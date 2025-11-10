@@ -15,7 +15,9 @@ public enum CommandType
     Flee,
     Solve,
     XP,
-    Level
+    Level,
+    Save,
+    Load
 }
 
 public class ParsedCommand
@@ -89,7 +91,9 @@ public class CommandParser
         { "?", CommandType.Help },
         { "quit", CommandType.Quit },
         { "exit", CommandType.Quit },
-        { "q", CommandType.Quit }
+        { "q", CommandType.Quit },
+        { "save", CommandType.Save },
+        { "load", CommandType.Load }
     };
 
     private static readonly HashSet<string> DirectionWords = new()
@@ -194,6 +198,7 @@ PUZZLE COMMANDS:
 
 OTHER COMMANDS:
   help, h, ?           - Show this help text
+  save                 - Save your current game
   quit, exit, q        - Exit the game
 ";
     }

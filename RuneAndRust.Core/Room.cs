@@ -2,6 +2,7 @@ namespace RuneAndRust.Core;
 
 public class Room
 {
+    public int Id { get; set; } = 1; // Unique room identifier
     public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public Dictionary<string, string> Exits { get; set; } = new(); // Direction -> Room Name

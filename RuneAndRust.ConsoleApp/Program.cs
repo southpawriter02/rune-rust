@@ -1,6 +1,7 @@
 using Spectre.Console;
 using RuneAndRust.Core;
 using RuneAndRust.Engine;
+using RuneAndRust.Persistence;
 
 namespace RuneAndRust.ConsoleApp;
 
@@ -12,6 +13,7 @@ class Program
     private static ProgressionService _progressionService = new();
     private static CombatEngine _combatEngine = new(_diceService, _progressionService);
     private static EnemyAI _enemyAI = new(_diceService);
+    private static SaveRepository _saveRepository = new();
 
     static void Main(string[] args)
     {
@@ -23,7 +25,28 @@ class Program
             _gameState = new GameState();
 
             DisplayWelcomeScreen();
-            CharacterCreation();
+
+            // Show start menu (New Game or Load Game)
+            var startChoice = ShowStartMenu();
+
+            if (startChoice == "new")
+            {
+                CharacterCreation();
+            }
+            else if (startChoice == "load")
+            {
+                if (!LoadGame())
+                {
+                    // Load failed, return to start
+                    continue;
+                }
+            }
+            else
+            {
+                // User chose to exit
+                break;
+            }
+
             MainGameLoop();
 
             // Ask if player wants to play again
@@ -47,6 +70,155 @@ class Program
         return choice.StartsWith("Yes");
     }
 
+    static string ShowStartMenu()
+    {
+        AnsiConsole.Clear();
+        AnsiConsole.WriteLine();
+
+        var rule = new Rule("[bold yellow]MAIN MENU[/]")
+        {
+            Justification = Justify.Center
+        };
+        AnsiConsole.Write(rule);
+        AnsiConsole.WriteLine();
+
+        var choices = new List<string> { "New Game" };
+
+        // Check if there are any saved games
+        var saves = _saveRepository.ListSaves();
+        if (saves.Count > 0)
+        {
+            choices.Add("Load Game");
+        }
+
+        choices.Add("Exit");
+
+        var choice = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+                .Title("[yellow]What would you like to do?[/]")
+                .AddChoices(choices)
+        );
+
+        return choice switch
+        {
+            "New Game" => "new",
+            "Load Game" => "load",
+            _ => "exit"
+        };
+    }
+
+    static bool LoadGame()
+    {
+        AnsiConsole.Clear();
+        AnsiConsole.WriteLine();
+
+        var rule = new Rule("[bold cyan]LOAD GAME[/]")
+        {
+            Justification = Justify.Center
+        };
+        AnsiConsole.Write(rule);
+        AnsiConsole.WriteLine();
+
+        var saves = _saveRepository.ListSaves();
+
+        if (saves.Count == 0)
+        {
+            AnsiConsole.MarkupLine("[yellow]No saved games found.[/]");
+            AnsiConsole.WriteLine();
+            AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+            Console.ReadLine();
+            return false;
+        }
+
+        // Build save list with details
+        var saveChoices = new List<string>();
+        foreach (var save in saves)
+        {
+            var status = save.BossDefeated ? "COMPLETED" : "IN PROGRESS";
+            var saveText = $"{save.CharacterName} - Lv{save.Level} {save.Class} - {status}";
+            saveChoices.Add(saveText);
+        }
+        saveChoices.Add("Cancel");
+
+        var choice = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+                .Title("[yellow]Select a save to load:[/]")
+                .PageSize(10)
+                .AddChoices(saveChoices)
+        );
+
+        if (choice == "Cancel")
+        {
+            return false;
+        }
+
+        // Extract character name from choice
+        var selectedIndex = saveChoices.IndexOf(choice);
+        var selectedSave = saves[selectedIndex];
+
+        // Load the game
+        var (loadedPlayer, loadedWorldState) = _saveRepository.LoadGame(selectedSave.CharacterName);
+
+        if (loadedPlayer == null || loadedWorldState == null)
+        {
+            AnsiConsole.MarkupLine("[red]Failed to load game![/]");
+            AnsiConsole.WriteLine();
+            AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+            Console.ReadLine();
+            return false;
+        }
+
+        // Restore game state
+        _gameState.Player = loadedPlayer;
+        _gameState.WorldState = loadedWorldState;
+
+        // Restore world state
+        RestoreWorldState(loadedWorldState);
+
+        // Set current room
+        foreach (var room in _gameState.World.Rooms.Values)
+        {
+            if (room.Id == loadedWorldState.CurrentRoomId)
+            {
+                _gameState.CurrentRoom = room;
+                break;
+            }
+        }
+
+        _gameState.CurrentPhase = GamePhase.Exploration;
+
+        AnsiConsole.WriteLine();
+        AnsiConsole.MarkupLine($"[green]✓[/] Game loaded: {loadedPlayer.Name} - Level {loadedPlayer.Level} {loadedPlayer.Class}");
+        AnsiConsole.WriteLine();
+        AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+        Console.ReadLine();
+
+        return true;
+    }
+
+    static void RestoreWorldState(WorldState worldState)
+    {
+        // Mark cleared rooms
+        foreach (var roomId in worldState.ClearedRoomIds)
+        {
+            foreach (var room in _gameState.World.Rooms.Values)
+            {
+                if (room.Id == roomId)
+                {
+                    room.HasBeenCleared = true;
+                }
+            }
+        }
+
+        // Restore puzzle state
+        if (worldState.PuzzleSolved)
+        {
+            var puzzleRoom = _gameState.World.GetRoom("Puzzle Chamber");
+            puzzleRoom.IsPuzzleSolved = true;
+            _gameState.World.UnlockPuzzleDoor();
+        }
+    }
+
     static void DisplayWelcomeScreen()
     {
         AnsiConsole.Clear();
@@ -61,7 +233,8 @@ class Program
         var panel = new Panel(
             "[dim]A text-based dungeon crawler set in the twilight of a broken world.\n" +
             "Corrupted machines guard ancient ruins. Only the bold survive.\n\n" +
-            "[yellow]Vertical Slice v0.1[/] - A 30-minute adventure[/]"
+            "[yellow]Version 0.2[/] - Expanded Edition\n" +
+            "Now with XP progression, new abilities, and save/load![/]"
         )
         {
             Border = BoxBorder.Rounded,
@@ -271,6 +444,10 @@ class Program
                     HandleLevel();
                     break;
 
+                case CommandType.Save:
+                    HandleSave();
+                    break;
+
                 case CommandType.Help:
                     HandleHelp();
                     break;
@@ -332,6 +509,18 @@ class Program
         AnsiConsole.MarkupLine($"[dim]You move {direction}...[/]");
         AnsiConsole.WriteLine();
         System.Threading.Thread.Sleep(800); // Brief pause for atmosphere
+
+        // Auto-save on room transition
+        try
+        {
+            _gameState.UpdateWorldState();
+            _saveRepository.SaveGame(_gameState.Player, _gameState.WorldState);
+            AnsiConsole.MarkupLine("[dim]Game auto-saved.[/]");
+        }
+        catch
+        {
+            // Silently fail auto-save - don't interrupt gameplay
+        }
     }
 
     static void HandleStats()
@@ -426,6 +615,42 @@ class Program
             Padding = new Padding(2, 1)
         };
         AnsiConsole.Write(panel);
+        AnsiConsole.WriteLine();
+        AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+        Console.ReadLine();
+    }
+
+    static void HandleSave()
+    {
+        AnsiConsole.Clear();
+        AnsiConsole.WriteLine();
+
+        var saveRule = new Rule("[bold cyan]SAVE GAME[/]")
+        {
+            Justification = Justify.Center
+        };
+        AnsiConsole.Write(saveRule);
+        AnsiConsole.WriteLine();
+
+        try
+        {
+            // Update world state before saving
+            _gameState.UpdateWorldState();
+
+            // Save the game
+            _saveRepository.SaveGame(_gameState.Player, _gameState.WorldState);
+
+            AnsiConsole.MarkupLine($"[green]✓ Game saved successfully![/]");
+            AnsiConsole.WriteLine();
+            AnsiConsole.MarkupLine($"[dim]Character: {_gameState.Player.Name}[/]");
+            AnsiConsole.MarkupLine($"[dim]Level: {_gameState.Player.Level}[/]");
+            AnsiConsole.MarkupLine($"[dim]Location: {_gameState.CurrentRoom.Name}[/]");
+        }
+        catch (Exception ex)
+        {
+            AnsiConsole.MarkupLine($"[red]Failed to save game:[/] {ex.Message.EscapeMarkup()}");
+        }
+
         AnsiConsole.WriteLine();
         AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
         Console.ReadLine();
