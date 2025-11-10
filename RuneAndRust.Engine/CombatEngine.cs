@@ -5,12 +5,12 @@ namespace RuneAndRust.Engine;
 public class CombatEngine
 {
     private readonly DiceService _diceService;
-    private readonly ProgressionService _progressionService;
+    private readonly SagaService _sagaService;
 
-    public CombatEngine(DiceService diceService, ProgressionService progressionService)
+    public CombatEngine(DiceService diceService, SagaService sagaService)
     {
         _diceService = diceService;
-        _progressionService = progressionService;
+        _sagaService = sagaService;
     }
 
     /// <summary>
@@ -464,8 +464,9 @@ public class CombatEngine
             combatState.AddLogEntry("=== VICTORY ===");
             combatState.AddLogEntry("All enemies have been defeated!");
 
-            // Award XP for defeated enemies
-            AwardCombatXP(combatState);
+            // Award Legend for defeated enemies (default trauma mod 1.0)
+            // Combat context will be set by the caller
+            AwardCombatLegend(combatState, 1.0f);
 
             return true;
         }
@@ -474,26 +475,27 @@ public class CombatEngine
     }
 
     /// <summary>
-    /// Award XP for all defeated enemies and check for level up
+    /// Award Legend for all defeated enemies and check for milestone
     /// </summary>
-    public bool AwardCombatXP(CombatState combatState)
+    public bool AwardCombatLegend(CombatState combatState, float traumaMod = 1.0f)
     {
-        int totalXP = 0;
+        int totalLegend = 0;
         foreach (var enemy in combatState.Enemies.Where(e => !e.IsAlive))
         {
-            totalXP += enemy.XPReward;
+            int legendAwarded = (int)(enemy.BaseLegendValue * 1.0f * traumaMod);
+            _sagaService.AwardLegend(combatState.Player, enemy.BaseLegendValue, 1.0f, traumaMod);
+            totalLegend += legendAwarded;
         }
 
-        if (totalXP > 0)
+        if (totalLegend > 0)
         {
-            _progressionService.AwardXP(combatState.Player, totalXP);
-            combatState.AddLogEntry($"Gained {totalXP} XP! (Total: {combatState.Player.CurrentXP})");
+            combatState.AddLogEntry($"Earned {totalLegend} Legend! (Total: {combatState.Player.CurrentLegend})");
 
-            // Check if player can level up
-            if (_progressionService.CanLevelUp(combatState.Player))
+            // Check if player can reach milestone
+            if (_sagaService.CanReachMilestone(combatState.Player))
             {
-                combatState.AddLogEntry($"*** READY TO LEVEL UP! ***");
-                return true; // Signal that level up is available
+                combatState.AddLogEntry($"*** MILESTONE REACHED! ***");
+                return true; // Signal that milestone is available
             }
         }
 

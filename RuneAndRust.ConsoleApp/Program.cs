@@ -10,8 +10,8 @@ class Program
     private static GameState _gameState = new();
     private static DiceService _diceService = new();
     private static CommandParser _commandParser = new();
-    private static ProgressionService _progressionService = new();
-    private static CombatEngine _combatEngine = new(_diceService, _progressionService);
+    private static SagaService _sagaService = new();
+    private static CombatEngine _combatEngine = new(_diceService, _sagaService);
     private static EnemyAI _enemyAI = new(_diceService);
     private static SaveRepository _saveRepository = new();
 
@@ -135,7 +135,7 @@ class Program
         foreach (var save in saves)
         {
             var status = save.BossDefeated ? "COMPLETED" : "IN PROGRESS";
-            var saveText = $"{save.CharacterName} - Lv{save.Level} {save.Class} - {status}";
+            var saveText = $"{save.CharacterName} - M{save.CurrentMilestone} {save.Class} - {status}";
             saveChoices.Add(saveText);
         }
         saveChoices.Add("Cancel");
@@ -188,7 +188,7 @@ class Program
         _gameState.CurrentPhase = GamePhase.Exploration;
 
         AnsiConsole.WriteLine();
-        AnsiConsole.MarkupLine($"[green]✓[/] Game loaded: {loadedPlayer.Name} - Level {loadedPlayer.Level} {loadedPlayer.Class}");
+        AnsiConsole.MarkupLine($"[green]✓[/] Game loaded: {loadedPlayer.Name} - Milestone {loadedPlayer.CurrentMilestone} {loadedPlayer.Class}");
         AnsiConsole.WriteLine();
         AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
         Console.ReadLine();
@@ -233,8 +233,8 @@ class Program
         var panel = new Panel(
             "[dim]A text-based dungeon crawler set in the twilight of a broken world.\n" +
             "Corrupted machines guard ancient ruins. Only the bold survive.\n\n" +
-            "[yellow]Version 0.2[/] - Expanded Edition\n" +
-            "Now with XP progression, new abilities, and save/load![/]"
+            "[yellow]Version 0.2.1[/] - Aethelgard Systems Migration\n" +
+            "Now with Legend/Milestone progression, ability ranks, and save/load![/]"
         )
         {
             Border = BoxBorder.Rounded,
@@ -436,12 +436,18 @@ class Program
                     HandleStats();
                     break;
 
-                case CommandType.XP:
-                    HandleXP();
+                case CommandType.Legend:
+                case CommandType.Saga:
+                    HandleLegend();
                     break;
 
-                case CommandType.Level:
-                    HandleLevel();
+                case CommandType.Milestone:
+                    HandleMilestone(_gameState.Player);
+                    break;
+
+                case CommandType.Spend:
+                case CommandType.PP:
+                    HandlePPSpending(_gameState.Player);
                     break;
 
                 case CommandType.Save:
@@ -547,29 +553,29 @@ class Program
         Console.ReadLine();
     }
 
-    static void HandleXP()
+    static void HandleLegend()
     {
         AnsiConsole.Clear();
         var player = _gameState.Player;
 
         AnsiConsole.WriteLine();
-        var xpRule = new Rule("[bold cyan]EXPERIENCE[/]")
+        var legendRule = new Rule("[bold cyan]LEGEND & SAGA[/]")
         {
             Justification = Justify.Center
         };
-        AnsiConsole.Write(xpRule);
+        AnsiConsole.Write(legendRule);
         AnsiConsole.WriteLine();
 
-        var xpToNext = _progressionService.GetXPToNextLevel(player);
-        var xpText = player.Level >= 5
-            ? $"[yellow]Current Level:[/] {player.Level} (MAX)\n" +
-              $"[yellow]Total XP:[/] {player.CurrentXP}"
-            : $"[yellow]Current Level:[/] {player.Level}\n" +
-              $"[yellow]Current XP:[/] {player.CurrentXP}\n" +
-              $"[yellow]XP to Next Level:[/] {xpToNext}\n" +
-              $"[yellow]Next Level At:[/] {player.XPToNextLevel} XP";
+        var legendToNext = _sagaService.CalculateLegendToNextMilestone(player.CurrentMilestone) - player.CurrentLegend;
+        var legendText = player.CurrentMilestone >= 3
+            ? $"[yellow]Current Milestone:[/] {player.CurrentMilestone} (MAX)\n" +
+              $"[yellow]Total Legend:[/] {player.CurrentLegend}"
+            : $"[yellow]Current Milestone:[/] {player.CurrentMilestone}\n" +
+              $"[yellow]Current Legend:[/] {player.CurrentLegend}\n" +
+              $"[yellow]Legend to Next Milestone:[/] {legendToNext}\n" +
+              $"[yellow]Next Milestone At:[/] {player.LegendToNextMilestone} Legend";
 
-        var panel = new Panel(xpText)
+        var panel = new Panel(legendText)
         {
             Border = BoxBorder.Rounded,
             BorderColor = Color.Yellow,
@@ -581,44 +587,6 @@ class Program
         Console.ReadLine();
     }
 
-    static void HandleLevel()
-    {
-        AnsiConsole.Clear();
-        var player = _gameState.Player;
-
-        AnsiConsole.WriteLine();
-        var levelRule = new Rule("[bold cyan]LEVEL INFORMATION[/]")
-        {
-            Justification = Justify.Center
-        };
-        AnsiConsole.Write(levelRule);
-        AnsiConsole.WriteLine();
-
-        var xpToNext = _progressionService.GetXPToNextLevel(player);
-        var levelText = $"[yellow]Current Level:[/] {player.Level}\n" +
-                        $"[yellow]Current XP:[/] {player.CurrentXP}";
-
-        if (player.Level < 5)
-        {
-            levelText += $"\n[yellow]XP to Level {player.Level + 1}:[/] {xpToNext} more\n" +
-                        $"[yellow]Progress:[/] {player.CurrentXP}/{player.XPToNextLevel}";
-        }
-        else
-        {
-            levelText += "\n\n[green]✓ Maximum level reached![/]";
-        }
-
-        var panel = new Panel(levelText)
-        {
-            Border = BoxBorder.Rounded,
-            BorderColor = Color.Yellow,
-            Padding = new Padding(2, 1)
-        };
-        AnsiConsole.Write(panel);
-        AnsiConsole.WriteLine();
-        AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
-        Console.ReadLine();
-    }
 
     static void HandleSave()
     {
@@ -643,7 +611,7 @@ class Program
             AnsiConsole.MarkupLine($"[green]✓ Game saved successfully![/]");
             AnsiConsole.WriteLine();
             AnsiConsole.MarkupLine($"[dim]Character: {_gameState.Player.Name}[/]");
-            AnsiConsole.MarkupLine($"[dim]Level: {_gameState.Player.Level}[/]");
+            AnsiConsole.MarkupLine($"[dim]Milestone: {_gameState.Player.CurrentMilestone}[/]");
             AnsiConsole.MarkupLine($"[dim]Location: {_gameState.CurrentRoom.Name}[/]");
         }
         catch (Exception ex)
@@ -948,11 +916,11 @@ class Program
             AnsiConsole.MarkupLine("[green]✓ Combat victory![/]");
             _gameState.ClearCurrentRoom();
 
-            // Check for level up
-            while (_progressionService.CanLevelUp(combat.Player))
+            // Check for milestone
+            while (_sagaService.CanReachMilestone(combat.Player))
             {
                 AnsiConsole.WriteLine();
-                HandleLevelUp(combat.Player);
+                HandleMilestone(combat.Player);
             }
 
             _gameState.CurrentPhase = GamePhase.Exploration;
@@ -963,32 +931,32 @@ class Program
         Console.ReadLine();
     }
 
-    static void HandleLevelUp(PlayerCharacter player)
+    static void HandleMilestone(PlayerCharacter player)
     {
         AnsiConsole.Clear();
         AnsiConsole.WriteLine();
 
-        // Display level up banner
-        var levelUpRule = new Rule("[bold yellow]⚡ LEVEL UP! ⚡[/]")
+        // Display milestone banner
+        var milestoneRule = new Rule("[bold yellow]⚡ MILESTONE REACHED! ⚡[/]")
         {
             Justification = Justify.Center,
             Style = new Style(Color.Yellow)
         };
-        AnsiConsole.Write(levelUpRule);
+        AnsiConsole.Write(milestoneRule);
         AnsiConsole.WriteLine();
 
-        var oldLevel = player.Level;
-        var newLevel = oldLevel + 1;
+        var oldMilestone = player.CurrentMilestone;
+        var newMilestone = oldMilestone + 1;
 
-        AnsiConsole.MarkupLine($"[green]Congratulations! You have reached Level {newLevel}![/]");
+        AnsiConsole.MarkupLine($"[green]Congratulations! You have reached Milestone {newMilestone}![/]");
         AnsiConsole.WriteLine();
 
         // Show rewards
         var rewardsPanel = new Panel(
-            "[yellow]Level Up Rewards:[/]\n\n" +
+            "[yellow]Milestone Rewards:[/]\n\n" +
             "• [green]+10 Max HP[/]\n" +
             "• [green]+5 Max Stamina[/]\n" +
-            "• [green]+1 Attribute Point[/]\n" +
+            "• [green]+1 Progression Point (PP)[/]\n" +
             "• [green]Full HP and Stamina Restored[/]"
         )
         {
@@ -999,8 +967,94 @@ class Program
         AnsiConsole.Write(rewardsPanel);
         AnsiConsole.WriteLine();
 
+        // Perform milestone advancement
+        _sagaService.ReachMilestone(player);
+
+        AnsiConsole.MarkupLine($"[green]You are now at Milestone {newMilestone}![/]");
+        AnsiConsole.MarkupLine($"[yellow]Unspent PP: {player.ProgressionPoints}[/]");
+        AnsiConsole.MarkupLine($"[dim]Legend: {player.CurrentLegend} / {player.LegendToNextMilestone} to next milestone[/]");
+        AnsiConsole.WriteLine();
+
+        // Prompt to spend PP
+        var spendChoice = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+                .Title("[yellow]You have PP to spend. What would you like to do?[/]")
+                .AddChoices(new[] { "Spend PP Now", "Save for Later" })
+        );
+
+        if (spendChoice == "Spend PP Now")
+        {
+            HandlePPSpending(player);
+        }
+        else
+        {
+            AnsiConsole.WriteLine();
+            AnsiConsole.MarkupLine("[dim]You can spend PP later using the 'spend' or 'pp' command.[/]");
+            AnsiConsole.WriteLine();
+            AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+            Console.ReadLine();
+        }
+    }
+
+    static void HandlePPSpending(PlayerCharacter player)
+    {
+        while (player.ProgressionPoints > 0)
+        {
+            AnsiConsole.Clear();
+            AnsiConsole.WriteLine();
+
+            var ppRule = new Rule($"[bold cyan]PROGRESSION POINTS: {player.ProgressionPoints} Unspent[/]")
+            {
+                Justification = Justify.Center
+            };
+            AnsiConsole.Write(ppRule);
+            AnsiConsole.WriteLine();
+
+            var choices = new List<string>();
+            if (player.ProgressionPoints >= 1)
+            {
+                choices.Add("Increase Attribute (1 PP)");
+            }
+            if (player.ProgressionPoints >= 5)
+            {
+                choices.Add("Advance Ability Rank (5 PP)");
+            }
+            choices.Add("Save PP for Later");
+
+            var choice = AnsiConsole.Prompt(
+                new SelectionPrompt<string>()
+                    .Title("[yellow]How would you like to spend your PP?[/]")
+                    .AddChoices(choices)
+            );
+
+            if (choice == "Save PP for Later")
+            {
+                break;
+            }
+            else if (choice.StartsWith("Increase Attribute"))
+            {
+                SpendPPOnAttributes(player);
+            }
+            else if (choice.StartsWith("Advance Ability"))
+            {
+                SpendPPOnAbilities(player);
+            }
+        }
+
+        AnsiConsole.WriteLine();
+        AnsiConsole.MarkupLine("[green]✓ PP spending complete![/]");
+        AnsiConsole.WriteLine();
+        AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+        Console.ReadLine();
+    }
+
+    static void SpendPPOnAttributes(PlayerCharacter player)
+    {
+        AnsiConsole.Clear();
+        AnsiConsole.WriteLine();
+
         // Show current attributes
-        AnsiConsole.MarkupLine("[yellow]Current Attributes:[/]");
+        AnsiConsole.MarkupLine($"[yellow]Current Attributes (PP Available: {player.ProgressionPoints}):[/]");
         AnsiConsole.MarkupLine($"  MIGHT:       {player.Attributes.Might} {(player.Attributes.Might >= 6 ? "[dim](MAX)[/]" : "")}");
         AnsiConsole.MarkupLine($"  FINESSE:     {player.Attributes.Finesse} {(player.Attributes.Finesse >= 6 ? "[dim](MAX)[/]" : "")}");
         AnsiConsole.MarkupLine($"  WITS:        {player.Attributes.Wits} {(player.Attributes.Wits >= 6 ? "[dim](MAX)[/]" : "")}");
@@ -1008,67 +1062,79 @@ class Program
         AnsiConsole.MarkupLine($"  STURDINESS:  {player.Attributes.Sturdiness} {(player.Attributes.Sturdiness >= 6 ? "[dim](MAX)[/]" : "")}");
         AnsiConsole.WriteLine();
 
-        // Build list of attributes that can be increased (not at cap)
+        // Build list of attributes that can be increased
         var availableAttributes = new List<string>();
         if (player.Attributes.Might < 6) availableAttributes.Add("MIGHT");
         if (player.Attributes.Finesse < 6) availableAttributes.Add("FINESSE");
         if (player.Attributes.Wits < 6) availableAttributes.Add("WITS");
         if (player.Attributes.Will < 6) availableAttributes.Add("WILL");
         if (player.Attributes.Sturdiness < 6) availableAttributes.Add("STURDINESS");
+        availableAttributes.Add("Cancel");
 
-        string attributeChoice;
-        if (availableAttributes.Count > 0)
+        var attributeChoice = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+                .Title("[yellow]Choose an attribute to increase (1 PP):[/]")
+                .AddChoices(availableAttributes)
+        );
+
+        if (attributeChoice != "Cancel")
         {
-            // Prompt for attribute to increase
-            attributeChoice = AnsiConsole.Prompt(
-                new SelectionPrompt<string>()
-                    .Title("[yellow]Choose an attribute to increase:[/]")
-                    .AddChoices(availableAttributes)
-            );
-        }
-        else
-        {
-            // All attributes at cap (shouldn't happen but handle gracefully)
-            AnsiConsole.MarkupLine("[yellow]All attributes are at maximum![/]");
-            attributeChoice = "might"; // Dummy choice, won't increase
-        }
-
-        // Perform level up
-        _progressionService.LevelUp(player, attributeChoice);
-
-        AnsiConsole.WriteLine();
-        AnsiConsole.MarkupLine($"[green]✓ {attributeChoice} increased to {player.GetAttributeValue(attributeChoice)}![/]");
-        AnsiConsole.WriteLine();
-
-        // Check for ability unlock
-        if (_progressionService.IsAbilityUnlockedAtLevel(newLevel))
-        {
-            var abilitySlot = _progressionService.GetAbilitySlotToUnlock(newLevel);
-            if (abilitySlot >= 0 && abilitySlot < player.Abilities.Count)
+            if (_sagaService.SpendPPOnAttribute(player, attributeChoice))
             {
-                var newAbility = player.Abilities[abilitySlot];
-                AnsiConsole.MarkupLine($"[bold cyan]🌟 NEW ABILITY UNLOCKED! 🌟[/]");
                 AnsiConsole.WriteLine();
-
-                var abilityPanel = new Panel(
-                    $"[bold yellow]{newAbility.Name}[/]\n\n" +
-                    $"{newAbility.Description}\n\n" +
-                    $"[dim]Stamina Cost: {newAbility.StaminaCost}[/]"
-                )
-                {
-                    Border = BoxBorder.Double,
-                    BorderColor = Color.Cyan,
-                    Padding = new Padding(2, 1)
-                };
-                AnsiConsole.Write(abilityPanel);
+                AnsiConsole.MarkupLine($"[green]✓ {attributeChoice} increased to {player.GetAttributeValue(attributeChoice)}![/]");
+                AnsiConsole.MarkupLine($"[yellow]PP Remaining: {player.ProgressionPoints}[/]");
                 AnsiConsole.WriteLine();
+                System.Threading.Thread.Sleep(1000);
             }
         }
+    }
 
-        AnsiConsole.MarkupLine($"[green]You are now Level {newLevel}![/]");
-        AnsiConsole.MarkupLine($"[dim]XP: {player.CurrentXP} / {player.XPToNextLevel} to next level[/]");
+    static void SpendPPOnAbilities(PlayerCharacter player)
+    {
+        AnsiConsole.Clear();
         AnsiConsole.WriteLine();
-        AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
-        Console.ReadLine();
+
+        AnsiConsole.MarkupLine($"[yellow]Advance Ability Rank (PP Available: {player.ProgressionPoints}):[/]");
+        AnsiConsole.WriteLine();
+
+        // Show abilities with current ranks
+        var abilityChoices = new List<string>();
+        foreach (var ability in player.Abilities)
+        {
+            var rankInfo = ability.CurrentRank >= 2 ? " [dim](MAX for v0.2)[/]" : $" [green](Rank {ability.CurrentRank} → {ability.CurrentRank + 1})[/]";
+            var costInfo = ability.CurrentRank < 2 ? $" - {ability.CostToRank2} PP" : "";
+            abilityChoices.Add($"{ability.Name}{rankInfo}{costInfo}");
+        }
+        abilityChoices.Add("Cancel");
+
+        var choice = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+                .Title("[yellow]Choose an ability to advance:[/]")
+                .AddChoices(abilityChoices)
+        );
+
+        if (choice != "Cancel")
+        {
+            var abilityName = choice.Split(" [")[0]; // Extract ability name
+            var ability = player.Abilities.FirstOrDefault(a => a.Name == abilityName);
+
+            if (ability != null && _sagaService.AdvanceAbilityRank(player, ability))
+            {
+                AnsiConsole.WriteLine();
+                AnsiConsole.MarkupLine($"[green]✓ {ability.Name} advanced to Rank {ability.CurrentRank}![/]");
+                AnsiConsole.MarkupLine($"[yellow]PP Remaining: {player.ProgressionPoints}[/]");
+                AnsiConsole.WriteLine();
+                AnsiConsole.MarkupLine("[cyan]Rank 2 improvements applied![/]");
+                AnsiConsole.WriteLine();
+                System.Threading.Thread.Sleep(1500);
+            }
+            else
+            {
+                AnsiConsole.WriteLine();
+                AnsiConsole.MarkupLine("[red]Cannot advance this ability (not enough PP or already at max rank)[/]");
+                System.Threading.Thread.Sleep(1000);
+            }
+        }
     }
 }

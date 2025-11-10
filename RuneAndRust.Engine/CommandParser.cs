@@ -14,8 +14,11 @@ public enum CommandType
     Ability,
     Flee,
     Solve,
-    XP,
-    Level,
+    Legend,
+    Saga,
+    Milestone,
+    Spend,
+    PP,
     Save,
     Load
 }
@@ -56,10 +59,13 @@ public class CommandParser
         { "status", CommandType.Stats },
         { "character", CommandType.Stats },
         { "sheet", CommandType.Stats },
-        { "xp", CommandType.XP },
-        { "experience", CommandType.XP },
-        { "level", CommandType.Level },
-        { "lvl", CommandType.Level },
+        { "legend", CommandType.Legend },
+        { "saga", CommandType.Saga },
+        { "milestone", CommandType.Milestone },
+        { "ms", CommandType.Milestone },
+        { "spend", CommandType.Spend },
+        { "pp", CommandType.PP },
+        { "progression", CommandType.PP },
 
         // Inventory
         { "inventory", CommandType.Inventory },
@@ -183,8 +189,9 @@ EXPLORATION COMMANDS:
   east, e              - Move east
   west, w              - Move west
   stats, status        - View your character stats
-  xp, experience       - View XP and level progress
-  level, lvl           - View level information
+  legend, saga         - View Legend and Saga progress
+  milestone, ms        - View milestone information
+  spend, pp            - Spend Progression Points
   inventory, inv, i    - View your inventory
 
 COMBAT COMMANDS:

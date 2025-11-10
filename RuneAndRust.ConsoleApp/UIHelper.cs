@@ -16,19 +16,25 @@ public static class UIHelper
 
         table.AddColumn(new TableColumn($"[bold yellow]{character.Name}[/] - [dim]{character.Class}[/]").Centered());
 
-        // Level and XP with progress bar
-        if (character.Level >= 5)
+        // Milestone and Legend with progress bar
+        if (character.CurrentMilestone >= 3)
         {
-            table.AddRow($"[yellow]Level {character.Level}[/] [dim](MAX)[/] | [dim]Total XP: {character.CurrentXP}[/]");
+            table.AddRow($"[yellow]Milestone {character.CurrentMilestone}[/] [dim](MAX)[/] | [dim]Total Legend: {character.CurrentLegend}[/]");
         }
         else
         {
-            var xpProgress = (double)character.CurrentXP / character.XPToNextLevel;
-            var xpBarWidth = 15;
-            var xpFilled = (int)(xpProgress * xpBarWidth);
-            var xpEmpty = xpBarWidth - xpFilled;
-            var xpBar = new string('█', xpFilled) + new string('░', xpEmpty);
-            table.AddRow($"[yellow]Level {character.Level}[/] | [cyan]{xpBar}[/] [dim]{character.CurrentXP}/{character.XPToNextLevel} XP[/]");
+            var legendProgress = (double)character.CurrentLegend / character.LegendToNextMilestone;
+            var legendBarWidth = 15;
+            var legendFilled = (int)(legendProgress * legendBarWidth);
+            var legendEmpty = legendBarWidth - legendFilled;
+            var legendBar = new string('█', legendFilled) + new string('░', legendEmpty);
+            table.AddRow($"[yellow]Milestone {character.CurrentMilestone}[/] | [cyan]{legendBar}[/] [dim]{character.CurrentLegend}/{character.LegendToNextMilestone} Legend[/]");
+        }
+
+        // Progression Points
+        if (character.ProgressionPoints > 0)
+        {
+            table.AddRow($"[bold green]PP Available: {character.ProgressionPoints}[/] [dim](type 'spend' to use)[/]");
         }
 
         // Resources
@@ -70,38 +76,16 @@ public static class UIHelper
         table.AddRow(new Markup("[bold]WEAPON[/]"));
         table.AddRow($"{character.WeaponName} ([yellow]{character.WeaponAttribute.ToUpper()}[/]-based, {character.BaseDamage}d6)");
 
-        // Abilities (show unlocked and locked based on level)
+        // Abilities (all usable in v0.2.1, ranks shown)
         table.AddRow(new Markup(""));  // Spacer
         table.AddRow(new Markup("[bold]ABILITIES[/]"));
 
-        // Determine how many abilities are unlocked
-        int unlockedCount = character.Level switch
+        foreach (var ability in character.Abilities)
         {
-            1 => 2,
-            2 => 2,
-            3 => 3,
-            4 => 3,
-            >= 5 => 4,
-            _ => 2
-        };
-
-        for (int i = 0; i < character.Abilities.Count; i++)
-        {
-            var ability = character.Abilities[i];
-            if (i < unlockedCount)
-            {
-                // Unlocked ability
-                var costColor = character.Stamina >= ability.StaminaCost ? "green" : "red";
-                var newTag = (i == 2 && character.Level == 3) || (i == 3 && character.Level == 5) ? " [cyan][NEW][/]" : "";
-                table.AddRow($"[yellow]{ability.Name}[/]{newTag} ([{costColor}]{ability.StaminaCost} Stamina[/])");
-                table.AddRow($"[dim]{ability.Description}[/]");
-            }
-            else
-            {
-                // Locked ability
-                var unlockLevel = i == 2 ? 3 : 5;
-                table.AddRow($"[dim][LOCKED] {ability.Name} - Unlocks at Level {unlockLevel}[/]");
-            }
+            var costColor = character.Stamina >= ability.StaminaCost ? "green" : "red";
+            var rankTag = ability.CurrentRank > 1 ? $" [cyan][Rank {ability.CurrentRank}][/]" : "";
+            table.AddRow($"[yellow]{ability.Name}[/]{rankTag} ([{costColor}]{ability.StaminaCost} Stamina[/])");
+            table.AddRow($"[dim]{ability.Description}[/]");
         }
 
         AnsiConsole.Write(table);
@@ -164,8 +148,8 @@ public static class UIHelper
         AnsiConsole.MarkupLine("[red]Enemies detected:[/]");
         foreach (var enemy in enemies)
         {
-            var xpReward = enemy.XPReward > 0 ? $" [dim]({enemy.XPReward} XP)[/]" : "";
-            AnsiConsole.MarkupLine($"  • [bold]{enemy.Name}[/] ([dim]HP: {enemy.HP}/{enemy.MaxHP}{xpReward}[/])");
+            var legendReward = enemy.BaseLegendValue > 0 ? $" [dim]({enemy.BaseLegendValue} Legend)[/]" : "";
+            AnsiConsole.MarkupLine($"  • [bold]{enemy.Name}[/] ([dim]HP: {enemy.HP}/{enemy.MaxHP}{legendReward}[/])");
         }
         AnsiConsole.WriteLine();
     }
@@ -268,8 +252,8 @@ public static class UIHelper
         {
             var healthPercent = (int)((double)player.HP / player.MaxHP * 100);
             storyText += $"\n\n[bold yellow]Final Status:[/]\n" +
-                        $"[green]Level:[/] {player.Level}\n" +
-                        $"[green]Total XP:[/] {player.CurrentXP}\n" +
+                        $"[green]Milestone:[/] {player.CurrentMilestone}\n" +
+                        $"[green]Total Legend:[/] {player.CurrentLegend}\n" +
                         $"[green]HP:[/] {player.HP}/{player.MaxHP} ({healthPercent}%)\n" +
                         $"[green]Stamina:[/] {player.Stamina}/{player.MaxStamina}\n" +
                         $"[dim]You survived with {healthPercent}% health remaining.[/]";
@@ -330,7 +314,7 @@ public static class UIHelper
             .Border(TableBorder.Rounded)
             .BorderColor(Color.Green);
 
-        playerTable.AddColumn($"[bold yellow]{combat.Player.Name}[/] - Level {combat.Player.Level}");
+        playerTable.AddColumn($"[bold yellow]{combat.Player.Name}[/] - Milestone {combat.Player.CurrentMilestone}");
         playerTable.AddRow(CreateBar("HP", combat.Player.HP, combat.Player.MaxHP, Color.Red, Color.DarkRed));
         playerTable.AddRow(CreateBar("Stamina", combat.Player.Stamina, combat.Player.MaxStamina, Color.Green, Color.DarkGreen));
 
@@ -468,23 +452,13 @@ public static class UIHelper
     {
         var choices = new List<string>();
 
-        // Only show unlocked abilities based on level
-        int unlockedCount = player.Level switch
+        // Show all abilities (all are usable in v0.2.1)
+        foreach (var ability in player.Abilities)
         {
-            1 => 2,
-            2 => 2,
-            3 => 3,
-            4 => 3,
-            >= 5 => 4,
-            _ => 2
-        };
-
-        for (int i = 0; i < Math.Min(unlockedCount, player.Abilities.Count); i++)
-        {
-            var ability = player.Abilities[i];
             var canAfford = player.Stamina >= ability.StaminaCost;
             var staminaColor = canAfford ? "green" : "red";
-            choices.Add($"{ability.Name} ([{staminaColor}]{ability.StaminaCost} Stamina[/]) - {ability.Description}");
+            var rankTag = ability.CurrentRank > 1 ? $" [Rank {ability.CurrentRank}]" : "";
+            choices.Add($"{ability.Name}{rankTag} ([{staminaColor}]{ability.StaminaCost} Stamina[/]) - {ability.Description}");
         }
 
         choices.Add("Cancel - Go back");

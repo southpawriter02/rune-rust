@@ -11,9 +11,10 @@ public class SaveData
     public string CharacterName { get; set; } = string.Empty;
     public CharacterClass Class { get; set; }
 
-    // Progression
-    public int Level { get; set; }
-    public int CurrentXP { get; set; }
+    // Progression (Aethelgard Saga System)
+    public int CurrentMilestone { get; set; }
+    public int CurrentLegend { get; set; }
+    public int ProgressionPoints { get; set; }
 
     // Attributes
     public int Might { get; set; }
@@ -42,7 +43,7 @@ public class SaveInfo
 {
     public string CharacterName { get; set; } = string.Empty;
     public CharacterClass Class { get; set; }
-    public int Level { get; set; }
+    public int CurrentMilestone { get; set; }
     public DateTime LastPlayed { get; set; }
     public bool BossDefeated { get; set; }
 }

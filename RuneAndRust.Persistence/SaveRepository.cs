@@ -28,8 +28,9 @@ public class SaveRepository
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 character_name TEXT UNIQUE NOT NULL,
                 class TEXT NOT NULL,
-                level INTEGER NOT NULL,
-                current_xp INTEGER NOT NULL,
+                current_milestone INTEGER NOT NULL,
+                current_legend INTEGER NOT NULL,
+                progression_points INTEGER NOT NULL,
                 might INTEGER NOT NULL,
                 finesse INTEGER NOT NULL,
                 wits INTEGER NOT NULL,
@@ -55,8 +56,9 @@ public class SaveRepository
         {
             CharacterName = player.Name,
             Class = player.Class,
-            Level = player.Level,
-            CurrentXP = player.CurrentXP,
+            CurrentMilestone = player.CurrentMilestone,
+            CurrentLegend = player.CurrentLegend,
+            ProgressionPoints = player.ProgressionPoints,
             Might = player.Attributes.Might,
             Finesse = player.Attributes.Finesse,
             Wits = player.Attributes.Wits,
@@ -79,13 +81,13 @@ public class SaveRepository
         var command = connection.CreateCommand();
         command.CommandText = @"
             INSERT OR REPLACE INTO saves (
-                character_name, class, level, current_xp,
+                character_name, class, current_milestone, current_legend, progression_points,
                 might, finesse, wits, will, sturdiness,
                 current_hp, max_hp, current_stamina, max_stamina,
                 current_room_id, cleared_rooms_json, puzzle_solved, boss_defeated,
                 last_saved
             ) VALUES (
-                $name, $class, $level, $xp,
+                $name, $class, $milestone, $legend, $pp,
                 $might, $finesse, $wits, $will, $sturdiness,
                 $hp, $maxhp, $stamina, $maxstamina,
                 $roomid, $cleared, $puzzle, $boss,
@@ -95,8 +97,9 @@ public class SaveRepository
 
         command.Parameters.AddWithValue("$name", saveData.CharacterName);
         command.Parameters.AddWithValue("$class", saveData.Class.ToString());
-        command.Parameters.AddWithValue("$level", saveData.Level);
-        command.Parameters.AddWithValue("$xp", saveData.CurrentXP);
+        command.Parameters.AddWithValue("$milestone", saveData.CurrentMilestone);
+        command.Parameters.AddWithValue("$legend", saveData.CurrentLegend);
+        command.Parameters.AddWithValue("$pp", saveData.ProgressionPoints);
         command.Parameters.AddWithValue("$might", saveData.Might);
         command.Parameters.AddWithValue("$finesse", saveData.Finesse);
         command.Parameters.AddWithValue("$wits", saveData.Wits);
@@ -135,8 +138,9 @@ public class SaveRepository
         {
             CharacterName = reader.GetString(reader.GetOrdinal("character_name")),
             Class = Enum.Parse<CharacterClass>(reader.GetString(reader.GetOrdinal("class"))),
-            Level = reader.GetInt32(reader.GetOrdinal("level")),
-            CurrentXP = reader.GetInt32(reader.GetOrdinal("current_xp")),
+            CurrentMilestone = reader.GetInt32(reader.GetOrdinal("current_milestone")),
+            CurrentLegend = reader.GetInt32(reader.GetOrdinal("current_legend")),
+            ProgressionPoints = reader.GetInt32(reader.GetOrdinal("progression_points")),
             Might = reader.GetInt32(reader.GetOrdinal("might")),
             Finesse = reader.GetInt32(reader.GetOrdinal("finesse")),
             Wits = reader.GetInt32(reader.GetOrdinal("wits")),
@@ -157,9 +161,10 @@ public class SaveRepository
         {
             Name = saveData.CharacterName,
             Class = saveData.Class,
-            Level = saveData.Level,
-            CurrentXP = saveData.CurrentXP,
-            XPToNextLevel = CalculateXPToNextLevel(saveData.Level),
+            CurrentMilestone = saveData.CurrentMilestone,
+            CurrentLegend = saveData.CurrentLegend,
+            ProgressionPoints = saveData.ProgressionPoints,
+            LegendToNextMilestone = CalculateLegendToNextMilestone(saveData.CurrentMilestone),
             Attributes = new Attributes(
                 might: saveData.Might,
                 finesse: saveData.Finesse,
@@ -196,7 +201,7 @@ public class SaveRepository
         connection.Open();
 
         var command = connection.CreateCommand();
-        command.CommandText = "SELECT character_name, class, level, boss_defeated, last_saved FROM saves ORDER BY last_saved DESC";
+        command.CommandText = "SELECT character_name, class, current_milestone, boss_defeated, last_saved FROM saves ORDER BY last_saved DESC";
 
         using var reader = command.ExecuteReader();
 
@@ -206,7 +211,7 @@ public class SaveRepository
             {
                 CharacterName = reader.GetString(0),
                 Class = Enum.Parse<CharacterClass>(reader.GetString(1)),
-                Level = reader.GetInt32(2),
+                CurrentMilestone = reader.GetInt32(2),
                 BossDefeated = reader.GetInt32(3) == 1,
                 LastPlayed = DateTime.Parse(reader.GetString(4))
             });
@@ -240,15 +245,9 @@ public class SaveRepository
         return count > 0;
     }
 
-    private int CalculateXPToNextLevel(int level)
+    private int CalculateLegendToNextMilestone(int currentMilestone)
     {
-        return level switch
-        {
-            1 => 50,
-            2 => 100,
-            3 => 150,
-            4 => 200,
-            _ => 0
-        };
+        // Adjusted formula for v0.1: (CurrentMilestone × 50) + 100
+        return (currentMilestone * 50) + 100;
     }
 }
