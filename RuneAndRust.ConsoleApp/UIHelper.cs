@@ -83,6 +83,14 @@ public static class UIHelper
     public static void DisplayCombatStart(List<Enemy> enemies)
     {
         AnsiConsole.WriteLine();
+
+        // Check if boss fight
+        var hasBoss = enemies.Any(e => e.IsBoss);
+        if (hasBoss)
+        {
+            DisplayBossArt();
+        }
+
         var rule = new Rule("[bold red]⚔ COMBAT INITIATED ⚔[/]")
         {
             Justification = Justify.Center
@@ -95,6 +103,40 @@ public static class UIHelper
         {
             AnsiConsole.MarkupLine($"  • [bold]{enemy.Name}[/] ([dim]HP: {enemy.HP}/{enemy.MaxHP}[/])");
         }
+        AnsiConsole.WriteLine();
+    }
+
+    private static void DisplayBossArt()
+    {
+        var bossArt = @"
+    ╔════════════════════════════════════════════════╗
+    ║                                                ║
+    ║       ████████╗  ██╗    ██╗  ██████╗          ║
+    ║       ██╔═══██║  ██║    ██║  ██╔══██╗         ║
+    ║       ████████╔╝ ██║ █╗ ██║  ██████╔╝         ║
+    ║       ██╔═══██╗ ██║███╗██║  ██╔═══╝          ║
+    ║       ██║   ██║ ╚███╔███╔╝  ██║              ║
+    ║       ╚═╝   ╚═╝  ╚══╝╚══╝   ╚═╝              ║
+    ║                                                ║
+    ║            ▄████████████████▄                  ║
+    ║          ▄█▀▀            ▀▀█▄                ║
+    ║         █▀  ████    ████  ▀█                 ║
+    ║        █    ████    ████    █                ║
+    ║        █                    █                ║
+    ║        █    ▄██████████▄    █                ║
+    ║         █   █          █   █                 ║
+    ║          ▀█▄▄        ▄▄█▀                   ║
+    ║            ▀████████████▀                    ║
+    ║         ███ ██████████ ███                   ║
+    ║        █████████████████████                 ║
+    ║       ███████████████████████                ║
+    ║                                                ║
+    ║          R U I N - W A R D E N                ║
+    ║                                                ║
+    ╚════════════════════════════════════════════════╝
+";
+
+        AnsiConsole.Markup($"[red]{bossArt.EscapeMarkup()}[/]");
         AnsiConsole.WriteLine();
     }
 
@@ -137,6 +179,11 @@ public static class UIHelper
 
     public static void DisplayVictory()
     {
+        DisplayVictory(null);
+    }
+
+    public static void DisplayVictory(PlayerCharacter? player)
+    {
         AnsiConsole.Clear();
         AnsiConsole.WriteLine();
 
@@ -146,13 +193,24 @@ public static class UIHelper
         AnsiConsole.Write(figlet);
 
         AnsiConsole.WriteLine();
-        var panel = new Panel(
-            "[bold green]You have defeated the Ruin-Warden and survived the facility.[/]\n\n" +
-            "The corrupted machines fall silent. The hum of residual energy fades.\n" +
-            "You stand alone in the twilight ruins, victorious.\n\n" +
-            "[dim]THE END[/]\n\n" +
-            "[yellow]Thank you for playing Rune & Rust v0.1[/]"
-        )
+
+        var storyText = "[bold green]You have defeated the Ruin-Warden and survived the facility.[/]\n\n" +
+                       "The corrupted machines fall silent. The hum of residual energy fades.\n" +
+                       "You stand alone in the twilight ruins, victorious.\n\n" +
+                       "[dim]THE END[/]";
+
+        // Add player stats if available
+        if (player != null)
+        {
+            storyText += $"\n\n[bold yellow]Final Status:[/]\n" +
+                        $"[green]HP:[/] {player.HP}/{player.MaxHP}\n" +
+                        $"[green]Stamina:[/] {player.Stamina}/{player.MaxStamina}\n" +
+                        $"[dim]You survived with {(int)((double)player.HP / player.MaxHP * 100)}% health remaining.[/]";
+        }
+
+        storyText += "\n\n[yellow]Thank you for playing Rune & Rust v0.1[/]";
+
+        var panel = new Panel(storyText)
         {
             Border = BoxBorder.Double,
             BorderColor = Color.Gold1,

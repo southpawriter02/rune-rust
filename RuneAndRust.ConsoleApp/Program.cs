@@ -14,9 +14,36 @@ class Program
 
     static void Main(string[] args)
     {
-        DisplayWelcomeScreen();
-        CharacterCreation();
-        MainGameLoop();
+        bool playAgain = true;
+
+        while (playAgain)
+        {
+            // Reset game state for new game
+            _gameState = new GameState();
+
+            DisplayWelcomeScreen();
+            CharacterCreation();
+            MainGameLoop();
+
+            // Ask if player wants to play again
+            playAgain = PromptPlayAgain();
+        }
+
+        AnsiConsole.Clear();
+        AnsiConsole.MarkupLine("[yellow]Thanks for playing Rune & Rust![/]");
+        AnsiConsole.WriteLine();
+    }
+
+    static bool PromptPlayAgain()
+    {
+        AnsiConsole.WriteLine();
+        var choice = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+                .Title("[yellow]Play again?[/]")
+                .AddChoices(new[] { "Yes - New Game", "No - Exit" })
+        );
+
+        return choice.StartsWith("Yes");
     }
 
     static void DisplayWelcomeScreen()
@@ -124,9 +151,6 @@ class Program
             {
                 _gameState.CurrentPhase = GamePhase.GameOver;
                 UIHelper.DisplayGameOver();
-                AnsiConsole.WriteLine();
-                AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to exit...[/]");
-                Console.ReadLine();
                 return;
             }
 
@@ -153,6 +177,27 @@ class Program
         // Display room
         UIHelper.DisplayRoomDescription(_gameState.CurrentRoom, _gameState.GetAvailableDirections());
 
+        // Show tutorial hints in the entrance
+        if (_gameState.CurrentRoom.IsStartRoom)
+        {
+            var tutorialPanel = new Panel(
+                "[yellow]TUTORIAL HINTS[/]\n\n" +
+                "• Type [cyan]north/south/east/west[/] (or [cyan]n/s/e/w[/]) to move\n" +
+                "• Type [cyan]look[/] (or [cyan]l[/]) to examine your surroundings\n" +
+                "• Type [cyan]stats[/] to view your character sheet\n" +
+                "• Type [cyan]help[/] (or [cyan]h[/]) for a full command list\n" +
+                "• In combat, use [cyan]attack[/], [cyan]defend[/], or [cyan]ability[/]\n" +
+                "• Manage your stamina wisely - abilities are powerful but costly!"
+            )
+            {
+                Border = BoxBorder.Rounded,
+                BorderColor = Color.Yellow,
+                Padding = new Padding(1, 0)
+            };
+            AnsiConsole.Write(tutorialPanel);
+            AnsiConsole.WriteLine();
+        }
+
         // Check for automatic triggers
         if (_gameState.ShouldTriggerCombat())
         {
@@ -177,10 +222,7 @@ class Program
         if (_gameState.CurrentRoom.Name == "Boss Sanctum" && _gameState.CurrentRoom.HasBeenCleared)
         {
             _gameState.CurrentPhase = GamePhase.Victory;
-            UIHelper.DisplayVictory();
-            AnsiConsole.WriteLine();
-            AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to exit...[/]");
-            Console.ReadLine();
+            UIHelper.DisplayVictory(_gameState.Player);
             return;
         }
 
