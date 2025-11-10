@@ -13,7 +13,9 @@ public enum CommandType
     Defend,
     Ability,
     Flee,
-    Solve
+    Solve,
+    XP,
+    Level
 }
 
 public class ParsedCommand
@@ -52,6 +54,10 @@ public class CommandParser
         { "status", CommandType.Stats },
         { "character", CommandType.Stats },
         { "sheet", CommandType.Stats },
+        { "xp", CommandType.XP },
+        { "experience", CommandType.XP },
+        { "level", CommandType.Level },
+        { "lvl", CommandType.Level },
 
         // Inventory
         { "inventory", CommandType.Inventory },
@@ -173,6 +179,8 @@ EXPLORATION COMMANDS:
   east, e              - Move east
   west, w              - Move west
   stats, status        - View your character stats
+  xp, experience       - View XP and level progress
+  level, lvl           - View level information
   inventory, inv, i    - View your inventory
 
 COMBAT COMMANDS:

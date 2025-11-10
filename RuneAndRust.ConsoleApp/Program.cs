@@ -9,7 +9,8 @@ class Program
     private static GameState _gameState = new();
     private static DiceService _diceService = new();
     private static CommandParser _commandParser = new();
-    private static CombatEngine _combatEngine = new(_diceService);
+    private static ProgressionService _progressionService = new();
+    private static CombatEngine _combatEngine = new(_diceService, _progressionService);
     private static EnemyAI _enemyAI = new(_diceService);
 
     static void Main(string[] args)
@@ -262,6 +263,14 @@ class Program
                     HandleStats();
                     break;
 
+                case CommandType.XP:
+                    HandleXP();
+                    break;
+
+                case CommandType.Level:
+                    HandleLevel();
+                    break;
+
                 case CommandType.Help:
                     HandleHelp();
                     break;
@@ -342,6 +351,79 @@ class Program
             Border = BoxBorder.Rounded,
             BorderColor = Color.Cyan,
             Header = new PanelHeader("[bold]HELP[/]")
+        };
+        AnsiConsole.Write(panel);
+        AnsiConsole.WriteLine();
+        AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+        Console.ReadLine();
+    }
+
+    static void HandleXP()
+    {
+        AnsiConsole.Clear();
+        var player = _gameState.Player;
+
+        AnsiConsole.WriteLine();
+        var xpRule = new Rule("[bold cyan]EXPERIENCE[/]")
+        {
+            Justification = Justify.Center
+        };
+        AnsiConsole.Write(xpRule);
+        AnsiConsole.WriteLine();
+
+        var xpToNext = _progressionService.GetXPToNextLevel(player);
+        var xpText = player.Level >= 5
+            ? $"[yellow]Current Level:[/] {player.Level} (MAX)\n" +
+              $"[yellow]Total XP:[/] {player.CurrentXP}"
+            : $"[yellow]Current Level:[/] {player.Level}\n" +
+              $"[yellow]Current XP:[/] {player.CurrentXP}\n" +
+              $"[yellow]XP to Next Level:[/] {xpToNext}\n" +
+              $"[yellow]Next Level At:[/] {player.XPToNextLevel} XP";
+
+        var panel = new Panel(xpText)
+        {
+            Border = BoxBorder.Rounded,
+            BorderColor = Color.Yellow,
+            Padding = new Padding(2, 1)
+        };
+        AnsiConsole.Write(panel);
+        AnsiConsole.WriteLine();
+        AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+        Console.ReadLine();
+    }
+
+    static void HandleLevel()
+    {
+        AnsiConsole.Clear();
+        var player = _gameState.Player;
+
+        AnsiConsole.WriteLine();
+        var levelRule = new Rule("[bold cyan]LEVEL INFORMATION[/]")
+        {
+            Justification = Justify.Center
+        };
+        AnsiConsole.Write(levelRule);
+        AnsiConsole.WriteLine();
+
+        var xpToNext = _progressionService.GetXPToNextLevel(player);
+        var levelText = $"[yellow]Current Level:[/] {player.Level}\n" +
+                        $"[yellow]Current XP:[/] {player.CurrentXP}";
+
+        if (player.Level < 5)
+        {
+            levelText += $"\n[yellow]XP to Level {player.Level + 1}:[/] {xpToNext} more\n" +
+                        $"[yellow]Progress:[/] {player.CurrentXP}/{player.XPToNextLevel}";
+        }
+        else
+        {
+            levelText += "\n\n[green]✓ Maximum level reached![/]";
+        }
+
+        var panel = new Panel(levelText)
+        {
+            Border = BoxBorder.Rounded,
+            BorderColor = Color.Yellow,
+            Padding = new Padding(2, 1)
         };
         AnsiConsole.Write(panel);
         AnsiConsole.WriteLine();
@@ -640,9 +722,126 @@ class Program
             // Victory!
             AnsiConsole.MarkupLine("[green]✓ Combat victory![/]");
             _gameState.ClearCurrentRoom();
+
+            // Check for level up
+            while (_progressionService.CanLevelUp(combat.Player))
+            {
+                AnsiConsole.WriteLine();
+                HandleLevelUp(combat.Player);
+            }
+
             _gameState.CurrentPhase = GamePhase.Exploration;
         }
 
+        AnsiConsole.WriteLine();
+        AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+        Console.ReadLine();
+    }
+
+    static void HandleLevelUp(PlayerCharacter player)
+    {
+        AnsiConsole.Clear();
+        AnsiConsole.WriteLine();
+
+        // Display level up banner
+        var levelUpRule = new Rule("[bold yellow]⚡ LEVEL UP! ⚡[/]")
+        {
+            Justification = Justify.Center,
+            Style = new Style(Color.Yellow)
+        };
+        AnsiConsole.Write(levelUpRule);
+        AnsiConsole.WriteLine();
+
+        var oldLevel = player.Level;
+        var newLevel = oldLevel + 1;
+
+        AnsiConsole.MarkupLine($"[green]Congratulations! You have reached Level {newLevel}![/]");
+        AnsiConsole.WriteLine();
+
+        // Show rewards
+        var rewardsPanel = new Panel(
+            "[yellow]Level Up Rewards:[/]\n\n" +
+            "• [green]+10 Max HP[/]\n" +
+            "• [green]+5 Max Stamina[/]\n" +
+            "• [green]+1 Attribute Point[/]\n" +
+            "• [green]Full HP and Stamina Restored[/]"
+        )
+        {
+            Border = BoxBorder.Rounded,
+            BorderColor = Color.Green,
+            Padding = new Padding(2, 1)
+        };
+        AnsiConsole.Write(rewardsPanel);
+        AnsiConsole.WriteLine();
+
+        // Show current attributes
+        AnsiConsole.MarkupLine("[yellow]Current Attributes:[/]");
+        AnsiConsole.MarkupLine($"  MIGHT:       {player.Attributes.Might} {(player.Attributes.Might >= 6 ? "[dim](MAX)[/]" : "")}");
+        AnsiConsole.MarkupLine($"  FINESSE:     {player.Attributes.Finesse} {(player.Attributes.Finesse >= 6 ? "[dim](MAX)[/]" : "")}");
+        AnsiConsole.MarkupLine($"  WITS:        {player.Attributes.Wits} {(player.Attributes.Wits >= 6 ? "[dim](MAX)[/]" : "")}");
+        AnsiConsole.MarkupLine($"  WILL:        {player.Attributes.Will} {(player.Attributes.Will >= 6 ? "[dim](MAX)[/]" : "")}");
+        AnsiConsole.MarkupLine($"  STURDINESS:  {player.Attributes.Sturdiness} {(player.Attributes.Sturdiness >= 6 ? "[dim](MAX)[/]" : "")}");
+        AnsiConsole.WriteLine();
+
+        // Build list of attributes that can be increased (not at cap)
+        var availableAttributes = new List<string>();
+        if (player.Attributes.Might < 6) availableAttributes.Add("MIGHT");
+        if (player.Attributes.Finesse < 6) availableAttributes.Add("FINESSE");
+        if (player.Attributes.Wits < 6) availableAttributes.Add("WITS");
+        if (player.Attributes.Will < 6) availableAttributes.Add("WILL");
+        if (player.Attributes.Sturdiness < 6) availableAttributes.Add("STURDINESS");
+
+        string attributeChoice;
+        if (availableAttributes.Count > 0)
+        {
+            // Prompt for attribute to increase
+            attributeChoice = AnsiConsole.Prompt(
+                new SelectionPrompt<string>()
+                    .Title("[yellow]Choose an attribute to increase:[/]")
+                    .AddChoices(availableAttributes)
+            );
+        }
+        else
+        {
+            // All attributes at cap (shouldn't happen but handle gracefully)
+            AnsiConsole.MarkupLine("[yellow]All attributes are at maximum![/]");
+            attributeChoice = "might"; // Dummy choice, won't increase
+        }
+
+        // Perform level up
+        _progressionService.LevelUp(player, attributeChoice);
+
+        AnsiConsole.WriteLine();
+        AnsiConsole.MarkupLine($"[green]✓ {attributeChoice} increased to {player.GetAttributeValue(attributeChoice)}![/]");
+        AnsiConsole.WriteLine();
+
+        // Check for ability unlock
+        if (_progressionService.IsAbilityUnlockedAtLevel(newLevel))
+        {
+            var abilitySlot = _progressionService.GetAbilitySlotToUnlock(newLevel);
+            if (abilitySlot >= 0 && abilitySlot < player.Abilities.Count)
+            {
+                var newAbility = player.Abilities[abilitySlot];
+                AnsiConsole.MarkupLine($"[bold cyan]🌟 NEW ABILITY UNLOCKED! 🌟[/]");
+                AnsiConsole.WriteLine();
+
+                var abilityPanel = new Panel(
+                    $"[bold yellow]{newAbility.Name}[/]\n\n" +
+                    $"{newAbility.Description}\n\n" +
+                    $"[dim]Stamina Cost: {newAbility.StaminaCost}[/]"
+                )
+                {
+                    Border = BoxBorder.Double,
+                    BorderColor = Color.Cyan,
+                    Padding = new Padding(2, 1)
+                };
+                AnsiConsole.Write(abilityPanel);
+                AnsiConsole.WriteLine();
+            }
+        }
+
+        AnsiConsole.MarkupLine($"[green]You are now Level {newLevel}![/]");
+        AnsiConsole.MarkupLine($"[dim]XP: {player.CurrentXP} / {player.XPToNextLevel} to next level[/]");
         AnsiConsole.WriteLine();
         AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
         Console.ReadLine();

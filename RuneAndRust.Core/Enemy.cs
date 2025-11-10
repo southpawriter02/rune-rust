@@ -30,6 +30,10 @@ public class Enemy
     // Status effects
     public bool IsStunned { get; set; } = false;
     public int StunTurnsRemaining { get; set; } = 0;
+    public int BleedingTurnsRemaining { get; set; } = 0; // Scavenger Lv3 ability
+
+    // Progression (v0.2)
+    public int XPReward { get; set; } = 0;
 
     public bool IsAlive => HP > 0;
 

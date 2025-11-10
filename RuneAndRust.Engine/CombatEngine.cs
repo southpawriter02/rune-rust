@@ -5,10 +5,12 @@ namespace RuneAndRust.Engine;
 public class CombatEngine
 {
     private readonly DiceService _diceService;
+    private readonly ProgressionService _progressionService;
 
-    public CombatEngine(DiceService diceService)
+    public CombatEngine(DiceService diceService, ProgressionService progressionService)
     {
         _diceService = diceService;
+        _progressionService = progressionService;
     }
 
     /// <summary>
@@ -89,6 +91,12 @@ public class CombatEngine
 
         // Reset bonus dice after use
         combatState.PlayerNextAttackBonusDice = 0;
+
+        // Apply Battle Rage bonus if active
+        if (player.BattleRageTurnsRemaining > 0)
+        {
+            bonusDice += 2;
+        }
 
         var totalDice = weaponAttribute + bonusDice;
         var attackRoll = _diceService.Roll(totalDice);
@@ -224,34 +232,103 @@ public class CombatEngine
 
         int damage = 0;
 
-        // Check if ability has special damage dice (like Aetheric Bolt)
-        if (ability.DamageDice > 0)
-        {
-            damage = _diceService.RollDamage(ability.DamageDice);
-            combatState.AddLogEntry($"  Rolled {ability.DamageDice}d6 for damage: {damage}");
-        }
         // Check for Power Strike (double weapon damage)
-        else if (ability.Name == "Power Strike")
+        if (ability.Name == "Power Strike")
         {
             var weaponDamage = _diceService.RollDamage(combatState.Player.BaseDamage);
             damage = weaponDamage * 2;
             combatState.AddLogEntry($"  Weapon damage doubled: {damage}");
+        }
+        // Check for Cleaving Strike (AOE damage)
+        else if (ability.Name == "Cleaving Strike")
+        {
+            damage = _diceService.RollDamage(ability.DamageDice);
+            combatState.AddLogEntry($"  Rolled {ability.DamageDice}d6 for damage: {damage}");
+
+            // Apply damage to primary target
+            ApplyDamageToEnemy(combatState, target, damage, ability.IgnoresArmor);
+
+            // If 3+ successes, also damage another enemy
+            if (successes >= 3)
+            {
+                var adjacentEnemy = combatState.Enemies.FirstOrDefault(e => e.IsAlive && e != target);
+                if (adjacentEnemy != null)
+                {
+                    var splashDamage = damage / 2;
+                    combatState.AddLogEntry($"  Cleaving attack strikes {adjacentEnemy.Name}!");
+                    ApplyDamageToEnemy(combatState, adjacentEnemy, splashDamage, ability.IgnoresArmor);
+                }
+            }
+            return; // Early return to avoid applying damage twice
+        }
+        // Check for Precision Strike (applies bleeding)
+        else if (ability.Name == "Precision Strike")
+        {
+            damage = _diceService.RollDamage(ability.DamageDice);
+            combatState.AddLogEntry($"  Rolled {ability.DamageDice}d6 for damage: {damage}");
+
+            ApplyDamageToEnemy(combatState, target, damage, ability.IgnoresArmor);
+
+            // Apply bleeding if 3+ successes
+            if (successes >= 3)
+            {
+                target.BleedingTurnsRemaining = 2;
+                combatState.AddLogEntry($"  {target.Name} is bleeding! (1d6 damage for 2 turns)");
+            }
+            return; // Early return
+        }
+        // Check for Chain Lightning (AOE to all enemies)
+        else if (ability.Name == "Chain Lightning")
+        {
+            var damageDice = successes >= 4 ? 2 : 1;
+            combatState.AddLogEntry($"  Lightning chains across all enemies!");
+
+            foreach (var enemy in combatState.Enemies.Where(e => e.IsAlive))
+            {
+                var lightningDamage = _diceService.RollDamage(damageDice);
+                combatState.AddLogEntry($"  {enemy.Name} struck for {lightningDamage} damage!");
+                enemy.HP -= lightningDamage;
+
+                if (!enemy.IsAlive)
+                {
+                    combatState.AddLogEntry($"  {enemy.Name} is destroyed!");
+                }
+            }
+            return; // Early return
+        }
+        // Check if ability has special damage dice (like Aetheric Bolt)
+        else if (ability.DamageDice > 0)
+        {
+            damage = _diceService.RollDamage(ability.DamageDice);
+            combatState.AddLogEntry($"  Rolled {ability.DamageDice}d6 for damage: {damage}");
         }
         else
         {
             damage = successes;
         }
 
+        // Apply damage to target (standard path)
+        ApplyDamageToEnemy(combatState, target, damage, ability.IgnoresArmor);
+    }
+
+    private void ApplyDamageToEnemy(CombatState combatState, Enemy target, int damage, bool ignoresArmor)
+    {
         // Check if ability ignores armor
-        if (!ability.IgnoresArmor && target.DefenseTurnsRemaining > 0)
+        if (!ignoresArmor && target.DefenseTurnsRemaining > 0)
         {
             var reducedDamage = (int)(damage * (1 - target.DefenseBonus / 100.0));
             combatState.AddLogEntry($"  {target.Name}'s defense reduces damage from {damage} to {reducedDamage}");
             damage = reducedDamage;
         }
-        else if (ability.IgnoresArmor)
+        else if (ignoresArmor)
         {
             combatState.AddLogEntry($"  Ignores armor!");
+        }
+
+        // Apply shield absorption if player has one
+        if (combatState.Player.ShieldAbsorptionRemaining > 0 && target == null)
+        {
+            // This is for player damage, not enemy damage
         }
 
         target.HP -= damage;
@@ -273,6 +350,12 @@ public class CombatEngine
             combatState.PlayerNegateNextAttack = true;
             combatState.AddLogEntry($"  {player.Name} will dodge the next attack completely!");
         }
+        // Check for Aetheric Shield (damage absorption)
+        else if (ability.Name == "Aetheric Shield")
+        {
+            player.ShieldAbsorptionRemaining = 15;
+            combatState.AddLogEntry($"  Aetheric shield created! (Absorbs next 15 damage)");
+        }
         // Shield Wall or similar
         else
         {
@@ -284,9 +367,27 @@ public class CombatEngine
 
     private void ProcessUtilityAbility(CombatState combatState, Ability ability)
     {
+        var player = combatState.Player;
+
+        // Battle Rage - +2 dice to attacks for 3 turns
+        if (ability.Name == "Battle Rage")
+        {
+            player.BattleRageTurnsRemaining = 3;
+            combatState.AddLogEntry($"  Entered battle rage! (+2 dice to attacks for 3 turns, +25% damage taken)");
+        }
+        // Survivalist - heal 2d6 HP
+        else if (ability.Name == "Survivalist")
+        {
+            var healAmount = _diceService.RollDamage(2);
+            player.HP = Math.Min(player.MaxHP, player.HP + healAmount);
+            combatState.AddLogEntry($"  Restored {healAmount} HP! (HP: {player.HP}/{player.MaxHP})");
+        }
         // Exploit Weakness - grants bonus dice to next attack
-        combatState.PlayerNextAttackBonusDice = ability.NextAttackBonusDice;
-        combatState.AddLogEntry($"  Next attack gains +{ability.NextAttackBonusDice} bonus dice!");
+        else if (ability.NextAttackBonusDice > 0)
+        {
+            combatState.PlayerNextAttackBonusDice = ability.NextAttackBonusDice;
+            combatState.AddLogEntry($"  Next attack gains +{ability.NextAttackBonusDice} bonus dice!");
+        }
     }
 
     private void ProcessControlAbility(CombatState combatState, Ability ability, Enemy? target)
@@ -362,7 +463,38 @@ public class CombatEngine
             combatState.IsActive = false;
             combatState.AddLogEntry("=== VICTORY ===");
             combatState.AddLogEntry("All enemies have been defeated!");
+
+            // Award XP for defeated enemies
+            AwardCombatXP(combatState);
+
             return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Award XP for all defeated enemies and check for level up
+    /// </summary>
+    public bool AwardCombatXP(CombatState combatState)
+    {
+        int totalXP = 0;
+        foreach (var enemy in combatState.Enemies.Where(e => !e.IsAlive))
+        {
+            totalXP += enemy.XPReward;
+        }
+
+        if (totalXP > 0)
+        {
+            _progressionService.AwardXP(combatState.Player, totalXP);
+            combatState.AddLogEntry($"Gained {totalXP} XP! (Total: {combatState.Player.CurrentXP})");
+
+            // Check if player can level up
+            if (_progressionService.CanLevelUp(combatState.Player))
+            {
+                combatState.AddLogEntry($"*** READY TO LEVEL UP! ***");
+                return true; // Signal that level up is available
+            }
         }
 
         return false;
@@ -383,9 +515,38 @@ public class CombatEngine
             }
         }
 
-        // Decrement enemy defense and stun turns
+        // Decrement player Battle Rage turns
+        if (combatState.Player.BattleRageTurnsRemaining > 0)
+        {
+            combatState.Player.BattleRageTurnsRemaining--;
+            if (combatState.Player.BattleRageTurnsRemaining == 0)
+            {
+                combatState.AddLogEntry($"{combatState.Player.Name}'s battle rage ends.");
+            }
+        }
+
+        // Decrement enemy defense, stun, and bleeding turns
         foreach (var enemy in combatState.Enemies.Where(e => e.IsAlive))
         {
+            // Apply bleeding damage at start of enemy turn
+            if (enemy.BleedingTurnsRemaining > 0)
+            {
+                var bleedDamage = _diceService.RollDamage(1);
+                enemy.HP -= bleedDamage;
+                combatState.AddLogEntry($"{enemy.Name} takes {bleedDamage} bleeding damage! (HP: {Math.Max(0, enemy.HP)}/{enemy.MaxHP})");
+
+                enemy.BleedingTurnsRemaining--;
+                if (enemy.BleedingTurnsRemaining == 0)
+                {
+                    combatState.AddLogEntry($"{enemy.Name} is no longer bleeding.");
+                }
+
+                if (!enemy.IsAlive)
+                {
+                    combatState.AddLogEntry($"{enemy.Name} is destroyed!");
+                }
+            }
+
             if (enemy.DefenseTurnsRemaining > 0)
             {
                 enemy.DefenseTurnsRemaining--;
