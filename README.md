@@ -2,19 +2,21 @@
 
 A text-based dungeon crawler set in the twilight of a broken world. Corrupted machines guard ancient ruins. Only the bold survive.
 
-**Current Version:** v0.1 Vertical Slice ✅ **COMPLETE**
+**Current Version:** v0.2 Expanded Edition ✅ **COMPLETE**
 
 ## Overview
 
-Rune & Rust is a turn-based dungeon crawler where you explore a ruined facility, fight corrupted machines, solve environmental puzzles, and defeat a powerful boss. The vertical slice (v0.1) delivers a complete 30-45 minute gameplay experience.
+Rune & Rust is a turn-based dungeon crawler where you explore a ruined facility, fight corrupted machines, solve environmental puzzles, and defeat a powerful boss. Version 0.2 adds progression systems, expanded abilities, and save/load functionality for a deeper experience that can be played over multiple sessions.
 
 ### Core Loop
-1. **Character Creation** → Choose from 3 classes with unique abilities
+1. **Character Creation** → Choose from 3 classes, each with 4 unique abilities
 2. **Exploration** → Navigate 5 interconnected rooms
-3. **Combat** → Fight corrupted machines using a dice pool system
-4. **Puzzle** → Solve one environmental challenge
-5. **Boss Fight** → Defeat the Ruin-Warden
-6. **Victory** → Survive to see the ending
+3. **Combat** → Fight corrupted machines, earn XP, level up (1-5)
+4. **Progression** → Unlock new abilities at levels 3 and 5
+5. **Puzzle** → Solve one environmental challenge
+6. **Boss Fight** → Defeat the Ruin-Warden
+7. **Save/Load** → Continue your journey across multiple sessions
+8. **Victory** → Survive to see the ending
 
 ## Project Structure
 
@@ -28,12 +30,25 @@ RuneAndRust/
 │   ├── Enemy.cs
 │   ├── Room.cs
 │   ├── Ability.cs
-│   └── CombatState.cs
+│   ├── CombatState.cs
+│   └── WorldState.cs              # [NEW v0.2] Game progression state
 ├── RuneAndRust.Engine/            # Game logic and services
 │   ├── DiceService.cs
-│   └── DiceResult.cs
+│   ├── DiceResult.cs
+│   ├── ProgressionService.cs      # [NEW v0.2] XP and leveling
+│   ├── CombatEngine.cs
+│   ├── EnemyAI.cs
+│   ├── CharacterFactory.cs
+│   ├── EnemyFactory.cs
+│   ├── CommandParser.cs
+│   ├── GameState.cs
+│   └── GameWorld.cs
+├── RuneAndRust.Persistence/       # [NEW v0.2] Save/Load system
+│   ├── SaveRepository.cs          # SQLite-based persistence
+│   └── SaveData.cs                # Serialization DTOs
 └── RuneAndRust.ConsoleApp/        # UI and main game loop
-    └── Program.cs
+    ├── Program.cs
+    └── UIHelper.cs
 ```
 
 ### Architecture Principles
@@ -111,20 +126,37 @@ dotnet run --project RuneAndRust.ConsoleApp
 - Playtime: 30-45 minutes per playthrough
 - All core systems implemented and balanced
 
-## What's New in v0.1
+### 🚀 v0.2 Expanded Edition: SHIPPED!
 
-### Complete Features
-✅ **3 Playable Classes** - Warrior, Scavenger, Mystic (each with unique abilities)
+**New features expand the core gameplay loop!**
+- Phase 1: XP System & Leveling (Levels 1-5)
+- Phase 2: New Abilities (2 per class, unlock at levels 3 & 5)
+- Phase 3: Save/Load System with SQLite
+- Total code: ~5,000 lines of C#
+- Supports longer play sessions with persistence
+
+## What's New in v0.2
+
+### New Features (Expanded Edition)
+✅ **XP & Leveling System** - Gain XP from defeating enemies, level up 1-5
+✅ **Level-Up Rewards** - +10 HP, +5 Stamina, +1 Attribute Point, full heal
+✅ **12 Total Abilities** - 4 per class (2 starting, 2 unlock at levels 3 & 5)
+✅ **New Combat Mechanics** - Bleeding, Battle Rage, AOE attacks, Shield absorption
+✅ **Save/Load System** - SQLite persistence with auto-save on room transitions
+✅ **Load Game Menu** - Resume from any saved character
+✅ **Enhanced Progression** - XP thresholds: 50/100/150/200 for levels 2-5
+✅ **Attribute Caps** - Strategic growth with max attribute value of 6
+
+### Complete Features from v0.1
+✅ **3 Playable Classes** - Warrior, Scavenger, Mystic
 ✅ **5 Interconnected Rooms** - Fully explored dungeon with atmospheric descriptions
 ✅ **Turn-Based Combat** - Initiative system with dice pool mechanics
-✅ **6 Unique Abilities** - Class-specific powers with tactical depth
-✅ **3 Enemy Types** - Trash mobs, elite enemies, and a challenging boss
+✅ **3 Enemy Types** - Servitors (10 XP), Drones (25 XP), Boss (100 XP)
 ✅ **Environmental Puzzle** - WITS-based challenge with multiple attempts
 ✅ **Boss Fight** - Phase-based AI with escalating difficulty
 ✅ **Rich Terminal UI** - Powered by Spectre.Console with HP/Stamina bars, combat logs
 ✅ **Restart System** - Play again without relaunching
 ✅ **Tutorial System** - In-game hints for new players
-✅ **Balance Tested** - All classes viable, documented in BALANCE.md
 
 ### Technical Highlights
 - Clean architecture with separated concerns
@@ -139,11 +171,11 @@ dotnet run --project RuneAndRust.ConsoleApp
 
 ### The Three Classes
 
-| Class | HP | Stamina | Focus | Abilities |
-|-------|-----|---------|-------|-----------|
-| **Warrior** | 50 | 30 | Melee combat, high survivability | Power Strike, Shield Wall |
-| **Scavenger** | 40 | 40 | Balanced, tactical | Exploit Weakness, Quick Dodge |
-| **Mystic** | 30 | 50 | Ranged abilities, control | Aetheric Bolt, Disrupt |
+| Class | HP | Stamina | Focus | Starting Abilities | Unlocked Abilities |
+|-------|-----|---------|-------|--------------------|--------------------|
+| **Warrior** | 50 | 30 | Melee combat, high survivability | Power Strike, Shield Wall | Cleaving Strike (Lv3), Battle Rage (Lv5) |
+| **Scavenger** | 40 | 40 | Balanced, tactical | Exploit Weakness, Quick Dodge | Precision Strike (Lv3), Survivalist (Lv5) |
+| **Mystic** | 30 | 50 | Ranged abilities, control | Aetheric Bolt, Disrupt | Aetheric Shield (Lv3), Chain Lightning (Lv5) |
 
 ### Dice Pool System
 - Roll d6 equal to (Attribute + bonuses)
@@ -165,30 +197,33 @@ dotnet run --project RuneAndRust.ConsoleApp
 - **UI Library**: [Spectre.Console](https://spectreconsole.net/) for rich terminal UI
 - **Architecture**: Clean Architecture with separated concerns
 
-## Scope: What's IN v0.1
+## Scope: What's IN v0.2
 
-✅ 3 character classes with 2 abilities each
+✅ 3 character classes with 4 abilities each
+✅ XP and leveling system (5 levels)
+✅ Progression rewards (HP, Stamina, Attributes)
 ✅ 5 attributes (MIGHT, FINESSE, WITS, WILL, STURDINESS)
 ✅ Turn-based combat with dice pool mechanics
-✅ 3 enemy types (Servitor, Drone, Boss)
+✅ 3 enemy types with XP rewards
 ✅ 5 rooms in a linear path
 ✅ One environmental puzzle
 ✅ Boss fight with phase-based AI
+✅ Save/load system with SQLite
+✅ Auto-save on room transitions
 ✅ Victory/defeat screens
 
-## Scope: What's OUT of v0.1
+## Scope: What's OUT of v0.2
 
-❌ Progression system (no XP, no leveling)
 ❌ Equipment system (no loot, no gear upgrades)
 ❌ Inventory system
-❌ Save/load functionality
 ❌ Multiple difficulty settings
 ❌ Specializations and advanced classes
 ❌ Trauma/Corruption mechanics
 ❌ Rune inscription system
 ❌ Factions and reputation
+❌ Procedural dungeon generation
 
-*These features are planned for v0.2 and beyond*
+*These features are planned for future versions*
 
 ## Contributing
 
