@@ -16,29 +16,62 @@ public static class UIHelper
 
         table.AddColumn(new TableColumn($"[bold yellow]{character.Name}[/] - [dim]{character.Class}[/]").Centered());
 
-        // Level and XP
-        var xpText = character.Level >= 5
-            ? $"[yellow]Level {character.Level}[/] [dim](MAX)[/] | [dim]XP: {character.CurrentXP}[/]"
-            : $"[yellow]Level {character.Level}[/] | [dim]XP: {character.CurrentXP}/{character.XPToNextLevel}[/]";
-        table.AddRow(xpText);
+        // Level and XP with progress bar
+        if (character.Level >= 5)
+        {
+            table.AddRow($"[yellow]Level {character.Level}[/] [dim](MAX)[/] | [dim]Total XP: {character.CurrentXP}[/]");
+        }
+        else
+        {
+            var xpProgress = (double)character.CurrentXP / character.XPToNextLevel;
+            var xpBarWidth = 15;
+            var xpFilled = (int)(xpProgress * xpBarWidth);
+            var xpEmpty = xpBarWidth - xpFilled;
+            var xpBar = new string('█', xpFilled) + new string('░', xpEmpty);
+            table.AddRow($"[yellow]Level {character.Level}[/] | [cyan]{xpBar}[/] [dim]{character.CurrentXP}/{character.XPToNextLevel} XP[/]");
+        }
 
         // Resources
+        table.AddRow(new Markup(""));  // Spacer
+        table.AddRow(new Markup("[bold]RESOURCES[/]"));
         var hpBar = CreateBar("HP", character.HP, character.MaxHP, Color.Red, Color.DarkRed);
         var staminaBar = CreateBar("Stamina", character.Stamina, character.MaxStamina, Color.Green, Color.DarkGreen);
         table.AddRow(hpBar);
         table.AddRow(staminaBar);
         table.AddRow($"[dim]AP:[/] {character.AP}");
 
+        // Status Effects
+        var statusEffects = new List<string>();
+        if (character.BattleRageTurnsRemaining > 0)
+            statusEffects.Add($"[red]Battle Rage ({character.BattleRageTurnsRemaining} turns)[/]");
+        if (character.ShieldAbsorptionRemaining > 0)
+            statusEffects.Add($"[cyan]Shield ({character.ShieldAbsorptionRemaining} absorption)[/]");
+        if (character.DefenseTurnsRemaining > 0)
+            statusEffects.Add($"[blue]Defense +{character.DefenseBonus}% ({character.DefenseTurnsRemaining} turns)[/]");
+
+        if (statusEffects.Count > 0)
+        {
+            table.AddRow(new Markup(""));  // Spacer
+            table.AddRow(new Markup("[bold]STATUS EFFECTS[/]"));
+            foreach (var effect in statusEffects)
+            {
+                table.AddRow(new Markup(effect));
+            }
+        }
+
         // Attributes
+        table.AddRow(new Markup(""));  // Spacer
         table.AddRow(new Markup("[bold]ATTRIBUTES[/]"));
         table.AddRow($"MIGHT: {character.Attributes.Might} | FINESSE: {character.Attributes.Finesse} | WITS: {character.Attributes.Wits}");
         table.AddRow($"WILL: {character.Attributes.Will} | STURDINESS: {character.Attributes.Sturdiness}");
 
         // Weapon
+        table.AddRow(new Markup(""));  // Spacer
         table.AddRow(new Markup("[bold]WEAPON[/]"));
         table.AddRow($"{character.WeaponName} ([yellow]{character.WeaponAttribute.ToUpper()}[/]-based, {character.BaseDamage}d6)");
 
         // Abilities (show unlocked and locked based on level)
+        table.AddRow(new Markup(""));  // Spacer
         table.AddRow(new Markup("[bold]ABILITIES[/]"));
 
         // Determine how many abilities are unlocked
@@ -131,7 +164,8 @@ public static class UIHelper
         AnsiConsole.MarkupLine("[red]Enemies detected:[/]");
         foreach (var enemy in enemies)
         {
-            AnsiConsole.MarkupLine($"  • [bold]{enemy.Name}[/] ([dim]HP: {enemy.HP}/{enemy.MaxHP}[/])");
+            var xpReward = enemy.XPReward > 0 ? $" [dim]({enemy.XPReward} XP)[/]" : "";
+            AnsiConsole.MarkupLine($"  • [bold]{enemy.Name}[/] ([dim]HP: {enemy.HP}/{enemy.MaxHP}{xpReward}[/])");
         }
         AnsiConsole.WriteLine();
     }
@@ -232,13 +266,16 @@ public static class UIHelper
         // Add player stats if available
         if (player != null)
         {
+            var healthPercent = (int)((double)player.HP / player.MaxHP * 100);
             storyText += $"\n\n[bold yellow]Final Status:[/]\n" +
-                        $"[green]HP:[/] {player.HP}/{player.MaxHP}\n" +
+                        $"[green]Level:[/] {player.Level}\n" +
+                        $"[green]Total XP:[/] {player.CurrentXP}\n" +
+                        $"[green]HP:[/] {player.HP}/{player.MaxHP} ({healthPercent}%)\n" +
                         $"[green]Stamina:[/] {player.Stamina}/{player.MaxStamina}\n" +
-                        $"[dim]You survived with {(int)((double)player.HP / player.MaxHP * 100)}% health remaining.[/]";
+                        $"[dim]You survived with {healthPercent}% health remaining.[/]";
         }
 
-        storyText += "\n\n[yellow]Thank you for playing Rune & Rust v0.1[/]";
+        storyText += "\n\n[yellow]Thank you for playing Rune & Rust v0.2![/]";
 
         var panel = new Panel(storyText)
         {
@@ -293,21 +330,29 @@ public static class UIHelper
             .Border(TableBorder.Rounded)
             .BorderColor(Color.Green);
 
-        playerTable.AddColumn($"[bold yellow]{combat.Player.Name}[/]");
+        playerTable.AddColumn($"[bold yellow]{combat.Player.Name}[/] - Level {combat.Player.Level}");
         playerTable.AddRow(CreateBar("HP", combat.Player.HP, combat.Player.MaxHP, Color.Red, Color.DarkRed));
         playerTable.AddRow(CreateBar("Stamina", combat.Player.Stamina, combat.Player.MaxStamina, Color.Green, Color.DarkGreen));
 
+        // Player status effects
+        var playerEffects = new List<string>();
         if (combat.Player.DefenseTurnsRemaining > 0)
-        {
-            playerTable.AddRow($"[cyan]Defense: {combat.Player.DefenseBonus}% ({combat.Player.DefenseTurnsRemaining} turns)[/]");
-        }
+            playerEffects.Add($"Defense: {combat.Player.DefenseBonus}% ({combat.Player.DefenseTurnsRemaining} turns)");
         if (combat.PlayerNextAttackBonusDice > 0)
-        {
-            playerTable.AddRow($"[yellow]Next attack: +{combat.PlayerNextAttackBonusDice} dice[/]");
-        }
+            playerEffects.Add($"Next attack: +{combat.PlayerNextAttackBonusDice} dice");
         if (combat.PlayerNegateNextAttack)
+            playerEffects.Add($"Dodge ready!");
+        if (combat.Player.BattleRageTurnsRemaining > 0)
+            playerEffects.Add($"Battle Rage ({combat.Player.BattleRageTurnsRemaining} turns)");
+        if (combat.Player.ShieldAbsorptionRemaining > 0)
+            playerEffects.Add($"Shield ({combat.Player.ShieldAbsorptionRemaining} absorption)");
+
+        if (playerEffects.Count > 0)
         {
-            playerTable.AddRow($"[cyan]Dodge ready![/]");
+            foreach (var effect in playerEffects)
+            {
+                playerTable.AddRow($"[cyan]{effect}[/]");
+            }
         }
 
         AnsiConsole.Write(playerTable);
@@ -331,6 +376,8 @@ public static class UIHelper
                 statusEffects.Add($"DEF:{enemy.DefenseBonus}%");
             if (enemy.IsStunned)
                 statusEffects.Add("STUNNED");
+            if (enemy.BleedingTurnsRemaining > 0)
+                statusEffects.Add($"BLEEDING({enemy.BleedingTurnsRemaining})");
 
             var statusText = statusEffects.Count > 0 ? $" [dim]({string.Join(", ", statusEffects)})[/]" : "";
             enemyTable.AddRow(new Markup($"{hpBar}{statusText}"));
