@@ -9,6 +9,8 @@ class Program
     private static GameState _gameState = new();
     private static DiceService _diceService = new();
     private static CommandParser _commandParser = new();
+    private static CombatEngine _combatEngine = new(_diceService);
+    private static EnemyAI _enemyAI = new(_diceService);
 
     static void Main(string[] args)
     {
@@ -135,9 +137,7 @@ class Program
                     ExplorationLoop();
                     break;
                 case GamePhase.Combat:
-                    // Combat will be implemented in Week 3
-                    AnsiConsole.MarkupLine("[red]Combat not yet implemented![/]");
-                    _gameState.CurrentPhase = GamePhase.GameOver;
+                    CombatLoop();
                     break;
                 case GamePhase.Puzzle:
                     PuzzleLoop();
@@ -156,14 +156,14 @@ class Program
         // Check for automatic triggers
         if (_gameState.ShouldTriggerCombat())
         {
-            // Show that combat would start
             UIHelper.DisplayCombatStart(_gameState.CurrentRoom.Enemies);
-            AnsiConsole.MarkupLine("[yellow]Combat system will be implemented in Week 3.[/]");
-            AnsiConsole.MarkupLine("[yellow]For now, clearing room automatically...[/]");
-            _gameState.ClearCurrentRoom();
-            AnsiConsole.WriteLine();
-            AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+            AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to begin combat...[/]");
             Console.ReadLine();
+
+            // Initialize combat
+            var canFlee = !_gameState.CurrentRoom.IsBossRoom;
+            _gameState.Combat = _combatEngine.InitializeCombat(_gameState.Player, _gameState.CurrentRoom.Enemies, canFlee);
+            _gameState.CurrentPhase = GamePhase.Combat;
             return;
         }
 
@@ -404,5 +404,205 @@ class Program
             AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
             Console.ReadLine();
         }
+    }
+
+    static void CombatLoop()
+    {
+        var combat = _gameState.Combat;
+        if (combat == null) return;
+
+        while (combat.IsActive)
+        {
+            // Check for combat end
+            if (_combatEngine.IsCombatOver(combat))
+            {
+                HandleCombatEnd(combat);
+                return;
+            }
+
+            // Get current participant
+            var currentParticipant = combat.CurrentParticipant;
+
+            if (currentParticipant.IsPlayer)
+            {
+                // Player turn
+                HandlePlayerTurn(combat);
+            }
+            else
+            {
+                // Enemy turn
+                var enemy = (Enemy)currentParticipant.Character!;
+                HandleEnemyTurn(combat, enemy);
+            }
+
+            // Check for combat end after turn
+            if (_combatEngine.IsCombatOver(combat))
+            {
+                HandleCombatEnd(combat);
+                return;
+            }
+
+            // Advance to next turn
+            _combatEngine.NextTurn(combat);
+        }
+    }
+
+    static void HandlePlayerTurn(CombatState combat)
+    {
+        bool turnComplete = false;
+
+        while (!turnComplete)
+        {
+            // Display combat state
+            UIHelper.DisplayCombatState(combat);
+
+            // Show recent combat log
+            if (combat.CombatLog.Count > 0)
+            {
+                UIHelper.DisplayCombatLog(combat.CombatLog, 8);
+            }
+
+            // Get player action
+            var action = UIHelper.PromptCombatAction(combat);
+
+            switch (action)
+            {
+                case "attack":
+                    turnComplete = HandlePlayerAttack(combat);
+                    break;
+
+                case "defend":
+                    HandlePlayerDefend(combat);
+                    turnComplete = true;
+                    break;
+
+                case "ability":
+                    turnComplete = HandlePlayerAbility(combat);
+                    break;
+
+                case "flee":
+                    if (_combatEngine.PlayerFlee(combat))
+                    {
+                        combat.IsActive = false;
+                        _gameState.CurrentPhase = GamePhase.Exploration;
+                        AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+                        Console.ReadLine();
+                        return;
+                    }
+                    else
+                    {
+                        turnComplete = true;
+                    }
+                    break;
+
+                case "stats":
+                    HandleStats();
+                    break;
+
+                default:
+                    AnsiConsole.MarkupLine("[red]Unknown action![/]");
+                    break;
+            }
+        }
+
+        // Show action result
+        AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+        Console.ReadLine();
+    }
+
+    static bool HandlePlayerAttack(CombatState combat)
+    {
+        var targetIndex = UIHelper.PromptEnemyTarget(combat);
+        var target = _combatEngine.GetEnemyByIndex(combat, targetIndex);
+
+        if (target == null)
+        {
+            combat.AddLogEntry("Invalid target!");
+            return false;
+        }
+
+        _combatEngine.PlayerAttack(combat, target);
+        return true;
+    }
+
+    static void HandlePlayerDefend(CombatState combat)
+    {
+        _combatEngine.PlayerDefend(combat);
+    }
+
+    static bool HandlePlayerAbility(CombatState combat)
+    {
+        var abilityName = UIHelper.PromptAbilityChoice(combat.Player);
+
+        if (abilityName == "cancel")
+        {
+            return false;
+        }
+
+        var ability = combat.Player.Abilities.FirstOrDefault(a =>
+            a.Name.Equals(abilityName, StringComparison.OrdinalIgnoreCase));
+
+        if (ability == null)
+        {
+            combat.AddLogEntry("Ability not found!");
+            return false;
+        }
+
+        // Check if ability needs a target
+        Enemy? target = null;
+        if (ability.Type == AbilityType.Attack || ability.Type == AbilityType.Control)
+        {
+            var targetIndex = UIHelper.PromptEnemyTarget(combat);
+            target = _combatEngine.GetEnemyByIndex(combat, targetIndex);
+
+            if (target == null)
+            {
+                combat.AddLogEntry("Invalid target!");
+                return false;
+            }
+        }
+
+        return _combatEngine.PlayerUseAbility(combat, ability, target);
+    }
+
+    static void HandleEnemyTurn(CombatState combat, Enemy enemy)
+    {
+        // Display combat state
+        UIHelper.DisplayCombatState(combat);
+        UIHelper.DisplayCombatLog(combat.CombatLog, 8);
+
+        AnsiConsole.MarkupLine($"[red]{enemy.Name} is preparing to act...[/]");
+        System.Threading.Thread.Sleep(1000);
+
+        // Determine and execute action
+        var action = _enemyAI.DetermineAction(enemy);
+        _enemyAI.ExecuteAction(enemy, action, combat.Player, combat);
+
+        AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+        Console.ReadLine();
+    }
+
+    static void HandleCombatEnd(CombatState combat)
+    {
+        UIHelper.DisplayCombatState(combat);
+        UIHelper.DisplayCombatLog(combat.CombatLog, 15);
+
+        if (!combat.Player.IsAlive)
+        {
+            // Player defeated
+            AnsiConsole.MarkupLine("[red]You have been defeated...[/]");
+            _gameState.CurrentPhase = GamePhase.GameOver;
+        }
+        else
+        {
+            // Victory!
+            AnsiConsole.MarkupLine("[green]✓ Combat victory![/]");
+            _gameState.ClearCurrentRoom();
+            _gameState.CurrentPhase = GamePhase.Exploration;
+        }
+
+        AnsiConsole.WriteLine();
+        AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+        Console.ReadLine();
     }
 }

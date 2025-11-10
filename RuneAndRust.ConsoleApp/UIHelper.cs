@@ -188,6 +188,176 @@ public static class UIHelper
         AnsiConsole.WriteLine();
     }
 
+    public static void DisplayCombatState(CombatState combat)
+    {
+        AnsiConsole.Clear();
+        AnsiConsole.WriteLine();
+
+        var rule = new Rule("[bold red]⚔ COMBAT ⚔[/]")
+        {
+            Justification = Justify.Center
+        };
+        AnsiConsole.Write(rule);
+        AnsiConsole.WriteLine();
+
+        // Player status
+        var playerTable = new Table()
+            .Border(TableBorder.Rounded)
+            .BorderColor(Color.Green);
+
+        playerTable.AddColumn($"[bold yellow]{combat.Player.Name}[/]");
+        playerTable.AddRow(CreateBar("HP", combat.Player.HP, combat.Player.MaxHP, Color.Red, Color.DarkRed));
+        playerTable.AddRow(CreateBar("Stamina", combat.Player.Stamina, combat.Player.MaxStamina, Color.Green, Color.DarkGreen));
+
+        if (combat.Player.DefenseTurnsRemaining > 0)
+        {
+            playerTable.AddRow($"[cyan]Defense: {combat.Player.DefenseBonus}% ({combat.Player.DefenseTurnsRemaining} turns)[/]");
+        }
+        if (combat.PlayerNextAttackBonusDice > 0)
+        {
+            playerTable.AddRow($"[yellow]Next attack: +{combat.PlayerNextAttackBonusDice} dice[/]");
+        }
+        if (combat.PlayerNegateNextAttack)
+        {
+            playerTable.AddRow($"[cyan]Dodge ready![/]");
+        }
+
+        AnsiConsole.Write(playerTable);
+        AnsiConsole.WriteLine();
+
+        // Enemies status
+        var enemyTable = new Table()
+            .Border(TableBorder.Rounded)
+            .BorderColor(Color.Red);
+
+        enemyTable.AddColumn("[bold]Enemies[/]");
+
+        var aliveEnemies = combat.Enemies.Where(e => e.IsAlive).ToList();
+        for (int i = 0; i < aliveEnemies.Count; i++)
+        {
+            var enemy = aliveEnemies[i];
+            var hpBar = CreateBar($"[{i + 1}] {enemy.Name}", enemy.HP, enemy.MaxHP, Color.Red, Color.DarkRed);
+
+            var statusEffects = new List<string>();
+            if (enemy.DefenseTurnsRemaining > 0)
+                statusEffects.Add($"DEF:{enemy.DefenseBonus}%");
+            if (enemy.IsStunned)
+                statusEffects.Add("STUNNED");
+
+            var statusText = statusEffects.Count > 0 ? $" [dim]({string.Join(", ", statusEffects)})[/]" : "";
+            enemyTable.AddRow(new Markup($"{hpBar}{statusText}"));
+        }
+
+        AnsiConsole.Write(enemyTable);
+        AnsiConsole.WriteLine();
+
+        // Initiative order indicator
+        var currentParticipant = combat.CurrentParticipant;
+        var currentName = currentParticipant.IsPlayer ? combat.Player.Name : ((Enemy)currentParticipant.Character!).Name;
+        var turnColor = currentParticipant.IsPlayer ? "green" : "red";
+        AnsiConsole.MarkupLine($"[{turnColor}]▶ {currentName}'s turn[/]");
+        AnsiConsole.WriteLine();
+    }
+
+    public static void DisplayCombatLog(List<string> logEntries, int maxEntries = 10)
+    {
+        if (logEntries.Count == 0) return;
+
+        var panel = new Panel(string.Join("\n", logEntries.TakeLast(maxEntries)))
+        {
+            Border = BoxBorder.Rounded,
+            BorderColor = Color.Grey,
+            Header = new PanelHeader("[dim]Combat Log[/]"),
+            Padding = new Padding(1, 0)
+        };
+
+        AnsiConsole.Write(panel);
+        AnsiConsole.WriteLine();
+    }
+
+    public static string PromptCombatAction(CombatState combat)
+    {
+        var choices = new List<string>
+        {
+            "Attack - Strike an enemy",
+            "Defend - Reduce incoming damage",
+            "Ability - Use a special ability",
+        };
+
+        if (combat.CanFlee)
+        {
+            choices.Add("Flee - Attempt to escape");
+        }
+
+        choices.Add("Stats - View character sheet");
+
+        var choice = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+                .Title("[yellow]Choose your action:[/]")
+                .PageSize(10)
+                .AddChoices(choices)
+        );
+
+        return choice.Split('-')[0].Trim().ToLower();
+    }
+
+    public static int PromptEnemyTarget(CombatState combat)
+    {
+        var aliveEnemies = combat.Enemies.Where(e => e.IsAlive).ToList();
+
+        if (aliveEnemies.Count == 1)
+        {
+            return 1; // Auto-target if only one enemy
+        }
+
+        var choices = new List<string>();
+        for (int i = 0; i < aliveEnemies.Count; i++)
+        {
+            var enemy = aliveEnemies[i];
+            choices.Add($"[{i + 1}] {enemy.Name} (HP: {enemy.HP}/{enemy.MaxHP})");
+        }
+
+        var choice = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+                .Title("[yellow]Select target:[/]")
+                .PageSize(10)
+                .AddChoices(choices)
+        );
+
+        // Extract index from choice
+        var indexStr = choice.Substring(choice.IndexOf('[') + 1, choice.IndexOf(']') - 1);
+        return int.Parse(indexStr);
+    }
+
+    public static string PromptAbilityChoice(PlayerCharacter player)
+    {
+        var choices = new List<string>();
+
+        foreach (var ability in player.Abilities)
+        {
+            var canAfford = player.Stamina >= ability.StaminaCost;
+            var staminaColor = canAfford ? "green" : "red";
+            choices.Add($"{ability.Name} ([{staminaColor}]{ability.StaminaCost} Stamina[/]) - {ability.Description}");
+        }
+
+        choices.Add("Cancel - Go back");
+
+        var choice = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+                .Title("[yellow]Choose ability:[/]")
+                .PageSize(10)
+                .AddChoices(choices)
+                .EnableSearch()
+        );
+
+        if (choice.StartsWith("Cancel"))
+        {
+            return "cancel";
+        }
+
+        return choice.Split('(')[0].Trim();
+    }
+
     private static Markup CreateBar(string label, int current, int max, Color fillColor, Color emptyColor)
     {
         var percentage = max > 0 ? (double)current / max : 0;
