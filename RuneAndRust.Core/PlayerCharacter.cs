@@ -6,10 +6,11 @@ public class PlayerCharacter
     public CharacterClass Class { get; set; }
     public Attributes Attributes { get; set; } = new();
 
-    // Progression
-    public int Level { get; set; } = 1;
-    public int CurrentXP { get; set; } = 0;
-    public int XPToNextLevel { get; set; } = 50;
+    // Progression (Aethelgard Saga System)
+    public int CurrentMilestone { get; set; } = 0;
+    public int CurrentLegend { get; set; } = 0;
+    public int LegendToNextMilestone { get; set; } = 100;
+    public int ProgressionPoints { get; set; } = 2; // Start with 2 PP
 
     // Resources
     public int HP { get; set; }

@@ -33,7 +33,7 @@ public class EnemyFactory
             BaseDamageDice = 1,
             DamageBonus = 0,
             IsBoss = false,
-            XPReward = 10
+            BaseLegendValue = 10 // Minor Act
         };
     }
 
@@ -55,7 +55,7 @@ public class EnemyFactory
             BaseDamageDice = 1,
             DamageBonus = 1,
             IsBoss = false,
-            XPReward = 25
+            BaseLegendValue = 25 // Minor Act
         };
     }
 
@@ -78,7 +78,7 @@ public class EnemyFactory
             DamageBonus = 0,
             IsBoss = true,
             Phase = 1,
-            XPReward = 100
+            BaseLegendValue = 100 // Significant Act
         };
     }
 }

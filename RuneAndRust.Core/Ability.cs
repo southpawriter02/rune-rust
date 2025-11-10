@@ -15,6 +15,12 @@ public class Ability
     public int StaminaCost { get; set; }
     public AbilityType Type { get; set; }
 
+    // Rank System (Aethelgard)
+    public int CurrentRank { get; set; } = 1; // Always starts at Rank 1
+    public int MaxRank { get; set; } = 3;
+    public int CostToRank2 { get; set; } = 5; // PP cost to advance to Rank 2
+    public int CostToRank3 { get; set; } = 0; // Locked until v0.5+ (Capstone)
+
     // For dice rolling
     public string AttributeUsed { get; set; } = string.Empty;
     public int BonusDice { get; set; } = 0;
