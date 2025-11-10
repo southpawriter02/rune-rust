@@ -19,6 +19,7 @@ public class GameWorld
         // Room 1: Entrance (Safe Zone)
         var entrance = new Room
         {
+            Id = 1,
             Name = "Entrance",
             Description =
                 "You stand at the shattered threshold of a pre-Glitch facility. Twisted metal frames " +
@@ -35,6 +36,7 @@ public class GameWorld
         // Room 2: Corridor (First Combat)
         var corridor = new Room
         {
+            Id = 2,
             Name = "Corridor",
             Description =
                 "A long corridor stretches before you. Flickering lights cast erratic shadows. " +
@@ -54,6 +56,7 @@ public class GameWorld
         // Room 3: Combat Arena (Main Combat)
         var combatArena = new Room
         {
+            Id = 3,
             Name = "Combat Arena",
             Description =
                 "You enter a vast chamber, once a testing facility. Scorch marks scar the walls. " +
@@ -74,6 +77,7 @@ public class GameWorld
         // Room 4: Puzzle Chamber (The One Puzzle)
         var puzzleChamber = new Room
         {
+            Id = 4,
             Name = "Puzzle Chamber",
             Description =
                 "A sealed door blocks your path. Three power conduits are embedded in the wall, " +
@@ -95,6 +99,7 @@ public class GameWorld
         // Room 5: Boss Sanctum (Final Fight)
         var bossSanctum = new Room
         {
+            Id = 5,
             Name = "Boss Sanctum",
             Description =
                 "You step into a cathedral of corrupted machinery. At the center stands a towering " +

@@ -6,6 +6,11 @@ public class PlayerCharacter
     public CharacterClass Class { get; set; }
     public Attributes Attributes { get; set; } = new();
 
+    // Progression
+    public int Level { get; set; } = 1;
+    public int CurrentXP { get; set; } = 0;
+    public int XPToNextLevel { get; set; } = 50;
+
     // Resources
     public int HP { get; set; }
     public int MaxHP { get; set; }
@@ -24,6 +29,10 @@ public class PlayerCharacter
     // Defense
     public int DefenseBonus { get; set; } = 0; // Temporary defense from Defend action
     public int DefenseTurnsRemaining { get; set; } = 0;
+
+    // Status Effects (v0.2)
+    public int BattleRageTurnsRemaining { get; set; } = 0; // Warrior Lv5 ability
+    public int ShieldAbsorptionRemaining { get; set; } = 0; // Mystic Lv3 ability
 
     public bool IsAlive => HP > 0;
 

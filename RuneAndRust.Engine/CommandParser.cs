@@ -13,7 +13,11 @@ public enum CommandType
     Defend,
     Ability,
     Flee,
-    Solve
+    Solve,
+    XP,
+    Level,
+    Save,
+    Load
 }
 
 public class ParsedCommand
@@ -52,6 +56,10 @@ public class CommandParser
         { "status", CommandType.Stats },
         { "character", CommandType.Stats },
         { "sheet", CommandType.Stats },
+        { "xp", CommandType.XP },
+        { "experience", CommandType.XP },
+        { "level", CommandType.Level },
+        { "lvl", CommandType.Level },
 
         // Inventory
         { "inventory", CommandType.Inventory },
@@ -83,7 +91,9 @@ public class CommandParser
         { "?", CommandType.Help },
         { "quit", CommandType.Quit },
         { "exit", CommandType.Quit },
-        { "q", CommandType.Quit }
+        { "q", CommandType.Quit },
+        { "save", CommandType.Save },
+        { "load", CommandType.Load }
     };
 
     private static readonly HashSet<string> DirectionWords = new()
@@ -173,6 +183,8 @@ EXPLORATION COMMANDS:
   east, e              - Move east
   west, w              - Move west
   stats, status        - View your character stats
+  xp, experience       - View XP and level progress
+  level, lvl           - View level information
   inventory, inv, i    - View your inventory
 
 COMBAT COMMANDS:
@@ -186,6 +198,7 @@ PUZZLE COMMANDS:
 
 OTHER COMMANDS:
   help, h, ?           - Show this help text
+  save                 - Save your current game
   quit, exit, q        - Exit the game
 ";
     }

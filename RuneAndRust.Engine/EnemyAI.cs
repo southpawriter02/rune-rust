@@ -182,17 +182,51 @@ public class EnemyAI
             damage = reducedDamage;
         }
 
-        if (damage > 0)
-        {
-            player.HP -= damage;
-            combatState.AddLogEntry($"  {player.Name} takes {damage} damage! (HP: {Math.Max(0, player.HP)}/{player.MaxHP})");
-        }
-        else
-        {
-            combatState.AddLogEntry($"  The attack is deflected!");
-        }
+        // Apply damage through shield and battle rage modifiers
+        ApplyDamageToPlayer(player, damage, combatState);
 
         combatState.AddLogEntry("");
+    }
+
+    private void ApplyDamageToPlayer(PlayerCharacter player, int damage, CombatState combatState, string indent = "  ")
+    {
+        if (damage <= 0)
+        {
+            combatState.AddLogEntry($"{indent}The attack is deflected!");
+            return;
+        }
+
+        // Apply Battle Rage damage increase (25% more damage)
+        if (player.BattleRageTurnsRemaining > 0)
+        {
+            var increasedDamage = (int)(damage * 1.25);
+            if (increasedDamage > damage)
+            {
+                combatState.AddLogEntry($"{indent}Battle Rage increases damage from {damage} to {increasedDamage}!");
+                damage = increasedDamage;
+            }
+        }
+
+        // Apply shield absorption
+        if (player.ShieldAbsorptionRemaining > 0)
+        {
+            if (damage <= player.ShieldAbsorptionRemaining)
+            {
+                player.ShieldAbsorptionRemaining -= damage;
+                combatState.AddLogEntry($"{indent}Aetheric shield absorbs {damage} damage! (Shield: {player.ShieldAbsorptionRemaining} remaining)");
+                return;
+            }
+            else
+            {
+                var remainingDamage = damage - player.ShieldAbsorptionRemaining;
+                combatState.AddLogEntry($"{indent}Aetheric shield absorbs {player.ShieldAbsorptionRemaining} damage and shatters!");
+                player.ShieldAbsorptionRemaining = 0;
+                damage = remainingDamage;
+            }
+        }
+
+        player.HP -= damage;
+        combatState.AddLogEntry($"{indent}{player.Name} takes {damage} damage! (HP: {Math.Max(0, player.HP)}/{player.MaxHP})");
     }
 
     private void ExecuteDefend(Enemy enemy, CombatState combatState)
@@ -246,15 +280,7 @@ public class EnemyAI
                 damage = (int)(damage * (1 - player.DefenseBonus / 100.0));
             }
 
-            if (damage > 0)
-            {
-                player.HP -= damage;
-                combatState.AddLogEntry($"    {player.Name} takes {damage} damage! (HP: {Math.Max(0, player.HP)}/{player.MaxHP})");
-            }
-            else
-            {
-                combatState.AddLogEntry($"    Attack deflected!");
-            }
+            ApplyDamageToPlayer(player, damage, combatState, "    ");
         }
 
         combatState.AddLogEntry("");
@@ -295,15 +321,7 @@ public class EnemyAI
             damage = reducedDamage;
         }
 
-        if (damage > 0)
-        {
-            player.HP -= damage;
-            combatState.AddLogEntry($"  {player.Name} takes {damage} damage! (HP: {Math.Max(0, player.HP)}/{player.MaxHP})");
-        }
-        else
-        {
-            combatState.AddLogEntry($"  The strike is deflected!");
-        }
+        ApplyDamageToPlayer(player, damage, combatState);
 
         combatState.AddLogEntry("");
     }
@@ -343,15 +361,7 @@ public class EnemyAI
             damage = reducedDamage;
         }
 
-        if (damage > 0)
-        {
-            player.HP -= damage;
-            combatState.AddLogEntry($"  {player.Name} takes {damage} damage! (HP: {Math.Max(0, player.HP)}/{player.MaxHP})");
-        }
-        else
-        {
-            combatState.AddLogEntry($"  Impossibly, the strike is deflected!");
-        }
+        ApplyDamageToPlayer(player, damage, combatState);
 
         combatState.AddLogEntry("");
     }

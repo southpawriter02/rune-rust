@@ -1,6 +1,7 @@
 using Spectre.Console;
 using RuneAndRust.Core;
 using RuneAndRust.Engine;
+using RuneAndRust.Persistence;
 
 namespace RuneAndRust.ConsoleApp;
 
@@ -9,8 +10,10 @@ class Program
     private static GameState _gameState = new();
     private static DiceService _diceService = new();
     private static CommandParser _commandParser = new();
-    private static CombatEngine _combatEngine = new(_diceService);
+    private static ProgressionService _progressionService = new();
+    private static CombatEngine _combatEngine = new(_diceService, _progressionService);
     private static EnemyAI _enemyAI = new(_diceService);
+    private static SaveRepository _saveRepository = new();
 
     static void Main(string[] args)
     {
@@ -22,7 +25,28 @@ class Program
             _gameState = new GameState();
 
             DisplayWelcomeScreen();
-            CharacterCreation();
+
+            // Show start menu (New Game or Load Game)
+            var startChoice = ShowStartMenu();
+
+            if (startChoice == "new")
+            {
+                CharacterCreation();
+            }
+            else if (startChoice == "load")
+            {
+                if (!LoadGame())
+                {
+                    // Load failed, return to start
+                    continue;
+                }
+            }
+            else
+            {
+                // User chose to exit
+                break;
+            }
+
             MainGameLoop();
 
             // Ask if player wants to play again
@@ -46,6 +70,155 @@ class Program
         return choice.StartsWith("Yes");
     }
 
+    static string ShowStartMenu()
+    {
+        AnsiConsole.Clear();
+        AnsiConsole.WriteLine();
+
+        var rule = new Rule("[bold yellow]MAIN MENU[/]")
+        {
+            Justification = Justify.Center
+        };
+        AnsiConsole.Write(rule);
+        AnsiConsole.WriteLine();
+
+        var choices = new List<string> { "New Game" };
+
+        // Check if there are any saved games
+        var saves = _saveRepository.ListSaves();
+        if (saves.Count > 0)
+        {
+            choices.Add("Load Game");
+        }
+
+        choices.Add("Exit");
+
+        var choice = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+                .Title("[yellow]What would you like to do?[/]")
+                .AddChoices(choices)
+        );
+
+        return choice switch
+        {
+            "New Game" => "new",
+            "Load Game" => "load",
+            _ => "exit"
+        };
+    }
+
+    static bool LoadGame()
+    {
+        AnsiConsole.Clear();
+        AnsiConsole.WriteLine();
+
+        var rule = new Rule("[bold cyan]LOAD GAME[/]")
+        {
+            Justification = Justify.Center
+        };
+        AnsiConsole.Write(rule);
+        AnsiConsole.WriteLine();
+
+        var saves = _saveRepository.ListSaves();
+
+        if (saves.Count == 0)
+        {
+            AnsiConsole.MarkupLine("[yellow]No saved games found.[/]");
+            AnsiConsole.WriteLine();
+            AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+            Console.ReadLine();
+            return false;
+        }
+
+        // Build save list with details
+        var saveChoices = new List<string>();
+        foreach (var save in saves)
+        {
+            var status = save.BossDefeated ? "COMPLETED" : "IN PROGRESS";
+            var saveText = $"{save.CharacterName} - Lv{save.Level} {save.Class} - {status}";
+            saveChoices.Add(saveText);
+        }
+        saveChoices.Add("Cancel");
+
+        var choice = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+                .Title("[yellow]Select a save to load:[/]")
+                .PageSize(10)
+                .AddChoices(saveChoices)
+        );
+
+        if (choice == "Cancel")
+        {
+            return false;
+        }
+
+        // Extract character name from choice
+        var selectedIndex = saveChoices.IndexOf(choice);
+        var selectedSave = saves[selectedIndex];
+
+        // Load the game
+        var (loadedPlayer, loadedWorldState) = _saveRepository.LoadGame(selectedSave.CharacterName);
+
+        if (loadedPlayer == null || loadedWorldState == null)
+        {
+            AnsiConsole.MarkupLine("[red]Failed to load game![/]");
+            AnsiConsole.WriteLine();
+            AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+            Console.ReadLine();
+            return false;
+        }
+
+        // Restore game state
+        _gameState.Player = loadedPlayer;
+        _gameState.WorldState = loadedWorldState;
+
+        // Restore world state
+        RestoreWorldState(loadedWorldState);
+
+        // Set current room
+        foreach (var room in _gameState.World.Rooms.Values)
+        {
+            if (room.Id == loadedWorldState.CurrentRoomId)
+            {
+                _gameState.CurrentRoom = room;
+                break;
+            }
+        }
+
+        _gameState.CurrentPhase = GamePhase.Exploration;
+
+        AnsiConsole.WriteLine();
+        AnsiConsole.MarkupLine($"[green]✓[/] Game loaded: {loadedPlayer.Name} - Level {loadedPlayer.Level} {loadedPlayer.Class}");
+        AnsiConsole.WriteLine();
+        AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+        Console.ReadLine();
+
+        return true;
+    }
+
+    static void RestoreWorldState(WorldState worldState)
+    {
+        // Mark cleared rooms
+        foreach (var roomId in worldState.ClearedRoomIds)
+        {
+            foreach (var room in _gameState.World.Rooms.Values)
+            {
+                if (room.Id == roomId)
+                {
+                    room.HasBeenCleared = true;
+                }
+            }
+        }
+
+        // Restore puzzle state
+        if (worldState.PuzzleSolved)
+        {
+            var puzzleRoom = _gameState.World.GetRoom("Puzzle Chamber");
+            puzzleRoom.IsPuzzleSolved = true;
+            _gameState.World.UnlockPuzzleDoor();
+        }
+    }
+
     static void DisplayWelcomeScreen()
     {
         AnsiConsole.Clear();
@@ -60,7 +233,8 @@ class Program
         var panel = new Panel(
             "[dim]A text-based dungeon crawler set in the twilight of a broken world.\n" +
             "Corrupted machines guard ancient ruins. Only the bold survive.\n\n" +
-            "[yellow]Vertical Slice v0.1[/] - A 30-minute adventure[/]"
+            "[yellow]Version 0.2[/] - Expanded Edition\n" +
+            "Now with XP progression, new abilities, and save/load![/]"
         )
         {
             Border = BoxBorder.Rounded,
@@ -262,6 +436,18 @@ class Program
                     HandleStats();
                     break;
 
+                case CommandType.XP:
+                    HandleXP();
+                    break;
+
+                case CommandType.Level:
+                    HandleLevel();
+                    break;
+
+                case CommandType.Save:
+                    HandleSave();
+                    break;
+
                 case CommandType.Help:
                     HandleHelp();
                     break;
@@ -323,6 +509,18 @@ class Program
         AnsiConsole.MarkupLine($"[dim]You move {direction}...[/]");
         AnsiConsole.WriteLine();
         System.Threading.Thread.Sleep(800); // Brief pause for atmosphere
+
+        // Auto-save on room transition
+        try
+        {
+            _gameState.UpdateWorldState();
+            _saveRepository.SaveGame(_gameState.Player, _gameState.WorldState);
+            AnsiConsole.MarkupLine("[dim]Game auto-saved.[/]");
+        }
+        catch
+        {
+            // Silently fail auto-save - don't interrupt gameplay
+        }
     }
 
     static void HandleStats()
@@ -344,6 +542,115 @@ class Program
             Header = new PanelHeader("[bold]HELP[/]")
         };
         AnsiConsole.Write(panel);
+        AnsiConsole.WriteLine();
+        AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+        Console.ReadLine();
+    }
+
+    static void HandleXP()
+    {
+        AnsiConsole.Clear();
+        var player = _gameState.Player;
+
+        AnsiConsole.WriteLine();
+        var xpRule = new Rule("[bold cyan]EXPERIENCE[/]")
+        {
+            Justification = Justify.Center
+        };
+        AnsiConsole.Write(xpRule);
+        AnsiConsole.WriteLine();
+
+        var xpToNext = _progressionService.GetXPToNextLevel(player);
+        var xpText = player.Level >= 5
+            ? $"[yellow]Current Level:[/] {player.Level} (MAX)\n" +
+              $"[yellow]Total XP:[/] {player.CurrentXP}"
+            : $"[yellow]Current Level:[/] {player.Level}\n" +
+              $"[yellow]Current XP:[/] {player.CurrentXP}\n" +
+              $"[yellow]XP to Next Level:[/] {xpToNext}\n" +
+              $"[yellow]Next Level At:[/] {player.XPToNextLevel} XP";
+
+        var panel = new Panel(xpText)
+        {
+            Border = BoxBorder.Rounded,
+            BorderColor = Color.Yellow,
+            Padding = new Padding(2, 1)
+        };
+        AnsiConsole.Write(panel);
+        AnsiConsole.WriteLine();
+        AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+        Console.ReadLine();
+    }
+
+    static void HandleLevel()
+    {
+        AnsiConsole.Clear();
+        var player = _gameState.Player;
+
+        AnsiConsole.WriteLine();
+        var levelRule = new Rule("[bold cyan]LEVEL INFORMATION[/]")
+        {
+            Justification = Justify.Center
+        };
+        AnsiConsole.Write(levelRule);
+        AnsiConsole.WriteLine();
+
+        var xpToNext = _progressionService.GetXPToNextLevel(player);
+        var levelText = $"[yellow]Current Level:[/] {player.Level}\n" +
+                        $"[yellow]Current XP:[/] {player.CurrentXP}";
+
+        if (player.Level < 5)
+        {
+            levelText += $"\n[yellow]XP to Level {player.Level + 1}:[/] {xpToNext} more\n" +
+                        $"[yellow]Progress:[/] {player.CurrentXP}/{player.XPToNextLevel}";
+        }
+        else
+        {
+            levelText += "\n\n[green]✓ Maximum level reached![/]";
+        }
+
+        var panel = new Panel(levelText)
+        {
+            Border = BoxBorder.Rounded,
+            BorderColor = Color.Yellow,
+            Padding = new Padding(2, 1)
+        };
+        AnsiConsole.Write(panel);
+        AnsiConsole.WriteLine();
+        AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+        Console.ReadLine();
+    }
+
+    static void HandleSave()
+    {
+        AnsiConsole.Clear();
+        AnsiConsole.WriteLine();
+
+        var saveRule = new Rule("[bold cyan]SAVE GAME[/]")
+        {
+            Justification = Justify.Center
+        };
+        AnsiConsole.Write(saveRule);
+        AnsiConsole.WriteLine();
+
+        try
+        {
+            // Update world state before saving
+            _gameState.UpdateWorldState();
+
+            // Save the game
+            _saveRepository.SaveGame(_gameState.Player, _gameState.WorldState);
+
+            AnsiConsole.MarkupLine($"[green]✓ Game saved successfully![/]");
+            AnsiConsole.WriteLine();
+            AnsiConsole.MarkupLine($"[dim]Character: {_gameState.Player.Name}[/]");
+            AnsiConsole.MarkupLine($"[dim]Level: {_gameState.Player.Level}[/]");
+            AnsiConsole.MarkupLine($"[dim]Location: {_gameState.CurrentRoom.Name}[/]");
+        }
+        catch (Exception ex)
+        {
+            AnsiConsole.MarkupLine($"[red]Failed to save game:[/] {ex.Message.EscapeMarkup()}");
+        }
+
         AnsiConsole.WriteLine();
         AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
         Console.ReadLine();
@@ -640,9 +947,126 @@ class Program
             // Victory!
             AnsiConsole.MarkupLine("[green]✓ Combat victory![/]");
             _gameState.ClearCurrentRoom();
+
+            // Check for level up
+            while (_progressionService.CanLevelUp(combat.Player))
+            {
+                AnsiConsole.WriteLine();
+                HandleLevelUp(combat.Player);
+            }
+
             _gameState.CurrentPhase = GamePhase.Exploration;
         }
 
+        AnsiConsole.WriteLine();
+        AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+        Console.ReadLine();
+    }
+
+    static void HandleLevelUp(PlayerCharacter player)
+    {
+        AnsiConsole.Clear();
+        AnsiConsole.WriteLine();
+
+        // Display level up banner
+        var levelUpRule = new Rule("[bold yellow]⚡ LEVEL UP! ⚡[/]")
+        {
+            Justification = Justify.Center,
+            Style = new Style(Color.Yellow)
+        };
+        AnsiConsole.Write(levelUpRule);
+        AnsiConsole.WriteLine();
+
+        var oldLevel = player.Level;
+        var newLevel = oldLevel + 1;
+
+        AnsiConsole.MarkupLine($"[green]Congratulations! You have reached Level {newLevel}![/]");
+        AnsiConsole.WriteLine();
+
+        // Show rewards
+        var rewardsPanel = new Panel(
+            "[yellow]Level Up Rewards:[/]\n\n" +
+            "• [green]+10 Max HP[/]\n" +
+            "• [green]+5 Max Stamina[/]\n" +
+            "• [green]+1 Attribute Point[/]\n" +
+            "• [green]Full HP and Stamina Restored[/]"
+        )
+        {
+            Border = BoxBorder.Rounded,
+            BorderColor = Color.Green,
+            Padding = new Padding(2, 1)
+        };
+        AnsiConsole.Write(rewardsPanel);
+        AnsiConsole.WriteLine();
+
+        // Show current attributes
+        AnsiConsole.MarkupLine("[yellow]Current Attributes:[/]");
+        AnsiConsole.MarkupLine($"  MIGHT:       {player.Attributes.Might} {(player.Attributes.Might >= 6 ? "[dim](MAX)[/]" : "")}");
+        AnsiConsole.MarkupLine($"  FINESSE:     {player.Attributes.Finesse} {(player.Attributes.Finesse >= 6 ? "[dim](MAX)[/]" : "")}");
+        AnsiConsole.MarkupLine($"  WITS:        {player.Attributes.Wits} {(player.Attributes.Wits >= 6 ? "[dim](MAX)[/]" : "")}");
+        AnsiConsole.MarkupLine($"  WILL:        {player.Attributes.Will} {(player.Attributes.Will >= 6 ? "[dim](MAX)[/]" : "")}");
+        AnsiConsole.MarkupLine($"  STURDINESS:  {player.Attributes.Sturdiness} {(player.Attributes.Sturdiness >= 6 ? "[dim](MAX)[/]" : "")}");
+        AnsiConsole.WriteLine();
+
+        // Build list of attributes that can be increased (not at cap)
+        var availableAttributes = new List<string>();
+        if (player.Attributes.Might < 6) availableAttributes.Add("MIGHT");
+        if (player.Attributes.Finesse < 6) availableAttributes.Add("FINESSE");
+        if (player.Attributes.Wits < 6) availableAttributes.Add("WITS");
+        if (player.Attributes.Will < 6) availableAttributes.Add("WILL");
+        if (player.Attributes.Sturdiness < 6) availableAttributes.Add("STURDINESS");
+
+        string attributeChoice;
+        if (availableAttributes.Count > 0)
+        {
+            // Prompt for attribute to increase
+            attributeChoice = AnsiConsole.Prompt(
+                new SelectionPrompt<string>()
+                    .Title("[yellow]Choose an attribute to increase:[/]")
+                    .AddChoices(availableAttributes)
+            );
+        }
+        else
+        {
+            // All attributes at cap (shouldn't happen but handle gracefully)
+            AnsiConsole.MarkupLine("[yellow]All attributes are at maximum![/]");
+            attributeChoice = "might"; // Dummy choice, won't increase
+        }
+
+        // Perform level up
+        _progressionService.LevelUp(player, attributeChoice);
+
+        AnsiConsole.WriteLine();
+        AnsiConsole.MarkupLine($"[green]✓ {attributeChoice} increased to {player.GetAttributeValue(attributeChoice)}![/]");
+        AnsiConsole.WriteLine();
+
+        // Check for ability unlock
+        if (_progressionService.IsAbilityUnlockedAtLevel(newLevel))
+        {
+            var abilitySlot = _progressionService.GetAbilitySlotToUnlock(newLevel);
+            if (abilitySlot >= 0 && abilitySlot < player.Abilities.Count)
+            {
+                var newAbility = player.Abilities[abilitySlot];
+                AnsiConsole.MarkupLine($"[bold cyan]🌟 NEW ABILITY UNLOCKED! 🌟[/]");
+                AnsiConsole.WriteLine();
+
+                var abilityPanel = new Panel(
+                    $"[bold yellow]{newAbility.Name}[/]\n\n" +
+                    $"{newAbility.Description}\n\n" +
+                    $"[dim]Stamina Cost: {newAbility.StaminaCost}[/]"
+                )
+                {
+                    Border = BoxBorder.Double,
+                    BorderColor = Color.Cyan,
+                    Padding = new Padding(2, 1)
+                };
+                AnsiConsole.Write(abilityPanel);
+                AnsiConsole.WriteLine();
+            }
+        }
+
+        AnsiConsole.MarkupLine($"[green]You are now Level {newLevel}![/]");
+        AnsiConsole.MarkupLine($"[dim]XP: {player.CurrentXP} / {player.XPToNextLevel} to next level[/]");
         AnsiConsole.WriteLine();
         AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
         Console.ReadLine();

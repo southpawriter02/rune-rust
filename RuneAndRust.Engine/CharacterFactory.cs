@@ -51,9 +51,10 @@ public class CharacterFactory
         character.WeaponAttribute = "might";
         character.BaseDamage = 1;
 
-        // Abilities
+        // Abilities (4 total: 2 starting, unlock 3rd at Level 3, 4th at Level 5)
         character.Abilities = new List<Ability>
         {
+            // Level 1 - Starting ability
             new Ability
             {
                 Name = "Power Strike",
@@ -65,6 +66,7 @@ public class CharacterFactory
                 SuccessThreshold = 3,
                 DamageDice = 0 // Uses weapon damage, doubled
             },
+            // Level 1 - Starting ability
             new Ability
             {
                 Name = "Shield Wall",
@@ -76,6 +78,29 @@ public class CharacterFactory
                 SuccessThreshold = 2,
                 DefensePercent = 50,
                 DefenseDuration = 2
+            },
+            // Level 3 - Unlocked ability
+            new Ability
+            {
+                Name = "Cleaving Strike",
+                Description = "Powerful strike that hits target and deals 50% damage to another enemy if you get 3+ successes",
+                StaminaCost = 8,
+                Type = AbilityType.Attack,
+                AttributeUsed = "might",
+                BonusDice = 1,
+                SuccessThreshold = 2,
+                DamageDice = 1
+            },
+            // Level 5 - Unlocked ability
+            new Ability
+            {
+                Name = "Battle Rage",
+                Description = "Enter a berserker state gaining +2 dice on all attacks for 3 turns, but take 25% more damage",
+                StaminaCost = 15,
+                Type = AbilityType.Utility,
+                AttributeUsed = "will",
+                BonusDice = 0,
+                SuccessThreshold = 2
             }
         };
     }
@@ -103,9 +128,10 @@ public class CharacterFactory
         character.WeaponAttribute = "finesse";
         character.BaseDamage = 1;
 
-        // Abilities
+        // Abilities (4 total: 2 starting, unlock 3rd at Level 3, 4th at Level 5)
         character.Abilities = new List<Ability>
         {
+            // Level 1 - Starting ability
             new Ability
             {
                 Name = "Exploit Weakness",
@@ -117,6 +143,7 @@ public class CharacterFactory
                 SuccessThreshold = 2,
                 NextAttackBonusDice = 2
             },
+            // Level 1 - Starting ability
             new Ability
             {
                 Name = "Quick Dodge",
@@ -127,6 +154,29 @@ public class CharacterFactory
                 BonusDice = 1,
                 SuccessThreshold = 2,
                 NegateNextAttack = true
+            },
+            // Level 3 - Unlocked ability
+            new Ability
+            {
+                Name = "Precision Strike",
+                Description = "A precise attack using FINESSE and WITS that causes bleeding (1d6 damage for 2 turns)",
+                StaminaCost = 8,
+                Type = AbilityType.Attack,
+                AttributeUsed = "finesse",
+                BonusDice = 0,
+                SuccessThreshold = 3,
+                DamageDice = 1
+            },
+            // Level 5 - Unlocked ability
+            new Ability
+            {
+                Name = "Survivalist",
+                Description = "Use survival skills to restore 2d6 HP during combat (costs your turn)",
+                StaminaCost = 20,
+                Type = AbilityType.Utility,
+                AttributeUsed = "sturdiness",
+                BonusDice = 0,
+                SuccessThreshold = 2
             }
         };
     }
@@ -154,9 +204,10 @@ public class CharacterFactory
         character.WeaponAttribute = "will";
         character.BaseDamage = 1;
 
-        // Abilities
+        // Abilities (4 total: 2 starting, unlock 3rd at Level 3, 4th at Level 5)
         character.Abilities = new List<Ability>
         {
+            // Level 1 - Starting ability
             new Ability
             {
                 Name = "Aetheric Bolt",
@@ -169,6 +220,7 @@ public class CharacterFactory
                 DamageDice = 2,
                 IgnoresArmor = true
             },
+            // Level 1 - Starting ability
             new Ability
             {
                 Name = "Disrupt",
@@ -179,6 +231,29 @@ public class CharacterFactory
                 BonusDice = 0,
                 SuccessThreshold = 2,
                 SkipEnemyTurn = true
+            },
+            // Level 3 - Unlocked ability
+            new Ability
+            {
+                Name = "Aetheric Shield",
+                Description = "Create a protective shield that absorbs the next 15 damage",
+                StaminaCost = 10,
+                Type = AbilityType.Defense,
+                AttributeUsed = "will",
+                BonusDice = 0,
+                SuccessThreshold = 2
+            },
+            // Level 5 - Unlocked ability
+            new Ability
+            {
+                Name = "Chain Lightning",
+                Description = "Unleash lightning that damages all enemies (2d6 with 4+ successes, 1d6 with 3+)",
+                StaminaCost = 15,
+                Type = AbilityType.Attack,
+                AttributeUsed = "will",
+                BonusDice = 2,
+                SuccessThreshold = 3,
+                DamageDice = 1
             }
         };
     }

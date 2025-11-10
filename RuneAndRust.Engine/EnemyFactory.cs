@@ -32,7 +32,8 @@ public class EnemyFactory
             ),
             BaseDamageDice = 1,
             DamageBonus = 0,
-            IsBoss = false
+            IsBoss = false,
+            XPReward = 10
         };
     }
 
@@ -53,7 +54,8 @@ public class EnemyFactory
             ),
             BaseDamageDice = 1,
             DamageBonus = 1,
-            IsBoss = false
+            IsBoss = false,
+            XPReward = 25
         };
     }
 
@@ -75,7 +77,8 @@ public class EnemyFactory
             BaseDamageDice = 2,
             DamageBonus = 0,
             IsBoss = true,
-            Phase = 1
+            Phase = 1,
+            XPReward = 100
         };
     }
 }

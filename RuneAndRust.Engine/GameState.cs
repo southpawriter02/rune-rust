@@ -19,6 +19,7 @@ public class GameState
     public Room CurrentRoom { get; set; }
     public GamePhase CurrentPhase { get; set; }
     public CombatState? Combat { get; set; }
+    public WorldState WorldState { get; set; }
 
     public GameState()
     {
@@ -27,6 +28,7 @@ public class GameState
         CurrentRoom = World.GetStartRoom();
         CurrentPhase = GamePhase.CharacterCreation;
         Combat = null;
+        WorldState = new WorldState();
     }
 
     public void MoveToRoom(string direction)
@@ -68,11 +70,25 @@ public class GameState
     public void ClearCurrentRoom()
     {
         CurrentRoom.HasBeenCleared = true;
+        WorldState.MarkRoomCleared(CurrentRoom.Id);
     }
 
     public void SolvePuzzle()
     {
         CurrentRoom.IsPuzzleSolved = true;
+        WorldState.PuzzleSolved = true;
         World.UnlockPuzzleDoor();
+    }
+
+    public void UpdateWorldState()
+    {
+        // Update world state based on current room
+        WorldState.CurrentRoomId = CurrentRoom.Id;
+
+        // Check for boss defeated
+        if (CurrentRoom.IsBossRoom && CurrentRoom.HasBeenCleared)
+        {
+            WorldState.BossDefeated = true;
+        }
     }
 }

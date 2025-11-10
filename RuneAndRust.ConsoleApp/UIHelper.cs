@@ -16,6 +16,12 @@ public static class UIHelper
 
         table.AddColumn(new TableColumn($"[bold yellow]{character.Name}[/] - [dim]{character.Class}[/]").Centered());
 
+        // Level and XP
+        var xpText = character.Level >= 5
+            ? $"[yellow]Level {character.Level}[/] [dim](MAX)[/] | [dim]XP: {character.CurrentXP}[/]"
+            : $"[yellow]Level {character.Level}[/] | [dim]XP: {character.CurrentXP}/{character.XPToNextLevel}[/]";
+        table.AddRow(xpText);
+
         // Resources
         var hpBar = CreateBar("HP", character.HP, character.MaxHP, Color.Red, Color.DarkRed);
         var staminaBar = CreateBar("Stamina", character.Stamina, character.MaxStamina, Color.Green, Color.DarkGreen);
@@ -32,13 +38,37 @@ public static class UIHelper
         table.AddRow(new Markup("[bold]WEAPON[/]"));
         table.AddRow($"{character.WeaponName} ([yellow]{character.WeaponAttribute.ToUpper()}[/]-based, {character.BaseDamage}d6)");
 
-        // Abilities
+        // Abilities (show unlocked and locked based on level)
         table.AddRow(new Markup("[bold]ABILITIES[/]"));
-        foreach (var ability in character.Abilities)
+
+        // Determine how many abilities are unlocked
+        int unlockedCount = character.Level switch
         {
-            var costColor = character.Stamina >= ability.StaminaCost ? "green" : "red";
-            table.AddRow($"[yellow]{ability.Name}[/] ([{costColor}]{ability.StaminaCost} Stamina[/])");
-            table.AddRow($"[dim]{ability.Description}[/]");
+            1 => 2,
+            2 => 2,
+            3 => 3,
+            4 => 3,
+            >= 5 => 4,
+            _ => 2
+        };
+
+        for (int i = 0; i < character.Abilities.Count; i++)
+        {
+            var ability = character.Abilities[i];
+            if (i < unlockedCount)
+            {
+                // Unlocked ability
+                var costColor = character.Stamina >= ability.StaminaCost ? "green" : "red";
+                var newTag = (i == 2 && character.Level == 3) || (i == 3 && character.Level == 5) ? " [cyan][NEW][/]" : "";
+                table.AddRow($"[yellow]{ability.Name}[/]{newTag} ([{costColor}]{ability.StaminaCost} Stamina[/])");
+                table.AddRow($"[dim]{ability.Description}[/]");
+            }
+            else
+            {
+                // Locked ability
+                var unlockLevel = i == 2 ? 3 : 5;
+                table.AddRow($"[dim][LOCKED] {ability.Name} - Unlocks at Level {unlockLevel}[/]");
+            }
         }
 
         AnsiConsole.Write(table);
@@ -391,8 +421,20 @@ public static class UIHelper
     {
         var choices = new List<string>();
 
-        foreach (var ability in player.Abilities)
+        // Only show unlocked abilities based on level
+        int unlockedCount = player.Level switch
         {
+            1 => 2,
+            2 => 2,
+            3 => 3,
+            4 => 3,
+            >= 5 => 4,
+            _ => 2
+        };
+
+        for (int i = 0; i < Math.Min(unlockedCount, player.Abilities.Count); i++)
+        {
+            var ability = player.Abilities[i];
             var canAfford = player.Stamina >= ability.StaminaCost;
             var staminaColor = canAfford ? "green" : "red";
             choices.Add($"{ability.Name} ([{staminaColor}]{ability.StaminaCost} Stamina[/]) - {ability.Description}");
