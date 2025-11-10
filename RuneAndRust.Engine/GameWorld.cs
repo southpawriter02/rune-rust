@@ -88,7 +88,7 @@ public class GameWorld
             PuzzleDescription =
                 "The conduits pulse with erratic energy. You need to analyze the power flow patterns " +
                 "and determine the correct activation sequence.",
-            PuzzleSuccessThreshold = 3,
+            PuzzleSuccessThreshold = 2,
             PuzzleFailureDamage = 6
         };
 
