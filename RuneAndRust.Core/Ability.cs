@@ -1,0 +1,31 @@
+namespace RuneAndRust.Core;
+
+public enum AbilityType
+{
+    Attack,      // Direct damage ability
+    Defense,     // Defensive ability
+    Utility,     // Support/utility ability
+    Control      // Disabling ability
+}
+
+public class Ability
+{
+    public string Name { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+    public int StaminaCost { get; set; }
+    public AbilityType Type { get; set; }
+
+    // For dice rolling
+    public string AttributeUsed { get; set; } = string.Empty;
+    public int BonusDice { get; set; } = 0;
+    public int SuccessThreshold { get; set; } = 2; // Successes needed for ability to work
+
+    // Effects
+    public int DamageDice { get; set; } = 0; // For direct damage abilities
+    public bool IgnoresArmor { get; set; } = false;
+    public int DefensePercent { get; set; } = 0; // For defensive abilities
+    public int DefenseDuration { get; set; } = 0; // Turns
+    public bool SkipEnemyTurn { get; set; } = false; // For control abilities
+    public int NextAttackBonusDice { get; set; } = 0; // For utility abilities
+    public bool NegateNextAttack { get; set; } = false; // For dodge abilities
+}
