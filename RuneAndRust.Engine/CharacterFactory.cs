@@ -39,17 +39,33 @@ public class CharacterFactory
             sturdiness: 4
         );
 
-        // Resources
+        // Resources (base values before equipment)
         character.MaxHP = 50;
         character.HP = 50;
         character.MaxStamina = 30;
         character.Stamina = 30;
         character.AP = 10;
 
-        // Weapon
-        character.WeaponName = "Scavenged Axe";
+        // Legacy weapon (v0.1/v0.2 compatibility)
+        character.WeaponName = "Rusty Hatchet";
         character.WeaponAttribute = "might";
         character.BaseDamage = 1;
+
+        // Starting equipment (v0.3)
+        var startingWeapon = EquipmentDatabase.GetByName("Rusty Hatchet");
+        var startingArmor = EquipmentDatabase.GetByName("Scrap Plating");
+
+        if (startingWeapon != null)
+        {
+            character.EquippedWeapon = startingWeapon;
+        }
+
+        if (startingArmor != null)
+        {
+            var equipmentService = new EquipmentService();
+            character.EquippedArmor = startingArmor;
+            equipmentService.RecalculatePlayerStats(character);
+        }
 
         // Abilities (4 total: 2 starting, unlock 3rd at Level 3, 4th at Level 5)
         character.Abilities = new List<Ability>
@@ -116,17 +132,33 @@ public class CharacterFactory
             sturdiness: 3
         );
 
-        // Resources
+        // Resources (base values before equipment)
         character.MaxHP = 40;
         character.HP = 40;
         character.MaxStamina = 40;
         character.Stamina = 40;
         character.AP = 10;
 
-        // Weapon
+        // Legacy weapon (v0.1/v0.2 compatibility)
         character.WeaponName = "Makeshift Spear";
         character.WeaponAttribute = "finesse";
         character.BaseDamage = 1;
+
+        // Starting equipment (v0.3)
+        var startingWeapon = EquipmentDatabase.GetByName("Makeshift Spear");
+        var startingArmor = EquipmentDatabase.GetByName("Tattered Leathers");
+
+        if (startingWeapon != null)
+        {
+            character.EquippedWeapon = startingWeapon;
+        }
+
+        if (startingArmor != null)
+        {
+            var equipmentService = new EquipmentService();
+            character.EquippedArmor = startingArmor;
+            equipmentService.RecalculatePlayerStats(character);
+        }
 
         // Abilities (4 total: 2 starting, unlock 3rd at Level 3, 4th at Level 5)
         character.Abilities = new List<Ability>
@@ -192,17 +224,33 @@ public class CharacterFactory
             sturdiness: 2
         );
 
-        // Resources
+        // Resources (base values before equipment)
         character.MaxHP = 30;
         character.HP = 30;
         character.MaxStamina = 50;
         character.Stamina = 50;
         character.AP = 10;
 
-        // Weapon
-        character.WeaponName = "Improvised Staff";
+        // Legacy weapon (v0.1/v0.2 compatibility)
+        character.WeaponName = "Crude Staff";
         character.WeaponAttribute = "will";
         character.BaseDamage = 1;
+
+        // Starting equipment (v0.3)
+        var startingWeapon = EquipmentDatabase.GetByName("Crude Staff");
+        var startingArmor = EquipmentDatabase.GetByName("Tattered Leathers");
+
+        if (startingWeapon != null)
+        {
+            character.EquippedWeapon = startingWeapon;
+        }
+
+        if (startingArmor != null)
+        {
+            var equipmentService = new EquipmentService();
+            character.EquippedArmor = startingArmor;
+            equipmentService.RecalculatePlayerStats(character);
+        }
 
         // Abilities (4 total: 2 starting, unlock 3rd at Level 3, 4th at Level 5)
         character.Abilities = new List<Ability>
