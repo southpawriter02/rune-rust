@@ -26,7 +26,9 @@ public enum CommandType
     Unequip,
     Pickup,
     Drop,
-    Compare
+    Compare,
+    // v0.4 - NPC interaction
+    Talk
 }
 
 public class ParsedCommand
@@ -109,6 +111,12 @@ public class CommandParser
         { "solve", CommandType.Solve },
         { "analyze", CommandType.Solve },
         { "puzzle", CommandType.Solve },
+
+        // NPC Interaction (v0.4)
+        { "talk", CommandType.Talk },
+        { "speak", CommandType.Talk },
+        { "negotiate", CommandType.Talk },
+        { "convince", CommandType.Talk },
 
         // Utility
         { "help", CommandType.Help },
@@ -253,6 +261,9 @@ COMBAT COMMANDS:
 
 PUZZLE COMMANDS:
   solve, analyze       - Attempt to solve a puzzle
+
+NPC INTERACTION (v0.4):
+  talk, speak          - Attempt to negotiate with NPCs (Forlorn Scholar)
 
 OTHER COMMANDS:
   help, h, ?           - Show this help text

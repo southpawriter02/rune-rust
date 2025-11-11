@@ -55,6 +55,12 @@ public class GameState
 
     public bool ShouldTriggerCombat()
     {
+        // [v0.4] Don't auto-trigger combat for rooms with talkable NPCs
+        if (CurrentRoom.HasTalkableNPC && !CurrentRoom.HasTalkedToNPC)
+        {
+            return false;
+        }
+
         return !CurrentRoom.HasBeenCleared &&
                CurrentRoom.Enemies.Count > 0 &&
                CurrentPhase == GamePhase.Exploration;

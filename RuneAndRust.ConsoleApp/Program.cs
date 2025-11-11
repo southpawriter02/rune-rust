@@ -408,6 +408,28 @@ class Program
             return;
         }
 
+        // [v0.4] Check for talkable NPC encounter
+        if (_gameState.CurrentRoom.HasTalkableNPC &&
+            !_gameState.CurrentRoom.HasTalkedToNPC &&
+            !_gameState.CurrentRoom.HasBeenCleared &&
+            _gameState.CurrentRoom.Enemies.Count > 0)
+        {
+            var npcPanel = new Panel(
+                "[yellow]⚠ SPECIAL ENCOUNTER[/]\n\n" +
+                "The Forlorn Scholar regards you with hollow eyes. Its form flickers between solid and ethereal.\n\n" +
+                "You sense it may be reasoned with... or you could attack first.\n\n" +
+                "[cyan]• Type 'talk' or 'negotiate' to attempt peaceful resolution (WILL check)[/]\n" +
+                "[cyan]• Type 'attack' to engage in combat immediately[/]"
+            )
+            {
+                Border = BoxBorder.Rounded,
+                BorderColor = Color.Yellow,
+                Padding = new Padding(1, 0)
+            };
+            AnsiConsole.Write(npcPanel);
+            AnsiConsole.WriteLine();
+        }
+
         // [v0.4] Check for victory condition (either boss room cleared)
         if ((_gameState.CurrentRoom.Name == "Arsenal Vault" || _gameState.CurrentRoom.Name == "Energy Core")
             && _gameState.CurrentRoom.HasBeenCleared)
@@ -504,6 +526,39 @@ class Program
                     HandleCompare(command.Target);
                     break;
 
+                case CommandType.Talk:
+                    HandleTalk();
+                    break;
+
+                case CommandType.Attack:
+                    // [v0.4] Allow attacking Forlorn Scholar to skip negotiation
+                    if (_gameState.CurrentRoom.HasTalkableNPC &&
+                        !_gameState.CurrentRoom.HasTalkedToNPC &&
+                        !_gameState.CurrentRoom.HasBeenCleared)
+                    {
+                        _gameState.CurrentRoom.HasTalkedToNPC = true; // Mark as resolved
+                        AnsiConsole.MarkupLine("[red]You decide to attack first![/]");
+                        AnsiConsole.WriteLine();
+                        AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to begin combat...[/]");
+                        Console.ReadLine();
+
+                        var canFlee = !_gameState.CurrentRoom.IsBossRoom;
+                        _gameState.Combat = _combatEngine.InitializeCombat(
+                            _gameState.Player,
+                            _gameState.CurrentRoom.Enemies,
+                            _gameState.CurrentRoom,
+                            canFlee);
+                        _gameState.CurrentPhase = GamePhase.Combat;
+                    }
+                    else
+                    {
+                        AnsiConsole.MarkupLine("[red]There's nothing to attack here. (Use this command in combat)[/]");
+                        AnsiConsole.WriteLine();
+                        AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+                        Console.ReadLine();
+                    }
+                    break;
+
                 case CommandType.Unknown:
                 default:
                     AnsiConsole.MarkupLine($"[red]Unknown command:[/] {command.RawInput.EscapeMarkup()}");
@@ -549,6 +604,14 @@ class Program
         AnsiConsole.MarkupLine($"[dim]You move {direction}...[/]");
         AnsiConsole.WriteLine();
         System.Threading.Thread.Sleep(800); // Brief pause for atmosphere
+
+        // [v0.4] Add loot to secret room when first discovered
+        if (_gameState.CurrentRoom.Name == "Supply Cache" && _gameState.CurrentRoom.ItemsOnGround.Count == 0)
+        {
+            _gameState.World.AddSecretRoomLoot(_gameState.Player);
+            AnsiConsole.MarkupLine("[yellow]You've discovered a pristine supply cache! Legendary equipment awaits...[/]");
+            AnsiConsole.WriteLine();
+        }
 
         // Auto-save on room transition
         try
@@ -773,6 +836,104 @@ class Program
             AnsiConsole.WriteLine();
             AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
             Console.ReadLine();
+        }
+    }
+
+    /// <summary>
+    /// [v0.4] Handle talking to Forlorn Scholar NPC
+    /// Requires WILL check (DC 4) to succeed
+    /// </summary>
+    static void HandleTalk()
+    {
+        // Check if there's an NPC to talk to
+        if (!_gameState.CurrentRoom.HasTalkableNPC ||
+            _gameState.CurrentRoom.HasBeenCleared ||
+            _gameState.CurrentRoom.Enemies.Count == 0)
+        {
+            AnsiConsole.MarkupLine("[red]There's no one here to talk to.[/]");
+            AnsiConsole.WriteLine();
+            AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+            Console.ReadLine();
+            return;
+        }
+
+        // Check if already talked
+        if (_gameState.CurrentRoom.HasTalkedToNPC)
+        {
+            AnsiConsole.MarkupLine("[red]You've already attempted to negotiate here.[/]");
+            AnsiConsole.WriteLine();
+            AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+            Console.ReadLine();
+            return;
+        }
+
+        // Mark as talked (can only attempt once)
+        _gameState.CurrentRoom.HasTalkedToNPC = true;
+
+        AnsiConsole.WriteLine();
+        AnsiConsole.MarkupLine("[yellow]You attempt to reason with the Forlorn Scholar...[/]");
+        AnsiConsole.MarkupLine("[dim]The data-ghost tilts its head, listening. Your words must reach its fragmented consciousness.[/]");
+        AnsiConsole.WriteLine();
+        System.Threading.Thread.Sleep(1500);
+
+        // Roll WILL check (DC 4)
+        var willValue = _gameState.Player.Attributes.Will;
+        var result = _diceService.Roll(willValue);
+
+        UIHelper.DisplayDiceRoll(result, "WILL Check");
+        AnsiConsole.WriteLine();
+
+        if (result.Successes >= 4) // DC 4
+        {
+            // Success - peaceful resolution
+            AnsiConsole.MarkupLine("[green]✓ Success![/] The Forlorn Scholar recognizes you as an ally.");
+            AnsiConsole.WriteLine();
+            AnsiConsole.MarkupLine("[cyan]The data-ghost speaks in a crackling, distorted voice:[/]");
+            AnsiConsole.MarkupLine("[italic]\"Survivor... I remember now. We were... researchers. The Blight came. " +
+                "Everything fell. Beware the vault ahead—the Warden still guards it. Or... perhaps the Energy Core, " +
+                "where the aberration dwells. Choose wisely.\"[/]");
+            AnsiConsole.WriteLine();
+            AnsiConsole.MarkupLine("[dim]The Scholar fades, leaving behind a token of knowledge.[/]");
+
+            // Clear room without combat
+            _gameState.ClearCurrentRoom();
+
+            // Award Legend for peaceful resolution (same as combat victory)
+            var legendGain = _gameState.CurrentRoom.Enemies[0].LegendValue;
+            _gameState.Player.Legend += legendGain;
+            AnsiConsole.MarkupLine($"[yellow]+ {legendGain} Legend[/] (Peaceful Resolution)");
+
+            // Give loot reward (Optimized-tier for peaceful resolution)
+            var lootService = new LootService();
+            var reward = lootService.CreatePuzzleReward(_gameState.Player.Class);
+            if (reward != null)
+            {
+                _gameState.CurrentRoom.ItemsOnGround.Add(reward);
+                AnsiConsole.MarkupLine($"[yellow]The Scholar left behind: {reward.GetDisplayName()}[/]");
+            }
+
+            AnsiConsole.WriteLine();
+            AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+            Console.ReadLine();
+        }
+        else
+        {
+            // Failure - combat is triggered
+            AnsiConsole.MarkupLine("[red]✗ Failure![/] The Forlorn Scholar does not understand. It turns hostile!");
+            AnsiConsole.WriteLine();
+            AnsiConsole.MarkupLine("[dim]Communication has failed. Combat is inevitable.[/]");
+            AnsiConsole.WriteLine();
+            AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to begin combat...[/]");
+            Console.ReadLine();
+
+            // Start combat
+            var canFlee = !_gameState.CurrentRoom.IsBossRoom;
+            _gameState.Combat = _combatEngine.InitializeCombat(
+                _gameState.Player,
+                _gameState.CurrentRoom.Enemies,
+                _gameState.CurrentRoom,
+                canFlee);
+            _gameState.CurrentPhase = GamePhase.Combat;
         }
     }
 

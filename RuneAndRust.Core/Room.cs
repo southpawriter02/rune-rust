@@ -30,4 +30,8 @@ public class Room
     public bool IsHazardActive { get; set; } = true; // Can be disabled via puzzle
     public int HazardDamagePerTurn { get; set; } = 0; // Damage dealt each turn
     public string HazardDescription { get; set; } = string.Empty;
+
+    // NPC Interaction (v0.4)
+    public bool HasTalkableNPC { get; set; } = false; // Can negotiate instead of fighting
+    public bool HasTalkedToNPC { get; set; } = false; // Track if player already talked
 }

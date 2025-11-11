@@ -231,7 +231,8 @@ public class GameWorld
             Enemies = new List<Enemy>
             {
                 EnemyFactory.CreateEnemy(EnemyType.ForlornScholar) // NEW enemy type (can be talked to)
-            }
+            },
+            HasTalkableNPC = true // [v0.4] Player can negotiate instead of fighting
         };
 
         // ====== DEEP VAULT (Convergence - High Difficulty) ======
@@ -397,7 +398,69 @@ public class GameWorld
         }
 
         // [v0.4] Operations Center (Room 4): Clan-Forged equipment cache (2 items)
-        // This will be added when the player first enters the room
+        AddOperationsCenterLoot(player);
+    }
+
+    /// <summary>
+    /// [v0.4] Add Clan-Forged equipment cache to Operations Center
+    /// Called during world initialization after character creation
+    /// </summary>
+    public void AddOperationsCenterLoot(PlayerCharacter player)
+    {
+        var lootService = new LootService();
+        var operationsCenter = GetRoom("Operations Center");
+
+        // Generate 2x Clan-Forged items appropriate for player's class
+        // One weapon, one armor to provide balanced rewards
+        var clanWeapon = EquipmentDatabase.GetRandomWeaponForClass(player.Class, QualityTier.ClanForged);
+        var clanArmor = EquipmentDatabase.GetRandomArmor(QualityTier.ClanForged);
+
+        if (clanWeapon != null)
+        {
+            lootService.PlaceStartingLoot(operationsCenter, clanWeapon);
+        }
+
+        if (clanArmor != null)
+        {
+            lootService.PlaceStartingLoot(operationsCenter, clanArmor);
+        }
+    }
+
+    /// <summary>
+    /// [v0.4] Add Myth-Forged loot to Secret Room
+    /// Called when secret room is first discovered
+    /// </summary>
+    public void AddSecretRoomLoot(PlayerCharacter player)
+    {
+        var lootService = new LootService();
+        var supplyCache = GetRoom("Supply Cache");
+
+        // Check if loot already placed (don't add multiple times)
+        if (supplyCache.ItemsOnGround.Count > 0)
+        {
+            return;
+        }
+
+        // Generate 3x Myth-Forged items for player to choose from
+        // This gives player agency and increases replay value
+        var mythWeapon1 = EquipmentDatabase.GetRandomWeaponForClass(player.Class, QualityTier.MythForged);
+        var mythWeapon2 = EquipmentDatabase.GetRandomWeaponForClass(player.Class, QualityTier.MythForged);
+        var mythArmor = EquipmentDatabase.GetRandomArmor(QualityTier.MythForged);
+
+        if (mythWeapon1 != null)
+        {
+            lootService.PlaceStartingLoot(supplyCache, mythWeapon1);
+        }
+
+        if (mythWeapon2 != null)
+        {
+            lootService.PlaceStartingLoot(supplyCache, mythWeapon2);
+        }
+
+        if (mythArmor != null)
+        {
+            lootService.PlaceStartingLoot(supplyCache, mythArmor);
+        }
     }
 
     /// <summary>
