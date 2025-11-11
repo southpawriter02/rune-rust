@@ -217,8 +217,8 @@ class Program
         var selectedIndex = saveChoices.IndexOf(choice);
         var selectedSave = saves[selectedIndex];
 
-        // Load the game (including equipment and room items - v0.3)
-        var (loadedPlayer, loadedWorldState, roomItemsJson) = _saveRepository.LoadGame(selectedSave.CharacterName);
+        // Load the game (including equipment, room items, and NPC states - v0.3, v0.8)
+        var (loadedPlayer, loadedWorldState, roomItemsJson, npcStatesJson) = _saveRepository.LoadGame(selectedSave.CharacterName);
 
         if (loadedPlayer == null || loadedWorldState == null)
         {
@@ -240,6 +240,12 @@ class Program
         if (!string.IsNullOrEmpty(roomItemsJson))
         {
             _saveRepository.RestoreRoomItems(_gameState.World, roomItemsJson);
+        }
+
+        // Restore NPC states (v0.8)
+        if (!string.IsNullOrEmpty(npcStatesJson))
+        {
+            _saveRepository.RestoreNPCStates(_gameState.World, npcStatesJson);
         }
 
         // Set current room
@@ -1183,15 +1189,25 @@ class Program
     }
 
     /// <summary>
-    /// [v0.4] Handle talking to Forlorn Scholar NPC
-    /// Requires WILL check (DC 4) to succeed
+    /// v0.8: Handle talking to NPCs with dialogue system
+    /// Supports both v0.4 legacy encounters and v0.8 dialogue trees
     /// </summary>
     static void HandleTalk()
     {
-        // Check if there's an NPC to talk to
-        if (!_gameState.CurrentRoom.HasTalkableNPC ||
-            _gameState.CurrentRoom.HasBeenCleared ||
-            _gameState.CurrentRoom.Enemies.Count == 0)
+        using RuneAndRust.Core.Dialogue;
+
+        // v0.4: Handle legacy Forlorn Scholar encounter first
+        if (_gameState.CurrentRoom.HasTalkableNPC &&
+            !_gameState.CurrentRoom.HasTalkedToNPC &&
+            !_gameState.CurrentRoom.HasBeenCleared &&
+            _gameState.CurrentRoom.Enemies.Count > 0)
+        {
+            HandleForlornScholar();
+            return;
+        }
+
+        // v0.8: Check for NPCs in room
+        if (_gameState.CurrentRoom.NPCs.Count == 0)
         {
             AnsiConsole.MarkupLine("[red]There's no one here to talk to.[/]");
             AnsiConsole.WriteLine();
@@ -1200,17 +1216,162 @@ class Program
             return;
         }
 
-        // Check if already talked
-        if (_gameState.CurrentRoom.HasTalkedToNPC)
+        // Select NPC to talk to
+        NPC? selectedNPC = null;
+        var aliveNPCs = _gameState.CurrentRoom.NPCs.Where(n => n.IsAlive).ToList();
+
+        if (aliveNPCs.Count == 0)
         {
-            AnsiConsole.MarkupLine("[red]You've already attempted to negotiate here.[/]");
+            AnsiConsole.MarkupLine("[red]There's no one alive here to talk to.[/]");
+            AnsiConsole.WriteLine();
+            AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+            Console.ReadLine();
+            return;
+        }
+        else if (aliveNPCs.Count == 1)
+        {
+            selectedNPC = aliveNPCs[0];
+        }
+        else
+        {
+            var npcNames = aliveNPCs.Select(n => n.Name).ToList();
+            var choice = AnsiConsole.Prompt(
+                new SelectionPrompt<string>()
+                    .Title("[yellow]Who do you want to talk to?[/]")
+                    .AddChoices(npcNames)
+            );
+            selectedNPC = aliveNPCs.First(n => n.Name == choice);
+        }
+
+        if (selectedNPC == null)
+        {
+            return;
+        }
+
+        // Update NPC disposition based on reputation
+        _gameState.NPCService.UpdateDisposition(selectedNPC, _gameState.Player);
+
+        // Check if NPC is hostile
+        if (_gameState.NPCService.IsHostile(selectedNPC))
+        {
+            AnsiConsole.MarkupLine($"[red]{selectedNPC.Name} is hostile and refuses to talk![/]");
             AnsiConsole.WriteLine();
             AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
             Console.ReadLine();
             return;
         }
 
-        // Mark as talked (can only attempt once)
+        // First encounter greeting
+        if (!selectedNPC.HasBeenMet)
+        {
+            _gameState.NPCService.MarkAsMet(selectedNPC);
+            AnsiConsole.WriteLine();
+            AnsiConsole.MarkupLine($"[cyan]{selectedNPC.Name}:[/] \"{selectedNPC.InitialGreeting.EscapeMarkup()}\"");
+            AnsiConsole.WriteLine();
+            System.Threading.Thread.Sleep(1000);
+        }
+
+        // Start dialogue
+        var dialogueNode = _gameState.DialogueService.StartConversation(selectedNPC, _gameState.Player);
+        if (dialogueNode == null)
+        {
+            AnsiConsole.MarkupLine($"[red]{selectedNPC.Name} has nothing more to say.[/]");
+            AnsiConsole.WriteLine();
+            AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+            Console.ReadLine();
+            return;
+        }
+
+        // Update quest objectives for talking to NPC
+        var talkMessages = _gameState.QuestService.OnNPCTalk(selectedNPC.Id, _gameState.Player);
+        foreach (var msg in talkMessages)
+        {
+            AnsiConsole.MarkupLine($"[yellow]{msg.EscapeMarkup()}[/]");
+        }
+        if (talkMessages.Count > 0)
+        {
+            AnsiConsole.WriteLine();
+        }
+
+        // Dialogue loop
+        while (dialogueNode != null && !dialogueNode.EndsConversation)
+        {
+            AnsiConsole.WriteLine();
+            AnsiConsole.MarkupLine($"[cyan]{selectedNPC.Name}:[/] \"{dialogueNode.Text.EscapeMarkup()}\"");
+            AnsiConsole.WriteLine();
+
+            var options = _gameState.DialogueService.GetAvailableOptions(dialogueNode, _gameState.Player);
+            if (options.Count == 0)
+            {
+                AnsiConsole.MarkupLine("[dim](End of conversation)[/]");
+                break;
+            }
+
+            var optionTexts = new List<string>();
+            for (int i = 0; i < options.Count; i++)
+            {
+                var opt = options[i];
+                var skillTag = opt.SkillCheck != null ?
+                    _gameState.DialogueService.FormatSkillCheckTag(opt.SkillCheck) + " " : "";
+                optionTexts.Add($"{skillTag}{opt.Text}");
+            }
+
+            var choice = AnsiConsole.Prompt(
+                new SelectionPrompt<string>()
+                    .Title("[yellow]Choose your response:[/]")
+                    .AddChoices(optionTexts)
+            );
+
+            int choiceIndex = optionTexts.IndexOf(choice);
+            var selectedOption = options[choiceIndex];
+            var (nextNode, outcome) = _gameState.DialogueService.SelectOption(selectedOption, _gameState.Player);
+
+            // Process outcome
+            if (outcome != null)
+            {
+                var outcomeMessages = _gameState.DialogueService.ProcessOutcome(outcome, _gameState.Player, selectedNPC);
+                if (outcomeMessages.Count > 0)
+                {
+                    AnsiConsole.WriteLine();
+                    foreach (var msg in outcomeMessages)
+                    {
+                        AnsiConsole.MarkupLine($"[yellow]{msg.EscapeMarkup()}[/]");
+                    }
+                }
+
+                // Handle quest-related outcomes
+                if (outcome.Type == OutcomeType.QuestGiven && !string.IsNullOrEmpty(outcome.Data))
+                {
+                    if (_gameState.QuestService.AcceptQuest(outcome.Data, _gameState.Player))
+                    {
+                        var quest = _gameState.QuestService.GetQuest(outcome.Data);
+                        AnsiConsole.MarkupLine($"[green]Quest accepted: {quest?.Title.EscapeMarkup() ?? outcome.Data.EscapeMarkup()}[/]");
+                    }
+                }
+                else if (outcome.Type == OutcomeType.QuestComplete && !string.IsNullOrEmpty(outcome.Data))
+                {
+                    var completionMessages = _gameState.QuestService.CompleteQuest(outcome.Data, _gameState.Player);
+                    foreach (var msg in completionMessages)
+                    {
+                        AnsiConsole.MarkupLine($"[green]{msg.EscapeMarkup()}[/]");
+                    }
+                }
+            }
+
+            dialogueNode = nextNode;
+        }
+
+        _gameState.DialogueService.EndConversation();
+        AnsiConsole.WriteLine();
+        AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+        Console.ReadLine();
+    }
+
+    /// <summary>
+    /// v0.4: Handle legacy Forlorn Scholar encounter
+    /// </summary>
+    static void HandleForlornScholar()
+    {
         _gameState.CurrentRoom.HasTalkedToNPC = true;
 
         AnsiConsole.WriteLine();
@@ -1219,16 +1380,14 @@ class Program
         AnsiConsole.WriteLine();
         System.Threading.Thread.Sleep(1500);
 
-        // Roll WILL check (DC 4)
         var willValue = _gameState.Player.Attributes.Will;
         var result = _diceService.Roll(willValue);
 
         UIHelper.DisplayDiceRoll(result, "WILL Check");
         AnsiConsole.WriteLine();
 
-        if (result.Successes >= 4) // DC 4
+        if (result.Successes >= 4)
         {
-            // Success - peaceful resolution
             AnsiConsole.MarkupLine("[green]✓ Success![/] The Forlorn Scholar recognizes you as an ally.");
             AnsiConsole.WriteLine();
             AnsiConsole.MarkupLine("[cyan]The data-ghost speaks in a crackling, distorted voice:[/]");
@@ -1238,17 +1397,13 @@ class Program
             AnsiConsole.WriteLine();
             AnsiConsole.MarkupLine("[dim]The Scholar fades, leaving behind a token of knowledge.[/]");
 
-            // Clear room without combat
             _gameState.ClearCurrentRoom();
 
-            // Award Legend for peaceful resolution (same as combat victory)
             var legendGain = _gameState.CurrentRoom.Enemies[0].LegendValue;
-            _gameState.Player.Legend += legendGain;
+            _gameState.Player.CurrentLegend += legendGain;
             AnsiConsole.MarkupLine($"[yellow]+ {legendGain} Legend[/] (Peaceful Resolution)");
 
-            // Give loot reward (Optimized-tier for peaceful resolution)
-            var lootService = new LootService();
-            var reward = lootService.CreatePuzzleReward(_gameState.Player.Class);
+            var reward = _lootService.CreatePuzzleReward(_gameState.Player.Class);
             if (reward != null)
             {
                 _gameState.CurrentRoom.ItemsOnGround.Add(reward);
@@ -1261,7 +1416,6 @@ class Program
         }
         else
         {
-            // Failure - combat is triggered
             AnsiConsole.MarkupLine("[red]✗ Failure![/] The Forlorn Scholar does not understand. It turns hostile!");
             AnsiConsole.WriteLine();
             AnsiConsole.MarkupLine("[dim]Communication has failed. Combat is inevitable.[/]");
@@ -1269,7 +1423,6 @@ class Program
             AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to begin combat...[/]");
             Console.ReadLine();
 
-            // Start combat
             var canFlee = !_gameState.CurrentRoom.IsBossRoom;
             _gameState.Combat = _combatEngine.InitializeCombat(
                 _gameState.Player,
