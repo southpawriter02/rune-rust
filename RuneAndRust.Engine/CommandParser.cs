@@ -36,7 +36,11 @@ public enum CommandType
     // v0.8 - NPC & Quest System
     Quests,
     Quest,
-    Reputation
+    Reputation,
+    // v0.9 - Merchant System
+    Shop,
+    Buy,
+    Sell
 }
 
 public class ParsedCommand
@@ -141,6 +145,15 @@ public class CommandParser
         { "rep", CommandType.Reputation },
         { "faction", CommandType.Reputation },
         { "factions", CommandType.Reputation },
+
+        // Merchant System (v0.9)
+        { "shop", CommandType.Shop },
+        { "browse", CommandType.Shop },
+        { "inventory", CommandType.Shop }, // Can also show merchant inventory in context
+        { "buy", CommandType.Buy },
+        { "purchase", CommandType.Buy },
+        { "sell", CommandType.Sell },
+        { "trade", CommandType.Sell },
 
         // Utility
         { "help", CommandType.Help },
