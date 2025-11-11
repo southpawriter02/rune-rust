@@ -36,7 +36,11 @@ public enum CommandType
     // v0.8 - NPC & Quest System
     Quests,
     Quest,
-    Reputation
+    Reputation,
+    // v0.9 - Merchant System
+    Shop,
+    Buy,
+    Sell
 }
 
 public class ParsedCommand
@@ -141,6 +145,15 @@ public class CommandParser
         { "rep", CommandType.Reputation },
         { "faction", CommandType.Reputation },
         { "factions", CommandType.Reputation },
+
+        // Merchant System (v0.9)
+        { "shop", CommandType.Shop },
+        { "browse", CommandType.Shop },
+        { "inventory", CommandType.Shop }, // Can also show merchant inventory in context
+        { "buy", CommandType.Buy },
+        { "purchase", CommandType.Buy },
+        { "sell", CommandType.Sell },
+        { "trade", CommandType.Sell },
 
         // Utility
         { "help", CommandType.Help },
@@ -290,11 +303,20 @@ COMBAT COMMANDS:
 PUZZLE COMMANDS:
   solve, analyze       - Attempt to solve a puzzle
 
-NPC INTERACTION (v0.4):
-  talk, speak          - Attempt to negotiate with NPCs (Forlorn Scholar)
+NPC INTERACTION (v0.4, v0.8):
+  talk, speak          - Talk to NPCs and access dialogue
+  quests, questlog     - View all active and completed quests
+  quest [quest name]   - View details of a specific quest
+  reputation, rep      - View faction reputation standings
 
 TRAUMA ECONOMY (v0.5):
   rest, sleep          - Rest at Sanctuary to recover Stress (Corruption persists)
+
+MERCHANT SYSTEM (v0.9):
+  shop, browse         - View merchant's inventory with prices
+  buy [item name]      - Purchase an item from a merchant
+  sell [item name]     - Sell equipment or materials to a merchant
+  sell                 - View all items you can sell with prices
 
 OTHER COMMANDS:
   help, h, ?           - Show this help text

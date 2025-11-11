@@ -6,17 +6,19 @@ using Serilog;
 namespace RuneAndRust.Engine;
 
 /// <summary>
-/// Manages quest lifecycle and tracking (v0.8)
+/// Manages quest lifecycle and tracking (v0.8, v0.9)
 /// </summary>
 public class QuestService
 {
     private static readonly ILogger _log = Log.ForContext<QuestService>();
     private readonly Dictionary<string, Quest> _questDatabase = new();
     private readonly string _questDataPath;
+    private readonly CurrencyService? _currencyService; // v0.9 - optional for backward compatibility
 
-    public QuestService(string dataPath = "Data/Quests")
+    public QuestService(string dataPath = "Data/Quests", CurrencyService? currencyService = null)
     {
         _questDataPath = dataPath;
+        _currencyService = currencyService; // v0.9
     }
 
     /// <summary>
@@ -309,6 +311,14 @@ public class QuestService
             messages.AddRange(log);
             _log.Information("Quest reward granted: Faction={Faction}, ReputationChange={Change}",
                 reward.Faction.Value, reward.ReputationChange);
+        }
+
+        // Grant currency (v0.9)
+        if (reward.Currency > 0 && _currencyService != null)
+        {
+            _currencyService.AddCurrency(player, reward.Currency, "Quest completion");
+            messages.Add($"[Reward] +{_currencyService.GetCurrencyDisplay(reward.Currency)}");
+            _log.Information("Quest reward granted: Currency={Currency}", reward.Currency);
         }
 
         return messages;

@@ -37,8 +37,11 @@ public class CharacterFactory
         // [v0.5] Add heretical abilities (available to all classes)
         AddHereticalAbilities(character);
 
-        _log.Information("Character created successfully: Name={Name}, Class={Class}, HP={HP}, Stamina={Stamina}, Abilities={AbilityCount}",
-            character.Name, character.Class, character.HP, character.Stamina, character.Abilities.Count);
+        // [v0.9] Set starting currency
+        character.Currency = 50; // Starting Dvergr Cogs
+
+        _log.Information("Character created successfully: Name={Name}, Class={Class}, HP={HP}, Stamina={Stamina}, Currency={Currency}, Abilities={AbilityCount}",
+            character.Name, character.Class, character.HP, character.Stamina, character.Currency, character.Abilities.Count);
 
         return character;
     }

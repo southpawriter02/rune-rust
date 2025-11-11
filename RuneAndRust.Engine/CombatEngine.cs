@@ -12,8 +12,9 @@ public class CombatEngine
     private readonly EquipmentService _equipmentService;
     private readonly HazardService _hazardService; // [v0.6]
     private readonly PerformanceService _performanceService; // [v0.7]
+    private readonly CurrencyService _currencyService; // [v0.9]
 
-    public CombatEngine(DiceService diceService, SagaService sagaService, LootService lootService, EquipmentService equipmentService, HazardService hazardService)
+    public CombatEngine(DiceService diceService, SagaService sagaService, LootService lootService, EquipmentService equipmentService, HazardService hazardService, CurrencyService currencyService)
     {
         _diceService = diceService;
         _sagaService = sagaService;
@@ -21,6 +22,7 @@ public class CombatEngine
         _equipmentService = equipmentService;
         _hazardService = hazardService; // [v0.6]
         _performanceService = new PerformanceService(); // [v0.7]
+        _currencyService = currencyService; // [v0.9]
     }
 
     /// <summary>
@@ -1107,8 +1109,11 @@ public class CombatEngine
         combatState.AddLogEntry("=== LOOT ===");
 
         bool anyLoot = false;
+        int totalCurrency = 0;
+
         foreach (var enemy in combatState.Enemies.Where(e => !e.IsAlive))
         {
+            // Generate equipment loot
             var loot = _lootService.GenerateLoot(enemy, combatState.Player);
             if (loot != null)
             {
@@ -1116,15 +1121,48 @@ public class CombatEngine
                 combatState.AddLogEntry($"[yellow]{enemy.Name}[/] dropped: [bold]{loot.GetDisplayName()}[/]");
                 anyLoot = true;
             }
+
+            // Generate currency drop (v0.9)
+            int currencyDrop = _lootService.GenerateCurrencyDrop(enemy);
+            if (currencyDrop > 0)
+            {
+                _currencyService.AddCurrency(combatState.Player, currencyDrop, $"Enemy loot: {enemy.Name}");
+                totalCurrency += currencyDrop;
+                anyLoot = true;
+            }
+
+            // Generate material drops (v0.9)
+            var materialDrops = _lootService.GenerateMaterialDrops(enemy);
+            foreach (var drop in materialDrops)
+            {
+                if (combatState.Player.CraftingComponents.ContainsKey(drop.Key))
+                {
+                    combatState.Player.CraftingComponents[drop.Key] += drop.Value;
+                }
+                else
+                {
+                    combatState.Player.CraftingComponents[drop.Key] = drop.Value;
+                }
+
+                var materialInfo = CraftingComponent.Create(drop.Key);
+                combatState.AddLogEntry($"[cyan]+ {materialInfo.Name} x{drop.Value}[/]");
+                anyLoot = true;
+            }
+        }
+
+        // Display currency gained
+        if (totalCurrency > 0)
+        {
+            combatState.AddLogEntry($"[green]⚙ Gained {_currencyService.GetCurrencyDisplay(totalCurrency)}[/]");
         }
 
         if (!anyLoot)
         {
             combatState.AddLogEntry("[dim]No loot dropped.[/]");
         }
-        else
+        else if (combatState.Enemies.Any(e => !e.IsAlive && e.Type != EnemyType.RuinWarden)) // Don't show pickup hint for boss (no items on ground after boss fight)
         {
-            combatState.AddLogEntry("[dim]Use 'pickup [item]' to collect loot.[/]");
+            combatState.AddLogEntry("[dim]Use 'pickup [item]' to collect equipment loot.[/]");
         }
     }
 

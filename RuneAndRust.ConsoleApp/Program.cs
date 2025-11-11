@@ -17,7 +17,11 @@ class Program
     private static EquipmentService _equipmentService = new();
     private static TraumaEconomyService _traumaService = new(); // [v0.6]
     private static HazardService _hazardService = new(_diceService, _traumaService); // [v0.6]
-    private static CombatEngine _combatEngine = new(_diceService, _sagaService, _lootService, _equipmentService, _hazardService);
+    private static CurrencyService _currencyService = new(); // [v0.9]
+    private static MerchantService _merchantService = new(); // [v0.9]
+    private static PricingService _pricingService = new(); // [v0.9]
+    private static TransactionService _transactionService = new(_currencyService, _pricingService); // [v0.9]
+    private static CombatEngine _combatEngine = new(_diceService, _sagaService, _lootService, _equipmentService, _hazardService, _currencyService);
     private static EnemyAI _enemyAI = new(_diceService);
     private static SaveRepository _saveRepository = new();
 
@@ -122,7 +126,10 @@ class Program
     {
         try
         {
-            Log.Information("Loading v0.8 NPC & Dialogue systems...");
+            Log.Information("Loading v0.8 NPC & Dialogue systems and v0.9 Economy system...");
+
+            // v0.9: Initialize Currency Service for Quest rewards
+            _gameState.SetCurrencyService(_currencyService);
 
             // Load NPC, Dialogue, and Quest databases
             _gameState.NPCService.LoadNPCDatabase();
@@ -132,7 +139,7 @@ class Program
             // Place NPCs in designated rooms
             PlaceNPCsInWorld();
 
-            Log.Information("v0.8 systems loaded successfully");
+            Log.Information("v0.8 and v0.9 systems loaded successfully");
         }
         catch (Exception ex)
         {
@@ -143,12 +150,13 @@ class Program
     }
 
     /// <summary>
-    /// v0.8: Place NPCs in their designated rooms
+    /// v0.8, v0.9: Place NPCs and Merchants in their designated rooms
     /// </summary>
     static void PlaceNPCsInWorld()
     {
         var npcPlacements = new Dictionary<int, string>
         {
+            // Regular NPCs
             { 2, "sigrun_scavenger" },
             { 5, "kjartan_smith" },
             { 8, "bjorn_exile" },
@@ -156,7 +164,12 @@ class Program
             { 12, "thorvald_guard" },
             { 15, "gunnar_raider" },
             { 18, "rolf_hermit" },
-            { 22, "eydis_survivor" }
+            { 22, "eydis_survivor" },
+
+            // v0.9: Merchants
+            { 7, "kjartan_merchant" },    // General Merchant (MidgardCombine)
+            { 14, "ragnhild_apothecary" }, // Apothecary (Independents)
+            { 19, "ulf_scrapper" }          // Scrap Trader (RustClans)
         };
 
         foreach (var (roomId, npcId) in npcPlacements)
@@ -168,6 +181,15 @@ class Program
                 if (room != null)
                 {
                     room.NPCs.Add(npc);
+
+                    // v0.9: Initialize merchant inventories
+                    if (npc is Merchant merchant)
+                    {
+                        _merchantService.InitializeCoreStock(merchant);
+                        _merchantService.RestockInventory(merchant, _gameState.CurrentDateTime);
+                        Log.Information("Initialized merchant: {MerchantName} ({MerchantType}) in Room {RoomId}",
+                            merchant.Name, merchant.Type, roomId);
+                    }
                 }
             }
         }
@@ -653,6 +675,18 @@ class Program
 
                 case CommandType.Reputation:
                     HandleReputation();
+                    break;
+
+                case CommandType.Shop:
+                    HandleShop();
+                    break;
+
+                case CommandType.Buy:
+                    HandleBuy(command.Arguments);
+                    break;
+
+                case CommandType.Sell:
+                    HandleSell(command.Arguments);
                     break;
 
                 case CommandType.Attack:
@@ -2558,6 +2592,240 @@ class Program
 
         AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
         Console.ReadLine();
+    }
+
+    /// <summary>
+    /// v0.9: Handle shop command - browse merchant inventory
+    /// </summary>
+    static void HandleShop()
+    {
+        var merchant = _transactionService.FindMerchantInRoom(_gameState.CurrentRoom);
+
+        if (merchant == null)
+        {
+            AnsiConsole.MarkupLine("[yellow]There is no merchant here.[/]");
+            return;
+        }
+
+        AnsiConsole.Clear();
+        AnsiConsole.WriteLine();
+
+        var rule = new Rule($"[bold cyan]{merchant.Name}'s Shop[/]")
+        {
+            Justification = Justify.Center
+        };
+        AnsiConsole.Write(rule);
+        AnsiConsole.WriteLine();
+
+        // Show merchant greeting and disposition
+        _gameState.NPCService.UpdateDisposition(merchant, _gameState.Player);
+        var disposition = merchant.GetDispositionTier();
+        var dispColor = disposition switch
+        {
+            "Friendly" => "green",
+            "Neutral-Positive" or "Neutral" => "yellow",
+            _ => "red"
+        };
+        AnsiConsole.MarkupLine($"[dim]{merchant.InitialGreeting}[/]");
+        AnsiConsole.MarkupLine($"[dim]Disposition: [{dispColor}]{disposition}[/][/]");
+        AnsiConsole.WriteLine();
+
+        // Check and restock if needed
+        _merchantService.CheckAndRestock(merchant, _gameState.CurrentDateTime);
+
+        // Display inventory with prices
+        var shopListing = _merchantService.GetShopListingWithPrices(merchant, _gameState.Player, _pricingService);
+
+        if (shopListing.Count == 0)
+        {
+            AnsiConsole.MarkupLine("[yellow]The merchant has nothing to sell right now.[/]");
+        }
+        else
+        {
+            AnsiConsole.MarkupLine("[bold]Available Items:[/]");
+            AnsiConsole.WriteLine();
+            foreach (var item in shopListing)
+            {
+                AnsiConsole.MarkupLine(item);
+            }
+            AnsiConsole.WriteLine();
+            AnsiConsole.MarkupLine("[dim]Use 'buy <item name>' to purchase an item[/]");
+        }
+
+        AnsiConsole.WriteLine();
+        AnsiConsole.MarkupLine($"[dim]Your currency: [green]{_gameState.Player.Currency} Cogs ⚙[/][/]");
+        AnsiConsole.WriteLine();
+        AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+        Console.ReadLine();
+    }
+
+    /// <summary>
+    /// v0.9: Handle buy command - purchase item from merchant
+    /// </summary>
+    static void HandleBuy(List<string> arguments)
+    {
+        var merchant = _transactionService.FindMerchantInRoom(_gameState.CurrentRoom);
+
+        if (merchant == null)
+        {
+            AnsiConsole.MarkupLine("[yellow]There is no merchant here.[/]");
+            return;
+        }
+
+        if (arguments.Count == 0)
+        {
+            AnsiConsole.MarkupLine("[yellow]What do you want to buy? Usage: buy <item name>[/]");
+            return;
+        }
+
+        // Join arguments to form item name
+        string itemName = string.Join(" ", arguments).ToLower().Trim();
+
+        // Find item in merchant inventory (case-insensitive partial match)
+        var shopItem = merchant.Inventory.Items.FirstOrDefault(i =>
+            i.ItemId.ToLower().Contains(itemName) || itemName.Contains(i.ItemId.ToLower()));
+
+        if (shopItem == null)
+        {
+            AnsiConsole.MarkupLine($"[yellow]{merchant.Name} doesn't have '{itemName}' in stock.[/]");
+            return;
+        }
+
+        // Process transaction
+        var result = _transactionService.BuyItem(merchant, shopItem, _gameState.Player);
+
+        if (result.Success)
+        {
+            AnsiConsole.MarkupLine($"[green]✓ {result.Message}[/]");
+
+            // Add purchased item to player inventory based on type
+            if (result.ItemType == "Equipment")
+            {
+                var equipment = EquipmentDatabase.GetByName(result.ItemId);
+                if (equipment != null)
+                {
+                    _gameState.Player.Inventory.Add(equipment);
+                }
+            }
+            else if (result.ItemType == "Component")
+            {
+                // Parse ComponentType from ItemId
+                if (Enum.TryParse<ComponentType>(result.ItemId, out var componentType))
+                {
+                    if (_gameState.Player.CraftingComponents.ContainsKey(componentType))
+                        _gameState.Player.CraftingComponents[componentType] += result.Quantity;
+                    else
+                        _gameState.Player.CraftingComponents[componentType] = result.Quantity;
+                }
+            }
+            // TODO: Handle Consumable items when implemented
+        }
+        else
+        {
+            AnsiConsole.MarkupLine($"[red]✗ {result.Message}[/]");
+        }
+    }
+
+    /// <summary>
+    /// v0.9: Handle sell command - sell item to merchant
+    /// </summary>
+    static void HandleSell(List<string> arguments)
+    {
+        var merchant = _transactionService.FindMerchantInRoom(_gameState.CurrentRoom);
+
+        if (merchant == null)
+        {
+            AnsiConsole.MarkupLine("[yellow]There is no merchant here.[/]");
+            return;
+        }
+
+        if (arguments.Count == 0)
+        {
+            // Show sellable items
+            AnsiConsole.Clear();
+            AnsiConsole.WriteLine();
+
+            var rule = new Rule($"[bold cyan]Sell to {merchant.Name}[/]")
+            {
+                Justification = Justify.Center
+            };
+            AnsiConsole.Write(rule);
+            AnsiConsole.WriteLine();
+
+            var sellListing = _merchantService.GetSellListingForPlayerItems(merchant, _gameState.Player, _pricingService);
+
+            if (sellListing.Count == 0)
+            {
+                AnsiConsole.MarkupLine("[yellow]You have nothing to sell.[/]");
+            }
+            else
+            {
+                AnsiConsole.MarkupLine("[bold]Items you can sell:[/]");
+                AnsiConsole.WriteLine();
+                foreach (var item in sellListing)
+                {
+                    AnsiConsole.MarkupLine(item);
+                }
+                AnsiConsole.WriteLine();
+                AnsiConsole.MarkupLine("[dim]Use 'sell <item name>' to sell an item[/]");
+            }
+
+            AnsiConsole.WriteLine();
+            AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+            Console.ReadLine();
+            return;
+        }
+
+        // Join arguments to form item name
+        string itemName = string.Join(" ", arguments).ToLower().Trim();
+
+        // Try to find equipment first
+        var equipment = _gameState.Player.Inventory.FirstOrDefault(e =>
+            e.Name.ToLower().Contains(itemName) || itemName.Contains(e.Name.ToLower()));
+
+        if (equipment != null)
+        {
+            var result = _transactionService.SellEquipment(merchant, equipment, _gameState.Player);
+            if (result.Success)
+            {
+                AnsiConsole.MarkupLine($"[green]✓ {result.Message}[/]");
+            }
+            else
+            {
+                AnsiConsole.MarkupLine($"[red]✗ {result.Message}[/]");
+            }
+            return;
+        }
+
+        // Try to find component
+        foreach (var (componentType, quantity) in _gameState.Player.CraftingComponents)
+        {
+            var component = CraftingComponent.Create(componentType);
+            if (component.Name.ToLower().Contains(itemName) || itemName.Contains(component.Name.ToLower()))
+            {
+                // Ask how many to sell
+                int sellQuantity = 1;
+                if (quantity > 1)
+                {
+                    AnsiConsole.MarkupLine($"[dim]You have {quantity} {component.Name}. How many do you want to sell?[/]");
+                    var input = AnsiConsole.Ask<int>("[cyan]Quantity:[/]", 1);
+                    sellQuantity = Math.Clamp(input, 1, quantity);
+                }
+
+                var result = _transactionService.SellComponents(merchant, componentType, sellQuantity, _gameState.Player);
+                if (result.Success)
+                {
+                    AnsiConsole.MarkupLine($"[green]✓ {result.Message}[/]");
+                }
+                else
+                {
+                    AnsiConsole.MarkupLine($"[red]✗ {result.Message}[/]");
+                }
+                return;
+            }
+        }
+
+        AnsiConsole.MarkupLine($"[yellow]You don't have '{itemName}' to sell.[/]");
     }
 
     /// <summary>

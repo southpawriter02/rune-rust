@@ -17,6 +17,7 @@
     "Experience": 150,
     "ItemIds": ["reinforced_gloves"],
     "ReputationChange": 20,
-    "Faction": "MidgardCombine"
+    "Faction": "MidgardCombine",
+    "Currency": 100
   }
 }

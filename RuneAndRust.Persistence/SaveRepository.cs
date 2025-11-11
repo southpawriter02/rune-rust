@@ -68,6 +68,7 @@ public class SaveRepository
         // Add Adept status effect columns (migration for v0.7)
         // Add consumables and crafting components columns (migration for v0.7)
         // Add NPC & Quest columns (migration for v0.8)
+        // Add currency column (migration for v0.9)
         var alterCommands = new[]
         {
             "ALTER TABLE saves ADD COLUMN equipped_weapon_json TEXT",
@@ -92,7 +93,8 @@ public class SaveRepository
             "ALTER TABLE saves ADD COLUMN faction_reputations_json TEXT DEFAULT '{}'",
             "ALTER TABLE saves ADD COLUMN active_quests_json TEXT DEFAULT '[]'",
             "ALTER TABLE saves ADD COLUMN completed_quests_json TEXT DEFAULT '[]'",
-            "ALTER TABLE saves ADD COLUMN npc_states_json TEXT DEFAULT '[]'"
+            "ALTER TABLE saves ADD COLUMN npc_states_json TEXT DEFAULT '[]'",
+            "ALTER TABLE saves ADD COLUMN currency INTEGER DEFAULT 0"
         };
 
         foreach (var alterSql in alterCommands)
@@ -190,6 +192,7 @@ public class SaveRepository
             MaxHP = player.MaxHP,
             CurrentStamina = player.Stamina,
             MaxStamina = player.MaxStamina,
+            Currency = player.Currency, // v0.9
             PsychicStress = player.PsychicStress,
             Corruption = player.Corruption,
             RoomsExploredSinceRest = player.RoomsExploredSinceRest,
@@ -228,7 +231,7 @@ public class SaveRepository
             INSERT OR REPLACE INTO saves (
                 character_name, class, specialization, current_milestone, current_legend, progression_points,
                 might, finesse, wits, will, sturdiness,
-                current_hp, max_hp, current_stamina, max_stamina,
+                current_hp, max_hp, current_stamina, max_stamina, currency,
                 psychic_stress, corruption, rooms_explored_since_rest,
                 vulnerable_turns, analyzed_turns, seized_turns, is_performing, performing_turns, current_performance,
                 inspired_turns, silenced_turns, temp_hp,
@@ -240,7 +243,7 @@ public class SaveRepository
             ) VALUES (
                 $name, $class, $spec, $milestone, $legend, $pp,
                 $might, $finesse, $wits, $will, $sturdiness,
-                $hp, $maxhp, $stamina, $maxstamina,
+                $hp, $maxhp, $stamina, $maxstamina, $currency,
                 $stress, $corruption, $roomsrest,
                 $vulnturns, $analyzedturns, $seizedturns, $isperforming, $perfturns, $perfname,
                 $inspiredturns, $silencedturns, $temphp,
@@ -267,6 +270,7 @@ public class SaveRepository
         command.Parameters.AddWithValue("$maxhp", saveData.MaxHP);
         command.Parameters.AddWithValue("$stamina", saveData.CurrentStamina);
         command.Parameters.AddWithValue("$maxstamina", saveData.MaxStamina);
+        command.Parameters.AddWithValue("$currency", saveData.Currency); // v0.9
         command.Parameters.AddWithValue("$stress", saveData.PsychicStress);
         command.Parameters.AddWithValue("$corruption", saveData.Corruption);
         command.Parameters.AddWithValue("$roomsrest", saveData.RoomsExploredSinceRest);
@@ -360,6 +364,13 @@ public class SaveRepository
             saveData.Specialization = Enum.Parse<Specialization>(reader.GetString(reader.GetOrdinal("specialization")));
         }
         catch { saveData.Specialization = Specialization.None; }
+
+        // Load currency (v0.9) - handle missing column for backward compatibility
+        try
+        {
+            saveData.Currency = reader.GetInt32(reader.GetOrdinal("currency"));
+        }
+        catch { saveData.Currency = 0; }
 
         // Load trauma economy data (v0.5) - handle missing columns for backward compatibility
         try
@@ -506,6 +517,7 @@ public class SaveRepository
             MaxHP = saveData.MaxHP,
             Stamina = saveData.CurrentStamina,
             MaxStamina = saveData.MaxStamina,
+            Currency = saveData.Currency, // v0.9
             PsychicStress = saveData.PsychicStress,
             Corruption = saveData.Corruption,
             RoomsExploredSinceRest = saveData.RoomsExploredSinceRest,

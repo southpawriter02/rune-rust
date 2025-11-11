@@ -49,6 +49,7 @@ public static class UIHelper
         table.AddRow(hpBar);
         table.AddRow(staminaBar);
         table.AddRow($"[dim]AP:[/] {character.AP}");
+        table.AddRow($"[dim]Currency:[/] [green]{character.Currency} Cogs ⚙[/]"); // v0.9
 
         // Status Effects
         var statusEffects = new List<string>();
@@ -246,7 +247,7 @@ public static class UIHelper
             DisplayGroundItems(room);
         }
 
-        // Show NPCs in room (v0.8)
+        // Show NPCs in room (v0.8, v0.9)
         if (room.NPCs.Count > 0)
         {
             var aliveNPCs = room.NPCs.Where(npc => npc.IsAlive).ToList();
@@ -256,7 +257,23 @@ public static class UIHelper
                 foreach (var npc in aliveNPCs)
                 {
                     var hostileTag = npc.IsHostile ? "[red](HOSTILE)[/] " : "";
-                    AnsiConsole.MarkupLine($"  • {hostileTag}[cyan]{npc.Name.EscapeMarkup()}[/] [dim](use 'talk {npc.Name.ToLower()}')[/]");
+
+                    // v0.9: Special display for merchants
+                    if (npc is Merchant merchant)
+                    {
+                        var merchantType = merchant.Type switch
+                        {
+                            MerchantType.General => "General Merchant",
+                            MerchantType.Apothecary => "Apothecary",
+                            MerchantType.ScrapTrader => "Scrap Trader",
+                            _ => "Merchant"
+                        };
+                        AnsiConsole.MarkupLine($"  • [yellow]💰[/] [cyan]{npc.Name.EscapeMarkup()}[/] [dim]({merchantType}) (use 'shop' or 'talk')[/]");
+                    }
+                    else
+                    {
+                        AnsiConsole.MarkupLine($"  • {hostileTag}[cyan]{npc.Name.EscapeMarkup()}[/] [dim](use 'talk')[/]");
+                    }
                 }
             }
         }

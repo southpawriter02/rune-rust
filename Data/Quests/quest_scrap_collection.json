@@ -17,6 +17,7 @@
     "Experience": 100,
     "ItemIds": ["healing_poultice", "healing_poultice", "healing_poultice"],
     "ReputationChange": 15,
-    "Faction": "MidgardCombine"
+    "Faction": "MidgardCombine",
+    "Currency": 50
   }
 }
