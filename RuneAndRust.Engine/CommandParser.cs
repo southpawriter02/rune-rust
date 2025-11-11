@@ -20,7 +20,13 @@ public enum CommandType
     Spend,
     PP,
     Save,
-    Load
+    Load,
+    // Equipment commands (v0.3)
+    Equip,
+    Unequip,
+    Pickup,
+    Drop,
+    Compare
 }
 
 public class ParsedCommand
@@ -71,6 +77,19 @@ public class CommandParser
         { "inventory", CommandType.Inventory },
         { "inv", CommandType.Inventory },
         { "i", CommandType.Inventory },
+
+        // Equipment (v0.3)
+        { "equip", CommandType.Equip },
+        { "wear", CommandType.Equip },
+        { "wield", CommandType.Equip },
+        { "unequip", CommandType.Unequip },
+        { "remove", CommandType.Unequip },
+        { "pickup", CommandType.Pickup },
+        { "take", CommandType.Pickup },
+        { "get", CommandType.Pickup },
+        { "drop", CommandType.Drop },
+        { "compare", CommandType.Compare },
+        { "comp", CommandType.Compare },
 
         // Combat
         { "attack", CommandType.Attack },
@@ -170,6 +189,31 @@ public class CommandParser
             {
                 command.AbilityName = string.Join(" ", parts.Skip(1));
             }
+            // Handle "equip [item name]"
+            else if (commandType == CommandType.Equip && parts.Length > 1)
+            {
+                command.Target = string.Join(" ", parts.Skip(1));
+            }
+            // Handle "unequip [weapon|armor]"
+            else if (commandType == CommandType.Unequip && parts.Length > 1)
+            {
+                command.Target = string.Join(" ", parts.Skip(1));
+            }
+            // Handle "pickup [item name]" or "take [item name]"
+            else if (commandType == CommandType.Pickup && parts.Length > 1)
+            {
+                command.Target = string.Join(" ", parts.Skip(1));
+            }
+            // Handle "drop [item name]"
+            else if (commandType == CommandType.Drop && parts.Length > 1)
+            {
+                command.Target = string.Join(" ", parts.Skip(1));
+            }
+            // Handle "compare [item name]"
+            else if (commandType == CommandType.Compare && parts.Length > 1)
+            {
+                command.Target = string.Join(" ", parts.Skip(1));
+            }
         }
         else
         {
@@ -193,6 +237,13 @@ EXPLORATION COMMANDS:
   milestone, ms        - View milestone information
   spend, pp            - Spend Progression Points
   inventory, inv, i    - View your inventory
+
+EQUIPMENT COMMANDS (v0.3):
+  equip [item]         - Equip weapon or armor from inventory
+  unequip [slot]       - Unequip weapon or armor to inventory
+  pickup [item]        - Pick up item from ground
+  drop [item]          - Drop item from inventory to ground
+  compare [item]       - Compare item to currently equipped
 
 COMBAT COMMANDS:
   attack [target], a   - Attack an enemy
