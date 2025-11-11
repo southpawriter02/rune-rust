@@ -192,30 +192,55 @@ v0.4 expands the game from a linear 5-room dungeon to a 15-room experience with:
 
 ---
 
-## Phase 3: Special Mechanics (IN PROGRESS)
+## Phase 3: Special Mechanics ⚙️ IN PROGRESS
 
-### What Needs to Be Done
+### What's Been Implemented
 
-**Boss Selection System:**
+**Environmental Hazards:** ✅ COMPLETE
+- ✅ Unstable Reactors (Room 7)
+  - Deal 1d6 damage per turn during combat
+  - WITS check DC 3 to disable
+  - Hazard automatically disables when puzzle solved
+  - Warning displayed at combat start
+- ✅ Added hazard properties to Room class
+- ✅ Integrated with combat turn system
+- ✅ Per-turn damage application at end of each round
+
+**Puzzle System Updates:** ✅ COMPLETE
+- ✅ Updated AddPuzzleReward to accept room name
+- ✅ Room-specific success messages
+- ✅ Puzzles disable environmental hazards
+- ✅ Vault Corridor puzzle unlocks secret room
+
+**Combat System Integration:** ✅ COMPLETE
+- ✅ CombatState now holds CurrentRoom reference
+- ✅ InitializeCombat accepts room parameter
+- ✅ Environmental damage integrated with turn progression
+
+### What Still Needs to Be Done
+
+**Forlorn Scholar Talk Mechanic:**
+- ❌ Add "talk" command for Forlorn Scholar encounter
+- ❌ WILL check (DC 4) to negotiate
+- ❌ Peaceful resolution gives loot and hints
+- ❌ Failure forces combat
+
+**Loot Placement:**
+- ❌ Operations Center (Room 4): 2x Clan-Forged equipment cache
+- ❌ Secret Room (Room 13): Myth-Forged choice reward
+- ❌ Research Archives puzzle reward
+- ❌ Ammunition Forge puzzle reward
+
+**Boss Selection System (Optional):**
 - ❌ Add UI prompt in Vault Corridor
 - ❌ Display boss descriptions and difficulty
 - ❌ Lock opposite boss room when one is chosen
 
-**Forlorn Scholar Talk Mechanic:**
-- ❌ Add dialogue system
-- ❌ WILL check (DC 4) to negotiate
-- ❌ Peaceful resolution gives loot and hints
-
-**Environmental Hazards:**
-- ❌ Unstable Reactors (Room 7)
-  - Deal 1d6 damage per turn in combat
-  - WITS check DC 3 to disable
-  - Grant Optimized armor as reward
-
-**Summon Mechanics:**
+**Summon Mechanics (Future):**
 - ❌ Update combat system to handle mid-combat spawns
 - ❌ Aetheric Aberration can summon Scrap-Hounds and Blight-Drones
 - ❌ Summoned enemies join initiative order
+- Note: Currently placeholders with log messages
 
 ---
 
@@ -375,11 +400,27 @@ v0.4 expands the game from a linear 5-room dungeon to a 15-room experience with:
 - Balanced enemy stats (HP, attributes, damage)
 - Implemented phase-based AI for Aetheric Aberration
 
+**Phase 3 Complete (Environmental Hazards & Puzzles):**
+- Implemented environmental hazard system
+  - Added hazard properties to Room class
+  - Created Unstable Reactors in Ammunition Forge
+  - Hazards deal 1d6 damage per turn during combat
+  - Puzzles can disable hazards
+- Updated puzzle system
+  - AddPuzzleReward now accepts room name for context
+  - Room-specific success messages
+  - Vault Corridor puzzle unlocks secret room
+- Combat system integration
+  - CombatState holds CurrentRoom reference
+  - Environmental damage applied each turn
+  - Hazard warnings at combat start
+
 **Compatibility Fixes:**
 - Updated Program.cs to handle new boss rooms
 - Updated GameState.cs puzzle logic
 - Added backwards compatibility notes
 - Updated GameWorld helper methods
+- Updated combat initialization to pass current room
 
 ---
 
