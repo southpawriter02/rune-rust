@@ -391,9 +391,13 @@ class Program
             AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to begin combat...[/]");
             Console.ReadLine();
 
-            // Initialize combat
+            // Initialize combat (v0.4: pass room for environmental hazards)
             var canFlee = !_gameState.CurrentRoom.IsBossRoom;
-            _gameState.Combat = _combatEngine.InitializeCombat(_gameState.Player, _gameState.CurrentRoom.Enemies, canFlee);
+            _gameState.Combat = _combatEngine.InitializeCombat(
+                _gameState.Player,
+                _gameState.CurrentRoom.Enemies,
+                _gameState.CurrentRoom,
+                canFlee);
             _gameState.CurrentPhase = GamePhase.Combat;
             return;
         }
@@ -714,13 +718,27 @@ class Program
         if (result.Successes >= _gameState.CurrentRoom.PuzzleSuccessThreshold)
         {
             // Success!
-            AnsiConsole.MarkupLine("[green]✓ Success![/] You route the power correctly.");
-            AnsiConsole.MarkupLine("[green]The sealed door unlocks with a grinding hiss.[/]");
+            AnsiConsole.MarkupLine("[green]✓ Success![/] You solve the puzzle.");
+
+            // Room-specific success messages
+            if (_gameState.CurrentRoom.HasEnvironmentalHazard)
+            {
+                AnsiConsole.MarkupLine("[green]The unstable reactors power down safely.[/]");
+            }
+            else if (_gameState.CurrentRoom.Name == "Vault Corridor")
+            {
+                AnsiConsole.MarkupLine("[green]You notice a hidden door in the wall![/]");
+            }
+            else
+            {
+                AnsiConsole.MarkupLine("[green]The sealed terminal unlocks with a soft chime.[/]");
+            }
+
             _gameState.SolvePuzzle();
 
-            // Add puzzle reward (v0.3)
-            _gameState.World.AddPuzzleReward(_gameState.Player);
-            AnsiConsole.MarkupLine("[yellow]You find something valuable in the newly unlocked chamber![/]");
+            // Add puzzle reward (v0.4: pass room name for context-specific rewards)
+            _gameState.World.AddPuzzleReward(_gameState.CurrentRoom.Name, _gameState.Player);
+            AnsiConsole.MarkupLine("[yellow]You find something valuable![/]");
 
             _gameState.CurrentPhase = GamePhase.Exploration;
             AnsiConsole.WriteLine();

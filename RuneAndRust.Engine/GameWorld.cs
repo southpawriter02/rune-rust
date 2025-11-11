@@ -163,7 +163,12 @@ public class GameWorld
             {
                 EnemyFactory.CreateEnemy(EnemyType.BlightDrone),
                 EnemyFactory.CreateEnemy(EnemyType.BlightDrone)
-            }
+            },
+            // Environmental Hazard
+            HasEnvironmentalHazard = true,
+            IsHazardActive = true,
+            HazardDamagePerTurn = 6, // 1d6 damage per turn
+            HazardDescription = "Unstable reactors crackle with dangerous energy, filling the room with radiation."
         };
 
         // ====== WEST WING (Exploration Path) ======

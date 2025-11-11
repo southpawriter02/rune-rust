@@ -78,8 +78,13 @@ public class GameState
         CurrentRoom.IsPuzzleSolved = true;
         WorldState.PuzzleSolved = true;
 
-        // [v0.4] In the new system, most puzzles just give rewards
-        // Only the secret room puzzle unlocks a door
+        // [v0.4] Disable environmental hazards if present
+        if (CurrentRoom.HasEnvironmentalHazard)
+        {
+            CurrentRoom.IsHazardActive = false;
+        }
+
+        // [v0.4] Room-specific puzzle effects
         if (CurrentRoom.Name == "Vault Corridor")
         {
             World.UnlockSecretRoom();

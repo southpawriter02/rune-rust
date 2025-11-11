@@ -20,14 +20,15 @@ public class CombatEngine
     /// <summary>
     /// Initialize combat with the player and enemies, roll initiative
     /// </summary>
-    public CombatState InitializeCombat(PlayerCharacter player, List<Enemy> enemies, bool canFlee = true)
+    public CombatState InitializeCombat(PlayerCharacter player, List<Enemy> enemies, Room? currentRoom = null, bool canFlee = true)
     {
         var combatState = new CombatState
         {
             Player = player,
             Enemies = new List<Enemy>(enemies),
             IsActive = true,
-            CanFlee = canFlee
+            CanFlee = canFlee,
+            CurrentRoom = currentRoom
         };
 
         // Roll initiative for all participants
@@ -41,6 +42,14 @@ public class CombatEngine
             combatState.AddLogEntry($"  {name} (Initiative: {participant.InitiativeRoll})");
         }
         combatState.AddLogEntry("");
+
+        // [v0.4] Environmental hazard warning
+        if (currentRoom != null && currentRoom.HasEnvironmentalHazard && currentRoom.IsHazardActive)
+        {
+            combatState.AddLogEntry($"[WARNING] {currentRoom.HazardDescription}");
+            combatState.AddLogEntry($"  You will take {currentRoom.HazardDamagePerTurn} damage per turn!");
+            combatState.AddLogEntry("");
+        }
 
         return combatState;
     }
@@ -635,6 +644,30 @@ public class CombatEngine
                     enemy.IsStunned = false;
                 }
             }
+        }
+
+        // [v0.4] Apply environmental hazard damage at end of round
+        if (combatState.CurrentRoom != null &&
+            combatState.CurrentRoom.HasEnvironmentalHazard &&
+            combatState.CurrentRoom.IsHazardActive)
+        {
+            var hazardDamage = _diceService.RollDamage(1); // Roll 1d6 for hazard damage
+            if (hazardDamage >= combatState.CurrentRoom.HazardDamagePerTurn)
+            {
+                hazardDamage = combatState.CurrentRoom.HazardDamagePerTurn;
+            }
+
+            combatState.Player.HP -= hazardDamage;
+            combatState.AddLogEntry($"[HAZARD] Environmental hazard deals {hazardDamage} damage to {combatState.Player.Name}!");
+            combatState.AddLogEntry($"  {combatState.Player.Name} HP: {Math.Max(0, combatState.Player.HP)}/{combatState.Player.MaxHP}");
+
+            if (!combatState.Player.IsAlive)
+            {
+                combatState.AddLogEntry($"{combatState.Player.Name} has fallen!");
+                combatState.IsActive = false;
+            }
+
+            combatState.AddLogEntry("");
         }
 
         combatState.NextTurn();
