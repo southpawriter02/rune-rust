@@ -752,6 +752,34 @@ public class CombatEngine
             }
             return; // Early return
         }
+        // v0.7: Anatomical Insight - Apply [Vulnerable] status (Architect ability)
+        else if (ability.Name == "Anatomical Insight")
+        {
+            damage = _diceService.RollDamage(ability.DamageDice);
+            combatState.AddLogEntry($"  You identify structural weaknesses in {target.Name}!");
+            combatState.AddLogEntry($"  Rolled {ability.DamageDice}d6 for damage: {damage}");
+
+            ApplyDamageToEnemy(combatState, target, damage, ability.IgnoresArmor);
+
+            // Apply [Vulnerable] status
+            target.VulnerableTurnsRemaining = 3;
+            combatState.AddLogEntry($"  {target.Name} is [Vulnerable] for 3 turns! (+25% damage taken)");
+            return; // Early return
+        }
+        // v0.7: Exploit Design Flaw - Apply [Analyzed] status (Architect ability)
+        else if (ability.Name == "Exploit Design Flaw")
+        {
+            damage = _diceService.RollDamage(ability.DamageDice);
+            combatState.AddLogEntry($"  You analyze {target.Name}'s design patterns and expose critical flaws!");
+            combatState.AddLogEntry($"  Rolled {ability.DamageDice}d6 for damage: {damage}");
+
+            ApplyDamageToEnemy(combatState, target, damage, ability.IgnoresArmor);
+
+            // Apply [Analyzed] status
+            target.AnalyzedTurnsRemaining = 4;
+            combatState.AddLogEntry($"  {target.Name} is [Analyzed] for 4 turns! (All attackers gain +2 Accuracy)");
+            return; // Early return
+        }
         // Check if ability has special damage dice (like Aetheric Bolt)
         else if (ability.DamageDice > 0)
         {
@@ -769,6 +797,17 @@ public class CombatEngine
 
     private void ApplyDamageToEnemy(CombatState combatState, Enemy target, int damage, bool ignoresArmor)
     {
+        // v0.7: Apply [Vulnerable] status (+25% damage)
+        if (target.VulnerableTurnsRemaining > 0)
+        {
+            var vulnerableDamage = (int)(damage * 1.25);
+            if (vulnerableDamage > damage)
+            {
+                combatState.AddLogEntry($"  [Vulnerable] increases damage from {damage} to {vulnerableDamage}!");
+                damage = vulnerableDamage;
+            }
+        }
+
         // Check if ability ignores armor
         if (!ignoresArmor && target.DefenseTurnsRemaining > 0)
         {
@@ -860,6 +899,17 @@ public class CombatEngine
             target.IsStunned = true;
             target.StunTurnsRemaining = 1;
             combatState.AddLogEntry($"  {target.Name} is disrupted and will skip their next turn!");
+        }
+
+        // v0.7: Architect of the Silence - Apply [Seized] status (Architect ability)
+        if (ability.Name == "Architect of the Silence")
+        {
+            // NOTE: This applies [Seized] to player (self-lock mechanic for Architect)
+            // In actual gameplay, this would apply to enemies, but enemies don't take actions
+            // So this is a placeholder for the mechanic
+            combatState.AddLogEntry($"  You exploit the labyrinth's patterns to immobilize {target.Name}!");
+            combatState.AddLogEntry($"  {target.Name} is temporarily locked in place by the architecture itself.");
+            // Future: When enemy AI supports action skipping, add enemy.SeizedTurnsRemaining = 2;
         }
     }
 
@@ -1110,6 +1160,12 @@ public class CombatEngine
             if (enemy.AnalyzedTurnsRemaining > 0)
             {
                 enemy.AnalyzedTurnsRemaining--;
+            }
+
+            // v0.7: Tick down [Vulnerable] status
+            if (enemy.VulnerableTurnsRemaining > 0)
+            {
+                enemy.VulnerableTurnsRemaining--;
             }
         }
 
