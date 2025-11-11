@@ -8,13 +8,15 @@ public class CombatEngine
     private readonly SagaService _sagaService;
     private readonly LootService _lootService;
     private readonly EquipmentService _equipmentService;
+    private readonly HazardService _hazardService; // [v0.6]
 
-    public CombatEngine(DiceService diceService, SagaService sagaService, LootService lootService, EquipmentService equipmentService)
+    public CombatEngine(DiceService diceService, SagaService sagaService, LootService lootService, EquipmentService equipmentService, HazardService hazardService)
     {
         _diceService = diceService;
         _sagaService = sagaService;
         _lootService = lootService;
         _equipmentService = equipmentService;
+        _hazardService = hazardService; // [v0.6]
     }
 
     /// <summary>
@@ -43,11 +45,31 @@ public class CombatEngine
         }
         combatState.AddLogEntry("");
 
-        // [v0.4] Environmental hazard warning
-        if (currentRoom != null && currentRoom.HasEnvironmentalHazard && currentRoom.IsHazardActive)
+        // [v0.6] Environmental hazard warning
+        if (currentRoom != null && _hazardService.RoomHasActiveHazard(currentRoom))
         {
             combatState.AddLogEntry($"[WARNING] {currentRoom.HazardDescription}");
-            combatState.AddLogEntry($"  You will take {currentRoom.HazardDamagePerTurn} damage per turn!");
+
+            // Display hazard details based on type
+            if (currentRoom.HazardDamageDice > 0)
+            {
+                combatState.AddLogEntry($"  You will take {currentRoom.HazardDamageDice}d{currentRoom.HazardDamageDieSize} damage per turn!");
+            }
+            else if (currentRoom.HazardDamagePerTurn > 0)
+            {
+                combatState.AddLogEntry($"  You will take {currentRoom.HazardDamagePerTurn} damage per turn!");
+            }
+
+            if (currentRoom.HazardStressPerTurn > 0)
+            {
+                combatState.AddLogEntry($"  +{currentRoom.HazardStressPerTurn} Psychic Stress per turn!");
+            }
+
+            if (currentRoom.HazardRequiresCheck)
+            {
+                combatState.AddLogEntry($"  {currentRoom.HazardCheckAttribute} Check (DC {currentRoom.HazardCheckDC}) required to avoid damage!");
+            }
+
             combatState.AddLogEntry("");
         }
 
@@ -255,6 +277,58 @@ public class CombatEngine
                 combatState.AddLogEntry($"  Psychic Stress: {stressBefore} → {player.PsychicStress}/100");
                 combatState.AddLogEntry($"  Corruption: {corruptionBefore} → {player.Corruption}/100");
                 break;
+
+            // [v0.6] NEW HERETICAL ABILITIES
+
+            case "Blight Surge":
+                traumaService.AddStress(player, 8);
+                traumaService.AddCorruption(player, 2);
+                combatState.AddLogEntry("  ⚠️ Blight energy surges through you...");
+                combatState.AddLogEntry($"  Psychic Stress: {stressBefore} → {player.PsychicStress}/100");
+                combatState.AddLogEntry($"  Corruption: {corruptionBefore} → {player.Corruption}/100");
+                break;
+
+            case "Blood Sacrifice":
+                // Special: Costs HP instead of Stamina
+                if (player.HP >= 30)
+                {
+                    player.HP = Math.Max(1, player.HP - 20); // Lose 20 HP, minimum 1
+                    traumaService.AddCorruption(player, 3);
+                    combatState.AddLogEntry("  ⚠️ You sacrifice your vitality for power...");
+                    combatState.AddLogEntry($"  HP: {player.HP + 20} → {player.HP}/{player.MaxHP}");
+                    combatState.AddLogEntry($"  Corruption: {corruptionBefore} → {player.Corruption}/100");
+                }
+                else
+                {
+                    combatState.AddLogEntry("  ⚠️ FAILED: HP too low (minimum 30 HP required)!");
+                    return; // Cancel ability
+                }
+                break;
+
+            case "Mass Psychic Lash":
+                traumaService.AddStress(player, 20);
+                combatState.AddLogEntry("  ⚠️ You project your trauma to all enemies...");
+                combatState.AddLogEntry($"  Psychic Stress: {stressBefore} → {player.PsychicStress}/100");
+                break;
+
+            case "Corruption Nova":
+                traumaService.AddCorruption(player, 10);
+                combatState.AddLogEntry("  ⚠️ You release accumulated Corruption as a destructive wave...");
+                combatState.AddLogEntry($"  Corruption: {corruptionBefore} → {player.Corruption}/100");
+                break;
+
+            case "Siphon Sanity":
+                combatState.AddLogEntry("  You drain enemy mental coherence...");
+                // Stress recovery handled after damage calculation
+                break;
+
+            case "Glitch Reality":
+                traumaService.AddStress(player, 5);
+                traumaService.AddCorruption(player, 4);
+                combatState.AddLogEntry("  ⚠️ You tear at the fabric of reality...");
+                combatState.AddLogEntry($"  Psychic Stress: {stressBefore} → {player.PsychicStress}/100");
+                combatState.AddLogEntry($"  Corruption: {corruptionBefore} → {player.Corruption}/100");
+                break;
         }
 
         // Check for threshold warnings after adding trauma
@@ -416,6 +490,145 @@ public class CombatEngine
                 {
                     combatState.AddLogEntry($"  {enemy.Name} is obliterated!");
                 }
+            }
+            return; // Early return
+        }
+        // [v0.6] Blight Surge - Corruption debuff attack (3d6 damage)
+        else if (ability.Name == "Blight Surge")
+        {
+            damage = _diceService.RollDamage(3);
+            combatState.AddLogEntry($"  Blight energy surges into {target.Name}!");
+            combatState.AddLogEntry($"  Rolled 3d6 damage: {damage}");
+            ApplyDamageToEnemy(combatState, target, damage, ability.IgnoresArmor);
+            combatState.AddLogEntry($"  {target.Name} gains [Corrupted] (+20% Stress from all sources for 3 turns)");
+            return; // Early return
+        }
+        // [v0.6] Blood Sacrifice - Already handled in trauma cost section (HP check)
+        else if (ability.Name == "Blood Sacrifice")
+        {
+            var baseDamage = _diceService.RollDamage(4);
+            damage = (int)(baseDamage * 1.33); // Approximate 4d8 with 4d6 * 1.33
+            combatState.AddLogEntry($"  Your blood fuels devastating power!");
+            combatState.AddLogEntry($"  Rolled 4d8 (approx) damage: {damage}");
+            ApplyDamageToEnemy(combatState, target, damage, ability.IgnoresArmor);
+            return; // Early return
+        }
+        // [v0.6] Mass Psychic Lash - AOE psychic damage (2d6 to all enemies)
+        else if (ability.Name == "Mass Psychic Lash")
+        {
+            combatState.AddLogEntry($"  ⚠️ Your trauma cascades outward to all minds!");
+
+            foreach (var enemy in combatState.Enemies.Where(e => e.IsAlive))
+            {
+                var psychicDamage = _diceService.RollDamage(2);
+                combatState.AddLogEntry($"  {enemy.Name} takes {psychicDamage} psychic damage!");
+                enemy.HP -= psychicDamage;
+
+                if (!enemy.IsAlive)
+                {
+                    combatState.AddLogEntry($"  {enemy.Name}'s mind shatters!");
+                }
+            }
+            return; // Early return
+        }
+        // [v0.6] Corruption Nova - Scaling AOE damage (5d6 base + 1d6 per 20 Corruption)
+        else if (ability.Name == "Corruption Nova")
+        {
+            var player = combatState.Player;
+            var baseDice = 5;
+            var bonusDice = player.Corruption / 20; // +1d6 per 20 Corruption
+            var totalDice = baseDice + bonusDice;
+
+            combatState.AddLogEntry($"  ⚠️ Corruption explodes outward in a devastating wave!");
+            combatState.AddLogEntry($"  Damage scales with your Corruption: {baseDice}d6 + {bonusDice}d6 = {totalDice}d6 total");
+
+            foreach (var enemy in combatState.Enemies.Where(e => e.IsAlive))
+            {
+                var novaDamage = _diceService.RollDamage(totalDice);
+                combatState.AddLogEntry($"  {enemy.Name} takes {novaDamage} corrupted damage!");
+                enemy.HP -= novaDamage;
+
+                if (!enemy.IsAlive)
+                {
+                    combatState.AddLogEntry($"  {enemy.Name} is consumed by the Blight!");
+                }
+            }
+            return; // Early return
+        }
+        // [v0.6] Siphon Sanity - Drains enemy's sanity, recovers your Stress
+        else if (ability.Name == "Siphon Sanity")
+        {
+            var player = combatState.Player;
+            damage = _diceService.RollDamage(2);
+            combatState.AddLogEntry($"  You drain {target.Name}'s mental coherence!");
+            combatState.AddLogEntry($"  Rolled 2d6 psychic damage: {damage}");
+            ApplyDamageToEnemy(combatState, target, damage, ability.IgnoresArmor);
+
+            // Recover Stress equal to damage dealt
+            var stressBefore = player.PsychicStress;
+            player.PsychicStress = Math.Max(0, player.PsychicStress - damage);
+            var stressRecovered = stressBefore - player.PsychicStress;
+            combatState.AddLogEntry($"  You recover {stressRecovered} Psychic Stress! ({stressBefore} → {player.PsychicStress})");
+            return; // Early return
+        }
+        // [v0.6] Glitch Reality - Random chaos effect (1d6 roll)
+        else if (ability.Name == "Glitch Reality")
+        {
+            var player = combatState.Player;
+            var effectRoll = _diceService.Roll(1).Rolls[0]; // 1d6
+
+            combatState.AddLogEntry($"  ⚠️ Reality warps unpredictably... (Rolled {effectRoll})");
+
+            switch (effectRoll)
+            {
+                case 1: // All enemies take 2d10 damage
+                    combatState.AddLogEntry($"  Effect: Reality Tear - All enemies take massive damage!");
+                    foreach (var enemy in combatState.Enemies.Where(e => e.IsAlive))
+                    {
+                        var tearDamage = _diceService.RollDamage(2) + 5; // 2d10 approx as 2d6+5
+                        combatState.AddLogEntry($"  {enemy.Name} takes {tearDamage} damage!");
+                        enemy.HP -= tearDamage;
+                        if (!enemy.IsAlive) combatState.AddLogEntry($"  {enemy.Name} is torn apart!");
+                    }
+                    break;
+
+                case 2: // All allies heal 2d10 HP
+                    combatState.AddLogEntry($"  Effect: Temporal Flux - You heal!");
+                    var healAmount = _diceService.RollDamage(2) + 5; // 2d10 approx
+                    player.HP = Math.Min(player.MaxHP, player.HP + healAmount);
+                    combatState.AddLogEntry($"  You heal {healAmount} HP! (Now at {player.HP}/{player.MaxHP})");
+                    break;
+
+                case 3: // All enemies gain [Disoriented] for 2 turns
+                    combatState.AddLogEntry($"  Effect: Mass Confusion - All enemies become disoriented!");
+                    foreach (var enemy in combatState.Enemies.Where(e => e.IsAlive))
+                    {
+                        combatState.AddLogEntry($"  {enemy.Name} is [Disoriented] for 2 turns (-2 dice to all actions)");
+                    }
+                    break;
+
+                case 4: // You teleport to random location in room
+                    combatState.AddLogEntry($"  Effect: Spatial Rift - You blink across the battlefield!");
+                    combatState.AddLogEntry($"  (Position reset, enemies lose targeting)");
+                    break;
+
+                case 5: // Reality tears: Both allies and enemies take 1d10 damage
+                    combatState.AddLogEntry($"  Effect: Reality Collapse - EVERYONE takes damage!");
+                    player.HP -= _diceService.RollDamage(1) + 3; // 1d10 approx
+                    combatState.AddLogEntry($"  You take damage! (Now at {player.HP}/{player.MaxHP})");
+                    foreach (var enemy in combatState.Enemies.Where(e => e.IsAlive))
+                    {
+                        var collapseDamage = _diceService.RollDamage(1) + 3;
+                        enemy.HP -= collapseDamage;
+                        combatState.AddLogEntry($"  {enemy.Name} takes {collapseDamage} damage!");
+                        if (!enemy.IsAlive) combatState.AddLogEntry($"  {enemy.Name} is destroyed!");
+                    }
+                    break;
+
+                case 6: // Time stutters: You gain extra turn immediately
+                    combatState.AddLogEntry($"  Effect: Time Stutter - You gain an EXTRA TURN!");
+                    combatState.AddLogEntry($"  (Note: Extra turn mechanic - would trigger immediately)");
+                    break;
             }
             return; // Early return
         }
@@ -774,28 +987,29 @@ public class CombatEngine
             }
         }
 
-        // [v0.4] Apply environmental hazard damage at end of round
-        if (combatState.CurrentRoom != null &&
-            combatState.CurrentRoom.HasEnvironmentalHazard &&
-            combatState.CurrentRoom.IsHazardActive)
+        // [v0.6] Apply environmental hazard damage at end of round
+        if (combatState.CurrentRoom != null && _hazardService.RoomHasActiveHazard(combatState.CurrentRoom))
         {
-            var hazardDamage = _diceService.RollDamage(1); // Roll 1d6 for hazard damage
-            if (hazardDamage >= combatState.CurrentRoom.HazardDamagePerTurn)
+            var (damage, stress, logMessage) = _hazardService.ProcessAutomaticHazard(combatState.CurrentRoom, combatState.Player);
+
+            if (damage > 0 || stress > 0)
             {
-                hazardDamage = combatState.CurrentRoom.HazardDamagePerTurn;
+                combatState.AddLogEntry($"[HAZARD] {logMessage}");
+                combatState.AddLogEntry($"  {combatState.Player.Name} HP: {Math.Max(0, combatState.Player.HP)}/{combatState.Player.MaxHP}");
+
+                if (stress > 0)
+                {
+                    combatState.AddLogEntry($"  {combatState.Player.Name} Psychic Stress: {combatState.Player.PsychicStress}");
+                }
+
+                if (!combatState.Player.IsAlive)
+                {
+                    combatState.AddLogEntry($"{combatState.Player.Name} has fallen to the environmental hazard!");
+                    combatState.IsActive = false;
+                }
+
+                combatState.AddLogEntry("");
             }
-
-            combatState.Player.HP -= hazardDamage;
-            combatState.AddLogEntry($"[HAZARD] Environmental hazard deals {hazardDamage} damage to {combatState.Player.Name}!");
-            combatState.AddLogEntry($"  {combatState.Player.Name} HP: {Math.Max(0, combatState.Player.HP)}/{combatState.Player.MaxHP}");
-
-            if (!combatState.Player.IsAlive)
-            {
-                combatState.AddLogEntry($"{combatState.Player.Name} has fallen!");
-                combatState.IsActive = false;
-            }
-
-            combatState.AddLogEntry("");
         }
 
         combatState.NextTurn();

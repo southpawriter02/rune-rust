@@ -17,7 +17,11 @@ public class CombatLegendTests
     {
         _diceService = new DiceService();
         _sagaService = new SagaService();
-        _combatEngine = new CombatEngine(_diceService, _sagaService);
+        var lootService = new LootService();
+        var equipmentService = new EquipmentService();
+        var traumaService = new TraumaEconomyService();
+        var hazardService = new HazardService(_diceService, traumaService);
+        _combatEngine = new CombatEngine(_diceService, _sagaService, lootService, equipmentService, hazardService);
 
         _player = new PlayerCharacter
         {

@@ -395,5 +395,114 @@ public class CharacterFactory
             CurrentRank = 1,
             MaxRank = 1
         });
+
+        // [v0.6] NEW HERETICAL ABILITIES (THE LOWER DEPTHS)
+
+        // Blight Surge - Corruption debuff attack
+        character.Abilities.Add(new Ability
+        {
+            Name = "Blight Surge",
+            Description = "Channel raw Blight energy for burst damage. Target gains [Corrupted] status (+20% Stress).",
+            StaminaCost = 30,
+            Type = AbilityType.Attack,
+            AttributeUsed = "will",
+            BonusDice = 4,
+            SuccessThreshold = 3,
+            DamageDice = 3, // 3d6 damage
+            IgnoresArmor = true,
+            // Trauma costs handled in CombatEngine: 8 Stress + 2 Corruption
+            CurrentRank = 1,
+            MaxRank = 1
+        });
+
+        // Blood Sacrifice - HP cost for overwhelming power
+        character.Abilities.Add(new Ability
+        {
+            Name = "Blood Sacrifice",
+            Description = "⚠️ Trade vitality for power. Costs HP instead of Stamina. Cannot use if HP < 30.",
+            StaminaCost = 0, // No stamina cost - uses HP instead
+            Type = AbilityType.Attack,
+            AttributeUsed = "might",
+            BonusDice = 6,
+            SuccessThreshold = 3,
+            DamageDice = 4, // 4d8 damage
+            IgnoresArmor = true,
+            // Trauma costs handled in CombatEngine: 20 HP + 3 Corruption
+            CurrentRank = 1,
+            MaxRank = 1
+        });
+
+        // Mass Psychic Lash - Stress AOE
+        character.Abilities.Add(new Ability
+        {
+            Name = "Mass Psychic Lash",
+            Description = "Project trauma outward to all enemies. High Stress cost limits uses.",
+            StaminaCost = 40,
+            Type = AbilityType.Attack,
+            AttributeUsed = "will",
+            BonusDice = 3,
+            SuccessThreshold = 2,
+            DamageDice = 2, // 2d6 psychic damage
+            IgnoresArmor = true,
+            // Trauma costs handled in CombatEngine: 20 Stress
+            // AOE: Hits all enemies
+            CurrentRank = 1,
+            MaxRank = 1
+        });
+
+        // Corruption Nova - Scales with your Corruption
+        character.Abilities.Add(new Ability
+        {
+            Name = "Corruption Nova",
+            Description = "Release accumulated Corruption as destructive wave. Damage scales with your Corruption (+1d6 per 20 Corruption).",
+            StaminaCost = 50,
+            Type = AbilityType.Attack,
+            AttributeUsed = "will",
+            BonusDice = 0, // No dice roll - automatic hit
+            SuccessThreshold = 0, // Automatic hit
+            DamageDice = 5, // 5d6 base damage
+            IgnoresArmor = true,
+            // Trauma costs handled in CombatEngine: 10 Corruption
+            // AOE: Hits all enemies
+            // Scaling: +1d6 per 20 Corruption
+            CurrentRank = 1,
+            MaxRank = 1
+        });
+
+        // Siphon Sanity - Stress drain
+        character.Abilities.Add(new Ability
+        {
+            Name = "Siphon Sanity",
+            Description = "Drain enemy's mental coherence to restore your own. Recover Stress equal to damage dealt.",
+            StaminaCost = 25,
+            Type = AbilityType.Attack,
+            AttributeUsed = "will",
+            BonusDice = 3,
+            SuccessThreshold = 2,
+            DamageDice = 2, // 2d6 psychic damage
+            IgnoresArmor = true,
+            // Special: Recover Stress equal to damage dealt (handled in CombatEngine)
+            // Only works on living enemies (not constructs)
+            CurrentRank = 1,
+            MaxRank = 1
+        });
+
+        // Glitch Reality - Random chaos effect
+        character.Abilities.Add(new Ability
+        {
+            Name = "Glitch Reality",
+            Description = "⚠️ Warp local reality with unpredictable effects. Roll 1d6 for random outcome.",
+            StaminaCost = 35,
+            Type = AbilityType.Utility, // Mixed effects
+            AttributeUsed = "will",
+            BonusDice = 0, // No attack roll - random effect
+            SuccessThreshold = 0,
+            DamageDice = 0, // Variable damage based on effect
+            IgnoresArmor = true,
+            // Trauma costs handled in CombatEngine: 5 Stress + 4 Corruption
+            // Effects: 1=AOE damage, 2=Heal, 3=Debuff, 4=Teleport, 5=Reality Tear, 6=Extra Turn
+            CurrentRank = 1,
+            MaxRank = 1
+        });
     }
 }

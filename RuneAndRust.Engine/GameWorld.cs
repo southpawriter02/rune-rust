@@ -314,6 +314,7 @@ public class GameWorld
             Exits = new Dictionary<string, string>
             {
                 { "east", "Vault Corridor" }
+                // "south" exit to Maintenance Shaft added when boss is defeated
             },
             IsBossRoom = true,
             Enemies = new List<Enemy>
@@ -334,12 +335,290 @@ public class GameWorld
             Exits = new Dictionary<string, string>
             {
                 { "west", "Vault Corridor" }
+                // "south" exit to Maintenance Shaft added when boss is defeated
             },
             IsBossRoom = true,
             PsychicResonance = PsychicResonanceLevel.Heavy, // [v0.5] +15 Stress per turn
             Enemies = new List<Enemy>
             {
                 EnemyFactory.CreateEnemy(EnemyType.AethericAberration) // NEW boss enemy type
+            }
+        };
+
+        // ====== [v0.6] THE LOWER DEPTHS (NEW - 10 Rooms) ======
+        // Unlocked after defeating boss in Room 14 or Room 15
+
+        // ====== DESCENT (Transition Zone) ======
+
+        // Room 16: Maintenance Shaft (NEW)
+        var maintenanceShaft = new Room
+        {
+            Id = 16,
+            Name = "Maintenance Shaft",
+            Description =
+                "A narrow maintenance shaft descends into darkness. Corroded grates creak underfoot, and the air " +
+                "grows thick with moisture. The descent is claustrophobic and oppressive. Whatever lies below " +
+                "was sealed for a reason.",
+            Exits = new Dictionary<string, string>
+            {
+                // "north" exit dynamically added from whichever boss room player came from
+                { "south", "Collapsed Junction" }
+            },
+            Enemies = new List<Enemy>
+            {
+                EnemyFactory.CreateEnemy(EnemyType.ScrapHound),
+                EnemyFactory.CreateEnemy(EnemyType.ScrapHound),
+                EnemyFactory.CreateEnemy(EnemyType.MaintenanceConstruct) // NEW enemy type
+            },
+            HasEnvironmentalHazard = true,
+            IsHazardActive = true,
+            HazardType = HazardType.UnstableFlooring,
+            HazardDescription = "[Unstable Flooring] - Weak floor panels threaten to collapse beneath your feet.",
+            // Check-based hazard: FINESSE DC 5 or take 2d6 fall damage
+            HazardRequiresCheck = true,
+            HazardCheckAttribute = "FINESSE",
+            HazardCheckDC = 5,
+            HazardCheckFailureDice = 2,
+            HazardCheckFailureDieSize = 6,
+            PsychicResonance = PsychicResonanceLevel.Light // +5 Stress per turn
+        };
+
+        // Room 17: Collapsed Junction (NEW)
+        var collapsedJunction = new Room
+        {
+            Id = 17,
+            Name = "Collapsed Junction",
+            Description =
+                "The ceiling has caved in, leaving mountains of twisted metal and broken ferrocrete. Safe paths " +
+                "through the debris are narrow and treacherous. Something moves in the shadows between the rubble piles.",
+            Exits = new Dictionary<string, string>
+            {
+                { "north", "Maintenance Shaft" },
+                { "south", "Airlock Transition" }
+            },
+            Enemies = new List<Enemy>
+            {
+                EnemyFactory.CreateEnemy(EnemyType.TestSubject),
+                EnemyFactory.CreateEnemy(EnemyType.TestSubject),
+                EnemyFactory.CreateEnemy(EnemyType.TestSubject),
+                EnemyFactory.CreateEnemy(EnemyType.ScrapHound)
+            },
+            HasPuzzle = true,
+            PuzzleDescription =
+                "Navigate through the rubble without triggering a collapse. A FINESSE check can find the safe path.",
+            PuzzleSuccessThreshold = 4, // DC 4 FINESSE check
+            PuzzleFailureDamage = 6, // 1d6 falling debris damage on failure
+            HasEnvironmentalHazard = true,
+            IsHazardActive = true,
+            HazardDamagePerTurn = 0, // Difficult terrain penalty, handled separately
+            HazardDescription = "[Collapsed Ceiling] - Difficult terrain reduces movement effectiveness."
+        };
+
+        // Room 18: Airlock Transition (NEW - Puzzle Gate)
+        var airlockTransition = new Room
+        {
+            Id = 18,
+            Name = "Airlock Transition",
+            Description =
+                "A reinforced airlock sealed from the inside. Warning sigils in Old Dvergr script read: " +
+                "'QUARANTINE ZONE - BIOLOGICAL HAZARD.' Beyond, you hear the drip of water and the hum of " +
+                "failing pumps. Whatever lies ahead was deliberately contained.",
+            Exits = new Dictionary<string, string>
+            {
+                { "north", "Collapsed Junction" }
+                // "south" exit to Flooded Reservoir locked until puzzle solved
+            },
+            HasPuzzle = true,
+            PuzzleDescription =
+                "The airlock control panel is partially functional. You can attempt to override the locks " +
+                "with a WITS check, but failure will trigger defensive systems.",
+            PuzzleSuccessThreshold = 6, // DC 6 WITS check
+            PuzzleFailureDamage = 12, // 2d6 electrical damage on failed attempt
+            PsychicResonance = PsychicResonanceLevel.Moderate // +10 Stress per turn
+        };
+
+        // ====== THE SUMP (Toxic Industrial Zone) ======
+
+        // Room 19: Flooded Reservoir (NEW - Hazard Arena)
+        var floodedReservoir = new Room
+        {
+            Id = 19,
+            Name = "Flooded Reservoir",
+            Description =
+                "A vast reservoir, half-filled with iridescent toxic sludge. The surface bubbles and hisses. " +
+                "Movement in the depths suggests things have adapted to the poison. The air reeks of chemical decay.",
+            Exits = new Dictionary<string, string>
+            {
+                { "north", "Airlock Transition" },
+                { "east", "Pump Control Station" },
+                { "west", "Filtration Array" }
+            },
+            Enemies = new List<Enemy>
+            {
+                EnemyFactory.CreateEnemy(EnemyType.SludgeCrawler), // NEW enemy type
+                EnemyFactory.CreateEnemy(EnemyType.SludgeCrawler),
+                EnemyFactory.CreateEnemy(EnemyType.SludgeCrawler),
+                EnemyFactory.CreateEnemy(EnemyType.SludgeCrawler)
+            },
+            HasEnvironmentalHazard = true,
+            IsHazardActive = true,
+            HazardType = HazardType.ToxicSludge,
+            HazardDamageDice = 3,
+            HazardDamageDieSize = 6, // 3d6 damage per turn
+            HazardDescription = "[Toxic Sludge] - Corrosive waste fills half the room, dealing 3d6 damage per turn. Can be drained from Pump Control.",
+            PsychicResonance = PsychicResonanceLevel.Moderate // +10 Stress per turn
+        };
+
+        // Room 20: Pump Control Station (NEW - Tactical Cover)
+        var pumpControlStation = new Room
+        {
+            Id = 20,
+            Name = "Pump Control Station",
+            Description =
+                "A control room overlooking the reservoir. Ancient pump machinery still functions, though its purpose " +
+                "is unclear. Massive pipes and machinery provide tactical cover, and a corrupted engineer construct " +
+                "oversees repairs to damaged equipment.",
+            Exits = new Dictionary<string, string>
+            {
+                { "west", "Flooded Reservoir" }
+            },
+            Enemies = new List<Enemy>
+            {
+                EnemyFactory.CreateEnemy(EnemyType.MaintenanceConstruct),
+                EnemyFactory.CreateEnemy(EnemyType.MaintenanceConstruct),
+                EnemyFactory.CreateEnemy(EnemyType.CorruptedEngineer) // NEW enemy type
+            },
+            HasPuzzle = true,
+            PuzzleDescription =
+                "The pump control systems are still operational. With sufficient technical knowledge, you could " +
+                "activate the drainage pumps and clear the toxic sludge from the reservoir.",
+            PuzzleSuccessThreshold = 5, // DC 5 WITS check
+            PuzzleFailureDamage = 0, // No damage on failure
+            HasEnvironmentalHazard = true,
+            IsHazardActive = true,
+            HazardType = HazardType.ElectricalHazard,
+            HazardDamageDice = 2,
+            HazardDamageDieSize = 8, // 2d8 electrical damage if touching conduits
+            HazardDescription = "[Live Power Conduit] - Exposed electrical systems crackle with lethal energy. Avoid contact!"
+        };
+
+        // Room 21: Filtration Array (NEW - Gauntlet Run)
+        var filtrationArray = new Room
+        {
+            Id = 21,
+            Name = "Filtration Array",
+            Description =
+                "Rows of filtration tanks line the walls. Most have ruptured, filling the air with acrid fumes. " +
+                "Your eyes water and your lungs burn. Whatever lurks in this toxic corridor won't give you time to rest.",
+            Exits = new Dictionary<string, string>
+            {
+                { "east", "Flooded Reservoir" },
+                { "south", "Sump Floor" }
+            },
+            Enemies = new List<Enemy>
+            {
+                EnemyFactory.CreateEnemy(EnemyType.SludgeCrawler),
+                EnemyFactory.CreateEnemy(EnemyType.SludgeCrawler),
+                EnemyFactory.CreateEnemy(EnemyType.SludgeCrawler),
+                EnemyFactory.CreateEnemy(EnemyType.ScrapHound),
+                EnemyFactory.CreateEnemy(EnemyType.ScrapHound)
+            },
+            HasEnvironmentalHazard = true,
+            IsHazardActive = true,
+            HazardType = HazardType.ToxicFumes,
+            HazardDamageDice = 1,
+            HazardDamageDieSize = 6, // 1d6 damage per turn
+            HazardStressPerTurn = 3, // +3 Psychic Stress per turn (in addition to room resonance)
+            HazardDescription = "[Toxic Fumes] - Poisonous gas fills the room, dealing 1d6 damage and +3 Stress per turn.",
+            PsychicResonance = PsychicResonanceLevel.Light // +5 Stress per turn (base)
+        };
+
+        // Room 22: Sump Floor (NEW - Sanctuary/Safe Zone)
+        var sumpFloor = new Room
+        {
+            Id = 22,
+            Name = "Sump Floor",
+            Description =
+                "A rare dry platform, elevated above the toxic mire. Emergency lighting still functions here, " +
+                "casting a sickly yellow glow. This is the last safe place before the deep vaults. Beyond lies " +
+                "the final threshold.",
+            Exits = new Dictionary<string, string>
+            {
+                { "north", "Filtration Array" },
+                { "south", "Deep Vault Antechamber" }
+            },
+            HasBeenCleared = true, // Safe zone, no combat
+            IsSanctuary = true // [v0.6] Last rest before final bosses
+        };
+
+        // ====== FINAL SANCTUM (End-Game Bosses) ======
+
+        // Room 23: Deep Vault Antechamber (NEW - Elite Arena)
+        var deepVaultAntechamber = new Room
+        {
+            Id = 23,
+            Name = "Deep Vault Antechamber",
+            Description =
+                "A massive sealed vault door dominates the southern wall. Before it stands a towering construct, " +
+                "its chassis scarred from centuries of faithful duty. It does not recognize you as authorized personnel. " +
+                "Twin sealed vaults flank the guardian—both radiate dangerous energy.",
+            Exits = new Dictionary<string, string>
+            {
+                { "north", "Sump Floor" }
+                // "west" and "east" exits to boss rooms locked until Vault Custodian defeated
+            },
+            Enemies = new List<Enemy>
+            {
+                EnemyFactory.CreateEnemy(EnemyType.VaultCustodian) // NEW enemy type (mini-boss)
+            },
+            IsBossRoom = true, // Prevent fleeing from mini-boss
+            PsychicResonance = PsychicResonanceLevel.Heavy // +15 Stress per turn
+        };
+
+        // Room 24: Core Vault A - The Sleeper's Tomb (NEW - Psychic Boss)
+        var sleepersVault = new Room
+        {
+            Id = 24,
+            Name = "Sleeper's Tomb",
+            Description =
+                "A spherical chamber, its walls covered in corrupted data terminals. At the center, suspended in " +
+                "a failing stasis field, floats the desiccated corpse of a Jötun-Reader. Its eyes snap open. " +
+                "It has been waiting. The psychic pressure is overwhelming.",
+            Exits = new Dictionary<string, string>
+            {
+                { "east", "Deep Vault Antechamber" }
+            },
+            IsBossRoom = true,
+            PsychicResonance = PsychicResonanceLevel.Heavy, // +15 Stress per turn
+            Enemies = new List<Enemy>
+            {
+                EnemyFactory.CreateEnemy(EnemyType.ForlornArchivist) // NEW boss enemy type
+            }
+        };
+
+        // Room 25: Core Vault B - The Engine Room (NEW - Physical Boss)
+        var engineRoom = new Room
+        {
+            Id = 25,
+            Name = "Engine Room",
+            Description =
+                "The heart of the facility. A massive power core still hums with ancient energy, and a colossus " +
+                "of metal and fury has awoken to defend it. This is the Omega Sentinel, the final failsafe. " +
+                "Live conduits crackle with lethal power across the multi-level arena.",
+            Exits = new Dictionary<string, string>
+            {
+                { "west", "Deep Vault Antechamber" }
+            },
+            IsBossRoom = true,
+            HasEnvironmentalHazard = true,
+            IsHazardActive = true,
+            HazardType = HazardType.ElectricalHazard,
+            HazardDamageDice = 2,
+            HazardDamageDieSize = 8, // 2d8 electrical damage if knocked into conduits
+            HazardDescription = "[Live Power Conduit] - Exposed electrical systems cover the arena. Knockback attacks can slam you into them for 2d8 damage!",
+            Enemies = new List<Enemy>
+            {
+                EnemyFactory.CreateEnemy(EnemyType.OmegaSentinel) // NEW boss enemy type
             }
         };
 
@@ -359,6 +638,18 @@ public class GameWorld
         Rooms.Add(supplyCache.Name, supplyCache);
         Rooms.Add(arsenalVault.Name, arsenalVault);
         Rooms.Add(energyCore.Name, energyCore);
+
+        // [v0.6] Add new rooms (The Lower Depths)
+        Rooms.Add(maintenanceShaft.Name, maintenanceShaft);
+        Rooms.Add(collapsedJunction.Name, collapsedJunction);
+        Rooms.Add(airlockTransition.Name, airlockTransition);
+        Rooms.Add(floodedReservoir.Name, floodedReservoir);
+        Rooms.Add(pumpControlStation.Name, pumpControlStation);
+        Rooms.Add(filtrationArray.Name, filtrationArray);
+        Rooms.Add(sumpFloor.Name, sumpFloor);
+        Rooms.Add(deepVaultAntechamber.Name, deepVaultAntechamber);
+        Rooms.Add(sleepersVault.Name, sleepersVault);
+        Rooms.Add(engineRoom.Name, engineRoom);
     }
 
     public Room GetRoom(string roomName)
@@ -385,6 +676,96 @@ public class GameWorld
         if (!vaultCorridor.Exits.ContainsKey("south"))
         {
             vaultCorridor.Exits.Add("south", "Supply Cache");
+        }
+    }
+
+    /// <summary>
+    /// [v0.6] Unlock The Lower Depths from Arsenal Vault (Room 14)
+    /// Called when player defeats Ruin-Warden boss
+    /// </summary>
+    public void UnlockLowerDepthsFromArsenalVault()
+    {
+        var arsenalVault = GetRoom("Arsenal Vault");
+        var maintenanceShaft = GetRoom("Maintenance Shaft");
+
+        // Add exit from boss room to Maintenance Shaft
+        if (!arsenalVault.Exits.ContainsKey("south"))
+        {
+            arsenalVault.Exits.Add("south", "Maintenance Shaft");
+        }
+
+        // Add return exit from Maintenance Shaft to boss room
+        if (!maintenanceShaft.Exits.ContainsKey("north"))
+        {
+            maintenanceShaft.Exits.Add("north", "Arsenal Vault");
+        }
+    }
+
+    /// <summary>
+    /// [v0.6] Unlock The Lower Depths from Energy Core (Room 15)
+    /// Called when player defeats Aetheric Aberration boss
+    /// </summary>
+    public void UnlockLowerDepthsFromEnergyCore()
+    {
+        var energyCore = GetRoom("Energy Core");
+        var maintenanceShaft = GetRoom("Maintenance Shaft");
+
+        // Add exit from boss room to Maintenance Shaft
+        if (!energyCore.Exits.ContainsKey("south"))
+        {
+            energyCore.Exits.Add("south", "Maintenance Shaft");
+        }
+
+        // Add return exit from Maintenance Shaft to boss room
+        if (!maintenanceShaft.Exits.ContainsKey("north"))
+        {
+            maintenanceShaft.Exits.Add("north", "Energy Core");
+        }
+    }
+
+    /// <summary>
+    /// [v0.6] Unlock Airlock Transition puzzle gate (Room 18)
+    /// Called when player succeeds WITS check (DC 6) on airlock override
+    /// </summary>
+    public void UnlockAirlockTransition()
+    {
+        var airlockTransition = GetRoom("Airlock Transition");
+        if (!airlockTransition.Exits.ContainsKey("south"))
+        {
+            airlockTransition.Exits.Add("south", "Flooded Reservoir");
+        }
+    }
+
+    /// <summary>
+    /// [v0.6] Drain toxic sludge from Flooded Reservoir (Room 19)
+    /// Called when player succeeds WITS check (DC 5) at Pump Control Station (Room 20)
+    /// </summary>
+    public void DrainFloodedReservoir()
+    {
+        var floodedReservoir = GetRoom("Flooded Reservoir");
+        if (floodedReservoir.HasEnvironmentalHazard && floodedReservoir.IsHazardActive)
+        {
+            floodedReservoir.IsHazardActive = false; // Disable toxic sludge hazard
+        }
+    }
+
+    /// <summary>
+    /// [v0.6] Unlock final boss rooms from Deep Vault Antechamber (Room 23)
+    /// Called when player defeats Vault Custodian mini-boss
+    /// </summary>
+    public void UnlockFinalBossRooms()
+    {
+        var deepVaultAntechamber = GetRoom("Deep Vault Antechamber");
+
+        // Add exits to both final boss rooms
+        if (!deepVaultAntechamber.Exits.ContainsKey("west"))
+        {
+            deepVaultAntechamber.Exits.Add("west", "Sleeper's Tomb");
+        }
+
+        if (!deepVaultAntechamber.Exits.ContainsKey("east"))
+        {
+            deepVaultAntechamber.Exits.Add("east", "Engine Room");
         }
     }
 
@@ -492,6 +873,10 @@ public class GameWorld
                 puzzleReward = lootService.CreatePuzzleReward(player.Class);
                 break;
 
+            case "Collapsed Junction": // [v0.6] Room 17 - Hidden cache behind rubble
+                puzzleReward = EquipmentDatabase.GetRandomWeaponForClass(player.Class, QualityTier.Optimized);
+                break;
+
             default:
                 puzzleReward = lootService.CreatePuzzleReward(player.Class);
                 break;
@@ -500,6 +885,36 @@ public class GameWorld
         if (puzzleReward != null)
         {
             lootService.PlaceStartingLoot(room, puzzleReward);
+        }
+    }
+
+    /// <summary>
+    /// [v0.6] Add Optimized equipment cache to Sump Floor (Room 22)
+    /// Called when room is first entered (sanctuary rest before final bosses)
+    /// </summary>
+    public void AddSumpFloorLoot(PlayerCharacter player)
+    {
+        var lootService = new LootService();
+        var sumpFloor = GetRoom("Sump Floor");
+
+        // Check if loot already placed
+        if (sumpFloor.ItemsOnGround.Count > 0)
+        {
+            return;
+        }
+
+        // Generate 2x Optimized items for final boss preparation
+        var optimizedWeapon = EquipmentDatabase.GetRandomWeaponForClass(player.Class, QualityTier.Optimized);
+        var optimizedArmor = EquipmentDatabase.GetRandomArmor(QualityTier.Optimized);
+
+        if (optimizedWeapon != null)
+        {
+            lootService.PlaceStartingLoot(sumpFloor, optimizedWeapon);
+        }
+
+        if (optimizedArmor != null)
+        {
+            lootService.PlaceStartingLoot(sumpFloor, optimizedArmor);
         }
     }
 }

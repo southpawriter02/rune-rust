@@ -12,7 +12,15 @@ public enum EnemyType
     TestSubject,        // Tier 1 - Glass cannon
     WarFrame,           // Tier 2 - Elite/Mini-boss
     ForlornScholar,     // Tier 2 - Caster (can be talked to)
-    AethericAberration  // Boss - Magic focus
+    AethericAberration, // Boss - Magic focus
+
+    // v0.6 new enemies (The Lower Depths)
+    MaintenanceConstruct,  // Tier 1 - Self-healing balanced enemy
+    SludgeCrawler,         // Tier 1 - Poison swarm enemy
+    CorruptedEngineer,     // Tier 2 - Support/buffer caster
+    VaultCustodian,        // Tier 3 - Mini-boss guardian
+    ForlornArchivist,      // Boss - Psychic/summoner
+    OmegaSentinel          // Boss - Physical tank
 }
 
 public class Enemy
@@ -42,6 +50,12 @@ public class Enemy
     public bool IsStunned { get; set; } = false;
     public int StunTurnsRemaining { get; set; } = 0;
     public int BleedingTurnsRemaining { get; set; } = 0; // Scavenger Lv3 ability
+
+    // [v0.6] Additional enemy mechanics
+    public int Soak { get; set; } = 0; // Damage reduction (armor)
+    public int PoisonDamagePerTurn { get; set; } = 0; // Poison DoT inflicted on player
+    public int PoisonTurnsRemaining { get; set; } = 0; // Duration of poison effect
+    public bool HasUsedSpecialAbility { get; set; } = false; // For one-time abilities (Last Stand, etc.)
 
     // Progression (Aethelgard Saga System)
     public int BaseLegendValue { get; set; } = 0;
