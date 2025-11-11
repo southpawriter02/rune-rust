@@ -29,7 +29,35 @@ public enum EnemyAction
     SummonEchoes,       // Aberration: spawn adds
     RealityTear,        // Aberration: AOE magic damage
     AethericStorm,      // Aberration Phase 2: AOE attack
-    DesperateSummon     // Aberration Phase 2: spawn add
+    DesperateSummon,    // Aberration Phase 2: spawn add
+
+    // v0.6 new actions (The Lower Depths)
+    WeldingTorch,       // Maintenance Construct: basic attack
+    RepairProtocol,     // Maintenance Construct: self-heal
+    EmergencyLockdown,  // Maintenance Construct: defense buff
+    ToxicBite,          // Sludge-Crawler: poison attack
+    Lunge,              // Sludge-Crawler: gap closer
+    Submerge,           // Sludge-Crawler: evasion boost (in flooded areas)
+    OverchargeAlly,     // Corrupted Engineer: buff ally damage
+    ArcDischarge,       // Corrupted Engineer: ranged electrical attack
+    EmergencyRepairAlly,// Corrupted Engineer: heal ally
+    SystemShock,        // Corrupted Engineer: stun attack
+    HalberdSweep,       // Vault Custodian: single target attack
+    DefensiveStance,    // Vault Custodian: defense mode
+    GuardianProtocol,   // Vault Custodian: self-heal
+    WhirlwindStrike,    // Vault Custodian Phase 2: AOE attack
+    LastStand,          // Vault Custodian Phase 2: buff all attacks
+    MindSpike,          // Forlorn Archivist: psychic attack
+    SummonRevenants,    // Forlorn Archivist: spawn adds
+    PsychicScream,      // Forlorn Archivist: stress AOE
+    MassHysteria,       // Forlorn Archivist Phase 2: fear debuff
+    PsychicStorm,       // Forlorn Archivist Phase 3: massive AOE
+    MaulStrike,         // Omega Sentinel: single target slam
+    SeismicSlam,        // Omega Sentinel: AOE knockback
+    PowerDraw,          // Omega Sentinel: self-heal from power core
+    OverchargedMaul,    // Omega Sentinel Phase 2: enhanced attack
+    DefensiveProtocols, // Omega Sentinel Phase 2: defense buff
+    OmegaProtocol       // Omega Sentinel Phase 3: ultimate attack
 }
 
 public class EnemyAI
@@ -73,6 +101,14 @@ public class EnemyAI
             EnemyType.WarFrame => DetermineWarFrameAction(enemy),
             EnemyType.ForlornScholar => DetermineForlornScholarAction(enemy),
             EnemyType.AethericAberration => DetermineAberrationAction(enemy),
+
+            // v0.6 new enemies
+            EnemyType.MaintenanceConstruct => DetermineMaintenanceConstructAction(enemy),
+            EnemyType.SludgeCrawler => DetermineSludgeCrawlerAction(enemy),
+            EnemyType.CorruptedEngineer => DetermineCorruptedEngineerAction(enemy),
+            EnemyType.VaultCustodian => DetermineVaultCustodianAction(enemy),
+            EnemyType.ForlornArchivist => DetermineForlornArchivistAction(enemy),
+            EnemyType.OmegaSentinel => DetermineOmegaSentinelAction(enemy),
 
             _ => EnemyAction.BasicAttack
         };
@@ -221,6 +257,180 @@ public class EnemyAI
         }
     }
 
+    // ====== v0.6 NEW ENEMY AI PATTERNS (THE LOWER DEPTHS) ======
+
+    private EnemyAction DetermineMaintenanceConstructAction(Enemy construct)
+    {
+        var roll = _random.Next(100);
+        var hpPercent = (double)construct.HP / construct.MaxHP;
+
+        // First time reduced to 50% HP, use Repair Protocol
+        if (hpPercent <= 0.5 && hpPercent > 0.4 && !construct.HasUsedSpecialAbility)
+        {
+            construct.HasUsedSpecialAbility = true;
+            return EnemyAction.RepairProtocol;
+        }
+
+        if (roll < 60) // 60% chance
+            return EnemyAction.WeldingTorch;
+        else if (roll < 90) // 30% chance
+            return EnemyAction.RepairProtocol;
+        else // 10% chance
+            return EnemyAction.EmergencyLockdown;
+    }
+
+    private EnemyAction DetermineSludgeCrawlerAction(Enemy crawler)
+    {
+        var roll = _random.Next(100);
+
+        if (roll < 70) // 70% chance
+            return EnemyAction.ToxicBite;
+        else if (roll < 90) // 20% chance
+            return EnemyAction.Lunge;
+        else // 10% chance
+            return EnemyAction.Submerge;
+    }
+
+    private EnemyAction DetermineCorruptedEngineerAction(Enemy engineer)
+    {
+        var roll = _random.Next(100);
+
+        // Priority: Buff/heal allies over attacking
+        if (roll < 40) // 40% chance
+            return EnemyAction.OverchargeAlly;
+        else if (roll < 60) // 20% chance
+            return EnemyAction.EmergencyRepairAlly;
+        else if (roll < 90) // 30% chance
+            return EnemyAction.ArcDischarge;
+        else // 10% chance
+            return EnemyAction.SystemShock;
+    }
+
+    private EnemyAction DetermineVaultCustodianAction(Enemy custodian)
+    {
+        var hpPercent = (double)custodian.HP / custodian.MaxHP;
+
+        // Phase 1 (100%-50% HP)
+        if (hpPercent > 0.5)
+        {
+            var roll = _random.Next(100);
+
+            if (roll < 50) // 50% chance
+                return EnemyAction.HalberdSweep;
+            else if (roll < 80) // 30% chance
+                return EnemyAction.DefensiveStance;
+            else // 20% chance
+                return EnemyAction.GuardianProtocol;
+        }
+        // Phase 2 (50%-0% HP)
+        else
+        {
+            // First time reduced to 25% HP, use Last Stand
+            if (hpPercent <= 0.25 && !custodian.HasUsedSpecialAbility)
+            {
+                custodian.HasUsedSpecialAbility = true;
+                return EnemyAction.LastStand;
+            }
+
+            var roll = _random.Next(100);
+
+            if (roll < 40) // 40% chance
+                return EnemyAction.WhirlwindStrike;
+            else if (roll < 80) // 40% chance
+                return EnemyAction.HalberdSweep;
+            else // 20% chance
+                return EnemyAction.LastStand; // Can try again if already used
+        }
+    }
+
+    private EnemyAction DetermineForlornArchivistAction(Enemy archivist)
+    {
+        var hpPercent = (double)archivist.HP / archivist.MaxHP;
+
+        // Phase 1 (100%-60% HP)
+        if (hpPercent > 0.6)
+        {
+            var roll = _random.Next(100);
+
+            if (roll < 40) // 40% chance
+                return EnemyAction.MindSpike;
+            else if (roll < 70) // 30% chance
+                return EnemyAction.SummonRevenants;
+            else if (roll < 90) // 20% chance
+                return EnemyAction.PsychicScream;
+            else // 10% chance
+                return EnemyAction.PhaseShift;
+        }
+        // Phase 2 (60%-30% HP)
+        else if (hpPercent > 0.3)
+        {
+            var roll = _random.Next(100);
+
+            if (roll < 40) // 40% chance
+                return EnemyAction.MassHysteria;
+            else if (roll < 70) // 30% chance
+                return EnemyAction.MindSpike;
+            else if (roll < 90) // 20% chance
+                return EnemyAction.SummonRevenants;
+            else // 10% chance
+                return EnemyAction.PhaseShift;
+        }
+        // Phase 3 (30%-0% HP)
+        else
+        {
+            var roll = _random.Next(100);
+
+            if (roll < 50) // 50% chance
+                return EnemyAction.PsychicStorm;
+            else if (roll < 80) // 30% chance
+                return EnemyAction.MindSpike;
+            else // 20% chance
+                return EnemyAction.SummonRevenants;
+        }
+    }
+
+    private EnemyAction DetermineOmegaSentinelAction(Enemy sentinel)
+    {
+        var hpPercent = (double)sentinel.HP / sentinel.MaxHP;
+
+        // Phase 1 (100%-60% HP)
+        if (hpPercent > 0.6)
+        {
+            var roll = _random.Next(100);
+
+            if (roll < 50) // 50% chance
+                return EnemyAction.MaulStrike;
+            else if (roll < 80) // 30% chance
+                return EnemyAction.SeismicSlam;
+            else // 20% chance
+                return EnemyAction.PowerDraw;
+        }
+        // Phase 2 (60%-30% HP)
+        else if (hpPercent > 0.3)
+        {
+            var roll = _random.Next(100);
+
+            if (roll < 40) // 40% chance
+                return EnemyAction.OverchargedMaul;
+            else if (roll < 80) // 40% chance
+                return EnemyAction.SeismicSlam;
+            else // 20% chance
+                return EnemyAction.DefensiveProtocols;
+        }
+        // Phase 3 (30%-0% HP)
+        else
+        {
+            var roll = _random.Next(100);
+
+            if (roll < 50) // 50% chance
+                return EnemyAction.OmegaProtocol;
+            else if (roll < 80) // 30% chance
+                return EnemyAction.OverchargedMaul;
+            else // 20% chance
+                return EnemyAction.PowerDraw; // Emergency healing
+        }
+    }
+
     /// <summary>
     /// Execute an enemy's action
     /// </summary>
@@ -328,6 +538,111 @@ public class EnemyAI
 
             case EnemyAction.DesperateSummon:
                 ExecuteDesperateSummon(enemy, combatState);
+                break;
+
+            // v0.6 new actions (The Lower Depths)
+            case EnemyAction.WeldingTorch:
+                ExecuteWeldingTorch(enemy, player, combatState);
+                break;
+
+            case EnemyAction.RepairProtocol:
+                ExecuteRepairProtocol(enemy, combatState);
+                break;
+
+            case EnemyAction.EmergencyLockdown:
+                ExecuteEmergencyLockdown(enemy, combatState);
+                break;
+
+            case EnemyAction.ToxicBite:
+                ExecuteToxicBite(enemy, player, combatState);
+                break;
+
+            case EnemyAction.Lunge:
+                ExecuteLunge(enemy, player, combatState);
+                break;
+
+            case EnemyAction.Submerge:
+                ExecuteSubmerge(enemy, combatState);
+                break;
+
+            case EnemyAction.OverchargeAlly:
+                ExecuteOverchargeAlly(enemy, combatState);
+                break;
+
+            case EnemyAction.ArcDischarge:
+                ExecuteArcDischarge(enemy, player, combatState);
+                break;
+
+            case EnemyAction.EmergencyRepairAlly:
+                ExecuteEmergencyRepairAlly(enemy, combatState);
+                break;
+
+            case EnemyAction.SystemShock:
+                ExecuteSystemShock(enemy, player, combatState);
+                break;
+
+            case EnemyAction.HalberdSweep:
+                ExecuteHalberdSweep(enemy, player, combatState);
+                break;
+
+            case EnemyAction.DefensiveStance:
+                ExecuteDefensiveStance(enemy, combatState);
+                break;
+
+            case EnemyAction.GuardianProtocol:
+                ExecuteGuardianProtocol(enemy, combatState);
+                break;
+
+            case EnemyAction.WhirlwindStrike:
+                ExecuteWhirlwindStrike(enemy, player, combatState);
+                break;
+
+            case EnemyAction.LastStand:
+                ExecuteLastStand(enemy, combatState);
+                break;
+
+            case EnemyAction.MindSpike:
+                ExecuteMindSpike(enemy, player, combatState);
+                break;
+
+            case EnemyAction.SummonRevenants:
+                ExecuteSummonRevenants(enemy, combatState);
+                break;
+
+            case EnemyAction.PsychicScream:
+                ExecutePsychicScream(enemy, player, combatState);
+                break;
+
+            case EnemyAction.MassHysteria:
+                ExecuteMassHysteria(enemy, player, combatState);
+                break;
+
+            case EnemyAction.PsychicStorm:
+                ExecutePsychicStorm(enemy, player, combatState);
+                break;
+
+            case EnemyAction.MaulStrike:
+                ExecuteMaulStrike(enemy, player, combatState);
+                break;
+
+            case EnemyAction.SeismicSlam:
+                ExecuteSeismicSlam(enemy, player, combatState);
+                break;
+
+            case EnemyAction.PowerDraw:
+                ExecutePowerDraw(enemy, combatState);
+                break;
+
+            case EnemyAction.OverchargedMaul:
+                ExecuteOverchargedMaul(enemy, player, combatState);
+                break;
+
+            case EnemyAction.DefensiveProtocols:
+                ExecuteDefensiveProtocols(enemy, combatState);
+                break;
+
+            case EnemyAction.OmegaProtocol:
+                ExecuteOmegaProtocol(enemy, player, combatState);
                 break;
         }
     }
@@ -952,6 +1267,524 @@ public class EnemyAI
         combatState.AddLogEntry($"  A Blight-Drone materializes!");
         combatState.AddLogEntry($"  [Note: Summon mechanics require combat system updates]");
         combatState.AddLogEntry($"  (Summoned add would appear as reinforcement)");
+        combatState.AddLogEntry("");
+    }
+
+    // ====== v0.6 NEW ENEMY ACTION EXECUTIONS (THE LOWER DEPTHS) ======
+
+    // MAINTENANCE CONSTRUCT ACTIONS
+
+    private void ExecuteWeldingTorch(Enemy enemy, PlayerCharacter player, CombatState combatState)
+    {
+        combatState.AddLogEntry($"{enemy.Name} attacks with its welding torch!");
+
+        var attackRoll = _diceService.Roll(enemy.Attributes.Might + 2);
+        combatState.AddLogEntry($"  Rolled {enemy.Attributes.Might + 2}d6: {FormatRolls(attackRoll)} = {attackRoll.Successes} successes");
+
+        if (combatState.PlayerNegateNextAttack)
+        {
+            combatState.AddLogEntry($"  {player.Name} dodges the torch!");
+            combatState.PlayerNegateNextAttack = false;
+            combatState.AddLogEntry("");
+            return;
+        }
+
+        var defendRoll = _diceService.Roll(player.DefenseDice);
+        combatState.AddLogEntry($"{player.Name} defends!");
+        combatState.AddLogEntry($"  Rolled {player.DefenseDice}d6: {FormatRolls(defendRoll)} = {defendRoll.Successes} successes");
+
+        var netSuccesses = Math.Max(0, attackRoll.Successes - defendRoll.Successes);
+        var damage = netSuccesses + _diceService.RollDamage(enemy.BaseDamageDice) + enemy.DamageBonus;
+
+        ApplyDamageToPlayer(player, damage, combatState);
+        combatState.AddLogEntry("");
+    }
+
+    private void ExecuteRepairProtocol(Enemy enemy, CombatState combatState)
+    {
+        combatState.AddLogEntry($"{enemy.Name} initiates repair protocols!");
+
+        var healAmount = 8;
+        enemy.HP = Math.Min(enemy.MaxHP, enemy.HP + healAmount);
+
+        combatState.AddLogEntry($"  {enemy.Name} repairs {healAmount} HP! (Now at {enemy.HP}/{enemy.MaxHP} HP)");
+        combatState.AddLogEntry("");
+    }
+
+    private void ExecuteEmergencyLockdown(Enemy enemy, CombatState combatState)
+    {
+        combatState.AddLogEntry($"{enemy.Name} activates emergency lockdown!");
+
+        enemy.DefenseBonus = 3;
+        enemy.DefenseTurnsRemaining = 1;
+
+        combatState.AddLogEntry($"  Defense increased by +3 until next turn!");
+        combatState.AddLogEntry("");
+    }
+
+    // SLUDGE-CRAWLER ACTIONS
+
+    private void ExecuteToxicBite(Enemy enemy, PlayerCharacter player, CombatState combatState)
+    {
+        combatState.AddLogEntry($"{enemy.Name} bites with toxic fangs!");
+
+        var attackRoll = _diceService.Roll(enemy.Attributes.Might);
+        combatState.AddLogEntry($"  Rolled {enemy.Attributes.Might}d6: {FormatRolls(attackRoll)} = {attackRoll.Successes} successes");
+
+        if (combatState.PlayerNegateNextAttack)
+        {
+            combatState.AddLogEntry($"  {player.Name} dodges the bite!");
+            combatState.PlayerNegateNextAttack = false;
+            combatState.AddLogEntry("");
+            return;
+        }
+
+        var defendRoll = _diceService.Roll(player.DefenseDice);
+        combatState.AddLogEntry($"{player.Name} defends!");
+        combatState.AddLogEntry($"  Rolled {player.DefenseDice}d6: {FormatRolls(defendRoll)} = {defendRoll.Successes} successes");
+
+        var netSuccesses = Math.Max(0, attackRoll.Successes - defendRoll.Successes);
+        var damage = netSuccesses + _diceService.RollDamage(enemy.BaseDamageDice);
+
+        ApplyDamageToPlayer(player, damage, combatState);
+
+        // Apply poison DoT
+        enemy.PoisonDamagePerTurn = 2; // 1d4 approximated as 2
+        enemy.PoisonTurnsRemaining = 2;
+
+        combatState.AddLogEntry($"  Venom courses through {player.Name}'s veins! (Poison for 2 turns)");
+        combatState.AddLogEntry("");
+    }
+
+    private void ExecuteLunge(Enemy enemy, PlayerCharacter player, CombatState combatState)
+    {
+        combatState.AddLogEntry($"{enemy.Name} lunges forward!");
+
+        var attackRoll = _diceService.Roll(enemy.Attributes.Might);
+        combatState.AddLogEntry($"  Rolled {enemy.Attributes.Might}d6: {FormatRolls(attackRoll)} = {attackRoll.Successes} successes");
+
+        if (combatState.PlayerNegateNextAttack)
+        {
+            combatState.AddLogEntry($"  {player.Name} sidesteps the lunge!");
+            combatState.PlayerNegateNextAttack = false;
+            combatState.AddLogEntry("");
+            return;
+        }
+
+        var defendRoll = _diceService.Roll(player.DefenseDice);
+        combatState.AddLogEntry($"{player.Name} defends!");
+        combatState.AddLogEntry($"  Rolled {player.DefenseDice}d6: {FormatRolls(defendRoll)} = {defendRoll.Successes} successes");
+
+        var netSuccesses = Math.Max(0, attackRoll.Successes - defendRoll.Successes);
+        var damage = netSuccesses + _diceService.RollDamage(enemy.BaseDamageDice);
+
+        ApplyDamageToPlayer(player, damage, combatState);
+        combatState.AddLogEntry($"  {enemy.Name} closes the distance!");
+        combatState.AddLogEntry("");
+    }
+
+    private void ExecuteSubmerge(Enemy enemy, CombatState combatState)
+    {
+        combatState.AddLogEntry($"{enemy.Name} submerges into the toxic sludge!");
+
+        enemy.DefenseBonus = 4;
+        enemy.DefenseTurnsRemaining = 1;
+
+        combatState.AddLogEntry($"  Evasion increased dramatically until next turn!");
+        combatState.AddLogEntry("");
+    }
+
+    // CORRUPTED ENGINEER ACTIONS
+
+    private void ExecuteOverchargeAlly(Enemy enemy, CombatState combatState)
+    {
+        combatState.AddLogEntry($"{enemy.Name} overcharges an ally's systems!");
+        combatState.AddLogEntry($"  [Note: Ally buff mechanics - target ally gains +2 dice and +1d6 damage on next attack]");
+        combatState.AddLogEntry($"  (Implementation pending multi-enemy combat system)");
+        combatState.AddLogEntry("");
+    }
+
+    private void ExecuteArcDischarge(Enemy enemy, PlayerCharacter player, CombatState combatState)
+    {
+        combatState.AddLogEntry($"{enemy.Name} fires an arc discharge!");
+
+        var attackRoll = _diceService.Roll(enemy.Attributes.Wits + 2);
+        combatState.AddLogEntry($"  Rolled {enemy.Attributes.Wits + 2}d6: {FormatRolls(attackRoll)} = {attackRoll.Successes} successes");
+
+        if (combatState.PlayerNegateNextAttack)
+        {
+            combatState.AddLogEntry($"  {player.Name} dodges the electrical blast!");
+            combatState.PlayerNegateNextAttack = false;
+            combatState.AddLogEntry("");
+            return;
+        }
+
+        var defendRoll = _diceService.Roll(player.DefenseDice);
+        combatState.AddLogEntry($"{player.Name} defends!");
+        combatState.AddLogEntry($"  Rolled {player.DefenseDice}d6: {FormatRolls(defendRoll)} = {defendRoll.Successes} successes");
+
+        var netSuccesses = Math.Max(0, attackRoll.Successes - defendRoll.Successes);
+        var damage = netSuccesses + _diceService.RollDamage(enemy.BaseDamageDice);
+
+        ApplyDamageToPlayer(player, damage, combatState);
+        combatState.AddLogEntry($"  Electrical energy crackles across {player.Name}!");
+        combatState.AddLogEntry("");
+    }
+
+    private void ExecuteEmergencyRepairAlly(Enemy enemy, CombatState combatState)
+    {
+        combatState.AddLogEntry($"{enemy.Name} initiates emergency repairs on an ally!");
+        combatState.AddLogEntry($"  [Note: Ally heal mechanics - target ally recovers 15 HP]");
+        combatState.AddLogEntry($"  (Implementation pending multi-enemy combat system)");
+        combatState.AddLogEntry("");
+    }
+
+    private void ExecuteSystemShock(Enemy enemy, PlayerCharacter player, CombatState combatState)
+    {
+        combatState.AddLogEntry($"{enemy.Name} unleashes a system shock!");
+
+        var attackRoll = _diceService.Roll(enemy.Attributes.Wits);
+        combatState.AddLogEntry($"  Rolled {enemy.Attributes.Wits}d6: {FormatRolls(attackRoll)} = {attackRoll.Successes} successes");
+
+        var defendRoll = _diceService.Roll(Math.Max(1, player.Attributes.Will));
+        combatState.AddLogEntry($"{player.Name} resists with WILL!");
+        combatState.AddLogEntry($"  Rolled {Math.Max(1, player.Attributes.Will)}d6: {FormatRolls(defendRoll)} = {defendRoll.Successes} successes");
+
+        if (attackRoll.Successes > defendRoll.Successes)
+        {
+            combatState.AddLogEntry($"  {player.Name} loses their next turn!");
+            combatState.AddLogEntry($"  (Note: Stun mechanic placeholder - would skip player turn)");
+        }
+        else
+        {
+            combatState.AddLogEntry($"  {player.Name} resists the shock!");
+        }
+        combatState.AddLogEntry("");
+    }
+
+    // VAULT CUSTODIAN ACTIONS
+
+    private void ExecuteHalberdSweep(Enemy enemy, PlayerCharacter player, CombatState combatState)
+    {
+        var attackDice = enemy.Phase == 1 ? enemy.Attributes.Might + 3 : enemy.Attributes.Might + 4;
+        combatState.AddLogEntry($"{enemy.Name} swings its massive halberd!");
+
+        var attackRoll = _diceService.Roll(attackDice);
+        combatState.AddLogEntry($"  Rolled {attackDice}d6: {FormatRolls(attackRoll)} = {attackRoll.Successes} successes");
+
+        if (combatState.PlayerNegateNextAttack)
+        {
+            combatState.AddLogEntry($"  {player.Name} narrowly dodges!");
+            combatState.PlayerNegateNextAttack = false;
+            combatState.AddLogEntry("");
+            return;
+        }
+
+        var defendRoll = _diceService.Roll(player.DefenseDice);
+        combatState.AddLogEntry($"{player.Name} defends!");
+        combatState.AddLogEntry($"  Rolled {player.DefenseDice}d6: {FormatRolls(defendRoll)} = {defendRoll.Successes} successes");
+
+        var netSuccesses = Math.Max(0, attackRoll.Successes - defendRoll.Successes);
+        var damage = Math.Max(0, netSuccesses + _diceService.RollDamage(enemy.BaseDamageDice) + enemy.DamageBonus - enemy.Soak);
+
+        ApplyDamageToPlayer(player, damage, combatState);
+        combatState.AddLogEntry("");
+    }
+
+    private void ExecuteDefensiveStance(Enemy enemy, CombatState combatState)
+    {
+        combatState.AddLogEntry($"{enemy.Name} assumes a defensive stance!");
+
+        enemy.DefenseBonus = 4;
+        enemy.DefenseTurnsRemaining = 1;
+
+        combatState.AddLogEntry($"  Defense greatly increased, but cannot attack next turn!");
+        combatState.AddLogEntry("");
+    }
+
+    private void ExecuteGuardianProtocol(Enemy enemy, CombatState combatState)
+    {
+        combatState.AddLogEntry($"{enemy.Name} activates guardian repair systems!");
+
+        var healAmount = 12;
+        enemy.HP = Math.Min(enemy.MaxHP, enemy.HP + healAmount);
+
+        combatState.AddLogEntry($"  {enemy.Name} repairs {healAmount} HP! (Now at {enemy.HP}/{enemy.MaxHP} HP)");
+        combatState.AddLogEntry("");
+    }
+
+    private void ExecuteWhirlwindStrike(Enemy enemy, PlayerCharacter player, CombatState combatState)
+    {
+        combatState.AddLogEntry($"{enemy.Name} spins its halberd in a devastating arc!");
+
+        var attackRoll = _diceService.Roll(enemy.Attributes.Might + 4);
+        combatState.AddLogEntry($"  Rolled {enemy.Attributes.Might + 4}d6: {FormatRolls(attackRoll)} = {attackRoll.Successes} successes");
+
+        if (combatState.PlayerNegateNextAttack)
+        {
+            combatState.AddLogEntry($"  {player.Name} dives clear of the whirlwind!");
+            combatState.PlayerNegateNextAttack = false;
+            combatState.AddLogEntry("");
+            return;
+        }
+
+        var defendRoll = _diceService.Roll(player.DefenseDice);
+        combatState.AddLogEntry($"{player.Name} defends!");
+        combatState.AddLogEntry($"  Rolled {player.DefenseDice}d6: {FormatRolls(defendRoll)} = {defendRoll.Successes} successes");
+
+        var netSuccesses = Math.Max(0, attackRoll.Successes - defendRoll.Successes);
+        var damage = Math.Max(0, netSuccesses + _diceService.RollDamage(2) + 1 - enemy.Soak);
+
+        ApplyDamageToPlayer(player, damage, combatState);
+        combatState.AddLogEntry($"  The whirlwind strike hits all enemies in the area!");
+        combatState.AddLogEntry("");
+    }
+
+    private void ExecuteLastStand(Enemy enemy, CombatState combatState)
+    {
+        combatState.AddLogEntry($"{enemy.Name} enters Last Stand mode!");
+
+        // Gain +2 dice to all attacks for 3 turns (track via DefenseBonus temporarily)
+        combatState.AddLogEntry($"  Combat protocols overclocked! +2 dice to all attacks for 3 turns!");
+        combatState.AddLogEntry($"  [Note: Attack bonus tracked - implementation requires turn counter]");
+        combatState.AddLogEntry("");
+    }
+
+    // FORLORN ARCHIVIST ACTIONS
+
+    private void ExecuteMindSpike(Enemy enemy, PlayerCharacter player, CombatState combatState)
+    {
+        var attackDice = enemy.Attributes.Will + 3;
+        if (enemy.Phase == 2) attackDice += 1;
+        if (enemy.Phase == 3) attackDice += 2;
+
+        combatState.AddLogEntry($"{enemy.Name} lances psychic energy through your mind!");
+
+        var attackRoll = _diceService.Roll(attackDice);
+        combatState.AddLogEntry($"  Rolled {attackDice}d6: {FormatRolls(attackRoll)} = {attackRoll.Successes} successes");
+
+        if (combatState.PlayerNegateNextAttack)
+        {
+            combatState.AddLogEntry($"  {player.Name} blocks the mental assault!");
+            combatState.PlayerNegateNextAttack = false;
+            combatState.AddLogEntry("");
+            return;
+        }
+
+        var defendRoll = _diceService.Roll(Math.Max(1, player.Attributes.Will));
+        combatState.AddLogEntry($"{player.Name} resists with WILL!");
+        combatState.AddLogEntry($"  Rolled {Math.Max(1, player.Attributes.Will)}d6: {FormatRolls(defendRoll)} = {defendRoll.Successes} successes");
+
+        var netSuccesses = Math.Max(0, attackRoll.Successes - defendRoll.Successes);
+        var damage = netSuccesses + _diceService.RollDamage(enemy.BaseDamageDice);
+
+        ApplyDamageToPlayer(player, damage, combatState);
+        combatState.AddLogEntry($"  Psychic damage ignores physical armor!");
+        combatState.AddLogEntry("");
+    }
+
+    private void ExecuteSummonRevenants(Enemy enemy, CombatState combatState)
+    {
+        combatState.AddLogEntry($"{enemy.Name} summons spectral echoes!");
+        combatState.AddLogEntry($"  2x Scrap-Hound revenants materialize!");
+        combatState.AddLogEntry($"  [Note: Summon mechanics require combat system updates]");
+        combatState.AddLogEntry("");
+    }
+
+    private void ExecutePsychicScream(Enemy enemy, PlayerCharacter player, CombatState combatState)
+    {
+        combatState.AddLogEntry($"{enemy.Name} releases a psychic scream!");
+
+        var attackRoll = _diceService.Roll(enemy.Attributes.Will + 3);
+        combatState.AddLogEntry($"  Rolled {enemy.Attributes.Will + 3}d6: {FormatRolls(attackRoll)} = {attackRoll.Successes} successes");
+
+        var defendRoll = _diceService.Roll(Math.Max(1, player.Attributes.Will));
+        combatState.AddLogEntry($"{player.Name} resists with WILL!");
+        combatState.AddLogEntry($"  Rolled {Math.Max(1, player.Attributes.Will)}d6: {FormatRolls(defendRoll)} = {defendRoll.Successes} successes");
+
+        if (attackRoll.Successes > defendRoll.Successes)
+        {
+            combatState.AddLogEntry($"  {player.Name} gains +15 Psychic Stress!");
+            combatState.AddLogEntry($"  (Note: Would call trauma service to add stress)");
+        }
+        else
+        {
+            combatState.AddLogEntry($"  {player.Name} resists the psychic assault!");
+        }
+        combatState.AddLogEntry("");
+    }
+
+    private void ExecuteMassHysteria(Enemy enemy, PlayerCharacter player, CombatState combatState)
+    {
+        combatState.AddLogEntry($"{enemy.Name} spreads mass hysteria!");
+
+        var attackRoll = _diceService.Roll(enemy.Attributes.Will + 4);
+        combatState.AddLogEntry($"  Rolled {enemy.Attributes.Will + 4}d6: {FormatRolls(attackRoll)} = {attackRoll.Successes} successes");
+
+        var defendRoll = _diceService.Roll(Math.Max(1, player.Attributes.Will));
+        combatState.AddLogEntry($"{player.Name} resists with WILL!");
+        combatState.AddLogEntry($"  Rolled {Math.Max(1, player.Attributes.Will)}d6: {FormatRolls(defendRoll)} = {defendRoll.Successes} successes");
+
+        if (attackRoll.Successes > defendRoll.Successes)
+        {
+            combatState.AddLogEntry($"  {player.Name} is [Feared] for 2 turns!");
+            combatState.AddLogEntry($"  (Note: Fear status effect - implementation pending)");
+        }
+        else
+        {
+            combatState.AddLogEntry($"  {player.Name} steels their mind against the fear!");
+        }
+        combatState.AddLogEntry("");
+    }
+
+    private void ExecutePsychicStorm(Enemy enemy, PlayerCharacter player, CombatState combatState)
+    {
+        combatState.AddLogEntry($"{enemy.Name} unleashes a psychic storm!");
+
+        var damage = _diceService.RollDamage(2) + 5; // 2d10 approx as 2d6+5
+
+        combatState.AddLogEntry($"  The storm tears through all minds in range!");
+        ApplyDamageToPlayer(player, damage, combatState);
+        combatState.AddLogEntry($"  Psychic damage ignores physical armor!");
+        combatState.AddLogEntry("");
+    }
+
+    // OMEGA SENTINEL ACTIONS
+
+    private void ExecuteMaulStrike(Enemy enemy, PlayerCharacter player, CombatState combatState)
+    {
+        combatState.AddLogEntry($"{enemy.Name} slams down with its massive maul!");
+
+        var attackRoll = _diceService.Roll(enemy.Attributes.Might + 4);
+        combatState.AddLogEntry($"  Rolled {enemy.Attributes.Might + 4}d6: {FormatRolls(attackRoll)} = {attackRoll.Successes} successes");
+
+        if (combatState.PlayerNegateNextAttack)
+        {
+            combatState.AddLogEntry($"  {player.Name} rolls clear of the massive blow!");
+            combatState.PlayerNegateNextAttack = false;
+            combatState.AddLogEntry("");
+            return;
+        }
+
+        var defendRoll = _diceService.Roll(player.DefenseDice);
+        combatState.AddLogEntry($"{player.Name} defends!");
+        combatState.AddLogEntry($"  Rolled {player.DefenseDice}d6: {FormatRolls(defendRoll)} = {defendRoll.Successes} successes");
+
+        var netSuccesses = Math.Max(0, attackRoll.Successes - defendRoll.Successes);
+        var damage = netSuccesses + _diceService.RollDamage(enemy.BaseDamageDice) + enemy.DamageBonus;
+
+        ApplyDamageToPlayer(player, damage, combatState);
+        combatState.AddLogEntry("");
+    }
+
+    private void ExecuteSeismicSlam(Enemy enemy, PlayerCharacter player, CombatState combatState)
+    {
+        var attackDice = enemy.Phase == 1 ? enemy.Attributes.Might + 3 : enemy.Attributes.Might + 4;
+        combatState.AddLogEntry($"{enemy.Name} slams the ground with earth-shaking force!");
+
+        var attackRoll = _diceService.Roll(attackDice);
+        combatState.AddLogEntry($"  Rolled {attackDice}d6: {FormatRolls(attackRoll)} = {attackRoll.Successes} successes");
+
+        if (combatState.PlayerNegateNextAttack)
+        {
+            combatState.AddLogEntry($"  {player.Name} leaps above the shockwave!");
+            combatState.PlayerNegateNextAttack = false;
+            combatState.AddLogEntry("");
+            return;
+        }
+
+        var defendRoll = _diceService.Roll(player.DefenseDice);
+        combatState.AddLogEntry($"{player.Name} braces for impact!");
+        combatState.AddLogEntry($"  Rolled {player.DefenseDice}d6: {FormatRolls(defendRoll)} = {defendRoll.Successes} successes");
+
+        var netSuccesses = Math.Max(0, attackRoll.Successes - defendRoll.Successes);
+        var baseDamage = enemy.Phase == 1 ? 2 : 3;
+        var damage = netSuccesses + _diceService.RollDamage(baseDamage);
+
+        ApplyDamageToPlayer(player, damage, combatState);
+        combatState.AddLogEntry($"  The shockwave hits all enemies, knocking them back!");
+        combatState.AddLogEntry($"  (Note: May knock into hazards - takes 2d8 electrical if knocked into conduits)");
+        combatState.AddLogEntry("");
+    }
+
+    private void ExecutePowerDraw(Enemy enemy, CombatState combatState)
+    {
+        var healAmount = enemy.Phase == 3 ? 25 : 15;
+        combatState.AddLogEntry($"{enemy.Name} drains energy from the power core!");
+
+        enemy.HP = Math.Min(enemy.MaxHP, enemy.HP + healAmount);
+
+        combatState.AddLogEntry($"  {enemy.Name} absorbs {healAmount} HP! (Now at {enemy.HP}/{enemy.MaxHP} HP)");
+        combatState.AddLogEntry("");
+    }
+
+    private void ExecuteOverchargedMaul(Enemy enemy, PlayerCharacter player, CombatState combatState)
+    {
+        var attackDice = enemy.Phase == 2 ? enemy.Attributes.Might + 5 : enemy.Attributes.Might + 6;
+        combatState.AddLogEntry($"{enemy.Name} charges its maul with crackling energy!");
+
+        var attackRoll = _diceService.Roll(attackDice);
+        combatState.AddLogEntry($"  Rolled {attackDice}d6: {FormatRolls(attackRoll)} = {attackRoll.Successes} successes");
+
+        if (combatState.PlayerNegateNextAttack)
+        {
+            combatState.AddLogEntry($"  {player.Name} narrowly avoids the electrified strike!");
+            combatState.PlayerNegateNextAttack = false;
+            combatState.AddLogEntry("");
+            return;
+        }
+
+        var defendRoll = _diceService.Roll(player.DefenseDice);
+        combatState.AddLogEntry($"{player.Name} defends!");
+        combatState.AddLogEntry($"  Rolled {player.DefenseDice}d6: {FormatRolls(defendRoll)} = {defendRoll.Successes} successes");
+
+        var netSuccesses = Math.Max(0, attackRoll.Successes - defendRoll.Successes);
+        var physicalDamage = netSuccesses + _diceService.RollDamage(enemy.BaseDamageDice) + enemy.DamageBonus;
+        var electricalDamage = enemy.Phase == 2 ? _diceService.RollDamage(2) + 1 : _diceService.RollDamage(3) + 1;
+        var totalDamage = physicalDamage + electricalDamage;
+
+        ApplyDamageToPlayer(player, totalDamage, combatState);
+        combatState.AddLogEntry($"  Physical + electrical damage combined!");
+        combatState.AddLogEntry("");
+    }
+
+    private void ExecuteDefensiveProtocols(Enemy enemy, CombatState combatState)
+    {
+        combatState.AddLogEntry($"{enemy.Name} activates defensive protocols!");
+
+        enemy.DefenseBonus = 5;
+        enemy.DefenseTurnsRemaining = 2;
+
+        combatState.AddLogEntry($"  Defense massively increased for 2 turns!");
+        combatState.AddLogEntry("");
+    }
+
+    private void ExecuteOmegaProtocol(Enemy enemy, PlayerCharacter player, CombatState combatState)
+    {
+        combatState.AddLogEntry($"{enemy.Name} initiates OMEGA PROTOCOL!");
+        combatState.AddLogEntry($"  Reality-warping energy surges through the arena!");
+
+        var attackRoll = _diceService.Roll(enemy.Attributes.Might + 6);
+        combatState.AddLogEntry($"  Rolled {enemy.Attributes.Might + 6}d6: {FormatRolls(attackRoll)} = {attackRoll.Successes} successes");
+
+        if (combatState.PlayerNegateNextAttack)
+        {
+            combatState.AddLogEntry($"  {player.Name} desperately shields themselves!");
+            combatState.PlayerNegateNextAttack = false;
+            combatState.AddLogEntry("");
+            return;
+        }
+
+        var defendRoll = _diceService.Roll(player.DefenseDice);
+        combatState.AddLogEntry($"{player.Name} desperately defends!");
+        combatState.AddLogEntry($"  Rolled {player.DefenseDice}d6: {FormatRolls(defendRoll)} = {defendRoll.Successes} successes");
+
+        var netSuccesses = Math.Max(0, attackRoll.Successes - defendRoll.Successes);
+        var damage = netSuccesses + _diceService.RollDamage(4) + 6; // 4d10 approx as 4d6+6
+
+        ApplyDamageToPlayer(player, damage, combatState);
+        combatState.AddLogEntry($"  Devastating AOE attack hits ALL enemies!");
+        combatState.AddLogEntry($"  Everyone is knocked back into hazards!");
         combatState.AddLogEntry("");
     }
 

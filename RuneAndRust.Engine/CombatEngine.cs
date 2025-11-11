@@ -255,6 +255,58 @@ public class CombatEngine
                 combatState.AddLogEntry($"  Psychic Stress: {stressBefore} → {player.PsychicStress}/100");
                 combatState.AddLogEntry($"  Corruption: {corruptionBefore} → {player.Corruption}/100");
                 break;
+
+            // [v0.6] NEW HERETICAL ABILITIES
+
+            case "Blight Surge":
+                traumaService.AddStress(player, 8);
+                traumaService.AddCorruption(player, 2);
+                combatState.AddLogEntry("  ⚠️ Blight energy surges through you...");
+                combatState.AddLogEntry($"  Psychic Stress: {stressBefore} → {player.PsychicStress}/100");
+                combatState.AddLogEntry($"  Corruption: {corruptionBefore} → {player.Corruption}/100");
+                break;
+
+            case "Blood Sacrifice":
+                // Special: Costs HP instead of Stamina
+                if (player.HP >= 30)
+                {
+                    player.HP = Math.Max(1, player.HP - 20); // Lose 20 HP, minimum 1
+                    traumaService.AddCorruption(player, 3);
+                    combatState.AddLogEntry("  ⚠️ You sacrifice your vitality for power...");
+                    combatState.AddLogEntry($"  HP: {player.HP + 20} → {player.HP}/{player.MaxHP}");
+                    combatState.AddLogEntry($"  Corruption: {corruptionBefore} → {player.Corruption}/100");
+                }
+                else
+                {
+                    combatState.AddLogEntry("  ⚠️ FAILED: HP too low (minimum 30 HP required)!");
+                    return; // Cancel ability
+                }
+                break;
+
+            case "Mass Psychic Lash":
+                traumaService.AddStress(player, 20);
+                combatState.AddLogEntry("  ⚠️ You project your trauma to all enemies...");
+                combatState.AddLogEntry($"  Psychic Stress: {stressBefore} → {player.PsychicStress}/100");
+                break;
+
+            case "Corruption Nova":
+                traumaService.AddCorruption(player, 10);
+                combatState.AddLogEntry("  ⚠️ You release accumulated Corruption as a destructive wave...");
+                combatState.AddLogEntry($"  Corruption: {corruptionBefore} → {player.Corruption}/100");
+                break;
+
+            case "Siphon Sanity":
+                combatState.AddLogEntry("  You drain enemy mental coherence...");
+                // Stress recovery handled after damage calculation
+                break;
+
+            case "Glitch Reality":
+                traumaService.AddStress(player, 5);
+                traumaService.AddCorruption(player, 4);
+                combatState.AddLogEntry("  ⚠️ You tear at the fabric of reality...");
+                combatState.AddLogEntry($"  Psychic Stress: {stressBefore} → {player.PsychicStress}/100");
+                combatState.AddLogEntry($"  Corruption: {corruptionBefore} → {player.Corruption}/100");
+                break;
         }
 
         // Check for threshold warnings after adding trauma
