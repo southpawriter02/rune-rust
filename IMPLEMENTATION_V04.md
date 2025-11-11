@@ -192,7 +192,7 @@ v0.4 expands the game from a linear 5-room dungeon to a 15-room experience with:
 
 ---
 
-## Phase 3: Special Mechanics ⚙️ IN PROGRESS
+## Phase 3: Special Mechanics ✅ COMPLETE
 
 ### What's Been Implemented
 
@@ -211,30 +211,43 @@ v0.4 expands the game from a linear 5-room dungeon to a 15-room experience with:
 - ✅ Room-specific success messages
 - ✅ Puzzles disable environmental hazards
 - ✅ Vault Corridor puzzle unlocks secret room
+- ✅ Research Archives puzzle rewards Clan-Forged equipment
+- ✅ Ammunition Forge puzzle rewards Optimized equipment
 
 **Combat System Integration:** ✅ COMPLETE
 - ✅ CombatState now holds CurrentRoom reference
 - ✅ InitializeCombat accepts room parameter
 - ✅ Environmental damage integrated with turn progression
 
-### What Still Needs to Be Done
+**Forlorn Scholar Talk Mechanic:** ✅ COMPLETE
+- ✅ Added "talk" command (aliases: speak, negotiate, convince)
+- ✅ WILL check (DC 4) to negotiate with Forlorn Scholar
+- ✅ Peaceful resolution gives Optimized loot, Legend, and boss hints
+- ✅ Failure forces combat as normal
+- ✅ Attack command allows skipping negotiation
+- ✅ Room properties track talkable NPCs
+- ✅ Special encounter message displayed in Observation Deck
+- ✅ Auto-combat disabled for rooms with talkable NPCs
 
-**Forlorn Scholar Talk Mechanic:**
-- ❌ Add "talk" command for Forlorn Scholar encounter
-- ❌ WILL check (DC 4) to negotiate
-- ❌ Peaceful resolution gives loot and hints
-- ❌ Failure forces combat
+**Loot Placement:** ✅ COMPLETE
+- ✅ Operations Center (Room 4): 2x Clan-Forged equipment cache
+  - 1x class-appropriate weapon
+  - 1x random armor
+  - Placed during character creation
+- ✅ Secret Room (Room 13): 3x Myth-Forged equipment with player choice
+  - 2x class-appropriate weapons
+  - 1x random armor
+  - Placed when room first discovered
+- ✅ Research Archives puzzle reward (Clan-Forged)
+- ✅ Ammunition Forge puzzle reward (Optimized)
 
-**Loot Placement:**
-- ❌ Operations Center (Room 4): 2x Clan-Forged equipment cache
-- ❌ Secret Room (Room 13): Myth-Forged choice reward
-- ❌ Research Archives puzzle reward
-- ❌ Ammunition Forge puzzle reward
+### Optional/Future Features
 
 **Boss Selection System (Optional):**
 - ❌ Add UI prompt in Vault Corridor
 - ❌ Display boss descriptions and difficulty
 - ❌ Lock opposite boss room when one is chosen
+- Note: Currently both bosses are accessible, no UI prompt
 
 **Summon Mechanics (Future):**
 - ❌ Update combat system to handle mid-combat spawns
@@ -244,34 +257,34 @@ v0.4 expands the game from a linear 5-room dungeon to a 15-room experience with:
 
 ---
 
-## Phase 4: Puzzle Rewards (IN PROGRESS)
+## Phase 4: Puzzle Rewards ✅ COMPLETE
 
 ### Puzzle Rooms
 
 **Room 7: Ammunition Forge (East Wing)**
 - Puzzle: Disable Unstable Reactors (WITS DC 3)
-- Reward: Optimized Armor
-- ❌ Implement puzzle reward logic
+- Reward: Optimized equipment (class-appropriate)
+- ✅ Implemented via AddPuzzleReward()
 
 **Room 8: Research Archives (West Wing)**
 - Puzzle: Hack secure terminal (WITS DC 4)
-- Reward: Clan-Forged Focus/Staff
-- ❌ Implement puzzle reward logic
+- Reward: Clan-Forged equipment (class-appropriate)
+- ✅ Implemented via AddPuzzleReward()
 
 **Room 12: Vault Corridor (Secret Room Discovery)**
 - Puzzle: Discover hidden door (WITS DC 5)
 - Reward: Access to Room 13 (Supply Cache)
-- ✅ Already implemented (UnlockSecretRoom)
+- ✅ Implemented (UnlockSecretRoom)
 
 **Room 13: Supply Cache (Secret Room)**
 - No puzzle, just reward
-- Reward: Myth-Forged equipment (player choice)
-- ❌ Implement loot placement
+- Reward: 3x Myth-Forged equipment (player choice)
+- ✅ Implemented (AddSecretRoomLoot)
 
 **Room 4: Operations Center (Hub)**
 - No puzzle
 - Reward: 2x Clan-Forged equipment cache
-- ❌ Implement loot placement
+- ✅ Implemented (AddOperationsCenterLoot)
 
 ---
 
@@ -342,9 +355,7 @@ v0.4 expands the game from a linear 5-room dungeon to a 15-room experience with:
 
 ### Incomplete Features
 - ⚠️ Summon mechanics are placeholders (log messages only)
-- ⚠️ Forlorn Scholar talk mechanic not yet implemented
-- ⚠️ Environmental hazards not yet fully functional
-- ⚠️ Secret room loot not yet placed
+- ⚠️ Boss selection UI not implemented (both bosses accessible)
 
 ---
 
@@ -368,14 +379,15 @@ v0.4 expands the game from a linear 5-room dungeon to a 15-room experience with:
 - ✅ Player can choose between 2 bosses
 - ✅ 8 enemy types total (3 existing + 5 new)
 - ✅ All new enemies have functional AI
-- ❌ War-Frame mini-boss is challenging but fair
-- ❌ Aetheric Aberration boss works (summons, phase shift)
-- ❌ Forlorn Scholar can be talked to or fought
-- ❌ Environmental hazards work (Unstable Reactors)
-- ❌ Secret room can be found
-- ❌ Full playthrough takes 45-60 minutes
-- ❌ Both paths feel distinct and rewarding
-- ❌ Game has replay value (2 paths × 2 bosses = 4 combinations)
+- ✅ Forlorn Scholar can be talked to or fought
+- ✅ Environmental hazards work (Unstable Reactors)
+- ✅ Secret room can be found
+- ✅ Loot placement complete (Operations Center, Secret Room, puzzles)
+- ⏳ War-Frame mini-boss is challenging but fair (needs testing)
+- ⏳ Aetheric Aberration boss works (summons are placeholders)
+- ⏳ Full playthrough takes 45-60 minutes (needs testing)
+- ⏳ Both paths feel distinct and rewarding (needs testing)
+- ✅ Game has replay value (2 paths × 2 bosses × talk/fight = multiple combinations)
 
 ---
 
@@ -422,17 +434,35 @@ v0.4 expands the game from a linear 5-room dungeon to a 15-room experience with:
 - Updated GameWorld helper methods
 - Updated combat initialization to pass current room
 
+**Phase 3 & 4 Complete (Loot & NPC Interaction):**
+- Implemented loot placement system
+  - Operations Center: 2x Clan-Forged equipment
+  - Secret Room: 3x Myth-Forged equipment with choice
+  - Puzzle rewards for Research Archives and Ammunition Forge
+- Implemented Forlorn Scholar talk mechanic
+  - Added Talk command type with aliases
+  - WILL check (DC 4) for peaceful resolution
+  - Success: Loot + Legend + boss hints
+  - Failure: Combat as normal
+  - Room properties for talkable NPCs
+  - Special encounter UI in Observation Deck
+- Updated combat auto-trigger logic for talkable NPCs
+- Attack command can skip negotiation
+
 ---
 
 ## Next Steps
 
 1. ✅ Commit Phase 1 & 2 changes
-2. Implement environmental hazards (Phase 3)
-3. Add puzzle reward logic (Phase 4)
-4. Implement talk mechanic for Forlorn Scholar
-5. Add summon mechanics to combat system
-6. Playtest both paths
-7. Balance encounters and loot
-8. Polish room descriptions
-9. Add replayability tracking
-10. Final testing and balance pass
+2. ✅ Implement environmental hazards (Phase 3)
+3. ✅ Add puzzle reward logic (Phase 4)
+4. ✅ Implement talk mechanic for Forlorn Scholar
+5. ⏳ Add summon mechanics to combat system (optional, placeholders work)
+6. ⏳ Playtest both paths
+7. ⏳ Balance encounters and loot
+8. ⏳ Polish room descriptions
+9. ⏳ Add replayability tracking (optional)
+10. ⏳ Final testing and balance pass
+
+**Current Status:** Phases 1-4 COMPLETE. Core v0.4 features fully implemented.
+**Remaining:** Phase 5 (Balance & Polish) - playtesting and balancing recommended
