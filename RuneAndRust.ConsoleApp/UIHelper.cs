@@ -484,6 +484,8 @@ public static class UIHelper
                 statusEffects.Add("STUNNED");
             if (enemy.BleedingTurnsRemaining > 0)
                 statusEffects.Add($"BLEEDING({enemy.BleedingTurnsRemaining})");
+            if (enemy.AnalyzedTurnsRemaining > 0)
+                statusEffects.Add($"ANALYZED({enemy.AnalyzedTurnsRemaining})");
 
             var statusText = statusEffects.Count > 0 ? $" [dim]({string.Join(", ", statusEffects)})[/]" : "";
             enemyTable.AddRow(new Markup($"{hpBar}{statusText}"));

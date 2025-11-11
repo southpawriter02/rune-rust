@@ -50,6 +50,7 @@ public class Enemy
     public bool IsStunned { get; set; } = false;
     public int StunTurnsRemaining { get; set; } = 0;
     public int BleedingTurnsRemaining { get; set; } = 0; // Scavenger Lv3 ability
+    public int AnalyzedTurnsRemaining { get; set; } = 0; // [v0.7] Adept status: +2 Accuracy for attackers
 
     // [v0.6] Additional enemy mechanics
     public int Soak { get; set; } = 0; // Damage reduction (armor)

@@ -162,6 +162,13 @@ public class CombatEngine
         // Apply accuracy bonus from equipment
         bonusDice += accuracyBonus;
 
+        // v0.7: Apply [Analyzed] status bonus (+2 Accuracy)
+        if (target.AnalyzedTurnsRemaining > 0)
+        {
+            bonusDice += 2;
+            combatState.AddLogEntry($"  [Analyzed] grants +2 Accuracy against {target.Name}!");
+        }
+
         var totalDice = attributeValue + bonusDice;
         var attackRoll = _diceService.Roll(totalDice);
 
@@ -1089,6 +1096,12 @@ public class CombatEngine
                 {
                     enemy.IsStunned = false;
                 }
+            }
+
+            // v0.7: Tick down [Analyzed] status
+            if (enemy.AnalyzedTurnsRemaining > 0)
+            {
+                enemy.AnalyzedTurnsRemaining--;
             }
         }
 
