@@ -1,0 +1,43 @@
+# Build results
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+*.dll
+*.exe
+*.pdb
+
+# User-specific files
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Visual Studio cache/options
+.vs/
+.vscode/
+
+# Rider IDE
+.idea/
+
+# NuGet packages
+*.nupkg
+*.snupkg
+packages/
+
+# Test results
+TestResults/
+*.trx
+*.coverage
+
+# Log files
+logs/
+*.log
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Save data (optional - uncomment if you don't want saves in git)
+# saves/
+# *.sav

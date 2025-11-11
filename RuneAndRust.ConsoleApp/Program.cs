@@ -2,6 +2,8 @@ using Spectre.Console;
 using RuneAndRust.Core;
 using RuneAndRust.Engine;
 using RuneAndRust.Persistence;
+using Serilog;
+using Serilog.Events;
 
 namespace RuneAndRust.ConsoleApp;
 
@@ -21,48 +23,83 @@ class Program
 
     static void Main(string[] args)
     {
-        bool playAgain = true;
+        // Configure Serilog (v0.8.1)
+        Log.Logger = new LoggerConfiguration()
+#if DEBUG
+            .MinimumLevel.Debug()  // Verbose logging in development
+#else
+            .MinimumLevel.Information()  // Less verbose in release
+#endif
+            .Enrich.WithThreadId()
+            .WriteTo.Console(
+                outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] ({ThreadId}) {Message:lj}{NewLine}{Exception}")
+            .WriteTo.File(
+                path: "logs/runerust-.log",
+                rollingInterval: RollingInterval.Day,
+                restrictedToMinimumLevel: LogEventLevel.Debug,
+                outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] [{SourceContext}] {Message:lj}{NewLine}{Exception}",
+                retainedFileCountLimit: 7)
+            .CreateLogger();
 
-        while (playAgain)
+        try
         {
-            // Reset game state for new game
-            _gameState = new GameState();
+            Log.Information("Rune & Rust starting up...");
 
-            // v0.8: Load NPC, Dialogue, and Quest databases
-            InitializeV08Systems();
+            bool playAgain = true;
 
-            DisplayWelcomeScreen();
-
-            // Show start menu (New Game or Load Game)
-            var startChoice = ShowStartMenu();
-
-            if (startChoice == "new")
+            while (playAgain)
             {
-                CharacterCreation();
-            }
-            else if (startChoice == "load")
-            {
-                if (!LoadGame())
+                // Reset game state for new game
+                _gameState = new GameState();
+
+                // v0.8: Load NPC, Dialogue, and Quest databases
+                InitializeV08Systems();
+
+                DisplayWelcomeScreen();
+
+                // Show start menu (New Game or Load Game)
+                var startChoice = ShowStartMenu();
+
+                if (startChoice == "new")
                 {
-                    // Load failed, return to start
-                    continue;
+                    CharacterCreation();
                 }
-            }
-            else
-            {
-                // User chose to exit
-                break;
+                else if (startChoice == "load")
+                {
+                    if (!LoadGame())
+                    {
+                        // Load failed, return to start
+                        continue;
+                    }
+                }
+                else
+                {
+                    // User chose to exit
+                    break;
+                }
+
+                MainGameLoop();
+
+                // Ask if player wants to play again
+                playAgain = PromptPlayAgain();
             }
 
-            MainGameLoop();
+            AnsiConsole.Clear();
+            AnsiConsole.MarkupLine("[yellow]Thanks for playing Rune & Rust![/]");
+            AnsiConsole.WriteLine();
 
-            // Ask if player wants to play again
-            playAgain = PromptPlayAgain();
+            Log.Information("Rune & Rust shutting down normally");
         }
-
-        AnsiConsole.Clear();
-        AnsiConsole.MarkupLine("[yellow]Thanks for playing Rune & Rust![/]");
-        AnsiConsole.WriteLine();
+        catch (Exception ex)
+        {
+            Log.Fatal(ex, "Unhandled exception in main game loop. Application terminating.");
+            AnsiConsole.WriteException(ex);
+            throw;
+        }
+        finally
+        {
+            Log.CloseAndFlush();
+        }
     }
 
     static bool PromptPlayAgain()
@@ -85,6 +122,8 @@ class Program
     {
         try
         {
+            Log.Information("Loading v0.8 NPC & Dialogue systems...");
+
             // Load NPC, Dialogue, and Quest databases
             _gameState.NPCService.LoadNPCDatabase();
             _gameState.DialogueService.LoadDialogueDatabase();
@@ -92,10 +131,13 @@ class Program
 
             // Place NPCs in designated rooms
             PlaceNPCsInWorld();
+
+            Log.Information("v0.8 systems loaded successfully");
         }
         catch (Exception ex)
         {
             // Non-fatal error - game can continue without NPCs
+            Log.Warning(ex, "Failed to load NPC system - game will continue without NPCs");
             Console.WriteLine($"Warning: Failed to load NPC system: {ex.Message}");
         }
     }

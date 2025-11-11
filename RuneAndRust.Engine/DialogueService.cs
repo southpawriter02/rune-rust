@@ -1,6 +1,7 @@
 using RuneAndRust.Core;
 using RuneAndRust.Core.Dialogue;
 using System.Text.Json;
+using Serilog;
 
 namespace RuneAndRust.Engine;
 
@@ -9,6 +10,7 @@ namespace RuneAndRust.Engine;
 /// </summary>
 public class DialogueService
 {
+    private static readonly ILogger _log = Log.ForContext<DialogueService>();
     private readonly Dictionary<string, DialogueNode> _dialogueDatabase = new();
     private readonly string _dialogueDataPath;
     private DialogueNode? _currentNode;
@@ -24,13 +26,18 @@ public class DialogueService
     /// </summary>
     public void LoadDialogueDatabase()
     {
+        _log.Debug("Loading dialogue database from: {DataPath}", _dialogueDataPath);
+
         if (!Directory.Exists(_dialogueDataPath))
         {
+            _log.Warning("Dialogue data path not found: {DataPath}", _dialogueDataPath);
             Console.WriteLine($"Warning: Dialogue data path not found: {_dialogueDataPath}");
             return;
         }
 
         var dialogueFiles = Directory.GetFiles(_dialogueDataPath, "*.json");
+        _log.Debug("Found {FileCount} dialogue files to load", dialogueFiles.Length);
+
         foreach (var file in dialogueFiles)
         {
             try
@@ -47,13 +54,16 @@ public class DialogueService
                         }
                     }
                 }
+                _log.Debug("Loaded dialogue file: {FileName}", Path.GetFileName(file));
             }
             catch (Exception ex)
             {
+                _log.Error(ex, "Error loading dialogue from file: {FileName}", Path.GetFileName(file));
                 Console.WriteLine($"Error loading dialogue from {file}: {ex.Message}");
             }
         }
 
+        _log.Information("Loaded {NodeCount} dialogue nodes from {FileCount} files", _dialogueDatabase.Count, dialogueFiles.Length);
         Console.WriteLine($"Loaded {_dialogueDatabase.Count} dialogue nodes");
     }
 
@@ -68,6 +78,12 @@ public class DialogueService
         if (!string.IsNullOrEmpty(npc.RootDialogueId))
         {
             _currentNode = _dialogueDatabase.GetValueOrDefault(npc.RootDialogueId);
+            _log.Information("Conversation started with NPC: {NpcId} ({NpcName}), Root Node: {RootDialogueId}",
+                npc.Id, npc.Name, npc.RootDialogueId);
+        }
+        else
+        {
+            _log.Warning("NPC {NpcId} ({NpcName}) has no root dialogue ID", npc.Id, npc.Name);
         }
 
         return _currentNode;
@@ -107,16 +123,29 @@ public class DialogueService
     {
         DialogueOutcome? outcome = option.Outcome;
 
+        _log.Information("Dialogue option selected: {OptionText}, NextNode: {NextNodeId}",
+            option.Text, option.NextNodeId ?? "END");
+
         // Move to next node
         DialogueNode? nextNode = null;
         if (!string.IsNullOrEmpty(option.NextNodeId))
         {
             nextNode = _dialogueDatabase.GetValueOrDefault(option.NextNodeId);
             _currentNode = nextNode;
+
+            if (nextNode != null)
+            {
+                _log.Debug("Transitioned to dialogue node: {NodeId}", nextNode.Id);
+            }
+            else
+            {
+                _log.Warning("Next node not found: {NextNodeId}", option.NextNodeId);
+            }
         }
         else
         {
             _currentNode = null; // End conversation
+            _log.Information("Dialogue ended (no next node)");
         }
 
         return (nextNode, outcome);
@@ -129,10 +158,14 @@ public class DialogueService
     {
         var messages = new List<string>();
 
+        _log.Information("Processing dialogue outcome: Type={OutcomeType}, NPC={NpcName}",
+            outcome.Type, npc.Name);
+
         switch (outcome.Type)
         {
             case OutcomeType.Information:
                 // Just reveals information, no mechanical effect
+                _log.Debug("Outcome: Information revealed (no mechanical effect)");
                 break;
 
             case OutcomeType.ReputationChange:
@@ -148,32 +181,40 @@ public class DialogueService
 
                     // Update NPC disposition
                     npc.UpdateDisposition(player.FactionReputations.GetReputation(npc.Faction));
+
+                    _log.Information("Reputation changed via dialogue: Faction={Faction}, Change={Change}",
+                        outcome.AffectedFaction.Value, outcome.ReputationChange);
                 }
                 break;
 
             case OutcomeType.QuestGiven:
                 messages.Add($"[Quest] {outcome.Data} added to quest log");
+                _log.Information("Quest given via dialogue: QuestId={QuestId}", outcome.Data);
                 break;
 
             case OutcomeType.QuestComplete:
                 messages.Add($"[Quest] {outcome.Data} completed!");
+                _log.Information("Quest completed via dialogue: QuestId={QuestId}", outcome.Data);
                 break;
 
             case OutcomeType.ItemReceived:
                 messages.Add($"[Item] Received: {outcome.Data}");
+                _log.Information("Item received via dialogue: ItemId={ItemId}", outcome.Data);
                 break;
 
             case OutcomeType.ItemLost:
                 messages.Add($"[Item] Lost: {outcome.Data}");
+                _log.Information("Item lost via dialogue: ItemId={ItemId}", outcome.Data);
                 break;
 
             case OutcomeType.InitiateCombat:
                 messages.Add($"{npc.Name} attacks!");
                 npc.IsHostile = true;
+                _log.Information("Combat initiated via dialogue: NPC={NpcName} ({NpcId})", npc.Name, npc.Id);
                 break;
 
             case OutcomeType.EndConversation:
-                // Just ends the conversation
+                _log.Debug("Outcome: End conversation");
                 break;
         }
 
@@ -185,6 +226,11 @@ public class DialogueService
     /// </summary>
     public void EndConversation()
     {
+        if (_currentNPC != null)
+        {
+            _log.Information("Conversation ended with NPC: {NpcName} ({NpcId})", _currentNPC.Name, _currentNPC.Id);
+        }
+
         _currentNode = null;
         _currentNPC = null;
     }
@@ -198,7 +244,12 @@ public class DialogueService
         if (!string.IsNullOrEmpty(check.Attribute))
         {
             int attributeValue = player.GetAttributeValue(check.Attribute);
-            if (attributeValue < check.TargetValue)
+            bool passed = attributeValue >= check.TargetValue;
+
+            _log.Debug("Skill check: Attribute={Attribute}, Required={Required}, Actual={Actual}, Result={Result}",
+                check.Attribute, check.TargetValue, attributeValue, passed ? "Pass" : "Fail");
+
+            if (!passed)
                 return false;
         }
 
@@ -206,7 +257,12 @@ public class DialogueService
         if (check.Skill.HasValue)
         {
             // Check if player has the specialization
-            if (player.Specialization != check.Skill.Value)
+            bool hasSpec = player.Specialization == check.Skill.Value;
+
+            _log.Debug("Specialization check: Required={Required}, PlayerHas={PlayerSpec}, Result={Result}",
+                check.Skill.Value, player.Specialization, hasSpec ? "Pass" : "Fail");
+
+            if (!hasSpec)
             {
                 return false;
             }

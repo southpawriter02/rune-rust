@@ -1,3 +1,5 @@
+using Serilog;
+
 namespace RuneAndRust.Engine;
 
 public enum CommandType
@@ -49,6 +51,8 @@ public class ParsedCommand
 
 public class CommandParser
 {
+    private static readonly ILogger _log = Log.ForContext<CommandParser>();
+
     private static readonly Dictionary<string, CommandType> CommandAliases = new()
     {
         // Look
@@ -158,6 +162,7 @@ public class CommandParser
     {
         if (string.IsNullOrWhiteSpace(input))
         {
+            _log.Debug("Empty command received");
             return new ParsedCommand { Type = CommandType.Unknown, RawInput = input };
         }
 
@@ -166,6 +171,7 @@ public class CommandParser
 
         if (parts.Length == 0)
         {
+            _log.Debug("Command parsed to zero parts");
             return new ParsedCommand { Type = CommandType.Unknown, RawInput = input };
         }
 
@@ -180,6 +186,7 @@ public class CommandParser
         if (CommandAliases.TryGetValue(firstWord, out var commandType))
         {
             command.Type = commandType;
+            _log.Information("Player command: {Command} -> Type: {CommandType}", input, commandType);
 
             // Handle direction-specific logic
             if (DirectionWords.Contains(firstWord))
@@ -246,6 +253,7 @@ public class CommandParser
         else
         {
             command.Type = CommandType.Unknown;
+            _log.Warning("Unknown command: {Command}", input);
         }
 
         return command;
