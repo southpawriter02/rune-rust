@@ -55,6 +55,12 @@ public class GameState
 
     public bool ShouldTriggerCombat()
     {
+        // [v0.4] Don't auto-trigger combat for rooms with talkable NPCs
+        if (CurrentRoom.HasTalkableNPC && !CurrentRoom.HasTalkedToNPC)
+        {
+            return false;
+        }
+
         return !CurrentRoom.HasBeenCleared &&
                CurrentRoom.Enemies.Count > 0 &&
                CurrentPhase == GamePhase.Exploration;
@@ -77,7 +83,18 @@ public class GameState
     {
         CurrentRoom.IsPuzzleSolved = true;
         WorldState.PuzzleSolved = true;
-        World.UnlockPuzzleDoor();
+
+        // [v0.4] Disable environmental hazards if present
+        if (CurrentRoom.HasEnvironmentalHazard)
+        {
+            CurrentRoom.IsHazardActive = false;
+        }
+
+        // [v0.4] Room-specific puzzle effects
+        if (CurrentRoom.Name == "Vault Corridor")
+        {
+            World.UnlockSecretRoom();
+        }
     }
 
     public void UpdateWorldState()

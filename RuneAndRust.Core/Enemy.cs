@@ -2,9 +2,17 @@ namespace RuneAndRust.Core;
 
 public enum EnemyType
 {
+    // v0.1-v0.3 enemies
     CorruptedServitor,
     BlightDrone,
-    RuinWarden
+    RuinWarden,
+
+    // v0.4 new enemies
+    ScrapHound,         // Tier 0 - Fast harasser
+    TestSubject,        // Tier 1 - Glass cannon
+    WarFrame,           // Tier 2 - Elite/Mini-boss
+    ForlornScholar,     // Tier 2 - Caster (can be talked to)
+    AethericAberration  // Boss - Magic focus
 }
 
 public class Enemy

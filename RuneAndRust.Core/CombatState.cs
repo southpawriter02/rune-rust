@@ -21,6 +21,9 @@ public class CombatState
     public bool IsActive { get; set; } = false;
     public bool CanFlee { get; set; } = true; // False for boss fights
 
+    // [v0.4] Current room for environmental hazards
+    public Room? CurrentRoom { get; set; } = null;
+
     // Player temporary effects
     public int PlayerNextAttackBonusDice { get; set; } = 0;
     public bool PlayerNegateNextAttack { get; set; } = false;
