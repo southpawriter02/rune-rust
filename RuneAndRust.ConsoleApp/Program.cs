@@ -218,12 +218,13 @@ class Program
             }
         }
 
-        // Restore puzzle state
+        // [v0.4] Restore puzzle state (deprecated - multiple puzzle rooms now)
+        // Old v0.3 saves may have PuzzleSolved flag, but v0.4 has multiple puzzles
+        // For backwards compatibility, we'll just ignore this for now
         if (worldState.PuzzleSolved)
         {
-            var puzzleRoom = _gameState.World.GetRoom("Puzzle Chamber");
-            puzzleRoom.IsPuzzleSolved = true;
-            _gameState.World.UnlockPuzzleDoor();
+            // TODO: Migrate old saves to new puzzle system
+            // For now, players will need to re-solve puzzles in v0.4
         }
     }
 
@@ -403,8 +404,9 @@ class Program
             return;
         }
 
-        // Check for victory condition (boss room cleared)
-        if (_gameState.CurrentRoom.Name == "Boss Sanctum" && _gameState.CurrentRoom.HasBeenCleared)
+        // [v0.4] Check for victory condition (either boss room cleared)
+        if ((_gameState.CurrentRoom.Name == "Arsenal Vault" || _gameState.CurrentRoom.Name == "Energy Core")
+            && _gameState.CurrentRoom.HasBeenCleared)
         {
             _gameState.CurrentPhase = GamePhase.Victory;
             UIHelper.DisplayVictory(_gameState.Player);
