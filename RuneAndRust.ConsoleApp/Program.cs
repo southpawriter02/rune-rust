@@ -796,8 +796,201 @@ class Program
         AnsiConsole.MarkupLine($"[yellow]⚠️ Corruption:[/]     {player.Corruption}/100 (unchanged - permanent)");
         AnsiConsole.WriteLine();
 
-        AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
-        Console.ReadLine();
+        // v0.7: Offer crafting option for Bone-Setters
+        if (player.Specialization == Specialization.BoneSetter)
+        {
+            AnsiConsole.MarkupLine("[cyan]💊 Would you like to craft Field Medicine items?[/]");
+            AnsiConsole.WriteLine();
+
+            var choice = AnsiConsole.Prompt(
+                new SelectionPrompt<string>()
+                    .Title("[cyan]Rest Menu:[/]")
+                    .AddChoices(new[] { "Craft Items", "Continue" })
+            );
+
+            if (choice == "Craft Items")
+            {
+                HandleCrafting();
+            }
+        }
+        else
+        {
+            AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+            Console.ReadLine();
+        }
+    }
+
+    static void HandleCrafting()
+    {
+        var player = _gameState.Player;
+        var craftingService = new CraftingService();
+
+        while (true)
+        {
+            AnsiConsole.Clear();
+            AnsiConsole.WriteLine();
+
+            var craftingRule = new Rule("[bold cyan]FIELD MEDICINE CRAFTING[/]")
+            {
+                Justification = Justify.Center
+            };
+            AnsiConsole.Write(craftingRule);
+            AnsiConsole.WriteLine();
+
+            // Display current components
+            AnsiConsole.MarkupLine("[cyan]Your Crafting Components:[/]");
+            if (player.CraftingComponents.Count == 0)
+            {
+                AnsiConsole.MarkupLine("[dim]  No components available[/]");
+            }
+            else
+            {
+                foreach (var component in player.CraftingComponents.OrderBy(c => c.Key))
+                {
+                    var componentInfo = CraftingComponent.Create(component.Key);
+                    AnsiConsole.MarkupLine($"  [yellow]{componentInfo.Name}:[/] {component.Value}x");
+                }
+            }
+            AnsiConsole.WriteLine();
+
+            // Display current consumables
+            AnsiConsole.MarkupLine($"[cyan]Current Consumables:[/] [yellow]{player.Consumables.Count}/{player.MaxConsumables}[/]");
+            if (player.Consumables.Count > 0)
+            {
+                foreach (var item in player.Consumables.GroupBy(c => c.Name))
+                {
+                    int count = item.Count();
+                    AnsiConsole.MarkupLine($"  [green]{item.Key}[/] x{count}");
+                }
+            }
+            else
+            {
+                AnsiConsole.MarkupLine("[dim]  No consumables in inventory[/]");
+            }
+            AnsiConsole.WriteLine();
+
+            // Get available recipes
+            var recipes = craftingService.GetAvailableRecipes(player);
+            if (recipes.Count == 0)
+            {
+                AnsiConsole.MarkupLine("[yellow]No recipes available. (Requires Bone-Setter specialization)[/]");
+                AnsiConsole.WriteLine();
+                AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+                Console.ReadLine();
+                return;
+            }
+
+            // Build recipe choices with availability indicators
+            var choices = new List<string>();
+            foreach (var recipe in recipes)
+            {
+                bool hasComponents = recipe.HasRequiredComponents(player.CraftingComponents);
+                string availability = hasComponents ? "[green]✓[/]" : "[red]✗[/]";
+                choices.Add($"{availability} {recipe.Name} (DC {recipe.SkillCheckDC})");
+            }
+            choices.Add("[dim]Back to Rest[/]");
+
+            // Show recipe selection menu
+            var choice = AnsiConsole.Prompt(
+                new SelectionPrompt<string>()
+                    .Title("[cyan]Select a recipe to craft:[/]")
+                    .AddChoices(choices)
+                    .HighlightStyle(new Style(Color.Cyan))
+            );
+
+            if (choice.Contains("Back to Rest"))
+            {
+                return;
+            }
+
+            // Extract recipe name from choice (remove availability indicator and DC)
+            string recipeName = choice.Substring(choice.IndexOf(']') + 2);
+            recipeName = recipeName.Substring(0, recipeName.IndexOf(" (DC"));
+
+            var selectedRecipe = craftingService.GetRecipeByName(recipeName);
+            if (selectedRecipe == null)
+                continue;
+
+            // Show recipe details and confirm
+            AnsiConsole.WriteLine();
+            AnsiConsole.MarkupLine($"[yellow]Recipe:[/] {selectedRecipe.Name}");
+            AnsiConsole.MarkupLine($"[dim]{selectedRecipe.Description}[/]");
+            AnsiConsole.MarkupLine($"[yellow]Required Components:[/] {selectedRecipe.GetRequirementsDescription()}");
+            AnsiConsole.MarkupLine($"[yellow]Difficulty Check:[/] DC {selectedRecipe.SkillCheckDC} ({selectedRecipe.SkillAttribute})");
+            AnsiConsole.WriteLine();
+
+            // Check if player has components
+            if (!selectedRecipe.HasRequiredComponents(player.CraftingComponents))
+            {
+                var missing = selectedRecipe.GetMissingComponents(player.CraftingComponents);
+                AnsiConsole.MarkupLine("[red]⚠️ Missing components:[/]");
+                foreach (var item in missing)
+                {
+                    AnsiConsole.MarkupLine($"  [red]{item}[/]");
+                }
+                AnsiConsole.WriteLine();
+                AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+                Console.ReadLine();
+                continue;
+            }
+
+            // Check if inventory is full
+            if (player.Consumables.Count >= player.MaxConsumables)
+            {
+                AnsiConsole.MarkupLine($"[red]⚠️ Consumables inventory full! ({player.Consumables.Count}/{player.MaxConsumables})[/]");
+                AnsiConsole.WriteLine();
+                AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+                Console.ReadLine();
+                continue;
+            }
+
+            // Confirm crafting
+            bool confirm = AnsiConsole.Confirm("[cyan]Craft this item?[/]");
+            if (!confirm)
+                continue;
+
+            // Attempt crafting
+            var result = craftingService.CraftItem(player, selectedRecipe);
+
+            AnsiConsole.WriteLine();
+            if (result.Success && result.CraftedItem != null)
+            {
+                // Success - add item and consume components
+                player.Consumables.Add(result.CraftedItem);
+
+                // Consume components
+                foreach (var requirement in selectedRecipe.RequiredComponents)
+                {
+                    player.CraftingComponents[requirement.Key] -= requirement.Value;
+                    if (player.CraftingComponents[requirement.Key] <= 0)
+                    {
+                        player.CraftingComponents.Remove(requirement.Key);
+                    }
+                }
+
+                AnsiConsole.MarkupLine($"[green]✅ {result.Message}[/]");
+                AnsiConsole.MarkupLine($"[green]Created:[/] {result.CraftedItem.GetDisplayName()}");
+                AnsiConsole.MarkupLine($"[dim]{result.CraftedItem.GetEffectsDescription()}[/]");
+            }
+            else
+            {
+                // Failure - still consume components (wasted in failed attempt)
+                foreach (var requirement in selectedRecipe.RequiredComponents)
+                {
+                    player.CraftingComponents[requirement.Key] -= requirement.Value;
+                    if (player.CraftingComponents[requirement.Key] <= 0)
+                    {
+                        player.CraftingComponents.Remove(requirement.Key);
+                    }
+                }
+
+                AnsiConsole.MarkupLine($"[red]❌ {result.Message}[/]");
+            }
+
+            AnsiConsole.WriteLine();
+            AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+            Console.ReadLine();
+        }
     }
 
     static void PuzzleLoop()
