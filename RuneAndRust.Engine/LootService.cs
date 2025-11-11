@@ -1,4 +1,5 @@
 using RuneAndRust.Core;
+using Serilog;
 
 namespace RuneAndRust.Engine;
 
@@ -7,6 +8,7 @@ namespace RuneAndRust.Engine;
 /// </summary>
 public class LootService
 {
+    private static readonly ILogger _log = Log.ForContext<LootService>();
     private readonly Random _random;
 
     public LootService()
@@ -19,13 +21,25 @@ public class LootService
     /// </summary>
     public Equipment? GenerateLoot(Enemy enemy, PlayerCharacter? player = null)
     {
-        return enemy.Type switch
+        var loot = enemy.Type switch
         {
             EnemyType.CorruptedServitor => GenerateServitorLoot(player),
             EnemyType.BlightDrone => GenerateDroneLoot(player),
             EnemyType.RuinWarden => GenerateBossLoot(player),
             _ => null
         };
+
+        if (loot != null)
+        {
+            _log.Information("Loot generated: Enemy={EnemyType}, Item={ItemName}, Quality={Quality}, Type={ItemType}",
+                enemy.Type, loot.Name, loot.Quality, loot.Type);
+        }
+        else
+        {
+            _log.Debug("No loot dropped: Enemy={EnemyType}", enemy.Type);
+        }
+
+        return loot;
     }
 
     /// <summary>

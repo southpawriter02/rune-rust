@@ -1,9 +1,11 @@
 using RuneAndRust.Core;
+using Serilog;
 
 namespace RuneAndRust.Engine;
 
 public class CombatEngine
 {
+    private static readonly ILogger _log = Log.ForContext<CombatEngine>();
     private readonly DiceService _diceService;
     private readonly SagaService _sagaService;
     private readonly LootService _lootService;
@@ -26,6 +28,9 @@ public class CombatEngine
     /// </summary>
     public CombatState InitializeCombat(PlayerCharacter player, List<Enemy> enemies, Room? currentRoom = null, bool canFlee = true)
     {
+        _log.Information("Combat initiated: Player={PlayerName}, Enemies={EnemyCount}, CanFlee={CanFlee}, Room={RoomId}",
+            player.Name, enemies.Count, canFlee, currentRoom?.Id);
+
         var combatState = new CombatState
         {
             Player = player,
@@ -220,16 +225,24 @@ public class CombatEngine
         {
             target.HP -= damage;
             combatState.AddLogEntry($"  {target.Name} takes {damage} damage! (HP: {Math.Max(0, target.HP)}/{target.MaxHP})");
+
+            _log.Information("Damage dealt: Attacker={Attacker}, Target={Target}, Damage={Damage}, AttackSuccesses={AttackSuccesses}, DefendSuccesses={DefendSuccesses}, RemainingHP={RemainingHP}",
+                player.Name, target.Name, damage, attackRoll.Successes, defendRoll.Successes, target.HP);
         }
         else
         {
             combatState.AddLogEntry($"  The attack is deflected!");
+
+            _log.Debug("Attack deflected: Attacker={Attacker}, Target={Target}, AttackSuccesses={AttackSuccesses}, DefendSuccesses={DefendSuccesses}",
+                player.Name, target.Name, attackRoll.Successes, defendRoll.Successes);
         }
 
         // Check if target is defeated
         if (!target.IsAlive)
         {
             combatState.AddLogEntry($"  {target.Name} is destroyed!");
+
+            _log.Information("Enemy defeated: Enemy={EnemyName}, Killer={PlayerName}", target.Name, player.Name);
         }
 
         combatState.AddLogEntry("");
@@ -335,10 +348,14 @@ public class CombatEngine
     {
         var player = combatState.Player;
 
+        _log.Information("Ability use attempt: Character={CharacterName}, Ability={AbilityName}, Target={Target}, StaminaCost={Cost}, CurrentStamina={CurrentStamina}",
+            player.Name, ability.Name, target?.Name ?? "None", ability.StaminaCost, player.Stamina);
+
         // Check stamina cost
         if (player.Stamina < ability.StaminaCost)
         {
             combatState.AddLogEntry($"Not enough stamina! ({player.Stamina}/{ability.StaminaCost} required)");
+            _log.Debug("Ability failed: Insufficient stamina for {AbilityName}", ability.Name);
             return false;
         }
 
@@ -347,6 +364,9 @@ public class CombatEngine
 
         combatState.AddLogEntry($"{player.Name} uses {ability.Name}!");
         combatState.AddLogEntry($"  Cost: {ability.StaminaCost} Stamina (Remaining: {player.Stamina}/{player.MaxStamina})");
+
+        _log.Information("Ability used: Character={CharacterName}, Ability={AbilityName}, Target={Target}, RemainingStamina={RemainingStamina}",
+            player.Name, ability.Name, target?.Name ?? "None", player.Stamina);
 
         // [v0.5] Apply trauma costs for heretical abilities
         var traumaService = new TraumaEconomyService();
@@ -1044,6 +1064,7 @@ public class CombatEngine
         if (!combatState.Player.IsAlive)
         {
             combatState.IsActive = false;
+            _log.Information("Combat ended: Player={PlayerName}, Result=Defeat", combatState.Player.Name);
             return true;
         }
 
@@ -1053,6 +1074,9 @@ public class CombatEngine
             combatState.IsActive = false;
             combatState.AddLogEntry("=== VICTORY ===");
             combatState.AddLogEntry("All enemies have been defeated!");
+
+            _log.Information("Combat ended: Player={PlayerName}, Result=Victory, EnemiesDefeated={EnemyCount}",
+                combatState.Player.Name, combatState.Enemies.Count);
 
             // Award Legend for defeated enemies (default trauma mod 1.0)
             // Combat context will be set by the caller

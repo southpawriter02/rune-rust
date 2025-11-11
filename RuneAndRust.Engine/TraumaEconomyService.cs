@@ -1,4 +1,5 @@
 using RuneAndRust.Core;
+using Serilog;
 
 namespace RuneAndRust.Engine;
 
@@ -7,6 +8,7 @@ namespace RuneAndRust.Engine;
 /// </summary>
 public class TraumaEconomyService
 {
+    private static readonly ILogger _log = Log.ForContext<TraumaEconomyService>();
     private const int MaxTraumaValue = 100;
     private const int MinTraumaValue = 0;
 
@@ -28,13 +30,29 @@ public class TraumaEconomyService
         if (allowResolveCheck && resolveSuccesses > 0)
         {
             actualAmount = Math.Max(0, baseAmount - resolveSuccesses);
+            _log.Debug("Stress reduced by Resolve Check: Character={CharacterName}, BaseAmount={Base}, Successes={Successes}, ReducedAmount={Reduced}",
+                character.Name, baseAmount, resolveSuccesses, actualAmount);
         }
 
         // Apply stress gain
         int oldStress = character.PsychicStress;
         character.PsychicStress = Math.Clamp(character.PsychicStress + actualAmount, MinTraumaValue, MaxTraumaValue);
+        int actualGained = character.PsychicStress - oldStress;
 
-        return character.PsychicStress - oldStress; // Return actual change
+        var threshold = GetStressThreshold(character);
+        var oldThreshold = GetStressThresholdForValue(oldStress);
+
+        _log.Information("Stress gained: Character={CharacterName}, Amount={Amount}, OldStress={Old}, NewStress={New}, Threshold={Threshold}",
+            character.Name, actualGained, oldStress, character.PsychicStress, threshold);
+
+        // Log threshold transitions
+        if (oldThreshold != threshold)
+        {
+            _log.Warning("Stress threshold crossed: Character={CharacterName}, OldThreshold={OldThreshold}, NewThreshold={NewThreshold}",
+                character.Name, oldThreshold, threshold);
+        }
+
+        return actualGained;
     }
 
     /// <summary>
@@ -49,8 +67,22 @@ public class TraumaEconomyService
 
         int oldCorruption = character.Corruption;
         character.Corruption = Math.Clamp(character.Corruption + amount, MinTraumaValue, MaxTraumaValue);
+        int actualGained = character.Corruption - oldCorruption;
 
-        return character.Corruption - oldCorruption; // Return actual change
+        var threshold = GetCorruptionThreshold(character);
+        var oldThreshold = GetCorruptionThresholdForValue(oldCorruption);
+
+        _log.Information("Corruption gained: Character={CharacterName}, Amount={Amount}, OldCorruption={Old}, NewCorruption={New}, Threshold={Threshold}",
+            character.Name, actualGained, oldCorruption, character.Corruption, threshold);
+
+        // Log threshold transitions
+        if (oldThreshold != threshold)
+        {
+            _log.Warning("Corruption threshold crossed: Character={CharacterName}, OldThreshold={OldThreshold}, NewThreshold={NewThreshold}",
+                character.Name, oldThreshold, threshold);
+        }
+
+        return actualGained;
     }
 
     /// <summary>
@@ -58,7 +90,11 @@ public class TraumaEconomyService
     /// </summary>
     public void ClearStress(PlayerCharacter character)
     {
+        int oldStress = character.PsychicStress;
         character.PsychicStress = 0;
+
+        _log.Information("Stress cleared: Character={CharacterName}, OldStress={Old}, Recovered={Recovered}",
+            character.Name, oldStress, oldStress);
     }
 
     /// <summary>
@@ -188,5 +224,34 @@ public class TraumaEconomyService
         string empty = new string('░', barLength - filledBlocks);
 
         return $"[{filled}{empty}]";
+    }
+
+    /// <summary>
+    /// Helper method to get stress threshold for a specific value
+    /// </summary>
+    private StressThreshold GetStressThresholdForValue(int stress)
+    {
+        return stress switch
+        {
+            >= 76 => StressThreshold.Critical,
+            >= 51 => StressThreshold.Severe,
+            >= 26 => StressThreshold.Strained,
+            _ => StressThreshold.Safe
+        };
+    }
+
+    /// <summary>
+    /// Helper method to get corruption threshold for a specific value
+    /// </summary>
+    private CorruptionThreshold GetCorruptionThresholdForValue(int corruption)
+    {
+        return corruption switch
+        {
+            >= 81 => CorruptionThreshold.Extreme,
+            >= 61 => CorruptionThreshold.High,
+            >= 41 => CorruptionThreshold.Moderate,
+            >= 21 => CorruptionThreshold.Low,
+            _ => CorruptionThreshold.Minimal
+        };
     }
 }
