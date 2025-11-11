@@ -1503,6 +1503,15 @@ class Program
             AnsiConsole.WriteLine();
 
             var choices = new List<string>();
+
+            // v0.7: Check for specialization unlock
+            if (player.ProgressionPoints >= 10 &&
+                player.Specialization == Specialization.None &&
+                SpecializationFactory.GetAvailableSpecializations(player.Class).Count > 0)
+            {
+                choices.Add("⭐ Unlock Specialization (10 PP)");
+            }
+
             if (player.ProgressionPoints >= 1)
             {
                 choices.Add("Increase Attribute (1 PP)");
@@ -1521,6 +1530,12 @@ class Program
 
             if (choice == "Save PP for Later")
             {
+                break;
+            }
+            else if (choice.StartsWith("⭐ Unlock Specialization"))
+            {
+                HandleSpecializationSelection(player);
+                // Break after specialization selection since it's a major choice
                 break;
             }
             else if (choice.StartsWith("Increase Attribute"))
@@ -1627,6 +1642,130 @@ class Program
                 AnsiConsole.MarkupLine("[red]Cannot advance this ability (not enough PP or already at max rank)[/]");
                 System.Threading.Thread.Sleep(1000);
             }
+        }
+    }
+
+    static void HandleSpecializationSelection(PlayerCharacter player)
+    {
+        AnsiConsole.Clear();
+        AnsiConsole.WriteLine();
+
+        var specializationRule = new Rule("[bold cyan]⭐ SPECIALIZATION UNLOCK ⭐[/]")
+        {
+            Justification = Justify.Center
+        };
+        AnsiConsole.Write(specializationRule);
+        AnsiConsole.WriteLine();
+
+        AnsiConsole.MarkupLine("[yellow]You have reached a pivotal moment in your journey![/]");
+        AnsiConsole.MarkupLine("[dim]Choose a specialization to define your role and unlock powerful abilities.[/]");
+        AnsiConsole.WriteLine();
+
+        // Get available specializations for player's class
+        var availableSpecs = SpecializationFactory.GetAvailableSpecializations(player.Class);
+
+        if (availableSpecs.Count == 0)
+        {
+            AnsiConsole.MarkupLine("[red]No specializations available for your class.[/]");
+            AnsiConsole.WriteLine();
+            AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+            Console.ReadLine();
+            return;
+        }
+
+        // Build choice list with specialization names
+        var choices = availableSpecs.Select(s => s.ToString()).ToList();
+        choices.Add("Cancel");
+
+        // Display specialization options
+        var choice = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+                .Title($"[yellow]Available Specializations for {player.Class}:[/]")
+                .AddChoices(choices)
+                .HighlightStyle(new Style(Color.Cyan))
+        );
+
+        if (choice == "Cancel")
+        {
+            return;
+        }
+
+        // Parse selected specialization
+        if (!Enum.TryParse<Specialization>(choice, out var selectedSpec))
+        {
+            AnsiConsole.MarkupLine("[red]Invalid specialization selection.[/]");
+            System.Threading.Thread.Sleep(1000);
+            return;
+        }
+
+        // Show detailed description
+        AnsiConsole.Clear();
+        AnsiConsole.WriteLine();
+        AnsiConsole.MarkupLine($"[bold yellow]{selectedSpec}[/]");
+        AnsiConsole.WriteLine();
+
+        var description = SpecializationFactory.GetSpecializationDescription(selectedSpec);
+        var panel = new Panel(description)
+        {
+            Border = BoxBorder.Rounded,
+            BorderColor = Color.Cyan,
+            Padding = new Padding(2, 1)
+        };
+        AnsiConsole.Write(panel);
+        AnsiConsole.WriteLine();
+
+        // Confirm selection
+        AnsiConsole.MarkupLine($"[yellow]Cost: 10 PP (Current: {player.ProgressionPoints} PP)[/]");
+        AnsiConsole.MarkupLine("[dim]This is a permanent choice and cannot be changed![/]");
+        AnsiConsole.WriteLine();
+
+        bool confirm = AnsiConsole.Confirm($"[cyan]Unlock {selectedSpec} specialization?[/]");
+
+        if (!confirm)
+        {
+            AnsiConsole.MarkupLine("[yellow]Specialization selection cancelled.[/]");
+            System.Threading.Thread.Sleep(1000);
+            return;
+        }
+
+        // Apply specialization
+        bool success = _sagaService.UnlockSpecialization(player, selectedSpec);
+
+        if (success)
+        {
+            AnsiConsole.WriteLine();
+            AnsiConsole.MarkupLine($"[green]✅ Specialization unlocked: {selectedSpec}![/]");
+            AnsiConsole.MarkupLine($"[yellow]PP Remaining: {player.ProgressionPoints}[/]");
+            AnsiConsole.WriteLine();
+
+            // Show granted abilities
+            AnsiConsole.MarkupLine("[cyan]New Abilities Granted:[/]");
+            var newAbilities = player.Abilities.TakeLast(3).ToList(); // Assuming 3 tier 1 abilities
+            foreach (var ability in newAbilities)
+            {
+                AnsiConsole.MarkupLine($"  [green]• {ability.Name}[/] - {ability.Description}");
+            }
+
+            // Special message for Bone-Setter
+            if (selectedSpec == Specialization.BoneSetter)
+            {
+                AnsiConsole.WriteLine();
+                AnsiConsole.MarkupLine("[cyan]💊 Field Medicine crafting unlocked![/]");
+                AnsiConsole.MarkupLine("[dim]You can craft healing items during rest at Sanctuaries.[/]");
+                AnsiConsole.MarkupLine("[dim]Starting supplies granted: 3x Healing Poultice + components[/]");
+            }
+
+            AnsiConsole.WriteLine();
+            AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+            Console.ReadLine();
+        }
+        else
+        {
+            AnsiConsole.WriteLine();
+            AnsiConsole.MarkupLine("[red]❌ Failed to unlock specialization (insufficient PP or already have one)[/]");
+            AnsiConsole.WriteLine();
+            AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+            Console.ReadLine();
         }
     }
 
