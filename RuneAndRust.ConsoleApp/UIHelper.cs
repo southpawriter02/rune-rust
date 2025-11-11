@@ -71,10 +71,40 @@ public static class UIHelper
         table.AddRow($"MIGHT: {character.Attributes.Might} | FINESSE: {character.Attributes.Finesse} | WITS: {character.Attributes.Wits}");
         table.AddRow($"WILL: {character.Attributes.Will} | STURDINESS: {character.Attributes.Sturdiness}");
 
-        // Weapon
+        // Equipment (v0.3)
         table.AddRow(new Markup(""));  // Spacer
-        table.AddRow(new Markup("[bold]WEAPON[/]"));
-        table.AddRow($"{character.WeaponName} ([yellow]{character.WeaponAttribute.ToUpper()}[/]-based, {character.BaseDamage}d6)");
+        table.AddRow(new Markup("[bold]EQUIPMENT[/]"));
+
+        if (character.EquippedWeapon != null)
+        {
+            var weapon = character.EquippedWeapon;
+            table.AddRow($"[yellow]Weapon:[/] {weapon.GetDisplayName()}");
+            table.AddRow($"  • {weapon.GetDamageDescription()} damage ({weapon.StaminaCost} Stamina)");
+            if (weapon.GetBonusesDescription() != "None")
+                table.AddRow($"  • {weapon.GetBonusesDescription()}");
+        }
+        else if (!string.IsNullOrEmpty(character.WeaponName))
+        {
+            // Fallback for legacy saves (v0.1/v0.2)
+            table.AddRow($"[yellow]Weapon:[/] {character.WeaponName} ([yellow]{character.WeaponAttribute.ToUpper()}[/]-based, {character.BaseDamage}d6)");
+        }
+        else
+        {
+            table.AddRow($"[yellow]Weapon:[/] [dim]Unarmed[/]");
+        }
+
+        if (character.EquippedArmor != null)
+        {
+            var armor = character.EquippedArmor;
+            table.AddRow($"[yellow]Armor:[/] {armor.GetDisplayName()}");
+            table.AddRow($"  • +{armor.HPBonus} HP, -{armor.DefenseBonus} to enemy attacks");
+            if (armor.GetBonusesDescription() != "None")
+                table.AddRow($"  • {armor.GetBonusesDescription()}");
+        }
+        else
+        {
+            table.AddRow($"[yellow]Armor:[/] [dim]None[/]");
+        }
 
         // Abilities (all usable in v0.2.1, ranks shown)
         table.AddRow(new Markup(""));  // Spacer
@@ -122,6 +152,12 @@ public static class UIHelper
         if (!room.HasBeenCleared && room.Enemies.Count > 0)
         {
             AnsiConsole.MarkupLine("[red]⚠ You sense danger ahead...[/]");
+        }
+
+        // Show items on ground (v0.3)
+        if (room.ItemsOnGround.Count > 0)
+        {
+            DisplayGroundItems(room);
         }
 
         AnsiConsole.WriteLine();
@@ -490,5 +526,212 @@ public static class UIHelper
         var empty = new string('░', emptyBlocks);
 
         return new Markup($"[dim]{label}:[/] [{fillColor}]{filled}[/][{emptyColor}]{empty}[/] [bold]{current}/{max}[/]");
+    }
+
+    // ============================================================
+    // EQUIPMENT & INVENTORY UI (v0.3)
+    // ============================================================
+
+    /// <summary>
+    /// Display player inventory and equipped items
+    /// </summary>
+    public static void DisplayInventory(PlayerCharacter player)
+    {
+        AnsiConsole.WriteLine();
+
+        var table = new Table()
+            .Border(TableBorder.Rounded)
+            .BorderColor(Color.Yellow);
+
+        table.AddColumn(new TableColumn($"[bold yellow]{player.Name}'s Equipment & Inventory[/]").Centered());
+
+        // Equipped Items
+        table.AddRow(new Markup("[bold]EQUIPPED[/]"));
+
+        if (player.EquippedWeapon != null)
+        {
+            var weapon = player.EquippedWeapon;
+            table.AddRow($"[yellow]Weapon:[/] {weapon.GetDisplayName()}");
+            table.AddRow($"  [dim]• Damage: {weapon.GetDamageDescription()} ({weapon.StaminaCost} Stamina)[/]");
+            if (weapon.AccuracyBonus != 0)
+                table.AddRow($"  [dim]• Accuracy: {(weapon.AccuracyBonus > 0 ? "+" : "")}{weapon.AccuracyBonus}[/]");
+            var bonuses = weapon.GetBonusesDescription();
+            if (bonuses != "None")
+                table.AddRow($"  [dim]• Bonuses: {bonuses}[/]");
+        }
+        else
+        {
+            table.AddRow($"[yellow]Weapon:[/] [dim]None equipped (unarmed)[/]");
+        }
+
+        if (player.EquippedArmor != null)
+        {
+            var armor = player.EquippedArmor;
+            table.AddRow($"[yellow]Armor:[/] {armor.GetDisplayName()}");
+            table.AddRow($"  [dim]• HP Bonus: +{armor.HPBonus}[/]");
+            table.AddRow($"  [dim]• Defense: -{armor.DefenseBonus} to enemy attacks[/]");
+            var bonuses = armor.GetBonusesDescription();
+            if (bonuses != "None")
+                table.AddRow($"  [dim]• Bonuses: {bonuses}[/]");
+        }
+        else
+        {
+            table.AddRow($"[yellow]Armor:[/] [dim]None equipped[/]");
+        }
+
+        // Inventory
+        table.AddRow(new Markup(""));  // Spacer
+        table.AddRow(new Markup($"[bold]CARRIED[/] [dim]({player.Inventory.Count}/{player.MaxInventorySize})[/]"));
+
+        if (player.Inventory.Count == 0)
+        {
+            table.AddRow(new Markup("[dim]Empty[/]"));
+        }
+        else
+        {
+            foreach (var item in player.Inventory)
+            {
+                var itemType = item.Type == EquipmentType.Weapon ? "⚔" : "🛡";
+                var qualityColor = GetQualityColor(item.Quality);
+                table.AddRow($"[{qualityColor}]{itemType} {item.GetDisplayName()}[/]");
+
+                if (item.Type == EquipmentType.Weapon)
+                {
+                    table.AddRow($"  [dim]• Damage: {item.GetDamageDescription()} ({item.StaminaCost} Stamina)[/]");
+                }
+                else
+                {
+                    table.AddRow($"  [dim]• HP: +{item.HPBonus}, Defense: -{item.DefenseBonus}[/]");
+                }
+            }
+        }
+
+        AnsiConsole.Write(table);
+        AnsiConsole.WriteLine();
+        AnsiConsole.MarkupLine("[dim]Use 'equip [item]' to equip from inventory, 'compare [item]' to compare items.[/]");
+        AnsiConsole.WriteLine();
+    }
+
+    /// <summary>
+    /// Display items on ground in current room
+    /// </summary>
+    public static void DisplayGroundItems(Room room)
+    {
+        if (room.ItemsOnGround.Count == 0) return;
+
+        AnsiConsole.MarkupLine("[yellow]Items on the ground:[/]");
+        foreach (var item in room.ItemsOnGround)
+        {
+            var itemType = item.Type == EquipmentType.Weapon ? "⚔" : "🛡";
+            var qualityColor = GetQualityColor(item.Quality);
+            AnsiConsole.MarkupLine($"  [{qualityColor}]{itemType} {item.GetDisplayName()}[/] [dim]- Use 'pickup {item.Name}' to take[/]");
+        }
+        AnsiConsole.WriteLine();
+    }
+
+    /// <summary>
+    /// Display equipment comparison
+    /// </summary>
+    public static void DisplayEquipmentComparison(EquipmentComparison comparison)
+    {
+        AnsiConsole.WriteLine();
+
+        var panel = new Panel(BuildComparisonMarkup(comparison))
+        {
+            Border = BoxBorder.Double,
+            BorderColor = comparison.IsUpgrade ? Color.Green : Color.Red,
+            Header = new PanelHeader("[bold]EQUIPMENT COMPARISON[/]"),
+            Padding = new Padding(2, 1)
+        };
+
+        AnsiConsole.Write(panel);
+        AnsiConsole.WriteLine();
+    }
+
+    private static string BuildComparisonMarkup(EquipmentComparison comparison)
+    {
+        var markup = "";
+
+        // Current item
+        if (comparison.Current != null)
+        {
+            markup += $"[bold]CURRENT:[/] {comparison.Current.GetDisplayName()}\n";
+            if (comparison.Current.Type == EquipmentType.Weapon)
+            {
+                markup += $"  • Damage: {comparison.Current.GetDamageDescription()}\n";
+                markup += $"  • Stamina Cost: {comparison.Current.StaminaCost}\n";
+                if (comparison.Current.AccuracyBonus != 0)
+                    markup += $"  • Accuracy: {(comparison.Current.AccuracyBonus > 0 ? "+" : "")}{comparison.Current.AccuracyBonus}\n";
+            }
+            else
+            {
+                markup += $"  • HP Bonus: +{comparison.Current.HPBonus}\n";
+                markup += $"  • Defense: -{comparison.Current.DefenseBonus}\n";
+            }
+            var currentBonuses = comparison.Current.GetBonusesDescription();
+            if (currentBonuses != "None")
+                markup += $"  • Bonuses: {currentBonuses}\n";
+
+            markup += "\n";
+        }
+        else
+        {
+            markup += "[bold]CURRENT:[/] [dim]Nothing equipped[/]\n\n";
+        }
+
+        // Proposed item
+        markup += $"[bold]NEW:[/] {comparison.Proposed.GetDisplayName()}\n";
+        if (comparison.Proposed.Type == EquipmentType.Weapon)
+        {
+            markup += $"  • Damage: {comparison.Proposed.GetDamageDescription()}\n";
+            markup += $"  • Stamina Cost: {comparison.Proposed.StaminaCost}\n";
+            if (comparison.Proposed.AccuracyBonus != 0)
+                markup += $"  • Accuracy: {(comparison.Proposed.AccuracyBonus > 0 ? "+" : "")}{comparison.Proposed.AccuracyBonus}\n";
+        }
+        else
+        {
+            markup += $"  • HP Bonus: +{comparison.Proposed.HPBonus}\n";
+            markup += $"  • Defense: -{comparison.Proposed.DefenseBonus}\n";
+        }
+        var proposedBonuses = comparison.Proposed.GetBonusesDescription();
+        if (proposedBonuses != "None")
+            markup += $"  • Bonuses: {proposedBonuses}\n";
+
+        // Differences
+        if (comparison.Differences.Count > 0)
+        {
+            markup += "\n[bold]CHANGES:[/]\n";
+            foreach (var diff in comparison.Differences)
+            {
+                var color = diff.StartsWith("NEW:") || diff.Contains("+") ? "green" : "red";
+                markup += $"  [{color}]• {diff}[/]\n";
+            }
+        }
+
+        // Verdict
+        markup += "\n";
+        if (comparison.IsUpgrade)
+        {
+            markup += "[bold green]⬆ UPGRADE RECOMMENDED[/]";
+        }
+        else
+        {
+            markup += "[bold red]⬇ DOWNGRADE WARNING[/]";
+        }
+
+        return markup;
+    }
+
+    private static string GetQualityColor(QualityTier quality)
+    {
+        return quality switch
+        {
+            QualityTier.JuryRigged => "grey",
+            QualityTier.Scavenged => "white",
+            QualityTier.ClanForged => "blue",
+            QualityTier.Optimized => "purple",
+            QualityTier.MythForged => "yellow",
+            _ => "white"
+        };
     }
 }

@@ -11,6 +11,9 @@ public class Room
     public List<Enemy> Enemies { get; set; } = new();
     public bool HasBeenCleared { get; set; } = false;
 
+    // Equipment & Loot (v0.3)
+    public List<Equipment> ItemsOnGround { get; set; } = new();
+
     // Puzzle
     public bool HasPuzzle { get; set; } = false;
     public bool IsPuzzleSolved { get; set; } = false;

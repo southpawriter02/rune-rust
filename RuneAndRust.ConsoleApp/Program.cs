@@ -11,7 +11,9 @@ class Program
     private static DiceService _diceService = new();
     private static CommandParser _commandParser = new();
     private static SagaService _sagaService = new();
-    private static CombatEngine _combatEngine = new(_diceService, _sagaService);
+    private static LootService _lootService = new();
+    private static EquipmentService _equipmentService = new();
+    private static CombatEngine _combatEngine = new(_diceService, _sagaService, _lootService, _equipmentService);
     private static EnemyAI _enemyAI = new(_diceService);
     private static SaveRepository _saveRepository = new();
 
@@ -156,8 +158,8 @@ class Program
         var selectedIndex = saveChoices.IndexOf(choice);
         var selectedSave = saves[selectedIndex];
 
-        // Load the game
-        var (loadedPlayer, loadedWorldState) = _saveRepository.LoadGame(selectedSave.CharacterName);
+        // Load the game (including equipment and room items - v0.3)
+        var (loadedPlayer, loadedWorldState, roomItemsJson) = _saveRepository.LoadGame(selectedSave.CharacterName);
 
         if (loadedPlayer == null || loadedWorldState == null)
         {
@@ -174,6 +176,12 @@ class Program
 
         // Restore world state
         RestoreWorldState(loadedWorldState);
+
+        // Restore room items (v0.3)
+        if (!string.IsNullOrEmpty(roomItemsJson))
+        {
+            _saveRepository.RestoreRoomItems(_gameState.World, roomItemsJson);
+        }
 
         // Set current room
         foreach (var room in _gameState.World.Rooms.Values)
@@ -233,8 +241,8 @@ class Program
         var panel = new Panel(
             "[dim]A text-based dungeon crawler set in the twilight of a broken world.\n" +
             "Corrupted machines guard ancient ruins. Only the bold survive.\n\n" +
-            "[yellow]Version 0.2.1[/] - Aethelgard Systems Migration\n" +
-            "Now with Legend/Milestone progression, ability ranks, and save/load![/]"
+            "[yellow]Version 0.3[/] - Equipment & Loot Systems\n" +
+            "Now with 36 unique items, quality tiers, loot drops, and inventory management![/]"
         )
         {
             Border = BoxBorder.Rounded,
@@ -307,6 +315,9 @@ class Program
         // Create character
         _gameState.Player = CharacterFactory.CreateCharacter(selectedClass, name);
         _gameState.CurrentPhase = GamePhase.Exploration;
+
+        // Add starting loot to world (v0.3)
+        _gameState.World.AddStartingLoot(_gameState.Player);
 
         AnsiConsole.WriteLine();
         AnsiConsole.MarkupLine("[green]✓[/] Character created successfully!");
@@ -464,10 +475,27 @@ class Program
                     break;
 
                 case CommandType.Inventory:
-                    AnsiConsole.MarkupLine("[dim]Inventory system not implemented in v0.1[/]");
-                    AnsiConsole.WriteLine();
-                    AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
-                    Console.ReadLine();
+                    HandleInventory();
+                    break;
+
+                case CommandType.Equip:
+                    HandleEquip(command.Target);
+                    break;
+
+                case CommandType.Unequip:
+                    HandleUnequip(command.Target);
+                    break;
+
+                case CommandType.Pickup:
+                    HandlePickup(command.Target);
+                    break;
+
+                case CommandType.Drop:
+                    HandleDrop(command.Target);
+                    break;
+
+                case CommandType.Compare:
+                    HandleCompare(command.Target);
                     break;
 
                 case CommandType.Unknown:
@@ -520,7 +548,7 @@ class Program
         try
         {
             _gameState.UpdateWorldState();
-            _saveRepository.SaveGame(_gameState.Player, _gameState.WorldState);
+            _saveRepository.SaveGame(_gameState.Player, _gameState.WorldState, _gameState.World);
             AnsiConsole.MarkupLine("[dim]Game auto-saved.[/]");
         }
         catch
@@ -605,8 +633,8 @@ class Program
             // Update world state before saving
             _gameState.UpdateWorldState();
 
-            // Save the game
-            _saveRepository.SaveGame(_gameState.Player, _gameState.WorldState);
+            // Save the game (including equipment and room items - v0.3)
+            _saveRepository.SaveGame(_gameState.Player, _gameState.WorldState, _gameState.World);
 
             AnsiConsole.MarkupLine($"[green]✓ Game saved successfully![/]");
             AnsiConsole.WriteLine();
@@ -687,6 +715,11 @@ class Program
             AnsiConsole.MarkupLine("[green]✓ Success![/] You route the power correctly.");
             AnsiConsole.MarkupLine("[green]The sealed door unlocks with a grinding hiss.[/]");
             _gameState.SolvePuzzle();
+
+            // Add puzzle reward (v0.3)
+            _gameState.World.AddPuzzleReward(_gameState.Player);
+            AnsiConsole.MarkupLine("[yellow]You find something valuable in the newly unlocked chamber![/]");
+
             _gameState.CurrentPhase = GamePhase.Exploration;
             AnsiConsole.WriteLine();
             AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
@@ -916,6 +949,10 @@ class Program
             AnsiConsole.MarkupLine("[green]✓ Combat victory![/]");
             _gameState.ClearCurrentRoom();
 
+            // Generate loot (v0.3)
+            _combatEngine.GenerateLoot(combat, _gameState.CurrentRoom);
+            UIHelper.DisplayCombatLog(combat.CombatLog, 20);
+
             // Check for milestone
             while (_sagaService.CanReachMilestone(combat.Player))
             {
@@ -1136,5 +1173,236 @@ class Program
                 System.Threading.Thread.Sleep(1000);
             }
         }
+    }
+
+    // ============================================================
+    // EQUIPMENT & INVENTORY HANDLERS (v0.3)
+    // ============================================================
+
+    static void HandleInventory()
+    {
+        AnsiConsole.Clear();
+        UIHelper.DisplayInventory(_gameState.Player);
+        AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+        Console.ReadLine();
+    }
+
+    static void HandleEquip(string itemName)
+    {
+        if (string.IsNullOrWhiteSpace(itemName))
+        {
+            AnsiConsole.MarkupLine("[red]Equip what?[/] Specify an item name.");
+            AnsiConsole.MarkupLine("[dim]Example: equip scavenged axe[/]");
+            AnsiConsole.WriteLine();
+            AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+            Console.ReadLine();
+            return;
+        }
+
+        var item = _equipmentService.FindInInventory(_gameState.Player, itemName);
+        if (item == null)
+        {
+            AnsiConsole.MarkupLine($"[red]You don't have '{itemName.EscapeMarkup()}' in your inventory.[/]");
+            AnsiConsole.WriteLine();
+            AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+            Console.ReadLine();
+            return;
+        }
+
+        // Equip the item
+        if (item.Type == EquipmentType.Weapon)
+        {
+            var oldWeapon = _gameState.Player.EquippedWeapon;
+            _equipmentService.EquipWeapon(_gameState.Player, item);
+            AnsiConsole.MarkupLine($"[green]✓[/] Equipped: [bold]{item.GetDisplayName()}[/]");
+            if (oldWeapon != null)
+            {
+                AnsiConsole.MarkupLine($"[dim]Unequipped: {oldWeapon.GetDisplayName()}[/]");
+            }
+        }
+        else if (item.Type == EquipmentType.Armor)
+        {
+            var oldArmor = _gameState.Player.EquippedArmor;
+            _equipmentService.EquipArmor(_gameState.Player, item);
+            AnsiConsole.MarkupLine($"[green]✓[/] Equipped: [bold]{item.GetDisplayName()}[/]");
+            if (oldArmor != null)
+            {
+                AnsiConsole.MarkupLine($"[dim]Unequipped: {oldArmor.GetDisplayName()}[/]");
+            }
+        }
+
+        AnsiConsole.WriteLine();
+        AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+        Console.ReadLine();
+    }
+
+    static void HandleUnequip(string slot)
+    {
+        if (string.IsNullOrWhiteSpace(slot))
+        {
+            AnsiConsole.MarkupLine("[red]Unequip what?[/] Specify 'weapon' or 'armor'.");
+            AnsiConsole.WriteLine();
+            AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+            Console.ReadLine();
+            return;
+        }
+
+        slot = slot.ToLower();
+        if (slot.Contains("weapon"))
+        {
+            if (_gameState.Player.EquippedWeapon == null)
+            {
+                AnsiConsole.MarkupLine("[yellow]You don't have a weapon equipped.[/]");
+            }
+            else if (_equipmentService.UnequipWeapon(_gameState.Player))
+            {
+                AnsiConsole.MarkupLine($"[green]✓[/] Unequipped weapon.");
+            }
+            else
+            {
+                AnsiConsole.MarkupLine("[red]Inventory is full! Drop something first.[/]");
+            }
+        }
+        else if (slot.Contains("armor"))
+        {
+            if (_gameState.Player.EquippedArmor == null)
+            {
+                AnsiConsole.MarkupLine("[yellow]You don't have armor equipped.[/]");
+            }
+            else if (_equipmentService.UnequipArmor(_gameState.Player))
+            {
+                AnsiConsole.MarkupLine($"[green]✓[/] Unequipped armor.");
+            }
+            else
+            {
+                AnsiConsole.MarkupLine("[red]Inventory is full! Drop something first.[/]");
+            }
+        }
+        else
+        {
+            AnsiConsole.MarkupLine("[red]Invalid slot.[/] Specify 'weapon' or 'armor'.");
+        }
+
+        AnsiConsole.WriteLine();
+        AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+        Console.ReadLine();
+    }
+
+    static void HandlePickup(string itemName)
+    {
+        if (string.IsNullOrWhiteSpace(itemName))
+        {
+            AnsiConsole.MarkupLine("[red]Pick up what?[/] Specify an item name.");
+            AnsiConsole.WriteLine();
+            AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+            Console.ReadLine();
+            return;
+        }
+
+        var item = _equipmentService.FindOnGround(_gameState.CurrentRoom, itemName);
+        if (item == null)
+        {
+            AnsiConsole.MarkupLine($"[red]There is no '{itemName.EscapeMarkup()}' on the ground here.[/]");
+            AnsiConsole.WriteLine();
+            AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+            Console.ReadLine();
+            return;
+        }
+
+        if (_equipmentService.PickupItem(_gameState.Player, _gameState.CurrentRoom, item))
+        {
+            AnsiConsole.MarkupLine($"[green]✓[/] Picked up: [bold]{item.GetDisplayName()}[/]");
+        }
+        else
+        {
+            AnsiConsole.MarkupLine("[red]Your inventory is full![/] Drop something first.");
+            AnsiConsole.MarkupLine($"[dim]Inventory: {_gameState.Player.Inventory.Count}/{_gameState.Player.MaxInventorySize}[/]");
+        }
+
+        AnsiConsole.WriteLine();
+        AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+        Console.ReadLine();
+    }
+
+    static void HandleDrop(string itemName)
+    {
+        if (string.IsNullOrWhiteSpace(itemName))
+        {
+            AnsiConsole.MarkupLine("[red]Drop what?[/] Specify an item name.");
+            AnsiConsole.WriteLine();
+            AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+            Console.ReadLine();
+            return;
+        }
+
+        var item = _equipmentService.FindInInventory(_gameState.Player, itemName);
+        if (item == null)
+        {
+            AnsiConsole.MarkupLine($"[red]You don't have '{itemName.EscapeMarkup()}' in your inventory.[/]");
+            AnsiConsole.WriteLine();
+            AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+            Console.ReadLine();
+            return;
+        }
+
+        if (_equipmentService.DropItem(_gameState.Player, _gameState.CurrentRoom, item))
+        {
+            AnsiConsole.MarkupLine($"[green]✓[/] Dropped: [bold]{item.GetDisplayName()}[/]");
+        }
+        else
+        {
+            AnsiConsole.MarkupLine("[red]Failed to drop item.[/]");
+        }
+
+        AnsiConsole.WriteLine();
+        AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+        Console.ReadLine();
+    }
+
+    static void HandleCompare(string itemName)
+    {
+        if (string.IsNullOrWhiteSpace(itemName))
+        {
+            AnsiConsole.MarkupLine("[red]Compare what?[/] Specify an item name.");
+            AnsiConsole.WriteLine();
+            AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+            Console.ReadLine();
+            return;
+        }
+
+        // Try to find in inventory first
+        var item = _equipmentService.FindInInventory(_gameState.Player, itemName);
+
+        // If not in inventory, try ground
+        if (item == null)
+        {
+            item = _equipmentService.FindOnGround(_gameState.CurrentRoom, itemName);
+        }
+
+        if (item == null)
+        {
+            AnsiConsole.MarkupLine($"[red]Cannot find '{itemName.EscapeMarkup()}' in your inventory or on the ground.[/]");
+            AnsiConsole.WriteLine();
+            AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+            Console.ReadLine();
+            return;
+        }
+
+        // Determine what to compare against
+        Equipment? currentItem = null;
+        if (item.Type == EquipmentType.Weapon)
+        {
+            currentItem = _gameState.Player.EquippedWeapon;
+        }
+        else if (item.Type == EquipmentType.Armor)
+        {
+            currentItem = _gameState.Player.EquippedArmor;
+        }
+
+        var comparison = _equipmentService.CompareEquipment(currentItem, item);
+        UIHelper.DisplayEquipmentComparison(comparison);
+
+        AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+        Console.ReadLine();
     }
 }

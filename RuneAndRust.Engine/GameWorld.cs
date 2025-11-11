@@ -147,4 +147,40 @@ public class GameWorld
             puzzleChamber.Exits.Add("north", "Boss Sanctum");
         }
     }
+
+    /// <summary>
+    /// Add starting loot to rooms (v0.3 Equipment System)
+    /// Should be called after character creation
+    /// </summary>
+    public void AddStartingLoot(PlayerCharacter player)
+    {
+        var lootService = new LootService();
+
+        // Room 1 (Entrance): Scavenged weapon upgrade for player's class
+        var entrance = GetRoom("Entrance");
+        var startingWeapon = lootService.CreateStartingWeapon(player.Class);
+        if (startingWeapon != null)
+        {
+            lootService.PlaceStartingLoot(entrance, startingWeapon);
+        }
+
+        // Room 4 (Puzzle Chamber): Optimized weapon as puzzle reward
+        // This will be added after the puzzle is solved in the game logic
+    }
+
+    /// <summary>
+    /// Add puzzle reward loot (v0.3 Equipment System)
+    /// Called when puzzle is successfully solved
+    /// </summary>
+    public void AddPuzzleReward(PlayerCharacter player)
+    {
+        var lootService = new LootService();
+        var puzzleChamber = GetRoom("Puzzle Chamber");
+
+        var puzzleReward = lootService.CreatePuzzleReward(player.Class);
+        if (puzzleReward != null)
+        {
+            lootService.PlaceStartingLoot(puzzleChamber, puzzleReward);
+        }
+    }
 }

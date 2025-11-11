@@ -19,10 +19,16 @@ public class PlayerCharacter
     public int MaxStamina { get; set; }
     public int AP { get; set; }
 
-    // Combat
+    // Combat (v0.1 - deprecated in favor of equipment system)
     public string WeaponName { get; set; } = string.Empty;
     public string WeaponAttribute { get; set; } = string.Empty; // Which attribute the weapon uses
     public int BaseDamage { get; set; } = 1; // Number of d6s
+
+    // Equipment System (v0.3)
+    public Equipment? EquippedWeapon { get; set; }
+    public Equipment? EquippedArmor { get; set; }
+    public List<Equipment> Inventory { get; set; } = new(); // Up to 5 items
+    public int MaxInventorySize { get; set; } = 5;
 
     // Abilities
     public List<Ability> Abilities { get; set; } = new();

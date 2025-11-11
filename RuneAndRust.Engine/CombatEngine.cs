@@ -6,11 +6,15 @@ public class CombatEngine
 {
     private readonly DiceService _diceService;
     private readonly SagaService _sagaService;
+    private readonly LootService _lootService;
+    private readonly EquipmentService _equipmentService;
 
-    public CombatEngine(DiceService diceService, SagaService sagaService)
+    public CombatEngine(DiceService diceService, SagaService sagaService, LootService lootService, EquipmentService equipmentService)
     {
         _diceService = diceService;
         _sagaService = sagaService;
+        _lootService = lootService;
+        _equipmentService = equipmentService;
     }
 
     /// <summary>
@@ -86,7 +90,31 @@ public class CombatEngine
     public void PlayerAttack(CombatState combatState, Enemy target)
     {
         var player = combatState.Player;
-        var weaponAttribute = player.GetAttributeValue(player.WeaponAttribute);
+
+        // Get weapon stats from equipped weapon (v0.3 Equipment System)
+        string weaponAttribute;
+        int weaponDice;
+        int weaponDamageBonus;
+        int accuracyBonus;
+
+        if (player.EquippedWeapon != null)
+        {
+            var weapon = player.EquippedWeapon;
+            weaponAttribute = weapon.WeaponAttribute;
+            weaponDice = weapon.DamageDice;
+            weaponDamageBonus = weapon.DamageBonus;
+            accuracyBonus = weapon.AccuracyBonus;
+        }
+        else
+        {
+            // Fallback to legacy system (v0.1/v0.2) or unarmed
+            weaponAttribute = !string.IsNullOrEmpty(player.WeaponAttribute) ? player.WeaponAttribute : "MIGHT";
+            weaponDice = player.BaseDamage > 0 ? player.BaseDamage : 1;
+            weaponDamageBonus = -2; // Unarmed penalty
+            accuracyBonus = -1; // Unarmed penalty
+        }
+
+        var attributeValue = _equipmentService.GetEffectiveAttributeValue(player, weaponAttribute);
         var bonusDice = combatState.PlayerNextAttackBonusDice;
 
         // Reset bonus dice after use
@@ -98,7 +126,10 @@ public class CombatEngine
             bonusDice += 2;
         }
 
-        var totalDice = weaponAttribute + bonusDice;
+        // Apply accuracy bonus from equipment
+        bonusDice += accuracyBonus;
+
+        var totalDice = attributeValue + bonusDice;
         var attackRoll = _diceService.Roll(totalDice);
 
         combatState.AddLogEntry($"{player.Name} attacks {target.Name}!");
@@ -109,9 +140,17 @@ public class CombatEngine
         combatState.AddLogEntry($"{target.Name} defends!");
         combatState.AddLogEntry($"  Rolled {target.Attributes.Sturdiness}d6: {FormatRolls(defendRoll)} = {defendRoll.Successes} successes");
 
-        // Calculate damage
+        // Calculate damage using weapon damage dice
         var netSuccesses = Math.Max(0, attackRoll.Successes - defendRoll.Successes);
-        var damage = netSuccesses;
+
+        // Roll weapon damage based on successes
+        int damage = 0;
+        if (netSuccesses > 0)
+        {
+            // Roll weapon damage dice
+            damage = _diceService.RollDamage(weaponDice) + weaponDamageBonus;
+            damage = Math.Max(1, damage); // Minimum 1 damage on hit
+        }
 
         // Apply defense bonus if active
         if (target.DefenseTurnsRemaining > 0)
@@ -472,6 +511,36 @@ public class CombatEngine
         }
 
         return false;
+    }
+
+    /// <summary>
+    /// Generate and drop loot from defeated enemies to the room
+    /// </summary>
+    public void GenerateLoot(CombatState combatState, Room room)
+    {
+        combatState.AddLogEntry("");
+        combatState.AddLogEntry("=== LOOT ===");
+
+        bool anyLoot = false;
+        foreach (var enemy in combatState.Enemies.Where(e => !e.IsAlive))
+        {
+            var loot = _lootService.GenerateLoot(enemy, combatState.Player);
+            if (loot != null)
+            {
+                room.ItemsOnGround.Add(loot);
+                combatState.AddLogEntry($"[yellow]{enemy.Name}[/] dropped: [bold]{loot.GetDisplayName()}[/]");
+                anyLoot = true;
+            }
+        }
+
+        if (!anyLoot)
+        {
+            combatState.AddLogEntry("[dim]No loot dropped.[/]");
+        }
+        else
+        {
+            combatState.AddLogEntry("[dim]Use 'pickup [item]' to collect loot.[/]");
+        }
     }
 
     /// <summary>

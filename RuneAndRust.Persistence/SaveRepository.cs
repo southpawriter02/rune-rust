@@ -1,5 +1,6 @@
 using Microsoft.Data.Sqlite;
 using RuneAndRust.Core;
+using RuneAndRust.Engine;
 using System.Text.Json;
 
 namespace RuneAndRust.Persistence;
@@ -44,14 +45,67 @@ public class SaveRepository
                 cleared_rooms_json TEXT NOT NULL,
                 puzzle_solved INTEGER NOT NULL,
                 boss_defeated INTEGER NOT NULL,
+                equipped_weapon_json TEXT,
+                equipped_armor_json TEXT,
+                inventory_json TEXT DEFAULT '[]',
+                room_items_json TEXT DEFAULT '{}',
                 last_saved TEXT NOT NULL
             )
         ";
         createTableCommand.ExecuteNonQuery();
+
+        // Add equipment columns to existing saves (migration for v0.3)
+        var alterCommands = new[]
+        {
+            "ALTER TABLE saves ADD COLUMN equipped_weapon_json TEXT",
+            "ALTER TABLE saves ADD COLUMN equipped_armor_json TEXT",
+            "ALTER TABLE saves ADD COLUMN inventory_json TEXT DEFAULT '[]'",
+            "ALTER TABLE saves ADD COLUMN room_items_json TEXT DEFAULT '{}'"
+        };
+
+        foreach (var alterSql in alterCommands)
+        {
+            try
+            {
+                var alterCommand = connection.CreateCommand();
+                alterCommand.CommandText = alterSql;
+                alterCommand.ExecuteNonQuery();
+            }
+            catch (SqliteException)
+            {
+                // Column already exists, ignore
+            }
+        }
     }
 
-    public void SaveGame(PlayerCharacter player, WorldState worldState)
+    public void SaveGame(PlayerCharacter player, WorldState worldState, GameWorld? world = null)
     {
+        // Serialize equipment (v0.3)
+        var equippedWeaponJson = player.EquippedWeapon != null
+            ? JsonSerializer.Serialize(player.EquippedWeapon)
+            : null;
+
+        var equippedArmorJson = player.EquippedArmor != null
+            ? JsonSerializer.Serialize(player.EquippedArmor)
+            : null;
+
+        var inventoryJson = JsonSerializer.Serialize(player.Inventory);
+
+        // Serialize room items (v0.3)
+        var roomItemsDict = new Dictionary<int, List<Equipment>>();
+        if (world != null)
+        {
+            foreach (var kvp in world.Rooms)
+            {
+                var room = kvp.Value;
+                if (room.ItemsOnGround.Count > 0)
+                {
+                    roomItemsDict[room.Id] = room.ItemsOnGround;
+                }
+            }
+        }
+        var roomItemsJson = JsonSerializer.Serialize(roomItemsDict);
+
         var saveData = new SaveData
         {
             CharacterName = player.Name,
@@ -72,6 +126,10 @@ public class SaveRepository
             ClearedRoomsJson = JsonSerializer.Serialize(worldState.ClearedRoomIds),
             PuzzleSolved = worldState.PuzzleSolved,
             BossDefeated = worldState.BossDefeated,
+            EquippedWeaponJson = equippedWeaponJson,
+            EquippedArmorJson = equippedArmorJson,
+            InventoryJson = inventoryJson,
+            RoomItemsJson = roomItemsJson,
             LastSaved = DateTime.Now
         };
 
@@ -85,12 +143,14 @@ public class SaveRepository
                 might, finesse, wits, will, sturdiness,
                 current_hp, max_hp, current_stamina, max_stamina,
                 current_room_id, cleared_rooms_json, puzzle_solved, boss_defeated,
+                equipped_weapon_json, equipped_armor_json, inventory_json, room_items_json,
                 last_saved
             ) VALUES (
                 $name, $class, $milestone, $legend, $pp,
                 $might, $finesse, $wits, $will, $sturdiness,
                 $hp, $maxhp, $stamina, $maxstamina,
                 $roomid, $cleared, $puzzle, $boss,
+                $eqweapon, $eqarmor, $inventory, $roomitems,
                 $saved
             )
         ";
@@ -113,12 +173,16 @@ public class SaveRepository
         command.Parameters.AddWithValue("$cleared", saveData.ClearedRoomsJson);
         command.Parameters.AddWithValue("$puzzle", saveData.PuzzleSolved ? 1 : 0);
         command.Parameters.AddWithValue("$boss", saveData.BossDefeated ? 1 : 0);
+        command.Parameters.AddWithValue("$eqweapon", (object?)saveData.EquippedWeaponJson ?? DBNull.Value);
+        command.Parameters.AddWithValue("$eqarmor", (object?)saveData.EquippedArmorJson ?? DBNull.Value);
+        command.Parameters.AddWithValue("$inventory", saveData.InventoryJson);
+        command.Parameters.AddWithValue("$roomitems", saveData.RoomItemsJson);
         command.Parameters.AddWithValue("$saved", saveData.LastSaved.ToString("yyyy-MM-dd HH:mm:ss"));
 
         command.ExecuteNonQuery();
     }
 
-    public (PlayerCharacter?, WorldState?) LoadGame(string characterName)
+    public (PlayerCharacter?, WorldState?, string?) LoadGame(string characterName)
     {
         using var connection = new SqliteConnection(_connectionString);
         connection.Open();
@@ -131,7 +195,7 @@ public class SaveRepository
 
         if (!reader.Read())
         {
-            return (null, null);
+            return (null, null, null);
         }
 
         var saveData = new SaveData
@@ -156,6 +220,35 @@ public class SaveRepository
             BossDefeated = reader.GetInt32(reader.GetOrdinal("boss_defeated")) == 1
         };
 
+        // Load equipment data (v0.3) - handle missing columns for backward compatibility
+        try
+        {
+            var weaponOrdinal = reader.GetOrdinal("equipped_weapon_json");
+            saveData.EquippedWeaponJson = reader.IsDBNull(weaponOrdinal) ? null : reader.GetString(weaponOrdinal);
+        }
+        catch { /* Column doesn't exist in old saves */ }
+
+        try
+        {
+            var armorOrdinal = reader.GetOrdinal("equipped_armor_json");
+            saveData.EquippedArmorJson = reader.IsDBNull(armorOrdinal) ? null : reader.GetString(armorOrdinal);
+        }
+        catch { /* Column doesn't exist in old saves */ }
+
+        try
+        {
+            var inventoryOrdinal = reader.GetOrdinal("inventory_json");
+            saveData.InventoryJson = reader.IsDBNull(inventoryOrdinal) ? "[]" : reader.GetString(inventoryOrdinal);
+        }
+        catch { saveData.InventoryJson = "[]"; }
+
+        try
+        {
+            var roomItemsOrdinal = reader.GetOrdinal("room_items_json");
+            saveData.RoomItemsJson = reader.IsDBNull(roomItemsOrdinal) ? "{}" : reader.GetString(roomItemsOrdinal);
+        }
+        catch { saveData.RoomItemsJson = "{}"; }
+
         // Reconstruct PlayerCharacter
         var player = new PlayerCharacter
         {
@@ -179,6 +272,34 @@ public class SaveRepository
             AP = 10 // Always restore to max AP
         };
 
+        // Reconstruct equipment (v0.3)
+        if (!string.IsNullOrEmpty(saveData.EquippedWeaponJson))
+        {
+            try
+            {
+                player.EquippedWeapon = JsonSerializer.Deserialize<Equipment>(saveData.EquippedWeaponJson);
+            }
+            catch { /* Failed to deserialize weapon */ }
+        }
+
+        if (!string.IsNullOrEmpty(saveData.EquippedArmorJson))
+        {
+            try
+            {
+                player.EquippedArmor = JsonSerializer.Deserialize<Equipment>(saveData.EquippedArmorJson);
+            }
+            catch { /* Failed to deserialize armor */ }
+        }
+
+        try
+        {
+            player.Inventory = JsonSerializer.Deserialize<List<Equipment>>(saveData.InventoryJson) ?? new List<Equipment>();
+        }
+        catch
+        {
+            player.Inventory = new List<Equipment>();
+        }
+
         // Reconstruct abilities based on class and level (will be set by CharacterFactory)
 
         // Reconstruct WorldState
@@ -190,7 +311,43 @@ public class SaveRepository
             BossDefeated = saveData.BossDefeated
         };
 
-        return (player, worldState);
+        // Return room items JSON for restoration (v0.3)
+        return (player, worldState, saveData.RoomItemsJson);
+    }
+
+    /// <summary>
+    /// Restore room items from save data (v0.3)
+    /// </summary>
+    public void RestoreRoomItems(GameWorld world, string roomItemsJson)
+    {
+        if (string.IsNullOrEmpty(roomItemsJson) || roomItemsJson == "{}")
+        {
+            return;
+        }
+
+        try
+        {
+            var roomItemsDict = JsonSerializer.Deserialize<Dictionary<int, List<Equipment>>>(roomItemsJson);
+            if (roomItemsDict == null) return;
+
+            foreach (var kvp in roomItemsDict)
+            {
+                var roomId = kvp.Key;
+                var items = kvp.Value;
+
+                // Find the room by ID
+                var room = world.Rooms.Values.FirstOrDefault(r => r.Id == roomId);
+                if (room != null)
+                {
+                    room.ItemsOnGround.Clear();
+                    room.ItemsOnGround.AddRange(items);
+                }
+            }
+        }
+        catch
+        {
+            // Failed to restore room items - not critical, player can continue without them
+        }
     }
 
     public List<SaveInfo> ListSaves()

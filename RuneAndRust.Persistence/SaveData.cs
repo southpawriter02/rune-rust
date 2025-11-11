@@ -35,6 +35,12 @@ public class SaveData
     public bool PuzzleSolved { get; set; }
     public bool BossDefeated { get; set; }
 
+    // Equipment System (v0.3)
+    public string? EquippedWeaponJson { get; set; } = null; // Serialized Equipment object
+    public string? EquippedArmorJson { get; set; } = null; // Serialized Equipment object
+    public string InventoryJson { get; set; } = "[]"; // JSON array of Equipment objects
+    public string RoomItemsJson { get; set; } = "{}"; // JSON dictionary: { roomId: [Equipment...] }
+
     // Metadata
     public DateTime LastSaved { get; set; }
 }

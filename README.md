@@ -2,21 +2,23 @@
 
 A text-based dungeon crawler set in the twilight of a broken world. Corrupted machines guard ancient ruins. Only the bold survive.
 
-**Current Version:** v0.2 Expanded Edition ✅ **COMPLETE**
+**Current Version:** v0.3 Equipment & Loot ✅ **COMPLETE**
 
 ## Overview
 
-Rune & Rust is a turn-based dungeon crawler where you explore a ruined facility, fight corrupted machines, solve environmental puzzles, and defeat a powerful boss. Version 0.2 adds progression systems, expanded abilities, and save/load functionality for a deeper experience that can be played over multiple sessions.
+Rune & Rust is a turn-based dungeon crawler where you explore a ruined facility, fight corrupted machines, solve environmental puzzles, and defeat a powerful boss. The game features a comprehensive equipment and loot system with 36 unique items across 5 quality tiers, progression systems with leveling and abilities, and save/load functionality for extended play sessions.
 
 ### Core Loop
-1. **Character Creation** → Choose from 3 classes, each with 4 unique abilities
-2. **Exploration** → Navigate 5 interconnected rooms
-3. **Combat** → Fight corrupted machines, earn XP, level up (1-5)
-4. **Progression** → Unlock new abilities at levels 3 and 5
-5. **Puzzle** → Solve one environmental challenge
-6. **Boss Fight** → Defeat the Ruin-Warden
-7. **Save/Load** → Continue your journey across multiple sessions
-8. **Victory** → Survive to see the ending
+1. **Character Creation** → Choose from 3 classes, each with starting equipment and 4 unique abilities
+2. **Exploration** → Navigate 5 interconnected rooms, discover loot
+3. **Combat** → Fight corrupted machines, earn XP, level up (1-5), collect equipment drops
+4. **Loot & Gear** → Find 36 unique weapons and armor pieces across 5 quality tiers
+5. **Inventory** → Manage equipment, compare stats, optimize your build
+6. **Progression** → Unlock new abilities at levels 3 and 5
+7. **Puzzle** → Solve environmental challenge for guaranteed reward
+8. **Boss Fight** → Defeat the Ruin-Warden for legendary loot
+9. **Save/Load** → Continue your journey across multiple sessions with equipment persistence
+10. **Victory** → Survive to see the ending
 
 ## Project Structure
 
@@ -31,19 +33,23 @@ RuneAndRust/
 │   ├── Room.cs
 │   ├── Ability.cs
 │   ├── CombatState.cs
-│   └── WorldState.cs              # [NEW v0.2] Game progression state
+│   ├── WorldState.cs              # [v0.2] Game progression state
+│   └── Equipment.cs               # [NEW v0.3] Equipment & quality tiers
 ├── RuneAndRust.Engine/            # Game logic and services
 │   ├── DiceService.cs
 │   ├── DiceResult.cs
-│   ├── ProgressionService.cs      # [NEW v0.2] XP and leveling
+│   ├── ProgressionService.cs      # [v0.2] XP and leveling
 │   ├── CombatEngine.cs
 │   ├── EnemyAI.cs
 │   ├── CharacterFactory.cs
 │   ├── EnemyFactory.cs
 │   ├── CommandParser.cs
 │   ├── GameState.cs
-│   └── GameWorld.cs
-├── RuneAndRust.Persistence/       # [NEW v0.2] Save/Load system
+│   ├── GameWorld.cs
+│   ├── EquipmentDatabase.cs       # [NEW v0.3] 36 unique items
+│   ├── EquipmentService.cs        # [NEW v0.3] Equip/unequip logic
+│   └── LootService.cs             # [NEW v0.3] Drop tables & generation
+├── RuneAndRust.Persistence/       # [v0.2] Save/Load system
 │   ├── SaveRepository.cs          # SQLite-based persistence
 │   └── SaveData.cs                # Serialization DTOs
 └── RuneAndRust.ConsoleApp/        # UI and main game loop
@@ -135,6 +141,45 @@ dotnet run --project RuneAndRust.ConsoleApp
 - Total code: ~5,000 lines of C#
 - Supports longer play sessions with persistence
 
+### ⚔️ v0.3 Equipment & Loot: SHIPPED!
+
+**The Equipment Update brings itemization and loot!**
+- Phase 1-3: Core Equipment & Loot Systems (36 unique items)
+- Phase 4: Combat Integration (equipment stats used in combat)
+- Phase 5: Save/Load Persistence (equipment survives restarts)
+- Total code: ~7,500 lines of C#
+- Build diversity and progression through gear
+- 5 Quality Tiers: Jury-Rigged → Scavenged → Clan-Forged → Optimized → Myth-Forged
+
+## What's New in v0.3
+
+### New Features (Equipment & Loot)
+✅ **36 Unique Items** - 8 weapons per class, 12 armor pieces across quality tiers
+✅ **5 Quality Tiers** - Jury-Rigged → Scavenged → Clan-Forged → Optimized → Myth-Forged
+✅ **Equipment System** - Equip weapons and armor with stat bonuses
+✅ **Inventory Management** - 5-slot inventory with pickup/drop/compare commands
+✅ **Dynamic Loot Generation** - Smart loot tables with 60% class-appropriate drops
+✅ **Combat Integration** - Equipment stats affect damage, defense, and attributes
+✅ **Starting Equipment** - All classes begin with class-appropriate gear
+✅ **Puzzle Rewards** - Guaranteed Clan-Forged weapon for solving puzzle
+✅ **Boss Loot** - Ruin-Warden drops legendary Myth-Forged equipment
+✅ **Equipment Persistence** - Full save/load support for gear and inventory
+✅ **Equipment Commands** - inventory, equip, unequip, pickup, drop, compare
+✅ **Attribute Bonuses** - Higher-tier equipment provides stat boosts
+
+### Quality Tier System
+- **Jury-Rigged (Tier 0):** Scrap held together with hope and wire
+- **Scavenged (Tier 1):** Salvaged from ruins, functional but worn
+- **Clan-Forged (Tier 2):** Crafted by survivor communities, solid work
+- **Optimized (Tier 3):** Pre-Glitch tech, carefully maintained
+- **Myth-Forged (Tier 4):** Legendary artifacts with special effects
+
+### Equipment Highlights
+- **Warrior:** Rusty Hatchet → Warden's Greatsword (ignores 50% armor)
+- **Scavenger:** Makeshift Spear → Shadow's Edge (inflicts bleeding)
+- **Mystic:** Crude Staff → Void Lens (Aether regeneration)
+- **Armor:** Scrap Plating → Warden's Aegis (can block attacks)
+
 ## What's New in v0.2
 
 ### New Features (Expanded Edition)
@@ -197,31 +242,39 @@ dotnet run --project RuneAndRust.ConsoleApp
 - **UI Library**: [Spectre.Console](https://spectreconsole.net/) for rich terminal UI
 - **Architecture**: Clean Architecture with separated concerns
 
-## Scope: What's IN v0.2
+## Scope: What's IN v0.3
 
 ✅ 3 character classes with 4 abilities each
 ✅ XP and leveling system (5 levels)
 ✅ Progression rewards (HP, Stamina, Attributes)
+✅ **36 unique equipment items** (NEW)
+✅ **Equipment slots: weapon + armor** (NEW)
+✅ **5-slot inventory system** (NEW)
+✅ **Quality tier progression (5 tiers)** (NEW)
+✅ **Dynamic loot generation** (NEW)
+✅ **Class-appropriate smart loot** (NEW)
+✅ **Equipment persistence** (NEW)
 ✅ 5 attributes (MIGHT, FINESSE, WITS, WILL, STURDINESS)
 ✅ Turn-based combat with dice pool mechanics
 ✅ 3 enemy types with XP rewards
 ✅ 5 rooms in a linear path
-✅ One environmental puzzle
-✅ Boss fight with phase-based AI
+✅ One environmental puzzle with reward
+✅ Boss fight with phase-based AI and legendary loot
 ✅ Save/load system with SQLite
 ✅ Auto-save on room transitions
 ✅ Victory/defeat screens
 
-## Scope: What's OUT of v0.2
+## Scope: What's OUT of v0.3
 
-❌ Equipment system (no loot, no gear upgrades)
-❌ Inventory system
 ❌ Multiple difficulty settings
 ❌ Specializations and advanced classes
 ❌ Trauma/Corruption mechanics
 ❌ Rune inscription system
 ❌ Factions and reputation
 ❌ Procedural dungeon generation
+❌ Crafting and enchanting
+❌ Equipment set bonuses
+❌ Character appearance customization
 
 *These features are planned for future versions*
 
