@@ -1,3 +1,5 @@
+using Serilog;
+
 namespace RuneAndRust.Core;
 
 /// <summary>
@@ -5,6 +7,8 @@ namespace RuneAndRust.Core;
 /// </summary>
 public class FactionReputationSystem
 {
+    private static readonly ILogger _log = Log.ForContext<FactionReputationSystem>();
+
     public Dictionary<FactionType, int> Reputations { get; set; } = new()
     {
         { FactionType.MidgardCombine, 0 },
@@ -24,6 +28,20 @@ public class FactionReputationSystem
         Reputations[faction] += change;
         Reputations[faction] = Math.Clamp(Reputations[faction], -100, 100);
 
+        var oldTier = oldRep >= -100 && oldRep <= 100 ? GetReputationTierForValue(oldRep) : ReputationTier.Neutral;
+        var newTier = GetReputationTier(faction);
+
+        // Log to Serilog
+        _log.Information("Reputation changed: Faction={Faction}, Change={Change}, Reason={Reason}, OldValue={Old}, NewValue={New}, OldTier={OldTier}, NewTier={NewTier}",
+            faction, change, reason, oldRep, Reputations[faction], oldTier, newTier);
+
+        // Tier transition logging
+        if (oldTier != newTier)
+        {
+            _log.Information("Reputation tier transition: Faction={Faction}, OldTier={OldTier}, NewTier={NewTier}",
+                faction, oldTier, newTier);
+        }
+
         // Log reputation change if log provided
         if (log != null && change != 0)
         {
@@ -41,7 +59,14 @@ public class FactionReputationSystem
     public ReputationTier GetReputationTier(FactionType faction)
     {
         int rep = Reputations.GetValueOrDefault(faction, 0);
+        return GetReputationTierForValue(rep);
+    }
 
+    /// <summary>
+    /// Gets the reputation tier for a specific value
+    /// </summary>
+    private ReputationTier GetReputationTierForValue(int rep)
+    {
         if (rep >= 75) return ReputationTier.Revered;
         if (rep >= 50) return ReputationTier.Honored;
         if (rep >= 25) return ReputationTier.Friendly;
@@ -78,6 +103,9 @@ public class FactionReputationSystem
             Reputations[FactionType.RustClans] -= penalty;
             Reputations[FactionType.RustClans] = Math.Clamp(Reputations[FactionType.RustClans], -100, 100);
 
+            _log.Debug("Rival faction penalty applied: Gained={GainedFaction}, Penalized={PenalizedFaction}, Penalty={Penalty}, OldValue={Old}, NewValue={New}",
+                faction, FactionType.RustClans, penalty, oldRep, Reputations[FactionType.RustClans]);
+
             if (log != null)
             {
                 log.Add($"[Reputation] RustClans: -{penalty} (rival penalty) - Now {GetReputationTier(FactionType.RustClans)}");
@@ -88,6 +116,9 @@ public class FactionReputationSystem
             int oldRep = Reputations[FactionType.MidgardCombine];
             Reputations[FactionType.MidgardCombine] -= penalty;
             Reputations[FactionType.MidgardCombine] = Math.Clamp(Reputations[FactionType.MidgardCombine], -100, 100);
+
+            _log.Debug("Rival faction penalty applied: Gained={GainedFaction}, Penalized={PenalizedFaction}, Penalty={Penalty}, OldValue={Old}, NewValue={New}",
+                faction, FactionType.MidgardCombine, penalty, oldRep, Reputations[FactionType.MidgardCombine]);
 
             if (log != null)
             {

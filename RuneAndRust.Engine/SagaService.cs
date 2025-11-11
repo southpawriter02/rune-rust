@@ -1,4 +1,5 @@
 using RuneAndRust.Core;
+using Serilog;
 
 namespace RuneAndRust.Engine;
 
@@ -7,6 +8,7 @@ namespace RuneAndRust.Engine;
 /// </summary>
 public class SagaService
 {
+    private static readonly ILogger _log = Log.ForContext<SagaService>();
     private const int MaxMilestone = 3; // For v0.1
     private const int AttributeCap = 6;
 
@@ -17,11 +19,17 @@ public class SagaService
     {
         if (player.CurrentMilestone >= MaxMilestone)
         {
+            _log.Debug("Legend award skipped: Character={CharacterName}, Reason=MaxMilestoneReached, CurrentMilestone={Milestone}",
+                player.Name, player.CurrentMilestone);
             return; // Already at max milestone for v0.1
         }
 
+        int oldLegend = player.CurrentLegend;
         int legendAwarded = (int)(baseLegendValue * difficultyMod * traumaMod);
         player.CurrentLegend += legendAwarded;
+
+        _log.Information("Legend awarded: Character={CharacterName}, Amount={Amount}, BaseValue={Base}, DifficultyMod={DM}, TraumaMod={TM}, OldLegend={Old}, NewLegend={New}, ToNextMilestone={ToNext}",
+            player.Name, legendAwarded, baseLegendValue, difficultyMod, traumaMod, oldLegend, player.CurrentLegend, player.LegendToNextMilestone);
     }
 
     /// <summary>
@@ -47,6 +55,11 @@ public class SagaService
             throw new InvalidOperationException("Player cannot reach milestone yet.");
         }
 
+        int oldMilestone = player.CurrentMilestone;
+        int oldMaxHP = player.MaxHP;
+        int oldMaxStamina = player.MaxStamina;
+        int oldPP = player.ProgressionPoints;
+
         // Increase milestone
         player.CurrentMilestone++;
 
@@ -61,6 +74,9 @@ public class SagaService
         // Full heal on milestone
         player.HP = player.MaxHP;
         player.Stamina = player.MaxStamina;
+
+        _log.Information("Milestone reached: Character={CharacterName}, OldMilestone={OldMilestone}, NewMilestone={NewMilestone}, PPGained={PPGained}, TotalPP={TotalPP}, MaxHPIncrease={HPIncrease}, NewMaxHP={MaxHP}, MaxStaminaIncrease={StaminaIncrease}, NewMaxStamina={MaxStamina}, LegendToNext={LegendToNext}",
+            player.Name, oldMilestone, player.CurrentMilestone, 1, player.ProgressionPoints, 10, player.MaxHP, 5, player.MaxStamina, player.LegendToNextMilestone);
     }
 
     /// <summary>
@@ -85,6 +101,8 @@ public class SagaService
     {
         if (player.ProgressionPoints < 1)
         {
+            _log.Warning("PP spend failed: Character={CharacterName}, Attribute={Attribute}, Reason=InsufficientPP, CurrentPP={PP}",
+                player.Name, attributeName, player.ProgressionPoints);
             return false; // Not enough PP
         }
 
@@ -92,10 +110,13 @@ public class SagaService
         int currentValue = player.GetAttributeValue(attributeName);
         if (currentValue >= AttributeCap)
         {
+            _log.Warning("PP spend failed: Character={CharacterName}, Attribute={Attribute}, Reason=AttributeAtCap, CurrentValue={Value}, Cap={Cap}",
+                player.Name, attributeName, currentValue, AttributeCap);
             return false; // Already at cap
         }
 
         // Spend PP and increase attribute
+        int oldPP = player.ProgressionPoints;
         player.ProgressionPoints -= 1;
 
         switch (attributeName.ToLower())
@@ -118,8 +139,14 @@ public class SagaService
             default:
                 // Refund PP if invalid attribute
                 player.ProgressionPoints += 1;
+                _log.Error("Invalid attribute name: Character={CharacterName}, Attribute={Attribute}",
+                    player.Name, attributeName);
                 throw new ArgumentException($"Invalid attribute name: {attributeName}");
         }
+
+        int newValue = player.GetAttributeValue(attributeName);
+        _log.Information("PP spent on attribute: Character={CharacterName}, Attribute={Attribute}, PPSpent={Cost}, OldValue={OldValue}, NewValue={NewValue}, RemainingPP={PP}",
+            player.Name, attributeName, 1, currentValue, newValue, player.ProgressionPoints);
 
         return true;
     }
@@ -131,13 +158,20 @@ public class SagaService
     {
         if (ability.CurrentRank >= 2)
         {
+            _log.Warning("Ability rank advance failed: Character={CharacterName}, Ability={Ability}, Reason=AlreadyAtMaxRank, CurrentRank={Rank}",
+                player.Name, ability.Name, ability.CurrentRank);
             return false; // Rank 3 locked until v0.5+
         }
 
         if (player.ProgressionPoints < ability.CostToRank2)
         {
+            _log.Warning("Ability rank advance failed: Character={CharacterName}, Ability={Ability}, Reason=InsufficientPP, RequiredPP={Required}, CurrentPP={Current}",
+                player.Name, ability.Name, ability.CostToRank2, player.ProgressionPoints);
             return false; // Not enough PP
         }
+
+        int oldRank = ability.CurrentRank;
+        int ppCost = ability.CostToRank2;
 
         // Spend PP and advance rank
         player.ProgressionPoints -= ability.CostToRank2;
@@ -145,6 +179,9 @@ public class SagaService
 
         // Apply rank 2 improvements (will be customized per ability)
         ApplyRank2Improvements(ability);
+
+        _log.Information("Ability rank advanced: Character={CharacterName}, Ability={Ability}, PPSpent={Cost}, OldRank={OldRank}, NewRank={NewRank}, RemainingPP={PP}",
+            player.Name, ability.Name, ppCost, oldRank, ability.CurrentRank, player.ProgressionPoints);
 
         return true;
     }
@@ -327,18 +364,24 @@ public class SagaService
         // Check if player has enough PP
         if (player.ProgressionPoints < SpecializationCost)
         {
+            _log.Warning("Specialization unlock failed: Character={CharacterName}, Specialization={Specialization}, Reason=InsufficientPP, RequiredPP={Required}, CurrentPP={Current}",
+                player.Name, specialization, SpecializationCost, player.ProgressionPoints);
             return false;
         }
 
         // Check if player already has a specialization
         if (player.Specialization != Specialization.None)
         {
+            _log.Warning("Specialization unlock failed: Character={CharacterName}, Specialization={Specialization}, Reason=AlreadyHasSpecialization, CurrentSpecialization={Current}",
+                player.Name, specialization, player.Specialization);
             return false;
         }
 
         // Check if specialization is valid for this archetype
         if (!SpecializationFactory.CanChooseSpecialization(player, specialization))
         {
+            _log.Warning("Specialization unlock failed: Character={CharacterName}, Specialization={Specialization}, Reason=InvalidForArchetype, Class={Class}",
+                player.Name, specialization, player.Class);
             return false;
         }
 
@@ -347,6 +390,9 @@ public class SagaService
 
         // Apply specialization (adds Tier 1 abilities)
         SpecializationFactory.ApplySpecialization(player, specialization);
+
+        _log.Information("Specialization unlocked: Character={CharacterName}, Specialization={Specialization}, PPSpent={Cost}, RemainingPP={PP}, Class={Class}",
+            player.Name, specialization, SpecializationCost, player.ProgressionPoints, player.Class);
 
         return true;
     }

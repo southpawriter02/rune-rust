@@ -1,9 +1,11 @@
 using RuneAndRust.Core;
+using Serilog;
 
 namespace RuneAndRust.Engine;
 
 public class CombatEngine
 {
+    private static readonly ILogger _log = Log.ForContext<CombatEngine>();
     private readonly DiceService _diceService;
     private readonly SagaService _sagaService;
     private readonly LootService _lootService;
@@ -26,6 +28,9 @@ public class CombatEngine
     /// </summary>
     public CombatState InitializeCombat(PlayerCharacter player, List<Enemy> enemies, Room? currentRoom = null, bool canFlee = true)
     {
+        _log.Information("Combat initiated: Player={PlayerName}, Enemies={EnemyCount}, CanFlee={CanFlee}, Room={RoomId}",
+            player.Name, enemies.Count, canFlee, currentRoom?.Id);
+
         var combatState = new CombatState
         {
             Player = player,
@@ -220,16 +225,24 @@ public class CombatEngine
         {
             target.HP -= damage;
             combatState.AddLogEntry($"  {target.Name} takes {damage} damage! (HP: {Math.Max(0, target.HP)}/{target.MaxHP})");
+
+            _log.Information("Damage dealt: Attacker={Attacker}, Target={Target}, Damage={Damage}, AttackSuccesses={AttackSuccesses}, DefendSuccesses={DefendSuccesses}, RemainingHP={RemainingHP}",
+                player.Name, target.Name, damage, attackRoll.Successes, defendRoll.Successes, target.HP);
         }
         else
         {
             combatState.AddLogEntry($"  The attack is deflected!");
+
+            _log.Debug("Attack deflected: Attacker={Attacker}, Target={Target}, AttackSuccesses={AttackSuccesses}, DefendSuccesses={DefendSuccesses}",
+                player.Name, target.Name, attackRoll.Successes, defendRoll.Successes);
         }
 
         // Check if target is defeated
         if (!target.IsAlive)
         {
             combatState.AddLogEntry($"  {target.Name} is destroyed!");
+
+            _log.Information("Enemy defeated: Enemy={EnemyName}, Killer={PlayerName}", target.Name, player.Name);
         }
 
         combatState.AddLogEntry("");
@@ -335,10 +348,14 @@ public class CombatEngine
     {
         var player = combatState.Player;
 
+        _log.Information("Ability use attempt: Character={CharacterName}, Ability={AbilityName}, Target={Target}, StaminaCost={Cost}, CurrentStamina={CurrentStamina}",
+            player.Name, ability.Name, target?.Name ?? "None", ability.StaminaCost, player.Stamina);
+
         // Check stamina cost
         if (player.Stamina < ability.StaminaCost)
         {
             combatState.AddLogEntry($"Not enough stamina! ({player.Stamina}/{ability.StaminaCost} required)");
+            _log.Debug("Ability failed: Insufficient stamina for {AbilityName}", ability.Name);
             return false;
         }
 
@@ -347,6 +364,9 @@ public class CombatEngine
 
         combatState.AddLogEntry($"{player.Name} uses {ability.Name}!");
         combatState.AddLogEntry($"  Cost: {ability.StaminaCost} Stamina (Remaining: {player.Stamina}/{player.MaxStamina})");
+
+        _log.Information("Ability used: Character={CharacterName}, Ability={AbilityName}, Target={Target}, RemainingStamina={RemainingStamina}",
+            player.Name, ability.Name, target?.Name ?? "None", player.Stamina);
 
         // [v0.5] Apply trauma costs for heretical abilities
         var traumaService = new TraumaEconomyService();
@@ -610,6 +630,8 @@ public class CombatEngine
             {
                 target.BleedingTurnsRemaining = 2;
                 combatState.AddLogEntry($"  {target.Name} is bleeding! (1d6 damage for 2 turns)");
+                _log.Information("Status effect applied: Enemy={EnemyName}, Effect=Bleeding, Duration={Duration}, Successes={Successes}",
+                    target.Name, 2, successes);
             }
             return; // Early return
         }
@@ -822,6 +844,8 @@ public class CombatEngine
             // Apply [Vulnerable] status
             target.VulnerableTurnsRemaining = 3;
             combatState.AddLogEntry($"  {target.Name} is [Vulnerable] for 3 turns! (+25% damage taken)");
+            _log.Information("Status effect applied: Enemy={EnemyName}, Effect=Vulnerable, Duration={Duration}, Ability={AbilityName}",
+                target.Name, 3, ability.Name);
             return; // Early return
         }
         // v0.7: Exploit Design Flaw - Apply [Analyzed] status (Architect ability)
@@ -836,6 +860,8 @@ public class CombatEngine
             // Apply [Analyzed] status
             target.AnalyzedTurnsRemaining = 4;
             combatState.AddLogEntry($"  {target.Name} is [Analyzed] for 4 turns! (All attackers gain +2 Accuracy)");
+            _log.Information("Status effect applied: Enemy={EnemyName}, Effect=Analyzed, Duration={Duration}, Ability={AbilityName}",
+                target.Name, 4, ability.Name);
             return; // Early return
         }
         // Check if ability has special damage dice (like Aetheric Bolt)
@@ -975,6 +1001,8 @@ public class CombatEngine
             target.IsStunned = true;
             target.StunTurnsRemaining = 1;
             combatState.AddLogEntry($"  {target.Name} is disrupted and will skip their next turn!");
+            _log.Information("Status effect applied: Enemy={EnemyName}, Effect=Stunned, Duration={Duration}, Ability={AbilityName}",
+                target.Name, 1, ability.Name);
         }
 
         // v0.7: Architect of the Silence - Apply [Seized] status (Architect ability)
@@ -994,6 +1022,8 @@ public class CombatEngine
             target.SilencedTurnsRemaining = 3;
             combatState.AddLogEntry($"  Your haunting melody strips {target.Name} of its voice!");
             combatState.AddLogEntry($"  {target.Name} is [Silenced] for 3 turns! (Cannot cast spells or perform)");
+            _log.Information("Status effect applied: Enemy={EnemyName}, Effect=Silenced, Duration={Duration}, Ability={AbilityName}",
+                target.Name, 3, ability.Name);
         }
     }
 
@@ -1044,6 +1074,7 @@ public class CombatEngine
         if (!combatState.Player.IsAlive)
         {
             combatState.IsActive = false;
+            _log.Information("Combat ended: Player={PlayerName}, Result=Defeat", combatState.Player.Name);
             return true;
         }
 
@@ -1053,6 +1084,9 @@ public class CombatEngine
             combatState.IsActive = false;
             combatState.AddLogEntry("=== VICTORY ===");
             combatState.AddLogEntry("All enemies have been defeated!");
+
+            _log.Information("Combat ended: Player={PlayerName}, Result=Victory, EnemiesDefeated={EnemyCount}",
+                combatState.Player.Name, combatState.Enemies.Count);
 
             // Award Legend for defeated enemies (default trauma mod 1.0)
             // Combat context will be set by the caller
@@ -1209,11 +1243,15 @@ public class CombatEngine
                 var bleedDamage = _diceService.RollDamage(1);
                 enemy.HP -= bleedDamage;
                 combatState.AddLogEntry($"{enemy.Name} takes {bleedDamage} bleeding damage! (HP: {Math.Max(0, enemy.HP)}/{enemy.MaxHP})");
+                _log.Debug("Status effect damage: Enemy={EnemyName}, Effect=Bleeding, Damage={Damage}, RemainingHP={HP}, TurnsRemaining={Turns}",
+                    enemy.Name, bleedDamage, Math.Max(0, enemy.HP), enemy.BleedingTurnsRemaining - 1);
 
                 enemy.BleedingTurnsRemaining--;
                 if (enemy.BleedingTurnsRemaining == 0)
                 {
                     combatState.AddLogEntry($"{enemy.Name} is no longer bleeding.");
+                    _log.Information("Status effect expired: Enemy={EnemyName}, Effect=Bleeding",
+                        enemy.Name);
                 }
 
                 if (!enemy.IsAlive)
@@ -1237,6 +1275,8 @@ public class CombatEngine
                 if (enemy.StunTurnsRemaining == 0)
                 {
                     enemy.IsStunned = false;
+                    _log.Information("Status effect expired: Enemy={EnemyName}, Effect=Stunned",
+                        enemy.Name);
                 }
             }
 

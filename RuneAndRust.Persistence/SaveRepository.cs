@@ -2,11 +2,13 @@ using Microsoft.Data.Sqlite;
 using RuneAndRust.Core;
 using RuneAndRust.Engine;
 using System.Text.Json;
+using Serilog;
 
 namespace RuneAndRust.Persistence;
 
 public class SaveRepository
 {
+    private static readonly ILogger _log = Log.ForContext<SaveRepository>();
     private readonly string _connectionString;
     private const string DatabaseName = "runeandrust.db";
 
@@ -15,15 +17,21 @@ public class SaveRepository
         var dbPath = Path.Combine(dataDirectory ?? Environment.CurrentDirectory, DatabaseName);
         _connectionString = $"Data Source={dbPath}";
 
+        _log.Debug("SaveRepository initialized with database path: {DbPath}", dbPath);
+
         InitializeDatabase();
     }
 
     private void InitializeDatabase()
     {
-        using var connection = new SqliteConnection(_connectionString);
-        connection.Open();
+        _log.Debug("Initializing database");
 
-        var createTableCommand = connection.CreateCommand();
+        try
+        {
+            using var connection = new SqliteConnection(_connectionString);
+            connection.Open();
+
+            var createTableCommand = connection.CreateCommand();
         createTableCommand.CommandText = @"
             CREATE TABLE IF NOT EXISTS saves (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -100,11 +108,26 @@ public class SaveRepository
                 // Column already exists, ignore
             }
         }
+
+            _log.Information("Database initialized successfully");
+        }
+        catch (Exception ex)
+        {
+            _log.Error(ex, "Failed to initialize database");
+            throw;
+        }
     }
 
     public void SaveGame(PlayerCharacter player, WorldState worldState, GameWorld? world = null)
     {
-        // Serialize equipment (v0.3)
+        _log.Information("Saving game: Character={CharacterName}, Class={Class}, Milestone={Milestone}, Room={RoomId}",
+            player.Name, player.Class, player.CurrentMilestone, worldState.CurrentRoomId);
+
+        var startTime = DateTime.Now;
+
+        try
+        {
+            // Serialize equipment (v0.3)
         var equippedWeaponJson = player.EquippedWeapon != null
             ? JsonSerializer.Serialize(player.EquippedWeapon)
             : null;
@@ -274,23 +297,40 @@ public class SaveRepository
         command.Parameters.AddWithValue("$saved", saveData.LastSaved.ToString("yyyy-MM-dd HH:mm:ss"));
 
         command.ExecuteNonQuery();
+
+            var duration = (DateTime.Now - startTime).TotalMilliseconds;
+            _log.Information("Game saved successfully: Character={CharacterName}, Duration={Duration}ms",
+                player.Name, duration);
+        }
+        catch (Exception ex)
+        {
+            _log.Error(ex, "Failed to save game: Character={CharacterName}", player.Name);
+            throw;
+        }
     }
 
     public (PlayerCharacter?, WorldState?, string?, string?) LoadGame(string characterName)
     {
-        using var connection = new SqliteConnection(_connectionString);
-        connection.Open();
+        _log.Information("Loading game: Character={CharacterName}", characterName);
 
-        var command = connection.CreateCommand();
-        command.CommandText = "SELECT * FROM saves WHERE character_name = $name";
-        command.Parameters.AddWithValue("$name", characterName);
+        var startTime = DateTime.Now;
 
-        using var reader = command.ExecuteReader();
-
-        if (!reader.Read())
+        try
         {
-            return (null, null, null);
-        }
+            using var connection = new SqliteConnection(_connectionString);
+            connection.Open();
+
+            var command = connection.CreateCommand();
+            command.CommandText = "SELECT * FROM saves WHERE character_name = $name";
+            command.Parameters.AddWithValue("$name", characterName);
+
+            using var reader = command.ExecuteReader();
+
+            if (!reader.Read())
+            {
+                _log.Warning("Save not found: Character={CharacterName}", characterName);
+                return (null, null, null);
+            }
 
         var saveData = new SaveData
         {
@@ -572,8 +612,18 @@ public class SaveRepository
             BossDefeated = saveData.BossDefeated
         };
 
-        // Return room items JSON and NPC states JSON for restoration (v0.3, v0.8)
-        return (player, worldState, saveData.RoomItemsJson, saveData.NPCStatesJson);
+            var duration = (DateTime.Now - startTime).TotalMilliseconds;
+            _log.Information("Game loaded successfully: Character={CharacterName}, Class={Class}, Milestone={Milestone}, Duration={Duration}ms",
+                player.Name, player.Class, player.CurrentMilestone, duration);
+
+            // Return room items JSON and NPC states JSON for restoration (v0.3, v0.8)
+            return (player, worldState, saveData.RoomItemsJson, saveData.NPCStatesJson);
+        }
+        catch (Exception ex)
+        {
+            _log.Error(ex, "Failed to load game: Character={CharacterName}", characterName);
+            throw;
+        }
     }
 
     /// <summary>
@@ -583,6 +633,7 @@ public class SaveRepository
     {
         if (string.IsNullOrEmpty(roomItemsJson) || roomItemsJson == "{}")
         {
+            _log.Debug("No room items to restore");
             return;
         }
 
@@ -591,6 +642,7 @@ public class SaveRepository
             var roomItemsDict = JsonSerializer.Deserialize<Dictionary<int, List<Equipment>>>(roomItemsJson);
             if (roomItemsDict == null) return;
 
+            int itemCount = 0;
             foreach (var kvp in roomItemsDict)
             {
                 var roomId = kvp.Key;
@@ -602,12 +654,17 @@ public class SaveRepository
                 {
                     room.ItemsOnGround.Clear();
                     room.ItemsOnGround.AddRange(items);
+                    itemCount += items.Count;
                 }
             }
+
+            _log.Information("Restored room items: {RoomCount} rooms, {ItemCount} items total",
+                roomItemsDict.Count, itemCount);
         }
-        catch
+        catch (Exception ex)
         {
             // Failed to restore room items - not critical, player can continue without them
+            _log.Warning(ex, "Failed to restore room items");
         }
     }
 
@@ -618,6 +675,7 @@ public class SaveRepository
     {
         if (string.IsNullOrEmpty(npcStatesJson) || npcStatesJson == "[]")
         {
+            _log.Debug("No NPC states to restore");
             return;
         }
 
@@ -641,10 +699,13 @@ public class SaveRepository
                     room.NPCs.Add(npc);
                 }
             }
+
+            _log.Information("Restored NPC states: {NpcCount} NPCs", savedNPCs.Count);
         }
-        catch
+        catch (Exception ex)
         {
             // Failed to restore NPC states - not critical, but NPCs will reset to default state
+            _log.Warning(ex, "Failed to restore NPC states");
         }
     }
 

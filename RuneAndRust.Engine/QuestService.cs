@@ -1,6 +1,7 @@
 using RuneAndRust.Core;
 using RuneAndRust.Core.Quests;
 using System.Text.Json;
+using Serilog;
 
 namespace RuneAndRust.Engine;
 
@@ -9,6 +10,7 @@ namespace RuneAndRust.Engine;
 /// </summary>
 public class QuestService
 {
+    private static readonly ILogger _log = Log.ForContext<QuestService>();
     private readonly Dictionary<string, Quest> _questDatabase = new();
     private readonly string _questDataPath;
 
@@ -22,13 +24,18 @@ public class QuestService
     /// </summary>
     public void LoadQuestDatabase()
     {
+        _log.Debug("Loading quest database from: {DataPath}", _questDataPath);
+
         if (!Directory.Exists(_questDataPath))
         {
+            _log.Warning("Quest data path not found: {DataPath}", _questDataPath);
             Console.WriteLine($"Warning: Quest data path not found: {_questDataPath}");
             return;
         }
 
         var questFiles = Directory.GetFiles(_questDataPath, "*.json");
+        _log.Debug("Found {FileCount} quest files to load", questFiles.Length);
+
         foreach (var file in questFiles)
         {
             try
@@ -38,14 +45,18 @@ public class QuestService
                 if (quest != null && !string.IsNullOrEmpty(quest.Id))
                 {
                     _questDatabase[quest.Id] = quest;
+                    _log.Debug("Loaded quest: {QuestId} ({QuestTitle}) from {FileName}",
+                        quest.Id, quest.Title, Path.GetFileName(file));
                 }
             }
             catch (Exception ex)
             {
+                _log.Error(ex, "Error loading quest from file: {FileName}", Path.GetFileName(file));
                 Console.WriteLine($"Error loading quest from {file}: {ex.Message}");
             }
         }
 
+        _log.Information("Loaded {QuestCount} quests from {FileCount} files", _questDatabase.Count, questFiles.Length);
         Console.WriteLine($"Loaded {_questDatabase.Count} quests");
     }
 
@@ -57,6 +68,7 @@ public class QuestService
         var questTemplate = _questDatabase.GetValueOrDefault(questId);
         if (questTemplate == null)
         {
+            _log.Warning("Quest not found in database: {QuestId}", questId);
             return false;
         }
 
@@ -64,6 +76,7 @@ public class QuestService
         if (player.ActiveQuests.Any(q => q.Id == questId) ||
             player.CompletedQuests.Any(q => q.Id == questId))
         {
+            _log.Debug("Quest already accepted or completed: {QuestId}", questId);
             return false;
         }
 
@@ -72,6 +85,10 @@ public class QuestService
         quest.Status = QuestStatus.Active;
 
         player.ActiveQuests.Add(quest);
+
+        _log.Information("Quest accepted: {QuestId} ({QuestTitle}), Giver={GiverId}",
+            questId, quest.Title, quest.GiverNpcId);
+
         return true;
     }
 
@@ -93,9 +110,14 @@ public class QuestService
                     objective.Current++;
                     messages.Add($"[Quest] {quest.Title}: {objective.Description} ({objective.GetProgress()})");
 
+                    _log.Information("Quest objective updated: Quest={QuestId}, Objective={Objective}, Progress={Progress}",
+                        quest.Id, objective.Description, objective.GetProgress());
+
                     if (objective.IsComplete)
                     {
                         messages.Add($"[Quest] Objective complete: {objective.Description}");
+                        _log.Information("Quest objective completed: Quest={QuestId}, Objective={Objective}",
+                            quest.Id, objective.Description);
                     }
                 }
             }
@@ -104,6 +126,8 @@ public class QuestService
             if (quest.IsComplete() && quest.Status == QuestStatus.Active)
             {
                 messages.Add($"[Quest] {quest.Title} objectives complete! Return to {quest.GiverNpcId} for reward.");
+                _log.Information("All quest objectives completed: Quest={QuestId} ({QuestTitle})",
+                    quest.Id, quest.Title);
             }
         }
 
@@ -225,8 +249,12 @@ public class QuestService
         var quest = player.ActiveQuests.FirstOrDefault(q => q.Id == questId);
         if (quest == null || !quest.IsComplete())
         {
+            _log.Debug("Cannot complete quest: Quest={QuestId}, Found={Found}, IsComplete={IsComplete}",
+                questId, quest != null, quest?.IsComplete() ?? false);
             return messages;
         }
+
+        _log.Information("Completing quest: {QuestId} ({QuestTitle})", quest.Id, quest.Title);
 
         // Grant rewards
         if (quest.Reward != null)
@@ -240,6 +268,8 @@ public class QuestService
         player.CompletedQuests.Add(quest);
 
         messages.Add($"[Quest Complete] {quest.Title}");
+
+        _log.Information("Quest completed successfully: {QuestId} ({QuestTitle})", quest.Id, quest.Title);
 
         return messages;
     }
@@ -257,12 +287,14 @@ public class QuestService
             // v0.8: Experience goes to Legend (Aethelgard Saga System)
             player.CurrentLegend += reward.Experience;
             messages.Add($"[Reward] +{reward.Experience} Legend");
+            _log.Information("Quest reward granted: Experience={Experience}", reward.Experience);
         }
 
         // Grant items (v0.8: simplified - just log, actual item granting would need EquipmentService integration)
         foreach (var itemId in reward.ItemIds)
         {
             messages.Add($"[Reward] Received: {itemId}");
+            _log.Information("Quest reward granted: Item={ItemId}", itemId);
         }
 
         // Grant reputation
@@ -275,6 +307,8 @@ public class QuestService
                 "Quest completion",
                 log);
             messages.AddRange(log);
+            _log.Information("Quest reward granted: Faction={Faction}, ReputationChange={Change}",
+                reward.Faction.Value, reward.ReputationChange);
         }
 
         return messages;

@@ -1,4 +1,5 @@
 using RuneAndRust.Core;
+using Serilog;
 
 namespace RuneAndRust.Engine;
 
@@ -7,6 +8,8 @@ namespace RuneAndRust.Engine;
 /// </summary>
 public class EquipmentService
 {
+    private static readonly ILogger _log = Log.ForContext<EquipmentService>();
+
     /// <summary>
     /// Equip a weapon from inventory
     /// </summary>
@@ -14,8 +17,12 @@ public class EquipmentService
     {
         if (weapon.Type != EquipmentType.Weapon)
         {
+            _log.Warning("Attempted to equip non-weapon: Character={CharacterName}, Item={ItemName}, Type={ItemType}",
+                player.Name, weapon.Name, weapon.Type);
             return false;
         }
+
+        var oldWeapon = player.EquippedWeapon;
 
         // Remove from inventory if present
         player.Inventory.Remove(weapon);
@@ -36,6 +43,9 @@ public class EquipmentService
         // Recalculate stats
         RecalculatePlayerStats(player);
 
+        _log.Information("Weapon equipped: Character={CharacterName}, NewWeapon={NewWeapon}, OldWeapon={OldWeapon}",
+            player.Name, weapon.Name, oldWeapon?.Name ?? "None");
+
         return true;
     }
 
@@ -46,8 +56,12 @@ public class EquipmentService
     {
         if (armor.Type != EquipmentType.Armor)
         {
+            _log.Warning("Attempted to equip non-armor: Character={CharacterName}, Item={ItemName}, Type={ItemType}",
+                player.Name, armor.Name, armor.Type);
             return false;
         }
+
+        var oldArmor = player.EquippedArmor;
 
         // Remove from inventory if present
         player.Inventory.Remove(armor);
@@ -67,6 +81,9 @@ public class EquipmentService
 
         // Recalculate stats
         RecalculatePlayerStats(player);
+
+        _log.Information("Armor equipped: Character={CharacterName}, NewArmor={NewArmor}, OldArmor={OldArmor}",
+            player.Name, armor.Name, oldArmor?.Name ?? "None");
 
         return true;
     }

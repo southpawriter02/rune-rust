@@ -1,5 +1,6 @@
 using RuneAndRust.Core;
 using System.Text.Json;
+using Serilog;
 
 namespace RuneAndRust.Engine;
 
@@ -8,6 +9,7 @@ namespace RuneAndRust.Engine;
 /// </summary>
 public class NPCService
 {
+    private static readonly ILogger _log = Log.ForContext<NPCService>();
     private readonly Dictionary<string, NPC> _npcDatabase = new();
     private readonly string _npcDataPath;
 
@@ -21,13 +23,18 @@ public class NPCService
     /// </summary>
     public void LoadNPCDatabase()
     {
+        _log.Debug("Loading NPC database from: {DataPath}", _npcDataPath);
+
         if (!Directory.Exists(_npcDataPath))
         {
+            _log.Warning("NPC data path not found: {DataPath}", _npcDataPath);
             Console.WriteLine($"Warning: NPC data path not found: {_npcDataPath}");
             return;
         }
 
         var npcFiles = Directory.GetFiles(_npcDataPath, "*.json");
+        _log.Debug("Found {FileCount} NPC files to load", npcFiles.Length);
+
         foreach (var file in npcFiles)
         {
             try
@@ -37,14 +44,18 @@ public class NPCService
                 if (npc != null && !string.IsNullOrEmpty(npc.Id))
                 {
                     _npcDatabase[npc.Id] = npc;
+                    _log.Debug("Loaded NPC: {NpcId} ({NpcName}) from {FileName}",
+                        npc.Id, npc.Name, Path.GetFileName(file));
                 }
             }
             catch (Exception ex)
             {
+                _log.Error(ex, "Error loading NPC from file: {FileName}", Path.GetFileName(file));
                 Console.WriteLine($"Error loading NPC from {file}: {ex.Message}");
             }
         }
 
+        _log.Information("Loaded {NpcCount} NPCs from {FileCount} files", _npcDatabase.Count, npcFiles.Length);
         Console.WriteLine($"Loaded {_npcDatabase.Count} NPCs");
     }
 
@@ -69,8 +80,15 @@ public class NPCService
     /// </summary>
     public void UpdateDisposition(NPC npc, PlayerCharacter player)
     {
+        int oldDisposition = npc.CurrentDisposition;
         int factionReputation = player.FactionReputations.GetReputation(npc.Faction);
         npc.UpdateDisposition(factionReputation);
+
+        if (oldDisposition != npc.CurrentDisposition)
+        {
+            _log.Information("NPC disposition updated: {NpcName} ({NpcId}), Old={Old}, New={New}, FactionRep={FactionRep}",
+                npc.Name, npc.Id, oldDisposition, npc.CurrentDisposition, factionReputation);
+        }
     }
 
     /// <summary>
@@ -143,7 +161,13 @@ public class NPCService
     public NPC? CreateNPCInstance(string npcId)
     {
         var template = _npcDatabase.GetValueOrDefault(npcId);
-        if (template == null) return null;
+        if (template == null)
+        {
+            _log.Warning("Failed to create NPC instance: NPC template not found for {NpcId}", npcId);
+            return null;
+        }
+
+        _log.Debug("Creating NPC instance: {NpcId} ({NpcName})", template.Id, template.Name);
 
         // Create a new instance with the same base properties
         return new NPC
