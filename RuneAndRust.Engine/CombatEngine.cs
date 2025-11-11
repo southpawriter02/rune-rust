@@ -9,6 +9,7 @@ public class CombatEngine
     private readonly LootService _lootService;
     private readonly EquipmentService _equipmentService;
     private readonly HazardService _hazardService; // [v0.6]
+    private readonly PerformanceService _performanceService; // [v0.7]
 
     public CombatEngine(DiceService diceService, SagaService sagaService, LootService lootService, EquipmentService equipmentService, HazardService hazardService)
     {
@@ -17,6 +18,7 @@ public class CombatEngine
         _lootService = lootService;
         _equipmentService = equipmentService;
         _hazardService = hazardService; // [v0.6]
+        _performanceService = new PerformanceService(); // [v0.7]
     }
 
     /// <summary>
@@ -428,6 +430,36 @@ public class CombatEngine
         }
 
         combatState.AddLogEntry($"  Ability succeeds!");
+
+        // v0.7: Check if ability is a performance (Skald channeling)
+        if (PerformanceService.IsPerformanceAbility(ability.Name))
+        {
+            var performanceResult = _performanceService.StartPerformance(player, ability.Name, abilityRoll.Successes);
+            if (performanceResult.Success)
+            {
+                combatState.AddLogEntry($"  {performanceResult.Message}");
+
+                // Special: Saga of the Einherjar grants temp HP and [Inspired]
+                if (ability.Name == "Saga of the Einherjar")
+                {
+                    // Grant temporary HP (2d6)
+                    int tempHP = _diceService.RollDamage(ability.DamageDice); // Uses DamageDice field for temp HP
+                    player.TempHP += tempHP;
+                    combatState.AddLogEntry($"  All allies gain {tempHP} Temporary HP!");
+
+                    // Apply [Inspired] status (+3 damage dice)
+                    player.InspiredTurnsRemaining = performanceResult.Duration;
+                    combatState.AddLogEntry($"  All allies gain [Inspired] (+3 damage dice) for {performanceResult.Duration} rounds!");
+                }
+            }
+            else
+            {
+                combatState.AddLogEntry($"  {performanceResult.Message}");
+            }
+
+            combatState.AddLogEntry("");
+            return true; // Performance started, turn complete
+        }
 
         // Apply ability effects
         switch (ability.Type)
@@ -1083,6 +1115,56 @@ public class CombatEngine
 
                 combatState.AddLogEntry("");
             }
+        }
+
+        // v0.7: Tick down performance duration and handle interruptions
+        if (combatState.Player.IsPerforming)
+        {
+            // Check for interruption ([Silenced])
+            var interruptMessage = _performanceService.HandleInterruption(combatState.Player);
+            if (!string.IsNullOrEmpty(interruptMessage))
+            {
+                combatState.AddLogEntry($"--- Performance Interrupted ---");
+                combatState.AddLogEntry($"  {interruptMessage}");
+                combatState.AddLogEntry("");
+            }
+            else
+            {
+                // Tick down performance duration
+                var tickMessage = _performanceService.TickPerformance(combatState.Player);
+                if (!string.IsNullOrEmpty(tickMessage))
+                {
+                    combatState.AddLogEntry($"--- Performance Status ---");
+                    combatState.AddLogEntry($"  {tickMessage}");
+                    combatState.AddLogEntry("");
+                }
+            }
+        }
+
+        // v0.7: Tick down v0.7 status effects
+        if (combatState.Player.VulnerableTurnsRemaining > 0)
+        {
+            combatState.Player.VulnerableTurnsRemaining--;
+        }
+
+        if (combatState.Player.AnalyzedTurnsRemaining > 0)
+        {
+            combatState.Player.AnalyzedTurnsRemaining--;
+        }
+
+        if (combatState.Player.SeizedTurnsRemaining > 0)
+        {
+            combatState.Player.SeizedTurnsRemaining--;
+        }
+
+        if (combatState.Player.InspiredTurnsRemaining > 0)
+        {
+            combatState.Player.InspiredTurnsRemaining--;
+        }
+
+        if (combatState.Player.SilencedTurnsRemaining > 0)
+        {
+            combatState.Player.SilencedTurnsRemaining--;
         }
 
         combatState.NextTurn();

@@ -1258,6 +1258,40 @@ class Program
 
         while (!turnComplete)
         {
+            // v0.7: Check if player is performing (action restrictions)
+            if (combat.Player.IsPerforming)
+            {
+                // Display combat state with performance status
+                UIHelper.DisplayCombatState(combat);
+
+                AnsiConsole.MarkupLine($"[magenta]🎵 Performing: {combat.Player.CurrentPerformance} ({combat.Player.PerformingTurnsRemaining} rounds remaining)[/]");
+                AnsiConsole.MarkupLine("[dim]While performing, you cannot take other actions.[/]");
+
+                var performanceChoice = AnsiConsole.Prompt(
+                    new SelectionPrompt<string>()
+                        .Title("[yellow]Performance Options:[/]")
+                        .AddChoices(new[] { "Continue Performance", "End Performance Early", "Stats - View character sheet" })
+                );
+
+                if (performanceChoice == "Continue Performance")
+                {
+                    combat.AddLogEntry($"{combat.Player.Name} continues the performance...");
+                    turnComplete = true;
+                }
+                else if (performanceChoice == "End Performance Early")
+                {
+                    var performanceService = new PerformanceService();
+                    var endMessage = performanceService.EndPerformance(combat.Player, forced: false);
+                    combat.AddLogEntry(endMessage);
+                    turnComplete = true;
+                }
+                else if (performanceChoice.StartsWith("Stats"))
+                {
+                    HandleStats();
+                }
+                continue; // Skip normal action processing
+            }
+
             // Display combat state
             UIHelper.DisplayCombatState(combat);
 
