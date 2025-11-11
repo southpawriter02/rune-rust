@@ -21,6 +21,11 @@ public class GameState
     public CombatState? Combat { get; set; }
     public WorldState WorldState { get; set; }
 
+    // v0.8: NPC & Quest System
+    public NPCService NPCService { get; set; }
+    public DialogueService DialogueService { get; set; }
+    public QuestService QuestService { get; set; }
+
     public GameState()
     {
         Player = new PlayerCharacter();
@@ -29,6 +34,11 @@ public class GameState
         CurrentPhase = GamePhase.CharacterCreation;
         Combat = null;
         WorldState = new WorldState();
+
+        // v0.8: Initialize NPC & Quest services
+        NPCService = new NPCService();
+        DialogueService = new DialogueService();
+        QuestService = new QuestService();
     }
 
     public void MoveToRoom(string direction)

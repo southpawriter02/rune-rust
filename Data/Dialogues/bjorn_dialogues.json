@@ -1,0 +1,106 @@
+[
+  {
+    "Id": "bjorn_greeting",
+    "Text": "This is MY territory. Leave your supplies and go, or things get bloody.",
+    "Options": [
+      {
+        "Text": "I'm not giving you anything. [Fight]",
+        "NextNodeId": null,
+        "Outcome": {
+          "Type": "InitiateCombat",
+          "Data": "bjorn_exile",
+          "ReputationChange": 0,
+          "AffectedFaction": null
+        }
+      },
+      {
+        "Text": "[WILL 4] Stand down. We don't have to do this.",
+        "SkillCheck": {
+          "Attribute": "will",
+          "TargetValue": 4,
+          "Skill": null,
+          "SkillRanks": 0
+        },
+        "NextNodeId": "bjorn_stand_down",
+        "Outcome": {
+          "Type": "ReputationChange",
+          "Data": "Successfully negotiated with Bjorn",
+          "ReputationChange": 10,
+          "AffectedFaction": "RustClans"
+        }
+      },
+      {
+        "Text": "There's enough for both of us here.",
+        "NextNodeId": "bjorn_negotiate_fail",
+        "Outcome": null
+      }
+    ],
+    "EndsConversation": false
+  },
+  {
+    "Id": "bjorn_stand_down",
+    "Text": "... Fine. You've got backbone, I'll give you that. Maybe you're not just another scavenger. There's a larger nest of Horrors deeper in—Room 24. Watch yourself.",
+    "Options": [
+      {
+        "Text": "Thanks for the warning.",
+        "NextNodeId": null,
+        "Outcome": {
+          "Type": "Information",
+          "Data": "Boss location revealed",
+          "ReputationChange": 0,
+          "AffectedFaction": null
+        }
+      },
+      {
+        "Text": "Why tell me this?",
+        "NextNodeId": "bjorn_reason",
+        "Outcome": null
+      }
+    ],
+    "EndsConversation": false
+  },
+  {
+    "Id": "bjorn_reason",
+    "Text": "Because those things don't discriminate. They'll kill Rust-Clan or Combine alike. Better we both know where the danger is.",
+    "Options": [
+      {
+        "Text": "Fair enough.",
+        "NextNodeId": null,
+        "Outcome": {
+          "Type": "EndConversation",
+          "Data": "",
+          "ReputationChange": 3,
+          "AffectedFaction": "RustClans"
+        }
+      }
+    ],
+    "EndsConversation": false
+  },
+  {
+    "Id": "bjorn_negotiate_fail",
+    "Text": "Nice try. But I don't share. Now get out before I make you.",
+    "Options": [
+      {
+        "Text": "Fine, I'm leaving.",
+        "NextNodeId": null,
+        "Outcome": {
+          "Type": "EndConversation",
+          "Data": "",
+          "ReputationChange": -5,
+          "AffectedFaction": "RustClans"
+        }
+      },
+      {
+        "Text": "Make me. [Fight]",
+        "NextNodeId": null,
+        "Outcome": {
+          "Type": "InitiateCombat",
+          "Data": "bjorn_exile",
+          "ReputationChange": 0,
+          "AffectedFaction": null
+        }
+      }
+    ],
+    "EndsConversation": false
+  }
+]
