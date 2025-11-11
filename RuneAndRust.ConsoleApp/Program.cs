@@ -284,7 +284,8 @@ class Program
                 {
                     "Warrior - High HP, Melee Focus",
                     "Scavenger - Balanced, Tactical",
-                    "Mystic - Low HP, Ability Focus"
+                    "Mystic - Low HP, Ability Focus",
+                    "Adept - WITS-based, Specialist (v0.7)" // NEW: v0.7 archetype
                 })
         );
 
@@ -293,6 +294,7 @@ class Program
             "Warrior - High HP, Melee Focus" => CharacterClass.Warrior,
             "Scavenger - Balanced, Tactical" => CharacterClass.Scavenger,
             "Mystic - Low HP, Ability Focus" => CharacterClass.Mystic,
+            "Adept - WITS-based, Specialist (v0.7)" => CharacterClass.Adept, // NEW: v0.7
             _ => CharacterClass.Warrior
         };
 
