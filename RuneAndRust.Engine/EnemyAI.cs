@@ -651,8 +651,16 @@ public class EnemyAI
     {
         combatState.AddLogEntry($"{enemy.Name} attacks {player.Name}!");
 
-        var attackRoll = _diceService.Roll(enemy.Attributes.Might);
-        combatState.AddLogEntry($"  Rolled {enemy.Attributes.Might}d6: {FormatRolls(attackRoll)} = {attackRoll.Successes} successes");
+        // v0.7: Apply Dirge of Defeat performance penalty (-2 dice to enemy rolls)
+        int attackDice = enemy.Attributes.Might;
+        if (player.IsPerforming && player.CurrentPerformance == "Dirge of Defeat")
+        {
+            attackDice = Math.Max(1, attackDice - 2); // Minimum 1 die
+            combatState.AddLogEntry($"  [Dirge of Defeat] weakens {enemy.Name}'s attack! ({enemy.Attributes.Might} → {attackDice} dice)");
+        }
+
+        var attackRoll = _diceService.Roll(attackDice);
+        combatState.AddLogEntry($"  Rolled {attackDice}d6: {FormatRolls(attackRoll)} = {attackRoll.Successes} successes");
 
         // Check if player has dodge active
         if (combatState.PlayerNegateNextAttack)
@@ -750,6 +758,18 @@ public class EnemyAI
                 combatState.AddLogEntry($"{indent}Aetheric shield absorbs {player.ShieldAbsorptionRemaining} damage and shatters!");
                 player.ShieldAbsorptionRemaining = 0;
                 damage = remainingDamage;
+            }
+        }
+
+        // v0.7: Apply Lay of the Iron Wall performance soak (+2 damage reduction)
+        if (player.IsPerforming && player.CurrentPerformance == "Lay of the Iron Wall")
+        {
+            int soakAmount = 2;
+            int reducedDamage = Math.Max(0, damage - soakAmount);
+            if (reducedDamage < damage)
+            {
+                combatState.AddLogEntry($"{indent}[Lay of the Iron Wall] reduces damage by {soakAmount}! ({damage} → {reducedDamage})");
+                damage = reducedDamage;
             }
         }
 

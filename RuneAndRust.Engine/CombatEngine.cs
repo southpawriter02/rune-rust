@@ -169,6 +169,13 @@ public class CombatEngine
             combatState.AddLogEntry($"  [Analyzed] grants +2 Accuracy against {target.Name}!");
         }
 
+        // v0.7: Apply Saga of Courage performance bonus (+2 Accuracy)
+        if (player.IsPerforming && player.CurrentPerformance == "Saga of Courage")
+        {
+            bonusDice += 2;
+            combatState.AddLogEntry($"  [Saga of Courage] inspires you! +2 Accuracy!");
+        }
+
         var totalDice = attributeValue + bonusDice;
         var attackRoll = _diceService.Roll(totalDice);
 
@@ -454,17 +461,34 @@ public class CombatEngine
             {
                 combatState.AddLogEntry($"  {performanceResult.Message}");
 
-                // Special: Saga of the Einherjar grants temp HP and [Inspired]
-                if (ability.Name == "Saga of the Einherjar")
+                // v0.7: Special performance effects
+                switch (ability.Name)
                 {
-                    // Grant temporary HP (2d6)
-                    int tempHP = _diceService.RollDamage(ability.DamageDice); // Uses DamageDice field for temp HP
-                    player.TempHP += tempHP;
-                    combatState.AddLogEntry($"  All allies gain {tempHP} Temporary HP!");
+                    case "Saga of the Einherjar":
+                        // Grant temporary HP (2d6)
+                        int tempHP = _diceService.RollDamage(ability.DamageDice);
+                        player.TempHP += tempHP;
+                        combatState.AddLogEntry($"  All allies gain {tempHP} Temporary HP!");
 
-                    // Apply [Inspired] status (+3 damage dice)
-                    player.InspiredTurnsRemaining = performanceResult.Duration;
-                    combatState.AddLogEntry($"  All allies gain [Inspired] (+3 damage dice) for {performanceResult.Duration} rounds!");
+                        // Apply [Inspired] status (+3 damage dice)
+                        player.InspiredTurnsRemaining = performanceResult.Duration;
+                        combatState.AddLogEntry($"  All allies gain [Inspired] (+3 damage dice) for {performanceResult.Duration} rounds!");
+                        break;
+
+                    case "Saga of Courage":
+                        combatState.AddLogEntry($"  Your inspiring battle hymn fills allies with courage!");
+                        combatState.AddLogEntry($"  All allies gain +2 Accuracy while the saga continues!");
+                        break;
+
+                    case "Dirge of Defeat":
+                        combatState.AddLogEntry($"  Your mournful dirge saps the will of your enemies!");
+                        combatState.AddLogEntry($"  All enemies suffer -2 to their rolls while the dirge plays!");
+                        break;
+
+                    case "Lay of the Iron Wall":
+                        combatState.AddLogEntry($"  Your protective chant hardens the resolve of your allies!");
+                        combatState.AddLogEntry($"  All allies gain +2 Soak (damage reduction) while the lay continues!");
+                        break;
                 }
             }
             else
