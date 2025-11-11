@@ -58,6 +58,7 @@ public class SaveRepository
         // Add trauma economy columns (migration for v0.5)
         // Add specialization column (migration for v0.7)
         // Add Adept status effect columns (migration for v0.7)
+        // Add consumables and crafting components columns (migration for v0.7)
         var alterCommands = new[]
         {
             "ALTER TABLE saves ADD COLUMN equipped_weapon_json TEXT",
@@ -76,7 +77,9 @@ public class SaveRepository
             "ALTER TABLE saves ADD COLUMN current_performance TEXT",
             "ALTER TABLE saves ADD COLUMN inspired_turns INTEGER DEFAULT 0",
             "ALTER TABLE saves ADD COLUMN silenced_turns INTEGER DEFAULT 0",
-            "ALTER TABLE saves ADD COLUMN temp_hp INTEGER DEFAULT 0"
+            "ALTER TABLE saves ADD COLUMN temp_hp INTEGER DEFAULT 0",
+            "ALTER TABLE saves ADD COLUMN consumables_json TEXT DEFAULT '[]'",
+            "ALTER TABLE saves ADD COLUMN crafting_components_json TEXT DEFAULT '{}'"
         };
 
         foreach (var alterSql in alterCommands)
@@ -106,6 +109,10 @@ public class SaveRepository
             : null;
 
         var inventoryJson = JsonSerializer.Serialize(player.Inventory);
+
+        // Serialize consumables and crafting components (v0.7)
+        var consumablesJson = JsonSerializer.Serialize(player.Consumables);
+        var craftingComponentsJson = JsonSerializer.Serialize(player.CraftingComponents);
 
         // Serialize room items (v0.3)
         var roomItemsDict = new Dictionary<int, List<Equipment>>();
@@ -160,6 +167,8 @@ public class SaveRepository
             EquippedArmorJson = equippedArmorJson,
             InventoryJson = inventoryJson,
             RoomItemsJson = roomItemsJson,
+            ConsumablesJson = consumablesJson,
+            CraftingComponentsJson = craftingComponentsJson,
             LastSaved = DateTime.Now
         };
 
@@ -177,6 +186,7 @@ public class SaveRepository
                 inspired_turns, silenced_turns, temp_hp,
                 current_room_id, cleared_rooms_json, puzzle_solved, boss_defeated,
                 equipped_weapon_json, equipped_armor_json, inventory_json, room_items_json,
+                consumables_json, crafting_components_json,
                 last_saved
             ) VALUES (
                 $name, $class, $spec, $milestone, $legend, $pp,
@@ -187,6 +197,7 @@ public class SaveRepository
                 $inspiredturns, $silencedturns, $temphp,
                 $roomid, $cleared, $puzzle, $boss,
                 $eqweapon, $eqarmor, $inventory, $roomitems,
+                $consumables, $craftingcomponents,
                 $saved
             )
         ";
@@ -227,6 +238,8 @@ public class SaveRepository
         command.Parameters.AddWithValue("$eqarmor", (object?)saveData.EquippedArmorJson ?? DBNull.Value);
         command.Parameters.AddWithValue("$inventory", saveData.InventoryJson);
         command.Parameters.AddWithValue("$roomitems", saveData.RoomItemsJson);
+        command.Parameters.AddWithValue("$consumables", saveData.ConsumablesJson);
+        command.Parameters.AddWithValue("$craftingcomponents", saveData.CraftingComponentsJson);
         command.Parameters.AddWithValue("$saved", saveData.LastSaved.ToString("yyyy-MM-dd HH:mm:ss"));
 
         command.ExecuteNonQuery();
@@ -357,6 +370,21 @@ public class SaveRepository
         }
         catch { saveData.RoomItemsJson = "{}"; }
 
+        // Load consumables and crafting components (v0.7) - handle missing columns for backward compatibility
+        try
+        {
+            var consumablesOrdinal = reader.GetOrdinal("consumables_json");
+            saveData.ConsumablesJson = reader.IsDBNull(consumablesOrdinal) ? "[]" : reader.GetString(consumablesOrdinal);
+        }
+        catch { saveData.ConsumablesJson = "[]"; }
+
+        try
+        {
+            var craftingComponentsOrdinal = reader.GetOrdinal("crafting_components_json");
+            saveData.CraftingComponentsJson = reader.IsDBNull(craftingComponentsOrdinal) ? "{}" : reader.GetString(craftingComponentsOrdinal);
+        }
+        catch { saveData.CraftingComponentsJson = "{}"; }
+
         // Reconstruct PlayerCharacter
         var player = new PlayerCharacter
         {
@@ -420,6 +448,25 @@ public class SaveRepository
         catch
         {
             player.Inventory = new List<Equipment>();
+        }
+
+        // Reconstruct consumables and crafting components (v0.7)
+        try
+        {
+            player.Consumables = JsonSerializer.Deserialize<List<Consumable>>(saveData.ConsumablesJson) ?? new List<Consumable>();
+        }
+        catch
+        {
+            player.Consumables = new List<Consumable>();
+        }
+
+        try
+        {
+            player.CraftingComponents = JsonSerializer.Deserialize<Dictionary<ComponentType, int>>(saveData.CraftingComponentsJson) ?? new Dictionary<ComponentType, int>();
+        }
+        catch
+        {
+            player.CraftingComponents = new Dictionary<ComponentType, int>();
         }
 
         // Reconstruct abilities based on class and level (will be set by CharacterFactory)
