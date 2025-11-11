@@ -453,6 +453,20 @@ public static class UIHelper
         if (combat.Player.ShieldAbsorptionRemaining > 0)
             playerEffects.Add($"Shield ({combat.Player.ShieldAbsorptionRemaining} absorption)");
 
+        // v0.7: Adept status effects
+        if (combat.Player.TempHP > 0)
+            playerEffects.Add($"Temp HP: {combat.Player.TempHP}");
+        if (combat.Player.VulnerableTurnsRemaining > 0)
+            playerEffects.Add($"[Vulnerable] +25% damage taken ({combat.Player.VulnerableTurnsRemaining} turns)");
+        if (combat.Player.InspiredTurnsRemaining > 0)
+            playerEffects.Add($"[Inspired] +3 damage dice ({combat.Player.InspiredTurnsRemaining} turns)");
+        if (combat.Player.SeizedTurnsRemaining > 0)
+            playerEffects.Add($"[Seized] Cannot act! ({combat.Player.SeizedTurnsRemaining} turns)");
+        if (combat.Player.SilencedTurnsRemaining > 0)
+            playerEffects.Add($"[Silenced] Cannot perform ({combat.Player.SilencedTurnsRemaining} turns)");
+        if (combat.Player.IsPerforming)
+            playerEffects.Add($"[Performing] {combat.Player.CurrentPerformance} ({combat.Player.PerformingTurnsRemaining} turns)");
+
         if (playerEffects.Count > 0)
         {
             foreach (var effect in playerEffects)

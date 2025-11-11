@@ -187,8 +187,16 @@ public class CombatEngine
         int damage = 0;
         if (netSuccesses > 0)
         {
+            // v0.7: Apply [Inspired] damage bonus (+3 damage dice)
+            int totalDamageDice = weaponDice;
+            if (player.InspiredTurnsRemaining > 0)
+            {
+                totalDamageDice += 3;
+                combatState.AddLogEntry($"  [Inspired] grants +3 damage dice!");
+            }
+
             // Roll weapon damage dice
-            damage = _diceService.RollDamage(weaponDice) + weaponDamageBonus;
+            damage = _diceService.RollDamage(totalDamageDice) + weaponDamageBonus;
             damage = Math.Max(1, damage); // Minimum 1 damage on hit
         }
 
