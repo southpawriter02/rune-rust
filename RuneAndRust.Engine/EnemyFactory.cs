@@ -177,6 +177,7 @@ public class EnemyFactory
             BaseDamageDice = 2,
             DamageBonus = 0,
             IsBoss = false,
+            IsForlorn = true, // [v0.5] Inflicts passive Psychic Stress aura
             BaseLegendValue = 35 // Moderate Act (can avoid combat)
         };
     }
@@ -199,6 +200,7 @@ public class EnemyFactory
             BaseDamageDice = 3,
             DamageBonus = 0,
             IsBoss = true,
+            IsForlorn = true, // [v0.5] Inflicts passive Psychic Stress aura
             Phase = 1,
             BaseLegendValue = 100 // Significant Act
         };

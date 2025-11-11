@@ -55,12 +55,16 @@ public class SaveRepository
         createTableCommand.ExecuteNonQuery();
 
         // Add equipment columns to existing saves (migration for v0.3)
+        // Add trauma economy columns (migration for v0.5)
         var alterCommands = new[]
         {
             "ALTER TABLE saves ADD COLUMN equipped_weapon_json TEXT",
             "ALTER TABLE saves ADD COLUMN equipped_armor_json TEXT",
             "ALTER TABLE saves ADD COLUMN inventory_json TEXT DEFAULT '[]'",
-            "ALTER TABLE saves ADD COLUMN room_items_json TEXT DEFAULT '{}'"
+            "ALTER TABLE saves ADD COLUMN room_items_json TEXT DEFAULT '{}'",
+            "ALTER TABLE saves ADD COLUMN psychic_stress INTEGER DEFAULT 0",
+            "ALTER TABLE saves ADD COLUMN corruption INTEGER DEFAULT 0",
+            "ALTER TABLE saves ADD COLUMN rooms_explored_since_rest INTEGER DEFAULT 0"
         };
 
         foreach (var alterSql in alterCommands)
@@ -122,6 +126,9 @@ public class SaveRepository
             MaxHP = player.MaxHP,
             CurrentStamina = player.Stamina,
             MaxStamina = player.MaxStamina,
+            PsychicStress = player.PsychicStress,
+            Corruption = player.Corruption,
+            RoomsExploredSinceRest = player.RoomsExploredSinceRest,
             CurrentRoomId = worldState.CurrentRoomId,
             ClearedRoomsJson = JsonSerializer.Serialize(worldState.ClearedRoomIds),
             PuzzleSolved = worldState.PuzzleSolved,
@@ -142,6 +149,7 @@ public class SaveRepository
                 character_name, class, current_milestone, current_legend, progression_points,
                 might, finesse, wits, will, sturdiness,
                 current_hp, max_hp, current_stamina, max_stamina,
+                psychic_stress, corruption, rooms_explored_since_rest,
                 current_room_id, cleared_rooms_json, puzzle_solved, boss_defeated,
                 equipped_weapon_json, equipped_armor_json, inventory_json, room_items_json,
                 last_saved
@@ -149,6 +157,7 @@ public class SaveRepository
                 $name, $class, $milestone, $legend, $pp,
                 $might, $finesse, $wits, $will, $sturdiness,
                 $hp, $maxhp, $stamina, $maxstamina,
+                $stress, $corruption, $roomsrest,
                 $roomid, $cleared, $puzzle, $boss,
                 $eqweapon, $eqarmor, $inventory, $roomitems,
                 $saved
@@ -169,6 +178,9 @@ public class SaveRepository
         command.Parameters.AddWithValue("$maxhp", saveData.MaxHP);
         command.Parameters.AddWithValue("$stamina", saveData.CurrentStamina);
         command.Parameters.AddWithValue("$maxstamina", saveData.MaxStamina);
+        command.Parameters.AddWithValue("$stress", saveData.PsychicStress);
+        command.Parameters.AddWithValue("$corruption", saveData.Corruption);
+        command.Parameters.AddWithValue("$roomsrest", saveData.RoomsExploredSinceRest);
         command.Parameters.AddWithValue("$roomid", saveData.CurrentRoomId);
         command.Parameters.AddWithValue("$cleared", saveData.ClearedRoomsJson);
         command.Parameters.AddWithValue("$puzzle", saveData.PuzzleSolved ? 1 : 0);
@@ -220,6 +232,25 @@ public class SaveRepository
             BossDefeated = reader.GetInt32(reader.GetOrdinal("boss_defeated")) == 1
         };
 
+        // Load trauma economy data (v0.5) - handle missing columns for backward compatibility
+        try
+        {
+            saveData.PsychicStress = reader.GetInt32(reader.GetOrdinal("psychic_stress"));
+        }
+        catch { saveData.PsychicStress = 0; }
+
+        try
+        {
+            saveData.Corruption = reader.GetInt32(reader.GetOrdinal("corruption"));
+        }
+        catch { saveData.Corruption = 0; }
+
+        try
+        {
+            saveData.RoomsExploredSinceRest = reader.GetInt32(reader.GetOrdinal("rooms_explored_since_rest"));
+        }
+        catch { saveData.RoomsExploredSinceRest = 0; }
+
         // Load equipment data (v0.3) - handle missing columns for backward compatibility
         try
         {
@@ -269,6 +300,9 @@ public class SaveRepository
             MaxHP = saveData.MaxHP,
             Stamina = saveData.CurrentStamina,
             MaxStamina = saveData.MaxStamina,
+            PsychicStress = saveData.PsychicStress,
+            Corruption = saveData.Corruption,
+            RoomsExploredSinceRest = saveData.RoomsExploredSinceRest,
             AP = 10 // Always restore to max AP
         };
 

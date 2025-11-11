@@ -25,6 +25,9 @@ public class CharacterFactory
                 break;
         }
 
+        // [v0.5] Add heretical abilities (available to all classes)
+        AddHereticalAbilities(character);
+
         return character;
     }
 
@@ -333,5 +336,64 @@ public class CharacterFactory
 
             _ => "Unknown class"
         };
+    }
+
+    /// <summary>
+    /// [v0.5] Add heretical abilities - forbidden powers that cost Corruption/Stress
+    /// Available to all classes from the start
+    /// </summary>
+    private static void AddHereticalAbilities(PlayerCharacter character)
+    {
+        // Void Strike - Corruption-based devastation
+        character.Abilities.Add(new Ability
+        {
+            Name = "Void Strike",
+            Description = "Channel corrupted energy for devastating damage. Ignores armor but costs permanent Corruption.",
+            StaminaCost = 20,
+            Type = AbilityType.Attack,
+            AttributeUsed = "might",
+            BonusDice = 4,
+            SuccessThreshold = 3,
+            DamageDice = 3, // 3d8 damage
+            IgnoresArmor = true,
+            // Trauma costs handled in CombatEngine: 3 Corruption
+            CurrentRank = 1,
+            MaxRank = 1 // Cannot be ranked up - heretical abilities are fixed
+        });
+
+        // Psychic Lash - Stress-based mental assault
+        character.Abilities.Add(new Ability
+        {
+            Name = "Psychic Lash",
+            Description = "Mental assault that bypasses armor. Uses WILL. Costs recoverable Psychic Stress.",
+            StaminaCost = 25,
+            Type = AbilityType.Attack,
+            AttributeUsed = "will",
+            BonusDice = 3,
+            SuccessThreshold = 2,
+            DamageDice = 2, // 2d6 psychic damage
+            IgnoresArmor = true,
+            // Trauma costs handled in CombatEngine: 10 Psychic Stress
+            CurrentRank = 1,
+            MaxRank = 1
+        });
+
+        // Desperate Gambit - Ultimate power at ultimate cost
+        character.Abilities.Add(new Ability
+        {
+            Name = "Desperate Gambit",
+            Description = "⚠️ EMERGENCY ONLY: Devastating AOE attack. Costs both Stress AND Corruption.",
+            StaminaCost = 40,
+            Type = AbilityType.Attack,
+            AttributeUsed = "might", // Can use MIGHT or WILL (handled in combat)
+            BonusDice = 5,
+            SuccessThreshold = 3,
+            DamageDice = 4, // 4d10 damage AOE
+            IgnoresArmor = true,
+            // Trauma costs handled in CombatEngine: 15 Stress + 5 Corruption
+            // AOE: Hits all enemies (handled in CombatEngine)
+            CurrentRank = 1,
+            MaxRank = 1
+        });
     }
 }

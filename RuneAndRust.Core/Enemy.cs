@@ -35,6 +35,9 @@ public class Enemy
     public bool IsBoss { get; set; } = false;
     public int Phase { get; set; } = 1; // For phase-based AI
 
+    // Trauma Economy (v0.5)
+    public bool IsForlorn { get; set; } = false; // Inflicts passive Psychic Stress aura
+
     // Status effects
     public bool IsStunned { get; set; } = false;
     public int StunTurnsRemaining { get; set; } = 0;

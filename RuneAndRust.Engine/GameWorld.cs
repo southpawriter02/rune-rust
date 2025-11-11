@@ -32,7 +32,8 @@ public class GameWorld
                 { "north", "Corridor" }
             },
             IsStartRoom = true,
-            HasBeenCleared = true // Safe zone, no combat
+            HasBeenCleared = true, // Safe zone, no combat
+            IsSanctuary = true // [v0.5] Safe location for Sanctuary Rest
         };
 
         // Room 2: Corridor (First Combat)
@@ -93,7 +94,8 @@ public class GameWorld
                 { "east", "Arsenal" },
                 { "west", "Research Archives" }
             },
-            HasBeenCleared = true // Safe zone - rest point before choosing path
+            HasBeenCleared = true, // Safe zone - rest point before choosing path
+            IsSanctuary = true // [v0.5] Safe location for Sanctuary Rest
         };
 
         // ====== EAST WING (Combat Path) ======
@@ -168,7 +170,9 @@ public class GameWorld
             HasEnvironmentalHazard = true,
             IsHazardActive = true,
             HazardDamagePerTurn = 6, // 1d6 damage per turn
-            HazardDescription = "Unstable reactors crackle with dangerous energy, filling the room with radiation."
+            HazardDescription = "Unstable reactors crackle with dangerous energy, filling the room with radiation.",
+            // Trauma Economy (v0.5)
+            PsychicResonance = PsychicResonanceLevel.Light // +5 Stress per turn
         };
 
         // ====== WEST WING (Exploration Path) ======
@@ -232,7 +236,8 @@ public class GameWorld
             {
                 EnemyFactory.CreateEnemy(EnemyType.ForlornScholar) // NEW enemy type (can be talked to)
             },
-            HasTalkableNPC = true // [v0.4] Player can negotiate instead of fighting
+            HasTalkableNPC = true, // [v0.4] Player can negotiate instead of fighting
+            PsychicResonance = PsychicResonanceLevel.Moderate // [v0.5] +10 Stress per turn
         };
 
         // ====== DEEP VAULT (Convergence - High Difficulty) ======
@@ -276,7 +281,8 @@ public class GameWorld
                 { "west", "Arsenal Vault" },
                 { "east", "Energy Core" }
             },
-            HasBeenCleared = true // No combat here, just boss choice
+            HasBeenCleared = true, // No combat here, just boss choice
+            PsychicResonance = PsychicResonanceLevel.Heavy // [v0.5] +15 Stress per turn
         };
 
         // Room 13: Supply Cache (NEW - Secret Room)
@@ -330,6 +336,7 @@ public class GameWorld
                 { "west", "Vault Corridor" }
             },
             IsBossRoom = true,
+            PsychicResonance = PsychicResonanceLevel.Heavy, // [v0.5] +15 Stress per turn
             Enemies = new List<Enemy>
             {
                 EnemyFactory.CreateEnemy(EnemyType.AethericAberration) // NEW boss enemy type
