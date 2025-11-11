@@ -62,6 +62,12 @@ public class SaveData
     public string ConsumablesJson { get; set; } = "[]"; // JSON array of Consumable objects
     public string CraftingComponentsJson { get; set; } = "{}"; // JSON dictionary: { ComponentType: count }
 
+    // NPC & Quest System (v0.8)
+    public string FactionReputationsJson { get; set; } = "{}"; // JSON dictionary: { FactionType: reputation }
+    public string ActiveQuestsJson { get; set; } = "[]"; // JSON array of Quest objects
+    public string CompletedQuestsJson { get; set; } = "[]"; // JSON array of Quest objects
+    public string NPCStatesJson { get; set; } = "[]"; // JSON array of NPC objects with state
+
     // Metadata
     public DateTime LastSaved { get; set; }
 }

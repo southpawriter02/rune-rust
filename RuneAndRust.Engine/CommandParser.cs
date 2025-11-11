@@ -30,7 +30,11 @@ public enum CommandType
     // v0.4 - NPC interaction
     Talk,
     // v0.5 - Trauma Economy
-    Rest
+    Rest,
+    // v0.8 - NPC & Quest System
+    Quests,
+    Quest,
+    Reputation
 }
 
 public class ParsedCommand
@@ -124,6 +128,15 @@ public class CommandParser
         { "rest", CommandType.Rest },
         { "sleep", CommandType.Rest },
         { "recover", CommandType.Rest },
+
+        // NPC & Quest System (v0.8)
+        { "quests", CommandType.Quests },
+        { "questlog", CommandType.Quests },
+        { "quest", CommandType.Quest },
+        { "reputation", CommandType.Reputation },
+        { "rep", CommandType.Reputation },
+        { "faction", CommandType.Reputation },
+        { "factions", CommandType.Reputation },
 
         // Utility
         { "help", CommandType.Help },

@@ -1,3 +1,5 @@
+using RuneAndRust.Core.Quests;
+
 namespace RuneAndRust.Core;
 
 public class PlayerCharacter
@@ -46,6 +48,11 @@ public class PlayerCharacter
     public List<Consumable> Consumables { get; set; } = new(); // Potions, medicines, etc.
     public Dictionary<ComponentType, int> CraftingComponents { get; set; } = new(); // Crafting materials
     public int MaxConsumables { get; set; } = 10; // Max consumable items
+
+    // Faction & Quests (v0.8)
+    public FactionReputationSystem FactionReputations { get; set; } = new();
+    public List<Quest> ActiveQuests { get; set; } = new();
+    public List<Quest> CompletedQuests { get; set; } = new();
 
     // Abilities
     public List<Ability> Abilities { get; set; } = new();

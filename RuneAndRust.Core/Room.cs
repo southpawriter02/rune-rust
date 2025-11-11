@@ -50,6 +50,9 @@ public class Room
     public bool HasTalkableNPC { get; set; } = false; // Can negotiate instead of fighting
     public bool HasTalkedToNPC { get; set; } = false; // Track if player already talked
 
+    // NPC System (v0.8)
+    public List<NPC> NPCs { get; set; } = new(); // NPCs present in this room
+
     // Trauma Economy (v0.5)
     public PsychicResonanceLevel PsychicResonance { get; set; } = PsychicResonanceLevel.None;
     public bool IsSanctuary { get; set; } = false; // Safe location for Sanctuary Rest

@@ -59,6 +59,7 @@ public class SaveRepository
         // Add specialization column (migration for v0.7)
         // Add Adept status effect columns (migration for v0.7)
         // Add consumables and crafting components columns (migration for v0.7)
+        // Add NPC & Quest columns (migration for v0.8)
         var alterCommands = new[]
         {
             "ALTER TABLE saves ADD COLUMN equipped_weapon_json TEXT",
@@ -79,7 +80,11 @@ public class SaveRepository
             "ALTER TABLE saves ADD COLUMN silenced_turns INTEGER DEFAULT 0",
             "ALTER TABLE saves ADD COLUMN temp_hp INTEGER DEFAULT 0",
             "ALTER TABLE saves ADD COLUMN consumables_json TEXT DEFAULT '[]'",
-            "ALTER TABLE saves ADD COLUMN crafting_components_json TEXT DEFAULT '{}'"
+            "ALTER TABLE saves ADD COLUMN crafting_components_json TEXT DEFAULT '{}'",
+            "ALTER TABLE saves ADD COLUMN faction_reputations_json TEXT DEFAULT '{}'",
+            "ALTER TABLE saves ADD COLUMN active_quests_json TEXT DEFAULT '[]'",
+            "ALTER TABLE saves ADD COLUMN completed_quests_json TEXT DEFAULT '[]'",
+            "ALTER TABLE saves ADD COLUMN npc_states_json TEXT DEFAULT '[]'"
         };
 
         foreach (var alterSql in alterCommands)
@@ -129,6 +134,22 @@ public class SaveRepository
         }
         var roomItemsJson = JsonSerializer.Serialize(roomItemsDict);
 
+        // Serialize faction reputations, quests, and NPC states (v0.8)
+        var factionReputationsJson = JsonSerializer.Serialize(player.FactionReputations.Reputations);
+        var activeQuestsJson = JsonSerializer.Serialize(player.ActiveQuests);
+        var completedQuestsJson = JsonSerializer.Serialize(player.CompletedQuests);
+
+        // Collect all NPCs from all rooms
+        var allNPCs = new List<NPC>();
+        if (world != null)
+        {
+            foreach (var kvp in world.Rooms)
+            {
+                allNPCs.AddRange(kvp.Value.NPCs);
+            }
+        }
+        var npcStatesJson = JsonSerializer.Serialize(allNPCs);
+
         var saveData = new SaveData
         {
             CharacterName = player.Name,
@@ -169,6 +190,10 @@ public class SaveRepository
             RoomItemsJson = roomItemsJson,
             ConsumablesJson = consumablesJson,
             CraftingComponentsJson = craftingComponentsJson,
+            FactionReputationsJson = factionReputationsJson,
+            ActiveQuestsJson = activeQuestsJson,
+            CompletedQuestsJson = completedQuestsJson,
+            NPCStatesJson = npcStatesJson,
             LastSaved = DateTime.Now
         };
 
@@ -187,6 +212,7 @@ public class SaveRepository
                 current_room_id, cleared_rooms_json, puzzle_solved, boss_defeated,
                 equipped_weapon_json, equipped_armor_json, inventory_json, room_items_json,
                 consumables_json, crafting_components_json,
+                faction_reputations_json, active_quests_json, completed_quests_json, npc_states_json,
                 last_saved
             ) VALUES (
                 $name, $class, $spec, $milestone, $legend, $pp,
@@ -198,6 +224,7 @@ public class SaveRepository
                 $roomid, $cleared, $puzzle, $boss,
                 $eqweapon, $eqarmor, $inventory, $roomitems,
                 $consumables, $craftingcomponents,
+                $factionreps, $activequests, $completedquests, $npcstates,
                 $saved
             )
         ";
@@ -240,12 +267,16 @@ public class SaveRepository
         command.Parameters.AddWithValue("$roomitems", saveData.RoomItemsJson);
         command.Parameters.AddWithValue("$consumables", saveData.ConsumablesJson);
         command.Parameters.AddWithValue("$craftingcomponents", saveData.CraftingComponentsJson);
+        command.Parameters.AddWithValue("$factionreps", saveData.FactionReputationsJson);
+        command.Parameters.AddWithValue("$activequests", saveData.ActiveQuestsJson);
+        command.Parameters.AddWithValue("$completedquests", saveData.CompletedQuestsJson);
+        command.Parameters.AddWithValue("$npcstates", saveData.NPCStatesJson);
         command.Parameters.AddWithValue("$saved", saveData.LastSaved.ToString("yyyy-MM-dd HH:mm:ss"));
 
         command.ExecuteNonQuery();
     }
 
-    public (PlayerCharacter?, WorldState?, string?) LoadGame(string characterName)
+    public (PlayerCharacter?, WorldState?, string?, string?) LoadGame(string characterName)
     {
         using var connection = new SqliteConnection(_connectionString);
         connection.Open();
@@ -385,6 +416,35 @@ public class SaveRepository
         }
         catch { saveData.CraftingComponentsJson = "{}"; }
 
+        // Load faction reputations, quests, and NPC states (v0.8) - handle missing columns for backward compatibility
+        try
+        {
+            var factionRepsOrdinal = reader.GetOrdinal("faction_reputations_json");
+            saveData.FactionReputationsJson = reader.IsDBNull(factionRepsOrdinal) ? "{}" : reader.GetString(factionRepsOrdinal);
+        }
+        catch { saveData.FactionReputationsJson = "{}"; }
+
+        try
+        {
+            var activeQuestsOrdinal = reader.GetOrdinal("active_quests_json");
+            saveData.ActiveQuestsJson = reader.IsDBNull(activeQuestsOrdinal) ? "[]" : reader.GetString(activeQuestsOrdinal);
+        }
+        catch { saveData.ActiveQuestsJson = "[]"; }
+
+        try
+        {
+            var completedQuestsOrdinal = reader.GetOrdinal("completed_quests_json");
+            saveData.CompletedQuestsJson = reader.IsDBNull(completedQuestsOrdinal) ? "[]" : reader.GetString(completedQuestsOrdinal);
+        }
+        catch { saveData.CompletedQuestsJson = "[]"; }
+
+        try
+        {
+            var npcStatesOrdinal = reader.GetOrdinal("npc_states_json");
+            saveData.NPCStatesJson = reader.IsDBNull(npcStatesOrdinal) ? "[]" : reader.GetString(npcStatesOrdinal);
+        }
+        catch { saveData.NPCStatesJson = "[]"; }
+
         // Reconstruct PlayerCharacter
         var player = new PlayerCharacter
         {
@@ -469,6 +529,38 @@ public class SaveRepository
             player.CraftingComponents = new Dictionary<ComponentType, int>();
         }
 
+        // Reconstruct faction reputations and quests (v0.8)
+        try
+        {
+            var factionReps = JsonSerializer.Deserialize<Dictionary<FactionType, int>>(saveData.FactionReputationsJson);
+            if (factionReps != null)
+            {
+                player.FactionReputations.Reputations = factionReps;
+            }
+        }
+        catch
+        {
+            // Failed to deserialize faction reputations - start with defaults
+        }
+
+        try
+        {
+            player.ActiveQuests = JsonSerializer.Deserialize<List<Quest>>(saveData.ActiveQuestsJson) ?? new List<Quest>();
+        }
+        catch
+        {
+            player.ActiveQuests = new List<Quest>();
+        }
+
+        try
+        {
+            player.CompletedQuests = JsonSerializer.Deserialize<List<Quest>>(saveData.CompletedQuestsJson) ?? new List<Quest>();
+        }
+        catch
+        {
+            player.CompletedQuests = new List<Quest>();
+        }
+
         // Reconstruct abilities based on class and level (will be set by CharacterFactory)
 
         // Reconstruct WorldState
@@ -480,8 +572,8 @@ public class SaveRepository
             BossDefeated = saveData.BossDefeated
         };
 
-        // Return room items JSON for restoration (v0.3)
-        return (player, worldState, saveData.RoomItemsJson);
+        // Return room items JSON and NPC states JSON for restoration (v0.3, v0.8)
+        return (player, worldState, saveData.RoomItemsJson, saveData.NPCStatesJson);
     }
 
     /// <summary>
@@ -516,6 +608,43 @@ public class SaveRepository
         catch
         {
             // Failed to restore room items - not critical, player can continue without them
+        }
+    }
+
+    /// <summary>
+    /// Restore NPC states from save data (v0.8)
+    /// </summary>
+    public void RestoreNPCStates(GameWorld world, string npcStatesJson)
+    {
+        if (string.IsNullOrEmpty(npcStatesJson) || npcStatesJson == "[]")
+        {
+            return;
+        }
+
+        try
+        {
+            var savedNPCs = JsonSerializer.Deserialize<List<NPC>>(npcStatesJson);
+            if (savedNPCs == null) return;
+
+            // Clear all NPCs from all rooms first
+            foreach (var room in world.Rooms.Values)
+            {
+                room.NPCs.Clear();
+            }
+
+            // Restore NPCs to their rooms with saved state
+            foreach (var npc in savedNPCs)
+            {
+                var room = world.Rooms.Values.FirstOrDefault(r => r.Id == npc.RoomId);
+                if (room != null)
+                {
+                    room.NPCs.Add(npc);
+                }
+            }
+        }
+        catch
+        {
+            // Failed to restore NPC states - not critical, but NPCs will reset to default state
         }
     }
 

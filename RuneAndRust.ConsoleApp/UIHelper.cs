@@ -246,6 +246,21 @@ public static class UIHelper
             DisplayGroundItems(room);
         }
 
+        // Show NPCs in room (v0.8)
+        if (room.NPCs.Count > 0)
+        {
+            var aliveNPCs = room.NPCs.Where(npc => npc.IsAlive).ToList();
+            if (aliveNPCs.Count > 0)
+            {
+                AnsiConsole.MarkupLine("[cyan]⏵ People here:[/]");
+                foreach (var npc in aliveNPCs)
+                {
+                    var hostileTag = npc.IsHostile ? "[red](HOSTILE)[/] " : "";
+                    AnsiConsole.MarkupLine($"  • {hostileTag}[cyan]{npc.Name.EscapeMarkup()}[/] [dim](use 'talk {npc.Name.ToLower()}')[/]");
+                }
+            }
+        }
+
         AnsiConsole.WriteLine();
     }
 

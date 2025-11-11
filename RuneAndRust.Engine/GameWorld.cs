@@ -661,6 +661,14 @@ public class GameWorld
         throw new ArgumentException($"Room '{roomName}' does not exist.");
     }
 
+    /// <summary>
+    /// v0.8: Get room by ID
+    /// </summary>
+    public Room? GetRoom(int roomId)
+    {
+        return Rooms.Values.FirstOrDefault(r => r.Id == roomId);
+    }
+
     public Room GetStartRoom()
     {
         return GetRoom(StartRoomName);
