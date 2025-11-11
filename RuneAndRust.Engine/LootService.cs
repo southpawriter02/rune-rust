@@ -61,6 +61,85 @@ public class LootService
     }
 
     /// <summary>
+    /// Generate crafting material drops from a defeated enemy (v0.9)
+    /// Returns a dictionary of ComponentType -> quantity
+    /// </summary>
+    public Dictionary<ComponentType, int> GenerateMaterialDrops(Enemy enemy)
+    {
+        var drops = new Dictionary<ComponentType, int>();
+
+        // 40% chance for Common material (1-3 units)
+        if (_random.Next(100) < 40)
+        {
+            var commonMaterials = new[]
+            {
+                ComponentType.ScrapMetal,
+                ComponentType.RustedComponents,
+                ComponentType.ClothScraps,
+                ComponentType.BoneShards
+            };
+            var material = commonMaterials[_random.Next(commonMaterials.Length)];
+            var quantity = _random.Next(1, 4); // 1-3 units
+            drops[material] = quantity;
+            _log.Information("Material dropped: Enemy={EnemyType}, Material={Material}, Quantity={Quantity}, Rarity=Common",
+                enemy.Type, material, quantity);
+        }
+
+        // 15% chance for Uncommon material (1-2 units)
+        if (_random.Next(100) < 15)
+        {
+            var uncommonMaterials = new[]
+            {
+                ComponentType.StructuralScrap,
+                ComponentType.AethericDust,
+                ComponentType.TemperedSprings,
+                ComponentType.MedicinalHerbs
+            };
+            var material = uncommonMaterials[_random.Next(uncommonMaterials.Length)];
+            var quantity = _random.Next(1, 3); // 1-2 units
+            drops[material] = quantity;
+            _log.Information("Material dropped: Enemy={EnemyType}, Material={Material}, Quantity={Quantity}, Rarity=Uncommon",
+                enemy.Type, material, quantity);
+        }
+
+        // 4% chance for Rare material (1 unit)
+        if (_random.Next(100) < 4)
+        {
+            var rareMaterials = new[]
+            {
+                ComponentType.DvergrAlloyIngot,
+                ComponentType.CorruptedCrystal,
+                ComponentType.AncientCircuitBoard
+            };
+            var material = rareMaterials[_random.Next(rareMaterials.Length)];
+            drops[material] = 1;
+            _log.Information("Material dropped: Enemy={EnemyType}, Material={Material}, Quantity=1, Rarity=Rare",
+                enemy.Type, material);
+        }
+
+        // 0.5% chance for Epic material (1 unit) - only from bosses
+        if (enemy.Type == EnemyType.RuinWarden && _random.Next(1000) < 5)
+        {
+            var epicMaterials = new[]
+            {
+                ComponentType.JotunCoreFragment,
+                ComponentType.RunicEtchingTemplate
+            };
+            var material = epicMaterials[_random.Next(epicMaterials.Length)];
+            drops[material] = 1;
+            _log.Information("Material dropped: Enemy={EnemyType}, Material={Material}, Quantity=1, Rarity=Epic",
+                enemy.Type, material);
+        }
+
+        if (drops.Count == 0)
+        {
+            _log.Debug("No materials dropped: Enemy={EnemyType}", enemy.Type);
+        }
+
+        return drops;
+    }
+
+    /// <summary>
     /// Generate loot from Corrupted Servitor (Tier 0 - Trash Mob)
     /// </summary>
     private Equipment? GenerateServitorLoot(PlayerCharacter? player)

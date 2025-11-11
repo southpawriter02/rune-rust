@@ -1130,6 +1130,24 @@ public class CombatEngine
                 totalCurrency += currencyDrop;
                 anyLoot = true;
             }
+
+            // Generate material drops (v0.9)
+            var materialDrops = _lootService.GenerateMaterialDrops(enemy);
+            foreach (var drop in materialDrops)
+            {
+                if (combatState.Player.CraftingComponents.ContainsKey(drop.Key))
+                {
+                    combatState.Player.CraftingComponents[drop.Key] += drop.Value;
+                }
+                else
+                {
+                    combatState.Player.CraftingComponents[drop.Key] = drop.Value;
+                }
+
+                var materialInfo = CraftingComponent.Create(drop.Key);
+                combatState.AddLogEntry($"[cyan]+ {materialInfo.Name} x{drop.Value}[/]");
+                anyLoot = true;
+            }
         }
 
         // Display currency gained
