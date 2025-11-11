@@ -14,7 +14,11 @@ public static class UIHelper
             .Border(TableBorder.Rounded)
             .BorderColor(Color.Grey);
 
-        table.AddColumn(new TableColumn($"[bold yellow]{character.Name}[/] - [dim]{character.Class}[/]").Centered());
+        // v0.7: Show specialization if present
+        string classDisplay = character.Specialization != Specialization.None
+            ? $"{character.Class} ({character.Specialization})"
+            : character.Class.ToString();
+        table.AddColumn(new TableColumn($"[bold yellow]{character.Name}[/] - [dim]{classDisplay}[/]").Centered());
 
         // Milestone and Legend with progress bar
         if (character.CurrentMilestone >= 3)
@@ -54,6 +58,22 @@ public static class UIHelper
             statusEffects.Add($"[cyan]Shield ({character.ShieldAbsorptionRemaining} absorption)[/]");
         if (character.DefenseTurnsRemaining > 0)
             statusEffects.Add($"[blue]Defense +{character.DefenseBonus}% ({character.DefenseTurnsRemaining} turns)[/]");
+
+        // v0.7: Adept status effects
+        if (character.VulnerableTurnsRemaining > 0)
+            statusEffects.Add($"[yellow]Vulnerable ({character.VulnerableTurnsRemaining} turns) - Take +25% damage[/]");
+        if (character.AnalyzedTurnsRemaining > 0)
+            statusEffects.Add($"[cyan]Analyzed ({character.AnalyzedTurnsRemaining} turns) - Allies +2 Accuracy[/]");
+        if (character.SeizedTurnsRemaining > 0)
+            statusEffects.Add($"[red]Seized ({character.SeizedTurnsRemaining} turns) - Cannot act![/]");
+        if (character.IsPerforming)
+            statusEffects.Add($"[magenta]Performing: {character.CurrentPerformance} ({character.PerformingTurnsRemaining} turns)[/]");
+        if (character.InspiredTurnsRemaining > 0)
+            statusEffects.Add($"[yellow]Inspired ({character.InspiredTurnsRemaining} turns) - +3 damage dice[/]");
+        if (character.SilencedTurnsRemaining > 0)
+            statusEffects.Add($"[red]Silenced ({character.SilencedTurnsRemaining} turns) - Cannot cast/perform[/]");
+        if (character.TempHP > 0)
+            statusEffects.Add($"[cyan]Temp HP: {character.TempHP}[/]");
 
         if (statusEffects.Count > 0)
         {
