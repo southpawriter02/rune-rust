@@ -35,6 +35,17 @@ public class SaveData
     public int Corruption { get; set; }
     public int RoomsExploredSinceRest { get; set; }
 
+    // v0.7: Adept Status Effects
+    public int VulnerableTurnsRemaining { get; set; }
+    public int AnalyzedTurnsRemaining { get; set; }
+    public int SeizedTurnsRemaining { get; set; }
+    public bool IsPerforming { get; set; }
+    public int PerformingTurnsRemaining { get; set; }
+    public string? CurrentPerformance { get; set; }
+    public int InspiredTurnsRemaining { get; set; }
+    public int SilencedTurnsRemaining { get; set; }
+    public int TempHP { get; set; }
+
     // World State
     public int CurrentRoomId { get; set; }
     public string ClearedRoomsJson { get; set; } = "[]"; // JSON array of room IDs

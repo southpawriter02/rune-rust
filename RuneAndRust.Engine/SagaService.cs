@@ -221,6 +221,99 @@ public class SagaService
                 ability.BonusDice = 2;
                 ability.SuccessThreshold = 2; // Easier to stun
                 break;
+
+            // v0.7: Bone-Setter abilities
+            case "Mend Wound":
+                ability.BonusDice = 2; // Was +1, now +2
+                ability.StaminaCost = 3; // Was 5, now cheaper
+                break;
+
+            case "Apply Tourniquet":
+                ability.BonusDice = 3; // Was +2, now +3 (easier success)
+                break;
+
+            case "Anatomical Insight":
+                ability.BonusDice = 3; // Was +2, now +3
+                ability.SuccessThreshold = 2; // Was 3, easier to apply
+                break;
+
+            case "Administer Antidote":
+                ability.BonusDice = 3; // Was +2, now +3
+                ability.StaminaCost = 10; // Was 15, now cheaper
+                break;
+
+            case "Cognitive Realignment":
+                ability.BonusDice = 3; // Was +2, now +3
+                ability.StaminaCost = 20; // Was 30, now cheaper
+                ability.DamageDice = 3; // Was 2d6 stress restoration, now 3d6
+                break;
+
+            case "Miracle Worker":
+                ability.BonusDice = 4; // Was +3, now +4
+                ability.DamageDice = 5; // Was 4d6 healing, now 5d6
+                ability.StaminaCost = 50; // Was 60, now cheaper
+                break;
+
+            // v0.7: Jötun-Reader abilities
+            case "Analyze Weakness":
+                ability.BonusDice = 4; // Was +3, now +4
+                ability.StaminaCost = 25; // Was 30, now cheaper (but still 5 Stress cost)
+                break;
+
+            case "Exploit Design Flaw":
+                ability.BonusDice = 3; // Was +2, now +3
+                ability.StaminaCost = 30; // Was 35, now cheaper
+                break;
+
+            case "Navigational Bypass":
+                ability.BonusDice = 4; // Was +3, now +4
+                ability.StaminaCost = 25; // Was 30, now cheaper
+                break;
+
+            case "The Unspoken Truth":
+                ability.BonusDice = 4; // Was +3, now +4
+                ability.DamageDice = 3; // Was 2d6, now 3d6 psychic damage
+                break;
+
+            case "Architect of the Silence":
+                ability.BonusDice = 5; // Was +4, now +5 (extremely powerful)
+                ability.SuccessThreshold = 3; // Was 4, slightly easier
+                ability.StaminaCost = 50; // Was 60, now cheaper (still 15 Stress)
+                break;
+
+            // v0.7: Skald abilities
+            case "Saga of Courage":
+                ability.BonusDice = 3; // Was +2, now +3
+                ability.StaminaCost = 35; // Was 40, now cheaper
+                break;
+
+            case "Dirge of Defeat":
+                ability.BonusDice = 3; // Was +2, now +3
+                ability.StaminaCost = 35; // Was 40, now cheaper
+                break;
+
+            case "Rousing Verse":
+                ability.BonusDice = 3; // Was +2, now +3
+                ability.DamageDice = 3; // Was 2d6 stamina, now 3d6
+                ability.StaminaCost = 15; // Was 20, now cheaper
+                break;
+
+            case "Song of Silence":
+                ability.BonusDice = 3; // Was +2, now +3
+                ability.SuccessThreshold = 2; // Was 3, easier to silence
+                break;
+
+            case "Lay of the Iron Wall":
+                ability.BonusDice = 3; // Was +2, now +3
+                ability.StaminaCost = 45; // Was 50, now cheaper
+                // Soak bonus increased in CombatEngine logic
+                break;
+
+            case "Saga of the Einherjar":
+                ability.BonusDice = 4; // Was +3, now +4
+                ability.DamageDice = 3; // Was 2d6 temp HP, now 3d6
+                ability.StaminaCost = 60; // Was 70, now cheaper
+                break;
         }
     }
 
