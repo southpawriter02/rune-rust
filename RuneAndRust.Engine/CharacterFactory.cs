@@ -23,6 +23,9 @@ public class CharacterFactory
             case CharacterClass.Mystic:
                 InitializeMystic(character);
                 break;
+            case CharacterClass.Adept:
+                InitializeAdept(character);
+                break;
         }
 
         // [v0.5] Add heretical abilities (available to all classes)
@@ -309,6 +312,94 @@ public class CharacterFactory
         };
     }
 
+    private static void InitializeAdept(PlayerCharacter character)
+    {
+        // Stats - WITS primary, balanced secondary
+        character.Attributes = new Attributes(
+            might: 2,
+            finesse: 3,
+            wits: 4,      // Primary: Analysis, knowledge, skills
+            will: 3,      // Secondary: Mental resilience
+            sturdiness: 2
+        );
+
+        // Resources (skill-based specialist)
+        character.MaxHP = 35;     // Lower than Warrior, higher than Mystic
+        character.HP = 35;
+        character.MaxStamina = 40; // Moderate stamina pool
+        character.Stamina = 40;
+        character.AP = 10;
+
+        // Legacy weapon (v0.1/v0.2 compatibility)
+        character.WeaponName = "Simple Staff";
+        character.WeaponAttribute = "wits";
+        character.BaseDamage = 1;
+
+        // Starting equipment (v0.3)
+        // Note: Will need to create "Scholar's Robes" and "Simple Staff" in EquipmentDatabase
+        var startingWeapon = EquipmentDatabase.GetByName("Crude Staff"); // Temporary - using Mystic weapon
+        var startingArmor = EquipmentDatabase.GetByName("Tattered Leathers"); // Light armor
+
+        if (startingWeapon != null)
+        {
+            character.EquippedWeapon = startingWeapon;
+        }
+
+        if (startingArmor != null)
+        {
+            var equipmentService = new EquipmentService();
+            character.EquippedArmor = startingArmor;
+            equipmentService.RecalculatePlayerStats(character);
+        }
+
+        // v0.7: Adept Starting Abilities (3 free abilities)
+        character.Abilities = new List<Ability>
+        {
+            // Starting Ability 1: Improvised Strike
+            new Ability
+            {
+                Name = "Improvised Strike",
+                Description = "Basic self-defense attack. Weak melee strike - combat is not your strength.",
+                StaminaCost = 10,
+                Type = AbilityType.Attack,
+                AttributeUsed = "wits",  // Using analysis, not raw power
+                BonusDice = 0,           // No bonus dice - intentionally weak
+                SuccessThreshold = 2,
+                DamageDice = 1           // Only 1d6 damage (vs Warrior's higher damage)
+            },
+
+            // Starting Ability 2: Analyze
+            new Ability
+            {
+                Name = "Analyze",
+                Description = "Study enemy to reveal one random piece of information (Resistance, Vulnerability, or HP).",
+                StaminaCost = 20,
+                Type = AbilityType.Utility,
+                AttributeUsed = "wits",
+                BonusDice = 2,           // Good chance to succeed
+                SuccessThreshold = 2,
+                // Special: Reveals enemy info (handled in CombatEngine)
+                CurrentRank = 1,
+                MaxRank = 1              // Cannot rank up - basic ability
+            },
+
+            // Starting Ability 3: Keen Eye (Passive)
+            new Ability
+            {
+                Name = "Keen Eye",
+                Description = "[PASSIVE] Gain +1 bonus rank in one skill: System Bypass, Wasteland Survival, or Rhetoric. (Choose during character creation)",
+                StaminaCost = 0,         // Passive ability
+                Type = AbilityType.Utility,
+                AttributeUsed = "wits",
+                BonusDice = 0,
+                SuccessThreshold = 0,
+                // Special: Skill bonus (will need skill system implementation)
+                CurrentRank = 1,
+                MaxRank = 1
+            }
+        };
+    }
+
     public static string GetClassDescription(CharacterClass characterClass)
     {
         return characterClass switch
@@ -333,6 +424,14 @@ public class CharacterFactory
                 "HP: 30 | Stamina: 50\n" +
                 "Weapon: Improvised Staff (WILL-based)\n" +
                 "Abilities: Aetheric Bolt, Disrupt",
+
+            CharacterClass.Adept =>
+                "[v0.7] A skill-based specialist who relies on knowledge and preparation. Weak in direct combat but excels in support, analysis, and utility.\n" +
+                "Starting Stats: MIGHT 2, FINESSE 3, WITS 4, WILL 3, STURDINESS 2\n" +
+                "HP: 35 | Stamina: 40\n" +
+                "Weapon: Simple Staff (WITS-based)\n" +
+                "Abilities: Improvised Strike, Analyze, Keen Eye\n" +
+                "Specializations (unlock with 10 PP): Bone-Setter, Jötun-Reader, Skald",
 
             _ => "Unknown class"
         };

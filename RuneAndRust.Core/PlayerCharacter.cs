@@ -4,6 +4,7 @@ public class PlayerCharacter
 {
     public string Name { get; set; } = "Survivor";
     public CharacterClass Class { get; set; }
+    public Specialization Specialization { get; set; } = Specialization.None; // v0.7: Unlocked with 10 PP
     public Attributes Attributes { get; set; } = new();
 
     // Progression (Aethelgard Saga System)
@@ -45,6 +46,17 @@ public class PlayerCharacter
     // Status Effects (v0.2)
     public int BattleRageTurnsRemaining { get; set; } = 0; // Warrior Lv5 ability
     public int ShieldAbsorptionRemaining { get; set; } = 0; // Mystic Lv3 ability
+
+    // v0.7: Adept Specialization Status Effects
+    public int VulnerableTurnsRemaining { get; set; } = 0; // Bone-Setter: Anatomical Insight - Take +25% damage
+    public int AnalyzedTurnsRemaining { get; set; } = 0; // Jötun-Reader: Exploit Design Flaw - Allies get +2 Accuracy
+    public int SeizedTurnsRemaining { get; set; } = 0; // Jötun-Reader: Architect of the Silence - Cannot take actions
+    public bool IsPerforming { get; set; } = false; // Skald: Performance channeling active
+    public int PerformingTurnsRemaining { get; set; } = 0; // Skald: Performance duration
+    public string? CurrentPerformance { get; set; } = null; // Skald: Which performance is active
+    public int InspiredTurnsRemaining { get; set; } = 0; // Skald: Saga of the Einherjar - +3 damage dice
+    public int SilencedTurnsRemaining { get; set; } = 0; // Skald: Song of Silence - Cannot cast/perform
+    public int TempHP { get; set; } = 0; // Temporary HP from Saga of the Einherjar (damaged first)
 
     public bool IsAlive => HP > 0;
 

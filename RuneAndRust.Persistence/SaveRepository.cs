@@ -56,6 +56,7 @@ public class SaveRepository
 
         // Add equipment columns to existing saves (migration for v0.3)
         // Add trauma economy columns (migration for v0.5)
+        // Add specialization column (migration for v0.7)
         var alterCommands = new[]
         {
             "ALTER TABLE saves ADD COLUMN equipped_weapon_json TEXT",
@@ -64,7 +65,8 @@ public class SaveRepository
             "ALTER TABLE saves ADD COLUMN room_items_json TEXT DEFAULT '{}'",
             "ALTER TABLE saves ADD COLUMN psychic_stress INTEGER DEFAULT 0",
             "ALTER TABLE saves ADD COLUMN corruption INTEGER DEFAULT 0",
-            "ALTER TABLE saves ADD COLUMN rooms_explored_since_rest INTEGER DEFAULT 0"
+            "ALTER TABLE saves ADD COLUMN rooms_explored_since_rest INTEGER DEFAULT 0",
+            "ALTER TABLE saves ADD COLUMN specialization TEXT DEFAULT 'None'"
         };
 
         foreach (var alterSql in alterCommands)
@@ -114,6 +116,7 @@ public class SaveRepository
         {
             CharacterName = player.Name,
             Class = player.Class,
+            Specialization = player.Specialization, // v0.7
             CurrentMilestone = player.CurrentMilestone,
             CurrentLegend = player.CurrentLegend,
             ProgressionPoints = player.ProgressionPoints,
@@ -146,7 +149,7 @@ public class SaveRepository
         var command = connection.CreateCommand();
         command.CommandText = @"
             INSERT OR REPLACE INTO saves (
-                character_name, class, current_milestone, current_legend, progression_points,
+                character_name, class, specialization, current_milestone, current_legend, progression_points,
                 might, finesse, wits, will, sturdiness,
                 current_hp, max_hp, current_stamina, max_stamina,
                 psychic_stress, corruption, rooms_explored_since_rest,
@@ -154,7 +157,7 @@ public class SaveRepository
                 equipped_weapon_json, equipped_armor_json, inventory_json, room_items_json,
                 last_saved
             ) VALUES (
-                $name, $class, $milestone, $legend, $pp,
+                $name, $class, $spec, $milestone, $legend, $pp,
                 $might, $finesse, $wits, $will, $sturdiness,
                 $hp, $maxhp, $stamina, $maxstamina,
                 $stress, $corruption, $roomsrest,
@@ -166,6 +169,7 @@ public class SaveRepository
 
         command.Parameters.AddWithValue("$name", saveData.CharacterName);
         command.Parameters.AddWithValue("$class", saveData.Class.ToString());
+        command.Parameters.AddWithValue("$spec", saveData.Specialization.ToString());
         command.Parameters.AddWithValue("$milestone", saveData.CurrentMilestone);
         command.Parameters.AddWithValue("$legend", saveData.CurrentLegend);
         command.Parameters.AddWithValue("$pp", saveData.ProgressionPoints);
@@ -232,6 +236,13 @@ public class SaveRepository
             BossDefeated = reader.GetInt32(reader.GetOrdinal("boss_defeated")) == 1
         };
 
+        // Load specialization (v0.7) - handle missing column for backward compatibility
+        try
+        {
+            saveData.Specialization = Enum.Parse<Specialization>(reader.GetString(reader.GetOrdinal("specialization")));
+        }
+        catch { saveData.Specialization = Specialization.None; }
+
         // Load trauma economy data (v0.5) - handle missing columns for backward compatibility
         try
         {
@@ -285,6 +296,7 @@ public class SaveRepository
         {
             Name = saveData.CharacterName,
             Class = saveData.Class,
+            Specialization = saveData.Specialization, // v0.7
             CurrentMilestone = saveData.CurrentMilestone,
             CurrentLegend = saveData.CurrentLegend,
             ProgressionPoints = saveData.ProgressionPoints,
