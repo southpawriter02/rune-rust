@@ -7,6 +7,12 @@ public class PlayerCharacter
     public Specialization Specialization { get; set; } = Specialization.None; // v0.7: Unlocked with 10 PP
     public Attributes Attributes { get; set; } = new();
 
+    // v0.7.1: Archetype System
+    public Archetype? Archetype { get; set; } // Formal archetype reference
+
+    // v0.7.1: Stance System (Warriors)
+    public Stance ActiveStance { get; set; } = Stance.CreateBalancedStance();
+
     // Progression (Aethelgard Saga System)
     public int CurrentMilestone { get; set; } = 0;
     public int CurrentLegend { get; set; } = 0;

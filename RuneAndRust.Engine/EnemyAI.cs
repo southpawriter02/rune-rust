@@ -761,6 +761,18 @@ public class EnemyAI
             }
         }
 
+        // v0.7.1: Apply Defensive Stance soak (+3 flat damage reduction)
+        if (player.ActiveStance?.Type == StanceType.Defensive)
+        {
+            int soakAmount = player.ActiveStance.SoakBonus;
+            int reducedDamage = Math.Max(0, damage - soakAmount);
+            if (reducedDamage < damage)
+            {
+                combatState.AddLogEntry($"{indent}[Defensive Stance] reduces damage by {soakAmount}! ({damage} → {reducedDamage})");
+                damage = reducedDamage;
+            }
+        }
+
         // v0.7: Apply Lay of the Iron Wall performance soak (+2 damage reduction)
         if (player.IsPerforming && player.CurrentPerformance == "Lay of the Iron Wall")
         {

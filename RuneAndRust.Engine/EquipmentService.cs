@@ -204,6 +204,12 @@ public class EquipmentService
         int baseMaxHP = GetBaseMaxHP(player);
         player.MaxHP = baseMaxHP;
 
+        // v0.7.1: Apply Warrior's Vigor passive (+10% Max HP)
+        if (player.Abilities.Any(a => a.Name == "Warrior's Vigor"))
+        {
+            player.MaxHP = (int)(player.MaxHP * 1.10f);
+        }
+
         // Apply armor HP bonus
         if (player.EquippedArmor != null)
         {
