@@ -242,6 +242,48 @@ public static class EquipmentDatabase
             SpecialEffect = "Ignores 50% armor, grants [Fortified] on kill",
             Bonuses = new List<EquipmentBonus>()
         });
+
+        // [v0.6] NEW BOSS WEAPONS
+
+        AllEquipment.Add(new Equipment
+        {
+            Name = "Custodian's Halberd",
+            Description = "The ancient guardian's weapon, scarred from centuries of duty. Sweeps through multiple foes.",
+            Quality = QualityTier.MythForged,
+            Type = EquipmentType.Weapon,
+            WeaponCategory = Core.WeaponCategory.Greatsword,
+            WeaponAttribute = "MIGHT",
+            DamageDice = 3,
+            DamageBonus = 2, // 3d8+2 damage
+            StaminaCost = 12,
+            AccuracyBonus = 0,
+            SpecialEffect = "Cleave: Attacks hit adjacent enemies",
+            Bonuses = new List<EquipmentBonus>
+            {
+                new EquipmentBonus { AttributeName = "MIGHT", BonusValue = 2, Description = "+2 MIGHT checks" }
+            }
+        });
+
+        AllEquipment.Add(new Equipment
+        {
+            Name = "Omega Maul",
+            Description = "A weapon of overwhelming force. The air trembles with each swing. Devastates all nearby foes.",
+            Quality = QualityTier.MythForged,
+            Type = EquipmentType.Weapon,
+            WeaponCategory = Core.WeaponCategory.Greatsword,
+            WeaponAttribute = "MIGHT",
+            DamageDice = 4,
+            DamageBonus = 4, // 4d10+4 damage approximated
+            StaminaCost = 15,
+            AccuracyBonus = 0,
+            IgnoresArmor = false,
+            SpecialEffect = "AOE: Hits ALL adjacent enemies with full damage",
+            Bonuses = new List<EquipmentBonus>
+            {
+                new EquipmentBonus { AttributeName = "MIGHT", BonusValue = 3, Description = "+3 MIGHT checks" },
+                new EquipmentBonus { AttributeName = "STURDINESS", BonusValue = 2, Description = "+2 STURDINESS checks" }
+            }
+        });
     }
 
     #endregion
@@ -464,6 +506,28 @@ public static class EquipmentDatabase
             Bonuses = new List<EquipmentBonus>
             {
                 new EquipmentBonus { AttributeName = "WILL", BonusValue = 2, Description = "+2 WILL checks" }
+            }
+        });
+
+        // [v0.6] NEW BOSS WEAPON
+
+        AllEquipment.Add(new Equipment
+        {
+            Name = "Mind-Render Scepter",
+            Description = "The Forlorn Archivist's psychic focus. Whispers of madness echo within. Heretical abilities cost less trauma.",
+            Quality = QualityTier.MythForged,
+            Type = EquipmentType.Weapon,
+            WeaponCategory = Core.WeaponCategory.Staff,
+            WeaponAttribute = "WILL",
+            DamageDice = 3,
+            DamageBonus = 3, // 3d8+3 psychic damage
+            StaminaCost = 7,
+            AccuracyBonus = 0,
+            IgnoresArmor = true, // Psychic damage bypasses armor
+            SpecialEffect = "Psychic damage ignores armor. Heretical abilities cost -5 Psychic Stress.",
+            Bonuses = new List<EquipmentBonus>
+            {
+                new EquipmentBonus { AttributeName = "WILL", BonusValue = 4, Description = "+4 WILL checks" }
             }
         });
 
