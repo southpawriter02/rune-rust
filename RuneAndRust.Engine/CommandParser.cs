@@ -28,7 +28,9 @@ public enum CommandType
     Drop,
     Compare,
     // v0.4 - NPC interaction
-    Talk
+    Talk,
+    // v0.5 - Trauma Economy
+    Rest
 }
 
 public class ParsedCommand
@@ -117,6 +119,11 @@ public class CommandParser
         { "speak", CommandType.Talk },
         { "negotiate", CommandType.Talk },
         { "convince", CommandType.Talk },
+
+        // Trauma Economy (v0.5)
+        { "rest", CommandType.Rest },
+        { "sleep", CommandType.Rest },
+        { "recover", CommandType.Rest },
 
         // Utility
         { "help", CommandType.Help },
@@ -264,6 +271,9 @@ PUZZLE COMMANDS:
 
 NPC INTERACTION (v0.4):
   talk, speak          - Attempt to negotiate with NPCs (Forlorn Scholar)
+
+TRAUMA ECONOMY (v0.5):
+  rest, sleep          - Rest at Sanctuary to recover Stress (Corruption persists)
 
 OTHER COMMANDS:
   help, h, ?           - Show this help text
