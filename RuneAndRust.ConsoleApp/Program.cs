@@ -28,6 +28,9 @@ class Program
             // Reset game state for new game
             _gameState = new GameState();
 
+            // v0.8: Load NPC, Dialogue, and Quest databases
+            InitializeV08Systems();
+
             DisplayWelcomeScreen();
 
             // Show start menu (New Game or Load Game)
@@ -72,6 +75,60 @@ class Program
         );
 
         return choice.StartsWith("Yes");
+    }
+
+    /// <summary>
+    /// v0.8: Initialize NPC & Dialogue System
+    /// Load databases and place NPCs in rooms
+    /// </summary>
+    static void InitializeV08Systems()
+    {
+        try
+        {
+            // Load NPC, Dialogue, and Quest databases
+            _gameState.NPCService.LoadNPCDatabase();
+            _gameState.DialogueService.LoadDialogueDatabase();
+            _gameState.QuestService.LoadQuestDatabase();
+
+            // Place NPCs in designated rooms
+            PlaceNPCsInWorld();
+        }
+        catch (Exception ex)
+        {
+            // Non-fatal error - game can continue without NPCs
+            Console.WriteLine($"Warning: Failed to load NPC system: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// v0.8: Place NPCs in their designated rooms
+    /// </summary>
+    static void PlaceNPCsInWorld()
+    {
+        var npcPlacements = new Dictionary<int, string>
+        {
+            { 2, "sigrun_scavenger" },
+            { 5, "kjartan_smith" },
+            { 8, "bjorn_exile" },
+            { 10, "astrid_reader" },
+            { 12, "thorvald_guard" },
+            { 15, "gunnar_raider" },
+            { 18, "rolf_hermit" },
+            { 22, "eydis_survivor" }
+        };
+
+        foreach (var (roomId, npcId) in npcPlacements)
+        {
+            var npc = _gameState.NPCService.CreateNPCInstance(npcId);
+            if (npc != null)
+            {
+                var room = _gameState.World.GetRoom(roomId);
+                if (room != null)
+                {
+                    room.NPCs.Add(npc);
+                }
+            }
+        }
     }
 
     static string ShowStartMenu()
@@ -536,6 +593,18 @@ class Program
 
                 case CommandType.Talk:
                     HandleTalk();
+                    break;
+
+                case CommandType.Quests:
+                    HandleQuests();
+                    break;
+
+                case CommandType.Quest:
+                    HandleQuestDetails(command.Target);
+                    break;
+
+                case CommandType.Reputation:
+                    HandleReputation();
                     break;
 
                 case CommandType.Attack:
@@ -1509,6 +1578,16 @@ class Program
             AnsiConsole.MarkupLine("[green]✓ Combat victory![/]");
             _gameState.ClearCurrentRoom();
 
+            // v0.8: Update quest objectives for defeated enemies
+            foreach (var enemy in combat.Enemies)
+            {
+                var questMessages = _gameState.QuestService.OnEnemyKilled(enemy.Id, combat.Player);
+                foreach (var msg in questMessages)
+                {
+                    AnsiConsole.MarkupLine($"[yellow]{msg.EscapeMarkup()}[/]");
+                }
+            }
+
             // Generate loot (v0.3)
             _combatEngine.GenerateLoot(combat, _gameState.CurrentRoom);
             UIHelper.DisplayCombatLog(combat.CombatLog, 20);
@@ -2011,6 +2090,13 @@ class Program
         if (_equipmentService.PickupItem(_gameState.Player, _gameState.CurrentRoom, item))
         {
             AnsiConsole.MarkupLine($"[green]✓[/] Picked up: [bold]{item.GetDisplayName()}[/]");
+
+            // v0.8: Update quest objectives for collected items
+            var questMessages = _gameState.QuestService.OnItemCollected(item.Id, _gameState.Player);
+            foreach (var msg in questMessages)
+            {
+                AnsiConsole.MarkupLine($"[yellow]{msg.EscapeMarkup()}[/]");
+            }
         }
         else
         {
@@ -2103,5 +2189,201 @@ class Program
 
         AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
         Console.ReadLine();
+    }
+
+    /// <summary>
+    /// v0.8: Handle quests command - display quest log
+    /// </summary>
+    static void HandleQuests()
+    {
+        AnsiConsole.Clear();
+        AnsiConsole.WriteLine();
+
+        var rule = new Rule("[bold yellow]QUEST LOG[/]")
+        {
+            Justification = Justify.Center
+        };
+        AnsiConsole.Write(rule);
+        AnsiConsole.WriteLine();
+
+        if (_gameState.Player.ActiveQuests.Count == 0 && _gameState.Player.CompletedQuests.Count == 0)
+        {
+            AnsiConsole.MarkupLine("[dim]You have no quests.[/]");
+            AnsiConsole.WriteLine();
+            AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+            Console.ReadLine();
+            return;
+        }
+
+        if (_gameState.Player.ActiveQuests.Count > 0)
+        {
+            AnsiConsole.MarkupLine("[bold cyan]=== ACTIVE QUESTS ===[/]\n");
+            for (int i = 0; i < _gameState.Player.ActiveQuests.Count; i++)
+            {
+                var quest = _gameState.Player.ActiveQuests[i];
+                AnsiConsole.MarkupLine($"[yellow][{i + 1}] {quest.Title.EscapeMarkup()}[/]");
+                AnsiConsole.MarkupLine($"[dim]{quest.Description.EscapeMarkup()}[/]");
+
+                foreach (var obj in quest.Objectives)
+                {
+                    var check = obj.IsComplete ? "[green]✓[/]" : "[yellow]○[/]";
+                    AnsiConsole.MarkupLine($"  {check} {obj.Description.EscapeMarkup()}: [cyan]{obj.GetProgress()}[/]");
+                }
+
+                if (quest.Reward != null)
+                {
+                    var rewardParts = new List<string>();
+                    if (quest.Reward.Experience > 0)
+                        rewardParts.Add($"{quest.Reward.Experience} Legend");
+                    if (quest.Reward.ItemIds.Count > 0)
+                        rewardParts.Add($"{quest.Reward.ItemIds.Count} items");
+                    if (quest.Reward.ReputationChange > 0 && quest.Reward.Faction.HasValue)
+                        rewardParts.Add($"+{quest.Reward.ReputationChange} {quest.Reward.Faction}");
+
+                    AnsiConsole.MarkupLine($"[dim]  Reward: {string.Join(", ", rewardParts)}[/]");
+                }
+
+                AnsiConsole.WriteLine();
+            }
+        }
+
+        if (_gameState.Player.CompletedQuests.Count > 0)
+        {
+            AnsiConsole.MarkupLine("\n[bold green]=== COMPLETED QUESTS ===[/]\n");
+            foreach (var quest in _gameState.Player.CompletedQuests)
+            {
+                AnsiConsole.MarkupLine($"[green]✓ {quest.Title.EscapeMarkup()}[/]");
+            }
+            AnsiConsole.WriteLine();
+        }
+
+        AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+        Console.ReadLine();
+    }
+
+    /// <summary>
+    /// v0.8: Handle quest details command
+    /// </summary>
+    static void HandleQuestDetails(string questName)
+    {
+        if (string.IsNullOrEmpty(questName))
+        {
+            AnsiConsole.MarkupLine("[red]Specify a quest name or number.[/]");
+            AnsiConsole.WriteLine();
+            AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+            Console.ReadLine();
+            return;
+        }
+
+        // Try to find quest by index or name
+        Quest? quest = null;
+        if (int.TryParse(questName, out int index) &&
+            index > 0 &&
+            index <= _gameState.Player.ActiveQuests.Count)
+        {
+            quest = _gameState.Player.ActiveQuests[index - 1];
+        }
+        else
+        {
+            quest = _gameState.Player.ActiveQuests
+                .FirstOrDefault(q => q.Title.Contains(questName, StringComparison.OrdinalIgnoreCase));
+        }
+
+        if (quest == null)
+        {
+            AnsiConsole.MarkupLine($"[red]Quest '{questName.EscapeMarkup()}' not found.[/]");
+            AnsiConsole.WriteLine();
+            AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+            Console.ReadLine();
+            return;
+        }
+
+        AnsiConsole.Clear();
+        AnsiConsole.WriteLine();
+
+        var panel = new Panel($"[bold]{quest.Title.EscapeMarkup()}[/]\n\n{quest.Description.EscapeMarkup()}")
+        {
+            Border = BoxBorder.Rounded,
+            BorderColor = Color.Yellow,
+            Padding = new Padding(1, 0)
+        };
+        AnsiConsole.Write(panel);
+        AnsiConsole.WriteLine();
+
+        AnsiConsole.MarkupLine("[bold cyan]Objectives:[/]");
+        foreach (var obj in quest.Objectives)
+        {
+            var status = obj.IsComplete ? "[green]COMPLETE[/]" : "[yellow]IN PROGRESS[/]";
+            AnsiConsole.MarkupLine($"  • {obj.Description.EscapeMarkup()} - {status} ({obj.GetProgress()})");
+        }
+
+        AnsiConsole.WriteLine();
+        AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+        Console.ReadLine();
+    }
+
+    /// <summary>
+    /// v0.8: Handle reputation command - display faction standing
+    /// </summary>
+    static void HandleReputation()
+    {
+        AnsiConsole.Clear();
+        AnsiConsole.WriteLine();
+
+        var rule = new Rule("[bold yellow]FACTION REPUTATION[/]")
+        {
+            Justification = Justify.Center
+        };
+        AnsiConsole.Write(rule);
+        AnsiConsole.WriteLine();
+
+        foreach (FactionType faction in Enum.GetValues(typeof(FactionType)))
+        {
+            int rep = _gameState.Player.FactionReputations.GetReputation(faction);
+            var tier = _gameState.Player.FactionReputations.GetReputationTier(faction);
+
+            // Generate reputation bar
+            string repBar = GenerateReputationBar(rep);
+
+            // Color code based on tier
+            var tierColor = tier switch
+            {
+                ReputationTier.Revered or ReputationTier.Honored => "green",
+                ReputationTier.Friendly or ReputationTier.Liked => "cyan",
+                ReputationTier.Neutral => "yellow",
+                ReputationTier.Disliked or ReputationTier.Hated => "red",
+                ReputationTier.Despised => "darkred",
+                _ => "white"
+            };
+
+            AnsiConsole.MarkupLine($"[bold]{faction}:[/] [{tierColor}]{tier}[/] ([dim]{rep:+0;-#}[/])");
+            AnsiConsole.MarkupLine($"[dim]{repBar}[/]");
+            AnsiConsole.WriteLine();
+        }
+
+        AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+        Console.ReadLine();
+    }
+
+    /// <summary>
+    /// v0.8: Generate a visual reputation bar
+    /// </summary>
+    static string GenerateReputationBar(int reputation)
+    {
+        // Map -100 to +100 onto a 21-character bar
+        int pos = (reputation + 100) / 10; // 0-20
+        pos = Math.Clamp(pos, 0, 20);
+
+        var bar = new char[21];
+        for (int i = 0; i < 21; i++)
+        {
+            if (i == pos)
+                bar[i] = '█';
+            else if (i == 10)
+                bar[i] = '|'; // Neutral marker
+            else
+                bar[i] = '▁';
+        }
+        return new string(bar);
     }
 }
