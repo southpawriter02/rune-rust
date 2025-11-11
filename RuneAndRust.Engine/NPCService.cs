@@ -5,7 +5,7 @@ using Serilog;
 namespace RuneAndRust.Engine;
 
 /// <summary>
-/// Manages NPC lifecycle, disposition, and interactions (v0.8)
+/// Manages NPC lifecycle, disposition, and interactions (v0.8, v0.9 - Merchants)
 /// </summary>
 public class NPCService
 {
@@ -19,7 +19,7 @@ public class NPCService
     }
 
     /// <summary>
-    /// Loads all NPC definitions from JSON files
+    /// Loads all NPC definitions from JSON files (v0.9 - supports Merchants)
     /// </summary>
     public void LoadNPCDatabase()
     {
@@ -40,12 +40,29 @@ public class NPCService
             try
             {
                 var json = File.ReadAllText(file);
-                var npc = JsonSerializer.Deserialize<NPC>(json);
+
+                // Check if this is a merchant by looking for IsMerchant flag
+                var isMerchant = json.Contains("\"IsMerchant\": true");
+
+                NPC? npc;
+                if (isMerchant)
+                {
+                    // Deserialize as Merchant
+                    npc = JsonSerializer.Deserialize<Merchant>(json);
+                    _log.Debug("Loaded Merchant: {NpcId} ({NpcName}, Type={MerchantType}) from {FileName}",
+                        npc?.Id, npc?.Name, (npc as Merchant)?.Type, Path.GetFileName(file));
+                }
+                else
+                {
+                    // Deserialize as regular NPC
+                    npc = JsonSerializer.Deserialize<NPC>(json);
+                    _log.Debug("Loaded NPC: {NpcId} ({NpcName}) from {FileName}",
+                        npc?.Id, npc?.Name, Path.GetFileName(file));
+                }
+
                 if (npc != null && !string.IsNullOrEmpty(npc.Id))
                 {
                     _npcDatabase[npc.Id] = npc;
-                    _log.Debug("Loaded NPC: {NpcId} ({NpcName}) from {FileName}",
-                        npc.Id, npc.Name, Path.GetFileName(file));
                 }
             }
             catch (Exception ex)
@@ -155,7 +172,7 @@ public class NPCService
     }
 
     /// <summary>
-    /// Creates a clone of an NPC from the database for placement in a room
+    /// Creates a clone of an NPC from the database for placement in a room (v0.9 - supports Merchants)
     /// This allows each room to have its own state for the same NPC
     /// </summary>
     public NPC? CreateNPCInstance(string npcId)
@@ -169,7 +186,41 @@ public class NPCService
 
         _log.Debug("Creating NPC instance: {NpcId} ({NpcName})", template.Id, template.Name);
 
-        // Create a new instance with the same base properties
+        // Check if this is a Merchant
+        if (template is Merchant merchantTemplate)
+        {
+            // Create a new Merchant instance with the same properties
+            return new Merchant
+            {
+                // Base NPC properties
+                Id = merchantTemplate.Id,
+                Name = merchantTemplate.Name,
+                Description = merchantTemplate.Description,
+                InitialGreeting = merchantTemplate.InitialGreeting,
+                RoomId = merchantTemplate.RoomId,
+                IsHostile = merchantTemplate.IsHostile,
+                Faction = merchantTemplate.Faction,
+                BaseDisposition = merchantTemplate.BaseDisposition,
+                CurrentDisposition = merchantTemplate.CurrentDisposition,
+                RootDialogueId = merchantTemplate.RootDialogueId,
+                EncounteredTopics = new List<string>(),
+                HasBeenMet = false,
+                IsAlive = true,
+                QuestFlags = new Dictionary<string, bool>(),
+
+                // Merchant-specific properties
+                Type = merchantTemplate.Type,
+                Inventory = new ShopInventory(), // Fresh inventory (will be initialized by MerchantService)
+                RestockIntervalDays = merchantTemplate.RestockIntervalDays,
+                LastRestockTime = DateTime.MinValue,
+                BaseMarkup = merchantTemplate.BaseMarkup,
+                ReputationPriceRange = merchantTemplate.ReputationPriceRange,
+                BarterSkillImpact = merchantTemplate.BarterSkillImpact,
+                CategoryModifiers = new Dictionary<string, float>(merchantTemplate.CategoryModifiers)
+            };
+        }
+
+        // Create a regular NPC instance
         return new NPC
         {
             Id = template.Id,
@@ -187,5 +238,30 @@ public class NPCService
             IsAlive = true,
             QuestFlags = new Dictionary<string, bool>()
         };
+    }
+
+    /// <summary>
+    /// Gets a merchant by ID (v0.9)
+    /// </summary>
+    public Merchant? GetMerchant(string id)
+    {
+        var npc = _npcDatabase.GetValueOrDefault(id);
+        return npc as Merchant;
+    }
+
+    /// <summary>
+    /// Checks if an NPC is a merchant (v0.9)
+    /// </summary>
+    public bool IsMerchant(NPC npc)
+    {
+        return npc is Merchant;
+    }
+
+    /// <summary>
+    /// Gets all merchants in the database (v0.9)
+    /// </summary>
+    public List<Merchant> GetAllMerchants()
+    {
+        return _npcDatabase.Values.OfType<Merchant>().ToList();
     }
 }

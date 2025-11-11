@@ -18,6 +18,7 @@ class Program
     private static TraumaEconomyService _traumaService = new(); // [v0.6]
     private static HazardService _hazardService = new(_diceService, _traumaService); // [v0.6]
     private static CurrencyService _currencyService = new(); // [v0.9]
+    private static MerchantService _merchantService = new(); // [v0.9]
     private static CombatEngine _combatEngine = new(_diceService, _sagaService, _lootService, _equipmentService, _hazardService, _currencyService);
     private static EnemyAI _enemyAI = new(_diceService);
     private static SaveRepository _saveRepository = new();
@@ -147,12 +148,13 @@ class Program
     }
 
     /// <summary>
-    /// v0.8: Place NPCs in their designated rooms
+    /// v0.8, v0.9: Place NPCs and Merchants in their designated rooms
     /// </summary>
     static void PlaceNPCsInWorld()
     {
         var npcPlacements = new Dictionary<int, string>
         {
+            // Regular NPCs
             { 2, "sigrun_scavenger" },
             { 5, "kjartan_smith" },
             { 8, "bjorn_exile" },
@@ -160,7 +162,12 @@ class Program
             { 12, "thorvald_guard" },
             { 15, "gunnar_raider" },
             { 18, "rolf_hermit" },
-            { 22, "eydis_survivor" }
+            { 22, "eydis_survivor" },
+
+            // v0.9: Merchants
+            { 7, "kjartan_merchant" },    // General Merchant (MidgardCombine)
+            { 14, "ragnhild_apothecary" }, // Apothecary (Independents)
+            { 19, "ulf_scrapper" }          // Scrap Trader (RustClans)
         };
 
         foreach (var (roomId, npcId) in npcPlacements)
@@ -172,6 +179,15 @@ class Program
                 if (room != null)
                 {
                     room.NPCs.Add(npc);
+
+                    // v0.9: Initialize merchant inventories
+                    if (npc is Merchant merchant)
+                    {
+                        _merchantService.InitializeCoreStock(merchant);
+                        _merchantService.RestockInventory(merchant, _gameState.CurrentDateTime);
+                        Log.Information("Initialized merchant: {MerchantName} ({MerchantType}) in Room {RoomId}",
+                            merchant.Name, merchant.Type, roomId);
+                    }
                 }
             }
         }
