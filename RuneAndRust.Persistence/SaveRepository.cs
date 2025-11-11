@@ -57,6 +57,8 @@ public class SaveRepository
         // Add equipment columns to existing saves (migration for v0.3)
         // Add trauma economy columns (migration for v0.5)
         // Add specialization column (migration for v0.7)
+        // Add Adept status effect columns (migration for v0.7)
+        // Add consumables and crafting components columns (migration for v0.7)
         var alterCommands = new[]
         {
             "ALTER TABLE saves ADD COLUMN equipped_weapon_json TEXT",
@@ -66,7 +68,18 @@ public class SaveRepository
             "ALTER TABLE saves ADD COLUMN psychic_stress INTEGER DEFAULT 0",
             "ALTER TABLE saves ADD COLUMN corruption INTEGER DEFAULT 0",
             "ALTER TABLE saves ADD COLUMN rooms_explored_since_rest INTEGER DEFAULT 0",
-            "ALTER TABLE saves ADD COLUMN specialization TEXT DEFAULT 'None'"
+            "ALTER TABLE saves ADD COLUMN specialization TEXT DEFAULT 'None'",
+            "ALTER TABLE saves ADD COLUMN vulnerable_turns INTEGER DEFAULT 0",
+            "ALTER TABLE saves ADD COLUMN analyzed_turns INTEGER DEFAULT 0",
+            "ALTER TABLE saves ADD COLUMN seized_turns INTEGER DEFAULT 0",
+            "ALTER TABLE saves ADD COLUMN is_performing INTEGER DEFAULT 0",
+            "ALTER TABLE saves ADD COLUMN performing_turns INTEGER DEFAULT 0",
+            "ALTER TABLE saves ADD COLUMN current_performance TEXT",
+            "ALTER TABLE saves ADD COLUMN inspired_turns INTEGER DEFAULT 0",
+            "ALTER TABLE saves ADD COLUMN silenced_turns INTEGER DEFAULT 0",
+            "ALTER TABLE saves ADD COLUMN temp_hp INTEGER DEFAULT 0",
+            "ALTER TABLE saves ADD COLUMN consumables_json TEXT DEFAULT '[]'",
+            "ALTER TABLE saves ADD COLUMN crafting_components_json TEXT DEFAULT '{}'"
         };
 
         foreach (var alterSql in alterCommands)
@@ -96,6 +109,10 @@ public class SaveRepository
             : null;
 
         var inventoryJson = JsonSerializer.Serialize(player.Inventory);
+
+        // Serialize consumables and crafting components (v0.7)
+        var consumablesJson = JsonSerializer.Serialize(player.Consumables);
+        var craftingComponentsJson = JsonSerializer.Serialize(player.CraftingComponents);
 
         // Serialize room items (v0.3)
         var roomItemsDict = new Dictionary<int, List<Equipment>>();
@@ -132,6 +149,16 @@ public class SaveRepository
             PsychicStress = player.PsychicStress,
             Corruption = player.Corruption,
             RoomsExploredSinceRest = player.RoomsExploredSinceRest,
+            // v0.7: Adept status effects
+            VulnerableTurnsRemaining = player.VulnerableTurnsRemaining,
+            AnalyzedTurnsRemaining = player.AnalyzedTurnsRemaining,
+            SeizedTurnsRemaining = player.SeizedTurnsRemaining,
+            IsPerforming = player.IsPerforming,
+            PerformingTurnsRemaining = player.PerformingTurnsRemaining,
+            CurrentPerformance = player.CurrentPerformance,
+            InspiredTurnsRemaining = player.InspiredTurnsRemaining,
+            SilencedTurnsRemaining = player.SilencedTurnsRemaining,
+            TempHP = player.TempHP,
             CurrentRoomId = worldState.CurrentRoomId,
             ClearedRoomsJson = JsonSerializer.Serialize(worldState.ClearedRoomIds),
             PuzzleSolved = worldState.PuzzleSolved,
@@ -140,6 +167,8 @@ public class SaveRepository
             EquippedArmorJson = equippedArmorJson,
             InventoryJson = inventoryJson,
             RoomItemsJson = roomItemsJson,
+            ConsumablesJson = consumablesJson,
+            CraftingComponentsJson = craftingComponentsJson,
             LastSaved = DateTime.Now
         };
 
@@ -153,16 +182,22 @@ public class SaveRepository
                 might, finesse, wits, will, sturdiness,
                 current_hp, max_hp, current_stamina, max_stamina,
                 psychic_stress, corruption, rooms_explored_since_rest,
+                vulnerable_turns, analyzed_turns, seized_turns, is_performing, performing_turns, current_performance,
+                inspired_turns, silenced_turns, temp_hp,
                 current_room_id, cleared_rooms_json, puzzle_solved, boss_defeated,
                 equipped_weapon_json, equipped_armor_json, inventory_json, room_items_json,
+                consumables_json, crafting_components_json,
                 last_saved
             ) VALUES (
                 $name, $class, $spec, $milestone, $legend, $pp,
                 $might, $finesse, $wits, $will, $sturdiness,
                 $hp, $maxhp, $stamina, $maxstamina,
                 $stress, $corruption, $roomsrest,
+                $vulnturns, $analyzedturns, $seizedturns, $isperforming, $perfturns, $perfname,
+                $inspiredturns, $silencedturns, $temphp,
                 $roomid, $cleared, $puzzle, $boss,
                 $eqweapon, $eqarmor, $inventory, $roomitems,
+                $consumables, $craftingcomponents,
                 $saved
             )
         ";
@@ -185,6 +220,16 @@ public class SaveRepository
         command.Parameters.AddWithValue("$stress", saveData.PsychicStress);
         command.Parameters.AddWithValue("$corruption", saveData.Corruption);
         command.Parameters.AddWithValue("$roomsrest", saveData.RoomsExploredSinceRest);
+        // v0.7: Adept status effects
+        command.Parameters.AddWithValue("$vulnturns", saveData.VulnerableTurnsRemaining);
+        command.Parameters.AddWithValue("$analyzedturns", saveData.AnalyzedTurnsRemaining);
+        command.Parameters.AddWithValue("$seizedturns", saveData.SeizedTurnsRemaining);
+        command.Parameters.AddWithValue("$isperforming", saveData.IsPerforming ? 1 : 0);
+        command.Parameters.AddWithValue("$perfturns", saveData.PerformingTurnsRemaining);
+        command.Parameters.AddWithValue("$perfname", (object?)saveData.CurrentPerformance ?? DBNull.Value);
+        command.Parameters.AddWithValue("$inspiredturns", saveData.InspiredTurnsRemaining);
+        command.Parameters.AddWithValue("$silencedturns", saveData.SilencedTurnsRemaining);
+        command.Parameters.AddWithValue("$temphp", saveData.TempHP);
         command.Parameters.AddWithValue("$roomid", saveData.CurrentRoomId);
         command.Parameters.AddWithValue("$cleared", saveData.ClearedRoomsJson);
         command.Parameters.AddWithValue("$puzzle", saveData.PuzzleSolved ? 1 : 0);
@@ -193,6 +238,8 @@ public class SaveRepository
         command.Parameters.AddWithValue("$eqarmor", (object?)saveData.EquippedArmorJson ?? DBNull.Value);
         command.Parameters.AddWithValue("$inventory", saveData.InventoryJson);
         command.Parameters.AddWithValue("$roomitems", saveData.RoomItemsJson);
+        command.Parameters.AddWithValue("$consumables", saveData.ConsumablesJson);
+        command.Parameters.AddWithValue("$craftingcomponents", saveData.CraftingComponentsJson);
         command.Parameters.AddWithValue("$saved", saveData.LastSaved.ToString("yyyy-MM-dd HH:mm:ss"));
 
         command.ExecuteNonQuery();
@@ -262,6 +309,38 @@ public class SaveRepository
         }
         catch { saveData.RoomsExploredSinceRest = 0; }
 
+        // Load v0.7 Adept status effects - handle missing columns for backward compatibility
+        try { saveData.VulnerableTurnsRemaining = reader.GetInt32(reader.GetOrdinal("vulnerable_turns")); }
+        catch { saveData.VulnerableTurnsRemaining = 0; }
+
+        try { saveData.AnalyzedTurnsRemaining = reader.GetInt32(reader.GetOrdinal("analyzed_turns")); }
+        catch { saveData.AnalyzedTurnsRemaining = 0; }
+
+        try { saveData.SeizedTurnsRemaining = reader.GetInt32(reader.GetOrdinal("seized_turns")); }
+        catch { saveData.SeizedTurnsRemaining = 0; }
+
+        try { saveData.IsPerforming = reader.GetInt32(reader.GetOrdinal("is_performing")) == 1; }
+        catch { saveData.IsPerforming = false; }
+
+        try { saveData.PerformingTurnsRemaining = reader.GetInt32(reader.GetOrdinal("performing_turns")); }
+        catch { saveData.PerformingTurnsRemaining = 0; }
+
+        try
+        {
+            var perfOrdinal = reader.GetOrdinal("current_performance");
+            saveData.CurrentPerformance = reader.IsDBNull(perfOrdinal) ? null : reader.GetString(perfOrdinal);
+        }
+        catch { saveData.CurrentPerformance = null; }
+
+        try { saveData.InspiredTurnsRemaining = reader.GetInt32(reader.GetOrdinal("inspired_turns")); }
+        catch { saveData.InspiredTurnsRemaining = 0; }
+
+        try { saveData.SilencedTurnsRemaining = reader.GetInt32(reader.GetOrdinal("silenced_turns")); }
+        catch { saveData.SilencedTurnsRemaining = 0; }
+
+        try { saveData.TempHP = reader.GetInt32(reader.GetOrdinal("temp_hp")); }
+        catch { saveData.TempHP = 0; }
+
         // Load equipment data (v0.3) - handle missing columns for backward compatibility
         try
         {
@@ -291,6 +370,21 @@ public class SaveRepository
         }
         catch { saveData.RoomItemsJson = "{}"; }
 
+        // Load consumables and crafting components (v0.7) - handle missing columns for backward compatibility
+        try
+        {
+            var consumablesOrdinal = reader.GetOrdinal("consumables_json");
+            saveData.ConsumablesJson = reader.IsDBNull(consumablesOrdinal) ? "[]" : reader.GetString(consumablesOrdinal);
+        }
+        catch { saveData.ConsumablesJson = "[]"; }
+
+        try
+        {
+            var craftingComponentsOrdinal = reader.GetOrdinal("crafting_components_json");
+            saveData.CraftingComponentsJson = reader.IsDBNull(craftingComponentsOrdinal) ? "{}" : reader.GetString(craftingComponentsOrdinal);
+        }
+        catch { saveData.CraftingComponentsJson = "{}"; }
+
         // Reconstruct PlayerCharacter
         var player = new PlayerCharacter
         {
@@ -315,6 +409,16 @@ public class SaveRepository
             PsychicStress = saveData.PsychicStress,
             Corruption = saveData.Corruption,
             RoomsExploredSinceRest = saveData.RoomsExploredSinceRest,
+            // v0.7: Restore Adept status effects
+            VulnerableTurnsRemaining = saveData.VulnerableTurnsRemaining,
+            AnalyzedTurnsRemaining = saveData.AnalyzedTurnsRemaining,
+            SeizedTurnsRemaining = saveData.SeizedTurnsRemaining,
+            IsPerforming = saveData.IsPerforming,
+            PerformingTurnsRemaining = saveData.PerformingTurnsRemaining,
+            CurrentPerformance = saveData.CurrentPerformance,
+            InspiredTurnsRemaining = saveData.InspiredTurnsRemaining,
+            SilencedTurnsRemaining = saveData.SilencedTurnsRemaining,
+            TempHP = saveData.TempHP,
             AP = 10 // Always restore to max AP
         };
 
@@ -344,6 +448,25 @@ public class SaveRepository
         catch
         {
             player.Inventory = new List<Equipment>();
+        }
+
+        // Reconstruct consumables and crafting components (v0.7)
+        try
+        {
+            player.Consumables = JsonSerializer.Deserialize<List<Consumable>>(saveData.ConsumablesJson) ?? new List<Consumable>();
+        }
+        catch
+        {
+            player.Consumables = new List<Consumable>();
+        }
+
+        try
+        {
+            player.CraftingComponents = JsonSerializer.Deserialize<Dictionary<ComponentType, int>>(saveData.CraftingComponentsJson) ?? new Dictionary<ComponentType, int>();
+        }
+        catch
+        {
+            player.CraftingComponents = new Dictionary<ComponentType, int>();
         }
 
         // Reconstruct abilities based on class and level (will be set by CharacterFactory)

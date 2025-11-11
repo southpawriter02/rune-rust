@@ -143,11 +143,14 @@ public class SpecializationFactory
     {
         // TIER 1 - Available immediately upon unlocking specialization
 
+        // Grant starting Field Medicine supplies
+        GrantBoneSetterStartingItems(character);
+
         // Field Medic I (Passive)
         character.Abilities.Add(new Ability
         {
             Name = "Field Medic I",
-            Description = "[PASSIVE] +1d to Field Medicine crafting checks. Start each expedition with 3 free Standard Healing Poultices.",
+            Description = "[PASSIVE] +2 to Field Medicine crafting checks. Start each expedition with 3 free Standard Healing Poultices.",
             StaminaCost = 0,
             Type = AbilityType.Utility,
             AttributeUsed = "wits",
@@ -586,6 +589,36 @@ public class SpecializationFactory
             CurrentRank = 1,
             MaxRank = 3
         });
+    }
+
+    #endregion
+
+    #region Helper Methods
+
+    /// <summary>
+    /// Grant Bone-Setter starting items (3 Healing Poultices + crafting components)
+    /// </summary>
+    private static void GrantBoneSetterStartingItems(PlayerCharacter character)
+    {
+        // Add 3 Standard Healing Poultices
+        for (int i = 0; i < 3; i++)
+        {
+            character.Consumables.Add(new Consumable
+            {
+                Name = "Healing Poultice",
+                Description = "A compress of medicinal herbs that restores vitality.",
+                Type = ConsumableType.Medicine,
+                Quality = CraftQuality.Standard,
+                HPRestore = 15,
+                MasterworkBonusHP = 5
+            });
+        }
+
+        // Add starting crafting components (enough for a few crafts)
+        character.CraftingComponents[ComponentType.CommonHerb] = 8;
+        character.CraftingComponents[ComponentType.CleanCloth] = 4;
+        character.CraftingComponents[ComponentType.Antiseptic] = 2;
+        character.CraftingComponents[ComponentType.Suture] = 2;
     }
 
     #endregion

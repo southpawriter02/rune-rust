@@ -58,6 +58,10 @@ public class SaveData
     public string InventoryJson { get; set; } = "[]"; // JSON array of Equipment objects
     public string RoomItemsJson { get; set; } = "{}"; // JSON dictionary: { roomId: [Equipment...] }
 
+    // Consumables & Crafting (v0.7)
+    public string ConsumablesJson { get; set; } = "[]"; // JSON array of Consumable objects
+    public string CraftingComponentsJson { get; set; } = "{}"; // JSON dictionary: { ComponentType: count }
+
     // Metadata
     public DateTime LastSaved { get; set; }
 }

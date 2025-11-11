@@ -9,6 +9,7 @@ public class CombatEngine
     private readonly LootService _lootService;
     private readonly EquipmentService _equipmentService;
     private readonly HazardService _hazardService; // [v0.6]
+    private readonly PerformanceService _performanceService; // [v0.7]
 
     public CombatEngine(DiceService diceService, SagaService sagaService, LootService lootService, EquipmentService equipmentService, HazardService hazardService)
     {
@@ -17,6 +18,7 @@ public class CombatEngine
         _lootService = lootService;
         _equipmentService = equipmentService;
         _hazardService = hazardService; // [v0.6]
+        _performanceService = new PerformanceService(); // [v0.7]
     }
 
     /// <summary>
@@ -160,6 +162,20 @@ public class CombatEngine
         // Apply accuracy bonus from equipment
         bonusDice += accuracyBonus;
 
+        // v0.7: Apply [Analyzed] status bonus (+2 Accuracy)
+        if (target.AnalyzedTurnsRemaining > 0)
+        {
+            bonusDice += 2;
+            combatState.AddLogEntry($"  [Analyzed] grants +2 Accuracy against {target.Name}!");
+        }
+
+        // v0.7: Apply Saga of Courage performance bonus (+2 Accuracy)
+        if (player.IsPerforming && player.CurrentPerformance == "Saga of Courage")
+        {
+            bonusDice += 2;
+            combatState.AddLogEntry($"  [Saga of Courage] inspires you! +2 Accuracy!");
+        }
+
         var totalDice = attributeValue + bonusDice;
         var attackRoll = _diceService.Roll(totalDice);
 
@@ -178,8 +194,16 @@ public class CombatEngine
         int damage = 0;
         if (netSuccesses > 0)
         {
+            // v0.7: Apply [Inspired] damage bonus (+3 damage dice)
+            int totalDamageDice = weaponDice;
+            if (player.InspiredTurnsRemaining > 0)
+            {
+                totalDamageDice += 3;
+                combatState.AddLogEntry($"  [Inspired] grants +3 damage dice!");
+            }
+
             // Roll weapon damage dice
-            damage = _diceService.RollDamage(weaponDice) + weaponDamageBonus;
+            damage = _diceService.RollDamage(totalDamageDice) + weaponDamageBonus;
             damage = Math.Max(1, damage); // Minimum 1 damage on hit
         }
 
@@ -229,6 +253,79 @@ public class CombatEngine
 
         combatState.AddLogEntry($"  Defense raised by {defensePercent}% for next attack");
         combatState.AddLogEntry("");
+    }
+
+    /// <summary>
+    /// v0.7: Use a consumable item in combat
+    /// </summary>
+    public bool PlayerUseConsumable(CombatState combatState, Consumable consumable)
+    {
+        var player = combatState.Player;
+
+        combatState.AddLogEntry($"{player.Name} uses {consumable.GetDisplayName()}!");
+        combatState.AddLogEntry("");
+
+        // Apply HP restoration
+        int totalHPRestore = consumable.GetTotalHPRestore();
+        if (totalHPRestore > 0)
+        {
+            int hpBefore = player.HP;
+            player.HP = Math.Min(player.MaxHP, player.HP + totalHPRestore);
+            int actualHealed = player.HP - hpBefore;
+            combatState.AddLogEntry($"  Restored {actualHealed} HP (now at {player.HP}/{player.MaxHP})");
+        }
+
+        // Apply Stamina restoration
+        int totalStaminaRestore = consumable.GetTotalStaminaRestore();
+        if (totalStaminaRestore > 0)
+        {
+            int staminaBefore = player.Stamina;
+            player.Stamina = Math.Min(player.MaxStamina, player.Stamina + totalStaminaRestore);
+            int actualRestored = player.Stamina - staminaBefore;
+            combatState.AddLogEntry($"  Restored {actualRestored} Stamina (now at {player.Stamina}/{player.MaxStamina})");
+        }
+
+        // Reduce Stress
+        if (consumable.StressRestore > 0)
+        {
+            int stressBefore = player.PsychicStress;
+            player.PsychicStress = Math.Max(0, player.PsychicStress - consumable.StressRestore);
+            int stressReduced = stressBefore - player.PsychicStress;
+            combatState.AddLogEntry($"  Reduced Stress by {stressReduced} (now at {player.PsychicStress}/100)");
+        }
+
+        // Grant Temp HP
+        if (consumable.TempHPGrant > 0)
+        {
+            player.TempHP += consumable.TempHPGrant;
+            combatState.AddLogEntry($"  Granted {consumable.TempHPGrant} Temporary HP (total: {player.TempHP})");
+        }
+
+        // Clear status effects
+        if (consumable.ClearsBleeding)
+        {
+            // Note: Bleeding status not yet implemented in player character
+            combatState.AddLogEntry($"  Stopped bleeding");
+        }
+
+        if (consumable.ClearsPoison)
+        {
+            // Note: Poison status not yet implemented in player character
+            combatState.AddLogEntry($"  Cured poison");
+        }
+
+        if (consumable.ClearsDisease)
+        {
+            // Note: Disease status not yet implemented in player character
+            combatState.AddLogEntry($"  Cured disease");
+        }
+
+        combatState.AddLogEntry("");
+
+        // Remove consumable from inventory
+        player.Consumables.Remove(consumable);
+
+        return true;
     }
 
     /// <summary>
@@ -355,6 +452,53 @@ public class CombatEngine
         }
 
         combatState.AddLogEntry($"  Ability succeeds!");
+
+        // v0.7: Check if ability is a performance (Skald channeling)
+        if (PerformanceService.IsPerformanceAbility(ability.Name))
+        {
+            var performanceResult = _performanceService.StartPerformance(player, ability.Name, abilityRoll.Successes);
+            if (performanceResult.Success)
+            {
+                combatState.AddLogEntry($"  {performanceResult.Message}");
+
+                // v0.7: Special performance effects
+                switch (ability.Name)
+                {
+                    case "Saga of the Einherjar":
+                        // Grant temporary HP (2d6)
+                        int tempHP = _diceService.RollDamage(ability.DamageDice);
+                        player.TempHP += tempHP;
+                        combatState.AddLogEntry($"  All allies gain {tempHP} Temporary HP!");
+
+                        // Apply [Inspired] status (+3 damage dice)
+                        player.InspiredTurnsRemaining = performanceResult.Duration;
+                        combatState.AddLogEntry($"  All allies gain [Inspired] (+3 damage dice) for {performanceResult.Duration} rounds!");
+                        break;
+
+                    case "Saga of Courage":
+                        combatState.AddLogEntry($"  Your inspiring battle hymn fills allies with courage!");
+                        combatState.AddLogEntry($"  All allies gain +2 Accuracy while the saga continues!");
+                        break;
+
+                    case "Dirge of Defeat":
+                        combatState.AddLogEntry($"  Your mournful dirge saps the will of your enemies!");
+                        combatState.AddLogEntry($"  All enemies suffer -2 to their rolls while the dirge plays!");
+                        break;
+
+                    case "Lay of the Iron Wall":
+                        combatState.AddLogEntry($"  Your protective chant hardens the resolve of your allies!");
+                        combatState.AddLogEntry($"  All allies gain +2 Soak (damage reduction) while the lay continues!");
+                        break;
+                }
+            }
+            else
+            {
+                combatState.AddLogEntry($"  {performanceResult.Message}");
+            }
+
+            combatState.AddLogEntry("");
+            return true; // Performance started, turn complete
+        }
 
         // Apply ability effects
         switch (ability.Type)
@@ -632,6 +776,34 @@ public class CombatEngine
             }
             return; // Early return
         }
+        // v0.7: Anatomical Insight - Apply [Vulnerable] status (Architect ability)
+        else if (ability.Name == "Anatomical Insight")
+        {
+            damage = _diceService.RollDamage(ability.DamageDice);
+            combatState.AddLogEntry($"  You identify structural weaknesses in {target.Name}!");
+            combatState.AddLogEntry($"  Rolled {ability.DamageDice}d6 for damage: {damage}");
+
+            ApplyDamageToEnemy(combatState, target, damage, ability.IgnoresArmor);
+
+            // Apply [Vulnerable] status
+            target.VulnerableTurnsRemaining = 3;
+            combatState.AddLogEntry($"  {target.Name} is [Vulnerable] for 3 turns! (+25% damage taken)");
+            return; // Early return
+        }
+        // v0.7: Exploit Design Flaw - Apply [Analyzed] status (Architect ability)
+        else if (ability.Name == "Exploit Design Flaw")
+        {
+            damage = _diceService.RollDamage(ability.DamageDice);
+            combatState.AddLogEntry($"  You analyze {target.Name}'s design patterns and expose critical flaws!");
+            combatState.AddLogEntry($"  Rolled {ability.DamageDice}d6 for damage: {damage}");
+
+            ApplyDamageToEnemy(combatState, target, damage, ability.IgnoresArmor);
+
+            // Apply [Analyzed] status
+            target.AnalyzedTurnsRemaining = 4;
+            combatState.AddLogEntry($"  {target.Name} is [Analyzed] for 4 turns! (All attackers gain +2 Accuracy)");
+            return; // Early return
+        }
         // Check if ability has special damage dice (like Aetheric Bolt)
         else if (ability.DamageDice > 0)
         {
@@ -649,6 +821,17 @@ public class CombatEngine
 
     private void ApplyDamageToEnemy(CombatState combatState, Enemy target, int damage, bool ignoresArmor)
     {
+        // v0.7: Apply [Vulnerable] status (+25% damage)
+        if (target.VulnerableTurnsRemaining > 0)
+        {
+            var vulnerableDamage = (int)(damage * 1.25);
+            if (vulnerableDamage > damage)
+            {
+                combatState.AddLogEntry($"  [Vulnerable] increases damage from {damage} to {vulnerableDamage}!");
+                damage = vulnerableDamage;
+            }
+        }
+
         // Check if ability ignores armor
         if (!ignoresArmor && target.DefenseTurnsRemaining > 0)
         {
@@ -724,6 +907,16 @@ public class CombatEngine
             combatState.PlayerNextAttackBonusDice = ability.NextAttackBonusDice;
             combatState.AddLogEntry($"  Next attack gains +{ability.NextAttackBonusDice} bonus dice!");
         }
+        // v0.7: Rousing Verse - Restore stamina (Skald ability)
+        else if (ability.Name == "Rousing Verse")
+        {
+            int staminaRestore = 30;
+            int staminaBefore = player.Stamina;
+            player.Stamina = Math.Min(player.MaxStamina, player.Stamina + staminaRestore);
+            int actualRestore = player.Stamina - staminaBefore;
+            combatState.AddLogEntry($"  Your rousing verse reinvigorates you!");
+            combatState.AddLogEntry($"  Restored {actualRestore} Stamina! ({staminaBefore} → {player.Stamina}/{player.MaxStamina})");
+        }
     }
 
     private void ProcessControlAbility(CombatState combatState, Ability ability, Enemy? target)
@@ -740,6 +933,25 @@ public class CombatEngine
             target.IsStunned = true;
             target.StunTurnsRemaining = 1;
             combatState.AddLogEntry($"  {target.Name} is disrupted and will skip their next turn!");
+        }
+
+        // v0.7: Architect of the Silence - Apply [Seized] status (Architect ability)
+        if (ability.Name == "Architect of the Silence")
+        {
+            // NOTE: This applies [Seized] to player (self-lock mechanic for Architect)
+            // In actual gameplay, this would apply to enemies, but enemies don't take actions
+            // So this is a placeholder for the mechanic
+            combatState.AddLogEntry($"  You exploit the labyrinth's patterns to immobilize {target.Name}!");
+            combatState.AddLogEntry($"  {target.Name} is temporarily locked in place by the architecture itself.");
+            // Future: When enemy AI supports action skipping, add enemy.SeizedTurnsRemaining = 2;
+        }
+
+        // v0.7: Song of Silence - Apply [Silenced] status (Skald ability)
+        if (ability.Name == "Song of Silence")
+        {
+            target.SilencedTurnsRemaining = 3;
+            combatState.AddLogEntry($"  Your haunting melody strips {target.Name} of its voice!");
+            combatState.AddLogEntry($"  {target.Name} is [Silenced] for 3 turns! (Cannot cast spells or perform)");
         }
     }
 
@@ -985,6 +1197,24 @@ public class CombatEngine
                     enemy.IsStunned = false;
                 }
             }
+
+            // v0.7: Tick down [Analyzed] status
+            if (enemy.AnalyzedTurnsRemaining > 0)
+            {
+                enemy.AnalyzedTurnsRemaining--;
+            }
+
+            // v0.7: Tick down [Vulnerable] status
+            if (enemy.VulnerableTurnsRemaining > 0)
+            {
+                enemy.VulnerableTurnsRemaining--;
+            }
+
+            // v0.7: Tick down [Silenced] status
+            if (enemy.SilencedTurnsRemaining > 0)
+            {
+                enemy.SilencedTurnsRemaining--;
+            }
         }
 
         // [v0.6] Apply environmental hazard damage at end of round
@@ -1010,6 +1240,56 @@ public class CombatEngine
 
                 combatState.AddLogEntry("");
             }
+        }
+
+        // v0.7: Tick down performance duration and handle interruptions
+        if (combatState.Player.IsPerforming)
+        {
+            // Check for interruption ([Silenced])
+            var interruptMessage = _performanceService.HandleInterruption(combatState.Player);
+            if (!string.IsNullOrEmpty(interruptMessage))
+            {
+                combatState.AddLogEntry($"--- Performance Interrupted ---");
+                combatState.AddLogEntry($"  {interruptMessage}");
+                combatState.AddLogEntry("");
+            }
+            else
+            {
+                // Tick down performance duration
+                var tickMessage = _performanceService.TickPerformance(combatState.Player);
+                if (!string.IsNullOrEmpty(tickMessage))
+                {
+                    combatState.AddLogEntry($"--- Performance Status ---");
+                    combatState.AddLogEntry($"  {tickMessage}");
+                    combatState.AddLogEntry("");
+                }
+            }
+        }
+
+        // v0.7: Tick down v0.7 status effects
+        if (combatState.Player.VulnerableTurnsRemaining > 0)
+        {
+            combatState.Player.VulnerableTurnsRemaining--;
+        }
+
+        if (combatState.Player.AnalyzedTurnsRemaining > 0)
+        {
+            combatState.Player.AnalyzedTurnsRemaining--;
+        }
+
+        if (combatState.Player.SeizedTurnsRemaining > 0)
+        {
+            combatState.Player.SeizedTurnsRemaining--;
+        }
+
+        if (combatState.Player.InspiredTurnsRemaining > 0)
+        {
+            combatState.Player.InspiredTurnsRemaining--;
+        }
+
+        if (combatState.Player.SilencedTurnsRemaining > 0)
+        {
+            combatState.Player.SilencedTurnsRemaining--;
         }
 
         combatState.NextTurn();

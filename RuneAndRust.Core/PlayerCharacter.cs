@@ -36,6 +36,11 @@ public class PlayerCharacter
     public List<Equipment> Inventory { get; set; } = new(); // Up to 5 items
     public int MaxInventorySize { get; set; } = 5;
 
+    // Consumables & Crafting (v0.7)
+    public List<Consumable> Consumables { get; set; } = new(); // Potions, medicines, etc.
+    public Dictionary<ComponentType, int> CraftingComponents { get; set; } = new(); // Crafting materials
+    public int MaxConsumables { get; set; } = 10; // Max consumable items
+
     // Abilities
     public List<Ability> Abilities { get; set; } = new();
 

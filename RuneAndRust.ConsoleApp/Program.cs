@@ -284,7 +284,8 @@ class Program
                 {
                     "Warrior - High HP, Melee Focus",
                     "Scavenger - Balanced, Tactical",
-                    "Mystic - Low HP, Ability Focus"
+                    "Mystic - Low HP, Ability Focus",
+                    "Adept - WITS-based, Specialist (v0.7)" // NEW: v0.7 archetype
                 })
         );
 
@@ -293,6 +294,7 @@ class Program
             "Warrior - High HP, Melee Focus" => CharacterClass.Warrior,
             "Scavenger - Balanced, Tactical" => CharacterClass.Scavenger,
             "Mystic - Low HP, Ability Focus" => CharacterClass.Mystic,
+            "Adept - WITS-based, Specialist (v0.7)" => CharacterClass.Adept, // NEW: v0.7
             _ => CharacterClass.Warrior
         };
 
@@ -796,8 +798,201 @@ class Program
         AnsiConsole.MarkupLine($"[yellow]⚠️ Corruption:[/]     {player.Corruption}/100 (unchanged - permanent)");
         AnsiConsole.WriteLine();
 
-        AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
-        Console.ReadLine();
+        // v0.7: Offer crafting option for Bone-Setters
+        if (player.Specialization == Specialization.BoneSetter)
+        {
+            AnsiConsole.MarkupLine("[cyan]💊 Would you like to craft Field Medicine items?[/]");
+            AnsiConsole.WriteLine();
+
+            var choice = AnsiConsole.Prompt(
+                new SelectionPrompt<string>()
+                    .Title("[cyan]Rest Menu:[/]")
+                    .AddChoices(new[] { "Craft Items", "Continue" })
+            );
+
+            if (choice == "Craft Items")
+            {
+                HandleCrafting();
+            }
+        }
+        else
+        {
+            AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+            Console.ReadLine();
+        }
+    }
+
+    static void HandleCrafting()
+    {
+        var player = _gameState.Player;
+        var craftingService = new CraftingService();
+
+        while (true)
+        {
+            AnsiConsole.Clear();
+            AnsiConsole.WriteLine();
+
+            var craftingRule = new Rule("[bold cyan]FIELD MEDICINE CRAFTING[/]")
+            {
+                Justification = Justify.Center
+            };
+            AnsiConsole.Write(craftingRule);
+            AnsiConsole.WriteLine();
+
+            // Display current components
+            AnsiConsole.MarkupLine("[cyan]Your Crafting Components:[/]");
+            if (player.CraftingComponents.Count == 0)
+            {
+                AnsiConsole.MarkupLine("[dim]  No components available[/]");
+            }
+            else
+            {
+                foreach (var component in player.CraftingComponents.OrderBy(c => c.Key))
+                {
+                    var componentInfo = CraftingComponent.Create(component.Key);
+                    AnsiConsole.MarkupLine($"  [yellow]{componentInfo.Name}:[/] {component.Value}x");
+                }
+            }
+            AnsiConsole.WriteLine();
+
+            // Display current consumables
+            AnsiConsole.MarkupLine($"[cyan]Current Consumables:[/] [yellow]{player.Consumables.Count}/{player.MaxConsumables}[/]");
+            if (player.Consumables.Count > 0)
+            {
+                foreach (var item in player.Consumables.GroupBy(c => c.Name))
+                {
+                    int count = item.Count();
+                    AnsiConsole.MarkupLine($"  [green]{item.Key}[/] x{count}");
+                }
+            }
+            else
+            {
+                AnsiConsole.MarkupLine("[dim]  No consumables in inventory[/]");
+            }
+            AnsiConsole.WriteLine();
+
+            // Get available recipes
+            var recipes = craftingService.GetAvailableRecipes(player);
+            if (recipes.Count == 0)
+            {
+                AnsiConsole.MarkupLine("[yellow]No recipes available. (Requires Bone-Setter specialization)[/]");
+                AnsiConsole.WriteLine();
+                AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+                Console.ReadLine();
+                return;
+            }
+
+            // Build recipe choices with availability indicators
+            var choices = new List<string>();
+            foreach (var recipe in recipes)
+            {
+                bool hasComponents = recipe.HasRequiredComponents(player.CraftingComponents);
+                string availability = hasComponents ? "[green]✓[/]" : "[red]✗[/]";
+                choices.Add($"{availability} {recipe.Name} (DC {recipe.SkillCheckDC})");
+            }
+            choices.Add("[dim]Back to Rest[/]");
+
+            // Show recipe selection menu
+            var choice = AnsiConsole.Prompt(
+                new SelectionPrompt<string>()
+                    .Title("[cyan]Select a recipe to craft:[/]")
+                    .AddChoices(choices)
+                    .HighlightStyle(new Style(Color.Cyan))
+            );
+
+            if (choice.Contains("Back to Rest"))
+            {
+                return;
+            }
+
+            // Extract recipe name from choice (remove availability indicator and DC)
+            string recipeName = choice.Substring(choice.IndexOf(']') + 2);
+            recipeName = recipeName.Substring(0, recipeName.IndexOf(" (DC"));
+
+            var selectedRecipe = craftingService.GetRecipeByName(recipeName);
+            if (selectedRecipe == null)
+                continue;
+
+            // Show recipe details and confirm
+            AnsiConsole.WriteLine();
+            AnsiConsole.MarkupLine($"[yellow]Recipe:[/] {selectedRecipe.Name}");
+            AnsiConsole.MarkupLine($"[dim]{selectedRecipe.Description}[/]");
+            AnsiConsole.MarkupLine($"[yellow]Required Components:[/] {selectedRecipe.GetRequirementsDescription()}");
+            AnsiConsole.MarkupLine($"[yellow]Difficulty Check:[/] DC {selectedRecipe.SkillCheckDC} ({selectedRecipe.SkillAttribute})");
+            AnsiConsole.WriteLine();
+
+            // Check if player has components
+            if (!selectedRecipe.HasRequiredComponents(player.CraftingComponents))
+            {
+                var missing = selectedRecipe.GetMissingComponents(player.CraftingComponents);
+                AnsiConsole.MarkupLine("[red]⚠️ Missing components:[/]");
+                foreach (var item in missing)
+                {
+                    AnsiConsole.MarkupLine($"  [red]{item}[/]");
+                }
+                AnsiConsole.WriteLine();
+                AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+                Console.ReadLine();
+                continue;
+            }
+
+            // Check if inventory is full
+            if (player.Consumables.Count >= player.MaxConsumables)
+            {
+                AnsiConsole.MarkupLine($"[red]⚠️ Consumables inventory full! ({player.Consumables.Count}/{player.MaxConsumables})[/]");
+                AnsiConsole.WriteLine();
+                AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+                Console.ReadLine();
+                continue;
+            }
+
+            // Confirm crafting
+            bool confirm = AnsiConsole.Confirm("[cyan]Craft this item?[/]");
+            if (!confirm)
+                continue;
+
+            // Attempt crafting
+            var result = craftingService.CraftItem(player, selectedRecipe);
+
+            AnsiConsole.WriteLine();
+            if (result.Success && result.CraftedItem != null)
+            {
+                // Success - add item and consume components
+                player.Consumables.Add(result.CraftedItem);
+
+                // Consume components
+                foreach (var requirement in selectedRecipe.RequiredComponents)
+                {
+                    player.CraftingComponents[requirement.Key] -= requirement.Value;
+                    if (player.CraftingComponents[requirement.Key] <= 0)
+                    {
+                        player.CraftingComponents.Remove(requirement.Key);
+                    }
+                }
+
+                AnsiConsole.MarkupLine($"[green]✅ {result.Message}[/]");
+                AnsiConsole.MarkupLine($"[green]Created:[/] {result.CraftedItem.GetDisplayName()}");
+                AnsiConsole.MarkupLine($"[dim]{result.CraftedItem.GetEffectsDescription()}[/]");
+            }
+            else
+            {
+                // Failure - still consume components (wasted in failed attempt)
+                foreach (var requirement in selectedRecipe.RequiredComponents)
+                {
+                    player.CraftingComponents[requirement.Key] -= requirement.Value;
+                    if (player.CraftingComponents[requirement.Key] <= 0)
+                    {
+                        player.CraftingComponents.Remove(requirement.Key);
+                    }
+                }
+
+                AnsiConsole.MarkupLine($"[red]❌ {result.Message}[/]");
+            }
+
+            AnsiConsole.WriteLine();
+            AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+            Console.ReadLine();
+        }
     }
 
     static void PuzzleLoop()
@@ -1063,6 +1258,53 @@ class Program
 
         while (!turnComplete)
         {
+            // v0.7: Check if player is [Seized] (complete action lockdown)
+            if (combat.Player.SeizedTurnsRemaining > 0)
+            {
+                UIHelper.DisplayCombatState(combat);
+                AnsiConsole.MarkupLine($"[red]⛓️ [SEIZED] You are completely immobilized and cannot act![/]");
+                AnsiConsole.MarkupLine($"[dim]({combat.Player.SeizedTurnsRemaining} rounds remaining)[/]");
+                combat.AddLogEntry($"{combat.Player.Name} is [Seized] and cannot act!");
+
+                AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to skip turn...[/]");
+                Console.ReadLine();
+                return; // End turn immediately
+            }
+
+            // v0.7: Check if player is performing (action restrictions)
+            if (combat.Player.IsPerforming)
+            {
+                // Display combat state with performance status
+                UIHelper.DisplayCombatState(combat);
+
+                AnsiConsole.MarkupLine($"[magenta]🎵 Performing: {combat.Player.CurrentPerformance} ({combat.Player.PerformingTurnsRemaining} rounds remaining)[/]");
+                AnsiConsole.MarkupLine("[dim]While performing, you cannot take other actions.[/]");
+
+                var performanceChoice = AnsiConsole.Prompt(
+                    new SelectionPrompt<string>()
+                        .Title("[yellow]Performance Options:[/]")
+                        .AddChoices(new[] { "Continue Performance", "End Performance Early", "Stats - View character sheet" })
+                );
+
+                if (performanceChoice == "Continue Performance")
+                {
+                    combat.AddLogEntry($"{combat.Player.Name} continues the performance...");
+                    turnComplete = true;
+                }
+                else if (performanceChoice == "End Performance Early")
+                {
+                    var performanceService = new PerformanceService();
+                    var endMessage = performanceService.EndPerformance(combat.Player, forced: false);
+                    combat.AddLogEntry(endMessage);
+                    turnComplete = true;
+                }
+                else if (performanceChoice.StartsWith("Stats"))
+                {
+                    HandleStats();
+                }
+                continue; // Skip normal action processing
+            }
+
             // Display combat state
             UIHelper.DisplayCombatState(combat);
 
@@ -1088,6 +1330,10 @@ class Program
 
                 case "ability":
                     turnComplete = HandlePlayerAbility(combat);
+                    break;
+
+                case "item":
+                    turnComplete = HandlePlayerUseConsumable(combat);
                     break;
 
                 case "flee":
@@ -1138,6 +1384,60 @@ class Program
     static void HandlePlayerDefend(CombatState combat)
     {
         _combatEngine.PlayerDefend(combat);
+    }
+
+    static bool HandlePlayerUseConsumable(CombatState combat)
+    {
+        var player = combat.Player;
+
+        if (player.Consumables.Count == 0)
+        {
+            combat.AddLogEntry("No consumables available!");
+            return false;
+        }
+
+        // Group consumables by name for display
+        var groupedConsumables = player.Consumables
+            .GroupBy(c => c.Name)
+            .Select(g => new { Name = g.First().GetDisplayName(), Count = g.Count(), Item = g.First() })
+            .ToList();
+
+        var choices = groupedConsumables
+            .Select(g => $"{g.Name} x{g.Count} - {g.Item.GetEffectsDescription()}")
+            .ToList();
+        choices.Add("Cancel");
+
+        var choice = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+                .Title("[yellow]Select a consumable to use:[/]")
+                .AddChoices(choices)
+                .HighlightStyle(new Style(Color.Cyan))
+        );
+
+        if (choice == "Cancel")
+        {
+            return false;
+        }
+
+        // Extract consumable name from choice (remove count and effects)
+        string consumableName = choice.Split(" x")[0].Trim();
+        if (consumableName.EndsWith(" ⭐"))
+        {
+            consumableName = consumableName.Substring(0, consumableName.Length - 2).Trim();
+        }
+
+        // Find the consumable
+        var consumable = player.Consumables.FirstOrDefault(c =>
+            c.Name.Equals(consumableName, StringComparison.OrdinalIgnoreCase) ||
+            c.GetDisplayName().Equals(consumableName, StringComparison.OrdinalIgnoreCase));
+
+        if (consumable == null)
+        {
+            combat.AddLogEntry("Consumable not found!");
+            return false;
+        }
+
+        return _combatEngine.PlayerUseConsumable(combat, consumable);
     }
 
     static bool HandlePlayerAbility(CombatState combat)
@@ -1308,6 +1608,15 @@ class Program
             AnsiConsole.WriteLine();
 
             var choices = new List<string>();
+
+            // v0.7: Check for specialization unlock
+            if (player.ProgressionPoints >= 10 &&
+                player.Specialization == Specialization.None &&
+                SpecializationFactory.GetAvailableSpecializations(player.Class).Count > 0)
+            {
+                choices.Add("⭐ Unlock Specialization (10 PP)");
+            }
+
             if (player.ProgressionPoints >= 1)
             {
                 choices.Add("Increase Attribute (1 PP)");
@@ -1326,6 +1635,12 @@ class Program
 
             if (choice == "Save PP for Later")
             {
+                break;
+            }
+            else if (choice.StartsWith("⭐ Unlock Specialization"))
+            {
+                HandleSpecializationSelection(player);
+                // Break after specialization selection since it's a major choice
                 break;
             }
             else if (choice.StartsWith("Increase Attribute"))
@@ -1432,6 +1747,130 @@ class Program
                 AnsiConsole.MarkupLine("[red]Cannot advance this ability (not enough PP or already at max rank)[/]");
                 System.Threading.Thread.Sleep(1000);
             }
+        }
+    }
+
+    static void HandleSpecializationSelection(PlayerCharacter player)
+    {
+        AnsiConsole.Clear();
+        AnsiConsole.WriteLine();
+
+        var specializationRule = new Rule("[bold cyan]⭐ SPECIALIZATION UNLOCK ⭐[/]")
+        {
+            Justification = Justify.Center
+        };
+        AnsiConsole.Write(specializationRule);
+        AnsiConsole.WriteLine();
+
+        AnsiConsole.MarkupLine("[yellow]You have reached a pivotal moment in your journey![/]");
+        AnsiConsole.MarkupLine("[dim]Choose a specialization to define your role and unlock powerful abilities.[/]");
+        AnsiConsole.WriteLine();
+
+        // Get available specializations for player's class
+        var availableSpecs = SpecializationFactory.GetAvailableSpecializations(player.Class);
+
+        if (availableSpecs.Count == 0)
+        {
+            AnsiConsole.MarkupLine("[red]No specializations available for your class.[/]");
+            AnsiConsole.WriteLine();
+            AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+            Console.ReadLine();
+            return;
+        }
+
+        // Build choice list with specialization names
+        var choices = availableSpecs.Select(s => s.ToString()).ToList();
+        choices.Add("Cancel");
+
+        // Display specialization options
+        var choice = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+                .Title($"[yellow]Available Specializations for {player.Class}:[/]")
+                .AddChoices(choices)
+                .HighlightStyle(new Style(Color.Cyan))
+        );
+
+        if (choice == "Cancel")
+        {
+            return;
+        }
+
+        // Parse selected specialization
+        if (!Enum.TryParse<Specialization>(choice, out var selectedSpec))
+        {
+            AnsiConsole.MarkupLine("[red]Invalid specialization selection.[/]");
+            System.Threading.Thread.Sleep(1000);
+            return;
+        }
+
+        // Show detailed description
+        AnsiConsole.Clear();
+        AnsiConsole.WriteLine();
+        AnsiConsole.MarkupLine($"[bold yellow]{selectedSpec}[/]");
+        AnsiConsole.WriteLine();
+
+        var description = SpecializationFactory.GetSpecializationDescription(selectedSpec);
+        var panel = new Panel(description)
+        {
+            Border = BoxBorder.Rounded,
+            BorderColor = Color.Cyan,
+            Padding = new Padding(2, 1)
+        };
+        AnsiConsole.Write(panel);
+        AnsiConsole.WriteLine();
+
+        // Confirm selection
+        AnsiConsole.MarkupLine($"[yellow]Cost: 10 PP (Current: {player.ProgressionPoints} PP)[/]");
+        AnsiConsole.MarkupLine("[dim]This is a permanent choice and cannot be changed![/]");
+        AnsiConsole.WriteLine();
+
+        bool confirm = AnsiConsole.Confirm($"[cyan]Unlock {selectedSpec} specialization?[/]");
+
+        if (!confirm)
+        {
+            AnsiConsole.MarkupLine("[yellow]Specialization selection cancelled.[/]");
+            System.Threading.Thread.Sleep(1000);
+            return;
+        }
+
+        // Apply specialization
+        bool success = _sagaService.UnlockSpecialization(player, selectedSpec);
+
+        if (success)
+        {
+            AnsiConsole.WriteLine();
+            AnsiConsole.MarkupLine($"[green]✅ Specialization unlocked: {selectedSpec}![/]");
+            AnsiConsole.MarkupLine($"[yellow]PP Remaining: {player.ProgressionPoints}[/]");
+            AnsiConsole.WriteLine();
+
+            // Show granted abilities
+            AnsiConsole.MarkupLine("[cyan]New Abilities Granted:[/]");
+            var newAbilities = player.Abilities.TakeLast(3).ToList(); // Assuming 3 tier 1 abilities
+            foreach (var ability in newAbilities)
+            {
+                AnsiConsole.MarkupLine($"  [green]• {ability.Name}[/] - {ability.Description}");
+            }
+
+            // Special message for Bone-Setter
+            if (selectedSpec == Specialization.BoneSetter)
+            {
+                AnsiConsole.WriteLine();
+                AnsiConsole.MarkupLine("[cyan]💊 Field Medicine crafting unlocked![/]");
+                AnsiConsole.MarkupLine("[dim]You can craft healing items during rest at Sanctuaries.[/]");
+                AnsiConsole.MarkupLine("[dim]Starting supplies granted: 3x Healing Poultice + components[/]");
+            }
+
+            AnsiConsole.WriteLine();
+            AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+            Console.ReadLine();
+        }
+        else
+        {
+            AnsiConsole.WriteLine();
+            AnsiConsole.MarkupLine("[red]❌ Failed to unlock specialization (insufficient PP or already have one)[/]");
+            AnsiConsole.WriteLine();
+            AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+            Console.ReadLine();
         }
     }
 
