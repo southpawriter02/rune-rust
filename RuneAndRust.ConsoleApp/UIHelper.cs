@@ -502,6 +502,8 @@ public static class UIHelper
                 statusEffects.Add($"ANALYZED({enemy.AnalyzedTurnsRemaining})");
             if (enemy.VulnerableTurnsRemaining > 0)
                 statusEffects.Add($"VULNERABLE({enemy.VulnerableTurnsRemaining})");
+            if (enemy.SilencedTurnsRemaining > 0)
+                statusEffects.Add($"SILENCED({enemy.SilencedTurnsRemaining})");
 
             var statusText = statusEffects.Count > 0 ? $" [dim]({string.Join(", ", statusEffects)})[/]" : "";
             enemyTable.AddRow(new Markup($"{hpBar}{statusText}"));

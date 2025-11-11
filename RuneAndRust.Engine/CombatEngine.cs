@@ -907,6 +907,16 @@ public class CombatEngine
             combatState.PlayerNextAttackBonusDice = ability.NextAttackBonusDice;
             combatState.AddLogEntry($"  Next attack gains +{ability.NextAttackBonusDice} bonus dice!");
         }
+        // v0.7: Rousing Verse - Restore stamina (Skald ability)
+        else if (ability.Name == "Rousing Verse")
+        {
+            int staminaRestore = 30;
+            int staminaBefore = player.Stamina;
+            player.Stamina = Math.Min(player.MaxStamina, player.Stamina + staminaRestore);
+            int actualRestore = player.Stamina - staminaBefore;
+            combatState.AddLogEntry($"  Your rousing verse reinvigorates you!");
+            combatState.AddLogEntry($"  Restored {actualRestore} Stamina! ({staminaBefore} → {player.Stamina}/{player.MaxStamina})");
+        }
     }
 
     private void ProcessControlAbility(CombatState combatState, Ability ability, Enemy? target)
@@ -934,6 +944,14 @@ public class CombatEngine
             combatState.AddLogEntry($"  You exploit the labyrinth's patterns to immobilize {target.Name}!");
             combatState.AddLogEntry($"  {target.Name} is temporarily locked in place by the architecture itself.");
             // Future: When enemy AI supports action skipping, add enemy.SeizedTurnsRemaining = 2;
+        }
+
+        // v0.7: Song of Silence - Apply [Silenced] status (Skald ability)
+        if (ability.Name == "Song of Silence")
+        {
+            target.SilencedTurnsRemaining = 3;
+            combatState.AddLogEntry($"  Your haunting melody strips {target.Name} of its voice!");
+            combatState.AddLogEntry($"  {target.Name} is [Silenced] for 3 turns! (Cannot cast spells or perform)");
         }
     }
 
@@ -1190,6 +1208,12 @@ public class CombatEngine
             if (enemy.VulnerableTurnsRemaining > 0)
             {
                 enemy.VulnerableTurnsRemaining--;
+            }
+
+            // v0.7: Tick down [Silenced] status
+            if (enemy.SilencedTurnsRemaining > 0)
+            {
+                enemy.SilencedTurnsRemaining--;
             }
         }
 
