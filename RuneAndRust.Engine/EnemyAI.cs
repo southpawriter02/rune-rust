@@ -706,6 +706,35 @@ public class EnemyAI
             }
         }
 
+        // v0.7: Apply [Vulnerable] status (+25% damage)
+        if (player.VulnerableTurnsRemaining > 0)
+        {
+            var vulnerableDamage = (int)(damage * 1.25);
+            if (vulnerableDamage > damage)
+            {
+                combatState.AddLogEntry($"{indent}[Vulnerable] increases damage from {damage} to {vulnerableDamage}!");
+                damage = vulnerableDamage;
+            }
+        }
+
+        // v0.7: Apply Temp HP absorption first
+        if (player.TempHP > 0)
+        {
+            if (damage <= player.TempHP)
+            {
+                player.TempHP -= damage;
+                combatState.AddLogEntry($"{indent}Temporary HP absorbs {damage} damage! (Temp HP: {player.TempHP} remaining)");
+                return;
+            }
+            else
+            {
+                var remainingDamage = damage - player.TempHP;
+                combatState.AddLogEntry($"{indent}Temporary HP absorbs {player.TempHP} damage!");
+                player.TempHP = 0;
+                damage = remainingDamage;
+            }
+        }
+
         // Apply shield absorption
         if (player.ShieldAbsorptionRemaining > 0)
         {

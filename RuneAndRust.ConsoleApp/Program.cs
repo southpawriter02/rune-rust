@@ -1285,6 +1285,10 @@ class Program
                     turnComplete = HandlePlayerAbility(combat);
                     break;
 
+                case "item":
+                    turnComplete = HandlePlayerUseConsumable(combat);
+                    break;
+
                 case "flee":
                     if (_combatEngine.PlayerFlee(combat))
                     {
@@ -1333,6 +1337,60 @@ class Program
     static void HandlePlayerDefend(CombatState combat)
     {
         _combatEngine.PlayerDefend(combat);
+    }
+
+    static bool HandlePlayerUseConsumable(CombatState combat)
+    {
+        var player = combat.Player;
+
+        if (player.Consumables.Count == 0)
+        {
+            combat.AddLogEntry("No consumables available!");
+            return false;
+        }
+
+        // Group consumables by name for display
+        var groupedConsumables = player.Consumables
+            .GroupBy(c => c.Name)
+            .Select(g => new { Name = g.First().GetDisplayName(), Count = g.Count(), Item = g.First() })
+            .ToList();
+
+        var choices = groupedConsumables
+            .Select(g => $"{g.Name} x{g.Count} - {g.Item.GetEffectsDescription()}")
+            .ToList();
+        choices.Add("Cancel");
+
+        var choice = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+                .Title("[yellow]Select a consumable to use:[/]")
+                .AddChoices(choices)
+                .HighlightStyle(new Style(Color.Cyan))
+        );
+
+        if (choice == "Cancel")
+        {
+            return false;
+        }
+
+        // Extract consumable name from choice (remove count and effects)
+        string consumableName = choice.Split(" x")[0].Trim();
+        if (consumableName.EndsWith(" ⭐"))
+        {
+            consumableName = consumableName.Substring(0, consumableName.Length - 2).Trim();
+        }
+
+        // Find the consumable
+        var consumable = player.Consumables.FirstOrDefault(c =>
+            c.Name.Equals(consumableName, StringComparison.OrdinalIgnoreCase) ||
+            c.GetDisplayName().Equals(consumableName, StringComparison.OrdinalIgnoreCase));
+
+        if (consumable == null)
+        {
+            combat.AddLogEntry("Consumable not found!");
+            return false;
+        }
+
+        return _combatEngine.PlayerUseConsumable(combat, consumable);
     }
 
     static bool HandlePlayerAbility(CombatState combat)

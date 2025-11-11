@@ -232,6 +232,79 @@ public class CombatEngine
     }
 
     /// <summary>
+    /// v0.7: Use a consumable item in combat
+    /// </summary>
+    public bool PlayerUseConsumable(CombatState combatState, Consumable consumable)
+    {
+        var player = combatState.Player;
+
+        combatState.AddLogEntry($"{player.Name} uses {consumable.GetDisplayName()}!");
+        combatState.AddLogEntry("");
+
+        // Apply HP restoration
+        int totalHPRestore = consumable.GetTotalHPRestore();
+        if (totalHPRestore > 0)
+        {
+            int hpBefore = player.HP;
+            player.HP = Math.Min(player.MaxHP, player.HP + totalHPRestore);
+            int actualHealed = player.HP - hpBefore;
+            combatState.AddLogEntry($"  Restored {actualHealed} HP (now at {player.HP}/{player.MaxHP})");
+        }
+
+        // Apply Stamina restoration
+        int totalStaminaRestore = consumable.GetTotalStaminaRestore();
+        if (totalStaminaRestore > 0)
+        {
+            int staminaBefore = player.Stamina;
+            player.Stamina = Math.Min(player.MaxStamina, player.Stamina + totalStaminaRestore);
+            int actualRestored = player.Stamina - staminaBefore;
+            combatState.AddLogEntry($"  Restored {actualRestored} Stamina (now at {player.Stamina}/{player.MaxStamina})");
+        }
+
+        // Reduce Stress
+        if (consumable.StressRestore > 0)
+        {
+            int stressBefore = player.PsychicStress;
+            player.PsychicStress = Math.Max(0, player.PsychicStress - consumable.StressRestore);
+            int stressReduced = stressBefore - player.PsychicStress;
+            combatState.AddLogEntry($"  Reduced Stress by {stressReduced} (now at {player.PsychicStress}/100)");
+        }
+
+        // Grant Temp HP
+        if (consumable.TempHPGrant > 0)
+        {
+            player.TempHP += consumable.TempHPGrant;
+            combatState.AddLogEntry($"  Granted {consumable.TempHPGrant} Temporary HP (total: {player.TempHP})");
+        }
+
+        // Clear status effects
+        if (consumable.ClearsBleeding)
+        {
+            // Note: Bleeding status not yet implemented in player character
+            combatState.AddLogEntry($"  Stopped bleeding");
+        }
+
+        if (consumable.ClearsPoison)
+        {
+            // Note: Poison status not yet implemented in player character
+            combatState.AddLogEntry($"  Cured poison");
+        }
+
+        if (consumable.ClearsDisease)
+        {
+            // Note: Disease status not yet implemented in player character
+            combatState.AddLogEntry($"  Cured disease");
+        }
+
+        combatState.AddLogEntry("");
+
+        // Remove consumable from inventory
+        player.Consumables.Remove(consumable);
+
+        return true;
+    }
+
+    /// <summary>
     /// Process player ability use
     /// </summary>
     public bool PlayerUseAbility(CombatState combatState, Ability ability, Enemy? target = null)
