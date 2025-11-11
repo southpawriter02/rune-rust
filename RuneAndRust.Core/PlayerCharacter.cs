@@ -4,6 +4,7 @@ public class PlayerCharacter
 {
     public string Name { get; set; } = "Survivor";
     public CharacterClass Class { get; set; }
+    public Specialization Specialization { get; set; } = Specialization.None; // v0.7: Unlocked with 10 PP
     public Attributes Attributes { get; set; } = new();
 
     // Progression (Aethelgard Saga System)

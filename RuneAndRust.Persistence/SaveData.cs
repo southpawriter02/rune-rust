@@ -10,6 +10,7 @@ public class SaveData
     // Character Info
     public string CharacterName { get; set; } = string.Empty;
     public CharacterClass Class { get; set; }
+    public Specialization Specialization { get; set; } = Specialization.None; // v0.7: Unlocked with 10 PP
 
     // Progression (Aethelgard Saga System)
     public int CurrentMilestone { get; set; }
@@ -54,6 +55,7 @@ public class SaveInfo
 {
     public string CharacterName { get; set; } = string.Empty;
     public CharacterClass Class { get; set; }
+    public Specialization Specialization { get; set; } = Specialization.None; // v0.7
     public int CurrentMilestone { get; set; }
     public DateTime LastPlayed { get; set; }
     public bool BossDefeated { get; set; }

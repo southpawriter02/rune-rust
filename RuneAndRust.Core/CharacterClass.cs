@@ -4,5 +4,6 @@ public enum CharacterClass
 {
     Warrior,
     Scavenger,
-    Mystic
+    Mystic,
+    Adept  // v0.7: Skill-based, non-magical specialist
 }

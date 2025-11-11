@@ -225,6 +225,50 @@ public class SagaService
     }
 
     /// <summary>
+    /// v0.7: Unlock a specialization for 10 PP
+    /// </summary>
+    public bool UnlockSpecialization(PlayerCharacter player, Specialization specialization)
+    {
+        const int SpecializationCost = 10;
+
+        // Check if player has enough PP
+        if (player.ProgressionPoints < SpecializationCost)
+        {
+            return false;
+        }
+
+        // Check if player already has a specialization
+        if (player.Specialization != Specialization.None)
+        {
+            return false;
+        }
+
+        // Check if specialization is valid for this archetype
+        if (!SpecializationFactory.CanChooseSpecialization(player, specialization))
+        {
+            return false;
+        }
+
+        // Spend PP
+        player.ProgressionPoints -= SpecializationCost;
+
+        // Apply specialization (adds Tier 1 abilities)
+        SpecializationFactory.ApplySpecialization(player, specialization);
+
+        return true;
+    }
+
+    /// <summary>
+    /// v0.7: Check if player can unlock a specialization
+    /// </summary>
+    public bool CanUnlockSpecialization(PlayerCharacter player)
+    {
+        const int SpecializationCost = 10;
+        return player.ProgressionPoints >= SpecializationCost &&
+               player.Specialization == Specialization.None;
+    }
+
+    /// <summary>
     /// Get list of abilities that are usable (unlocked and available)
     /// For now, returns all abilities. Full specialization system comes in v0.5+
     /// </summary>
