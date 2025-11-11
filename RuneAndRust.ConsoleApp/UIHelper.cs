@@ -65,6 +65,72 @@ public static class UIHelper
             }
         }
 
+        // Trauma Economy (v0.5)
+        table.AddRow(new Markup(""));  // Spacer
+        table.AddRow(new Markup("[bold]TRAUMA ECONOMY[/]"));
+
+        var traumaService = new TraumaEconomyService();
+        var stressThreshold = traumaService.GetStressThreshold(character);
+        var corruptionThreshold = traumaService.GetCorruptionThreshold(character);
+
+        // Psychic Stress meter with color coding
+        var stressColor = stressThreshold switch
+        {
+            StressThreshold.Safe => Color.Green,
+            StressThreshold.Strained => Color.Yellow,
+            StressThreshold.Severe => Color.Orange1,
+            StressThreshold.Critical => Color.Red,
+            _ => Color.Green
+        };
+        var stressEmptyColor = stressThreshold switch
+        {
+            StressThreshold.Safe => Color.DarkGreen,
+            StressThreshold.Strained => Color.DarkOrange,
+            StressThreshold.Severe => Color.DarkRed,
+            StressThreshold.Critical => Color.Maroon,
+            _ => Color.DarkGreen
+        };
+        var stressBar = CreateBar("Psychic Stress", character.PsychicStress, 100, stressColor, stressEmptyColor);
+        table.AddRow(stressBar);
+
+        // Corruption meter with color coding
+        var corruptionColor = corruptionThreshold switch
+        {
+            CorruptionThreshold.Minimal => Color.Grey,
+            CorruptionThreshold.Low => Color.Yellow,
+            CorruptionThreshold.Moderate => Color.Orange1,
+            CorruptionThreshold.High => Color.Red,
+            CorruptionThreshold.Extreme => Color.Purple,
+            _ => Color.Grey
+        };
+        var corruptionEmptyColor = corruptionThreshold switch
+        {
+            CorruptionThreshold.Minimal => Color.Grey19,
+            CorruptionThreshold.Low => Color.DarkOrange,
+            CorruptionThreshold.Moderate => Color.DarkRed,
+            CorruptionThreshold.High => Color.Maroon,
+            CorruptionThreshold.Extreme => Color.Purple4,
+            _ => Color.Grey19
+        };
+        var corruptionBar = CreateBar("Corruption", character.Corruption, 100, corruptionColor, corruptionEmptyColor);
+        table.AddRow(corruptionBar);
+
+        // Threshold warnings
+        if (stressThreshold >= StressThreshold.Severe)
+        {
+            var stressWarning = stressThreshold == StressThreshold.Critical
+                ? "[red]⚠️ CRITICAL STRESS - Seek Sanctuary immediately![/]"
+                : "[orange1]⚠️ High Stress - Rest at Sanctuary soon[/]";
+            table.AddRow(stressWarning);
+        }
+        if (corruptionThreshold >= CorruptionThreshold.High)
+        {
+            var corruptionWarning = corruptionThreshold == CorruptionThreshold.Extreme
+                ? "[purple]⚠️ EXTREME CORRUPTION - You are becoming something else...[/]"
+                : "[red]⚠️ High Corruption - Limit heretical ability use[/]";
+            table.AddRow(corruptionWarning);
+        }
+
         // Attributes
         table.AddRow(new Markup(""));  // Spacer
         table.AddRow(new Markup("[bold]ATTRIBUTES[/]"));

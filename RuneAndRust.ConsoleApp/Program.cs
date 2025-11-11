@@ -493,6 +493,10 @@ class Program
                     HandleSave();
                     break;
 
+                case CommandType.Rest:
+                    HandleRest();
+                    break;
+
                 case CommandType.Help:
                     HandleHelp();
                     break;
@@ -717,6 +721,58 @@ class Program
         }
 
         AnsiConsole.WriteLine();
+        AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+        Console.ReadLine();
+    }
+
+    static void HandleRest()
+    {
+        AnsiConsole.Clear();
+        AnsiConsole.WriteLine();
+
+        var restRule = new Rule("[bold cyan]REST[/]")
+        {
+            Justification = Justify.Center
+        };
+        AnsiConsole.Write(restRule);
+        AnsiConsole.WriteLine();
+
+        // Check if current room is a Sanctuary
+        if (!_gameState.CurrentRoom.IsSanctuary)
+        {
+            AnsiConsole.MarkupLine("[yellow]⚠️ This location is not safe enough to rest.[/]");
+            AnsiConsole.WriteLine();
+            AnsiConsole.MarkupLine("[dim]You must find a Sanctuary to recover from trauma.[/]");
+            AnsiConsole.MarkupLine("[dim]Sanctuaries: Entrance, Operations Center[/]");
+            AnsiConsole.WriteLine();
+            AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+            Console.ReadLine();
+            return;
+        }
+
+        // Apply rest recovery
+        var player = _gameState.Player;
+        var traumaService = new TraumaEconomyService();
+
+        int oldHP = player.HP;
+        int oldStamina = player.Stamina;
+        int oldStress = player.PsychicStress;
+
+        player.HP = player.MaxHP;
+        player.Stamina = player.MaxStamina;
+        traumaService.ClearStress(player);
+        player.RoomsExploredSinceRest = 0;
+
+        AnsiConsole.MarkupLine("[green]You rest in the relative safety of the Sanctuary...[/]");
+        AnsiConsole.MarkupLine("[dim]The screaming in your mind fades to a dull whisper...[/]");
+        AnsiConsole.WriteLine();
+
+        AnsiConsole.MarkupLine($"[green]✅ HP:[/]             {oldHP}/{player.MaxHP} → {player.HP}/{player.MaxHP}");
+        AnsiConsole.MarkupLine($"[green]✅ Stamina:[/]        {oldStamina}/{player.MaxStamina} → {player.Stamina}/{player.MaxStamina}");
+        AnsiConsole.MarkupLine($"[green]✅ Psychic Stress:[/] {oldStress}/100 → {player.PsychicStress}/100");
+        AnsiConsole.MarkupLine($"[yellow]⚠️ Corruption:[/]     {player.Corruption}/100 (unchanged - permanent)");
+        AnsiConsole.WriteLine();
+
         AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
         Console.ReadLine();
     }

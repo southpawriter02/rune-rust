@@ -29,6 +29,11 @@ public class SaveData
     public int CurrentStamina { get; set; }
     public int MaxStamina { get; set; }
 
+    // Trauma Economy (v0.5)
+    public int PsychicStress { get; set; }
+    public int Corruption { get; set; }
+    public int RoomsExploredSinceRest { get; set; }
+
     // World State
     public int CurrentRoomId { get; set; }
     public string ClearedRoomsJson { get; set; } = "[]"; // JSON array of room IDs

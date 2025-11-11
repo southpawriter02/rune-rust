@@ -19,6 +19,11 @@ public class PlayerCharacter
     public int MaxStamina { get; set; }
     public int AP { get; set; }
 
+    // Trauma Economy (v0.5)
+    public int PsychicStress { get; set; } = 0; // 0-100, recoverable at Sanctuary
+    public int Corruption { get; set; } = 0; // 0-100, permanent
+    public int RoomsExploredSinceRest { get; set; } = 0; // For rest cooldown tracking
+
     // Combat (v0.1 - deprecated in favor of equipment system)
     public string WeaponName { get; set; } = string.Empty;
     public string WeaponAttribute { get; set; } = string.Empty; // Which attribute the weapon uses
