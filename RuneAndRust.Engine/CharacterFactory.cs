@@ -1,4 +1,5 @@
 using RuneAndRust.Core;
+using RuneAndRust.Core.Archetypes;
 
 namespace RuneAndRust.Engine;
 
@@ -36,14 +37,12 @@ public class CharacterFactory
 
     private static void InitializeWarrior(PlayerCharacter character)
     {
-        // Stats
-        character.Attributes = new Attributes(
-            might: 4,
-            finesse: 2,
-            wits: 2,
-            will: 2,
-            sturdiness: 4
-        );
+        // v0.7.1: Create formal archetype instance
+        var warriorArchetype = new WarriorArchetype();
+        character.Archetype = warriorArchetype;
+
+        // Stats from archetype
+        character.Attributes = warriorArchetype.GetBaseAttributes();
 
         // Resources (base values before equipment)
         character.MaxHP = 50;
@@ -73,58 +72,18 @@ public class CharacterFactory
             equipmentService.RecalculatePlayerStats(character);
         }
 
-        // Abilities (4 total: 2 starting, unlock 3rd at Level 3, 4th at Level 5)
-        character.Abilities = new List<Ability>
-        {
-            // Level 1 - Starting ability
-            new Ability
-            {
-                Name = "Power Strike",
-                Description = "A devastating melee attack that deals double damage on success",
-                StaminaCost = 5,
-                Type = AbilityType.Attack,
-                AttributeUsed = "might",
-                BonusDice = 2,
-                SuccessThreshold = 3,
-                DamageDice = 0 // Uses weapon damage, doubled
-            },
-            // Level 1 - Starting ability
-            new Ability
-            {
-                Name = "Shield Wall",
-                Description = "Raise your defenses, reducing incoming damage by 50% for 2 turns",
-                StaminaCost = 10,
-                Type = AbilityType.Defense,
-                AttributeUsed = "sturdiness",
-                BonusDice = 1,
-                SuccessThreshold = 2,
-                DefensePercent = 50,
-                DefenseDuration = 2
-            },
-            // Level 3 - Unlocked ability
-            new Ability
-            {
-                Name = "Cleaving Strike",
-                Description = "Powerful strike that hits target and deals 50% damage to another enemy if you get 3+ successes",
-                StaminaCost = 8,
-                Type = AbilityType.Attack,
-                AttributeUsed = "might",
-                BonusDice = 1,
-                SuccessThreshold = 2,
-                DamageDice = 1
-            },
-            // Level 5 - Unlocked ability
-            new Ability
-            {
-                Name = "Battle Rage",
-                Description = "Enter a berserker state gaining +2 dice on all attacks for 3 turns, but take 25% more damage",
-                StaminaCost = 15,
-                Type = AbilityType.Utility,
-                AttributeUsed = "will",
-                BonusDice = 0,
-                SuccessThreshold = 2
-            }
-        };
+        // v0.7.1: Grant 3 starting abilities automatically from archetype
+        // 1. Strike - Standard weapon attack (10 Stamina)
+        // 2. Defensive Stance - Defensive stance (+3 Soak, -25% damage)
+        // 3. Warrior's Vigor - Passive +10% Max HP
+        character.Abilities = warriorArchetype.GetStartingAbilities();
+
+        // v0.7.1: Initialize stance system
+        character.ActiveStance = Stance.CreateBalancedStance();
+
+        // Recalculate stats to apply Warrior's Vigor bonus
+        var equipService = new EquipmentService();
+        equipService.RecalculatePlayerStats(character);
     }
 
     private static void InitializeScavenger(PlayerCharacter character)

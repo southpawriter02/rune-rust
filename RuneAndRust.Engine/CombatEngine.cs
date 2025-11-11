@@ -534,8 +534,42 @@ public class CombatEngine
 
         int damage = 0;
 
+        // v0.7.1: Check for Strike (standard weapon attack)
+        if (ability.Name == "Strike")
+        {
+            var player = combatState.Player;
+
+            // Base weapon damage
+            int baseDamage = 1; // Default 1d6
+            if (player.EquippedWeapon != null)
+            {
+                baseDamage = player.EquippedWeapon.Damage;
+            }
+            else if (player.BaseDamage > 0)
+            {
+                baseDamage = player.BaseDamage; // Legacy support
+            }
+
+            // Roll base damage + successes
+            int totalDice = baseDamage + successes;
+            damage = _diceService.RollDamage(totalDice);
+
+            combatState.AddLogEntry($"  Weapon damage: {baseDamage}d6 + {successes} successes = {totalDice}d6");
+            combatState.AddLogEntry($"  Rolled {totalDice}d6 for damage: {damage}");
+
+            // v0.7.1: Apply stance modifier (Defensive Stance = -25% damage)
+            if (player.ActiveStance?.Type == StanceType.Defensive)
+            {
+                int originalDamage = damage;
+                damage = (int)(damage * player.ActiveStance.DamageMultiplier);
+                combatState.AddLogEntry($"  Defensive Stance penalty: {originalDamage} → {damage} damage (-25%)");
+            }
+
+            ApplyDamageToEnemy(combatState, target, damage, ability.IgnoresArmor);
+            return; // Early return
+        }
         // Check for Power Strike (double weapon damage)
-        if (ability.Name == "Power Strike")
+        else if (ability.Name == "Power Strike")
         {
             var weaponDamage = _diceService.RollDamage(combatState.Player.BaseDamage);
             damage = weaponDamage * 2;
@@ -863,8 +897,16 @@ public class CombatEngine
     {
         var player = combatState.Player;
 
+        // v0.7.1: Check for Defensive Stance (enter stance)
+        if (ability.Name == "Defensive Stance")
+        {
+            player.ActiveStance = Stance.CreateDefensiveStance();
+            combatState.AddLogEntry($"  Entered Defensive Stance!");
+            combatState.AddLogEntry($"  Effects: +3 Soak, -25% damage dealt, +1d to defensive Resolve Checks");
+            combatState.AddLogEntry($"  Exit as a Free Action at any time.");
+        }
         // Check for Quick Dodge (negates next attack)
-        if (ability.NegateNextAttack)
+        else if (ability.NegateNextAttack)
         {
             combatState.PlayerNegateNextAttack = true;
             combatState.AddLogEntry($"  {player.Name} will dodge the next attack completely!");
