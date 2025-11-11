@@ -229,6 +229,42 @@ public class CombatEngine
         combatState.AddLogEntry($"{player.Name} uses {ability.Name}!");
         combatState.AddLogEntry($"  Cost: {ability.StaminaCost} Stamina (Remaining: {player.Stamina}/{player.MaxStamina})");
 
+        // [v0.5] Apply trauma costs for heretical abilities
+        var traumaService = new TraumaEconomyService();
+        int stressBefore = player.PsychicStress;
+        int corruptionBefore = player.Corruption;
+
+        switch (ability.Name)
+        {
+            case "Void Strike":
+                traumaService.AddCorruption(player, 3);
+                combatState.AddLogEntry("  ⚠️ You channel the Blight's power...");
+                combatState.AddLogEntry($"  Corruption: {corruptionBefore} → {player.Corruption}/100");
+                break;
+
+            case "Psychic Lash":
+                traumaService.AddStress(player, 10);
+                combatState.AddLogEntry("  ⚠️ You project your trauma outward as a weapon...");
+                combatState.AddLogEntry($"  Psychic Stress: {stressBefore} → {player.PsychicStress}/100");
+                break;
+
+            case "Desperate Gambit":
+                traumaService.AddStress(player, 15);
+                traumaService.AddCorruption(player, 5);
+                combatState.AddLogEntry("  ‼️ You draw deeply from the Blight's well of power...");
+                combatState.AddLogEntry($"  Psychic Stress: {stressBefore} → {player.PsychicStress}/100");
+                combatState.AddLogEntry($"  Corruption: {corruptionBefore} → {player.Corruption}/100");
+                break;
+        }
+
+        // Check for threshold warnings after adding trauma
+        var (shouldWarn, warningMessage) = traumaService.CheckForThresholdWarning(player);
+        if (shouldWarn)
+        {
+            combatState.AddLogEntry("");
+            combatState.AddLogEntry(warningMessage);
+        }
+
         // Roll for ability
         var attributeValue = player.GetAttributeValue(ability.AttributeUsed);
         var totalDice = attributeValue + ability.BonusDice;
@@ -340,6 +376,45 @@ public class CombatEngine
                 if (!enemy.IsAlive)
                 {
                     combatState.AddLogEntry($"  {enemy.Name} is destroyed!");
+                }
+            }
+            return; // Early return
+        }
+        // [v0.5] Void Strike - Corrupted strike (3d8 damage, ignores armor)
+        else if (ability.Name == "Void Strike")
+        {
+            var baseDamage = _diceService.RollDamage(3);
+            damage = (int)(baseDamage * 1.33); // Approximate 3d8 with 3d6 * 1.33
+            combatState.AddLogEntry($"  Corrupted energy tears through {target.Name}!");
+            combatState.AddLogEntry($"  Rolled 3d8 (approx) for damage: {damage}");
+            ApplyDamageToEnemy(combatState, target, damage, ability.IgnoresArmor);
+            return; // Early return
+        }
+        // [v0.5] Psychic Lash - Mental assault (2d6 psychic damage, ignores armor)
+        else if (ability.Name == "Psychic Lash")
+        {
+            damage = _diceService.RollDamage(2);
+            combatState.AddLogEntry($"  Psychic assault strikes {target.Name}'s mind!");
+            combatState.AddLogEntry($"  Rolled 2d6 psychic damage: {damage}");
+            ApplyDamageToEnemy(combatState, target, damage, ability.IgnoresArmor);
+            return; // Early return
+        }
+        // [v0.5] Desperate Gambit - Ultimate AOE heretical ability (4d10 to all enemies)
+        else if (ability.Name == "Desperate Gambit")
+        {
+            combatState.AddLogEntry($"  ‼️ Aetheric energy explodes outward!");
+
+            foreach (var enemy in combatState.Enemies.Where(e => e.IsAlive))
+            {
+                // Roll 4d10 for each enemy (using d6 approximation: 1.67 * 4d6)
+                var baseDamage = _diceService.RollDamage(4);
+                var desperateDamage = (int)(baseDamage * 1.67); // Approximate d10 distribution
+                combatState.AddLogEntry($"  {enemy.Name} takes {desperateDamage} damage!");
+                enemy.HP -= desperateDamage;
+
+                if (!enemy.IsAlive)
+                {
+                    combatState.AddLogEntry($"  {enemy.Name} is obliterated!");
                 }
             }
             return; // Early return
@@ -585,6 +660,59 @@ public class CombatEngine
     /// </summary>
     public void NextTurn(CombatState combatState)
     {
+        // [v0.5] Forlorn Enemy Aura - Apply at start of each turn
+        var traumaService = new TraumaEconomyService();
+        var resolveService = new ResolveCheckService(_diceService);
+        var forlornEnemies = combatState.Enemies.Where(e => e.IsAlive && e.IsForlorn).ToList();
+
+        if (forlornEnemies.Any())
+        {
+            combatState.AddLogEntry("--- Forlorn Aura ---");
+
+            foreach (var forlornEnemy in forlornEnemies)
+            {
+                var (success, successes, rollDetails) = resolveService.RollResolveCheck(combatState.Player, dc: 1);
+
+                combatState.AddLogEntry(resolveService.GetForlornAuraFlavorText(forlornEnemy.Name, success));
+                combatState.AddLogEntry($"  {rollDetails}");
+
+                if (!success)
+                {
+                    traumaService.AddStress(combatState.Player, 5);
+                    combatState.AddLogEntry($"  You gain 5 Psychic Stress (Current: {combatState.Player.PsychicStress}/100)");
+                }
+                else
+                {
+                    combatState.AddLogEntry($"  You resist the mental assault.");
+                }
+            }
+
+            combatState.AddLogEntry("");
+        }
+
+        // [v0.5] Environmental Psychic Resonance - Apply at start of each turn
+        if (combatState.CurrentRoom != null && combatState.CurrentRoom.PsychicResonance != PsychicResonanceLevel.None)
+        {
+            var baseStress = (int)combatState.CurrentRoom.PsychicResonance;
+            var (stressToApply, successes, rollDetails) = resolveService.RollEnvironmentalStressResistance(combatState.Player, baseStress);
+
+            combatState.AddLogEntry("--- Psychic Resonance ---");
+            combatState.AddLogEntry(resolveService.GetResolveCheckFlavorText(stressToApply == 0, stressToApply));
+            combatState.AddLogEntry($"  {rollDetails}");
+
+            traumaService.AddStress(combatState.Player, stressToApply, allowResolveCheck: false, resolveSuccesses: 0);
+            combatState.AddLogEntry($"  Psychic Stress: {combatState.Player.PsychicStress - stressToApply} → {combatState.Player.PsychicStress}/100");
+            combatState.AddLogEntry("");
+
+            // Check for threshold warnings after environmental stress
+            var (shouldWarn, warningMessage) = traumaService.CheckForThresholdWarning(combatState.Player);
+            if (shouldWarn)
+            {
+                combatState.AddLogEntry(warningMessage);
+                combatState.AddLogEntry("");
+            }
+        }
+
         // Decrement player defense turns
         if (combatState.Player.DefenseTurnsRemaining > 0)
         {
