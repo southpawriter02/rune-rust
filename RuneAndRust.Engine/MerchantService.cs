@@ -358,7 +358,7 @@ public class MerchantService
     }
 
     /// <summary>
-    /// Get shop inventory as display-friendly list
+    /// Get shop inventory as display-friendly list (basic - no pricing)
     /// </summary>
     public List<string> GetShopListing(Merchant merchant)
     {
@@ -368,6 +368,63 @@ public class MerchantService
         {
             var item = merchant.Inventory.Items[i];
             listing.Add($"{i + 1}. {item.GetDisplayString()}");
+        }
+
+        return listing;
+    }
+
+    /// <summary>
+    /// Get shop inventory with reputation-adjusted pricing (v0.9)
+    /// </summary>
+    public List<string> GetShopListingWithPrices(Merchant merchant, PlayerCharacter player, PricingService pricingService)
+    {
+        var listing = new List<string>();
+
+        for (int i = 0; i < merchant.Inventory.Items.Count; i++)
+        {
+            var item = merchant.Inventory.Items[i];
+            var finalPrice = pricingService.GetFinalBuyPrice(merchant, item, player);
+
+            var stockText = item.IsInfiniteStock ? "∞" : $"{item.Quantity}";
+            var priceDisplay = pricingService.GetPriceDisplay(finalPrice, merchant, player, isBuying: true);
+
+            listing.Add($"[cyan]{i + 1}.[/] {item.ItemId} [dim](Stock: {stockText})[/] - {priceDisplay}");
+        }
+
+        return listing;
+    }
+
+    /// <summary>
+    /// Get merchant's buy-back prices for player's items (what merchant will pay)
+    /// </summary>
+    public List<string> GetSellListingForPlayerItems(Merchant merchant, PlayerCharacter player, PricingService pricingService)
+    {
+        var listing = new List<string>();
+        int index = 1;
+
+        // List equipment
+        foreach (var eq in player.Inventory)
+        {
+            if (eq.SellValue > 0)
+            {
+                var finalPrice = pricingService.GetFinalSellPrice(merchant, eq.SellValue, "Equipment", player);
+                var priceDisplay = pricingService.GetPriceDisplay(finalPrice, merchant, player, isBuying: false);
+                listing.Add($"[cyan]{index}.[/] {eq.GetDisplayName()} - {priceDisplay}");
+                index++;
+            }
+        }
+
+        // List crafting components (if tradeable)
+        foreach (var (componentType, quantity) in player.CraftingComponents)
+        {
+            var component = CraftingComponent.Create(componentType);
+            if (component.IsTradeable && component.SellValue > 0)
+            {
+                var finalPrice = pricingService.GetFinalSellPrice(merchant, component.SellValue, "Component", player);
+                var priceDisplay = pricingService.GetPriceDisplay(finalPrice, merchant, player, isBuying: false);
+                listing.Add($"[cyan]{index}.[/] {component.Name} x{quantity} - {priceDisplay} each");
+                index++;
+            }
         }
 
         return listing;
