@@ -1258,6 +1258,19 @@ class Program
 
         while (!turnComplete)
         {
+            // v0.7: Check if player is [Seized] (complete action lockdown)
+            if (combat.Player.SeizedTurnsRemaining > 0)
+            {
+                UIHelper.DisplayCombatState(combat);
+                AnsiConsole.MarkupLine($"[red]⛓️ [SEIZED] You are completely immobilized and cannot act![/]");
+                AnsiConsole.MarkupLine($"[dim]({combat.Player.SeizedTurnsRemaining} rounds remaining)[/]");
+                combat.AddLogEntry($"{combat.Player.Name} is [Seized] and cannot act!");
+
+                AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to skip turn...[/]");
+                Console.ReadLine();
+                return; // End turn immediately
+            }
+
             // v0.7: Check if player is performing (action restrictions)
             if (combat.Player.IsPerforming)
             {
