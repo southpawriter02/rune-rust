@@ -13,7 +13,9 @@ class Program
     private static SagaService _sagaService = new();
     private static LootService _lootService = new();
     private static EquipmentService _equipmentService = new();
-    private static CombatEngine _combatEngine = new(_diceService, _sagaService, _lootService, _equipmentService);
+    private static TraumaEconomyService _traumaService = new(); // [v0.6]
+    private static HazardService _hazardService = new(_diceService, _traumaService); // [v0.6]
+    private static CombatEngine _combatEngine = new(_diceService, _sagaService, _lootService, _equipmentService, _hazardService);
     private static EnemyAI _enemyAI = new(_diceService);
     private static SaveRepository _saveRepository = new();
 
@@ -608,6 +610,27 @@ class Program
         AnsiConsole.MarkupLine($"[dim]You move {direction}...[/]");
         AnsiConsole.WriteLine();
         System.Threading.Thread.Sleep(800); // Brief pause for atmosphere
+
+        // [v0.6] Process check-based hazards on room entry (e.g., Unstable Flooring)
+        if (_gameState.CurrentRoom.HasEnvironmentalHazard &&
+            _gameState.CurrentRoom.IsHazardActive &&
+            _gameState.CurrentRoom.HazardRequiresCheck)
+        {
+            var (success, damage, logMessage) = _hazardService.ProcessCheckBasedHazard(_gameState.CurrentRoom, _gameState.Player);
+
+            AnsiConsole.MarkupLine("[yellow]" + logMessage.Replace("\n", "\n") + "[/]");
+            AnsiConsole.WriteLine();
+
+            if (!_gameState.Player.IsAlive)
+            {
+                AnsiConsole.MarkupLine("[red bold]You have fallen![/]");
+                AnsiConsole.WriteLine();
+                HandleDeath();
+                return;
+            }
+
+            System.Threading.Thread.Sleep(1000); // Pause to let player read hazard result
+        }
 
         // [v0.4] Add loot to secret room when first discovered
         if (_gameState.CurrentRoom.Name == "Supply Cache" && _gameState.CurrentRoom.ItemsOnGround.Count == 0)

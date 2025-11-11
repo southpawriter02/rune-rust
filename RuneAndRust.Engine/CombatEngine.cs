@@ -8,13 +8,15 @@ public class CombatEngine
     private readonly SagaService _sagaService;
     private readonly LootService _lootService;
     private readonly EquipmentService _equipmentService;
+    private readonly HazardService _hazardService; // [v0.6]
 
-    public CombatEngine(DiceService diceService, SagaService sagaService, LootService lootService, EquipmentService equipmentService)
+    public CombatEngine(DiceService diceService, SagaService sagaService, LootService lootService, EquipmentService equipmentService, HazardService hazardService)
     {
         _diceService = diceService;
         _sagaService = sagaService;
         _lootService = lootService;
         _equipmentService = equipmentService;
+        _hazardService = hazardService; // [v0.6]
     }
 
     /// <summary>
@@ -43,11 +45,31 @@ public class CombatEngine
         }
         combatState.AddLogEntry("");
 
-        // [v0.4] Environmental hazard warning
-        if (currentRoom != null && currentRoom.HasEnvironmentalHazard && currentRoom.IsHazardActive)
+        // [v0.6] Environmental hazard warning
+        if (currentRoom != null && _hazardService.RoomHasActiveHazard(currentRoom))
         {
             combatState.AddLogEntry($"[WARNING] {currentRoom.HazardDescription}");
-            combatState.AddLogEntry($"  You will take {currentRoom.HazardDamagePerTurn} damage per turn!");
+
+            // Display hazard details based on type
+            if (currentRoom.HazardDamageDice > 0)
+            {
+                combatState.AddLogEntry($"  You will take {currentRoom.HazardDamageDice}d{currentRoom.HazardDamageDieSize} damage per turn!");
+            }
+            else if (currentRoom.HazardDamagePerTurn > 0)
+            {
+                combatState.AddLogEntry($"  You will take {currentRoom.HazardDamagePerTurn} damage per turn!");
+            }
+
+            if (currentRoom.HazardStressPerTurn > 0)
+            {
+                combatState.AddLogEntry($"  +{currentRoom.HazardStressPerTurn} Psychic Stress per turn!");
+            }
+
+            if (currentRoom.HazardRequiresCheck)
+            {
+                combatState.AddLogEntry($"  {currentRoom.HazardCheckAttribute} Check (DC {currentRoom.HazardCheckDC}) required to avoid damage!");
+            }
+
             combatState.AddLogEntry("");
         }
 
@@ -965,28 +987,29 @@ public class CombatEngine
             }
         }
 
-        // [v0.4] Apply environmental hazard damage at end of round
-        if (combatState.CurrentRoom != null &&
-            combatState.CurrentRoom.HasEnvironmentalHazard &&
-            combatState.CurrentRoom.IsHazardActive)
+        // [v0.6] Apply environmental hazard damage at end of round
+        if (combatState.CurrentRoom != null && _hazardService.RoomHasActiveHazard(combatState.CurrentRoom))
         {
-            var hazardDamage = _diceService.RollDamage(1); // Roll 1d6 for hazard damage
-            if (hazardDamage >= combatState.CurrentRoom.HazardDamagePerTurn)
+            var (damage, stress, logMessage) = _hazardService.ProcessAutomaticHazard(combatState.CurrentRoom, combatState.Player);
+
+            if (damage > 0 || stress > 0)
             {
-                hazardDamage = combatState.CurrentRoom.HazardDamagePerTurn;
+                combatState.AddLogEntry($"[HAZARD] {logMessage}");
+                combatState.AddLogEntry($"  {combatState.Player.Name} HP: {Math.Max(0, combatState.Player.HP)}/{combatState.Player.MaxHP}");
+
+                if (stress > 0)
+                {
+                    combatState.AddLogEntry($"  {combatState.Player.Name} Psychic Stress: {combatState.Player.PsychicStress}");
+                }
+
+                if (!combatState.Player.IsAlive)
+                {
+                    combatState.AddLogEntry($"{combatState.Player.Name} has fallen to the environmental hazard!");
+                    combatState.IsActive = false;
+                }
+
+                combatState.AddLogEntry("");
             }
-
-            combatState.Player.HP -= hazardDamage;
-            combatState.AddLogEntry($"[HAZARD] Environmental hazard deals {hazardDamage} damage to {combatState.Player.Name}!");
-            combatState.AddLogEntry($"  {combatState.Player.Name} HP: {Math.Max(0, combatState.Player.HP)}/{combatState.Player.MaxHP}");
-
-            if (!combatState.Player.IsAlive)
-            {
-                combatState.AddLogEntry($"{combatState.Player.Name} has fallen!");
-                combatState.IsActive = false;
-            }
-
-            combatState.AddLogEntry("");
         }
 
         combatState.NextTurn();

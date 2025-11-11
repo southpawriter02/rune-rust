@@ -21,7 +21,12 @@ public class V04CombatSimulationTests
         _output = output;
         _diceService = new DiceService();
         _enemyAI = new EnemyAI(_diceService);
-        _combatEngine = new CombatEngine(_diceService, _enemyAI);
+        var sagaService = new SagaService();
+        var lootService = new LootService();
+        var equipmentService = new EquipmentService();
+        var traumaService = new TraumaEconomyService();
+        var hazardService = new HazardService(_diceService, traumaService);
+        _combatEngine = new CombatEngine(_diceService, sagaService, lootService, equipmentService, hazardService);
     }
 
     #region Enemy Factory Validation

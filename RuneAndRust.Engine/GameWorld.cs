@@ -372,8 +372,14 @@ public class GameWorld
             },
             HasEnvironmentalHazard = true,
             IsHazardActive = true,
-            HazardDamagePerTurn = 0, // Special: Movement restriction, not damage
-            HazardDescription = "[Unstable Flooring] - Weak floor panels restrict movement.",
+            HazardType = HazardType.UnstableFlooring,
+            HazardDescription = "[Unstable Flooring] - Weak floor panels threaten to collapse beneath your feet.",
+            // Check-based hazard: FINESSE DC 5 or take 2d6 fall damage
+            HazardRequiresCheck = true,
+            HazardCheckAttribute = "FINESSE",
+            HazardCheckDC = 5,
+            HazardCheckFailureDice = 2,
+            HazardCheckFailureDieSize = 6,
             PsychicResonance = PsychicResonanceLevel.Light // +5 Stress per turn
         };
 
@@ -456,8 +462,10 @@ public class GameWorld
             },
             HasEnvironmentalHazard = true,
             IsHazardActive = true,
-            HazardDamagePerTurn = 4, // 1d4 toxic sludge damage per turn
-            HazardDescription = "[Toxic Sludge] - Corrosive waste fills half the room, dealing damage to anyone standing in it.",
+            HazardType = HazardType.ToxicSludge,
+            HazardDamageDice = 3,
+            HazardDamageDieSize = 6, // 3d6 damage per turn
+            HazardDescription = "[Toxic Sludge] - Corrosive waste fills half the room, dealing 3d6 damage per turn. Can be drained from Pump Control.",
             PsychicResonance = PsychicResonanceLevel.Moderate // +10 Stress per turn
         };
 
@@ -488,8 +496,10 @@ public class GameWorld
             PuzzleFailureDamage = 0, // No damage on failure
             HasEnvironmentalHazard = true,
             IsHazardActive = true,
-            HazardDamagePerTurn = 8, // 2d8 electrical damage if touching conduits
-            HazardDescription = "[Live Power Conduit] - Exposed electrical systems crackle with lethal energy."
+            HazardType = HazardType.ElectricalHazard,
+            HazardDamageDice = 2,
+            HazardDamageDieSize = 8, // 2d8 electrical damage if touching conduits
+            HazardDescription = "[Live Power Conduit] - Exposed electrical systems crackle with lethal energy. Avoid contact!"
         };
 
         // Room 21: Filtration Array (NEW - Gauntlet Run)
@@ -515,9 +525,12 @@ public class GameWorld
             },
             HasEnvironmentalHazard = true,
             IsHazardActive = true,
-            HazardDamagePerTurn = 4, // 1d4 toxic fumes damage per turn (unavoidable)
-            HazardDescription = "[Toxic Fumes] - Poisonous gas fills the room, damaging all combatants each turn.",
-            PsychicResonance = PsychicResonanceLevel.Light // +5 Stress per turn
+            HazardType = HazardType.ToxicFumes,
+            HazardDamageDice = 1,
+            HazardDamageDieSize = 6, // 1d6 damage per turn
+            HazardStressPerTurn = 3, // +3 Psychic Stress per turn (in addition to room resonance)
+            HazardDescription = "[Toxic Fumes] - Poisonous gas fills the room, dealing 1d6 damage and +3 Stress per turn.",
+            PsychicResonance = PsychicResonanceLevel.Light // +5 Stress per turn (base)
         };
 
         // Room 22: Sump Floor (NEW - Sanctuary/Safe Zone)
@@ -599,8 +612,10 @@ public class GameWorld
             IsBossRoom = true,
             HasEnvironmentalHazard = true,
             IsHazardActive = true,
-            HazardDamagePerTurn = 16, // 2d8 electrical damage if knocked into conduits
-            HazardDescription = "[Live Power Conduit] - Exposed electrical systems cover the arena. Knockback attacks can slam you into them.",
+            HazardType = HazardType.ElectricalHazard,
+            HazardDamageDice = 2,
+            HazardDamageDieSize = 8, // 2d8 electrical damage if knocked into conduits
+            HazardDescription = "[Live Power Conduit] - Exposed electrical systems cover the arena. Knockback attacks can slam you into them for 2d8 damage!",
             Enemies = new List<Enemy>
             {
                 EnemyFactory.CreateEnemy(EnemyType.OmegaSentinel) // NEW boss enemy type
