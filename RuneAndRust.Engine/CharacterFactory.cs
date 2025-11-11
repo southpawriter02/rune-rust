@@ -1,12 +1,17 @@
 using RuneAndRust.Core;
 using RuneAndRust.Core.Archetypes;
+using Serilog;
 
 namespace RuneAndRust.Engine;
 
 public class CharacterFactory
 {
+    private static readonly ILogger _log = Log.ForContext<CharacterFactory>();
+
     public static PlayerCharacter CreateCharacter(CharacterClass characterClass, string name = "Survivor")
     {
+        _log.Information("Creating character: Name={Name}, Class={Class}", name, characterClass);
+
         var character = new PlayerCharacter
         {
             Name = name,
@@ -31,6 +36,9 @@ public class CharacterFactory
 
         // [v0.5] Add heretical abilities (available to all classes)
         AddHereticalAbilities(character);
+
+        _log.Information("Character created successfully: Name={Name}, Class={Class}, HP={HP}, Stamina={Stamina}, Abilities={AbilityCount}",
+            character.Name, character.Class, character.HP, character.Stamina, character.Abilities.Count);
 
         return character;
     }

@@ -1,7 +1,10 @@
+using Serilog;
+
 namespace RuneAndRust.Engine;
 
 public class DiceService
 {
+    private static readonly ILogger _log = Log.ForContext<DiceService>();
     private readonly Random _random;
 
     public DiceService()
@@ -38,7 +41,13 @@ public class DiceService
             }
         }
 
-        return new DiceResult(diceCount, rolls, successes);
+        var result = new DiceResult(diceCount, rolls, successes);
+
+        // Log at Debug level - dice rolls are frequent
+        _log.Debug("Dice rolled: DiceCount={DiceCount}, Rolls=[{Rolls}], Successes={Successes}",
+            diceCount, string.Join(", ", rolls), successes);
+
+        return result;
     }
 
     /// <summary>
@@ -55,10 +64,18 @@ public class DiceService
     public int RollDamage(int diceCount)
     {
         int total = 0;
+        var rolls = new List<int>();
+
         for (int i = 0; i < diceCount; i++)
         {
-            total += RollD6();
+            int roll = RollD6();
+            rolls.Add(roll);
+            total += roll;
         }
+
+        _log.Debug("Damage dice rolled: DiceCount={DiceCount}, Rolls=[{Rolls}], Total={Total}",
+            diceCount, string.Join(", ", rolls), total);
+
         return total;
     }
 }
