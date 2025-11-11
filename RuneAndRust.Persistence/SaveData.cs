@@ -30,6 +30,9 @@ public class SaveData
     public int CurrentStamina { get; set; }
     public int MaxStamina { get; set; }
 
+    // Economy (v0.9)
+    public int Currency { get; set; }
+
     // Trauma Economy (v0.5)
     public int PsychicStress { get; set; }
     public int Corruption { get; set; }

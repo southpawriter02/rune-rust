@@ -49,6 +49,7 @@ public static class UIHelper
         table.AddRow(hpBar);
         table.AddRow(staminaBar);
         table.AddRow($"[dim]AP:[/] {character.AP}");
+        table.AddRow($"[dim]Currency:[/] [green]{character.Currency} Cogs ⚙[/]"); // v0.9
 
         // Status Effects
         var statusEffects = new List<string>();

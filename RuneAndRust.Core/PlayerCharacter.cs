@@ -28,6 +28,9 @@ public class PlayerCharacter
     public int MaxStamina { get; set; }
     public int AP { get; set; }
 
+    // Economy (v0.9)
+    public int Currency { get; set; } = 0; // Dvergr Cogs (⚙)
+
     // Trauma Economy (v0.5)
     public int PsychicStress { get; set; } = 0; // 0-100, recoverable at Sanctuary
     public int Corruption { get; set; } = 0; // 0-100, permanent

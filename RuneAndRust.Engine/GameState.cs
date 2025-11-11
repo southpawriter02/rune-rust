@@ -38,7 +38,14 @@ public class GameState
         // v0.8: Initialize NPC & Quest services
         NPCService = new NPCService();
         DialogueService = new DialogueService();
-        QuestService = new QuestService();
+        QuestService = new QuestService(); // Will be updated with CurrencyService later (v0.9)
+    }
+
+    // v0.9: Set CurrencyService after GameState initialization
+    public void SetCurrencyService(CurrencyService currencyService)
+    {
+        // Recreate QuestService with CurrencyService
+        QuestService = new QuestService("Data/Quests", currencyService);
     }
 
     public void MoveToRoom(string direction)

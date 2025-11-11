@@ -17,7 +17,8 @@ class Program
     private static EquipmentService _equipmentService = new();
     private static TraumaEconomyService _traumaService = new(); // [v0.6]
     private static HazardService _hazardService = new(_diceService, _traumaService); // [v0.6]
-    private static CombatEngine _combatEngine = new(_diceService, _sagaService, _lootService, _equipmentService, _hazardService);
+    private static CurrencyService _currencyService = new(); // [v0.9]
+    private static CombatEngine _combatEngine = new(_diceService, _sagaService, _lootService, _equipmentService, _hazardService, _currencyService);
     private static EnemyAI _enemyAI = new(_diceService);
     private static SaveRepository _saveRepository = new();
 
@@ -122,7 +123,10 @@ class Program
     {
         try
         {
-            Log.Information("Loading v0.8 NPC & Dialogue systems...");
+            Log.Information("Loading v0.8 NPC & Dialogue systems and v0.9 Economy system...");
+
+            // v0.9: Initialize Currency Service for Quest rewards
+            _gameState.SetCurrencyService(_currencyService);
 
             // Load NPC, Dialogue, and Quest databases
             _gameState.NPCService.LoadNPCDatabase();
@@ -132,7 +136,7 @@ class Program
             // Place NPCs in designated rooms
             PlaceNPCsInWorld();
 
-            Log.Information("v0.8 systems loaded successfully");
+            Log.Information("v0.8 and v0.9 systems loaded successfully");
         }
         catch (Exception ex)
         {

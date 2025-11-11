@@ -43,6 +43,24 @@ public class LootService
     }
 
     /// <summary>
+    /// Generate currency drop from a defeated enemy (v0.9)
+    /// </summary>
+    public int GenerateCurrencyDrop(Enemy enemy)
+    {
+        int amount = enemy.Type switch
+        {
+            EnemyType.CorruptedServitor => _random.Next(10, 31), // 10-30 Cogs (trash mob)
+            EnemyType.BlightDrone => _random.Next(40, 81),       // 40-80 Cogs (standard enemy)
+            EnemyType.RuinWarden => _random.Next(300, 801),      // 300-800 Cogs (boss)
+            _ => _random.Next(5, 21)                             // 5-20 Cogs (default)
+        };
+
+        _log.Information("Currency dropped: Enemy={EnemyType}, Amount={Amount}", enemy.Type, amount);
+
+        return amount;
+    }
+
+    /// <summary>
     /// Generate loot from Corrupted Servitor (Tier 0 - Trash Mob)
     /// </summary>
     private Equipment? GenerateServitorLoot(PlayerCharacter? player)
