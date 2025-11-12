@@ -208,8 +208,8 @@ public class EnemyFactory
         {
             Name = "Aetheric Aberration",
             Type = EnemyType.AethericAberration,
-            MaxHP = 60,
-            HP = 60,
+            MaxHP = 75,  // v0.18: Increased from 60 to match 100 Legend boss value
+            HP = 75,
             Attributes = new Attributes(
                 might: 2,
                 finesse: 4,
@@ -311,7 +311,7 @@ public class EnemyFactory
             ),
             BaseDamageDice = 2, // 2d8 ≈ 2d6+2
             DamageBonus = 2,
-            Soak = 6, // [v0.6] Heavy armor damage reduction
+            Soak = 4, // v0.18: Reduced from 6 to prevent excessive tankiness (was too frustrating)
             IsBoss = false, // Mini-boss, not full boss
             Phase = 1, // Phase-based AI
             BaseLegendValue = 75 // Moderate-High Act (mini-boss)
@@ -359,7 +359,7 @@ public class EnemyFactory
             ),
             BaseDamageDice = 3, // 3d8 ≈ 3d6+3
             DamageBonus = 3,
-            Soak = 8, // [v0.6] Massive armor damage reduction
+            Soak = 6, // v0.18: Reduced from 8 to prevent excessive TTK (was too slow/frustrating)
             IsBoss = true,
             Phase = 1, // 3-phase boss fight
             BaseLegendValue = 150 // Significant Act (major boss)
@@ -409,7 +409,7 @@ public class EnemyFactory
             BaseDamageDice = 1, // 1d6+2 (6-9 damage avg)
             DamageBonus = 2,
             IsBoss = false,
-            BaseLegendValue = 15 // Low tier enemy
+            BaseLegendValue = 18 // v0.18: Increased from 15 to better match 25 HP + high damage (0.72 Legend/HP ratio)
         };
     }
 
@@ -431,7 +431,7 @@ public class EnemyFactory
             BaseDamageDice = 2, // 2d6 (8-12 damage avg, ranged electrical)
             DamageBonus = 0,
             IsBoss = false,
-            BaseLegendValue = 20 // Low tier enemy
+            BaseLegendValue = 25 // v0.18: Increased from 20 to match 30 HP (0.83 Legend/HP ratio)
         };
     }
 
@@ -500,7 +500,7 @@ public class EnemyFactory
             DamageBonus = 0,
             DefenseBonus = -2, // Low defense (swarm)
             IsBoss = false,
-            BaseLegendValue = 30 // Medium tier enemy
+            BaseLegendValue = 40 // v0.18: Increased from 30 to match 50 HP (0.80 Legend/HP ratio)
         };
     }
 
@@ -523,7 +523,7 @@ public class EnemyFactory
             DamageBonus = 0,
             IsBoss = false,
             IsForlorn = true, // Body horror, inflicts Stress
-            BaseLegendValue = 50 // High tier enemy
+            BaseLegendValue = 55 // v0.18: Increased from 50 to match high damage output (0.92 Legend/HP ratio)
         };
     }
 
@@ -542,8 +542,8 @@ public class EnemyFactory
                 will: 0,
                 sturdiness: 6
             ),
-            BaseDamageDice = 4, // 4d6+3 (15-25 damage, crushing blows)
-            DamageBonus = 3,
+            BaseDamageDice = 3, // v0.18: Reduced from 4d6+3 to 3d6+4 (avg 14.5 vs 17) to prevent one-shots
+            DamageBonus = 4,
             Soak = 4, // Heavy armor
             IsBoss = false,
             BaseLegendValue = 60 // High tier enemy
@@ -588,7 +588,7 @@ public class EnemyFactory
                 will: 0,
                 sturdiness: 6
             ),
-            BaseDamageDice = 5, // 5d6 (18-28 damage, plasma rifle)
+            BaseDamageDice = 4, // v0.18: Reduced from 5d6 to 4d6 (avg 14 vs 17.5) to prevent unfair one-shots
             DamageBonus = 0,
             Soak = 6, // Military-grade armor
             IsBoss = false,
