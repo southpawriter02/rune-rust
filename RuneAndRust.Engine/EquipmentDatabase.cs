@@ -218,7 +218,7 @@ public static class EquipmentDatabase
             WeaponCategory = Core.WeaponCategory.Greatsword,
             WeaponAttribute = "MIGHT",
             DamageDice = 1,
-            DamageBonus = 6, // d10+2 equivalent
+            DamageBonus = 5, // v0.18: Reduced from 6 to 5 for better tier progression balance
             StaminaCost = 8,
             AccuracyBonus = 0,
             Bonuses = new List<EquipmentBonus>
@@ -373,7 +373,7 @@ public static class EquipmentDatabase
             WeaponCategory = Core.WeaponCategory.Dagger,
             WeaponAttribute = "FINESSE",
             DamageDice = 1,
-            DamageBonus = -2, // d4 equivalent
+            DamageBonus = -1, // v0.18: Reduced penalty from -2 to -1 (avg 2.5 instead of 1.5)
             StaminaCost = 3,
             AccuracyBonus = -1,
             Bonuses = new List<EquipmentBonus>
@@ -447,7 +447,7 @@ public static class EquipmentDatabase
             WeaponCategory = Core.WeaponCategory.Staff,
             WeaponAttribute = "WILL",
             DamageDice = 1,
-            DamageBonus = -2, // d4 equivalent
+            DamageBonus = -1, // v0.18: Reduced penalty from -2 to -1 (avg 2.5 instead of 1.5)
             StaminaCost = 5,
             AccuracyBonus = -1,
             Bonuses = new List<EquipmentBonus>
@@ -773,6 +773,7 @@ public static class EquipmentDatabase
             DefenseBonus = 5,
             Bonuses = new List<EquipmentBonus>
             {
+                new EquipmentBonus { AttributeName = "FINESSE", BonusValue = -1, Description = "-1 FINESSE" }, // v0.18: Added penalty for heavy armor consistency
                 new EquipmentBonus { AttributeName = "STURDINESS", BonusValue = 2, Description = "+2 STURDINESS" }
             }
         });
