@@ -63,9 +63,9 @@ public class QuestService
     }
 
     /// <summary>
-    /// Accepts a quest and adds it to the player's active quests
+    /// v0.14: Offers a quest to the player (makes it available)
     /// </summary>
-    public bool AcceptQuest(string questId, PlayerCharacter player)
+    public bool OfferQuest(string questId, PlayerCharacter player)
     {
         var questTemplate = _questDatabase.GetValueOrDefault(questId);
         if (questTemplate == null)
@@ -74,19 +74,87 @@ public class QuestService
             return false;
         }
 
-        // Check if already accepted
+        // Check eligibility
+        if (!CanOfferQuest(player, questTemplate))
+        {
+            _log.Debug("Player not eligible for quest: {QuestId}", questId);
+            return false;
+        }
+
+        // Check if already in any quest list
         if (player.ActiveQuests.Any(q => q.Id == questId) ||
             player.CompletedQuests.Any(q => q.Id == questId))
+        {
+            _log.Debug("Quest already in player quest lists: {QuestId}", questId);
+            return false;
+        }
+
+        // Create instance and mark as Available
+        var quest = CreateQuestInstance(questTemplate);
+        quest.Status = QuestStatus.Available;
+        player.ActiveQuests.Add(quest); // Store in ActiveQuests list even when Available
+
+        _log.Information("Quest offered: QuestId={QuestId}, Player={PlayerName}",
+            questId, player.Name);
+
+        return true;
+    }
+
+    /// <summary>
+    /// v0.14: Checks if a quest can be offered to the player
+    /// </summary>
+    public bool CanOfferQuest(PlayerCharacter player, Quest quest)
+    {
+        // Check minimum Legend requirement
+        if (player.CurrentLegend < quest.MinimumLegend)
+        {
+            _log.Debug("Player Legend too low: Current={Current}, Required={Required}",
+                player.CurrentLegend, quest.MinimumLegend);
+            return false;
+        }
+
+        // Check prerequisite quests
+        foreach (var prereqId in quest.PrerequisiteQuests)
+        {
+            if (!player.CompletedQuests.Any(q => q.Id == prereqId))
+            {
+                _log.Debug("Missing prerequisite quest: {PrereqId}", prereqId);
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Accepts a quest and adds it to the player's active quests
+    /// </summary>
+    public bool AcceptQuest(string questId, PlayerCharacter player)
+    {
+        // Find quest in player's available quests
+        var quest = player.ActiveQuests.FirstOrDefault(q => q.Id == questId);
+
+        if (quest == null)
+        {
+            // Try to offer it first
+            if (!OfferQuest(questId, player))
+            {
+                _log.Warning("Cannot accept quest - not available: {QuestId}", questId);
+                return false;
+            }
+            quest = player.ActiveQuests.First(q => q.Id == questId);
+        }
+
+        // Check if already active or completed
+        if (quest.Status == QuestStatus.Active || quest.Status == QuestStatus.Completed || quest.Status == QuestStatus.TurnedIn)
         {
             _log.Debug("Quest already accepted or completed: {QuestId}", questId);
             return false;
         }
 
-        // Create a new instance of the quest
-        var quest = CreateQuestInstance(questTemplate);
+        // Activate the quest
         quest.Status = QuestStatus.Active;
-
-        player.ActiveQuests.Add(quest);
+        quest.AcceptedAt = DateTime.UtcNow;
 
         _log.Information("Quest accepted: {QuestId} ({QuestTitle}), Giver={GiverId}",
             questId, quest.Title, quest.GiverNpcId);
@@ -242,21 +310,41 @@ public class QuestService
     }
 
     /// <summary>
-    /// Completes a quest and grants rewards
+    /// v0.14: Updates quest progress and checks for completion
     /// </summary>
-    public List<string> CompleteQuest(string questId, PlayerCharacter player)
+    public List<string> UpdateQuestProgress(PlayerCharacter player)
+    {
+        var messages = new List<string>();
+
+        foreach (var quest in player.ActiveQuests.Where(q => q.Status == QuestStatus.Active))
+        {
+            if (quest.IsComplete() && quest.Status == QuestStatus.Active)
+            {
+                quest.Status = QuestStatus.Complete;
+                messages.Add($"[Quest Complete] {quest.Title} - Return to {quest.GiverNpcName} for reward!");
+                _log.Information("Quest objectives completed: QuestId={QuestId}", quest.Id);
+            }
+        }
+
+        return messages;
+    }
+
+    /// <summary>
+    /// v0.14: Turns in a completed quest and grants rewards
+    /// </summary>
+    public List<string> TurnInQuest(string questId, PlayerCharacter player)
     {
         var messages = new List<string>();
 
         var quest = player.ActiveQuests.FirstOrDefault(q => q.Id == questId);
-        if (quest == null || !quest.IsComplete())
+        if (quest == null || quest.Status != QuestStatus.Complete)
         {
-            _log.Debug("Cannot complete quest: Quest={QuestId}, Found={Found}, IsComplete={IsComplete}",
-                questId, quest != null, quest?.IsComplete() ?? false);
+            _log.Debug("Cannot turn in quest: Quest={QuestId}, Found={Found}, Status={Status}",
+                questId, quest != null, quest?.Status);
             return messages;
         }
 
-        _log.Information("Completing quest: {QuestId} ({QuestTitle})", quest.Id, quest.Title);
+        _log.Information("Turning in quest: {QuestId} ({QuestTitle})", quest.Id, quest.Title);
 
         // Grant rewards
         if (quest.Reward != null)
@@ -265,15 +353,31 @@ public class QuestService
         }
 
         // Move quest from active to completed
-        quest.Status = QuestStatus.Completed;
+        quest.Status = QuestStatus.TurnedIn;
+        quest.CompletedAt = DateTime.UtcNow;
         player.ActiveQuests.Remove(quest);
         player.CompletedQuests.Add(quest);
 
-        messages.Add($"[Quest Complete] {quest.Title}");
+        messages.Add($"[Quest Turned In] {quest.Title}");
 
-        _log.Information("Quest completed successfully: {QuestId} ({QuestTitle})", quest.Id, quest.Title);
+        _log.Information("Quest turned in successfully: {QuestId} ({QuestTitle})", quest.Id, quest.Title);
 
         return messages;
+    }
+
+    /// <summary>
+    /// Legacy method: Completes a quest and grants rewards (calls TurnInQuest)
+    /// </summary>
+    public List<string> CompleteQuest(string questId, PlayerCharacter player)
+    {
+        // For backward compatibility, auto-complete objectives if possible
+        var quest = player.ActiveQuests.FirstOrDefault(q => q.Id == questId);
+        if (quest != null && quest.IsComplete() && quest.Status == QuestStatus.Active)
+        {
+            quest.Status = QuestStatus.Complete;
+        }
+
+        return TurnInQuest(questId, player);
     }
 
     /// <summary>
@@ -363,5 +467,58 @@ public class QuestService
     {
         var quest = player.ActiveQuests.FirstOrDefault(q => q.Id == questId);
         return quest != null && quest.IsComplete();
+    }
+
+    // v0.14: Quest Query Methods
+
+    /// <summary>
+    /// Gets all quests with a specific status
+    /// </summary>
+    public List<Quest> GetQuestsByStatus(PlayerCharacter player, QuestStatus status)
+    {
+        return player.ActiveQuests.Where(q => q.Status == status).ToList();
+    }
+
+    /// <summary>
+    /// Gets all available quests (offered but not accepted)
+    /// </summary>
+    public List<Quest> GetAvailableQuests(PlayerCharacter player)
+    {
+        return GetQuestsByStatus(player, QuestStatus.Available);
+    }
+
+    /// <summary>
+    /// Gets all active quests (accepted and in progress)
+    /// </summary>
+    public List<Quest> GetActiveQuests(PlayerCharacter player)
+    {
+        return GetQuestsByStatus(player, QuestStatus.Active);
+    }
+
+    /// <summary>
+    /// Gets all complete quests (ready to turn in)
+    /// </summary>
+    public List<Quest> GetCompleteQuests(PlayerCharacter player)
+    {
+        return GetQuestsByStatus(player, QuestStatus.Complete);
+    }
+
+    /// <summary>
+    /// Gets all turned in quests (from completed list)
+    /// </summary>
+    public List<Quest> GetTurnedInQuests(PlayerCharacter player)
+    {
+        return player.CompletedQuests.Where(q =>
+            q.Status == QuestStatus.TurnedIn ||
+            q.Status == QuestStatus.Completed).ToList();
+    }
+
+    /// <summary>
+    /// Gets a player's quest by ID (searches both active and completed)
+    /// </summary>
+    public Quest? GetPlayerQuest(PlayerCharacter player, string questId)
+    {
+        return player.ActiveQuests.FirstOrDefault(q => q.Id == questId) ??
+               player.CompletedQuests.FirstOrDefault(q => q.Id == questId);
     }
 }
