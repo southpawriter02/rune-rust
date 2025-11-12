@@ -5,18 +5,21 @@ namespace RuneAndRust.Engine;
 
 /// <summary>
 /// Generates procedural dungeon layouts using graph-based algorithm (v0.10)
+/// v0.11: Integrated with PopulationPipeline for enemy/hazard/loot spawning
 /// </summary>
 public class DungeonGenerator
 {
     private static readonly ILogger _log = Log.ForContext<DungeonGenerator>();
     private readonly TemplateLibrary _templateLibrary;
+    private readonly PopulationPipeline? _populationPipeline; // v0.11 - optional for backward compatibility
     private Random _rng = null!;
     private int _seed;
     private BiomeDefinition? _currentBiome;
 
-    public DungeonGenerator(TemplateLibrary templateLibrary)
+    public DungeonGenerator(TemplateLibrary templateLibrary, PopulationPipeline? populationPipeline = null)
     {
         _templateLibrary = templateLibrary;
+        _populationPipeline = populationPipeline;
     }
 
     /// <summary>
@@ -91,6 +94,7 @@ public class DungeonGenerator
 
     /// <summary>
     /// Generates a complete playable dungeon (graph + instantiated rooms) from a seed
+    /// v0.11: Now includes population (enemies, hazards, terrain, loot, conditions)
     /// </summary>
     public Dungeon GenerateComplete(int seed, int dungeonId = 1, int targetRoomCount = 7, BiomeDefinition? biome = null)
     {
@@ -106,6 +110,17 @@ public class DungeonGenerator
         if (biome != null)
         {
             dungeon.Biome = biome.BiomeId;
+        }
+
+        // Step 3: v0.11 - Populate rooms with enemies, hazards, terrain, loot, conditions
+        if (_populationPipeline != null && biome != null)
+        {
+            _log.Information("Populating dungeon with v0.11 population pipeline...");
+            _populationPipeline.PopulateDungeon(dungeon, biome, _rng);
+        }
+        else if (_populationPipeline == null)
+        {
+            _log.Debug("Population pipeline not available (v0.10 mode)");
         }
 
         _log.Information("Complete dungeon generated: DungeonId={DungeonId}, Seed={Seed}, Biome={Biome}, Rooms={RoomCount}",
