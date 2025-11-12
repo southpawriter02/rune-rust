@@ -1,0 +1,41 @@
+{
+  "RoomId": "collapsed_workshop",
+  "Name": "[The Collapsed Workshop]",
+  "Description": "Once, things were made here. Now only rust and ruin remain. The ceiling has partially collapsed, leaving twisted support beams jutting down like broken ribs. Workbenches are buried under debris, tools scattered across the floor.",
+  "Archetype": "Chamber",
+  "SuggestedNodeType": "Main",
+  "NarrativeText": "This was a heavy fabrication facility - where Draugr-Pattern automatons were assembled and maintained. The machines here haven't moved in 800 years. Except... you hear something grinding in the darkness. Movement. They're waking up.",
+  "FlavorText": "A massive fabricator dominates the center of the room, its assembly arms frozen mid-task. Blueprints scatter across workstations showing automaton schematics. Emergency lighting flickers, casting dancing shadows.",
+  "EnemyIds": [
+    "CorrodedSentry",
+    "CorrodedSentry",
+    "ArcWelderUnit"
+  ],
+  "HazardIds": [
+    "collapsing_ceiling",
+    "sharp_debris"
+  ],
+  "TerrainIds": [
+    "workbench_cover",
+    "debris_pile"
+  ],
+  "LootIds": [
+    "tool_salvage",
+    "weapon_parts",
+    "raw_materials"
+  ],
+  "ConditionIds": [
+    "dim_lighting",
+    "unstable_structure"
+  ],
+  "NPCIds": [],
+  "IsSafeZone": false,
+  "IsBossArena": false,
+  "HasQuestObjective": false,
+  "QuestObjectiveId": null,
+  "PreferredExits": {
+    "North": "Corridor",
+    "East": "Junction",
+    "South": "Corridor"
+  }
+}

@@ -16,6 +16,7 @@ public static class EquipmentDatabase
         InitializeScavengerWeapons();
         InitializeMysticWeapons();
         InitializeArmor();
+        InitializeV016Equipment(); // v0.16 Content Expansion
     }
 
     /// <summary>
@@ -790,6 +791,393 @@ public static class EquipmentDatabase
             {
                 new EquipmentBonus { AttributeName = "STURDINESS", BonusValue = 3, Description = "+3 STURDINESS" },
                 new EquipmentBonus { AttributeName = "FINESSE", BonusValue = -2, Description = "-2 FINESSE" }
+            }
+        });
+    }
+
+    #endregion
+
+    #region v0.16 Content Expansion Equipment
+
+    private static void InitializeV016Equipment()
+    {
+        // ===== NEW WEAPONS =====
+
+        // Rusted Machete (Common, Tier 1)
+        AllEquipment.Add(new Equipment
+        {
+            Name = "Rusted Machete",
+            Description = "Salvaged from industrial wreckage. Still cuts.",
+            Quality = QualityTier.Scavenged,
+            Type = EquipmentType.Weapon,
+            WeaponCategory = Core.WeaponCategory.Blade,
+            WeaponAttribute = "MIGHT",
+            DamageDice = 1,
+            DamageBonus = 0,
+            StaminaCost = 5,
+            AccuracyBonus = 0,
+            Bonuses = new List<EquipmentBonus>
+            {
+                new EquipmentBonus { AttributeName = "MIGHT", BonusValue = 1, Description = "+1 MIGHT" }
+            }
+        });
+
+        // Scrap-Metal Cudgel (Common, Tier 1)
+        AllEquipment.Add(new Equipment
+        {
+            Name = "Scrap-Metal Cudgel",
+            Description = "Heavy. Crude. Effective.",
+            Quality = QualityTier.Scavenged,
+            Type = EquipmentType.Weapon,
+            WeaponCategory = Core.WeaponCategory.Blunt,
+            WeaponAttribute = "MIGHT",
+            DamageDice = 1,
+            DamageBonus = 0,
+            StaminaCost = 5,
+            AccuracyBonus = 0,
+            SpecialEffect = "20% chance to stun (lose 1 action)",
+            Bonuses = new List<EquipmentBonus>
+            {
+                new EquipmentBonus { AttributeName = "MIGHT", BonusValue = 2, Description = "+2 MIGHT" }
+            }
+        });
+
+        // Shock-Baton (Uncommon, Tier 2)
+        AllEquipment.Add(new Equipment
+        {
+            Name = "Shock-Baton",
+            Description = "Security equipment. Electrical charge still functional. Barely.",
+            Quality = QualityTier.ClanForged,
+            Type = EquipmentType.Weapon,
+            WeaponCategory = Core.WeaponCategory.EnergyMelee,
+            WeaponAttribute = "FINESSE",
+            DamageDice = 1,
+            DamageBonus = 2,
+            StaminaCost = 6,
+            AccuracyBonus = 0,
+            SpecialEffect = "Bypasses 2 points of armor",
+            Bonuses = new List<EquipmentBonus>
+            {
+                new EquipmentBonus { AttributeName = "FINESSE", BonusValue = 1, Description = "+1 FINESSE" },
+                new EquipmentBonus { AttributeName = "WITS", BonusValue = 1, Description = "+1 WITS (Tech)" }
+            }
+        });
+
+        // Bone-Saw Blade (Uncommon, Tier 2)
+        AllEquipment.Add(new Equipment
+        {
+            Name = "Bone-Saw Blade",
+            Description = "Symbiotic Plate-crafted weapon. Disturbingly effective.",
+            Quality = QualityTier.ClanForged,
+            Type = EquipmentType.Weapon,
+            WeaponCategory = Core.WeaponCategory.Blade,
+            WeaponAttribute = "MIGHT",
+            DamageDice = 1,
+            DamageBonus = 3,
+            StaminaCost = 6,
+            AccuracyBonus = 0,
+            SpecialEffect = "Attacks inflict [Bleeding] (1d4 damage/turn, 3 turns). WARNING: +5 Corruption on equip",
+            Bonuses = new List<EquipmentBonus>
+            {
+                new EquipmentBonus { AttributeName = "MIGHT", BonusValue = 2, Description = "+2 MIGHT" }
+            }
+        });
+
+        // Plasma Cutter (Rare, Tier 3)
+        AllEquipment.Add(new Equipment
+        {
+            Name = "Plasma Cutter",
+            Description = "Industrial tool. Cuts through steel. Cuts through bone.",
+            Quality = QualityTier.Optimized,
+            Type = EquipmentType.Weapon,
+            WeaponCategory = Core.WeaponCategory.EnergyMelee,
+            WeaponAttribute = "FINESSE",
+            DamageDice = 2,
+            DamageBonus = 0,
+            StaminaCost = 8,
+            AccuracyBonus = 1,
+            IgnoresArmor = true,
+            SpecialEffect = "Ignores armor. Requires power cells (consumable).",
+            Bonuses = new List<EquipmentBonus>
+            {
+                new EquipmentBonus { AttributeName = "FINESSE", BonusValue = 2, Description = "+2 FINESSE" },
+                new EquipmentBonus { AttributeName = "WITS", BonusValue = 2, Description = "+2 WITS (Tech)" }
+            }
+        });
+
+        // Sentinel's Rifle (Rare, Tier 3)
+        AllEquipment.Add(new Equipment
+        {
+            Name = "Sentinel's Rifle",
+            Description = "Military-grade. Servitor-grade. Kill-grade. Taken from a Sentinel Prime. It remembers killing.",
+            Quality = QualityTier.Optimized,
+            Type = EquipmentType.Weapon,
+            WeaponCategory = Core.WeaponCategory.Rifle,
+            WeaponAttribute = "FINESSE",
+            DamageDice = 2,
+            DamageBonus = 2,
+            StaminaCost = 7,
+            AccuracyBonus = 2,
+            SpecialEffect = "Armor piercing (-3 to target Defense). Range: 30ft.",
+            Bonuses = new List<EquipmentBonus>
+            {
+                new EquipmentBonus { AttributeName = "FINESSE", BonusValue = 3, Description = "+3 FINESSE" },
+                new EquipmentBonus { AttributeName = "WITS", BonusValue = 1, Description = "+1 WITS" }
+            }
+        });
+
+        // Thunder Hammer (Epic, Tier 4)
+        AllEquipment.Add(new Equipment
+        {
+            Name = "Thunder Hammer",
+            Description = "Each strike echoes like thunder in The Roots. Construction equipment. Built to break mountains.",
+            Quality = QualityTier.MythForged,
+            Type = EquipmentType.Weapon,
+            WeaponCategory = Core.WeaponCategory.HeavyBlunt,
+            WeaponAttribute = "MIGHT",
+            DamageDice = 2,
+            DamageBonus = 4,
+            StaminaCost = 10,
+            AccuracyBonus = 0,
+            SpecialEffect = "AOE 5ft radius on hit (1d6 damage to nearby enemies). Knock prone.",
+            Bonuses = new List<EquipmentBonus>
+            {
+                new EquipmentBonus { AttributeName = "MIGHT", BonusValue = 4, Description = "+4 MIGHT" }
+            }
+        });
+
+        // Heretical Blade (Epic, Tier 4)
+        AllEquipment.Add(new Equipment
+        {
+            Name = "Heretical Blade",
+            Description = "It wants to cut. It wants to feed. Found in Jötun-Reader ruins. Wrong. Alien. Hungry.",
+            Quality = QualityTier.MythForged,
+            Type = EquipmentType.Weapon,
+            WeaponCategory = Core.WeaponCategory.Blade,
+            WeaponAttribute = "MIGHT",
+            DamageDice = 2,
+            DamageBonus = 3,
+            StaminaCost = 8,
+            AccuracyBonus = 1,
+            SpecialEffect = "Lifesteal (heal 25% of damage dealt). Whispers to you. WARNING: +10 Corruption on equip",
+            Bonuses = new List<EquipmentBonus>
+            {
+                new EquipmentBonus { AttributeName = "MIGHT", BonusValue = 3, Description = "+3 MIGHT" }
+            }
+        });
+
+        // Arc-Cannon (Legendary, Tier 5/MythForged)
+        AllEquipment.Add(new Equipment
+        {
+            Name = "Arc-Cannon",
+            Description = "Experimental Pre-Glitch weapon. Devastating. Unstable. Only 3 were made. You have the last one.",
+            Quality = QualityTier.MythForged,
+            Type = EquipmentType.Weapon,
+            WeaponCategory = Core.WeaponCategory.Rifle,
+            WeaponAttribute = "FINESSE",
+            DamageDice = 3,
+            DamageBonus = 2,
+            StaminaCost = 12,
+            AccuracyBonus = 2,
+            SpecialEffect = "Chain lightning (bounces to 2 additional targets). Overcharge mode: double damage, weapon breaks.",
+            Bonuses = new List<EquipmentBonus>
+            {
+                new EquipmentBonus { AttributeName = "FINESSE", BonusValue = 4, Description = "+4 FINESSE" },
+                new EquipmentBonus { AttributeName = "WITS", BonusValue = 3, Description = "+3 WITS (Tech)" }
+            }
+        });
+
+        // The Rust-Eater (Legendary, Tier 5/MythForged)
+        AllEquipment.Add(new Equipment
+        {
+            Name = "The Rust-Eater",
+            Description = "Forged from salvaged Sentinel parts. It hunts its own kind. A blade that kills machines. Made from machines.",
+            Quality = QualityTier.MythForged,
+            Type = EquipmentType.Weapon,
+            WeaponCategory = Core.WeaponCategory.Blade,
+            WeaponAttribute = "MIGHT",
+            DamageDice = 2,
+            DamageBonus = 2,
+            StaminaCost = 7,
+            AccuracyBonus = 2,
+            SpecialEffect = "Deals double damage to Draugr-Pattern enemies. Self-repairs (regains durability).",
+            Bonuses = new List<EquipmentBonus>
+            {
+                new EquipmentBonus { AttributeName = "MIGHT", BonusValue = 4, Description = "+4 MIGHT" },
+                new EquipmentBonus { AttributeName = "FINESSE", BonusValue = 2, Description = "+2 FINESSE" }
+            }
+        });
+
+        // ===== NEW ARMOR =====
+
+        // Salvaged Leathers (Common, Tier 1)
+        AllEquipment.Add(new Equipment
+        {
+            Name = "Salvaged Leathers",
+            Description = "Patched worker's gear. Better than nothing.",
+            Quality = QualityTier.Scavenged,
+            Type = EquipmentType.Armor,
+            ArmorCategory = Core.ArmorCategory.Light,
+            HPBonus = 5,
+            DefenseBonus = 2,
+            Bonuses = new List<EquipmentBonus>
+            {
+                new EquipmentBonus { AttributeName = "FINESSE", BonusValue = 1, Description = "+1 FINESSE" }
+            }
+        });
+
+        // Reinforced Coveralls (Uncommon, Tier 2)
+        AllEquipment.Add(new Equipment
+        {
+            Name = "Reinforced Coveralls",
+            Description = "Heavy-duty work clothing with scavenged metal plates.",
+            Quality = QualityTier.ClanForged,
+            Type = EquipmentType.Armor,
+            ArmorCategory = Core.ArmorCategory.Medium,
+            HPBonus = 10,
+            DefenseBonus = 3,
+            Bonuses = new List<EquipmentBonus>
+            {
+                new EquipmentBonus { AttributeName = "MIGHT", BonusValue = 1, Description = "+1 MIGHT" },
+                new EquipmentBonus { AttributeName = "WILL", BonusValue = 1, Description = "+1 WILL" }
+            }
+        });
+
+        // Servitor Shell Armor (Uncommon, Tier 2)
+        AllEquipment.Add(new Equipment
+        {
+            Name = "Servitor Shell Armor",
+            Description = "Plating torn from deactivated Servitors. Functional.",
+            Quality = QualityTier.ClanForged,
+            Type = EquipmentType.Armor,
+            ArmorCategory = Core.ArmorCategory.Medium,
+            HPBonus = 8,
+            DefenseBonus = 4,
+            SpecialEffect = "Resistance to electrical damage (half damage)",
+            Bonuses = new List<EquipmentBonus>
+            {
+                new EquipmentBonus { AttributeName = "MIGHT", BonusValue = 2, Description = "+2 MIGHT" },
+                new EquipmentBonus { AttributeName = "FINESSE", BonusValue = -1, Description = "-1 FINESSE" }
+            }
+        });
+
+        // Guardian's Plate (Rare, Tier 3)
+        AllEquipment.Add(new Equipment
+        {
+            Name = "Guardian's Plate",
+            Description = "Security automaton plating. Built to withstand riots.",
+            Quality = QualityTier.Optimized,
+            Type = EquipmentType.Armor,
+            ArmorCategory = Core.ArmorCategory.Heavy,
+            HPBonus = 15,
+            DefenseBonus = 6,
+            SpecialEffect = "Damage reduction (reduce all incoming damage by 2)",
+            Bonuses = new List<EquipmentBonus>
+            {
+                new EquipmentBonus { AttributeName = "MIGHT", BonusValue = 3, Description = "+3 MIGHT" },
+                new EquipmentBonus { AttributeName = "FINESSE", BonusValue = -2, Description = "-2 FINESSE" }
+            }
+        });
+
+        // Symbiotic Carapace (Rare, Tier 3)
+        AllEquipment.Add(new Equipment
+        {
+            Name = "Symbiotic Carapace",
+            Description = "It's alive. It breathes. It's part of you now.",
+            Quality = QualityTier.Optimized,
+            Type = EquipmentType.Armor,
+            ArmorCategory = Core.ArmorCategory.Medium,
+            HPBonus = 12,
+            DefenseBonus = 4,
+            SpecialEffect = "Regeneration (heal 2 HP/turn in combat). WARNING: +8 Corruption on equip",
+            Bonuses = new List<EquipmentBonus>
+            {
+                new EquipmentBonus { AttributeName = "WILL", BonusValue = 2, Description = "+2 WILL" }
+            }
+        });
+
+        // Sentinel Prime Armor (Epic, Tier 4)
+        AllEquipment.Add(new Equipment
+        {
+            Name = "Sentinel Prime Armor",
+            Description = "Military-grade automaton plating. Near-impenetrable.",
+            Quality = QualityTier.MythForged,
+            Type = EquipmentType.Armor,
+            ArmorCategory = Core.ArmorCategory.Heavy,
+            HPBonus = 20,
+            DefenseBonus = 8,
+            SpecialEffect = "Energy shields (absorb 20 damage, recharges on rest)",
+            Bonuses = new List<EquipmentBonus>
+            {
+                new EquipmentBonus { AttributeName = "MIGHT", BonusValue = 4, Description = "+4 MIGHT" },
+                new EquipmentBonus { AttributeName = "FINESSE", BonusValue = -1, Description = "-1 FINESSE" }
+            }
+        });
+
+        // ===== NEW ACCESSORIES =====
+
+        // Stress Dampener (Uncommon, Tier 2)
+        AllEquipment.Add(new Equipment
+        {
+            Name = "Stress Dampener",
+            Description = "Salvaged neural regulator. Dulls the edge of fear.",
+            Quality = QualityTier.ClanForged,
+            Type = EquipmentType.Accessory,
+            SpecialEffect = "-20% Stress gain from all sources",
+            Bonuses = new List<EquipmentBonus>()
+        });
+
+        // Data-Slate Fragment (Rare, Tier 3)
+        AllEquipment.Add(new Equipment
+        {
+            Name = "Data-Slate Fragment",
+            Description = "Pre-Glitch data device. Shows you what the machines see.",
+            Quality = QualityTier.Optimized,
+            Type = EquipmentType.Accessory,
+            SpecialEffect = "Access to Layer 2 diagnostic information",
+            Bonuses = new List<EquipmentBonus>
+            {
+                new EquipmentBonus { AttributeName = "WITS", BonusValue = 2, Description = "+2 WITS" },
+                new EquipmentBonus { AttributeName = "WITS", BonusValue = 3, Description = "+3 Tech checks" }
+            }
+        });
+
+        // Iron Heart Pendant (Rare, Tier 3)
+        AllEquipment.Add(new Equipment
+        {
+            Name = "Iron Heart Pendant",
+            Description = "A deactivated Iron Heart power core. Warm to the touch.",
+            Quality = QualityTier.Optimized,
+            Type = EquipmentType.Accessory,
+            HPBonus = 10,
+            Bonuses = new List<EquipmentBonus>
+            {
+                new EquipmentBonus { AttributeName = "WILL", BonusValue = 1, Description = "+1 WILL" }
+            }
+        });
+
+        // Corruption Filter (Epic, Tier 4)
+        AllEquipment.Add(new Equipment
+        {
+            Name = "Corruption Filter",
+            Description = "Experimental bio-filter. Keeps the wrong thoughts out. Mostly.",
+            Quality = QualityTier.MythForged,
+            Type = EquipmentType.Accessory,
+            SpecialEffect = "-30% Corruption gain from all sources",
+            Bonuses = new List<EquipmentBonus>()
+        });
+
+        // Jötun-Reader Shard (Epic, Tier 4)
+        AllEquipment.Add(new Equipment
+        {
+            Name = "Jötun-Reader Shard",
+            Description = "Fragment of alien AI. It thinks through you.",
+            Quality = QualityTier.MythForged,
+            Type = EquipmentType.Accessory,
+            SpecialEffect = "Unlock 2 Heretical abilities. WARNING: +15 Corruption on equip",
+            Bonuses = new List<EquipmentBonus>
+            {
+                new EquipmentBonus { AttributeName = "WITS", BonusValue = 4, Description = "+4 WITS (Tech)" }
             }
         });
     }

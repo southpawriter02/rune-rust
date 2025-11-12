@@ -18,7 +18,8 @@ public enum QualityTier
 public enum EquipmentType
 {
     Weapon,
-    Armor
+    Armor,
+    Accessory  // v0.16: Accessories (rings, amulets, trinkets)
 }
 
 /// <summary>
@@ -31,7 +32,14 @@ public enum WeaponCategory
     Spear,        // Scavenger - FINESSE-based, reach
     Dagger,       // Scavenger - FINESSE-based, fast
     Staff,        // Mystic - WILL-based, Aether cost reduction
-    Focus         // Mystic - WILL-based, ability enhancement
+    Focus,        // Mystic - WILL-based, ability enhancement
+
+    // v0.16 new weapon types
+    Blade,        // One-handed blade (machete, heretical blade, rust-eater)
+    Blunt,        // One-handed blunt (cudgel, hammer)
+    EnergyMelee,  // Energy melee weapon (shock-baton, plasma cutter)
+    Rifle,        // Ranged firearm (sentinel's rifle, arc-cannon)
+    HeavyBlunt    // Two-handed blunt (thunder hammer)
 }
 
 /// <summary>

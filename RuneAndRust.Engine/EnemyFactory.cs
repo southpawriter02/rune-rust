@@ -28,6 +28,18 @@ public class EnemyFactory
             EnemyType.ForlornArchivist => CreateForlornArchivist(),
             EnemyType.OmegaSentinel => CreateOmegaSentinel(),
 
+            // v0.16 new enemies (Content Expansion)
+            EnemyType.CorrodedSentry => CreateCorrodedSentry(),
+            EnemyType.HuskEnforcer => CreateHuskEnforcer(),
+            EnemyType.ArcWelderUnit => CreateArcWelderUnit(),
+            EnemyType.Shrieker => CreateShrieker(),
+            EnemyType.JotunReaderFragment => CreateJotunReaderFragment(),
+            EnemyType.ServitorSwarm => CreateServitorSwarm(),
+            EnemyType.BoneKeeper => CreateBoneKeeper(),
+            EnemyType.FailureColossus => CreateFailureColossus(),
+            EnemyType.RustWitch => CreateRustWitch(),
+            EnemyType.SentinelPrime => CreateSentinelPrime(),
+
             _ => throw new ArgumentException($"Unknown enemy type: {type}")
         };
     }
@@ -351,6 +363,237 @@ public class EnemyFactory
             IsBoss = true,
             Phase = 1, // 3-phase boss fight
             BaseLegendValue = 150 // Significant Act (major boss)
+        };
+    }
+
+    // ====== v0.16 NEW ENEMIES (CONTENT EXPANSION) ======
+
+    private static Enemy CreateCorrodedSentry()
+    {
+        return new Enemy
+        {
+            Name = "Corroded Sentry",
+            Type = EnemyType.CorrodedSentry,
+            MaxHP = 15,
+            HP = 15,
+            Attributes = new Attributes(
+                might: 2,
+                finesse: 1,
+                wits: 0,
+                will: 0,
+                sturdiness: 2
+            ),
+            BaseDamageDice = 1, // 1d6 (4-6 damage avg)
+            DamageBonus = 0,
+            DefenseBonus = -1, // Rusted, less accurate
+            IsBoss = false,
+            BaseLegendValue = 5 // Trivial enemy
+        };
+    }
+
+    private static Enemy CreateHuskEnforcer()
+    {
+        return new Enemy
+        {
+            Name = "Husk Enforcer",
+            Type = EnemyType.HuskEnforcer,
+            MaxHP = 25,
+            HP = 25,
+            Attributes = new Attributes(
+                might: 3,
+                finesse: 1,
+                wits: 0,
+                will: 0,
+                sturdiness: 3
+            ),
+            BaseDamageDice = 1, // 1d6+2 (6-9 damage avg)
+            DamageBonus = 2,
+            IsBoss = false,
+            BaseLegendValue = 15 // Low tier enemy
+        };
+    }
+
+    private static Enemy CreateArcWelderUnit()
+    {
+        return new Enemy
+        {
+            Name = "Arc-Welder Unit",
+            Type = EnemyType.ArcWelderUnit,
+            MaxHP = 30,
+            HP = 30,
+            Attributes = new Attributes(
+                might: 2,
+                finesse: 3,
+                wits: 0,
+                will: 0,
+                sturdiness: 3
+            ),
+            BaseDamageDice = 2, // 2d6 (8-12 damage avg, ranged electrical)
+            DamageBonus = 0,
+            IsBoss = false,
+            BaseLegendValue = 20 // Low tier enemy
+        };
+    }
+
+    private static Enemy CreateShrieker()
+    {
+        return new Enemy
+        {
+            Name = "Shrieker",
+            Type = EnemyType.Shrieker,
+            MaxHP = 35,
+            HP = 35,
+            Attributes = new Attributes(
+                might: 2,
+                finesse: 2,
+                wits: 0,
+                will: 4,
+                sturdiness: 2
+            ),
+            BaseDamageDice = 1, // 1d6 (4-6 damage) + psychic scream AOE
+            DamageBonus = 0,
+            IsBoss = false,
+            IsForlorn = true, // Inflicts Stress
+            BaseLegendValue = 30 // Medium tier enemy
+        };
+    }
+
+    private static Enemy CreateJotunReaderFragment()
+    {
+        return new Enemy
+        {
+            Name = "Jötun-Reader Fragment",
+            Type = EnemyType.JotunReaderFragment,
+            MaxHP = 40,
+            HP = 40,
+            Attributes = new Attributes(
+                might: 1,
+                finesse: 4,
+                wits: 5,
+                will: 5,
+                sturdiness: 3
+            ),
+            BaseDamageDice = 2, // 2d6 (6-10 psychic damage)
+            DamageBonus = 0,
+            IsBoss = false,
+            IsForlorn = true, // Inflicts Corruption
+            BaseLegendValue = 35 // Medium tier enemy
+        };
+    }
+
+    private static Enemy CreateServitorSwarm()
+    {
+        return new Enemy
+        {
+            Name = "Servitor Swarm",
+            Type = EnemyType.ServitorSwarm,
+            MaxHP = 50,
+            HP = 50,
+            Attributes = new Attributes(
+                might: 3,
+                finesse: 3,
+                wits: 0,
+                will: 0,
+                sturdiness: 2
+            ),
+            BaseDamageDice = 2, // 2d6 (8-12 damage, swarm attack)
+            DamageBonus = 0,
+            DefenseBonus = -2, // Low defense (swarm)
+            IsBoss = false,
+            BaseLegendValue = 30 // Medium tier enemy
+        };
+    }
+
+    private static Enemy CreateBoneKeeper()
+    {
+        return new Enemy
+        {
+            Name = "Bone-Keeper",
+            Type = EnemyType.BoneKeeper,
+            MaxHP = 60,
+            HP = 60,
+            Attributes = new Attributes(
+                might: 4,
+                finesse: 3,
+                wits: 0,
+                will: 3,
+                sturdiness: 4
+            ),
+            BaseDamageDice = 3, // 3d6 (12-18 damage, armor piercing)
+            DamageBonus = 0,
+            IsBoss = false,
+            IsForlorn = true, // Body horror, inflicts Stress
+            BaseLegendValue = 50 // High tier enemy
+        };
+    }
+
+    private static Enemy CreateFailureColossus()
+    {
+        return new Enemy
+        {
+            Name = "Failure Colossus",
+            Type = EnemyType.FailureColossus,
+            MaxHP = 80,
+            HP = 80,
+            Attributes = new Attributes(
+                might: 6,
+                finesse: 1,
+                wits: 0,
+                will: 0,
+                sturdiness: 6
+            ),
+            BaseDamageDice = 4, // 4d6+3 (15-25 damage, crushing blows)
+            DamageBonus = 3,
+            Soak = 4, // Heavy armor
+            IsBoss = false,
+            BaseLegendValue = 60 // High tier enemy
+        };
+    }
+
+    private static Enemy CreateRustWitch()
+    {
+        return new Enemy
+        {
+            Name = "Rust-Witch",
+            Type = EnemyType.RustWitch,
+            MaxHP = 70,
+            HP = 70,
+            Attributes = new Attributes(
+                might: 2,
+                finesse: 3,
+                wits: 4,
+                will: 5,
+                sturdiness: 3
+            ),
+            BaseDamageDice = 3, // 3d6 (10-15 damage, ranged)
+            DamageBonus = 0,
+            IsBoss = false,
+            IsForlorn = true, // High Corruption aura
+            BaseLegendValue = 75 // Lethal tier enemy
+        };
+    }
+
+    private static Enemy CreateSentinelPrime()
+    {
+        return new Enemy
+        {
+            Name = "Sentinel Prime",
+            Type = EnemyType.SentinelPrime,
+            MaxHP = 90,
+            HP = 90,
+            Attributes = new Attributes(
+                might: 5,
+                finesse: 5,
+                wits: 4,
+                will: 0,
+                sturdiness: 6
+            ),
+            BaseDamageDice = 5, // 5d6 (18-28 damage, plasma rifle)
+            DamageBonus = 0,
+            Soak = 6, // Military-grade armor
+            IsBoss = false,
+            Phase = 1, // Tactical AI phases
+            BaseLegendValue = 100 // Lethal tier enemy
         };
     }
 }

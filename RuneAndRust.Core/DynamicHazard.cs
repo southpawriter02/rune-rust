@@ -56,7 +56,17 @@ public enum DynamicHazardType
     CorrodedGrating,     // Fragile floor that breaks
     LeakingCoolant,      // Slippery chemical spill
     RadiationLeak,       // Cumulative exposure
-    PressurizedPipe      // Explosive decompression
+    PressurizedPipe,     // Explosive decompression
+
+    // v0.16 new hazards (Content Expansion)
+    SporeCloud,          // Symbiotic Plate spore dispersion
+    AutomatedTurret,     // Pre-Glitch active security
+    CollapsingCeiling,   // Structural collapse hazard
+    DataStream,          // Jötun-Reader psychic overflow
+    FungalGrowth,        // Symbiotic Plate terrain barrier
+    UnstableGrating,     // Corroded floor trap
+    PsychicEcho,         // Trauma site resonance
+    RadiationSource      // Nuclear system leak
 }
 
 /// <summary>
