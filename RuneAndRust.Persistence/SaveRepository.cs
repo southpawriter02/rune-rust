@@ -69,6 +69,7 @@ public class SaveRepository
         // Add consumables and crafting components columns (migration for v0.7)
         // Add NPC & Quest columns (migration for v0.8)
         // Add currency column (migration for v0.9)
+        // Add procedural generation columns (migration for v0.10)
         var alterCommands = new[]
         {
             "ALTER TABLE saves ADD COLUMN equipped_weapon_json TEXT",
@@ -94,7 +95,12 @@ public class SaveRepository
             "ALTER TABLE saves ADD COLUMN active_quests_json TEXT DEFAULT '[]'",
             "ALTER TABLE saves ADD COLUMN completed_quests_json TEXT DEFAULT '[]'",
             "ALTER TABLE saves ADD COLUMN npc_states_json TEXT DEFAULT '[]'",
-            "ALTER TABLE saves ADD COLUMN currency INTEGER DEFAULT 0"
+            "ALTER TABLE saves ADD COLUMN currency INTEGER DEFAULT 0",
+            "ALTER TABLE saves ADD COLUMN current_dungeon_seed INTEGER DEFAULT 0",
+            "ALTER TABLE saves ADD COLUMN dungeons_completed INTEGER DEFAULT 0",
+            "ALTER TABLE saves ADD COLUMN current_room_string_id TEXT",
+            "ALTER TABLE saves ADD COLUMN is_procedural_dungeon INTEGER DEFAULT 0",
+            "ALTER TABLE saves ADD COLUMN current_biome_id TEXT"
         };
 
         foreach (var alterSql in alterCommands)
@@ -122,8 +128,12 @@ public class SaveRepository
 
     public void SaveGame(PlayerCharacter player, WorldState worldState, GameWorld? world = null)
     {
-        _log.Information("Saving game: Character={CharacterName}, Class={Class}, Milestone={Milestone}, Room={RoomId}",
-            player.Name, player.Class, player.CurrentMilestone, worldState.CurrentRoomId);
+        var roomIdentifier = world?.IsProcedurallyGenerated == true
+            ? worldState.CurrentRoomStringId ?? "unknown"
+            : worldState.CurrentRoomId.ToString();
+
+        _log.Information("Saving game: Character={CharacterName}, Class={Class}, Milestone={Milestone}, Room={RoomId}, Procedural={IsProc}",
+            player.Name, player.Class, player.CurrentMilestone, roomIdentifier, world?.IsProcedurallyGenerated ?? false);
 
         var startTime = DateTime.Now;
 
@@ -220,6 +230,11 @@ public class SaveRepository
             ActiveQuestsJson = activeQuestsJson,
             CompletedQuestsJson = completedQuestsJson,
             NPCStatesJson = npcStatesJson,
+            // v0.10: Procedural generation
+            IsProceduralDungeon = world?.IsProcedurallyGenerated ?? false,
+            CurrentDungeonSeed = world?.CurrentDungeon?.Seed ?? 0,
+            CurrentRoomStringId = worldState.CurrentRoomStringId,
+            DungeonsCompleted = worldState.DungeonsCompleted,
             LastSaved = DateTime.Now
         };
 
@@ -239,6 +254,7 @@ public class SaveRepository
                 equipped_weapon_json, equipped_armor_json, inventory_json, room_items_json,
                 consumables_json, crafting_components_json,
                 faction_reputations_json, active_quests_json, completed_quests_json, npc_states_json,
+                is_procedural_dungeon, current_dungeon_seed, current_room_string_id, dungeons_completed, current_biome_id,
                 last_saved
             ) VALUES (
                 $name, $class, $spec, $milestone, $legend, $pp,
@@ -251,6 +267,7 @@ public class SaveRepository
                 $eqweapon, $eqarmor, $inventory, $roomitems,
                 $consumables, $craftingcomponents,
                 $factionreps, $activequests, $completedquests, $npcstates,
+                $isproc, $dungeonseed, $roomstringid, $dungeonscompleted, $biomeid,
                 $saved
             )
         ";
@@ -298,6 +315,11 @@ public class SaveRepository
         command.Parameters.AddWithValue("$activequests", saveData.ActiveQuestsJson);
         command.Parameters.AddWithValue("$completedquests", saveData.CompletedQuestsJson);
         command.Parameters.AddWithValue("$npcstates", saveData.NPCStatesJson);
+        command.Parameters.AddWithValue("$isproc", saveData.IsProceduralDungeon ? 1 : 0);
+        command.Parameters.AddWithValue("$dungeonseed", saveData.CurrentDungeonSeed);
+        command.Parameters.AddWithValue("$roomstringid", (object?)saveData.CurrentRoomStringId ?? DBNull.Value);
+        command.Parameters.AddWithValue("$dungeonscompleted", saveData.DungeonsCompleted);
+        command.Parameters.AddWithValue("$biomeid", (object?)(world?.CurrentDungeon?.Biome) ?? DBNull.Value);
         command.Parameters.AddWithValue("$saved", saveData.LastSaved.ToString("yyyy-MM-dd HH:mm:ss"));
 
         command.ExecuteNonQuery();
@@ -313,7 +335,7 @@ public class SaveRepository
         }
     }
 
-    public (PlayerCharacter?, WorldState?, string?, string?) LoadGame(string characterName)
+    public (PlayerCharacter?, WorldState?, string?, string?, int?, string?) LoadGame(string characterName)
     {
         _log.Information("Loading game: Character={CharacterName}", characterName);
 
@@ -333,7 +355,7 @@ public class SaveRepository
             if (!reader.Read())
             {
                 _log.Warning("Save not found: Character={CharacterName}", characterName);
-                return (null, null, null);
+                return (null, null, null, null, null, null);
             }
 
         var saveData = new SaveData
@@ -422,6 +444,23 @@ public class SaveRepository
 
         try { saveData.TempHP = reader.GetInt32(reader.GetOrdinal("temp_hp")); }
         catch { saveData.TempHP = 0; }
+
+        // Load procedural generation data (v0.10) - handle missing columns for backward compatibility
+        try { saveData.IsProceduralDungeon = reader.GetInt32(reader.GetOrdinal("is_procedural_dungeon")) == 1; }
+        catch { saveData.IsProceduralDungeon = false; }
+
+        try { saveData.CurrentDungeonSeed = reader.GetInt32(reader.GetOrdinal("current_dungeon_seed")); }
+        catch { saveData.CurrentDungeonSeed = 0; }
+
+        try { saveData.DungeonsCompleted = reader.GetInt32(reader.GetOrdinal("dungeons_completed")); }
+        catch { saveData.DungeonsCompleted = 0; }
+
+        try
+        {
+            var roomStringIdOrdinal = reader.GetOrdinal("current_room_string_id");
+            saveData.CurrentRoomStringId = reader.IsDBNull(roomStringIdOrdinal) ? null : reader.GetString(roomStringIdOrdinal);
+        }
+        catch { saveData.CurrentRoomStringId = null; }
 
         // Load equipment data (v0.3) - handle missing columns for backward compatibility
         try
@@ -621,15 +660,32 @@ public class SaveRepository
             CurrentRoomId = saveData.CurrentRoomId,
             ClearedRoomIds = JsonSerializer.Deserialize<List<int>>(saveData.ClearedRoomsJson) ?? new List<int>(),
             PuzzleSolved = saveData.PuzzleSolved,
-            BossDefeated = saveData.BossDefeated
+            BossDefeated = saveData.BossDefeated,
+            // v0.10: Procedural generation
+            CurrentRoomStringId = saveData.CurrentRoomStringId,
+            DungeonsCompleted = saveData.DungeonsCompleted
         };
 
-            var duration = (DateTime.Now - startTime).TotalMilliseconds;
-            _log.Information("Game loaded successfully: Character={CharacterName}, Class={Class}, Milestone={Milestone}, Duration={Duration}ms",
-                player.Name, player.Class, player.CurrentMilestone, duration);
+        // Extract biome ID from saved data for dungeon regeneration
+        string? biomeId = null;
+        if (saveData.IsProceduralDungeon)
+        {
+            try
+            {
+                var biomeIdOrdinal = reader.GetOrdinal("current_biome_id");
+                biomeId = reader.IsDBNull(biomeIdOrdinal) ? null : reader.GetString(biomeIdOrdinal);
+            }
+            catch { biomeId = null; }
+        }
 
-            // Return room items JSON and NPC states JSON for restoration (v0.3, v0.8)
-            return (player, worldState, saveData.RoomItemsJson, saveData.NPCStatesJson);
+            var duration = (DateTime.Now - startTime).TotalMilliseconds;
+            _log.Information("Game loaded successfully: Character={CharacterName}, Class={Class}, Milestone={Milestone}, Procedural={IsProc}, Duration={Duration}ms",
+                player.Name, player.Class, player.CurrentMilestone, saveData.IsProceduralDungeon, duration);
+
+            // Return room items JSON, NPC states JSON, dungeon seed (if procedural), and biome ID for restoration
+            // (v0.3, v0.8, v0.10)
+            int? dungeonSeed = saveData.IsProceduralDungeon ? saveData.CurrentDungeonSeed : null;
+            return (player, worldState, saveData.RoomItemsJson, saveData.NPCStatesJson, dungeonSeed, biomeId);
         }
         catch (Exception ex)
         {
@@ -639,7 +695,7 @@ public class SaveRepository
     }
 
     /// <summary>
-    /// Restore room items from save data (v0.3)
+    /// Restore room items from save data (v0.3, v0.10: supports procedural dungeons)
     /// </summary>
     public void RestoreRoomItems(GameWorld world, string roomItemsJson)
     {
@@ -651,6 +707,7 @@ public class SaveRepository
 
         try
         {
+            // Try to deserialize as int-keyed dictionary (legacy saves)
             var roomItemsDict = JsonSerializer.Deserialize<Dictionary<int, List<Equipment>>>(roomItemsJson);
             if (roomItemsDict == null) return;
 
@@ -660,7 +717,8 @@ public class SaveRepository
                 var roomId = kvp.Key;
                 var items = kvp.Value;
 
-                // Find the room by ID
+                // For legacy handcrafted worlds, find room by integer ID
+                // For procedural worlds, this won't work (procedural rooms use string IDs)
                 var room = world.Rooms.Values.FirstOrDefault(r => r.Id == roomId);
                 if (room != null)
                 {
@@ -678,6 +736,10 @@ public class SaveRepository
             // Failed to restore room items - not critical, player can continue without them
             _log.Warning(ex, "Failed to restore room items");
         }
+
+        // Note: For procedural dungeons (v0.10), room items are NOT persisted because
+        // dungeons are regenerated from seed. Future enhancement could serialize room
+        // items with string room IDs for procedural dungeon persistence.
     }
 
     /// <summary>

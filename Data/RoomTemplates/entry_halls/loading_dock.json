@@ -1,0 +1,44 @@
+{
+  "TemplateId": "loading_dock",
+  "Biome": "the_roots",
+  "Size": "Large",
+  "Archetype": "EntryHall",
+  "NameTemplates": [
+    "The {Adjective} Loading Dock",
+    "The {Adjective} Freight Bay",
+    "The {Adjective} Cargo Platform"
+  ],
+  "Adjectives": [
+    "Desolate",
+    "Vast",
+    "Empty",
+    "Cavernous",
+    "Silent"
+  ],
+  "DescriptionTemplates": [
+    "A {Adjective} loading dock opens before you. {Detail}. Massive cargo doors, sealed shut for centuries, loom at the far end.",
+    "This {Adjective} freight bay once bustled with activity. {Detail}. Now only echoes remain.",
+    "You emerge onto a {Adjective} cargo platform. {Detail}. The scale of this place is staggering."
+  ],
+  "Details": [
+    "Empty cargo containers are stacked haphazardly along the walls",
+    "A defunct loading crane hangs motionless overhead, its cables frayed",
+    "Runic identification markers still glow faintly on the floor",
+    "Pools of iridescent fluid collect in the low points of the deck",
+    "The skeletal frame of a cargo servitor lies collapsed against one wall"
+  ],
+  "MinConnectionPoints": 1,
+  "MaxConnectionPoints": 3,
+  "ValidConnections": [
+    "Corridor",
+    "Chamber",
+    "Junction"
+  ],
+  "Difficulty": "Easy",
+  "Tags": [
+    "Entry",
+    "Safe",
+    "Start",
+    "Large"
+  ]
+}
