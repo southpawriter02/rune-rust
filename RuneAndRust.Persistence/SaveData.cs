@@ -55,6 +55,12 @@ public class SaveData
     public bool PuzzleSolved { get; set; }
     public bool BossDefeated { get; set; }
 
+    // Procedural Generation (v0.10)
+    public int CurrentDungeonSeed { get; set; } = 0; // Seed for current dungeon
+    public int DungeonsCompleted { get; set; } = 0; // Total dungeons completed
+    public string? CurrentRoomStringId { get; set; } = null; // String room ID for procedural dungeons
+    public bool IsProceduralDungeon { get; set; } = false; // True if using procedural generation
+
     // Equipment System (v0.3)
     public string? EquippedWeaponJson { get; set; } = null; // Serialized Equipment object
     public string? EquippedArmorJson { get; set; } = null; // Serialized Equipment object

@@ -12,6 +12,7 @@ public class DungeonGenerator
     private readonly TemplateLibrary _templateLibrary;
     private Random _rng = null!;
     private int _seed;
+    private BiomeDefinition? _currentBiome;
 
     public DungeonGenerator(TemplateLibrary templateLibrary)
     {
@@ -21,13 +22,24 @@ public class DungeonGenerator
     /// <summary>
     /// Generates a complete dungeon graph from a seed
     /// </summary>
-    public DungeonGraph Generate(int seed, int targetRoomCount = 7)
+    public DungeonGraph Generate(int seed, int targetRoomCount = 7, BiomeDefinition? biome = null)
     {
         _seed = seed;
         _rng = new Random(seed);
+        _currentBiome = biome;
 
-        _log.Information("Generating dungeon: Seed={Seed}, TargetRoomCount={TargetRoomCount}",
-            seed, targetRoomCount);
+        // Use biome parameters if provided
+        if (biome != null)
+        {
+            targetRoomCount = _rng.Next(biome.MinRoomCount, biome.MaxRoomCount + 1);
+            _log.Information("Generating dungeon: Seed={Seed}, Biome={Biome}, RoomCount={RoomCount}",
+                seed, biome.Name, targetRoomCount);
+        }
+        else
+        {
+            _log.Information("Generating dungeon: Seed={Seed}, TargetRoomCount={TargetRoomCount} (no biome)",
+                seed, targetRoomCount);
+        }
 
         // Step 1: Create graph structure
         var graph = new DungeonGraph();
@@ -37,7 +49,8 @@ public class DungeonGenerator
         GenerateMainPath(graph, targetRoomCount);
 
         // Step 3: Add branching paths (optional)
-        int branchCount = _rng.NextDouble() < 0.6 ? _rng.Next(1, 3) : 0; // 60% chance of 1-2 branches
+        float branchProb = biome?.BranchingProbability ?? 0.6f;
+        int branchCount = _rng.NextDouble() < branchProb ? _rng.Next(1, 3) : 0;
         if (branchCount > 0)
         {
             _log.Debug("Adding {BranchCount} branching paths...", branchCount);
@@ -45,7 +58,8 @@ public class DungeonGenerator
         }
 
         // Step 4: Add secret rooms (optional)
-        int secretCount = _rng.NextDouble() < 0.3 ? 1 : 0; // 30% chance of 1 secret
+        float secretProb = biome?.SecretRoomProbability ?? 0.3f;
+        int secretCount = _rng.NextDouble() < secretProb ? 1 : 0;
         if (secretCount > 0)
         {
             _log.Debug("Adding {SecretCount} secret rooms...", secretCount);
@@ -78,18 +92,24 @@ public class DungeonGenerator
     /// <summary>
     /// Generates a complete playable dungeon (graph + instantiated rooms) from a seed
     /// </summary>
-    public Dungeon GenerateComplete(int seed, int dungeonId = 1, int targetRoomCount = 7)
+    public Dungeon GenerateComplete(int seed, int dungeonId = 1, int targetRoomCount = 7, BiomeDefinition? biome = null)
     {
         // Step 1: Generate graph
-        var graph = Generate(seed, targetRoomCount);
+        var graph = Generate(seed, targetRoomCount, biome);
 
         // Step 2: Instantiate rooms
         _log.Debug("Instantiating rooms...");
         var instantiator = new RoomInstantiator();
         var dungeon = instantiator.Instantiate(graph, dungeonId, seed);
 
-        _log.Information("Complete dungeon generated: DungeonId={DungeonId}, Seed={Seed}, Rooms={RoomCount}",
-            dungeonId, seed, dungeon.TotalRoomCount);
+        // Set biome on dungeon
+        if (biome != null)
+        {
+            dungeon.Biome = biome.BiomeId;
+        }
+
+        _log.Information("Complete dungeon generated: DungeonId={DungeonId}, Seed={Seed}, Biome={Biome}, Rooms={RoomCount}",
+            dungeonId, seed, dungeon.Biome, dungeon.TotalRoomCount);
 
         return dungeon;
     }
