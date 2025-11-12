@@ -1,0 +1,31 @@
+{
+  "RoomId": "broken_shrine",
+  "Name": "[The Broken Shrine]",
+  "Description": "Someone tried to make meaning here. Offerings to machines that don't care. Candles burn before a makeshift altar constructed from automaton parts. Prayer beads made from servitor components hang from the ceiling. Despite everything, this place feels peaceful.",
+  "Archetype": "Chamber",
+  "SuggestedNodeType": "Branch",
+  "NarrativeText": "The Iron Hearts cult built this shrine generations ago, believing the automatons were divine messengers from the Old Gods. They're gone now, but their faith remains - etched in prayer, carved in metal, preserved in silence.",
+  "FlavorText": "Devotional texts cover the walls in flowing Old Aetheric script. Offerings of scavenged food and tools lay before the altar. Someone painted 'They will wake. They will remember. They will forgive.' in fading letters above the door.",
+  "EnemyIds": [],
+  "HazardIds": [],
+  "TerrainIds": [
+    "prayer_altar",
+    "meditation_space"
+  ],
+  "LootIds": [
+    "devotional_items",
+    "minor_healing_supplies"
+  ],
+  "ConditionIds": [
+    "preserved",
+    "peaceful"
+  ],
+  "NPCIds": [],
+  "IsSafeZone": true,
+  "IsBossArena": false,
+  "HasQuestObjective": false,
+  "QuestObjectiveId": null,
+  "PreferredExits": {
+    "North": "Corridor"
+  }
+}

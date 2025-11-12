@@ -20,7 +20,19 @@ public enum EnemyType
     CorruptedEngineer,     // Tier 2 - Support/buffer caster
     VaultCustodian,        // Tier 3 - Mini-boss guardian
     ForlornArchivist,      // Boss - Psychic/summoner
-    OmegaSentinel          // Boss - Physical tank
+    OmegaSentinel,         // Boss - Physical tank
+
+    // v0.16 new enemies (Content Expansion)
+    CorrodedSentry,        // Trivial - Draugr-Pattern security drone
+    HuskEnforcer,          // Low - Symbiotic Plate reanimated corpse
+    ArcWelderUnit,         // Low - Haugbui-Class industrial robot
+    Shrieker,              // Medium - Symbiotic Plate with psychic scream
+    JotunReaderFragment,   // Medium - J-Reader AI fragment
+    ServitorSwarm,         // Medium - Collective of maintenance drones
+    BoneKeeper,            // High - Symbiotic Plate skeletal construct
+    FailureColossus,       // High - Haugbui-Class construction automaton
+    RustWitch,             // Lethal - Advanced Symbiotic Plate colony
+    SentinelPrime          // Lethal - Elite military automaton
 }
 
 public class Enemy

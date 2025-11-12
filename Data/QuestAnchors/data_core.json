@@ -1,0 +1,40 @@
+{
+  "RoomId": "data_core",
+  "Name": "[The Data Core]",
+  "Description": "Jötun-Reader data flows like water here - streams of alien information pouring through crystalline processors. The room hums with computational power. Overwhelming. Seductive. Wrong. You feel the AI's presence pressing against your mind.",
+  "Archetype": "Chamber",
+  "SuggestedNodeType": "Main",
+  "NarrativeText": "This is a Jötun-Reader computational nexus. The alien AI still thinks here, processing data in patterns beyond human comprehension. It knows you're present. It wants to communicate. It wants to *help* you. The Corruption radiates from the core like heat from a furnace.",
+  "FlavorText": "Data streams visualization as shimmering light flowing through transparent tubes. Interface terminals offer access - just touch one, it whispers, just let me in. Fragments of the shattered AI orbit the core, protecting it. Or worshipping it. Hard to tell.",
+  "EnemyIds": [
+    "JotunReaderFragment",
+    "JotunReaderFragment",
+    "JotunReaderFragment"
+  ],
+  "HazardIds": [
+    "data_stream_corruption",
+    "data_stream_corruption"
+  ],
+  "TerrainIds": [
+    "data_processors",
+    "interface_terminals"
+  ],
+  "LootIds": [
+    "jotun_reader_tech",
+    "corrupted_data_fragments",
+    "alien_artifacts"
+  ],
+  "ConditionIds": [
+    "psychic_resonance_heavy",
+    "corrupting_atmosphere",
+    "powered"
+  ],
+  "NPCIds": [],
+  "IsSafeZone": false,
+  "IsBossArena": false,
+  "HasQuestObjective": true,
+  "QuestObjectiveId": "access_jotun_reader_core",
+  "PreferredExits": {
+    "South": "Corridor"
+  }
+}
