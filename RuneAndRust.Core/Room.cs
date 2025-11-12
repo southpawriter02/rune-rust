@@ -62,4 +62,36 @@ public class Room
     // Trauma Economy (v0.5)
     public PsychicResonanceLevel PsychicResonance { get; set; } = PsychicResonanceLevel.None;
     public bool IsSanctuary { get; set; } = false; // Safe location for Sanctuary Rest
+
+    // v0.11+ Procedural Population
+    public List<Population.DormantProcess> DormantProcesses { get; set; } = new();
+    public List<Population.DynamicHazard> DynamicHazards { get; set; } = new();
+    public List<Population.StaticTerrain> StaticTerrainFeatures { get; set; } = new();
+    public List<Population.LootNode> LootNodes { get; set; } = new();
+    public List<Population.AmbientCondition> AmbientConditions { get; set; } = new();
+
+    // v0.12 Coherent Glitch Tracking
+    public int CoherentGlitchRulesFired { get; set; } = 0; // Number of rules applied to this room
+
+    /// <summary>
+    /// Checks if room has a specific ambient condition
+    /// </summary>
+    public bool HasAmbientCondition(string conditionName)
+    {
+        return AmbientConditions.Any(c => c.ConditionName == conditionName);
+    }
+
+    /// <summary>
+    /// Gets room archetype (from v0.11 population system)
+    /// </summary>
+    public Population.RoomArchetype? Archetype { get; set; } = null;
+
+    /// <summary>
+    /// Distance to a specific node type (for Coherent Glitch rules)
+    /// </summary>
+    public int DistanceToNode(NodeType nodeType)
+    {
+        // Placeholder - would be calculated during generation
+        return 0;
+    }
 }
