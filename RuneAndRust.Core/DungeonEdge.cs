@@ -23,8 +23,8 @@ public class DungeonEdge
     public EdgeType Type { get; set; } = EdgeType.Normal;
 
     // Direction Assignment (populated during direction assignment phase)
-    public string? FromDirection { get; set; } = null; // e.g., "north", "east"
-    public string? ToDirection { get; set; } = null;   // Opposite of FromDirection
+    public Direction? FromDirection { get; set; } = null;
+    public Direction? ToDirection { get; set; } = null;
 
     /// <summary>
     /// Gets whether this edge represents a bidirectional connection
@@ -45,7 +45,7 @@ public class DungeonEdge
     /// </summary>
     public bool HasDirections()
     {
-        return !string.IsNullOrEmpty(FromDirection) && !string.IsNullOrEmpty(ToDirection);
+        return FromDirection.HasValue && ToDirection.HasValue;
     }
 
     /// <summary>

@@ -55,7 +55,12 @@ public class DungeonGenerator
         // Step 5: Calculate node depths
         CalculateNodeDepths(graph);
 
-        // Step 6: Validate connectivity
+        // Step 6: Assign directions to edges
+        _log.Debug("Assigning directions to edges...");
+        var directionAssigner = new DirectionAssigner();
+        directionAssigner.AssignDirections(graph, _rng);
+
+        // Step 7: Validate connectivity
         var (isValid, errors) = graph.Validate();
         if (!isValid)
         {
@@ -68,6 +73,25 @@ public class DungeonGenerator
             seed, stats["TotalNodes"], stats["TotalEdges"], stats["BranchNodes"], stats["SecretNodes"]);
 
         return graph;
+    }
+
+    /// <summary>
+    /// Generates a complete playable dungeon (graph + instantiated rooms) from a seed
+    /// </summary>
+    public Dungeon GenerateComplete(int seed, int dungeonId = 1, int targetRoomCount = 7)
+    {
+        // Step 1: Generate graph
+        var graph = Generate(seed, targetRoomCount);
+
+        // Step 2: Instantiate rooms
+        _log.Debug("Instantiating rooms...");
+        var instantiator = new RoomInstantiator();
+        var dungeon = instantiator.Instantiate(graph, dungeonId, seed);
+
+        _log.Information("Complete dungeon generated: DungeonId={DungeonId}, Seed={Seed}, Rooms={RoomCount}",
+            dungeonId, seed, dungeon.TotalRoomCount);
+
+        return dungeon;
     }
 
     #region Main Path Generation

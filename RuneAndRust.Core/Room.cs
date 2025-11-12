@@ -2,10 +2,16 @@ namespace RuneAndRust.Core;
 
 public class Room
 {
-    public int Id { get; set; } = 1; // Unique room identifier
+    public int Id { get; set; } = 1; // Unique room identifier (legacy - for handcrafted rooms)
+    public string RoomId { get; set; } = string.Empty; // String ID for procedurally generated rooms (v0.10)
     public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
-    public Dictionary<string, string> Exits { get; set; } = new(); // Direction -> Room Name
+    public Dictionary<string, string> Exits { get; set; } = new(); // Direction -> Room ID/Name
+
+    // Procedural Generation (v0.10)
+    public string? TemplateId { get; set; } = null; // Template used to generate this room
+    public NodeType? GeneratedNodeType { get; set; } = null; // Node type in generation graph
+    public bool IsProcedurallyGenerated { get; set; } = false;
 
     // Combat
     public List<Enemy> Enemies { get; set; } = new();
