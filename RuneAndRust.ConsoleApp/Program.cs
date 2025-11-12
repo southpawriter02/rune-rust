@@ -24,6 +24,9 @@ class Program
     private static CombatEngine _combatEngine = new(_diceService, _sagaService, _lootService, _equipmentService, _hazardService, _currencyService);
     private static EnemyAI _enemyAI = new(_diceService);
     private static SaveRepository _saveRepository = new();
+    // v0.13: Persistent World State System
+    private static WorldStateRepository _worldStateRepository = new();
+    private static DestructionService _destructionService = new(_worldStateRepository, _diceService);
 
     static void Main(string[] args)
     {
@@ -354,6 +357,34 @@ class Program
         {
             // TODO: Migrate old saves to new puzzle system
             // For now, players will need to re-solve puzzles in v0.4
+        }
+
+        // v0.13: Apply persistent world state changes to all rooms
+        var saveId = _worldStateRepository.GetSaveIdForCharacter(_gameState.Player.Name);
+        if (saveId.HasValue)
+        {
+            Log.Information("Applying persistent world state changes for save ID: {SaveId}", saveId.Value);
+
+            foreach (var room in _gameState.World.Rooms.Values)
+            {
+                var sectorSeed = ExtractSectorSeed(room.RoomId);
+                var changes = _worldStateRepository.GetChangesForRoom(saveId.Value, sectorSeed, room.RoomId);
+
+                if (changes.Count > 0)
+                {
+                    _destructionService.ApplyWorldStateChanges(room, changes, saveId.Value);
+                    _destructionService.InitializeRoomElements(room);
+
+                    Log.Debug("Applied {ChangeCount} world state changes to room: {RoomId}",
+                        changes.Count, room.RoomId);
+                }
+            }
+
+            Log.Information("World state restoration complete");
+        }
+        else
+        {
+            Log.Warning("No save ID found for character, skipping world state restoration");
         }
     }
 
@@ -687,6 +718,15 @@ class Program
 
                 case CommandType.Sell:
                     HandleSell(command.Arguments);
+                    break;
+
+                // v0.13: Persistent World State System
+                case CommandType.Destroy:
+                    HandleDestroy(command.Target);
+                    break;
+
+                case CommandType.History:
+                    HandleHistory();
                     break;
 
                 case CommandType.Attack:
@@ -1817,6 +1857,24 @@ class Program
                 }
             }
 
+            // v0.13: Record defeated enemies to persistent world state
+            var saveId = _worldStateRepository.GetSaveIdForCharacter(combat.Player.Name);
+            if (saveId.HasValue && combat.CurrentRoom != null)
+            {
+                foreach (var enemy in combat.Enemies)
+                {
+                    _destructionService.RecordEnemyDefeat(
+                        combat.CurrentRoom,
+                        enemy,
+                        saveId.Value,
+                        combat.CurrentTurnNumber,
+                        droppedLoot: true); // Loot generation happens next
+
+                    Log.Debug("Recorded enemy defeat to world state: {EnemyName} in {RoomId}",
+                        enemy.Name, combat.CurrentRoom.RoomId);
+                }
+            }
+
             // Generate loot (v0.3)
             _combatEngine.GenerateLoot(combat, _gameState.CurrentRoom);
             UIHelper.DisplayCombatLog(combat.CombatLog, 20);
@@ -2826,6 +2884,281 @@ class Program
         }
 
         AnsiConsole.MarkupLine($"[yellow]You don't have '{itemName}' to sell.[/]");
+    }
+
+    // v0.13: Persistent World State System - Destruction Handler
+    static void HandleDestroy(string target)
+    {
+        if (string.IsNullOrWhiteSpace(target))
+        {
+            AnsiConsole.MarkupLine("[yellow]What do you want to destroy? (e.g., 'destroy pillar', 'smash grating')[/]");
+            return;
+        }
+
+        var currentRoom = _gameState.CurrentRoom;
+        if (currentRoom == null)
+        {
+            AnsiConsole.MarkupLine("[red]You are not in a valid location.[/]");
+            return;
+        }
+
+        // Get save ID for recording changes
+        var saveId = _worldStateRepository.GetSaveIdForCharacter(_gameState.Player.Name);
+        if (saveId == null)
+        {
+            Log.Warning("No save ID found for character: {CharacterName}", _gameState.Player.Name);
+            AnsiConsole.MarkupLine("[yellow]Unable to save world changes. Please save your game first.[/]");
+            return;
+        }
+
+        var turnNumber = _gameState.TurnNumber;
+
+        // Try to find matching static terrain
+        var terrain = FindTerrainByName(currentRoom, target);
+        if (terrain != null)
+        {
+            var result = _destructionService.AttemptDestroyTerrain(
+                currentRoom,
+                terrain,
+                _gameState.Player,
+                saveId.Value,
+                turnNumber);
+
+            AnsiConsole.WriteLine();
+            AnsiConsole.MarkupLine($"[cyan]{result.Message}[/]");
+            AnsiConsole.WriteLine();
+
+            if (result.WasDestroyed)
+            {
+                // Remove from room
+                currentRoom.StaticTerrain.Remove(terrain);
+
+                // Add rubble if applicable
+                if (result.SpawnRubble)
+                {
+                    currentRoom.StaticTerrain.Add(new StaticTerrain
+                    {
+                        TerrainId = $"rubble_from_{terrain.TerrainId}",
+                        Name = "Rubble Pile",
+                        Description = $"Debris from the destroyed {terrain.Name.ToLower()}.",
+                        Type = StaticTerrainType.RubblePile,
+                        CoverProvided = CoverType.Partial,
+                        AccuracyModifier = -2,
+                        IsDifficultTerrain = true,
+                        MovementCostModifier = 2,
+                        IsDestructible = true,
+                        HP = 15
+                    });
+
+                    AnsiConsole.MarkupLine("[dim]A pile of rubble now occupies the space.[/]");
+                    AnsiConsole.WriteLine();
+                }
+
+                // Increment turn counter
+                _gameState.TurnNumber++;
+            }
+
+            AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+            Console.ReadLine();
+            return;
+        }
+
+        // Try to find matching dynamic hazard
+        var hazard = FindHazardByName(currentRoom, target);
+        if (hazard != null)
+        {
+            var result = _destructionService.AttemptDestroyHazard(
+                currentRoom,
+                hazard,
+                _gameState.Player,
+                saveId.Value,
+                turnNumber);
+
+            AnsiConsole.WriteLine();
+            AnsiConsole.MarkupLine($"[cyan]{result.Message}[/]");
+            AnsiConsole.WriteLine();
+
+            if (result.WasDestroyed)
+            {
+                // Remove from room
+                currentRoom.DynamicHazards.Remove(hazard);
+
+                // Handle secondary effects
+                if (result.CausedSecondaryEffect)
+                {
+                    AnsiConsole.MarkupLine("[red]The destruction causes a violent secondary reaction![/]");
+
+                    // Apply damage if it's an explosive hazard
+                    if (hazard.Type == DynamicHazardType.PressurizedPipe)
+                    {
+                        var damage = _diceService.RollDice(2, 6);
+                        _gameState.Player.HP -= damage;
+                        AnsiConsole.MarkupLine($"[red]You take {damage} damage from the explosion![/]");
+
+                        // Check if player died
+                        if (_gameState.Player.HP <= 0)
+                        {
+                            AnsiConsole.WriteLine();
+                            AnsiConsole.MarkupLine("[red bold]The explosion was fatal. You have died.[/]");
+                            AnsiConsole.WriteLine();
+                            AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+                            Console.ReadLine();
+                            Environment.Exit(0);
+                        }
+                    }
+                    AnsiConsole.WriteLine();
+                }
+
+                // Increment turn counter
+                _gameState.TurnNumber++;
+            }
+
+            AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+            Console.ReadLine();
+            return;
+        }
+
+        // No matching element found
+        AnsiConsole.WriteLine();
+        AnsiConsole.MarkupLine($"[yellow]You cannot find '{target}' to destroy.[/]");
+        AnsiConsole.WriteLine();
+        AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+        Console.ReadLine();
+    }
+
+    // v0.13: Persistent World State System - History Handler
+    static void HandleHistory()
+    {
+        var currentRoom = _gameState.CurrentRoom;
+        if (currentRoom == null)
+        {
+            AnsiConsole.MarkupLine("[red]You are not in a valid location.[/]");
+            return;
+        }
+
+        var saveId = _worldStateRepository.GetSaveIdForCharacter(_gameState.Player.Name);
+        if (saveId == null)
+        {
+            AnsiConsole.MarkupLine("[yellow]No save history available.[/]");
+            return;
+        }
+
+        var sectorSeed = ExtractSectorSeed(currentRoom.RoomId);
+        var changes = _worldStateRepository.GetChangesForRoom(saveId.Value, sectorSeed, currentRoom.RoomId);
+
+        AnsiConsole.Clear();
+        AnsiConsole.WriteLine();
+
+        var rule = new Rule($"[bold cyan]Room History: {currentRoom.Name}[/]")
+        {
+            Justification = Justify.Center
+        };
+        AnsiConsole.Write(rule);
+        AnsiConsole.WriteLine();
+
+        if (changes.Count == 0)
+        {
+            AnsiConsole.MarkupLine("[dim]This room is unchanged from its original state.[/]");
+        }
+        else
+        {
+            AnsiConsole.MarkupLine($"[bold]Total modifications:[/] {changes.Count}");
+            AnsiConsole.WriteLine();
+
+            foreach (var change in changes.OrderBy(c => c.Timestamp))
+            {
+                var timeAgo = FormatTimeAgo(change.Timestamp);
+                var description = GetChangeDescription(change);
+                var icon = GetChangeIcon(change.ChangeType);
+
+                AnsiConsole.MarkupLine($"{icon} [dim]{description}[/] [yellow]({timeAgo})[/]");
+            }
+        }
+
+        AnsiConsole.WriteLine();
+        AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+        Console.ReadLine();
+    }
+
+    // v0.13: Helper methods for destruction system
+    private static StaticTerrain? FindTerrainByName(Room room, string target)
+    {
+        var normalized = target.ToLower().Trim();
+
+        return room.StaticTerrain.FirstOrDefault(t =>
+            t.Name.ToLower().Contains(normalized) ||
+            t.Type.ToString().ToLower().Contains(normalized) ||
+            normalized.Contains(t.Type.ToString().ToLower()));
+    }
+
+    private static DynamicHazard? FindHazardByName(Room room, string target)
+    {
+        var normalized = target.ToLower().Trim();
+
+        return room.DynamicHazards.FirstOrDefault(h =>
+            h.Name.ToLower().Contains(normalized) ||
+            h.Type.ToString().ToLower().Contains(normalized) ||
+            normalized.Contains(h.Type.ToString().ToLower()));
+    }
+
+    private static string ExtractSectorSeed(string roomId)
+    {
+        // room_d1_n5 -> "d1"
+        if (roomId.StartsWith("room_d"))
+        {
+            var parts = roomId.Split('_');
+            return parts.Length >= 2 ? parts[1] : roomId;
+        }
+        return roomId;
+    }
+
+    private static string GetChangeDescription(WorldStateChange change)
+    {
+        return change.ChangeType switch
+        {
+            WorldStateChangeType.TerrainDestroyed => $"Destroyed {GetElementName(change.TargetId)}",
+            WorldStateChangeType.HazardDestroyed => $"Disabled {GetElementName(change.TargetId)}",
+            WorldStateChangeType.EnemyDefeated => $"Defeated {change.TargetId}",
+            WorldStateChangeType.LootCollected => $"Collected loot from {GetElementName(change.TargetId)}",
+            _ => $"Modified {change.TargetId}"
+        };
+    }
+
+    private static string GetElementName(string targetId)
+    {
+        // Convert "pillar_1" to "Pillar"
+        var parts = targetId.Split('_');
+        if (parts.Length > 0)
+        {
+            var name = parts[0];
+            return char.ToUpper(name[0]) + name.Substring(1);
+        }
+        return targetId;
+    }
+
+    private static string GetChangeIcon(WorldStateChangeType changeType)
+    {
+        return changeType switch
+        {
+            WorldStateChangeType.TerrainDestroyed => "[red]💥[/]",
+            WorldStateChangeType.HazardDestroyed => "[yellow]⚠️[/]",
+            WorldStateChangeType.EnemyDefeated => "[green]⚔️[/]",
+            WorldStateChangeType.LootCollected => "[cyan]💎[/]",
+            _ => "[dim]•[/]"
+        };
+    }
+
+    private static string FormatTimeAgo(DateTime timestamp)
+    {
+        var elapsed = DateTime.UtcNow - timestamp;
+
+        if (elapsed.TotalMinutes < 1)
+            return "just now";
+        if (elapsed.TotalMinutes < 60)
+            return $"{(int)elapsed.TotalMinutes} min ago";
+        if (elapsed.TotalHours < 24)
+            return $"{(int)elapsed.TotalHours} hr ago";
+        return $"{(int)elapsed.TotalDays} days ago";
     }
 
     /// <summary>

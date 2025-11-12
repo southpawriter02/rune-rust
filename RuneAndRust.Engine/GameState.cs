@@ -21,6 +21,9 @@ public class GameState
     public CombatState? Combat { get; set; }
     public WorldState WorldState { get; set; }
 
+    // v0.13: Persistent World State - Turn tracking for chronological ordering
+    public int TurnNumber { get; set; }
+
     // v0.8: NPC & Quest System
     public NPCService NPCService { get; set; }
     public DialogueService DialogueService { get; set; }
