@@ -36,6 +36,9 @@ public class PlayerCharacter
     public int Corruption { get; set; } = 0; // 0-100, permanent
     public int RoomsExploredSinceRest { get; set; } = 0; // For rest cooldown tracking
 
+    // Trauma Economy (v0.15) - Permanent psychological wounds
+    public List<Trauma> Traumas { get; set; } = new(); // Permanent Traumas from Breaking Points
+
     // Combat (v0.1 - deprecated in favor of equipment system)
     public string WeaponName { get; set; } = string.Empty;
     public string WeaponAttribute { get; set; } = string.Empty; // Which attribute the weapon uses
@@ -92,5 +95,83 @@ public class PlayerCharacter
             "sturdiness" => Attributes.Sturdiness,
             _ => 0
         };
+    }
+
+    // v0.15: Trauma Economy Helper Methods
+
+    /// <summary>
+    /// Checks if the character has a specific trauma by ID
+    /// </summary>
+    public bool HasTrauma(string traumaId)
+    {
+        return Traumas.Any(t => t.TraumaId.Equals(traumaId, StringComparison.OrdinalIgnoreCase));
+    }
+
+    /// <summary>
+    /// Gets a trauma by ID, or null if not present
+    /// </summary>
+    public Trauma? GetTrauma(string traumaId)
+    {
+        return Traumas.FirstOrDefault(t => t.TraumaId.Equals(traumaId, StringComparison.OrdinalIgnoreCase));
+    }
+
+    /// <summary>
+    /// Gets the total attribute penalty from all traumas for a given attribute
+    /// </summary>
+    public int GetTraumaAttributePenalty(string attributeName, string? condition = null)
+    {
+        int totalPenalty = 0;
+        foreach (var trauma in Traumas)
+        {
+            totalPenalty += trauma.GetAttributePenalty(attributeName, condition);
+        }
+        return totalPenalty;
+    }
+
+    /// <summary>
+    /// Gets the total stress multiplier from all traumas for a given condition
+    /// </summary>
+    public float GetTraumaStressMultiplier(string condition)
+    {
+        float totalMultiplier = 1.0f;
+        foreach (var trauma in Traumas)
+        {
+            totalMultiplier *= trauma.GetStressMultiplier(condition);
+        }
+        return totalMultiplier;
+    }
+
+    /// <summary>
+    /// Gets the total passive stress per turn from all traumas
+    /// </summary>
+    public int GetTraumaPassiveStress(string condition)
+    {
+        int totalStress = 0;
+        foreach (var trauma in Traumas)
+        {
+            totalStress += trauma.GetPassiveStress(condition);
+        }
+        return totalStress;
+    }
+
+    /// <summary>
+    /// Checks if any traumas block rest in current location
+    /// </summary>
+    public bool IsRestBlockedByTraumas(Room? room)
+    {
+        return Traumas.Any(t => t.BlocksRest(room));
+    }
+
+    /// <summary>
+    /// Gets the rest effectiveness multiplier from all traumas
+    /// </summary>
+    public float GetRestEffectivenessMultiplier()
+    {
+        float multiplier = 1.0f;
+        foreach (var trauma in Traumas)
+        {
+            multiplier *= trauma.GetRestEffectivenessMultiplier();
+        }
+        return multiplier;
     }
 }

@@ -70,6 +70,7 @@ public class SaveRepository
         // Add NPC & Quest columns (migration for v0.8)
         // Add currency column (migration for v0.9)
         // Add procedural generation columns (migration for v0.10)
+        // Add traumas column (migration for v0.15)
         var alterCommands = new[]
         {
             "ALTER TABLE saves ADD COLUMN equipped_weapon_json TEXT",
@@ -79,6 +80,7 @@ public class SaveRepository
             "ALTER TABLE saves ADD COLUMN psychic_stress INTEGER DEFAULT 0",
             "ALTER TABLE saves ADD COLUMN corruption INTEGER DEFAULT 0",
             "ALTER TABLE saves ADD COLUMN rooms_explored_since_rest INTEGER DEFAULT 0",
+            "ALTER TABLE saves ADD COLUMN traumas_json TEXT DEFAULT '[]'",
             "ALTER TABLE saves ADD COLUMN specialization TEXT DEFAULT 'None'",
             "ALTER TABLE saves ADD COLUMN vulnerable_turns INTEGER DEFAULT 0",
             "ALTER TABLE saves ADD COLUMN analyzed_turns INTEGER DEFAULT 0",
@@ -154,6 +156,9 @@ public class SaveRepository
         var consumablesJson = JsonSerializer.Serialize(player.Consumables);
         var craftingComponentsJson = JsonSerializer.Serialize(player.CraftingComponents);
 
+        // Serialize traumas (v0.15)
+        var traumasJson = JsonSerializer.Serialize(player.Traumas);
+
         // Serialize room items (v0.3)
         var roomItemsDict = new Dictionary<int, List<Equipment>>();
         if (world != null)
@@ -206,6 +211,7 @@ public class SaveRepository
             PsychicStress = player.PsychicStress,
             Corruption = player.Corruption,
             RoomsExploredSinceRest = player.RoomsExploredSinceRest,
+            TraumasJson = traumasJson, // v0.15
             // v0.7: Adept status effects
             VulnerableTurnsRemaining = player.VulnerableTurnsRemaining,
             AnalyzedTurnsRemaining = player.AnalyzedTurnsRemaining,
@@ -247,7 +253,7 @@ public class SaveRepository
                 character_name, class, specialization, current_milestone, current_legend, progression_points,
                 might, finesse, wits, will, sturdiness,
                 current_hp, max_hp, current_stamina, max_stamina, currency,
-                psychic_stress, corruption, rooms_explored_since_rest,
+                psychic_stress, corruption, rooms_explored_since_rest, traumas_json,
                 vulnerable_turns, analyzed_turns, seized_turns, is_performing, performing_turns, current_performance,
                 inspired_turns, silenced_turns, temp_hp,
                 current_room_id, cleared_rooms_json, puzzle_solved, boss_defeated,
@@ -260,7 +266,7 @@ public class SaveRepository
                 $name, $class, $spec, $milestone, $legend, $pp,
                 $might, $finesse, $wits, $will, $sturdiness,
                 $hp, $maxhp, $stamina, $maxstamina, $currency,
-                $stress, $corruption, $roomsrest,
+                $stress, $corruption, $roomsrest, $traumas,
                 $vulnturns, $analyzedturns, $seizedturns, $isperforming, $perfturns, $perfname,
                 $inspiredturns, $silencedturns, $temphp,
                 $roomid, $cleared, $puzzle, $boss,
@@ -291,6 +297,7 @@ public class SaveRepository
         command.Parameters.AddWithValue("$stress", saveData.PsychicStress);
         command.Parameters.AddWithValue("$corruption", saveData.Corruption);
         command.Parameters.AddWithValue("$roomsrest", saveData.RoomsExploredSinceRest);
+        command.Parameters.AddWithValue("$traumas", saveData.TraumasJson);
         // v0.7: Adept status effects
         command.Parameters.AddWithValue("$vulnturns", saveData.VulnerableTurnsRemaining);
         command.Parameters.AddWithValue("$analyzedturns", saveData.AnalyzedTurnsRemaining);
@@ -412,6 +419,14 @@ public class SaveRepository
             saveData.RoomsExploredSinceRest = reader.GetInt32(reader.GetOrdinal("rooms_explored_since_rest"));
         }
         catch { saveData.RoomsExploredSinceRest = 0; }
+
+        // Load traumas (v0.15) - handle missing column for backward compatibility
+        try
+        {
+            var traumasOrdinal = reader.GetOrdinal("traumas_json");
+            saveData.TraumasJson = reader.IsDBNull(traumasOrdinal) ? "[]" : reader.GetString(traumasOrdinal);
+        }
+        catch { saveData.TraumasJson = "[]"; }
 
         // Load v0.7 Adept status effects - handle missing columns for backward compatibility
         try { saveData.VulnerableTurnsRemaining = reader.GetInt32(reader.GetOrdinal("vulnerable_turns")); }
@@ -618,6 +633,16 @@ public class SaveRepository
         catch
         {
             player.CraftingComponents = new Dictionary<ComponentType, int>();
+        }
+
+        // Reconstruct traumas (v0.15)
+        try
+        {
+            player.Traumas = JsonSerializer.Deserialize<List<Trauma>>(saveData.TraumasJson) ?? new List<Trauma>();
+        }
+        catch
+        {
+            player.Traumas = new List<Trauma>();
         }
 
         // Reconstruct faction reputations and quests (v0.8)
