@@ -1,0 +1,35 @@
+{
+  "RoomId": "servitor_command_node",
+  "Name": "[Servitor Command Node]",
+  "Description": "A vast operations chamber dominated by a towering control nexus - a spire of corroded metal and pulsing Runic conduits. This was once the coordination hub for Aethelgard's automated security forces. Now it serves as the lair of a Servitor Overseer, a Draugr-Pattern unit whose patrol-loop has degraded into territorial aggression. The walls are scarred by centuries of automated defense protocols gone haywire.",
+  "Archetype": "BossArena",
+  "SuggestedNodeType": "Boss",
+  "NarrativeText": "The Servitor Overseer has been broadcasting corrupted directives for 800 years, commanding lesser automata to 'defend' the abandoned facility from non-existent intruders. Destroying it will cripple the hostile servitor network throughout [The Roots], making deeper exploration feasible. The Overseer is heavily armored and capable of summoning reinforcements from nearby patrol routes.",
+  "FlavorText": "The control nexus flickers with erratic status displays - diagnostics for systems that failed centuries ago. Servitor corpses litter the floor, cannibalized for parts by the Overseer to maintain its operational state.",
+  "EnemyIds": [
+    "servitor_overseer_boss"
+  ],
+  "HazardIds": [
+    "unstable_ceiling_boss_arena",
+    "live_power_conduit_boss_arena"
+  ],
+  "TerrainIds": [
+    "collapsed_pillar_cover_01",
+    "collapsed_pillar_cover_02",
+    "rubble_pile_boss_arena",
+    "elevated_platform_boss_arena"
+  ],
+  "LootIds": [],
+  "ConditionIds": [
+    "psychic_resonance",
+    "corroded_atmosphere"
+  ],
+  "NPCIds": [],
+  "IsSafeZone": false,
+  "IsBossArena": true,
+  "HasQuestObjective": false,
+  "QuestObjectiveId": null,
+  "PreferredExits": {
+    "South": "Main"
+  }
+}

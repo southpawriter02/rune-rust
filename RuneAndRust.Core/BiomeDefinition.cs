@@ -81,15 +81,62 @@ public class BiomeDefinition
 
 /// <summary>
 /// Biome element table for v0.11+ (enemy/hazard/loot population)
-/// Currently a placeholder for future implementation
+/// Implements the v2.0 data-driven population system
 /// </summary>
 public class BiomeElementTable
 {
     public List<BiomeElement> Elements { get; set; } = new();
+
+    /// <summary>
+    /// Gets all elements of a specific type
+    /// </summary>
+    public List<BiomeElement> GetElementsByType(BiomeElementType type)
+    {
+        return Elements.Where(e => e.ElementType == type).ToList();
+    }
+
+    /// <summary>
+    /// Gets all elements that meet spawn rules for a given room
+    /// </summary>
+    public List<BiomeElement> GetEligibleElements(BiomeElementType type, Room room, Random rng)
+    {
+        return Elements
+            .Where(e => e.ElementType == type && e.MeetsSpawnRules(room, rng))
+            .ToList();
+    }
+
+    /// <summary>
+    /// Performs weighted random selection from a list of elements
+    /// </summary>
+    public BiomeElement? WeightedRandomSelection(List<BiomeElement> elements, Random rng)
+    {
+        if (elements.Count == 0) return null;
+
+        // Calculate total weight
+        float totalWeight = elements.Sum(e => e.Weight);
+        if (totalWeight <= 0) return null;
+
+        // Random selection
+        float randomValue = (float)(rng.NextDouble() * totalWeight);
+        float cumulativeWeight = 0f;
+
+        foreach (var element in elements)
+        {
+            cumulativeWeight += element.Weight;
+            if (randomValue <= cumulativeWeight)
+            {
+                return element;
+            }
+        }
+
+        // Fallback to last element (should never happen)
+        return elements[^1];
+    }
 }
 
 /// <summary>
 /// Individual element that can appear in a biome (v0.11+)
+/// Represents enemies, hazards, terrain, loot nodes per v2.0 spec
 /// </summary>
 public class BiomeElement
 {
@@ -97,6 +144,88 @@ public class BiomeElement
     public BiomeElementType ElementType { get; set; } = BiomeElementType.DescriptionDetail;
     public float Weight { get; set; } = 1.0f;
     public string? AssociatedDataId { get; set; } = null;
+    public SpawnRules? SpawnRules { get; set; } = null;
+
+    // Spawn budget (for enemies)
+    public int SpawnCost { get; set; } = 1;
+
+    /// <summary>
+    /// Checks if this element meets spawn rules for a given room
+    /// </summary>
+    public bool MeetsSpawnRules(Room room, Random rng)
+    {
+        if (SpawnRules == null) return true; // No restrictions
+
+        // Room size restrictions
+        if (SpawnRules.OnlyInLargeRooms && room.GeneratedNodeType != NodeType.Boss &&
+            room.GeneratedNodeType != NodeType.Main)
+        {
+            return false;
+        }
+
+        // Room archetype restrictions
+        if (SpawnRules.RequiredArchetype != null)
+        {
+            // Would need room archetype tracking - for now, skip
+            // Could be enhanced by storing archetype on Room
+        }
+
+        // Never spawn in certain rooms
+        if (SpawnRules.NeverInEntryHall && room.IsStartRoom)
+        {
+            return false;
+        }
+
+        if (SpawnRules.NeverInBossArena && room.IsBossRoom)
+        {
+            return false;
+        }
+
+        // Secret room weight modifier
+        if (SpawnRules.HigherWeightInSecretRooms && room.GeneratedNodeType == NodeType.Secret)
+        {
+            // Weight is already applied in selection algorithm
+            return true;
+        }
+
+        // Conditional spawning (e.g., "only if Rust-Horror present")
+        if (SpawnRules.RequiresEnemyType != null)
+        {
+            bool hasRequiredEnemy = room.Enemies.Any(e => e.Type.ToString() == SpawnRules.RequiresEnemyType);
+            if (!hasRequiredEnemy) return false;
+        }
+
+        return true;
+    }
+}
+
+/// <summary>
+/// Spawn rules for BiomeElements (v0.11)
+/// Defines constraints and conditions for element placement
+/// </summary>
+public class SpawnRules
+{
+    // Size constraints
+    public bool OnlyInLargeRooms { get; set; } = false;
+    public bool OnlyInSmallRooms { get; set; } = false;
+
+    // Archetype constraints
+    public string? RequiredArchetype { get; set; } = null; // "Chamber", "Corridor", etc.
+    public bool NeverInEntryHall { get; set; } = false;
+    public bool NeverInBossArena { get; set; } = false;
+    public bool NeverInSecretRooms { get; set; } = false;
+
+    // Weight modifiers
+    public bool HigherWeightInSecretRooms { get; set; } = false;
+    public float SecretRoomWeightMultiplier { get; set; } = 2.0f;
+
+    // Conditional spawning
+    public string? RequiresEnemyType { get; set; } = null; // "RustHorror" - must have this enemy
+    public string? RequiresHazardType { get; set; } = null; // "SteamVent" - must have this hazard
+    public string? RequiresCondition { get; set; } = null; // "Flooded" - must have this ambient condition
+
+    // Thematic constraints
+    public List<string>? RequiresRoomNameContains { get; set; } = null; // ["Geothermal", "Pumping"]
 }
 
 /// <summary>

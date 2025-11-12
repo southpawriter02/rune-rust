@@ -5,18 +5,26 @@ namespace RuneAndRust.Engine;
 
 /// <summary>
 /// Generates procedural dungeon layouts using graph-based algorithm (v0.10)
+/// v0.11: Integrated with PopulationPipeline for enemy/hazard/loot spawning
 /// </summary>
 public class DungeonGenerator
 {
     private static readonly ILogger _log = Log.ForContext<DungeonGenerator>();
     private readonly TemplateLibrary _templateLibrary;
+    private readonly PopulationPipeline? _populationPipeline; // v0.11 - optional for backward compatibility
+    private readonly AnchorInserter? _anchorInserter; // v0.11 - Quest Anchor support
     private Random _rng = null!;
     private int _seed;
     private BiomeDefinition? _currentBiome;
 
-    public DungeonGenerator(TemplateLibrary templateLibrary)
+    public DungeonGenerator(
+        TemplateLibrary templateLibrary,
+        PopulationPipeline? populationPipeline = null,
+        AnchorInserter? anchorInserter = null)
     {
         _templateLibrary = templateLibrary;
+        _populationPipeline = populationPipeline;
+        _anchorInserter = anchorInserter;
     }
 
     /// <summary>
@@ -91,6 +99,7 @@ public class DungeonGenerator
 
     /// <summary>
     /// Generates a complete playable dungeon (graph + instantiated rooms) from a seed
+    /// v0.11: Now includes population (enemies, hazards, terrain, loot, conditions)
     /// </summary>
     public Dungeon GenerateComplete(int seed, int dungeonId = 1, int targetRoomCount = 7, BiomeDefinition? biome = null)
     {
@@ -108,8 +117,73 @@ public class DungeonGenerator
             dungeon.Biome = biome.BiomeId;
         }
 
+        // Step 3: v0.11 - Populate rooms with enemies, hazards, terrain, loot, conditions
+        if (_populationPipeline != null && biome != null)
+        {
+            _log.Information("Populating dungeon with v0.11 population pipeline...");
+            _populationPipeline.PopulateDungeon(dungeon, biome, _rng);
+        }
+        else if (_populationPipeline == null)
+        {
+            _log.Debug("Population pipeline not available (v0.10 mode)");
+        }
+
         _log.Information("Complete dungeon generated: DungeonId={DungeonId}, Seed={Seed}, Biome={Biome}, Rooms={RoomCount}",
             dungeonId, seed, dungeon.Biome, dungeon.TotalRoomCount);
+
+        return dungeon;
+    }
+
+    /// <summary>
+    /// v0.11: Generates a complete dungeon from a DungeonBlueprint (with Quest Anchor support)
+    /// </summary>
+    public Dungeon GenerateFromBlueprint(DungeonBlueprint blueprint, int dungeonId, BiomeDefinition biome)
+    {
+        // Step 1: Validate blueprint
+        var (isValid, errors) = blueprint.Validate();
+        if (!isValid)
+        {
+            _log.Error("Blueprint validation failed: {Errors}", string.Join(", ", errors));
+            throw new ArgumentException($"Invalid blueprint: {string.Join(", ", errors)}");
+        }
+
+        _seed = blueprint.Seed;
+        _rng = new Random(blueprint.Seed);
+        _currentBiome = biome;
+
+        _log.Information("Generating dungeon from blueprint: Seed={Seed}, TargetRooms={RoomCount}, Anchors={AnchorCount}",
+            blueprint.Seed, blueprint.TargetRoomCount, blueprint.RequiredAnchors.Count);
+
+        // Step 2: Generate base graph
+        var graph = Generate(blueprint.Seed, blueprint.TargetRoomCount, biome);
+
+        // Step 3: Insert Quest Anchors (if anchor inserter available)
+        if (_anchorInserter != null && blueprint.RequiredAnchors.Count > 0)
+        {
+            _log.Information("Inserting {AnchorCount} Quest Anchors into graph", blueprint.RequiredAnchors.Count);
+            _anchorInserter.InsertAnchors(graph, blueprint, _rng);
+        }
+        else if (blueprint.RequiredAnchors.Count > 0)
+        {
+            _log.Warning("Blueprint has {AnchorCount} Quest Anchors but no AnchorInserter provided - anchors will be skipped",
+                blueprint.RequiredAnchors.Count);
+        }
+
+        // Step 4: Instantiate rooms
+        _log.Debug("Instantiating rooms...");
+        var instantiator = new RoomInstantiator();
+        var dungeon = instantiator.Instantiate(graph, dungeonId, blueprint.Seed);
+        dungeon.Biome = biome.BiomeId;
+
+        // Step 5: Populate rooms (skip handcrafted Quest Anchor rooms)
+        if (_populationPipeline != null)
+        {
+            _log.Information("Populating dungeon with v0.11 population pipeline...");
+            _populationPipeline.PopulateDungeon(dungeon, biome, _rng);
+        }
+
+        _log.Information("Complete dungeon generated from blueprint: DungeonId={DungeonId}, Seed={Seed}, Rooms={RoomCount}, Anchors={AnchorCount}",
+            dungeonId, blueprint.Seed, dungeon.TotalRoomCount, blueprint.RequiredAnchors.Count);
 
         return dungeon;
     }
