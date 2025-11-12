@@ -38,6 +38,9 @@ public class SaveData
     public int Corruption { get; set; }
     public int RoomsExploredSinceRest { get; set; }
 
+    // Trauma Economy (v0.15) - Permanent Traumas
+    public string TraumasJson { get; set; } = "[]"; // JSON array of Trauma objects
+
     // v0.7: Adept Status Effects
     public int VulnerableTurnsRemaining { get; set; }
     public int AnalyzedTurnsRemaining { get; set; }
