@@ -25,7 +25,7 @@
 - **Class Identity**: Each archetype has unique abilities
 - **Tactical Depth**: Players choose when to spend Stamina
 - **Progression**: Abilities can be ranked up with PP
-- **Specialization**: 10 PP unlocks advanced ability trees
+- **Specialization**: 3 PP unlocks advanced ability trees **(v0.18: reduced from 10 PP)**
 
 ### 1.2 Ability Acquisition
 
@@ -40,7 +40,7 @@
 - Cost Corruption/Stress to use
 - Unlock at character creation
 
-**Specialization Abilities** (10 PP unlock):
+**Specialization Abilities** (3 PP unlock, v0.18: reduced from 10 PP):
 - 9 tiered abilities per specialization
 - Tier 1 (3 abilities): Granted immediately on unlock
 - Tier 2-3: Must be purchased with PP
@@ -124,7 +124,7 @@ Rank 3: LOCKED (v0.5+)
 
 ### 3.1 Specialization System
 
-**Unlock Cost**: 10 PP (one-time)
+**Unlock Cost**: 3 PP (one-time) **(v0.18: reduced from 10 PP)**
 **Limit**: One specialization per character
 **Availability**: Adept archetype only (v0.7)
 
@@ -140,10 +140,10 @@ Rank 3: LOCKED (v0.5+)
 3. **Field Triage** (15 Stamina): Emergency stabilization
 
 **Tier 2-3 Abilities** (must purchase with PP):
-- Anatomical Insight (debuff enemy, +2 accuracy for allies)
+- Anatomical Insight (debuff enemy, +2 accuracy for allies) **[20 Stamina, v0.18: reduced from 25]**
 - Administer Antidote (cure poison/disease)
-- Cognitive Realignment (reduce Stress)
-- Miracle Worker (massive heal, 60 Stamina)
+- Cognitive Realignment (reduce Stress) **[25 Stamina, v0.18: reduced from 30]**
+- Miracle Worker (massive heal) **[40 Stamina, v0.18: reduced from 60]**
 
 ---
 
@@ -152,12 +152,12 @@ Rank 3: LOCKED (v0.5+)
 **Focus**: Enemy analysis, tech checks, bypassing locks
 
 **Tier 1 Abilities** (granted on unlock):
-1. **Analyze Weakness** (30 Stamina, 5 Stress): Reveal enemy stats
+1. **Analyze Weakness** **[25 Stamina, v0.18: reduced from 30]** (5 Stress): Reveal enemy stats
 2. **System Diagnostic** (20 Stamina): Understand machine logic
 3. **Bypass Lock** (25 Stamina): Open locked doors/chests
 
 **Tier 2-3 Abilities** (must purchase with PP):
-- Exploit Design Flaw (debuff enemy defense)
+- Exploit Design Flaw (debuff enemy defense) **[28 Stamina, v0.18: reduced from 35]**
 - Navigational Bypass (teleport through walls)
 - The Unspoken Truth (psychic damage)
 - Architect of the Silence (control enemy, 15 Stress cost)
@@ -244,16 +244,16 @@ Rank 3: LOCKED (v0.5+)
 
 ### 5.3 Specialization Value
 
-**10 PP Cost**: Very expensive (requires ~7 Milestones)
+**3 PP Cost (v0.18: reduced from 10 PP)**: Achievable by Milestone 2 (4 PP available)
 **Benefit**: 9 unique abilities (3 granted immediately, 6 purchasable)
 
 **Opportunity Cost**:
-- 10 PP = 10 attribute increases
-- 10 PP = 3-5 ability rank advancements
+- 3 PP = 3 attribute increases (broad power boost)
+- 3 PP = 1-2 ability rank advancements (focused improvements)
 
 **Trade-off**: Specialization grants **unique utility** (healing, analysis, buffs) not available through attributes/ranks.
 
-**Design**: Specializations are end-game investments for long campaigns, not viable in v0.1 (15-20 min playtime, max 5 PP by Milestone 3).
+**Design (v0.18)**: Specializations are now viable within v0.1 scope (15-20 min playtime, 5 PP by Milestone 3). Players can unlock specialization by M2 and still have 1-2 PP for customization, enabling diverse build strategies including support-focused characters.
 
 ---
 

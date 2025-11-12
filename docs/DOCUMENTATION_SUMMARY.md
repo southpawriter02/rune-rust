@@ -1,9 +1,10 @@
 # Rune & Rust v0.17 Documentation Summary
 
 **Project**: Rune & Rust - Aethelgard Saga System
-**Version**: v0.17 Documentation Phase
+**Version**: v0.17 Documentation Phase (Updated for v0.18 Balance Pass)
 **Date**: 2025-11-12
 **Total Documentation**: ~12,000+ lines across 17 documents
+**Latest Update**: v0.18 Balance Pass (2025-11-12)
 
 ---
 
@@ -59,7 +60,7 @@
 - ✅ Progression Points (PP) spending
 - ✅ Attribute increases (1 PP per +1, cap at 6)
 - ✅ Ability rank advancement (2-5 PP per rank)
-- ✅ Specialization unlock (10 PP)
+- ✅ Specialization unlock (**3 PP, v0.18: reduced from 10 PP**)
 
 ### Resource Systems
 - ✅ Hit Points (class-based, 30-50 base)
@@ -191,9 +192,71 @@
 - Stamina per Milestone: +5
 - PP per Milestone: +1
 - Attribute cap: 6
-- Specialization cost: 10 PP
+- Specialization cost: **3 PP (v0.18: reduced from 10 PP)**
 - Success rate: 33.33% (5-6 on d6)
 - Trauma Modifier: 1.0-1.25×
+
+---
+
+## v0.18 Balance Pass Updates (2025-11-12)
+
+### Critical Changes
+1. **Specialization Cost: 10 PP → 3 PP**
+   - Makes specializations achievable by Milestone 2 (4 PP available)
+   - Enables support builds in v0.1 scope
+   - Updated in: SagaService.cs, Program.cs, SpecializationFactory.cs, SaveData.cs, CharacterFactory.cs
+
+2. **Miracle Worker: 60 → 40 Stamina**
+   - Capstone ability now usable (Adept has 55 max Stamina at M3)
+   - Bone-Setter specialization viability improved
+
+### High Priority Ability Adjustments
+3. **Exploit Design Flaw: 35 → 28 Stamina** (-20%)
+4. **Analyze Weakness: 30 → 25 Stamina** (-17%)
+5. **Anatomical Insight: 25 → 20 Stamina** (-20%)
+6. **Cognitive Realignment: 30 → 25 Stamina** (-17%)
+7. **Rally Cry: Enhanced** (1d8 → 2d6 heal, 15ft → 20ft range)
+8. **Whirlwind Strike: Clarified** (damage description updated)
+
+### Enemy Balance Adjustments
+**Legend Value Increases** (improved reward fairness):
+9. Corroded Sentry: 5 → 10 Legend
+10. Husk Enforcer: 15 → 18 Legend
+11. Arc-Welder Unit: 20 → 25 Legend
+12. Servitor Swarm: 30 → 40 Legend
+13. Bone-Keeper: 50 → 55 Legend
+
+**Damage Reductions** (prevent one-shots):
+14. Failure Colossus: 4d6+3 → 3d6+4 damage
+15. Sentinel Prime: 5d6 → 4d6 damage
+
+**Defense Reductions** (reduce tedious fights):
+16. Vault Custodian: Soak 6 → 4
+17. Omega Sentinel: Soak 8 → 6
+
+**HP Buff** (Legend/HP ratio fix):
+18. Aetheric Aberration: 60 → 75 HP
+
+### Equipment Balance Adjustments
+19. **Clan-Forged Greatsword: +6 → +5 damage** (prevent early-game dominance)
+20. **Clan-Forged Full Plate: Added -1 FINESSE penalty** (meaningful trade-off)
+21. **Sharpened Scrap: -2 → -1 damage** (better starter experience)
+22. **Crude Staff: -2 → -1 damage** (better starter experience)
+
+### Documentation Updated
+- ✅ `docs/01-systems/legend-leveling.md` (Specialization cost references)
+- ✅ `docs/02-abilities/abilities-overview.md` (ability costs)
+- ✅ `docs/04-enemies/enemies-overview.md` (Legend values, damage, HP, Soak)
+- ✅ `docs/03-equipment/equipment-overview.md` (equipment stats)
+- ✅ `DOCUMENTATION_SUMMARY.md` (this file)
+- ✅ `BALANCE_CHANGELOG_V018.md` (comprehensive change documentation)
+
+### Impact Summary
+- **Specializations**: Now viable in v0.1 scope, enabling support/utility builds
+- **Support Abilities**: 15-30% cost reduction improves Bone-Setter/Jötun-Reader viability
+- **Enemy Rewards**: Legend/HP ratios improved to 0.8-1.2 target range
+- **Combat Pacing**: Reduced one-shot scenarios and tedious boss fights
+- **Starter Experience**: Improved for Scavenger and Mystic classes
 
 ---
 

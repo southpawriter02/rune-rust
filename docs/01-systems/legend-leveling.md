@@ -56,7 +56,7 @@ This system replaces traditional leveling with a narrative-driven progression mo
 - Spent on:
   - **Attribute increases**: 1 PP per +1 attribute (cap at 6 per attribute)
   - **Ability rank advancement**: Variable PP cost (typically 2-3 PP to reach Rank 2)
-  - **Specialization unlock**: 10 PP to unlock a specialization (one-time)
+  - **Specialization unlock**: 3 PP to unlock a specialization (one-time) **(v0.18: reduced from 10 PP)**
 
 ### 1.3 Gameplay Flow
 
@@ -77,7 +77,7 @@ This system replaces traditional leveling with a narrative-driven progression mo
 │ 5. Player Spends PP (between encounters)                    │
 │    - Option A: Spend 1 PP → +1 Attribute (cap 6)           │
 │    - Option B: Spend 2-3 PP → Advance Ability Rank         │
-│    - Option C: Spend 10 PP → Unlock Specialization         │
+│    - Option C: Spend 3 PP → Unlock Specialization (v0.18)  │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -219,7 +219,7 @@ Current Cap = Rank 2 (Rank 3 locked until v0.5+)
 #### Specialization Unlock
 
 ```
-Cost = 10 PP (one-time)
+Cost = 3 PP (one-time) **[v0.18: reduced from 10 PP]**
 Requirement = Specialization.None (can only unlock one)
 Effect = Grants Tier 1 abilities for chosen specialization
 ```
@@ -233,7 +233,7 @@ Effect = Grants Tier 1 abilities for chosen specialization
 - Unlocks 2-3 Tier 1 abilities
 - Thematic bonuses (healing, analysis, support)
 - Cannot be changed once selected
-- 10 PP cost = ~2 full Milestone cycles
+- 3 PP cost = achievable by Milestone 2 (v0.18 balance)
 
 ### 2.5 PP Economy Analysis
 
@@ -247,9 +247,9 @@ Effect = Grants Tier 1 abilities for chosen specialization
 1. **Attribute Specialist**: +5 to one attribute (e.g., MIGHT 3 → 6 = 3 PP, 2 PP left for abilities)
 2. **Ability Focused**: +2 attributes (2 PP), +1 ability rank (2-3 PP)
 3. **Hybrid**: +3 attributes (3 PP), +1 ability rank (2 PP)
-4. **Specialization Build**: Save all PP for specialization (10 PP) - **Not achievable by Milestone 3**
+4. **Specialization Build**: Unlock specialization (3 PP), +2 attributes (2 PP) - **[v0.18: Now achievable!]**
 
-**Design Note**: 10 PP specialization cost is intentionally expensive, requiring players to choose between immediate power (attributes/abilities) and delayed specialization unlock.
+**Design Note (v0.18)**: 3 PP specialization cost makes specializations accessible by Milestone 2, enabling specialized builds in v0.1 scope while still requiring meaningful choices.
 
 ---
 
@@ -625,7 +625,7 @@ private void ApplyRank2Improvements(Ability ability)
 ```csharp
 public bool UnlockSpecialization(PlayerCharacter player, Specialization specialization)
 {
-    const int SpecializationCost = 10;
+    const int SpecializationCost = 3; // v0.18: reduced from 10
 
     // Check if player has enough PP
     if (player.ProgressionPoints < SpecializationCost)
@@ -670,10 +670,10 @@ public bool UnlockSpecialization(PlayerCharacter player, Specialization speciali
 ```
 
 **Validation Steps**:
-1. Check PP ≥ 10
+1. Check PP ≥ 3 **(v0.18: reduced from 10)**
 2. Check `player.Specialization == Specialization.None` (can only have one)
 3. Check specialization is valid for player's archetype (via `SpecializationFactory`)
-4. Deduct 10 PP
+4. Deduct 3 PP
 5. Apply specialization via `SpecializationFactory.ApplySpecialization()`
 
 **Specialization Restrictions**:
@@ -681,7 +681,7 @@ public bool UnlockSpecialization(PlayerCharacter player, Specialization speciali
 - Must be valid for player's archetype (Warrior/Scavenger/Mystic)
 - Cannot be changed once selected
 
-**Design Note**: 10 PP cost is intentionally high to create meaningful trade-offs between immediate power (attributes/abilities) and long-term specialization unlock.
+**Design Note (v0.18)**: 3 PP cost makes specializations accessible in v0.1 scope (M0-M3) while maintaining meaningful choices between specialization and attribute investment.
 
 ### 3.5 Data Model
 
@@ -1006,7 +1006,7 @@ public void UnlockSpecialization_WithSufficientPP_UnlocksSuccessfully()
     // Arrange
     var player = new PlayerCharacter
     {
-        ProgressionPoints = 10,
+        ProgressionPoints = 5, // v0.18: Updated to realistic M3 amount
         Class = CharacterClass.Warrior,
         Specialization = Specialization.None
     };
@@ -1017,7 +1017,7 @@ public void UnlockSpecialization_WithSufficientPP_UnlocksSuccessfully()
 
     // Assert
     Assert.IsTrue(result);
-    Assert.AreEqual(0, player.ProgressionPoints);            // 10 - 10
+    Assert.AreEqual(2, player.ProgressionPoints);            // 5 - 3
     Assert.AreEqual(Specialization.BoneSetter, player.Specialization);
     Assert.IsTrue(player.Abilities.Count > 0);               // Tier 1 abilities granted
 }
@@ -1031,7 +1031,7 @@ public void UnlockSpecialization_AlreadyHasSpecialization_ReturnsFalse()
     // Arrange
     var player = new PlayerCharacter
     {
-        ProgressionPoints = 10,
+        ProgressionPoints = 5, // v0.18: Updated to realistic M3 amount
         Specialization = Specialization.BoneSetter // Already has one
     };
     var sagaService = new SagaService();
@@ -1041,7 +1041,7 @@ public void UnlockSpecialization_AlreadyHasSpecialization_ReturnsFalse()
 
     // Assert
     Assert.IsFalse(result);
-    Assert.AreEqual(10, player.ProgressionPoints);                   // No change
+    Assert.AreEqual(5, player.ProgressionPoints);                    // No change
     Assert.AreEqual(Specialization.BoneSetter, player.Specialization); // Still BoneSetter
 }
 ```
@@ -1200,17 +1200,17 @@ public void IntegerTruncation_FloorsBehaviorCorrectly()
 
 **Total PP by Milestone 3**: 5 PP (2 start + 3 earned)
 
-**Spending Analysis**:
-- 5 PP = Not enough for specialization (10 PP required)
-- 5 PP = 5 attribute increases (e.g., MIGHT 3 → 6 + 2 remaining)
+**Spending Analysis (v0.18)**:
+- 5 PP = Enough for specialization (3 PP) + 2 PP for attributes/abilities
+- 5 PP = 5 attribute increases (e.g., MIGHT 3 → 6 + 2 remaining, or MIGHT/FINESSE both 3 → 5)
 - 5 PP = 2-3 ability rank advancements (2-3 PP each)
 
 **Trade-offs**:
-- **Immediate Power** (attributes/abilities) vs **Delayed Specialization**
+- **Specialization Build** (3 PP unlock + 2 PP customization) vs **Attribute Focus** (5 PP attributes)
 - **Generalist** (spread PP) vs **Specialist** (focus PP)
-- **Combat Power** (attributes) vs **Utility** (ability ranks)
+- **Combat Power** (attributes) vs **Utility** (ability ranks/specialization)
 
-**Design**: 10 PP specialization cost is intentionally out of reach for v0.1 scope, encouraging players to focus on attributes/abilities. Future versions (longer campaigns) will make specialization viable.
+**Design (v0.18)**: 3 PP specialization cost makes specializations achievable by Milestone 2, enabling diverse build strategies within v0.1 scope. Players can now choose between immediate power (attributes), tactical flexibility (ability ranks), or unique capabilities (specializations).
 
 ### 5.3 Milestone Rewards Balance
 
@@ -1274,10 +1274,10 @@ public void IntegerTruncation_FloorsBehaviorCorrectly()
 
 ### 5.7 Specialization Cost Analysis
 
-**10 PP Cost**:
-- **Not achievable** by Milestone 3 (only 5 PP available)
-- Requires ~6-7 Milestones in full campaign
-- **Intentional design**: Specializations are end-game goals
+**3 PP Cost (v0.18: reduced from 10 PP)**:
+- **Achievable** by Milestone 2 (4 PP available)
+- Comfortably affordable by Milestone 3 (5 PP available with 2 PP remaining)
+- **Design rationale**: Enables specialization gameplay within v0.1 scope
 
 **Unlock Benefits**:
 - 2-3 Tier 1 abilities (unique utility/healing/support)
@@ -1286,7 +1286,8 @@ public void IntegerTruncation_FloorsBehaviorCorrectly()
 
 **Trade-off**:
 - Specialization unlocks **new capabilities** (healing, ally buffs) not available through attributes
-- Delay = Weaker in mid-game, stronger in late-game
+- 3 PP = Meaningful choice vs 3 attribute increases or 1-2 ability ranks
+- Specialization provides unique utility, attributes provide consistent power
 
 ### 5.8 Legend Carry-Over Design
 
@@ -1379,7 +1380,7 @@ Tunable parameters for future balance adjustments:
 | Stamina per Milestone | +5 | +3 to +10 | Resource availability |
 | PP per Milestone | +1 | +1 to +3 | Customization rate |
 | Attribute Cap | 6 | 5 to 10 | Power ceiling |
-| Specialization Cost | 10 PP | 5 to 15 PP | Unlock timing |
+| Specialization Cost | **3 PP** (v0.18) | 3 to 15 PP | Unlock timing |
 | Trauma Modifier | 1.25 | 1.0 to 2.0 | Risk/reward balance |
 | Starting PP | 2 | 0 to 5 | Early agency |
 | Max Milestone | 3 | 3 to 20 | Campaign length |
@@ -1444,7 +1445,7 @@ Character stats updated
 | **Milestone Threshold** | `(Current_Milestone × 50) + 100` |
 | **Attribute Cost** | `1 PP per +1 attribute` |
 | **Ability Rank Cost** | `ability.CostToRank2` (typically 2-3 PP) |
-| **Specialization Cost** | `10 PP (one-time)` |
+| **Specialization Cost** | `3 PP (one-time)` **(v0.18: reduced from 10 PP)** |
 
 ### 8.2 Constants
 

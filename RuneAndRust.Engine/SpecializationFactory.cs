@@ -4,7 +4,7 @@ namespace RuneAndRust.Engine;
 
 /// <summary>
 /// v0.7: Factory for applying specializations to characters
-/// Specializations are unlocked with 10 PP during gameplay
+/// Specializations are unlocked with 3 PP during gameplay (v0.18: reduced from 10)
 /// Each specialization grants access to 9 tiered abilities
 /// </summary>
 public class SpecializationFactory
@@ -195,7 +195,7 @@ public class SpecializationFactory
         {
             Name = "Anatomical Insight",
             Description = "Apply [Vulnerable] status to organic enemy. Target takes +25% damage for 3 turns. WITS check vs target's defense.",
-            StaminaCost = 25,
+            StaminaCost = 20,  // v0.18: Reduced from 25 to improve Bone-Setter support viability
             Type = AbilityType.Control,
             AttributeUsed = "wits",
             BonusDice = 2,
@@ -242,7 +242,7 @@ public class SpecializationFactory
         {
             Name = "Cognitive Realignment",
             Description = "Remove [Feared] and [Disoriented] status effects from ally. Restore 2d6 Psychic Stress. Your presence anchors their sanity.",
-            StaminaCost = 30,
+            StaminaCost = 25,  // v0.18: Reduced from 30 to make mental health management accessible
             Type = AbilityType.Utility,
             AttributeUsed = "will",  // Uses WILL for mental stabilization
             BonusDice = 2,
@@ -276,7 +276,7 @@ public class SpecializationFactory
         {
             Name = "Miracle Worker",
             Description = "⭐ CAPSTONE: Massive heal (4d6 + WITS) and remove ALL physical debuffs ([Bleeding], [Poisoned], [Disease], [Vulnerable]). Limited uses per expedition.",
-            StaminaCost = 60,
+            StaminaCost = 40,  // v0.18: Reduced from 60 to make usable at M3
             Type = AbilityType.Utility,
             AttributeUsed = "wits",
             BonusDice = 3,
@@ -315,7 +315,7 @@ public class SpecializationFactory
         {
             Name = "Analyze Weakness",
             Description = "Reveal enemy HP, Resistances, and Vulnerabilities to entire party. Costs 5 Psychic Stress (staring into the crash hurts).",
-            StaminaCost = 30,
+            StaminaCost = 25,  // v0.18: Reduced from 30 to make utility more accessible
             Type = AbilityType.Utility,
             AttributeUsed = "wits",
             BonusDice = 3,
@@ -346,7 +346,7 @@ public class SpecializationFactory
         {
             Name = "Exploit Design Flaw",
             Description = "Apply [Analyzed] debuff to target. All allies gain +2 Accuracy against [Analyzed] enemies for 3 turns.",
-            StaminaCost = 35,
+            StaminaCost = 28,  // v0.18: Reduced from 35 to make accessible for Warriors
             Type = AbilityType.Control,
             AttributeUsed = "wits",
             BonusDice = 2,

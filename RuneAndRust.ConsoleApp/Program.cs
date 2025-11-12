@@ -1976,11 +1976,11 @@ class Program
             var choices = new List<string>();
 
             // v0.7: Check for specialization unlock
-            if (player.ProgressionPoints >= 10 &&
+            if (player.ProgressionPoints >= 3 &&
                 player.Specialization == Specialization.None &&
                 SpecializationFactory.GetAvailableSpecializations(player.Class).Count > 0)
             {
-                choices.Add("⭐ Unlock Specialization (10 PP)");
+                choices.Add("⭐ Unlock Specialization (3 PP)");
             }
 
             if (player.ProgressionPoints >= 1)
@@ -2186,7 +2186,7 @@ class Program
         AnsiConsole.WriteLine();
 
         // Confirm selection
-        AnsiConsole.MarkupLine($"[yellow]Cost: 10 PP (Current: {player.ProgressionPoints} PP)[/]");
+        AnsiConsole.MarkupLine($"[yellow]Cost: 3 PP (Current: {player.ProgressionPoints} PP)[/]");
         AnsiConsole.MarkupLine("[dim]This is a permanent choice and cannot be changed![/]");
         AnsiConsole.WriteLine();
 
