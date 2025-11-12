@@ -1,0 +1,45 @@
+{
+  "TemplateId": "maintenance_crawlspace",
+  "Biome": "the_roots",
+  "Size": "Small",
+  "Archetype": "SecretRoom",
+  "NameTemplates": [
+    "The {Adjective} Maintenance Crawlspace",
+    "The {Adjective} Service Void",
+    "The {Adjective} Hidden Shaft"
+  ],
+  "Adjectives": [
+    "Cramped",
+    "Narrow",
+    "Tight",
+    "Claustrophobic",
+    "Confining"
+  ],
+  "DescriptionTemplates": [
+    "A {Adjective} crawlspace, accessible only through a maintenance hatch. {Detail}. This passage wasn't meant to be found.",
+    "This {Adjective} service void runs between the facility's main structures. {Detail}. Only maintenance workers knew these routes.",
+    "You squeeze into a {Adjective} hidden shaft. {Detail}. The walls press in on all sides."
+  ],
+  "Details": [
+    "Tool marks scar the walls where workers expanded the passage",
+    "Emergency supplies are tucked into a recessed alcove",
+    "A faded map of secret passages is scratched into the metal",
+    "The remains of a worker's lunch sit preserved in the dry air",
+    "Access panels lead to critical facility systems"
+  ],
+  "MinConnectionPoints": 1,
+  "MaxConnectionPoints": 1,
+  "ValidConnections": [
+    "Corridor",
+    "Chamber",
+    "Junction"
+  ],
+  "Difficulty": "Medium",
+  "Tags": [
+    "Secret",
+    "Maintenance",
+    "Optional",
+    "Hidden",
+    "Shortcut"
+  ]
+}
