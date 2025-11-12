@@ -355,11 +355,11 @@ public class SagaService
     }
 
     /// <summary>
-    /// v0.7: Unlock a specialization for 10 PP
+    /// v0.7: Unlock a specialization for 3 PP (v0.18: reduced from 10 to make achievable by M2-M3)
     /// </summary>
     public bool UnlockSpecialization(PlayerCharacter player, Specialization specialization)
     {
-        const int SpecializationCost = 10;
+        const int SpecializationCost = 3;
 
         // Check if player has enough PP
         if (player.ProgressionPoints < SpecializationCost)

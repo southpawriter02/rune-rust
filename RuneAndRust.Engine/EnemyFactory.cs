@@ -387,7 +387,7 @@ public class EnemyFactory
             DamageBonus = 0,
             DefenseBonus = -1, // Rusted, less accurate
             IsBoss = false,
-            BaseLegendValue = 5 // Trivial enemy
+            BaseLegendValue = 10 // v0.18: Increased from 5 to match HP investment (0.67 Legend/HP ratio)
         };
     }
 

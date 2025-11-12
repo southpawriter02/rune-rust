@@ -401,7 +401,7 @@ public class CharacterFactory
                 "HP: 35 | Stamina: 40\n" +
                 "Weapon: Simple Staff (WITS-based)\n" +
                 "Abilities: Improvised Strike, Analyze, Keen Eye\n" +
-                "Specializations (unlock with 10 PP): Bone-Setter, Jötun-Reader, Skald",
+                "Specializations (unlock with 3 PP): Bone-Setter, Jötun-Reader, Skald",
 
             _ => "Unknown class"
         };

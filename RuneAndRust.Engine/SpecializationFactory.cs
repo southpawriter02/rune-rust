@@ -4,7 +4,7 @@ namespace RuneAndRust.Engine;
 
 /// <summary>
 /// v0.7: Factory for applying specializations to characters
-/// Specializations are unlocked with 10 PP during gameplay
+/// Specializations are unlocked with 3 PP during gameplay (v0.18: reduced from 10)
 /// Each specialization grants access to 9 tiered abilities
 /// </summary>
 public class SpecializationFactory
@@ -276,7 +276,7 @@ public class SpecializationFactory
         {
             Name = "Miracle Worker",
             Description = "⭐ CAPSTONE: Massive heal (4d6 + WITS) and remove ALL physical debuffs ([Bleeding], [Poisoned], [Disease], [Vulnerable]). Limited uses per expedition.",
-            StaminaCost = 60,
+            StaminaCost = 40,  // v0.18: Reduced from 60 to make usable at M3
             Type = AbilityType.Utility,
             AttributeUsed = "wits",
             BonusDice = 3,

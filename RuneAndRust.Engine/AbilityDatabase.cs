@@ -109,8 +109,8 @@ public class AbilityDatabase
         return new Ability
         {
             Name = "Rally Cry",
-            Description = "Your commanding shout inspires your companions to fight on. All allies within 15ft heal 1d8 HP, gain +1 to next attack, and reduce Stress by 5.",
-            StaminaCost = 20,
+            Description = "Your commanding shout inspires your companions to fight on. All allies within 20ft heal 2d6 HP, gain +1 to next attack, and reduce Stress by 5.",
+            StaminaCost = 20,  // v0.18: Increased heal from 1d8 to 2d6, range from 15ft to 20ft
             Type = AbilityType.Utility,
             AttributeUsed = "will",
             BonusDice = 0,
@@ -130,13 +130,13 @@ public class AbilityDatabase
         return new Ability
         {
             Name = "Whirlwind Strike",
-            Description = "Spin in a devastating arc, your blade finding every nearby foe. Attack all enemies within 5ft for 1d8+MIGHT damage each.",
+            Description = "Spin in a devastating arc, your blade finding every nearby foe. Attack all enemies within 5ft for 1d6+MIGHT damage each.",
             StaminaCost = 25,
             Type = AbilityType.Attack,
             AttributeUsed = "might",
             BonusDice = 0,
             SuccessThreshold = 2,
-            DamageDice = 1, // 1d8 per target (≈ 1d6+1)
+            DamageDice = 1, // v0.18: Clarified damage as 1d6 per target (AOE ability)
             MaxRank = 3,
             CostToRank2 = 5,
             CostToRank3 = 0
