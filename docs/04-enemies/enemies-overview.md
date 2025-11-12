@@ -110,7 +110,9 @@ public class Enemy
 
 **Soak** (Damage Reduction):
 - Some enemies have armor that reduces incoming damage
-- Example: Omega Sentinel (5 Soak = -5 damage per hit)
+- Examples:
+  - Vault Custodian: **4 Soak** **(v0.18: reduced from 6)**
+  - Omega Sentinel: **6 Soak** **(v0.18: reduced from 8)**
 
 **Poison**:
 - Sludge Crawler inflicts poison (1d6 damage per turn)
@@ -136,27 +138,27 @@ public class Enemy
 5. Test Subject (Low)
 6. War Frame (High)
 7. Forlorn Scholar (Medium, Forlorn)
-8. Aetheric Aberration (Boss)
+8. Aetheric Aberration (Boss) **[75 HP, v0.18: increased from 60]**
 
 **v0.6 Enemies** (6):
 9. Maintenance Construct (Low)
 10. Sludge Crawler (Low, Poison)
 11. Corrupted Engineer (Medium, Support)
-12. Vault Custodian (High)
+12. Vault Custodian (High) **[Soak 4, v0.18: reduced from 6]**
 13. Forlorn Archivist (Boss, Forlorn)
-14. Omega Sentinel (Boss, Tank)
+14. Omega Sentinel (Boss, Tank) **[Soak 6, v0.18: reduced from 8]**
 
 **v0.16 Enemies** (10):
-15. Corroded Sentry (Trivial)
-16. Husk Enforcer (Low)
-17. Arc Welder Unit (Low)
+15. Corroded Sentry (Trivial) **[10 Legend, v0.18: increased from 5]**
+16. Husk Enforcer (Low) **[18 Legend, v0.18: increased from 15]**
+17. Arc Welder Unit (Low) **[25 Legend, v0.18: increased from 20]**
 18. Shrieker (Medium, Psychic)
 19. Jötun-Reader Fragment (Medium, Tech)
-20. Servitor Swarm (Medium, Swarm)
-21. Bone Keeper (High, Undead)
-22. Failure Colossus (High, Construct)
+20. Servitor Swarm (Medium, Swarm) **[40 Legend, v0.18: increased from 30]**
+21. Bone Keeper (High, Undead) **[55 Legend, v0.18: increased from 50]**
+22. Failure Colossus (High, Construct) **[3d6+4 damage, v0.18: reduced from 4d6+3]**
 23. Rust Witch (Lethal, Corruption)
-24. Sentinel Prime (Lethal, Military)
+24. Sentinel Prime (Lethal, Military) **[4d6 damage, v0.18: reduced from 5d6]**
 
 **Total**: 36 enemy types across 5 difficulty tiers
 
@@ -178,14 +180,15 @@ public class Enemy
 
 ### 5.2 Legend Value Scaling
 
-**Legend Awards**: ~50% of enemy HP
+**Legend Awards**: Target ratio of 0.8-1.2 Legend per HP (normal), 1.2-1.5 (bosses)
 
-**Examples**:
-- Corroded Sentry: 15 HP, 15 Legend
-- Corrupted Servitor: 50 HP, 40 Legend
-- Omega Sentinel: 150 HP, 120 Legend
+**Examples (v0.18 adjusted)**:
+- Corroded Sentry: 15 HP, **10 Legend** (0.67 ratio - early enemy, intentionally lower)
+- Corrupted Servitor: 50 HP, 40 Legend (0.80 ratio)
+- Aetheric Aberration: **75 HP**, 60 Legend (0.80 ratio - boss)
+- Omega Sentinel: 150 HP, 120 Legend (0.80 ratio - boss)
 
-**Design**: Higher-tier enemies provide proportionally more XP, incentivizing risk.
+**Design**: Higher-tier enemies provide proportionally more XP, incentivizing risk. v0.18 adjusted several enemies to improve Legend/HP ratios for fairer progression.
 
 ### 5.3 Forlorn Enemy Risk/Reward
 

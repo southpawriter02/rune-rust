@@ -82,8 +82,8 @@ Jury-Rigged (0) → Scavenged (1) → Clan-Forged (2) → Optimized (3) → Myth
 | **Axe** | MIGHT | 1d6 to 2d6 | Warrior | Balanced melee |
 | **Greatsword** | MIGHT | 1d6+2 to 4d6+4 | Warrior | Two-handed, highest damage |
 | **Spear** | FINESSE | 1d6 to 2d6 | Scavenger | Reach weapon |
-| **Dagger** | FINESSE | 1d6-2 to 2d6 | Scavenger | Fast, low damage |
-| **Staff** | WILL | 1d6-2 to 3d6+3 | Mystic | Aether-based |
+| **Dagger** | FINESSE | 1d6-1 to 2d6 | Scavenger | Fast, low damage **(v0.18: improved starter)** |
+| **Staff** | WILL | 1d6-1 to 3d6+3 | Mystic | Aether-based **(v0.18: improved starter)** |
 | **Focus** | WILL | 0d6 to 0d6 | Mystic | No melee damage, +WILL bonuses |
 
 ### 3.2 Weapon Properties
@@ -106,10 +106,12 @@ public class Weapon : Equipment
 **Tier 0 (Jury-Rigged)**:
 - Rusty Hatchet: 1d6, MIGHT
 - Makeshift Spear: 1d6, FINESSE
-- Crude Staff: 1d6-2, WILL
+- Crude Staff: **1d6-1**, WILL **(v0.18: improved from 1d6-2)**
+- Sharpened Scrap: **1d6-1** **(v0.18: improved from 1d6-2)**
 
 **Tier 2 (Clan-Forged)**:
 - Clan-Forged Axe: 1d6+3, MIGHT
+- Clan-Forged Greatsword: **1d6+5**, MIGHT **(v0.18: reduced from 1d6+6)**
 - Hunter's Spear: 1d6+3, FINESSE
 - Iron-Bound Staff: 1d6+1, WILL
 
@@ -151,7 +153,7 @@ public class Armor : Equipment
 
 **Heavy Armor**:
 - **Pros**: High HP/defense, +STURDINESS bonuses
-- **Cons**: -FINESSE penalties possible
+- **Cons**: **-FINESSE penalties** (Clan-Forged+ tiers) **(v0.18: balanced heavy armor)**
 - **Best for**: Tanks (Warrior frontline)
 
 ### 4.4 Armor Examples by Tier
@@ -163,6 +165,7 @@ public class Armor : Equipment
 **Tier 2**:
 - Reinforced Leathers: +15 HP, +1 defense, +1 FINESSE (Light)
 - Chain Hauberk: +20 HP, +2 defense (Medium)
+- Clan-Forged Full Plate: +25 HP, +3 defense, **-1 FINESSE** (Heavy) **(v0.18: added penalty)**
 
 **Tier 4**:
 - Sentinel's Plate: +30 HP, +3 defense, +2 STURDINESS (Heavy)
@@ -182,6 +185,11 @@ public class Armor : Equipment
 - End: Tier 2-3 (Clan-Forged/Optimized)
 
 **Tier 4 (Myth-Forged)**: Reserved for rare drops, boss rewards, or long campaigns
+
+**v0.18 Balance Adjustments**:
+- **Starter weapons improved**: Jury-rigged weapons (Crude Staff, Sharpened Scrap) reduced penalty from -2 to -1 damage, improving new player experience for support classes
+- **Top-tier weapon nerfed**: Clan-Forged Greatsword reduced from +6 to +5 damage to prevent early-game dominance
+- **Heavy armor trade-off**: Clan-Forged Full Plate adds -1 FINESSE penalty, creating meaningful choice vs medium armor
 
 ### 5.2 Attribute Bonus Scaling
 
