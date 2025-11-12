@@ -40,7 +40,10 @@ public enum CommandType
     // v0.9 - Merchant System
     Shop,
     Buy,
-    Sell
+    Sell,
+    // v0.13 - Persistent World State / Destruction
+    Destroy,
+    History
 }
 
 public class ParsedCommand
@@ -155,6 +158,16 @@ public class CommandParser
         { "sell", CommandType.Sell },
         { "trade", CommandType.Sell },
 
+        // Destruction (v0.13)
+        { "destroy", CommandType.Destroy },
+        { "smash", CommandType.Destroy },
+        { "break", CommandType.Destroy },
+        { "clear", CommandType.Destroy },
+        { "demolish", CommandType.Destroy },
+        { "history", CommandType.History },
+        { "changes", CommandType.History },
+        { "modifications", CommandType.History },
+
         // Utility
         { "help", CommandType.Help },
         { "h", CommandType.Help },
@@ -262,6 +275,11 @@ public class CommandParser
             {
                 command.Target = string.Join(" ", parts.Skip(1));
             }
+            // Handle "destroy [target]" or "smash [target]" (v0.13)
+            else if (commandType == CommandType.Destroy && parts.Length > 1)
+            {
+                command.Target = string.Join(" ", parts.Skip(1));
+            }
         }
         else
         {
@@ -317,6 +335,10 @@ MERCHANT SYSTEM (v0.9):
   buy [item name]      - Purchase an item from a merchant
   sell [item name]     - Sell equipment or materials to a merchant
   sell                 - View all items you can sell with prices
+
+WORLD INTERACTION (v0.13):
+  destroy [target]     - Destroy terrain or hazards (smash, break, clear)
+  history              - View modifications to the current room
 
 OTHER COMMANDS:
   help, h, ?           - Show this help text
