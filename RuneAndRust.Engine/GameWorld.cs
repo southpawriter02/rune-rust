@@ -6,12 +6,25 @@ public class GameWorld
 {
     public Dictionary<string, Room> Rooms { get; private set; }
     public string StartRoomName { get; private set; }
+    public bool IsProcedurallyGenerated { get; private set; }
+    public Dungeon? CurrentDungeon { get; private set; }
 
+    // Legacy constructor: handcrafted rooms
     public GameWorld()
     {
         Rooms = new Dictionary<string, Room>();
         StartRoomName = "Entrance";
+        IsProcedurallyGenerated = false;
         InitializeRooms();
+    }
+
+    // v0.10: Constructor for procedurally generated dungeons
+    public GameWorld(Dungeon dungeon)
+    {
+        Rooms = dungeon.Rooms;
+        StartRoomName = dungeon.StartRoomId;
+        IsProcedurallyGenerated = true;
+        CurrentDungeon = dungeon;
     }
 
     private void InitializeRooms()
