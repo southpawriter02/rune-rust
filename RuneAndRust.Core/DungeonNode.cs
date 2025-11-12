@@ -33,6 +33,11 @@ public class DungeonNode
     public List<string> Tags { get; set; } = new();
     public Dictionary<string, object> Properties { get; set; } = new(); // Extensibility
 
+    // Quest Anchor (v0.11)
+    public bool IsQuestAnchor { get; set; } = false;
+    public string? QuestAnchorId { get; set; } = null;
+    public string? HandcraftedRoomId { get; set; } = null;
+
     /// <summary>
     /// Gets whether this node is on the critical path (Start, Main, or Boss)
     /// </summary>

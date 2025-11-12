@@ -62,4 +62,13 @@ public class Room
     // Trauma Economy (v0.5)
     public PsychicResonanceLevel PsychicResonance { get; set; } = PsychicResonanceLevel.None;
     public bool IsSanctuary { get; set; } = false; // Safe location for Sanctuary Rest
+
+    // v0.11 Population Systems
+    public List<DynamicHazard> DynamicHazards { get; set; } = new();
+    public List<StaticTerrain> StaticTerrain { get; set; } = new();
+    public List<LootNode> LootNodes { get; set; } = new();
+    public List<AmbientCondition> AmbientConditions { get; set; } = new();
+
+    // v0.11 Metadata
+    public bool IsHandcrafted { get; set; } = false; // True for Quest Anchor rooms (skip procedural population)
 }
