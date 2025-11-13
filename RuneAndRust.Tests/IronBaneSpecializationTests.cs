@@ -372,7 +372,6 @@ public class IronBaneSpecializationTests
         // Add Righteous Conviction at Rank 1 (+50%)
         character.Abilities.Add(new Ability
         {
-            AbilityID = 1108,
             Name = "Righteous Conviction",
             CurrentRank = 1
         });
@@ -394,7 +393,6 @@ public class IronBaneSpecializationTests
         // Add Righteous Conviction at Rank 3 (+100%, i.e., double)
         character.Abilities.Add(new Ability
         {
-            AbilityID = 1108,
             Name = "Righteous Conviction",
             CurrentRank = 3
         });
@@ -419,7 +417,6 @@ public class IronBaneSpecializationTests
         // Add Righteous Conviction at Rank 3 (enables refunds)
         character.Abilities.Add(new Ability
         {
-            AbilityID = 1108,
             Name = "Righteous Conviction",
             CurrentRank = 3
         });

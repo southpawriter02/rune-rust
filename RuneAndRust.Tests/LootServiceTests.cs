@@ -1,5 +1,6 @@
 using NUnit.Framework;
 using RuneAndRust.Core;
+using RuneAndRust.Core.Population;
 using RuneAndRust.Engine;
 
 namespace RuneAndRust.Tests;
@@ -354,10 +355,9 @@ public class LootServiceTests
         return new Enemy
         {
             Name = name,
-            Description = $"A test enemy of tier {tier}",
             MaxHP = 20,
             HP = 20,
-            Level = tier,
+            ThreatLevel = (ThreatLevel)tier,
             IsBoss = false,
             Attributes = new Attributes(might: 2, finesse: 2, wits: 1, will: 1, sturdiness: 2)
         };

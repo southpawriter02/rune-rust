@@ -102,7 +102,7 @@ public class SaveLoadTests
         _repository.SaveGame(player, worldState);
 
         // Act
-        var (loadedPlayer, _) = _repository.LoadGame(player.Name);
+        var (loadedPlayer, _, _, _, _, _) = _repository.LoadGame(player.Name);
 
         // Assert
         Assert.That(loadedPlayer!.CurrentMilestone, Is.EqualTo(2));
@@ -126,7 +126,7 @@ public class SaveLoadTests
         _repository.SaveGame(player, worldState);
 
         // Act
-        var (loadedPlayer, _) = _repository.LoadGame(player.Name);
+        var (loadedPlayer, _, _, _, _, _) = _repository.LoadGame(player.Name);
 
         // Assert
         Assert.That(loadedPlayer!.Attributes.Might, Is.EqualTo(5));
@@ -150,7 +150,7 @@ public class SaveLoadTests
         _repository.SaveGame(player, worldState);
 
         // Act
-        var (loadedPlayer, _) = _repository.LoadGame(player.Name);
+        var (loadedPlayer, _, _, _, _, _) = _repository.LoadGame(player.Name);
 
         // Assert
         Assert.That(loadedPlayer!.HP, Is.EqualTo(45));
@@ -176,7 +176,7 @@ public class SaveLoadTests
         _repository.SaveGame(player, worldState);
 
         // Act
-        var (_, loadedWorldState) = _repository.LoadGame(player.Name);
+        var (_, loadedWorldState, _, _, _, _) = _repository.LoadGame(player.Name);
 
         // Assert
         Assert.That(loadedWorldState!.CurrentRoomId, Is.EqualTo(4));
@@ -199,7 +199,7 @@ public class SaveLoadTests
 
         // Act
         _repository.SaveGame(player, worldState); // Overwrite
-        var (loadedPlayer, _) = _repository.LoadGame(player.Name);
+        var (loadedPlayer, _, _, _, _, _) = _repository.LoadGame(player.Name);
 
         // Assert
         Assert.That(loadedPlayer!.CurrentMilestone, Is.EqualTo(3));
@@ -297,7 +297,7 @@ public class SaveLoadTests
 
         // Act
         _repository.SaveGame(player, worldState);
-        var (loadedPlayer, loadedWorldState, roomItemsJson) = _repository.LoadGame(player.Name);
+        var (loadedPlayer, loadedWorldState, roomItemsJson, _, _, _) = _repository.LoadGame(player.Name);
 
         // Assert
         Assert.That(loadedPlayer, Is.Not.Null);
@@ -320,7 +320,7 @@ public class SaveLoadTests
 
         // Act
         _repository.SaveGame(player, worldState);
-        var (loadedPlayer, loadedWorldState, roomItemsJson) = _repository.LoadGame(player.Name);
+        var (loadedPlayer, loadedWorldState, roomItemsJson, _, _, _) = _repository.LoadGame(player.Name);
 
         // Assert
         Assert.That(loadedPlayer, Is.Not.Null);
@@ -344,7 +344,7 @@ public class SaveLoadTests
 
         // Act
         _repository.SaveGame(player, worldState);
-        var (loadedPlayer, loadedWorldState, roomItemsJson) = _repository.LoadGame(player.Name);
+        var (loadedPlayer, loadedWorldState, roomItemsJson, _, _, _) = _repository.LoadGame(player.Name);
 
         // Assert
         Assert.That(loadedPlayer, Is.Not.Null);
@@ -391,7 +391,7 @@ public class SaveLoadTests
 
         // Act
         _repository.SaveGame(player, worldState);
-        var (loadedPlayer, loadedWorldState, roomItemsJson) = _repository.LoadGame(player.Name);
+        var (loadedPlayer, loadedWorldState, roomItemsJson, _, _, _) = _repository.LoadGame(player.Name);
 
         // Assert
         Assert.That(loadedPlayer, Is.Not.Null);
@@ -418,7 +418,7 @@ public class SaveLoadTests
 
         // Act
         _repository.SaveGame(player, worldState);
-        var (loadedPlayer, loadedWorldState, roomItemsJson) = _repository.LoadGame(player.Name);
+        var (loadedPlayer, loadedWorldState, roomItemsJson, _, _, _) = _repository.LoadGame(player.Name);
 
         // Assert
         Assert.That(loadedPlayer, Is.Not.Null);
@@ -442,7 +442,7 @@ public class SaveLoadTests
 
         // Act
         _repository.SaveGame(player, worldState);
-        var (loadedPlayer, loadedWorldState, roomItemsJson) = _repository.LoadGame(player.Name);
+        var (loadedPlayer, loadedWorldState, roomItemsJson, _, _, _) = _repository.LoadGame(player.Name);
 
         // Assert
         Assert.That(loadedPlayer, Is.Not.Null);

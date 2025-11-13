@@ -1,8 +1,8 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using RuneAndRust.Core;
+using RuneAndRust.Core.Population;
 using RuneAndRust.Engine.CoherentGlitch;
 using RuneAndRust.Engine.CoherentGlitch.Rules;
-using Population = RuneAndRust.Core.Population;
 
 namespace RuneAndRust.Tests;
 
