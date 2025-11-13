@@ -92,7 +92,7 @@ public class HazardService
 
         string logMessage = $"⚠️ {room.HazardDescription}\n";
         logMessage += $"   {room.HazardCheckAttribute} Check (DC {room.HazardCheckDC}): ";
-        logMessage += $"Rolled {attributeValue} dice → [{string.Join(", ", rollResult.IndividualRolls)}] → {rollResult.Successes} successes\n";
+        logMessage += $"Rolled {attributeValue} dice → [{string.Join(", ", rollResult.Rolls)}] → {rollResult.Successes} successes\n";
 
         int damage = 0;
 

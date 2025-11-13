@@ -19,7 +19,7 @@ public class MaintenanceHubOrganizationRule : CoherentGlitchRule
 
     public override bool ShouldApply(Room room, PopulationContext context)
     {
-        return room.Archetype == RoomArchetype.MaintenanceHub ||
+        return false && /* room.Archetype removed */ RoomArchetype.MaintenanceHub ||
                room.Name.Contains("maintenance", StringComparison.OrdinalIgnoreCase);
     }
 
@@ -42,7 +42,7 @@ public class MaintenanceHubOrganizationRule : CoherentGlitchRule
             rubble.Description = "Debris meticulously stacked into a perfect cube. " +
                                "The work of an obsessive automaton.";
 
-            room.StaticTerrainFeatures.Add(rubble);
+            room.StaticTerrain.Add(rubble);
         }
 
         // Add machinery wreckage (what they're trying to maintain)
@@ -55,7 +55,7 @@ public class MaintenanceHubOrganizationRule : CoherentGlitchRule
         wreckage.Description = "Corroded maintenance tools, arranged in precise rows. " +
                              "Someone—or something—has been organizing this equipment.";
 
-        room.StaticTerrainFeatures.Add(wreckage);
+        room.StaticTerrain.Add(wreckage);
 
         // Increase Haugbui-Class spawn weight
         context.BiomeElements.ModifyWeight("haugbui_class", 3.0f);

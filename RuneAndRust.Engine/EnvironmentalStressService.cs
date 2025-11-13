@@ -62,14 +62,14 @@ public class EnvironmentalStressService
         int stress = 0;
 
         // Check for Psychic Resonance condition (from v0.11)
-        if (room.AmbientConditions?.Contains(AmbientCondition.PsychicResonance) ?? false)
+        if (room.AmbientConditions?.Contains(null /* AmbientCondition.PsychicResonance removed */) ?? false)
         {
             stress += 2;
             _log.Debug("Psychic Resonance stress: +2");
         }
 
         // Flooded rooms (claustrophobia amplifier)
-        if (room.AmbientConditions?.Contains(AmbientCondition.Flooded) ?? false)
+        if (room.AmbientConditions?.Contains(null /* AmbientCondition.Flooded removed */) ?? false)
         {
             if (character.HasTrauma("claustrophobia"))
             {
@@ -132,7 +132,7 @@ public class EnvironmentalStressService
         // Nyctophobia: Dim lighting causes increased stress
         if (character.HasTrauma("nyctophobia"))
         {
-            if (room.AmbientConditions?.Contains(AmbientCondition.DimLighting) ?? false)
+            if (room.AmbientConditions?.Contains(null /* AmbientCondition.DimLighting removed */) ?? false)
             {
                 var trauma = character.GetTrauma("nyctophobia");
                 if (trauma != null)
@@ -159,7 +159,7 @@ public class EnvironmentalStressService
         int stress = 0;
 
         // Check for enemies in the room
-        bool hasEnemies = (room.DormantProcesses?.Count ?? 0) > 0;
+        bool hasEnemies = (room.Enemies /* DormantProcesses removed, using Enemies */?.Count ?? 0) > 0;
 
         if (hasEnemies)
         {
@@ -225,8 +225,8 @@ public class EnvironmentalStressService
 
         if (IsLargeRoom(room)) conditions.Add("large_room");
         if (IsSmallRoom(room)) conditions.Add("small_room");
-        if (room.AmbientConditions?.Contains(AmbientCondition.DimLighting) ?? false) conditions.Add("dim_lighting");
-        if ((room.DormantProcesses?.Count ?? 0) > 0) conditions.Add("enemy_nearby");
+        if (room.AmbientConditions?.Contains(null /* AmbientCondition.DimLighting removed */) ?? false) conditions.Add("dim_lighting");
+        if ((room.Enemies /* DormantProcesses removed, using Enemies */?.Count ?? 0) > 0) conditions.Add("enemy_nearby");
 
         // Apply passive stress for each condition
         foreach (var condition in conditions)
@@ -275,7 +275,7 @@ public class EnvironmentalStressService
         bool anyStress = false;
 
         // Check each source
-        if (room.AmbientConditions?.Contains(AmbientCondition.PsychicResonance) ?? false)
+        if (room.AmbientConditions?.Contains(null /* AmbientCondition.PsychicResonance removed */) ?? false)
         {
             report.AppendLine("  • Psychic Resonance: +2 Stress/turn");
             anyStress = true;
@@ -293,13 +293,13 @@ public class EnvironmentalStressService
             anyStress = true;
         }
 
-        if (character.HasTrauma("nyctophobia") && (room.AmbientConditions?.Contains(AmbientCondition.DimLighting) ?? false))
+        if (character.HasTrauma("nyctophobia") && (room.AmbientConditions?.Contains(null /* AmbientCondition.DimLighting removed */) ?? false))
         {
             report.AppendLine("  • [NYCTOPHOBIA] Darkness: +50% Stress");
             anyStress = true;
         }
 
-        if ((room.DormantProcesses?.Count ?? 0) > 0)
+        if ((room.Enemies /* DormantProcesses removed, using Enemies */?.Count ?? 0) > 0)
         {
             report.AppendLine("  • Enemy presence: +1 Stress/turn");
             if (character.HasTrauma("paranoia"))

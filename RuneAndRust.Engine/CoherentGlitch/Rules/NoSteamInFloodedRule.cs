@@ -19,7 +19,7 @@ public class NoSteamInFloodedRule : CoherentGlitchRule
 
     public override bool ShouldApply(Room room, PopulationContext context)
     {
-        return room.HasAmbientCondition("[Flooded]");
+        return room.AmbientConditions.Any() /* TODO: filter by type */;
     }
 
     public override void Apply(Room room, PopulationContext context)

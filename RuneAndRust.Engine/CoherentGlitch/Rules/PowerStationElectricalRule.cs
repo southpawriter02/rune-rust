@@ -48,7 +48,7 @@ public class PowerStationElectricalRule : CoherentGlitchRule
         wreckage.Description = "The shattered remains of a power distribution node. " +
                              "Exposed wiring crackles ominously.";
 
-        room.StaticTerrainFeatures.Add(wreckage);
+        room.StaticTerrain.Add(wreckage);
 
         // Add ambient description
         room.Description += " The air smells of ozone and burnt insulation. " +

@@ -19,7 +19,7 @@ public class DarknessStressAmplifierRule : CoherentGlitchRule
 
     public override bool ShouldApply(Room room, PopulationContext context)
     {
-        return room.HasAmbientCondition("[Darkness]");
+        return room.AmbientConditions.Any() /* TODO: filter by type */;
     }
 
     public override void Apply(Room room, PopulationContext context)
@@ -28,7 +28,7 @@ public class DarknessStressAmplifierRule : CoherentGlitchRule
         context.BiomeElements.ModifyWeight("psychic_resonance", 2.0f);
 
         // If room has both Darkness and Psychic Resonance, amplify stress
-        if (room.HasAmbientCondition("[Psychic Resonance]"))
+        if (room.AmbientConditions.Any() /* TODO: filter by type */)
         {
             var darkness = room.AmbientConditions
                 .OfType<DarknessCondition>()

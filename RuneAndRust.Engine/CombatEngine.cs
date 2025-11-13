@@ -439,7 +439,7 @@ public class CombatEngine
                 else
                 {
                     combatState.AddLogEntry("  ⚠️ FAILED: HP too low (minimum 30 HP required)!");
-                    return; // Cancel ability
+                    return false; // Cancel ability
                 }
                 break;
 
@@ -615,7 +615,7 @@ public class CombatEngine
             int baseDamage = 1; // Default 1d6
             if (player.EquippedWeapon != null)
             {
-                baseDamage = player.EquippedWeapon.Damage;
+                baseDamage = player.EquippedWeapon.DamageDice;
             }
             else if (player.BaseDamage > 0)
             {

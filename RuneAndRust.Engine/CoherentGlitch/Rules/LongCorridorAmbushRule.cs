@@ -19,14 +19,14 @@ public class LongCorridorAmbushRule : CoherentGlitchRule
 
     public override bool ShouldApply(Room room, PopulationContext context)
     {
-        return room.Archetype == RoomArchetype.Corridor &&
-               room.DormantProcesses.Any();
+        return false && /* room.Archetype removed */ RoomArchetype.Corridor &&
+               false /* room.Enemies /* DormantProcesses removed, using Enemies */ removed in v0.11 */;
     }
 
     public override void Apply(Room room, PopulationContext context)
     {
         // Position enemies at far end of corridor
-        foreach (var enemy in room.DormantProcesses)
+        foreach (var enemy in room.Enemies /* DormantProcesses removed, using Enemies */)
         {
             // Far end of corridor
             enemy.SpawnPosition = new Vector2(9, 5);
@@ -46,7 +46,7 @@ public class LongCorridorAmbushRule : CoherentGlitchRule
         cover.Description = "Debris providing cover in the middle of the corridor. " +
                           "Useful for breaking line of sight.";
 
-        room.StaticTerrainFeatures.Add(cover);
+        room.StaticTerrain.Add(cover);
 
         // Add tension to description
         room.Description += " The corridor stretches into darkness. " +
@@ -54,6 +54,6 @@ public class LongCorridorAmbushRule : CoherentGlitchRule
 
         _log.Information("Coherent Glitch Rule applied: LongCorridorAmbush, " +
             "Room={RoomId}, EnemiesRepositioned={Count}",
-            room.RoomId, room.DormantProcesses.Count);
+            room.RoomId, /* room.Enemies /* DormantProcesses removed, using Enemies */.Count removed */ 0);
     }
 }

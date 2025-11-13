@@ -46,7 +46,7 @@ public class GeothermalSteamRule : CoherentGlitchRule
         }
 
         // Also add [Extreme Heat] ambient condition if not present
-        if (!room.HasAmbientCondition("[Extreme Heat]"))
+        if (!room.AmbientConditions.Any() /* TODO: filter by type */)
         {
             room.AmbientConditions.Add(new ExtremeHeatCondition());
 
