@@ -110,7 +110,7 @@ public class HazardSpawner
     private void ApplyCoherentGlitchWeightModifiers(Room room, List<BiomeElement> hazards)
     {
         // Check for Flooded condition
-        bool isFlooded = room.AmbientConditions.Cast<Population.AmbientCondition>().Any(c => c.Type == AmbientConditionType.Flooded);
+        bool isFlooded = room.AmbientConditions.Cast<AmbientCondition>().Any(c => c.Type == AmbientConditionType.Flooded);
         if (isFlooded)
         {
             // Increase weight of electrical hazards
@@ -134,7 +134,7 @@ public class HazardSpawner
     /// <summary>
     /// Creates a DynamicHazard from a BiomeElement
     /// </summary>
-    private Population.DynamicHazard? CreateHazardFromElement(BiomeElement element, Room room, Random rng)
+    private DynamicHazard? CreateHazardFromElement(BiomeElement element, Room room, Random rng)
     {
         var hazardType = MapElementToHazardType(element.AssociatedDataId);
         if (hazardType == null)
@@ -170,7 +170,7 @@ public class HazardSpawner
     }
 
     // Hazard creation methods
-    private Population.DynamicHazard CreateSteamVent(BiomeElement element)
+    private DynamicHazard CreateSteamVent(BiomeElement element)
     {
         return new SteamVentHazard
         {
@@ -183,9 +183,9 @@ public class HazardSpawner
         };
     }
 
-    private Population.DynamicHazard CreateLivePowerConduit(BiomeElement element, Room room)
+    private DynamicHazard CreateLivePowerConduit(BiomeElement element, Room room)
     {
-        bool isFlooded = room.AmbientConditions.Cast<Population.AmbientCondition>().Any(c => c.Type == AmbientConditionType.Flooded);
+        bool isFlooded = room.AmbientConditions.Cast<AmbientCondition>().Any(c => c.Type == AmbientConditionType.Flooded);
 
         return new LivePowerConduitHazard
         {
@@ -201,7 +201,7 @@ public class HazardSpawner
         };
     }
 
-    private Population.DynamicHazard CreateUnstableCeiling(BiomeElement element)
+    private DynamicHazard CreateUnstableCeiling(BiomeElement element)
     {
         return new UnstableCeilingHazard
         {
@@ -214,7 +214,7 @@ public class HazardSpawner
         };
     }
 
-    private Population.DynamicHazard CreateToxicSporeCloud(BiomeElement element)
+    private DynamicHazard CreateToxicSporeCloud(BiomeElement element)
     {
         return new ToxicSporeCloudHazard
         {
@@ -226,7 +226,7 @@ public class HazardSpawner
         };
     }
 
-    private Population.DynamicHazard CreateCorrodedGrating(BiomeElement element)
+    private DynamicHazard CreateCorrodedGrating(BiomeElement element)
     {
         return new CorrodedGratingHazard
         {
@@ -238,7 +238,7 @@ public class HazardSpawner
         };
     }
 
-    private Population.DynamicHazard CreateLeakingCoolant(BiomeElement element)
+    private DynamicHazard CreateLeakingCoolant(BiomeElement element)
     {
         return new LeakingCoolantHazard
         {
