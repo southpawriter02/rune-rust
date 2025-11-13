@@ -119,12 +119,11 @@ public class DestructionService
                         Name = "Rubble Pile",
                         Description = $"Debris from the destroyed {element.Name.ToLower()}.",
                         Type = StaticTerrainType.RubblePile,
-                        CoverProvided = CoverType.Partial,
-                        AccuracyModifier = -2,
-                        IsDifficultTerrain = true,
-                        MovementCostModifier = 2,
+                        ProvidesTouchCover = true, // Provides +2 DEF when adjacent
+                        BlocksMovement = false, // Difficult terrain, not impassable
                         IsDestructible = true,
-                        HP = 15
+                        HP = 15,
+                        Position = element.Position // Maintain position of destroyed element
                     });
                     _log.Debug("Added rubble pile from destroyed terrain");
                 }
