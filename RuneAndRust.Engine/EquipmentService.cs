@@ -271,6 +271,8 @@ public class EquipmentService
             CharacterClass.Warrior => 50,
             CharacterClass.Scavenger => 40,
             CharacterClass.Mystic => 30,
+            CharacterClass.Adept => 35,
+            CharacterClass.Skirmisher => 40,
             _ => 40
         };
 

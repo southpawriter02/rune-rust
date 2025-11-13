@@ -676,8 +676,11 @@ public class EnemyAI
         combatState.AddLogEntry($"{player.Name} defends!");
         combatState.AddLogEntry($"  Rolled {player.Attributes.Sturdiness}d6: {FormatRolls(defendRoll)} = {defendRoll.Successes} successes");
 
+        // v0.19.9: Apply stance defense bonuses
+        int effectiveDefenseSuccesses = GetPlayerDefenseSuccesses(player, defendRoll, combatState);
+
         // Calculate damage
-        var netSuccesses = Math.Max(0, attackRoll.Successes - defendRoll.Successes);
+        var netSuccesses = Math.Max(0, attackRoll.Successes - effectiveDefenseSuccesses);
         var baseDamage = netSuccesses + _diceService.RollDamage(enemy.BaseDamageDice) + enemy.DamageBonus;
         var damage = baseDamage;
 
@@ -829,8 +832,11 @@ public class EnemyAI
             var defendRoll = _diceService.Roll(player.Attributes.Sturdiness);
             combatState.AddLogEntry($"    {player.Name} defends: {defendRoll.Successes} successes");
 
+            // v0.19.9: Apply stance defense bonuses
+            int effectiveDefenseSuccesses = GetPlayerDefenseSuccesses(player, defendRoll, combatState);
+
             // Calculate damage
-            var netSuccesses = Math.Max(0, attackRoll.Successes - defendRoll.Successes);
+            var netSuccesses = Math.Max(0, attackRoll.Successes - effectiveDefenseSuccesses);
             var baseDamage = netSuccesses + _diceService.RollDamage(enemy.BaseDamageDice) + enemy.DamageBonus;
             var damage = baseDamage;
 
@@ -868,8 +874,11 @@ public class EnemyAI
         combatState.AddLogEntry($"{player.Name} defends!");
         combatState.AddLogEntry($"  Rolled {player.Attributes.Sturdiness}d6: {FormatRolls(defendRoll)} = {defendRoll.Successes} successes");
 
+        // v0.19.9: Apply stance defense bonuses
+        int effectiveDefenseSuccesses = GetPlayerDefenseSuccesses(player, defendRoll, combatState);
+
         // 2d6 damage
-        var netSuccesses = Math.Max(0, attackRoll.Successes - defendRoll.Successes);
+        var netSuccesses = Math.Max(0, attackRoll.Successes - effectiveDefenseSuccesses);
         var baseDamage = netSuccesses + _diceService.RollDamage(2);
         var damage = baseDamage;
 
@@ -908,8 +917,11 @@ public class EnemyAI
         combatState.AddLogEntry($"{player.Name} defends!");
         combatState.AddLogEntry($"  Rolled {player.Attributes.Sturdiness}d6: {FormatRolls(defendRoll)} = {defendRoll.Successes} successes");
 
+        // v0.19.9: Apply stance defense bonuses
+        int effectiveDefenseSuccesses = GetPlayerDefenseSuccesses(player, defendRoll, combatState);
+
         // 3d6 damage
-        var netSuccesses = Math.Max(0, attackRoll.Successes - defendRoll.Successes);
+        var netSuccesses = Math.Max(0, attackRoll.Successes - effectiveDefenseSuccesses);
         var baseDamage = netSuccesses + _diceService.RollDamage(3);
         var damage = baseDamage;
 
@@ -977,7 +989,10 @@ public class EnemyAI
             var defendRoll = _diceService.Roll(player.Attributes.Sturdiness);
             combatState.AddLogEntry($"    {player.Name} defends: {defendRoll.Successes} successes");
 
-            var netSuccesses = Math.Max(0, attackRoll.Successes - defendRoll.Successes);
+            // v0.19.9: Apply stance defense bonuses
+            int effectiveDefenseSuccesses = GetPlayerDefenseSuccesses(player, defendRoll, combatState);
+
+            var netSuccesses = Math.Max(0, attackRoll.Successes - effectiveDefenseSuccesses);
             var baseDamage = netSuccesses + _diceService.RollDamage(enemy.BaseDamageDice) + enemy.DamageBonus;
             var damage = baseDamage;
 
@@ -1024,7 +1039,10 @@ public class EnemyAI
         combatState.AddLogEntry($"{player.Name} defends!");
         combatState.AddLogEntry($"  Rolled {player.Attributes.Sturdiness}d6: {FormatRolls(defendRoll)} = {defendRoll.Successes} successes");
 
-        var netSuccesses = Math.Max(0, attackRoll.Successes - defendRoll.Successes);
+        // v0.19.9: Apply stance defense bonuses
+        int effectiveDefenseSuccesses = GetPlayerDefenseSuccesses(player, defendRoll, combatState);
+
+        var netSuccesses = Math.Max(0, attackRoll.Successes - effectiveDefenseSuccesses);
         var baseDamage = netSuccesses + _diceService.RollDamage(enemy.BaseDamageDice) + enemy.DamageBonus;
         var damage = baseDamage;
 
@@ -1062,7 +1080,10 @@ public class EnemyAI
         combatState.AddLogEntry($"{player.Name} defends!");
         combatState.AddLogEntry($"  Rolled {player.Attributes.Sturdiness}d6: {FormatRolls(defendRoll)} = {defendRoll.Successes} successes");
 
-        var netSuccesses = Math.Max(0, attackRoll.Successes - defendRoll.Successes);
+        // v0.19.9: Apply stance defense bonuses
+        int effectiveDefenseSuccesses = GetPlayerDefenseSuccesses(player, defendRoll, combatState);
+
+        var netSuccesses = Math.Max(0, attackRoll.Successes - effectiveDefenseSuccesses);
         var baseDamage = netSuccesses + _diceService.RollDamage(2) + enemy.DamageBonus; // Extra damage die
         var damage = baseDamage;
 
@@ -1109,7 +1130,10 @@ public class EnemyAI
         combatState.AddLogEntry($"{player.Name} defends!");
         combatState.AddLogEntry($"  Rolled {player.Attributes.Sturdiness}d6: {FormatRolls(defendRoll)} = {defendRoll.Successes} successes");
 
-        var netSuccesses = Math.Max(0, attackRoll.Successes - defendRoll.Successes);
+        // v0.19.9: Apply stance defense bonuses
+        int effectiveDefenseSuccesses = GetPlayerDefenseSuccesses(player, defendRoll, combatState);
+
+        var netSuccesses = Math.Max(0, attackRoll.Successes - effectiveDefenseSuccesses);
         var baseDamage = netSuccesses + _diceService.RollDamage(enemy.BaseDamageDice) + enemy.DamageBonus + 2; // +2 accuracy bonus
         var damage = baseDamage;
 
@@ -1142,7 +1166,10 @@ public class EnemyAI
         combatState.AddLogEntry($"{player.Name} takes cover!");
         combatState.AddLogEntry($"  Rolled {player.Attributes.Sturdiness}d6: {FormatRolls(defendRoll)} = {defendRoll.Successes} successes");
 
-        var netSuccesses = Math.Max(0, attackRoll.Successes - defendRoll.Successes);
+        // v0.19.9: Apply stance defense bonuses
+        int effectiveDefenseSuccesses = GetPlayerDefenseSuccesses(player, defendRoll, combatState);
+
+        var netSuccesses = Math.Max(0, attackRoll.Successes - effectiveDefenseSuccesses);
         var baseDamage = netSuccesses + _diceService.RollDamage(1); // 1d6 damage (lower than normal)
         var damage = baseDamage;
 
@@ -1188,7 +1215,10 @@ public class EnemyAI
         combatState.AddLogEntry($"{player.Name} resists with WILL!");
         combatState.AddLogEntry($"  Rolled {Math.Max(1, player.Attributes.Will)}d6: {FormatRolls(defendRoll)} = {defendRoll.Successes} successes");
 
-        var netSuccesses = Math.Max(0, attackRoll.Successes - defendRoll.Successes);
+        // v0.19.9: Apply stance defense bonuses
+        int effectiveDefenseSuccesses = GetPlayerDefenseSuccesses(player, defendRoll, combatState);
+
+        var netSuccesses = Math.Max(0, attackRoll.Successes - effectiveDefenseSuccesses);
         var damage = netSuccesses + _diceService.RollDamage(enemy.BaseDamageDice);
 
         combatState.AddLogEntry($"  Aetheric damage ignores armor!");
@@ -1255,7 +1285,10 @@ public class EnemyAI
         combatState.AddLogEntry($"{player.Name} resists with WILL!");
         combatState.AddLogEntry($"  Rolled {Math.Max(1, player.Attributes.Will)}d6: {FormatRolls(defendRoll)} = {defendRoll.Successes} successes");
 
-        var netSuccesses = Math.Max(0, attackRoll.Successes - defendRoll.Successes);
+        // v0.19.9: Apply stance defense bonuses
+        int effectiveDefenseSuccesses = GetPlayerDefenseSuccesses(player, defendRoll, combatState);
+
+        var netSuccesses = Math.Max(0, attackRoll.Successes - effectiveDefenseSuccesses);
         var damageDice = phase == 2 ? 4 : 3;
         var damage = netSuccesses + _diceService.RollDamage(damageDice);
 
@@ -1285,7 +1318,10 @@ public class EnemyAI
         combatState.AddLogEntry($"{player.Name} resists with WILL!");
         combatState.AddLogEntry($"  Rolled {Math.Max(1, player.Attributes.Will)}d6: {FormatRolls(defendRoll)} = {defendRoll.Successes} successes");
 
-        var netSuccesses = Math.Max(0, attackRoll.Successes - defendRoll.Successes);
+        // v0.19.9: Apply stance defense bonuses
+        int effectiveDefenseSuccesses = GetPlayerDefenseSuccesses(player, defendRoll, combatState);
+
+        var netSuccesses = Math.Max(0, attackRoll.Successes - effectiveDefenseSuccesses);
         var damage = netSuccesses + _diceService.RollDamage(2);
 
         combatState.AddLogEntry($"  Reality tears hit all targets in the area!");
@@ -1313,7 +1349,10 @@ public class EnemyAI
         combatState.AddLogEntry($"{player.Name} resists with WILL!");
         combatState.AddLogEntry($"  Rolled {Math.Max(1, player.Attributes.Will)}d6: {FormatRolls(defendRoll)} = {defendRoll.Successes} successes");
 
-        var netSuccesses = Math.Max(0, attackRoll.Successes - defendRoll.Successes);
+        // v0.19.9: Apply stance defense bonuses
+        int effectiveDefenseSuccesses = GetPlayerDefenseSuccesses(player, defendRoll, combatState);
+
+        var netSuccesses = Math.Max(0, attackRoll.Successes - effectiveDefenseSuccesses);
         var damage = netSuccesses + _diceService.RollDamage(2) + 4; // 2d8 approximated as 2d6+4
 
         combatState.AddLogEntry($"  Aetheric storm hits all characters!");
@@ -1353,7 +1392,10 @@ public class EnemyAI
         combatState.AddLogEntry($"{player.Name} defends!");
         combatState.AddLogEntry($"  Rolled {player.Attributes.Finesse /* DefenseDice removed, using FINESSE */}d6: {FormatRolls(defendRoll)} = {defendRoll.Successes} successes");
 
-        var netSuccesses = Math.Max(0, attackRoll.Successes - defendRoll.Successes);
+        // v0.19.9: Apply stance defense bonuses
+        int effectiveDefenseSuccesses = GetPlayerDefenseSuccesses(player, defendRoll, combatState);
+
+        var netSuccesses = Math.Max(0, attackRoll.Successes - effectiveDefenseSuccesses);
         var damage = netSuccesses + _diceService.RollDamage(enemy.BaseDamageDice) + enemy.DamageBonus;
 
         ApplyDamageToPlayer(player, damage, combatState);
@@ -1403,7 +1445,10 @@ public class EnemyAI
         combatState.AddLogEntry($"{player.Name} defends!");
         combatState.AddLogEntry($"  Rolled {player.Attributes.Finesse /* DefenseDice removed, using FINESSE */}d6: {FormatRolls(defendRoll)} = {defendRoll.Successes} successes");
 
-        var netSuccesses = Math.Max(0, attackRoll.Successes - defendRoll.Successes);
+        // v0.19.9: Apply stance defense bonuses
+        int effectiveDefenseSuccesses = GetPlayerDefenseSuccesses(player, defendRoll, combatState);
+
+        var netSuccesses = Math.Max(0, attackRoll.Successes - effectiveDefenseSuccesses);
         var damage = netSuccesses + _diceService.RollDamage(enemy.BaseDamageDice);
 
         ApplyDamageToPlayer(player, damage, combatState);
@@ -1435,7 +1480,10 @@ public class EnemyAI
         combatState.AddLogEntry($"{player.Name} defends!");
         combatState.AddLogEntry($"  Rolled {player.Attributes.Finesse /* DefenseDice removed, using FINESSE */}d6: {FormatRolls(defendRoll)} = {defendRoll.Successes} successes");
 
-        var netSuccesses = Math.Max(0, attackRoll.Successes - defendRoll.Successes);
+        // v0.19.9: Apply stance defense bonuses
+        int effectiveDefenseSuccesses = GetPlayerDefenseSuccesses(player, defendRoll, combatState);
+
+        var netSuccesses = Math.Max(0, attackRoll.Successes - effectiveDefenseSuccesses);
         var damage = netSuccesses + _diceService.RollDamage(enemy.BaseDamageDice);
 
         ApplyDamageToPlayer(player, damage, combatState);
@@ -1483,7 +1531,10 @@ public class EnemyAI
         combatState.AddLogEntry($"{player.Name} defends!");
         combatState.AddLogEntry($"  Rolled {player.Attributes.Finesse /* DefenseDice removed, using FINESSE */}d6: {FormatRolls(defendRoll)} = {defendRoll.Successes} successes");
 
-        var netSuccesses = Math.Max(0, attackRoll.Successes - defendRoll.Successes);
+        // v0.19.9: Apply stance defense bonuses
+        int effectiveDefenseSuccesses = GetPlayerDefenseSuccesses(player, defendRoll, combatState);
+
+        var netSuccesses = Math.Max(0, attackRoll.Successes - effectiveDefenseSuccesses);
         var damage = netSuccesses + _diceService.RollDamage(enemy.BaseDamageDice);
 
         ApplyDamageToPlayer(player, damage, combatState);
@@ -1544,7 +1595,10 @@ public class EnemyAI
         combatState.AddLogEntry($"{player.Name} defends!");
         combatState.AddLogEntry($"  Rolled {player.Attributes.Finesse /* DefenseDice removed, using FINESSE */}d6: {FormatRolls(defendRoll)} = {defendRoll.Successes} successes");
 
-        var netSuccesses = Math.Max(0, attackRoll.Successes - defendRoll.Successes);
+        // v0.19.9: Apply stance defense bonuses
+        int effectiveDefenseSuccesses = GetPlayerDefenseSuccesses(player, defendRoll, combatState);
+
+        var netSuccesses = Math.Max(0, attackRoll.Successes - effectiveDefenseSuccesses);
         var damage = Math.Max(0, netSuccesses + _diceService.RollDamage(enemy.BaseDamageDice) + enemy.DamageBonus - enemy.Soak);
 
         ApplyDamageToPlayer(player, damage, combatState);
@@ -1592,7 +1646,10 @@ public class EnemyAI
         combatState.AddLogEntry($"{player.Name} defends!");
         combatState.AddLogEntry($"  Rolled {player.Attributes.Finesse /* DefenseDice removed, using FINESSE */}d6: {FormatRolls(defendRoll)} = {defendRoll.Successes} successes");
 
-        var netSuccesses = Math.Max(0, attackRoll.Successes - defendRoll.Successes);
+        // v0.19.9: Apply stance defense bonuses
+        int effectiveDefenseSuccesses = GetPlayerDefenseSuccesses(player, defendRoll, combatState);
+
+        var netSuccesses = Math.Max(0, attackRoll.Successes - effectiveDefenseSuccesses);
         var damage = Math.Max(0, netSuccesses + _diceService.RollDamage(2) + 1 - enemy.Soak);
 
         ApplyDamageToPlayer(player, damage, combatState);
@@ -1635,7 +1692,10 @@ public class EnemyAI
         combatState.AddLogEntry($"{player.Name} resists with WILL!");
         combatState.AddLogEntry($"  Rolled {Math.Max(1, player.Attributes.Will)}d6: {FormatRolls(defendRoll)} = {defendRoll.Successes} successes");
 
-        var netSuccesses = Math.Max(0, attackRoll.Successes - defendRoll.Successes);
+        // v0.19.9: Apply stance defense bonuses
+        int effectiveDefenseSuccesses = GetPlayerDefenseSuccesses(player, defendRoll, combatState);
+
+        var netSuccesses = Math.Max(0, attackRoll.Successes - effectiveDefenseSuccesses);
         var damage = netSuccesses + _diceService.RollDamage(enemy.BaseDamageDice);
 
         ApplyDamageToPlayer(player, damage, combatState);
@@ -1730,7 +1790,10 @@ public class EnemyAI
         combatState.AddLogEntry($"{player.Name} defends!");
         combatState.AddLogEntry($"  Rolled {player.Attributes.Finesse /* DefenseDice removed, using FINESSE */}d6: {FormatRolls(defendRoll)} = {defendRoll.Successes} successes");
 
-        var netSuccesses = Math.Max(0, attackRoll.Successes - defendRoll.Successes);
+        // v0.19.9: Apply stance defense bonuses
+        int effectiveDefenseSuccesses = GetPlayerDefenseSuccesses(player, defendRoll, combatState);
+
+        var netSuccesses = Math.Max(0, attackRoll.Successes - effectiveDefenseSuccesses);
         var damage = netSuccesses + _diceService.RollDamage(enemy.BaseDamageDice) + enemy.DamageBonus;
 
         ApplyDamageToPlayer(player, damage, combatState);
@@ -1757,7 +1820,10 @@ public class EnemyAI
         combatState.AddLogEntry($"{player.Name} braces for impact!");
         combatState.AddLogEntry($"  Rolled {player.Attributes.Finesse /* DefenseDice removed, using FINESSE */}d6: {FormatRolls(defendRoll)} = {defendRoll.Successes} successes");
 
-        var netSuccesses = Math.Max(0, attackRoll.Successes - defendRoll.Successes);
+        // v0.19.9: Apply stance defense bonuses
+        int effectiveDefenseSuccesses = GetPlayerDefenseSuccesses(player, defendRoll, combatState);
+
+        var netSuccesses = Math.Max(0, attackRoll.Successes - effectiveDefenseSuccesses);
         var baseDamage = enemy.Phase == 1 ? 2 : 3;
         var damage = netSuccesses + _diceService.RollDamage(baseDamage);
 
@@ -1798,7 +1864,10 @@ public class EnemyAI
         combatState.AddLogEntry($"{player.Name} defends!");
         combatState.AddLogEntry($"  Rolled {player.Attributes.Finesse /* DefenseDice removed, using FINESSE */}d6: {FormatRolls(defendRoll)} = {defendRoll.Successes} successes");
 
-        var netSuccesses = Math.Max(0, attackRoll.Successes - defendRoll.Successes);
+        // v0.19.9: Apply stance defense bonuses
+        int effectiveDefenseSuccesses = GetPlayerDefenseSuccesses(player, defendRoll, combatState);
+
+        var netSuccesses = Math.Max(0, attackRoll.Successes - effectiveDefenseSuccesses);
         var physicalDamage = netSuccesses + _diceService.RollDamage(enemy.BaseDamageDice) + enemy.DamageBonus;
         var electricalDamage = enemy.Phase == 2 ? _diceService.RollDamage(2) + 1 : _diceService.RollDamage(3) + 1;
         var totalDamage = physicalDamage + electricalDamage;
@@ -1839,13 +1908,33 @@ public class EnemyAI
         combatState.AddLogEntry($"{player.Name} desperately defends!");
         combatState.AddLogEntry($"  Rolled {player.Attributes.Finesse /* DefenseDice removed, using FINESSE */}d6: {FormatRolls(defendRoll)} = {defendRoll.Successes} successes");
 
-        var netSuccesses = Math.Max(0, attackRoll.Successes - defendRoll.Successes);
+        // v0.19.9: Apply stance defense bonuses
+        int effectiveDefenseSuccesses = GetPlayerDefenseSuccesses(player, defendRoll, combatState);
+
+        var netSuccesses = Math.Max(0, attackRoll.Successes - effectiveDefenseSuccesses);
         var damage = netSuccesses + _diceService.RollDamage(4) + 6; // 4d10 approx as 4d6+6
 
         ApplyDamageToPlayer(player, damage, combatState);
         combatState.AddLogEntry($"  Devastating AOE attack hits ALL enemies!");
         combatState.AddLogEntry($"  Everyone is knocked back into hazards!");
         combatState.AddLogEntry("");
+    }
+
+    /// <summary>
+    /// v0.19.9: Get player's effective defense successes including stance bonuses
+    /// </summary>
+    private int GetPlayerDefenseSuccesses(PlayerCharacter player, DiceResult defendRoll, CombatState combatState)
+    {
+        int defenseSuccesses = defendRoll.Successes;
+
+        // v0.19.9: Apply Evasive Stance defense bonus (+3 Defense)
+        if (player.ActiveStance?.DefenseBonus > 0)
+        {
+            defenseSuccesses += player.ActiveStance.DefenseBonus;
+            combatState.AddLogEntry($"  Evasive Stance bonus: +{player.ActiveStance.DefenseBonus} Defense!");
+        }
+
+        return defenseSuccesses;
     }
 
     private string FormatRolls(DiceResult result)

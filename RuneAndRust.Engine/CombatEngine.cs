@@ -94,11 +94,19 @@ public class CombatEngine
 
         // Player initiative
         var playerInitiativeRoll = _diceService.Roll(combatState.Player.Attributes.Finesse);
+        int playerInitiative = playerInitiativeRoll.Successes;
+
+        // v0.19.9: Apply Fleet Footed passive (+2 Vigilance/initiative)
+        if (combatState.Player.Abilities.Any(a => a.Name == "Fleet Footed"))
+        {
+            playerInitiative += 2;
+        }
+
         participants.Add(new CombatParticipant
         {
             Name = combatState.Player.Name,
             IsPlayer = true,
-            InitiativeRoll = playerInitiativeRoll.Successes,
+            InitiativeRoll = playerInitiative,
             InitiativeAttribute = combatState.Player.Attributes.Finesse,
             Character = combatState.Player
         });
@@ -607,7 +615,8 @@ public class CombatEngine
         int damage = 0;
 
         // v0.7.1: Check for Strike (standard weapon attack)
-        if (ability.Name == "Strike")
+        // v0.19.9: Also handles Quick Strike (FINESSE-based weapon attack)
+        if (ability.Name == "Strike" || ability.Name == "Quick Strike")
         {
             var player = combatState.Player;
 
@@ -629,12 +638,21 @@ public class CombatEngine
             combatState.AddLogEntry($"  Weapon damage: {baseDamage}d6 + {successes} successes = {totalDice}d6");
             combatState.AddLogEntry($"  Rolled {totalDice}d6 for damage: {damage}");
 
+            // v0.19.9: Quick Strike uses FINESSE for damage (successes already incorporate FINESSE from ability.AttributeUsed)
+            if (ability.Name == "Quick Strike")
+            {
+                combatState.AddLogEntry($"  Quick Strike uses FINESSE for accuracy and damage!");
+            }
+
             // v0.7.1: Apply stance modifier (Defensive Stance = -25% damage)
-            if (player.ActiveStance?.Type == StanceType.Defensive)
+            // v0.19.9: Also apply Evasive Stance modifier (-50% damage)
+            if (player.ActiveStance != null && player.ActiveStance.DamageMultiplier != 1.0f)
             {
                 int originalDamage = damage;
                 damage = (int)(damage * player.ActiveStance.DamageMultiplier);
-                combatState.AddLogEntry($"  Defensive Stance penalty: {originalDamage} → {damage} damage (-25%)");
+                string stanceName = player.ActiveStance.Type == StanceType.Defensive ? "Defensive Stance" : "Evasive Stance";
+                int penaltyPercent = (int)((1.0f - player.ActiveStance.DamageMultiplier) * 100);
+                combatState.AddLogEntry($"  {stanceName} penalty: {originalDamage} → {damage} damage (-{penaltyPercent}%)");
             }
 
             ApplyDamageToEnemy(combatState, target, damage, ability.IgnoresArmor);
@@ -1130,6 +1148,14 @@ public class CombatEngine
             player.ActiveStance = Stance.CreateDefensiveStance();
             combatState.AddLogEntry($"  Entered Defensive Stance!");
             combatState.AddLogEntry($"  Effects: +3 Soak, -25% damage dealt, +1d to defensive Resolve Checks");
+            combatState.AddLogEntry($"  Exit as a Free Action at any time.");
+        }
+        // v0.19.9: Check for Evasive Stance (Skirmisher defensive stance)
+        else if (ability.Name == "Evasive Stance")
+        {
+            player.ActiveStance = Stance.CreateEvasiveStance();
+            combatState.AddLogEntry($"  Entered Evasive Stance!");
+            combatState.AddLogEntry($"  Effects: +3 Defense (harder to hit), -50% damage dealt");
             combatState.AddLogEntry($"  Exit as a Free Action at any time.");
         }
         // Check for Quick Dodge (negates next attack)
