@@ -7,6 +7,90 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.19.7] - 2025-11-13 - Jötun-Reader Specialization (Complete Implementation)
+
+### Updated
+
+#### Specialization: Jötun-Reader (System Analyst)
+- **Archetype:** Adept
+- **Path Type:** Coherent (updated from Heretical)
+- **Mechanical Role:** Controller / Utility Specialist
+- **Primary Attribute:** WITS
+- **Secondary Attribute:** FINESSE
+- **Resource System:** Stamina + Psychic Stress
+- **Trauma Risk:** High
+- **Unlock Requirements:** Legend 3+
+- **Icon:** 🔍 (updated from 📜)
+
+#### Core Philosophy
+The Jötun-Reader is a forensic pathologist of the apocalypse who reads crash logs of a dead civilization. They observe and document system failures with clinical precision, analyze enemy weaknesses, translate runic inscriptions, apply tactical debuffs, and weaponize forbidden knowledge. High Trauma Risk creates dependency on Bone-Setter support. Non-combat specialist who enables party success through pure knowledge.
+
+#### 9 Updated Abilities (30 PP Total)
+
+**Tier 1 (3 PP each):**
+1. **Scholarly Acumen I** (Passive, 3 ranks) - Investigation bonuses
+   - +2d10 to +4d10 bonus to WITS-based Investigate and System Bypass checks
+   - Auto-upgrade Success → Critical Success at Rank 3
+2. **Analyze Weakness** (Active, 3 ranks) - Enemy analysis with Psychic Stress cost
+   - Reveal 1-2 Resistances/Vulnerabilities, costs 5-0 Psychic Stress
+   - Free Action at Rank 3, auto-applies [Analyzed] on Critical
+3. **Runic Linguistics** (Passive, 3 ranks) - Translation system
+   - Translate Elder Futhark inscriptions, handle corrupted text
+   - Extrapolate 70-80% missing sections at Rank 3
+
+**Tier 2 (4 PP each, requires 8 PP in tree):**
+4. **Exploit Design Flaw** (Active, 3 ranks) - Tactical debuffs
+   - Apply [Analyzed] debuff: +2 to +4 Accuracy for all allies
+   - +1d10 bonus damage at Rank 3, no prior analysis required
+5. **Navigational Bypass** (Active, 3 ranks) - Hazard navigation
+   - Grant party +1d10 to +3d10 to bypass trap checks
+   - Can use in combat at Rank 3
+6. **Structural Insight** (Passive, 3 ranks) - Environmental detection
+   - Auto-detect hazards, cover quality, structural features
+   - Controlled collapse and +1 Defense in analyzed areas at Rank 3
+
+**Tier 3 (5 PP each, requires 16 PP in tree):**
+7. **Calculated Triage** (Passive, 3 ranks) - Healing optimization
+   - +25% to +50% healing effectiveness for nearby allies
+   - Field Hospital zone at Rank 3: +75% healing, +2 Resolve
+8. **The Unspoken Truth** (Active, 3 ranks) - Psychological attacks
+   - Opposed WITS vs WILL check, inflict [Disoriented]
+   - Add 5-12 Psychic Stress to target at Rank 3, may trigger narrative consequences
+
+**Capstone (6 PP, requires 24 PP + both Tier 3):**
+9. **Architect of the Silence** (Active, 3 ranks, Once Per Combat) - Command-line seizure
+   - Speak original command-line code to apply [Seized] status
+   - Total paralysis for 1-2 rounds on Jötun-Forged/Undying enemies
+   - Costs 15-20 Psychic Stress (reduced to 10-15 at Rank 3)
+   - Auto-Critical analyze ALL Jötun-Forged/Undying at combat start (Rank 3 passive)
+
+### Technical
+
+- **Updated Files:**
+  - `RuneAndRust.Persistence/DataSeeder.cs` - Updated Jötun-Reader seeding (SpecializationID: 2, AbilityIDs: 201-209)
+  - `RuneAndRust.Engine/SpecializationFactory.cs` - Updated ability initialization with full rank progression
+  - `RuneAndRust.Tests/SpecializationIntegrationTests.cs` - Validation test already exists
+
+### Design Philosophy
+- **Information Warfare:** Analyze Weakness reveals defenses, Exploit Design Flaw grants party accuracy
+- **Linguistic Archaeology:** Runic Linguistics translates ancient inscriptions, Architect uses command syntax
+- **Trauma Economy Integration:** Most abilities cost Psychic Stress, creating high-risk/high-reward gameplay
+- **Force Multiplier:** Contributes zero direct damage but increases party effectiveness by 30-40%
+
+### Balance Considerations
+- **Psychic Stress Management:** Budget 5 Stress per Analyze, 15-20 per Architect use
+- **Party Accuracy Boost:** [Analyzed] debuff increases hit rate by 10-15%
+- **Runic Translation:** Gates 20-30% of dungeon secrets
+- **Strategic Weakness:** Weak solo play, requires Bone-Setter support, no combat-only dungeon viability
+
+### Synergies
+- **Analyze Weakness → Exploit Design Flaw:** Full enemy intel + +4 Accuracy for party
+- **Scholarly Acumen + Runic Linguistics:** Perfect translation with massive investigation bonuses
+- **Calculated Triage + Bone-Setter:** Combined 75%+ healing boost
+- **Architect (Rank 3 passive) + Analyze Weakness:** Auto-analyze all machines at combat start
+
+---
+
 ## [0.19.5] - 2025-11-13 - Scrap-Tinker Specialization
 
 ### Added

@@ -314,88 +314,99 @@ public class SpecializationFactory
 
     private static void AddJotunReaderAbilities(PlayerCharacter character)
     {
-        // TIER 1 - Available immediately upon unlocking specialization
+        // v0.19.7: Updated Jötun-Reader specialization with full rank progression
+        // TIER 1 - Available immediately upon unlocking specialization (3 PP each)
 
-        // Scholarly Acumen I (Passive)
+        // Scholarly Acumen I (Passive) - 3 ranks
         character.Abilities.Add(new Ability
         {
             Name = "Scholarly Acumen I",
-            Description = "[PASSIVE] +1d to System Bypass and investigation checks. Knowledge is your weapon.",
+            Description = "Your mind is a finely honed instrument, constantly processing layers of forgotten history.",
             StaminaCost = 0,
             Type = AbilityType.Utility,
             AttributeUsed = "wits",
             BonusDice = 0,
             SuccessThreshold = 0,
             CurrentRank = 1,
-            MaxRank = 1
+            MaxRank = 3,
+            CostToRank2 = 20,
+            CostToRank3 = 0
         });
 
-        // Analyze Weakness (Active)
+        // Analyze Weakness (Active) - 3 ranks
         character.Abilities.Add(new Ability
         {
             Name = "Analyze Weakness",
-            Description = "Reveal enemy HP, Resistances, and Vulnerabilities to entire party. Costs 5 Psychic Stress (staring into the crash hurts).",
-            StaminaCost = 25,  // v0.18: Reduced from 30 to make utility more accessible
+            Description = "Clinical observation reveals structural flaws. You document weakness like a pathologist identifies cause of death.",
+            StaminaCost = 30,
             Type = AbilityType.Utility,
             AttributeUsed = "wits",
-            BonusDice = 3,
-            SuccessThreshold = 2,
+            BonusDice = 0,
+            SuccessThreshold = 0,
             // Special: Reveals enemy stats + 5 Stress cost (handled in CombatEngine)
             CurrentRank = 1,
-            MaxRank = 3
+            MaxRank = 3,
+            CostToRank2 = 20,
+            CostToRank3 = 0
         });
 
-        // Runic Linguistics (Passive)
+        // Runic Linguistics (Passive) - 3 ranks
         character.Abilities.Add(new Ability
         {
             Name = "Runic Linguistics",
-            Description = "[PASSIVE] Automatically translate non-magical runic inscriptions. Bypass puzzle gates that would require difficult WITS checks.",
+            Description = "You read the grammar of reality's operating system. You understand error messages in a dead language.",
             StaminaCost = 0,
             Type = AbilityType.Utility,
             AttributeUsed = "wits",
             BonusDice = 0,
             SuccessThreshold = 0,
             CurrentRank = 1,
-            MaxRank = 1
+            MaxRank = 3,
+            CostToRank2 = 20,
+            CostToRank3 = 0
         });
 
-        // TIER 2 - Advanced tactical support
+        // TIER 2 - Advanced tactical support (4 PP each, requires 8 PP in tree)
 
-        // Exploit Design Flaw (Active)
+        // Exploit Design Flaw (Active) - 3 ranks
         character.Abilities.Add(new Ability
         {
             Name = "Exploit Design Flaw",
-            Description = "Apply [Analyzed] debuff to target. All allies gain +2 Accuracy against [Analyzed] enemies for 3 turns.",
-            StaminaCost = 28,  // v0.18: Reduced from 35 to make accessible for Warriors
+            Description = "Strike the left knee joint—actuator is damaged. Your tactical guidance turns allies into precision instruments.",
+            StaminaCost = 35,
             Type = AbilityType.Control,
             AttributeUsed = "wits",
-            BonusDice = 2,
-            SuccessThreshold = 2,
-            // Special: Applies [Analyzed] status (+2 Accuracy for all allies)
+            BonusDice = 0,
+            SuccessThreshold = 0,
+            // Special: Applies [Analyzed] status (+2/+3/+4 Accuracy for all allies)
             CurrentRank = 1,
-            MaxRank = 3
+            MaxRank = 3,
+            CostToRank2 = 20,
+            CostToRank3 = 0
         });
 
-        // Navigational Bypass (Active)
+        // Navigational Bypass (Active) - 3 ranks
         character.Abilities.Add(new Ability
         {
             Name = "Navigational Bypass",
-            Description = "Grant entire party +2d to resist/avoid trap damage for next 3 rooms. Your knowledge of Jötun-Forged systems protects your allies.",
+            Description = "The trigger mechanism is corroded on the western edge. Distribute weight evenly—sensor won't register threshold pressure.",
             StaminaCost = 30,
             Type = AbilityType.Utility,
             AttributeUsed = "wits",
-            BonusDice = 3,
-            SuccessThreshold = 2,
+            BonusDice = 0,
+            SuccessThreshold = 0,
             // Special: Party-wide trap resistance buff (handled in exploration logic)
             CurrentRank = 1,
-            MaxRank = 3
+            MaxRank = 3,
+            CostToRank2 = 20,
+            CostToRank3 = 0
         });
 
-        // Structural Insight (Passive)
+        // Structural Insight (Passive) - 3 ranks
         character.Abilities.Add(new Ability
         {
             Name = "Structural Insight",
-            Description = "[PASSIVE] Automatically detect unstable structures (collapsing floors, weak walls, environmental hazards) before entering a room.",
+            Description = "Support beams compromised. Eastern wall provides solid cover—load-bearing, reinforced. Center of room will collapse.",
             StaminaCost = 0,
             Type = AbilityType.Utility,
             AttributeUsed = "wits",
@@ -403,16 +414,18 @@ public class SpecializationFactory
             SuccessThreshold = 0,
             // Special: Pre-room hazard detection (handled in exploration logic)
             CurrentRank = 1,
-            MaxRank = 1
+            MaxRank = 3,
+            CostToRank2 = 20,
+            CostToRank3 = 0
         });
 
-        // TIER 3 - Mastery abilities
+        // TIER 3 - Mastery abilities (5 PP each, requires 16 PP in tree)
 
-        // Calculated Triage (Passive)
+        // Calculated Triage (Passive) - 3 ranks
         character.Abilities.Add(new Ability
         {
             Name = "Calculated Triage",
-            Description = "[PASSIVE] Allies within 10 feet of you gain +25% effectiveness from consumable healing items. Your analysis optimizes treatment.",
+            Description = "Apply pressure to brachial artery first. Follow wound track with the applicator. Your clinical guidance optimizes treatment.",
             StaminaCost = 0,
             Type = AbilityType.Utility,
             AttributeUsed = "wits",
@@ -420,42 +433,48 @@ public class SpecializationFactory
             SuccessThreshold = 0,
             // Special: Proximity-based healing buff (handled in CombatEngine)
             CurrentRank = 1,
-            MaxRank = 1
+            MaxRank = 3,
+            CostToRank2 = 20,
+            CostToRank3 = 0
         });
 
-        // The Unspoken Truth (Active)
+        // The Unspoken Truth (Active) - 3 ranks
         character.Abilities.Add(new Ability
         {
             Name = "The Unspoken Truth",
-            Description = "Knowledge attack that inflicts [Disoriented] status. Speak the enemy's true designation - most cannot bear the weight of their own identity.",
+            Description = "Your 'god' is ERROR CODE 0x4A7F. You worship a crash log. The truth shatters their worldview.",
             StaminaCost = 40,
             Type = AbilityType.Control,
-            AttributeUsed = "will",  // Mental assault using knowledge
-            BonusDice = 3,
-            SuccessThreshold = 3,
-            DamageDice = 2,  // 2d6 psychic damage
+            AttributeUsed = "wits",  // Opposed WITS vs WILL
+            BonusDice = 0,
+            SuccessThreshold = 0,
+            DamageDice = 0,
             IgnoresArmor = true,
-            // Special: Applies [Disoriented] + psychic damage (handled in CombatEngine)
+            // Special: Applies [Disoriented] + psychic stress to target (handled in CombatEngine)
             CurrentRank = 1,
-            MaxRank = 3
+            MaxRank = 3,
+            CostToRank2 = 20,
+            CostToRank3 = 0
         });
 
-        // CAPSTONE - Command syntax mastery
+        // CAPSTONE - Command syntax mastery (6 PP, requires 24 PP + both Tier 3)
 
-        // Architect of the Silence (Active)
+        // Architect of the Silence (Active) - 3 ranks
         character.Abilities.Add(new Ability
         {
             Name = "Architect of the Silence",
-            Description = "⭐ CAPSTONE: Speak original Jötun command syntax. Apply [Seized] status to Jötun-Forged or Undying enemy for 2 turns (cannot take actions). Costs 15 Psychic Stress.",
+            Description = "⭐ CAPSTONE: PRIORITY OVERRIDE: TIWAZ PROTOCOL ALPHA. CEASE HOSTILE OPERATIONS. The machine's logic wars with corrupted directives.",
             StaminaCost = 60,
             Type = AbilityType.Control,
             AttributeUsed = "will",  // WILL vs enemy WILL
-            BonusDice = 4,
-            SuccessThreshold = 4,  // Difficult but devastating
-            // Special: [Seized] status (complete lockdown) + 15 Stress cost (handled in CombatEngine)
+            BonusDice = 0,
+            SuccessThreshold = 0,
+            // Special: [Seized] status (complete lockdown) + 15-20 Stress cost (handled in CombatEngine)
             // Only works on Jötun-Forged or Undying enemies
             CurrentRank = 1,
-            MaxRank = 3
+            MaxRank = 3,
+            CostToRank2 = 20,
+            CostToRank3 = 0
         });
     }
 
