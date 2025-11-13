@@ -26,20 +26,32 @@ public class SpecializationFactory
         // Add specialization-specific abilities based on type
         switch (specialization)
         {
+            // Warrior specializations
+            case Specialization.SkarHordeAspirant:
+            case Specialization.IronBane:
+            case Specialization.AtgeirWielder:
+                // These are implemented elsewhere
+                break;
+
+            // Adept specializations
             case Specialization.BoneSetter:
                 AddBoneSetterAbilities(character);
+                break;
+            case Specialization.ScrapTinker:
+                // Implemented elsewhere
                 break;
             case Specialization.JotunReader:
                 AddJotunReaderAbilities(character);
                 break;
-            case Specialization.Skald:
-                AddSkaldAbilities(character);
+
+            // Mystic specializations (v0.19.8)
+            case Specialization.VardWarden:
+                AddVardWardenAbilities(character);
                 break;
-            // Future Warrior specializations
-            case Specialization.Berserker:
-            case Specialization.ShieldBearer:
-            case Specialization.WeaponMaster:
-                throw new NotImplementedException($"{specialization} not yet implemented");
+            case Specialization.RustWitch:
+                AddRustWitchAbilities(character);
+                break;
+
             default:
                 throw new ArgumentException($"Invalid specialization: {specialization}");
         }
@@ -57,15 +69,19 @@ public class SpecializationFactory
         // Check archetype compatibility
         return specialization switch
         {
+            // Warrior specializations
+            Specialization.SkarHordeAspirant => character.Class == CharacterClass.Warrior,
+            Specialization.IronBane => character.Class == CharacterClass.Warrior,
+            Specialization.AtgeirWielder => character.Class == CharacterClass.Warrior,
+
             // Adept specializations
             Specialization.BoneSetter => character.Class == CharacterClass.Adept,
+            Specialization.ScrapTinker => character.Class == CharacterClass.Adept,
             Specialization.JotunReader => character.Class == CharacterClass.Adept,
-            Specialization.Skald => character.Class == CharacterClass.Adept,
 
-            // Warrior specializations (future)
-            Specialization.Berserker => character.Class == CharacterClass.Warrior,
-            Specialization.ShieldBearer => character.Class == CharacterClass.Warrior,
-            Specialization.WeaponMaster => character.Class == CharacterClass.Warrior,
+            // Mystic specializations
+            Specialization.VardWarden => character.Class == CharacterClass.Mystic,
+            Specialization.RustWitch => character.Class == CharacterClass.Mystic,
 
             _ => false
         };
@@ -78,19 +94,24 @@ public class SpecializationFactory
     {
         return characterClass switch
         {
+            CharacterClass.Warrior => new List<Specialization>
+            {
+                Specialization.SkarHordeAspirant,
+                Specialization.IronBane,
+                Specialization.AtgeirWielder
+            },
             CharacterClass.Adept => new List<Specialization>
             {
                 Specialization.BoneSetter,
-                Specialization.JotunReader,
-                Specialization.Skald
+                Specialization.ScrapTinker,
+                Specialization.JotunReader
             },
-            CharacterClass.Warrior => new List<Specialization>
+            CharacterClass.Mystic => new List<Specialization>
             {
-                Specialization.Berserker,
-                Specialization.ShieldBearer,
-                Specialization.WeaponMaster
+                Specialization.VardWarden,
+                Specialization.RustWitch
             },
-            _ => new List<Specialization>() // Scavenger and Mystic don't have specializations yet
+            _ => new List<Specialization>() // Scavenger doesn't have specializations yet
         };
     }
 
@@ -118,20 +139,26 @@ public class SpecializationFactory
                 "Tier 3: Calculated Triage (passive), The Unspoken Truth\n" +
                 "Capstone: Architect of the Silence (shut down Undying, 15 Stress cost)",
 
-            Specialization.Skald =>
-                "SKALD (Buffer/Debuffer)\n" +
-                "Warrior-poet who wields structured narrative as weapon. Maintains performances for battlefield control.\n" +
-                "Primary: WILL | Secondary: WITS | Trauma Risk: Low (Coherent with minor costs)\n" +
-                "Core Role: Provide party-wide buffs/debuffs through sustained performances\n" +
-                "Tier 1: Oral Tradition I (passive), Saga of Courage (performance), Dirge of Defeat (performance)\n" +
-                "Tier 2: Rousing Verse, Song of Silence, Enduring Performance (passive)\n" +
-                "Tier 3: Lay of the Iron Wall (performance), Heart of the Clan (passive)\n" +
-                "Capstone: Saga of the Einherjar (Inspired + temp HP, Stress cost on end)",
+            // Mystic specializations (v0.19.8)
+            Specialization.VardWarden =>
+                "VARD-WARDEN (Defensive Caster)\n" +
+                "Firewall architect who creates pockets of stable reality. Battlefield controller with runic barriers.\n" +
+                "Primary: WILL | Secondary: WITS | Trauma Risk: None (Coherent)\n" +
+                "Core Role: Create physical barriers, sanctify zones, protect allies, control battlefield\n" +
+                "Tier 1: Sanctified Resolve I (passive +1d WILL vs Push/Pull), Runic Barrier (create wall), Consecrate Ground (healing zone)\n" +
+                "Tier 2: Rune of Shielding (buff ally +2 Soak), Reinforce Ward (heal barrier/boost zone), Warden's Vigil (passive Stress resist)\n" +
+                "Tier 3: Glyph of Sanctuary (party temp HP + Stress immunity), Aegis of Sanctity (passive barrier reflection + cleanse)\n" +
+                "Capstone: Indomitable Bastion (reaction: negate fatal damage, create emergency barrier)",
 
-            // Future Warrior specializations
-            Specialization.Berserker => "BERSERKER - Not yet implemented",
-            Specialization.ShieldBearer => "SHIELD-BEARER - Not yet implemented",
-            Specialization.WeaponMaster => "WEAPON-MASTER - Not yet implemented",
+            Specialization.RustWitch =>
+                "RUST-WITCH (Heretical Debuffer)\n" +
+                "Agent of entropy who accelerates inevitable collapse. Trades sanity for devastating power.\n" +
+                "Primary: WILL | Secondary: WITS | Trauma Risk: EXTREME (every spell inflicts self-Corruption)\n" +
+                "Core Role: Apply [Corroded] stacking debuff, shred armor, sustained damage, high risk/reward\n" +
+                "Tier 1: Philosopher of Dust (passive +1d vs corrupted), Corrosive Curse (1 stack [Corroded], +2 Corruption), Entropic Field (passive -1 Armor to nearby enemies)\n" +
+                "Tier 2: System Shock (2 stacks + [Stunned] vs Mechanical, +3 Corruption), Flash Rust (2 stacks AoE, +4 Corruption), Accelerated Entropy (passive +1d damage per stack)\n" +
+                "Tier 3: Unmaking Word (double [Corroded] stacks, +4 Corruption), Cascade Reaction (passive: death spreads [Corroded])\n" +
+                "Capstone: Entropic Cascade (execute if >50% Corrupted, +6 Corruption)",
 
             _ => "Unknown specialization"
         };
@@ -627,6 +654,330 @@ public class SpecializationFactory
             // Special: [Inspired] status + temp HP + 10 Stress on end (handled in CombatEngine)
             CurrentRank = 1,
             MaxRank = 3
+        });
+    }
+
+    #endregion
+
+    #region Vard-Warden Abilities (v0.19.8)
+
+    private static void AddVardWardenAbilities(PlayerCharacter character)
+    {
+        // v0.19.8: Vard-Warden specialization - Defensive Caster
+        // TIER 1 - Available immediately upon unlocking specialization
+
+        // Sanctified Resolve I (Passive) - Rank 1
+        character.Abilities.Add(new Ability
+        {
+            Name = "Sanctified Resolve I",
+            Description = "Passive: +1d to WILL Resolve Checks against [Push] and [Pull] effects. Your connection to stable Aether grounds you.",
+            StaminaCost = 0,
+            APCost = 0,
+            Type = AbilityType.Utility,
+            AttributeUsed = "",
+            BonusDice = 0,
+            SuccessThreshold = 0,
+            CurrentRank = 1,
+            MaxRank = 1  // Passive, no ranking
+        });
+
+        // Runic Barrier (Active) - 3 ranks
+        character.Abilities.Add(new Ability
+        {
+            Name = "Runic Barrier",
+            Description = "Create a physical wall of solidified Aether on target row (front/back). Barrier has 30 HP and blocks movement/line-of-sight for 2 turns.",
+            StaminaCost = 0,
+            APCost = 25,
+            Type = AbilityType.Defense,
+            AttributeUsed = "will",
+            BonusDice = 0,
+            SuccessThreshold = 2,
+            CurrentRank = 1,
+            MaxRank = 3,
+            CostToRank2 = 5,
+            CostToRank3 = 10
+        });
+
+        // Consecrate Ground (Active) - 3 ranks
+        character.Abilities.Add(new Ability
+        {
+            Name = "Consecrate Ground",
+            Description = "Target row becomes [Sanctified Ground] for 3 turns. Allies heal 1d6 HP at start of turn. [Blighted]/[Undying] enemies take 1d6 Arcane damage.",
+            StaminaCost = 0,
+            APCost = 30,
+            Type = AbilityType.Utility,
+            AttributeUsed = "will",
+            BonusDice = 0,
+            SuccessThreshold = 2,
+            CurrentRank = 1,
+            MaxRank = 3,
+            CostToRank2 = 5,
+            CostToRank3 = 10
+        });
+
+        // TIER 2 - Requires Progression Points to unlock
+
+        // Rune of Shielding (Active) - 3 ranks
+        character.Abilities.Add(new Ability
+        {
+            Name = "Rune of Shielding",
+            Description = "Inscribe protective rune on ally. Target gains +2 Soak and resistance to Corruption for 3 turns.",
+            StaminaCost = 0,
+            APCost = 20,
+            Type = AbilityType.Defense,
+            AttributeUsed = "will",
+            BonusDice = 0,
+            SuccessThreshold = 2,
+            CurrentRank = 1,
+            MaxRank = 3,
+            CostToRank2 = 5,
+            CostToRank3 = 10
+        });
+
+        // Reinforce Ward (Active) - 3 ranks
+        character.Abilities.Add(new Ability
+        {
+            Name = "Reinforce Ward",
+            Description = "Target your Runic Barrier to heal it for 2d6 HP, OR boost Sanctified Ground to extend duration by 2 turns and increase healing to 2d6.",
+            StaminaCost = 0,
+            APCost = 15,
+            Type = AbilityType.Utility,
+            AttributeUsed = "will",
+            BonusDice = 0,
+            SuccessThreshold = 0,  // Auto-success
+            CurrentRank = 1,
+            MaxRank = 3,
+            CostToRank2 = 5,
+            CostToRank3 = 10
+        });
+
+        // Warden's Vigil (Passive) - Rank 1
+        character.Abilities.Add(new Ability
+        {
+            Name = "Warden's Vigil",
+            Description = "Passive: Allies in the same row as you gain +1d to Resolve Checks against Stress effects. Your presence is calming.",
+            StaminaCost = 0,
+            APCost = 0,
+            Type = AbilityType.Utility,
+            AttributeUsed = "",
+            BonusDice = 0,
+            SuccessThreshold = 0,
+            CurrentRank = 1,
+            MaxRank = 1  // Passive, no ranking
+        });
+
+        // TIER 3 - High-level abilities
+
+        // Glyph of Sanctuary (Active) - 3 ranks
+        character.Abilities.Add(new Ability
+        {
+            Name = "Glyph of Sanctuary",
+            Description = "Party-wide protection: All allies gain 2d6 temporary HP and immunity to Stress for 2 turns. Emergency protection.",
+            StaminaCost = 0,
+            APCost = 40,
+            Type = AbilityType.Defense,
+            AttributeUsed = "will",
+            BonusDice = 0,
+            SuccessThreshold = 2,
+            CurrentRank = 1,
+            MaxRank = 3,
+            CostToRank2 = 5,
+            CostToRank3 = 10
+        });
+
+        // Aegis of Sanctity (Passive) - Rank 1
+        character.Abilities.Add(new Ability
+        {
+            Name = "Aegis of Sanctity",
+            Description = "Passive: Your Runic Barriers reflect 25% damage back to attackers. Your Sanctified Ground zones cleanse 1 debuff per turn.",
+            StaminaCost = 0,
+            APCost = 0,
+            Type = AbilityType.Utility,
+            AttributeUsed = "",
+            BonusDice = 0,
+            SuccessThreshold = 0,
+            CurrentRank = 1,
+            MaxRank = 1  // Passive, no ranking
+        });
+
+        // CAPSTONE - Ultimate defensive ability
+
+        // Indomitable Bastion (Reaction) - Rank 1
+        character.Abilities.Add(new Ability
+        {
+            Name = "Indomitable Bastion",
+            Description = "CAPSTONE REACTION: When you or an ally would take fatal damage, negate it and create emergency Runic Barrier on their row (40 HP, 3 turns). Once per expedition.",
+            StaminaCost = 0,
+            APCost = 0,  // Free reaction, once per expedition
+            Type = AbilityType.Defense,
+            AttributeUsed = "",
+            BonusDice = 0,
+            SuccessThreshold = 0,  // Auto-success
+            CurrentRank = 1,
+            MaxRank = 1
+        });
+    }
+
+    #endregion
+
+    #region Rust-Witch Abilities (v0.19.8)
+
+    private static void AddRustWitchAbilities(PlayerCharacter character)
+    {
+        // v0.19.8: Rust-Witch specialization - Heretical Debuffer
+        // WARNING: ALL abilities inflict self-Corruption
+        // TIER 1 - Available immediately upon unlocking specialization
+
+        // Philosopher of Dust (Passive) - Rank 1
+        character.Abilities.Add(new Ability
+        {
+            Name = "Philosopher of Dust",
+            Description = "Passive: +1d to analysis checks against corrupted targets. You understand entropy intimately.",
+            StaminaCost = 0,
+            APCost = 0,
+            Type = AbilityType.Utility,
+            AttributeUsed = "",
+            BonusDice = 0,
+            SuccessThreshold = 0,
+            CurrentRank = 1,
+            MaxRank = 1  // Passive, no ranking
+        });
+
+        // Corrosive Curse (Active) - 3 ranks
+        character.Abilities.Add(new Ability
+        {
+            Name = "Corrosive Curse",
+            Description = "Apply 1 stack of [Corroded] to target (1d6 damage/turn, -2 Armor, 3 turns). COST: +2 Corruption to self.",
+            StaminaCost = 0,
+            APCost = 20,
+            Type = AbilityType.Attack,
+            AttributeUsed = "will",
+            BonusDice = 0,
+            SuccessThreshold = 2,
+            DamageDice = 0,  // [Corroded] handles damage
+            CurrentRank = 1,
+            MaxRank = 3,
+            CostToRank2 = 5,
+            CostToRank3 = 10
+        });
+
+        // Entropic Field (Passive) - Rank 1
+        character.Abilities.Add(new Ability
+        {
+            Name = "Entropic Field",
+            Description = "Passive: Enemies in your row lose 1 Armor. Your presence accelerates decay.",
+            StaminaCost = 0,
+            APCost = 0,
+            Type = AbilityType.Utility,
+            AttributeUsed = "",
+            BonusDice = 0,
+            SuccessThreshold = 0,
+            CurrentRank = 1,
+            MaxRank = 1  // Passive, no ranking
+        });
+
+        // TIER 2 - Requires Progression Points to unlock
+
+        // System Shock (Active) - 3 ranks
+        character.Abilities.Add(new Ability
+        {
+            Name = "System Shock",
+            Description = "Apply 2 stacks of [Corroded] to target. If target is [Mechanical], also apply [Stunned] (1 turn). COST: +3 Corruption to self.",
+            StaminaCost = 0,
+            APCost = 25,
+            Type = AbilityType.Control,
+            AttributeUsed = "will",
+            BonusDice = 0,
+            SuccessThreshold = 2,
+            SkipEnemyTurn = false,  // [Stunned] handled separately
+            CurrentRank = 1,
+            MaxRank = 3,
+            CostToRank2 = 5,
+            CostToRank3 = 10
+        });
+
+        // Flash Rust (Active) - 3 ranks
+        character.Abilities.Add(new Ability
+        {
+            Name = "Flash Rust",
+            Description = "Apply 2 stacks of [Corroded] to ALL enemies. Instant entropy cascade. COST: +4 Corruption to self.",
+            StaminaCost = 0,
+            APCost = 35,
+            Type = AbilityType.Attack,
+            AttributeUsed = "will",
+            BonusDice = 0,
+            SuccessThreshold = 2,
+            CurrentRank = 1,
+            MaxRank = 3,
+            CostToRank2 = 5,
+            CostToRank3 = 10
+        });
+
+        // Accelerated Entropy (Passive) - Rank 1
+        character.Abilities.Add(new Ability
+        {
+            Name = "Accelerated Entropy",
+            Description = "Passive: [Corroded] damage increases to 2d6 per stack (from 1d6). Your curses are potent.",
+            StaminaCost = 0,
+            APCost = 0,
+            Type = AbilityType.Utility,
+            AttributeUsed = "",
+            BonusDice = 0,
+            SuccessThreshold = 0,
+            CurrentRank = 1,
+            MaxRank = 1  // Passive, no ranking
+        });
+
+        // TIER 3 - High-level abilities
+
+        // Unmaking Word (Active) - 3 ranks
+        character.Abilities.Add(new Ability
+        {
+            Name = "Unmaking Word",
+            Description = "Speak the word of dissolution. DOUBLE current [Corroded] stacks on target (max 5 total). COST: +4 Corruption to self.",
+            StaminaCost = 0,
+            APCost = 30,
+            Type = AbilityType.Attack,
+            AttributeUsed = "will",
+            BonusDice = 0,
+            SuccessThreshold = 2,
+            CurrentRank = 1,
+            MaxRank = 3,
+            CostToRank2 = 5,
+            CostToRank3 = 10
+        });
+
+        // Cascade Reaction (Passive) - Rank 1
+        character.Abilities.Add(new Ability
+        {
+            Name = "Cascade Reaction",
+            Description = "Passive: When an enemy with [Corroded] dies, spread 1 stack of [Corroded] to all adjacent enemies. Entropy is contagious.",
+            StaminaCost = 0,
+            APCost = 0,
+            Type = AbilityType.Utility,
+            AttributeUsed = "",
+            BonusDice = 0,
+            SuccessThreshold = 0,
+            CurrentRank = 1,
+            MaxRank = 1  // Passive, no ranking
+        });
+
+        // CAPSTONE - Ultimate execution ability
+
+        // Entropic Cascade (Active) - Rank 1
+        character.Abilities.Add(new Ability
+        {
+            Name = "Entropic Cascade",
+            Description = "CAPSTONE: If target has >50% Corruption or 5 [Corroded] stacks, instantly reduce to 0 HP. Otherwise deal 6d6 Arcane damage. COST: +6 Corruption to self.",
+            StaminaCost = 0,
+            APCost = 50,
+            Type = AbilityType.Attack,
+            AttributeUsed = "will",
+            BonusDice = 0,
+            SuccessThreshold = 2,
+            DamageDice = 6,  // 6d6 if not execute
+            CurrentRank = 1,
+            MaxRank = 1
         });
     }
 

@@ -72,6 +72,10 @@ public class Enemy
     public int PoisonTurnsRemaining { get; set; } = 0; // Duration of poison effect
     public bool HasUsedSpecialAbility { get; set; } = false; // For one-time abilities (Last Stand, etc.)
 
+    // v0.19.8: Rust-Witch [Corroded] status effect
+    public int CorrodedStacks { get; set; } = 0; // 0-5 stacks, each deals 1d6 damage and -2 Armor
+    public List<int> CorrodedStackDurations { get; set; } = new(); // Independent 3-turn durations per stack
+
     // Progression (Aethelgard Saga System)
     public int BaseLegendValue { get; set; } = 0;
 

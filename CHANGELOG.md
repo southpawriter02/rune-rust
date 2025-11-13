@@ -7,6 +7,231 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.19.8] - 2025-11-13 - Mystic Archetype & Aether Pool System
+
+### Added
+
+#### Mystic Archetype - Third Core Archetype
+- **Class:** Mystic (CharacterClass.Mystic)
+- **Philosophy:** Aether-wielding spellcasters who interface with reality's corrupted source code
+- **Primary Resource:** Aether Pool (AP)
+- **Secondary Resource:** Stamina
+- **Primary Attribute:** WILL (spell potency, AP pool size, Corruption resistance)
+- **Secondary Attribute:** WITS (perception, analysis)
+- **Base Stats:** MIGHT 2, FINESSE 2, WITS 4, WILL 4, STURDINESS 2
+- **Starting HP:** 30 (glass cannon - lowest HP)
+- **Starting Stamina:** 30 (lower than Warriors/Adepts)
+- **Proficiencies:**
+  - Weapons: Simple one-handed only (daggers, staves, wands, hand-axes)
+  - Armor: Light armor only (heavy gear interferes with Aether channeling)
+
+#### Aether Pool (AP) Resource System
+- **Max AP Calculation:** `(WILL × 10) + 50`
+- **Starting AP (WILL 4):** 90 AP (99 with Aetheric Attunement)
+- **Regeneration:**
+  - Focus Aether ability: Restore 25 AP (ends turn)
+  - Short Rest: Restore 25% Max AP
+  - Long Rest: Restore 100% Max AP
+- **Ability Cost:** Mystic abilities use APCost instead of StaminaCost
+- **Core Design:** Dual-resource architecture (AP primary, Stamina secondary)
+
+#### MagicService - Core Spell Casting System
+- `CanCastSpell()` - Validate AP cost
+- `DeductAPCost()` - Deduct AP from caster
+- `RestoreAP()` - Restore AP with max cap
+- `CalculateSpellPotency()` - Scale spells with WILL
+- `ApplyCorruptionCost()` - Apply self-Corruption for heretical spells
+- `FocusAether()` - Handle Focus Aether ability (25/35/50 AP by rank)
+- `ShortRestRegeneration()` - 25% Max AP
+- `LongRestRegeneration()` - 100% Max AP
+
+#### 3 Mystic Starting Abilities (FREE at character creation)
+1. **Aether Dart** (Active)
+   - Cost: 15 AP
+   - Effect: Single-target Arcane damage (2d6 + WILL bonus)
+   - Purpose: Spammable basic magical attack
+   - Ranks: 3 (5 PP to rank 2)
+
+2. **Focus Aether** (Active)
+   - Cost: Ends turn
+   - Effect: Restore 25 AP (35 AP at Rank 2, 50 AP at Rank 3)
+   - Purpose: Core AP management, resource regeneration
+   - Ranks: 3 (5 PP to rank 2)
+
+3. **Aetheric Attunement** (Passive)
+   - Effect: +10% Maximum Aether Pool
+   - Purpose: Defines Mystic identity as Aether masters
+   - Ranks: 1 (passive, no ranking)
+
+#### Specialization: Vard-Warden (Defensive Caster)
+- **Archetype:** Mystic
+- **Path Type:** Coherent (no Corruption costs)
+- **Mechanical Role:** Battlefield Controller / Defensive Support
+- **Primary Attribute:** WILL
+- **Secondary Attribute:** WITS
+- **Trauma Risk:** None (Coherent magic)
+- **Core Mechanics:**
+  - Runic Barriers: Create physical walls with HP that block movement
+  - Sanctified Ground: Create healing/purifying zones for allies
+  - Construct Management: Reinforce and boost existing constructs
+
+**9 Vard-Warden Abilities (30 PP Total):**
+
+**Tier 1 (3 PP each):**
+1. **Sanctified Resolve I** (Passive) - +1d to WILL Resolve vs [Push]/[Pull]
+2. **Runic Barrier** (Active, 3 ranks, 25 AP) - Create barrier with 30 HP on row, blocks movement/LoS, 2 turns
+3. **Consecrate Ground** (Active, 3 ranks, 30 AP) - Create [Sanctified Ground] zone, heal 1d6/turn, damage Blighted, 3 turns
+
+**Tier 2 (4 PP each):**
+4. **Rune of Shielding** (Active, 3 ranks, 20 AP) - Buff ally with +2 Soak, Corruption resistance, 3 turns
+5. **Reinforce Ward** (Active, 3 ranks, 15 AP) - Heal barrier 2d6 HP OR boost zone +2 turns +2d6 healing
+6. **Warden's Vigil** (Passive) - Same-row allies get +1d to Stress resistance
+
+**Tier 3 (5 PP each):**
+7. **Glyph of Sanctuary** (Active, 3 ranks, 40 AP) - Party-wide 2d6 temp HP + Stress immunity, 2 turns
+8. **Aegis of Sanctity** (Passive) - Barriers reflect 25% damage, zones cleanse 1 debuff/turn
+
+**Capstone (10 PP):**
+9. **Indomitable Bastion** (Reaction) - Negate fatal damage, create emergency 40 HP barrier, once per expedition
+
+#### Specialization: Rust-Witch (Heretical Debuffer)
+- **Archetype:** Mystic
+- **Path Type:** Heretical (EXTREME Corruption risk - every spell inflicts self-Corruption)
+- **Mechanical Role:** Debuffer / Sustained Damage / Armor Shredder
+- **Primary Attribute:** WILL
+- **Secondary Attribute:** WITS
+- **Trauma Risk:** EXTREME (every spell +2 to +6 Corruption)
+- **Core Mechanics:**
+  - [Corroded] Status: Stacking DoT (1d6/stack) + armor reduction (-2/stack)
+  - Max 5 stacks, 3-turn independent durations
+  - Corruption Bargain: Trade sanity for power
+
+**9 Rust-Witch Abilities (30 PP Total):**
+
+**Tier 1 (3 PP each):**
+1. **Philosopher of Dust** (Passive) - +1d to analysis vs corrupted targets
+2. **Corrosive Curse** (Active, 3 ranks, 20 AP) - Apply 1 stack [Corroded], +2 Corruption to self
+3. **Entropic Field** (Passive) - Enemies in your row lose 1 Armor
+
+**Tier 2 (4 PP each):**
+4. **System Shock** (Active, 3 ranks, 25 AP) - 2 stacks [Corroded] + [Stunned] vs Mechanical, +3 Corruption
+5. **Flash Rust** (Active, 3 ranks, 35 AP) - 2 stacks [Corroded] to ALL enemies (AoE), +4 Corruption
+6. **Accelerated Entropy** (Passive) - [Corroded] damage increases to 2d6/stack (from 1d6)
+
+**Tier 3 (5 PP each):**
+7. **Unmaking Word** (Active, 3 ranks, 30 AP) - DOUBLE [Corroded] stacks (max 5), +4 Corruption
+8. **Cascade Reaction** (Passive) - Enemy death spreads 1 [Corroded] stack to adjacent
+
+**Capstone (10 PP):**
+9. **Entropic Cascade** (Active, 50 AP) - Execute if >50% Corrupted or 5 stacks, else 6d6 Arcane, +6 Corruption
+
+#### New Core Classes & Systems
+
+**RunicConstruct Class:**
+- Represents physical Aether constructs (barriers and zones)
+- Properties: ConstructId, Type, CurrentHP, MaxHP, DurationRemaining, Location, OwnerId
+- Methods: TakeDamage(), CountdownDuration(), Heal(), BoostZone()
+- Types: RunicBarrier (wall with HP), SanctifiedGround (healing zone)
+
+**Status Effects (PlayerCharacter):**
+- RuneOfShieldingTurnsRemaining - Vard-Warden buff
+- SanctifiedGroundTurnsRemaining - Standing in zone
+- GlyphOfSanctuaryTempHP - Temp HP from Glyph
+- GlyphOfSanctuaryStressImmunity - Stress immunity duration
+- IndomitableBastionUsed - Capstone once per expedition flag
+- EntropyFieldArmorReduction - Rust-Witch passive aura
+
+**Status Effects (Enemy):**
+- CorrodedStacks (0-5) - Stacking debuff
+- CorrodedStackDurations (List<int>) - Independent 3-turn timers per stack
+
+### Changed
+
+#### Core/PlayerCharacter.cs
+- Added MaxAP property for Aether Pool maximum
+- AP property now properly tracked with max/current values
+- Added 11 new status effect properties for Mystic abilities
+
+#### Core/Ability.cs
+- Added APCost property (0 by default)
+- Mystic abilities use APCost instead of StaminaCost
+
+#### Core/Specialization.cs
+- Updated enum to include all implemented specializations
+- Added VardWarden and RustWitch for Mystic
+- Updated comments to reflect current state (3 PP unlock cost)
+
+#### Core/Enemy.cs
+- Added CorrodedStacks (int) tracking
+- Added CorrodedStackDurations (List<int>) for independent stack timers
+
+#### Engine/CharacterFactory.cs
+- Updated InitializeMystic() to use MysticArchetype
+- Calculate MaxAP: (WILL × 10) + 50
+- Grant 3 starting abilities from archetype
+- Apply Aetheric Attunement bonus via RecalculatePlayerStats
+
+#### Engine/EquipmentService.cs
+- Updated RecalculatePlayerStats() to calculate MaxAP for Mystics
+- Apply Aetheric Attunement passive (+10% Max AP)
+- Maintain AP ratio when stats change (like HP ratio system)
+
+#### Engine/SpecializationFactory.cs
+- Updated ApplySpecialization() switch to handle VardWarden and RustWitch
+- Updated CanChooseSpecialization() to recognize Mystic specializations
+- Updated GetAvailableSpecializations() to return Mystic options
+- Added GetSpecializationDescription() entries for both Mystic specs
+- Implemented AddVardWardenAbilities() with 9 abilities
+- Implemented AddRustWitchAbilities() with 9 abilities
+
+### Technical Details
+
+**Aether Pool Scaling:**
+- WILL 2: 70 AP base → 77 AP with Attunement
+- WILL 4: 90 AP base → 99 AP with Attunement (starting Mystic)
+- WILL 6: 110 AP base → 121 AP with Attunement
+- WILL 8: 130 AP base → 143 AP with Attunement
+
+**Design Validation:**
+- ✅ Dual-resource architecture (Stamina + Aether Pool)
+- ✅ Magic system foundation for future Mystic specializations
+- ✅ Coherent vs Heretical magic contrast (Vard-Warden vs Rust-Witch)
+- ✅ Support vs DPS Mystic roles
+- ✅ Low-Corruption vs High-Corruption playstyles
+- ✅ Defensive vs Offensive spellcasting
+
+**File Changes:**
+- Modified: 7 files (PlayerCharacter.cs, Ability.cs, Specialization.cs, Enemy.cs, CharacterFactory.cs, EquipmentService.cs, SpecializationFactory.cs)
+- Created: 3 files (MysticArchetype.cs, MagicService.cs, RunicConstruct.cs)
+- Total: 10 files changed
+
+### Notes for Implementers
+
+**CombatEngine Integration (Future Work):**
+- AP cost checking and deduction for Mystic abilities
+- Arcane damage type handling
+- Runic Construct creation and management
+- [Corroded] status effect application and DoT processing
+- Corruption cost application for heretical spells
+- Focus Aether turn-ending behavior
+- Sanctified Ground healing and damage
+- Entropic Cascade execute conditions
+
+**Balance Considerations:**
+- Mystics have lowest HP (30) - true glass cannon
+- AP costs balanced against Stamina costs (roughly 1.5x multiplier)
+- Rust-Witch Corruption spiral requires careful management
+- Vard-Warden provides unique defensive utility not available elsewhere
+
+**Progression Path:**
+1. Create Mystic character (get 3 starting abilities)
+2. Unlock specialization at 3 PP (get 3 Tier 1 abilities)
+3. Purchase Tier 2 abilities at 4 PP each (requires 8 PP in tree)
+4. Purchase Tier 3 abilities at 5 PP each (requires 15 PP in tree)
+5. Unlock Capstone at 10 PP (requires 25 PP in tree)
+
+---
+
 ## [0.19.7] - 2025-11-13 - Jötun-Reader Specialization (Complete Implementation)
 
 ### Updated

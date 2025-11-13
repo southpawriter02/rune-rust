@@ -350,22 +350,41 @@ public class CombatEngine
     {
         var player = combatState.Player;
 
-        _log.Information("Ability use attempt: Character={CharacterName}, Ability={AbilityName}, Target={Target}, StaminaCost={Cost}, CurrentStamina={CurrentStamina}",
-            player.Name, ability.Name, target?.Name ?? "None", ability.StaminaCost, player.Stamina);
+        _log.Information("Ability use attempt: Character={CharacterName}, Ability={AbilityName}, Target={Target}, StaminaCost={StaminaCost}, APCost={APCost}, CurrentStamina={CurrentStamina}, CurrentAP={CurrentAP}",
+            player.Name, ability.Name, target?.Name ?? "None", ability.StaminaCost, ability.APCost, player.Stamina, player.AP);
 
-        // Check stamina cost
-        if (player.Stamina < ability.StaminaCost)
+        // v0.19.8: Check AP cost for Mystic abilities
+        if (ability.APCost > 0)
         {
-            combatState.AddLogEntry($"Not enough stamina! ({player.Stamina}/{ability.StaminaCost} required)");
-            _log.Debug("Ability failed: Insufficient stamina for {AbilityName}", ability.Name);
-            return false;
+            if (player.AP < ability.APCost)
+            {
+                combatState.AddLogEntry($"Not enough Aether Pool! ({player.AP}/{ability.APCost} AP required)");
+                _log.Debug("Ability failed: Insufficient AP for {AbilityName}", ability.Name);
+                return false;
+            }
+
+            // Pay AP cost (Mystic abilities)
+            player.AP -= ability.APCost;
+
+            combatState.AddLogEntry($"{player.Name} uses {ability.Name}!");
+            combatState.AddLogEntry($"  Cost: {ability.APCost} AP (Remaining: {player.AP}/{player.MaxAP})");
         }
+        else
+        {
+            // Check stamina cost (Warrior/Adept abilities)
+            if (player.Stamina < ability.StaminaCost)
+            {
+                combatState.AddLogEntry($"Not enough stamina! ({player.Stamina}/{ability.StaminaCost} required)");
+                _log.Debug("Ability failed: Insufficient stamina for {AbilityName}", ability.Name);
+                return false;
+            }
 
-        // Pay stamina cost
-        player.Stamina -= ability.StaminaCost;
+            // Pay stamina cost
+            player.Stamina -= ability.StaminaCost;
 
-        combatState.AddLogEntry($"{player.Name} uses {ability.Name}!");
-        combatState.AddLogEntry($"  Cost: {ability.StaminaCost} Stamina (Remaining: {player.Stamina}/{player.MaxStamina})");
+            combatState.AddLogEntry($"{player.Name} uses {ability.Name}!");
+            combatState.AddLogEntry($"  Cost: {ability.StaminaCost} Stamina (Remaining: {player.Stamina}/{player.MaxStamina})");
+        }
 
         _log.Information("Ability used: Character={CharacterName}, Ability={AbilityName}, Target={Target}, RemainingStamina={RemainingStamina}",
             player.Name, ability.Name, target?.Name ?? "None", player.Stamina);
@@ -446,6 +465,37 @@ public class CombatEngine
                 traumaService.AddCorruption(player, 4);
                 combatState.AddLogEntry("  ⚠️ You tear at the fabric of reality...");
                 combatState.AddLogEntry($"  Psychic Stress: {stressBefore} → {player.PsychicStress}/100");
+                combatState.AddLogEntry($"  Corruption: {corruptionBefore} → {player.Corruption}/100");
+                break;
+
+            // v0.19.8: Rust-Witch heretical abilities (EXTREME Corruption costs)
+            case "Corrosive Curse":
+                traumaService.AddCorruption(player, 2);
+                combatState.AddLogEntry("  ⚠️ You channel corrosive entropy...");
+                combatState.AddLogEntry($"  Corruption: {corruptionBefore} → {player.Corruption}/100");
+                break;
+
+            case "System Shock":
+                traumaService.AddCorruption(player, 3);
+                combatState.AddLogEntry("  ⚠️ You disrupt reality's code with heretical power...");
+                combatState.AddLogEntry($"  Corruption: {corruptionBefore} → {player.Corruption}/100");
+                break;
+
+            case "Flash Rust":
+                traumaService.AddCorruption(player, 4);
+                combatState.AddLogEntry("  ⚠️ You accelerate entropy across the battlefield...");
+                combatState.AddLogEntry($"  Corruption: {corruptionBefore} → {player.Corruption}/100");
+                break;
+
+            case "Unmaking Word":
+                traumaService.AddCorruption(player, 4);
+                combatState.AddLogEntry("  ⚠️ You speak the word of dissolution...");
+                combatState.AddLogEntry($"  Corruption: {corruptionBefore} → {player.Corruption}/100");
+                break;
+
+            case "Entropic Cascade":
+                traumaService.AddCorruption(player, 6);
+                combatState.AddLogEntry("  ‼️ You invoke ultimate entropy at terrible cost...");
                 combatState.AddLogEntry($"  Corruption: {corruptionBefore} → {player.Corruption}/100");
                 break;
         }
@@ -866,6 +916,129 @@ public class CombatEngine
                 target.Name, 4, ability.Name);
             return; // Early return
         }
+        // v0.19.8: Aether Dart - Basic Mystic attack (2d6 Arcane damage)
+        else if (ability.Name == "Aether Dart")
+        {
+            var player = combatState.Player;
+            var willBonus = player.Attributes.Will / 2; // Spells scale with WILL
+
+            damage = _diceService.RollDamage(ability.DamageDice);
+            damage += willBonus; // Add WILL bonus to damage
+
+            combatState.AddLogEntry($"  A compressed bolt of corrupted Aether strikes {target.Name}!");
+            combatState.AddLogEntry($"  Rolled {ability.DamageDice}d6 + {willBonus} WILL bonus = {damage} Arcane damage");
+
+            ApplyDamageToEnemy(combatState, target, damage, false); // Respects armor
+            return; // Early return
+        }
+        // v0.19.8: Corrosive Curse - Apply [Corroded] (Rust-Witch Tier 1)
+        else if (ability.Name == "Corrosive Curse")
+        {
+            combatState.AddLogEntry($"  You whisper words of entropy at {target.Name}...");
+
+            // Apply 1 stack of [Corroded]
+            target.CorrodedStacks = Math.Min(5, target.CorrodedStacks + 1);
+            target.CorrodedStackDurations.Add(3); // 3 turns per stack
+
+            combatState.AddLogEntry($"  {target.Name} gains [Corroded] x{target.CorrodedStacks}!");
+            combatState.AddLogEntry($"  (1d6 damage/turn per stack, -2 Armor per stack)");
+
+            _log.Information("Status effect applied: Enemy={EnemyName}, Effect=Corroded, Stacks={Stacks}",
+                target.Name, target.CorrodedStacks);
+            return; // Early return
+        }
+        // v0.19.8: System Shock - 2 stacks [Corroded] + [Stunned] vs Mechanical (Rust-Witch Tier 2)
+        else if (ability.Name == "System Shock")
+        {
+            combatState.AddLogEntry($"  You disrupt {target.Name}'s fundamental code!");
+
+            // Apply 2 stacks of [Corroded]
+            int stacksToAdd = 2;
+            target.CorrodedStacks = Math.Min(5, target.CorrodedStacks + stacksToAdd);
+            for (int i = 0; i < stacksToAdd; i++)
+            {
+                target.CorrodedStackDurations.Add(3);
+            }
+
+            combatState.AddLogEntry($"  {target.Name} gains [Corroded] x{target.CorrodedStacks}!");
+
+            // Check if target is Mechanical (placeholder - would need enemy tags)
+            if (target.Type.ToString().Contains("Construct") || target.Type.ToString().Contains("Sentinel"))
+            {
+                target.StunTurnsRemaining = 1;
+                combatState.AddLogEntry($"  {target.Name} is [Stunned] for 1 turn! (Mechanical vulnerability)");
+            }
+
+            return; // Early return
+        }
+        // v0.19.8: Flash Rust - 2 stacks [Corroded] to ALL enemies (Rust-Witch Tier 2 AoE)
+        else if (ability.Name == "Flash Rust")
+        {
+            combatState.AddLogEntry($"  ⚠️ Entropy cascades across the battlefield!");
+
+            foreach (var enemy in combatState.Enemies.Where(e => e.IsAlive))
+            {
+                int stacksToAdd = 2;
+                enemy.CorrodedStacks = Math.Min(5, enemy.CorrodedStacks + stacksToAdd);
+                for (int i = 0; i < stacksToAdd; i++)
+                {
+                    enemy.CorrodedStackDurations.Add(3);
+                }
+
+                combatState.AddLogEntry($"  {enemy.Name} gains [Corroded] x{enemy.CorrodedStacks}!");
+            }
+
+            return; // Early return
+        }
+        // v0.19.8: Unmaking Word - DOUBLE [Corroded] stacks (Rust-Witch Tier 3)
+        else if (ability.Name == "Unmaking Word")
+        {
+            combatState.AddLogEntry($"  You speak the word of dissolution...");
+
+            int currentStacks = target.CorrodedStacks;
+            int newStacks = Math.Min(5, currentStacks * 2);
+            int stacksAdded = newStacks - currentStacks;
+
+            if (stacksAdded > 0)
+            {
+                target.CorrodedStacks = newStacks;
+                for (int i = 0; i < stacksAdded; i++)
+                {
+                    target.CorrodedStackDurations.Add(3);
+                }
+                combatState.AddLogEntry($"  {target.Name}'s [Corroded] stacks DOUBLE! ({currentStacks} → {newStacks})");
+            }
+            else
+            {
+                combatState.AddLogEntry($"  {target.Name} is already at maximum [Corroded] (5 stacks)!");
+            }
+
+            return; // Early return
+        }
+        // v0.19.8: Entropic Cascade - Execute or massive damage (Rust-Witch Capstone)
+        else if (ability.Name == "Entropic Cascade")
+        {
+            var player = combatState.Player;
+
+            // Check execute conditions: >50% Corruption OR 5 [Corroded] stacks
+            bool canExecute = (target.CorrodedStacks >= 5) || (player.Corruption >= 50);
+
+            if (canExecute)
+            {
+                combatState.AddLogEntry($"  ‼️ ENTROPIC CASCADE: {target.Name} dissolves into nothingness!");
+                target.HP = 0;
+                combatState.AddLogEntry($"  {target.Name} is EXECUTED!");
+            }
+            else
+            {
+                damage = _diceService.RollDamage(ability.DamageDice);
+                combatState.AddLogEntry($"  Massive entropy wave strikes {target.Name}!");
+                combatState.AddLogEntry($"  Rolled {ability.DamageDice}d6 Arcane damage: {damage}");
+                ApplyDamageToEnemy(combatState, target, damage, false);
+            }
+
+            return; // Early return
+        }
         // Check if ability has special damage dice (like Aetheric Bolt)
         else if (ability.DamageDice > 0)
         {
@@ -891,6 +1064,29 @@ public class CombatEngine
             {
                 combatState.AddLogEntry($"  [Vulnerable] increases damage from {damage} to {vulnerableDamage}!");
                 damage = vulnerableDamage;
+            }
+        }
+
+        // v0.19.8: Apply Soak (flat damage reduction) unless ignored
+        if (!ignoresArmor && target.Soak > 0)
+        {
+            // Calculate effective Soak (reduced by [Corroded] stacks: -2 per stack)
+            int corrodedArmorReduction = target.CorrodedStacks * 2;
+            int effectiveSoak = Math.Max(0, target.Soak - corrodedArmorReduction);
+
+            if (effectiveSoak > 0)
+            {
+                int soakedDamage = Math.Max(0, damage - effectiveSoak);
+                if (corrodedArmorReduction > 0)
+                {
+                    combatState.AddLogEntry($"  {target.Name}'s armor reduced by [Corroded]: {target.Soak} → {effectiveSoak} Soak");
+                }
+                combatState.AddLogEntry($"  Armor absorbs {effectiveSoak} damage ({damage} → {soakedDamage})");
+                damage = soakedDamage;
+            }
+            else if (corrodedArmorReduction > 0)
+            {
+                combatState.AddLogEntry($"  {target.Name}'s armor completely destroyed by [Corroded]!");
             }
         }
 
@@ -945,6 +1141,39 @@ public class CombatEngine
             player.ShieldAbsorptionRemaining = 15;
             combatState.AddLogEntry($"  Aetheric shield created! (Absorbs next 15 damage)");
         }
+        // v0.19.8: Runic Barrier - Create defensive wall (Vard-Warden)
+        else if (ability.Name == "Runic Barrier")
+        {
+            combatState.AddLogEntry($"  You manifest a Runic Barrier of solidified Aether!");
+            combatState.AddLogEntry($"  Barrier has 30 HP, blocks movement and line-of-sight for 2 turns");
+            combatState.AddLogEntry($"  (Note: Full barrier mechanics require RunicConstruct system integration)");
+
+            _log.Information("Runic Barrier created: Character={Name}, Rank={Rank}",
+                player.Name, ability.CurrentRank);
+        }
+        // v0.19.8: Rune of Shielding - Buff ally (Vard-Warden)
+        else if (ability.Name == "Rune of Shielding")
+        {
+            player.RuneOfShieldingTurnsRemaining = 3;
+            combatState.AddLogEntry($"  Protective rune inscribed!");
+            combatState.AddLogEntry($"  +2 Soak and Corruption resistance for 3 turns");
+
+            _log.Information("Rune of Shielding applied: Character={Name}",
+                player.Name);
+        }
+        // v0.19.8: Glyph of Sanctuary - Party-wide protection (Vard-Warden)
+        else if (ability.Name == "Glyph of Sanctuary")
+        {
+            int tempHP = _diceService.RollDamage(2); // 2d6
+            player.GlyphOfSanctuaryTempHP += tempHP;
+            player.GlyphOfSanctuaryStressImmunity = 2;
+
+            combatState.AddLogEntry($"  Glyph of Sanctuary radiates protective energy!");
+            combatState.AddLogEntry($"  Gained {tempHP} temporary HP and Stress immunity for 2 turns!");
+
+            _log.Information("Glyph of Sanctuary used: Character={Name}, TempHP={TempHP}",
+                player.Name, tempHP);
+        }
         // Shield Wall or similar
         else
         {
@@ -986,6 +1215,53 @@ public class CombatEngine
             int actualRestore = player.Stamina - staminaBefore;
             combatState.AddLogEntry($"  Your rousing verse reinvigorates you!");
             combatState.AddLogEntry($"  Restored {actualRestore} Stamina! ({staminaBefore} → {player.Stamina}/{player.MaxStamina})");
+        }
+        // v0.19.8: Focus Aether - Restore AP (Mystic core ability)
+        else if (ability.Name == "Focus Aether")
+        {
+            // Restore amount scales with rank: 25/35/50 AP
+            int apRestore = ability.CurrentRank switch
+            {
+                1 => 25,
+                2 => 35,
+                3 => 50,
+                _ => 25
+            };
+
+            int apBefore = player.AP;
+            player.AP = Math.Min(player.MaxAP, player.AP + apRestore);
+            int actualRestore = player.AP - apBefore;
+
+            combatState.AddLogEntry($"  You channel ambient Aether to restore your mental capacity!");
+            combatState.AddLogEntry($"  Restored {actualRestore} AP! ({apBefore} → {player.AP}/{player.MaxAP})");
+            combatState.AddLogEntry($"  Your turn ends (Focus Aether requires full concentration)");
+
+            _log.Information("Focus Aether used: Character={Name}, Restored={Amount} AP, Rank={Rank}",
+                player.Name, actualRestore, ability.CurrentRank);
+        }
+        // v0.19.8: Consecrate Ground - Create [Sanctified Ground] zone (Vard-Warden)
+        else if (ability.Name == "Consecrate Ground")
+        {
+            combatState.AddLogEntry($"  You consecrate the ground with stable Aether!");
+            combatState.AddLogEntry($"  [Sanctified Ground] zone created for 3 turns!");
+            combatState.AddLogEntry($"  Allies in zone heal 1d6 HP/turn, Blighted enemies take 1d6 damage/turn");
+            combatState.AddLogEntry($"  (Note: Full zone mechanics require RunicConstruct system integration)");
+
+            // Placeholder: Set player status to track being in zone
+            player.SanctifiedGroundTurnsRemaining = 3;
+        }
+        // v0.19.8: Reinforce Ward - Heal barrier or boost zone (Vard-Warden)
+        else if (ability.Name == "Reinforce Ward")
+        {
+            combatState.AddLogEntry($"  You reinforce your magical construct!");
+            combatState.AddLogEntry($"  (Note: Full mechanics require RunicConstruct tracking)");
+
+            // Placeholder: Extend Sanctified Ground if active
+            if (player.SanctifiedGroundTurnsRemaining > 0)
+            {
+                player.SanctifiedGroundTurnsRemaining += 2;
+                combatState.AddLogEntry($"  [Sanctified Ground] duration extended by 2 turns!");
+            }
         }
     }
 
@@ -1272,6 +1548,41 @@ public class CombatEngine
             }
         }
 
+        // v0.19.8: Apply [Sanctified Ground] healing at start of player turn
+        if (combatState.Player.SanctifiedGroundTurnsRemaining > 0)
+        {
+            int healAmount = _diceService.RollDamage(1); // 1d6 per turn
+            int oldHP = combatState.Player.HP;
+            combatState.Player.HP = Math.Min(combatState.Player.MaxHP, combatState.Player.HP + healAmount);
+            int actualHeal = combatState.Player.HP - oldHP;
+
+            if (actualHeal > 0)
+            {
+                combatState.AddLogEntry($"[Sanctified Ground] heals you for {actualHeal} HP! (HP: {combatState.Player.HP}/{combatState.Player.MaxHP})");
+            }
+
+            combatState.Player.SanctifiedGroundTurnsRemaining--;
+            if (combatState.Player.SanctifiedGroundTurnsRemaining == 0)
+            {
+                combatState.AddLogEntry($"[Sanctified Ground] zone dissipates.");
+            }
+        }
+
+        // v0.19.8: Decrement Mystic status effects
+        if (combatState.Player.RuneOfShieldingTurnsRemaining > 0)
+        {
+            combatState.Player.RuneOfShieldingTurnsRemaining--;
+            if (combatState.Player.RuneOfShieldingTurnsRemaining == 0)
+            {
+                combatState.AddLogEntry($"Rune of Shielding fades.");
+            }
+        }
+
+        if (combatState.Player.GlyphOfSanctuaryStressImmunity > 0)
+        {
+            combatState.Player.GlyphOfSanctuaryStressImmunity--;
+        }
+
         // Decrement enemy defense, stun, and bleeding turns
         foreach (var enemy in combatState.Enemies.Where(e => e.IsAlive))
         {
@@ -1295,6 +1606,64 @@ public class CombatEngine
                 if (!enemy.IsAlive)
                 {
                     combatState.AddLogEntry($"{enemy.Name} is destroyed!");
+                }
+            }
+
+            // v0.19.8: Apply [Corroded] DoT damage at start of enemy turn
+            if (enemy.CorrodedStacks > 0)
+            {
+                // Check if Rust-Witch has Accelerated Entropy passive (2d6 per stack)
+                var player = combatState.Player;
+                bool hasAcceleratedEntropy = player.Abilities.Any(a => a.Name == "Accelerated Entropy");
+                int dicePerStack = hasAcceleratedEntropy ? 2 : 1;
+
+                // Roll damage for each stack
+                int totalCorrodedDamage = 0;
+                for (int i = 0; i < enemy.CorrodedStacks; i++)
+                {
+                    totalCorrodedDamage += _diceService.RollDamage(dicePerStack);
+                }
+
+                enemy.HP -= totalCorrodedDamage;
+                combatState.AddLogEntry($"{enemy.Name} takes {totalCorrodedDamage} corrosion damage from {enemy.CorrodedStacks} [Corroded] stacks! (HP: {Math.Max(0, enemy.HP)}/{enemy.MaxHP})");
+
+                _log.Debug("Status effect damage: Enemy={EnemyName}, Effect=Corroded, Stacks={Stacks}, Damage={Damage}, RemainingHP={HP}",
+                    enemy.Name, enemy.CorrodedStacks, totalCorrodedDamage, Math.Max(0, enemy.HP));
+
+                // Countdown all stack durations
+                for (int i = enemy.CorrodedStackDurations.Count - 1; i >= 0; i--)
+                {
+                    enemy.CorrodedStackDurations[i]--;
+                    if (enemy.CorrodedStackDurations[i] <= 0)
+                    {
+                        enemy.CorrodedStackDurations.RemoveAt(i);
+                        enemy.CorrodedStacks--;
+                        combatState.AddLogEntry($"  1 [Corroded] stack expires on {enemy.Name} ({enemy.CorrodedStacks} remaining)");
+                    }
+                }
+
+                if (enemy.CorrodedStacks == 0)
+                {
+                    combatState.AddLogEntry($"{enemy.Name} is no longer [Corroded].");
+                    _log.Information("Status effect expired: Enemy={EnemyName}, Effect=Corroded", enemy.Name);
+                }
+
+                if (!enemy.IsAlive)
+                {
+                    combatState.AddLogEntry($"{enemy.Name} dissolves from corrosion!");
+
+                    // v0.19.8: Cascade Reaction - Spread [Corroded] on death (Rust-Witch passive)
+                    bool hasCascadeReaction = player.Abilities.Any(a => a.Name == "Cascade Reaction");
+                    if (hasCascadeReaction)
+                    {
+                        combatState.AddLogEntry($"  [Cascade Reaction] Entropy spreads from {enemy.Name}!");
+                        foreach (var adjacentEnemy in combatState.Enemies.Where(e => e.IsAlive && e != enemy))
+                        {
+                            adjacentEnemy.CorrodedStacks = Math.Min(5, adjacentEnemy.CorrodedStacks + 1);
+                            adjacentEnemy.CorrodedStackDurations.Add(3);
+                            combatState.AddLogEntry($"    {adjacentEnemy.Name} gains [Corroded] x{adjacentEnemy.CorrodedStacks}!");
+                        }
+                    }
                 }
             }
 

@@ -236,6 +236,26 @@ public class EquipmentService
         // Restore HP ratio (but don't exceed new MaxHP)
         player.HP = Math.Min((int)(player.MaxHP * hpRatio), player.MaxHP);
 
+        // v0.19.8: Recalculate Aether Pool for Mystics
+        if (player.Class == CharacterClass.Mystic)
+        {
+            // Store current AP ratio to maintain percentage after equipment change
+            float apRatio = player.MaxAP > 0 ? (float)player.AP / player.MaxAP : 1.0f;
+
+            // Base MaxAP = (WILL × 10) + 50
+            int baseMaxAP = (player.Attributes.Will * 10) + 50;
+            player.MaxAP = baseMaxAP;
+
+            // v0.19.8: Apply Aetheric Attunement passive (+10% Max AP)
+            if (player.Abilities.Any(a => a.Name == "Aetheric Attunement"))
+            {
+                player.MaxAP = (int)(player.MaxAP * 1.10f);
+            }
+
+            // Restore AP ratio (but don't exceed new MaxAP)
+            player.AP = Math.Min((int)(player.MaxAP * apRatio), player.MaxAP);
+        }
+
         // Note: Attribute bonuses are calculated dynamically in GetEffectiveAttributeValue
         // rather than modifying the base Attributes object
     }
