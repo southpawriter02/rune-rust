@@ -492,15 +492,15 @@ public static class UIHelper
         if (combat.Player.TempHP > 0)
             playerEffects.Add($"Temp HP: {combat.Player.TempHP}");
         if (combat.Player.VulnerableTurnsRemaining > 0)
-            playerEffects.Add($"[Vulnerable] +25% damage taken ({combat.Player.VulnerableTurnsRemaining} turns)");
+            playerEffects.Add($"[[Vulnerable]] +25% damage taken ({combat.Player.VulnerableTurnsRemaining} turns)");
         if (combat.Player.InspiredTurnsRemaining > 0)
-            playerEffects.Add($"[Inspired] +3 damage dice ({combat.Player.InspiredTurnsRemaining} turns)");
+            playerEffects.Add($"[[Inspired]] +3 damage dice ({combat.Player.InspiredTurnsRemaining} turns)");
         if (combat.Player.SeizedTurnsRemaining > 0)
-            playerEffects.Add($"[Seized] Cannot act! ({combat.Player.SeizedTurnsRemaining} turns)");
+            playerEffects.Add($"[[Seized]] Cannot act! ({combat.Player.SeizedTurnsRemaining} turns)");
         if (combat.Player.SilencedTurnsRemaining > 0)
-            playerEffects.Add($"[Silenced] Cannot perform ({combat.Player.SilencedTurnsRemaining} turns)");
+            playerEffects.Add($"[[Silenced]] Cannot perform ({combat.Player.SilencedTurnsRemaining} turns)");
         if (combat.Player.IsPerforming)
-            playerEffects.Add($"[Performing] {combat.Player.CurrentPerformance} ({combat.Player.PerformingTurnsRemaining} turns)");
+            playerEffects.Add($"[[Performing]] {combat.Player.CurrentPerformance} ({combat.Player.PerformingTurnsRemaining} turns)");
 
         if (playerEffects.Count > 0)
         {
@@ -750,7 +750,7 @@ public static class UIHelper
 
         AnsiConsole.Write(table);
         AnsiConsole.WriteLine();
-        AnsiConsole.MarkupLine("[dim]Use 'equip [item]' to equip from inventory, 'compare [item]' to compare items.[/]");
+        AnsiConsole.MarkupLine("[dim]Use 'equip [[item]]' to equip from inventory, 'compare [[item]]' to compare items.[/]");
         AnsiConsole.WriteLine();
     }
 
