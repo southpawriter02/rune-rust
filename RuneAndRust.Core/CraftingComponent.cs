@@ -43,7 +43,13 @@ public enum ComponentType
 
     // v0.9: Economy Materials - Epic (500-1000 Cogs)
     JotunCoreFragment, // Power source
-    RunicEtchingTemplate // Enchanting material
+    RunicEtchingTemplate, // Enchanting material
+
+    // v0.19.10: Runeforging Components (Rúnasmiðr specialization)
+    AetherDust,      // Magical fuel for Runeforging (common)
+    UruzStone,       // Catalyst for Bull's Strength imbuement (uncommon)
+    AlgizTablet,     // Catalyst for Warding Rune imbuement (uncommon)
+    HagalazCrystal   // Catalyst for ice trap runes (rare)
 }
 
 /// <summary>
@@ -243,6 +249,44 @@ public class CraftingComponent
                 Description = "Pre-Glitch enchanting template with Dvergr runes",
                 Rarity = ComponentRarity.Epic,
                 SellValue = 900,
+                IsTradeable = true
+            },
+
+            // v0.19.10: Runeforging Components
+            ComponentType.AetherDust => new CraftingComponent
+            {
+                Type = ComponentType.AetherDust,
+                Name = "Aether Dust",
+                Description = "Powdered Aetheric energy, fuel for runic inscription",
+                Rarity = ComponentRarity.Common,
+                SellValue = 12,
+                IsTradeable = true
+            },
+            ComponentType.UruzStone => new CraftingComponent
+            {
+                Type = ComponentType.UruzStone,
+                Name = "Uruz Stone",
+                Description = "Rune-carved stone resonating with primal strength",
+                Rarity = ComponentRarity.Uncommon,
+                SellValue = 45,
+                IsTradeable = true
+            },
+            ComponentType.AlgizTablet => new CraftingComponent
+            {
+                Type = ComponentType.AlgizTablet,
+                Name = "Algiz Tablet",
+                Description = "Protective ward inscribed on ancient metal",
+                Rarity = ComponentRarity.Uncommon,
+                SellValue = 50,
+                IsTradeable = true
+            },
+            ComponentType.HagalazCrystal => new CraftingComponent
+            {
+                Type = ComponentType.HagalazCrystal,
+                Name = "Hagalaz Crystal",
+                Description = "Ice-aspected crystal crackling with frozen energy",
+                Rarity = ComponentRarity.Rare,
+                SellValue = 120,
                 IsTradeable = true
             },
 

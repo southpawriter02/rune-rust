@@ -93,6 +93,12 @@ public class Equipment
     public bool IgnoresArmor { get; set; } = false;
     public string SpecialEffect { get; set; } = string.Empty; // Description of unique effect
 
+    // v0.19.10: Runic Charges (Rúnasmiðr specialization)
+    public string? RunicEnchantment { get; set; } = null; // Name of runic enchantment (e.g., "Bull's Strength", "Warding Rune")
+    public int RunicCharges { get; set; } = 0; // Number of charges remaining
+    public string? RunicEffect { get; set; } = null; // Description of what the charge does
+    public string? SagaProperty { get; set; } = null; // Masterwork legendary effect (e.g., "Unbreakable", "Thirsty Blade")
+
     /// <summary>
     /// Get a formatted display name with quality tier
     /// </summary>
@@ -153,5 +159,56 @@ public class Equipment
         }
 
         return string.Join(", ", descriptions);
+    }
+
+    /// <summary>
+    /// v0.19.10: Check if item has active runic charges
+    /// </summary>
+    public bool HasRunicCharges()
+    {
+        return RunicCharges > 0 && !string.IsNullOrEmpty(RunicEnchantment);
+    }
+
+    /// <summary>
+    /// v0.19.10: Get runic charges display text
+    /// </summary>
+    public string GetRunicChargesDisplay()
+    {
+        if (!HasRunicCharges())
+            return "";
+
+        return $"[{RunicEnchantment}: {RunicCharges} charges]";
+    }
+
+    /// <summary>
+    /// v0.19.10: Get Saga Property display text
+    /// </summary>
+    public string GetSagaPropertyDisplay()
+    {
+        if (string.IsNullOrEmpty(SagaProperty))
+            return "";
+
+        return $"[Saga: {SagaProperty}]";
+    }
+
+    /// <summary>
+    /// v0.19.10: Consume one runic charge (returns false if no charges left)
+    /// </summary>
+    public bool ConsumeRunicCharge()
+    {
+        if (!HasRunicCharges())
+            return false;
+
+        RunicCharges--;
+
+        // If depleted, clear enchantment data
+        if (RunicCharges <= 0)
+        {
+            RunicCharges = 0;
+            // Keep the enchantment name for re-forging, but clear effect
+            RunicEffect = null;
+        }
+
+        return true;
     }
 }

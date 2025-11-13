@@ -20,5 +20,6 @@ public enum Specialization
 
     // Mystic specializations (v0.19.8+)
     VardWarden,         // v0.19.8: Defensive caster - Runic barriers & sanctified ground
-    RustWitch           // v0.19.8: Heretical debuffer - Corrosion & entropy magic
+    RustWitch,          // v0.19.8: Heretical debuffer - Corrosion & entropy magic
+    Runasmidr           // v0.19.10: Arcane artisan - Runeforging & battlefield control
 }

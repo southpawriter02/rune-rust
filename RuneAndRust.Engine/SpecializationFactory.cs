@@ -44,12 +44,15 @@ public class SpecializationFactory
                 AddJotunReaderAbilities(character);
                 break;
 
-            // Mystic specializations (v0.19.8)
+            // Mystic specializations (v0.19.8+)
             case Specialization.VardWarden:
                 AddVardWardenAbilities(character);
                 break;
             case Specialization.RustWitch:
                 AddRustWitchAbilities(character);
+                break;
+            case Specialization.Runasmidr:  // v0.19.10
+                AddRunasmidrAbilities(character);
                 break;
 
             default:
@@ -82,6 +85,7 @@ public class SpecializationFactory
             // Mystic specializations
             Specialization.VardWarden => character.Class == CharacterClass.Mystic,
             Specialization.RustWitch => character.Class == CharacterClass.Mystic,
+            Specialization.Runasmidr => character.Class == CharacterClass.Mystic,  // v0.19.10
 
             _ => false
         };
@@ -109,7 +113,8 @@ public class SpecializationFactory
             CharacterClass.Mystic => new List<Specialization>
             {
                 Specialization.VardWarden,
-                Specialization.RustWitch
+                Specialization.RustWitch,
+                Specialization.Runasmidr  // v0.19.10
             },
             _ => new List<Specialization>() // Scavenger doesn't have specializations yet
         };
@@ -159,6 +164,16 @@ public class SpecializationFactory
                 "Tier 2: System Shock (2 stacks + [Stunned] vs Mechanical, +3 Corruption), Flash Rust (2 stacks AoE, +4 Corruption), Accelerated Entropy (passive +1d damage per stack)\n" +
                 "Tier 3: Unmaking Word (double [Corroded] stacks, +4 Corruption), Cascade Reaction (passive: death spreads [Corroded])\n" +
                 "Capstone: Entropic Cascade (execute if >50% Corrupted, +6 Corruption)",
+
+            Specialization.Runasmidr =>
+                "RÚNASMIÐR (Arcane Artisan)\n" +
+                "System debugger who writes stable code patches into broken reality. Runesmith and battlefield controller.\n" +
+                "Primary: WITS | Secondary: WILL | Trauma Risk: Low (Coherent specialization)\n" +
+                "Core Role: Craft enchanted gear (out-of-combat), place runic traps (in-combat), force multiplier\n" +
+                "Tier 1: Master Carver I (passive +1d to Runeforging), Hagalaz Trap (ice damage trap), Algiz Imbuement (defensive enchantment)\n" +
+                "Tier 2: Debug Enemy (reveal stats, +3 Stress), Rune of Disruption ([Disoriented] trap), Uruz Imbuement (offensive enchantment)\n" +
+                "Tier 3: Runic Synergy (restore resources when trap triggers), Rune of Isolation ([Rooted] + blocks buffs)\n" +
+                "Capstone: Architect of Stability (Masterwork crafting + Saga Properties, Sanctuary zone ability)",
 
             _ => "Unknown specialization"
         };
@@ -983,6 +998,177 @@ public class SpecializationFactory
 
     #endregion
 
+    #region Rúnasmiðr Abilities (v0.19.10)
+
+    private static void AddRunasmidrAbilities(PlayerCharacter character)
+    {
+        // v0.19.10: Rúnasmiðr specialization - Arcane Artisan (Runeforging + Battlefield Control)
+        // Grant starting Runeforging components
+        GrantRunasmidrStartingItems(character);
+
+        // TIER 1 - Available immediately upon unlocking specialization (3 PP each)
+
+        // Master Carver I (Passive) - 3 ranks
+        character.Abilities.Add(new Ability
+        {
+            Name = "Master Carver I",
+            Description = "Passive: +1d10 to all Runeforging checks. Your runic inscriptions are precise and potent.",
+            StaminaCost = 0,
+            APCost = 0,
+            Type = AbilityType.Utility,
+            AttributeUsed = "",
+            BonusDice = 0,
+            SuccessThreshold = 0,
+            CurrentRank = 1,
+            MaxRank = 3,
+            CostToRank2 = 20,  // Rank 2: +2d10
+            CostToRank3 = 40   // Rank 3: +3d10 + Masterwork access
+        });
+
+        // Hagalaz Trap (Active) - 3 ranks
+        character.Abilities.Add(new Ability
+        {
+            Name = "Hagalaz Trap",
+            Description = "Place invisible ice trap on target tile. When enemy enters: 2d6 Ice damage (AoE row). Lasts 3 turns.",
+            StaminaCost = 0,
+            APCost = 25,
+            Type = AbilityType.Attack,
+            AttributeUsed = "",
+            BonusDice = 0,
+            SuccessThreshold = 0,  // Auto-success placement
+            DamageDice = 2,  // 2d6 base
+            CurrentRank = 1,
+            MaxRank = 3,
+            CostToRank2 = 20,  // Rank 2: 3d6 damage
+            CostToRank3 = 40   // Rank 3: 4d6 + [Chilled] status
+        });
+
+        // Algiz Imbuement (Crafting Ability) - 3 ranks
+        character.Abilities.Add(new Ability
+        {
+            Name = "Algiz Imbuement",
+            Description = "Runeforging recipe: Imbue armor with protective wards. Grants 2 [Warding Rune] charges (React: +5 Soak vs one attack).",
+            StaminaCost = 0,
+            APCost = 0,
+            Type = AbilityType.Utility,
+            AttributeUsed = "",
+            BonusDice = 0,
+            SuccessThreshold = 0,
+            CurrentRank = 1,
+            MaxRank = 3,
+            CostToRank2 = 20,  // Rank 2: 3 charges
+            CostToRank3 = 40   // Rank 3: 4 charges, +7 Soak
+        });
+
+        // TIER 2 - Requires Progression Points to unlock (4 PP each, requires 8 PP in tree)
+
+        // Debug Enemy (Active) - 3 ranks
+        character.Abilities.Add(new Ability
+        {
+            Name = "Debug Enemy",
+            Description = "Analyze enemy's code structure. Reveal HP, defenses, resistances, vulnerabilities. COST: +3 Psychic Stress.",
+            StaminaCost = 0,
+            APCost = 30,
+            Type = AbilityType.Utility,
+            AttributeUsed = "wits",
+            BonusDice = 0,
+            SuccessThreshold = 2,  // WITS + WILL check
+            CurrentRank = 1,
+            MaxRank = 3,
+            CostToRank2 = 20,  // Rank 2: Also reveals AI patterns
+            CostToRank3 = 40   // Rank 3: No Stress cost, reveals hidden abilities
+        });
+
+        // Rune of Disruption (Active) - 3 ranks
+        character.Abilities.Add(new Ability
+        {
+            Name = "Rune of Disruption",
+            Description = "Place trap that applies [Disoriented] (-2 to all checks) for 2 turns. WILL save DC 14. Lasts 3 turns.",
+            StaminaCost = 0,
+            APCost = 35,
+            Type = AbilityType.Control,
+            AttributeUsed = "",
+            BonusDice = 0,
+            SuccessThreshold = 0,
+            CurrentRank = 1,
+            MaxRank = 3,
+            CostToRank2 = 20,  // Rank 2: DC 16, status lasts 3 turns
+            CostToRank3 = 40   // Rank 3: DC 18, also deals 2d6 Psychic damage
+        });
+
+        // Uruz Imbuement (Crafting Ability) - 3 ranks
+        character.Abilities.Add(new Ability
+        {
+            Name = "Uruz Imbuement",
+            Description = "Runeforging recipe: Imbue weapon with primal strength. Grants 3 [Bull's Strength] charges (Free Action: +2d10 damage to next attack).",
+            StaminaCost = 0,
+            APCost = 0,
+            Type = AbilityType.Utility,
+            AttributeUsed = "",
+            BonusDice = 0,
+            SuccessThreshold = 0,
+            CurrentRank = 1,
+            MaxRank = 3,
+            CostToRank2 = 20,  // Rank 2: 4 charges
+            CostToRank3 = 40   // Rank 3: 5 charges, +3d10 damage
+        });
+
+        // TIER 3 - High-level abilities (5 PP each, requires 16 PP in tree)
+
+        // Runic Synergy (Passive) - 3 ranks
+        character.Abilities.Add(new Ability
+        {
+            Name = "Runic Synergy",
+            Description = "Passive: When enemy triggers your trap, restore 10 Stamina to yourself. Your traps feed you energy.",
+            StaminaCost = 0,
+            APCost = 0,
+            Type = AbilityType.Utility,
+            AttributeUsed = "",
+            BonusDice = 0,
+            SuccessThreshold = 0,
+            CurrentRank = 1,
+            MaxRank = 3,
+            CostToRank2 = 20,  // Rank 2: Restore 15 Stamina + 5 AP
+            CostToRank3 = 40   // Rank 3: Restore 20 Stamina + 10 AP + remove 2 Stress
+        });
+
+        // Rune of Isolation (Active) - 3 ranks
+        character.Abilities.Add(new Ability
+        {
+            Name = "Rune of Isolation",
+            Description = "Place trap that applies [Rooted] (cannot move) for 2 turns. Target cannot receive external buffs/healing. Lasts 3 turns.",
+            StaminaCost = 0,
+            APCost = 50,
+            Type = AbilityType.Control,
+            AttributeUsed = "",
+            BonusDice = 0,
+            SuccessThreshold = 0,
+            CurrentRank = 1,
+            MaxRank = 3,
+            CostToRank2 = 20,  // Rank 2: Status lasts 3 turns
+            CostToRank3 = 40   // Rank 3: Also deals 3d6 Arcane damage
+        });
+
+        // CAPSTONE - Ultimate crafting and support ability (6 PP, requires 24 PP + one Tier 3)
+
+        // Architect of Stability (Passive + Active) - Rank 1
+        character.Abilities.Add(new Ability
+        {
+            Name = "Architect of Stability",
+            Description = "CAPSTONE: Passive: Masterwork crafting unlocked (critical success: 2x charges + Saga Property). Active (75 AP, once per combat): Create 3x3 [Sanctuary of Order] zone for 3 turns (negates Wild Magic, blocks Reality Glitches, nullifies environmental Stress).",
+            StaminaCost = 0,
+            APCost = 75,  // For active component
+            Type = AbilityType.Utility,
+            AttributeUsed = "",
+            BonusDice = 0,
+            SuccessThreshold = 0,
+            CurrentRank = 1,
+            MaxRank = 1  // Capstone, no ranking
+        });
+    }
+
+    #endregion
+
     #region Helper Methods
 
     /// <summary>
@@ -1009,6 +1195,18 @@ public class SpecializationFactory
         character.CraftingComponents[ComponentType.CleanCloth] = 4;
         character.CraftingComponents[ComponentType.Antiseptic] = 2;
         character.CraftingComponents[ComponentType.Suture] = 2;
+    }
+
+    /// <summary>
+    /// Grant Rúnasmiðr starting items (runeforging components)
+    /// </summary>
+    private static void GrantRunasmidrStartingItems(PlayerCharacter character)
+    {
+        // Add starting Runeforging components
+        character.CraftingComponents[ComponentType.AetherDust] = 10;  // Common fuel
+        character.CraftingComponents[ComponentType.AlgizTablet] = 3;  // Defensive enchantments
+        character.CraftingComponents[ComponentType.UruzStone] = 3;    // Offensive enchantments
+        character.CraftingComponents[ComponentType.HagalazCrystal] = 2;  // Ice trap runes
     }
 
     #endregion

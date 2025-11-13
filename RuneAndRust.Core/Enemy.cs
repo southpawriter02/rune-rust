@@ -86,6 +86,12 @@ public class Enemy
     public int CorrodedStacks { get; set; } = 0; // 0-5 stacks, each deals 1d6 damage and -2 Armor
     public List<int> CorrodedStackDurations { get; set; } = new(); // Independent 3-turn durations per stack
 
+    // v0.19.10: Rúnasmiðr status effects
+    public int DisorientedTurnsRemaining { get; set; } = 0; // Rune of Disruption - -2 to all checks
+    public int ChilledTurnsRemaining { get; set; } = 0; // Hagalaz Trap Rank 3 - Movement speed reduced
+    public int RootedTurnsRemaining { get; set; } = 0; // Rune of Isolation - Cannot move
+    public bool BlocksExternalBuffs { get; set; } = false; // Rune of Isolation - No healing/buffs from allies
+
     // Progression (Aethelgard Saga System)
     public int BaseLegendValue { get; set; } = 0;
 

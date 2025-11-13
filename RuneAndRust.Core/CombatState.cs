@@ -28,6 +28,9 @@ public class CombatState
     public int PlayerNextAttackBonusDice { get; set; } = 0;
     public bool PlayerNegateNextAttack { get; set; } = false;
 
+    // v0.19.10: Runic Traps (Rúnasmiðr specialization)
+    public List<RunicTrap> ActiveTraps { get; set; } = new();
+
     public CombatParticipant CurrentParticipant =>
         InitiativeOrder.Count > 0 ? InitiativeOrder[CurrentTurnIndex] : new();
 
