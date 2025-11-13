@@ -15,6 +15,7 @@ public class StaticTerrain
 
     // Tactical Properties
     public CoverType CoverProvided { get; set; } = CoverType.None;
+    public bool ProvidesTouchCover { get; set; } = false; // +2 DEF when adjacent (compatibility with Population.StaticTerrain)
     public int AccuracyModifier { get; set; } = 0; // -2 dice for partial cover, -4 for full
     public bool BlocksLineOfSight { get; set; } = false;
     public bool BlocksMovement { get; set; } = false;

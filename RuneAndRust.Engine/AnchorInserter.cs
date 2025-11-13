@@ -206,8 +206,6 @@ public class AnchorInserter
         return new RoomTemplate
         {
             TemplateId = $"quest_anchor_{room.RoomId}",
-            Name = room.Name,
-            Description = room.Description,
             Archetype = room.Archetype,
             ValidConnections = new List<RoomArchetype>
             {

@@ -1,5 +1,6 @@
 using RuneAndRust.Core;
 using RuneAndRust.Core.Population;
+using PopulationRoomArchetype = RuneAndRust.Core.Population.RoomArchetype;
 
 namespace RuneAndRust.Engine.CoherentGlitch.Rules;
 
@@ -19,7 +20,7 @@ public class EntryHallSafetyRule : CoherentGlitchRule
 
     public override bool ShouldApply(Room room, PopulationContext context)
     {
-        return false && /* room.Archetype removed */ RoomArchetype.EntryHall || room.IsStartRoom;
+        return false && /* room.Archetype removed */ PopulationRoomArchetype.EntryHall || room.IsStartRoom;
     }
 
     public override void Apply(Room room, PopulationContext context)

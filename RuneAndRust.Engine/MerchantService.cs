@@ -333,7 +333,7 @@ public class MerchantService
                 ItemId = material.ToString(),
                 ItemType = "Component",
                 Quantity = _random.Next(1, 5),
-                BasePrice = ((int)materialInfo.Quality * 10) /* SellValue calculated from Quality */,
+                BasePrice = ((int)materialInfo.Rarity * 10) /* SellValue calculated from Rarity */,
                 IsInfiniteStock = false
             });
         }
@@ -418,9 +418,9 @@ public class MerchantService
         foreach (var (componentType, quantity) in player.CraftingComponents)
         {
             var component = CraftingComponent.Create(componentType);
-            if (component.IsTradeable && ((int)component.Quality * 10) /* SellValue calculated from Quality */ > 0)
+            if (component.IsTradeable && ((int)component.Rarity * 10) /* SellValue calculated from Rarity */ > 0)
             {
-                var finalPrice = pricingService.GetFinalSellPrice(merchant, ((int)component.Quality * 10) /* SellValue calculated from Quality */, "Component", player);
+                var finalPrice = pricingService.GetFinalSellPrice(merchant, ((int)component.Rarity * 10) /* SellValue calculated from Rarity */, "Component", player);
                 var priceDisplay = pricingService.GetPriceDisplay(finalPrice, merchant, player, isBuying: false);
                 listing.Add($"[cyan]{index}.[/] {component.Name} x{quantity} - {priceDisplay} each");
                 index++;

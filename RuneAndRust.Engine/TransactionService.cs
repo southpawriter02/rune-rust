@@ -142,7 +142,7 @@ public class TransactionService
         }
 
         // Calculate sell price (per unit)
-        int unitPrice = _pricingService.GetFinalSellPrice(merchant, ((int)component.Quality * 10) /* SellValue calculated from Quality */, "Component", player);
+        int unitPrice = _pricingService.GetFinalSellPrice(merchant, ((int)component.Rarity * 10) /* SellValue calculated from Rarity */, "Component", player);
         int totalPrice = unitPrice * quantity;
 
         // Remove components from player

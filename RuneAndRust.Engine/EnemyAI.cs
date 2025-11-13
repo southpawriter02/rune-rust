@@ -1211,8 +1211,7 @@ public class EnemyAI
         if (attackRoll.Successes > defendRoll.Successes + 1) // Need to beat by 2+
         {
             combatState.AddLogEntry($"  {player.Name} is disoriented and loses their next turn!");
-            false /* player.IsStunned property removed */ = true;
-            0 /* player.StunTurnsRemaining property removed */ = 1;
+            // Note: Player stun mechanic removed - this is now just a flavor message
         }
         else
         {
