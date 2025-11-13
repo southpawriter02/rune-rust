@@ -26,7 +26,8 @@ public class V04CombatSimulationTests
         var equipmentService = new EquipmentService();
         var traumaService = new TraumaEconomyService();
         var hazardService = new HazardService(_diceService, traumaService);
-        _combatEngine = new CombatEngine(_diceService, sagaService, lootService, equipmentService, hazardService);
+        var currencyService = new CurrencyService();
+        _combatEngine = new CombatEngine(_diceService, sagaService, lootService, equipmentService, hazardService, currencyService);
     }
 
     #region Enemy Factory Validation
@@ -48,7 +49,7 @@ public class V04CombatSimulationTests
         Assert.Equal(expectedHP, enemy.HP);
         Assert.Equal(expectedHP, enemy.MaxHP);
         Assert.Equal(expectedName, enemy.Name);
-        Assert.True(enemy.LegendValue > 0, "Enemy should grant Legend");
+        Assert.True(enemy.BaseLegendValue > 0, "Enemy should grant Legend");
     }
 
     [Fact]

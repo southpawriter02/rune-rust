@@ -223,7 +223,6 @@ public static class UIHelper
         var panel = new Panel(new Markup($"[bold]{room.Name}[/]\n\n{room.Description}"))
         {
             Border = BoxBorder.Rounded,
-            BorderColor = Color.Blue,
             Padding = new Padding(2, 1)
         };
 
@@ -362,7 +361,6 @@ public static class UIHelper
         var panel = new Panel(new Markup(room.PuzzleDescription))
         {
             Border = BoxBorder.Double,
-            BorderColor = Color.Yellow,
             Header = new PanelHeader("[bold]Environmental Puzzle[/]"),
             Padding = new Padding(2, 1)
         };
@@ -425,7 +423,6 @@ public static class UIHelper
         var panel = new Panel(storyText)
         {
             Border = BoxBorder.Double,
-            BorderColor = Color.Gold1,
             Padding = new Padding(2, 1)
         };
         AnsiConsole.Write(panel);
@@ -451,7 +448,6 @@ public static class UIHelper
         )
         {
             Border = BoxBorder.Double,
-            BorderColor = Color.Red,
             Padding = new Padding(2, 1)
         };
         AnsiConsole.Write(panel);
@@ -566,7 +562,6 @@ public static class UIHelper
         var panel = new Panel(string.Join("\n", logEntries.TakeLast(maxEntries)))
         {
             Border = BoxBorder.Rounded,
-            BorderColor = Color.Grey,
             Header = new PanelHeader("[dim]Combat Log[/]"),
             Padding = new Padding(1, 0)
         };
@@ -954,7 +949,7 @@ public static class UIHelper
 
         var table = new Table()
             .Border(TableBorder.Rounded)
-            .BorderColor(Color.Cyan)
+            .BorderColor(Color.Cyan1)
             .AddColumn("Ability")
             .AddColumn("Type")
             .AddColumn("Cost")
