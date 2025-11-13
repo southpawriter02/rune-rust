@@ -114,12 +114,9 @@ public class DestructionServiceTests
     {
         // Arrange
         var room = CreateTestRoom();
-        var hazard = new PopDynamicHazard
+        var hazard = new SteamVentHazard
         {
-            HazardId = "steam_vent_1",
-            Name = "Steam Vent",
-            Type = DynamicHazardType.SteamVent,
-            IsActive = true
+            HazardId = "steam_vent_1"
         };
         room.DynamicHazards.Add(hazard);
 
@@ -176,7 +173,7 @@ public class DestructionServiceTests
         var room = CreateTestRoom();
 
         var pillar = new PopStaticTerrain { TerrainId = "pillar_1", Name = "Pillar", IsDestructible = true, HP = 30 };
-        var hazard = new PopDynamicHazard { HazardId = "steam_vent_1", Name = "Steam Vent", Type = DynamicHazardType.SteamVent };
+        var hazard = new SteamVentHazard { HazardId = "steam_vent_1" };
         var enemy = new Enemy { Name = "Servitor", Type = EnemyType.CorruptedServitor, HP = 10, MaxHP = 10 };
 
         room.StaticTerrain.Add(pillar);
@@ -261,12 +258,9 @@ public class DestructionServiceTests
         // Arrange
         var room = CreateTestRoom();
         var player = CreateTestPlayer();
-        var hazard = new PopDynamicHazard
+        var hazard = new SteamVentHazard
         {
-            HazardId = "steam_vent_1",
-            Name = "Steam Vent",
-            Type = DynamicHazardType.SteamVent,
-            IsActive = true
+            HazardId = "steam_vent_1"
         };
 
         // Act

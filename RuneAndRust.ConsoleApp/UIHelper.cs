@@ -901,16 +901,22 @@ public static class UIHelper
         table.AddRow(new Markup(""));  // Spacer
         table.AddRow(new Markup("[bold]SPECIALIZATIONS[/]"));
 
-        foreach (var spec in unlockedSpecs)
+        foreach (var charSpec in unlockedSpecs)
         {
+            // Get the SpecializationData for this character specialization
+            var specResult = specializationService.GetSpecialization(charSpec.SpecializationID);
+            if (!specResult.Success || specResult.Specialization == null) continue;
+
+            var spec = specResult.Specialization;
+
             // Get learned abilities count - filter by specialization
             var allLearnedAbilities = abilityService.GetLearnedAbilities(character);
-            var specAbilities = abilityService.GetAbilitiesForSpecialization(spec.SpecializationID).Abilities ?? new List<AbilityData>();
+            var specAbilities = abilityService.GetAbilitiesForSpecialization(charSpec.SpecializationID).Abilities ?? new List<AbilityData>();
             var specAbilityIds = specAbilities.Select(a => a.AbilityID).ToHashSet();
             var learnedAbilities = allLearnedAbilities.Where(ca => specAbilityIds.Contains(ca.AbilityID)).ToList();
 
             var totalAbilities = 9; // All specs have 9 abilities
-            var ppSpent = specializationService.GetPPSpentInTree(character, spec.SpecializationID);
+            var ppSpent = specializationService.GetPPSpentInTree(character, charSpec.SpecializationID);
 
             // Determine current tier unlocked based on PP spent
             string tierProgress;
@@ -1046,12 +1052,18 @@ public static class UIHelper
         );
 
         // Per-specialization breakdown
-        foreach (var spec in unlockedSpecs)
+        foreach (var charSpec in unlockedSpecs)
         {
-            var ppSpent = specializationService.GetPPSpentInTree(character, spec.SpecializationID);
+            // Get the SpecializationData for this character specialization
+            var specResult = specializationService.GetSpecialization(charSpec.SpecializationID);
+            if (!specResult.Success || specResult.Specialization == null) continue;
+
+            var spec = specResult.Specialization;
+
+            var ppSpent = specializationService.GetPPSpentInTree(character, charSpec.SpecializationID);
             // Filter learned abilities by specialization
             var allLearnedAbilities = abilityService.GetLearnedAbilities(character);
-            var specAbilities = abilityService.GetAbilitiesForSpecialization(spec.SpecializationID).Abilities ?? new List<AbilityData>();
+            var specAbilities = abilityService.GetAbilitiesForSpecialization(charSpec.SpecializationID).Abilities ?? new List<AbilityData>();
             var specAbilityIds = specAbilities.Select(a => a.AbilityID).ToHashSet();
             var learnedCount = allLearnedAbilities.Count(ca => specAbilityIds.Contains(ca.AbilityID));
 

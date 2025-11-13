@@ -58,7 +58,7 @@ public class EquipmentServiceTests
         var player = CreateTestPlayer();
 
         // Act
-        var result = _equipmentService.EquipWeapon(player, null);
+        var result = _equipmentService.EquipWeapon(player, null!);
 
         // Assert
         Assert.That(result, Is.False);

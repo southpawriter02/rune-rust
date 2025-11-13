@@ -253,7 +253,7 @@ public class LootServiceTests
         var weapon = _lootService.CreateStartingWeapon(CharacterClass.Warrior);
 
         // Act
-        _lootService.PlaceStartingLoot(room, weapon);
+        _lootService.PlaceStartingLoot(room, weapon!);
 
         // Assert
         Assert.That(room.ItemsOnGround, Contains.Item(weapon));
@@ -267,7 +267,7 @@ public class LootServiceTests
         var room = CreateTestRoom();
 
         // Act
-        _lootService.PlaceStartingLoot(room, null);
+        _lootService.PlaceStartingLoot(room, null!);
 
         // Assert
         Assert.That(room.ItemsOnGround.Count, Is.EqualTo(0));
@@ -311,7 +311,7 @@ public class LootServiceTests
         var player = CreateTestPlayer(CharacterClass.Warrior);
 
         // Act
-        var loot = _lootService.GenerateLoot(null, player);
+        var loot = _lootService.GenerateLoot(null!, player);
 
         // Assert
         Assert.That(loot, Is.Null);
