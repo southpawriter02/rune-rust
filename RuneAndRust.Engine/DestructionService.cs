@@ -113,7 +113,7 @@ public class DestructionService
                 // Add rubble if specified
                 if (data.SpawnRubble)
                 {
-                    room.StaticTerrain.Add(new RuneAndRust.Core.StaticTerrain
+                    room.StaticTerrain.Add(new StaticTerrain
                     {
                         TerrainId = $"rubble_from_{change.TargetId}",
                         Name = "Rubble Pile",
@@ -233,7 +233,7 @@ public class DestructionService
     /// </summary>
     public DestructionResult AttemptDestroyTerrain(
         Room room,
-        RuneAndRust.Core.StaticTerrain terrain,
+        StaticTerrain terrain,
         PlayerCharacter player,
         int saveId,
         int turnNumber)
@@ -314,7 +314,7 @@ public class DestructionService
     /// </summary>
     public DestructionResult AttemptDestroyHazard(
         Room room,
-        RuneAndRust.Core.DynamicHazard hazard,
+        DynamicHazard hazard,
         PlayerCharacter player,
         int saveId,
         int turnNumber)
