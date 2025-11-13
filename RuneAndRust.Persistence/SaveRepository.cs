@@ -1,5 +1,6 @@
 using Microsoft.Data.Sqlite;
 using RuneAndRust.Core;
+using RuneAndRust.Core.Quests;
 using System.Text.Json;
 using Serilog;
 
@@ -279,9 +280,9 @@ public class SaveRepository
 
         // Serialize room items (v0.3)
         var roomItemsDict = new Dictionary<int, List<Equipment>>();
-        if (world != null)
+        if (worldState != null)
         {
-            foreach (var kvp in world.Rooms)
+            foreach (var kvp in worldState.Rooms)
             {
                 var room = kvp.Value;
                 if (room.ItemsOnGround.Count > 0)
@@ -299,9 +300,9 @@ public class SaveRepository
 
         // Collect all NPCs from all rooms
         var allNPCs = new List<NPC>();
-        if (world != null)
+        if (worldState != null)
         {
-            foreach (var kvp in world.Rooms)
+            foreach (var kvp in worldState.Rooms)
             {
                 allNPCs.AddRange(kvp.Value.NPCs);
             }
@@ -355,8 +356,8 @@ public class SaveRepository
             CompletedQuestsJson = completedQuestsJson,
             NPCStatesJson = npcStatesJson,
             // v0.10: Procedural generation
-            IsProceduralDungeon = world?.IsProcedurallyGenerated ?? false,
-            CurrentDungeonSeed = world?.CurrentDungeon?.Seed ?? 0,
+            IsProceduralDungeon = worldState?.IsProcedurallyGenerated ?? false,
+            CurrentDungeonSeed = worldState?.CurrentDungeon?.Seed ?? 0,
             CurrentRoomStringId = worldState.CurrentRoomStringId,
             DungeonsCompleted = worldState.DungeonsCompleted,
             LastSaved = DateTime.Now
@@ -444,7 +445,7 @@ public class SaveRepository
         command.Parameters.AddWithValue("$dungeonseed", saveData.CurrentDungeonSeed);
         command.Parameters.AddWithValue("$roomstringid", (object?)saveData.CurrentRoomStringId ?? DBNull.Value);
         command.Parameters.AddWithValue("$dungeonscompleted", saveData.DungeonsCompleted);
-        command.Parameters.AddWithValue("$biomeid", (object?)(world?.CurrentDungeon?.Biome) ?? DBNull.Value);
+        command.Parameters.AddWithValue("$biomeid", (object?)(worldState?.CurrentDungeon?.Biome) ?? DBNull.Value);
         command.Parameters.AddWithValue("$saved", saveData.LastSaved.ToString("yyyy-MM-dd HH:mm:ss"));
 
         command.ExecuteNonQuery();
