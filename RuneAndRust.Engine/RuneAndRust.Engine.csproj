@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\RuneAndRust.Core\RuneAndRust.Core.csproj" />
+    <ProjectReference Include="..\RuneAndRust.Persistence\RuneAndRust.Persistence.csproj" />
   </ItemGroup>
 
 </Project>

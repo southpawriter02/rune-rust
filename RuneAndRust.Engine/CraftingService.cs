@@ -20,12 +20,12 @@ public class CraftingResult
 /// </summary>
 public class CraftingService
 {
-    private readonly DiceRoller _diceRoller;
+    private readonly DiceService _diceService;
     private readonly List<CraftingRecipe> _recipes = new();
 
-    public CraftingService(DiceRoller? diceRoller = null)
+    public CraftingService(DiceService? diceService = null)
     {
-        _diceRoller = diceRoller ?? new DiceRoller();
+        _diceService = diceService ?? new DiceService();
         InitializeRecipes();
     }
 
@@ -58,9 +58,9 @@ public class CraftingService
         // Make skill check (WITS + Field Medic I bonus if applicable)
         int attributeValue = character.GetAttributeValue(recipe.SkillAttribute);
         int bonus = GetCraftingBonus(character);
-        var skillCheck = _diceRoller.SkillCheck(attributeValue + bonus);
+        var skillCheck = _diceService.Roll(attributeValue + bonus);
 
-        int rollTotal = skillCheck.Total;
+        int rollTotal = skillCheck.TotalValue;
         int dc = recipe.SkillCheckDC;
 
         // Determine result
