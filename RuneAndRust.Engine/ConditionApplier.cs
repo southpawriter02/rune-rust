@@ -122,7 +122,7 @@ public class ConditionApplier
             foreach (var hazard in room.DynamicHazards.Where(h => h.Type == DynamicHazardType.LivePowerConduit))
             {
                 hazard.DamageDice = (int)(hazard.DamageDice * 2);
-                hazard.ProximityRange = (int)(hazard.ProximityRange * 1.5);
+                hazard.Range = hazard.Range * 1.5f;
                 _log.Information("Coherent Glitch: [Flooded] enhanced electrical hazard in room {RoomId}", room.RoomId);
             }
         }
