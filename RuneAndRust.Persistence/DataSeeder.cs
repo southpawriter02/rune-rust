@@ -339,16 +339,20 @@ public class DataSeeder
             SpecializationID = 2,
             Name = "Jötun-Reader",
             ArchetypeID = 2, // Adept
-            PathType = "Heretical",
-            MechanicalRole = "Utility/Analyst",
+            PathType = "Coherent", // v0.19.7: Updated from Heretical to Coherent
+            MechanicalRole = "Controller / Utility Specialist",
             PrimaryAttribute = "WITS",
             SecondaryAttribute = "FINESSE",
-            Description = "Forensic analyst of the apocalypse. Exposes enemy weaknesses for tactical advantage.",
-            Tagline = "Analyze enemies, apply debuffs, translate runic puzzles, unlock secrets",
-            UnlockRequirements = new UnlockRequirements { MinLegend = 0, MaxCorruption = 100 },
-            ResourceSystem = "Stamina",
+            Description = @"You are the scholar-pathologist who reads the crash logs of a dead civilization. Where others see chaos, you see patterns. You translate error messages carved in ancient stone, identify structural flaws in corrupted war-machines, and speak fragments of command-line code that freeze enemies in logic conflicts.
+
+            You don't repair the broken world—you document its death throes and turn that knowledge into tactical advantage. Every analysis of corrupted systems costs sanity. You apply clinical observation to reveal enemy weaknesses, communicate tactical advantages to allies, and weaponize forbidden knowledge as psychological attacks.
+
+            The price? Every truth you uncover costs sanity. You are the ultimate force multiplier who contributes zero direct damage but dramatically increases party effectiveness.",
+            Tagline = "Forensic Observation and Documentation - Weaponize Forbidden Knowledge",
+            UnlockRequirements = new UnlockRequirements { MinLegend = 3, MaxCorruption = 100 },
+            ResourceSystem = "Stamina + Psychic Stress",
             TraumaRisk = "High",
-            IconEmoji = "📜",
+            IconEmoji = "🔍", // v0.19.7: Updated icon
             PPCostToUnlock = 3,
             IsActive = true
         };
@@ -365,124 +369,144 @@ public class DataSeeder
 
     private void SeedJotunReaderTier1()
     {
-        // Scholarly Acumen I
+        // Scholarly Acumen I (Passive) - 3 ranks
         _abilityRepo.Insert(new AbilityData
         {
             AbilityID = 201,
             SpecializationID = 2,
             Name = "Scholarly Acumen I",
-            Description = "[PASSIVE] +1d to System Bypass and investigation checks. Knowledge is your weapon.",
+            Description = "Your mind is a finely honed instrument, constantly processing layers of forgotten history.",
+            MechanicalSummary = "+2d10 bonus to WITS-based Investigate and System Bypass checks, increases to +4d10 at higher ranks",
             TierLevel = 1,
-            PPCost = 0,
+            PPCost = 3, // v0.19.7: Updated from 0 to 3
             Prerequisites = new AbilityPrerequisites { RequiredPPInTree = 0 },
             AbilityType = "Passive",
             ActionType = "Free Action",
             TargetType = "Self",
             ResourceCost = new AbilityResourceCost(),
-            MechanicalSummary = "+1d to System Bypass and investigation",
-            MaxRank = 1,
-            IsActive = true
+            AttributeUsed = "wits",
+            BonusDice = 0,
+            SuccessThreshold = 0,
+            MaxRank = 3,
+            CostToRank2 = 20,
+            CostToRank3 = 0,
+            IsActive = true,
+            Notes = "Rank 1: +2d10 bonus to WITS-based Investigate and System Bypass checks (lore, terminals, artifacts). Rank 2 (20 PP): +4d10 bonus (doubled). Translation/hacking time reduced 25%. Rank 3: +4d10 bonus. Auto-upgrade Success → Critical Success on Investigate checks. Mastery = intuitive leaps."
         });
 
-        // Analyze Weakness
+        // Analyze Weakness (Active) - 3 ranks
         _abilityRepo.Insert(new AbilityData
         {
             AbilityID = 202,
             SpecializationID = 2,
             Name = "Analyze Weakness",
-            Description = "Reveal enemy HP, Resistances, and Vulnerabilities to entire party. Costs 5 Psychic Stress (staring into the crash hurts).",
+            Description = "Clinical observation reveals structural flaws. You document weakness like a pathologist identifies cause of death.",
+            MechanicalSummary = "WITS check to reveal enemy Resistances/Vulnerabilities, costs Psychic Stress",
             TierLevel = 1,
-            PPCost = 0,
+            PPCost = 3, // v0.19.7: Updated from 0 to 3
             Prerequisites = new AbilityPrerequisites { RequiredPPInTree = 0 },
             AbilityType = "Active",
             ActionType = "Standard Action",
             TargetType = "Single Enemy",
-            ResourceCost = new AbilityResourceCost { Stamina = 25, Stress = 5 }, // v0.18: Reduced stamina from 30
+            ResourceCost = new AbilityResourceCost { Stamina = 30, Stress = 5 },
             AttributeUsed = "wits",
-            BonusDice = 3,
-            SuccessThreshold = 2,
-            MechanicalSummary = "Reveal enemy stats to party, 5 Stress cost",
+            BonusDice = 0,
+            SuccessThreshold = 0,
             MaxRank = 3,
-            CostToRank2 = 5,
-            IsActive = true
+            CostToRank2 = 20,
+            CostToRank3 = 0,
+            IsActive = true,
+            Notes = "Rank 1: WITS check. Success = reveal 1 Resistance + 1 Vulnerability. Critical = ALL Resistances/Vulnerabilities + AI hint. Costs 30 Stamina + 5 Psychic Stress. Rank 2 (20 PP): Stamina 25, Stress 3. Success reveals 2 Resistances + 2 Vulnerabilities (doubled). Critical also reveals special ability. Rank 3: Stamina 25, Stress 0 (mind adapted). Success = auto-Critical Success info. True Critical also applies [Analyzed] for 1 round. Can use as Free Action once per combat."
         });
 
-        // Runic Linguistics
+        // Runic Linguistics (Passive) - 3 ranks
         _abilityRepo.Insert(new AbilityData
         {
             AbilityID = 203,
             SpecializationID = 2,
             Name = "Runic Linguistics",
-            Description = "[PASSIVE] Automatically translate non-magical runic inscriptions. Bypass puzzle gates that would require difficult WITS checks.",
+            Description = "You read the grammar of reality's operating system. You understand error messages in a dead language.",
+            MechanicalSummary = "Translate Elder Futhark inscriptions, bypass puzzle gates, extrapolate missing text at higher ranks",
             TierLevel = 1,
-            PPCost = 0,
+            PPCost = 3, // v0.19.7: Updated from 0 to 3
             Prerequisites = new AbilityPrerequisites { RequiredPPInTree = 0 },
             AbilityType = "Passive",
             ActionType = "Free Action",
             TargetType = "Self",
             ResourceCost = new AbilityResourceCost(),
-            MechanicalSummary = "Auto-translate runes, bypass puzzles",
-            MaxRank = 1,
-            IsActive = true
+            AttributeUsed = "wits",
+            BonusDice = 0,
+            SuccessThreshold = 0,
+            MaxRank = 3,
+            CostToRank2 = 20,
+            CostToRank3 = 0,
+            IsActive = true,
+            Notes = "Rank 1: Can read and translate all non-magical Elder Futhark inscriptions (error logs, commands, warnings). Translation only—cannot execute. Rank 2 (20 PP): Translation instantaneous (no time). Can translate corrupted/fragmentary text (30-40% missing). Identify age and origin facility. Rank 3: Can translate ANY corruption level. Extrapolate missing sections (70-80% accuracy). Identify author/system by syntax. Once per day: Deep analysis reveals hidden subtext/encoded messages."
         });
     }
 
     private void SeedJotunReaderTier2()
     {
-        // Exploit Design Flaw
+        // Exploit Design Flaw (Active) - 3 ranks
         _abilityRepo.Insert(new AbilityData
         {
             AbilityID = 204,
             SpecializationID = 2,
             Name = "Exploit Design Flaw",
-            Description = "Apply [Analyzed] debuff to target. All allies gain +2 Accuracy against [Analyzed] enemies for 3 turns.",
+            Description = "Strike the left knee joint—actuator is damaged. Your tactical guidance turns allies into precision instruments.",
+            MechanicalSummary = "Apply [Analyzed] debuff - all party attacks gain +2 to +4 Accuracy against target",
             TierLevel = 2,
             PPCost = 4,
             Prerequisites = new AbilityPrerequisites { RequiredPPInTree = 8 },
             AbilityType = "Active",
             ActionType = "Standard Action",
             TargetType = "Single Enemy",
-            ResourceCost = new AbilityResourceCost { Stamina = 28 }, // v0.18: Reduced from 35
+            ResourceCost = new AbilityResourceCost { Stamina = 35 },
             AttributeUsed = "wits",
-            BonusDice = 2,
-            SuccessThreshold = 2,
-            MechanicalSummary = "Apply [Analyzed] - party gets +2 Accuracy vs target",
+            BonusDice = 0,
+            SuccessThreshold = 0,
+            MechanicalSummary = "Apply [Analyzed] debuff for increased party accuracy",
             StatusEffectsApplied = new List<string> { "Analyzed" },
             MaxRank = 3,
-            CostToRank2 = 5,
-            IsActive = true
+            CostToRank2 = 20,
+            CostToRank3 = 0,
+            IsActive = true,
+            Notes = "Rank 1: Apply [Analyzed] debuff for 2 rounds. All party attacks gain +2 Accuracy against target. Must have previously used Analyze Weakness on target. Rank 2 (20 PP): Stamina 35. [Analyzed] grants +3 Accuracy (increased) for 3 rounds (longer). Rank 3: Stamina 25. [Analyzed] grants +4 Accuracy for 4 rounds. Also adds +1d10 bonus damage to all attacks. No longer requires prior Analysis (can identify weaknesses mid-combat)."
         });
 
-        // Navigational Bypass
+        // Navigational Bypass (Active) - 3 ranks
         _abilityRepo.Insert(new AbilityData
         {
             AbilityID = 205,
             SpecializationID = 2,
             Name = "Navigational Bypass",
-            Description = "Grant entire party +2d to resist/avoid trap damage for next 3 rooms. Your knowledge of Jötun-Forged systems protects your allies.",
+            Description = "The trigger mechanism is corroded on the western edge. Distribute weight evenly—sensor won't register threshold pressure.",
+            MechanicalSummary = "Analyze trap construction, grant party bonus dice to bypass checks",
             TierLevel = 2,
             PPCost = 4,
             Prerequisites = new AbilityPrerequisites { RequiredPPInTree = 8 },
             AbilityType = "Active",
             ActionType = "Standard Action",
-            TargetType = "All Allies",
+            TargetType = "Environmental Hazard",
             ResourceCost = new AbilityResourceCost { Stamina = 30 },
             AttributeUsed = "wits",
-            BonusDice = 3,
-            SuccessThreshold = 2,
-            MechanicalSummary = "Party gets +2d vs traps for 3 rooms",
+            BonusDice = 0,
+            SuccessThreshold = 0,
             MaxRank = 3,
-            CostToRank2 = 5,
-            IsActive = true
+            CostToRank2 = 20,
+            CostToRank3 = 0,
+            IsActive = true,
+            Notes = "Rank 1: Analyze trap construction. Grant party +1d10 to next bypass check (avoid/disarm hazard). Rank 2 (20 PP): Stamina 20. Grant +2d10. Critical Success on bypass grants retry on different hazard within 1 hour. Rank 3: Stamina 20. Grant +3d10 to next 2 bypass checks. Critical Success permanently disables hazard. Can use in combat for environmental hazards."
         });
 
-        // Structural Insight
+        // Structural Insight (Passive) - 3 ranks
         _abilityRepo.Insert(new AbilityData
         {
             AbilityID = 206,
             SpecializationID = 2,
             Name = "Structural Insight",
-            Description = "[PASSIVE] Automatically detect unstable structures (collapsing floors, weak walls, environmental hazards) before entering a room.",
+            Description = "Support beams compromised. Eastern wall provides solid cover—load-bearing, reinforced. Center of room will collapse.",
+            MechanicalSummary = "Automatically detect hazards, cover quality, and structural weak points",
             TierLevel = 2,
             PPCost = 4,
             Prerequisites = new AbilityPrerequisites { RequiredPPInTree = 8 },
@@ -490,21 +514,27 @@ public class DataSeeder
             ActionType = "Free Action",
             TargetType = "Self",
             ResourceCost = new AbilityResourceCost(),
-            MechanicalSummary = "Auto-detect hazards before room entry",
-            MaxRank = 1,
-            IsActive = true
+            AttributeUsed = "wits",
+            BonusDice = 0,
+            SuccessThreshold = 0,
+            MaxRank = 3,
+            CostToRank2 = 20,
+            CostToRank3 = 0,
+            IsActive = true,
+            Notes = "Rank 1: Automatically detect [Structurally Unstable] features, [Cover] quality, hazards upon entering area. Current room only. Rank 2 (20 PP): Detection extends to adjacent visible areas. Assess exact integrity percentages. Once per combat: Warning shout as Free Action grants allies +2d10 to defensive checks vs hazard. Rank 3: Detection extends to entire dungeon floor/zone. Once per combat: Call out structural weak point for controlled collapse (Standard Action + ally attack). Auto-warn of ambush positions. Party gains +1 Defense in analyzed areas."
         });
     }
 
     private void SeedJotunReaderTier3()
     {
-        // Calculated Triage
+        // Calculated Triage (Passive) - 3 ranks
         _abilityRepo.Insert(new AbilityData
         {
             AbilityID = 207,
             SpecializationID = 2,
             Name = "Calculated Triage",
-            Description = "[PASSIVE] Allies within 10 feet of you gain +25% effectiveness from consumable healing items. Your analysis optimizes treatment.",
+            Description = "Apply pressure to brachial artery first. Follow wound track with the applicator. Your clinical guidance optimizes treatment.",
+            MechanicalSummary = "Nearby allies gain increased effectiveness from healing consumables, up to +50% at Rank 3",
             TierLevel = 3,
             PPCost = 5,
             Prerequisites = new AbilityPrerequisites { RequiredPPInTree = 16 },
@@ -512,64 +542,75 @@ public class DataSeeder
             ActionType = "Free Action",
             TargetType = "Self",
             ResourceCost = new AbilityResourceCost(),
-            MechanicalSummary = "Allies near you get +25% from healing consumables",
-            MaxRank = 1,
-            IsActive = true
+            AttributeUsed = "wits",
+            BonusDice = 0,
+            SuccessThreshold = 0,
+            MaxRank = 3,
+            CostToRank2 = 20,
+            CostToRank3 = 0,
+            IsActive = true,
+            Notes = "Rank 1: Healing consumables used on allies adjacent to Jötun-Reader heal for +25% more. Rank 2 (20 PP): (Same as Rank 1—Tier 3 abilities start at this rank). Rank 3: Healing bonus +50%. Range increased to 2 squares. Healing also removes one minor debuff ([Bleeding], [Poisoned], [Disoriented]). Once per combat: Activate 'Field Hospital' zone (3x3, 3 rounds): +75% healing, +2 Resolve Checks, healing costs half action."
         });
 
-        // The Unspoken Truth
+        // The Unspoken Truth (Active) - 3 ranks
         _abilityRepo.Insert(new AbilityData
         {
             AbilityID = 208,
             SpecializationID = 2,
             Name = "The Unspoken Truth",
-            Description = "Knowledge attack that inflicts [Disoriented] status. Speak the enemy's true designation - most cannot bear the weight of their own identity.",
+            Description = "Your 'god' is ERROR CODE 0x4A7F. You worship a crash log. The truth shatters their worldview.",
+            MechanicalSummary = "Weaponize forbidden knowledge as psychological attack - opposed WITS vs WILL check",
             TierLevel = 3,
             PPCost = 5,
             Prerequisites = new AbilityPrerequisites { RequiredPPInTree = 16 },
             AbilityType = "Active",
             ActionType = "Standard Action",
-            TargetType = "Single Enemy",
+            TargetType = "Single Intelligent Enemy",
             ResourceCost = new AbilityResourceCost { Stamina = 40 },
-            AttributeUsed = "will",
-            BonusDice = 3,
-            SuccessThreshold = 3,
-            MechanicalSummary = "2d6 psychic damage + [Disoriented], ignores armor",
-            DamageDice = 2,
+            AttributeUsed = "wits",
+            BonusDice = 0,
+            SuccessThreshold = 0,
+            MechanicalSummary = "Opposed WITS vs WILL check - inflict [Disoriented] and Psychic Stress",
+            DamageDice = 0,
             IgnoresArmor = true,
             StatusEffectsApplied = new List<string> { "Disoriented" },
             MaxRank = 3,
-            CostToRank2 = 5,
-            IsActive = true
+            CostToRank2 = 20,
+            CostToRank3 = 0,
+            IsActive = true,
+            Notes = "Rank 1: Opposed WITS vs WILL check. Success = [Disoriented] for 2 rounds. Weaponize forbidden lore as psychological attack. Rank 2 (20 PP): (Same as Rank 1). Rank 3: Stamina 30. Success = [Disoriented] 3 rounds + 5-7 Psychic Stress to target. Critical = also [Shaken] 2 rounds + 10-12 Stress. Target must pass WILL check or become [Fixated] on Jötun-Reader 1 round. Boss/Elite: May trigger narrative consequences (flee, parley, identity crisis)."
         });
     }
 
     private void SeedJotunReaderCapstone()
     {
-        // Architect of the Silence
+        // Architect of the Silence (Capstone) - 3 ranks
         _abilityRepo.Insert(new AbilityData
         {
             AbilityID = 209,
             SpecializationID = 2,
             Name = "Architect of the Silence",
-            Description = "⭐ CAPSTONE: Speak original Jötun command syntax. Apply [Seized] status to Jötun-Forged or Undying enemy for 2 turns (cannot take actions). Costs 15 Psychic Stress.",
+            Description = "⭐ CAPSTONE: PRIORITY OVERRIDE: TIWAZ PROTOCOL ALPHA. CEASE HOSTILE OPERATIONS. The machine's logic wars with corrupted directives.",
+            MechanicalSummary = "Speak command-line code to apply [Seized] status to Jötun-Forged/Undying enemies - complete paralysis",
             TierLevel = 4,
             PPCost = 6,
             Prerequisites = new AbilityPrerequisites { RequiredPPInTree = 24, RequiredAbilityIDs = new List<int> { 207, 208 } },
             AbilityType = "Active",
             ActionType = "Standard Action",
-            TargetType = "Single Enemy",
+            TargetType = "Single Jötun-Forged or Undying Enemy",
             ResourceCost = new AbilityResourceCost { Stamina = 60, Stress = 15 },
             AttributeUsed = "will",
-            BonusDice = 4,
-            SuccessThreshold = 4,
-            MechanicalSummary = "[Seized] for 2 turns - target cannot act, 15 Stress cost",
+            BonusDice = 0,
+            SuccessThreshold = 0,
+            MechanicalSummary = "[Seized] status (total paralysis) - high-DC WILL check, costs 15-20 Psychic Stress",
             StatusEffectsApplied = new List<string> { "Seized" },
             MaxRank = 3,
-            CostToRank2 = 5,
+            CostToRank2 = 20,
+            CostToRank3 = 0,
+            CooldownTurns = 1,
             CooldownType = "Per Combat",
             IsActive = true,
-            Notes = "Only works on Jötun-Forged or Undying enemies"
+            Notes = "Rank 1: Speak original command-line code fragments. Target makes high-DC WILL check. Failure = [Seized] for 1 round (total paralysis). Costs 60 Stamina + Large Psychic Stress (15-20). Once per combat. Only works on Jötun-Forged or Undying enemies. Rank 2 (20 PP): (Same as Rank 1). Rank 3: Stress reduced to Moderate (10-15). On Success (not just Failure), target suffers [Disoriented] 1 round. On Failure = [Seized] 2 rounds. If target <50% HP: Can make effect automatic (no save), but locks ability for entire day. Passive: Auto-Critical analyze ALL Jötun-Forged/Undying at combat start (no action)."
         });
     }
 
