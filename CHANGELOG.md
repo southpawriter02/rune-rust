@@ -7,6 +7,92 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.19.3] - 2025-11-13 - Atgeir-wielder Specialization
+
+### Added
+
+#### New Specialization: Atgeir-wielder (Formation Master)
+- **Archetype:** Warrior
+- **Path Type:** Coherent
+- **Mechanical Role:** Battlefield Controller / Formation Anchor
+- **Primary Attribute:** MIGHT
+- **Secondary Attribute:** WITS
+- **Resource System:** Stamina
+- **Trauma Risk:** None
+- **Unlock Requirements:** Legend 3+
+- **Icon:** ⚔️
+
+#### Core Mechanics
+- **[Reach] System:** Attack front-row enemies from back-row safety
+- **[Push] Mechanic:** Drive enemies backward with STURDINESS opposed checks
+- **[Pull] Mechanic:** Drag priority targets forward into kill zone
+- **Stance System:** Trade mobility for massive defensive bonuses and forced movement immunity
+- **Aura Effects:** Provide Soak bonuses and Stamina regeneration to adjacent allies
+
+#### 9 New Abilities (30 PP Total)
+
+**Tier 1 (3 PP each):**
+1. **Formal Training** (Passive) - Enhanced Stamina regeneration and resistance to disorientation effects
+   - Rank 3 grants +1 WITS
+2. **Skewer** (Active) - MIGHT-based Physical attack with [Reach]
+   - Can attack front row from back row
+   - Applies [Bleeding] on critical hit at Rank 3
+3. **Disciplined Stance** (Bonus Action) - Defensive stance with massive Soak
+   - Immune to [Push]/[Pull] at Rank 3
+   - Cannot move while active
+
+**Tier 2 (4 PP each, requires 8 PP in tree):**
+4. **Hook and Drag** (Active) - Physical attack with [Pull] effect
+   - Drag back-row enemies to front row
+   - Applies [Stunned] on successful Pull at Rank 3
+5. **Line Breaker** (Active) - AoE attack with [Push] on all front-row enemies
+   - Apply [Off-Balance] to pushed enemies at Rank 3
+6. **Guarding Presence** (Passive) - Aura providing Soak and bonuses to adjacent allies
+   - Rank 3 grants +3 Stamina regeneration to allies
+
+**Tier 3 (5 PP each, requires 16 PP in tree):**
+7. **Brace for Charge** (Active, Once Per Combat) - Defensive stance with counter-damage
+   - Deals 6d8 Physical damage to melee attackers at Rank 3
+   - Auto-stuns Mechanical/Undying attackers
+8. **Unstoppable Phalanx** (Active) - Line-piercing attack hitting two enemies
+   - Doubles secondary damage if primary target dies at Rank 3
+
+**Capstone (6 PP, requires 24 PP + both Tier 3):**
+9. **Living Fortress** (Passive) - Ultimate formation anchor
+   - Permanent immunity to [Push] and [Pull]
+   - Brace for Charge becomes reactive (twice per combat at Rank 3)
+   - Zone of Control at Rank 3: Enemies opposite you have -1 to hit and cannot move freely
+
+#### Design Philosophy
+- **Tactical Discipline:** Control battlefield through positioning, reach, and forced movement
+- **Formation Anchor:** Become immovable defensive core for party
+- **Thinking Warrior:** WITS as secondary attribute rewards tactical play
+- **Party Synergy:** High value in team play, excels at protecting fragile allies
+- **Strategic Weakness:** Lower solo viability, weak against high-mobility enemies
+
+### Technical
+- **New Files:**
+  - `RuneAndRust.Tests/AtgeirWielderSpecializationTests.cs` - Comprehensive unit tests (40+ tests)
+- **Updated Files:**
+  - `RuneAndRust.Persistence/DataSeeder.cs` - Added Atgeir-wielder specialization (300+ lines)
+    - SpecializationID: 12
+    - AbilityIDs: 1201-1209
+- **Test Coverage:**
+  - Specialization seeding tests
+  - Ability structure validation (3-3-2-1 tier distribution)
+  - PP cost validation (30 PP total)
+  - Prerequisite validation
+  - Unlock requirement tests
+  - Ability mechanics tests
+
+### Balance Considerations
+- **Target Success Rates:** Push/Pull effects balanced for 60-70% success vs average STURDINESS
+- **Defensive Parity:** Disciplined Stance rivals Skjaldmær for tankiness with different playstyle
+- **Safety Tax:** Back-row Skewer damage ~80% of front-row attacks (balanced for safety)
+- **Role Differentiation:** Strong party controller/tank, intentionally weak solo performance
+
+---
+
 ## [0.3.0] - 2025-11-11 - Equipment & Loot Update
 
 ### Added

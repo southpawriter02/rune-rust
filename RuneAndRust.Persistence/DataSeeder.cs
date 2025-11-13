@@ -21,7 +21,7 @@ public class DataSeeder
     }
 
     /// <summary>
-    /// Seed all existing specializations (BoneSetter, JotunReader, Skald, SkarHordeAspirant)
+    /// Seed all existing specializations (BoneSetter, JotunReader, Skald, SkarHordeAspirant, IronBane, AtgeirWielder)
     /// </summary>
     public void SeedExistingSpecializations()
     {
@@ -32,6 +32,7 @@ public class DataSeeder
         SeedSkaldSpecialization();
         SeedSkarHordeAspirantSpecialization();
         SeedIronBaneSpecialization();
+        SeedAtgeirWielderSpecialization();
 
         _log.Information("Specialization data seeding completed successfully");
     }
@@ -1390,6 +1391,305 @@ public class DataSeeder
             CooldownType = "Once Per Combat",
             IsActive = true,
             Notes = "Rank 1: 10d10 Fire. WILL DC 18 or instant death. On save: double damage + Stun 2 turns. Requires 75 Fervor. Rank 2 (20 PP): 12d10, DC 20. Destroyed enemies explode for 6d6 Fire AoE. Rank 3: 15d10, DC 22. Success still death (but gets death save). Destroy causes Fear on all Mechanical/Undying 3 turns"
+        });
+    }
+
+    #endregion
+
+    #region Atgeir-wielder (ID: 12)
+
+    /// <summary>
+    /// v0.19.3: Seeds Atgeir-wielder specialization for Warrior
+    /// Formation master who controls the battlefield through reach, forced movement, and defensive anchoring
+    /// </summary>
+    private void SeedAtgeirWielderSpecialization()
+    {
+        _log.Information("Seeding Atgeir-wielder specialization");
+
+        var atgeirWielder = new SpecializationData
+        {
+            SpecializationID = 12,
+            Name = "Atgeir-wielder",
+            ArchetypeID = 1, // Warrior
+            PathType = "Coherent",
+            MechanicalRole = "Battlefield Controller / Formation Anchor",
+            PrimaryAttribute = "MIGHT",
+            SecondaryAttribute = "WITS",
+            Description = @"You are the disciplined hoplite, the master of formation warfare. Wielding a long polearm, you command the space around you with tactical precision. Your [Reach] allows you to strike from safety while your Push and Pull effects shatter enemy formations.
+
+            You are the immovable anchor that holds the line, the thinking warrior who controls where battles happen. You don't fight with rage—you fight with discipline, leverage, and perfect positioning.
+
+            In a chaotic, glitching world, you impose order through superior reach, forced movement, and formation mastery. The polearm is logic made physical.",
+            Tagline = "Tactical discipline — control the battlefield",
+            UnlockRequirements = new UnlockRequirements { MinLegend = 3 },
+            ResourceSystem = "Stamina",
+            TraumaRisk = "None",
+            IconEmoji = "⚔️",
+            PPCostToUnlock = 3,
+            IsActive = true
+        };
+
+        _specializationRepo.Insert(atgeirWielder);
+
+        // Seed all ability tiers
+        SeedAtgeirWielderTier1();
+        SeedAtgeirWielderTier2();
+        SeedAtgeirWielderTier3();
+        SeedAtgeirWielderCapstone();
+
+        _log.Information("Atgeir-wielder seeding complete: 9 abilities");
+    }
+
+    private void SeedAtgeirWielderTier1()
+    {
+        // Tier 1 - Ability 1: Formal Training (Passive)
+        _abilityRepo.Insert(new AbilityData
+        {
+            AbilityID = 1201,
+            SpecializationID = 12,
+            Name = "Formal Training",
+            Description = "Your formal training instills deep physical and mental discipline, allowing you to remain focused amid chaos.",
+            MechanicalSummary = "Increased Stamina regeneration and resistance to disorientation effects",
+            TierLevel = 1,
+            PPCost = 3,
+            MaxRank = 3,
+            CostToRank2 = 20,
+            CostToRank3 = 0,
+            Prerequisites = new AbilityPrerequisites { RequiredPPInTree = 0 },
+            AbilityType = "Passive",
+            ActionType = "Free Action",
+            TargetType = "Self",
+            ResourceCost = new AbilityResourceCost(),
+            CooldownTurns = 0,
+            CooldownType = "None",
+            IsActive = true,
+            Notes = "Rank 1: +5 Stamina regeneration per turn. +1d10 to Resolve checks vs [Stagger]. Rank 2 (20 PP): +7 Stamina regen. +1d10 vs [Stagger] and [Disoriented]. Rank 3: +10 Stamina regen. +2d10 vs [Stagger] and [Disoriented]. +1 WITS."
+        });
+
+        // Tier 1 - Ability 2: Skewer (Active)
+        _abilityRepo.Insert(new AbilityData
+        {
+            AbilityID = 1202,
+            SpecializationID = 12,
+            Name = "Skewer",
+            Description = "A precise, powerful thrust designed to exploit your weapon's length. Strike from tactical safety.",
+            MechanicalSummary = "MIGHT-based Physical attack with [Reach] - can attack front row from back row",
+            TierLevel = 1,
+            PPCost = 3,
+            MaxRank = 3,
+            CostToRank2 = 20,
+            CostToRank3 = 0,
+            Prerequisites = new AbilityPrerequisites { RequiredPPInTree = 0 },
+            AbilityType = "Active",
+            ActionType = "Standard Action",
+            TargetType = "Single Enemy (front row)",
+            ResourceCost = new AbilityResourceCost { Stamina = 40 },
+            AttributeUsed = "might",
+            BonusDice = 2,
+            SuccessThreshold = 2,
+            DamageDice = 2,
+            DamageType = "Physical",
+            CooldownTurns = 0,
+            CooldownType = "None",
+            IsActive = true,
+            Notes = "Rank 1: 2d8 Physical. [Reach] - Can attack front row from back row. Rank 2 (20 PP): Costs 35 Stamina. +1d6 damage (2d8+1d6). Rank 3: +2d6 damage (2d8+2d6). On crit: apply [Bleeding] for 2 turns."
+        });
+
+        // Tier 1 - Ability 3: Disciplined Stance (Active)
+        _abilityRepo.Insert(new AbilityData
+        {
+            AbilityID = 1203,
+            SpecializationID = 12,
+            Name = "Disciplined Stance",
+            Description = "You plant your feet, becoming an anchor of stability. This line will not be broken.",
+            MechanicalSummary = "Defensive stance providing massive Soak and immunity to forced movement; cannot move while active",
+            TierLevel = 1,
+            PPCost = 3,
+            MaxRank = 3,
+            CostToRank2 = 20,
+            CostToRank3 = 0,
+            Prerequisites = new AbilityPrerequisites { RequiredPPInTree = 0 },
+            AbilityType = "Active",
+            ActionType = "Bonus Action",
+            TargetType = "Self",
+            ResourceCost = new AbilityResourceCost { Stamina = 30 },
+            CooldownTurns = 3,
+            CooldownType = "Standard",
+            IsActive = true,
+            Notes = "Rank 1: +4 Soak. +3 bonus dice vs [Push]/[Pull]. Cannot move while active. Duration: 2 turns. Rank 2 (20 PP): +6 Soak. +4 bonus dice vs [Push]/[Pull]. Duration 3 turns. Rank 3: +8 Soak. Immune to [Push]/[Pull]. Gain Stamina regen +5 while in stance."
+        });
+    }
+
+    private void SeedAtgeirWielderTier2()
+    {
+        // Tier 2 - Ability 4: Hook and Drag (Active)
+        _abilityRepo.Insert(new AbilityData
+        {
+            AbilityID = 1204,
+            SpecializationID = 12,
+            Name = "Hook and Drag",
+            Description = "Using your weapon's hooked blade, you violently yank a priority target out of position.",
+            MechanicalSummary = "Physical attack with [Pull] effect - drag enemy from back row to front row",
+            TierLevel = 2,
+            PPCost = 4,
+            MaxRank = 3,
+            CostToRank2 = 20,
+            CostToRank3 = 0,
+            Prerequisites = new AbilityPrerequisites { RequiredPPInTree = 8 },
+            AbilityType = "Active",
+            ActionType = "Standard Action",
+            TargetType = "Single Enemy (back row)",
+            ResourceCost = new AbilityResourceCost { Stamina = 45 },
+            AttributeUsed = "might",
+            BonusDice = 2,
+            SuccessThreshold = 2,
+            DamageDice = 2,
+            DamageType = "Physical",
+            CooldownTurns = 4,
+            CooldownType = "Standard",
+            IsActive = true,
+            Notes = "Rank 1: 2d8 Physical damage. STURDINESS opposed check to [Pull] target from back row to front row. Rank 2 (20 PP): 3d8 damage. +2 bonus to Pull check. Pulled target is [Slowed] for 1 turn. Rank 3: 4d8 damage. +3 bonus to Pull check. If Pull succeeds, target is also [Stunned] for 1 turn."
+        });
+
+        // Tier 2 - Ability 5: Line Breaker (Active)
+        _abilityRepo.Insert(new AbilityData
+        {
+            AbilityID = 1205,
+            SpecializationID = 12,
+            Name = "Line Breaker",
+            Description = "A wide, sweeping strike that shatters enemy formations and drives them backward.",
+            MechanicalSummary = "AoE Physical attack with [Push] effect on all front-row enemies",
+            TierLevel = 2,
+            PPCost = 4,
+            MaxRank = 3,
+            CostToRank2 = 20,
+            CostToRank3 = 0,
+            Prerequisites = new AbilityPrerequisites { RequiredPPInTree = 8 },
+            AbilityType = "Active",
+            ActionType = "Standard Action",
+            TargetType = "All Enemies (front row)",
+            ResourceCost = new AbilityResourceCost { Stamina = 50 },
+            AttributeUsed = "might",
+            BonusDice = 2,
+            SuccessThreshold = 2,
+            DamageDice = 3,
+            DamageType = "Physical",
+            CooldownTurns = 5,
+            CooldownType = "Standard",
+            IsActive = true,
+            Notes = "Rank 1: 3d6 Physical to all front row. STURDINESS opposed check to [Push] all targets to back row. Rank 2 (20 PP): 4d6 damage. +1 bonus to Push check. Successfully pushed enemies take +1d6 bonus damage. Rank 3: 5d6 damage. +2 bonus to Push check. Enemies pushed into back row are [Off-Balance] (-2 to hit, 1 turn)."
+        });
+
+        // Tier 2 - Ability 6: Guarding Presence (Passive)
+        _abilityRepo.Insert(new AbilityData
+        {
+            AbilityID = 1206,
+            SpecializationID = 12,
+            Name = "Guarding Presence",
+            Description = "Your disciplined presence inspires fortitude in those around you. The formation holds.",
+            MechanicalSummary = "Aura providing Soak bonus and stamina regeneration to adjacent front-row allies",
+            TierLevel = 2,
+            PPCost = 4,
+            MaxRank = 3,
+            CostToRank2 = 20,
+            CostToRank3 = 0,
+            Prerequisites = new AbilityPrerequisites { RequiredPPInTree = 8 },
+            AbilityType = "Passive",
+            ActionType = "Free Action",
+            TargetType = "Adjacent Front-Row Allies",
+            ResourceCost = new AbilityResourceCost(),
+            CooldownTurns = 0,
+            CooldownType = "None",
+            IsActive = true,
+            Notes = "Rank 1: While in front row: You and adjacent front-row allies gain +1 Soak. Rank 2 (20 PP): +2 Soak aura. Aura also grants +1 bonus die vs [Fear]. Rank 3: +3 Soak aura. Allies in aura regenerate +3 Stamina per turn."
+        });
+    }
+
+    private void SeedAtgeirWielderTier3()
+    {
+        // Tier 3 - Ability 7: Brace for Charge (Active)
+        _abilityRepo.Insert(new AbilityData
+        {
+            AbilityID = 1207,
+            SpecializationID = 12,
+            Name = "Brace for Charge",
+            Description = "You set your weapon with expert precision. They will run onto your spear and break.",
+            MechanicalSummary = "Defensive stance with massive counter-damage and stun effect when hit by melee",
+            TierLevel = 3,
+            PPCost = 5,
+            MaxRank = 3,
+            CostToRank2 = 20,
+            CostToRank3 = 0,
+            Prerequisites = new AbilityPrerequisites { RequiredPPInTree = 16 },
+            AbilityType = "Active",
+            ActionType = "Standard Action",
+            TargetType = "Self",
+            ResourceCost = new AbilityResourceCost { Stamina = 40 },
+            DamageType = "Physical",
+            CooldownTurns = 999,
+            CooldownType = "Once Per Combat",
+            IsActive = true,
+            Notes = "Rank 1: Enter defensive stance (1 turn). If hit by melee: +10 Soak, Immune [Knocked Down], attacker takes 4d8 Physical damage. Rank 2 (20 PP): Counter-damage increases to 5d8. Attacker must make WILL save DC 15 or be [Stunned] for 1 turn. Rank 3: Counter-damage 6d8. Stun save DC 18. If attacker is Mechanical/Undying, automatically Stunned."
+        });
+
+        // Tier 3 - Ability 8: Unstoppable Phalanx (Active)
+        _abilityRepo.Insert(new AbilityData
+        {
+            AbilityID = 1208,
+            SpecializationID = 12,
+            Name = "Unstoppable Phalanx",
+            Description = "Your polearm punches through armor and flesh, impaling one target and striking another.",
+            MechanicalSummary = "Line-piercing attack hitting primary target and enemy behind them",
+            TierLevel = 3,
+            PPCost = 5,
+            MaxRank = 3,
+            CostToRank2 = 20,
+            CostToRank3 = 0,
+            Prerequisites = new AbilityPrerequisites { RequiredPPInTree = 16 },
+            AbilityType = "Active",
+            ActionType = "Standard Action",
+            TargetType = "Single Enemy + Enemy Behind",
+            ResourceCost = new AbilityResourceCost { Stamina = 60 },
+            AttributeUsed = "might",
+            BonusDice = 3,
+            SuccessThreshold = 3,
+            DamageDice = 6,
+            DamageType = "Physical",
+            CooldownTurns = 4,
+            CooldownType = "Standard",
+            IsActive = true,
+            Notes = "Rank 1: 6d10 Physical to primary target. If hit: 4d10 Physical to enemy directly behind. Rank 2 (20 PP): 7d10 to primary, 5d10 to secondary. Both targets [Off-Balance] for 1 turn. Rank 3: 8d10 to primary, 6d10 to secondary. If primary dies: bonus damage to secondary doubled."
+        });
+    }
+
+    private void SeedAtgeirWielderCapstone()
+    {
+        // Capstone - Ability 9: Living Fortress (Passive)
+        _abilityRepo.Insert(new AbilityData
+        {
+            AbilityID = 1209,
+            SpecializationID = 12,
+            Name = "Living Fortress",
+            Description = "You have become the absolute master of your domain. A living fortress around which battles are won.",
+            MechanicalSummary = "Permanent immunity to forced movement, reactive Brace for Charge, zone of control",
+            TierLevel = 4,
+            PPCost = 6,
+            MaxRank = 3,
+            CostToRank2 = 20,
+            CostToRank3 = 0,
+            Prerequisites = new AbilityPrerequisites
+            {
+                RequiredPPInTree = 24,
+                RequiredAbilityIDs = new List<int> { 1207, 1208 }  // Both Tier 3 required
+            },
+            AbilityType = "Passive",
+            ActionType = "Free Action",
+            TargetType = "Self",
+            ResourceCost = new AbilityResourceCost(),
+            CooldownTurns = 0,
+            CooldownType = "None",
+            IsActive = true,
+            Notes = "Rank 1: While in front row: Immune to [Push] and [Pull]. Brace for Charge can be used as Reaction (once per combat). Rank 2 (20 PP): Aura: Adjacent allies also resistant to [Push]/[Pull] (+3 dice to resist). Your Skewer range increased by 1 row. Rank 3: Zone of Control: Enemies in front row opposite you have -1 to hit and cannot move freely. Brace reactive triggers twice per combat."
         });
     }
 
