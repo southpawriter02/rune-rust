@@ -559,7 +559,9 @@ public static class UIHelper
     {
         if (logEntries.Count == 0) return;
 
-        var panel = new Panel(string.Join("\n", logEntries.TakeLast(maxEntries)))
+        // Escape markup in log entries to prevent Spectre.Console from interpreting square brackets as markup tags
+        var escapedEntries = logEntries.TakeLast(maxEntries).Select(entry => entry.EscapeMarkup());
+        var panel = new Panel(string.Join("\n", escapedEntries))
         {
             Border = BoxBorder.Rounded,
             Header = new PanelHeader("[dim]Combat Log[/]"),
