@@ -13,6 +13,7 @@ public class CombatEngine
     private readonly HazardService _hazardService; // [v0.6]
     private readonly PerformanceService _performanceService; // [v0.7]
     private readonly CurrencyService _currencyService; // [v0.9]
+    private readonly GridInitializationService _gridService; // [v0.20]
 
     public CombatEngine(DiceService diceService, SagaService sagaService, LootService lootService, EquipmentService equipmentService, HazardService hazardService, CurrencyService currencyService)
     {
@@ -23,6 +24,7 @@ public class CombatEngine
         _hazardService = hazardService; // [v0.6]
         _performanceService = new PerformanceService(); // [v0.7]
         _currencyService = currencyService; // [v0.9]
+        _gridService = new GridInitializationService(); // [v0.20]
     }
 
     /// <summary>
@@ -41,6 +43,10 @@ public class CombatEngine
             CanFlee = canFlee,
             CurrentRoom = currentRoom
         };
+
+        // [v0.20] Initialize tactical combat grid
+        combatState.Grid = _gridService.InitializeGrid(player, enemies);
+        _gridService.ApplyEnvironmentalFeatures(combatState.Grid, currentRoom);
 
         // Roll initiative for all participants
         RollInitiative(combatState);

@@ -24,6 +24,9 @@ public class CombatState
     // [v0.4] Current room for environmental hazards
     public Room? CurrentRoom { get; set; } = null;
 
+    // [v0.20] Tactical Combat Grid System
+    public BattlefieldGrid? Grid { get; set; } = null;
+
     // Player temporary effects
     public int PlayerNextAttackBonusDice { get; set; } = 0;
     public bool PlayerNegateNextAttack { get; set; } = false;
