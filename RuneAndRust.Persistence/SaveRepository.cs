@@ -279,18 +279,8 @@ public class SaveRepository
         var traumasJson = JsonSerializer.Serialize(player.Traumas);
 
         // Serialize room items (v0.3)
+        // Note: WorldState no longer tracks rooms directly, using empty dict for compatibility
         var roomItemsDict = new Dictionary<int, List<Equipment>>();
-        if (worldState != null)
-        {
-            foreach (var kvp in worldState.Rooms)
-            {
-                var room = kvp.Value;
-                if (room.ItemsOnGround.Count > 0)
-                {
-                    roomItemsDict[room.Id] = room.ItemsOnGround;
-                }
-            }
-        }
         var roomItemsJson = JsonSerializer.Serialize(roomItemsDict);
 
         // Serialize faction reputations, quests, and NPC states (v0.8)
@@ -299,14 +289,8 @@ public class SaveRepository
         var completedQuestsJson = JsonSerializer.Serialize(player.CompletedQuests);
 
         // Collect all NPCs from all rooms
+        // Note: WorldState no longer tracks rooms/NPCs directly, using empty list for compatibility
         var allNPCs = new List<NPC>();
-        if (worldState != null)
-        {
-            foreach (var kvp in worldState.Rooms)
-            {
-                allNPCs.AddRange(kvp.Value.NPCs);
-            }
-        }
         var npcStatesJson = JsonSerializer.Serialize(allNPCs);
 
         var saveData = new SaveData
@@ -356,10 +340,10 @@ public class SaveRepository
             CompletedQuestsJson = completedQuestsJson,
             NPCStatesJson = npcStatesJson,
             // v0.10: Procedural generation
-            IsProceduralDungeon = worldState?.IsProcedurallyGenerated ?? false,
-            CurrentDungeonSeed = worldState?.CurrentDungeon?.Seed ?? 0,
-            CurrentRoomStringId = worldState.CurrentRoomStringId,
-            DungeonsCompleted = worldState.DungeonsCompleted,
+            IsProceduralDungeon = isProcedurallyGenerated,
+            CurrentDungeonSeed = 0, // WorldState no longer tracks dungeon seed directly
+            CurrentRoomStringId = worldState?.CurrentRoomStringId,
+            DungeonsCompleted = worldState?.DungeonsCompleted ?? 0,
             LastSaved = DateTime.Now
         };
 
@@ -445,7 +429,7 @@ public class SaveRepository
         command.Parameters.AddWithValue("$dungeonseed", saveData.CurrentDungeonSeed);
         command.Parameters.AddWithValue("$roomstringid", (object?)saveData.CurrentRoomStringId ?? DBNull.Value);
         command.Parameters.AddWithValue("$dungeonscompleted", saveData.DungeonsCompleted);
-        command.Parameters.AddWithValue("$biomeid", (object?)(worldState?.CurrentDungeon?.Biome) ?? DBNull.Value);
+        command.Parameters.AddWithValue("$biomeid", DBNull.Value); // WorldState no longer tracks dungeon biome directly
         command.Parameters.AddWithValue("$saved", saveData.LastSaved.ToString("yyyy-MM-dd HH:mm:ss"));
 
         command.ExecuteNonQuery();
