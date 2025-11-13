@@ -57,8 +57,11 @@ public class LootSpawner
         {
             foreach (var loot in availableLoot.Where(l => l.SpawnRules?.HigherWeightInSecretRooms == true))
             {
-                loot.Weight *= loot.SpawnRules.SecretRoomWeightMultiplier;
-                _log.Debug("Increased weight for {LootName} in secret room", loot.ElementName);
+                if (loot.SpawnRules != null)
+                {
+                    loot.Weight *= loot.SpawnRules.SecretRoomWeightMultiplier;
+                    _log.Debug("Increased weight for {LootName} in secret room", loot.ElementName);
+                }
             }
         }
 

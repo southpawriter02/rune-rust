@@ -1108,12 +1108,15 @@ public class CombatEngine
             // This is for player damage, not enemy damage
         }
 
-        target.HP -= damage;
-        combatState.AddLogEntry($"  {target.Name} takes {damage} damage! (HP: {Math.Max(0, target.HP)}/{target.MaxHP})");
-
-        if (!target.IsAlive)
+        if (target != null)
         {
-            combatState.AddLogEntry($"  {target.Name} is destroyed!");
+            target.HP -= damage;
+            combatState.AddLogEntry($"  {target.Name} takes {damage} damage! (HP: {Math.Max(0, target.HP)}/{target.MaxHP})");
+
+            if (!target.IsAlive)
+            {
+                combatState.AddLogEntry($"  {target.Name} is destroyed!");
+            }
         }
     }
 
