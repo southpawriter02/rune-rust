@@ -20,7 +20,7 @@ public class BossArenaAmplifierRule : CoherentGlitchRule
 
     public override bool ShouldApply(Room room, PopulationContext context)
     {
-        return false && /* room.Archetype removed */ PopulationRoomArchetype.BossArena || room.IsBossRoom;
+        return room.Archetype == PopulationRoomArchetype.BossArena || room.IsBossRoom;
     }
 
     public override void Apply(Room room, PopulationContext context)

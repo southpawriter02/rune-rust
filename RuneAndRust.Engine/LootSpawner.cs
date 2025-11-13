@@ -1,4 +1,5 @@
 using RuneAndRust.Core;
+using RuneAndRust.Core.Population;
 using Serilog;
 
 namespace RuneAndRust.Engine;
@@ -113,7 +114,7 @@ public class LootSpawner
     /// <summary>
     /// Creates a LootNode from a BiomeElement
     /// </summary>
-    private LootNode? CreateLootNodeFromElement(BiomeElement element, Room room, Random rng)
+    private Population.LootNode? CreateLootNodeFromElement(BiomeElement element, Room room, Random rng)
     {
         var lootType = MapElementToLootType(element.AssociatedDataId);
         if (lootType == null)
@@ -147,127 +148,76 @@ public class LootSpawner
     }
 
     // Loot node creation methods
-    private LootNode CreateOreVein(Random rng)
+    private Population.LootNode CreateOreVein(Random rng)
     {
-        return new LootNode
+        return new ResourceVein
         {
+            Id = $"ore_vein_{Guid.NewGuid():N}",
             NodeId = $"ore_vein_{Guid.NewGuid():N}",
             Name = "[Ore Vein]",
             Description = "Mineral deposits glint in the wall - iron, copper, and traces of rare Dvergr alloys.",
-            Type = LootNodeType.OreVein,
-            RequiresInteraction = true,
-            InteractionTurns = 2,
-            InteractionDescription = "Mine",
-            LootTable = new LootTable
-            {
-                CraftingMaterials = new List<LootDrop>
-                {
-                    new() { ItemId = "Iron Ore", DropChance = 0.8f, MinQuantity = 2, MaxQuantity = 4, Rarity = "Common" },
-                    new() { ItemId = "Copper Ore", DropChance = 0.5f, MinQuantity = 1, MaxQuantity = 3, Rarity = "Uncommon" },
-                    new() { ItemId = "Dvergr Alloy Fragment", DropChance = 0.1f, MinQuantity = 1, MaxQuantity = 1, Rarity = "Rare" }
-                }
-            },
-            FlavorText = "The Pre-Glitch extraction equipment is long dead, but the ore remains."
+            ResourceType = "Ore Deposits",
+            EstimatedCogsValue = 30,
+            Quality = LootQuality.Common
         };
     }
 
-    private LootNode CreateSalvageableWreckage(Random rng)
+    private Population.LootNode CreateSalvageableWreckage(Random rng)
     {
-        return new LootNode
+        return new SalvageableWreckage
         {
+            Id = $"salvageable_wreckage_{Guid.NewGuid():N}",
             NodeId = $"salvageable_wreckage_{Guid.NewGuid():N}",
             Name = "[Salvageable Wreckage]",
             Description = "The remains of a destroyed automaton lie scattered. Components might be salvageable.",
-            Type = LootNodeType.SalvageableWreckage,
-            RequiresInteraction = true,
-            InteractionTurns = 1,
-            InteractionDescription = "Salvage",
-            LootTable = new LootTable
-            {
-                CraftingMaterials = new List<LootDrop>
-                {
-                    new() { ItemId = "Scrap Metal", DropChance = 1.0f, MinQuantity = 1, MaxQuantity = 4, Rarity = "Common" },
-                    new() { ItemId = "Tempered Springs", DropChance = 0.3f, MinQuantity = 1, MaxQuantity = 2, Rarity = "Uncommon" },
-                    new() { ItemId = "Ancient Circuit Board", DropChance = 0.1f, MinQuantity = 1, MaxQuantity = 1, Rarity = "Rare" }
-                }
-            },
-            FlavorText = "Rust-fused mechanisms still hold value for those who know what to look for."
+            Type = WreckageType.Machinery,
+            EstimatedCogsValue = 40,
+            Quality = LootQuality.Common
         };
     }
 
-    private LootNode CreateHiddenContainer(Random rng)
+    private Population.LootNode CreateHiddenContainer(Random rng)
     {
-        return new LootNode
+        return new HiddenContainer
         {
+            Id = $"hidden_container_{Guid.NewGuid():N}",
             NodeId = $"hidden_container_{Guid.NewGuid():N}",
             Name = "[Hidden Container]",
             Description = "A concealed storage locker. Its location suggests someone valued secrecy.",
-            Type = LootNodeType.HiddenContainer,
-            RequiresDiscovery = true,
+            IsHidden = true,
             DiscoveryDC = 15,
-            RequiresInteraction = true,
-            InteractionTurns = 1,
-            InteractionDescription = "Open",
-            LootTable = new LootTable
-            {
-                DropsCurrency = true,
-                MinCurrency = 30,
-                MaxCurrency = 100,
-                Equipment = new List<LootDrop>
-                {
-                    new() { ItemId = "Random Uncommon Equipment", DropChance = 0.6f, MinQuantity = 1, MaxQuantity = 1, Rarity = "Uncommon" }
-                },
-                Consumables = new List<LootDrop>
-                {
-                    new() { ItemId = "Repair Kit", DropChance = 0.4f, MinQuantity = 1, MaxQuantity = 2, Rarity = "Common" }
-                }
-            },
-            FlavorText = "The lock is centuries old but still functional."
+            IsLocked = true,
+            LockDC = 10,
+            EstimatedCogsValue = 120,
+            Quality = LootQuality.Rare
         };
     }
 
-    private LootNode CreateCorruptedDataSlate(Random rng)
+    private Population.LootNode CreateCorruptedDataSlate(Random rng)
     {
-        return new LootNode
+        return new CorruptedDataSlate
         {
+            Id = $"corrupted_data_slate_{Guid.NewGuid():N}",
             NodeId = $"corrupted_data_slate_{Guid.NewGuid():N}",
             Name = "[Corrupted Data-Slate]",
             Description = "A Pre-Glitch data storage device. The screen flickers with fragmented text.",
-            Type = LootNodeType.CorruptedDataSlate,
-            RequiresInteraction = true,
-            InteractionTurns = 1,
-            InteractionDescription = "Read",
-            LootTable = new LootTable
-            {
-                QuestItems = new List<LootDrop>
-                {
-                    new() { ItemId = "Lore Fragment", DropChance = 1.0f, MinQuantity = 1, MaxQuantity = 1, Rarity = "Uncommon" }
-                }
-            },
-            FlavorText = "v5.0 compliance: Read-only. Contents cannot be modified."
+            LoreFragmentId = null,
+            EstimatedCogsValue = 20,
+            Quality = LootQuality.Uncommon
         };
     }
 
-    private LootNode CreateResourceCache(Random rng)
+    private Population.LootNode CreateResourceCache(Random rng)
     {
-        return new LootNode
+        return new ResourceCache
         {
+            Id = $"resource_cache_{Guid.NewGuid():N}",
             NodeId = $"resource_cache_{Guid.NewGuid():N}",
             Name = "[Resource Cache]",
             Description = "An emergency supply stash. Surprisingly well-preserved.",
-            Type = LootNodeType.ResourceCache,
-            RequiresInteraction = true,
-            InteractionTurns = 1,
-            InteractionDescription = "Search",
-            LootTable = new LootTable
-            {
-                Consumables = new List<LootDrop>
-                {
-                    new() { ItemId = "Medical Supplies", DropChance = 0.7f, MinQuantity = 1, MaxQuantity = 2, Rarity = "Common" },
-                    new() { ItemId = "Combat Stim", DropChance = 0.3f, MinQuantity = 1, MaxQuantity = 1, Rarity = "Uncommon" }
-                }
-            },
-            FlavorText = "Pre-Glitch emergency protocols mandated such caches throughout Aethelgard."
+            CacheType = "Emergency Supplies",
+            EstimatedCogsValue = 35,
+            Quality = LootQuality.Common
         };
     }
 }

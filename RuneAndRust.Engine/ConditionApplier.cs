@@ -1,4 +1,5 @@
 using RuneAndRust.Core;
+using RuneAndRust.Core.Population;
 using Serilog;
 
 namespace RuneAndRust.Engine;
@@ -112,12 +113,12 @@ public class ConditionApplier
     /// Applies Coherent Glitch interactions between conditions and hazards
     /// Example: [Flooded] enhances electrical hazards
     /// </summary>
-    private void ApplyCoherentGlitchInteractions(Room room, AmbientCondition condition)
+    private void ApplyCoherentGlitchInteractions(Room room, Population.AmbientCondition condition)
     {
         if (condition.Type == AmbientConditionType.Flooded)
         {
             // Enhance electrical hazards
-            foreach (var hazard in room.DynamicHazards.Where(h => h.Type == DynamicHazardType.LivePowerConduit))
+            foreach (var hazard in room.DynamicHazards.Cast<Population.DynamicHazard>().Where(h => h.Type == DynamicHazardType.LivePowerConduit))
             {
                 hazard.DamageDice = (int)(hazard.DamageDice * 2);
                 hazard.ProximityRange = (int)(hazard.ProximityRange * 1.5);
@@ -129,7 +130,7 @@ public class ConditionApplier
     /// <summary>
     /// Creates an AmbientCondition from a BiomeElement
     /// </summary>
-    private AmbientCondition? CreateConditionFromElement(BiomeElement element, Room room, Random rng)
+    private Population.AmbientCondition? CreateConditionFromElement(BiomeElement element, Room room, Random rng)
     {
         var conditionType = MapElementToConditionType(element.AssociatedDataId);
         if (conditionType == null)
@@ -163,83 +164,63 @@ public class ConditionApplier
     }
 
     // Condition creation methods
-    private AmbientCondition CreatePsychicResonance()
+    private Population.AmbientCondition CreatePsychicResonance()
     {
-        return new AmbientCondition
+        return new PsychicResonanceCondition
         {
-            ConditionId = $"psychic_resonance_{Guid.NewGuid():N}",
-            Name = "[Psychic Resonance]",
+            Id = $"psychic_resonance_{Guid.NewGuid():N}",
+            ConditionName = "[Psychic Resonance]",
             Description = "The Great Silence echoes loudly here. Something terrible happened in this place.",
-            Type = AmbientConditionType.PsychicResonance,
-            PsychicStressPerTurn = 2,
-            WillResolveModifier = -1,
-            EnhancesHazardTypes = new List<string>(), // No direct hazard enhancement
-            HazardEnhancementMultiplier = 1.0f
+            StressPerTurn = 2,
+            Intensity = 2
         };
     }
 
-    private AmbientCondition CreateRunicInstability()
+    private Population.AmbientCondition CreateRunicInstability()
     {
-        return new AmbientCondition
+        return new RunicInstabilityCondition
         {
-            ConditionId = $"runic_instability_{Guid.NewGuid():N}",
-            Name = "[Runic Instability]",
+            Id = $"runic_instability_{Guid.NewGuid():N}",
+            ConditionName = "[Runic Instability]",
             Description = "The fabric of Aether feels volatile here. Magic behaves unpredictably.",
-            Type = AmbientConditionType.RunicInstability,
             CausesWildMagic = true,
-            WildMagicChance = 0.2f,
-            EnhancesHazardTypes = new List<string>(),
-            HazardEnhancementMultiplier = 1.0f
+            WildMagicChance = 0.2f
         };
     }
 
-    private AmbientCondition CreateFlooded()
+    private Population.AmbientCondition CreateFlooded()
     {
-        return new AmbientCondition
+        return new FloodedCondition
         {
-            ConditionId = $"flooded_{Guid.NewGuid():N}",
-            Name = "[Flooded]",
+            Id = $"flooded_{Guid.NewGuid():N}",
+            ConditionName = "[Flooded]",
             Description = "Stagnant water covers the floor, reeking of rust and chemicals. Knee-deep in places.",
-            Type = AmbientConditionType.Flooded,
-            MovementCostModifier = 1,
-            EnhancesHazardTypes = new List<string> { "LivePowerConduit" },
-            HazardEnhancementMultiplier = 2.0f,
-            SpawnWeightModifiers = new Dictionary<string, float>
-            {
-                ["LivePowerConduit"] = 2.0f // Electrical hazards 2x more likely
-            }
+            MovementModifier = -20,
+            WaterDepth = 2 // Knee-deep
         };
     }
 
-    private AmbientCondition CreateCorrodedAtmosphere()
+    private Population.AmbientCondition CreateCorrodedAtmosphere()
     {
-        return new AmbientCondition
+        return new CorrodedAtmosphereCondition
         {
-            ConditionId = $"corroded_atmosphere_{Guid.NewGuid():N}",
-            Name = "[Corroded Atmosphere]",
+            Id = $"corroded_atmosphere_{Guid.NewGuid():N}",
+            ConditionName = "[Corroded Atmosphere]",
             Description = "The air is thick with rust particles and chemical fumes. Metal corrodes visibly.",
-            Type = AmbientConditionType.CorrodedAtmosphere,
             CausesEquipmentDegradation = true,
-            DegradationAmount = 1,
-            CanApplyStatusEffect = "Corroded",
-            StatusEffectChance = 0.1f,
-            EnhancesHazardTypes = new List<string>(),
-            HazardEnhancementMultiplier = 1.0f
+            DegradationAmount = 1
         };
     }
 
-    private AmbientCondition CreateDimLighting()
+    private Population.AmbientCondition CreateDimLighting()
     {
-        return new AmbientCondition
+        return new DarknessCondition
         {
-            ConditionId = $"dim_lighting_{Guid.NewGuid():N}",
-            Name = "[Dim Lighting]",
+            Id = $"dim_lighting_{Guid.NewGuid():N}",
+            ConditionName = "[Dim Lighting]",
             Description = "Failing illumination systems provide only weak, flickering light. Shadows gather in corners.",
-            Type = AmbientConditionType.DimLighting,
             AccuracyModifier = -1,
-            PsychicStressPerTurn = 1,
-            EnhancesHazardTypes = new List<string>(),
-            HazardEnhancementMultiplier = 1.0f
+            StressPerTurn = 1
         };
     }
 }

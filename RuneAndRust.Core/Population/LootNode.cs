@@ -6,6 +6,7 @@ namespace RuneAndRust.Core.Population;
 public abstract class LootNode
 {
     public string Id { get; set; } = Guid.NewGuid().ToString();
+    public string NodeId { get; set; } = string.Empty; // Alias for Core compatibility
     public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
 
@@ -92,4 +93,36 @@ public class HiddenContainer : LootNode
 
     public bool IsLocked { get; set; } = true;
     public int LockDC { get; set; } = 10; // FINESSE check to pick
+}
+
+/// <summary>
+/// [Corrupted Data-Slate] - Lore and quest hooks (v0.11)
+/// </summary>
+public class CorruptedDataSlate : LootNode
+{
+    public CorruptedDataSlate()
+    {
+        Name = "Corrupted Data-Slate";
+        Description = "A Pre-Glitch data storage device. The screen flickers with fragmented text.";
+        Quality = LootQuality.Uncommon;
+        EstimatedCogsValue = 20;
+    }
+
+    public string? LoreFragmentId { get; set; } = null;
+}
+
+/// <summary>
+/// [Resource Cache] - Consumables and supplies (v0.11)
+/// </summary>
+public class ResourceCache : LootNode
+{
+    public ResourceCache()
+    {
+        Name = "Resource Cache";
+        Description = "An emergency supply stash. Surprisingly well-preserved.";
+        Quality = LootQuality.Common;
+        EstimatedCogsValue = 35;
+    }
+
+    public string CacheType { get; set; } = "Emergency Supplies";
 }

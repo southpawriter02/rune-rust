@@ -20,7 +20,7 @@ public class EntryHallSafetyRule : CoherentGlitchRule
 
     public override bool ShouldApply(Room room, PopulationContext context)
     {
-        return false && /* room.Archetype removed */ PopulationRoomArchetype.EntryHall || room.IsStartRoom;
+        return room.Archetype == PopulationRoomArchetype.EntryHall || room.IsStartRoom;
     }
 
     public override void Apply(Room room, PopulationContext context)
