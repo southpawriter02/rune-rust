@@ -43,7 +43,10 @@ public enum CommandType
     Sell,
     // v0.13 - Persistent World State / Destruction
     Destroy,
-    History
+    History,
+    // v0.19.10 - Rúnasmiðr Crafting
+    Runeforge,
+    Craft
 }
 
 public class ParsedCommand
@@ -167,6 +170,13 @@ public class CommandParser
         { "changes", CommandType.History },
         { "modifications", CommandType.History },
 
+        // Runeforging (v0.19.10)
+        { "runeforge", CommandType.Runeforge },
+        { "forge", CommandType.Runeforge },
+        { "enchant", CommandType.Runeforge },
+        { "imbue", CommandType.Runeforge },
+        { "craft", CommandType.Craft },
+
         // Utility
         { "help", CommandType.Help },
         { "h", CommandType.Help },
@@ -279,6 +289,11 @@ public class CommandParser
             {
                 command.Target = string.Join(" ", parts.Skip(1));
             }
+            // Handle "runeforge [recipe] on [item]" or "craft [recipe]" (v0.19.10)
+            else if ((commandType == CommandType.Runeforge || commandType == CommandType.Craft) && parts.Length > 1)
+            {
+                command.Target = string.Join(" ", parts.Skip(1));
+            }
         }
         else
         {
@@ -338,6 +353,11 @@ MERCHANT SYSTEM (v0.9):
 WORLD INTERACTION (v0.13):
   destroy [[target]]     - Destroy terrain or hazards (smash, break, clear)
   history              - View modifications to the current room
+
+CRAFTING (v0.19.10):
+  craft                - View available crafting recipes (Field Medicine)
+  runeforge [[recipe]]   - Enchant equipment at Forge (Rúnasmiðr only)
+  forge, enchant       - Aliases for runeforge
 
 OTHER COMMANDS:
   help, h, ?           - Show this help text

@@ -61,8 +61,11 @@ public class Room
     public List<NPC> NPCs { get; set; } = new(); // NPCs present in this room
 
     // Trauma Economy (v0.5)
-    public PsychicResonanceLevel PsychicResonance { get; set; } = PsychicResonanceLevel.None;
+    public PsychicResonanceLevel PsychicResonance { get; set} = PsychicResonanceLevel.None;
     public bool IsSanctuary { get; set; } = false; // Safe location for Sanctuary Rest
+
+    // v0.19.10: Crafting Stations (Rúnasmiðr)
+    public bool HasForge { get; set; } = false; // Runeforging station for enchanting equipment
 
     // v0.11 Population Systems - Use Population namespace types
     public List<Population.DynamicHazard> DynamicHazards { get; set; } = new();
