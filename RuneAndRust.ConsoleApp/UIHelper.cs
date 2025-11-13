@@ -779,7 +779,7 @@ public static class UIHelper
         var panel = new Panel(BuildComparisonMarkup(comparison))
         {
             Border = BoxBorder.Double,
-            BorderColor = comparison.IsUpgrade ? Color.Green : Color.Red,
+            BorderStyle = new Style(comparison.IsUpgrade ? Color.Green : Color.Red),
             Header = new PanelHeader("[bold]EQUIPMENT COMPARISON[/]"),
             Padding = new Padding(2, 1)
         };
@@ -891,7 +891,7 @@ public static class UIHelper
 
         // Get all unlocked specializations for this character
         var characterId = character.Name.GetHashCode();
-        var unlockedSpecs = specializationRepo.GetUnlockedForCharacter(characterId);
+        var unlockedSpecs = specializationRepo.GetUnlockedSpecializations(characterId);
 
         if (unlockedSpecs.Count == 0)
         {
@@ -903,8 +903,12 @@ public static class UIHelper
 
         foreach (var spec in unlockedSpecs)
         {
-            // Get learned abilities count
-            var learnedAbilities = abilityService.GetLearnedAbilitiesForSpecialization(character, spec.SpecializationID);
+            // Get learned abilities count - filter by specialization
+            var allLearnedAbilities = abilityService.GetLearnedAbilities(character);
+            var specAbilities = abilityService.GetAbilitiesForSpecialization(spec.SpecializationID).Abilities ?? new List<AbilityData>();
+            var specAbilityIds = specAbilities.Select(a => a.AbilityID).ToHashSet();
+            var learnedAbilities = allLearnedAbilities.Where(ca => specAbilityIds.Contains(ca.AbilityID)).ToList();
+
             var totalAbilities = 9; // All specs have 9 abilities
             var ppSpent = specializationService.GetPPSpentInTree(character, spec.SpecializationID);
 
@@ -955,13 +959,13 @@ public static class UIHelper
             .AddColumn("Cost")
             .AddColumn("Summary");
 
-        foreach (var abilityId in learnedAbilities)
+        foreach (var learnedAbility in learnedAbilities)
         {
-            var result = abilityService.GetAbility(abilityId);
+            var result = abilityService.GetAbility(learnedAbility.AbilityID);
             if (!result.Success || result.Ability == null) continue;
 
             var ability = result.Ability;
-            var rank = abilityService.GetCurrentRank(character, abilityId);
+            var rank = abilityService.GetCurrentRank(character, learnedAbility.AbilityID);
 
             // Type icon
             var typeIcon = ability.AbilityType switch
@@ -1028,7 +1032,7 @@ public static class UIHelper
 
         // Get all unlocked specializations
         var characterId = character.Name.GetHashCode();
-        var unlockedSpecs = specializationRepo.GetUnlockedForCharacter(characterId);
+        var unlockedSpecs = specializationRepo.GetUnlockedSpecializations(characterId);
 
         int totalSpent = 0;
 
@@ -1045,7 +1049,11 @@ public static class UIHelper
         foreach (var spec in unlockedSpecs)
         {
             var ppSpent = specializationService.GetPPSpentInTree(character, spec.SpecializationID);
-            var learnedCount = abilityService.GetLearnedAbilitiesForSpecialization(character, spec.SpecializationID).Count;
+            // Filter learned abilities by specialization
+            var allLearnedAbilities = abilityService.GetLearnedAbilities(character);
+            var specAbilities = abilityService.GetAbilitiesForSpecialization(spec.SpecializationID).Abilities ?? new List<AbilityData>();
+            var specAbilityIds = specAbilities.Select(a => a.AbilityID).ToHashSet();
+            var learnedCount = allLearnedAbilities.Count(ca => specAbilityIds.Contains(ca.AbilityID));
 
             totalSpent += ppSpent;
 

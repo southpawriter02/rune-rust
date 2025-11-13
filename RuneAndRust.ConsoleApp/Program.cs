@@ -837,7 +837,7 @@ class Program
         try
         {
             _gameState.UpdateWorldState();
-            _saveRepository.SaveGame(_gameState.Player, _gameState.WorldState, _gameState.World);
+            _saveRepository.SaveGame(_gameState.Player, _gameState.WorldState, _gameState.World.IsProcedurallyGenerated);
             AnsiConsole.MarkupLine("[dim]Game auto-saved.[/]");
         }
         catch
@@ -921,7 +921,7 @@ class Program
             _gameState.UpdateWorldState();
 
             // Save the game (including equipment and room items - v0.3)
-            _saveRepository.SaveGame(_gameState.Player, _gameState.WorldState, _gameState.World);
+            _saveRepository.SaveGame(_gameState.Player, _gameState.WorldState, _gameState.World.IsProcedurallyGenerated);
 
             AnsiConsole.MarkupLine($"[green]✓ Game saved successfully![/]");
             AnsiConsole.WriteLine();
@@ -2373,7 +2373,7 @@ class Program
             AnsiConsole.MarkupLine($"[green]✓[/] Picked up: [bold]{item.GetDisplayName()}[/]");
 
             // v0.8: Update quest objectives for collected items
-            var questMessages = _gameState.QuestService.OnItemCollected(item.Id, _gameState.Player);
+            var questMessages = _gameState.QuestService.OnItemCollected(item.Name, _gameState.Player);
             foreach (var msg in questMessages)
             {
                 AnsiConsole.MarkupLine($"[yellow]{msg.EscapeMarkup()}[/]");
