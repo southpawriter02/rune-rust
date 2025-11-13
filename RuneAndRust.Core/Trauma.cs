@@ -44,11 +44,7 @@ public class Trauma
                 if (restEffect.RestrictionType == "no_rest_multiple_exits" && room != null)
                 {
                     // Count exits
-                    int exitCount = 0;
-                    if (room.NorthExit != null) exitCount++;
-                    if (room.SouthExit != null) exitCount++;
-                    if (room.EastExit != null) exitCount++;
-                    if (room.WestExit != null) exitCount++;
+                    int exitCount = room.Exits.Count;
 
                     if (exitCount > 1)
                     {
