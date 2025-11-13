@@ -233,7 +233,7 @@ public class DestructionService
     /// </summary>
     public DestructionResult AttemptDestroyTerrain(
         Room room,
-        StaticTerrain terrain,
+        RuneAndRust.Core.StaticTerrain terrain,
         PlayerCharacter player,
         int saveId,
         int turnNumber)
@@ -314,7 +314,7 @@ public class DestructionService
     /// </summary>
     public DestructionResult AttemptDestroyHazard(
         Room room,
-        DynamicHazard hazard,
+        RuneAndRust.Core.DynamicHazard hazard,
         PlayerCharacter player,
         int saveId,
         int turnNumber)
