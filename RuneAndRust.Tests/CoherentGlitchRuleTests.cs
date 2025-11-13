@@ -302,7 +302,7 @@ public class CoherentGlitchRuleTests
 
         // Assert
         var element = context.BiomeElements.GetElement("steam_vent");
-        Assert.AreEqual(0.54f, element.Weight, 0.001f, "Weight should be tripled (0.18 * 3 = 0.54)");
+        Assert.AreEqual(0.54f, element!.Weight, 0.001f, "Weight should be tripled (0.18 * 3 = 0.54)");
     }
 
     [TestMethod]

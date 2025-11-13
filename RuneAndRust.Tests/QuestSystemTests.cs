@@ -241,8 +241,8 @@ public class QuestSystemTests
         var largeQuest = generator.GenerateClearSectorQuest(largeDungeon, dungeonSeed: 2);
 
         // Assert
-        Assert.True(largeQuest.Reward.Experience > smallQuest.Reward.Experience);
-        Assert.True(largeQuest.Reward.Currency > smallQuest.Reward.Currency);
+        Assert.True(largeQuest.Reward!.Experience > smallQuest.Reward!.Experience);
+        Assert.True(largeQuest.Reward!.Currency > smallQuest.Reward!.Currency);
     }
 
     private DungeonGraph CreateTestDungeon(int roomCount = 5)

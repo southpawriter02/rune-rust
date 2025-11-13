@@ -373,7 +373,7 @@ public class SaveLoadTests
 
         // Clear room items and restore
         room.ItemsOnGround.Clear();
-        _repository.RestoreRoomItems(world.Rooms, roomItemsJson);
+        _repository.RestoreRoomItems(world.Rooms, roomItemsJson!);
 
         // Assert
         Assert.That(room.ItemsOnGround.Count, Is.EqualTo(2));
