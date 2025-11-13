@@ -21,7 +21,7 @@ public class DataSeeder
     }
 
     /// <summary>
-    /// Seed all existing specializations (BoneSetter, JotunReader, Skald)
+    /// Seed all existing specializations (BoneSetter, JotunReader, Skald, SkarHordeAspirant)
     /// </summary>
     public void SeedExistingSpecializations()
     {
@@ -30,6 +30,7 @@ public class DataSeeder
         SeedBoneSetterSpecialization();
         SeedJotunReaderSpecialization();
         SeedSkaldSpecialization();
+        SeedSkarHordeAspirantSpecialization();
 
         _log.Information("Specialization data seeding completed successfully");
     }
@@ -785,6 +786,302 @@ public class DataSeeder
             CooldownType = "Per Combat",
             IsActive = true,
             Notes = "Costs 10 Stress when performance ends"
+        });
+    }
+
+    #endregion
+
+    #region SkarHordeAspirant (ID: 10)
+
+    /// <summary>
+    /// v0.19.1: Seeds Skar-Horde Aspirant specialization for Warrior
+    /// Self-destructive melee DPS that trades humanity for devastating armor-bypassing power
+    /// </summary>
+    private void SeedSkarHordeAspirantSpecialization()
+    {
+        _log.Information("Seeding Skar-Horde Aspirant specialization");
+
+        var skarHordeAspirant = new SpecializationData
+        {
+            SpecializationID = 10,
+            Name = "Skar-Horde Aspirant",
+            ArchetypeID = 1, // Warrior
+            PathType = "Heretical",
+            MechanicalRole = "Melee DPS / Armor-Breaker",
+            PrimaryAttribute = "MIGHT",
+            SecondaryAttribute = "",
+            Description = @"The Skar-Horde Aspirant embodies the heretical philosophy of achieving power through savage, willful self-mutilation. You have ritualistically replaced your hand with a modular weapon-stump augment, trading humanity for devastating combat prowess. Build Savagery by fighting in melee, then unleash armor-bypassing attacks that ignore all defenses. Every strike pushes you closer to madness, but power is worth any price. You are no longer human. You are a weapon.",
+            Tagline = "The Warrior Who Bleeds for Power",
+            UnlockRequirements = new UnlockRequirements { MinLegend = 5, MaxCorruption = 100 },
+            ResourceSystem = "Stamina + Savagery",
+            TraumaRisk = "Extreme",
+            IconEmoji = "⚔️",
+            PPCostToUnlock = 3,
+            IsActive = true
+        };
+
+        _specializationRepo.Insert(skarHordeAspirant);
+
+        // Seed all ability tiers
+        SeedSkarHordeTier1();
+        SeedSkarHordeTier2();
+        SeedSkarHordeTier3();
+        SeedSkarHordeCapstone();
+
+        _log.Information("Skar-Horde Aspirant seeding complete: 9 abilities");
+    }
+
+    private void SeedSkarHordeTier1()
+    {
+        // Tier 1 - Ability 1: Heretical Augmentation (Passive)
+        _abilityRepo.Insert(new AbilityData
+        {
+            AbilityID = 1001,
+            SpecializationID = 10,
+            Name = "Heretical Augmentation",
+            Description = "You have performed the ritual of replacement, carving away weakness and grafting brutal functionality. Your hand is gone. Your weapon-stump remains.",
+            MechanicalSummary = "Unlocks [Augmentation] slot (replaces weapon slot). Enables crafting and installing augments at workbenches.",
+            TierLevel = 1,
+            PPCost = 0,
+            MaxRank = 3,
+            CostToRank2 = 20,
+            CostToRank3 = 0, // Capstone rank
+            Prerequisites = new AbilityPrerequisites { RequiredPPInTree = 0 },
+            AbilityType = "Passive",
+            ActionType = "Free Action",
+            TargetType = "Self",
+            ResourceCost = new AbilityResourceCost(),
+            CooldownTurns = 0,
+            CooldownType = "None",
+            IsActive = true,
+            Notes = "Rank 2 (20 PP): Swap augments in 1 action. Rank 3 (Capstone): Augments gain +1 to all damage dice"
+        });
+
+        // Tier 1 - Ability 2: Savage Strike (Active)
+        _abilityRepo.Insert(new AbilityData
+        {
+            AbilityID = 1002,
+            SpecializationID = 10,
+            Name = "Savage Strike",
+            Description = "A brutal, straightforward blow with your augmented stump. Savage. Effective. Yours.",
+            MechanicalSummary = "MIGHT-based melee attack; damage type depends on augment; generates Savagery on hit",
+            TierLevel = 1,
+            PPCost = 0,
+            MaxRank = 3,
+            CostToRank2 = 20,
+            CostToRank3 = 0,
+            Prerequisites = new AbilityPrerequisites { RequiredPPInTree = 0 },
+            AbilityType = "Active",
+            ActionType = "Standard Action",
+            TargetType = "Single Enemy (Melee)",
+            ResourceCost = new AbilityResourceCost { Stamina = 40 },
+            AttributeUsed = "might",
+            BonusDice = 2,
+            SuccessThreshold = 2,
+            DamageDice = 2,
+            CooldownTurns = 0,
+            CooldownType = "None",
+            IsActive = true,
+            Notes = "Rank 1: Generates 15 Savagery. Rank 2 (20 PP): Generates 20 Savagery, costs 35 Stamina. Rank 3: Generates 25 Savagery, apply [Bleeding] on crit"
+        });
+
+        // Tier 1 - Ability 3: Horrific Form (Passive)
+        _abilityRepo.Insert(new AbilityData
+        {
+            AbilityID = 1003,
+            SpecializationID = 10,
+            Name = "Horrific Form",
+            Description = "Your self-mutilation is deeply unsettling. Good. Let them see what you have become.",
+            MechanicalSummary = "Enemies that hit you in melee have chance to become [Feared]",
+            TierLevel = 1,
+            PPCost = 0,
+            MaxRank = 3,
+            CostToRank2 = 20,
+            CostToRank3 = 0,
+            Prerequisites = new AbilityPrerequisites { RequiredPPInTree = 0 },
+            AbilityType = "Passive",
+            ActionType = "Free Action",
+            TargetType = "Self",
+            ResourceCost = new AbilityResourceCost(),
+            StatusEffectsApplied = new List<string> { "Feared" },
+            CooldownTurns = 0,
+            CooldownType = "None",
+            IsActive = true,
+            Notes = "Rank 1: 25% chance to Fear melee attackers for 1 turn. Rank 2 (20 PP): 35% chance, Feared enemies deal -2 damage to you. Rank 3: 50% chance, gain 5 Savagery when enemy becomes Feared"
+        });
+    }
+
+    private void SeedSkarHordeTier2()
+    {
+        // Tier 2 - Ability 4: Grievous Wound (Active)
+        _abilityRepo.Insert(new AbilityData
+        {
+            AbilityID = 1004,
+            SpecializationID = 10,
+            Name = "Grievous Wound",
+            Description = "You carve a wound that armor cannot protect against. A wound that does not close. A wound that reminds them what mortality means.",
+            MechanicalSummary = "Deals Physical damage and applies [Grievous Wound] DoT that bypasses all Soak",
+            TierLevel = 2,
+            PPCost = 4,
+            MaxRank = 3,
+            CostToRank2 = 20,
+            CostToRank3 = 0,
+            Prerequisites = new AbilityPrerequisites { RequiredPPInTree = 8 },
+            AbilityType = "Active",
+            ActionType = "Standard Action",
+            TargetType = "Single Enemy (Melee)",
+            ResourceCost = new AbilityResourceCost { Stamina = 45 },
+            AttributeUsed = "might",
+            BonusDice = 2,
+            SuccessThreshold = 2,
+            DamageDice = 3,
+            IgnoresArmor = false,
+            StatusEffectsApplied = new List<string> { "Grievous Wound" },
+            CooldownTurns = 2,
+            CooldownType = "Per Combat",
+            IsActive = true,
+            Notes = "Rank 1: 3d8 damage + [Grievous Wound] (1d10/turn, bypasses Soak, 3 turns). Rank 2 (20 PP): 4d8 damage, lasts 4 turns. Rank 3: 1d12/turn, refund 20 Savagery if target dies. Requires 30 Savagery"
+        });
+
+        // Tier 2 - Ability 5: Impaling Spike (Active)
+        _abilityRepo.Insert(new AbilityData
+        {
+            AbilityID = 1005,
+            SpecializationID = 10,
+            Name = "Impaling Spike",
+            Description = "You slam your spike through foot, pinning them to the broken earth. They are not going anywhere.",
+            MechanicalSummary = "Deals damage and Roots target; requires Piercing-type augment",
+            TierLevel = 2,
+            PPCost = 4,
+            MaxRank = 3,
+            CostToRank2 = 20,
+            CostToRank3 = 0,
+            Prerequisites = new AbilityPrerequisites { RequiredPPInTree = 8 },
+            AbilityType = "Active",
+            ActionType = "Standard Action",
+            TargetType = "Single Enemy (Melee)",
+            ResourceCost = new AbilityResourceCost { Stamina = 40 },
+            AttributeUsed = "might",
+            BonusDice = 2,
+            SuccessThreshold = 2,
+            DamageDice = 2,
+            StatusEffectsApplied = new List<string> { "Rooted" },
+            CooldownTurns = 3,
+            CooldownType = "Per Combat",
+            IsActive = true,
+            Notes = "Rank 1: 2d10 damage, 75% chance [Rooted] 2 turns. Rank 2 (20 PP): 90% Root chance, 3 turn duration. Rank 3: 100% Root chance, +2 to hit Rooted target. Requires 25 Savagery"
+        });
+
+        // Tier 2 - Ability 6: Pain Fuels Savagery (Passive)
+        _abilityRepo.Insert(new AbilityData
+        {
+            AbilityID = 1006,
+            SpecializationID = 10,
+            Name = "Pain Fuels Savagery",
+            Description = "Every wound is fuel. Every blow against you is a gift. Pain is just another resource.",
+            MechanicalSummary = "Generate Savagery when taking damage",
+            TierLevel = 2,
+            PPCost = 4,
+            MaxRank = 3,
+            CostToRank2 = 20,
+            CostToRank3 = 0,
+            Prerequisites = new AbilityPrerequisites { RequiredPPInTree = 8 },
+            AbilityType = "Passive",
+            ActionType = "Free Action",
+            TargetType = "Self",
+            ResourceCost = new AbilityResourceCost(),
+            CooldownTurns = 0,
+            CooldownType = "None",
+            IsActive = true,
+            Notes = "Rank 1: Generate Savagery = 10% of damage taken (max 20/hit). Rank 2 (20 PP): 15% of damage (max 25/hit). Rank 3: 20% of damage (max 30/hit), gain +1 Soak per 25 Savagery"
+        });
+    }
+
+    private void SeedSkarHordeTier3()
+    {
+        // Tier 3 - Ability 7: Overcharged Piston Slam (Active)
+        _abilityRepo.Insert(new AbilityData
+        {
+            AbilityID = 1007,
+            SpecializationID = 10,
+            Name = "Overcharged Piston Slam",
+            Description = "Superheated steam vents. Pistons compress. And then—impact. A concussive blast that reduces bone to powder.",
+            MechanicalSummary = "Massive damage + Stun; requires Blunt-type augment",
+            TierLevel = 3,
+            PPCost = 5,
+            MaxRank = 3,
+            CostToRank2 = 20,
+            CostToRank3 = 0,
+            Prerequisites = new AbilityPrerequisites { RequiredPPInTree = 16 },
+            AbilityType = "Active",
+            ActionType = "Standard Action",
+            TargetType = "Single Enemy (Melee)",
+            ResourceCost = new AbilityResourceCost { Stamina = 55 },
+            AttributeUsed = "might",
+            BonusDice = 3,
+            SuccessThreshold = 2,
+            DamageDice = 6,
+            StatusEffectsApplied = new List<string> { "Stunned" },
+            CooldownTurns = 4,
+            CooldownType = "Per Combat",
+            IsActive = true,
+            Notes = "Rank 1: 6d10 damage, 60% chance [Stunned] 1 turn. Rank 2 (20 PP): 7d10 damage, 75% Stun chance. Rank 3: 100% Stun, next attack deals double damage. Requires 40 Savagery"
+        });
+
+        // Tier 3 - Ability 8: The Price of Power (Passive)
+        _abilityRepo.Insert(new AbilityData
+        {
+            AbilityID = 1008,
+            SpecializationID = 10,
+            Name = "The Price of Power",
+            Description = "The rush of transhuman power is intoxicating. The whispers in your mind grow louder. You do not care. Power is worth any price.",
+            MechanicalSummary = "Massively increased Savagery generation, but gain Psychic Stress when generating Savagery",
+            TierLevel = 3,
+            PPCost = 5,
+            MaxRank = 3,
+            CostToRank2 = 20,
+            CostToRank3 = 0,
+            Prerequisites = new AbilityPrerequisites { RequiredPPInTree = 16 },
+            AbilityType = "Passive",
+            ActionType = "Free Action",
+            TargetType = "Self",
+            ResourceCost = new AbilityResourceCost(),
+            CooldownTurns = 0,
+            CooldownType = "None",
+            IsActive = true,
+            Notes = "Rank 1: +50% Savagery generation, gain 1 Stress per 10 Savagery generated. Rank 2 (20 PP): +75% Savagery generation. Rank 3: +100% Savagery (double), 1 Stress per 15 Savagery"
+        });
+    }
+
+    private void SeedSkarHordeCapstone()
+    {
+        // Capstone - Ability 9: Monstrous Apotheosis (Active)
+        _abilityRepo.Insert(new AbilityData
+        {
+            AbilityID = 1009,
+            SpecializationID = 10,
+            Name = "Monstrous Apotheosis",
+            Description = "You give in completely. The whispers become a roar. Your augment screams with power. You are no longer human. You are a weapon. You are inevitable.",
+            MechanicalSummary = "Enter [Apotheosis] state: free Savage Strikes, enhanced Grievous Wound, immune to Fear/Stun, massive Stress penalty after",
+            TierLevel = 4,
+            PPCost = 6,
+            MaxRank = 3,
+            CostToRank2 = 20,
+            CostToRank3 = 0,
+            Prerequisites = new AbilityPrerequisites
+            {
+                RequiredPPInTree = 24,
+                RequiredAbilityIDs = new List<int> { 1007, 1008 }
+            },
+            AbilityType = "Active",
+            ActionType = "Bonus Action",
+            TargetType = "Self",
+            ResourceCost = new AbilityResourceCost { Stamina = 20 },
+            StatusEffectsApplied = new List<string> { "Apotheosis" },
+            CooldownTurns = 999,
+            CooldownType = "Once Per Combat",
+            IsActive = true,
+            Notes = "Rank 1: 3 turns: Savage Strike costs 0, Grievous Wound applies [Bleeding], immune Fear/Stun, 30 Stress after. Rank 2 (20 PP): 4 turn duration, 25 Stress penalty. Rank 3: +25% all damage, 20 Stress, can end early to avoid penalty. Requires 75 Savagery"
         });
     }
 
