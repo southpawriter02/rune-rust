@@ -65,7 +65,7 @@ public class HazardSpawner
             if (hazard != null)
             {
                 room.DynamicHazards.Add(hazard);
-                _log.Debug("Spawned hazard {HazardName} in room {RoomId}", hazard.Name, room.RoomId);
+                _log.Debug("Spawned hazard {HazardName} in room {RoomId}", hazard.HazardName, room.RoomId);
             }
 
             // Remove from pool to avoid duplicates (optional - could allow multiple)

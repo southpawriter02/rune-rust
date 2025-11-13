@@ -2,6 +2,7 @@ using RuneAndRust.Core;
 using RuneAndRust.Core.Population;
 using Serilog;
 using AmbientCondition = RuneAndRust.Core.Population.AmbientCondition;
+using DynamicHazard = RuneAndRust.Core.Population.DynamicHazard;
 
 namespace RuneAndRust.Engine;
 
@@ -73,7 +74,7 @@ public class ConditionApplier
             if (condition != null)
             {
                 room.AmbientConditions.Add(condition);
-                _log.Debug("Applied condition {ConditionName} to room {RoomId}", condition.Name, room.RoomId);
+                _log.Debug("Applied condition {ConditionName} to room {RoomId}", condition.ConditionName, room.RoomId);
 
                 // Apply Coherent Glitch interactions
                 ApplyCoherentGlitchInteractions(room, condition);
