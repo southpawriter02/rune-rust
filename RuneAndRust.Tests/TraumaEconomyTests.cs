@@ -1,7 +1,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using RuneAndRust.Core;
 using RuneAndRust.Engine;
-using Population = RuneAndRust.Core.Population;
+using RuneAndRust.Core.Population;
 
 namespace RuneAndRust.Tests;
 

@@ -56,8 +56,7 @@ public class CombatLegendTests
                 Name = "Corrupted Servitor",
                 BaseLegendValue = 10,
                 HP = 0, // Defeated
-                MaxHP = 15,
-                HP = 0
+                MaxHP = 15
             }
         };
 
@@ -82,8 +81,7 @@ public class CombatLegendTests
                 Name = "Blight-Drone",
                 BaseLegendValue = 25,
                 HP = 0,
-                MaxHP = 25,
-                HP = 0
+                MaxHP = 25
             }
         };
 
@@ -109,7 +107,6 @@ public class CombatLegendTests
                 BaseLegendValue = 100,
                 HP = 0,
                 MaxHP = 80,
-                HP = 0,
                 IsBoss = true
             }
         };
@@ -216,7 +213,6 @@ public class CombatLegendTests
                 BaseLegendValue = 10,
                 HP = 1,
                 MaxHP = 15,
-                IsAlive = true,
                 Attributes = new Attributes(2, 2, 0, 0, 2)
             }
         };

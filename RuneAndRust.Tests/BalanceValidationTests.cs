@@ -3,7 +3,7 @@ using RuneAndRust.Core;
 using RuneAndRust.Engine;
 using RuneAndRust.Engine.Telemetry;
 using RuneAndRust.Engine.CoherentGlitch;
-using Population = RuneAndRust.Core.Population;
+using RuneAndRust.Core.Population;
 
 namespace RuneAndRust.Tests;
 

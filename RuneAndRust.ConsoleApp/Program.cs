@@ -3068,7 +3068,7 @@ class Program
     }
 
     // v0.13: Helper methods for destruction system
-    private static StaticTerrain? FindTerrainByName(Room room, string target)
+    private static Population.StaticTerrain? FindTerrainByName(Room room, string target)
     {
         var normalized = target.ToLower().Trim();
 
@@ -3078,7 +3078,7 @@ class Program
             normalized.Contains(t.Type.ToString().ToLower()));
     }
 
-    private static DynamicHazard? FindHazardByName(Room room, string target)
+    private static Population.DynamicHazard? FindHazardByName(Room room, string target)
     {
         var normalized = target.ToLower().Trim();
 

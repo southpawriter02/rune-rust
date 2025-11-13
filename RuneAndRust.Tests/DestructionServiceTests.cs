@@ -1,9 +1,9 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using RuneAndRust.Core;
+using RuneAndRust.Core.Population;
 using RuneAndRust.Engine;
 using RuneAndRust.Persistence;
 using System.Text.Json;
-using Population = RuneAndRust.Core.Population;
 
 namespace RuneAndRust.Tests;
 
@@ -323,7 +323,7 @@ public class DestructionServiceTests
         return new PlayerCharacter
         {
             Name = "Test Player",
-            Class = CharacterClass.IronBane,
+            Class = CharacterClass.Warrior,
             Attributes = new Attributes(might, 2, 2, 2, 3),
             HP = 20,
             MaxHP = 20,
