@@ -1,6 +1,7 @@
 using RuneAndRust.Core;
 using RuneAndRust.Core.Population;
 using Serilog;
+using LootNode = RuneAndRust.Core.Population.LootNode;
 
 namespace RuneAndRust.Engine;
 

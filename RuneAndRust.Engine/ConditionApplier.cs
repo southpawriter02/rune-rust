@@ -1,6 +1,7 @@
 using RuneAndRust.Core;
 using RuneAndRust.Core.Population;
 using Serilog;
+using AmbientCondition = RuneAndRust.Core.Population.AmbientCondition;
 
 namespace RuneAndRust.Engine;
 

@@ -1,6 +1,8 @@
 using RuneAndRust.Core;
 using RuneAndRust.Core.Population;
 using Serilog;
+using StaticTerrain = RuneAndRust.Core.Population.StaticTerrain;
+using DynamicHazard = RuneAndRust.Core.Population.DynamicHazard;
 
 namespace RuneAndRust.Engine;
 
