@@ -1,6 +1,8 @@
 using RuneAndRust.Core;
 using RuneAndRust.Core.Population;
 using Serilog;
+using DynamicHazard = RuneAndRust.Core.Population.DynamicHazard;
+using AmbientCondition = RuneAndRust.Core.Population.AmbientCondition;
 
 namespace RuneAndRust.Engine;
 
