@@ -31,6 +31,7 @@ public class DataSeeder
         SeedJotunReaderSpecialization();
         SeedSkaldSpecialization();
         SeedSkarHordeAspirantSpecialization();
+        SeedIronBaneSpecialization();
 
         _log.Information("Specialization data seeding completed successfully");
     }
@@ -1082,6 +1083,313 @@ public class DataSeeder
             CooldownType = "Once Per Combat",
             IsActive = true,
             Notes = "Rank 1: 3 turns: Savage Strike costs 0, Grievous Wound applies [Bleeding], immune Fear/Stun, 30 Stress after. Rank 2 (20 PP): 4 turn duration, 25 Stress penalty. Rank 3: +25% all damage, 20 Stress, can end early to avoid penalty. Requires 75 Savagery"
+        });
+    }
+
+    #endregion
+
+    #region Iron-Bane (ID: 11)
+
+    /// <summary>
+    /// v0.19.2: Seeds Iron-Bane specialization for Warrior
+    /// Zealous purifier who destroys corrupted machines and Undying with knowledge and holy fire
+    /// </summary>
+    private void SeedIronBaneSpecialization()
+    {
+        _log.Information("Seeding Iron-Bane specialization");
+
+        var ironBane = new SpecializationData
+        {
+            SpecializationID = 11,
+            Name = "Iron-Bane",
+            ArchetypeID = 1, // Warrior
+            PathType = "Coherent",
+            MechanicalRole = "Anti-Mechanical Specialist / Controller",
+            PrimaryAttribute = "WILL",
+            SecondaryAttribute = "MIGHT",
+            Description = @"You are a warrior-scholar who has studied the Undying and their mechanical corruption. Where others see invincible foes, you see exploitable weaknesses in their code. You wield flame and faith to purge the abominations, using your knowledge of pre-Glitch technology to identify and destroy critical systems.
+
+            You are the debugger, the antivirus, the purifier who turns the Blight's own corrupted machinery against itself. Through study and conviction, you have become the deadliest weapon against the mechanical horrors that plague the world.
+
+            Your power comes not from brute force, but from understanding. Every Undying weakness memorized. Every mechanical schematic analyzed. Every corrupted system waiting to be shut down.",
+            Tagline = "Knowledge is the Deadliest Weapon",
+            UnlockRequirements = new UnlockRequirements { MinLegend = 3, RequiredAttribute = "WILL", RequiredAttributeValue = 3 },
+            ResourceSystem = "Stamina + Righteous Fervor",
+            TraumaRisk = "Low",
+            IconEmoji = "🔥",
+            PPCostToUnlock = 3,
+            IsActive = true
+        };
+
+        _specializationRepo.Insert(ironBane);
+
+        // Seed all ability tiers
+        SeedIronBaneTier1();
+        SeedIronBaneTier2();
+        SeedIronBaneTier3();
+        SeedIronBaneCapstone();
+
+        _log.Information("Iron-Bane seeding complete: 9 abilities");
+    }
+
+    private void SeedIronBaneTier1()
+    {
+        // Tier 1 - Ability 1: Scholar of Corruption (Passive)
+        _abilityRepo.Insert(new AbilityData
+        {
+            AbilityID = 1101,
+            SpecializationID = 11,
+            Name = "Scholar of Corruption",
+            Description = "You have studied the schematics of the Undying, memorized their corrupted code. Where others see invincible foes, you see exploitable bugs.",
+            MechanicalSummary = "Observe enemies to reveal type, resistances, and vulnerabilities; auto-observe at combat start",
+            TierLevel = 1,
+            PPCost = 0,
+            MaxRank = 3,
+            CostToRank2 = 20,
+            CostToRank3 = 0,
+            Prerequisites = new AbilityPrerequisites { RequiredPPInTree = 0 },
+            AbilityType = "Passive",
+            ActionType = "Free Action",
+            TargetType = "Single Enemy",
+            ResourceCost = new AbilityResourceCost(),
+            CooldownTurns = 0,
+            CooldownType = "None",
+            IsActive = true,
+            Notes = "Rank 1: Observe enemy (Free Action) reveals type, resistances, vulnerabilities. Mechanical/Undying reveal 1 extra weakness. Rank 2 (20 PP): Observing grants 10 Fervor. Auto-observe all enemies at combat start. Rank 3: See enemy HP values. Mechanical/Undying below 30% HP marked [Critical Failure] (guaranteed crit)"
+        });
+
+        // Tier 1 - Ability 2: Purifying Flame (Active)
+        _abilityRepo.Insert(new AbilityData
+        {
+            AbilityID = 1102,
+            SpecializationID = 11,
+            Name = "Purifying Flame",
+            Description = "Holy fire cleanses corrupted iron. Your flame burns hotter against the abominations.",
+            MechanicalSummary = "WILL-based Fire attack with massive bonus damage vs Mechanical/Undying; generates Righteous Fervor",
+            TierLevel = 1,
+            PPCost = 0,
+            MaxRank = 3,
+            CostToRank2 = 20,
+            CostToRank3 = 0,
+            Prerequisites = new AbilityPrerequisites { RequiredPPInTree = 0 },
+            AbilityType = "Active",
+            ActionType = "Standard Action",
+            TargetType = "Single Enemy",
+            ResourceCost = new AbilityResourceCost { Stamina = 35 },
+            AttributeUsed = "will",
+            BonusDice = 2,
+            SuccessThreshold = 2,
+            DamageDice = 2,
+            DamageType = "Fire",
+            CooldownTurns = 0,
+            CooldownType = "None",
+            IsActive = true,
+            Notes = "Rank 1: 2d8 Fire damage. Vs Mechanical/Undying: +2d6 damage, generate 15 Fervor. Rank 2 (20 PP): +3d6 vs targets, generate 20 Fervor, costs 30 Stamina. Rank 3: +4d6 vs targets, generate 25 Fervor, apply [Burning] 1d6/turn for 3 turns"
+        });
+
+        // Tier 1 - Ability 3: Weakness Exploiter (Passive)
+        _abilityRepo.Insert(new AbilityData
+        {
+            AbilityID = 1103,
+            SpecializationID = 11,
+            Name = "Weakness Exploiter",
+            Description = "Every system has a flaw. Every machine has a breaking point. You know exactly where to strike.",
+            MechanicalSummary = "Massive damage bonus against enemies identified by Scholar of Corruption",
+            TierLevel = 1,
+            PPCost = 0,
+            MaxRank = 3,
+            CostToRank2 = 20,
+            CostToRank3 = 0,
+            Prerequisites = new AbilityPrerequisites { RequiredPPInTree = 0 },
+            AbilityType = "Passive",
+            ActionType = "Free Action",
+            TargetType = "Self",
+            ResourceCost = new AbilityResourceCost(),
+            CooldownTurns = 0,
+            CooldownType = "None",
+            IsActive = true,
+            Notes = "Rank 1: +25% damage vs enemies identified by Scholar of Corruption. Rank 2 (20 PP): +35% damage, +1 to hit. Rank 3: +50% damage. Critical hits deal triple damage instead of double"
+        });
+    }
+
+    private void SeedIronBaneTier2()
+    {
+        // Tier 2 - Ability 4: System Shutdown (Active)
+        _abilityRepo.Insert(new AbilityData
+        {
+            AbilityID = 1104,
+            SpecializationID = 11,
+            Name = "System Shutdown",
+            Description = "You strike at the central processor, the corrupted core. Their systems crash. They stand frozen, helpless.",
+            MechanicalSummary = "Fire damage with Stun effect; only affects Mechanical/Undying enemies",
+            TierLevel = 2,
+            PPCost = 4,
+            MaxRank = 3,
+            CostToRank2 = 20,
+            CostToRank3 = 0,
+            Prerequisites = new AbilityPrerequisites { RequiredPPInTree = 8 },
+            AbilityType = "Active",
+            ActionType = "Standard Action",
+            TargetType = "Single Enemy (Mechanical/Undying)",
+            ResourceCost = new AbilityResourceCost { Stamina = 40 },
+            AttributeUsed = "will",
+            BonusDice = 3,
+            SuccessThreshold = 2,
+            DamageDice = 3,
+            DamageType = "Fire",
+            StatusEffectsApplied = new List<string> { "Stunned" },
+            CooldownTurns = 3,
+            CooldownType = "Per Combat",
+            IsActive = true,
+            Notes = "Rank 1: 3d10 Fire damage. WILL save DC 15 or [Stunned] 2 turns. Only affects Mechanical/Undying. Requires 30 Fervor. Rank 2 (20 PP): 4d10 damage, DC 17. Failed save also gives -3 to all actions for rest of combat. Rank 3: 5d10 damage, 3 turn Stun. Failed save adds [System Malfunction] (30% skip turn each round)"
+        });
+
+        // Tier 2 - Ability 5: Critical Strike (Active)
+        _abilityRepo.Insert(new AbilityData
+        {
+            AbilityID = 1105,
+            SpecializationID = 11,
+            Name = "Critical Strike",
+            Description = "You've identified the critical failure point. One precise strike and their entire system collapses.",
+            MechanicalSummary = "Guaranteed critical hit vs Mechanical/Undying with execute at low HP",
+            TierLevel = 2,
+            PPCost = 4,
+            MaxRank = 3,
+            CostToRank2 = 20,
+            CostToRank3 = 0,
+            Prerequisites = new AbilityPrerequisites { RequiredPPInTree = 8 },
+            AbilityType = "Active",
+            ActionType = "Standard Action",
+            TargetType = "Single Enemy (Mechanical/Undying)",
+            ResourceCost = new AbilityResourceCost { Stamina = 45 },
+            AttributeUsed = "will",
+            BonusDice = 4,
+            SuccessThreshold = 2,
+            DamageDice = 4,
+            DamageType = "Fire",
+            CooldownTurns = 4,
+            CooldownType = "Per Combat",
+            IsActive = true,
+            Notes = "Rank 1: Guaranteed crit vs Mechanical/Undying. 4d8 Fire + Weakness Exploiter bonuses. Requires 25 Fervor. Rank 2 (20 PP): 5d8 damage. Vs Mechanical/Undying: target loses 1 action next turn. Rank 3: 6d8 damage. Vs Mechanical/Undying below 40% HP: instant death (execute)"
+        });
+
+        // Tier 2 - Ability 6: Flame Ward (Passive)
+        _abilityRepo.Insert(new AbilityData
+        {
+            AbilityID = 1106,
+            SpecializationID = 11,
+            Name = "Flame Ward",
+            Description = "You are wreathed in holy flame. The corrupted dare not touch you. Those who try burn.",
+            MechanicalSummary = "Fire resistance and retaliation damage against melee attackers",
+            TierLevel = 2,
+            PPCost = 4,
+            MaxRank = 3,
+            CostToRank2 = 20,
+            CostToRank3 = 0,
+            Prerequisites = new AbilityPrerequisites { RequiredPPInTree = 8 },
+            AbilityType = "Passive",
+            ActionType = "Free Action",
+            TargetType = "Self",
+            ResourceCost = new AbilityResourceCost(),
+            DamageType = "Fire",
+            CooldownTurns = 0,
+            CooldownType = "None",
+            IsActive = true,
+            Notes = "Rank 1: 50% Fire resistance. Mechanical/Undying melee attackers take 1d6 Fire damage. Rank 2 (20 PP): 75% Fire resistance. 1d8 retaliation. +2 Soak vs Mechanical/Undying attacks. Rank 3: Fire immunity. 1d10 retaliation. Generate 10 Fervor when hit by Mechanical/Undying"
+        });
+    }
+
+    private void SeedIronBaneTier3()
+    {
+        // Tier 3 - Ability 7: Purging Flame (Active)
+        _abilityRepo.Insert(new AbilityData
+        {
+            AbilityID = 1107,
+            SpecializationID = 11,
+            Name = "Purging Flame",
+            Description = "A wave of cleansing fire washes over the battlefield. Corrupted metal screams as it melts.",
+            MechanicalSummary = "AoE Fire attack that devastates Mechanical/Undying enemies with persistent Burning",
+            TierLevel = 3,
+            PPCost = 5,
+            MaxRank = 3,
+            CostToRank2 = 20,
+            CostToRank3 = 0,
+            Prerequisites = new AbilityPrerequisites { RequiredPPInTree = 16 },
+            AbilityType = "Active",
+            ActionType = "Standard Action",
+            TargetType = "All Enemies (Front Row)",
+            ResourceCost = new AbilityResourceCost { Stamina = 55 },
+            AttributeUsed = "will",
+            BonusDice = 4,
+            SuccessThreshold = 2,
+            DamageDice = 4,
+            DamageType = "Fire",
+            StatusEffectsApplied = new List<string> { "Burning" },
+            CooldownTurns = 5,
+            CooldownType = "Per Combat",
+            IsActive = true,
+            Notes = "Rank 1: 4d8 Fire to all. Mechanical/Undying take double, [Burning] 2d6/turn for 3 turns. Requires 40 Fervor. Rank 2 (20 PP): 5d8 damage. Burning lasts 4 turns, cannot be cleansed from Mechanical/Undying. Rank 3: 6d8 damage. Mechanical/Undying also [Vulnerable] +50% damage taken for 2 turns"
+        });
+
+        // Tier 3 - Ability 8: Righteous Conviction (Passive)
+        _abilityRepo.Insert(new AbilityData
+        {
+            AbilityID = 1108,
+            SpecializationID = 11,
+            Name = "Righteous Conviction",
+            Description = "Your faith is unshakeable. Your purpose is clear. The corrupted will fall.",
+            MechanicalSummary = "Massively increased Fervor generation and near-perfect accuracy vs Mechanical/Undying",
+            TierLevel = 3,
+            PPCost = 5,
+            MaxRank = 3,
+            CostToRank2 = 20,
+            CostToRank3 = 0,
+            Prerequisites = new AbilityPrerequisites { RequiredPPInTree = 16 },
+            AbilityType = "Passive",
+            ActionType = "Free Action",
+            TargetType = "Self",
+            ResourceCost = new AbilityResourceCost(),
+            CooldownTurns = 0,
+            CooldownType = "None",
+            IsActive = true,
+            Notes = "Rank 1: +50% Righteous Fervor generation. +2 WILL vs Psychic/Corruption saves. Rank 2 (20 PP): +75% Fervor. +3 WILL. Attacks vs Mechanical/Undying cannot miss (95% min hit chance). Rank 3: +100% Fervor (double). +5 WILL. Defeating Mechanical/Undying refunds 50% ability costs"
+        });
+    }
+
+    private void SeedIronBaneCapstone()
+    {
+        // Capstone - Ability 9: Divine Purge (Active)
+        _abilityRepo.Insert(new AbilityData
+        {
+            AbilityID = 1109,
+            SpecializationID = 11,
+            Name = "Divine Purge",
+            Description = "You channel every lesson, every moment of study, into one perfect strike. This is not combat. This is deletion.",
+            MechanicalSummary = "Ultimate purge that can instantly destroy Mechanical/Undying enemies; spreads fear and destruction",
+            TierLevel = 4,
+            PPCost = 6,
+            MaxRank = 3,
+            CostToRank2 = 20,
+            CostToRank3 = 0,
+            Prerequisites = new AbilityPrerequisites
+            {
+                RequiredPPInTree = 24,
+                RequiredAbilityIDs = new List<int> { 1107, 1108 }
+            },
+            AbilityType = "Active",
+            ActionType = "Standard Action",
+            TargetType = "Single Enemy (Mechanical/Undying)",
+            ResourceCost = new AbilityResourceCost { Stamina = 60 },
+            AttributeUsed = "will",
+            BonusDice = 5,
+            SuccessThreshold = 3,
+            DamageDice = 10,
+            DamageType = "Fire",
+            StatusEffectsApplied = new List<string> { "Feared" },
+            CooldownTurns = 999,
+            CooldownType = "Once Per Combat",
+            IsActive = true,
+            Notes = "Rank 1: 10d10 Fire. WILL DC 18 or instant death. On save: double damage + Stun 2 turns. Requires 75 Fervor. Rank 2 (20 PP): 12d10, DC 20. Destroyed enemies explode for 6d6 Fire AoE. Rank 3: 15d10, DC 22. Success still death (but gets death save). Destroy causes Fear on all Mechanical/Undying 3 turns"
         });
     }
 
