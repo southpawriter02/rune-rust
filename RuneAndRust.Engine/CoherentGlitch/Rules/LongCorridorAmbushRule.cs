@@ -54,6 +54,6 @@ public class LongCorridorAmbushRule : CoherentGlitchRule
 
         _log.Information("Coherent Glitch Rule applied: LongCorridorAmbush, " +
             "Room={RoomId}, EnemiesRepositioned={Count}",
-            room.RoomId, /* room.Enemies /* DormantProcesses removed, using Enemies */.Count removed */ 0);
+            room.RoomId, room.Enemies.Count);
     }
 }
