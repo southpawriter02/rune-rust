@@ -49,7 +49,7 @@ public class UnlockRequirements
         // Check quest requirement
         if (!string.IsNullOrEmpty(RequiredQuestID))
         {
-            if (!character.CompletedQuests.Any(q => q.QuestID.Equals(RequiredQuestID, StringComparison.OrdinalIgnoreCase)))
+            if (!character.CompletedQuests.Any(q => q.Id.Equals(RequiredQuestID, StringComparison.OrdinalIgnoreCase)))
                 return false;
         }
 
@@ -74,7 +74,7 @@ public class UnlockRequirements
 
         if (!string.IsNullOrEmpty(RequiredQuestID))
         {
-            if (!character.CompletedQuests.Any(q => q.QuestID.Equals(RequiredQuestID, StringComparison.OrdinalIgnoreCase)))
+            if (!character.CompletedQuests.Any(q => q.Id.Equals(RequiredQuestID, StringComparison.OrdinalIgnoreCase)))
                 unmet.Add($"Requires completion of quest: {RequiredQuestID}");
         }
 
