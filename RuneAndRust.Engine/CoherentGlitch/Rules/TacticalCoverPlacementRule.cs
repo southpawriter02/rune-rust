@@ -19,7 +19,8 @@ public class TacticalCoverPlacementRule : CoherentGlitchRule
 
     public override bool ShouldApply(Room room, PopulationContext context)
     {
-        return false /* room.Enemies /* DormantProcesses removed, using Enemies */ removed in v0.11 */;
+        // DormantProcesses removed - check if room has enemies
+        return room.Enemies.Any();
     }
 
     public override void Apply(Room room, PopulationContext context)
