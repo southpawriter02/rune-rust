@@ -79,6 +79,6 @@ public class Room
     // Helper methods
     public bool HasAmbientCondition(string conditionName)
     {
-        return AmbientConditions.Any(c => c.Name.Contains(conditionName.Trim('[', ']'), StringComparison.OrdinalIgnoreCase));
+        return AmbientConditions.Any(c => c.ConditionName.Contains(conditionName.Trim('[', ']'), StringComparison.OrdinalIgnoreCase));
     }
 }
