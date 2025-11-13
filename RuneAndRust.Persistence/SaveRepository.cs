@@ -1,6 +1,5 @@
 using Microsoft.Data.Sqlite;
 using RuneAndRust.Core;
-using RuneAndRust.Engine;
 using System.Text.Json;
 using Serilog;
 
@@ -247,14 +246,14 @@ public class SaveRepository
         _log.Information("Specialization system tables created successfully");
     }
 
-    public void SaveGame(PlayerCharacter player, WorldState worldState, GameWorld? world = null)
+    public void SaveGame(PlayerCharacter player, WorldState worldState, bool isProcedurallyGenerated = false)
     {
-        var roomIdentifier = world?.IsProcedurallyGenerated == true
+        var roomIdentifier = isProcedurallyGenerated
             ? worldState.CurrentRoomStringId ?? "unknown"
             : worldState.CurrentRoomId.ToString();
 
         _log.Information("Saving game: Character={CharacterName}, Class={Class}, Milestone={Milestone}, Room={RoomId}, Procedural={IsProc}",
-            player.Name, player.Class, player.CurrentMilestone, roomIdentifier, world?.IsProcedurallyGenerated ?? false);
+            player.Name, player.Class, player.CurrentMilestone, roomIdentifier, isProcedurallyGenerated);
 
         var startTime = DateTime.Now;
 
@@ -841,7 +840,7 @@ public class SaveRepository
     /// <summary>
     /// Restore room items from save data (v0.3, v0.10: supports procedural dungeons)
     /// </summary>
-    public void RestoreRoomItems(GameWorld world, string roomItemsJson)
+    public void RestoreRoomItems(Dictionary<string, Room> rooms, string roomItemsJson)
     {
         if (string.IsNullOrEmpty(roomItemsJson) || roomItemsJson == "{}")
         {
@@ -863,7 +862,7 @@ public class SaveRepository
 
                 // For legacy handcrafted worlds, find room by integer ID
                 // For procedural worlds, this won't work (procedural rooms use string IDs)
-                var room = world.Rooms.Values.FirstOrDefault(r => r.Id == roomId);
+                var room = rooms.Values.FirstOrDefault(r => r.Id == roomId);
                 if (room != null)
                 {
                     room.ItemsOnGround.Clear();
@@ -889,7 +888,7 @@ public class SaveRepository
     /// <summary>
     /// Restore NPC states from save data (v0.8)
     /// </summary>
-    public void RestoreNPCStates(GameWorld world, string npcStatesJson)
+    public void RestoreNPCStates(Dictionary<string, Room> rooms, string npcStatesJson)
     {
         if (string.IsNullOrEmpty(npcStatesJson) || npcStatesJson == "[]")
         {
@@ -903,7 +902,7 @@ public class SaveRepository
             if (savedNPCs == null) return;
 
             // Clear all NPCs from all rooms first
-            foreach (var room in world.Rooms.Values)
+            foreach (var room in rooms.Values)
             {
                 room.NPCs.Clear();
             }
@@ -911,7 +910,7 @@ public class SaveRepository
             // Restore NPCs to their rooms with saved state
             foreach (var npc in savedNPCs)
             {
-                var room = world.Rooms.Values.FirstOrDefault(r => r.Id == npc.RoomId);
+                var room = rooms.Values.FirstOrDefault(r => r.Id == npc.RoomId);
                 if (room != null)
                 {
                     room.NPCs.Add(npc);
