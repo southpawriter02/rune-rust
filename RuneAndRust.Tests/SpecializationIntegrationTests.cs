@@ -242,16 +242,64 @@ public class SpecializationIntegrationTests
     }
 
     [Test]
+    public void Validation_SkarHordeAspirant_PassesAllRules()
+    {
+        // Act
+        var result = _validator.ValidateSpecialization(10); // Skar Horde Aspirant
+
+        // Assert
+        Assert.That(result.IsValid, Is.True,
+            $"Skar Horde Aspirant validation failed:\n{result.GetSummary()}");
+    }
+
+    [Test]
+    public void Validation_IronBane_PassesAllRules()
+    {
+        // Act
+        var result = _validator.ValidateSpecialization(11); // Iron-Bane
+
+        // Assert
+        Assert.That(result.IsValid, Is.True,
+            $"Iron-Bane validation failed:\n{result.GetSummary()}");
+    }
+
+    [Test]
+    public void Validation_AtgeirWielder_PassesAllRules()
+    {
+        // Act
+        var result = _validator.ValidateSpecialization(12); // Atgeir-wielder
+
+        // Assert
+        Assert.That(result.IsValid, Is.True,
+            $"Atgeir-wielder validation failed:\n{result.GetSummary()}");
+    }
+
+    [Test]
+    public void Validation_ScrapTinker_PassesAllRules()
+    {
+        // Act
+        var result = _validator.ValidateSpecialization(14); // Scrap-Tinker
+
+        // Assert
+        Assert.That(result.IsValid, Is.True,
+            $"Scrap-Tinker validation failed:\n{result.GetSummary()}");
+    }
+
+    [Test]
     public void Validation_GenerateReport_ContainsAllSpecializations()
     {
         // Act
         var report = _validator.GenerateValidationReport();
 
         // Assert
-        Assert.That(report, Does.Contain("Total Specializations: 3"));
+        Assert.That(report, Does.Contain("Total Specializations: 7"));
         Assert.That(report, Does.Contain("Bone-Setter"));
         Assert.That(report, Does.Contain("Jötun-Reader"));
         Assert.That(report, Does.Contain("Skald"));
+        Assert.That(report, Does.Contain("Skar Horde Aspirant"));
+        Assert.That(report, Does.Contain("Iron-Bane"));
+        Assert.That(report, Does.Contain("Atgeir-wielder"));
+        Assert.That(report, Does.Contain("Scrap-Tinker"));
 
         TestContext.WriteLine(report);
     }

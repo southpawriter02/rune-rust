@@ -7,115 +7,100 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [0.19.4] - 2025-11-13 - Bone-Setter Specialization Update
+## [0.19.5] - 2025-11-13 - Scrap-Tinker Specialization
 
-### Updated
+### Added
 
-#### Bone-Setter Specialization (Restorer of Coherence)
+#### New Specialization: Scrap-Tinker (Master Artificer)
 - **Archetype:** Adept
 - **Path Type:** Coherent
-- **Mechanical Role:** Healer / Sanity Anchor
+- **Mechanical Role:** Crafter / Pet Controller
 - **Primary Attribute:** WITS
 - **Secondary Attribute:** FINESSE
-- **Resource System:** Stamina + Consumable Items
+- **Resource System:** Stamina + Scrap Materials
 - **Trauma Risk:** None
 - **Unlock Requirements:** Legend 3+
-- **Icon:** ⚕️
+- **Icon:** 🔧
 
-#### Core Philosophy: The Pragmatic Healer
-The Bone-Setter is a non-magical combat medic who refuses to rely on magic. All healing uses crafted consumables (potions, poultices, antidotes). They're preparation-dependent: effectiveness requires downtime crafting. They heal both HP and Psychic Stress, making them dual-purpose. WITS primary means they're an intelligent, analytical healer who understands anatomy and psychology.
+#### Core Mechanics
+- **Scrap Material Economy:** Track and manage Scrap Materials for crafting
+- **Gadget Crafting:** Create Flash Bombs, Shock Mines, Repair Kits at workbenches
+- **Quality System:** Masterwork and Prototype quality rolls for superior gadgets
+- **Weapon Modifications:** Permanent enhancements to ally weapons (Elemental, Precision, Reinforced)
+- **Pet System:** Deploy Scout Drone and Scrap Golem with controllable commands
+- **Trap Placement:** Shock Mines trigger on enemy movement
 
-**Thematic Identity:**
-- Combat medics and field surgeons who trust science, herbs, and steady hands
-- In a world where magic is corrupted, they're the pragmatists who understand survival requires keeping body intact AND mind coherent
-- Ultimate enabler for high-risk strategies (lets Berserkrs go full rage, lets Echo-Callers push Corruption limits)
-
-#### Complete Ability Redesign (9 Abilities, 30 PP Total)
+#### 9 New Abilities (30 PP Total)
 
 **Tier 1 (3 PP each):**
-1. **Field Medic** (Passive, 3 Ranks) - Enhanced Field Medicine crafting with Masterwork item creation
-   - Rank 1: +1d10 crafting bonus, start with 3 [Healing Poultices]
-   - Rank 2: +2d10 bonus, 5 Poultices, 20% Masterwork chance (heal 50% more)
-   - Rank 3: +3d10 bonus, 7 Poultices + 2 Antidotes, 35% Masterwork chance, craft [Miracle Tinctures]
-
-2. **Mend Wound** (Active, 3 Ranks) - Heal HP using poultices
-   - Rank 1: 3d8 + WITS HP, consumes [Healing Poultice], 35 Stamina
-   - Rank 2: 4d8 + WITS HP, 30 Stamina, +2d8 with [Masterwork Poultice]
-   - Rank 3: 5d8 + WITS HP, also removes [Poisoned] or [Bleeding]
-
-3. **Apply Tourniquet** (Active, 3 Ranks) - Emergency bleeding control
-   - Rank 1: Remove [Bleeding], 30 Stamina, 2 turn cooldown
-   - Rank 2: Remove [Bleeding], grant +2 Soak for 2 turns
-   - Rank 3: Remove [Bleeding] + [Hemorrhaging], +3 Soak for 3 turns, target immune to [Bleeding] for rest of combat
+1. **Master Scavenger** (Passive) - Enhanced Scrap Material gathering
+   - Find 50% more Scrap from mechanical enemies and containers
+   - Start expeditions with 20 Scrap at Rank 3
+2. **Deploy Flash Bomb** (Active) - AoE attack applying [Blinded] status
+   - 3x3 area, WILL save DC 13-17
+   - Masterwork bombs deal 2d6 damage at Rank 3
+3. **Salvage Expertise** (Passive) - Crafting bonuses and quality improvements
+   - +3d10 crafting bonus at Rank 3
+   - 40% Masterwork chance, 10% Prototype chance
 
 **Tier 2 (4 PP each, requires 8 PP in tree):**
-4. **Anatomical Insight** (Active, 3 Ranks) - Apply [Vulnerable] to organic enemies
-   - Rank 1: WITS check, [Vulnerable] 2 turns (+25% Physical damage), 40 Stamina
-   - Rank 2: [Vulnerable] 3 turns (+35% damage), reveal one weakness/resistance
-   - Rank 3: [Vulnerable] 4 turns (+50% damage), auto-success vs [Bloodied] enemies
-
-5. **Administer Antidote** (Active, 3 Ranks) - Remove poison and disease
-   - Rank 1: Remove [Poisoned] or [Disease], consumes [Common Antidote], 30 Stamina
-   - Rank 2: Remove [Poisoned], [Disease], [Weakened], grant +2 STURDINESS for 2 turns
-   - Rank 3: Remove all poison/disease effects, target immune to [Poisoned] for rest of combat
-
-6. **Triage** (Passive, 3 Ranks) - Massive healing bonus to bloodied allies
-   - Rank 1: +25% healing to allies below 50% HP
-   - Rank 2: +35% healing, also grants +1 Soak for 1 turn
-   - Rank 3: +50% healing, grants [Revitalized] (+2 to hit, 2 turns) when healing brings ally above 50% HP
+4. **Deploy Scout Drone** (Active) - Deploy reconnaissance drone
+   - Provides vision, reveals hidden enemies and traps
+   - Can self-destruct for 4d6 AoE damage at Rank 3
+5. **Deploy Shock Mine** (Active) - Place trap mine
+   - 3d8-5d8 Lightning damage, STURDINESS save DC 14-18
+   - Applies [Stunned] and [Slowed] effects
+6. **Weapon Modification** (Active) - Permanently enhance ally weapons
+   - Add Elemental damage (+1d6-2d6), Precision (+1-2 to hit), or Reinforced (+50-100% durability)
+   - Can stack 2 modifications at Rank 3
 
 **Tier 3 (5 PP each, requires 16 PP in tree):**
-7. **Cognitive Realignment** (Active, 3 Ranks) - Remove mental effects and restore Psychic Stress
-   - Rank 1: Remove 15 Psychic Stress, consumes [Stabilizing Draught], 45 Stamina, 3 turn cooldown
-   - Rank 2: Remove 25 Stress, also remove [Feared] or [Panicked]
-   - Rank 3: Remove 40 Stress, remove all mental effects, grant [Focused] (+1 WILL, 3 turns)
-
-8. **Defensive Focus** (Passive, 3 Ranks) - NEW ABILITY - Gain defensive bonuses while healing
-   - Rank 1: +2 Defense until end of turn after using healing ability
-   - Rank 2: +3 Defense, +1 Soak while adjacent ally below 50% HP
-   - Rank 3: +4 Defense, advantage on saves vs [Fear] and [Stun] while healing allies
+7. **Automated Scavenging** (Passive) - Auto-collect Scrap after combat
+   - 5-15 Scrap per combat, no action required
+   - 25% chance for rare components at Rank 3
+8. **Efficient Assembly** (Passive) - Reduced crafting costs and time
+   - 25-50% less Scrap Materials required
+   - Craft 3 gadgets simultaneously at Rank 3
 
 **Capstone (6 PP, requires 24 PP + both Tier 3):**
-9. **Miracle Worker** (Active, 3 Ranks) - Emergency massive heal with death protection
-   - Rank 1: 8d10 + (WITS × 2) HP, remove all status effects, target cannot drop below 1 HP for 1 turn, consumes [Miracle Tincture], once per expedition, 50 Stamina
-   - Rank 2: 10d10 + (WITS × 2) HP, grant [Invigorated] (+3 to all actions, 2 turns), death protection 2 turns
-   - Rank 3: 12d10 + (WITS × 3) HP, remove 30 Psychic Stress, grant [Second Wind] (next ability costs 0, 1 use)
+9. **Deploy Scrap Golem** (Active, Once Per Expedition) - Deploy powerful combat pet
+   - 40-80 HP, 6-10 Armor, immune to psychic effects
+   - Slam attack: 3d10-5d10 Physical damage
+   - Defend command: Grant +3 Soak to adjacent ally
+   - Can self-destruct for 8d10 AoE damage at Rank 3
 
-#### Design Pillars
-1. **Consumable-Based Healing:** All healing consumes crafted items, creates resource management gameplay
-2. **Trauma Economy Management:** Only non-heretical spec that can directly heal Psychic Stress
-3. **Emergency Response:** Instant bleeding control, poison removal, clutch-save Miracle Worker
-
-#### Strategic Purpose
-- Expands Adept archetype with pure support specialization
-- Provides Trauma Economy management (heals Stress)
-- Enables high-risk party compositions (Berserkr, Echo-Caller)
-- Creates WITS-based healer (thinking person's support)
+#### Design Philosophy
+- **Salvage and Innovation:** Reverse-engineer corrupted technology and repurpose scrap
+- **Force Multiplier:** Enhance party capabilities through weapon mods and gadgets
+- **Preparation Gameplay:** Craft during downtime, deploy strategic tools in combat
+- **Utility Specialist:** Provide vision (Scout Drone), control (Flash Bombs), and traps (Shock Mines)
+- **Pet-Based Gameplay:** Control drones and golems for reconnaissance and combat
 
 ### Technical
-- **New Files:**
-  - `RuneAndRust.Tests/BoneSetterSpecializationTests.cs` - Comprehensive unit tests (50+ tests)
 - **Updated Files:**
-  - `RuneAndRust.Persistence/DataSeeder.cs` - Updated Bone-Setter specialization with v0.19.4 design
-    - SpecializationID: 1
-    - AbilityIDs: 101-109
-    - All abilities now have 3 ranks with detailed progression
-  - `RuneAndRust.Engine/SpecializationFactory.cs` - Updated Bone-Setter ability definitions
+  - `RuneAndRust.Persistence/DataSeeder.cs` - Added Scrap-Tinker specialization (280+ lines)
+    - SpecializationID: 14
+    - AbilityIDs: 1401-1409
+  - `RuneAndRust.Tests/SpecializationIntegrationTests.cs` - Added validation test for Scrap-Tinker
 - **Test Coverage:**
   - Specialization seeding tests
   - Ability structure validation (3-3-2-1 tier distribution)
   - PP cost validation (30 PP total)
-  - Rank progression tests
-  - Consumable system tests
-  - Coherent path validation
+  - Prerequisite validation (Capstone requires both Tier 3 abilities)
   - Unlock requirement tests
 
 ### Balance Considerations
-- **Healing Balance:** Mend Wound should heal 30-40% of Warrior HP at Rank 1
-- **Stress Management:** Cognitive Realignment should prevent 1 Breaking Point per use
-- **Resource Management:** Field Medic should start with enough Poultices for 5-7 heals
-- **Triage Bonus:** Massive healing boost for critically wounded allies (up to +50%)
-- **Capstone Power:** Miracle Worker brings allies back from brink, once per expedition restriction prevents spam
+- **Weapon Modifications:** Target 25-40% party DPS increase when fully invested
+- **Scrap Economy:** Requires 2-3 combats worth of Scrap per gadget (sustainable)
+- **Pet Survivability:** Scout Drone 3-5 turn survival, Scrap Golem tanks comparable to Warrior
+- **Role Differentiation:** Strong utility/support, minimal direct combat contribution
+- **Strategic Weakness:** Weak solo play (crafting/mods wasted), requires long expeditions for crafting time
+
+### Synergies
+- **Master Scavenger + Efficient Assembly:** Craft twice as many gadgets with doubled Scrap income
+- **Scout Drone + Shock Mines:** Vision reveals enemy paths for optimal mine placement
+- **Weapon Modification + Salvage Expertise:** Prototype mods have doubled bonuses
+- **Scrap Golem + Automated Scavenging:** Golem scavenges additional 10 Scrap per combat
 
 ---
 
