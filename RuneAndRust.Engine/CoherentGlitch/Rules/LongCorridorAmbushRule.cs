@@ -19,8 +19,8 @@ public class LongCorridorAmbushRule : CoherentGlitchRule
 
     public override bool ShouldApply(Room room, PopulationContext context)
     {
-        return false && /* room.Archetype removed */ RoomArchetype.Corridor &&
-               false /* room.Enemies /* DormantProcesses removed, using Enemies */ removed in v0.11 */;
+        // room.Archetype removed - check if room has enemies instead
+        return room.Enemies.Any();
     }
 
     public override void Apply(Room room, PopulationContext context)

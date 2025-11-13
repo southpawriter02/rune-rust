@@ -23,8 +23,8 @@ public class BrokenMaintenanceCycleRule : CoherentGlitchRule
         if (!room.Name.Contains("maintenance", StringComparison.OrdinalIgnoreCase))
             return false;
 
-        return /* room.Enemies /* DormantProcesses removed, using Enemies */.Any(e =>
-            e.ProcessType.Contains("haugbui", StringComparison.OrdinalIgnoreCase) removed */ 0);
+        // DormantProcesses removed - check if any enemies exist
+        return room.Enemies.Any();
     }
 
     public override void Apply(Room room, PopulationContext context)
