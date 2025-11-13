@@ -12,7 +12,7 @@ public class Room
     public string? TemplateId { get; set; } = null; // Template used to generate this room
     public NodeType? GeneratedNodeType { get; set; } = null; // Node type in generation graph
     public bool IsProcedurallyGenerated { get; set; } = false;
-    public RoomArchetype Archetype { get; set; } = RoomArchetype.Chamber; // Room archetype (Chamber, Corridor, etc.)
+    public Population.RoomArchetype Archetype { get; set; } = Population.RoomArchetype.Chamber; // Room archetype (Chamber, Corridor, etc.)
 
     // Combat
     public List<Enemy> Enemies { get; set; } = new();

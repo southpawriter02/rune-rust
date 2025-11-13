@@ -1,3 +1,5 @@
+using RuneAndRust.Core;
+
 namespace RuneAndRust.Core.Population;
 
 /// <summary>
@@ -7,8 +9,10 @@ namespace RuneAndRust.Core.Population;
 public abstract class DynamicHazard
 {
     public string Id { get; set; } = Guid.NewGuid().ToString();
+    public string HazardId { get; set; } = string.Empty; // Alias for Core compatibility
     public string HazardName { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
+    public DynamicHazardType Type { get; set; } // Hazard type classification
 
     // Mechanical Properties
     public int DamageDice { get; set; } = 0; // Number of d6s
@@ -36,6 +40,7 @@ public class SteamVentHazard : DynamicHazard
         Description = "Superheated steam vents unpredictably from corroded pipes.";
         DamageDice = 2; // 2d6 damage
         Range = 2.0f;
+        Type = DynamicHazardType.SteamVent;
     }
 
     public bool IsIntermittent { get; set; } = true; // Vents every 2-3 turns
@@ -53,6 +58,7 @@ public class LivePowerConduitHazard : DynamicHazard
         Description = "Exposed electrical wiring crackles with residual charge.";
         DamageDice = 3; // 3d6 damage
         Range = 1.5f;
+        Type = DynamicHazardType.LivePowerConduit;
     }
 
     public bool IsContactBased { get; set; } = true; // Only damages on touch
@@ -70,6 +76,7 @@ public class UnstableCeilingHazard : DynamicHazard
         Description = "Corroded support beams groan ominously overhead.";
         DamageDice = 4; // 4d6 damage on collapse
         Range = 3.0f; // Large affected area
+        Type = DynamicHazardType.UnstableCeiling;
     }
 
     public int CollapseThreshold { get; set; } = 10; // Cumulative damage triggers collapse
@@ -88,6 +95,7 @@ public class ToxicSporeCloudHazard : DynamicHazard
         DamageDice = 1; // 1d6 damage
         StressPerTurn = 1; // +1 Psychic Stress per turn
         Range = 4.0f; // Wide area
+        Type = DynamicHazardType.SporeCloud;
     }
 
     public bool IsMoving { get; set; } = false; // Drifts over time
@@ -104,8 +112,43 @@ public class ChasmHazard : DynamicHazard
         Description = "A deep fissure splits the floor, its bottom lost in darkness.";
         DamageDice = 6; // 6d6 fall damage
         Range = 0f; // No area effect
+        Type = DynamicHazardType.Chasm;
     }
 
     public float Width { get; set; } = 3.0f; // Meters
     public bool IsTraversable { get; set; } = false; // Requires skill check
+}
+
+/// <summary>
+/// [Corroded Grating] - Fragile floor hazard (v0.11)
+/// </summary>
+public class CorrodedGratingHazard : DynamicHazard
+{
+    public CorrodedGratingHazard()
+    {
+        HazardName = "Corroded Grating";
+        Description = "The floor grating is severely weakened. It may break under weight.";
+        DamageDice = 2; // 2d6 damage
+        Range = 1.0f;
+        Type = DynamicHazardType.CorrodedGrating;
+    }
+
+    public float ActivationChance { get; set; } = 0.3f;
+}
+
+/// <summary>
+/// [Leaking Coolant] - Slippery surface hazard (v0.11)
+/// </summary>
+public class LeakingCoolantHazard : DynamicHazard
+{
+    public LeakingCoolantHazard()
+    {
+        HazardName = "Leaking Coolant";
+        Description = "Slippery chemical coolant pools across the floor, making movement treacherous.";
+        DamageDice = 1; // 1d6 damage
+        Range = 2.0f;
+        Type = DynamicHazardType.LeakingCoolant;
+    }
+
+    public float ActivationChance { get; set; } = 0.5f;
 }

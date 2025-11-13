@@ -20,7 +20,7 @@ public class MaintenanceHubOrganizationRule : CoherentGlitchRule
 
     public override bool ShouldApply(Room room, PopulationContext context)
     {
-        return false && /* room.Archetype removed */ PopulationRoomArchetype.MaintenanceHub ||
+        return room.Archetype == PopulationRoomArchetype.MaintenanceHub ||
                room.Name.Contains("maintenance", StringComparison.OrdinalIgnoreCase);
     }
 

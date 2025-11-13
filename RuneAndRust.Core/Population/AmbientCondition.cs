@@ -1,3 +1,5 @@
+using RuneAndRust.Core;
+
 namespace RuneAndRust.Core.Population;
 
 /// <summary>
@@ -9,6 +11,7 @@ public abstract class AmbientCondition
     public string Id { get; set; } = Guid.NewGuid().ToString();
     public string ConditionName { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
+    public AmbientConditionType Type { get; set; } // Condition type classification
 
     // Game Effects
     public int AccuracyModifier { get; set; } = 0;
@@ -27,6 +30,7 @@ public class FloodedCondition : AmbientCondition
         ConditionName = "[Flooded]";
         Description = "Stagnant water covers the floor, ankle-deep in places.";
         MovementModifier = -20; // -20% movement speed
+        Type = AmbientConditionType.Flooded;
     }
 
     public int WaterDepth { get; set; } = 1; // 1 = ankle-deep, 2 = knee-deep, 3 = waist-deep
@@ -43,6 +47,7 @@ public class DarknessCondition : AmbientCondition
         Description = "Emergency lighting flickers fitfully, casting deep shadows.";
         AccuracyModifier = -2; // -2 to hit
         StressPerTurn = 1; // +1 Psychic Stress per turn
+        Type = AmbientConditionType.DimLighting;
     }
 }
 
@@ -56,6 +61,7 @@ public class PsychicResonanceCondition : AmbientCondition
         ConditionName = "[Psychic Resonance]";
         Description = "The air thrums with psychic residue, oppressive and disorienting.";
         StressPerTurn = 2; // +2 Psychic Stress per turn
+        Type = AmbientConditionType.PsychicResonance;
     }
 
     public int Intensity { get; set; } = 1; // 1-5 scale
@@ -71,7 +77,40 @@ public class ExtremeHeatCondition : AmbientCondition
         ConditionName = "[Extreme Heat]";
         Description = "Oppressive heat radiates from corroded thermal conduits.";
         StressPerTurn = 1; // +1 Psychic Stress from exhaustion
+        Type = AmbientConditionType.ExtremeHeat;
     }
 
     public int DamagePerTurn { get; set; } = 1; // Flat damage per turn (optional)
+}
+
+/// <summary>
+/// [Runic Instability] - Volatile Aether (v0.11)
+/// </summary>
+public class RunicInstabilityCondition : AmbientCondition
+{
+    public RunicInstabilityCondition()
+    {
+        ConditionName = "[Runic Instability]";
+        Description = "The fabric of Aether feels volatile here. Magic behaves unpredictably.";
+        Type = AmbientConditionType.RunicInstability;
+    }
+
+    public bool CausesWildMagic { get; set; } = true;
+    public float WildMagicChance { get; set; } = 0.2f;
+}
+
+/// <summary>
+/// [Corroded Atmosphere] - Caustic environment (v0.11)
+/// </summary>
+public class CorrodedAtmosphereCondition : AmbientCondition
+{
+    public CorrodedAtmosphereCondition()
+    {
+        ConditionName = "[Corroded Atmosphere]";
+        Description = "The air is thick with rust particles and chemical fumes. Metal corrodes visibly.";
+        Type = AmbientConditionType.CorrodedAtmosphere;
+    }
+
+    public bool CausesEquipmentDegradation { get; set; } = true;
+    public int DegradationAmount { get; set; } = 1;
 }

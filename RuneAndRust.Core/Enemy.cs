@@ -40,6 +40,7 @@ public enum EnemyType
 public class Enemy
 {
     public string Name { get; set; } = string.Empty;
+    public string Id { get; set; } = string.Empty;
     public EnemyType Type { get; set; }
     public int HP { get; set; }
     public int MaxHP { get; set; }

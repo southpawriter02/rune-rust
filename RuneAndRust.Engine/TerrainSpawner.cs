@@ -1,4 +1,5 @@
 using RuneAndRust.Core;
+using RuneAndRust.Core.Population;
 using Serilog;
 
 namespace RuneAndRust.Engine;
@@ -50,7 +51,7 @@ public class TerrainSpawner
         }
 
         // Coherent Glitch: If Unstable Ceiling hazard present, MUST spawn Rubble Pile
-        bool hasUnstableCeiling = room.DynamicHazards.Any(h => h.Type == DynamicHazardType.UnstableCeiling);
+        bool hasUnstableCeiling = room.DynamicHazards.Cast<Population.DynamicHazard>().Any(h => h.Type == DynamicHazardType.UnstableCeiling);
         if (hasUnstableCeiling)
         {
             var rubblePile = CreateRubblePile();
@@ -109,7 +110,7 @@ public class TerrainSpawner
     /// <summary>
     /// Creates StaticTerrain from a BiomeElement
     /// </summary>
-    private StaticTerrain? CreateTerrainFromElement(BiomeElement element, Room room, Random rng)
+    private Population.StaticTerrain? CreateTerrainFromElement(BiomeElement element, Room room, Random rng)
     {
         var terrainType = MapElementToTerrainType(element.AssociatedDataId);
         if (terrainType == null)
@@ -143,78 +144,62 @@ public class TerrainSpawner
     }
 
     // Terrain creation methods
-    private StaticTerrain CreateCollapsedPillar()
+    private Population.StaticTerrain CreateCollapsedPillar()
     {
-        return new StaticTerrain
+        return new CorrodedPillar
         {
+            Id = $"collapsed_pillar_{Guid.NewGuid():N}",
             TerrainId = $"collapsed_pillar_{Guid.NewGuid():N}",
             Name = "Collapsed Pillar",
-            Description = "A massive support pillar lies in ruins, providing substantial cover.",
-            Type = StaticTerrainType.CollapsedPillar,
-            CoverProvided = CoverType.Full,
-            AccuracyModifier = -4,
-            BlocksLineOfSight = true,
-            BlocksMovement = true
+            Description = "A massive support pillar lies in ruins, providing substantial cover."
         };
     }
 
-    private StaticTerrain CreateRubblePile()
+    private Population.StaticTerrain CreateRubblePile()
     {
-        return new StaticTerrain
+        return new RubblePile
         {
+            Id = $"rubble_pile_{Guid.NewGuid():N}",
             TerrainId = $"rubble_pile_{Guid.NewGuid():N}",
             Name = "Rubble Pile",
-            Description = "Debris and broken masonry create difficult terrain and partial cover.",
-            Type = StaticTerrainType.RubblePile,
-            CoverProvided = CoverType.Partial,
-            AccuracyModifier = -2,
-            IsDifficultTerrain = true,
-            MovementCostModifier = 2
+            Description = "Debris and broken masonry create difficult terrain and partial cover."
         };
     }
 
-    private StaticTerrain CreateRustedBulkhead()
+    private Population.StaticTerrain CreateRustedBulkhead()
     {
-        return new StaticTerrain
+        return new RustedBulkhead
         {
+            Id = $"rusted_bulkhead_{Guid.NewGuid():N}",
             TerrainId = $"rusted_bulkhead_{Guid.NewGuid():N}",
             Name = "Rusted Bulkhead",
-            Description = "A corroded blast door provides solid cover despite centuries of decay.",
-            Type = StaticTerrainType.RustedBulkhead,
-            CoverProvided = CoverType.Full,
-            AccuracyModifier = -4,
-            BlocksLineOfSight = true,
-            BlocksMovement = true
+            Description = "A corroded blast door provides solid cover despite centuries of decay."
         };
     }
 
-    private StaticTerrain CreateChasm()
+    private Population.StaticTerrain CreateChasm()
     {
-        return new StaticTerrain
+        return new ChasmTerrain
         {
+            Id = $"chasm_{Guid.NewGuid():N}",
             TerrainId = $"chasm_{Guid.NewGuid():N}",
             Name = "Chasm",
             Description = "A gaping hole in the floor plunges into darkness. The edges are unstable.",
-            Type = StaticTerrainType.Chasm,
-            BlocksMovement = true,
-            IsHazardous = true,
-            HazardDamageDice = 6,
-            HazardCondition = "if forced into"
+            RequiresSkillCheck = true,
+            SkillCheckDC = 12
         };
     }
 
-    private StaticTerrain CreateElevatedPlatform()
+    private Population.StaticTerrain CreateElevatedPlatform()
     {
-        return new StaticTerrain
+        return new ElevatedPlatform
         {
+            Id = $"elevated_platform_{Guid.NewGuid():N}",
             TerrainId = $"elevated_platform_{Guid.NewGuid():N}",
             Name = "Elevated Platform",
             Description = "A raised maintenance walkway provides tactical high ground.",
-            Type = StaticTerrainType.ElevatedPlatform,
-            ProvidesElevation = true,
-            ElevationBonus = 1,
             RequiresClimbing = true,
-            MovementCostModifier = 3
+            ClimbDC = 10
         };
     }
 }

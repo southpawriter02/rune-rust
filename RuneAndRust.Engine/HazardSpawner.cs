@@ -1,4 +1,5 @@
 using RuneAndRust.Core;
+using RuneAndRust.Core.Population;
 using Serilog;
 
 namespace RuneAndRust.Engine;
@@ -109,7 +110,7 @@ public class HazardSpawner
     private void ApplyCoherentGlitchWeightModifiers(Room room, List<BiomeElement> hazards)
     {
         // Check for Flooded condition
-        bool isFlooded = room.AmbientConditions.Any(c => c.Type == AmbientConditionType.Flooded);
+        bool isFlooded = room.AmbientConditions.Cast<Population.AmbientCondition>().Any(c => c.Type == AmbientConditionType.Flooded);
         if (isFlooded)
         {
             // Increase weight of electrical hazards
@@ -133,7 +134,7 @@ public class HazardSpawner
     /// <summary>
     /// Creates a DynamicHazard from a BiomeElement
     /// </summary>
-    private DynamicHazard? CreateHazardFromElement(BiomeElement element, Room room, Random rng)
+    private Population.DynamicHazard? CreateHazardFromElement(BiomeElement element, Room room, Random rng)
     {
         var hazardType = MapElementToHazardType(element.AssociatedDataId);
         if (hazardType == null)
@@ -169,116 +170,83 @@ public class HazardSpawner
     }
 
     // Hazard creation methods
-    private DynamicHazard CreateSteamVent(BiomeElement element)
+    private Population.DynamicHazard CreateSteamVent(BiomeElement element)
     {
-        return new DynamicHazard
+        return new SteamVentHazard
         {
+            Id = $"steam_vent_{Guid.NewGuid():N}",
             HazardId = $"steam_vent_{Guid.NewGuid():N}",
-            Name = "[Steam Vent]",
+            HazardName = "[Steam Vent]",
             Description = "Hissing jets of superheated steam escape from fractured pipes. The geothermal pumping station, once climate-controlled, now vents unpredictably after 800 years of corrosion.",
-            Type = DynamicHazardType.SteamVent,
-            ActivationChance = 0.4f,
-            Trigger = HazardTrigger.Automatic,
-            DamageDice = 2,
-            DamageDieSize = 6,
-            DamageType = "Fire",
-            AreaSize = 3,
-            IsActive = true
+            IsIntermittent = true,
+            TurnsUntilNextVent = 2
         };
     }
 
-    private DynamicHazard CreateLivePowerConduit(BiomeElement element, Room room)
+    private Population.DynamicHazard CreateLivePowerConduit(BiomeElement element, Room room)
     {
-        bool isFlooded = room.AmbientConditions.Any(c => c.Type == AmbientConditionType.Flooded);
+        bool isFlooded = room.AmbientConditions.Cast<Population.AmbientCondition>().Any(c => c.Type == AmbientConditionType.Flooded);
 
-        return new DynamicHazard
+        return new LivePowerConduitHazard
         {
+            Id = $"power_conduit_{Guid.NewGuid():N}",
             HazardId = $"power_conduit_{Guid.NewGuid():N}",
-            Name = "[Live Power Conduit]",
+            HazardName = "[Live Power Conduit]",
             Description = "Exposed wiring crackles with unstable current. Pre-Glitch safety systems have long since failed." +
                          (isFlooded ? " The standing water conducts electricity across the entire room." : ""),
-            Type = DynamicHazardType.LivePowerConduit,
-            ActivationChance = 1.0f,
-            Trigger = HazardTrigger.OnProximity,
             DamageDice = isFlooded ? 6 : 3,
-            DamageDieSize = 6,
-            DamageType = "Lightning",
-            ProximityRange = isFlooded ? 5 : 2,
-            RequiresProximity = true,
-            IsActive = true
+            Range = isFlooded ? 5.0f : 1.5f,
+            IsContactBased = true,
+            IsFloodedEnhanced = isFlooded
         };
     }
 
-    private DynamicHazard CreateUnstableCeiling(BiomeElement element)
+    private Population.DynamicHazard CreateUnstableCeiling(BiomeElement element)
     {
-        return new DynamicHazard
+        return new UnstableCeilingHazard
         {
+            Id = $"unstable_ceiling_{Guid.NewGuid():N}",
             HazardId = $"unstable_ceiling_{Guid.NewGuid():N}",
-            Name = "[Unstable Ceiling]",
+            HazardName = "[Unstable Ceiling]",
             Description = "Centuries of structural stress have weakened the ceiling. Loud impacts could trigger a collapse.",
-            Type = DynamicHazardType.UnstableCeiling,
-            ActivationChance = 1.0f,
-            Trigger = HazardTrigger.OnLoudAction,
-            DamageDice = 4,
-            DamageDieSize = 6,
-            DamageType = "Physical",
-            AffectsAllCombatants = true,
-            IsOneTime = true,
-            IsActive = true
+            CollapseThreshold = 10,
+            AccumulatedDamage = 0
         };
     }
 
-    private DynamicHazard CreateToxicSporeCloud(BiomeElement element)
+    private Population.DynamicHazard CreateToxicSporeCloud(BiomeElement element)
     {
-        return new DynamicHazard
+        return new ToxicSporeCloudHazard
         {
+            Id = $"spore_cloud_{Guid.NewGuid():N}",
             HazardId = $"spore_cloud_{Guid.NewGuid():N}",
-            Name = "[Toxic Spore Cloud]",
+            HazardName = "[Toxic Spore Cloud]",
             Description = "Fungal growths release clouds of toxic spores into the stagnant air.",
-            Type = DynamicHazardType.ToxicSporeCloud,
-            ActivationChance = 1.0f,
-            Trigger = HazardTrigger.Automatic,
-            DamageDice = 1,
-            DamageDieSize = 4,
-            DamageType = "Poison",
-            AffectsAllCombatants = true,
-            AppliesStatusEffect = "Poisoned",
-            StatusEffectChance = 0.25f,
-            IsActive = true
+            IsMoving = false
         };
     }
 
-    private DynamicHazard CreateCorrodedGrating(BiomeElement element)
+    private Population.DynamicHazard CreateCorrodedGrating(BiomeElement element)
     {
-        return new DynamicHazard
+        return new CorrodedGratingHazard
         {
+            Id = $"corroded_grating_{Guid.NewGuid():N}",
             HazardId = $"corroded_grating_{Guid.NewGuid():N}",
-            Name = "[Corroded Grating]",
+            HazardName = "[Corroded Grating]",
             Description = "The floor grating is severely weakened. It may break under weight.",
-            Type = DynamicHazardType.CorrodedGrating,
-            ActivationChance = 0.3f,
-            Trigger = HazardTrigger.OnMovement,
-            DamageDice = 2,
-            DamageDieSize = 6,
-            DamageType = "Physical",
-            IsActive = true
+            ActivationChance = 0.3f
         };
     }
 
-    private DynamicHazard CreateLeakingCoolant(BiomeElement element)
+    private Population.DynamicHazard CreateLeakingCoolant(BiomeElement element)
     {
-        return new DynamicHazard
+        return new LeakingCoolantHazard
         {
+            Id = $"leaking_coolant_{Guid.NewGuid():N}",
             HazardId = $"leaking_coolant_{Guid.NewGuid():N}",
-            Name = "[Leaking Coolant]",
+            HazardName = "[Leaking Coolant]",
             Description = "Slippery chemical coolant pools across the floor, making movement treacherous.",
-            Type = DynamicHazardType.LeakingCoolant,
-            ActivationChance = 0.5f,
-            Trigger = HazardTrigger.OnMovement,
-            DamageDice = 1,
-            DamageDieSize = 6,
-            DamageType = "Physical",
-            IsActive = true
+            ActivationChance = 0.5f
         };
     }
 }

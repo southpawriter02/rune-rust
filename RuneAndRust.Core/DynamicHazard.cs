@@ -57,6 +57,7 @@ public enum DynamicHazardType
     LeakingCoolant,      // Slippery chemical spill
     RadiationLeak,       // Cumulative exposure
     PressurizedPipe,     // Explosive decompression
+    Chasm,               // Deep fissure with fall damage
 
     // v0.16 new hazards (Content Expansion)
     SporeCloud,          // Symbiotic Plate spore dispersion
