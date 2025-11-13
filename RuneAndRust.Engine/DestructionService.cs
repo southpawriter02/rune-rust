@@ -113,7 +113,7 @@ public class DestructionService
                 // Add rubble if specified
                 if (data.SpawnRubble)
                 {
-                    room.StaticTerrain.Add(new StaticTerrain
+                    room.StaticTerrain.Add(new RuneAndRust.Core.StaticTerrain
                     {
                         TerrainId = $"rubble_from_{change.TargetId}",
                         Name = "Rubble Pile",
