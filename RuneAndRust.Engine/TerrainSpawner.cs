@@ -51,7 +51,7 @@ public class TerrainSpawner
         }
 
         // Coherent Glitch: If Unstable Ceiling hazard present, MUST spawn Rubble Pile
-        bool hasUnstableCeiling = room.DynamicHazards.Cast<Population.DynamicHazard>().Any(h => h.Type == DynamicHazardType.UnstableCeiling);
+        bool hasUnstableCeiling = room.DynamicHazards.Cast<DynamicHazard>().Any(h => h.Type == DynamicHazardType.UnstableCeiling);
         if (hasUnstableCeiling)
         {
             var rubblePile = CreateRubblePile();
@@ -110,7 +110,7 @@ public class TerrainSpawner
     /// <summary>
     /// Creates StaticTerrain from a BiomeElement
     /// </summary>
-    private Population.StaticTerrain? CreateTerrainFromElement(BiomeElement element, Room room, Random rng)
+    private StaticTerrain? CreateTerrainFromElement(BiomeElement element, Room room, Random rng)
     {
         var terrainType = MapElementToTerrainType(element.AssociatedDataId);
         if (terrainType == null)
@@ -144,7 +144,7 @@ public class TerrainSpawner
     }
 
     // Terrain creation methods
-    private Population.StaticTerrain CreateCollapsedPillar()
+    private StaticTerrain CreateCollapsedPillar()
     {
         return new CorrodedPillar
         {
@@ -155,7 +155,7 @@ public class TerrainSpawner
         };
     }
 
-    private Population.StaticTerrain CreateRubblePile()
+    private StaticTerrain CreateRubblePile()
     {
         return new RubblePile
         {
@@ -166,7 +166,7 @@ public class TerrainSpawner
         };
     }
 
-    private Population.StaticTerrain CreateRustedBulkhead()
+    private StaticTerrain CreateRustedBulkhead()
     {
         return new RustedBulkhead
         {
@@ -177,7 +177,7 @@ public class TerrainSpawner
         };
     }
 
-    private Population.StaticTerrain CreateChasm()
+    private StaticTerrain CreateChasm()
     {
         return new ChasmTerrain
         {
@@ -190,7 +190,7 @@ public class TerrainSpawner
         };
     }
 
-    private Population.StaticTerrain CreateElevatedPlatform()
+    private StaticTerrain CreateElevatedPlatform()
     {
         return new ElevatedPlatform
         {

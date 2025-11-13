@@ -114,7 +114,7 @@ public class LootSpawner
     /// <summary>
     /// Creates a LootNode from a BiomeElement
     /// </summary>
-    private Population.LootNode? CreateLootNodeFromElement(BiomeElement element, Room room, Random rng)
+    private LootNode? CreateLootNodeFromElement(BiomeElement element, Room room, Random rng)
     {
         var lootType = MapElementToLootType(element.AssociatedDataId);
         if (lootType == null)
@@ -148,7 +148,7 @@ public class LootSpawner
     }
 
     // Loot node creation methods
-    private Population.LootNode CreateOreVein(Random rng)
+    private LootNode CreateOreVein(Random rng)
     {
         return new ResourceVein
         {
@@ -162,7 +162,7 @@ public class LootSpawner
         };
     }
 
-    private Population.LootNode CreateSalvageableWreckage(Random rng)
+    private LootNode CreateSalvageableWreckage(Random rng)
     {
         return new SalvageableWreckage
         {
@@ -176,7 +176,7 @@ public class LootSpawner
         };
     }
 
-    private Population.LootNode CreateHiddenContainer(Random rng)
+    private LootNode CreateHiddenContainer(Random rng)
     {
         return new HiddenContainer
         {
@@ -193,7 +193,7 @@ public class LootSpawner
         };
     }
 
-    private Population.LootNode CreateCorruptedDataSlate(Random rng)
+    private LootNode CreateCorruptedDataSlate(Random rng)
     {
         return new CorruptedDataSlate
         {
@@ -207,7 +207,7 @@ public class LootSpawner
         };
     }
 
-    private Population.LootNode CreateResourceCache(Random rng)
+    private LootNode CreateResourceCache(Random rng)
     {
         return new ResourceCache
         {

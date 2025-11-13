@@ -113,12 +113,12 @@ public class ConditionApplier
     /// Applies Coherent Glitch interactions between conditions and hazards
     /// Example: [Flooded] enhances electrical hazards
     /// </summary>
-    private void ApplyCoherentGlitchInteractions(Room room, Population.AmbientCondition condition)
+    private void ApplyCoherentGlitchInteractions(Room room, AmbientCondition condition)
     {
         if (condition.Type == AmbientConditionType.Flooded)
         {
             // Enhance electrical hazards
-            foreach (var hazard in room.DynamicHazards.Cast<Population.DynamicHazard>().Where(h => h.Type == DynamicHazardType.LivePowerConduit))
+            foreach (var hazard in room.DynamicHazards.Cast<DynamicHazard>().Where(h => h.Type == DynamicHazardType.LivePowerConduit))
             {
                 hazard.DamageDice = (int)(hazard.DamageDice * 2);
                 hazard.ProximityRange = (int)(hazard.ProximityRange * 1.5);
@@ -130,7 +130,7 @@ public class ConditionApplier
     /// <summary>
     /// Creates an AmbientCondition from a BiomeElement
     /// </summary>
-    private Population.AmbientCondition? CreateConditionFromElement(BiomeElement element, Room room, Random rng)
+    private AmbientCondition? CreateConditionFromElement(BiomeElement element, Room room, Random rng)
     {
         var conditionType = MapElementToConditionType(element.AssociatedDataId);
         if (conditionType == null)
@@ -164,7 +164,7 @@ public class ConditionApplier
     }
 
     // Condition creation methods
-    private Population.AmbientCondition CreatePsychicResonance()
+    private AmbientCondition CreatePsychicResonance()
     {
         return new PsychicResonanceCondition
         {
@@ -176,7 +176,7 @@ public class ConditionApplier
         };
     }
 
-    private Population.AmbientCondition CreateRunicInstability()
+    private AmbientCondition CreateRunicInstability()
     {
         return new RunicInstabilityCondition
         {
@@ -188,7 +188,7 @@ public class ConditionApplier
         };
     }
 
-    private Population.AmbientCondition CreateFlooded()
+    private AmbientCondition CreateFlooded()
     {
         return new FloodedCondition
         {
@@ -200,7 +200,7 @@ public class ConditionApplier
         };
     }
 
-    private Population.AmbientCondition CreateCorrodedAtmosphere()
+    private AmbientCondition CreateCorrodedAtmosphere()
     {
         return new CorrodedAtmosphereCondition
         {
@@ -212,7 +212,7 @@ public class ConditionApplier
         };
     }
 
-    private Population.AmbientCondition CreateDimLighting()
+    private AmbientCondition CreateDimLighting()
     {
         return new DarknessCondition
         {
