@@ -1,7 +1,7 @@
 {
   "RoomId": "abandoned_workshop",
   "Name": "[Abandoned Workshop]",
-  "Description": "A makeshift repair bay carved from a collapsed maintenance tunnel. The walls are lined with salvaged tools, scavenged automaton parts, and jury-rigged diagnostic equipment. A Dvergr tinkerer has claimed this space as their refuge - one of the few living souls willing to delve this deep into [The Roots]. The air smells of hot metal and ozone from ongoing repair work.",
+  "Description": "A makeshift repair bay carved from a collapsed maintenance tunnel. The walls are lined with salvaged tools, scavenged automaton parts, and jury-rigged diagnostic equipment. A Dvergr tinkerer has claimed this space as their refuge - one of the few living souls willing to delve this deep into [The Roots]. The air smells of hot metal and ozone from ongoing repair work. A runic anvil salvaged from the old forge districts glows with faint arcane energy - perfect for skilled runecrafters.",
   "Archetype": "Chamber",
   "SuggestedNodeType": "Branch",
   "NarrativeText": "Grelda Ironbraid, a renegade Dvergr engineer, has been scavenging Pre-Glitch technology from the ruins for decades. She's remarkably pragmatic about the dangers - 'The servitors leave you alone if you don't threaten their patrol routes, and the Glitch-touched fauna are more afraid of you than you are of them.' She offers to upgrade equipment, trade crafting materials, or share knowledge of the ruins... for a price.",
@@ -24,6 +24,7 @@
   "IsBossArena": false,
   "HasQuestObjective": false,
   "QuestObjectiveId": null,
+  "HasForge": true,
   "PreferredExits": {
     "East": "Corridor",
     "West": "Corridor"

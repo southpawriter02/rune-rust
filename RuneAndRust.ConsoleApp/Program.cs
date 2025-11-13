@@ -30,6 +30,8 @@ class Program
     // v0.13: Persistent World State System
     private static WorldStateRepository _worldStateRepository = new();
     private static DestructionService _destructionService = new(_worldStateRepository, _diceService);
+    // v0.19.10: Crafting System (Field Medicine + Runeforging)
+    private static CraftingService _craftingService = new(_diceService);
 
     static void Main(string[] args)
     {
@@ -727,6 +729,15 @@ class Program
 
                 case CommandType.History:
                     HandleHistory();
+                    break;
+
+                // v0.19.10: Crafting System
+                case CommandType.Craft:
+                    HandleCraft();
+                    break;
+
+                case CommandType.Runeforge:
+                    HandleRuneforge(command.Target);
                     break;
 
                 case CommandType.Attack:
@@ -3060,6 +3071,342 @@ class Program
 
                 AnsiConsole.MarkupLine($"{icon} [dim]{description}[/] [yellow]({timeAgo})[/]");
             }
+        }
+
+        AnsiConsole.WriteLine();
+        AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+        Console.ReadLine();
+    }
+
+    // v0.19.10: Crafting System - Field Medicine Handler
+    static void HandleCraft()
+    {
+        AnsiConsole.Clear();
+        AnsiConsole.WriteLine();
+
+        var rule = new Rule("[bold cyan]Field Medicine Crafting[/]")
+        {
+            Justification = Justify.Center
+        };
+        AnsiConsole.Write(rule);
+        AnsiConsole.WriteLine();
+
+        // Get available recipes for character
+        var availableRecipes = _craftingService.GetAvailableRecipes(_gameState.Player);
+
+        if (availableRecipes.Count == 0)
+        {
+            AnsiConsole.MarkupLine("[yellow]You don't know any crafting recipes yet.[/]");
+            AnsiConsole.MarkupLine("[dim](Bone-Setter specialization required for Field Medicine)[/]");
+            AnsiConsole.WriteLine();
+            AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+            Console.ReadLine();
+            return;
+        }
+
+        // Display available recipes
+        var table = new Table();
+        table.Border(TableBorder.Rounded);
+        table.AddColumn("[bold]Recipe[/]");
+        table.AddColumn("[bold]Components Required[/]");
+        table.AddColumn("[bold]DC[/]");
+        table.AddColumn("[bold]Effect[/]");
+
+        foreach (var recipe in availableRecipes)
+        {
+            bool hasComponents = recipe.HasRequiredComponents(_gameState.Player.CraftingComponents);
+            string recipeName = hasComponents ? $"[green]{recipe.Name}[/]" : $"[dim]{recipe.Name}[/]";
+            string components = recipe.GetRequirementsDescription();
+            if (!hasComponents)
+            {
+                var missing = recipe.GetMissingComponents(_gameState.Player.CraftingComponents);
+                components += $"\n[red]Missing: {string.Join(", ", missing)}[/]";
+            }
+
+            table.AddRow(recipeName, components, recipe.SkillCheckDC.ToString(), recipe.Description);
+        }
+
+        AnsiConsole.Write(table);
+        AnsiConsole.WriteLine();
+
+        // Show player's components
+        AnsiConsole.MarkupLine("[bold]Your Crafting Components:[/]");
+        if (_gameState.Player.CraftingComponents.Count == 0)
+        {
+            AnsiConsole.MarkupLine("[dim]  None[/]");
+        }
+        else
+        {
+            foreach (var (componentType, count) in _gameState.Player.CraftingComponents)
+            {
+                var component = CraftingComponent.Create(componentType);
+                AnsiConsole.MarkupLine($"  [cyan]{component.Name}[/]: {count}");
+            }
+        }
+
+        AnsiConsole.WriteLine();
+        AnsiConsole.MarkupLine("[dim]Type recipe name to craft, or press ENTER to cancel[/]");
+        var input = AnsiConsole.Ask<string>("[grey]>[/]");
+
+        if (string.IsNullOrWhiteSpace(input))
+        {
+            return;
+        }
+
+        // Find recipe
+        var selectedRecipe = _craftingService.GetRecipeByName(input);
+        if (selectedRecipe == null)
+        {
+            AnsiConsole.MarkupLine($"[red]Unknown recipe:[/] {input.EscapeMarkup()}");
+            AnsiConsole.WriteLine();
+            AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+            Console.ReadLine();
+            return;
+        }
+
+        // Check components
+        if (!selectedRecipe.HasRequiredComponents(_gameState.Player.CraftingComponents))
+        {
+            var missing = selectedRecipe.GetMissingComponents(_gameState.Player.CraftingComponents);
+            AnsiConsole.MarkupLine($"[red]Missing components:[/] {string.Join(", ", missing)}");
+            AnsiConsole.WriteLine();
+            AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+            Console.ReadLine();
+            return;
+        }
+
+        // Consume components
+        foreach (var (componentType, count) in selectedRecipe.RequiredComponents)
+        {
+            _gameState.Player.CraftingComponents[componentType] -= count;
+            if (_gameState.Player.CraftingComponents[componentType] <= 0)
+            {
+                _gameState.Player.CraftingComponents.Remove(componentType);
+            }
+        }
+
+        // Attempt crafting
+        var result = _craftingService.CraftItem(_gameState.Player, selectedRecipe);
+
+        AnsiConsole.WriteLine();
+        if (result.Success && result.CraftedItem != null)
+        {
+            AnsiConsole.MarkupLine($"[green]✓ {result.Message.EscapeMarkup()}[/]");
+            _gameState.Player.Consumables.Add(result.CraftedItem);
+            AnsiConsole.MarkupLine($"[cyan]Added to inventory:[/] {result.CraftedItem.Name}");
+        }
+        else
+        {
+            AnsiConsole.MarkupLine($"[red]✗ {result.Message.EscapeMarkup()}[/]");
+        }
+
+        AnsiConsole.WriteLine();
+        AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+        Console.ReadLine();
+    }
+
+    // v0.19.10: Runeforging System - Rúnasmiðr Handler
+    static void HandleRuneforge(string target)
+    {
+        AnsiConsole.Clear();
+        AnsiConsole.WriteLine();
+
+        var rule = new Rule("[bold cyan]Runeforging[/]")
+        {
+            Justification = Justify.Center
+        };
+        AnsiConsole.Write(rule);
+        AnsiConsole.WriteLine();
+
+        // Check if at Forge
+        if (!_gameState.CurrentRoom.HasForge)
+        {
+            AnsiConsole.MarkupLine("[red]You need to be at a [Forge] to perform Runeforging.[/]");
+            AnsiConsole.MarkupLine("[dim]Look for runic anvils in settlements or workshops.[/]");
+            AnsiConsole.WriteLine();
+            AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+            Console.ReadLine();
+            return;
+        }
+
+        // Check specialization
+        if (_gameState.Player.Specialization != Specialization.Runasmidr)
+        {
+            AnsiConsole.MarkupLine("[red]You lack the runic knowledge to perform enchantments.[/]");
+            AnsiConsole.MarkupLine("[dim](Requires Rúnasmiðr specialization)[/]");
+            AnsiConsole.WriteLine();
+            AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+            Console.ReadLine();
+            return;
+        }
+
+        // Get available runeforge recipes
+        var availableRecipes = _craftingService.GetAvailableRuneforgeRecipes(_gameState.Player);
+
+        AnsiConsole.MarkupLine("[bold]Available Enchantments:[/]");
+        AnsiConsole.WriteLine();
+
+        var table = new Table();
+        table.Border(TableBorder.Rounded);
+        table.AddColumn("[bold]Recipe[/]");
+        table.AddColumn("[bold]Target[/]");
+        table.AddColumn("[bold]Components Required[/]");
+        table.AddColumn("[bold]DC[/]");
+        table.AddColumn("[bold]Effect[/]");
+
+        foreach (var recipe in availableRecipes)
+        {
+            bool hasComponents = recipe.HasRequiredComponents(_gameState.Player.CraftingComponents);
+            string recipeName = hasComponents ? $"[green]{recipe.Name}[/]" : $"[dim]{recipe.Name}[/]";
+            string targetType = recipe.TargetType == EquipmentType.Weapon ? "Weapon" : "Armor";
+            string components = recipe.GetRequirementsDescription();
+            if (!hasComponents)
+            {
+                var missing = recipe.GetMissingComponents(_gameState.Player.CraftingComponents);
+                components += $"\n[red]Missing: {string.Join(", ", missing)}[/]";
+            }
+
+            table.AddRow(recipeName, targetType, components, recipe.ForgingDC.ToString(), $"{recipe.BaseCharges} charges: {recipe.ChargeEffect}");
+        }
+
+        AnsiConsole.Write(table);
+        AnsiConsole.WriteLine();
+
+        // Show player's components
+        AnsiConsole.MarkupLine("[bold]Your Runeforging Components:[/]");
+        var runicComponents = _gameState.Player.CraftingComponents
+            .Where(kvp => kvp.Key == ComponentType.AetherDust ||
+                          kvp.Key == ComponentType.UruzStone ||
+                          kvp.Key == ComponentType.AlgizTablet ||
+                          kvp.Key == ComponentType.HagalazCrystal)
+            .ToList();
+
+        if (runicComponents.Count == 0)
+        {
+            AnsiConsole.MarkupLine("[dim]  None[/]");
+        }
+        else
+        {
+            foreach (var (componentType, count) in runicComponents)
+            {
+                var component = CraftingComponent.Create(componentType);
+                AnsiConsole.MarkupLine($"  [cyan]{component.Name}[/]: {count}");
+            }
+        }
+
+        AnsiConsole.WriteLine();
+
+        // If no target provided, show instructions
+        if (string.IsNullOrWhiteSpace(target))
+        {
+            AnsiConsole.MarkupLine("[yellow]Usage:[/] runeforge <recipe name> on <item name>");
+            AnsiConsole.MarkupLine("[dim]Example: runeforge algiz imbuement on leather armor[/]");
+            AnsiConsole.WriteLine();
+            AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+            Console.ReadLine();
+            return;
+        }
+
+        // Parse "recipe on item" syntax
+        var parts = target.Split(" on ", StringSplitOptions.TrimEntries);
+        if (parts.Length != 2)
+        {
+            AnsiConsole.MarkupLine("[red]Invalid syntax. Use:[/] runeforge <recipe name> on <item name>");
+            AnsiConsole.WriteLine();
+            AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+            Console.ReadLine();
+            return;
+        }
+
+        string recipeName = parts[0];
+        string itemName = parts[1];
+
+        // Find recipe
+        var selectedRecipe = _craftingService.GetRuneforgeRecipeByName(recipeName);
+        if (selectedRecipe == null)
+        {
+            AnsiConsole.MarkupLine($"[red]Unknown recipe:[/] {recipeName.EscapeMarkup()}");
+            AnsiConsole.WriteLine();
+            AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+            Console.ReadLine();
+            return;
+        }
+
+        // Find item in inventory or equipped
+        Equipment? targetItem = null;
+
+        // Check equipped items first
+        if (_gameState.Player.EquippedWeapon != null &&
+            _gameState.Player.EquippedWeapon.Name.Contains(itemName, StringComparison.OrdinalIgnoreCase))
+        {
+            targetItem = _gameState.Player.EquippedWeapon;
+        }
+        else if (_gameState.Player.EquippedArmor != null &&
+                 _gameState.Player.EquippedArmor.Name.Contains(itemName, StringComparison.OrdinalIgnoreCase))
+        {
+            targetItem = _gameState.Player.EquippedArmor;
+        }
+        else
+        {
+            // Check inventory
+            targetItem = _gameState.Player.Inventory.FirstOrDefault(e =>
+                e.Name.Contains(itemName, StringComparison.OrdinalIgnoreCase));
+        }
+
+        if (targetItem == null)
+        {
+            AnsiConsole.MarkupLine($"[red]Item not found:[/] {itemName.EscapeMarkup()}");
+            AnsiConsole.MarkupLine("[dim](Check your equipped items and inventory)[/]");
+            AnsiConsole.WriteLine();
+            AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+            Console.ReadLine();
+            return;
+        }
+
+        // Check components
+        if (!selectedRecipe.HasRequiredComponents(_gameState.Player.CraftingComponents))
+        {
+            var missing = selectedRecipe.GetMissingComponents(_gameState.Player.CraftingComponents);
+            AnsiConsole.MarkupLine($"[red]Missing components:[/] {string.Join(", ", missing)}");
+            AnsiConsole.WriteLine();
+            AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+            Console.ReadLine();
+            return;
+        }
+
+        // Consume components
+        foreach (var (componentType, count) in selectedRecipe.RequiredComponents)
+        {
+            _gameState.Player.CraftingComponents[componentType] -= count;
+            if (_gameState.Player.CraftingComponents[componentType] <= 0)
+            {
+                _gameState.Player.CraftingComponents.Remove(componentType);
+            }
+        }
+
+        // Perform runeforging
+        var result = _craftingService.RuneforgeItem(_gameState.Player, selectedRecipe, targetItem);
+
+        AnsiConsole.WriteLine();
+        if (result.Success)
+        {
+            AnsiConsole.MarkupLine($"[green]✓ Runeforging successful![/]");
+            AnsiConsole.WriteLine();
+            AnsiConsole.MarkupLine(result.Message.EscapeMarkup());
+
+            if (result.IsCriticalSuccess)
+            {
+                AnsiConsole.MarkupLine($"[bold yellow]⚡ MASTERWORK QUALITY![/]");
+            }
+
+            if (!string.IsNullOrEmpty(result.SagaProperty))
+            {
+                AnsiConsole.MarkupLine($"[bold magenta]✨ SAGA PROPERTY GRANTED: {result.SagaProperty}[/]");
+            }
+        }
+        else
+        {
+            AnsiConsole.MarkupLine($"[red]✗ {result.Message.EscapeMarkup()}[/]");
         }
 
         AnsiConsole.WriteLine();

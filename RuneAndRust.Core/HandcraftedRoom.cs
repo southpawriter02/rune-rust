@@ -36,6 +36,9 @@ public class HandcraftedRoom
     public bool HasQuestObjective { get; set; } = false;
     public string? QuestObjectiveId { get; set; } = null;
 
+    // v0.19.10: Crafting Stations
+    public bool HasForge { get; set; } = false; // Runeforging station (Rúnasmiðr)
+
     // Exits (optional - can be overridden by graph generation)
     public Dictionary<string, string> PreferredExits { get; set; } = new();
     // Key: Direction (North, South, etc.), Value: Preferred connection type (Main, Branch, etc.)
@@ -53,6 +56,7 @@ public class HandcraftedRoom
             IsHandcrafted = true,
             IsBossRoom = IsBossArena,
             IsSanctuary = IsSafeZone,
+            HasForge = HasForge, // v0.19.10: Crafting stations
             // Exits will be set by graph generation
             Exits = new Dictionary<string, string>()
         };
