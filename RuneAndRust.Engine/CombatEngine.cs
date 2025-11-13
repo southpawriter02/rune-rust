@@ -752,7 +752,7 @@ public class CombatEngine
             combatState.AddLogEntry($"  Blight energy surges into {target.Name}!");
             combatState.AddLogEntry($"  Rolled 3d6 damage: {damage}");
             ApplyDamageToEnemy(combatState, target, damage, ability.IgnoresArmor);
-            combatState.AddLogEntry($"  {target.Name} gains [Corrupted] (+20% Stress from all sources for 3 turns)");
+            combatState.AddLogEntry($"  {target.Name} gains [[Corrupted]] (+20% Stress from all sources for 3 turns)");
             return; // Early return
         }
         // [v0.6] Blood Sacrifice - Already handled in trauma cost section (HP check)
@@ -895,7 +895,7 @@ public class CombatEngine
 
             // Apply [Vulnerable] status
             target.VulnerableTurnsRemaining = 3;
-            combatState.AddLogEntry($"  {target.Name} is [Vulnerable] for 3 turns! (+25% damage taken)");
+            combatState.AddLogEntry($"  {target.Name} is [[Vulnerable]] for 3 turns! (+25% damage taken)");
             _log.Information("Status effect applied: Enemy={EnemyName}, Effect=Vulnerable, Duration={Duration}, Ability={AbilityName}",
                 target.Name, 3, ability.Name);
             return; // Early return
@@ -1062,7 +1062,7 @@ public class CombatEngine
             var vulnerableDamage = (int)(damage * 1.25);
             if (vulnerableDamage > damage)
             {
-                combatState.AddLogEntry($"  [Vulnerable] increases damage from {damage} to {vulnerableDamage}!");
+                combatState.AddLogEntry($"  [[Vulnerable]] increases damage from {damage} to {vulnerableDamage}!");
                 damage = vulnerableDamage;
             }
         }
@@ -1441,7 +1441,7 @@ public class CombatEngine
         }
         else if (combatState.Enemies.Any(e => !e.IsAlive && e.Type != EnemyType.RuinWarden)) // Don't show pickup hint for boss (no items on ground after boss fight)
         {
-            combatState.AddLogEntry("[dim]Use 'pickup [item]' to collect equipment loot.[/]");
+            combatState.AddLogEntry("[dim]Use 'pickup [[item]]' to collect equipment loot.[/]");
         }
     }
 

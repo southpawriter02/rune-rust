@@ -1596,9 +1596,9 @@ class Program
             if (combat.Player.SeizedTurnsRemaining > 0)
             {
                 UIHelper.DisplayCombatState(combat);
-                AnsiConsole.MarkupLine($"[red]⛓️ [SEIZED] You are completely immobilized and cannot act![/]");
+                AnsiConsole.MarkupLine($"[red]⛓️ [[SEIZED]] You are completely immobilized and cannot act![/]");
                 AnsiConsole.MarkupLine($"[dim]({combat.Player.SeizedTurnsRemaining} rounds remaining)[/]");
-                combat.AddLogEntry($"{combat.Player.Name} is [Seized] and cannot act!");
+                combat.AddLogEntry($"{combat.Player.Name} is [[Seized]] and cannot act!");
 
                 AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to skip turn...[/]");
                 Console.ReadLine();

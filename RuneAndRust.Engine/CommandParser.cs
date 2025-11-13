@@ -305,16 +305,16 @@ EXPLORATION COMMANDS:
   inventory, inv, i    - View your inventory
 
 EQUIPMENT COMMANDS (v0.3):
-  equip [item]         - Equip weapon or armor from inventory
-  unequip [slot]       - Unequip weapon or armor to inventory
-  pickup [item]        - Pick up item from ground
-  drop [item]          - Drop item from inventory to ground
-  compare [item]       - Compare item to currently equipped
+  equip [[item]]         - Equip weapon or armor from inventory
+  unequip [[slot]]       - Unequip weapon or armor to inventory
+  pickup [[item]]        - Pick up item from ground
+  drop [[item]]          - Drop item from inventory to ground
+  compare [[item]]       - Compare item to currently equipped
 
 COMBAT COMMANDS:
-  attack [target], a   - Attack an enemy
+  attack [[target]], a   - Attack an enemy
   defend, d            - Take a defensive stance
-  ability [name], ab   - Use a special ability
+  ability [[name]], ab   - Use a special ability
   flee, run            - Attempt to flee from combat
 
 PUZZLE COMMANDS:
@@ -323,7 +323,7 @@ PUZZLE COMMANDS:
 NPC INTERACTION (v0.4, v0.8):
   talk, speak          - Talk to NPCs and access dialogue
   quests, questlog     - View all active and completed quests
-  quest [quest name]   - View details of a specific quest
+  quest [[quest name]]   - View details of a specific quest
   reputation, rep      - View faction reputation standings
 
 TRAUMA ECONOMY (v0.5):
@@ -331,12 +331,12 @@ TRAUMA ECONOMY (v0.5):
 
 MERCHANT SYSTEM (v0.9):
   shop, browse         - View merchant's inventory with prices
-  buy [item name]      - Purchase an item from a merchant
-  sell [item name]     - Sell equipment or materials to a merchant
+  buy [[item name]]      - Purchase an item from a merchant
+  sell [[item name]]     - Sell equipment or materials to a merchant
   sell                 - View all items you can sell with prices
 
 WORLD INTERACTION (v0.13):
-  destroy [target]     - Destroy terrain or hazards (smash, break, clear)
+  destroy [[target]]     - Destroy terrain or hazards (smash, break, clear)
   history              - View modifications to the current room
 
 OTHER COMMANDS:

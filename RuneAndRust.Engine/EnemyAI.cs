@@ -720,7 +720,7 @@ public class EnemyAI
             var vulnerableDamage = (int)(damage * 1.25);
             if (vulnerableDamage > damage)
             {
-                combatState.AddLogEntry($"{indent}[Vulnerable] increases damage from {damage} to {vulnerableDamage}!");
+                combatState.AddLogEntry($"{indent}[[Vulnerable]] increases damage from {damage} to {vulnerableDamage}!");
                 damage = vulnerableDamage;
             }
         }
