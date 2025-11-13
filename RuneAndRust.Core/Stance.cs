@@ -18,6 +18,11 @@ public enum StanceType
     Defensive,
 
     /// <summary>
+    /// Skirmisher: Evasive Stance - +3 Defense, -50% damage dealt
+    /// </summary>
+    Evasive,
+
+    /// <summary>
     /// Reserved for future specialization abilities (e.g., Aggressive Stance)
     /// </summary>
     Aggressive
@@ -34,6 +39,11 @@ public class Stance
     /// Flat damage reduction bonus (Soak)
     /// </summary>
     public int SoakBonus { get; set; } = 0;
+
+    /// <summary>
+    /// Defense score bonus (for Evasive Stance)
+    /// </summary>
+    public int DefenseBonus { get; set; } = 0;
 
     /// <summary>
     /// Damage dealt multiplier (1.0 = normal, 0.75 = -25%, 1.25 = +25%)
@@ -68,7 +78,23 @@ public class Stance
         {
             Type = StanceType.Balanced,
             SoakBonus = 0,
+            DefenseBonus = 0,
             DamageMultiplier = 1.0f,
+            DefensiveBonusDice = 0
+        };
+    }
+
+    /// <summary>
+    /// Factory method for Evasive Stance (Skirmisher)
+    /// </summary>
+    public static Stance CreateEvasiveStance()
+    {
+        return new Stance
+        {
+            Type = StanceType.Evasive,
+            SoakBonus = 0,
+            DefenseBonus = 3, // +3 Defense
+            DamageMultiplier = 0.5f, // -50% damage
             DefensiveBonusDice = 0
         };
     }
@@ -82,6 +108,7 @@ public class Stance
         {
             Type = StanceType.Aggressive,
             SoakBonus = -2,
+            DefenseBonus = 0,
             DamageMultiplier = 1.25f, // +25% damage
             DefensiveBonusDice = -1
         };

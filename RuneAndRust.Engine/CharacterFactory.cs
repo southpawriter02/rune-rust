@@ -32,6 +32,9 @@ public class CharacterFactory
             case CharacterClass.Adept:
                 InitializeAdept(character);
                 break;
+            case CharacterClass.Skirmisher:
+                InitializeSkirmisher(character);
+                break;
         }
 
         // [v0.5] Add heretical abilities (available to all classes)
@@ -329,6 +332,55 @@ public class CharacterFactory
         };
     }
 
+    private static void InitializeSkirmisher(PlayerCharacter character)
+    {
+        // v0.19.9: Create formal archetype instance
+        var skirmisherArchetype = new SkirmisherArchetype();
+        character.Archetype = skirmisherArchetype;
+
+        // Stats from archetype (FINESSE primary, WITS secondary)
+        character.Attributes = skirmisherArchetype.GetBaseAttributes();
+
+        // Resources (base values before equipment)
+        character.MaxHP = 40; // Moderate HP (higher than Mystic, lower than Warrior)
+        character.HP = 40;
+        character.MaxStamina = 35; // Moderate stamina pool
+        character.Stamina = 35;
+        character.AP = 10;
+
+        // Legacy weapon (v0.1/v0.2 compatibility)
+        character.WeaponName = "Makeshift Spear";
+        character.WeaponAttribute = "finesse";
+        character.BaseDamage = 1;
+
+        // Starting equipment (v0.3)
+        var startingWeapon = EquipmentDatabase.GetByName("Makeshift Spear");
+        var startingArmor = EquipmentDatabase.GetByName("Tattered Leathers");
+
+        if (startingWeapon != null)
+        {
+            character.EquippedWeapon = startingWeapon;
+        }
+
+        if (startingArmor != null)
+        {
+            character.EquippedArmor = startingArmor;
+        }
+
+        // v0.19.9: Grant 3 starting abilities automatically from archetype
+        // 1. Quick Strike - FINESSE-based attack (15 Stamina)
+        // 2. Evasive Stance - Defensive stance (+3 Defense, -50% damage)
+        // 3. Fleet Footed - Passive +2 Vigilance
+        character.Abilities = skirmisherArchetype.GetStartingAbilities();
+
+        // v0.19.9: Initialize stance system for Skirmisher
+        character.ActiveStance = Stance.CreateBalancedStance();
+
+        // Recalculate stats to apply Fleet Footed bonus (if needed)
+        var equipService = new EquipmentService();
+        equipService.RecalculatePlayerStats(character);
+    }
+
     public static string GetClassDescription(CharacterClass characterClass)
     {
         return characterClass switch
@@ -361,6 +413,14 @@ public class CharacterFactory
                 "Weapon: Simple Staff (WITS-based)\n" +
                 "Abilities: Improvised Strike, Analyze, Keen Eye\n" +
                 "Specializations (unlock with 3 PP): Bone-Setter, Jötun-Reader, Skald",
+
+            CharacterClass.Skirmisher =>
+                "[v0.19.9] An agility-based combatant who excels at evasion, precision, and speed. High Defense but lower endurance. Acts first in combat.\n" +
+                "Starting Stats: MIGHT 2, FINESSE 4, WITS 3, WILL 2, STURDINESS 3\n" +
+                "HP: 40 | Stamina: 35\n" +
+                "Weapon: Makeshift Spear (FINESSE-based)\n" +
+                "Abilities: Quick Strike, Evasive Stance, Fleet Footed\n" +
+                "Specializations (coming soon): Myrk-gengr, Veiðimaðr, Hlekkr-master",
 
             _ => "Unknown class"
         };
