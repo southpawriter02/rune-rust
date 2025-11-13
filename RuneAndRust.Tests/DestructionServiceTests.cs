@@ -47,7 +47,7 @@ public class DestructionServiceTests
     {
         // Arrange
         var room = CreateTestRoom();
-        var pillar = new StaticTerrain
+        var pillar = new PopStaticTerrain
         {
             TerrainId = "pillar_1",
             Name = "Collapsed Pillar",
@@ -81,7 +81,7 @@ public class DestructionServiceTests
     {
         // Arrange
         var room = CreateTestRoom();
-        var grating = new StaticTerrain
+        var grating = new PopStaticTerrain
         {
             TerrainId = "grating_1",
             Name = "Corroded Grating",
@@ -114,7 +114,7 @@ public class DestructionServiceTests
     {
         // Arrange
         var room = CreateTestRoom();
-        var hazard = new DynamicHazard
+        var hazard = new PopDynamicHazard
         {
             HazardId = "steam_vent_1",
             Name = "Steam Vent",
@@ -175,8 +175,8 @@ public class DestructionServiceTests
         // Arrange
         var room = CreateTestRoom();
 
-        var pillar = new StaticTerrain { TerrainId = "pillar_1", Name = "Pillar", IsDestructible = true, HP = 30 };
-        var hazard = new DynamicHazard { HazardId = "steam_vent_1", Name = "Steam Vent", Type = DynamicHazardType.SteamVent };
+        var pillar = new PopStaticTerrain { TerrainId = "pillar_1", Name = "Pillar", IsDestructible = true, HP = 30 };
+        var hazard = new PopDynamicHazard { HazardId = "steam_vent_1", Name = "Steam Vent", Type = DynamicHazardType.SteamVent };
         var enemy = new Enemy { Name = "Servitor", Type = EnemyType.CorruptedServitor, HP = 10, MaxHP = 10 };
 
         room.StaticTerrain.Add(pillar);
@@ -211,7 +211,7 @@ public class DestructionServiceTests
         // Arrange
         var room = CreateTestRoom();
         var player = CreateTestPlayer(might: 5);
-        var terrain = new StaticTerrain
+        var terrain = new PopStaticTerrain
         {
             TerrainId = "pillar_1",
             Name = "Collapsed Pillar",
@@ -236,7 +236,7 @@ public class DestructionServiceTests
         // Arrange
         var room = CreateTestRoom();
         var player = CreateTestPlayer();
-        var terrain = new StaticTerrain
+        var terrain = new PopStaticTerrain
         {
             TerrainId = "chasm_1",
             Name = "Chasm",
@@ -261,7 +261,7 @@ public class DestructionServiceTests
         // Arrange
         var room = CreateTestRoom();
         var player = CreateTestPlayer();
-        var hazard = new DynamicHazard
+        var hazard = new PopDynamicHazard
         {
             HazardId = "steam_vent_1",
             Name = "Steam Vent",
