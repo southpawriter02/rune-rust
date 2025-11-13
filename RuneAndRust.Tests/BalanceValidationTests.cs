@@ -4,6 +4,10 @@ using RuneAndRust.Engine;
 using RuneAndRust.Engine.Telemetry;
 using RuneAndRust.Engine.CoherentGlitch;
 using RuneAndRust.Core.Population;
+using PopDynamicHazard = RuneAndRust.Core.Population.DynamicHazard;
+using PopStaticTerrain = RuneAndRust.Core.Population.StaticTerrain;
+using PopLootNode = RuneAndRust.Core.Population.LootNode;
+using PopAmbientCondition = RuneAndRust.Core.Population.AmbientCondition;
 
 namespace RuneAndRust.Tests;
 
@@ -217,15 +221,15 @@ public class BalanceValidationTests
         {
             RoomId = "room_1",
             // DormantProcesses = new List<DormantProcess>
-            {
-                new DormantProcess { ThreatLevel = ThreatLevel.Low },
-                new DormantProcess { ThreatLevel = ThreatLevel.Medium }
-            },
-            DynamicHazards = new List<DynamicHazard>
+            // {
+            //     new DormantProcess { ThreatLevel = ThreatLevel.Low },
+            //     new DormantProcess { ThreatLevel = ThreatLevel.Medium }
+            // },
+            DynamicHazards = new List<PopDynamicHazard>
             {
                 new SteamVentHazard()
             },
-            LootNodes = new List<LootNode>
+            LootNodes = new List<PopLootNode>
             {
                 new ResourceVein { EstimatedCogsValue = 30 },
                 new SalvageableWreckage { EstimatedCogsValue = 40 }
@@ -236,10 +240,10 @@ public class BalanceValidationTests
         {
             RoomId = "room_2",
             // DormantProcesses = new List<DormantProcess>
-            {
-                new DormantProcess { ThreatLevel = ThreatLevel.High, IsChampion = true }
-            },
-            LootNodes = new List<LootNode>
+            // {
+            //     new DormantProcess { ThreatLevel = ThreatLevel.High, IsChampion = true }
+            // },
+            LootNodes = new List<PopLootNode>
             {
                 new HiddenContainer { EstimatedCogsValue = 120 }
             }

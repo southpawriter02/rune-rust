@@ -2929,7 +2929,7 @@ class Program
                 // Add rubble if applicable
                 if (result.SpawnRubble)
                 {
-                    currentRoom.StaticTerrain.Add(new Population.RubblePile
+                    currentRoom.StaticTerrain.Add(new RuneAndRust.Core.Population.RubblePile
                     {
                         TerrainId = $"rubble_from_{terrain.TerrainId}",
                         Description = $"Debris from the destroyed {terrain.Name.ToLower()}.",
@@ -3068,7 +3068,7 @@ class Program
     }
 
     // v0.13: Helper methods for destruction system
-    private static Population.StaticTerrain? FindTerrainByName(Room room, string target)
+    private static RuneAndRust.Core.Population.StaticTerrain? FindTerrainByName(Room room, string target)
     {
         var normalized = target.ToLower().Trim();
 
@@ -3078,7 +3078,7 @@ class Program
             normalized.Contains(t.Type.ToString().ToLower()));
     }
 
-    private static Population.DynamicHazard? FindHazardByName(Room room, string target)
+    private static RuneAndRust.Core.Population.DynamicHazard? FindHazardByName(Room room, string target)
     {
         var normalized = target.ToLower().Trim();
 

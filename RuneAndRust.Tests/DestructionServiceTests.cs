@@ -4,6 +4,10 @@ using RuneAndRust.Core.Population;
 using RuneAndRust.Engine;
 using RuneAndRust.Persistence;
 using System.Text.Json;
+using PopDynamicHazard = RuneAndRust.Core.Population.DynamicHazard;
+using PopStaticTerrain = RuneAndRust.Core.Population.StaticTerrain;
+using PopLootNode = RuneAndRust.Core.Population.LootNode;
+using PopAmbientCondition = RuneAndRust.Core.Population.AmbientCondition;
 
 namespace RuneAndRust.Tests;
 
@@ -309,11 +313,11 @@ public class DestructionServiceTests
             Name = "Test Room",
             Description = "A test room",
             IsProcedurallyGenerated = true,
-            StaticTerrain = new List<StaticTerrain>(),
-            DynamicHazards = new List<DynamicHazard>(),
+            StaticTerrain = new List<PopStaticTerrain>(),
+            DynamicHazards = new List<PopDynamicHazard>(),
             Enemies = new List<Enemy>(),
-            LootNodes = new List<LootNode>(),
-            AmbientConditions = new List<AmbientCondition>(),
+            LootNodes = new List<PopLootNode>(),
+            AmbientConditions = new List<PopAmbientCondition>(),
             Exits = new Dictionary<string, string>()
         };
     }
