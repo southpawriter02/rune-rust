@@ -23,7 +23,7 @@ public class DungeonGenerationBalanceTests
         // Configure Serilog for test output
         Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Warning() // Reduce noise in test output
-            .WriteTo.Console()
+            // .WriteTo.Console() // Serilog.Sinks.Console not available
             .CreateLogger();
 
         _templateLibrary = new TemplateLibrary("Data/RoomTemplates");

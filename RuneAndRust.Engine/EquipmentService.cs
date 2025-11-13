@@ -408,6 +408,10 @@ public class EquipmentService
     {
         int upgradeScore = 0;
 
+        // Calculate dice and bonus differences
+        comparison.DamageDiceDiff = proposed.DamageDice - current.DamageDice;
+        comparison.DamageBonusDiff = proposed.DamageBonus - current.DamageBonus;
+
         // Compare damage
         int currentAvgDamage = current.DamageDice * 3 + current.DamageBonus; // Avg of d6 is 3.5, we use 3 for simplicity
         int proposedAvgDamage = proposed.DamageDice * 3 + proposed.DamageBonus;
@@ -455,6 +459,10 @@ public class EquipmentService
     private void CompareArmor(Equipment current, Equipment proposed, EquipmentComparison comparison)
     {
         int upgradeScore = 0;
+
+        // Calculate bonus differences
+        comparison.HPBonusDiff = proposed.HPBonus - current.HPBonus;
+        comparison.DefenseBonusDiff = proposed.DefenseBonus - current.DefenseBonus;
 
         // Compare HP bonus
         if (proposed.HPBonus > current.HPBonus)
@@ -547,4 +555,12 @@ public class EquipmentComparison
     public Equipment Proposed { get; set; } = null!;
     public bool IsUpgrade { get; set; }
     public List<string> Differences { get; set; } = new();
+
+    // Weapon comparison properties
+    public int DamageDiceDiff { get; set; }
+    public int DamageBonusDiff { get; set; }
+
+    // Armor comparison properties
+    public int HPBonusDiff { get; set; }
+    public int DefenseBonusDiff { get; set; }
 }

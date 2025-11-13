@@ -218,7 +218,7 @@ public class QuestSystemTests
         var dungeon = CreateTestDungeon();
 
         // Act
-        var quest = generator.GenerateClearSectorQuest(dungeon, seed: 12345);
+        var quest = generator.GenerateClearSectorQuest(dungeon, dungeonSeed: 12345);
 
         // Assert
         Assert.Equal(QuestType.Dynamic, quest.Type);
@@ -237,8 +237,8 @@ public class QuestSystemTests
         var largeDungeon = CreateTestDungeon(roomCount: 10);
 
         // Act
-        var smallQuest = generator.GenerateClearSectorQuest(smallDungeon, seed: 1);
-        var largeQuest = generator.GenerateClearSectorQuest(largeDungeon, seed: 2);
+        var smallQuest = generator.GenerateClearSectorQuest(smallDungeon, dungeonSeed: 1);
+        var largeQuest = generator.GenerateClearSectorQuest(largeDungeon, dungeonSeed: 2);
 
         // Assert
         Assert.True(largeQuest.Reward.Experience > smallQuest.Reward.Experience);
@@ -260,7 +260,7 @@ public class QuestSystemTests
                 Template = new RoomTemplate
                 {
                     TemplateId = $"test_room_{i}",
-                    Name = $"Test Room {i}",
+                    // Name = $"Test Room {i}", // RoomTemplate doesn't have Name property
                     Archetype = RoomArchetype.Chamber
                 }
             };

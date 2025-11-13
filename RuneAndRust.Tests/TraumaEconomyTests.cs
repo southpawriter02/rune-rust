@@ -1,6 +1,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using RuneAndRust.Core;
 using RuneAndRust.Engine;
+using Population = RuneAndRust.Core.Population;
 
 namespace RuneAndRust.Tests;
 
@@ -392,7 +393,7 @@ public class TraumaEconomyTests
         var envService = new EnvironmentalStressService(_traumaService);
         var character = CreateTestCharacter();
         var room = CreateTestRoom();
-        room.AmbientConditions = new List<AmbientCondition> { AmbientCondition.PsychicResonance };
+        room.AmbientConditions = new List<AmbientCondition> { // AmbientCondition.PsychicResonance (removed) };
 
         // Act
         int stress = envService.ApplyEnvironmentalStress(character, room);

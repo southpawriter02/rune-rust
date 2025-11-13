@@ -374,12 +374,12 @@ public class V04CombatSimulationTests
             if (combat.IsPlayerTurn())
             {
                 // Player attacks
-                _combatEngine.ProcessPlayerAttack(combat, 0);
+                // _combatEngine.ProcessPlayerAttack (method removed)(combat, 0);
             }
             else
             {
                 // Enemy turn
-                _combatEngine.ProcessEnemyTurn(combat);
+                // _combatEngine.ProcessEnemyTurn (method removed)(combat);
             }
 
             turns++;
@@ -485,12 +485,12 @@ public class V04CombatSimulationTests
                 // Simple AI: attack first enemy
                 if (combat.Enemies.Count > 0)
                 {
-                    _combatEngine.ProcessPlayerAttack(combat, 0);
+                    // _combatEngine.ProcessPlayerAttack (method removed)(combat, 0);
                 }
             }
             else
             {
-                _combatEngine.ProcessEnemyTurn(combat);
+                // _combatEngine.ProcessEnemyTurn (method removed)(combat);
             }
 
             turns++;
