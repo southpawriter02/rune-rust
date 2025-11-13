@@ -1,5 +1,8 @@
 using Spectre.Console;
 using RuneAndRust.Core;
+using RuneAndRust.Core.Dialogue;
+using RuneAndRust.Core.Population;
+using RuneAndRust.Core.Quests;
 using RuneAndRust.Engine;
 using RuneAndRust.Persistence;
 using Serilog;
@@ -189,7 +192,7 @@ class Program
                     if (npc is Merchant merchant)
                     {
                         _merchantService.InitializeCoreStock(merchant);
-                        _merchantService.RestockInventory(merchant, _gameState.CurrentDateTime);
+                        _merchantService.RestockInventory(merchant, DateTime.Now);
                         Log.Information("Initialized merchant: {MerchantName} ({MerchantType}) in Room {RoomId}",
                             merchant.Name, merchant.Type, roomId);
                     }
@@ -285,7 +288,7 @@ class Program
         var selectedSave = saves[selectedIndex];
 
         // Load the game (including equipment, room items, and NPC states - v0.3, v0.8)
-        var (loadedPlayer, loadedWorldState, roomItemsJson, npcStatesJson) = _saveRepository.LoadGame(selectedSave.CharacterName);
+        var (loadedPlayer, loadedWorldState, roomItemsJson, npcStatesJson, dungeonSeed, biomeId) = _saveRepository.LoadGame(selectedSave.CharacterName);
 
         if (loadedPlayer == null || loadedWorldState == null)
         {
@@ -306,13 +309,13 @@ class Program
         // Restore room items (v0.3)
         if (!string.IsNullOrEmpty(roomItemsJson))
         {
-            _saveRepository.RestoreRoomItems(_gameState.World, roomItemsJson);
+            _saveRepository.RestoreRoomItems(_gameState.World.Rooms, roomItemsJson);
         }
 
         // Restore NPC states (v0.8)
         if (!string.IsNullOrEmpty(npcStatesJson))
         {
-            _saveRepository.RestoreNPCStates(_gameState.World, npcStatesJson);
+            _saveRepository.RestoreNPCStates(_gameState.World.Rooms, npcStatesJson);
         }
 
         // Set current room
@@ -466,7 +469,6 @@ class Program
         var panel = new Panel(description)
         {
             Border = BoxBorder.Rounded,
-            BorderColor = Color.Yellow,
             Padding = new Padding(2, 1)
         };
         AnsiConsole.Write(panel);
@@ -539,8 +541,7 @@ class Program
             )
             {
                 Border = BoxBorder.Rounded,
-                BorderColor = Color.Yellow,
-                Padding = new Padding(1, 0)
+                    Padding = new Padding(1, 0)
             };
             AnsiConsole.Write(tutorialPanel);
             AnsiConsole.WriteLine();
@@ -585,8 +586,7 @@ class Program
             )
             {
                 Border = BoxBorder.Rounded,
-                BorderColor = Color.Yellow,
-                Padding = new Padding(1, 0)
+                    Padding = new Padding(1, 0)
             };
             AnsiConsole.Write(npcPanel);
             AnsiConsole.WriteLine();
@@ -818,7 +818,7 @@ class Program
             {
                 AnsiConsole.MarkupLine("[red bold]You have fallen![/]");
                 AnsiConsole.WriteLine();
-                HandleDeath();
+                _gameState.CurrentPhase = GamePhase.GameOver;
                 return;
             }
 
@@ -861,7 +861,6 @@ class Program
         var panel = new Panel(helpText)
         {
             Border = BoxBorder.Rounded,
-            BorderColor = Color.Cyan,
             Header = new PanelHeader("[bold]HELP[/]")
         };
         AnsiConsole.Write(panel);
@@ -895,7 +894,6 @@ class Program
         var panel = new Panel(legendText)
         {
             Border = BoxBorder.Rounded,
-            BorderColor = Color.Yellow,
             Padding = new Padding(2, 1)
         };
         AnsiConsole.Write(panel);
@@ -1088,7 +1086,7 @@ class Program
                 new SelectionPrompt<string>()
                     .Title("[cyan]Select a recipe to craft:[/]")
                     .AddChoices(choices)
-                    .HighlightStyle(new Style(Color.Cyan))
+                    .HighlightStyle(new Style(Color.Cyan1))
             );
 
             if (choice.Contains("Back to Rest"))
@@ -1513,7 +1511,7 @@ class Program
 
             _gameState.ClearCurrentRoom();
 
-            var legendGain = _gameState.CurrentRoom.Enemies[0].LegendValue;
+            var legendGain = _gameState.CurrentRoom.Enemies[0].BaseLegendValue;
             _gameState.Player.CurrentLegend += legendGain;
             AnsiConsole.MarkupLine($"[yellow]+ {legendGain} Legend[/] (Peaceful Resolution)");
 
@@ -1747,7 +1745,7 @@ class Program
             new SelectionPrompt<string>()
                 .Title("[yellow]Select a consumable to use:[/]")
                 .AddChoices(choices)
-                .HighlightStyle(new Style(Color.Cyan))
+                .HighlightStyle(new Style(Color.Cyan1))
         );
 
         if (choice == "Cancel")
@@ -1865,7 +1863,7 @@ class Program
                         combat.CurrentRoom,
                         enemy,
                         saveId.Value,
-                        combat.CurrentTurnNumber,
+                        combat.CurrentTurnIndex,
                         droppedLoot: true); // Loot generation happens next
 
                     Log.Debug("Recorded enemy defeat to world state: {EnemyName} in {RoomId}",
@@ -1922,7 +1920,6 @@ class Program
         )
         {
             Border = BoxBorder.Rounded,
-            BorderColor = Color.Green,
             Padding = new Padding(2, 1)
         };
         AnsiConsole.Write(rewardsPanel);
@@ -2151,7 +2148,7 @@ class Program
             new SelectionPrompt<string>()
                 .Title($"[yellow]Available Specializations for {player.Class}:[/]")
                 .AddChoices(choices)
-                .HighlightStyle(new Style(Color.Cyan))
+                .HighlightStyle(new Style(Color.Cyan1))
         );
 
         if (choice == "Cancel")
@@ -2177,7 +2174,6 @@ class Program
         var panel = new Panel(description)
         {
             Border = BoxBorder.Rounded,
-            BorderColor = Color.Cyan,
             Padding = new Padding(2, 1)
         };
         AnsiConsole.Write(panel);
@@ -2589,7 +2585,6 @@ class Program
         var panel = new Panel($"[bold]{quest.Title.EscapeMarkup()}[/]\n\n{quest.Description.EscapeMarkup()}")
         {
             Border = BoxBorder.Rounded,
-            BorderColor = Color.Yellow,
             Padding = new Padding(1, 0)
         };
         AnsiConsole.Write(panel);
@@ -2687,7 +2682,7 @@ class Program
         AnsiConsole.WriteLine();
 
         // Check and restock if needed
-        _merchantService.CheckAndRestock(merchant, _gameState.CurrentDateTime);
+        _merchantService.CheckAndRestock(merchant, DateTime.Now);
 
         // Display inventory with prices
         var shopListing = _merchantService.GetShopListingWithPrices(merchant, _gameState.Player, _pricingService);
@@ -2934,16 +2929,10 @@ class Program
                 // Add rubble if applicable
                 if (result.SpawnRubble)
                 {
-                    currentRoom.StaticTerrain.Add(new StaticTerrain
+                    currentRoom.StaticTerrain.Add(new Population.RubblePile
                     {
                         TerrainId = $"rubble_from_{terrain.TerrainId}",
-                        Name = "Rubble Pile",
                         Description = $"Debris from the destroyed {terrain.Name.ToLower()}.",
-                        Type = StaticTerrainType.RubblePile,
-                        CoverProvided = CoverType.Partial,
-                        AccuracyModifier = -2,
-                        IsDifficultTerrain = true,
-                        MovementCostModifier = 2,
                         IsDestructible = true,
                         HP = 15
                     });
@@ -2989,7 +2978,7 @@ class Program
                     // Apply damage if it's an explosive hazard
                     if (hazard.Type == DynamicHazardType.PressurizedPipe)
                     {
-                        var damage = _diceService.RollDice(2, 6);
+                        var damage = _diceService.RollDamage(2);
                         _gameState.Player.HP -= damage;
                         AnsiConsole.MarkupLine($"[red]You take {damage} damage from the explosion![/]");
 
@@ -3089,12 +3078,12 @@ class Program
             normalized.Contains(t.Type.ToString().ToLower()));
     }
 
-    private static DynamicHazard? FindHazardByName(Room room, string target)
+    private static Population.DynamicHazard? FindHazardByName(Room room, string target)
     {
         var normalized = target.ToLower().Trim();
 
         return room.DynamicHazards.FirstOrDefault(h =>
-            h.Name.ToLower().Contains(normalized) ||
+            h.HazardName.ToLower().Contains(normalized) ||
             h.Type.ToString().ToLower().Contains(normalized) ||
             normalized.Contains(h.Type.ToString().ToLower()));
     }

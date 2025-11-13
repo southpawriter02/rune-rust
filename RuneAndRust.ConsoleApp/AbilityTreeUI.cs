@@ -139,7 +139,7 @@ public class AbilityTreeUI
     {
         var table = new Table()
             .Border(TableBorder.Rounded)
-            .BorderColor(Color.Cyan);
+            .BorderColor(Color.Cyan1);
 
         table.AddColumn(new TableColumn("[bold]Tier[/]").Centered());
         table.AddColumn(new TableColumn("[bold]Ability[/]"));
@@ -288,10 +288,10 @@ public class AbilityTreeUI
         var detailsPanel = new Panel(detailsMarkup)
         {
             Border = BoxBorder.Rounded,
-            BorderColor = Color.Yellow,
             Header = new PanelHeader("[bold]ABILITY DETAILS[/]"),
             Padding = new Padding(2, 1)
         };
+        detailsPanel.BorderColor(Color.Yellow);
         AnsiConsole.Write(detailsPanel);
         AnsiConsole.WriteLine();
 

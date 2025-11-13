@@ -218,10 +218,10 @@ public class SpecializationUI
         var overviewPanel = new Panel(overviewMarkup)
         {
             Border = BoxBorder.Rounded,
-            BorderColor = Color.Yellow,
             Header = new PanelHeader("[bold]SPECIALIZATION OVERVIEW[/]"),
             Padding = new Padding(2, 1)
         };
+        overviewPanel.BorderColor(Color.Yellow);
         AnsiConsole.Write(overviewPanel);
         AnsiConsole.WriteLine();
 
@@ -298,7 +298,7 @@ public class SpecializationUI
 
         var table = new Table()
             .Border(TableBorder.Rounded)
-            .BorderColor(Color.Cyan);
+            .BorderColor(Color.Cyan1);
 
         table.AddColumn(new TableColumn("[bold]Tier[/]").Centered());
         table.AddColumn(new TableColumn("[bold]Abilities (9 Total)[/]"));
