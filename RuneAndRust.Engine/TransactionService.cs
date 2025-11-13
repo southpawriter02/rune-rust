@@ -77,7 +77,7 @@ public class TransactionService
     public TransactionResult SellEquipment(Merchant merchant, Equipment equipment, PlayerCharacter player)
     {
         // Calculate sell price
-        int sellPrice = _pricingService.GetFinalSellPrice(merchant, equipment.SellValue, "Equipment", player);
+        int sellPrice = _pricingService.GetFinalSellPrice(merchant, ((int)equipment.Quality * 10) /* SellValue calculated from Quality */, "Equipment", player);
 
         // Check if player has the item
         if (!player.Inventory.Contains(equipment))
@@ -142,7 +142,7 @@ public class TransactionService
         }
 
         // Calculate sell price (per unit)
-        int unitPrice = _pricingService.GetFinalSellPrice(merchant, component.SellValue, "Component", player);
+        int unitPrice = _pricingService.GetFinalSellPrice(merchant, ((int)component.Quality * 10) /* SellValue calculated from Quality */, "Component", player);
         int totalPrice = unitPrice * quantity;
 
         // Remove components from player

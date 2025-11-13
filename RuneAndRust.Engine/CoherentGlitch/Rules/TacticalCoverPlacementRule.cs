@@ -19,13 +19,13 @@ public class TacticalCoverPlacementRule : CoherentGlitchRule
 
     public override bool ShouldApply(Room room, PopulationContext context)
     {
-        return room.DormantProcesses.Any();
+        return false /* room.Enemies /* DormantProcesses removed, using Enemies */ removed in v0.11 */;
     }
 
     public override void Apply(Room room, PopulationContext context)
     {
         // Find enemy positions
-        var enemyPositions = room.DormantProcesses
+        var enemyPositions = room.Enemies /* DormantProcesses removed, using Enemies */
             .Where(e => e.SpawnPosition.HasValue)
             .Select(e => e.SpawnPosition!.Value)
             .ToList();
@@ -34,7 +34,7 @@ public class TacticalCoverPlacementRule : CoherentGlitchRule
             return;
 
         // Find existing cover terrain
-        var coverTerrain = room.StaticTerrainFeatures
+        var coverTerrain = room.StaticTerrain
             .Where(t => t.ProvidesTouchCover)
             .ToList();
 
@@ -57,7 +57,7 @@ public class TacticalCoverPlacementRule : CoherentGlitchRule
                 cover.Description = "Debris strategically positioned for cover. " +
                                   "Almost as if someone placed it here deliberately.";
 
-                room.StaticTerrainFeatures.Add(cover);
+                room.StaticTerrain.Add(cover);
 
                 _log.Debug("Coherent Glitch Rule spawned tactical cover: " +
                     "Room={RoomId}, CoverPos={Position}",

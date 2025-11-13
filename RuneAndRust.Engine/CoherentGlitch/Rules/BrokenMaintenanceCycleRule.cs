@@ -23,15 +23,15 @@ public class BrokenMaintenanceCycleRule : CoherentGlitchRule
         if (!room.Name.Contains("maintenance", StringComparison.OrdinalIgnoreCase))
             return false;
 
-        return room.DormantProcesses.Any(e =>
-            e.ProcessType.Contains("haugbui", StringComparison.OrdinalIgnoreCase));
+        return /* room.Enemies /* DormantProcesses removed, using Enemies */.Any(e =>
+            e.ProcessType.Contains("haugbui", StringComparison.OrdinalIgnoreCase) removed */ 0);
     }
 
     public override void Apply(Room room, PopulationContext context)
     {
         // Narrative: Haugbui-Class automaton stuck in maintenance loop
 
-        var haugbui = room.DormantProcesses
+        var haugbui = room.Enemies /* DormantProcesses removed, using Enemies */
             .FirstOrDefault(e => e.ProcessType.Contains("haugbui", StringComparison.OrdinalIgnoreCase));
 
         if (haugbui != null)
@@ -54,7 +54,7 @@ public class BrokenMaintenanceCycleRule : CoherentGlitchRule
                                    "The work of an obsessive automaton. " +
                                    "It's been doing this for 800 years.";
 
-                room.StaticTerrainFeatures.Add(rubble);
+                room.StaticTerrain.Add(rubble);
             }
 
             // 2. Add broken tools (what it's trying to maintain)
@@ -81,7 +81,7 @@ public class BrokenMaintenanceCycleRule : CoherentGlitchRule
             machinery.Description = "Ancient environmental control systems, long dead. " +
                                   "The Haugbui continues its futile maintenance routine.";
 
-            room.StaticTerrainFeatures.Add(machinery);
+            room.StaticTerrain.Add(machinery);
 
             // 4. Modify enemy behavior note
             haugbui.BehaviorNote = "Obsessively organizing debris. " +

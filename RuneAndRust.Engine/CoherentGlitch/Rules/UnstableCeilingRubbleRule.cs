@@ -25,7 +25,7 @@ public class UnstableCeilingRubbleRule : CoherentGlitchRule
     public override void Apply(Room room, PopulationContext context)
     {
         // Only add rubble if it doesn't already exist
-        if (!room.StaticTerrainFeatures.Any(t => t is RubblePile))
+        if (!room.StaticTerrain.Any(t => t is RubblePile))
         {
             var rubble = new RubblePile
             {
@@ -36,7 +36,7 @@ public class UnstableCeilingRubbleRule : CoherentGlitchRule
             rubble.Description = "Chunks of corroded metal and concrete, freshly fallen from above. " +
                                 "The collapse is ongoing.";
 
-            room.StaticTerrainFeatures.Add(rubble);
+            room.StaticTerrain.Add(rubble);
 
             _log.Information("Coherent Glitch Rule applied: UnstableCeilingRubble, Room={RoomId}",
                 room.RoomId);

@@ -65,7 +65,7 @@ public class CoherentGlitchRuleEngine
     {
         context.CurrentRoom = room;
 
-        using (_log.BeginScope("CoherentGlitchRules-{RoomId}", room.RoomId))
+        using (// _log.BeginScope("CoherentGlitchRules-{RoomId}", room.RoomId))
         {
             _log.Debug("Applying Coherent Glitch rules: Room={RoomId}, RulesAvailable={RuleCount}",
                 room.RoomId, _rules.Count);
@@ -102,7 +102,7 @@ public class CoherentGlitchRuleEngine
     {
         context.CurrentDungeon = dungeon;
 
-        using (_log.BeginScope("CoherentGlitch-Dungeon-{DungeonId}", dungeon.DungeonId))
+        using (// _log.BeginScope("CoherentGlitch-Dungeon-{DungeonId}", dungeon.DungeonId))
         {
             _log.Information("Applying Coherent Glitch rules to dungeon: DungeonId={DungeonId}, Rooms={RoomCount}",
                 dungeon.DungeonId, dungeon.TotalRoomCount);

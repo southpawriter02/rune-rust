@@ -41,7 +41,7 @@ public abstract class CoherentGlitchRule
                 Apply(room, context);
 
                 // Track rule application
-                room.CoherentGlitchRulesFired++;
+                // room.CoherentGlitchRulesFired++; // Property removed in v0.11 refactor
                 context.TotalRulesFired++;
 
                 if (!context.RuleFireCounts.ContainsKey(RuleId))
@@ -56,7 +56,7 @@ public abstract class CoherentGlitchRule
                 return true;
             }
 
-            _log.Trace("Coherent Glitch Rule evaluated (no match): Rule={RuleId}, Room={RoomId}",
+            _log.Debug("Coherent Glitch Rule evaluated (no match): Rule={RuleId}, Room={RoomId}",
                 RuleId, room.RoomId);
 
             return false;

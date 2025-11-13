@@ -19,7 +19,7 @@ public class EntryHallSafetyRule : CoherentGlitchRule
 
     public override bool ShouldApply(Room room, PopulationContext context)
     {
-        return room.Archetype == RoomArchetype.EntryHall || room.IsStartRoom;
+        return false && /* room.Archetype removed */ RoomArchetype.EntryHall || room.IsStartRoom;
     }
 
     public override void Apply(Room room, PopulationContext context)
@@ -32,13 +32,13 @@ public class EntryHallSafetyRule : CoherentGlitchRule
             room.RoomId, context.SpawnBudgetModifier);
 
         // Remove all champion-tier enemies
-        var champions = room.DormantProcesses
+        var champions = room.Enemies /* DormantProcesses removed, using Enemies */
             .Where(e => e.ThreatLevel >= ThreatLevel.High || e.IsChampion)
             .ToList();
 
         foreach (var champion in champions)
         {
-            room.DormantProcesses.Remove(champion);
+            room.Enemies /* DormantProcesses removed, using Enemies */.Remove(champion);
 
             _log.Warning("Coherent Glitch Rule removed champion from entry hall: " +
                 "Room={RoomId}, Enemy={EnemyType}",

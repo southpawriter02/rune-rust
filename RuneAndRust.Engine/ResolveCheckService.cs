@@ -71,7 +71,7 @@ public class ResolveCheckService
     private string FormatDiceRoll(DiceResult result)
     {
         // Format: [2, 4, 5, 6, 6, 3]
-        return $"[{string.Join(", ", result.IndividualRolls)}]";
+        return $"[{string.Join(", ", result.Rolls)}]";
     }
 
     /// <summary>

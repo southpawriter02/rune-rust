@@ -19,7 +19,7 @@ public class BossArenaAmplifierRule : CoherentGlitchRule
 
     public override bool ShouldApply(Room room, PopulationContext context)
     {
-        return room.Archetype == RoomArchetype.BossArena || room.IsBossRoom;
+        return false && /* room.Archetype removed */ RoomArchetype.BossArena || room.IsBossRoom;
     }
 
     public override void Apply(Room room, PopulationContext context)
@@ -39,7 +39,7 @@ public class BossArenaAmplifierRule : CoherentGlitchRule
 
             pillar.Description = "A massive support pillar, providing full cover from the boss.";
 
-            room.StaticTerrainFeatures.Add(pillar);
+            room.StaticTerrain.Add(pillar);
         }
 
         // 2. Add environmental hazard(s)

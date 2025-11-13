@@ -333,7 +333,7 @@ public class MerchantService
                 ItemId = material.ToString(),
                 ItemType = "Component",
                 Quantity = _random.Next(1, 5),
-                BasePrice = materialInfo.SellValue,
+                BasePrice = ((int)materialInfo.Quality * 10) /* SellValue calculated from Quality */,
                 IsInfiniteStock = false
             });
         }
@@ -405,9 +405,9 @@ public class MerchantService
         // List equipment
         foreach (var eq in player.Inventory)
         {
-            if (eq.SellValue > 0)
+            if (((int)eq.Quality * 10) /* SellValue calculated from Quality */ > 0)
             {
-                var finalPrice = pricingService.GetFinalSellPrice(merchant, eq.SellValue, "Equipment", player);
+                var finalPrice = pricingService.GetFinalSellPrice(merchant, ((int)eq.Quality * 10) /* SellValue calculated from Quality */, "Equipment", player);
                 var priceDisplay = pricingService.GetPriceDisplay(finalPrice, merchant, player, isBuying: false);
                 listing.Add($"[cyan]{index}.[/] {eq.GetDisplayName()} - {priceDisplay}");
                 index++;
@@ -418,9 +418,9 @@ public class MerchantService
         foreach (var (componentType, quantity) in player.CraftingComponents)
         {
             var component = CraftingComponent.Create(componentType);
-            if (component.IsTradeable && component.SellValue > 0)
+            if (component.IsTradeable && ((int)component.Quality * 10) /* SellValue calculated from Quality */ > 0)
             {
-                var finalPrice = pricingService.GetFinalSellPrice(merchant, component.SellValue, "Component", player);
+                var finalPrice = pricingService.GetFinalSellPrice(merchant, ((int)component.Quality * 10) /* SellValue calculated from Quality */, "Component", player);
                 var priceDisplay = pricingService.GetPriceDisplay(finalPrice, merchant, player, isBuying: false);
                 listing.Add($"[cyan]{index}.[/] {component.Name} x{quantity} - {priceDisplay} each");
                 index++;

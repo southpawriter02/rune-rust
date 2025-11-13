@@ -39,7 +39,7 @@ public class ChasmInfrastructureRule : CoherentGlitchRule
                            "This bridge failed catastrophically 800 years ago. " +
                            "Whatever stress caused it to fail must have been immense.";
 
-        room.StaticTerrainFeatures.Add(gantry);
+        room.StaticTerrain.Add(gantry);
 
         // 2. Add rubble pile near chasm edge
         var rubble = new RubblePile
@@ -53,7 +53,7 @@ public class ChasmInfrastructureRule : CoherentGlitchRule
 
         rubble.Description = "Chunks of broken concrete and twisted metal from the collapsed bridge.";
 
-        room.StaticTerrainFeatures.Add(rubble);
+        room.StaticTerrain.Add(rubble);
 
         // 3. Add salvageable wreckage (broken equipment that fell)
         if (context.Rng.NextDouble() < 0.6) // 60% chance

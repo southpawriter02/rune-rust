@@ -184,7 +184,7 @@ public class DormantProcessSpawner
         }
 
         // Use EnemyFactory to create the enemy
-        var enemy = _enemyFactory.CreateEnemy(enemyType.Value);
+        var enemy = EnemyFactory.CreateEnemy(enemyType.Value);
         enemy.IsBoss = isBoss;
 
         // Boss stat multipliers

@@ -92,7 +92,7 @@ public class FailedEvacuationNarrativeRule : CoherentGlitchRule
         rubble.Description = "Fresh debris partially blocking the corridor. " +
                            "This collapse happened during the evacuation.";
 
-        room.StaticTerrainFeatures.Add(rubble);
+        room.StaticTerrain.Add(rubble);
 
         _log.Information("Coherent Glitch Narrative applied: FailedEvacuation, " +
             "Room={RoomId}, ElementsAdded={Count}",
