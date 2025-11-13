@@ -1,12 +1,13 @@
 using Spectre.Console;
 using RuneAndRust.Core;
 using RuneAndRust.Engine;
+using RuneAndRust.Persistence;
 
 namespace RuneAndRust.ConsoleApp;
 
 public static class UIHelper
 {
-    public static void DisplayCharacterSheet(PlayerCharacter character)
+    public static void DisplayCharacterSheet(PlayerCharacter character, string? connectionString = null)
     {
         AnsiConsole.WriteLine();
 
@@ -39,6 +40,12 @@ public static class UIHelper
         if (character.ProgressionPoints > 0)
         {
             table.AddRow($"[bold green]PP Available: {character.ProgressionPoints}[/] [dim](type 'spend' to use)[/]");
+        }
+
+        // v0.19: Specialization Summary
+        if (!string.IsNullOrEmpty(connectionString))
+        {
+            DisplaySpecializationSummary(table, character, connectionString);
         }
 
         // Resources
@@ -871,5 +878,205 @@ public static class UIHelper
             QualityTier.MythForged => "yellow",
             _ => "white"
         };
+    }
+
+    // ============================================================
+    // SPECIALIZATION SUMMARY (v0.19)
+    // ============================================================
+
+    /// <summary>
+    /// v0.19: Display specialization summary in character sheet
+    /// Shows unlocked specs, learned abilities, and PP spending breakdown
+    /// </summary>
+    private static void DisplaySpecializationSummary(Table table, PlayerCharacter character, string connectionString)
+    {
+        var specializationService = new SpecializationService(connectionString);
+        var abilityService = new AbilityService(connectionString);
+        var specializationRepo = new SpecializationRepository(connectionString);
+
+        // Get all unlocked specializations for this character
+        var characterId = character.Name.GetHashCode();
+        var unlockedSpecs = specializationRepo.GetUnlockedForCharacter(characterId);
+
+        if (unlockedSpecs.Count == 0)
+        {
+            return; // No specializations unlocked, skip section
+        }
+
+        table.AddRow(new Markup(""));  // Spacer
+        table.AddRow(new Markup("[bold]SPECIALIZATIONS[/]"));
+
+        foreach (var spec in unlockedSpecs)
+        {
+            // Get learned abilities count
+            var learnedAbilities = abilityService.GetLearnedAbilitiesForSpecialization(character, spec.SpecializationID);
+            var totalAbilities = 9; // All specs have 9 abilities
+            var ppSpent = specializationService.GetPPSpentInTree(character, spec.SpecializationID);
+
+            // Determine current tier unlocked based on PP spent
+            string tierProgress;
+            if (ppSpent >= 24)
+                tierProgress = "Capstone";
+            else if (ppSpent >= 16)
+                tierProgress = "Tier 3";
+            else if (ppSpent >= 8)
+                tierProgress = "Tier 2";
+            else
+                tierProgress = "Tier 1";
+
+            // Build summary line
+            var specLine = $"{spec.IconEmoji} [yellow]{spec.Name}[/] " +
+                          $"[dim]({learnedAbilities.Count}/{totalAbilities} abilities)[/] " +
+                          $"[cyan]{ppSpent} PP[/] [dim]• {tierProgress}[/]";
+
+            table.AddRow(specLine);
+        }
+
+        table.AddRow(new Markup("[dim]Use 'specializations' to manage specializations and abilities[/]"));
+    }
+
+    /// <summary>
+    /// v0.19: Display quick ability reference for combat
+    /// Shows learned abilities with costs and availability
+    /// </summary>
+    public static void DisplayAbilityQuickReference(PlayerCharacter character, string connectionString)
+    {
+        var abilityService = new AbilityService(connectionString);
+        var learnedAbilities = abilityService.GetLearnedAbilities(character);
+
+        if (learnedAbilities.Count == 0)
+        {
+            return; // No abilities learned from new system yet
+        }
+
+        AnsiConsole.WriteLine();
+        AnsiConsole.MarkupLine("[bold yellow]SPECIALIZATION ABILITIES[/]");
+
+        var table = new Table()
+            .Border(TableBorder.Rounded)
+            .BorderColor(Color.Cyan)
+            .AddColumn("Ability")
+            .AddColumn("Type")
+            .AddColumn("Cost")
+            .AddColumn("Summary");
+
+        foreach (var abilityId in learnedAbilities)
+        {
+            var result = abilityService.GetAbility(abilityId);
+            if (!result.Success || result.Ability == null) continue;
+
+            var ability = result.Ability;
+            var rank = abilityService.GetCurrentRank(character, abilityId);
+
+            // Type icon
+            var typeIcon = ability.AbilityType switch
+            {
+                "Active" => "⚔",
+                "Passive" => "◈",
+                "Reaction" => "⚡",
+                _ => "•"
+            };
+
+            // Name with rank
+            var nameDisplay = rank > 1
+                ? $"[yellow]{ability.Name}[/] [cyan][R{rank}][/]"
+                : $"[yellow]{ability.Name}[/]";
+
+            // Resource cost
+            var costDisplay = ability.AbilityType == "Passive"
+                ? "[dim]Passive[/]"
+                : $"[green]{ability.ResourceCost.Stamina} STA[/]";
+
+            // Can afford check
+            var canAfford = character.Stamina >= ability.ResourceCost.Stamina;
+            if (!canAfford && ability.AbilityType != "Passive")
+            {
+                costDisplay = $"[red]{ability.ResourceCost.Stamina} STA[/]";
+            }
+
+            table.AddRow(
+                nameDisplay,
+                $"{typeIcon} {ability.AbilityType}",
+                costDisplay,
+                $"[dim]{ability.MechanicalSummary}[/]"
+            );
+        }
+
+        AnsiConsole.Write(table);
+        AnsiConsole.WriteLine();
+    }
+
+    /// <summary>
+    /// v0.19: Display PP spending breakdown across all specializations
+    /// Useful for planning progression
+    /// </summary>
+    public static void DisplayPPBreakdown(PlayerCharacter character, string connectionString)
+    {
+        var specializationService = new SpecializationService(connectionString);
+        var abilityService = new AbilityService(connectionString);
+        var specializationRepo = new SpecializationRepository(connectionString);
+
+        AnsiConsole.WriteLine();
+        var rule = new Rule("[bold yellow]PROGRESSION POINT BREAKDOWN[/]")
+        {
+            Justification = Justify.Center
+        };
+        AnsiConsole.Write(rule);
+        AnsiConsole.WriteLine();
+
+        var table = new Table()
+            .Border(TableBorder.Rounded)
+            .BorderColor(Color.Yellow)
+            .AddColumn("Category")
+            .AddColumn("PP Spent", c => c.RightAligned())
+            .AddColumn("Details");
+
+        // Get all unlocked specializations
+        var characterId = character.Name.GetHashCode();
+        var unlockedSpecs = specializationRepo.GetUnlockedForCharacter(characterId);
+
+        int totalSpent = 0;
+
+        // Specialization unlocks
+        int unlockCost = unlockedSpecs.Count * 3; // 3 PP per specialization
+        totalSpent += unlockCost;
+        table.AddRow(
+            "[yellow]Specialization Unlocks[/]",
+            $"[red]{unlockCost}[/]",
+            $"[dim]{unlockedSpecs.Count} × 3 PP[/]"
+        );
+
+        // Per-specialization breakdown
+        foreach (var spec in unlockedSpecs)
+        {
+            var ppSpent = specializationService.GetPPSpentInTree(character, spec.SpecializationID);
+            var learnedCount = abilityService.GetLearnedAbilitiesForSpecialization(character, spec.SpecializationID).Count;
+
+            totalSpent += ppSpent;
+
+            table.AddRow(
+                $"{spec.IconEmoji} [yellow]{spec.Name}[/]",
+                $"[red]{ppSpent}[/]",
+                $"[dim]{learnedCount} abilities learned[/]"
+            );
+        }
+
+        // Summary
+        table.AddRow("", "", "");
+        table.AddRow(
+            "[bold]TOTAL SPENT[/]",
+            $"[bold red]{totalSpent}[/]",
+            ""
+        );
+        table.AddRow(
+            "[bold]AVAILABLE[/]",
+            $"[bold green]{character.ProgressionPoints}[/]",
+            ""
+        );
+
+        AnsiConsole.Write(table);
+        AnsiConsole.WriteLine();
+        AnsiConsole.MarkupLine("[dim]Progression Points are earned by completing milestones and achieving Legend.[/]");
+        AnsiConsole.WriteLine();
     }
 }

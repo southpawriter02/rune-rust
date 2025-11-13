@@ -119,6 +119,9 @@ public class SaveRepository
             }
         }
 
+            // v0.19: Create specialization system tables (data-driven architecture)
+            CreateSpecializationTables(connection);
+
             _log.Information("Database initialized successfully");
         }
         catch (Exception ex)
@@ -126,6 +129,122 @@ public class SaveRepository
             _log.Error(ex, "Failed to initialize database");
             throw;
         }
+    }
+
+    /// <summary>
+    /// v0.19: Create specialization system tables for data-driven architecture
+    /// </summary>
+    private void CreateSpecializationTables(SqliteConnection connection)
+    {
+        _log.Debug("Creating specialization system tables");
+
+        // Specializations table - stores all specialization metadata
+        var createSpecializationsTable = connection.CreateCommand();
+        createSpecializationsTable.CommandText = @"
+            CREATE TABLE IF NOT EXISTS Specializations (
+                SpecializationID INTEGER PRIMARY KEY,
+                Name TEXT NOT NULL,
+                ArchetypeID INTEGER NOT NULL,
+                PathType TEXT NOT NULL,
+                MechanicalRole TEXT NOT NULL,
+                PrimaryAttribute TEXT NOT NULL,
+                SecondaryAttribute TEXT,
+                Description TEXT,
+                Tagline TEXT,
+                UnlockRequirementsJson TEXT NOT NULL,
+                ResourceSystem TEXT NOT NULL,
+                TraumaRisk TEXT NOT NULL,
+                IconEmoji TEXT,
+                PPCostToUnlock INTEGER DEFAULT 3,
+                IsActive INTEGER DEFAULT 1
+            )
+        ";
+        createSpecializationsTable.ExecuteNonQuery();
+
+        // Abilities table - stores all ability definitions
+        var createAbilitiesTable = connection.CreateCommand();
+        createAbilitiesTable.CommandText = @"
+            CREATE TABLE IF NOT EXISTS Abilities (
+                AbilityID INTEGER PRIMARY KEY,
+                SpecializationID INTEGER NOT NULL,
+                Name TEXT NOT NULL,
+                Description TEXT NOT NULL,
+                TierLevel INTEGER NOT NULL,
+                PPCost INTEGER NOT NULL,
+                PrerequisitesJson TEXT NOT NULL,
+                AbilityType TEXT NOT NULL,
+                ActionType TEXT NOT NULL,
+                TargetType TEXT NOT NULL,
+                ResourceCostJson TEXT NOT NULL,
+                AttributeUsed TEXT,
+                BonusDice INTEGER DEFAULT 0,
+                SuccessThreshold INTEGER DEFAULT 2,
+                MechanicalSummary TEXT,
+                DamageDice INTEGER DEFAULT 0,
+                IgnoresArmor INTEGER DEFAULT 0,
+                HealingDice INTEGER DEFAULT 0,
+                StatusEffectsAppliedJson TEXT,
+                StatusEffectsRemovedJson TEXT,
+                MaxRank INTEGER DEFAULT 3,
+                CostToRank2 INTEGER DEFAULT 5,
+                CostToRank3 INTEGER DEFAULT 0,
+                CooldownTurns INTEGER DEFAULT 0,
+                CooldownType TEXT DEFAULT 'None',
+                IsActive INTEGER DEFAULT 1,
+                Notes TEXT,
+                FOREIGN KEY (SpecializationID) REFERENCES Specializations(SpecializationID)
+            )
+        ";
+        createAbilitiesTable.ExecuteNonQuery();
+
+        // CharacterSpecializations - tracks which specs each character has unlocked
+        var createCharacterSpecializationsTable = connection.CreateCommand();
+        createCharacterSpecializationsTable.CommandText = @"
+            CREATE TABLE IF NOT EXISTS CharacterSpecializations (
+                CharacterID INTEGER NOT NULL,
+                SpecializationID INTEGER NOT NULL,
+                UnlockedAt TEXT NOT NULL,
+                IsActive INTEGER DEFAULT 1,
+                PPSpentInTree INTEGER DEFAULT 0,
+                PRIMARY KEY (CharacterID, SpecializationID),
+                FOREIGN KEY (SpecializationID) REFERENCES Specializations(SpecializationID)
+            )
+        ";
+        createCharacterSpecializationsTable.ExecuteNonQuery();
+
+        // CharacterAbilities - tracks which abilities each character has learned
+        var createCharacterAbilitiesTable = connection.CreateCommand();
+        createCharacterAbilitiesTable.CommandText = @"
+            CREATE TABLE IF NOT EXISTS CharacterAbilities (
+                CharacterID INTEGER NOT NULL,
+                AbilityID INTEGER NOT NULL,
+                UnlockedAt TEXT NOT NULL,
+                CurrentRank INTEGER DEFAULT 1,
+                TimesUsed INTEGER DEFAULT 0,
+                PRIMARY KEY (CharacterID, AbilityID),
+                FOREIGN KEY (AbilityID) REFERENCES Abilities(AbilityID)
+            )
+        ";
+        createCharacterAbilitiesTable.ExecuteNonQuery();
+
+        // Create indices for performance
+        var createIndices = new[]
+        {
+            "CREATE INDEX IF NOT EXISTS idx_specializations_archetype ON Specializations(ArchetypeID)",
+            "CREATE INDEX IF NOT EXISTS idx_abilities_specialization ON Abilities(SpecializationID)",
+            "CREATE INDEX IF NOT EXISTS idx_abilities_tier ON Abilities(TierLevel)",
+            "CREATE INDEX IF NOT EXISTS idx_character_specs ON CharacterSpecializations(CharacterID)",
+            "CREATE INDEX IF NOT EXISTS idx_character_abilities ON CharacterAbilities(CharacterID)"
+        };
+
+        foreach (var indexSql in createIndices)
+        {
+            var indexCommand = connection.CreateCommand();
+            indexCommand.CommandText = indexSql;
+            indexCommand.ExecuteNonQuery();
+        }
+
+        _log.Information("Specialization system tables created successfully");
     }
 
     public void SaveGame(PlayerCharacter player, WorldState worldState, GameWorld? world = null)
