@@ -157,8 +157,8 @@ public class PopulationPipeline
         foreach (var room in dungeon.Rooms.Values)
         {
             // Unstable Ceiling should have Rubble Pile
-            bool hasUnstableCeiling = room.DynamicHazards.Cast<DynamicHazard>().Any(h => h.Type == DynamicHazardType.UnstableCeiling);
-            bool hasRubblePile = room.StaticTerrain.Cast<StaticTerrain>().Any(t => t.Type == StaticTerrainType.RubblePile);
+            bool hasUnstableCeiling = room.DynamicHazards.OfType<RuneAndRust.Core.DynamicHazard>().Any(h => h.Type == DynamicHazardType.UnstableCeiling);
+            bool hasRubblePile = room.StaticTerrain.OfType<RuneAndRust.Core.StaticTerrain>().Any(t => t.Type == StaticTerrainType.RubblePile);
 
             if (hasUnstableCeiling && !hasRubblePile)
             {

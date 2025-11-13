@@ -2,7 +2,6 @@ using RuneAndRust.Core;
 using RuneAndRust.Core.Population;
 using Serilog;
 using AmbientCondition = RuneAndRust.Core.Population.AmbientCondition;
-using DynamicHazard = RuneAndRust.Core.Population.DynamicHazard;
 
 namespace RuneAndRust.Engine;
 
@@ -120,7 +119,7 @@ public class ConditionApplier
         if (condition.Type == AmbientConditionType.Flooded)
         {
             // Enhance electrical hazards
-            foreach (var hazard in room.DynamicHazards.Cast<DynamicHazard>().Where(h => h.Type == DynamicHazardType.LivePowerConduit))
+            foreach (var hazard in room.DynamicHazards.OfType<RuneAndRust.Core.DynamicHazard>().Where(h => h.Type == DynamicHazardType.LivePowerConduit))
             {
                 hazard.DamageDice = (int)(hazard.DamageDice * 2);
                 hazard.ProximityRange = (int)(hazard.ProximityRange * 1.5);
