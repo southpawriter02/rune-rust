@@ -1067,6 +1067,29 @@ public class CombatEngine
             }
         }
 
+        // v0.19.8: Apply Soak (flat damage reduction) unless ignored
+        if (!ignoresArmor && target.Soak > 0)
+        {
+            // Calculate effective Soak (reduced by [Corroded] stacks: -2 per stack)
+            int corrodedArmorReduction = target.CorrodedStacks * 2;
+            int effectiveSoak = Math.Max(0, target.Soak - corrodedArmorReduction);
+
+            if (effectiveSoak > 0)
+            {
+                int soakedDamage = Math.Max(0, damage - effectiveSoak);
+                if (corrodedArmorReduction > 0)
+                {
+                    combatState.AddLogEntry($"  {target.Name}'s armor reduced by [Corroded]: {target.Soak} → {effectiveSoak} Soak");
+                }
+                combatState.AddLogEntry($"  Armor absorbs {effectiveSoak} damage ({damage} → {soakedDamage})");
+                damage = soakedDamage;
+            }
+            else if (corrodedArmorReduction > 0)
+            {
+                combatState.AddLogEntry($"  {target.Name}'s armor completely destroyed by [Corroded]!");
+            }
+        }
+
         // Check if ability ignores armor
         if (!ignoresArmor && target.DefenseTurnsRemaining > 0)
         {
@@ -1525,6 +1548,41 @@ public class CombatEngine
             }
         }
 
+        // v0.19.8: Apply [Sanctified Ground] healing at start of player turn
+        if (combatState.Player.SanctifiedGroundTurnsRemaining > 0)
+        {
+            int healAmount = _diceService.RollDamage(1); // 1d6 per turn
+            int oldHP = combatState.Player.HP;
+            combatState.Player.HP = Math.Min(combatState.Player.MaxHP, combatState.Player.HP + healAmount);
+            int actualHeal = combatState.Player.HP - oldHP;
+
+            if (actualHeal > 0)
+            {
+                combatState.AddLogEntry($"[Sanctified Ground] heals you for {actualHeal} HP! (HP: {combatState.Player.HP}/{combatState.Player.MaxHP})");
+            }
+
+            combatState.Player.SanctifiedGroundTurnsRemaining--;
+            if (combatState.Player.SanctifiedGroundTurnsRemaining == 0)
+            {
+                combatState.AddLogEntry($"[Sanctified Ground] zone dissipates.");
+            }
+        }
+
+        // v0.19.8: Decrement Mystic status effects
+        if (combatState.Player.RuneOfShieldingTurnsRemaining > 0)
+        {
+            combatState.Player.RuneOfShieldingTurnsRemaining--;
+            if (combatState.Player.RuneOfShieldingTurnsRemaining == 0)
+            {
+                combatState.AddLogEntry($"Rune of Shielding fades.");
+            }
+        }
+
+        if (combatState.Player.GlyphOfSanctuaryStressImmunity > 0)
+        {
+            combatState.Player.GlyphOfSanctuaryStressImmunity--;
+        }
+
         // Decrement enemy defense, stun, and bleeding turns
         foreach (var enemy in combatState.Enemies.Where(e => e.IsAlive))
         {
@@ -1548,6 +1606,64 @@ public class CombatEngine
                 if (!enemy.IsAlive)
                 {
                     combatState.AddLogEntry($"{enemy.Name} is destroyed!");
+                }
+            }
+
+            // v0.19.8: Apply [Corroded] DoT damage at start of enemy turn
+            if (enemy.CorrodedStacks > 0)
+            {
+                // Check if Rust-Witch has Accelerated Entropy passive (2d6 per stack)
+                var player = combatState.Player;
+                bool hasAcceleratedEntropy = player.Abilities.Any(a => a.Name == "Accelerated Entropy");
+                int dicePerStack = hasAcceleratedEntropy ? 2 : 1;
+
+                // Roll damage for each stack
+                int totalCorrodedDamage = 0;
+                for (int i = 0; i < enemy.CorrodedStacks; i++)
+                {
+                    totalCorrodedDamage += _diceService.RollDamage(dicePerStack);
+                }
+
+                enemy.HP -= totalCorrodedDamage;
+                combatState.AddLogEntry($"{enemy.Name} takes {totalCorrodedDamage} corrosion damage from {enemy.CorrodedStacks} [Corroded] stacks! (HP: {Math.Max(0, enemy.HP)}/{enemy.MaxHP})");
+
+                _log.Debug("Status effect damage: Enemy={EnemyName}, Effect=Corroded, Stacks={Stacks}, Damage={Damage}, RemainingHP={HP}",
+                    enemy.Name, enemy.CorrodedStacks, totalCorrodedDamage, Math.Max(0, enemy.HP));
+
+                // Countdown all stack durations
+                for (int i = enemy.CorrodedStackDurations.Count - 1; i >= 0; i--)
+                {
+                    enemy.CorrodedStackDurations[i]--;
+                    if (enemy.CorrodedStackDurations[i] <= 0)
+                    {
+                        enemy.CorrodedStackDurations.RemoveAt(i);
+                        enemy.CorrodedStacks--;
+                        combatState.AddLogEntry($"  1 [Corroded] stack expires on {enemy.Name} ({enemy.CorrodedStacks} remaining)");
+                    }
+                }
+
+                if (enemy.CorrodedStacks == 0)
+                {
+                    combatState.AddLogEntry($"{enemy.Name} is no longer [Corroded].");
+                    _log.Information("Status effect expired: Enemy={EnemyName}, Effect=Corroded", enemy.Name);
+                }
+
+                if (!enemy.IsAlive)
+                {
+                    combatState.AddLogEntry($"{enemy.Name} dissolves from corrosion!");
+
+                    // v0.19.8: Cascade Reaction - Spread [Corroded] on death (Rust-Witch passive)
+                    bool hasCascadeReaction = player.Abilities.Any(a => a.Name == "Cascade Reaction");
+                    if (hasCascadeReaction)
+                    {
+                        combatState.AddLogEntry($"  [Cascade Reaction] Entropy spreads from {enemy.Name}!");
+                        foreach (var adjacentEnemy in combatState.Enemies.Where(e => e.IsAlive && e != enemy))
+                        {
+                            adjacentEnemy.CorrodedStacks = Math.Min(5, adjacentEnemy.CorrodedStacks + 1);
+                            adjacentEnemy.CorrodedStackDurations.Add(3);
+                            combatState.AddLogEntry($"    {adjacentEnemy.Name} gains [Corroded] x{adjacentEnemy.CorrodedStacks}!");
+                        }
+                    }
                 }
             }
 
