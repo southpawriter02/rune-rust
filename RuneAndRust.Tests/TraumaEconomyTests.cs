@@ -393,7 +393,8 @@ public class TraumaEconomyTests
         var envService = new EnvironmentalStressService(_traumaService);
         var character = CreateTestCharacter();
         var room = CreateTestRoom();
-        room.AmbientConditions = new List<AmbientCondition> { // AmbientCondition.PsychicResonance (removed) };
+        // AmbientCondition.PsychicResonance (removed)
+        room.AmbientConditions = new List<AmbientCondition>();
 
         // Act
         int stress = envService.ApplyEnvironmentalStress(character, room);
