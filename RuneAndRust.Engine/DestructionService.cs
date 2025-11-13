@@ -113,7 +113,7 @@ public class DestructionService
                 // Add rubble if specified
                 if (data.SpawnRubble)
                 {
-                    room.StaticTerrain.Add(new StaticTerrain
+                    room.StaticTerrain.Add(new RuneAndRust.Core.Population.StaticTerrain
                     {
                         TerrainId = $"rubble_from_{change.TargetId}",
                         Name = "Rubble Pile",
@@ -324,7 +324,7 @@ public class DestructionService
             return new DestructionResult
             {
                 Success = false,
-                Message = $"The {hazard.Name} cannot be destroyed."
+                Message = $"The {hazard.HazardName} cannot be destroyed."
             };
         }
 
