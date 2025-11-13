@@ -50,15 +50,19 @@ public class DataSeeder
             Name = "Bone-Setter",
             ArchetypeID = 2, // Adept
             PathType = "Coherent",
-            MechanicalRole = "Support/Healer",
+            MechanicalRole = "Healer / Sanity Anchor",
             PrimaryAttribute = "WITS",
             SecondaryAttribute = "FINESSE",
-            Description = "Non-magical medic and sanity anchor. Uses Field Medicine crafting to create healing items.",
-            Tagline = "Keep party alive with healing items, remove debuffs, stabilize sanity",
-            UnlockRequirements = new UnlockRequirements { MinLegend = 0, MaxCorruption = 100 },
-            ResourceSystem = "Stamina",
+            Description = @"You are the indispensable combat medic and the anchor of sanity. While others fight monsters, you fight entropy—you stitch wounds, set bones, and talk comrades back from the brink of madness. Your healing is non-magical: it's science, anatomy, herbalism, and psychology.
+
+            You prepare during downtime, craft medical supplies, and deploy them with precision during crisis. You are the quiet hero who keeps the party coherent enough to survive another day.
+
+            In a world where magic is corrupted, you trust science, herbs, and steady hands. You're a pragmatist who understands that surviving the Blight means keeping your body intact AND your mind coherent.",
+            Tagline = "Pragmatic Restoration - Restorer of Coherence",
+            UnlockRequirements = new UnlockRequirements { MinLegend = 3, MaxCorruption = 100 },
+            ResourceSystem = "Stamina + Consumable Items",
             TraumaRisk = "None",
-            IconEmoji = "🩺",
+            IconEmoji = "⚕️",
             PPCostToUnlock = 3,
             IsActive = true
         };
@@ -82,121 +86,137 @@ public class DataSeeder
 
     private void SeedBoneSetterTier1()
     {
-        // Field Medic I (Passive)
+        // Field Medic (Passive)
         _abilityRepo.Insert(new AbilityData
         {
             AbilityID = 101,
             SpecializationID = 1,
-            Name = "Field Medic I",
-            Description = "[PASSIVE] +2 to Field Medicine crafting checks. Start each expedition with 3 free Standard Healing Poultices.",
+            Name = "Field Medic",
+            Description = "You are an expert at preparing medical supplies. Your kit is always ready, your hands always steady.",
+            MechanicalSummary = "Bonus to Field Medicine crafting checks, start with free poultices, craft Masterwork items",
             TierLevel = 1,
-            PPCost = 0, // Tier 1 granted free on unlock
+            PPCost = 3, // v0.19.4: Updated to 3 PP
             Prerequisites = new AbilityPrerequisites { RequiredPPInTree = 0 },
             AbilityType = "Passive",
             ActionType = "Free Action",
             TargetType = "Self",
             ResourceCost = new AbilityResourceCost(),
-            MechanicalSummary = "+2 Field Medicine, 3 free healing poultices per expedition",
-            MaxRank = 1,
-            IsActive = true
+            MaxRank = 3,
+            CostToRank2 = 20,
+            CostToRank3 = 0,
+            IsActive = true,
+            Notes = "Rank 1: +1d10 bonus to Field Medicine crafting checks. Start expeditions with 3 [Healing Poultices]. Rank 2 (20 PP): +2d10 bonus. Start with 5 Poultices. Crafted items 20% chance to be [Masterwork] (heal 50% more). Rank 3: +3d10 bonus. Start with 7 Poultices + 2 Antidotes. Masterwork chance 35%. Can craft rare [Miracle Tinctures]"
         });
 
-        // Mend Wound
+        // Mend Wound (Active)
         _abilityRepo.Insert(new AbilityData
         {
             AbilityID = 102,
             SpecializationID = 1,
             Name = "Mend Wound",
-            Description = "Consume a healing poultice to restore HP to an ally. Effectiveness based on poultice quality.",
+            Description = "You quickly dress the wound, applying poultice with practiced efficiency. The healing begins.",
+            MechanicalSummary = "Heal HP using poultice, cleanse debuffs at higher ranks",
             TierLevel = 1,
-            PPCost = 0,
+            PPCost = 3,
             Prerequisites = new AbilityPrerequisites { RequiredPPInTree = 0 },
             AbilityType = "Active",
             ActionType = "Standard Action",
             TargetType = "Single Ally",
-            ResourceCost = new AbilityResourceCost { Stamina = 5 },
+            ResourceCost = new AbilityResourceCost { Stamina = 35 },
             AttributeUsed = "wits",
-            BonusDice = 1,
-            SuccessThreshold = 2,
-            MechanicalSummary = "Use healing poultice on ally",
+            BonusDice = 0,
+            SuccessThreshold = 0, // Auto-success, consumes poultice
+            HealingDice = 3,
             MaxRank = 3,
-            CostToRank2 = 5,
-            IsActive = true
+            CostToRank2 = 20,
+            CostToRank3 = 0,
+            IsActive = true,
+            Notes = "Rank 1: Heal 3d8 + WITS HP. Consumes one [Healing Poultice]. Rank 2 (20 PP): Heal 4d8 + WITS HP. Costs 30 Stamina. If using [Masterwork Poultice]: +2d8 healing. Rank 3: Heal 5d8 + WITS HP. Also removes [Poisoned] or [Bleeding] (free cleanse)"
         });
 
-        // Apply Tourniquet
+        // Apply Tourniquet (Active)
         _abilityRepo.Insert(new AbilityData
         {
             AbilityID = 103,
             SpecializationID = 1,
             Name = "Apply Tourniquet",
-            Description = "Remove [Bleeding] status from an ally. No stamina cost - emergency field medicine.",
+            Description = "With speed and precision, you stop the life-threatening blood loss. They'll live.",
+            MechanicalSummary = "Remove [Bleeding], grant temporary Soak, immunity to bleeding at higher ranks",
             TierLevel = 1,
-            PPCost = 0,
+            PPCost = 3,
             Prerequisites = new AbilityPrerequisites { RequiredPPInTree = 0 },
             AbilityType = "Active",
             ActionType = "Standard Action",
             TargetType = "Single Ally",
-            ResourceCost = new AbilityResourceCost(),
-            AttributeUsed = "wits",
-            BonusDice = 2,
-            SuccessThreshold = 2,
-            MechanicalSummary = "Remove [Bleeding]",
+            ResourceCost = new AbilityResourceCost { Stamina = 30 },
+            AttributeUsed = "",
+            BonusDice = 0,
+            SuccessThreshold = 0, // Auto-success
             StatusEffectsRemoved = new List<string> { "Bleeding" },
+            CooldownTurns = 2,
+            CooldownType = "Per Combat",
             MaxRank = 3,
-            CostToRank2 = 5,
-            IsActive = true
+            CostToRank2 = 20,
+            CostToRank3 = 0,
+            IsActive = true,
+            Notes = "Rank 1: Instantly remove [Bleeding] status from target. Rank 2 (20 PP): Remove [Bleeding]. Also grant target +2 Soak for 2 turns (field bandages). Rank 3: Remove [Bleeding] + [Hemorrhaging]. Grant +3 Soak for 3 turns. Target immune to [Bleeding] for rest of combat"
         });
     }
 
     private void SeedBoneSetterTier2()
     {
-        // Anatomical Insight
+        // Anatomical Insight (Active)
         _abilityRepo.Insert(new AbilityData
         {
             AbilityID = 104,
             SpecializationID = 1,
             Name = "Anatomical Insight",
-            Description = "Apply [Vulnerable] status to organic enemy. Target takes +25% damage for 3 turns. WITS check vs target's defense.",
+            Description = "You observe their anatomy and recognize the weak points. There—that's where to strike.",
+            MechanicalSummary = "Apply [Vulnerable] debuff to organic enemies, increasing Physical damage taken",
             TierLevel = 2,
             PPCost = 4,
             Prerequisites = new AbilityPrerequisites { RequiredPPInTree = 8 },
             AbilityType = "Active",
             ActionType = "Standard Action",
-            TargetType = "Single Enemy",
-            ResourceCost = new AbilityResourceCost { Stamina = 20 }, // v0.18: Reduced from 25
+            TargetType = "Single Enemy (Organic)",
+            ResourceCost = new AbilityResourceCost { Stamina = 40 },
             AttributeUsed = "wits",
-            BonusDice = 2,
-            SuccessThreshold = 3,
-            MechanicalSummary = "Apply [Vulnerable] - target takes +25% damage for 3 turns",
+            BonusDice = 0,
+            SuccessThreshold = 0, // WITS check vs enemy
             StatusEffectsApplied = new List<string> { "Vulnerable" },
+            CooldownTurns = 3,
+            CooldownType = "Per Combat",
             MaxRank = 3,
-            CostToRank2 = 5,
-            IsActive = true
+            CostToRank2 = 20,
+            CostToRank3 = 0,
+            IsActive = true,
+            Notes = "Rank 1: WITS check vs enemy. Success: Apply [Vulnerable] for 2 turns (+25% Physical damage taken). Rank 2 (20 PP): Vulnerable lasts 3 turns (+35% damage). Also reveals one enemy weakness/resistance. Rank 3: Vulnerable lasts 4 turns (+50% damage). Automatically succeeds vs [Bloodied] enemies"
         });
 
-        // Administer Antidote
+        // Administer Antidote (Active)
         _abilityRepo.Insert(new AbilityData
         {
             AbilityID = 105,
             SpecializationID = 1,
             Name = "Administer Antidote",
-            Description = "Remove [Poisoned] and [Disease] status effects from ally. Crafted antidotes are more effective.",
+            Description = "You administer the carefully prepared antidote. The toxins are neutralized.",
+            MechanicalSummary = "Remove poison and disease effects, grant immunity at higher ranks",
             TierLevel = 2,
             PPCost = 4,
             Prerequisites = new AbilityPrerequisites { RequiredPPInTree = 8 },
             AbilityType = "Active",
             ActionType = "Standard Action",
             TargetType = "Single Ally",
-            ResourceCost = new AbilityResourceCost { Stamina = 15 },
-            AttributeUsed = "wits",
-            BonusDice = 2,
-            SuccessThreshold = 2,
-            MechanicalSummary = "Remove [Poisoned] and [Disease]",
+            ResourceCost = new AbilityResourceCost { Stamina = 30 },
+            AttributeUsed = "",
+            BonusDice = 0,
+            SuccessThreshold = 0, // Auto-success, consumes antidote
             StatusEffectsRemoved = new List<string> { "Poisoned", "Disease" },
             MaxRank = 3,
-            CostToRank2 = 5,
-            IsActive = true
+            CostToRank2 = 20,
+            CostToRank3 = 0,
+            IsActive = true,
+            Notes = "Rank 1: Remove one [Poisoned] or [Disease] effect. Consumes one [Common Antidote]. Rank 2 (20 PP): Remove [Poisoned], [Disease], and [Weakened]. Target gains +2 STURDINESS for 2 turns. Rank 3: Remove all poison/disease effects. Target immune to [Poisoned] for rest of combat"
         });
 
         // Triage (Passive)
@@ -205,7 +225,8 @@ public class DataSeeder
             AbilityID = 106,
             SpecializationID = 1,
             Name = "Triage",
-            Description = "[PASSIVE] All healing you provide to bloodied allies (HP < 50%) gains +25% effectiveness.",
+            Description = "You understand battlefield medicine: treat the most grievous wounds first. Maximum efficiency.",
+            MechanicalSummary = "Massive healing bonus to bloodied allies, grant temporary buffs",
             TierLevel = 2,
             PPCost = 4,
             Prerequisites = new AbilityPrerequisites { RequiredPPInTree = 8 },
@@ -213,46 +234,52 @@ public class DataSeeder
             ActionType = "Free Action",
             TargetType = "Self",
             ResourceCost = new AbilityResourceCost(),
-            MechanicalSummary = "+25% healing to bloodied allies",
-            MaxRank = 1,
-            IsActive = true
+            MaxRank = 3,
+            CostToRank2 = 20,
+            CostToRank3 = 0,
+            IsActive = true,
+            Notes = "Rank 1: All healing abilities restore +25% HP when used on [Bloodied] allies (below 50% HP). Rank 2 (20 PP): +35% healing on Bloodied allies. Healing also grants target +1 Soak for 1 turn. Rank 3: +50% healing on Bloodied allies. When healing brings ally above 50% HP, they gain [Revitalized] (+2 to hit, 2 turns)"
         });
     }
 
     private void SeedBoneSetterTier3()
     {
-        // Cognitive Realignment
+        // Cognitive Realignment (Active)
         _abilityRepo.Insert(new AbilityData
         {
             AbilityID = 107,
             SpecializationID = 1,
             Name = "Cognitive Realignment",
-            Description = "Remove [Feared] and [Disoriented] status effects from ally. Restore 2d6 Psychic Stress. Your presence anchors their sanity.",
+            Description = "Calming techniques, pressure points, smelling salts—you reboot their panicked mind.",
+            MechanicalSummary = "Remove mental status effects, restore massive Psychic Stress, grant mental buffs",
             TierLevel = 3,
             PPCost = 5,
             Prerequisites = new AbilityPrerequisites { RequiredPPInTree = 16 },
             AbilityType = "Active",
             ActionType = "Standard Action",
             TargetType = "Single Ally",
-            ResourceCost = new AbilityResourceCost { Stamina = 25 }, // v0.18: Reduced from 30
-            AttributeUsed = "will",
-            BonusDice = 2,
-            SuccessThreshold = 2,
-            MechanicalSummary = "Remove [Feared] and [Disoriented], restore 2d6 Stress",
-            StatusEffectsRemoved = new List<string> { "Feared", "Disoriented" },
-            HealingDice = 2, // Used for Stress restoration
+            ResourceCost = new AbilityResourceCost { Stamina = 45 },
+            AttributeUsed = "",
+            BonusDice = 0,
+            SuccessThreshold = 0, // Auto-success, consumes draught
+            StatusEffectsRemoved = new List<string> { "Feared", "Panicked" },
+            CooldownTurns = 3,
+            CooldownType = "Per Combat",
             MaxRank = 3,
-            CostToRank2 = 5,
-            IsActive = true
+            CostToRank2 = 20,
+            CostToRank3 = 0,
+            IsActive = true,
+            Notes = "Rank 1: Remove 15 Psychic Stress from target. Consumes [Stabilizing Draught]. Rank 2 (20 PP): Remove 25 Stress. Also remove [Feared] or [Panicked] status effects. Rank 3: Remove 40 Stress. Remove all mental status effects. Grant [Focused] (+1 WILL, 3 turns)"
         });
 
-        // First, Do No Harm (Passive)
+        // Defensive Focus (Passive)
         _abilityRepo.Insert(new AbilityData
         {
             AbilityID = 108,
             SpecializationID = 1,
-            Name = "First, Do No Harm",
-            Description = "[PASSIVE] After healing an ally, gain +2 Defense until your next turn. Helping others keeps you vigilant.",
+            Name = "Defensive Focus",
+            Description = "When focused on saving another, you enter heightened awareness. You will not fall.",
+            MechanicalSummary = "Gain Defense bonus after healing, extra Soak when allies wounded, resistance to mental effects",
             TierLevel = 3,
             PPCost = 5,
             Prerequisites = new AbilityPrerequisites { RequiredPPInTree = 16 },
@@ -260,9 +287,11 @@ public class DataSeeder
             ActionType = "Free Action",
             TargetType = "Self",
             ResourceCost = new AbilityResourceCost(),
-            MechanicalSummary = "+2 Defense after healing (lasts 1 turn)",
-            MaxRank = 1,
-            IsActive = true
+            MaxRank = 3,
+            CostToRank2 = 20,
+            CostToRank3 = 0,
+            IsActive = true,
+            Notes = "Rank 1: After using any healing ability, gain +2 Defense until end of turn. Rank 2 (20 PP): +3 Defense. Also gain +1 Soak while adjacent ally is below 50% HP (protective instinct). Rank 3: +4 Defense. You have advantage on saves vs [Fear] and [Stun] while healing allies"
         });
     }
 
@@ -274,24 +303,26 @@ public class DataSeeder
             AbilityID = 109,
             SpecializationID = 1,
             Name = "Miracle Worker",
-            Description = "⭐ CAPSTONE: Massive heal (4d6 + WITS) and remove ALL physical debuffs ([Bleeding], [Poisoned], [Disease], [Vulnerable]). Limited uses per expedition.",
+            Description = "⭐ CAPSTONE: A complex procedure—stimulants, field surgery, sheer will. You bring them back from the brink.",
+            MechanicalSummary = "Massive emergency heal, remove all debuffs, grant death protection and buffs",
             TierLevel = 4,
             PPCost = 6,
             Prerequisites = new AbilityPrerequisites { RequiredPPInTree = 24, RequiredAbilityIDs = new List<int> { 107, 108 } },
             AbilityType = "Active",
             ActionType = "Standard Action",
-            TargetType = "Single Ally",
-            ResourceCost = new AbilityResourceCost { Stamina = 40 }, // v0.18: Reduced from 60
+            TargetType = "Single Ally ([Bloodied] - below 50% HP)",
+            ResourceCost = new AbilityResourceCost { Stamina = 50 },
             AttributeUsed = "wits",
-            BonusDice = 3,
-            SuccessThreshold = 2,
-            MechanicalSummary = "4d6+WITS heal, remove all physical debuffs",
-            HealingDice = 4,
-            StatusEffectsRemoved = new List<string> { "Bleeding", "Poisoned", "Disease", "Vulnerable" },
-            MaxRank = 3,
-            CostToRank2 = 5,
+            BonusDice = 0,
+            SuccessThreshold = 0, // Auto-success, consumes Miracle Tincture
+            HealingDice = 8,
+            StatusEffectsRemoved = new List<string> { "Bleeding", "Poisoned", "Disease", "Vulnerable", "Weakened", "Stunned" },
             CooldownType = "Per Expedition",
-            IsActive = true
+            MaxRank = 3,
+            CostToRank2 = 20,
+            CostToRank3 = 0,
+            IsActive = true,
+            Notes = "Rank 1: Heal 8d10 + (WITS × 2) HP. Remove all status effects. Target cannot drop below 1 HP for 1 turn. Consumes 1 [Miracle Tincture]. Once per expedition. Rank 2 (20 PP): Heal 10d10 + (WITS × 2) HP. Grant [Invigorated] (+3 to all actions, 2 turns). Protected from death for 2 turns. Rank 3: Heal 12d10 + (WITS × 3) HP. Remove 30 Psychic Stress. Grant [Second Wind] (next ability costs 0, 1 use)"
         });
     }
 

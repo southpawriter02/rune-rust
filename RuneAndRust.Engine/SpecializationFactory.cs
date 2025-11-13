@@ -99,14 +99,14 @@ public class SpecializationFactory
         return specialization switch
         {
             Specialization.BoneSetter =>
-                "BONE-SETTER (Support/Healer)\n" +
-                "Non-magical medic and sanity anchor. Uses Field Medicine crafting to create healing items.\n" +
+                "BONE-SETTER (Healer / Sanity Anchor)\n" +
+                "Pragmatic Restoration - Non-magical combat medic who fights entropy.\n" +
                 "Primary: WITS | Secondary: FINESSE | Trauma Risk: None (Coherent)\n" +
-                "Core Role: Keep party alive with healing items, remove debuffs, stabilize sanity\n" +
-                "Tier 1: Field Medic I (passive), Mend Wound, Apply Tourniquet\n" +
-                "Tier 2: Anatomical Insight, Administer Antidote, Triage (passive)\n" +
-                "Tier 3: Cognitive Realignment, \"First, Do No Harm\" (passive)\n" +
-                "Capstone: Miracle Worker (massive heal + cleanse)",
+                "Core Role: Heal both HP and Stress, craft consumables, enable high-risk strategies\n" +
+                "Tier 1: Field Medic (3 ranks), Mend Wound (3 ranks), Apply Tourniquet (3 ranks)\n" +
+                "Tier 2: Anatomical Insight (3 ranks), Administer Antidote (3 ranks), Triage (3 ranks)\n" +
+                "Tier 3: Cognitive Realignment (3 ranks), Defensive Focus (3 ranks)\n" +
+                "Capstone: Miracle Worker (emergency massive heal, death protection, once per expedition)",
 
             Specialization.JotunReader =>
                 "JÖTUN-READER (Utility/Analyst)\n" +
@@ -141,90 +141,102 @@ public class SpecializationFactory
 
     private static void AddBoneSetterAbilities(PlayerCharacter character)
     {
-        // TIER 1 - Available immediately upon unlocking specialization
+        // v0.19.4: Updated Bone-Setter specialization with full rank progression
+        // TIER 1 - Available immediately upon unlocking specialization (3 PP each)
 
         // Grant starting Field Medicine supplies
         GrantBoneSetterStartingItems(character);
 
-        // Field Medic I (Passive)
+        // Field Medic (Passive) - 3 ranks
         character.Abilities.Add(new Ability
         {
-            Name = "Field Medic I",
-            Description = "[PASSIVE] +2 to Field Medicine crafting checks. Start each expedition with 3 free Standard Healing Poultices.",
+            Name = "Field Medic",
+            Description = "You are an expert at preparing medical supplies. Your kit is always ready, your hands always steady.",
             StaminaCost = 0,
             Type = AbilityType.Utility,
             AttributeUsed = "wits",
             BonusDice = 0,
             SuccessThreshold = 0,
             CurrentRank = 1,
-            MaxRank = 1
+            MaxRank = 3,
+            CostToRank2 = 20,
+            CostToRank3 = 0
         });
 
-        // Mend Wound (Active)
+        // Mend Wound (Active) - 3 ranks
         character.Abilities.Add(new Ability
         {
             Name = "Mend Wound",
-            Description = "Consume a healing poultice to restore HP to an ally. Effectiveness based on poultice quality.",
-            StaminaCost = 5,
+            Description = "You quickly dress the wound, applying poultice with practiced efficiency. The healing begins.",
+            StaminaCost = 35,
             Type = AbilityType.Utility,
             AttributeUsed = "wits",
-            BonusDice = 1,
-            SuccessThreshold = 2,
+            BonusDice = 0,
+            SuccessThreshold = 0,  // Auto-success, consumes poultice
+            DamageDice = 3,  // Used for healing dice
             CurrentRank = 1,
-            MaxRank = 3
+            MaxRank = 3,
+            CostToRank2 = 20,
+            CostToRank3 = 0
         });
 
-        // Apply Tourniquet (Active)
+        // Apply Tourniquet (Active) - 3 ranks
         character.Abilities.Add(new Ability
         {
             Name = "Apply Tourniquet",
-            Description = "Remove [Bleeding] status from an ally. No stamina cost - emergency field medicine.",
-            StaminaCost = 0,
+            Description = "With speed and precision, you stop the life-threatening blood loss. They'll live.",
+            StaminaCost = 30,
             Type = AbilityType.Utility,
-            AttributeUsed = "wits",
-            BonusDice = 2,
-            SuccessThreshold = 2,
+            AttributeUsed = "",
+            BonusDice = 0,
+            SuccessThreshold = 0,  // Auto-success
             CurrentRank = 1,
-            MaxRank = 3
+            MaxRank = 3,
+            CostToRank2 = 20,
+            CostToRank3 = 0
         });
 
-        // TIER 2 - Advanced treatment abilities
+        // TIER 2 - Advanced treatment abilities (4 PP each, requires 8 PP in tree)
 
-        // Anatomical Insight (Active)
+        // Anatomical Insight (Active) - 3 ranks
         character.Abilities.Add(new Ability
         {
             Name = "Anatomical Insight",
-            Description = "Apply [Vulnerable] status to organic enemy. Target takes +25% damage for 3 turns. WITS check vs target's defense.",
-            StaminaCost = 20,  // v0.18: Reduced from 25 to improve Bone-Setter support viability
+            Description = "You observe their anatomy and recognize the weak points. There—that's where to strike.",
+            StaminaCost = 40,
             Type = AbilityType.Control,
             AttributeUsed = "wits",
-            BonusDice = 2,
-            SuccessThreshold = 3,
+            BonusDice = 0,
+            SuccessThreshold = 0,  // WITS check vs enemy
             // Special: Applies [Vulnerable] status (handled in CombatEngine)
             CurrentRank = 1,
-            MaxRank = 3
+            MaxRank = 3,
+            CostToRank2 = 20,
+            CostToRank3 = 0
         });
 
-        // Administer Antidote (Active)
+        // Administer Antidote (Active) - 3 ranks
         character.Abilities.Add(new Ability
         {
             Name = "Administer Antidote",
-            Description = "Remove [Poisoned] and [Disease] status effects from ally. Crafted antidotes are more effective.",
-            StaminaCost = 15,
+            Description = "You administer the carefully prepared antidote. The toxins are neutralized.",
+            StaminaCost = 30,
             Type = AbilityType.Utility,
-            AttributeUsed = "wits",
-            BonusDice = 2,
-            SuccessThreshold = 2,
+            AttributeUsed = "",
+            BonusDice = 0,
+            SuccessThreshold = 0,  // Auto-success, consumes antidote
             // Special: Removes poison/disease (handled in CombatEngine)
             CurrentRank = 1,
-            MaxRank = 3
+            MaxRank = 3,
+            CostToRank2 = 20,
+            CostToRank3 = 0
         });
 
-        // Triage (Passive)
+        // Triage (Passive) - 3 ranks
         character.Abilities.Add(new Ability
         {
             Name = "Triage",
-            Description = "[PASSIVE] All healing you provide to bloodied allies (HP < 50%) gains +25% effectiveness.",
+            Description = "You understand battlefield medicine: treat the most grievous wounds first. Maximum efficiency.",
             StaminaCost = 0,
             Type = AbilityType.Utility,
             AttributeUsed = "wits",
@@ -232,59 +244,67 @@ public class SpecializationFactory
             SuccessThreshold = 0,
             // Special: Passive healing bonus (handled in CombatEngine)
             CurrentRank = 1,
-            MaxRank = 1
+            MaxRank = 3,
+            CostToRank2 = 20,
+            CostToRank3 = 0
         });
 
-        // TIER 3 - Mastery abilities
+        // TIER 3 - Mastery abilities (5 PP each, requires 16 PP in tree)
 
-        // Cognitive Realignment (Active)
+        // Cognitive Realignment (Active) - 3 ranks
         character.Abilities.Add(new Ability
         {
             Name = "Cognitive Realignment",
-            Description = "Remove [Feared] and [Disoriented] status effects from ally. Restore 2d6 Psychic Stress. Your presence anchors their sanity.",
-            StaminaCost = 25,  // v0.18: Reduced from 30 to make mental health management accessible
+            Description = "Calming techniques, pressure points, smelling salts—you reboot their panicked mind.",
+            StaminaCost = 45,
             Type = AbilityType.Utility,
-            AttributeUsed = "will",  // Uses WILL for mental stabilization
-            BonusDice = 2,
-            SuccessThreshold = 2,
+            AttributeUsed = "",
+            BonusDice = 0,
+            SuccessThreshold = 0,  // Auto-success, consumes draught
             // Special: Removes mental debuffs + restores Stress (handled in CombatEngine)
             CurrentRank = 1,
-            MaxRank = 3
+            MaxRank = 3,
+            CostToRank2 = 20,
+            CostToRank3 = 0
         });
 
-        // "First, Do No Harm" (Passive)
+        // Defensive Focus (Passive) - 3 ranks
         character.Abilities.Add(new Ability
         {
-            Name = "First, Do No Harm",
-            Description = "[PASSIVE] After healing an ally, gain +2 Defense until your next turn. Helping others keeps you vigilant.",
+            Name = "Defensive Focus",
+            Description = "When focused on saving another, you enter heightened awareness. You will not fall.",
             StaminaCost = 0,
             Type = AbilityType.Defense,
-            AttributeUsed = "wits",
+            AttributeUsed = "",
             BonusDice = 0,
             SuccessThreshold = 0,
-            DefensePercent = 0,  // Flat +2 defense bonus
+            DefensePercent = 0,  // Flat defense bonus (varies by rank)
             DefenseDuration = 1,
             // Special: Triggered after healing (handled in CombatEngine)
             CurrentRank = 1,
-            MaxRank = 1
+            MaxRank = 3,
+            CostToRank2 = 20,
+            CostToRank3 = 0
         });
 
-        // CAPSTONE - Ultimate healing ability
+        // CAPSTONE - Ultimate healing ability (6 PP, requires 24 PP + both Tier 3)
 
-        // Miracle Worker (Active)
+        // Miracle Worker (Active) - 3 ranks
         character.Abilities.Add(new Ability
         {
             Name = "Miracle Worker",
-            Description = "⭐ CAPSTONE: Massive heal (4d6 + WITS) and remove ALL physical debuffs ([Bleeding], [Poisoned], [Disease], [Vulnerable]). Limited uses per expedition.",
-            StaminaCost = 40,  // v0.18: Reduced from 60 to make usable at M3
+            Description = "⭐ CAPSTONE: A complex procedure—stimulants, field surgery, sheer will. You bring them back from the brink.",
+            StaminaCost = 50,
             Type = AbilityType.Utility,
             AttributeUsed = "wits",
-            BonusDice = 3,
-            SuccessThreshold = 2,
-            DamageDice = 4,  // Used for healing dice
+            BonusDice = 0,
+            SuccessThreshold = 0,  // Auto-success, consumes Miracle Tincture
+            DamageDice = 8,  // Used for healing dice
             // Special: Massive heal + cleanse all debuffs (handled in CombatEngine)
             CurrentRank = 1,
-            MaxRank = 3
+            MaxRank = 3,
+            CostToRank2 = 20,
+            CostToRank3 = 0
         });
     }
 
