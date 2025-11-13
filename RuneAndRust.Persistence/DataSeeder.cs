@@ -33,6 +33,7 @@ public class DataSeeder
         SeedSkarHordeAspirantSpecialization();
         SeedIronBaneSpecialization();
         SeedAtgeirWielderSpecialization();
+        SeedScrapTinkerSpecialization();
 
         _log.Information("Specialization data seeding completed successfully");
     }
@@ -1690,6 +1691,288 @@ public class DataSeeder
             CooldownType = "None",
             IsActive = true,
             Notes = "Rank 1: While in front row: Immune to [Push] and [Pull]. Brace for Charge can be used as Reaction (once per combat). Rank 2 (20 PP): Aura: Adjacent allies also resistant to [Push]/[Pull] (+3 dice to resist). Your Skewer range increased by 1 row. Rank 3: Zone of Control: Enemies in front row opposite you have -1 to hit and cannot move freely. Brace reactive triggers twice per combat."
+        });
+    }
+
+    #endregion
+
+    #region Scrap-Tinker (ID: 14)
+
+    private void SeedScrapTinkerSpecialization()
+    {
+        _log.Information("Seeding Scrap-Tinker specialization");
+
+        var scrapTinker = new SpecializationData
+        {
+            SpecializationID = 14,
+            Name = "Scrap-Tinker",
+            ArchetypeID = 2, // Adept
+            PathType = "Coherent",
+            MechanicalRole = "Crafter / Pet Controller",
+            PrimaryAttribute = "WITS",
+            SecondaryAttribute = "FINESSE",
+            Description = @"You are the scavenger-engineer who sees treasure in ruins. Where others see broken machines, you see repurposable parts. You salvage corrupted technology, reverse-engineer pre-Glitch devices, and cobble together functional gadgets from scrap.
+
+            You craft drones for reconnaissance, bombs for crowd control, and weapon mods for allies. You're the tinkerer who proves that in a crashed system, the best debugger is the one who can rebuild from the ground up.",
+            Tagline = "Salvage and innovation — craft gadgets, deploy drones, modify weapons",
+            UnlockRequirements = new UnlockRequirements { MinLegend = 3 },
+            ResourceSystem = "Stamina + Scrap Materials",
+            TraumaRisk = "None",
+            IconEmoji = "🔧",
+            PPCostToUnlock = 3,
+            IsActive = true
+        };
+
+        _specializationRepo.Insert(scrapTinker);
+
+        // Seed all ability tiers
+        SeedScrapTinkerTier1();
+        SeedScrapTinkerTier2();
+        SeedScrapTinkerTier3();
+        SeedScrapTinkerCapstone();
+
+        _log.Information("Scrap-Tinker seeding complete: 9 abilities");
+    }
+
+    private void SeedScrapTinkerTier1()
+    {
+        // Tier 1 - Ability 1: Master Scavenger (Passive)
+        _abilityRepo.Insert(new AbilityData
+        {
+            AbilityID = 1401,
+            SpecializationID = 14,
+            Name = "Master Scavenger",
+            Description = "You see value where others see junk. Every bolt, every wire, every corroded gear—repurposable.",
+            MechanicalSummary = "Bonus to scavenging Scrap Materials; find more from enemies and containers",
+            TierLevel = 1,
+            PPCost = 3,
+            MaxRank = 3,
+            CostToRank2 = 20,
+            CostToRank3 = 0,
+            Prerequisites = new AbilityPrerequisites { RequiredPPInTree = 0 },
+            AbilityType = "Passive",
+            ActionType = "Free Action",
+            TargetType = "Self",
+            ResourceCost = new AbilityResourceCost(),
+            CooldownTurns = 0,
+            CooldownType = "None",
+            IsActive = true,
+            Notes = "Rank 1: +1d10 bonus to scavenging Scrap Materials. Find 50% more Scrap from defeated mechanical enemies and loot containers. Rank 2 (20 PP): +2d10 bonus. Find 75% more Scrap. Can salvage Scrap from broken weapons/armor (dismantle for materials). Rank 3: +3d10 bonus. Find 100% more Scrap (double). Salvaged materials include rare components. Start expeditions with 20 Scrap."
+        });
+
+        // Tier 1 - Ability 2: Deploy Flash Bomb (Active)
+        _abilityRepo.Insert(new AbilityData
+        {
+            AbilityID = 1402,
+            SpecializationID = 14,
+            Name = "Deploy Flash Bomb",
+            Description = "You lob the improvised device. Flash! Their optics overload, their eyes burn.",
+            MechanicalSummary = "AoE attack applying [Blinded] status to all enemies in 3x3 area",
+            TierLevel = 1,
+            PPCost = 3,
+            MaxRank = 3,
+            CostToRank2 = 20,
+            CostToRank3 = 0,
+            Prerequisites = new AbilityPrerequisites { RequiredPPInTree = 0 },
+            AbilityType = "Active",
+            ActionType = "Standard Action",
+            TargetType = "Ground location (3x3 area)",
+            ResourceCost = new AbilityResourceCost { Stamina = 30 },
+            AttributeUsed = "wits",
+            BonusDice = 2,
+            SuccessThreshold = 2,
+            CooldownTurns = 2,
+            CooldownType = "Standard",
+            IsActive = true,
+            Notes = "Rank 1: Throw Flash Bomb. All enemies in area make WILL save DC 13 or become [Blinded] for 2 turns. Consumes 1 Flash Bomb. Rank 2 (20 PP): DC increases to 15. Blinded enemies also take -2 Defense. Costs 25 Stamina. Rank 3: DC 17. Blinded duration 3 turns. [Masterwork Flash Bomb]: also deals 2d6 damage."
+        });
+
+        // Tier 1 - Ability 3: Salvage Expertise (Passive)
+        _abilityRepo.Insert(new AbilityData
+        {
+            AbilityID = 1403,
+            SpecializationID = 14,
+            Name = "Salvage Expertise",
+            Description = "Your understanding of pre-Glitch engineering is encyclopedic. Your work is precise, efficient, masterful.",
+            MechanicalSummary = "Crafting bonuses and chance to create superior-quality gadgets",
+            TierLevel = 1,
+            PPCost = 3,
+            MaxRank = 3,
+            CostToRank2 = 20,
+            CostToRank3 = 0,
+            Prerequisites = new AbilityPrerequisites { RequiredPPInTree = 0 },
+            AbilityType = "Passive",
+            ActionType = "Free Action",
+            TargetType = "Self",
+            ResourceCost = new AbilityResourceCost(),
+            CooldownTurns = 0,
+            CooldownType = "None",
+            IsActive = true,
+            Notes = "Rank 1: All Engineering crafting checks have +1d10 bonus. Crafted gadgets have 15% chance to be [Masterwork] (enhanced effects). Rank 2 (20 PP): +2d10 crafting bonus. Masterwork chance 25%. Crafting time reduced by 25%. Rank 3: +3d10 bonus. Masterwork chance 40%. Can craft [Prototype] quality (superior to Masterwork, 10% chance)."
+        });
+    }
+
+    private void SeedScrapTinkerTier2()
+    {
+        // Tier 2 - Ability 4: Deploy Scout Drone (Active)
+        _abilityRepo.Insert(new AbilityData
+        {
+            AbilityID = 1404,
+            SpecializationID = 14,
+            Name = "Deploy Scout Drone",
+            Description = "The jerry-rigged drone buzzes to life. Its optics scan the battlefield, feeding you tactical data.",
+            MechanicalSummary = "Deploy reconnaissance drone providing vision, revealing hidden enemies and traps",
+            TierLevel = 2,
+            PPCost = 4,
+            MaxRank = 3,
+            CostToRank2 = 20,
+            CostToRank3 = 0,
+            Prerequisites = new AbilityPrerequisites { RequiredPPInTree = 8 },
+            AbilityType = "Active",
+            ActionType = "Standard Action",
+            TargetType = "Self (deploys drone)",
+            ResourceCost = new AbilityResourceCost { Stamina = 40 },
+            CooldownTurns = 4,
+            CooldownType = "Standard",
+            IsActive = true,
+            Notes = "Rank 1: Deploy Scout Drone (10 HP, 0 Armor). Grants vision in 5x5 area. Reveals hidden enemies and traps. Moves 3 spaces per turn (your command). Duration: Until destroyed or dismissed. Costs 15 Scrap Materials. Rank 2 (20 PP): Drone has 15 HP, 2 Armor. Vision radius 7x7. Can mark priority targets (+1 ally to hit vs marked enemy). Rank 3: Drone has 20 HP, 4 Armor. Vision radius 10x10. Can self-destruct for 4d6 damage (3x3 AoE, destroys drone)."
+        });
+
+        // Tier 2 - Ability 5: Deploy Shock Mine (Active)
+        _abilityRepo.Insert(new AbilityData
+        {
+            AbilityID = 1405,
+            SpecializationID = 14,
+            Name = "Deploy Shock Mine",
+            Description = "You carefully arm the mine. Step on it—instant overload. Nervous system fried.",
+            MechanicalSummary = "Place trap mine that damages and stuns enemies who trigger it",
+            TierLevel = 2,
+            PPCost = 4,
+            MaxRank = 3,
+            CostToRank2 = 20,
+            CostToRank3 = 0,
+            Prerequisites = new AbilityPrerequisites { RequiredPPInTree = 8 },
+            AbilityType = "Active",
+            ActionType = "Standard Action",
+            TargetType = "Ground location",
+            ResourceCost = new AbilityResourceCost { Stamina = 35 },
+            AttributeUsed = "wits",
+            BonusDice = 2,
+            SuccessThreshold = 2,
+            DamageDice = 3,
+            DamageType = "Lightning",
+            CooldownTurns = 0,
+            CooldownType = "None",
+            IsActive = true,
+            Notes = "Rank 1: Place Shock Mine. When enemy moves onto it: trigger, deal 3d8 Lightning damage, STURDINESS save DC 14 or [Stunned] 1 turn. Consumes 1 Shock Mine. Rank 2 (20 PP): Damage 4d8. DC 16. Stun duration 2 turns. Can place 2 mines per combat. Rank 3: Damage 5d8. DC 18. [Masterwork Mine]: also applies [Slowed] for 2 turns after Stun ends."
+        });
+
+        // Tier 2 - Ability 6: Weapon Modification (Active)
+        _abilityRepo.Insert(new AbilityData
+        {
+            AbilityID = 1406,
+            SpecializationID = 14,
+            Name = "Weapon Modification",
+            Description = "You disassemble the weapon, integrate salvaged components, reassemble. Better than factory spec.",
+            MechanicalSummary = "Apply permanent enhancement to ally weapon (elemental, precision, or durability)",
+            TierLevel = 2,
+            PPCost = 4,
+            MaxRank = 3,
+            CostToRank2 = 20,
+            CostToRank3 = 0,
+            Prerequisites = new AbilityPrerequisites { RequiredPPInTree = 8 },
+            AbilityType = "Active",
+            ActionType = "Standard Action",
+            TargetType = "Single ally weapon",
+            ResourceCost = new AbilityResourceCost { Stamina = 0 },
+            CooldownTurns = 0,
+            CooldownType = "None",
+            IsActive = true,
+            Notes = "Rank 1: Apply permanent modification (out-of-combat, 10 minutes at workbench): [Elemental] (+1d6 Fire/Frost/Lightning), [Precision] (+1 to hit), or [Reinforced] (+50% durability). Costs 25 Scrap Materials. Rank 2 (20 PP): Costs 20 Scrap. Mods more powerful: [Elemental] (+2d6), [Precision] (+2 to hit), [Reinforced] (+100% durability + 10% crit chance). Rank 3: Can apply 2 modifications to same weapon (stacking). Prototype quality mods: bonus doubled."
+        });
+    }
+
+    private void SeedScrapTinkerTier3()
+    {
+        // Tier 3 - Ability 7: Automated Scavenging (Passive)
+        _abilityRepo.Insert(new AbilityData
+        {
+            AbilityID = 1407,
+            SpecializationID = 14,
+            Name = "Automated Scavenging",
+            Description = "You've built automated collection systems. Magnets, sensors, retrieval claws—never leave materials behind.",
+            MechanicalSummary = "Automatically scavenge Scrap Materials after combat without action cost",
+            TierLevel = 3,
+            PPCost = 5,
+            MaxRank = 3,
+            CostToRank2 = 20,
+            CostToRank3 = 0,
+            Prerequisites = new AbilityPrerequisites { RequiredPPInTree = 16 },
+            AbilityType = "Passive",
+            ActionType = "Free Action",
+            TargetType = "Self",
+            ResourceCost = new AbilityResourceCost(),
+            CooldownTurns = 0,
+            CooldownType = "None",
+            IsActive = true,
+            Notes = "Rank 1: After combat, automatically scavenge 5 Scrap Materials from battlefield (no action required). Rank 2 (20 PP): Auto-scavenge 10 Scrap. Scout Drone can scavenge while deployed (adds 5 Scrap per combat). Rank 3: Auto-scavenge 15 Scrap. 25% chance to find rare components. Scrap Golem (if active) scavenges additional 10 Scrap."
+        });
+
+        // Tier 3 - Ability 8: Efficient Assembly (Passive)
+        _abilityRepo.Insert(new AbilityData
+        {
+            AbilityID = 1408,
+            SpecializationID = 14,
+            Name = "Efficient Assembly",
+            Description = "Muscle memory. Optimized workflows. You assemble gadgets faster than most people load a gun.",
+            MechanicalSummary = "Reduced crafting costs and time; can craft multiple gadgets simultaneously",
+            TierLevel = 3,
+            PPCost = 5,
+            MaxRank = 3,
+            CostToRank2 = 20,
+            CostToRank3 = 0,
+            Prerequisites = new AbilityPrerequisites { RequiredPPInTree = 16 },
+            AbilityType = "Passive",
+            ActionType = "Free Action",
+            TargetType = "Self",
+            ResourceCost = new AbilityResourceCost(),
+            CooldownTurns = 0,
+            CooldownType = "None",
+            IsActive = true,
+            Notes = "Rank 1: All gadget crafting costs 25% less Scrap Materials. Crafting time reduced by 50%. Rank 2 (20 PP): Costs 40% less. Crafting time reduced by 75%. Can craft 2 gadgets simultaneously. Rank 3: Costs 50% less. Some gadgets craftable instantly (Flash Bombs, Repair Kits). Can craft 3 gadgets simultaneously."
+        });
+    }
+
+    private void SeedScrapTinkerCapstone()
+    {
+        // Capstone - Ability 9: Deploy Scrap Golem (Active)
+        _abilityRepo.Insert(new AbilityData
+        {
+            AbilityID = 1409,
+            SpecializationID = 14,
+            Name = "Deploy Scrap Golem",
+            Description = "Your masterpiece. A walking junk pile animated by salvaged power cores. Loyal. Brutal. Yours.",
+            MechanicalSummary = "Deploy powerful combat pet with high HP, armor, and damage; can self-destruct for AoE",
+            TierLevel = 4,
+            PPCost = 6,
+            MaxRank = 3,
+            CostToRank2 = 20,
+            CostToRank3 = 0,
+            Prerequisites = new AbilityPrerequisites
+            {
+                RequiredPPInTree = 24,
+                RequiredAbilityIDs = new List<int> { 1407, 1408 }  // Both Tier 3 required
+            },
+            AbilityType = "Active",
+            ActionType = "Standard Action",
+            TargetType = "Self (deploys golem)",
+            ResourceCost = new AbilityResourceCost { Stamina = 50 },
+            DamageDice = 3,
+            DamageType = "Physical",
+            CooldownTurns = 999,
+            CooldownType = "Once Per Expedition",
+            IsActive = true,
+            Notes = "Rank 1: Deploy Scrap Golem (40 HP, 6 Armor, immune to psychic effects). Acts on your turn. Slam: 3d10 Physical damage. Defend: Grant adjacent ally +3 Soak. Costs 50 Scrap Materials (once per expedition, out-of-combat: 1 hour assembly). Duration: Until destroyed or expedition ends. Rank 2 (20 PP): Golem has 60 HP, 8 Armor. Slam: 4d10 damage. Repair Protocol: Once per combat, self-heal 20 HP. Can carry 50 extra Scrap capacity. Rank 3: Golem has 80 HP, 10 Armor. Slam: 5d10 damage. Detonate: Command golem to self-destruct (8d10 damage, 5x5 AoE, destroys golem). Can rebuild with 25 Scrap (half cost)."
         });
     }
 

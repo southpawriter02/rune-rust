@@ -7,6 +7,103 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.19.5] - 2025-11-13 - Scrap-Tinker Specialization
+
+### Added
+
+#### New Specialization: Scrap-Tinker (Master Artificer)
+- **Archetype:** Adept
+- **Path Type:** Coherent
+- **Mechanical Role:** Crafter / Pet Controller
+- **Primary Attribute:** WITS
+- **Secondary Attribute:** FINESSE
+- **Resource System:** Stamina + Scrap Materials
+- **Trauma Risk:** None
+- **Unlock Requirements:** Legend 3+
+- **Icon:** 🔧
+
+#### Core Mechanics
+- **Scrap Material Economy:** Track and manage Scrap Materials for crafting
+- **Gadget Crafting:** Create Flash Bombs, Shock Mines, Repair Kits at workbenches
+- **Quality System:** Masterwork and Prototype quality rolls for superior gadgets
+- **Weapon Modifications:** Permanent enhancements to ally weapons (Elemental, Precision, Reinforced)
+- **Pet System:** Deploy Scout Drone and Scrap Golem with controllable commands
+- **Trap Placement:** Shock Mines trigger on enemy movement
+
+#### 9 New Abilities (30 PP Total)
+
+**Tier 1 (3 PP each):**
+1. **Master Scavenger** (Passive) - Enhanced Scrap Material gathering
+   - Find 50% more Scrap from mechanical enemies and containers
+   - Start expeditions with 20 Scrap at Rank 3
+2. **Deploy Flash Bomb** (Active) - AoE attack applying [Blinded] status
+   - 3x3 area, WILL save DC 13-17
+   - Masterwork bombs deal 2d6 damage at Rank 3
+3. **Salvage Expertise** (Passive) - Crafting bonuses and quality improvements
+   - +3d10 crafting bonus at Rank 3
+   - 40% Masterwork chance, 10% Prototype chance
+
+**Tier 2 (4 PP each, requires 8 PP in tree):**
+4. **Deploy Scout Drone** (Active) - Deploy reconnaissance drone
+   - Provides vision, reveals hidden enemies and traps
+   - Can self-destruct for 4d6 AoE damage at Rank 3
+5. **Deploy Shock Mine** (Active) - Place trap mine
+   - 3d8-5d8 Lightning damage, STURDINESS save DC 14-18
+   - Applies [Stunned] and [Slowed] effects
+6. **Weapon Modification** (Active) - Permanently enhance ally weapons
+   - Add Elemental damage (+1d6-2d6), Precision (+1-2 to hit), or Reinforced (+50-100% durability)
+   - Can stack 2 modifications at Rank 3
+
+**Tier 3 (5 PP each, requires 16 PP in tree):**
+7. **Automated Scavenging** (Passive) - Auto-collect Scrap after combat
+   - 5-15 Scrap per combat, no action required
+   - 25% chance for rare components at Rank 3
+8. **Efficient Assembly** (Passive) - Reduced crafting costs and time
+   - 25-50% less Scrap Materials required
+   - Craft 3 gadgets simultaneously at Rank 3
+
+**Capstone (6 PP, requires 24 PP + both Tier 3):**
+9. **Deploy Scrap Golem** (Active, Once Per Expedition) - Deploy powerful combat pet
+   - 40-80 HP, 6-10 Armor, immune to psychic effects
+   - Slam attack: 3d10-5d10 Physical damage
+   - Defend command: Grant +3 Soak to adjacent ally
+   - Can self-destruct for 8d10 AoE damage at Rank 3
+
+#### Design Philosophy
+- **Salvage and Innovation:** Reverse-engineer corrupted technology and repurpose scrap
+- **Force Multiplier:** Enhance party capabilities through weapon mods and gadgets
+- **Preparation Gameplay:** Craft during downtime, deploy strategic tools in combat
+- **Utility Specialist:** Provide vision (Scout Drone), control (Flash Bombs), and traps (Shock Mines)
+- **Pet-Based Gameplay:** Control drones and golems for reconnaissance and combat
+
+### Technical
+- **Updated Files:**
+  - `RuneAndRust.Persistence/DataSeeder.cs` - Added Scrap-Tinker specialization (280+ lines)
+    - SpecializationID: 14
+    - AbilityIDs: 1401-1409
+  - `RuneAndRust.Tests/SpecializationIntegrationTests.cs` - Added validation test for Scrap-Tinker
+- **Test Coverage:**
+  - Specialization seeding tests
+  - Ability structure validation (3-3-2-1 tier distribution)
+  - PP cost validation (30 PP total)
+  - Prerequisite validation (Capstone requires both Tier 3 abilities)
+  - Unlock requirement tests
+
+### Balance Considerations
+- **Weapon Modifications:** Target 25-40% party DPS increase when fully invested
+- **Scrap Economy:** Requires 2-3 combats worth of Scrap per gadget (sustainable)
+- **Pet Survivability:** Scout Drone 3-5 turn survival, Scrap Golem tanks comparable to Warrior
+- **Role Differentiation:** Strong utility/support, minimal direct combat contribution
+- **Strategic Weakness:** Weak solo play (crafting/mods wasted), requires long expeditions for crafting time
+
+### Synergies
+- **Master Scavenger + Efficient Assembly:** Craft twice as many gadgets with doubled Scrap income
+- **Scout Drone + Shock Mines:** Vision reveals enemy paths for optimal mine placement
+- **Weapon Modification + Salvage Expertise:** Prototype mods have doubled bonuses
+- **Scrap Golem + Automated Scavenging:** Golem scavenges additional 10 Scrap per combat
+
+---
+
 ## [0.19.3] - 2025-11-13 - Atgeir-wielder Specialization
 
 ### Added
