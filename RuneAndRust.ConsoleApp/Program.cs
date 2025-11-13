@@ -1310,8 +1310,6 @@ class Program
     /// </summary>
     static void HandleTalk()
     {
-        using RuneAndRust.Core.Dialogue;
-
         // v0.4: Handle legacy Forlorn Scholar encounter first
         if (_gameState.CurrentRoom.HasTalkableNPC &&
             !_gameState.CurrentRoom.HasTalkedToNPC &&

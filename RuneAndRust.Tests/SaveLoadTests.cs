@@ -1,5 +1,6 @@
 using NUnit.Framework;
 using RuneAndRust.Core;
+using RuneAndRust.Engine;
 using RuneAndRust.Persistence;
 using System.IO;
 
