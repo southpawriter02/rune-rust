@@ -21,7 +21,8 @@ public class CombatLegendTests
         var equipmentService = new EquipmentService();
         var traumaService = new TraumaEconomyService();
         var hazardService = new HazardService(_diceService, traumaService);
-        _combatEngine = new CombatEngine(_diceService, _sagaService, lootService, equipmentService, hazardService);
+        var currencyService = new CurrencyService();
+        _combatEngine = new CombatEngine(_diceService, _sagaService, lootService, equipmentService, hazardService, currencyService);
 
         _player = new PlayerCharacter
         {
@@ -56,7 +57,7 @@ public class CombatLegendTests
                 BaseLegendValue = 10,
                 HP = 0, // Defeated
                 MaxHP = 15,
-                IsAlive = false
+                HP = 0
             }
         };
 
@@ -82,7 +83,7 @@ public class CombatLegendTests
                 BaseLegendValue = 25,
                 HP = 0,
                 MaxHP = 25,
-                IsAlive = false
+                HP = 0
             }
         };
 
@@ -108,7 +109,7 @@ public class CombatLegendTests
                 BaseLegendValue = 100,
                 HP = 0,
                 MaxHP = 80,
-                IsAlive = false,
+                HP = 0,
                 IsBoss = true
             }
         };
@@ -151,7 +152,7 @@ public class CombatLegendTests
         var enemies = new List<Enemy>
         {
             new Enemy { Name = "Defeated", BaseLegendValue = 10, HP = 0, IsAlive = false },
-            new Enemy { Name = "Alive", BaseLegendValue = 25, HP = 20, IsAlive = true }
+            new Enemy { Name = "Alive", BaseLegendValue = 25, HP = 20, HP = 10 }
         };
 
         var combat = _combatEngine.InitializeCombat(_player, enemies);
@@ -190,7 +191,7 @@ public class CombatLegendTests
         // Arrange
         var enemies = new List<Enemy>
         {
-            new Enemy { Name = "Alive Enemy", BaseLegendValue = 100, HP = 50, IsAlive = true }
+            new Enemy { Name = "Alive Enemy", BaseLegendValue = 100, HP = 50, HP = 10 }
         };
 
         var combat = _combatEngine.InitializeCombat(_player, enemies);

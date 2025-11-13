@@ -427,7 +427,7 @@ public class V04MechanicsTests
         foreach (var type in newEnemyTypes)
         {
             var enemy = EnemyFactory.CreateEnemy(type);
-            Assert.True(enemy.LegendValue > 0, $"{type} should grant Legend");
+            Assert.True(enemy.BaseLegendValue > 0, $"{type} should grant Legend");
         }
     }
 
@@ -441,8 +441,8 @@ public class V04MechanicsTests
         // Assert
         Assert.True(ruinWarden.IsBoss);
         Assert.True(aberration.IsBoss);
-        Assert.True(ruinWarden.LegendValue >= 100, "Boss should grant at least 100 Legend");
-        Assert.True(aberration.LegendValue >= 100, "Boss should grant at least 100 Legend");
+        Assert.True(ruinWarden.BaseLegendValue >= 100, "Boss should grant at least 100 Legend");
+        Assert.True(aberration.BaseLegendValue >= 100, "Boss should grant at least 100 Legend");
     }
 
     #endregion
