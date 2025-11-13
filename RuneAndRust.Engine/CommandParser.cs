@@ -152,7 +152,6 @@ public class CommandParser
         // Merchant System (v0.9)
         { "shop", CommandType.Shop },
         { "browse", CommandType.Shop },
-        { "inventory", CommandType.Shop }, // Can also show merchant inventory in context
         { "buy", CommandType.Buy },
         { "purchase", CommandType.Buy },
         { "sell", CommandType.Sell },
