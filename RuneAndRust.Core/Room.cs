@@ -72,4 +72,13 @@ public class Room
 
     // v0.11 Metadata
     public bool IsHandcrafted { get; set; } = false; // True for Quest Anchor rooms (skip procedural population)
+
+    // v0.12 Coherent Glitch tracking
+    public int CoherentGlitchRulesFired { get; set; } = 0;
+
+    // Helper methods
+    public bool HasAmbientCondition(string conditionName)
+    {
+        return AmbientConditions.Any(c => c.Name.Contains(conditionName.Trim('[', ']'), StringComparison.OrdinalIgnoreCase));
+    }
 }

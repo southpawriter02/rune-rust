@@ -131,9 +131,9 @@ public class CombatLegendTests
         // Arrange
         var enemies = new List<Enemy>
         {
-            new Enemy { Name = "Servitor 1", BaseLegendValue = 10, HP = 0, IsAlive = false },
-            new Enemy { Name = "Servitor 2", BaseLegendValue = 10, HP = 0, IsAlive = false },
-            new Enemy { Name = "Drone", BaseLegendValue = 25, HP = 0, IsAlive = false }
+            new Enemy { Name = "Servitor 1", BaseLegendValue = 10, HP = 0 },
+            new Enemy { Name = "Servitor 2", BaseLegendValue = 10, HP = 0 },
+            new Enemy { Name = "Drone", BaseLegendValue = 25, HP = 0 }
         };
 
         var combat = _combatEngine.InitializeCombat(_player, enemies);
@@ -151,8 +151,8 @@ public class CombatLegendTests
         // Arrange
         var enemies = new List<Enemy>
         {
-            new Enemy { Name = "Defeated", BaseLegendValue = 10, HP = 0, IsAlive = false },
-            new Enemy { Name = "Alive", BaseLegendValue = 25, HP = 20, HP = 10 }
+            new Enemy { Name = "Defeated", BaseLegendValue = 10, HP = 0 },
+            new Enemy { Name = "Alive", BaseLegendValue = 25, HP = 10 }
         };
 
         var combat = _combatEngine.InitializeCombat(_player, enemies);
@@ -171,7 +171,7 @@ public class CombatLegendTests
         _player.CurrentLegend = 90; // Close to milestone
         var enemies = new List<Enemy>
         {
-            new Enemy { Name = "Servitor", BaseLegendValue = 10, HP = 0, IsAlive = false }
+            new Enemy { Name = "Servitor", BaseLegendValue = 10, HP = 0 }
         };
 
         var combat = _combatEngine.InitializeCombat(_player, enemies);
@@ -191,7 +191,7 @@ public class CombatLegendTests
         // Arrange
         var enemies = new List<Enemy>
         {
-            new Enemy { Name = "Alive Enemy", BaseLegendValue = 100, HP = 50, HP = 10 }
+            new Enemy { Name = "Alive Enemy", BaseLegendValue = 100, HP = 10 }
         };
 
         var combat = _combatEngine.InitializeCombat(_player, enemies);
@@ -245,8 +245,8 @@ public class CombatLegendTests
         // Fight 1: 2 Servitors (normal combat)
         var fight1 = new List<Enemy>
         {
-            new Enemy { BaseLegendValue = 10, HP = 0, IsAlive = false },
-            new Enemy { BaseLegendValue = 10, HP = 0, IsAlive = false }
+            new Enemy { BaseLegendValue = 10, HP = 0 },
+            new Enemy { BaseLegendValue = 10, HP = 0 }
         };
         var combat1 = _combatEngine.InitializeCombat(_player, fight1);
         _combatEngine.AwardCombatLegend(combat1, 1.0f);
@@ -255,7 +255,7 @@ public class CombatLegendTests
         // Fight 2: Blight-Drone (blight area, 1.25x trauma)
         var fight2 = new List<Enemy>
         {
-            new Enemy { BaseLegendValue = 25, HP = 0, IsAlive = false }
+            new Enemy { BaseLegendValue = 25, HP = 0 }
         };
         var combat2 = _combatEngine.InitializeCombat(_player, fight2);
         _combatEngine.AwardCombatLegend(combat2, 1.25f);
@@ -264,7 +264,7 @@ public class CombatLegendTests
         // Fight 3: Another Blight-Drone
         var fight3 = new List<Enemy>
         {
-            new Enemy { BaseLegendValue = 25, HP = 0, IsAlive = false }
+            new Enemy { BaseLegendValue = 25, HP = 0 }
         };
         var combat3 = _combatEngine.InitializeCombat(_player, fight3);
         _combatEngine.AwardCombatLegend(combat3, 1.25f);
@@ -273,8 +273,8 @@ public class CombatLegendTests
         // Fight 4: 2 more Servitors (normal)
         var fight4 = new List<Enemy>
         {
-            new Enemy { BaseLegendValue = 10, HP = 0, IsAlive = false },
-            new Enemy { BaseLegendValue = 10, HP = 0, IsAlive = false }
+            new Enemy { BaseLegendValue = 10, HP = 0 },
+            new Enemy { BaseLegendValue = 10, HP = 0 }
         };
         var combat4 = _combatEngine.InitializeCombat(_player, fight4);
         bool milestoneReached = _combatEngine.AwardCombatLegend(combat4, 1.0f);

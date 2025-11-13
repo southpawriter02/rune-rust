@@ -100,6 +100,47 @@ public class AbilityService
     }
 
     /// <summary>
+    /// Get a specific ability by name for a specialization
+    /// </summary>
+    public AbilityResult GetAbilitiesByName(int specializationId, string abilityName)
+    {
+        _log.Debug("Getting ability {AbilityName} for specialization {SpecializationID}",
+            abilityName, specializationId);
+
+        try
+        {
+            var abilities = _abilityRepo.GetBySpecialization(specializationId);
+            var ability = abilities.FirstOrDefault(a =>
+                a.Name.Equals(abilityName, StringComparison.OrdinalIgnoreCase));
+
+            if (ability == null)
+            {
+                return new AbilityResult
+                {
+                    Success = false,
+                    Message = $"Ability '{abilityName}' not found for specialization {specializationId}"
+                };
+            }
+
+            return new AbilityResult
+            {
+                Success = true,
+                Ability = ability,
+                Message = $"Found ability: {ability.Name}"
+            };
+        }
+        catch (Exception ex)
+        {
+            _log.Error(ex, "Error getting ability {AbilityName}", abilityName);
+            return new AbilityResult
+            {
+                Success = false,
+                Message = $"Error: {ex.Message}"
+            };
+        }
+    }
+
+    /// <summary>
     /// Get a specific ability by ID
     /// </summary>
     public AbilityResult GetAbility(int abilityId)

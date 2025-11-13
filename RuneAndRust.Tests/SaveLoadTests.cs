@@ -66,7 +66,7 @@ public class SaveLoadTests
         _repository.SaveGame(originalPlayer, originalWorldState);
 
         // Act
-        var (loadedPlayer, loadedWorldState) = _repository.LoadGame(originalPlayer.Name);
+        var (loadedPlayer, loadedWorldState, _, _, _, _) = _repository.LoadGame(originalPlayer.Name);
 
         // Assert
         Assert.That(loadedPlayer, Is.Not.Null);
@@ -81,7 +81,7 @@ public class SaveLoadTests
     public void LoadGame_NonExistentSave_ReturnsNull()
     {
         // Act
-        var (player, worldState) = _repository.LoadGame("NonExistent");
+        var (player, worldState, _, _, _, _) = _repository.LoadGame("NonExistent");
 
         // Assert
         Assert.That(player, Is.Null);
@@ -368,12 +368,12 @@ public class SaveLoadTests
         var worldState = new WorldState { CurrentRoomId = room.Id };
 
         // Act
-        _repository.SaveGame(player, worldState, world);
-        var (loadedPlayer, loadedWorldState, roomItemsJson) = _repository.LoadGame(player.Name);
+        _repository.SaveGame(player, worldState);
+        var (loadedPlayer, loadedWorldState, roomItemsJson, _, _, _) = _repository.LoadGame(player.Name);
 
         // Clear room items and restore
         room.ItemsOnGround.Clear();
-        _repository.RestoreRoomItems(world, roomItemsJson);
+        _repository.RestoreRoomItems(world.Rooms, roomItemsJson);
 
         // Assert
         Assert.That(room.ItemsOnGround.Count, Is.EqualTo(2));

@@ -26,6 +26,7 @@ public class AbilityData
     // Effects
     public string MechanicalSummary { get; set; } = string.Empty; // Short mechanical description
     public int DamageDice { get; set; } = 0; // Number of d6 damage dice
+    public string DamageType { get; set; } = "Physical"; // "Physical", "Fire", "Lightning", "Poison", etc.
     public bool IgnoresArmor { get; set; } = false;
     public int HealingDice { get; set; } = 0; // Number of d6 healing dice
     public List<string> StatusEffectsApplied { get; set; } = new(); // [Vulnerable], [Analyzed], [Feared], etc.

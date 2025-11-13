@@ -542,8 +542,8 @@ public class DungeonGraphTests
         Assert.That(edge.HasDirections(), Is.False);
 
         // Act - assign directions
-        edge.FromDirection = "north";
-        edge.ToDirection = "south";
+        edge.FromDirection = Direction.North;
+        edge.ToDirection = Direction.South;
 
         // Assert
         Assert.That(edge.HasDirections(), Is.True);

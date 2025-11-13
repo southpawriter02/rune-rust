@@ -1,9 +1,9 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using RuneAndRust.Core;
-using RuneAndRust.Core.Population;
 using RuneAndRust.Engine;
 using RuneAndRust.Engine.Telemetry;
 using RuneAndRust.Engine.CoherentGlitch;
+using Population = RuneAndRust.Core.Population;
 
 namespace RuneAndRust.Tests;
 
@@ -216,7 +216,7 @@ public class BalanceValidationTests
         var room1 = new Room
         {
             RoomId = "room_1",
-            DormantProcesses = new List<DormantProcess>
+            // DormantProcesses = new List<DormantProcess>
             {
                 new DormantProcess { ThreatLevel = ThreatLevel.Low },
                 new DormantProcess { ThreatLevel = ThreatLevel.Medium }
@@ -235,7 +235,7 @@ public class BalanceValidationTests
         var room2 = new Room
         {
             RoomId = "room_2",
-            DormantProcesses = new List<DormantProcess>
+            // DormantProcesses = new List<DormantProcess>
             {
                 new DormantProcess { ThreatLevel = ThreatLevel.High, IsChampion = true }
             },

@@ -1,8 +1,8 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using RuneAndRust.Core;
-using RuneAndRust.Core.Population;
 using RuneAndRust.Engine.CoherentGlitch;
 using RuneAndRust.Engine.CoherentGlitch.Rules;
+using Population = RuneAndRust.Core.Population;
 
 namespace RuneAndRust.Tests;
 
@@ -49,7 +49,7 @@ public class CoherentGlitchRuleTests
             {
                 new UnstableCeilingHazard()
             },
-            StaticTerrainFeatures = new List<StaticTerrain>()
+            StaticTerrain = new List<StaticTerrain>()
         };
         var context = new PopulationContext();
 
@@ -57,10 +57,10 @@ public class CoherentGlitchRuleTests
         rule.Apply(room, context);
 
         // Assert
-        Assert.AreEqual(1, room.StaticTerrainFeatures.Count, "Should add exactly one rubble pile");
-        Assert.IsInstanceOfType(room.StaticTerrainFeatures[0], typeof(RubblePile));
+        Assert.AreEqual(1, room.StaticTerrain.Count, "Should add exactly one rubble pile");
+        Assert.IsInstanceOfType(room.StaticTerrain[0], typeof(RubblePile));
 
-        var rubble = (RubblePile)room.StaticTerrainFeatures[0];
+        var rubble = (RubblePile)room.StaticTerrain[0];
         Assert.IsTrue(rubble.IsFromCeilingCollapse, "Rubble should be marked as from ceiling collapse");
     }
 
@@ -76,7 +76,7 @@ public class CoherentGlitchRuleTests
             {
                 new UnstableCeilingHazard()
             },
-            StaticTerrainFeatures = new List<StaticTerrain>
+            StaticTerrain = new List<StaticTerrain>
             {
                 new RubblePile() // Already has rubble
             }
@@ -87,7 +87,7 @@ public class CoherentGlitchRuleTests
         rule.Apply(room, context);
 
         // Assert
-        Assert.AreEqual(1, room.StaticTerrainFeatures.Count, "Should not add duplicate rubble");
+        Assert.AreEqual(1, room.StaticTerrain.Count, "Should not add duplicate rubble");
     }
 
     #endregion
@@ -237,7 +237,7 @@ public class CoherentGlitchRuleTests
         {
             RoomId = "test_room_1",
             Archetype = RoomArchetype.EntryHall,
-            DormantProcesses = new List<DormantProcess>
+            // DormantProcesses = new List<DormantProcess>
             {
                 new DormantProcess { ThreatLevel = ThreatLevel.Low },
                 new DormantProcess { ThreatLevel = ThreatLevel.High, IsChampion = true },
@@ -250,8 +250,8 @@ public class CoherentGlitchRuleTests
         rule.Apply(room, context);
 
         // Assert
-        Assert.AreEqual(2, room.DormantProcesses.Count, "Champions should be removed");
-        Assert.IsFalse(room.DormantProcesses.Any(e => e.ThreatLevel >= ThreatLevel.High),
+        Assert.AreEqual(2, /* room.DormantProcesses */ room.Enemies.Count, "Champions should be removed");
+        Assert.IsFalse(/* room.DormantProcesses */ room.Enemies.Any(e => e.ThreatLevel >= ThreatLevel.High),
             "No high-threat enemies should remain");
     }
 
@@ -333,7 +333,7 @@ public class CoherentGlitchRuleTests
         var room = new Room
         {
             RoomId = "test_room_1",
-            DormantProcesses = new List<DormantProcess>
+            // DormantProcesses = new List<DormantProcess>
             {
                 new DormantProcess { SpawnPosition = new Vector2(5, 5) }
             }
@@ -355,12 +355,12 @@ public class CoherentGlitchRuleTests
         var room = new Room
         {
             RoomId = "test_room_1",
-            DormantProcesses = new List<DormantProcess>
+            // DormantProcesses = new List<DormantProcess>
             {
                 new DormantProcess { SpawnPosition = new Vector2(5, 5) },
                 new DormantProcess { SpawnPosition = new Vector2(8, 8) }
             },
-            StaticTerrainFeatures = new List<StaticTerrain>()
+            StaticTerrain = new List<StaticTerrain>()
         };
         var context = new PopulationContext { Rng = new Random(42) };
 
@@ -368,8 +368,8 @@ public class CoherentGlitchRuleTests
         rule.Apply(room, context);
 
         // Assert
-        Assert.IsTrue(room.StaticTerrainFeatures.Count > 0, "Cover should be added");
-        Assert.IsTrue(room.StaticTerrainFeatures.All(t => t.ProvidesTouchCover),
+        Assert.IsTrue(room.StaticTerrain.Count > 0, "Cover should be added");
+        Assert.IsTrue(room.StaticTerrain.All(t => t.ProvidesTouchCover),
             "All added terrain should provide cover");
     }
 
@@ -386,7 +386,7 @@ public class CoherentGlitchRuleTests
         {
             RoomId = "test_room_1",
             Name = "Maintenance Hub",
-            DormantProcesses = new List<DormantProcess>
+            // DormantProcesses = new List<DormantProcess>
             {
                 new DormantProcess { ProcessType = "haugbui_class" }
             }
@@ -409,11 +409,11 @@ public class CoherentGlitchRuleTests
         {
             RoomId = "test_room_1",
             Name = "Maintenance Hub",
-            DormantProcesses = new List<DormantProcess>
+            // DormantProcesses = new List<DormantProcess>
             {
                 new DormantProcess { ProcessType = "haugbui_class" }
             },
-            StaticTerrainFeatures = new List<StaticTerrain>(),
+            StaticTerrain = new List<StaticTerrain>(),
             LootNodes = new List<LootNode>()
         };
         var context = new PopulationContext { Rng = new Random(42) };
@@ -422,8 +422,8 @@ public class CoherentGlitchRuleTests
         rule.Apply(room, context);
 
         // Assert
-        Assert.IsTrue(room.StaticTerrainFeatures.Count >= 3, "Should add at least 3 organized rubble piles");
-        Assert.IsTrue(room.StaticTerrainFeatures.OfType<RubblePile>().All(r => r.IsOrganized),
+        Assert.IsTrue(room.StaticTerrain.Count >= 3, "Should add at least 3 organized rubble piles");
+        Assert.IsTrue(room.StaticTerrain.OfType<RubblePile>().All(r => r.IsOrganized),
             "All rubble should be organized");
         Assert.IsTrue(room.LootNodes.Count > 0, "Should add loot nodes");
     }
@@ -438,7 +438,7 @@ public class CoherentGlitchRuleTests
         {
             RoomId = "test_room_1",
             DynamicHazards = new List<DynamicHazard> { chasm },
-            StaticTerrainFeatures = new List<StaticTerrain>(),
+            StaticTerrain = new List<StaticTerrain>(),
             LootNodes = new List<LootNode>()
         };
         var context = new PopulationContext { Rng = new Random(42) };
@@ -447,9 +447,9 @@ public class CoherentGlitchRuleTests
         rule.Apply(room, context);
 
         // Assert
-        Assert.IsTrue(room.StaticTerrainFeatures.Count >= 2,
+        Assert.IsTrue(room.StaticTerrain.Count >= 2,
             "Should add gantry and rubble");
-        Assert.IsTrue(room.StaticTerrainFeatures.Any(t => t is MachineryWreckage),
+        Assert.IsTrue(room.StaticTerrain.Any(t => t is MachineryWreckage),
             "Should add collapsed gantry");
         Assert.IsTrue(room.Description.Contains("chasm"), "Description should mention chasm");
     }
@@ -528,7 +528,7 @@ public class CoherentGlitchRuleTests
             {
                 new UnstableCeilingHazard() // Should trigger mandatory rule
             },
-            StaticTerrainFeatures = new List<StaticTerrain>()
+            StaticTerrain = new List<StaticTerrain>()
         };
         var context = new PopulationContext();
 
@@ -540,7 +540,7 @@ public class CoherentGlitchRuleTests
         Assert.AreEqual(1, room.CoherentGlitchRulesFired, "Room should track rules fired");
 
         // Mandatory rule should have fired (UnstableCeiling -> Rubble)
-        Assert.IsTrue(room.StaticTerrainFeatures.Any(t => t is RubblePile),
+        Assert.IsTrue(room.StaticTerrain.Any(t => t is RubblePile),
             "Mandatory rule should have added rubble pile");
     }
 

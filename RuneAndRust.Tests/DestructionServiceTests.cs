@@ -3,6 +3,7 @@ using RuneAndRust.Core;
 using RuneAndRust.Engine;
 using RuneAndRust.Persistence;
 using System.Text.Json;
+using Population = RuneAndRust.Core.Population;
 
 namespace RuneAndRust.Tests;
 
@@ -322,7 +323,7 @@ public class DestructionServiceTests
         return new PlayerCharacter
         {
             Name = "Test Player",
-            Class = CharacterClass.Vanguard,
+            Class = CharacterClass.IronBane,
             Attributes = new Attributes(might, 2, 2, 2, 3),
             HP = 20,
             MaxHP = 20,
