@@ -191,21 +191,25 @@ public class CharacterFactory
 
     private static void InitializeMystic(PlayerCharacter character)
     {
-        // Stats
-        character.Attributes = new Attributes(
-            might: 2,
-            finesse: 2,
-            wits: 3,
-            will: 4,
-            sturdiness: 2
-        );
+        // v0.19.8: Create formal archetype instance
+        var mysticArchetype = new MysticArchetype();
+        character.Archetype = mysticArchetype;
+
+        // Stats from archetype (WILL primary, WITS secondary)
+        character.Attributes = mysticArchetype.GetBaseAttributes();
 
         // Resources (base values before equipment)
-        character.MaxHP = 30;
+        character.MaxHP = 30; // Glass cannon - lowest HP
         character.HP = 30;
-        character.MaxStamina = 50;
-        character.Stamina = 50;
-        character.AP = 10;
+        character.MaxStamina = 30; // Lower stamina than Warriors/Adepts (AP is primary)
+        character.Stamina = 30;
+
+        // v0.19.8: Aether Pool - primary resource for Mystics
+        // Base MaxAP = (WILL × 10) + 50
+        // With WILL 4: (4 × 10) + 50 = 90 AP
+        int baseMaxAP = (character.Attributes.Will * 10) + 50;
+        character.MaxAP = baseMaxAP;
+        character.AP = character.MaxAP; // Start at full AP
 
         // Legacy weapon (v0.1/v0.2 compatibility)
         character.WeaponName = "Crude Staff";
@@ -223,63 +227,18 @@ public class CharacterFactory
 
         if (startingArmor != null)
         {
-            var equipmentService = new EquipmentService();
             character.EquippedArmor = startingArmor;
-            equipmentService.RecalculatePlayerStats(character);
         }
 
-        // Abilities (4 total: 2 starting, unlock 3rd at Level 3, 4th at Level 5)
-        character.Abilities = new List<Ability>
-        {
-            // Level 1 - Starting ability
-            new Ability
-            {
-                Name = "Aetheric Bolt",
-                Description = "Unleash a bolt of corrupted energy that ignores armor",
-                StaminaCost = 8,
-                Type = AbilityType.Attack,
-                AttributeUsed = "will",
-                BonusDice = 1,
-                SuccessThreshold = 2,
-                DamageDice = 2,
-                IgnoresArmor = true
-            },
-            // Level 1 - Starting ability
-            new Ability
-            {
-                Name = "Disrupt",
-                Description = "Overwhelm your enemy's systems, causing them to skip their next turn",
-                StaminaCost = 12,
-                Type = AbilityType.Control,
-                AttributeUsed = "will",
-                BonusDice = 0,
-                SuccessThreshold = 2,
-                SkipEnemyTurn = true
-            },
-            // Level 3 - Unlocked ability
-            new Ability
-            {
-                Name = "Aetheric Shield",
-                Description = "Create a protective shield that absorbs the next 15 damage",
-                StaminaCost = 10,
-                Type = AbilityType.Defense,
-                AttributeUsed = "will",
-                BonusDice = 0,
-                SuccessThreshold = 2
-            },
-            // Level 5 - Unlocked ability
-            new Ability
-            {
-                Name = "Chain Lightning",
-                Description = "Unleash lightning that damages all enemies (2d6 with 4+ successes, 1d6 with 3+)",
-                StaminaCost = 15,
-                Type = AbilityType.Attack,
-                AttributeUsed = "will",
-                BonusDice = 2,
-                SuccessThreshold = 3,
-                DamageDice = 1
-            }
-        };
+        // v0.19.8: Grant 3 starting abilities automatically from archetype
+        // 1. Aether Dart - Basic magical attack (15 AP, Arcane damage)
+        // 2. Focus Aether - AP regeneration (ends turn, restore 25 AP)
+        // 3. Aetheric Attunement - Passive +10% Max AP
+        character.Abilities = mysticArchetype.GetStartingAbilities();
+
+        // Recalculate stats to apply Aetheric Attunement bonus (+10% Max AP)
+        var equipService = new EquipmentService();
+        equipService.RecalculatePlayerStats(character);
     }
 
     private static void InitializeAdept(PlayerCharacter character)

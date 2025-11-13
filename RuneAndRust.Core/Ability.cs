@@ -13,6 +13,8 @@ public class Ability
     public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public int StaminaCost { get; set; }
+    // v0.19.8: Aether Pool cost for Mystic abilities
+    public int APCost { get; set; } = 0; // Aether Pool cost (Mystic abilities use this instead of Stamina)
     public AbilityType Type { get; set; }
 
     // Rank System (Aethelgard)
