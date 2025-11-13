@@ -2,6 +2,10 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using RuneAndRust.Core;
 using RuneAndRust.Engine;
 using RuneAndRust.Core.Population;
+using PopDynamicHazard = RuneAndRust.Core.Population.DynamicHazard;
+using PopStaticTerrain = RuneAndRust.Core.Population.StaticTerrain;
+using PopLootNode = RuneAndRust.Core.Population.LootNode;
+using PopAmbientCondition = RuneAndRust.Core.Population.AmbientCondition;
 
 namespace RuneAndRust.Tests;
 
@@ -394,7 +398,7 @@ public class TraumaEconomyTests
         var character = CreateTestCharacter();
         var room = CreateTestRoom();
         // AmbientCondition.PsychicResonance (removed)
-        room.AmbientConditions = new List<AmbientCondition>();
+        room.AmbientConditions = new List<PopAmbientCondition>();
 
         // Act
         int stress = envService.ApplyEnvironmentalStress(character, room);
@@ -489,7 +493,7 @@ public class TraumaEconomyTests
             Id = 1,
             Name = "Test Room",
             Description = "A test room",
-            AmbientConditions = new List<AmbientCondition>()
+            AmbientConditions = new List<PopAmbientCondition>()
         };
     }
 

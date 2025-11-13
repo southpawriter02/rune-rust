@@ -3,6 +3,11 @@ using RuneAndRust.Core;
 using RuneAndRust.Core.Population;
 using RuneAndRust.Engine.CoherentGlitch;
 using RuneAndRust.Engine.CoherentGlitch.Rules;
+using PopDynamicHazard = RuneAndRust.Core.Population.DynamicHazard;
+using PopStaticTerrain = RuneAndRust.Core.Population.StaticTerrain;
+using PopLootNode = RuneAndRust.Core.Population.LootNode;
+using PopAmbientCondition = RuneAndRust.Core.Population.AmbientCondition;
+using PopRoomArchetype = RuneAndRust.Core.Population.RoomArchetype;
 
 namespace RuneAndRust.Tests;
 
@@ -23,7 +28,7 @@ public class CoherentGlitchRuleTests
         var room = new Room
         {
             RoomId = "test_room_1",
-            DynamicHazards = new List<DynamicHazard>
+            DynamicHazards = new List<PopDynamicHazard>
             {
                 new UnstableCeilingHazard()
             }
@@ -45,11 +50,11 @@ public class CoherentGlitchRuleTests
         var room = new Room
         {
             RoomId = "test_room_1",
-            DynamicHazards = new List<DynamicHazard>
+            DynamicHazards = new List<PopDynamicHazard>
             {
                 new UnstableCeilingHazard()
             },
-            StaticTerrain = new List<StaticTerrain>()
+            StaticTerrain = new List<PopStaticTerrain>()
         };
         var context = new PopulationContext();
 
@@ -72,11 +77,11 @@ public class CoherentGlitchRuleTests
         var room = new Room
         {
             RoomId = "test_room_1",
-            DynamicHazards = new List<DynamicHazard>
+            DynamicHazards = new List<PopDynamicHazard>
             {
                 new UnstableCeilingHazard()
             },
-            StaticTerrain = new List<StaticTerrain>
+            StaticTerrain = new List<PopStaticTerrain>
             {
                 new RubblePile() // Already has rubble
             }
@@ -102,7 +107,7 @@ public class CoherentGlitchRuleTests
         var room = new Room
         {
             RoomId = "test_room_1",
-            AmbientConditions = new List<AmbientCondition>
+            AmbientConditions = new List<PopAmbientCondition>
             {
                 new FloodedCondition()
             }
@@ -132,11 +137,11 @@ public class CoherentGlitchRuleTests
         var room = new Room
         {
             RoomId = "test_room_1",
-            AmbientConditions = new List<AmbientCondition>
+            AmbientConditions = new List<PopAmbientCondition>
             {
                 new FloodedCondition()
             },
-            DynamicHazards = new List<DynamicHazard> { conduit }
+            DynamicHazards = new List<PopDynamicHazard> { conduit }
         };
         var context = new PopulationContext();
 
@@ -162,7 +167,7 @@ public class CoherentGlitchRuleTests
         var room = new Room
         {
             RoomId = "test_room_1",
-            AmbientConditions = new List<AmbientCondition>
+            AmbientConditions = new List<PopAmbientCondition>
             {
                 new FloodedCondition()
             }
@@ -189,11 +194,11 @@ public class CoherentGlitchRuleTests
         var room = new Room
         {
             RoomId = "test_room_1",
-            AmbientConditions = new List<AmbientCondition>
+            AmbientConditions = new List<PopAmbientCondition>
             {
                 new FloodedCondition()
             },
-            DynamicHazards = new List<DynamicHazard> { steamVent }
+            DynamicHazards = new List<PopDynamicHazard> { steamVent }
         };
         var context = new PopulationContext();
 
@@ -212,7 +217,7 @@ public class CoherentGlitchRuleTests
         var room = new Room
         {
             RoomId = "test_room_1",
-            Archetype = RoomArchetype.EntryHall,
+            Archetype = PopRoomArchetype.EntryHall,
             IsStartRoom = true
         };
         var context = new PopulationContext
@@ -236,13 +241,13 @@ public class CoherentGlitchRuleTests
         var room = new Room
         {
             RoomId = "test_room_1",
-            Archetype = RoomArchetype.EntryHall,
+            Archetype = PopRoomArchetype.EntryHall
             // DormantProcesses = new List<DormantProcess>
-            {
-                new DormantProcess { ThreatLevel = ThreatLevel.Low },
-                new DormantProcess { ThreatLevel = ThreatLevel.High, IsChampion = true },
-                new DormantProcess { ThreatLevel = ThreatLevel.Medium }
-            }
+            // {
+            //     new DormantProcess { ThreatLevel = ThreatLevel.Low },
+            //     new DormantProcess { ThreatLevel = ThreatLevel.High, IsChampion = true },
+            //     new DormantProcess { ThreatLevel = ThreatLevel.Medium }
+            // }
         };
         var context = new PopulationContext();
 
@@ -309,7 +314,7 @@ public class CoherentGlitchRuleTests
         {
             RoomId = "test_room_1",
             Name = "Thermal Exchange Chamber",
-            AmbientConditions = new List<AmbientCondition>()
+            AmbientConditions = new List<PopAmbientCondition>()
         };
         var context = new PopulationContext();
 
@@ -332,11 +337,11 @@ public class CoherentGlitchRuleTests
         var rule = new TacticalCoverPlacementRule();
         var room = new Room
         {
-            RoomId = "test_room_1",
+            RoomId = "test_room_1"
             // DormantProcesses = new List<DormantProcess>
-            {
-                new DormantProcess { SpawnPosition = new Vector2(5, 5) }
-            }
+            // {
+            //     new DormantProcess { SpawnPosition = new Vector2(5, 5) }
+            // }
         };
         var context = new PopulationContext();
 
@@ -356,11 +361,11 @@ public class CoherentGlitchRuleTests
         {
             RoomId = "test_room_1",
             // DormantProcesses = new List<DormantProcess>
-            {
-                new DormantProcess { SpawnPosition = new Vector2(5, 5) },
-                new DormantProcess { SpawnPosition = new Vector2(8, 8) }
-            },
-            StaticTerrain = new List<StaticTerrain>()
+            // {
+            //     new DormantProcess { SpawnPosition = new Vector2(5, 5) },
+            //     new DormantProcess { SpawnPosition = new Vector2(8, 8) }
+            // },
+            StaticTerrain = new List<PopStaticTerrain>()
         };
         var context = new PopulationContext { Rng = new Random(42) };
 
@@ -385,11 +390,11 @@ public class CoherentGlitchRuleTests
         var room = new Room
         {
             RoomId = "test_room_1",
-            Name = "Maintenance Hub",
+            Name = "Maintenance Hub"
             // DormantProcesses = new List<DormantProcess>
-            {
-                new DormantProcess { ProcessType = "haugbui_class" }
-            }
+            // {
+            //     new DormantProcess { ProcessType = "haugbui_class" }
+            // }
         };
         var context = new PopulationContext();
 
@@ -410,11 +415,11 @@ public class CoherentGlitchRuleTests
             RoomId = "test_room_1",
             Name = "Maintenance Hub",
             // DormantProcesses = new List<DormantProcess>
-            {
-                new DormantProcess { ProcessType = "haugbui_class" }
-            },
-            StaticTerrain = new List<StaticTerrain>(),
-            LootNodes = new List<LootNode>()
+            // {
+            //     new DormantProcess { ProcessType = "haugbui_class" }
+            // },
+            StaticTerrain = new List<PopStaticTerrain>(),
+            LootNodes = new List<PopLootNode>()
         };
         var context = new PopulationContext { Rng = new Random(42) };
 
@@ -437,9 +442,9 @@ public class CoherentGlitchRuleTests
         var room = new Room
         {
             RoomId = "test_room_1",
-            DynamicHazards = new List<DynamicHazard> { chasm },
-            StaticTerrain = new List<StaticTerrain>(),
-            LootNodes = new List<LootNode>()
+            DynamicHazards = new List<PopDynamicHazard> { chasm },
+            StaticTerrain = new List<PopStaticTerrain>(),
+            LootNodes = new List<PopLootNode>()
         };
         var context = new PopulationContext { Rng = new Random(42) };
 
@@ -467,7 +472,7 @@ public class CoherentGlitchRuleTests
         {
             RoomId = "test_room_1",
             GeneratedNodeType = NodeType.Secret,
-            LootNodes = new List<LootNode>()
+            LootNodes = new List<PopLootNode>()
         };
         var context = new PopulationContext { LootMultiplier = 1.0 };
 
@@ -489,7 +494,7 @@ public class CoherentGlitchRuleTests
         var room = new Room
         {
             RoomId = "test_room_1",
-            LootNodes = new List<LootNode> { container }
+            LootNodes = new List<PopLootNode> { container }
         };
         var context = new PopulationContext();
 
@@ -523,12 +528,12 @@ public class CoherentGlitchRuleTests
         var room = new Room
         {
             RoomId = "test_room_1",
-            Archetype = RoomArchetype.Chamber,
-            DynamicHazards = new List<DynamicHazard>
+            Archetype = PopRoomArchetype.Chamber,
+            DynamicHazards = new List<PopDynamicHazard>
             {
                 new UnstableCeilingHazard() // Should trigger mandatory rule
             },
-            StaticTerrain = new List<StaticTerrain>()
+            StaticTerrain = new List<PopStaticTerrain>()
         };
         var context = new PopulationContext();
 
