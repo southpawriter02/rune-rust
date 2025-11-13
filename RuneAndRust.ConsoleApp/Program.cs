@@ -1677,6 +1677,10 @@ class Program
                     turnComplete = HandlePlayerAbility(combat);
                     break;
 
+                case "charge":
+                    turnComplete = HandlePlayerActivateCharge(combat);
+                    break;
+
                 case "item":
                     turnComplete = HandlePlayerUseConsumable(combat);
                     break;
@@ -1818,6 +1822,90 @@ class Program
         }
 
         return _combatEngine.PlayerUseAbility(combat, ability, target);
+    }
+
+    /// <summary>
+    /// v0.19.10: Handle player activating runic charges
+    /// </summary>
+    static bool HandlePlayerActivateCharge(CombatState combat)
+    {
+        var player = combat.Player;
+        var choices = new List<string>();
+
+        // Check weapon charges
+        if (player.EquippedWeapon?.HasRunicCharges() == true)
+        {
+            var weapon = player.EquippedWeapon;
+            choices.Add($"Weapon: {weapon.RunicEnchantment} ({weapon.RunicCharges} charges) - {weapon.RunicEffect}");
+        }
+
+        // Check armor charges
+        if (player.EquippedArmor?.HasRunicCharges() == true)
+        {
+            var armor = player.EquippedArmor;
+            choices.Add($"Armor: {armor.RunicEnchantment} ({armor.RunicCharges} charges) - {armor.RunicEffect}");
+        }
+
+        if (choices.Count == 0)
+        {
+            combat.AddLogEntry("No runic charges available!");
+            return false;
+        }
+
+        choices.Add("Cancel");
+
+        var choice = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+                .Title("[cyan]Select a runic charge to activate:[/]")
+                .AddChoices(choices)
+                .HighlightStyle(new Style(Color.Cyan))
+        );
+
+        if (choice == "Cancel")
+        {
+            return false;
+        }
+
+        // Determine which charge was selected
+        if (choice.StartsWith("Weapon:"))
+        {
+            var weapon = player.EquippedWeapon!;
+            if (!weapon.ConsumeRunicCharge())
+            {
+                combat.AddLogEntry("Failed to activate runic charge!");
+                return false;
+            }
+
+            // Activate Bull's Strength
+            if (weapon.RunicEnchantment == "Bull's Strength")
+            {
+                player.BullsStrengthActive = true;
+                combat.AddLogEntry($"{player.Name} activates {weapon.RunicEnchantment}! Next attack gains +2d10 damage.");
+                AnsiConsole.MarkupLine($"[cyan]⚡ Runic energy surges through your weapon! Your next attack will deal +2d10 damage.[/]");
+                AnsiConsole.MarkupLine($"[dim]({weapon.RunicCharges} charges remaining)[/]");
+            }
+        }
+        else if (choice.StartsWith("Armor:"))
+        {
+            var armor = player.EquippedArmor!;
+            if (!armor.ConsumeRunicCharge())
+            {
+                combat.AddLogEntry("Failed to activate runic charge!");
+                return false;
+            }
+
+            // Activate Warding Rune
+            if (armor.RunicEnchantment == "Warding Rune")
+            {
+                player.WardingRuneActive = true;
+                combat.AddLogEntry($"{player.Name} activates {armor.RunicEnchantment}! Next incoming hit reduced by +5 Soak.");
+                AnsiConsole.MarkupLine($"[cyan]⚡ Protective runes shimmer across your armor! The next hit you take will be reduced by 5 damage.[/]");
+                AnsiConsole.MarkupLine($"[dim]({armor.RunicCharges} charges remaining)[/]");
+            }
+        }
+
+        // Free action - doesn't consume turn
+        return false;
     }
 
     static void HandleEnemyTurn(CombatState combat, Enemy enemy)

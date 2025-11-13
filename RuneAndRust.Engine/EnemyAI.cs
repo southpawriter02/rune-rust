@@ -788,6 +788,19 @@ public class EnemyAI
             }
         }
 
+        // v0.19.10: Apply Warding Rune soak (+5 damage reduction, single use)
+        if (player.WardingRuneActive)
+        {
+            int soakAmount = 5;
+            int reducedDamage = Math.Max(0, damage - soakAmount);
+            if (reducedDamage < damage)
+            {
+                combatState.AddLogEntry($"{indent}[Warding Rune] flares with protective magic! Damage reduced by {soakAmount}! ({damage} → {reducedDamage})");
+                damage = reducedDamage;
+            }
+            player.WardingRuneActive = false; // Consume the buff
+        }
+
         player.HP -= damage;
         combatState.AddLogEntry($"{indent}{player.Name} takes {damage} damage! (HP: {Math.Max(0, player.HP)}/{player.MaxHP})");
     }

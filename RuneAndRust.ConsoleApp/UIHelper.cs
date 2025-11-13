@@ -581,6 +581,17 @@ public static class UIHelper
             "Ability - Use a special ability",
         };
 
+        // v0.19.10: Add Charge option if player has runic charges
+        bool hasCharges = (combat.Player.EquippedWeapon?.HasRunicCharges() == true) ||
+                          (combat.Player.EquippedArmor?.HasRunicCharges() == true);
+        if (hasCharges)
+        {
+            choices.Insert(3, "Charge - Activate runic enchantment");
+        }
+
+        // v0.2: Item option always available
+        choices.Add("Item - Use a consumable");
+
         if (combat.CanFlee)
         {
             choices.Add("Flee - Attempt to escape");
@@ -700,6 +711,11 @@ public static class UIHelper
             var bonuses = weapon.GetBonusesDescription();
             if (bonuses != "None")
                 table.AddRow($"  [dim]• Bonuses: {bonuses}[/]");
+            // v0.19.10: Runic charges
+            if (weapon.HasRunicCharges())
+                table.AddRow($"  [cyan]• {weapon.GetRunicChargesDisplay()}[/]");
+            if (!string.IsNullOrEmpty(weapon.SagaProperty))
+                table.AddRow($"  [magenta]• {weapon.GetSagaPropertyDisplay()}[/]");
         }
         else
         {
@@ -715,6 +731,11 @@ public static class UIHelper
             var bonuses = armor.GetBonusesDescription();
             if (bonuses != "None")
                 table.AddRow($"  [dim]• Bonuses: {bonuses}[/]");
+            // v0.19.10: Runic charges
+            if (armor.HasRunicCharges())
+                table.AddRow($"  [cyan]• {armor.GetRunicChargesDisplay()}[/]");
+            if (!string.IsNullOrEmpty(armor.SagaProperty))
+                table.AddRow($"  [magenta]• {armor.GetSagaPropertyDisplay()}[/]");
         }
         else
         {
@@ -745,6 +766,12 @@ public static class UIHelper
                 {
                     table.AddRow($"  [dim]• HP: +{item.HPBonus}, Defense: -{item.DefenseBonus}[/]");
                 }
+
+                // v0.19.10: Runic charges in inventory
+                if (item.HasRunicCharges())
+                    table.AddRow($"  [cyan]• {item.GetRunicChargesDisplay()}[/]");
+                if (!string.IsNullOrEmpty(item.SagaProperty))
+                    table.AddRow($"  [magenta]• {item.GetSagaPropertyDisplay()}[/]");
             }
         }
 
@@ -814,6 +841,12 @@ public static class UIHelper
             if (currentBonuses != "None")
                 markup += $"  • Bonuses: {currentBonuses}\n";
 
+            // v0.19.10: Runic charges
+            if (comparison.Current.HasRunicCharges())
+                markup += $"  • [cyan]{comparison.Current.GetRunicChargesDisplay()}[/]\n";
+            if (!string.IsNullOrEmpty(comparison.Current.SagaProperty))
+                markup += $"  • [magenta]{comparison.Current.GetSagaPropertyDisplay()}[/]\n";
+
             markup += "\n";
         }
         else
@@ -838,6 +871,12 @@ public static class UIHelper
         var proposedBonuses = comparison.Proposed.GetBonusesDescription();
         if (proposedBonuses != "None")
             markup += $"  • Bonuses: {proposedBonuses}\n";
+
+        // v0.19.10: Runic charges
+        if (comparison.Proposed.HasRunicCharges())
+            markup += $"  • [cyan]{comparison.Proposed.GetRunicChargesDisplay()}[/]\n";
+        if (!string.IsNullOrEmpty(comparison.Proposed.SagaProperty))
+            markup += $"  • [magenta]{comparison.Proposed.GetSagaPropertyDisplay()}[/]\n";
 
         // Differences
         if (comparison.Differences.Count > 0)

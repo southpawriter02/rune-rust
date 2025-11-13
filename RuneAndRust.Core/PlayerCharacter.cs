@@ -111,6 +111,10 @@ public class PlayerCharacter
     // Rust-Witch status (for self-tracking)
     public int EntropyFieldArmorReduction { get; set; } = 0; // Enemies near you lose 1 Armor (passive)
 
+    // v0.19.10: Rúnasmiðr Runic Charge Status Effects
+    public bool BullsStrengthActive { get; set; } = false; // Uruz Imbuement: +2d10 damage on next attack
+    public bool WardingRuneActive { get; set; } = false; // Algiz Imbuement: +5 Soak on next hit
+
     public bool IsAlive => HP > 0;
 
     public int GetAttributeValue(string attributeName)

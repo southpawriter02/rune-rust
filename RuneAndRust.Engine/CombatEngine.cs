@@ -219,6 +219,16 @@ public class CombatEngine
 
             // Roll weapon damage dice
             damage = _diceService.RollDamage(totalDamageDice) + weaponDamageBonus;
+
+            // v0.19.10: Apply Bull's Strength runic charge bonus
+            if (player.BullsStrengthActive)
+            {
+                int bonusDamage = _diceService.RollDamage(2); // +2d10
+                damage += bonusDamage;
+                combatState.AddLogEntry($"  [Bull's Strength] adds +{bonusDamage} bonus damage!");
+                player.BullsStrengthActive = false; // Consume the buff
+            }
+
             damage = Math.Max(1, damage); // Minimum 1 damage on hit
         }
 
