@@ -1,3 +1,5 @@
+using RuneAndRust.Core.Population;
+
 namespace RuneAndRust.Core;
 
 public enum EnemyType
@@ -54,6 +56,13 @@ public class Enemy
     // Boss specific
     public bool IsBoss { get; set; } = false;
     public int Phase { get; set; } = 1; // For phase-based AI
+
+    // Spawn/Population properties (v0.11+)
+    public Vector2? SpawnPosition { get; set; } = null; // Tactical positioning from DormantProcess
+    public ThreatLevel ThreatLevel { get; set; } = ThreatLevel.Low; // Threat classification
+    public bool IsChampion { get; set; } = false; // Elite variant with enhanced stats
+    public string? BehaviorNote { get; set; } = null; // Environmental storytelling context
+    public string ProcessType { get; set; } = string.Empty; // DormantProcess type identifier
 
     // Trauma Economy (v0.5)
     public bool IsForlorn { get; set; } = false; // Inflicts passive Psychic Stress aura

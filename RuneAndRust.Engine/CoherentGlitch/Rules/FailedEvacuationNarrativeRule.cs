@@ -1,5 +1,6 @@
 using RuneAndRust.Core;
 using RuneAndRust.Core.Population;
+using PopulationRoomArchetype = RuneAndRust.Core.Population.RoomArchetype;
 
 namespace RuneAndRust.Engine.CoherentGlitch.Rules;
 
@@ -20,7 +21,7 @@ public class FailedEvacuationNarrativeRule : CoherentGlitchRule
     public override bool ShouldApply(Room room, PopulationContext context)
     {
         // Trigger in corridors near boss arenas (fleeing the catastrophe)
-        if (room.Archetype != RoomArchetype.Corridor)
+        if (room.Archetype != PopulationRoomArchetype.Corridor)
             return false;
 
         // Check if room is near boss (within 2 rooms)

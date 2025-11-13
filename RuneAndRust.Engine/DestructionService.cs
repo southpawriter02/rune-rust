@@ -409,7 +409,7 @@ public class DestructionService
         int weaponBonus = player.EquippedWeapon?.DamageDice ?? 0;
 
         // Random variance
-        int variance = _diceService.RollDice(1, 6) - 3; // -2 to +3
+        int variance = _diceService.RollD6() - 3; // -2 to +3
 
         int totalDamage = Math.Max(1, baseDamage + weaponBonus + variance);
 

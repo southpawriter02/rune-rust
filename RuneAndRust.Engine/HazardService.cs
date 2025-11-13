@@ -37,7 +37,7 @@ public class HazardService
         // Handle dice-based hazards (v0.6 enhanced system)
         if (room.HazardDamageDice > 0)
         {
-            damage = _diceService.RollDamage(room.HazardDamageDice, room.HazardDamageDieSize);
+            damage = _diceService.RollDamage(room.HazardDamageDice);
             logMessage += $"💀 {room.HazardDescription}\n";
             logMessage += $"   Rolled {room.HazardDamageDice}d{room.HazardDamageDieSize} → {damage} damage!";
         }
@@ -102,7 +102,7 @@ public class HazardService
         }
         else
         {
-            damage = _diceService.RollDamage(room.HazardCheckFailureDice, room.HazardCheckFailureDieSize);
+            damage = _diceService.RollDamage(room.HazardCheckFailureDice);
             logMessage += $"   ✗ FAILURE! You take {room.HazardCheckFailureDice}d{room.HazardCheckFailureDieSize} → {damage} damage!";
 
             character.HP = Math.Max(0, character.HP - damage);
@@ -131,7 +131,7 @@ public class HazardService
 
         if (room.HazardType == HazardType.ElectricalHazard)
         {
-            damage = _diceService.RollDamage(room.HazardDamageDice, room.HazardDamageDieSize);
+            damage = _diceService.RollDamage(room.HazardDamageDice);
             logMessage = $"⚡ {triggerContext}\n";
             logMessage += $"   You're slammed into the live conduits! {room.HazardDamageDice}d{room.HazardDamageDieSize} → {damage} electrical damage!";
 

@@ -12,6 +12,7 @@ public class Room
     public string? TemplateId { get; set; } = null; // Template used to generate this room
     public NodeType? GeneratedNodeType { get; set; } = null; // Node type in generation graph
     public bool IsProcedurallyGenerated { get; set; } = false;
+    public RoomArchetype Archetype { get; set; } = RoomArchetype.Chamber; // Room archetype (Chamber, Corridor, etc.)
 
     // Combat
     public List<Enemy> Enemies { get; set; } = new();
@@ -63,11 +64,11 @@ public class Room
     public PsychicResonanceLevel PsychicResonance { get; set; } = PsychicResonanceLevel.None;
     public bool IsSanctuary { get; set; } = false; // Safe location for Sanctuary Rest
 
-    // v0.11 Population Systems
-    public List<DynamicHazard> DynamicHazards { get; set; } = new();
-    public List<StaticTerrain> StaticTerrain { get; set; } = new();
-    public List<LootNode> LootNodes { get; set; } = new();
-    public List<AmbientCondition> AmbientConditions { get; set; } = new();
+    // v0.11 Population Systems - Use Population namespace types
+    public List<Population.DynamicHazard> DynamicHazards { get; set; } = new();
+    public List<Population.StaticTerrain> StaticTerrain { get; set; } = new();
+    public List<Population.LootNode> LootNodes { get; set; } = new();
+    public List<Population.AmbientCondition> AmbientConditions { get; set; } = new();
 
     // v0.11 Metadata
     public bool IsHandcrafted { get; set; } = false; // True for Quest Anchor rooms (skip procedural population)

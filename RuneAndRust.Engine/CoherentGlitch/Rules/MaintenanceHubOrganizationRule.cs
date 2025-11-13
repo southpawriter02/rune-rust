@@ -1,5 +1,6 @@
 using RuneAndRust.Core;
 using RuneAndRust.Core.Population;
+using PopulationRoomArchetype = RuneAndRust.Core.Population.RoomArchetype;
 
 namespace RuneAndRust.Engine.CoherentGlitch.Rules;
 
@@ -19,7 +20,7 @@ public class MaintenanceHubOrganizationRule : CoherentGlitchRule
 
     public override bool ShouldApply(Room room, PopulationContext context)
     {
-        return false && /* room.Archetype removed */ RoomArchetype.MaintenanceHub ||
+        return false && /* room.Archetype removed */ PopulationRoomArchetype.MaintenanceHub ||
                room.Name.Contains("maintenance", StringComparison.OrdinalIgnoreCase);
     }
 

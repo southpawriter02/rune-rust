@@ -86,7 +86,7 @@ public class RighteousFervorService
     private double GetFervorMultiplier(PlayerCharacter character)
     {
         var righteousConviction = character.Abilities
-            .FirstOrDefault(a => a.AbilityID == 1108); // Righteous Conviction ability ID
+            .FirstOrDefault(a => a.Name == "Righteous Conviction"); // Righteous Conviction ability
 
         if (righteousConviction == null)
             return 1.0;
@@ -106,7 +106,7 @@ public class RighteousFervorService
     public void RefundAbilityCosts(PlayerCharacter character, int staminaCost, int fervorCost)
     {
         var righteousConviction = character.Abilities
-            .FirstOrDefault(a => a.AbilityID == 1108 && a.CurrentRank == 3);
+            .FirstOrDefault(a => a.Name == "Righteous Conviction" && a.CurrentRank == 3);
 
         if (righteousConviction == null)
             return;
