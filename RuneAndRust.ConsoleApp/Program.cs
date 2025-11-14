@@ -24,7 +24,10 @@ class Program
     private static MerchantService _merchantService = new(); // [v0.9]
     private static PricingService _pricingService = new(); // [v0.9]
     private static TransactionService _transactionService = new(_currencyService, _pricingService); // [v0.9]
-    private static CombatEngine _combatEngine = new(_diceService, _sagaService, _lootService, _equipmentService, _hazardService, _currencyService);
+    // [v0.21.3] Advanced Status Effect System
+    private static StatusEffectRepository _statusEffectRepository = new();
+    private static AdvancedStatusEffectService _statusEffectService = new(_statusEffectRepository, _traumaService, _diceService);
+    private static CombatEngine _combatEngine = new(_diceService, _sagaService, _lootService, _equipmentService, _hazardService, _currencyService, _statusEffectService);
     private static EnemyAI _enemyAI = new(_diceService);
     private static AdvancedMovementService _advancedMovement = new(); // v0.20.4
     private static SaveRepository _saveRepository = new();

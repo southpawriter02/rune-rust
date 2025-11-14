@@ -1087,9 +1087,22 @@ public class CombatEngine
 
             ApplyDamageToEnemy(combatState, target, damage, ability.IgnoresArmor);
 
-            // Apply [Vulnerable] status
-            target.VulnerableTurnsRemaining = 3;
-            combatState.AddLogEntry($"  {target.Name} is [[Vulnerable]] for 3 turns! (+25% damage taken)");
+            // [v0.21.3] Apply [Vulnerable] status
+            if (_statusEffectService != null)
+            {
+                var result = _statusEffectService.ApplyEffect(GetTargetId(target), "Vulnerable", duration: 3);
+                if (result.Success)
+                {
+                    combatState.AddLogEntry($"  {result.Message}");
+                }
+            }
+            else
+            {
+                // Fallback to legacy
+                target.VulnerableTurnsRemaining = 3;
+                combatState.AddLogEntry($"  {target.Name} is [[Vulnerable]] for 3 turns! (+25% damage taken)");
+            }
+
             _log.Information("Status effect applied: Enemy={EnemyName}, Effect=Vulnerable, Duration={Duration}, Ability={AbilityName}",
                 target.Name, 3, ability.Name);
             return; // Early return
@@ -1103,9 +1116,22 @@ public class CombatEngine
 
             ApplyDamageToEnemy(combatState, target, damage, ability.IgnoresArmor);
 
-            // Apply [Analyzed] status
-            target.AnalyzedTurnsRemaining = 4;
-            combatState.AddLogEntry($"  {target.Name} is [Analyzed] for 4 turns! (All attackers gain +2 Accuracy)");
+            // [v0.21.3] Apply [Analyzed] status
+            if (_statusEffectService != null)
+            {
+                var result = _statusEffectService.ApplyEffect(GetTargetId(target), "Analyzed", duration: 4);
+                if (result.Success)
+                {
+                    combatState.AddLogEntry($"  {result.Message}");
+                }
+            }
+            else
+            {
+                // Fallback to legacy
+                target.AnalyzedTurnsRemaining = 4;
+                combatState.AddLogEntry($"  {target.Name} is [Analyzed] for 4 turns! (All attackers gain +2 Accuracy)");
+            }
+
             _log.Information("Status effect applied: Enemy={EnemyName}, Effect=Analyzed, Duration={Duration}, Ability={AbilityName}",
                 target.Name, 4, ability.Name);
             return; // Early return
@@ -1159,8 +1185,21 @@ public class CombatEngine
             // Check if target is Mechanical (placeholder - would need enemy tags)
             if (target.Type.ToString().Contains("Construct") || target.Type.ToString().Contains("Sentinel"))
             {
-                target.StunTurnsRemaining = 1;
-                combatState.AddLogEntry($"  {target.Name} is [Stunned] for 1 turn! (Mechanical vulnerability)");
+                // [v0.21.3] Apply [Stunned] status
+                if (_statusEffectService != null)
+                {
+                    var result = _statusEffectService.ApplyEffect(GetTargetId(target), "Stunned", duration: 1);
+                    if (result.Success)
+                    {
+                        combatState.AddLogEntry($"  {result.Message}");
+                    }
+                }
+                else
+                {
+                    // Fallback to legacy
+                    target.StunTurnsRemaining = 1;
+                    combatState.AddLogEntry($"  {target.Name} is [Stunned] for 1 turn! (Mechanical vulnerability)");
+                }
             }
 
             return; // Early return
@@ -1481,9 +1520,23 @@ public class CombatEngine
         // Disrupt - skip enemy's next turn
         if (ability.SkipEnemyTurn)
         {
-            target.IsStunned = true;
-            target.StunTurnsRemaining = 1;
-            combatState.AddLogEntry($"  {target.Name} is disrupted and will skip their next turn!");
+            // [v0.21.3] Apply [Stunned] status
+            if (_statusEffectService != null)
+            {
+                var result = _statusEffectService.ApplyEffect(GetTargetId(target), "Stunned", duration: 1);
+                if (result.Success)
+                {
+                    combatState.AddLogEntry($"  {result.Message}");
+                }
+            }
+            else
+            {
+                // Fallback to legacy
+                target.IsStunned = true;
+                target.StunTurnsRemaining = 1;
+                combatState.AddLogEntry($"  {target.Name} is disrupted and will skip their next turn!");
+            }
+
             _log.Information("Status effect applied: Enemy={EnemyName}, Effect=Stunned, Duration={Duration}, Ability={AbilityName}",
                 target.Name, 1, ability.Name);
         }
