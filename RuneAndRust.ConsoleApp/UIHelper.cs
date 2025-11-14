@@ -1413,4 +1413,344 @@ public static class UIHelper
         AnsiConsole.MarkupLine("[dim]Progression Points are earned by completing milestones and achieving Legend.[/]");
         AnsiConsole.WriteLine();
     }
+
+    // ============================================================
+    // v0.20.5: Party Formation UI
+    // ============================================================
+
+    /// <summary>
+    /// Displays formation selection options to the player
+    /// </summary>
+    public static FormationType PromptFormationSelection()
+    {
+        AnsiConsole.WriteLine();
+        AnsiConsole.MarkupLine("[bold yellow]═══ Formation Selection ═══[/]");
+        AnsiConsole.WriteLine();
+
+        var choices = new List<string>
+        {
+            "Line Formation (Defensive) - +1 Defense for front row",
+            "Wedge Formation (Aggressive) - +1 Accuracy for front row",
+            "Scattered Formation (Tactical) - Harder to flank",
+            "Protect Formation (Support) - +2 Defense for back-row center"
+        };
+
+        var choice = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+                .Title("[yellow]Choose your formation:[/]")
+                .PageSize(10)
+                .AddChoices(choices)
+        );
+
+        if (choice.Contains("Line"))
+            return FormationType.Line;
+        if (choice.Contains("Wedge"))
+            return FormationType.Wedge;
+        if (choice.Contains("Scattered"))
+            return FormationType.Scattered;
+        if (choice.Contains("Protect"))
+            return FormationType.Protect;
+
+        return FormationType.Line; // Default
+    }
+
+    /// <summary>
+    /// Displays the current party formation on the grid
+    /// </summary>
+    public static void DisplayPartyFormation(List<object> party, BattlefieldGrid grid)
+    {
+        AnsiConsole.WriteLine();
+        AnsiConsole.MarkupLine("[bold yellow]═══ Party Formation ═══[/]");
+        AnsiConsole.WriteLine();
+
+        // Display grid visualization
+        var table = new Table()
+            .Border(TableBorder.Rounded)
+            .BorderColor(Color.Blue);
+
+        table.AddColumn(new TableColumn("[bold]Zone[/]").Centered());
+        table.AddColumn(new TableColumn("[bold]Row[/]").Centered());
+
+        for (int col = 0; col < grid.Columns; col++)
+        {
+            table.AddColumn(new TableColumn($"[bold]Col {col}[/]").Centered());
+        }
+
+        // Display Player zone
+        for (int rowIndex = 0; rowIndex < 2; rowIndex++)
+        {
+            var row = (Row)rowIndex;
+            var rowCells = new List<string>
+            {
+                rowIndex == 0 ? "[cyan]Player[/]" : "",
+                $"[dim]{row}[/]"
+            };
+
+            for (int col = 0; col < grid.Columns; col++)
+            {
+                var pos = new GridPosition(Zone.Player, row, col);
+                var tile = grid.GetTile(pos);
+
+                if (tile != null && tile.IsOccupied)
+                {
+                    // Find the party member at this position
+                    var member = party.FirstOrDefault(m =>
+                    {
+                        var memberPos = m switch
+                        {
+                            PlayerCharacter player => player.Position,
+                            Enemy enemy => enemy.Position,
+                            _ => null
+                        };
+                        return memberPos.HasValue && memberPos.Value == pos;
+                    });
+
+                    if (member != null)
+                    {
+                        var icon = GetFormationIcon(member, row);
+                        var name = member switch
+                        {
+                            PlayerCharacter player => player.Name.Substring(0, Math.Min(3, player.Name.Length)),
+                            Enemy enemy => enemy.Name.Substring(0, Math.Min(3, enemy.Name.Length)),
+                            _ => "?"
+                        };
+                        rowCells.Add($"[green]{icon}:{name}[/]");
+                    }
+                    else
+                    {
+                        rowCells.Add("[dim][ ][/]");
+                    }
+                }
+                else
+                {
+                    rowCells.Add("[dim][ ][/]");
+                }
+            }
+
+            table.AddRow(rowCells.ToArray());
+        }
+
+        AnsiConsole.Write(table);
+        AnsiConsole.WriteLine();
+        AnsiConsole.MarkupLine("[dim]T=Tank/Front, S=Support/Back, R=Ranged, D=Damage[/]");
+        AnsiConsole.WriteLine();
+    }
+
+    /// <summary>
+    /// Gets a formation icon for a party member based on their position
+    /// </summary>
+    private static string GetFormationIcon(object combatant, Row row)
+    {
+        if (row == Row.Front)
+        {
+            return "T"; // Tank/Front-line
+        }
+        else
+        {
+            // Back row
+            if (combatant is PlayerCharacter player)
+            {
+                // Check class/archetype
+                if (player.Class == CharacterClass.Mystic)
+                    return "S"; // Support
+                else
+                    return "R"; // Ranged
+            }
+            return "R"; // Default to Ranged
+        }
+    }
+
+    /// <summary>
+    /// Displays formation bonuses applied to party members
+    /// </summary>
+    public static void DisplayFormationBonuses(List<FormationBonus> bonuses, FormationType formation)
+    {
+        if (bonuses == null || bonuses.Count == 0)
+            return;
+
+        AnsiConsole.WriteLine();
+        AnsiConsole.MarkupLine($"[bold yellow]Formation Bonuses ({formation}):[/]");
+
+        var table = new Table()
+            .Border(TableBorder.Rounded)
+            .BorderColor(Color.Green);
+
+        table.AddColumn(new TableColumn("[bold]Member[/]"));
+        table.AddColumn(new TableColumn("[bold]Bonus Type[/]"));
+        table.AddColumn(new TableColumn("[bold]Amount[/]"));
+        table.AddColumn(new TableColumn("[bold]Description[/]"));
+
+        foreach (var bonus in bonuses)
+        {
+            var memberName = bonus.Target switch
+            {
+                PlayerCharacter player => player.Name,
+                Enemy enemy => enemy.Name,
+                _ => "Unknown"
+            };
+
+            var bonusColor = bonus.Type switch
+            {
+                BonusType.Defense => "blue",
+                BonusType.Accuracy => "yellow",
+                BonusType.Damage => "red",
+                BonusType.AntiFlanking => "cyan",
+                _ => "white"
+            };
+
+            table.AddRow(
+                $"[green]{memberName}[/]",
+                $"[{bonusColor}]{bonus.Type}[/]",
+                $"[bold]+{bonus.Amount}[/]",
+                $"[dim]{bonus.Description}[/]"
+            );
+        }
+
+        AnsiConsole.Write(table);
+        AnsiConsole.WriteLine();
+    }
+
+    /// <summary>
+    /// Displays tactical grid with party and enemy positions (v0.20.5 enhanced)
+    /// </summary>
+    public static void DisplayTacticalGrid(BattlefieldGrid grid, List<object> party, List<Enemy> enemies)
+    {
+        AnsiConsole.WriteLine();
+        AnsiConsole.MarkupLine("[bold yellow]═══ Tactical Grid ═══[/]");
+        AnsiConsole.WriteLine();
+
+        var table = new Table()
+            .Border(TableBorder.Rounded)
+            .BorderColor(Color.Grey);
+
+        table.AddColumn(new TableColumn("[bold]Zone[/]").Centered());
+        table.AddColumn(new TableColumn("[bold]Row[/]").Centered());
+
+        for (int col = 0; col < grid.Columns; col++)
+        {
+            table.AddColumn(new TableColumn($"[bold]{col}[/]").Centered());
+        }
+
+        // Display both zones
+        foreach (Zone zone in new[] { Zone.Enemy, Zone.Player })
+        {
+            for (int rowIndex = 0; rowIndex < 2; rowIndex++)
+            {
+                var row = (Row)rowIndex;
+                var rowCells = new List<string>
+                {
+                    rowIndex == 0 ? (zone == Zone.Player ? "[cyan]Player[/]" : "[red]Enemy[/]") : "",
+                    $"[dim]{row}[/]"
+                };
+
+                for (int col = 0; col < grid.Columns; col++)
+                {
+                    var pos = new GridPosition(zone, row, col);
+                    var tile = grid.GetTile(pos);
+
+                    if (tile != null)
+                    {
+                        var cellContent = GetGridCellDisplay(tile, party, enemies, pos);
+                        rowCells.Add(cellContent);
+                    }
+                    else
+                    {
+                        rowCells.Add("[dim][ ][/]");
+                    }
+                }
+
+                table.AddRow(rowCells.ToArray());
+            }
+
+            // Add separator between zones
+            if (zone == Zone.Enemy)
+            {
+                var separator = Enumerable.Repeat("[dim]───[/]", grid.Columns + 2).ToArray();
+                table.AddRow(separator);
+            }
+        }
+
+        AnsiConsole.Write(table);
+        AnsiConsole.WriteLine();
+    }
+
+    /// <summary>
+    /// Gets the display content for a grid cell
+    /// </summary>
+    private static string GetGridCellDisplay(BattlefieldTile tile, List<object> party, List<Enemy> enemies, GridPosition pos)
+    {
+        var content = new List<string>();
+
+        // Check for occupant
+        if (tile.IsOccupied)
+        {
+            // Check party members
+            var partyMember = party.FirstOrDefault(m =>
+            {
+                var memberPos = m switch
+                {
+                    PlayerCharacter player => player.Position,
+                    Enemy enemy => enemy.Position,
+                    _ => null
+                };
+                return memberPos.HasValue && memberPos.Value == pos;
+            });
+
+            if (partyMember != null)
+            {
+                var name = partyMember switch
+                {
+                    PlayerCharacter player => player.Name.Substring(0, Math.Min(1, player.Name.Length)),
+                    _ => "P"
+                };
+                content.Add($"[green]{name}[/]");
+            }
+            else
+            {
+                // Check enemies
+                var enemy = enemies.FirstOrDefault(e => e.Position.HasValue && e.Position.Value == pos);
+                if (enemy != null)
+                {
+                    var name = enemy.Name.Substring(0, Math.Min(1, enemy.Name.Length));
+                    content.Add($"[red]{name}[/]");
+                }
+                else
+                {
+                    content.Add("[yellow]?[/]");
+                }
+            }
+        }
+
+        // Check for cover
+        if (tile.Cover != CoverType.None)
+        {
+            var coverIcon = tile.Cover switch
+            {
+                CoverType.Physical => "▓",
+                CoverType.Metaphysical => "▒",
+                CoverType.Both => "█",
+                _ => ""
+            };
+            content.Add($"[blue]{coverIcon}[/]");
+        }
+
+        // Check for glitch
+        if (tile.Type == TileType.Glitched)
+        {
+            content.Add("[magenta]⚠[/]");
+        }
+
+        // Check for high ground
+        if (tile.Type == TileType.HighGround)
+        {
+            content.Add("[cyan]↑[/]");
+        }
+
+        if (content.Count == 0)
+        {
+            return "[dim][ ][/]";
+        }
+
+        return string.Join("", content);
+    }
 }
