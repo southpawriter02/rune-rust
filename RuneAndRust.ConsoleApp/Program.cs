@@ -1666,6 +1666,11 @@ class Program
                     turnComplete = true;
                     break;
 
+                case "parry": // v0.21.4
+                    HandlePlayerParry(combat);
+                    turnComplete = true;
+                    break;
+
                 case "ability":
                     turnComplete = HandlePlayerAbility(combat);
                     break;
@@ -1730,6 +1735,14 @@ class Program
     static void HandlePlayerDefend(CombatState combat)
     {
         _combatEngine.PlayerDefend(combat);
+    }
+
+    /// <summary>
+    /// v0.21.4: Handle player preparing a parry reaction
+    /// </summary>
+    static void HandlePlayerParry(CombatState combat)
+    {
+        _combatEngine.PrepareParry(combat);
     }
 
     /// <summary>

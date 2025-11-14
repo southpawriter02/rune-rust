@@ -19,12 +19,13 @@ public class CombatEngine
     private readonly CoverService _coverService; // [v0.20.2]
     private readonly StanceService _stanceService; // [v0.21.1]
     private readonly AdvancedStatusEffectService? _statusEffectService; // [v0.21.3]
+    private readonly CounterAttackService? _counterAttackService; // [v0.21.4]
 
     // [v0.21.3] Target ID mapping for status effects
     // Player ID = 0, Enemy IDs = hash of enemy ID string
     private const int PLAYER_TARGET_ID = 0;
 
-    public CombatEngine(DiceService diceService, SagaService sagaService, LootService lootService, EquipmentService equipmentService, HazardService hazardService, CurrencyService currencyService, AdvancedStatusEffectService? statusEffectService = null)
+    public CombatEngine(DiceService diceService, SagaService sagaService, LootService lootService, EquipmentService equipmentService, HazardService hazardService, CurrencyService currencyService, AdvancedStatusEffectService? statusEffectService = null, CounterAttackService? counterAttackService = null)
     {
         _diceService = diceService;
         _sagaService = sagaService;
@@ -38,6 +39,7 @@ public class CombatEngine
         _coverService = new CoverService(); // [v0.20.2]
         _stanceService = new StanceService(); // [v0.21.1]
         _statusEffectService = statusEffectService; // [v0.21.3]
+        _counterAttackService = counterAttackService; // [v0.21.4]
     }
 
     /// <summary>
@@ -398,6 +400,51 @@ public class CombatEngine
         player.DefenseTurnsRemaining = 1; // Lasts until next turn
 
         combatState.AddLogEntry($"  Defense raised by {defensePercent}% for next attack");
+        combatState.AddLogEntry("");
+    }
+
+    /// <summary>
+    /// v0.21.4: Prepare parry reaction for the next incoming attack
+    /// </summary>
+    public void PrepareParry(CombatState combatState)
+    {
+        var player = combatState.Player;
+
+        // Check if counter-attack service is available
+        if (_counterAttackService == null)
+        {
+            combatState.AddLogEntry("Parry system not available.");
+            return;
+        }
+
+        // Check if can parry this turn
+        if (!_counterAttackService.CanParryThisTurn(player))
+        {
+            int maxParries = _counterAttackService.GetParriesPerRound(player);
+            combatState.AddLogEntry($"You have no parry attempts remaining this turn! (Max: {maxParries})");
+            return;
+        }
+
+        // Mark parry as prepared
+        player.ParryReactionPrepared = true;
+
+        combatState.AddLogEntry("You prepare to parry the next attack!");
+        combatState.AddLogEntry($"  Parries remaining: {player.ParriesRemainingThisTurn}/{_counterAttackService.GetParriesPerRound(player)}");
+
+        // Get parry pool info for display
+        int parryBonusDice = _counterAttackService.GetParryBonusDice(player);
+        bool hasSuperiorRiposte = _counterAttackService.HasSuperiorRiposte(player);
+
+        if (parryBonusDice > 0)
+        {
+            combatState.AddLogEntry($"  Parry bonus: +{parryBonusDice}d10");
+        }
+
+        if (hasSuperiorRiposte)
+        {
+            combatState.AddLogEntry("  [Reactive Parry]: Superior parries trigger Riposte!");
+        }
+
         combatState.AddLogEntry("");
     }
 
@@ -2100,6 +2147,12 @@ public class CombatEngine
             if (nextParticipant.IsPlayer)
             {
                 _stanceService.OnTurnStart(combatState.Player);
+
+                // [v0.21.4] Reset parries at start of player's turn
+                if (_counterAttackService != null)
+                {
+                    _counterAttackService.ResetParriesForNewTurn(combatState.Player);
+                }
             }
 
             // Decrement trap durations (once per full round, on player's turn)

@@ -68,21 +68,24 @@ public class EnemyAI
     private readonly CoverService _coverService; // v0.20.2
     private readonly StanceService _stanceService; // v0.21.1
     private readonly AdvancedStatusEffectService? _statusEffectService; // v0.21.3
+    private readonly CounterAttackService? _counterAttackService; // v0.21.4
 
-    public EnemyAI(DiceService diceService, AdvancedStatusEffectService? statusEffectService = null)
+    public EnemyAI(DiceService diceService, AdvancedStatusEffectService? statusEffectService = null, CounterAttackService? counterAttackService = null)
     {
         _diceService = diceService;
         _statusEffectService = statusEffectService;
+        _counterAttackService = counterAttackService;
         _random = new Random();
         _flankingService = new FlankingService(); // v0.20.1
         _coverService = new CoverService(); // v0.20.2
         _stanceService = new StanceService(); // v0.21.1
     }
 
-    public EnemyAI(DiceService diceService, int seed, AdvancedStatusEffectService? statusEffectService = null)
+    public EnemyAI(DiceService diceService, int seed, AdvancedStatusEffectService? statusEffectService = null, CounterAttackService? counterAttackService = null)
     {
         _diceService = diceService;
         _statusEffectService = statusEffectService;
+        _counterAttackService = counterAttackService;
         _random = new Random(seed);
         _flankingService = new FlankingService(); // v0.20.1
         _coverService = new CoverService(); // v0.20.2
@@ -747,13 +750,95 @@ public class EnemyAI
         }
 
         // Apply damage through shield and battle rage modifiers
-        ApplyDamageToPlayer(player, damage, combatState);
+        // [v0.21.4] Pass enemy and attack accuracy for parry check
+        ApplyDamageToPlayer(player, damage, combatState, "  ", enemy, attackRoll.Successes);
 
         combatState.AddLogEntry("");
     }
 
-    private void ApplyDamageToPlayer(PlayerCharacter player, int damage, CombatState combatState, string indent = "  ")
+    private void ApplyDamageToPlayer(PlayerCharacter player, int damage, CombatState combatState, string indent = "  ", Enemy? attacker = null, int attackAccuracy = 0)
     {
+        // [v0.21.4] Check for parry if player has one prepared
+        if (_counterAttackService != null && player.ParryReactionPrepared && attacker != null && attackAccuracy > 0)
+        {
+            combatState.AddLogEntry("");
+            combatState.AddLogEntry($"🛡 You attempt to parry {attacker.Name}'s attack!");
+
+            var parryResult = _counterAttackService.ExecuteParry(player, attacker, attackAccuracy);
+
+            // Consume parry attempt
+            _counterAttackService.ConsumeParryAttempt(player);
+            player.ParryReactionPrepared = false;
+
+            // Display parry outcome
+            switch (parryResult.Outcome)
+            {
+                case ParryOutcome.Critical:
+                    combatState.AddLogEntry($"✦ CRITICAL PARRY! ✦");
+                    combatState.AddLogEntry($"  Parry Roll: {parryResult.ParryRoll} vs Accuracy: {parryResult.AccuracyRoll}");
+                    combatState.AddLogEntry($"  Attack completely deflected!");
+                    break;
+
+                case ParryOutcome.Superior:
+                    combatState.AddLogEntry($"◆ SUPERIOR PARRY! ◆");
+                    combatState.AddLogEntry($"  Parry Roll: {parryResult.ParryRoll} vs Accuracy: {parryResult.AccuracyRoll}");
+                    combatState.AddLogEntry($"  Attack deflected!");
+                    break;
+
+                case ParryOutcome.Standard:
+                    combatState.AddLogEntry($"▸ PARRY! ▸");
+                    combatState.AddLogEntry($"  Parry Roll: {parryResult.ParryRoll} vs Accuracy: {parryResult.AccuracyRoll}");
+                    combatState.AddLogEntry($"  Attack blocked!");
+                    break;
+
+                case ParryOutcome.Failed:
+                    combatState.AddLogEntry($"✗ PARRY FAILED! ✗");
+                    combatState.AddLogEntry($"  Parry Roll: {parryResult.ParryRoll} vs Accuracy: {parryResult.AccuracyRoll}");
+                    combatState.AddLogEntry($"  Attack hits normally!");
+                    break;
+            }
+
+            // Handle Riposte
+            if (parryResult.RiposteTriggered && parryResult.Riposte != null)
+            {
+                combatState.AddLogEntry("");
+                combatState.AddLogEntry("⚔ RIPOSTE! You counter-attack!");
+
+                if (parryResult.Riposte.Hit)
+                {
+                    combatState.AddLogEntry($"  Your riposte strikes {attacker.Name} for {parryResult.Riposte.DamageDealt} damage!");
+                    combatState.AddLogEntry($"  {attacker.Name} HP: {Math.Max(0, attacker.HP)}/{attacker.MaxHP}");
+
+                    if (parryResult.Riposte.KilledTarget)
+                    {
+                        combatState.AddLogEntry($"  ✦ {attacker.Name} is destroyed by your riposte! ✦");
+                    }
+                }
+                else
+                {
+                    combatState.AddLogEntry($"  Your riposte misses! ({parryResult.Riposte.AttackRoll} vs Defense {parryResult.Riposte.DefenseScore})");
+                }
+            }
+
+            // Display stress change
+            if (parryResult.StressChange < 0)
+            {
+                combatState.AddLogEntry($"  Stress relieved: {parryResult.StressChange}");
+            }
+            else if (parryResult.StressChange > 0)
+            {
+                combatState.AddLogEntry($"  Stress gained: +{parryResult.StressChange}");
+            }
+
+            combatState.AddLogEntry("");
+
+            // If parry succeeded, skip damage application
+            if (parryResult.Success)
+            {
+                return;
+            }
+        }
+
         if (damage <= 0)
         {
             combatState.AddLogEntry($"{indent}The attack is deflected!");

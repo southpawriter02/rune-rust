@@ -82,6 +82,10 @@ public class PlayerCharacter
     public int DefenseBonus { get; set; } = 0; // Temporary defense from Defend action
     public int DefenseTurnsRemaining { get; set; } = 0;
 
+    // v0.21.4: Counter-Attack System (Parry tracking)
+    public int ParriesRemainingThisTurn { get; set; } = 1; // Resets each turn (Hólmgangr Rank 3 = 2)
+    public bool ParryReactionPrepared { get; set; } = false; // Whether parry reaction is prepared
+
     // Status Effects (v0.2)
     public int BattleRageTurnsRemaining { get; set; } = 0; // Warrior Lv5 ability
     public int ShieldAbsorptionRemaining { get; set; } = 0; // Mystic Lv3 ability
