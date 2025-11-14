@@ -35,6 +35,22 @@ class Program
     private static WorldStateRepository _worldStateRepository = new();
     private static DestructionService _destructionService = new(_worldStateRepository, _diceService);
 
+    // v0.22: Environmental Combat System
+    private static EnvironmentalObjectService _environmentalObjectService = new(_diceService);
+    private static ResolveCheckService _resolveCheckService = new(_diceService);
+    private static AmbientConditionService _ambientConditionService = new(_diceService, _traumaService, _resolveCheckService);
+    private static WeatherEffectService _weatherEffectService = new(_diceService, _traumaService);
+    private static EnvironmentalManipulationService _environmentalManipulationService = new(_environmentalObjectService, _traumaService, _diceService);
+    private static CoverService _coverService = new();
+    private static EnvironmentalCombatService _environmentalCombatService = new(
+        _environmentalObjectService,
+        _ambientConditionService,
+        _weatherEffectService,
+        _environmentalManipulationService,
+        _coverService,
+        _hazardService
+    );
+
     static void Main(string[] args)
     {
         // Configure Serilog (v0.8.1)
