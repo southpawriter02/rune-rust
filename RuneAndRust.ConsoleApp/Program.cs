@@ -1671,6 +1671,10 @@ class Program
                     turnComplete = HandlePlayerMovement(combat);
                     break;
 
+                case "stance": // v0.21.1
+                    turnComplete = HandlePlayerStanceChange(combat);
+                    break;
+
                 case "item":
                     turnComplete = HandlePlayerUseConsumable(combat);
                     break;
@@ -1723,6 +1727,43 @@ class Program
     static void HandlePlayerDefend(CombatState combat)
     {
         _combatEngine.PlayerDefend(combat);
+    }
+
+    /// <summary>
+    /// v0.21.1: Handle player changing combat stance.
+    /// Stance changes are FREE ACTIONS (don't consume turn) - 1 free shift per turn.
+    /// </summary>
+    static bool HandlePlayerStanceChange(CombatState combat)
+    {
+        var stanceChoice = UIHelper.PromptStanceChoice(combat.Player);
+
+        if (stanceChoice == "cancel")
+        {
+            return false; // Didn't use turn, go back to action menu
+        }
+
+        // Map choice to StanceType
+        StanceType newStanceType = stanceChoice switch
+        {
+            "balanced" => StanceType.Balanced,
+            "offensive" => StanceType.Offensive,
+            "defensive" => StanceType.Defensive,
+            "evasive" => StanceType.Evasive,
+            _ => StanceType.Balanced
+        };
+
+        var stanceService = new StanceService();
+        var success = stanceService.SwitchStance(combat.Player, newStanceType, combat);
+
+        if (!success)
+        {
+            // Already in that stance or no shifts remaining - didn't consume turn
+            return false;
+        }
+
+        // v0.21.1 SPEC: Stance changes are FREE ACTIONS (don't consume turn)
+        // Player can continue to take their turn after changing stance
+        return false;
     }
 
     static bool HandlePlayerUseConsumable(CombatState combat)

@@ -109,7 +109,11 @@ public class SaveRepository
             "ALTER TABLE saves ADD COLUMN position_column INTEGER",
             "ALTER TABLE saves ADD COLUMN position_elevation INTEGER DEFAULT 0",
             "ALTER TABLE saves ADD COLUMN kinetic_energy INTEGER DEFAULT 0",
-            "ALTER TABLE saves ADD COLUMN max_kinetic_energy INTEGER DEFAULT 100"
+            "ALTER TABLE saves ADD COLUMN max_kinetic_energy INTEGER DEFAULT 100",
+            // v0.21.1: Advanced Stance System
+            "ALTER TABLE saves ADD COLUMN active_stance_type TEXT DEFAULT 'Balanced'",
+            "ALTER TABLE saves ADD COLUMN stance_turns_in_current INTEGER DEFAULT 0",
+            "ALTER TABLE saves ADD COLUMN stance_shifts_remaining INTEGER DEFAULT 1"
         };
 
         foreach (var alterSql in alterCommands)
@@ -433,6 +437,10 @@ public class SaveRepository
             CurrentDungeonSeed = 0, // WorldState no longer tracks dungeon seed directly
             CurrentRoomStringId = worldState?.CurrentRoomStringId,
             DungeonsCompleted = worldState?.DungeonsCompleted ?? 0,
+            // v0.21.1: Advanced Stance System
+            ActiveStanceType = player.ActiveStance?.Type.ToString() ?? "Balanced",
+            StanceTurnsInCurrent = player.StanceTurnsInCurrent,
+            StanceShiftsRemaining = player.StanceShiftsRemaining,
             LastSaved = DateTime.Now
         };
 
@@ -453,6 +461,7 @@ public class SaveRepository
                 consumables_json, crafting_components_json,
                 faction_reputations_json, active_quests_json, completed_quests_json, npc_states_json,
                 is_procedural_dungeon, current_dungeon_seed, current_room_string_id, dungeons_completed, current_biome_id,
+                active_stance_type, stance_turns_in_current, stance_shifts_remaining,
                 last_saved
             ) VALUES (
                 $name, $class, $spec, $milestone, $legend, $pp,
@@ -466,6 +475,7 @@ public class SaveRepository
                 $consumables, $craftingcomponents,
                 $factionreps, $activequests, $completedquests, $npcstates,
                 $isproc, $dungeonseed, $roomstringid, $dungeonscompleted, $biomeid,
+                $activestancetype, $stanceturns, $stanceshifts,
                 $saved
             )
         ";
@@ -519,6 +529,10 @@ public class SaveRepository
         command.Parameters.AddWithValue("$roomstringid", (object?)saveData.CurrentRoomStringId ?? DBNull.Value);
         command.Parameters.AddWithValue("$dungeonscompleted", saveData.DungeonsCompleted);
         command.Parameters.AddWithValue("$biomeid", DBNull.Value); // WorldState no longer tracks dungeon biome directly
+        // v0.21.1: Advanced Stance System
+        command.Parameters.AddWithValue("$activestancetype", saveData.ActiveStanceType);
+        command.Parameters.AddWithValue("$stanceturns", saveData.StanceTurnsInCurrent);
+        command.Parameters.AddWithValue("$stanceshifts", saveData.StanceShiftsRemaining);
         command.Parameters.AddWithValue("$saved", saveData.LastSaved.ToString("yyyy-MM-dd HH:mm:ss"));
 
         command.ExecuteNonQuery();
@@ -742,6 +756,20 @@ public class SaveRepository
         }
         catch { saveData.NPCStatesJson = "[]"; }
 
+        // Load v0.21.1 Advanced Stance System - handle missing columns for backward compatibility
+        try
+        {
+            var stanceTypeOrdinal = reader.GetOrdinal("active_stance_type");
+            saveData.ActiveStanceType = reader.IsDBNull(stanceTypeOrdinal) ? "Balanced" : reader.GetString(stanceTypeOrdinal);
+        }
+        catch { saveData.ActiveStanceType = "Balanced"; }
+
+        try { saveData.StanceTurnsInCurrent = reader.GetInt32(reader.GetOrdinal("stance_turns_in_current")); }
+        catch { saveData.StanceTurnsInCurrent = 0; }
+
+        try { saveData.StanceShiftsRemaining = reader.GetInt32(reader.GetOrdinal("stance_shifts_remaining")); }
+        catch { saveData.StanceShiftsRemaining = 1; }
+
         // Reconstruct PlayerCharacter
         var player = new PlayerCharacter
         {
@@ -867,6 +895,27 @@ public class SaveRepository
         catch
         {
             player.CompletedQuests = new List<Quest>();
+        }
+
+        // Reconstruct v0.21.1 Advanced Stance System
+        try
+        {
+            player.ActiveStance = saveData.ActiveStanceType switch
+            {
+                "Defensive" => Stance.CreateDefensiveStance(),
+                "Offensive" => Stance.CreateOffensiveStance(),
+                "Evasive" => Stance.CreateEvasiveStance(),
+                "Balanced" => Stance.CreateBalancedStance(),
+                _ => Stance.CreateBalancedStance()
+            };
+            player.StanceTurnsInCurrent = saveData.StanceTurnsInCurrent;
+            player.StanceShiftsRemaining = saveData.StanceShiftsRemaining;
+        }
+        catch
+        {
+            player.ActiveStance = Stance.CreateBalancedStance();
+            player.StanceTurnsInCurrent = 0;
+            player.StanceShiftsRemaining = 1;
         }
 
         // Reconstruct abilities based on class and level (will be set by CharacterFactory)

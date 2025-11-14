@@ -80,6 +80,11 @@ public class SaveData
     public string CompletedQuestsJson { get; set; } = "[]"; // JSON array of Quest objects
     public string NPCStatesJson { get; set; } = "[]"; // JSON array of NPC objects with state
 
+    // v0.21.1: Advanced Stance System
+    public string ActiveStanceType { get; set; } = "Balanced"; // StanceType enum value
+    public int StanceTurnsInCurrent { get; set; } = 0; // Turns spent in current stance
+    public int StanceShiftsRemaining { get; set; } = 1; // Stance shifts remaining this turn
+
     // Metadata
     public DateTime LastSaved { get; set; }
 }

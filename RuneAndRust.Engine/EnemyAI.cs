@@ -66,6 +66,7 @@ public class EnemyAI
     private readonly DiceService _diceService;
     private readonly FlankingService _flankingService; // v0.20.1
     private readonly CoverService _coverService; // v0.20.2
+    private readonly StanceService _stanceService; // v0.21.1
 
     public EnemyAI(DiceService diceService)
     {
@@ -73,6 +74,7 @@ public class EnemyAI
         _random = new Random();
         _flankingService = new FlankingService(); // v0.20.1
         _coverService = new CoverService(); // v0.20.2
+        _stanceService = new StanceService(); // v0.21.1
     }
 
     public EnemyAI(DiceService diceService, int seed)
@@ -81,6 +83,7 @@ public class EnemyAI
         _random = new Random(seed);
         _flankingService = new FlankingService(); // v0.20.1
         _coverService = new CoverService(); // v0.20.2
+        _stanceService = new StanceService(); // v0.21.1
     }
 
     /// <summary>
@@ -804,15 +807,29 @@ public class EnemyAI
             }
         }
 
-        // v0.7.1: Apply Defensive Stance soak (+3 flat damage reduction)
-        if (player.ActiveStance?.Type == StanceType.Defensive)
+        // v0.7.1: Apply Defensive Stance soak (+3 flat damage reduction) - Legacy
+        if (player.ActiveStance?.Type == StanceType.Defensive && player.ActiveStance.SoakBonus > 0)
         {
             int soakAmount = player.ActiveStance.SoakBonus;
             int reducedDamage = Math.Max(0, damage - soakAmount);
             if (reducedDamage < damage)
             {
-                combatState.AddLogEntry($"{indent}[Defensive Stance] reduces damage by {soakAmount}! ({damage} → {reducedDamage})");
+                combatState.AddLogEntry($"{indent}[Defensive Stance - Legacy Soak] reduces damage by {soakAmount}! ({damage} → {reducedDamage})");
                 damage = reducedDamage;
+            }
+        }
+
+        // [v0.21.1] Apply stance mitigation modifier (percentage-based damage reduction/increase)
+        if (player.ActiveStance != null && player.ActiveStance.MitigationModifier != 1.0f)
+        {
+            int originalDamage = damage;
+            damage = _stanceService.ApplyStanceMitigationModifier(player, damage);
+            if (damage != originalDamage)
+            {
+                var stanceName = _stanceService.GetStanceName(player.ActiveStance.Type);
+                var mitigationPercent = (int)((player.ActiveStance.MitigationModifier - 1.0f) * 100);
+                var sign = mitigationPercent >= 0 ? "+" : "";
+                combatState.AddLogEntry($"{indent}[{stanceName}] {originalDamage} → {damage} damage ({sign}{mitigationPercent}% mitigation)");
             }
         }
 
@@ -830,6 +847,15 @@ public class EnemyAI
 
         player.HP -= damage;
         combatState.AddLogEntry($"{indent}{player.Name} takes {damage} damage! (HP: {Math.Max(0, player.HP)}/{player.MaxHP})");
+
+        // [v0.21.1] Stance vulnerability stress - Offensive stance makes you vulnerable when attacked
+        var stanceStress = _stanceService.CheckStanceVulnerabilityStress(player, wasAttacked: true);
+        if (stanceStress > 0)
+        {
+            var traumaService = new TraumaEconomyService();
+            traumaService.AddStress(player, stanceStress, source: "Stance Vulnerability");
+            combatState.AddLogEntry($"{indent}[Offensive Stance Vulnerability] +{stanceStress} Psychic Stress! (Current: {player.PsychicStress}/100)");
+        }
     }
 
     private void ExecuteDefend(Enemy enemy, CombatState combatState)
