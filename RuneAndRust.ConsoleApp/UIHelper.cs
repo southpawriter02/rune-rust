@@ -1115,4 +1115,68 @@ public static class UIHelper
         AnsiConsole.MarkupLine("[dim]Progression Points are earned by completing milestones and achieving Legend.[/]");
         AnsiConsole.WriteLine();
     }
+
+    /// <summary>
+    /// v0.20.2: Displays the battlefield grid with cover locations
+    /// </summary>
+    public static void DisplayBattlefieldGrid(BattlefieldGrid grid)
+    {
+        AnsiConsole.WriteLine();
+        AnsiConsole.Rule("[cyan]BATTLEFIELD[/]");
+        AnsiConsole.WriteLine();
+
+        // Display cover locations
+        var tilesWithCover = grid.Tiles.Values.Where(t => t.Cover != CoverType.None).ToList();
+        if (tilesWithCover.Any())
+        {
+            AnsiConsole.MarkupLine("[bold cyan]Cover Locations:[/]");
+            foreach (var tile in tilesWithCover.OrderBy(t => t.Position.Zone).ThenBy(t => t.Position.Row).ThenBy(t => t.Position.Column))
+            {
+                var icon = GetCoverIcon(tile.Cover);
+                var health = tile.CoverHealth.HasValue ? $" [dim]({tile.CoverHealth}HP)[/]" : "";
+                var description = tile.CoverDescription ?? "Unknown";
+
+                var zoneColor = tile.Position.Zone == Zone.Player ? "blue" : "red";
+                var rowName = tile.Position.Row == Row.Front ? "Front" : "Back";
+
+                AnsiConsole.MarkupLine($"  {icon} [{zoneColor}]{tile.Position.Zone} {rowName}[/] Column {tile.Position.Column}: [yellow]{description}[/]{health}");
+            }
+        }
+        else
+        {
+            AnsiConsole.MarkupLine("[dim]No cover on battlefield[/]");
+        }
+
+        AnsiConsole.WriteLine();
+    }
+
+    /// <summary>
+    /// v0.20.2: Gets a visual icon for cover type
+    /// </summary>
+    private static string GetCoverIcon(CoverType coverType)
+    {
+        return coverType switch
+        {
+            CoverType.Physical => "[white]█[/]",          // Physical cover (solid block)
+            CoverType.Metaphysical => "[magenta]◆[/]",    // Metaphysical cover (diamond)
+            CoverType.Both => "[cyan]◈[/]",               // Both types (double diamond)
+            _ => "[ ]"
+        };
+    }
+
+    /// <summary>
+    /// v0.20.2: Displays cover bonus information during combat
+    /// </summary>
+    public static void DisplayCoverBonus(CoverBonus bonus, string targetName)
+    {
+        if (bonus.DefenseBonus > 0)
+        {
+            AnsiConsole.MarkupLine($"  [blue][[COVER]][/] {targetName} gains +{bonus.DefenseBonus} Defense!");
+        }
+
+        if (bonus.ResolveBonus > 0)
+        {
+            AnsiConsole.MarkupLine($"  [magenta][[METAPHYSICAL COVER]][/] {targetName} gains +{bonus.ResolveBonus} Resolve!");
+        }
+    }
 }

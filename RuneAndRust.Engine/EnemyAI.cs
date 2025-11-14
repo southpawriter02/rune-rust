@@ -64,16 +64,19 @@ public class EnemyAI
 {
     private readonly Random _random;
     private readonly DiceService _diceService;
+    private readonly CoverService _coverService; // [v0.20.2]
 
     public EnemyAI(DiceService diceService)
     {
         _diceService = diceService;
+        _coverService = new CoverService(); // [v0.20.2]
         _random = new Random();
     }
 
     public EnemyAI(DiceService diceService, int seed)
     {
         _diceService = diceService;
+        _coverService = new CoverService(); // [v0.20.2]
         _random = new Random(seed);
     }
 
@@ -671,10 +674,26 @@ public class EnemyAI
             return;
         }
 
-        // Player defends
-        var defendRoll = _diceService.Roll(player.Attributes.Sturdiness);
+        // [v0.20.2] Apply cover bonuses to player defense
+        var coverBonus = CoverBonus.None();
+        if (combatState.Grid != null)
+        {
+            // Determine attack type based on enemy action/weapon
+            // For now, assume melee unless enemy has specific ranged actions
+            var attackType = AttackType.Melee; // Most enemies use melee
+            coverBonus = _coverService.CalculateCoverBonus(player, enemy, attackType, combatState.Grid);
+        }
+
+        // Player defends (with cover bonus)
+        var defensePool = player.Attributes.Sturdiness + coverBonus.DefenseBonus;
+        var defendRoll = _diceService.Roll(defensePool);
+
         combatState.AddLogEntry($"{player.Name} defends!");
-        combatState.AddLogEntry($"  Rolled {player.Attributes.Sturdiness}d6: {FormatRolls(defendRoll)} = {defendRoll.Successes} successes");
+        if (coverBonus.DefenseBonus > 0)
+        {
+            combatState.AddLogEntry($"  [COVER] +{coverBonus.DefenseBonus} Defense bonus!");
+        }
+        combatState.AddLogEntry($"  Rolled {defensePool}d6: {FormatRolls(defendRoll)} = {defendRoll.Successes} successes");
 
         // v0.19.9: Apply stance defense bonuses
         int effectiveDefenseSuccesses = GetPlayerDefenseSuccesses(player, defendRoll, combatState);

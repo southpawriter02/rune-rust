@@ -127,12 +127,155 @@ public class GridInitializationService
         if (room == null)
             return;
 
-        // TODO v0.20: Integrate with procedural generation
-        // - Place cover based on room type (ruins have more physical cover)
+        // v0.20.2: Generate cover
+        GenerateCover(grid, room);
+
+        // TODO v0.20: Additional environmental features
         // - Place glitched tiles based on Corruption level
         // - Place high ground tiles in specific biomes
 
         _log.Debug("Environmental features applied to grid: Room={RoomId}", room.Id);
+    }
+
+    /// <summary>
+    /// Generates cover on the battlefield based on room archetype
+    /// v0.20.2: Cover System implementation
+    /// </summary>
+    private void GenerateCover(BattlefieldGrid grid, Room room)
+    {
+        // Calculate number of cover pieces based on grid size
+        int coverCount = CalculateCoverCount(grid.Columns);
+
+        _log.Information("Generating cover: Columns={Columns}, CoverCount={Count}, RoomArchetype={Archetype}",
+            grid.Columns, coverCount, room.Archetype);
+
+        var random = new Random();
+        var placedCover = 0;
+
+        // Attempt to place cover pieces
+        for (int attempt = 0; attempt < coverCount * 3 && placedCover < coverCount; attempt++)
+        {
+            var coverType = SelectCoverType(room, random);
+            var position = SelectCoverPosition(grid, random);
+
+            if (position == null)
+            {
+                _log.Warning("Failed to find valid cover position: Attempt={Attempt}", attempt);
+                continue;
+            }
+
+            var tile = grid.GetTile(position.Value);
+            if (tile != null && !tile.IsOccupied && tile.Cover == CoverType.None)
+            {
+                PlaceCover(tile, coverType, random);
+                placedCover++;
+            }
+        }
+
+        _log.Information("Cover generation complete: PlacedCover={PlacedCount}, TargetCount={TargetCount}",
+            placedCover, coverCount);
+    }
+
+    /// <summary>
+    /// Calculates number of cover pieces based on grid size
+    /// Formula: 1 cover per 2 columns, minimum 1
+    /// </summary>
+    private int CalculateCoverCount(int columns)
+    {
+        return Math.Max(1, columns / 2);
+    }
+
+    /// <summary>
+    /// Selects cover type based on room archetype and biome
+    /// </summary>
+    private CoverType SelectCoverType(Room room, Random random)
+    {
+        var roll = random.NextDouble();
+
+        // Boss arenas have more metaphysical cover (reality anchors)
+        if (room.IsBossRoom)
+        {
+            if (roll < 0.50) return CoverType.Physical;      // 50% physical
+            if (roll < 0.85) return CoverType.Metaphysical;  // 35% metaphysical
+            return CoverType.Both;                           // 15% both
+        }
+
+        // Standard rooms favor physical cover
+        if (roll < 0.70) return CoverType.Physical;      // 70% physical (pillars, crates)
+        if (roll < 0.85) return CoverType.Metaphysical;  // 15% metaphysical (Runic Anchors)
+        return CoverType.Both;                           // 5% both (rare)
+    }
+
+    /// <summary>
+    /// Selects a random position for cover placement
+    /// Prefers back rows for tactical positioning
+    /// </summary>
+    private GridPosition? SelectCoverPosition(BattlefieldGrid grid, Random random)
+    {
+        // Try to place in back rows first (60% chance)
+        var preferBackRow = random.NextDouble() < 0.6;
+        var row = preferBackRow ? Row.Back : Row.Front;
+
+        // Randomly select zone and column
+        var zone = random.Next(2) == 0 ? Zone.Player : Zone.Enemy;
+        var column = random.Next(grid.Columns);
+
+        var position = new GridPosition(zone, row, column, elevation: 0);
+
+        // Validate position exists
+        if (grid.GetTile(position) != null)
+        {
+            return position;
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Places cover on a tile with appropriate properties
+    /// </summary>
+    private void PlaceCover(BattlefieldTile tile, CoverType coverType, Random random)
+    {
+        tile.Cover = coverType;
+
+        // Set health for physical cover
+        if (coverType == CoverType.Physical || coverType == CoverType.Both)
+        {
+            tile.CoverHealth = 20;  // Standard cover HP
+            tile.CoverDescription = SelectPhysicalCoverDescription(random);
+        }
+
+        // Set description for metaphysical cover
+        if (coverType == CoverType.Metaphysical)
+        {
+            tile.CoverDescription = "Runic Anchor";
+        }
+        else if (coverType == CoverType.Both)
+        {
+            tile.CoverDescription = "Fortified Anchor";  // Both types
+        }
+
+        _log.Information("Cover placed: Position={Position}, Type={CoverType}, Description={Description}, HP={HP}",
+            tile.Position, coverType, tile.CoverDescription, tile.CoverHealth);
+    }
+
+    /// <summary>
+    /// Selects a random description for physical cover
+    /// </summary>
+    private string SelectPhysicalCoverDescription(Random random)
+    {
+        var descriptions = new[]
+        {
+            "Pillar",
+            "Crate",
+            "Debris",
+            "Wall Section",
+            "Console",
+            "Rubble",
+            "Barricade"
+        };
+
+        return descriptions[random.Next(descriptions.Length)];
     }
 
     /// <summary>

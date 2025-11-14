@@ -14,6 +14,7 @@ public class CombatEngine
     private readonly PerformanceService _performanceService; // [v0.7]
     private readonly CurrencyService _currencyService; // [v0.9]
     private readonly GridInitializationService _gridService; // [v0.20]
+    private readonly CoverService _coverService; // [v0.20.2]
 
     public CombatEngine(DiceService diceService, SagaService sagaService, LootService lootService, EquipmentService equipmentService, HazardService hazardService, CurrencyService currencyService)
     {
@@ -25,6 +26,7 @@ public class CombatEngine
         _performanceService = new PerformanceService(); // [v0.7]
         _currencyService = currencyService; // [v0.9]
         _gridService = new GridInitializationService(); // [v0.20]
+        _coverService = new CoverService(); // [v0.20.2]
     }
 
     /// <summary>
@@ -203,10 +205,26 @@ public class CombatEngine
         combatState.AddLogEntry($"{player.Name} attacks {target.Name}!");
         combatState.AddLogEntry($"  Rolled {totalDice}d6: {FormatRolls(attackRoll)} = {attackRoll.Successes} successes");
 
-        // Opponent defends
-        var defendRoll = _diceService.Roll(target.Attributes.Sturdiness);
+        // [v0.20.2] Determine attack type for cover calculation
+        var attackType = DetermineAttackType(player.EquippedWeapon);
+
+        // [v0.20.2] Apply cover bonuses to defense
+        var coverBonus = CoverBonus.None();
+        if (combatState.Grid != null)
+        {
+            coverBonus = _coverService.CalculateCoverBonus(target, player, attackType, combatState.Grid);
+        }
+
+        // Opponent defends (with cover bonus)
+        var defensePool = target.Attributes.Sturdiness + coverBonus.DefenseBonus;
+        var defendRoll = _diceService.Roll(defensePool);
+
         combatState.AddLogEntry($"{target.Name} defends!");
-        combatState.AddLogEntry($"  Rolled {target.Attributes.Sturdiness}d6: {FormatRolls(defendRoll)} = {defendRoll.Successes} successes");
+        if (coverBonus.DefenseBonus > 0)
+        {
+            combatState.AddLogEntry($"  [COVER] +{coverBonus.DefenseBonus} Defense bonus!");
+        }
+        combatState.AddLogEntry($"  Rolled {defensePool}d6: {FormatRolls(defendRoll)} = {defendRoll.Successes} successes");
 
         // Calculate damage using weapon damage dice
         var netSuccesses = Math.Max(0, attackRoll.Successes - defendRoll.Successes);
@@ -1103,6 +1121,18 @@ public class CombatEngine
 
     private void ApplyDamageToEnemy(CombatState combatState, Enemy target, int damage, bool ignoresArmor)
     {
+        // [v0.20.2] Damage cover if it blocked the attack
+        if (combatState.Grid != null && target.Position != null && damage > 0)
+        {
+            var targetTile = combatState.Grid.GetTile(target.Position.Value);
+            if (targetTile != null && (targetTile.Cover == CoverType.Physical || targetTile.Cover == CoverType.Both))
+            {
+                // Cover takes 25% of damage dealt
+                int coverDamage = Math.Max(1, damage / 4);
+                _coverService.DamageCover(targetTile, coverDamage, combatState);
+            }
+        }
+
         // v0.7: Apply [Vulnerable] status (+25% damage)
         if (target.VulnerableTurnsRemaining > 0)
         {
@@ -1916,5 +1946,25 @@ public class CombatEngine
     private string FormatRolls(DiceResult result)
     {
         return string.Join(", ", result.Rolls);
+    }
+
+    /// <summary>
+    /// [v0.20.2] Determines the attack type for cover calculation based on weapon
+    /// </summary>
+    private AttackType DetermineAttackType(Equipment? weapon)
+    {
+        if (weapon == null)
+        {
+            return AttackType.Melee; // Unarmed attacks are melee
+        }
+
+        // Ranged weapons
+        if (weapon.WeaponCategory == WeaponCategory.Rifle)
+        {
+            return AttackType.Ranged;
+        }
+
+        // All other weapons are melee
+        return AttackType.Melee;
     }
 }

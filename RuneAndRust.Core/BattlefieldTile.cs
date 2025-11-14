@@ -9,6 +9,8 @@ public class BattlefieldTile
     public GridPosition Position { get; set; }
     public TileType Type { get; set; }                      // Normal, HighGround, Glitched
     public CoverType Cover { get; set; }                    // None, Physical, Metaphysical, Both
+    public int? CoverHealth { get; set; }                   // HP for physical cover (null if no physical cover)
+    public string? CoverDescription { get; set; }           // "Pillar", "Crate", "Runic Anchor", etc.
     public List<BattlefieldTrap> Traps { get; set; }       // Active traps on this tile
     public bool IsOccupied { get; set; }
     public string? OccupantId { get; set; }                // Combatant ID (player or enemy)
@@ -22,6 +24,8 @@ public class BattlefieldTile
         Position = position;
         Type = TileType.Normal;
         Cover = CoverType.None;
+        CoverHealth = null;
+        CoverDescription = null;
         Traps = new List<BattlefieldTrap>();
         IsOccupied = false;
         OccupantId = null;
@@ -44,6 +48,14 @@ public class BattlefieldTile
     {
         var status = IsOccupied ? $"[{OccupantId}]" : "[ ]";
         var coverStr = Cover != CoverType.None ? $" Cover:{Cover}" : "";
+        if (CoverHealth.HasValue)
+        {
+            coverStr += $"({CoverHealth}HP)";
+        }
+        if (!string.IsNullOrEmpty(CoverDescription))
+        {
+            coverStr += $"[{CoverDescription}]";
+        }
         var glitchStr = GlitchType != null ? $" GLITCH:{GlitchType}({GlitchSeverity})" : "";
         var trapStr = Traps.Count > 0 ? $" Traps:{Traps.Count}" : "";
 
