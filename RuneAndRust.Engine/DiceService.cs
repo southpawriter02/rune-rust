@@ -78,4 +78,30 @@ public class DiceService
 
         return total;
     }
+
+    /// <summary>
+    /// v0.21.3: Rolls dice with variable die size (e.g., 3d4, 2d6, 1d10)
+    /// </summary>
+    public int Roll(int numDice, int dieSize)
+    {
+        if (numDice <= 0 || dieSize <= 0)
+        {
+            return 0;
+        }
+
+        int total = 0;
+        var rolls = new List<int>();
+
+        for (int i = 0; i < numDice; i++)
+        {
+            int roll = _random.Next(1, dieSize + 1);
+            rolls.Add(roll);
+            total += roll;
+        }
+
+        _log.Debug("Dice rolled: {NumDice}d{DieSize}, Rolls=[{Rolls}], Total={Total}",
+            numDice, dieSize, string.Join(", ", rolls), total);
+
+        return total;
+    }
 }

@@ -1,4 +1,5 @@
 using RuneAndRust.Core;
+using RuneAndRust.Persistence;
 using Serilog;
 
 namespace RuneAndRust.Engine;
@@ -17,8 +18,13 @@ public class CombatEngine
     private readonly FlankingService _flankingService; // [v0.20.1]
     private readonly CoverService _coverService; // [v0.20.2]
     private readonly StanceService _stanceService; // [v0.21.1]
+    private readonly AdvancedStatusEffectService? _statusEffectService; // [v0.21.3]
 
-    public CombatEngine(DiceService diceService, SagaService sagaService, LootService lootService, EquipmentService equipmentService, HazardService hazardService, CurrencyService currencyService)
+    // [v0.21.3] Target ID mapping for status effects
+    // Player ID = 0, Enemy IDs = hash of enemy ID string
+    private const int PLAYER_TARGET_ID = 0;
+
+    public CombatEngine(DiceService diceService, SagaService sagaService, LootService lootService, EquipmentService equipmentService, HazardService hazardService, CurrencyService currencyService, AdvancedStatusEffectService? statusEffectService = null)
     {
         _diceService = diceService;
         _sagaService = sagaService;
@@ -31,6 +37,16 @@ public class CombatEngine
         _flankingService = new FlankingService(); // [v0.20.1]
         _coverService = new CoverService(); // [v0.20.2]
         _stanceService = new StanceService(); // [v0.21.1]
+        _statusEffectService = statusEffectService; // [v0.21.3]
+    }
+
+    /// <summary>
+    /// v0.21.3: Get target ID for status effect service
+    /// </summary>
+    private int GetTargetId(Enemy enemy)
+    {
+        // Use stable hash of enemy ID for consistent targeting
+        return enemy.Id.GetHashCode();
     }
 
     /// <summary>
@@ -834,11 +850,32 @@ public class CombatEngine
 
             ApplyDamageToEnemy(combatState, target, damage, ability.IgnoresArmor);
 
-            // Apply bleeding if 3+ successes
+            // [v0.21.3] Apply bleeding if 3+ successes
             if (successes >= 3)
             {
-                target.BleedingTurnsRemaining = 2;
-                combatState.AddLogEntry($"  {target.Name} is bleeding! (1d6 damage for 2 turns)");
+                if (_statusEffectService != null)
+                {
+                    // Use new service for stacking support
+                    var result = _statusEffectService.ApplyEffect(GetTargetId(target), "Bleeding", stacks: 1, duration: 5);
+                    if (result.Success)
+                    {
+                        combatState.AddLogEntry($"  {result.Message}");
+                        if (result.ActiveInteractions.Any())
+                        {
+                            foreach (var interaction in result.ActiveInteractions)
+                            {
+                                combatState.AddLogEntry($"    {interaction}");
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    // Fallback to legacy system
+                    target.BleedingTurnsRemaining = 2;
+                    combatState.AddLogEntry($"  {target.Name} is bleeding! (1d6 damage for 2 turns)");
+                }
+
                 _log.Information("Status effect applied: Enemy={EnemyName}, Effect=Bleeding, Duration={Duration}, Successes={Successes}",
                     target.Name, 2, successes);
             }
@@ -1751,85 +1788,104 @@ public class CombatEngine
             combatState.Player.GlyphOfSanctuaryStressImmunity--;
         }
 
-        // Decrement enemy defense, stun, and bleeding turns
+        // [v0.21.3] Process status effects for enemies (DoT damage, etc.)
         foreach (var enemy in combatState.Enemies.Where(e => e.IsAlive))
         {
-            // Apply bleeding damage at start of enemy turn
-            if (enemy.BleedingTurnsRemaining > 0)
+            // Use new status effect service if available
+            if (_statusEffectService != null)
             {
-                var bleedDamage = _diceService.RollDamage(1);
-                enemy.HP -= bleedDamage;
-                combatState.AddLogEntry($"{enemy.Name} takes {bleedDamage} bleeding damage! (HP: {Math.Max(0, enemy.HP)}/{enemy.MaxHP})");
-                _log.Debug("Status effect damage: Enemy={EnemyName}, Effect=Bleeding, Damage={Damage}, RemainingHP={HP}, TurnsRemaining={Turns}",
-                    enemy.Name, bleedDamage, Math.Max(0, enemy.HP), enemy.BleedingTurnsRemaining - 1);
-
-                enemy.BleedingTurnsRemaining--;
-                if (enemy.BleedingTurnsRemaining == 0)
+                // Process start-of-turn effects (Bleeding, Poisoned, etc.)
+                var messages = _statusEffectService.ProcessStartOfTurn(GetTargetId(enemy), enemy: enemy).Result;
+                foreach (var message in messages)
                 {
-                    combatState.AddLogEntry($"{enemy.Name} is no longer bleeding.");
-                    _log.Information("Status effect expired: Enemy={EnemyName}, Effect=Bleeding",
-                        enemy.Name);
+                    combatState.AddLogEntry(message);
                 }
 
+                // Check if enemy died from DoT
                 if (!enemy.IsAlive)
                 {
                     combatState.AddLogEntry($"{enemy.Name} is destroyed!");
                 }
             }
-
-            // v0.19.8: Apply [Corroded] DoT damage at start of enemy turn
-            if (enemy.CorrodedStacks > 0)
+            else
             {
-                // Check if Rust-Witch has Accelerated Entropy passive (2d6 per stack)
-                var player = combatState.Player;
-                bool hasAcceleratedEntropy = player.Abilities.Any(a => a.Name == "Accelerated Entropy");
-                int dicePerStack = hasAcceleratedEntropy ? 2 : 1;
-
-                // Roll damage for each stack
-                int totalCorrodedDamage = 0;
-                for (int i = 0; i < enemy.CorrodedStacks; i++)
+                // Fallback to legacy bleeding system
+                if (enemy.BleedingTurnsRemaining > 0)
                 {
-                    totalCorrodedDamage += _diceService.RollDamage(dicePerStack);
-                }
+                    var bleedDamage = _diceService.RollDamage(1);
+                    enemy.HP -= bleedDamage;
+                    combatState.AddLogEntry($"{enemy.Name} takes {bleedDamage} bleeding damage! (HP: {Math.Max(0, enemy.HP)}/{enemy.MaxHP})");
+                    _log.Debug("Status effect damage: Enemy={EnemyName}, Effect=Bleeding, Damage={Damage}, RemainingHP={HP}, TurnsRemaining={Turns}",
+                        enemy.Name, bleedDamage, Math.Max(0, enemy.HP), enemy.BleedingTurnsRemaining - 1);
 
-                enemy.HP -= totalCorrodedDamage;
-                combatState.AddLogEntry($"{enemy.Name} takes {totalCorrodedDamage} corrosion damage from {enemy.CorrodedStacks} [Corroded] stacks! (HP: {Math.Max(0, enemy.HP)}/{enemy.MaxHP})");
-
-                _log.Debug("Status effect damage: Enemy={EnemyName}, Effect=Corroded, Stacks={Stacks}, Damage={Damage}, RemainingHP={HP}",
-                    enemy.Name, enemy.CorrodedStacks, totalCorrodedDamage, Math.Max(0, enemy.HP));
-
-                // Countdown all stack durations
-                for (int i = enemy.CorrodedStackDurations.Count - 1; i >= 0; i--)
-                {
-                    enemy.CorrodedStackDurations[i]--;
-                    if (enemy.CorrodedStackDurations[i] <= 0)
+                    enemy.BleedingTurnsRemaining--;
+                    if (enemy.BleedingTurnsRemaining == 0)
                     {
-                        enemy.CorrodedStackDurations.RemoveAt(i);
-                        enemy.CorrodedStacks--;
-                        combatState.AddLogEntry($"  1 [Corroded] stack expires on {enemy.Name} ({enemy.CorrodedStacks} remaining)");
+                        combatState.AddLogEntry($"{enemy.Name} is no longer bleeding.");
+                        _log.Information("Status effect expired: Enemy={EnemyName}, Effect=Bleeding",
+                            enemy.Name);
+                    }
+
+                    if (!enemy.IsAlive)
+                    {
+                        combatState.AddLogEntry($"{enemy.Name} is destroyed!");
                     }
                 }
 
-                if (enemy.CorrodedStacks == 0)
+                // v0.19.8: Apply [Corroded] DoT damage at start of enemy turn (legacy)
+                if (enemy.CorrodedStacks > 0)
                 {
-                    combatState.AddLogEntry($"{enemy.Name} is no longer [Corroded].");
-                    _log.Information("Status effect expired: Enemy={EnemyName}, Effect=Corroded", enemy.Name);
-                }
+                    // Check if Rust-Witch has Accelerated Entropy passive (2d6 per stack)
+                    var player = combatState.Player;
+                    bool hasAcceleratedEntropy = player.Abilities.Any(a => a.Name == "Accelerated Entropy");
+                    int dicePerStack = hasAcceleratedEntropy ? 2 : 1;
 
-                if (!enemy.IsAlive)
-                {
-                    combatState.AddLogEntry($"{enemy.Name} dissolves from corrosion!");
-
-                    // v0.19.8: Cascade Reaction - Spread [Corroded] on death (Rust-Witch passive)
-                    bool hasCascadeReaction = player.Abilities.Any(a => a.Name == "Cascade Reaction");
-                    if (hasCascadeReaction)
+                    // Roll damage for each stack
+                    int totalCorrodedDamage = 0;
+                    for (int i = 0; i < enemy.CorrodedStacks; i++)
                     {
-                        combatState.AddLogEntry($"  [Cascade Reaction] Entropy spreads from {enemy.Name}!");
-                        foreach (var adjacentEnemy in combatState.Enemies.Where(e => e.IsAlive && e != enemy))
+                        totalCorrodedDamage += _diceService.RollDamage(dicePerStack);
+                    }
+
+                    enemy.HP -= totalCorrodedDamage;
+                    combatState.AddLogEntry($"{enemy.Name} takes {totalCorrodedDamage} corrosion damage from {enemy.CorrodedStacks} [Corroded] stacks! (HP: {Math.Max(0, enemy.HP)}/{enemy.MaxHP})");
+
+                    _log.Debug("Status effect damage: Enemy={EnemyName}, Effect=Corroded, Stacks={Stacks}, Damage={Damage}, RemainingHP={HP}",
+                        enemy.Name, enemy.CorrodedStacks, totalCorrodedDamage, Math.Max(0, enemy.HP));
+
+                    // Countdown all stack durations
+                    for (int i = enemy.CorrodedStackDurations.Count - 1; i >= 0; i--)
+                    {
+                        enemy.CorrodedStackDurations[i]--;
+                        if (enemy.CorrodedStackDurations[i] <= 0)
                         {
-                            adjacentEnemy.CorrodedStacks = Math.Min(5, adjacentEnemy.CorrodedStacks + 1);
-                            adjacentEnemy.CorrodedStackDurations.Add(3);
-                            combatState.AddLogEntry($"    {adjacentEnemy.Name} gains [Corroded] x{adjacentEnemy.CorrodedStacks}!");
+                            enemy.CorrodedStackDurations.RemoveAt(i);
+                            enemy.CorrodedStacks--;
+                            combatState.AddLogEntry($"  1 [Corroded] stack expires on {enemy.Name} ({enemy.CorrodedStacks} remaining)");
+                        }
+                    }
+
+                    if (enemy.CorrodedStacks == 0)
+                    {
+                        combatState.AddLogEntry($"{enemy.Name} is no longer [Corroded].");
+                        _log.Information("Status effect expired: Enemy={EnemyName}, Effect=Corroded", enemy.Name);
+                    }
+
+                    if (!enemy.IsAlive)
+                    {
+                        combatState.AddLogEntry($"{enemy.Name} dissolves from corrosion!");
+
+                        // v0.19.8: Cascade Reaction - Spread [Corroded] on death (Rust-Witch passive)
+                        bool hasCascadeReaction = player.Abilities.Any(a => a.Name == "Cascade Reaction");
+                        if (hasCascadeReaction)
+                        {
+                            combatState.AddLogEntry($"  [Cascade Reaction] Entropy spreads from {enemy.Name}!");
+                            foreach (var adjacentEnemy in combatState.Enemies.Where(e => e.IsAlive && e != enemy))
+                            {
+                                adjacentEnemy.CorrodedStacks = Math.Min(5, adjacentEnemy.CorrodedStacks + 1);
+                                adjacentEnemy.CorrodedStackDurations.Add(3);
+                                combatState.AddLogEntry($"    {adjacentEnemy.Name} gains [Corroded] x{adjacentEnemy.CorrodedStacks}!");
+                            }
                         }
                     }
                 }
@@ -1947,6 +2003,27 @@ public class CombatEngine
         if (combatState.Player.SilencedTurnsRemaining > 0)
         {
             combatState.Player.SilencedTurnsRemaining--;
+        }
+
+        // [v0.21.3] Process end-of-turn status effect management (duration decrement, Corroded damage, etc.)
+        if (_statusEffectService != null)
+        {
+            // Process end-of-turn for all enemies
+            foreach (var enemy in combatState.Enemies.Where(e => e.IsAlive))
+            {
+                var messages = _statusEffectService.ProcessEndOfTurn(GetTargetId(enemy), enemy: enemy).Result;
+                foreach (var message in messages)
+                {
+                    combatState.AddLogEntry(message);
+                }
+            }
+
+            // Process end-of-turn for player
+            var playerMessages = _statusEffectService.ProcessEndOfTurn(PLAYER_TARGET_ID, player: combatState.Player).Result;
+            foreach (var message in playerMessages)
+            {
+                combatState.AddLogEntry(message);
+            }
         }
 
         // [v0.20] Tactical Combat Grid System - Turn management

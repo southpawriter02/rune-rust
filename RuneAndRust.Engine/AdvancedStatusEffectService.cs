@@ -494,7 +494,7 @@ public class AdvancedStatusEffectService
         int numDice = int.Parse(match.Groups[1].Value);
         int dieSize = int.Parse(match.Groups[2].Value);
 
-        // Roll damage per stack
+        // Roll damage per stack using DiceService.Roll(numDice, dieSize)
         int totalDamage = 0;
         for (int i = 0; i < effect.StackCount; i++)
         {
