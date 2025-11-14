@@ -74,26 +74,41 @@ public enum EnvironmentalEventType
 }
 
 /// <summary>
-/// Result of environmental object destruction
+/// Result of environmental object destruction (v0.22.1 enhanced)
 /// </summary>
 public class DestructionResult
 {
-    public bool WasDestroyed { get; set; }
+    public bool Success { get; set; } = true;
+    public bool ObjectDestroyed { get; set; }
+    public int ObjectId { get; set; }
+    public string ObjectName { get; set; } = string.Empty;
+    public string? DestructionMethod { get; set; }
+    public int DamageDealt { get; set; }
     public int RemainingDurability { get; set; }
-    public string LogMessage { get; set; } = string.Empty;
-    public List<EnvironmentalEvent> ChainReactions { get; set; } = new(); // Cascading effects
+    public List<int> SecondaryTargets { get; set; } = new(); // Character IDs hit by destruction
+    public string? TerrainCreated { get; set; }
+    public List<DestructionResult> ChainReactions { get; set; } = new(); // Cascading effects
+    public string Message { get; set; } = string.Empty;
+
+    // Legacy compatibility
+    public bool WasDestroyed => ObjectDestroyed;
+    public string LogMessage => Message;
 }
 
 /// <summary>
-/// Result of hazard trigger
+/// Result of hazard trigger (v0.22.1 enhanced)
 /// </summary>
 public class HazardResult
 {
     public bool WasTriggered { get; set; }
-    public int DamageDealt { get; set; }
+    public int TotalDamage { get; set; }
     public List<int> AffectedCharacters { get; set; } = new();
     public string? StatusEffectApplied { get; set; }
-    public string LogMessage { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+
+    // Legacy compatibility
+    public int DamageDealt => TotalDamage;
+    public string LogMessage => Description;
 }
 
 /// <summary>
