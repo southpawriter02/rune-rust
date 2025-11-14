@@ -2109,4 +2109,246 @@ public class EnemyAI
     {
         return string.Join(", ", result.Rolls);
     }
+
+    // ============================================================
+    // v0.20.5: Formation-Aware Targeting
+    // ============================================================
+
+    /// <summary>
+    /// Selects a target from the player party based on formation analysis
+    /// Enemies adapt their targeting strategy based on detected party formation
+    /// </summary>
+    public object SelectTarget(Enemy enemy, List<object> playerParty, BattlefieldGrid grid, FormationService formationService)
+    {
+        if (playerParty == null || playerParty.Count == 0)
+        {
+            Serilog.Log.Warning("SelectTarget called with empty player party");
+            return playerParty.FirstOrDefault()!;
+        }
+
+        // Single target - no formation analysis needed
+        if (playerParty.Count == 1)
+        {
+            return playerParty[0];
+        }
+
+        Serilog.Log.Information("Target selection: Enemy={EnemyId}, PlayerPartySize={Size}",
+            enemy.Id, playerParty.Count);
+
+        // Analyze player formation
+        var formation = formationService.DetectFormation(playerParty, grid);
+
+        Serilog.Log.Debug("Detected player formation: Formation={Formation}", formation);
+
+        // Select target based on formation
+        object? target = formation switch
+        {
+            FormationType.Protect => TargetProtectedMember(playerParty, grid),   // Go for protected target
+            FormationType.Scattered => TargetIsolatedMember(playerParty, grid),  // Pick off isolated members
+            FormationType.Line => TargetWeakestFrontRow(playerParty),            // Focus front line
+            FormationType.Wedge => TargetWedgePoint(playerParty, grid),          // Attack wedge point
+            FormationType.None => TargetLowestHP(playerParty),                   // Default to lowest HP
+            _ => TargetLowestHP(playerParty)
+        };
+
+        // Fallback to first party member if targeting logic fails
+        target ??= playerParty[0];
+
+        var targetName = target switch
+        {
+            PlayerCharacter player => player.Name,
+            Enemy e => e.Name,
+            _ => "Unknown"
+        };
+
+        Serilog.Log.Information("Target selected: Enemy={EnemyId}, Target={TargetName}, Reason={Reason}",
+            enemy.Id, targetName, $"Formation:{formation}");
+
+        return target;
+    }
+
+    /// <summary>
+    /// Targets the protected back-row center member in a Protect formation
+    /// </summary>
+    private object? TargetProtectedMember(List<object> party, BattlefieldGrid grid)
+    {
+        int centerColumn = grid.Columns / 2;
+
+        // Try to reach the protected back-row member
+        var backRowCenter = party
+            .Where(p =>
+            {
+                var pos = GetMemberPosition(p);
+                return pos.Row == Row.Back && pos.Column == centerColumn;
+            })
+            .FirstOrDefault();
+
+        if (backRowCenter != null)
+        {
+            Serilog.Log.Debug("Targeting protected back-row center member");
+            return backRowCenter;
+        }
+
+        // Fallback: any back-row member
+        var anyBackRow = party
+            .Where(p => GetMemberPosition(p).Row == Row.Back)
+            .FirstOrDefault();
+
+        if (anyBackRow != null)
+        {
+            Serilog.Log.Debug("Targeting back-row member (protected center not found)");
+            return anyBackRow;
+        }
+
+        // Last resort: lowest HP
+        return TargetLowestHP(party);
+    }
+
+    /// <summary>
+    /// Targets an isolated member in a Scattered formation
+    /// Looks for members with fewer adjacent allies
+    /// </summary>
+    private object? TargetIsolatedMember(List<object> party, BattlefieldGrid grid)
+    {
+        var isolationScores = new Dictionary<object, int>();
+
+        foreach (var member in party)
+        {
+            var position = GetMemberPosition(member);
+            int adjacentAllies = 0;
+
+            // Count adjacent allies (same row, adjacent column OR adjacent row, same/adjacent column)
+            foreach (var otherMember in party)
+            {
+                if (member == otherMember)
+                    continue;
+
+                var otherPosition = GetMemberPosition(otherMember);
+
+                int columnDist = Math.Abs(position.Column - otherPosition.Column);
+                int rowDist = position.Row != otherPosition.Row ? 1 : 0;
+
+                // Adjacent if within 1 tile Manhattan distance
+                if (columnDist + rowDist <= 1)
+                {
+                    adjacentAllies++;
+                }
+            }
+
+            isolationScores[member] = adjacentAllies;
+        }
+
+        // Target the most isolated member (fewest adjacent allies)
+        var mostIsolated = isolationScores.OrderBy(kvp => kvp.Value).FirstOrDefault().Key;
+
+        if (mostIsolated != null)
+        {
+            var isolationScore = isolationScores[mostIsolated];
+            Serilog.Log.Debug("Targeting most isolated member: AdjacentAllies={AdjacentAllies}", isolationScore);
+            return mostIsolated;
+        }
+
+        return TargetLowestHP(party);
+    }
+
+    /// <summary>
+    /// Targets the weakest front-row member in a Line formation
+    /// </summary>
+    private object? TargetWeakestFrontRow(List<object> party)
+    {
+        var frontRowMembers = party
+            .Where(p => GetMemberPosition(p).Row == Row.Front)
+            .ToList();
+
+        if (frontRowMembers.Count == 0)
+        {
+            // No front row, target lowest HP overall
+            Serilog.Log.Debug("No front-row members found, targeting lowest HP");
+            return TargetLowestHP(party);
+        }
+
+        // Find weakest front-row member (lowest HP)
+        var weakest = frontRowMembers
+            .OrderBy(p => GetMemberHP(p))
+            .FirstOrDefault();
+
+        Serilog.Log.Debug("Targeting weakest front-row member");
+        return weakest;
+    }
+
+    /// <summary>
+    /// Targets the wedge point (back-row center) in a Wedge formation
+    /// </summary>
+    private object? TargetWedgePoint(List<object> party, BattlefieldGrid grid)
+    {
+        int centerColumn = grid.Columns / 2;
+
+        // Target the back-row center (wedge point)
+        var wedgePoint = party
+            .Where(p =>
+            {
+                var pos = GetMemberPosition(p);
+                return pos.Row == Row.Back && Math.Abs(pos.Column - centerColumn) <= 1;
+            })
+            .OrderBy(p => Math.Abs(GetMemberPosition(p).Column - centerColumn))
+            .FirstOrDefault();
+
+        if (wedgePoint != null)
+        {
+            Serilog.Log.Debug("Targeting wedge point (back-row center)");
+            return wedgePoint;
+        }
+
+        // Fallback: any back-row
+        var anyBackRow = party
+            .Where(p => GetMemberPosition(p).Row == Row.Back)
+            .FirstOrDefault();
+
+        if (anyBackRow != null)
+        {
+            Serilog.Log.Debug("Targeting back-row member (wedge point not found)");
+            return anyBackRow;
+        }
+
+        return TargetLowestHP(party);
+    }
+
+    /// <summary>
+    /// Targets the party member with the lowest HP (default strategy)
+    /// </summary>
+    private object TargetLowestHP(List<object> party)
+    {
+        var target = party
+            .OrderBy(p => GetMemberHP(p))
+            .FirstOrDefault();
+
+        Serilog.Log.Debug("Targeting lowest HP member");
+        return target ?? party[0];
+    }
+
+    /// <summary>
+    /// Helper to get position from any party member type
+    /// </summary>
+    private GridPosition GetMemberPosition(object member)
+    {
+        return member switch
+        {
+            PlayerCharacter player => player.Position ?? new GridPosition(Zone.Player, Row.Front, 0),
+            Enemy enemy => enemy.Position ?? new GridPosition(Zone.Player, Row.Front, 0),
+            _ => new GridPosition(Zone.Player, Row.Front, 0)
+        };
+    }
+
+    /// <summary>
+    /// Helper to get HP from any party member type
+    /// </summary>
+    private int GetMemberHP(object member)
+    {
+        return member switch
+        {
+            PlayerCharacter player => player.HP,
+            Enemy enemy => enemy.HP,
+            _ => 0
+        };
+    }
 }
