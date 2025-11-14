@@ -753,6 +753,7 @@ public static class UIHelper
             "Attack - Strike an enemy",
             "Defend - Reduce incoming damage",
             "Ability - Use a special ability",
+            "Move - Advanced movement abilities", // v0.20.4
         };
 
         if (combat.CanFlee)
@@ -829,6 +830,148 @@ public static class UIHelper
         }
 
         return choice.Split('(')[0].Trim();
+    }
+
+    /// <summary>
+    /// v0.20.4: Prompt player to choose an advanced movement ability
+    /// </summary>
+    public static string PromptMovementChoice(PlayerCharacter player, BattlefieldGrid grid)
+    {
+        var choices = new List<string>();
+
+        // Leap
+        if (player.Stamina >= 20)
+        {
+            choices.Add($"Leap ([green]20 Stamina[/]) - Jump 2-3 tiles, bypass hazards (FINESSE check)");
+        }
+        else
+        {
+            choices.Add($"Leap ([red]20 Stamina[/]) - Jump 2-3 tiles, bypass hazards (FINESSE check)");
+        }
+
+        // Dash
+        if (player.KineticEnergy >= 25 && player.Stamina >= 10)
+        {
+            choices.Add($"Dash ([green]25 KE + 10 Stamina[/]) - Rapid 3-tile straight movement (+10 KE bonus)");
+        }
+        else
+        {
+            choices.Add($"Dash ([red]25 KE + 10 Stamina[/]) - Rapid 3-tile straight movement (+10 KE bonus)");
+        }
+
+        // Blink (Mystic ability)
+        if (player.AP >= 40)
+        {
+            choices.Add($"Blink ([green]40 AP[/]) - Teleport 2 tiles, bypass all hazards");
+        }
+        else
+        {
+            choices.Add($"Blink ([red]40 AP[/]) - Teleport 2 tiles, bypass all hazards");
+        }
+
+        // Climb
+        if (player.Stamina >= 15)
+        {
+            choices.Add($"Climb ([green]15 Stamina[/]) - Reach high ground (FINESSE check, +2 Accuracy/+2 Defense)");
+        }
+        else
+        {
+            choices.Add($"Climb ([red]15 Stamina[/]) - Reach high ground (FINESSE check, +2 Accuracy/+2 Defense)");
+        }
+
+        // Safe Step
+        if (player.Stamina >= 15)
+        {
+            var autoPass = player.Attributes.Wits >= 5 ? " (auto-pass)" : " (WITS check)";
+            choices.Add($"Safe Step ([green]15 Stamina[/]) - Careful 1-tile movement, ignore glitches{autoPass}");
+        }
+        else
+        {
+            var autoPass = player.Attributes.Wits >= 5 ? " (auto-pass)" : " (WITS check)";
+            choices.Add($"Safe Step ([red]15 Stamina[/]) - Careful 1-tile movement, ignore glitches{autoPass}");
+        }
+
+        choices.Add("Cancel - Go back");
+
+        var choice = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+                .Title("[yellow]Choose movement:[/]")
+                .PageSize(10)
+                .AddChoices(choices)
+        );
+
+        if (choice.StartsWith("Cancel"))
+        {
+            return "cancel";
+        }
+
+        // Extract movement type from choice
+        if (choice.Contains("Leap")) return "leap";
+        if (choice.Contains("Dash")) return "dash";
+        if (choice.Contains("Blink")) return "blink";
+        if (choice.Contains("Climb")) return "climb";
+        if (choice.Contains("Safe Step")) return "safestep";
+
+        return "cancel";
+    }
+
+    /// <summary>
+    /// v0.20.4: Prompt player to select a target tile for movement
+    /// </summary>
+    public static GridPosition? PromptMovementTarget(BattlefieldGrid grid, GridPosition currentPosition)
+    {
+        AnsiConsole.MarkupLine("[yellow]Select target tile:[/]");
+        AnsiConsole.MarkupLine($"[dim]Current position: {currentPosition}[/]");
+        AnsiConsole.MarkupLine($"[dim]Enter target as: zone/row/column (e.g., Player/Front/2)[/]");
+        AnsiConsole.MarkupLine($"[dim]Or type 'cancel' to go back[/]");
+        AnsiConsole.WriteLine();
+
+        var input = AnsiConsole.Ask<string>("[yellow]Target:[/]").Trim();
+
+        if (input.Equals("cancel", StringComparison.OrdinalIgnoreCase))
+        {
+            return null;
+        }
+
+        // Parse input: zone/row/column
+        var parts = input.Split('/');
+        if (parts.Length != 3)
+        {
+            AnsiConsole.MarkupLine("[red]Invalid format! Use: zone/row/column[/]");
+            return null;
+        }
+
+        // Parse zone
+        if (!Enum.TryParse<Zone>(parts[0], true, out var zone))
+        {
+            AnsiConsole.MarkupLine("[red]Invalid zone! Use: Player or Enemy[/]");
+            return null;
+        }
+
+        // Parse row
+        if (!Enum.TryParse<Row>(parts[1], true, out var row))
+        {
+            AnsiConsole.MarkupLine("[red]Invalid row! Use: Front or Back[/]");
+            return null;
+        }
+
+        // Parse column
+        if (!int.TryParse(parts[2], out var column))
+        {
+            AnsiConsole.MarkupLine("[red]Invalid column! Must be a number[/]");
+            return null;
+        }
+
+        var targetPosition = new GridPosition(zone, row, column, currentPosition.Elevation);
+
+        // Validate position
+        if (!grid.IsValidPosition(targetPosition))
+        {
+            AnsiConsole.MarkupLine("[red]Invalid position! Out of bounds[/]");
+            return null;
+        }
+
+        return targetPosition;
     }
 
     private static Markup CreateBar(string label, int current, int max, Color fillColor, Color emptyColor)

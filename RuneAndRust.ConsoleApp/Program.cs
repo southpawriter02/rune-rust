@@ -26,6 +26,7 @@ class Program
     private static TransactionService _transactionService = new(_currencyService, _pricingService); // [v0.9]
     private static CombatEngine _combatEngine = new(_diceService, _sagaService, _lootService, _equipmentService, _hazardService, _currencyService);
     private static EnemyAI _enemyAI = new(_diceService);
+    private static AdvancedMovementService _advancedMovement = new(); // v0.20.4
     private static SaveRepository _saveRepository = new();
     // v0.13: Persistent World State System
     private static WorldStateRepository _worldStateRepository = new();
@@ -1666,6 +1667,10 @@ class Program
                     turnComplete = HandlePlayerAbility(combat);
                     break;
 
+                case "move": // v0.20.4
+                    turnComplete = HandlePlayerMovement(combat);
+                    break;
+
                 case "item":
                     turnComplete = HandlePlayerUseConsumable(combat);
                     break;
@@ -1807,6 +1812,78 @@ class Program
         }
 
         return _combatEngine.PlayerUseAbility(combat, ability, target);
+    }
+
+    /// <summary>
+    /// v0.20.4: Handle player advanced movement action
+    /// </summary>
+    static bool HandlePlayerMovement(CombatState combat)
+    {
+        var player = combat.Player;
+
+        // Ensure grid and position are valid
+        if (combat.Grid == null || player.Position == null)
+        {
+            combat.AddLogEntry("Movement not available in this combat!");
+            return false;
+        }
+
+        // Prompt for movement type
+        var movementType = UIHelper.PromptMovementChoice(player, combat.Grid);
+
+        if (movementType == "cancel")
+        {
+            return false;
+        }
+
+        // Prompt for target position
+        var targetPosition = UIHelper.PromptMovementTarget(combat.Grid, player.Position.Value);
+
+        if (targetPosition == null)
+        {
+            return false;
+        }
+
+        // Execute movement based on type
+        AdvancedMovementResult result;
+
+        switch (movementType)
+        {
+            case "leap":
+                result = _advancedMovement.Leap(player, targetPosition.Value, combat.Grid);
+                break;
+
+            case "dash":
+                result = _advancedMovement.Dash(player, targetPosition.Value, combat.Grid);
+                break;
+
+            case "blink":
+                result = _advancedMovement.Blink(player, targetPosition.Value, combat.Grid);
+                break;
+
+            case "climb":
+                result = _advancedMovement.Climb(player, targetPosition.Value, combat.Grid);
+                break;
+
+            case "safestep":
+                result = _advancedMovement.SafeStep(player, targetPosition.Value, combat.Grid);
+                break;
+
+            default:
+                combat.AddLogEntry("Invalid movement type!");
+                return false;
+        }
+
+        // Display result
+        combat.AddLogEntry($"{player.Name} attempts {movementType}!");
+        combat.AddLogEntry($"  {result.Message}");
+
+        if (result.AlternatePosition != null)
+        {
+            combat.AddLogEntry($"  Landed at: {result.AlternatePosition.Value}");
+        }
+
+        return result.Success;
     }
 
     static void HandleEnemyTurn(CombatState combat, Enemy enemy)
