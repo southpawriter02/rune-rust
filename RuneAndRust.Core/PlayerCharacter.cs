@@ -99,6 +99,7 @@ public class PlayerCharacter
     public int RootedTurnsRemaining { get; set; } = 0; // Impaling Spike - Cannot move
     public int ApotheosisTurnsRemaining { get; set; } = 0; // Monstrous Apotheosis - Berserk state
     public int FearedTurnsRemaining { get; set; } = 0; // Horrific Form - Fear effect
+    public int DisorientedTurnsRemaining { get; set; } = 0; // v0.20.3: Disoriented - Gravity/spatial distortion
 
     // v0.19.8: Mystic Specialization Status Effects
     // Vard-Warden buffs

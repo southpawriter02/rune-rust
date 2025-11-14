@@ -9,6 +9,12 @@ namespace RuneAndRust.Engine;
 public class PositioningService
 {
     private static readonly ILogger _log = Log.ForContext<PositioningService>();
+    private readonly GlitchService _glitchService; // v0.20.3
+
+    public PositioningService(GlitchService? glitchService = null)
+    {
+        _glitchService = glitchService ?? new GlitchService();
+    }
 
     /// <summary>
     /// Attempts to move a combatant to a new position on the grid
@@ -52,6 +58,40 @@ public class PositioningService
         if (targetTile == null)
         {
             return MovementResult.Failure("Invalid target position");
+        }
+
+        // v0.20.3: Check for glitched tile BEFORE moving
+        if (targetTile.Type == TileType.Glitched)
+        {
+            var glitchResult = _glitchService.ResolveGlitchedTileEntry(combatant, targetTile, grid);
+
+            if (!glitchResult.Success)
+            {
+                // Movement failed or redirected
+                if (glitchResult.MovementFailed)
+                {
+                    // Actor doesn't move (Flickering Platform failure)
+                    _log.Warning("Movement failed due to glitch: Combatant={CombatantName}, Position={Position}",
+                        combatantName, targetPosition);
+                    return MovementResult.Failure(glitchResult.Message);
+                }
+                else if (glitchResult.TeleportTo.HasValue)
+                {
+                    // Actor teleported to different location (Looping Corridor)
+                    targetPosition = glitchResult.TeleportTo.Value;
+                    targetTile = grid.GetTile(targetPosition);
+
+                    if (targetTile == null)
+                    {
+                        return MovementResult.Failure("Teleport destination invalid");
+                    }
+
+                    _log.Warning("Movement teleported by glitch: Combatant={CombatantName}, NewPosition={Position}",
+                        combatantName, targetPosition);
+                }
+                // Else: Movement succeeds with status effect (Inverted Gravity)
+                // Status effect already applied by GlitchService
+            }
         }
 
         // Execute movement
