@@ -8,10 +8,12 @@ namespace RuneAndRust.Engine;
 public class ResolveCheckService
 {
     private readonly DiceService _diceService;
+    private readonly StanceService? _stanceService;
 
-    public ResolveCheckService(DiceService diceService)
+    public ResolveCheckService(DiceService diceService, StanceService? stanceService = null)
     {
         _diceService = diceService;
+        _stanceService = stanceService;
     }
 
     /// <summary>
@@ -24,11 +26,18 @@ public class ResolveCheckService
     public (bool success, int successes, string rollDetails) RollResolveCheck(PlayerCharacter character, int dc)
     {
         int willValue = character.GetAttributeValue("will");
-        var result = _diceService.Roll(willValue);
+
+        // [v2.0] Apply stance WILL modifier (Aggressive: -2, Defensive: +2)
+        int willModifier = _stanceService?.GetWillModifier(character) ?? 0;
+        int effectiveWill = Math.Max(1, willValue + willModifier); // Minimum 1 die
+
+        var result = _diceService.Roll(effectiveWill);
 
         bool success = result.Successes >= dc;
 
-        string rollDetails = $"WILL Resolve Check (DC {dc}): Rolled {willValue} dice → {FormatDiceRoll(result)} → {result.Successes} successes";
+        string rollDetails = willModifier != 0
+            ? $"WILL Resolve Check (DC {dc}): Rolled {willValue} {(willModifier >= 0 ? "+" : "")}{willModifier} = {effectiveWill} dice → {FormatDiceRoll(result)} → {result.Successes} successes"
+            : $"WILL Resolve Check (DC {dc}): Rolled {willValue} dice → {FormatDiceRoll(result)} → {result.Successes} successes";
 
         return (success, result.Successes, rollDetails);
     }
@@ -55,12 +64,18 @@ public class ResolveCheckService
     public (int stressToApply, int successes, string rollDetails) RollEnvironmentalStressResistance(PlayerCharacter character, int baseStress)
     {
         int willValue = character.GetAttributeValue("will");
-        var result = _diceService.Roll(willValue);
+
+        // [v2.0] Apply stance WILL modifier (Aggressive: -2, Defensive: +2)
+        int willModifier = _stanceService?.GetWillModifier(character) ?? 0;
+        int effectiveWill = Math.Max(1, willValue + willModifier); // Minimum 1 die
+
+        var result = _diceService.Roll(effectiveWill);
 
         int reducedStress = CalculateStressReduction(result.Successes, baseStress);
 
-        string rollDetails = $"WILL Resolve Check ({baseStress} Stress): Rolled {willValue} dice → {FormatDiceRoll(result)} → {result.Successes} successes\n" +
-                           $"Stress reduced by {result.Successes}. Gaining {reducedStress} Psychic Stress.";
+        string rollDetails = willModifier != 0
+            ? $"WILL Resolve Check ({baseStress} Stress): Rolled {willValue} {(willModifier >= 0 ? "+" : "")}{willModifier} = {effectiveWill} dice → {FormatDiceRoll(result)} → {result.Successes} successes\nStress reduced by {result.Successes}. Gaining {reducedStress} Psychic Stress."
+            : $"WILL Resolve Check ({baseStress} Stress): Rolled {willValue} dice → {FormatDiceRoll(result)} → {result.Successes} successes\nStress reduced by {result.Successes}. Gaining {reducedStress} Psychic Stress.";
 
         return (reducedStress, result.Successes, rollDetails);
     }

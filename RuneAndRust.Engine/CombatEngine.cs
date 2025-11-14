@@ -303,6 +303,15 @@ public class CombatEngine
 
             // Roll weapon damage dice
             damage = _diceService.RollDamage(totalDamageDice) + weaponDamageBonus;
+
+            // [v2.0] Apply stance flat damage bonus (Aggressive: +4)
+            var flatDamageBonus = _stanceService.GetFlatDamageBonus(player);
+            if (flatDamageBonus != 0)
+            {
+                damage += flatDamageBonus;
+                combatState.AddLogEntry($"  [Stance Bonus] +{flatDamageBonus} damage");
+            }
+
             damage = Math.Max(1, damage); // Minimum 1 damage on hit
         }
 
@@ -639,10 +648,7 @@ public class CombatEngine
 
         // Roll for ability
         var attributeValue = player.GetAttributeValue(ability.AttributeUsed);
-        var baseDice = attributeValue + ability.BonusDice;
-
-        // [v0.21.1] Apply stance accuracy modifier
-        var totalDice = _stanceService.ApplyStanceAccuracyModifier(player, baseDice);
+        var totalDice = attributeValue + ability.BonusDice;
 
         var abilityRoll = _diceService.Roll(totalDice);
 
@@ -769,11 +775,19 @@ public class CombatEngine
                 combatState.AddLogEntry($"  Quick Strike uses FINESSE for accuracy and damage!");
             }
 
-            // [v0.21.1] Apply stance damage modifier
+            // [v2.0] Apply stance flat damage bonus (Aggressive: +4)
+            var flatDamageBonus = _stanceService.GetFlatDamageBonus(player);
+            if (flatDamageBonus != 0)
+            {
+                damage += flatDamageBonus;
+                combatState.AddLogEntry($"  [Stance Bonus] +{flatDamageBonus} damage");
+            }
+
+            // [v2.0] Apply stance damage multiplier (Defensive: -25%, Evasive: -50%)
             if (player.ActiveStance != null && player.ActiveStance.DamageMultiplier != 1.0f)
             {
                 int originalDamage = damage;
-                damage = _stanceService.ApplyStanceDamageModifier(player, damage);
+                damage = _stanceService.ApplyDamageMultiplier(player, damage);
                 var stanceName = _stanceService.GetStanceName(player.ActiveStance.Type);
                 var modifier = (int)((player.ActiveStance.DamageMultiplier - 1.0f) * 100);
                 var modifierSign = modifier >= 0 ? "+" : "";
@@ -1631,7 +1645,7 @@ public class CombatEngine
     {
         // [v0.5] Forlorn Enemy Aura - Apply at start of each turn
         var traumaService = new TraumaEconomyService();
-        var resolveService = new ResolveCheckService(_diceService);
+        var resolveService = new ResolveCheckService(_diceService, _stanceService);
         var forlornEnemies = combatState.Enemies.Where(e => e.IsAlive && e.IsForlorn).ToList();
 
         if (forlornEnemies.Any())
@@ -1995,13 +2009,36 @@ public class CombatEngine
             {
                 _stanceService.OnTurnEnd(combatState.Player);
 
-                // [v0.21.1 SPEC] Check for stance mastery stress relief (Offensive 3+ turns = -5 stress)
+                // [v2.0] Apply stamina regeneration with stance penalty
+                const int baseStaminaRegen = 10; // Base stamina regen per turn
+                var staminaPenalty = _stanceService.GetStaminaRegenPenalty(combatState.Player);
+                var actualRegen = baseStaminaRegen + staminaPenalty; // staminaPenalty is negative for Defensive stance
+
+                if (actualRegen > 0 && combatState.Player.Stamina < combatState.Player.MaxStamina)
+                {
+                    int oldStamina = combatState.Player.Stamina;
+                    combatState.Player.Stamina = Math.Min(combatState.Player.MaxStamina, combatState.Player.Stamina + actualRegen);
+                    int actualRestored = combatState.Player.Stamina - oldStamina;
+
+                    if (actualRestored > 0)
+                    {
+                        combatState.AddLogEntry($"Stamina regenerated: +{actualRestored} ({oldStamina} → {combatState.Player.Stamina}/{combatState.Player.MaxStamina})");
+
+                        if (staminaPenalty < 0)
+                        {
+                            var stanceName = _stanceService.GetStanceName(combatState.Player.ActiveStance.Type);
+                            combatState.AddLogEntry($"  [{stanceName}] {staminaPenalty} regen penalty applied");
+                        }
+                    }
+                }
+
+                // [v2.0 SPEC] Check for stance mastery stress relief (Aggressive 3+ turns = -5 stress)
                 var stressRelief = _stanceService.CheckStanceMasteryStressRelief(combatState.Player);
                 if (stressRelief < 0)
                 {
                     var traumaService = new TraumaEconomyService();
                     traumaService.AddStress(combatState.Player, stressRelief, source: "Stance Mastery");
-                    combatState.AddLogEntry($"[Offensive Stance Mastery] Confidence builds! {stressRelief} Psychic Stress (Current: {combatState.Player.PsychicStress}/100)");
+                    combatState.AddLogEntry($"[Aggressive Stance Mastery] Confidence builds! {stressRelief} Psychic Stress (Current: {combatState.Player.PsychicStress}/100)");
                 }
             }
         }

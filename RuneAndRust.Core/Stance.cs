@@ -1,151 +1,183 @@
 namespace RuneAndRust.Core;
 
 /// <summary>
-/// v0.21.1: Advanced Stance System
-/// Combat postures that modify accuracy, mitigation, and damage output.
+/// v0.21.1: Universal Stance System (v2.0 Canonical Migration)
+/// Combat postures that declare metaphysical intent - how characters interface with Aethelgard's broken reality.
 /// Only one stance can be active at a time.
-/// Stances can be switched once per turn (default limit).
+/// Stances can be switched once per turn as a free action.
 /// </summary>
 public enum StanceType
 {
     /// <summary>
-    /// Default stance with no bonuses or penalties.
-    /// Balanced approach with no tactical modifiers.
+    /// v2.0: Calculated Stance - Balanced interface with broken reality (default).
+    /// No modifiers - baseline operational state.
     /// </summary>
-    Balanced,
+    Calculated,
 
     /// <summary>
-    /// v0.21.1: Defensive Stance - Prioritizes survival over offense.
-    /// -10% Accuracy, +15% Mitigation, -10% Damage
+    /// v2.0: Aggressive Stance - Channel chaotic Aether for overwhelming offense.
+    /// +4 damage, -3 Defense, -2 WILL checks (more vulnerable to psychic stress)
+    /// </summary>
+    Aggressive,
+
+    /// <summary>
+    /// v2.0: Defensive Stance - Reinforce personal coherence against external chaos.
+    /// +2 Soak, +2 WILL checks, -25% damage output, -5 Stamina regen
     /// </summary>
     Defensive,
 
     /// <summary>
-    /// v0.21.1: Offensive Stance - Aggressive combat posture.
-    /// +15% Accuracy, -10% Mitigation, +5% Damage
-    /// </summary>
-    Offensive,
-
-    /// <summary>
-    /// Skirmisher: Evasive Stance - Specialized stance for high mobility builds.
-    /// +3 Defense, -50% damage dealt (legacy v0.7 stance, kept for backward compatibility)
+    /// Legacy: Evasive Stance - Specialized stance for Skirmisher builds (v0.7).
+    /// +3 Defense, -50% damage dealt.
+    /// Kept for backward compatibility.
     /// </summary>
     Evasive
 }
 
 /// <summary>
-/// v0.21.1: Represents an active stance and its combat effects.
-/// Stances modify accuracy, mitigation, and damage output.
+/// v0.21.1: Represents an active combat stance and its effects (v2.0 canonical values).
+/// v2.0 Source: Migrated from v2.0 dice pool system to Rune & Rust flat bonus architecture.
 /// </summary>
 public class Stance
 {
-    public StanceType Type { get; set; } = StanceType.Balanced;
+    public StanceType Type { get; set; } = StanceType.Calculated;
+
+    // v2.0 Canonical Modifiers (Flat Bonuses)
 
     /// <summary>
-    /// v0.21.1: Accuracy modifier (1.0 = normal, 1.15 = +15%, 0.90 = -10%)
-    /// Applied to attack rolls and ability success calculations.
+    /// v2.0: Flat damage bonus added to all attacks.
+    /// Aggressive: +4 (represents v2.0's +2 damage dice average of ~4)
     /// </summary>
-    public float AccuracyModifier { get; set; } = 1.0f;
+    public int FlatDamageBonus { get; set; } = 0;
 
     /// <summary>
-    /// v0.21.1: Mitigation modifier (1.0 = normal, 1.15 = +15% damage reduction, 0.90 = -10% reduction)
-    /// Applied when receiving damage (higher = better defense).
+    /// v2.0: Defense Score modification.
+    /// Aggressive: -3 (direct v2.0 value)
     /// </summary>
-    public float MitigationModifier { get; set; } = 1.0f;
+    public int DefenseModifier { get; set; } = 0;
 
     /// <summary>
-    /// v0.21.1: Damage dealt multiplier (1.0 = normal, 1.05 = +5%, 0.90 = -10%)
-    /// Applied to all outgoing damage.
-    /// </summary>
-    public float DamageMultiplier { get; set; } = 1.0f;
-
-    /// <summary>
-    /// Flat damage reduction bonus (Soak) - legacy property for backward compatibility
+    /// v2.0: Flat Soak bonus (damage reduction before applying to HP).
+    /// Defensive: +2 (direct v2.0 value)
     /// </summary>
     public int SoakBonus { get; set; } = 0;
 
     /// <summary>
-    /// Defense score bonus (for Evasive Stance) - legacy property
+    /// v2.0: WILL check modifier for Trauma Economy (Resolve Checks).
+    /// Aggressive: -2 (more vulnerable to psychic stress)
+    /// Defensive: +2 (reinforced coherence)
+    /// </summary>
+    public int WillModifier { get; set; } = 0;
+
+    /// <summary>
+    /// v2.0: Damage output multiplier (percentage-based).
+    /// Defensive: 0.75f (-25% damage output penalty)
+    /// Legacy Evasive: 0.5f (-50% damage output)
+    /// </summary>
+    public float DamageMultiplier { get; set; } = 1.0f;
+
+    /// <summary>
+    /// v2.0: Stamina regeneration penalty per turn.
+    /// Defensive: -5 (reduced regen while in defensive posture)
+    /// </summary>
+    public int StaminaRegenPenalty { get; set; } = 0;
+
+    // Legacy Properties (backward compatibility with v0.7 Evasive Stance)
+
+    /// <summary>
+    /// Legacy: Defense score bonus for Evasive Stance.
+    /// Evasive: +3 Defense
     /// </summary>
     public int DefenseBonus { get; set; } = 0;
 
     /// <summary>
-    /// Bonus dice to defensive Resolve Checks - legacy property
+    /// v2.0: Factory method for Calculated Stance (default).
+    /// Balanced interface with broken reality - no modifiers.
     /// </summary>
-    public int DefensiveBonusDice { get; set; } = 0;
+    public static Stance CreateCalculatedStance()
+    {
+        return new Stance
+        {
+            Type = StanceType.Calculated,
+            FlatDamageBonus = 0,
+            DefenseModifier = 0,
+            SoakBonus = 0,
+            WillModifier = 0,
+            DamageMultiplier = 1.0f,
+            StaminaRegenPenalty = 0,
+            DefenseBonus = 0
+        };
+    }
 
     /// <summary>
-    /// v0.21.1: Factory method for Defensive Stance
-    /// -10% Accuracy, +15% Mitigation, -10% Damage
-    /// Prioritizes survival and damage reduction over offense.
+    /// v2.0: Factory method for Aggressive Stance.
+    /// Channel tainted Aether: +4 damage, -3 Defense, -2 WILL checks.
+    /// High-risk, high-reward offense that exposes character to danger.
+    /// </summary>
+    public static Stance CreateAggressiveStance()
+    {
+        return new Stance
+        {
+            Type = StanceType.Aggressive,
+            FlatDamageBonus = 4,            // v2.0: +2 dice average = +4 flat
+            DefenseModifier = -3,           // v2.0: -3 Defense Score
+            SoakBonus = 0,
+            WillModifier = -2,              // v2.0: -2 to WILL checks (vulnerable to psychic stress)
+            DamageMultiplier = 1.0f,
+            StaminaRegenPenalty = 0,
+            DefenseBonus = 0
+        };
+    }
+
+    /// <summary>
+    /// v2.0: Factory method for Defensive Stance.
+    /// Reinforce personal coherence: +2 Soak, +2 WILL checks, -25% damage, -5 Stamina regen.
+    /// Prioritizes survival and mental fortitude over offensive output.
     /// </summary>
     public static Stance CreateDefensiveStance()
     {
         return new Stance
         {
             Type = StanceType.Defensive,
-            AccuracyModifier = 0.90f,      // -10% accuracy
-            MitigationModifier = 1.15f,     // +15% damage reduction
-            DamageMultiplier = 0.90f,       // -10% damage output
-            SoakBonus = 0,
-            DefenseBonus = 0,
-            DefensiveBonusDice = 0
+            FlatDamageBonus = 0,
+            DefenseModifier = 0,
+            SoakBonus = 2,                  // v2.0: +2 Soak
+            WillModifier = 2,               // v2.0: +2 to WILL/STURDINESS checks
+            DamageMultiplier = 0.75f,       // v2.0: -25% damage output
+            StaminaRegenPenalty = -5,       // v2.0: Reduced stamina regen
+            DefenseBonus = 0
         };
     }
 
     /// <summary>
-    /// v0.21.1: Factory method for Balanced Stance (default)
-    /// No modifiers - neutral combat posture.
-    /// </summary>
-    public static Stance CreateBalancedStance()
-    {
-        return new Stance
-        {
-            Type = StanceType.Balanced,
-            AccuracyModifier = 1.0f,        // No accuracy modifier
-            MitigationModifier = 1.0f,      // No mitigation modifier
-            DamageMultiplier = 1.0f,        // No damage modifier
-            SoakBonus = 0,
-            DefenseBonus = 0,
-            DefensiveBonusDice = 0
-        };
-    }
-
-    /// <summary>
-    /// v0.21.1: Factory method for Offensive Stance
-    /// +15% Accuracy, -10% Mitigation, +5% Damage
-    /// Aggressive combat posture that trades defense for offense.
-    /// </summary>
-    public static Stance CreateOffensiveStance()
-    {
-        return new Stance
-        {
-            Type = StanceType.Offensive,
-            AccuracyModifier = 1.15f,       // +15% accuracy
-            MitigationModifier = 0.90f,     // -10% damage reduction (more vulnerable)
-            DamageMultiplier = 1.05f,       // +5% damage output
-            SoakBonus = 0,
-            DefenseBonus = 0,
-            DefensiveBonusDice = 0
-        };
-    }
-
-    /// <summary>
-    /// Legacy: Factory method for Evasive Stance (Skirmisher specialization)
-    /// +3 Defense, -50% damage dealt.
-    /// Kept for backward compatibility with v0.7 system.
+    /// Legacy: Factory method for Evasive Stance (v0.7 Skirmisher specialization).
+    /// +3 Defense, -50% damage output.
+    /// Kept for backward compatibility, not part of v2.0 core stances.
     /// </summary>
     public static Stance CreateEvasiveStance()
     {
         return new Stance
         {
             Type = StanceType.Evasive,
-            AccuracyModifier = 1.0f,
-            MitigationModifier = 1.0f,
-            DamageMultiplier = 0.5f,        // -50% damage (legacy)
+            FlatDamageBonus = 0,
+            DefenseModifier = 0,
             SoakBonus = 0,
-            DefenseBonus = 3,               // +3 Defense (legacy)
-            DefensiveBonusDice = 0
+            WillModifier = 0,
+            DamageMultiplier = 0.5f,        // -50% damage (legacy)
+            StaminaRegenPenalty = 0,
+            DefenseBonus = 3                // +3 Defense (legacy)
         };
     }
+
+    /// <summary>
+    /// Legacy alias: Create Balanced Stance (redirects to Calculated).
+    /// For backward compatibility with existing code.
+    /// </summary>
+    public static Stance CreateBalancedStance() => CreateCalculatedStance();
+
+    /// <summary>
+    /// Legacy alias: Create Offensive Stance (redirects to Aggressive).
+    /// For backward compatibility with existing code.
+    /// </summary>
+    public static Stance CreateOffensiveStance() => CreateAggressiveStance();
 }
