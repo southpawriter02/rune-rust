@@ -774,6 +774,7 @@ public static class UIHelper
         {
             "Attack - Strike an enemy",
             "Defend - Reduce incoming damage",
+            "Parry - Prepare to counter the next attack", // v0.21.4
             "Ability - Use a special ability",
             "Move - Advanced movement abilities", // v0.20.4
             "Stance - Change combat stance", // v0.21.1
