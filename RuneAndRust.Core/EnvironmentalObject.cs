@@ -52,6 +52,16 @@ public class EnvironmentalObject
     // State tracking
     public EnvironmentalObjectState State { get; set; } = EnvironmentalObjectState.Active;
     public int TriggersRemaining { get; set; } = 1; // For one-time hazards
+    public int CooldownRemaining { get; set; } = 0; // Turns until re-armed
+    public int CooldownDuration { get; set; } = 0; // Base cooldown in turns
+
+    // Destruction aftermath (v0.22.1)
+    public string? CreatesTerrainOnDestroy { get; set; } // "Difficult", "Hazardous", NULL
+    public int? TerrainDuration { get; set; } // Turns (NULL = permanent)
+
+    // Chain reaction properties (v0.22.1)
+    public int ExplosionRadius { get; set; } = 0; // Tiles affected (0 = self only)
+    public bool CanTriggerAdjacents { get; set; } = false;
 
     /// <summary>
     /// Applies damage to this environmental object (if destructible)
@@ -143,6 +153,7 @@ public enum InteractionType
 public enum EnvironmentalObjectState
 {
     Active,         // Functional and can be used/triggered
+    Damaged,        // Partially damaged (below 50% durability) - v0.22.1
     Destroyed,      // Destroyed and non-functional
     Triggered,      // Has been triggered (one-time effects)
     Depleted,       // No longer has resources (loot taken, etc.)

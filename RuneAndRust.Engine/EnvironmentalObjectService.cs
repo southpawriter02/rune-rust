@@ -13,7 +13,9 @@ namespace RuneAndRust.Engine;
 /// - Durability tracking and damage application
 /// - Cover management (integrates with v0.20.2 CoverService)
 /// - Interactive object triggering
-/// - Chain reaction detection
+/// - Chain reaction detection and execution
+/// - Hazard triggers on destruction
+/// - Terrain creation aftermath
 /// </summary>
 public class EnvironmentalObjectService
 {
@@ -23,6 +25,10 @@ public class EnvironmentalObjectService
     // In-memory storage for environmental objects (could be moved to repository later)
     private readonly Dictionary<int, EnvironmentalObject> _objects = new();
     private int _nextObjectId = 1;
+
+    // Dependencies (these will be injected or passed as method parameters)
+    // For now, we keep them as optional to maintain backwards compatibility
+    private BattlefieldGrid? _currentGrid;
 
     public EnvironmentalObjectService(DiceService diceService)
     {
@@ -63,6 +69,18 @@ public class EnvironmentalObjectService
     }
 
     /// <summary>
+    /// Gets all destructible objects in a room
+    /// </summary>
+    public List<EnvironmentalObject> GetDestructibleObjectsInRoom(int roomId)
+    {
+        return _objects.Values
+            .Where(o => o.RoomId == roomId &&
+                       o.IsDestructible &&
+                       o.State != EnvironmentalObjectState.Destroyed)
+            .ToList();
+    }
+
+    /// <summary>
     /// Gets all active hazards at a position
     /// </summary>
     public List<EnvironmentalObject> GetHazardsAtPosition(string gridPosition)
@@ -93,10 +111,16 @@ public class EnvironmentalObjectService
     }
 
     /// <summary>
-    /// Creates destructible cover at a position
+    /// Creates destructible cover at a position (v0.22.1 enhanced)
     /// </summary>
-    public EnvironmentalObject CreateCover(int roomId, string gridPosition, string name,
-        CoverQuality quality, int durability)
+    public EnvironmentalObject CreateCover(
+        int roomId,
+        string gridPosition,
+        string name,
+        CoverQuality quality,
+        int durability,
+        int soakValue = 0,
+        string? createsTerrainOnDestroy = "Difficult")
     {
         var cover = new EnvironmentalObject
         {
@@ -109,19 +133,137 @@ public class EnvironmentalObjectService
             IsDestructible = true,
             CurrentDurability = durability,
             MaxDurability = durability,
+            SoakValue = soakValue,
             ProvidesCover = true,
             CoverQuality = quality,
-            State = EnvironmentalObjectState.Active
+            State = EnvironmentalObjectState.Active,
+            CreatesTerrainOnDestroy = createsTerrainOnDestroy,
+            TerrainDuration = null // Permanent rubble
         };
 
         return CreateObject(cover);
     }
 
     /// <summary>
+    /// Creates an explosive object (barrel, spore pod, etc.) - v0.22.1
+    /// </summary>
+    public EnvironmentalObject CreateExplosiveObject(
+        int roomId,
+        string gridPosition,
+        string name,
+        string damageFormula, // "20 Fire", "5 Poison"
+        int explosionRadius,
+        int durability = 10,
+        string? statusEffect = null,
+        bool canTriggerAdjacents = true)
+    {
+        var explosive = new EnvironmentalObject
+        {
+            RoomId = roomId,
+            GridPosition = gridPosition,
+            ObjectType = EnvironmentalObjectType.Interactive,
+            Name = name,
+            Description = $"Explosive hazard: {name}",
+            Icon = "🛢️",
+            IsDestructible = true,
+            CurrentDurability = durability,
+            MaxDurability = durability,
+            SoakValue = 0,
+            IsHazard = true,
+            HazardTrigger = HazardTrigger.OnDestroy,
+            DamageFormula = damageFormula,
+            DamageType = ParseDamageType(damageFormula),
+            StatusEffect = statusEffect,
+            IgnoresSoak = false,
+            ExplosionRadius = explosionRadius,
+            CanTriggerAdjacents = canTriggerAdjacents,
+            State = EnvironmentalObjectState.Active
+        };
+
+        return CreateObject(explosive);
+    }
+
+    /// <summary>
+    /// Creates an unstable ceiling hazard - v0.22.1
+    /// </summary>
+    public EnvironmentalObject CreateUnstableCeiling(
+        int roomId,
+        string gridPosition,
+        int explosionRadius = 3)
+    {
+        var ceiling = new EnvironmentalObject
+        {
+            RoomId = roomId,
+            GridPosition = gridPosition,
+            ObjectType = EnvironmentalObjectType.Terrain,
+            Name = "Unstable Ceiling",
+            Description = "Structural integrity compromised. Explosive impact will trigger collapse.",
+            Icon = "⚠️",
+            IsDestructible = false, // Triggered by abilities, not direct damage
+            IsHazard = true,
+            HazardTrigger = HazardTrigger.OnExplosive, // Custom trigger
+            DamageFormula = "25 Physical",
+            DamageType = "Physical",
+            StatusEffect = "[Stunned]",
+            IgnoresSoak = true,
+            ExplosionRadius = explosionRadius,
+            CanTriggerAdjacents = false,
+            State = EnvironmentalObjectState.Active,
+            TriggersRemaining = 1, // One-time collapse
+            CreatesTerrainOnDestroy = "Difficult",
+            TerrainDuration = null // Permanent rubble
+        };
+
+        return CreateObject(ceiling);
+    }
+
+    /// <summary>
+    /// Creates a steam vent hazard (reusable with cooldown) - v0.22.1
+    /// </summary>
+    public EnvironmentalObject CreateSteamVent(
+        int roomId,
+        string gridPosition)
+    {
+        var steamVent = new EnvironmentalObject
+        {
+            RoomId = roomId,
+            GridPosition = gridPosition,
+            ObjectType = EnvironmentalObjectType.Interactive,
+            Name = "High-Pressure Steam Vent",
+            Description = "Ruptured geothermal conduit. Erupts periodically.",
+            Icon = "💨",
+            IsDestructible = true,
+            CurrentDurability = 20,
+            MaxDurability = 20,
+            SoakValue = 5,
+            IsHazard = true,
+            HazardTrigger = HazardTrigger.OnDestroy,
+            DamageFormula = "15 Fire",
+            DamageType = "Fire",
+            StatusEffect = "[Obscuring Terrain]",
+            IgnoresSoak = false,
+            ExplosionRadius = 1,
+            CanTriggerAdjacents = false,
+            State = EnvironmentalObjectState.Active,
+            CooldownDuration = 2,
+            CooldownRemaining = 0,
+            CreatesTerrainOnDestroy = "Hazardous",
+            TerrainDuration = 1 // Steam clears after 1 turn
+        };
+
+        return CreateObject(steamVent);
+    }
+
+    /// <summary>
     /// Creates a hazard object (fire, toxic pool, energy field)
     /// </summary>
-    public EnvironmentalObject CreateHazard(int roomId, string gridPosition, string name,
-        string damageFormula, string damageType, HazardTrigger trigger = HazardTrigger.Automatic)
+    public EnvironmentalObject CreateHazard(
+        int roomId,
+        string gridPosition,
+        string name,
+        string damageFormula,
+        string damageType,
+        HazardTrigger trigger = HazardTrigger.Automatic)
     {
         var hazard = new EnvironmentalObject
         {
@@ -143,114 +285,275 @@ public class EnvironmentalObjectService
 
     #endregion
 
-    #region Destruction and Damage
+    #region Damage and Destruction (v0.22.1 Enhanced)
 
     /// <summary>
-    /// Applies damage to an environmental object
+    /// Applies damage to an environmental object with soak calculation
+    /// v0.22.1: Enhanced with proper soak, destruction triggers, and combat instance tracking
     /// </summary>
-    public DestructionResult DamageObject(int objectId, int damage)
+    public DestructionResult ApplyDamageToObject(
+        int objectId,
+        int damage,
+        string damageType,
+        int attackerId,
+        int combatInstanceId)
     {
         var obj = GetObject(objectId);
-        if (obj == null)
+        if (obj == null || !obj.IsDestructible || obj.State == EnvironmentalObjectState.Destroyed)
         {
             return new DestructionResult
             {
-                WasDestroyed = false,
-                LogMessage = "Object not found"
+                Success = false,
+                ObjectDestroyed = false,
+                Message = "Object cannot be damaged"
             };
         }
 
-        if (!obj.IsDestructible)
+        // Apply soak (damage reduction)
+        int damageAfterSoak = Math.Max(0, damage - obj.SoakValue);
+
+        _log.Information(
+            "Environmental object {ObjectId} ({Name}) taking {Damage} {DamageType} damage " +
+            "(soak: {Soak}, after soak: {DamageAfterSoak}). Current durability: {Current}/{Max}",
+            objectId, obj.Name, damage, damageType, obj.SoakValue, damageAfterSoak,
+            obj.CurrentDurability, obj.MaxDurability);
+
+        // Update durability
+        obj.CurrentDurability = Math.Max(0, obj.CurrentDurability!.Value - damageAfterSoak);
+
+        // Check for destruction
+        if (obj.CurrentDurability <= 0)
+        {
+            return DestroyObject(objectId, attackerId, combatInstanceId, "Direct Damage");
+        }
+
+        // Update state to Damaged if below 50% durability
+        if (obj.CurrentDurability <= obj.MaxDurability / 2 && obj.State == EnvironmentalObjectState.Active)
+        {
+            obj.State = EnvironmentalObjectState.Damaged;
+            _log.Information("Object {ObjectId} state changed to Damaged", objectId);
+        }
+
+        return new DestructionResult
+        {
+            Success = true,
+            ObjectDestroyed = false,
+            ObjectId = objectId,
+            ObjectName = obj.Name,
+            DamageDealt = damageAfterSoak,
+            RemainingDurability = obj.CurrentDurability.Value,
+            Message = $"{obj.Name} damaged for {damageAfterSoak} (durability: {obj.CurrentDurability}/{obj.MaxDurability})"
+        };
+    }
+
+    /// <summary>
+    /// Destroys an environmental object (v0.22.1 enhanced with full effects)
+    /// </summary>
+    public DestructionResult DestroyObject(
+        int objectId,
+        int? destroyerId,
+        int combatInstanceId,
+        string destructionMethod)
+    {
+        var obj = GetObject(objectId);
+        if (obj == null || obj.State == EnvironmentalObjectState.Destroyed)
         {
             return new DestructionResult
             {
-                WasDestroyed = false,
-                RemainingDurability = 0,
-                LogMessage = $"{obj.Name} is indestructible"
+                Success = false,
+                ObjectDestroyed = false,
+                Message = "Object not found or already destroyed"
             };
         }
 
-        bool destroyed = obj.ApplyDamage(damage);
-
-        _log.Information("Environmental object damaged: {ObjectId} - {Name} took {Damage} damage, " +
-                        "Remaining: {Remaining}/{Max}, Destroyed: {Destroyed}",
-            objectId, obj.Name, damage, obj.CurrentDurability, obj.MaxDurability, destroyed);
+        _log.Information(
+            "Destroying environmental object {ObjectId} ({Name}) via {Method}",
+            objectId, obj.Name, destructionMethod);
 
         var result = new DestructionResult
         {
-            WasDestroyed = destroyed,
-            RemainingDurability = obj.CurrentDurability ?? 0,
-            LogMessage = destroyed
-                ? $"[DESTROYED] {obj.Name} has been obliterated! ({damage} damage)"
-                : $"{obj.Name} damaged: {obj.CurrentDurability}/{obj.MaxDurability} HP remaining"
+            Success = true,
+            ObjectDestroyed = true,
+            ObjectId = objectId,
+            ObjectName = obj.Name,
+            DestructionMethod = destructionMethod
         };
 
-        // Check for chain reactions (e.g., explosive barrel destroying nearby objects)
-        if (destroyed && obj.ObjectType == EnvironmentalObjectType.Interactive)
+        // Handle destruction effects
+        if (obj.IsHazard && obj.HazardTrigger == HazardTrigger.OnDestroy)
         {
-            result.ChainReactions = DetectChainReactions(obj);
+            // Trigger explosion/hazard effect
+            var hazardResult = TriggerDestructionHazard(obj, combatInstanceId);
+            result.SecondaryTargets = hazardResult.AffectedCharacters;
+            result.DamageDealt = hazardResult.TotalDamage;
+            result.Message = hazardResult.Description;
+        }
+        else
+        {
+            result.Message = $"[DESTROYED] {obj.Name} has been obliterated!";
+        }
+
+        // Create terrain aftermath
+        if (!string.IsNullOrEmpty(obj.CreatesTerrainOnDestroy))
+        {
+            CreateDestructionTerrain(obj);
+            result.TerrainCreated = obj.CreatesTerrainOnDestroy;
+        }
+
+        // Chain reactions
+        if (obj.CanTriggerAdjacents && obj.ExplosionRadius > 0)
+        {
+            var chainResults = TriggerChainReaction(obj, combatInstanceId);
+            result.ChainReactions = chainResults;
+
+            if (chainResults.Count > 0)
+            {
+                result.Message += $"\n⚡ CHAIN REACTION! {chainResults.Count} additional objects destroyed!";
+            }
+        }
+
+        // Update object state
+        obj.State = EnvironmentalObjectState.Destroyed;
+        obj.CurrentDurability = 0;
+
+        _log.Information("Object {ObjectId} destroyed successfully. Secondary targets: {Count}",
+            objectId, result.SecondaryTargets.Count);
+
+        return result;
+    }
+
+    /// <summary>
+    /// Destroys an environmental object immediately (legacy compatibility)
+    /// </summary>
+    public bool DestroyObject(int objectId, string destructionCause)
+    {
+        var result = DestroyObject(objectId, null, 0, destructionCause);
+        return result.ObjectDestroyed;
+    }
+
+    #endregion
+
+    #region Hazard Triggers & Chain Reactions (v0.22.1)
+
+    /// <summary>
+    /// Triggers the destruction hazard of an object (explosion, eruption, etc.)
+    /// v0.22.1: Core hazard trigger system
+    /// </summary>
+    private HazardResult TriggerDestructionHazard(
+        EnvironmentalObject obj,
+        int combatInstanceId)
+    {
+        _log.Information(
+            "Triggering destruction hazard for {ObjectId}: {Damage} {DamageType} in radius {Radius}",
+            obj.ObjectId, obj.DamageFormula, obj.DamageType, obj.ExplosionRadius);
+
+        // Parse damage formula (e.g., "15 Fire" → 15, "Fire")
+        var (damage, damageType) = ParseDamageFormula(obj.DamageFormula ?? "0 Physical");
+
+        // Get affected characters in radius
+        var affectedCharacters = GetCharactersInRadius(obj.GridPosition, obj.ExplosionRadius);
+
+        var result = new HazardResult
+        {
+            WasTriggered = true,
+            AffectedCharacters = affectedCharacters,
+            TotalDamage = 0,
+            StatusEffectApplied = obj.StatusEffect,
+            Description = $"💥 {obj.Name} explodes!"
+        };
+
+        // Calculate total damage dealt (would integrate with actual damage service in production)
+        result.TotalDamage = damage * affectedCharacters.Count;
+
+        if (affectedCharacters.Count > 0)
+        {
+            result.Description += $"\n   {affectedCharacters.Count} targets hit for {damage} {damageType} damage each!";
+
+            if (!string.IsNullOrEmpty(obj.StatusEffect))
+            {
+                result.Description += $"\n   Status effect applied: {obj.StatusEffect}";
+            }
+        }
+        else
+        {
+            result.Description += " No targets in range.";
         }
 
         return result;
     }
 
     /// <summary>
-    /// Destroys an environmental object immediately
+    /// Creates terrain aftermath from object destruction
+    /// v0.22.1: Terrain creation system
     /// </summary>
-    public bool DestroyObject(int objectId, string destructionCause)
+    private void CreateDestructionTerrain(EnvironmentalObject obj)
     {
-        var obj = GetObject(objectId);
-        if (obj == null)
-        {
-            return false;
-        }
+        _log.Information(
+            "Creating {TerrainType} terrain at {Position} from destroyed {ObjectName}",
+            obj.CreatesTerrainOnDestroy, obj.GridPosition, obj.Name);
 
-        obj.State = EnvironmentalObjectState.Destroyed;
-        obj.CurrentDurability = 0;
-
-        _log.Warning("Environmental object destroyed: {ObjectId} - {Name} - Cause: {Cause}",
-            objectId, obj.Name, destructionCause);
-
-        return true;
+        // In production, this would call TacticalGridService.SetTerrainType
+        // For now, we log the intent
+        _log.Debug("Terrain created: Type={TerrainType}, Position={Position}, Duration={Duration}",
+            obj.CreatesTerrainOnDestroy, obj.GridPosition,
+            obj.TerrainDuration.HasValue ? $"{obj.TerrainDuration} turns" : "Permanent");
     }
 
     /// <summary>
-    /// Detects chain reactions from object destruction
+    /// Triggers chain reaction from object destruction
+    /// v0.22.1: Chain reaction system
     /// </summary>
-    private List<EnvironmentalEvent> DetectChainReactions(EnvironmentalObject source)
+    private List<DestructionResult> TriggerChainReaction(
+        EnvironmentalObject sourceObj,
+        int combatInstanceId)
     {
-        var reactions = new List<EnvironmentalEvent>();
+        _log.Information(
+            "Checking for chain reactions from {ObjectId} explosion (radius: {Radius})",
+            sourceObj.ObjectId, sourceObj.ExplosionRadius);
 
-        // Check for nearby explosive objects or hazards
-        var nearbyObjects = GetObjectsInRoom(source.RoomId)
-            .Where(o => o.ObjectId != source.ObjectId && IsNearby(source.GridPosition, o.GridPosition))
-            .ToList();
+        var chainResults = new List<DestructionResult>();
 
-        foreach (var nearby in nearbyObjects)
+        // Get all positions in explosion radius
+        var nearbyPositions = GetPositionsInRadius(sourceObj.GridPosition, sourceObj.ExplosionRadius);
+
+        foreach (var position in nearbyPositions)
         {
-            if (nearby.ObjectType == EnvironmentalObjectType.Interactive &&
-                nearby.Name.Contains("Barrel", StringComparison.OrdinalIgnoreCase))
+            var objects = GetObjectsAtPosition(sourceObj.RoomId, position);
+
+            foreach (var obj in objects)
             {
-                reactions.Add(new EnvironmentalEvent
+                // Don't trigger self or already destroyed objects
+                if (obj.ObjectId == sourceObj.ObjectId || obj.State == EnvironmentalObjectState.Destroyed)
+                    continue;
+
+                // Apply explosion damage to destructible objects
+                if (obj.IsDestructible)
                 {
-                    EventType = EnvironmentalEventType.ChainReaction,
-                    ObjectId = nearby.ObjectId,
-                    Description = $"Chain reaction: {source.Name} destruction triggered {nearby.Name}!"
-                });
+                    var (explosionDamage, _) = ParseDamageFormula(sourceObj.DamageFormula ?? "0 Physical");
+
+                    var result = ApplyDamageToObject(
+                        obj.ObjectId,
+                        explosionDamage,
+                        "Explosive",
+                        attackerId: 0, // Chain reaction, not player
+                        combatInstanceId);
+
+                    if (result.ObjectDestroyed)
+                    {
+                        chainResults.Add(result);
+                        _log.Information("Chain reaction destroyed {ObjectId} ({Name})",
+                            obj.ObjectId, obj.Name);
+                    }
+                }
             }
         }
 
-        return reactions;
-    }
+        if (chainResults.Count > 0)
+        {
+            _log.Information("Chain reaction triggered {Count} additional destructions", chainResults.Count);
+        }
 
-    /// <summary>
-    /// Checks if two positions are nearby (simplified distance check)
-    /// </summary>
-    private bool IsNearby(string? position1, string? position2)
-    {
-        // TODO: Implement proper grid distance calculation
-        // For now, simple string comparison
-        return position1 == position2;
+        return chainResults;
     }
 
     #endregion
@@ -260,9 +563,9 @@ public class EnvironmentalObjectService
     /// <summary>
     /// Gets cover data at a specific position (integrates with v0.20.2 CoverService)
     /// </summary>
-    public CoverData? GetCoverAtPosition(string gridPosition, string attackDirection)
+    public CoverData? GetCoverAtPosition(int roomId, string gridPosition, string attackDirection)
     {
-        var coverObjects = GetHazardsAtPosition(gridPosition)
+        var coverObjects = GetObjectsAtPosition(roomId, gridPosition)
             .Where(o => o.ProvidesCover && o.State == EnvironmentalObjectState.Active)
             .ToList();
 
@@ -276,13 +579,18 @@ public class EnvironmentalObjectService
             .OrderByDescending(o => o.CoverQuality)
             .First();
 
-        int defenseBonus = bestCover.CoverQuality switch
+        // Check if cover blocks this attack direction
+        if (!CoverBlocksDirection(bestCover, attackDirection))
         {
-            CoverQuality.Light => 2,
-            CoverQuality.Heavy => 4,
-            CoverQuality.Total => 6,
-            _ => 0
-        };
+            return null;
+        }
+
+        int defenseBonus = GetCoverDefenseBonus(bestCover.CoverQuality);
+
+        _log.Debug(
+            "Cover found at {Position}: {Name} ({Quality}, {Durability}/{MaxDurability})",
+            gridPosition, bestCover.Name, bestCover.CoverQuality,
+            bestCover.CurrentDurability, bestCover.MaxDurability);
 
         return new CoverData
         {
@@ -294,14 +602,41 @@ public class EnvironmentalObjectService
     }
 
     /// <summary>
+    /// Checks if cover blocks attack from a given direction
+    /// </summary>
+    private bool CoverBlocksDirection(EnvironmentalObject cover, string attackDirection)
+    {
+        if (string.IsNullOrEmpty(cover.CoverArc))
+            return true; // Blocks all directions
+
+        // In production, would parse JSON array and check direction
+        // For now, simplified logic
+        return true;
+    }
+
+    /// <summary>
+    /// Gets defense bonus for cover quality
+    /// </summary>
+    private int GetCoverDefenseBonus(CoverQuality quality)
+    {
+        return quality switch
+        {
+            CoverQuality.Light => 2,
+            CoverQuality.Heavy => 4,
+            CoverQuality.Total => 6,
+            _ => 0
+        };
+    }
+
+    /// <summary>
     /// Validates if cover blocks a path between attacker and target
     /// </summary>
     public bool ValidateCoverPath(string attackerPosition, string targetPosition)
     {
         // TODO: Implement proper line of sight and cover arc calculation
         // For parent spec, just check if target has cover
-        var coverAtTarget = GetCoverAtPosition(targetPosition, "any");
-        return coverAtTarget != null;
+        // This would integrate with BattlefieldGrid in production
+        return false;
     }
 
     #endregion
@@ -352,7 +687,73 @@ public class EnvironmentalObjectService
 
     #endregion
 
-    #region Utility
+    #region Utility & Helper Methods
+
+    /// <summary>
+    /// Parses damage formula "15 Fire" into (damage, type)
+    /// </summary>
+    private (int damage, string type) ParseDamageFormula(string formula)
+    {
+        var parts = formula.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length >= 2)
+        {
+            if (int.TryParse(parts[0], out int damage))
+            {
+                return (damage, parts[1]);
+            }
+        }
+
+        // Fallback
+        _log.Warning("Could not parse damage formula: {Formula}", formula);
+        return (0, "Physical");
+    }
+
+    /// <summary>
+    /// Parses damage type from formula "15 Fire" → "Fire"
+    /// </summary>
+    private string ParseDamageType(string formula)
+    {
+        var parts = formula.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        return parts.Length >= 2 ? parts[1] : "Physical";
+    }
+
+    /// <summary>
+    /// Gets all character IDs in radius from a position
+    /// NOTE: This is a stub - in production would query BattlefieldGrid
+    /// </summary>
+    private List<int> GetCharactersInRadius(string? centerPosition, int radius)
+    {
+        // Stub: In production, this would query the BattlefieldGrid service
+        // to find all characters within the specified radius
+        _log.Debug("GetCharactersInRadius called (stub): Position={Position}, Radius={Radius}",
+            centerPosition, radius);
+
+        return new List<int>(); // Empty for now - integrate with grid later
+    }
+
+    /// <summary>
+    /// Gets all grid positions in radius from a center position
+    /// NOTE: This is a stub - in production would query BattlefieldGrid
+    /// </summary>
+    private List<string> GetPositionsInRadius(string? centerPosition, int radius)
+    {
+        // Stub: In production, this would calculate grid positions based on radius
+        _log.Debug("GetPositionsInRadius called (stub): Position={Position}, Radius={Radius}",
+            centerPosition, radius);
+
+        // For now, just return the center position
+        return centerPosition != null ? new List<string> { centerPosition } : new List<string>();
+    }
+
+    /// <summary>
+    /// Checks if two positions are nearby (simplified distance check)
+    /// </summary>
+    private bool IsNearby(string? position1, string? position2)
+    {
+        // TODO: Implement proper grid distance calculation
+        // For now, simple string comparison
+        return position1 == position2;
+    }
 
     /// <summary>
     /// Clears all objects in a room (cleanup)
@@ -372,5 +773,45 @@ public class EnvironmentalObjectService
         _log.Information("Cleared all environmental objects from room {RoomId}", roomId);
     }
 
+    /// <summary>
+    /// Updates cooldowns for all reusable hazards (called each turn)
+    /// v0.22.1: Cooldown management
+    /// </summary>
+    public void UpdateCooldowns(int roomId)
+    {
+        var reusableHazards = _objects.Values
+            .Where(o => o.RoomId == roomId &&
+                       o.CooldownDuration > 0 &&
+                       o.CooldownRemaining > 0)
+            .ToList();
+
+        foreach (var hazard in reusableHazards)
+        {
+            hazard.CooldownRemaining--;
+
+            if (hazard.CooldownRemaining <= 0)
+            {
+                hazard.State = EnvironmentalObjectState.Active;
+                hazard.TriggersRemaining = 1; // Re-arm
+
+                _log.Information("Hazard {ObjectId} ({Name}) cooldown complete - re-armed",
+                    hazard.ObjectId, hazard.Name);
+            }
+        }
+    }
+
     #endregion
+}
+
+/// <summary>
+/// Hazard trigger conditions
+/// </summary>
+public enum HazardTrigger
+{
+    Manual,         // Manually triggered by player
+    Automatic,      // Triggers automatically (e.g., stepping on tile)
+    OnDestroy,      // Triggers when object is destroyed
+    OnDamageReceived, // Triggers when object takes damage
+    OnEnter,        // Triggers when character enters tile
+    OnExplosive     // Triggers on explosive/concussive ability hit (custom for ceilings)
 }
