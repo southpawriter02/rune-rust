@@ -510,6 +510,18 @@ public static class UIHelper
             }
         }
 
+        // [v0.20] Grid position display
+        if (combat.Grid != null && combat.Player.Position != null)
+        {
+            var pos = combat.Player.Position.Value;
+            var posDisplay = $"Position: {pos.Zone} {pos.Row} (Col {pos.Column})";
+            if (combat.Player.KineticEnergy > 0)
+            {
+                posDisplay += $" | KE: {combat.Player.KineticEnergy}/{combat.Player.MaxKineticEnergy}";
+            }
+            playerTable.AddRow($"[dim]{posDisplay}[/]");
+        }
+
         AnsiConsole.Write(playerTable);
         AnsiConsole.WriteLine();
 
@@ -539,6 +551,13 @@ public static class UIHelper
                 statusEffects.Add($"VULNERABLE({enemy.VulnerableTurnsRemaining})");
             if (enemy.SilencedTurnsRemaining > 0)
                 statusEffects.Add($"SILENCED({enemy.SilencedTurnsRemaining})");
+
+            // [v0.20] Add position info if grid is active
+            if (combat.Grid != null && enemy.Position != null)
+            {
+                var pos = enemy.Position.Value;
+                statusEffects.Add($"{pos.Row}/C{pos.Column}");
+            }
 
             var statusText = statusEffects.Count > 0 ? $" [dim]({string.Join(", ", statusEffects)})[/]" : "";
             enemyTable.AddRow(new Markup($"{hpBar}{statusText}"));

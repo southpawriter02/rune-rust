@@ -180,7 +180,9 @@ public class CommandParser
 
     private static readonly HashSet<string> DirectionWords = new()
     {
-        "north", "n", "south", "s", "east", "e", "west", "w"
+        "north", "n", "south", "s", "east", "e", "west", "w",
+        // v0.20: Tactical combat grid movement
+        "front", "f", "back", "b", "left", "l", "right", "r"
     };
 
     public ParsedCommand Parse(string input)
@@ -223,10 +225,14 @@ public class CommandParser
                     "s" => "south",
                     "e" => "east",
                     "w" => "west",
+                    "f" => "front",
+                    "b" => "back",
+                    "l" => "left",
+                    "r" => "right",
                     _ => firstWord
                 };
             }
-            // Handle "go north" or "move west"
+            // Handle "go north" or "move west" or "move front" (tactical combat)
             else if (commandType == CommandType.Move && parts.Length > 1)
             {
                 var direction = parts[1];
@@ -236,6 +242,10 @@ public class CommandParser
                     "s" => "south",
                     "e" => "east",
                     "w" => "west",
+                    "f" => "front",
+                    "b" => "back",
+                    "l" => "left",
+                    "r" => "right",
                     _ => direction
                 };
             }

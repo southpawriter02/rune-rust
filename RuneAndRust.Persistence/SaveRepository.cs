@@ -102,7 +102,14 @@ public class SaveRepository
             "ALTER TABLE saves ADD COLUMN dungeons_completed INTEGER DEFAULT 0",
             "ALTER TABLE saves ADD COLUMN current_room_string_id TEXT",
             "ALTER TABLE saves ADD COLUMN is_procedural_dungeon INTEGER DEFAULT 0",
-            "ALTER TABLE saves ADD COLUMN current_biome_id TEXT"
+            "ALTER TABLE saves ADD COLUMN current_biome_id TEXT",
+            // v0.20: Tactical Combat Grid System
+            "ALTER TABLE saves ADD COLUMN position_zone TEXT",
+            "ALTER TABLE saves ADD COLUMN position_row TEXT",
+            "ALTER TABLE saves ADD COLUMN position_column INTEGER",
+            "ALTER TABLE saves ADD COLUMN position_elevation INTEGER DEFAULT 0",
+            "ALTER TABLE saves ADD COLUMN kinetic_energy INTEGER DEFAULT 0",
+            "ALTER TABLE saves ADD COLUMN max_kinetic_energy INTEGER DEFAULT 100"
         };
 
         foreach (var alterSql in alterCommands)
@@ -121,6 +128,9 @@ public class SaveRepository
 
             // v0.19: Create specialization system tables (data-driven architecture)
             CreateSpecializationTables(connection);
+
+            // v0.20: Create tactical combat grid system tables
+            CreateBattlefieldGridTables(connection);
 
             _log.Information("Database initialized successfully");
         }
@@ -245,6 +255,85 @@ public class SaveRepository
         }
 
         _log.Information("Specialization system tables created successfully");
+    }
+
+    /// <summary>
+    /// v0.20: Create tactical combat grid system tables
+    /// </summary>
+    private void CreateBattlefieldGridTables(SqliteConnection connection)
+    {
+        _log.Debug("Creating battlefield grid system tables");
+
+        // battlefield_grids table - stores grid metadata
+        var createGridsTable = connection.CreateCommand();
+        createGridsTable.CommandText = @"
+            CREATE TABLE IF NOT EXISTS battlefield_grids (
+                grid_id TEXT PRIMARY KEY,
+                combat_id TEXT,
+                columns INTEGER NOT NULL,
+                created_at TEXT NOT NULL
+            )
+        ";
+        createGridsTable.ExecuteNonQuery();
+
+        // battlefield_tiles table - stores individual tile state
+        var createTilesTable = connection.CreateCommand();
+        createTilesTable.CommandText = @"
+            CREATE TABLE IF NOT EXISTS battlefield_tiles (
+                tile_id TEXT PRIMARY KEY,
+                grid_id TEXT NOT NULL,
+                zone TEXT NOT NULL CHECK(zone IN ('Player', 'Enemy')),
+                row TEXT NOT NULL CHECK(row IN ('Front', 'Back')),
+                column_index INTEGER NOT NULL,
+                elevation INTEGER DEFAULT 0,
+                tile_type TEXT NOT NULL CHECK(tile_type IN ('Normal', 'HighGround', 'Glitched')),
+                cover_type TEXT NOT NULL CHECK(cover_type IN ('None', 'Physical', 'Metaphysical', 'Both')),
+                glitch_type TEXT CHECK(glitch_type IN ('Flickering', 'InvertedGravity', 'Looping')),
+                glitch_severity INTEGER CHECK(glitch_severity BETWEEN 1 AND 3),
+                is_occupied INTEGER DEFAULT 0,
+                occupant_id TEXT,
+                FOREIGN KEY (grid_id) REFERENCES battlefield_grids(grid_id)
+            )
+        ";
+        createTilesTable.ExecuteNonQuery();
+
+        // battlefield_traps table - stores active traps
+        var createTrapsTable = connection.CreateCommand();
+        createTrapsTable.CommandText = @"
+            CREATE TABLE IF NOT EXISTS battlefield_traps (
+                trap_id TEXT PRIMARY KEY,
+                trap_name TEXT NOT NULL,
+                tile_id TEXT NOT NULL,
+                owner_id TEXT NOT NULL,
+                turns_remaining INTEGER NOT NULL,
+                is_visible INTEGER DEFAULT 0,
+                effect_type TEXT NOT NULL CHECK(effect_type IN ('Damage', 'Status', 'Debuff', 'AreaEffect')),
+                effect_data TEXT NOT NULL,
+                trigger_type TEXT NOT NULL CHECK(trigger_type IN ('OnEnter', 'OnExit', 'Manual')),
+                created_at TEXT NOT NULL,
+                FOREIGN KEY (tile_id) REFERENCES battlefield_tiles(tile_id)
+            )
+        ";
+        createTrapsTable.ExecuteNonQuery();
+
+        // Create indices for performance
+        var createIndices = new[]
+        {
+            "CREATE INDEX IF NOT EXISTS idx_battlefield_grids_combat ON battlefield_grids(combat_id)",
+            "CREATE INDEX IF NOT EXISTS idx_tiles_grid ON battlefield_tiles(grid_id)",
+            "CREATE INDEX IF NOT EXISTS idx_tiles_position ON battlefield_tiles(grid_id, zone, row, column_index)",
+            "CREATE INDEX IF NOT EXISTS idx_traps_tile ON battlefield_traps(tile_id)",
+            "CREATE INDEX IF NOT EXISTS idx_traps_owner ON battlefield_traps(owner_id)"
+        };
+
+        foreach (var indexSql in createIndices)
+        {
+            var indexCommand = connection.CreateCommand();
+            indexCommand.CommandText = indexSql;
+            indexCommand.ExecuteNonQuery();
+        }
+
+        _log.Information("Battlefield grid system tables created successfully");
     }
 
     public void SaveGame(PlayerCharacter player, WorldState worldState, bool isProcedurallyGenerated = false)

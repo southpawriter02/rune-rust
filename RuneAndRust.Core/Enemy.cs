@@ -89,6 +89,13 @@ public class Enemy
     // Progression (Aethelgard Saga System)
     public int BaseLegendValue { get; set; } = 0;
 
+    // v0.20: Tactical Combat Grid System
+    public GridPosition? Position { get; set; } = null; // Current position on the combat grid
+    public int KineticEnergy { get; set; } = 0; // Movement-based resource (0-100)
+    public int MaxKineticEnergy { get; set; } = 100; // Maximum KE
+    public int TilesMovedThisTurn { get; set; } = 0; // Number of tiles moved this turn
+    public bool HasMovedThisTurn { get; set; } = false; // Whether movement occurred this turn
+
     public bool IsAlive => HP > 0;
 
     public int GetAttributeValue(string attributeName)

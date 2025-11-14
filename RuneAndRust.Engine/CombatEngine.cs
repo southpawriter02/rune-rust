@@ -13,6 +13,7 @@ public class CombatEngine
     private readonly HazardService _hazardService; // [v0.6]
     private readonly PerformanceService _performanceService; // [v0.7]
     private readonly CurrencyService _currencyService; // [v0.9]
+    private readonly GridInitializationService _gridService; // [v0.20]
 
     public CombatEngine(DiceService diceService, SagaService sagaService, LootService lootService, EquipmentService equipmentService, HazardService hazardService, CurrencyService currencyService)
     {
@@ -23,6 +24,7 @@ public class CombatEngine
         _hazardService = hazardService; // [v0.6]
         _performanceService = new PerformanceService(); // [v0.7]
         _currencyService = currencyService; // [v0.9]
+        _gridService = new GridInitializationService(); // [v0.20]
     }
 
     /// <summary>
@@ -41,6 +43,10 @@ public class CombatEngine
             CanFlee = canFlee,
             CurrentRoom = currentRoom
         };
+
+        // [v0.20] Initialize tactical combat grid
+        combatState.Grid = _gridService.InitializeGrid(player, enemies);
+        _gridService.ApplyEnvironmentalFeatures(combatState.Grid, currentRoom);
 
         // Roll initiative for all participants
         RollInitiative(combatState);
@@ -396,6 +402,29 @@ public class CombatEngine
 
         _log.Information("Ability used: Character={CharacterName}, Ability={AbilityName}, Target={Target}, RemainingStamina={RemainingStamina}",
             player.Name, ability.Name, target?.Name ?? "None", player.Stamina);
+
+        // [v0.20] Handle Rúnasmiðr trap abilities
+        if (RunasmidrAbilityHandler.IsTrapAbility(ability.Name))
+        {
+            var trapHandler = new RunasmidrAbilityHandler(new TrapService(_diceService));
+
+            // Determine trap target position
+            // For now, use default position (enemy front row, player column)
+            var targetPosition = RunasmidrAbilityHandler.GetDefaultTrapPosition(player, combatState.Grid!);
+
+            var trapResult = trapHandler.ExecuteTrapAbility(player, ability.Name, targetPosition, combatState);
+
+            if (!trapResult.Success)
+            {
+                combatState.AddLogEntry($"  ⚠️ Trap placement failed: {trapResult.Message}");
+                // Refund stamina since ability failed
+                player.Stamina += ability.StaminaCost;
+                return false;
+            }
+
+            combatState.AddLogEntry("");
+            return true; // Trap ability successfully executed
+        }
 
         // [v0.5] Apply trauma costs for heretical abilities
         var traumaService = new TraumaEconomyService();
@@ -1808,6 +1837,56 @@ public class CombatEngine
         if (combatState.Player.SilencedTurnsRemaining > 0)
         {
             combatState.Player.SilencedTurnsRemaining--;
+        }
+
+        // [v0.20] Tactical Combat Grid System - Turn management
+        if (combatState.Grid != null)
+        {
+            var keService = new KineticEnergyService();
+            var trapService = new TrapService(_diceService);
+
+            // Get the NEXT participant (since we're about to advance the turn)
+            var nextTurnIndex = (combatState.CurrentTurnIndex + 1) % combatState.InitiativeOrder.Count;
+            var nextParticipant = combatState.InitiativeOrder[nextTurnIndex];
+
+            object nextCombatant = nextParticipant.IsPlayer
+                ? (object)combatState.Player
+                : combatState.Enemies.First(e => e.Name == nextParticipant.Name);
+
+            // Handle KE decay for next participant's turn start
+            keService.OnTurnStart(nextCombatant);
+
+            // Decrement trap durations (once per full round, on player's turn)
+            if (nextParticipant.IsPlayer)
+            {
+                trapService.DecrementTrapDurations(combatState.Grid, combatState);
+            }
+
+            // Check if the current participant ended their turn on a trapped tile
+            var currentParticipant = combatState.CurrentParticipant;
+            object currentCombatant = currentParticipant.IsPlayer
+                ? (object)combatState.Player
+                : combatState.Enemies.First(e => e.Name == currentParticipant.Name);
+
+            var currentPosition = currentCombatant switch
+            {
+                PlayerCharacter player => player.Position,
+                Enemy enemy => enemy.Position,
+                _ => null
+            };
+
+            if (currentPosition != null)
+            {
+                var tile = combatState.Grid.GetTile(currentPosition.Value);
+                if (tile != null && tile.Traps.Count > 0)
+                {
+                    var trapResults = trapService.TriggerTrapsOnTileEntry(currentCombatant, tile, combatState);
+                    if (trapResults.Count > 0)
+                    {
+                        combatState.AddLogEntry(""); // Spacing after trap triggers
+                    }
+                }
+            }
         }
 
         combatState.NextTurn();
