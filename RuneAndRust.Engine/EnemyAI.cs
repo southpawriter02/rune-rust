@@ -65,12 +65,14 @@ public class EnemyAI
     private readonly Random _random;
     private readonly DiceService _diceService;
     private readonly FlankingService _flankingService; // v0.20.1
+    private readonly CoverService _coverService; // v0.20.2
 
     public EnemyAI(DiceService diceService)
     {
         _diceService = diceService;
         _random = new Random();
         _flankingService = new FlankingService(); // v0.20.1
+        _coverService = new CoverService(); // v0.20.2
     }
 
     public EnemyAI(DiceService diceService, int seed)
@@ -78,6 +80,7 @@ public class EnemyAI
         _diceService = diceService;
         _random = new Random(seed);
         _flankingService = new FlankingService(); // v0.20.1
+        _coverService = new CoverService(); // v0.20.2
     }
 
     /// <summary>
@@ -674,10 +677,23 @@ public class EnemyAI
             return;
         }
 
-        // Player defends
-        var defendRoll = _diceService.Roll(player.Attributes.Sturdiness);
+        // v0.20.2: Calculate cover bonus for player
+        CoverBonus coverBonus = CoverBonus.None();
+        if (combatState.Grid != null)
+        {
+            coverBonus = _coverService.CalculateCoverBonus(player.Position, enemy.Position, AttackType.Ranged, combatState.Grid);
+
+            if (coverBonus.DefenseBonus > 0)
+            {
+                combatState.AddLogEntry($"  [COVER] {player.Name} takes cover! +{coverBonus.DefenseBonus} Defense!");
+            }
+        }
+
+        // Player defends (with cover bonus)
+        var defendDice = Math.Max(1, player.Attributes.Sturdiness + coverBonus.DefenseBonus);
+        var defendRoll = _diceService.Roll(defendDice);
         combatState.AddLogEntry($"{player.Name} defends!");
-        combatState.AddLogEntry($"  Rolled {player.Attributes.Sturdiness}d6: {FormatRolls(defendRoll)} = {defendRoll.Successes} successes");
+        combatState.AddLogEntry($"  Rolled {defendDice}d6: {FormatRolls(defendRoll)} = {defendRoll.Successes} successes");
 
         // v0.19.9: Apply stance defense bonuses
         int effectiveDefenseSuccesses = GetPlayerDefenseSuccesses(player, defendRoll, combatState);
@@ -1691,9 +1707,22 @@ public class EnemyAI
             return;
         }
 
-        var defendRoll = _diceService.Roll(Math.Max(1, player.Attributes.Will));
+        // v0.20.2: Calculate metaphysical cover bonus for player
+        CoverBonus coverBonus = CoverBonus.None();
+        if (combatState.Grid != null)
+        {
+            coverBonus = _coverService.CalculateCoverBonus(player.Position, enemy.Position, AttackType.Psychic, combatState.Grid);
+
+            if (coverBonus.ResolveBonus > 0)
+            {
+                combatState.AddLogEntry($"  [METAPHYSICAL COVER] Reality anchor stabilizes {player.Name}'s mind! +{coverBonus.ResolveBonus} WILL!");
+            }
+        }
+
+        var defendDice = Math.Max(1, player.Attributes.Will + coverBonus.ResolveBonus);
+        var defendRoll = _diceService.Roll(defendDice);
         combatState.AddLogEntry($"{player.Name} resists with WILL!");
-        combatState.AddLogEntry($"  Rolled {Math.Max(1, player.Attributes.Will)}d6: {FormatRolls(defendRoll)} = {defendRoll.Successes} successes");
+        combatState.AddLogEntry($"  Rolled {defendDice}d6: {FormatRolls(defendRoll)} = {defendRoll.Successes} successes");
 
         // v0.19.9: Apply stance defense bonuses
         int effectiveDefenseSuccesses = GetPlayerDefenseSuccesses(player, defendRoll, combatState);
@@ -1721,9 +1750,22 @@ public class EnemyAI
         var attackRoll = _diceService.Roll(enemy.Attributes.Will + 3);
         combatState.AddLogEntry($"  Rolled {enemy.Attributes.Will + 3}d6: {FormatRolls(attackRoll)} = {attackRoll.Successes} successes");
 
-        var defendRoll = _diceService.Roll(Math.Max(1, player.Attributes.Will));
+        // v0.20.2: Calculate metaphysical cover bonus for player
+        CoverBonus coverBonus = CoverBonus.None();
+        if (combatState.Grid != null)
+        {
+            coverBonus = _coverService.CalculateCoverBonus(player.Position, enemy.Position, AttackType.Psychic, combatState.Grid);
+
+            if (coverBonus.ResolveBonus > 0)
+            {
+                combatState.AddLogEntry($"  [METAPHYSICAL COVER] Reality anchor dampens psychic assault! +{coverBonus.ResolveBonus} WILL!");
+            }
+        }
+
+        var defendDice = Math.Max(1, player.Attributes.Will + coverBonus.ResolveBonus);
+        var defendRoll = _diceService.Roll(defendDice);
         combatState.AddLogEntry($"{player.Name} resists with WILL!");
-        combatState.AddLogEntry($"  Rolled {Math.Max(1, player.Attributes.Will)}d6: {FormatRolls(defendRoll)} = {defendRoll.Successes} successes");
+        combatState.AddLogEntry($"  Rolled {defendDice}d6: {FormatRolls(defendRoll)} = {defendRoll.Successes} successes");
 
         if (attackRoll.Successes > defendRoll.Successes)
         {

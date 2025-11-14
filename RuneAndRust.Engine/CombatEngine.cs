@@ -15,6 +15,7 @@ public class CombatEngine
     private readonly CurrencyService _currencyService; // [v0.9]
     private readonly GridInitializationService _gridService; // [v0.20]
     private readonly FlankingService _flankingService; // [v0.20.1]
+    private readonly CoverService _coverService; // [v0.20.2]
 
     public CombatEngine(DiceService diceService, SagaService sagaService, LootService lootService, EquipmentService equipmentService, HazardService hazardService, CurrencyService currencyService)
     {
@@ -27,6 +28,7 @@ public class CombatEngine
         _currencyService = currencyService; // [v0.9]
         _gridService = new GridInitializationService(); // [v0.20]
         _flankingService = new FlankingService(); // [v0.20.1]
+        _coverService = new CoverService(); // [v0.20.2]
     }
 
     /// <summary>
@@ -222,8 +224,21 @@ public class CombatEngine
         combatState.AddLogEntry($"{player.Name} attacks {target.Name}!");
         combatState.AddLogEntry($"  Rolled {totalDice}d6: {FormatRolls(attackRoll)} = {attackRoll.Successes} successes");
 
-        // Opponent defends (with flanking penalty)
-        var defendDice = Math.Max(1, target.Attributes.Sturdiness - flankingBonus.DefensePenalty);
+        // v0.20.2: Calculate cover bonus for target
+        CoverBonus coverBonus = CoverBonus.None();
+        if (combatState.Grid != null)
+        {
+            coverBonus = _coverService.CalculateCoverBonus(target.Position, player.Position, AttackType.Ranged, combatState.Grid);
+
+            if (coverBonus.DefenseBonus > 0)
+            {
+                combatState.AddLogEntry($"  [COVER] {target.Name} takes cover! +{coverBonus.DefenseBonus} Defense!");
+                _log.Information("BALLISTIC OBSTRUCTION DETECTED: Target={TargetId}, DefenseBonus={Bonus}", target.Id, coverBonus.DefenseBonus);
+            }
+        }
+
+        // Opponent defends (with flanking penalty and cover bonus)
+        var defendDice = Math.Max(1, target.Attributes.Sturdiness - flankingBonus.DefensePenalty + coverBonus.DefenseBonus);
         if (flankingBonus.DefensePenalty > 0)
         {
             combatState.AddLogEntry($"  [FLANKING] {target.Name}'s Defense algorithms overloaded! -{flankingBonus.DefensePenalty} Defense!");
@@ -282,6 +297,20 @@ public class CombatEngine
 
             _log.Information("Damage dealt: Attacker={Attacker}, Target={Target}, Damage={Damage}, AttackSuccesses={AttackSuccesses}, DefendSuccesses={DefendSuccesses}, RemainingHP={RemainingHP}",
                 player.Name, target.Name, damage, attackRoll.Successes, defendRoll.Successes, target.HP);
+
+            // v0.20.2: Damage cover if target was behind cover
+            if (combatState.Grid != null && coverBonus.DefenseBonus > 0 && target.Position != null)
+            {
+                var targetTile = combatState.Grid.GetTile(target.Position);
+                if (targetTile != null)
+                {
+                    var coverMessage = _coverService.DamageCover(targetTile, damage);
+                    if (coverMessage != null)
+                    {
+                        combatState.AddLogEntry($"  {coverMessage}");
+                    }
+                }
+            }
         }
         else
         {

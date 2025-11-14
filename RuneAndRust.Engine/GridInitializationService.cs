@@ -9,6 +9,14 @@ namespace RuneAndRust.Engine;
 public class GridInitializationService
 {
     private static readonly ILogger _log = Log.ForContext<GridInitializationService>();
+    private readonly CoverService _coverService; // v0.20.2
+    private readonly Random _random;
+
+    public GridInitializationService()
+    {
+        _coverService = new CoverService();
+        _random = new Random();
+    }
 
     /// <summary>
     /// Initializes a battlefield grid for combat based on the number of combatants
@@ -127,12 +135,112 @@ public class GridInitializationService
         if (room == null)
             return;
 
-        // TODO v0.20: Integrate with procedural generation
-        // - Place cover based on room type (ruins have more physical cover)
+        // v0.20.2: Generate procedural cover
+        GenerateCover(grid, room);
+
+        // TODO v0.21+: Integrate with procedural generation
         // - Place glitched tiles based on Corruption level
         // - Place high ground tiles in specific biomes
 
         _log.Debug("Environmental features applied to grid: Room={RoomId}", room.Id);
+    }
+
+    /// <summary>
+    /// v0.20.2: Generates procedural cover placement on the battlefield
+    /// Cover count: 1 piece per 2 columns (minimum 1)
+    /// Distribution: 70% Physical, 15% Metaphysical, 5% Both (for The Roots biome)
+    /// </summary>
+    private void GenerateCover(BattlefieldGrid grid, Room room)
+    {
+        int coverCount = CalculateCoverCount(grid.Columns);
+
+        _log.Information("Generating cover: Columns={Columns}, CoverCount={Count}, Room={RoomId}",
+            grid.Columns, coverCount, room.Id);
+
+        for (int i = 0; i < coverCount; i++)
+        {
+            var coverType = SelectCoverType();
+            var position = SelectCoverPosition(grid);
+
+            if (position == null)
+            {
+                _log.Warning("Failed to place cover {Index}: no valid positions remaining", i);
+                break;
+            }
+
+            var tile = grid.GetTile(position);
+            if (tile != null)
+            {
+                _coverService.PlaceCover(tile, coverType);
+
+                _log.Debug("Cover placed: Position={Position}, Type={CoverType}, Description={Description}",
+                    position, coverType, tile.CoverDescription);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Calculates number of cover pieces based on grid size
+    /// Formula: 1 cover per 2 columns (minimum 1)
+    /// </summary>
+    private int CalculateCoverCount(int columns)
+    {
+        return Math.Max(1, columns / 2);
+    }
+
+    /// <summary>
+    /// Selects a cover type based on biome-specific distributions
+    /// The Roots biome: 70% Physical, 25% Metaphysical, 5% Both
+    /// </summary>
+    private CoverType SelectCoverType()
+    {
+        var roll = _random.NextDouble();
+
+        // TODO: Add biome parameter and biome-specific distributions
+        // For now, using The Roots distribution as default
+        if (roll < 0.70)
+            return CoverType.Physical;      // 70% physical (pillars, crates)
+        else if (roll < 0.95)
+            return CoverType.Metaphysical;  // 25% metaphysical (Runic Anchors)
+        else
+            return CoverType.Both;          // 5% both (rare sanctified locations)
+    }
+
+    /// <summary>
+    /// Selects a random valid position for cover placement
+    /// Avoids occupied tiles and prefers back rows for tactical gameplay
+    /// </summary>
+    private GridPosition? SelectCoverPosition(BattlefieldGrid grid)
+    {
+        var availablePositions = new List<GridPosition>();
+
+        // Collect all valid, unoccupied positions
+        // Prefer back rows (60% chance) for more tactical gameplay
+        foreach (var tile in grid.Tiles.Values)
+        {
+            if (!tile.IsOccupied && tile.Cover == CoverType.None)
+            {
+                // Weight back rows more heavily
+                if (tile.Position.Row == Row.Back)
+                {
+                    availablePositions.Add(tile.Position);
+                    availablePositions.Add(tile.Position); // Add twice for 2x weight
+                }
+                else
+                {
+                    availablePositions.Add(tile.Position);
+                }
+            }
+        }
+
+        if (availablePositions.Count == 0)
+        {
+            return null;
+        }
+
+        // Select random position
+        int index = _random.Next(availablePositions.Count);
+        return availablePositions[index];
     }
 
     /// <summary>

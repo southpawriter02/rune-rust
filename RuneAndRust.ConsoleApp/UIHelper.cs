@@ -566,12 +566,79 @@ public static class UIHelper
         AnsiConsole.Write(enemyTable);
         AnsiConsole.WriteLine();
 
+        // [v0.20.2] Display battlefield cover locations
+        if (combat.Grid != null)
+        {
+            DisplayBattlefieldCover(combat.Grid);
+        }
+
         // Initiative order indicator
         var currentParticipant = combat.CurrentParticipant;
         var currentName = currentParticipant.IsPlayer ? combat.Player.Name : ((Enemy)currentParticipant.Character!).Name;
         var turnColor = currentParticipant.IsPlayer ? "green" : "red";
         AnsiConsole.MarkupLine($"[{turnColor}]▶ {currentName}'s turn[/]");
         AnsiConsole.WriteLine();
+    }
+
+    /// <summary>
+    /// v0.20.2: Displays cover locations on the battlefield
+    /// Shows cover type, position, and health status
+    /// </summary>
+    private static void DisplayBattlefieldCover(BattlefieldGrid grid)
+    {
+        var coverTiles = grid.Tiles.Values
+            .Where(t => t.Cover != CoverType.None)
+            .OrderBy(t => t.Position.Zone)
+            .ThenBy(t => t.Position.Row)
+            .ThenBy(t => t.Position.Column)
+            .ToList();
+
+        if (coverTiles.Count == 0)
+        {
+            return; // No cover to display
+        }
+
+        var coverTable = new Table()
+            .Border(TableBorder.Rounded)
+            .BorderColor(Color.Cyan);
+
+        coverTable.AddColumn("[bold cyan]Battlefield Cover[/]");
+
+        foreach (var tile in coverTiles)
+        {
+            string icon = GetCoverIcon(tile.Cover);
+            string description = tile.CoverDescription ?? "Cover";
+            string position = $"{tile.Position.Zone} {tile.Position.Row} (Col {tile.Position.Column})";
+            string health = "";
+
+            if (tile.CoverHealth.HasValue)
+            {
+                // Color code health: green (16-20), yellow (11-15), orange (6-10), red (1-5)
+                string healthColor = tile.CoverHealth >= 16 ? "green" :
+                                   tile.CoverHealth >= 11 ? "yellow" :
+                                   tile.CoverHealth >= 6 ? "orange" : "red";
+                health = $" [{healthColor}]{tile.CoverHealth} HP[/]";
+            }
+
+            coverTable.AddRow($"{icon} {description} [dim]at {position}[/]{health}");
+        }
+
+        AnsiConsole.Write(coverTable);
+        AnsiConsole.WriteLine();
+    }
+
+    /// <summary>
+    /// v0.20.2: Returns icon/visual representation for cover type
+    /// </summary>
+    private static string GetCoverIcon(CoverType coverType)
+    {
+        return coverType switch
+        {
+            CoverType.Physical => "[blue]█[/]",        // Solid block for physical
+            CoverType.Metaphysical => "[magenta]◆[/]", // Diamond for metaphysical
+            CoverType.Both => "[cyan]◈[/]",            // Combined symbol
+            _ => "[ ]"
+        };
     }
 
     public static void DisplayCombatLog(List<string> logEntries, int maxEntries = 10)
