@@ -13,7 +13,8 @@ public class StanceService
     private static readonly ILogger _log = Log.ForContext<StanceService>();
 
     /// <summary>
-    /// Switches a character's active stance.
+    /// v0.21.1: Switches a character's active stance.
+    /// First shift per turn is free, subsequent shifts would cost AP (not yet implemented).
     /// </summary>
     /// <param name="character">The character changing stance</param>
     /// <param name="newStanceType">The stance to switch to</param>
@@ -33,6 +34,15 @@ public class StanceService
             return false;
         }
 
+        // v0.21.1: Check if shifts remaining (future: could cost AP if no shifts left)
+        if (character.StanceShiftsRemaining <= 0)
+        {
+            _log.Debug("Character {CharacterName} has no stance shifts remaining this turn",
+                character.Name);
+            combatState?.AddLogEntry($"  No stance shifts remaining this turn!");
+            return false;
+        }
+
         // Create new stance instance
         Stance newStance = newStanceType switch
         {
@@ -45,13 +55,20 @@ public class StanceService
 
         // Apply stance change
         character.ActiveStance = newStance;
+        character.StanceShiftsRemaining--;
+        character.StanceTurnsInCurrent = 0; // Reset turn counter for new stance
 
-        _log.Information("Character {CharacterName} changed stance from {OldStance} to {NewStance}",
-            character.Name, oldStanceType, newStanceType);
+        _log.Information("Character {CharacterName} changed stance from {OldStance} to {NewStance} (Shifts remaining: {ShiftsRemaining})",
+            character.Name, oldStanceType, newStanceType, character.StanceShiftsRemaining);
 
         // Log to combat state
-        combatState?.AddLogEntry($"  Shifted to {GetStanceName(newStanceType)} stance.");
+        combatState?.AddLogEntry($"  Shifted to {GetStanceName(newStanceType)} stance (free action).");
         LogStanceEffects(newStanceType, combatState);
+
+        if (character.StanceShiftsRemaining == 0)
+        {
+            combatState?.AddLogEntry($"  [No more free stance shifts this turn]");
+        }
 
         return true;
     }
@@ -185,8 +202,8 @@ public class StanceService
     }
 
     /// <summary>
-    /// v0.21.1: Checks if character is in a vulnerable stance (Offensive).
-    /// Used by Trauma Economy to apply stress when caught in wrong stance.
+    /// v0.21.1 SPEC: Checks if character is in a vulnerable stance (Offensive).
+    /// Being attacked while in Offensive Stance: +8-10 stress (vulnerability punishment)
     /// </summary>
     /// <param name="character">The character to check</param>
     /// <param name="wasAttacked">Whether the character was just attacked</param>
@@ -198,8 +215,8 @@ public class StanceService
         var stance = character.ActiveStance;
         if (stance == null || stance.Type != StanceType.Offensive) return 0;
 
-        // Offensive stance makes you vulnerable when attacked
-        const int vulnerabilityStress = 5;
+        // v0.21.1 SPEC: Offensive stance vulnerability: +8-10 stress
+        const int vulnerabilityStress = 8; // Using 8 (mid-range of 8-10)
 
         _log.Debug("Character {CharacterName} caught in Offensive stance while being attacked, adding {Stress} stress",
             character.Name, vulnerabilityStress);
@@ -245,5 +262,56 @@ public class StanceService
             (StanceType.Defensive, GetStanceName(StanceType.Defensive), GetStanceDescription(StanceType.Defensive)),
             (StanceType.Evasive, GetStanceName(StanceType.Evasive), GetStanceDescription(StanceType.Evasive))
         };
+    }
+
+    /// <summary>
+    /// v0.21.1: Called at the start of a character's turn to reset stance shifts.
+    /// </summary>
+    public void OnTurnStart(PlayerCharacter character)
+    {
+        character.StanceShiftsRemaining = 1; // Reset to 1 free shift per turn
+
+        _log.Debug("Turn start for {CharacterName}: Stance shifts reset to {ShiftsRemaining}",
+            character.Name, character.StanceShiftsRemaining);
+    }
+
+    /// <summary>
+    /// v0.21.1: Called at the end of a character's turn to increment stance duration.
+    /// Tracks how long character has been in current stance for stress relief mechanics.
+    /// </summary>
+    public void OnTurnEnd(PlayerCharacter character)
+    {
+        character.StanceTurnsInCurrent++;
+
+        _log.Debug("Turn end for {CharacterName}: {StanceTurnsInCurrent} turns in {StanceType}",
+            character.Name, character.StanceTurnsInCurrent, character.ActiveStance.Type);
+    }
+
+    /// <summary>
+    /// v0.21.1 SPEC: Calculates stress relief from stance mastery.
+    /// Maintaining Offensive Stance for 3+ turns: -5 stress (confidence building)
+    /// </summary>
+    public int CheckStanceMasteryStressRelief(PlayerCharacter character)
+    {
+        // v0.21.1 SPEC: Maintaining Offensive for 3+ turns reduces stress
+        if (character.ActiveStance.Type == StanceType.Offensive && character.StanceTurnsInCurrent >= 3)
+        {
+            const int masteryStressRelief = -5; // Negative = stress reduction
+
+            _log.Debug("Character {CharacterName} has maintained Offensive stance for {Turns} turns, granting {Relief} stress relief",
+                character.Name, character.StanceTurnsInCurrent, Math.Abs(masteryStressRelief));
+
+            return masteryStressRelief;
+        }
+
+        return 0;
+    }
+
+    /// <summary>
+    /// v0.21.1: Check if character can change stance (has shifts remaining).
+    /// </summary>
+    public bool CanChangeStance(PlayerCharacter character)
+    {
+        return character.StanceShiftsRemaining > 0;
     }
 }

@@ -847,6 +847,15 @@ public class EnemyAI
 
         player.HP -= damage;
         combatState.AddLogEntry($"{indent}{player.Name} takes {damage} damage! (HP: {Math.Max(0, player.HP)}/{player.MaxHP})");
+
+        // [v0.21.1] Stance vulnerability stress - Offensive stance makes you vulnerable when attacked
+        var stanceStress = _stanceService.CheckStanceVulnerabilityStress(player, wasAttacked: true);
+        if (stanceStress > 0)
+        {
+            var traumaService = new TraumaEconomyService();
+            traumaService.AddStress(player, stanceStress, source: "Stance Vulnerability");
+            combatState.AddLogEntry($"{indent}[Offensive Stance Vulnerability] +{stanceStress} Psychic Stress! (Current: {player.PsychicStress}/100)");
+        }
     }
 
     private void ExecuteDefend(Enemy enemy, CombatState combatState)

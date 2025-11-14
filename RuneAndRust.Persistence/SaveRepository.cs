@@ -439,8 +439,8 @@ public class SaveRepository
             DungeonsCompleted = worldState?.DungeonsCompleted ?? 0,
             // v0.21.1: Advanced Stance System
             ActiveStanceType = player.ActiveStance?.Type.ToString() ?? "Balanced",
-            StanceTurnsInCurrent = 0, // TODO: Add tracking field to PlayerCharacter
-            StanceShiftsRemaining = 1, // TODO: Add tracking field to PlayerCharacter
+            StanceTurnsInCurrent = player.StanceTurnsInCurrent,
+            StanceShiftsRemaining = player.StanceShiftsRemaining,
             LastSaved = DateTime.Now
         };
 
@@ -908,11 +908,14 @@ public class SaveRepository
                 "Balanced" => Stance.CreateBalancedStance(),
                 _ => Stance.CreateBalancedStance()
             };
-            // TODO: Restore StanceTurnsInCurrent and StanceShiftsRemaining when PlayerCharacter has these fields
+            player.StanceTurnsInCurrent = saveData.StanceTurnsInCurrent;
+            player.StanceShiftsRemaining = saveData.StanceShiftsRemaining;
         }
         catch
         {
             player.ActiveStance = Stance.CreateBalancedStance();
+            player.StanceTurnsInCurrent = 0;
+            player.StanceShiftsRemaining = 1;
         }
 
         // Reconstruct abilities based on class and level (will be set by CharacterFactory)

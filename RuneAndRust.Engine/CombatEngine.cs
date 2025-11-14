@@ -1952,6 +1952,12 @@ public class CombatEngine
             // Handle KE decay for next participant's turn start
             keService.OnTurnStart(nextCombatant);
 
+            // [v0.21.1] Handle stance turn management for next participant
+            if (nextParticipant.IsPlayer)
+            {
+                _stanceService.OnTurnStart(combatState.Player);
+            }
+
             // Decrement trap durations (once per full round, on player's turn)
             if (nextParticipant.IsPlayer)
             {
@@ -1981,6 +1987,21 @@ public class CombatEngine
                     {
                         combatState.AddLogEntry(""); // Spacing after trap triggers
                     }
+                }
+            }
+
+            // [v0.21.1] Handle stance turn end for current participant
+            if (currentParticipant.IsPlayer)
+            {
+                _stanceService.OnTurnEnd(combatState.Player);
+
+                // [v0.21.1 SPEC] Check for stance mastery stress relief (Offensive 3+ turns = -5 stress)
+                var stressRelief = _stanceService.CheckStanceMasteryStressRelief(combatState.Player);
+                if (stressRelief < 0)
+                {
+                    var traumaService = new TraumaEconomyService();
+                    traumaService.AddStress(combatState.Player, stressRelief, source: "Stance Mastery");
+                    combatState.AddLogEntry($"[Offensive Stance Mastery] Confidence builds! {stressRelief} Psychic Stress (Current: {combatState.Player.PsychicStress}/100)");
                 }
             }
         }

@@ -15,6 +15,10 @@ public class PlayerCharacter
     // v0.7.1: Stance System (Warriors)
     public Stance ActiveStance { get; set; } = Stance.CreateBalancedStance();
 
+    // v0.21.1: Advanced Stance System - Turn tracking
+    public int StanceShiftsRemaining { get; set; } = 1; // Free shifts per turn (resets each turn)
+    public int StanceTurnsInCurrent { get; set; } = 0; // Turns spent in current stance
+
     // Progression (Aethelgard Saga System)
     public int CurrentMilestone { get; set; } = 0;
     public int CurrentLegend { get; set; } = 0;

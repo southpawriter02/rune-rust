@@ -1730,7 +1730,8 @@ class Program
     }
 
     /// <summary>
-    /// v0.21.1: Handle player changing combat stance
+    /// v0.21.1: Handle player changing combat stance.
+    /// Stance changes are FREE ACTIONS (don't consume turn) - 1 free shift per turn.
     /// </summary>
     static bool HandlePlayerStanceChange(CombatState combat)
     {
@@ -1756,12 +1757,13 @@ class Program
 
         if (!success)
         {
-            // Already in that stance, didn't consume turn
+            // Already in that stance or no shifts remaining - didn't consume turn
             return false;
         }
 
-        // Successfully changed stance, turn complete
-        return true;
+        // v0.21.1 SPEC: Stance changes are FREE ACTIONS (don't consume turn)
+        // Player can continue to take their turn after changing stance
+        return false;
     }
 
     static bool HandlePlayerUseConsumable(CombatState combat)
