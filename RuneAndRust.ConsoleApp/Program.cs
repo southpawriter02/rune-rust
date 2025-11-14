@@ -28,7 +28,7 @@ class Program
     private static StatusEffectRepository _statusEffectRepository = new();
     private static AdvancedStatusEffectService _statusEffectService = new(_statusEffectRepository, _traumaService, _diceService);
     private static CombatEngine _combatEngine = new(_diceService, _sagaService, _lootService, _equipmentService, _hazardService, _currencyService, _statusEffectService);
-    private static EnemyAI _enemyAI = new(_diceService);
+    private static EnemyAI _enemyAI = new(_diceService, _statusEffectService);
     private static AdvancedMovementService _advancedMovement = new(); // v0.20.4
     private static SaveRepository _saveRepository = new();
     // v0.13: Persistent World State System

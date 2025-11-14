@@ -12,10 +12,21 @@ public class TrapService
 {
     private static readonly ILogger _log = Log.ForContext<TrapService>();
     private readonly DiceService _diceService;
+    private readonly AdvancedStatusEffectService? _statusEffectService; // v0.21.3
+    private const int PLAYER_TARGET_ID = 0; // v0.21.3
 
-    public TrapService(DiceService diceService)
+    public TrapService(DiceService diceService, AdvancedStatusEffectService? statusEffectService = null)
     {
         _diceService = diceService;
+        _statusEffectService = statusEffectService;
+    }
+
+    /// <summary>
+    /// v0.21.3: Get target ID for status effect tracking
+    /// </summary>
+    private int GetTargetId(Enemy enemy)
+    {
+        return enemy.Id.GetHashCode();
     }
 
     /// <summary>
@@ -209,6 +220,15 @@ public class TrapService
 
     private void ApplyStatusToPlayer(PlayerCharacter player, string statusEffect, int duration)
     {
+        // v0.21.3: Use new Advanced Status Effect System if available
+        if (_statusEffectService != null)
+        {
+            var result = _statusEffectService.ApplyEffect(PLAYER_TARGET_ID, statusEffect, duration: duration);
+            _log.Debug("Applied {Effect} to player: {Success} - {Message}", statusEffect, result.Success, result.Message);
+            return;
+        }
+
+        // Fallback to legacy system
         switch (statusEffect)
         {
             case "Rooted":
@@ -225,6 +245,16 @@ public class TrapService
 
     private void ApplyStatusToEnemy(Enemy enemy, string statusEffect, int duration)
     {
+        // v0.21.3: Use new Advanced Status Effect System if available
+        if (_statusEffectService != null)
+        {
+            var result = _statusEffectService.ApplyEffect(GetTargetId(enemy), statusEffect, duration: duration);
+            _log.Debug("Applied {Effect} to enemy {EnemyId}: {Success} - {Message}",
+                statusEffect, enemy.Id, result.Success, result.Message);
+            return;
+        }
+
+        // Fallback to legacy system
         switch (statusEffect)
         {
             case "Rooted":

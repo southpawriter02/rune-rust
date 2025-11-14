@@ -523,7 +523,7 @@ public class CombatEngine
         // [v0.20] Handle Rúnasmiðr trap abilities
         if (RunasmidrAbilityHandler.IsTrapAbility(ability.Name))
         {
-            var trapHandler = new RunasmidrAbilityHandler(new TrapService(_diceService));
+            var trapHandler = new RunasmidrAbilityHandler(new TrapService(_diceService, _statusEffectService));
 
             // Determine trap target position
             // For now, use default position (enemy front row, player column)
@@ -2083,7 +2083,7 @@ public class CombatEngine
         if (combatState.Grid != null)
         {
             var keService = new KineticEnergyService();
-            var trapService = new TrapService(_diceService);
+            var trapService = new TrapService(_diceService, _statusEffectService);
 
             // Get the NEXT participant (since we're about to advance the turn)
             var nextTurnIndex = (combatState.CurrentTurnIndex + 1) % combatState.InitiativeOrder.Count;

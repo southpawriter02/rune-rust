@@ -67,23 +67,34 @@ public class EnemyAI
     private readonly FlankingService _flankingService; // v0.20.1
     private readonly CoverService _coverService; // v0.20.2
     private readonly StanceService _stanceService; // v0.21.1
+    private readonly AdvancedStatusEffectService? _statusEffectService; // v0.21.3
 
-    public EnemyAI(DiceService diceService)
+    public EnemyAI(DiceService diceService, AdvancedStatusEffectService? statusEffectService = null)
     {
         _diceService = diceService;
+        _statusEffectService = statusEffectService;
         _random = new Random();
         _flankingService = new FlankingService(); // v0.20.1
         _coverService = new CoverService(); // v0.20.2
         _stanceService = new StanceService(); // v0.21.1
     }
 
-    public EnemyAI(DiceService diceService, int seed)
+    public EnemyAI(DiceService diceService, int seed, AdvancedStatusEffectService? statusEffectService = null)
     {
         _diceService = diceService;
+        _statusEffectService = statusEffectService;
         _random = new Random(seed);
         _flankingService = new FlankingService(); // v0.20.1
         _coverService = new CoverService(); // v0.20.2
         _stanceService = new StanceService(); // v0.21.1
+    }
+
+    /// <summary>
+    /// v0.21.3: Get target ID for status effect tracking
+    /// </summary>
+    private int GetTargetId(Enemy enemy)
+    {
+        return enemy.Id.GetHashCode();
     }
 
     /// <summary>
@@ -1122,9 +1133,23 @@ public class EnemyAI
         {
             combatState.AddLogEntry($"  {player.Name} dodges the berserker rush!");
             combatState.PlayerNegateNextAttack = false;
-            combatState.AddLogEntry("  ...but the effort leaves {enemy.Name} exhausted!");
-            enemy.IsStunned = true; // Skips next turn
-            enemy.StunTurnsRemaining = 1;
+            combatState.AddLogEntry($"  ...but the effort leaves {enemy.Name} exhausted!");
+
+            // v0.21.3: Apply Stunned using new system
+            if (_statusEffectService != null)
+            {
+                var result = _statusEffectService.ApplyEffect(GetTargetId(enemy), "Stunned", duration: 1);
+                if (result.Success)
+                {
+                    combatState.AddLogEntry($"  {result.Message}");
+                }
+            }
+            else
+            {
+                enemy.IsStunned = true; // Skips next turn
+                enemy.StunTurnsRemaining = 1;
+            }
+
             combatState.AddLogEntry("");
             return;
         }
@@ -1146,11 +1171,23 @@ public class EnemyAI
         }
 
         ApplyDamageToPlayer(player, damage, combatState);
-        combatState.AddLogEntry($"  The effort exhausts {enemy.Name}! (Skips next turn)");
+        combatState.AddLogEntry($"  The effort exhausts {enemy.Name}!");
 
-        // Skip next turn
-        enemy.IsStunned = true;
-        enemy.StunTurnsRemaining = 1;
+        // v0.21.3: Apply Stunned using new system
+        if (_statusEffectService != null)
+        {
+            var result = _statusEffectService.ApplyEffect(GetTargetId(enemy), "Stunned", duration: 1);
+            if (result.Success)
+            {
+                combatState.AddLogEntry($"  {result.Message}");
+            }
+        }
+        else
+        {
+            enemy.IsStunned = true;
+            enemy.StunTurnsRemaining = 1;
+            combatState.AddLogEntry($"  (Skips next turn)");
+        }
 
         combatState.AddLogEntry("");
     }
