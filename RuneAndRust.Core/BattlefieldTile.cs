@@ -13,6 +13,10 @@ public class BattlefieldTile
     public bool IsOccupied { get; set; }
     public string? OccupantId { get; set; }                // Combatant ID (player or enemy)
 
+    // Cover properties (v0.20.2)
+    public int? CoverHealth { get; set; }                   // HP for physical cover (null for metaphysical only)
+    public string? CoverDescription { get; set; }           // Descriptive text: "Pillar", "Crate", "Runic Anchor"
+
     // Glitched tile properties
     public GlitchType? GlitchType { get; set; }            // Flickering, InvertedGravity, Looping
     public int GlitchSeverity { get; set; }                // 1-3 (DC scaling: 12/14/16)
