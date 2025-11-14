@@ -21,6 +21,9 @@ public class BattlefieldTile
     public GlitchType? GlitchType { get; set; }            // Flickering, InvertedGravity, Looping
     public int GlitchSeverity { get; set; }                // 1-3 (DC scaling: 12/14/16)
 
+    // v0.22: Environmental objects on this tile
+    public List<int> EnvironmentalObjectIds { get; set; } = new List<int>(); // IDs of environmental objects at this position
+
     public BattlefieldTile(GridPosition position)
     {
         Position = position;
@@ -31,6 +34,7 @@ public class BattlefieldTile
         OccupantId = null;
         GlitchType = null;
         GlitchSeverity = 0;
+        EnvironmentalObjectIds = new List<int>();
     }
 
     /// <summary>
@@ -50,8 +54,9 @@ public class BattlefieldTile
         var coverStr = Cover != CoverType.None ? $" Cover:{Cover}" : "";
         var glitchStr = GlitchType != null ? $" GLITCH:{GlitchType}({GlitchSeverity})" : "";
         var trapStr = Traps.Count > 0 ? $" Traps:{Traps.Count}" : "";
+        var envObjStr = EnvironmentalObjectIds.Count > 0 ? $" EnvObjs:{EnvironmentalObjectIds.Count}" : "";
 
-        return $"{Position} {status}{coverStr}{glitchStr}{trapStr}";
+        return $"{Position} {status}{coverStr}{glitchStr}{trapStr}{envObjStr}";
     }
 }
 
