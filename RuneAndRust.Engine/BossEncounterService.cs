@@ -1,43 +1,35 @@
 using RuneAndRust.Core;
+using RuneAndRust.Persistence;
 using Serilog;
+using System.Text.Json;
 
 namespace RuneAndRust.Engine;
 
 /// <summary>
-/// v0.23.1: Manages boss encounter mechanics including multi-phase transitions,
-/// add wave spawning, and enrage timers
+/// v0.23.1: Boss Encounter Service - Database-backed implementation
+/// Manages boss encounter mechanics including multi-phase transitions,
+/// add wave spawning, and enrage timers with full persistence.
 /// </summary>
 public class BossEncounterService
 {
     private static readonly ILogger _log = Log.ForContext<BossEncounterService>();
+    private readonly BossEncounterRepository _repository;
     private readonly DiceService _diceService;
-    private readonly EnemyFactory _enemyFactory;
 
-    /// <summary>
-    /// Tracks active phase transitions (boss ID -> remaining invulnerability turns)
-    /// </summary>
-    private Dictionary<string, int> _activeTransitions = new();
-
-    /// <summary>
-    /// Tracks current phase for each boss (boss ID -> phase number)
-    /// </summary>
-    private Dictionary<string, int> _bossPhases = new();
-
-    /// <summary>
-    /// Tracks enrage timers (boss ID -> remaining turns until enrage)
-    /// </summary>
-    private Dictionary<string, int> _enrageTimers = new();
-
-    public BossEncounterService(DiceService diceService, EnemyFactory enemyFactory)
+    public BossEncounterService(BossEncounterRepository repository, DiceService diceService)
     {
+        _repository = repository;
         _diceService = diceService;
-        _enemyFactory = enemyFactory;
     }
 
+    // ═════════════════════════════════════════════════════════════
+    // BOSS ENCOUNTER INITIALIZATION
+    // ═════════════════════════════════════════════════════════════
+
     /// <summary>
-    /// Initialize boss encounter tracking for a boss enemy
+    /// Initialize boss encounter for a boss enemy
     /// </summary>
-    public void InitializeBossEncounter(Enemy boss, List<BossPhaseDefinition> phases, int? enrageTimer = null)
+    public void InitializeBossEncounter(Enemy boss, int encounterId)
     {
         if (!boss.IsBoss)
         {
@@ -45,236 +37,381 @@ public class BossEncounterService
             return;
         }
 
-        _bossPhases[boss.Id] = 1; // Start at Phase 1
+        _log.Information("Initializing boss encounter: EnemyId={EnemyId}, EncounterId={EncounterId}",
+            boss.Id, encounterId);
 
-        if (enrageTimer.HasValue)
+        // Get boss configuration from database
+        var bossConfig = _repository.GetBossEncounterByEncounterId(encounterId);
+        if (bossConfig == null)
         {
-            _enrageTimers[boss.Id] = enrageTimer.Value;
-            _log.Information("Boss encounter initialized: {BossId}, Phases={PhaseCount}, EnrageTimer={EnrageTimer}",
-                boss.Id, phases.Count, enrageTimer.Value);
+            _log.Warning("No boss configuration found for EncounterId={EncounterId}", encounterId);
+            return;
         }
-        else
-        {
-            _log.Information("Boss encounter initialized: {BossId}, Phases={PhaseCount}",
-                boss.Id, phases.Count);
-        }
+
+        // Initialize combat state
+        _repository.InitializeBossCombatState(bossConfig.BossEncounterId, boss.Id);
+
+        _log.Information("Boss encounter initialized: Boss={BossName}, Phases={TotalPhases}",
+            bossConfig.BossName, bossConfig.TotalPhases);
     }
+
+    // ═════════════════════════════════════════════════════════════
+    // PHASE TRANSITION SYSTEM
+    // ═════════════════════════════════════════════════════════════
 
     /// <summary>
     /// Check if boss should transition to next phase based on HP percentage
-    /// Returns the new phase definition if transition should occur, null otherwise
+    /// Returns transition description if phase transition occurs, null otherwise
     /// </summary>
-    public BossPhaseDefinition? CheckPhaseTransition(Enemy boss, List<BossPhaseDefinition> phases)
+    public string? CheckPhaseTransitions(Enemy boss, CombatState combatState)
     {
-        if (!boss.IsBoss || boss.MaxHP <= 0)
-            return null;
-
-        int currentPhase = GetCurrentPhase(boss);
-        int hpPercentage = (int)((boss.HP / (double)boss.MaxHP) * 100);
-
-        // Find the highest phase that boss should be in based on HP
-        var targetPhase = phases
-            .Where(p => p.PhaseNumber > currentPhase && hpPercentage <= p.HPPercentageThreshold)
-            .OrderBy(p => p.PhaseNumber)
-            .FirstOrDefault();
-
-        if (targetPhase != null)
+        var bossState = _repository.GetBossCombatState(boss.Id);
+        if (bossState == null || bossState.IsTransitioning)
         {
-            _log.Information("Boss phase transition triggered: {BossId}, Phase {OldPhase} → {NewPhase}, HP={HP}/{MaxHP} ({HPPercent}%)",
-                boss.Id, currentPhase, targetPhase.PhaseNumber, boss.HP, boss.MaxHP, hpPercentage);
+            return null; // Not a boss fight or already transitioning
+        }
 
-            return targetPhase;
+        var bossConfig = _repository.GetBossEncounter(bossState.BossEncounterId);
+        if (bossConfig == null)
+        {
+            return null;
+        }
+
+        // Calculate current HP percentage
+        float hpPercentage = (float)boss.HP / boss.MaxHP;
+
+        _log.Debug("Checking phase transitions: Boss={BossName}, HP={HP}/{MaxHP} ({HPPercent}%), CurrentPhase={Phase}",
+            bossConfig.BossName, boss.HP, boss.MaxHP, (hpPercentage * 100).ToString("F1"), bossState.CurrentPhase);
+
+        // Check for phase 2 transition
+        if (bossState.CurrentPhase == 1 &&
+            !bossState.Phase2Triggered &&
+            hpPercentage <= bossConfig.Phase2HpThreshold)
+        {
+            return TriggerPhaseTransition(boss, bossState, bossConfig, 2, combatState);
+        }
+
+        // Check for phase 3 transition
+        if (bossState.CurrentPhase == 2 &&
+            !bossState.Phase3Triggered &&
+            bossConfig.TotalPhases >= 3 &&
+            hpPercentage <= bossConfig.Phase3HpThreshold)
+        {
+            return TriggerPhaseTransition(boss, bossState, bossConfig, 3, combatState);
+        }
+
+        // Check for phase 4 transition
+        if (bossState.CurrentPhase == 3 &&
+            !bossState.Phase4Triggered &&
+            bossConfig.TotalPhases >= 4 &&
+            hpPercentage <= bossConfig.Phase4HpThreshold)
+        {
+            return TriggerPhaseTransition(boss, bossState, bossConfig, 4, combatState);
         }
 
         return null;
     }
 
-    /// <summary>
-    /// Execute phase transition for a boss, applying stat modifiers and starting invulnerability
-    /// </summary>
-    public string ExecutePhaseTransition(Enemy boss, BossPhaseDefinition phase, CombatState combatState)
+    private string TriggerPhaseTransition(
+        Enemy boss,
+        BossCombatStateData bossState,
+        BossEncounterConfig bossConfig,
+        int newPhase,
+        CombatState combatState)
     {
-        // Update boss phase tracking
-        _bossPhases[boss.Id] = phase.PhaseNumber;
-        boss.Phase = phase.PhaseNumber;
-
-        // Apply stat modifiers
-        ApplyPhaseStatModifiers(boss, phase.StatModifiers);
-
-        // Start invulnerability window
-        if (phase.InvulnerabilityTurns > 0)
+        var phaseDefinition = _repository.GetPhaseDefinition(bossState.BossEncounterId, newPhase);
+        if (phaseDefinition == null)
         {
-            _activeTransitions[boss.Id] = phase.InvulnerabilityTurns;
-            _log.Information("Boss invulnerability started: {BossId}, Duration={Turns} turns",
-                boss.Id, phase.InvulnerabilityTurns);
+            _log.Warning("No phase definition found: BossEncounterId={BossEncounterId}, Phase={Phase}",
+                bossState.BossEncounterId, newPhase);
+            return string.Empty;
         }
 
-        // Build combat log message
+        _log.Warning("PHASE TRANSITION: Boss={BossName}, Phase {OldPhase} → {NewPhase}",
+            bossConfig.BossName, bossState.CurrentPhase, newPhase);
+
+        // Step 1: Apply invulnerability
+        _repository.UpdateInvulnerability(boss.Id, bossConfig.TransitionInvulnerabilityTurns);
+
+        // Step 2: Update phase state
+        _repository.UpdatePhaseState(boss.Id, newPhase);
+        boss.Phase = newPhase;
+
+        // Step 3: Execute phase transition events
+        string eventLog = ExecutePhaseTransitionEvents(boss, phaseDefinition, combatState);
+
+        // Step 4: Build cinematic description
         string logMessage = $"\n╔═══════════════════════════════════════════════════════════════╗\n";
-        logMessage += $"║ PHASE {phase.PhaseNumber} TRANSITION\n";
+        logMessage += $"║ PHASE {newPhase} TRANSITION\n";
         logMessage += $"╚═══════════════════════════════════════════════════════════════╝\n";
-        logMessage += $"{phase.TransitionDescription}\n";
+        logMessage += $"{phaseDefinition.PhaseDescription}\n";
 
-        if (phase.InvulnerabilityTurns > 0)
+        if (bossConfig.TransitionInvulnerabilityTurns > 0)
         {
-            logMessage += $"⚠️ {boss.Name} is [INVULNERABLE] for {phase.InvulnerabilityTurns} turn(s)!\n";
+            logMessage += $"⚠️ {boss.Name} is [INVULNERABLE] for {bossConfig.TransitionInvulnerabilityTurns} turn(s)!\n";
         }
 
-        if (phase.StatModifiers.RegenerationPerTurn > 0)
+        if (phaseDefinition.RegenerationPerTurn > 0)
         {
-            logMessage += $"🔄 {boss.Name} gains [Regeneration] ({phase.StatModifiers.RegenerationPerTurn} HP/turn)\n";
+            logMessage += $"🔄 {boss.Name} gains [Regeneration] ({phaseDefinition.RegenerationPerTurn} HP/turn)\n";
         }
 
-        if (phase.StatModifiers.DamageMultiplier > 1.0)
+        if (phaseDefinition.DamageModifier > 1.0)
         {
-            logMessage += $"⚡ {boss.Name}'s damage increased by {(int)((phase.StatModifiers.DamageMultiplier - 1.0) * 100)}%!\n";
+            logMessage += $"⚡ {boss.Name}'s damage increased by {(int)((phaseDefinition.DamageModifier - 1.0) * 100)}%!\n";
         }
 
-        if (phase.StatModifiers.BonusActionsPerTurn > 0)
+        if (phaseDefinition.BonusActionsPerTurn > 0)
         {
-            logMessage += $"⚡ {boss.Name} gains {phase.StatModifiers.BonusActionsPerTurn} additional action(s) per turn!\n";
+            logMessage += $"⚡ {boss.Name} gains {phaseDefinition.BonusActionsPerTurn} additional action(s) per turn!\n";
         }
 
-        _log.Information("Phase transition executed: {BossId}, Phase={Phase}, Modifiers={@Modifiers}",
-            boss.Id, phase.PhaseNumber, phase.StatModifiers);
+        logMessage += eventLog;
 
         return logMessage;
     }
 
-    /// <summary>
-    /// Spawn add wave for a boss phase transition
-    /// </summary>
-    public (List<Enemy> spawnedEnemies, string logMessage) SpawnAddWave(AddWaveConfig addWave, BattlefieldGrid? grid = null)
+    private string ExecutePhaseTransitionEvents(
+        Enemy boss,
+        BossPhaseDefinitionData phaseDefinition,
+        CombatState combatState)
+    {
+        string eventLog = "";
+
+        _log.Information("Executing phase transition events: Phase={PhaseName}", phaseDefinition.PhaseName);
+
+        // Spawn add waves
+        if (phaseDefinition.SpawnsAdds && !string.IsNullOrEmpty(phaseDefinition.AddWaveComposition))
+        {
+            var (spawnedEnemies, addLog) = SpawnAddWave(boss.Id, phaseDefinition.AddWaveComposition);
+            if (spawnedEnemies.Count > 0)
+            {
+                combatState.Enemies.AddRange(spawnedEnemies);
+                eventLog += addLog;
+            }
+        }
+
+        // Apply phase stat modifiers
+        ApplyPhaseStatModifiers(boss, phaseDefinition);
+
+        return eventLog;
+    }
+
+    // ═════════════════════════════════════════════════════════════
+    // ADD WAVE SPAWNING
+    // ═════════════════════════════════════════════════════════════
+
+    private (List<Enemy> spawnedEnemies, string logMessage) SpawnAddWave(
+        string bossId,
+        string addWaveCompositionJSON)
     {
         var spawnedEnemies = new List<Enemy>();
-        string logMessage = $"\n{addWave.SpawnDescription}\n";
+        string logMessage = "";
 
-        foreach (var enemyType in addWave.EnemyTypes)
+        try
         {
-            int count = addWave.SpawnCounts.ContainsKey(enemyType)
-                ? addWave.SpawnCounts[enemyType]
-                : 1;
-
-            for (int i = 0; i < count; i++)
+            var addWave = JsonSerializer.Deserialize<List<AddSpawnDefinition>>(addWaveCompositionJSON);
+            if (addWave == null || addWave.Count == 0)
             {
-                var enemy = EnemyFactory.CreateEnemy(enemyType);
-                enemy.Id = $"{enemyType}_{Guid.NewGuid().ToString().Substring(0, 8)}";
-
-                // Apply spawn delay
-                if (addWave.SpawnDelay > 0)
-                {
-                    enemy.StunTurnsRemaining = addWave.SpawnDelay;
-                    enemy.IsStunned = true;
-                }
-
-                spawnedEnemies.Add(enemy);
-                logMessage += $"  • {enemy.Name} spawned!\n";
-
-                _log.Information("Add spawned: Type={EnemyType}, ID={EnemyId}, SpawnDelay={Delay}",
-                    enemyType, enemy.Id, addWave.SpawnDelay);
+                return (spawnedEnemies, logMessage);
             }
+
+            _log.Information("Spawning add wave: {AddCount} enemies", addWave.Sum(a => a.Count));
+
+            logMessage += "\n⚠️ Reinforcements summoned!\n";
+
+            foreach (var addDef in addWave)
+            {
+                for (int i = 0; i < addDef.Count; i++)
+                {
+                    var enemy = EnemyFactory.CreateEnemy(addDef.EnemyType);
+                    enemy.Id = $"{addDef.EnemyType}_{Guid.NewGuid().ToString().Substring(0, 8)}";
+
+                    spawnedEnemies.Add(enemy);
+                    logMessage += $"  • {enemy.Name} spawned!\n";
+
+                    _log.Debug("Add spawned: Type={EnemyType}, ID={EnemyId}",
+                        addDef.EnemyType, enemy.Id);
+                }
+            }
+
+            // Update add tracking
+            _repository.UpdateAddTracking(bossId, spawnedEnemies.Count, spawnedEnemies.Count);
+        }
+        catch (Exception ex)
+        {
+            _log.Error(ex, "Failed to spawn add wave: BossId={BossId}", bossId);
         }
 
         return (spawnedEnemies, logMessage);
     }
 
     /// <summary>
-    /// Check if boss is currently invulnerable due to phase transition
+    /// Call when an add is killed to update tracking
     /// </summary>
-    public bool IsBossInvulnerable(Enemy boss)
+    public void OnAddKilled(string bossId)
     {
-        return _activeTransitions.ContainsKey(boss.Id) && _activeTransitions[boss.Id] > 0;
+        _repository.UpdateAddTracking(bossId, 0, -1);
+        _log.Debug("Add killed in boss fight: BossId={BossId}", bossId);
     }
 
+    // ═════════════════════════════════════════════════════════════
+    // ENRAGE SYSTEM
+    // ═════════════════════════════════════════════════════════════
+
     /// <summary>
-    /// Decrement invulnerability duration and enrage timers at end of turn
+    /// Check if boss should enrage based on HP/turn thresholds
+    /// Returns enrage message if enrage triggers, null otherwise
     /// </summary>
-    public string ProcessEndOfTurn(Enemy boss)
+    public string? CheckEnrageConditions(Enemy boss, int currentTurn)
     {
-        string logMessage = "";
-
-        // Decrement invulnerability
-        if (_activeTransitions.ContainsKey(boss.Id) && _activeTransitions[boss.Id] > 0)
+        var bossState = _repository.GetBossCombatState(boss.Id);
+        if (bossState == null || bossState.IsEnraged)
         {
-            _activeTransitions[boss.Id]--;
-
-            if (_activeTransitions[boss.Id] == 0)
-            {
-                logMessage += $"⚔️ {boss.Name} is no longer invulnerable!\n";
-                _log.Information("Boss invulnerability ended: {BossId}", boss.Id);
-            }
+            return null; // Not a boss fight or already enraged
         }
 
-        // Decrement enrage timer
-        if (_enrageTimers.ContainsKey(boss.Id) && _enrageTimers[boss.Id] > 0)
+        var bossConfig = _repository.GetBossEncounter(bossState.BossEncounterId);
+        if (bossConfig == null)
         {
-            _enrageTimers[boss.Id]--;
-
-            if (_enrageTimers[boss.Id] == 0)
-            {
-                logMessage += ApplyEnrage(boss);
-            }
-            else if (_enrageTimers[boss.Id] <= 3)
-            {
-                logMessage += $"⏰ [WARNING] {boss.Name} enrages in {_enrageTimers[boss.Id]} turns!\n";
-            }
+            return null;
         }
 
-        return logMessage;
+        bool shouldEnrage = false;
+        string enrageReason = "";
+
+        // Check HP-based enrage
+        float hpPercentage = (float)boss.HP / boss.MaxHP;
+        if (hpPercentage <= bossConfig.EnrageHpThreshold)
+        {
+            shouldEnrage = true;
+            enrageReason = $"System integrity critical ({(hpPercentage * 100):F0}%)";
+        }
+
+        // Check turn-based enrage (optional)
+        if (bossConfig.EnrageTurnThreshold.HasValue &&
+            currentTurn >= bossConfig.EnrageTurnThreshold.Value)
+        {
+            shouldEnrage = true;
+            enrageReason = $"Combat duration exceeded ({currentTurn} turns)";
+        }
+
+        if (shouldEnrage)
+        {
+            return TriggerEnrage(boss, bossState, bossConfig, currentTurn, enrageReason);
+        }
+
+        return null;
     }
 
-    /// <summary>
-    /// Apply enrage buff to boss (50% damage increase, +1 action per turn)
-    /// </summary>
-    private string ApplyEnrage(Enemy boss)
+    private string TriggerEnrage(
+        Enemy boss,
+        BossCombatStateData bossState,
+        BossEncounterConfig bossConfig,
+        int currentTurn,
+        string reason)
     {
-        // Apply enrage stat buffs
-        boss.DamageBonus += (int)(boss.BaseDamageDice * 0.5);  // +50% damage
+        _log.Warning("BOSS ENRAGE: Boss={BossName}, Reason={Reason}, Turn={Turn}",
+            bossConfig.BossName, reason, currentTurn);
 
+        // Update enrage state
+        _repository.UpdateEnrageState(boss.Id, true, currentTurn);
+
+        // Apply enrage buffs
+        int originalDamageBonus = boss.DamageBonus;
+        boss.DamageBonus += (int)(boss.BaseDamageDice * (bossConfig.EnrageDamageMultiplier - 1.0) * 3);
+
+        // Build dramatic enrage message
         string logMessage = $"\n╔═══════════════════════════════════════════════════════════════╗\n";
         logMessage += $"║ ENRAGE\n";
         logMessage += $"╚═══════════════════════════════════════════════════════════════╝\n";
         logMessage += $"💀 {boss.Name} enters ENRAGE state!\n";
-        logMessage += $"⚡ Damage increased by 50%!\n";
-        logMessage += $"⚡ Gains +1 action per turn!\n";
+        logMessage += $"⚡ Reason: {reason}\n";
+        logMessage += $"⚡ Damage increased by {(int)((bossConfig.EnrageDamageMultiplier - 1.0) * 100)}%!\n";
 
-        _log.Warning("Boss enraged: {BossId}, NewDamageBonus={DamageBonus}",
-            boss.Id, boss.DamageBonus);
+        if (bossConfig.EnrageSpeedBonus > 0)
+        {
+            logMessage += $"⚡ Gains +{bossConfig.EnrageSpeedBonus} action(s) per turn!\n";
+        }
+
+        logMessage += $"⚡ [Control Immunity] - Cannot be stunned or disabled!\n";
+
+        _log.Warning("Enrage buffs applied: DamageBonus {OldBonus} → {NewBonus}",
+            originalDamageBonus, boss.DamageBonus);
+
+        return logMessage;
+    }
+
+    // ═════════════════════════════════════════════════════════════
+    // INVULNERABILITY SYSTEM
+    // ═════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// Check if boss is currently invulnerable due to phase transition
+    /// </summary>
+    public bool IsBossInvulnerable(Enemy boss)
+    {
+        var bossState = _repository.GetBossCombatState(boss.Id);
+        return bossState != null && bossState.InvulnerabilityTurnsRemaining > 0;
+    }
+
+    /// <summary>
+    /// Get remaining invulnerability turns
+    /// </summary>
+    public int GetInvulnerabilityTurns(Enemy boss)
+    {
+        var bossState = _repository.GetBossCombatState(boss.Id);
+        return bossState?.InvulnerabilityTurnsRemaining ?? 0;
+    }
+
+    // ═════════════════════════════════════════════════════════════
+    // TURN PROCESSING
+    // ═════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// Process end of turn for boss (decrement invulnerability, apply regeneration)
+    /// </summary>
+    public string ProcessEndOfTurn(Enemy boss)
+    {
+        var bossState = _repository.GetBossCombatState(boss.Id);
+        if (bossState == null)
+        {
+            return ""; // Not a boss fight
+        }
+
+        var bossConfig = _repository.GetBossEncounter(bossState.BossEncounterId);
+        if (bossConfig == null)
+        {
+            return "";
+        }
+
+        string logMessage = "";
+
+        // Decrement invulnerability
+        if (bossState.InvulnerabilityTurnsRemaining > 0)
+        {
+            int newTurns = bossState.InvulnerabilityTurnsRemaining - 1;
+            _repository.UpdateInvulnerability(boss.Id, newTurns);
+
+            if (newTurns == 0)
+            {
+                logMessage += $"⚔️ {boss.Name} is no longer invulnerable!\n";
+                _log.Information("Boss invulnerability ended: BossId={BossId}", boss.Id);
+            }
+        }
+
+        // Apply regeneration if in regen phase
+        var phaseDefinition = _repository.GetPhaseDefinition(bossState.BossEncounterId, bossState.CurrentPhase);
+        if (phaseDefinition != null && phaseDefinition.RegenerationPerTurn > 0)
+        {
+            logMessage += ProcessRegeneration(boss, phaseDefinition.RegenerationPerTurn);
+        }
 
         return logMessage;
     }
 
     /// <summary>
-    /// Apply phase stat modifiers to boss
-    /// </summary>
-    private void ApplyPhaseStatModifiers(Enemy boss, PhaseStatModifiers modifiers)
-    {
-        // Damage multiplier is applied during damage calculation
-        // Store it as a damage bonus increase for simplicity
-        if (modifiers.DamageMultiplier > 1.0)
-        {
-            int bonusDamage = (int)((modifiers.DamageMultiplier - 1.0) * boss.BaseDamageDice * 3); // Rough estimate
-            boss.DamageBonus += bonusDamage;
-        }
-
-        // Apply defense bonus
-        if (modifiers.DefenseBonus > 0)
-        {
-            boss.DefenseBonus += modifiers.DefenseBonus;
-        }
-
-        // Apply soak bonus
-        if (modifiers.SoakBonus > 0)
-        {
-            boss.Soak += modifiers.SoakBonus;
-        }
-
-        _log.Debug("Phase stat modifiers applied: {BossId}, DefenseBonus={Defense}, SoakBonus={Soak}",
-            boss.Id, modifiers.DefenseBonus, modifiers.SoakBonus);
-    }
-
-    /// <summary>
-    /// Process boss regeneration (if active in current phase)
+    /// Process boss regeneration
     /// </summary>
     public string ProcessRegeneration(Enemy boss, int regenAmount)
     {
@@ -286,45 +423,106 @@ public class BossEncounterService
 
         string logMessage = $"🔄 {boss.Name} regenerates {healedAmount} HP ({boss.HP}/{boss.MaxHP})\n";
 
-        _log.Debug("Boss regeneration: {BossId}, Healed={Amount}, CurrentHP={HP}/{MaxHP}",
+        _log.Debug("Boss regeneration: BossId={BossId}, Healed={Amount}, CurrentHP={HP}/{MaxHP}",
             boss.Id, healedAmount, boss.HP, boss.MaxHP);
 
         return logMessage;
     }
+
+    // ═════════════════════════════════════════════════════════════
+    // HELPER METHODS
+    // ═════════════════════════════════════════════════════════════
 
     /// <summary>
     /// Get current phase number for a boss
     /// </summary>
     public int GetCurrentPhase(Enemy boss)
     {
-        return _bossPhases.ContainsKey(boss.Id) ? _bossPhases[boss.Id] : 1;
+        var bossState = _repository.GetBossCombatState(boss.Id);
+        return bossState?.CurrentPhase ?? 1;
     }
 
     /// <summary>
-    /// Get remaining invulnerability turns for a boss
+    /// Check if boss is enraged
     /// </summary>
-    public int GetInvulnerabilityTurns(Enemy boss)
+    public bool IsBossEnraged(Enemy boss)
     {
-        return _activeTransitions.ContainsKey(boss.Id) ? _activeTransitions[boss.Id] : 0;
+        var bossState = _repository.GetBossCombatState(boss.Id);
+        return bossState != null && bossState.IsEnraged;
     }
 
     /// <summary>
-    /// Get remaining turns until enrage
+    /// Get boss encounter configuration
     /// </summary>
-    public int? GetEnrageTimer(Enemy boss)
+    public BossEncounterConfig? GetBossConfig(Enemy boss)
     {
-        return _enrageTimers.ContainsKey(boss.Id) ? _enrageTimers[boss.Id] : null;
+        var bossState = _repository.GetBossCombatState(boss.Id);
+        if (bossState == null)
+        {
+            return null;
+        }
+
+        return _repository.GetBossEncounter(bossState.BossEncounterId);
     }
 
     /// <summary>
-    /// Clear all boss encounter tracking data
+    /// Get current phase definition
     /// </summary>
-    public void ClearEncounterData()
+    public BossPhaseDefinitionData? GetCurrentPhaseDefinition(Enemy boss)
     {
-        _activeTransitions.Clear();
-        _bossPhases.Clear();
-        _enrageTimers.Clear();
+        var bossState = _repository.GetBossCombatState(boss.Id);
+        if (bossState == null)
+        {
+            return null;
+        }
 
-        _log.Debug("Boss encounter data cleared");
+        return _repository.GetPhaseDefinition(bossState.BossEncounterId, bossState.CurrentPhase);
     }
+
+    /// <summary>
+    /// Apply phase stat modifiers to boss
+    /// </summary>
+    private void ApplyPhaseStatModifiers(Enemy boss, BossPhaseDefinitionData phaseDefinition)
+    {
+        // Damage multiplier
+        if (phaseDefinition.DamageModifier > 1.0)
+        {
+            int bonusDamage = (int)((phaseDefinition.DamageModifier - 1.0) * boss.BaseDamageDice * 3);
+            boss.DamageBonus += bonusDamage;
+        }
+
+        // Defense bonus
+        if (phaseDefinition.DefenseModifier != 0)
+        {
+            boss.DefenseBonus += phaseDefinition.DefenseModifier;
+        }
+
+        // Soak bonus
+        if (phaseDefinition.SoakModifier != 0)
+        {
+            boss.Soak += phaseDefinition.SoakModifier;
+        }
+
+        _log.Debug("Phase stat modifiers applied: BossId={BossId}, DefenseBonus={Defense}, SoakBonus={Soak}",
+            boss.Id, phaseDefinition.DefenseModifier, phaseDefinition.SoakModifier);
+    }
+
+    /// <summary>
+    /// Clear boss combat state (when combat ends)
+    /// </summary>
+    public void ClearEncounterData(Enemy boss)
+    {
+        _repository.ClearBossCombatState(boss.Id);
+        _log.Debug("Boss encounter data cleared: BossId={BossId}", boss.Id);
+    }
+}
+
+/// <summary>
+/// Add spawn definition for JSON deserialization
+/// </summary>
+public class AddSpawnDefinition
+{
+    public EnemyType EnemyType { get; set; }
+    public int Count { get; set; }
+    public string? Position { get; set; }
 }
