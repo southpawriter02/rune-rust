@@ -754,6 +754,7 @@ public static class UIHelper
             "Defend - Reduce incoming damage",
             "Ability - Use a special ability",
             "Move - Advanced movement abilities", // v0.20.4
+            "Stance - Change combat stance", // v0.21.1
         };
 
         if (combat.CanFlee)
@@ -771,6 +772,44 @@ public static class UIHelper
         );
 
         return choice.Split('-')[0].Trim().ToLower();
+    }
+
+    /// <summary>
+    /// v0.21.1: Prompt player to select a combat stance
+    /// </summary>
+    public static string PromptStanceChoice(PlayerCharacter player)
+    {
+        var stanceService = new StanceService();
+        var currentStance = player.ActiveStance?.Type ?? StanceType.Balanced;
+        var availableStances = stanceService.GetAvailableStances();
+
+        var choices = new List<string>();
+        foreach (var (stanceType, name, description) in availableStances)
+        {
+            var currentIndicator = stanceType == currentStance ? " [green](CURRENT)[/]" : "";
+            choices.Add($"{name}{currentIndicator} - {description}");
+        }
+
+        choices.Add("Cancel - Go back");
+
+        var choice = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+                .Title($"[yellow]Change Stance (Current: {stanceService.GetStanceName(currentStance)}):[/]")
+                .PageSize(10)
+                .AddChoices(choices)
+        );
+
+        if (choice.StartsWith("Cancel"))
+        {
+            return "cancel";
+        }
+
+        // Extract stance name (first word before " - ")
+        var stanceName = choice.Split('-')[0].Trim();
+        // Remove (CURRENT) marker if present
+        stanceName = stanceName.Replace("[green]", "").Replace("(CURRENT)[/]", "").Trim();
+
+        return stanceName.ToLower();
     }
 
     public static int PromptEnemyTarget(CombatState combat)

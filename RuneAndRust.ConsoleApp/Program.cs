@@ -1671,6 +1671,10 @@ class Program
                     turnComplete = HandlePlayerMovement(combat);
                     break;
 
+                case "stance": // v0.21.1
+                    turnComplete = HandlePlayerStanceChange(combat);
+                    break;
+
                 case "item":
                     turnComplete = HandlePlayerUseConsumable(combat);
                     break;
@@ -1723,6 +1727,41 @@ class Program
     static void HandlePlayerDefend(CombatState combat)
     {
         _combatEngine.PlayerDefend(combat);
+    }
+
+    /// <summary>
+    /// v0.21.1: Handle player changing combat stance
+    /// </summary>
+    static bool HandlePlayerStanceChange(CombatState combat)
+    {
+        var stanceChoice = UIHelper.PromptStanceChoice(combat.Player);
+
+        if (stanceChoice == "cancel")
+        {
+            return false; // Didn't use turn, go back to action menu
+        }
+
+        // Map choice to StanceType
+        StanceType newStanceType = stanceChoice switch
+        {
+            "balanced" => StanceType.Balanced,
+            "offensive" => StanceType.Offensive,
+            "defensive" => StanceType.Defensive,
+            "evasive" => StanceType.Evasive,
+            _ => StanceType.Balanced
+        };
+
+        var stanceService = new StanceService();
+        var success = stanceService.SwitchStance(combat.Player, newStanceType, combat);
+
+        if (!success)
+        {
+            // Already in that stance, didn't consume turn
+            return false;
+        }
+
+        // Successfully changed stance, turn complete
+        return true;
     }
 
     static bool HandlePlayerUseConsumable(CombatState combat)

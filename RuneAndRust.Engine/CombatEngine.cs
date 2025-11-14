@@ -16,6 +16,7 @@ public class CombatEngine
     private readonly GridInitializationService _gridService; // [v0.20]
     private readonly FlankingService _flankingService; // [v0.20.1]
     private readonly CoverService _coverService; // [v0.20.2]
+    private readonly StanceService _stanceService; // [v0.21.1]
 
     public CombatEngine(DiceService diceService, SagaService sagaService, LootService lootService, EquipmentService equipmentService, HazardService hazardService, CurrencyService currencyService)
     {
@@ -29,6 +30,7 @@ public class CombatEngine
         _gridService = new GridInitializationService(); // [v0.20]
         _flankingService = new FlankingService(); // [v0.20.1]
         _coverService = new CoverService(); // [v0.20.2]
+        _stanceService = new StanceService(); // [v0.21.1]
     }
 
     /// <summary>
@@ -637,7 +639,11 @@ public class CombatEngine
 
         // Roll for ability
         var attributeValue = player.GetAttributeValue(ability.AttributeUsed);
-        var totalDice = attributeValue + ability.BonusDice;
+        var baseDice = attributeValue + ability.BonusDice;
+
+        // [v0.21.1] Apply stance accuracy modifier
+        var totalDice = _stanceService.ApplyStanceAccuracyModifier(player, baseDice);
+
         var abilityRoll = _diceService.Roll(totalDice);
 
         combatState.AddLogEntry($"  Rolled {totalDice}d6: {FormatRolls(abilityRoll)} = {abilityRoll.Successes} successes");
@@ -763,15 +769,15 @@ public class CombatEngine
                 combatState.AddLogEntry($"  Quick Strike uses FINESSE for accuracy and damage!");
             }
 
-            // v0.7.1: Apply stance modifier (Defensive Stance = -25% damage)
-            // v0.19.9: Also apply Evasive Stance modifier (-50% damage)
+            // [v0.21.1] Apply stance damage modifier
             if (player.ActiveStance != null && player.ActiveStance.DamageMultiplier != 1.0f)
             {
                 int originalDamage = damage;
-                damage = (int)(damage * player.ActiveStance.DamageMultiplier);
-                string stanceName = player.ActiveStance.Type == StanceType.Defensive ? "Defensive Stance" : "Evasive Stance";
-                int penaltyPercent = (int)((1.0f - player.ActiveStance.DamageMultiplier) * 100);
-                combatState.AddLogEntry($"  {stanceName} penalty: {originalDamage} → {damage} damage (-{penaltyPercent}%)");
+                damage = _stanceService.ApplyStanceDamageModifier(player, damage);
+                var stanceName = _stanceService.GetStanceName(player.ActiveStance.Type);
+                var modifier = (int)((player.ActiveStance.DamageMultiplier - 1.0f) * 100);
+                var modifierSign = modifier >= 0 ? "+" : "";
+                combatState.AddLogEntry($"  [{stanceName}] {originalDamage} → {damage} damage ({modifierSign}{modifier}%)");
             }
 
             ApplyDamageToEnemy(combatState, target, damage, ability.IgnoresArmor);
