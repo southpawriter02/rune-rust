@@ -56,7 +56,7 @@ public class RealityGlitchService
     /// <summary>
     /// Triggers a random reality glitch
     /// </summary>
-    public (GlitchType type, string narrative) TriggerGlitch(PlayerCharacter character)
+    public (NarrativeGlitchType type, string narrative) TriggerGlitch(PlayerCharacter character)
     {
         var glitchType = SelectGlitchType(character);
 
@@ -71,52 +71,52 @@ public class RealityGlitchService
     /// <summary>
     /// Selects an appropriate glitch type based on character state
     /// </summary>
-    private GlitchType SelectGlitchType(PlayerCharacter character)
+    private NarrativeGlitchType SelectGlitchType(PlayerCharacter character)
     {
         // Terminal corruption always does diagnostic intrusions
         if (character.Corruption >= 100)
         {
-            return GlitchType.DiagnosticIntrusion;
+            return NarrativeGlitchType.DiagnosticIntrusion;
         }
 
         // High corruption favors diagnostic intrusions
         if (character.Corruption >= 75 && _rng.NextDouble() < 0.5)
         {
-            return GlitchType.DiagnosticIntrusion;
+            return NarrativeGlitchType.DiagnosticIntrusion;
         }
 
         // High stress favors hallucinations and memory issues
         if (character.PsychicStress >= 90)
         {
-            var stressGlitches = new[] { GlitchType.HallucinatedEnemy, GlitchType.MemoryLapse, GlitchType.TemporalSkip };
+            var stressGlitches = new[] { NarrativeGlitchType.HallucinatedEnemy, NarrativeGlitchType.MemoryLapse, NarrativeGlitchType.TemporalSkip };
             return stressGlitches[_rng.Next(stressGlitches.Length)];
         }
 
         // Otherwise random selection
-        var allTypes = Enum.GetValues<GlitchType>();
+        var allTypes = Enum.GetValues<NarrativeGlitchType>();
         return allTypes[_rng.Next(allTypes.Length)];
     }
 
     /// <summary>
     /// Generates narrative text for a glitch
     /// </summary>
-    private string GenerateGlitchNarrative(GlitchType glitchType, PlayerCharacter character)
+    private string GenerateGlitchNarrative(NarrativeGlitchType glitchType, PlayerCharacter character)
     {
         switch (glitchType)
         {
-            case GlitchType.TextDistortion:
+            case NarrativeGlitchType.TextDistortion:
                 return GenerateTextDistortion();
 
-            case GlitchType.HallucinatedEnemy:
+            case NarrativeGlitchType.HallucinatedEnemy:
                 return GenerateHallucinatedEnemyNarrative();
 
-            case GlitchType.MemoryLapse:
+            case NarrativeGlitchType.MemoryLapse:
                 return GenerateMemoryLapseNarrative();
 
-            case GlitchType.TemporalSkip:
+            case NarrativeGlitchType.TemporalSkip:
                 return GenerateTemporalSkipNarrative();
 
-            case GlitchType.DiagnosticIntrusion:
+            case NarrativeGlitchType.DiagnosticIntrusion:
                 return GenerateDiagnosticIntrusionNarrative(character);
 
             default:
@@ -286,9 +286,10 @@ public class RealityGlitchService
 }
 
 /// <summary>
-/// Types of reality glitches
+/// Types of narrative reality glitches (psychological/perceptual distortions)
+/// Renamed from GlitchType to avoid conflict with BattlefieldTile.GlitchType (environmental hazards)
 /// </summary>
-public enum GlitchType
+public enum NarrativeGlitchType
 {
     TextDistortion,      // Corrupted text rendering
     HallucinatedEnemy,   // Enemies that aren't real

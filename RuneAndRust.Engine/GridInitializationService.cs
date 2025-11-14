@@ -138,8 +138,10 @@ public class GridInitializationService
         // v0.20.2: Generate procedural cover
         GenerateCover(grid, room);
 
+        // v0.20.3: Generate glitched tiles
+        GenerateGlitchedTiles(grid, room);
+
         // TODO v0.21+: Integrate with procedural generation
-        // - Place glitched tiles based on Corruption level
         // - Place high ground tiles in specific biomes
 
         _log.Debug("Environmental features applied to grid: Room={RoomId}", room.Id);
@@ -241,6 +243,134 @@ public class GridInitializationService
         // Select random position
         int index = _random.Next(availablePositions.Count);
         return availablePositions[index];
+    }
+
+    /// <summary>
+    /// v0.20.3: Generates procedural glitched tile placement on the battlefield
+    /// Glitch count: 1 glitch per 3 columns (minimum 1), biome-adjusted
+    /// </summary>
+    private void GenerateGlitchedTiles(BattlefieldGrid grid, Room room)
+    {
+        int glitchCount = CalculateGlitchCount(grid.Columns, room.Biome);
+
+        _log.Information("Generating glitched tiles: Columns={Columns}, Biome={Biome}, GlitchCount={Count}, Room={RoomId}",
+            grid.Columns, room.Biome, glitchCount, room.Id);
+
+        for (int i = 0; i < glitchCount; i++)
+        {
+            var glitchType = SelectGlitchType(room.Biome);
+            var severity = SelectSeverity(room.DifficultyLevel);
+            var position = SelectGlitchPosition(grid);
+
+            if (position == null)
+            {
+                _log.Warning("Failed to place glitched tile {Index}: no valid positions", i);
+                break;
+            }
+
+            PlaceGlitch(grid, position.Value, glitchType, severity);
+        }
+    }
+
+    /// <summary>
+    /// Calculates number of glitched tiles based on grid size and biome
+    /// Formula: 1 glitch per 3 columns (minimum 1), with biome modifiers
+    /// </summary>
+    private int CalculateGlitchCount(int columns, string biome)
+    {
+        // Base: 1 glitch per 3 columns
+        int baseCount = Math.Max(1, columns / 3);
+
+        // Biome modifier
+        return biome switch
+        {
+            "TheRoots" => baseCount,           // Standard
+            "Muspelheim" => baseCount + 1,     // More hazards (fire biome)
+            "Niflheim" => baseCount + 1,       // More hazards (ice biome)
+            _ => baseCount
+        };
+    }
+
+    /// <summary>
+    /// Selects a glitch type based on biome-specific distributions
+    /// </summary>
+    private Core.GlitchType SelectGlitchType(string biome)
+    {
+        var roll = _random.NextDouble();
+
+        // Biome-specific distributions
+        switch (biome)
+        {
+            case "TheRoots":
+                if (roll < 0.40) return Core.GlitchType.Looping;        // 40% Looping (spatial)
+                if (roll < 0.70) return Core.GlitchType.Flickering;     // 30% Flickering
+                return Core.GlitchType.InvertedGravity;                 // 30% Gravity
+
+            case "Muspelheim":
+                if (roll < 0.50) return Core.GlitchType.Flickering;     // 50% Flickering (unstable)
+                if (roll < 0.75) return Core.GlitchType.InvertedGravity; // 25% Gravity
+                return Core.GlitchType.Looping;                         // 25% Looping
+
+            case "Niflheim":
+                if (roll < 0.45) return Core.GlitchType.InvertedGravity; // 45% Gravity (frozen air)
+                if (roll < 0.75) return Core.GlitchType.Flickering;     // 30% Flickering
+                return Core.GlitchType.Looping;                         // 25% Looping
+
+            default:
+                // Default distribution
+                if (roll < 0.33) return Core.GlitchType.Flickering;
+                if (roll < 0.66) return Core.GlitchType.InvertedGravity;
+                return Core.GlitchType.Looping;
+        }
+    }
+
+    /// <summary>
+    /// Selects glitch severity based on room difficulty level
+    /// Difficulty 1-3 = Severity 1 (DC 12)
+    /// Difficulty 4-6 = Severity 2 (DC 14)
+    /// Difficulty 7+ = Severity 3 (DC 16)
+    /// </summary>
+    private int SelectSeverity(int difficultyLevel)
+    {
+        if (difficultyLevel <= 3) return 1;
+        if (difficultyLevel <= 6) return 2;
+        return 3;
+    }
+
+    /// <summary>
+    /// Selects a random valid position for glitched tile placement
+    /// Avoids occupied tiles and tiles with cover
+    /// </summary>
+    private GridPosition? SelectGlitchPosition(BattlefieldGrid grid)
+    {
+        var availablePositions = grid.Tiles.Values
+            .Where(t => !t.IsOccupied && t.Cover == CoverType.None && t.Type == TileType.Normal)
+            .Select(t => t.Position)
+            .ToList();
+
+        if (availablePositions.Count == 0)
+            return null;
+
+        return availablePositions[_random.Next(availablePositions.Count)];
+    }
+
+    /// <summary>
+    /// Places a glitched tile on the grid
+    /// </summary>
+    private void PlaceGlitch(BattlefieldGrid grid, GridPosition position, Core.GlitchType glitchType, int severity)
+    {
+        var tile = grid.GetTile(position);
+        if (tile == null)
+            return;
+
+        tile.Type = TileType.Glitched;
+        tile.GlitchType = glitchType;
+        tile.GlitchSeverity = severity;
+
+        int dc = 10 + (severity * 2);
+
+        _log.Information("Glitched tile placed: Position={Position}, Type={GlitchType}, Severity={Severity}, DC={DC}",
+            position, glitchType, severity, dc);
     }
 
     /// <summary>

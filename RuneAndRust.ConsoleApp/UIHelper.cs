@@ -83,6 +83,10 @@ public static class UIHelper
         if (character.TempHP > 0)
             statusEffects.Add($"[cyan]Temp HP: {character.TempHP}[/]");
 
+        // v0.20.3: Disoriented status
+        if (character.DisorientedTurnsRemaining > 0)
+            statusEffects.Add($"[yellow]Disoriented ({character.DisorientedTurnsRemaining} turns) - Gravity/spatial distortion[/]");
+
         if (statusEffects.Count > 0)
         {
             table.AddRow(new Markup(""));  // Spacer
@@ -570,6 +574,7 @@ public static class UIHelper
         if (combat.Grid != null)
         {
             DisplayBattlefieldCover(combat.Grid);
+            DisplayBattlefieldGlitches(combat.Grid); // v0.20.3
         }
 
         // Initiative order indicator
@@ -638,6 +643,89 @@ public static class UIHelper
             CoverType.Metaphysical => "[magenta]◆[/]", // Diamond for metaphysical
             CoverType.Both => "[cyan]◈[/]",            // Combined symbol
             _ => "[ ]"
+        };
+    }
+
+    /// <summary>
+    /// v0.20.3: Displays glitched tiles on the battlefield
+    /// Shows glitch type, position, and DC
+    /// </summary>
+    private static void DisplayBattlefieldGlitches(BattlefieldGrid grid)
+    {
+        var glitchedTiles = grid.GetGlitchedTiles()
+            .OrderBy(t => t.Position.Zone)
+            .ThenBy(t => t.Position.Row)
+            .ThenBy(t => t.Position.Column)
+            .ToList();
+
+        if (glitchedTiles.Count == 0)
+        {
+            return; // No glitched tiles to display
+        }
+
+        var glitchTable = new Table()
+            .Border(TableBorder.Rounded)
+            .BorderColor(Color.Red);
+
+        glitchTable.AddColumn("[bold red]⚠ Reality Corruption Detected[/]");
+
+        foreach (var tile in glitchedTiles)
+        {
+            if (tile.GlitchType == null)
+                continue;
+
+            string icon = GetGlitchIcon(tile.GlitchType.Value);
+            string severityColor = GetGlitchSeverityColor(tile.GlitchSeverity);
+            string description = GetGlitchDescription(tile.GlitchType.Value);
+            string position = $"{tile.Position.Zone} {tile.Position.Row} (Col {tile.Position.Column})";
+            int dc = 10 + (tile.GlitchSeverity * 2);
+
+            glitchTable.AddRow($"{icon} [{severityColor}]{description}[/] [dim]at {position}[/] [yellow](DC {dc})[/]");
+        }
+
+        AnsiConsole.Write(glitchTable);
+        AnsiConsole.WriteLine();
+    }
+
+    /// <summary>
+    /// v0.20.3: Returns icon/visual representation for glitch type
+    /// </summary>
+    private static string GetGlitchIcon(Core.GlitchType glitchType)
+    {
+        return glitchType switch
+        {
+            Core.GlitchType.Flickering => "[yellow]~[/]",         // Wave for flickering
+            Core.GlitchType.InvertedGravity => "[magenta]↕[/]",   // Up-down arrow for gravity
+            Core.GlitchType.Looping => "[cyan]∞[/]",              // Infinity for loops
+            _ => "[red]?[/]"
+        };
+    }
+
+    /// <summary>
+    /// v0.20.3: Returns color for glitch severity level
+    /// </summary>
+    private static string GetGlitchSeverityColor(int severity)
+    {
+        return severity switch
+        {
+            1 => "yellow",      // DC 12 - Minor hazard
+            2 => "darkorange",  // DC 14 - Moderate hazard
+            3 => "red",         // DC 16 - Severe hazard
+            _ => "grey"
+        };
+    }
+
+    /// <summary>
+    /// v0.20.3: Returns descriptive text for glitch type with attribute requirement
+    /// </summary>
+    private static string GetGlitchDescription(Core.GlitchType glitchType)
+    {
+        return glitchType switch
+        {
+            Core.GlitchType.Flickering => "Flickering Platform (FINESSE)",
+            Core.GlitchType.InvertedGravity => "Inverted Gravity (STURDINESS)",
+            Core.GlitchType.Looping => "Looping Corridor (WITS)",
+            _ => "Unknown Glitch"
         };
     }
 
