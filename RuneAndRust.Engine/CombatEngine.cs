@@ -14,6 +14,7 @@ public class CombatEngine
     private readonly PerformanceService _performanceService; // [v0.7]
     private readonly CurrencyService _currencyService; // [v0.9]
     private readonly GridInitializationService _gridService; // [v0.20]
+    private readonly FlankingService _flankingService; // [v0.20.1]
 
     public CombatEngine(DiceService diceService, SagaService sagaService, LootService lootService, EquipmentService equipmentService, HazardService hazardService, CurrencyService currencyService)
     {
@@ -25,6 +26,7 @@ public class CombatEngine
         _performanceService = new PerformanceService(); // [v0.7]
         _currencyService = currencyService; // [v0.9]
         _gridService = new GridInitializationService(); // [v0.20]
+        _flankingService = new FlankingService(); // [v0.20.1]
     }
 
     /// <summary>
@@ -197,16 +199,39 @@ public class CombatEngine
             combatState.AddLogEntry($"  [Saga of Courage] inspires you! +2 Accuracy!");
         }
 
+        // v0.20.1: Calculate flanking bonus
+        FlankingBonus flankingBonus = FlankingBonus.None();
+        if (combatState.Grid != null)
+        {
+            var allCombatants = new List<object> { player };
+            allCombatants.AddRange(combatState.Enemies.Cast<object>());
+
+            flankingBonus = _flankingService.CalculateFlankingBonus(player, target, allCombatants, combatState.Grid);
+
+            if (flankingBonus.AccuracyBonus > 0)
+            {
+                bonusDice += flankingBonus.AccuracyBonus;
+                combatState.AddLogEntry($"  [FLANKING] {target.Name} is surrounded! +{flankingBonus.AccuracyBonus} Accuracy!");
+                _log.Information("THREAT CORRELATION FAILURE: Target={TargetId}, Combat AI desync detected. Attack vectors intersect from multiple spatial coordinates.", target.Id);
+            }
+        }
+
         var totalDice = attributeValue + bonusDice;
         var attackRoll = _diceService.Roll(totalDice);
 
         combatState.AddLogEntry($"{player.Name} attacks {target.Name}!");
         combatState.AddLogEntry($"  Rolled {totalDice}d6: {FormatRolls(attackRoll)} = {attackRoll.Successes} successes");
 
-        // Opponent defends
-        var defendRoll = _diceService.Roll(target.Attributes.Sturdiness);
+        // Opponent defends (with flanking penalty)
+        var defendDice = Math.Max(1, target.Attributes.Sturdiness - flankingBonus.DefensePenalty);
+        if (flankingBonus.DefensePenalty > 0)
+        {
+            combatState.AddLogEntry($"  [FLANKING] {target.Name}'s Defense algorithms overloaded! -{flankingBonus.DefensePenalty} Defense!");
+        }
+
+        var defendRoll = _diceService.Roll(defendDice);
         combatState.AddLogEntry($"{target.Name} defends!");
-        combatState.AddLogEntry($"  Rolled {target.Attributes.Sturdiness}d6: {FormatRolls(defendRoll)} = {defendRoll.Successes} successes");
+        combatState.AddLogEntry($"  Rolled {defendDice}d6: {FormatRolls(defendRoll)} = {defendRoll.Successes} successes");
 
         // Calculate damage using weapon damage dice
         var netSuccesses = Math.Max(0, attackRoll.Successes - defendRoll.Successes);
@@ -215,12 +240,25 @@ public class CombatEngine
         int damage = 0;
         if (netSuccesses > 0)
         {
+            // v0.20.1: Check for critical hit (base 5% + flanking bonus)
+            float critChance = 0.05f + flankingBonus.CriticalHitBonus;
+            bool isCriticalHit = new Random().NextDouble() < critChance;
+
             // v0.7: Apply [Inspired] damage bonus (+3 damage dice)
             int totalDamageDice = weaponDice;
             if (player.InspiredTurnsRemaining > 0)
             {
                 totalDamageDice += 3;
                 combatState.AddLogEntry($"  [Inspired] grants +3 damage dice!");
+            }
+
+            // v0.20.1: Critical hits double damage dice
+            if (isCriticalHit)
+            {
+                totalDamageDice *= 2;
+                combatState.AddLogEntry($"  [CRITICAL HIT!] Targeting subroutines experience catastrophic failure!");
+                _log.Information("Critical hit: Attacker={Attacker}, Target={Target}, CritChance={CritChance}, Flanked={IsFlanked}",
+                    player.Name, target.Name, critChance, flankingBonus.CriticalHitBonus > 0);
             }
 
             // Roll weapon damage dice

@@ -64,17 +64,20 @@ public class EnemyAI
 {
     private readonly Random _random;
     private readonly DiceService _diceService;
+    private readonly FlankingService _flankingService; // v0.20.1
 
     public EnemyAI(DiceService diceService)
     {
         _diceService = diceService;
         _random = new Random();
+        _flankingService = new FlankingService(); // v0.20.1
     }
 
     public EnemyAI(DiceService diceService, int seed)
     {
         _diceService = diceService;
         _random = new Random(seed);
+        _flankingService = new FlankingService(); // v0.20.1
     }
 
     /// <summary>
@@ -1935,6 +1938,108 @@ public class EnemyAI
         }
 
         return defenseSuccesses;
+    }
+
+    /// <summary>
+    /// v0.20.1: Check if enemy can create flanking opportunity by repositioning
+    /// Called before determining standard action to prioritize tactical positioning
+    /// </summary>
+    public bool ShouldSeekFlankingPosition(Enemy enemy, PlayerCharacter player, List<Enemy> allEnemies, BattlefieldGrid? grid)
+    {
+        if (grid == null || enemy.Position == null || player.Position == null)
+            return false;
+
+        // 30% chance to consider flanking (keeps AI from being too predictable)
+        if (_random.Next(100) >= 30)
+            return false;
+
+        // Check if player is already threatened by an ally
+        var allCombatants = new List<object> { player };
+        allCombatants.AddRange(allEnemies.Cast<object>());
+
+        var currentThreats = _flankingService.GetThreateningCombatants(player, allCombatants, grid);
+
+        // If player is already flanked, no need to reposition
+        if (currentThreats.Count >= 2)
+        {
+            var uniqueColumns = currentThreats.Select(t =>
+            {
+                if (t is Enemy e) return e.Position?.Column ?? 0;
+                return 0;
+            }).Distinct().Count();
+
+            if (uniqueColumns >= 2)
+                return false; // Already flanked
+        }
+
+        // If we're the only threat or there's potential for flanking
+        return currentThreats.Count >= 1;
+    }
+
+    /// <summary>
+    /// v0.20.1: Find a grid position that would create a flank on the player
+    /// </summary>
+    public GridPosition? FindFlankingPosition(Enemy enemy, PlayerCharacter player, List<Enemy> allEnemies, BattlefieldGrid grid)
+    {
+        if (enemy.Position == null || player.Position == null)
+            return null;
+
+        // Get current threats on player
+        var allCombatants = new List<object> { player };
+        allCombatants.AddRange(allEnemies.Cast<object>());
+        var currentThreats = _flankingService.GetThreateningCombatants(player, allCombatants, grid);
+
+        if (currentThreats.Count == 0)
+            return null;
+
+        // Get the column of existing threats
+        var threatColumns = currentThreats.Select(t =>
+        {
+            if (t is Enemy e) return e.Position?.Column ?? -1;
+            return -1;
+        }).Where(c => c >= 0).ToList();
+
+        if (threatColumns.Count == 0)
+            return null;
+
+        // Try to find a position in a different column that's in range
+        int targetColumn = -1;
+
+        // If threats are on left, go right; if on right, go left
+        int avgThreatColumn = (int)threatColumns.Average();
+        if (avgThreatColumn < player.Position.Value.Column)
+        {
+            // Threats on left, position on right
+            targetColumn = player.Position.Value.Column + 1;
+        }
+        else if (avgThreatColumn > player.Position.Value.Column)
+        {
+            // Threats on right, position on left
+            targetColumn = player.Position.Value.Column - 1;
+        }
+        else
+        {
+            // Threats same column, pick either side
+            targetColumn = player.Position.Value.Column + (_random.Next(2) == 0 ? -1 : 1);
+        }
+
+        // Ensure column is valid
+        if (targetColumn < 0 || targetColumn >= grid.Columns)
+            return null;
+
+        // Create position in enemy zone, front row, at the flank column
+        var flankPosition = new GridPosition(Zone.Enemy, Row.Front, targetColumn);
+
+        // Check if position is passable
+        var tile = grid.GetTile(flankPosition);
+        if (tile != null && tile.IsPassable())
+        {
+            Serilog.Log.Information("Flanking position found: Enemy={EnemyId}, FlankColumn={Column}, PlayerColumn={PlayerColumn}",
+                enemy.Id, targetColumn, player.Position.Value.Column);
+            return flankPosition;
+        }
+
+        return null;
     }
 
     private string FormatRolls(DiceResult result)
