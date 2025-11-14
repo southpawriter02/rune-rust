@@ -1,366 +1,441 @@
 using RuneAndRust.Core;
+using RuneAndRust.Persistence;
 using Serilog;
+using System.Text.Json;
 
 namespace RuneAndRust.Engine;
 
 /// <summary>
-/// v0.23.2: Manages telegraphed boss abilities with charge times, cooldowns,
-/// and vulnerability windows
+/// v0.23.2: Manages telegraphed boss abilities with charge times, interrupt mechanics,
+/// vulnerability windows, and database persistence
 /// </summary>
 public class TelegraphedAbilityService
 {
     private static readonly ILogger _log = Log.ForContext<TelegraphedAbilityService>();
+    private readonly BossEncounterRepository _repository;
     private readonly DiceService _diceService;
 
-    /// <summary>
-    /// Active telegraphed abilities being charged (ability ID -> telegraphed ability)
-    /// </summary>
-    private Dictionary<string, TelegraphedAbility> _activeCharges = new();
-
-    /// <summary>
-    /// Active cooldowns for boss abilities (boss ID -> list of cooldowns)
-    /// </summary>
-    private Dictionary<string, List<AbilityCooldown>> _activeCooldowns = new();
-
-    /// <summary>
-    /// Current combat turn (for tracking)
-    /// </summary>
-    private int _currentTurn = 0;
-
-    public TelegraphedAbilityService(DiceService diceService)
+    public TelegraphedAbilityService(BossEncounterRepository repository, DiceService diceService)
     {
+        _repository = repository;
         _diceService = diceService;
     }
 
-    /// <summary>
-    /// Initialize telegraphed ability tracking for a new combat
-    /// </summary>
-    public void InitializeCombat()
-    {
-        _activeCharges.Clear();
-        _activeCooldowns.Clear();
-        _currentTurn = 0;
-
-        _log.Information("Telegraphed ability tracking initialized");
-    }
+    // ═══════════════════════════════════════════════════════════
+    // TELEGRAPH CHARGING
+    // ═══════════════════════════════════════════════════════════
 
     /// <summary>
     /// Start charging a telegraphed ability
-    /// Returns combat log message
+    /// Returns combat log message with warning
     /// </summary>
-    public string StartChargingAbility(Enemy boss, BossAbility ability)
+    public string BeginTelegraph(Enemy boss, BossAbilityData ability, int currentTurn, List<string>? targetIds = null)
     {
-        if (ability.Type != BossAbilityType.Telegraphed && ability.ChargeTurns <= 0)
+        if (!ability.IsTelegraphed)
         {
-            _log.Warning("Attempted to charge non-telegraphed ability: {AbilityId}", ability.Id);
+            _log.Warning("Attempted to telegraph non-telegraphed ability: {AbilityName}", ability.AbilityName);
             return "";
         }
 
-        // Check if ability is on cooldown
-        if (IsAbilityOnCooldown(boss.Id, ability.Id))
+        _log.Information("Beginning telegraph: Boss={BossName}, Ability={AbilityName}, ChargeTurns={ChargeTurns}",
+            boss.Name, ability.AbilityName, ability.TelegraphChargeTurns);
+
+        // Start telegraph in database
+        _repository.StartTelegraph(
+            boss.Id,
+            ability.BossAbilityId,
+            currentTurn,
+            ability.TelegraphChargeTurns,
+            ability.InterruptDamageThreshold,
+            targetIds
+        );
+
+        // Create warning message
+        string logMessage = $"\n⚠️  [WARNING] {boss.Name} begins charging {ability.AbilityName}!\n";
+
+        if (!string.IsNullOrEmpty(ability.TelegraphWarningMessage))
         {
-            _log.Debug("Ability on cooldown, cannot charge: {BossId}, {AbilityId}",
-                boss.Id, ability.Id);
-            return "";
+            logMessage += $"   {ability.TelegraphWarningMessage}\n";
         }
 
-        var telegraphedAbility = new TelegraphedAbility
+        logMessage += $"   ⏰ Executes in {ability.TelegraphChargeTurns} turn(s)!\n";
+
+        if (ability.InterruptDamageThreshold > 0)
         {
-            AbilityId = ability.Id,
-            EnemyId = boss.Id,
-            RemainingChargeTurns = ability.ChargeTurns,
-            TotalChargeTurns = ability.ChargeTurns,
-            Ability = ability,
-            ChargeStartTurn = _currentTurn
-        };
-
-        string key = $"{boss.Id}_{ability.Id}";
-        _activeCharges[key] = telegraphedAbility;
-
-        string logMessage = $"\n⚠️ [WARNING] {boss.Name} begins charging {ability.Name}!\n";
-        logMessage += $"   {ability.ChargeMessage}\n";
-        logMessage += $"   ⏰ Executes in {ability.ChargeTurns} turn(s)!\n";
-
-        _log.Information("Telegraphed ability charging started: {BossId}, {AbilityId}, ChargeTurns={Turns}",
-            boss.Id, ability.Id, ability.ChargeTurns);
+            logMessage += $"   🛡️  Can be interrupted with {ability.InterruptDamageThreshold}+ damage!\n";
+        }
 
         return logMessage;
     }
 
     /// <summary>
-    /// Process end of turn for telegraphed abilities (decrement charge timers)
+    /// Process all active telegraphs at end of turn
     /// Returns list of abilities ready to execute
     /// </summary>
-    public List<(Enemy boss, BossAbility ability)> ProcessEndOfTurn(List<Enemy> bosses)
+    public List<(Enemy boss, BossAbilityData ability)> ProcessActiveTelegraphs(List<Enemy> bosses, int currentTurn)
     {
-        _currentTurn++;
+        var readyToExecute = new List<(Enemy boss, BossAbilityData ability)>();
 
-        var readyToExecute = new List<(Enemy boss, BossAbility ability)>();
-        var keysToRemove = new List<string>();
-
-        foreach (var kvp in _activeCharges)
+        foreach (var boss in bosses.Where(b => b.IsBoss))
         {
-            var telegraphed = kvp.Value;
+            var activeTelegraphs = _repository.GetActiveTelegraphs(boss.Id);
 
-            // Skip if interrupted
-            if (telegraphed.IsInterrupted)
+            foreach (var telegraph in activeTelegraphs)
             {
-                keysToRemove.Add(kvp.Key);
-                continue;
-            }
+                // Update current turn
+                _repository.UpdateTelegraphTurn(telegraph.TelegraphStateId, currentTurn);
 
-            telegraphed.RemainingChargeTurns--;
-
-            if (telegraphed.RemainingChargeTurns <= 0)
-            {
-                // Ability is ready to execute
-                var boss = bosses.FirstOrDefault(b => b.Id == telegraphed.EnemyId);
-                if (boss != null && telegraphed.Ability != null)
+                // Check if ready to execute
+                if (currentTurn >= telegraph.ChargeCompleteTurn)
                 {
-                    readyToExecute.Add((boss, telegraphed.Ability));
-                }
+                    var ability = _repository.GetBossAbility(telegraph.BossAbilityId);
+                    if (ability != null)
+                    {
+                        readyToExecute.Add((boss, ability));
+                        _repository.CompleteTelegraph(telegraph.TelegraphStateId);
 
-                keysToRemove.Add(kvp.Key);
-            }
-        }
-
-        // Remove executed abilities
-        foreach (var key in keysToRemove)
-        {
-            _activeCharges.Remove(key);
-        }
-
-        // Decrement cooldowns
-        foreach (var bossId in _activeCooldowns.Keys.ToList())
-        {
-            var cooldowns = _activeCooldowns[bossId];
-            for (int i = cooldowns.Count - 1; i >= 0; i--)
-            {
-                cooldowns[i].RemainingTurns--;
-                if (cooldowns[i].RemainingTurns <= 0)
-                {
-                    cooldowns.RemoveAt(i);
-                    _log.Debug("Cooldown expired: {BossId}, {AbilityId}",
-                        bossId, cooldowns[i].AbilityId);
+                        _log.Information("Telegraph ready to execute: Boss={BossId}, Ability={AbilityName}",
+                            boss.Id, ability.AbilityName);
+                    }
                 }
             }
         }
-
-        _log.Debug("End of turn processed: Telegraphed abilities ready={Count}",
-            readyToExecute.Count);
 
         return readyToExecute;
     }
 
     /// <summary>
-    /// Execute a telegraphed ability and start cooldown
+    /// Execute a telegraphed ability (damage, status effects, special effects)
     /// </summary>
-    public string ExecuteTelegraphedAbility(Enemy boss, BossAbility ability, PlayerCharacter player)
+    public string ExecuteTelegraphedAbility(Enemy boss, BossAbilityData ability, PlayerCharacter player, CombatState combatState)
     {
+        _log.Information("Executing telegraphed ability: Boss={BossName}, Ability={AbilityName}",
+            boss.Name, ability.AbilityName);
+
         string logMessage = $"\n╔═══════════════════════════════════════════════════════════════╗\n";
-        logMessage += $"║ {ability.Name.ToUpper()}\n";
+        logMessage += $"║ ⚡ {ability.AbilityName.ToUpper()}\n";
         logMessage += $"╚═══════════════════════════════════════════════════════════════╝\n";
-        logMessage += $"{ability.ExecuteMessage}\n";
+
+        if (!string.IsNullOrEmpty(ability.AbilityDescription))
+        {
+            logMessage += $"{ability.AbilityDescription}\n\n";
+        }
 
         // Deal damage
-        if (ability.DamageDice > 0)
+        if (ability.BaseDamageDice > 0)
         {
-            int damage = _diceService.RollDamage(ability.DamageDice) + ability.DamageBonus;
+            int damage = CalculateDamage(boss, ability);
 
-            if (ability.IsAoE)
+            if (ability.TargetType == "AoE" || ability.TargetType == "All")
             {
-                logMessage += $"💥 AoE Attack: {damage} damage to all targets!\n";
+                logMessage += $"💥 AoE Attack: {damage} {ability.DamageType} damage to all targets!\n";
                 player.HP = Math.Max(0, player.HP - damage);
             }
             else
             {
-                logMessage += $"💥 {damage} damage dealt!\n";
+                logMessage += $"💥 {damage} {ability.DamageType} damage dealt to {player.Name}!\n";
                 player.HP = Math.Max(0, player.HP - damage);
             }
 
-            _log.Information("Telegraphed ability executed: {BossId}, {AbilityId}, Damage={Damage}, IsAoE={IsAoE}",
-                boss.Id, ability.Id, damage, ability.IsAoE);
+            _log.Debug("Telegraph damage dealt: Damage={Damage}, Type={Type}, AoE={IsAoE}",
+                damage, ability.DamageType, ability.TargetType);
         }
 
         // Apply status effects
-        foreach (var statusEffect in ability.StatusEffects)
+        if (!string.IsNullOrEmpty(ability.AppliesStatusEffects))
         {
-            ApplyStatusEffect(player, statusEffect);
-            logMessage += $"🔴 {player.Name} is [{statusEffect.StatusName}] for {statusEffect.Duration} turns!\n";
+            logMessage += ApplyStatusEffects(player, ability.AppliesStatusEffects);
         }
 
         // Apply special effects
-        if (ability.SpecialEffects != null)
+        if (!string.IsNullOrEmpty(ability.SpecialEffects))
         {
-            logMessage += ApplySpecialEffects(boss, ability.SpecialEffects);
+            logMessage += ApplySpecialEffects(boss, combatState, ability.SpecialEffects);
         }
 
-        // Start cooldown
-        if (ability.CooldownTurns > 0)
+        // Apply vulnerability window if ultimate ability
+        if (ability.IsUltimate && ability.VulnerabilityDurationTurns > 0)
         {
-            StartCooldown(boss.Id, ability.Id, ability.CooldownTurns);
-            _log.Debug("Cooldown started: {BossId}, {AbilityId}, Duration={Turns}",
-                boss.Id, ability.Id, ability.CooldownTurns);
-        }
+            ApplyVulnerabilityWindow(boss, ability.VulnerabilityDurationTurns, ability.VulnerabilityDamageMultiplier);
+            logMessage += $"\n⚔️  {boss.Name} is [VULNERABLE] for {ability.VulnerabilityDurationTurns} turn(s)! " +
+                         $"(+{(ability.VulnerabilityDamageMultiplier - 1.0f) * 100:F0}% damage taken)\n";
 
-        // Apply vulnerability window
-        if (ability.TriggersVulnerability && ability.VulnerabilityDuration > 0)
-        {
-            boss.VulnerableTurnsRemaining = ability.VulnerabilityDuration;
-            logMessage += $"\n⚔️ {boss.Name} is [VULNERABLE] for {ability.VulnerabilityDuration} turn(s)! (+50% damage taken)\n";
-
-            _log.Information("Vulnerability window applied: {BossId}, Duration={Turns}",
-                boss.Id, ability.VulnerabilityDuration);
+            _log.Information("Vulnerability window applied: Boss={BossId}, Duration={Duration}, Multiplier={Multiplier}",
+                boss.Id, ability.VulnerabilityDurationTurns, ability.VulnerabilityDamageMultiplier);
         }
 
         return logMessage;
     }
 
+    // ═══════════════════════════════════════════════════════════
+    // INTERRUPT MECHANICS
+    // ═══════════════════════════════════════════════════════════
+
     /// <summary>
-    /// Interrupt a charging telegraphed ability (e.g., via stun)
+    /// Add interrupt damage to active telegraphs
+    /// Returns true if telegraph was interrupted
     /// </summary>
-    public string InterruptAbility(Enemy boss, string abilityId)
+    public string? CheckTelegraphInterrupt(Enemy boss, int damageDealt)
     {
-        string key = $"{boss.Id}_{abilityId}";
+        var activeTelegraphs = _repository.GetActiveTelegraphs(boss.Id);
 
-        if (_activeCharges.ContainsKey(key))
+        foreach (var telegraph in activeTelegraphs)
         {
-            var telegraphed = _activeCharges[key];
-            telegraphed.IsInterrupted = true;
+            if (telegraph.InterruptDamageThreshold <= 0)
+                continue;
 
-            string logMessage = $"⚡ {boss.Name}'s {telegraphed.Ability?.Name} was INTERRUPTED!\n";
+            bool interrupted = _repository.AddInterruptDamage(telegraph.TelegraphStateId, damageDealt);
 
-            _log.Information("Telegraphed ability interrupted: {BossId}, {AbilityId}",
-                boss.Id, abilityId);
+            if (interrupted)
+            {
+                _repository.InterruptTelegraph(telegraph.TelegraphStateId);
 
-            _activeCharges.Remove(key);
+                var ability = _repository.GetBossAbility(telegraph.BossAbilityId);
 
-            return logMessage;
+                _log.Information("Telegraph interrupted: Boss={BossId}, Ability={AbilityName}, Damage={Damage}",
+                    boss.Id, ability?.AbilityName, damageDealt);
+
+                // Apply staggered status
+                ApplyStaggeredStatus(boss, ability?.InterruptStaggerDuration ?? 2);
+
+                return $"\n⚡ INTERRUPTED! {boss.Name}'s {ability?.AbilityName} was disrupted!\n" +
+                       $"   {boss.Name} is [Staggered] for {ability?.InterruptStaggerDuration ?? 2} turn(s)!\n";
+            }
         }
 
-        return "";
+        return null;
     }
 
+    // ═══════════════════════════════════════════════════════════
+    // VULNERABILITY WINDOW SYSTEM
+    // ═══════════════════════════════════════════════════════════
+
     /// <summary>
-    /// Check if an ability is currently on cooldown
+    /// Apply vulnerability window to boss (increased damage taken)
     /// </summary>
-    public bool IsAbilityOnCooldown(string bossId, string abilityId)
+    public void ApplyVulnerabilityWindow(Enemy boss, int duration, float damageMultiplier)
     {
-        if (!_activeCooldowns.ContainsKey(bossId))
-            return false;
+        boss.VulnerableTurnsRemaining = duration;
+        boss.VulnerabilityDamageMultiplier = damageMultiplier;
 
-        return _activeCooldowns[bossId].Any(c => c.AbilityId == abilityId);
+        _log.Information("Vulnerability window applied: Boss={BossId}, Duration={Duration}, Multiplier={Multiplier}",
+            boss.Id, duration, damageMultiplier);
     }
 
     /// <summary>
-    /// Get remaining cooldown turns for an ability
+    /// Calculate damage modifier for boss based on vulnerability
     /// </summary>
-    public int GetCooldownRemaining(string bossId, string abilityId)
+    public float GetVulnerabilityMultiplier(Enemy boss)
     {
-        if (!_activeCooldowns.ContainsKey(bossId))
-            return 0;
+        if (boss.VulnerableTurnsRemaining > 0)
+        {
+            return boss.VulnerabilityDamageMultiplier;
+        }
 
-        var cooldown = _activeCooldowns[bossId].FirstOrDefault(c => c.AbilityId == abilityId);
-        return cooldown?.RemainingTurns ?? 0;
+        return 1.0f;
     }
 
     /// <summary>
-    /// Get all active telegraphed abilities for display
+    /// Process vulnerability window at end of turn
     /// </summary>
-    public List<TelegraphedAbility> GetActiveTelegraphedAbilities()
+    public string? ProcessVulnerabilityWindow(Enemy boss)
     {
-        return _activeCharges.Values.Where(t => !t.IsInterrupted).ToList();
+        if (boss.VulnerableTurnsRemaining > 0)
+        {
+            boss.VulnerableTurnsRemaining--;
+
+            if (boss.VulnerableTurnsRemaining == 0)
+            {
+                boss.VulnerabilityDamageMultiplier = 1.0f;
+                _log.Debug("Vulnerability window expired: Boss={BossId}", boss.Id);
+                return $"{boss.Name}'s vulnerability window has ended.\n";
+            }
+        }
+
+        return null;
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // QUERY METHODS
+    // ═══════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// Get all active telegraphs for a boss
+    /// </summary>
+    public List<BossTelegraphStateData> GetActiveTelegraphs(string bossId)
+    {
+        return _repository.GetActiveTelegraphs(bossId);
     }
 
     /// <summary>
-    /// Check if boss is currently charging an ability
+    /// Check if boss is currently charging any ability
     /// </summary>
     public bool IsBossChargingAbility(string bossId)
     {
-        return _activeCharges.Values.Any(t => t.EnemyId == bossId && !t.IsInterrupted);
+        var telegraphs = _repository.GetActiveTelegraphs(bossId);
+        return telegraphs.Any();
     }
 
     /// <summary>
-    /// Start cooldown for an ability
+    /// Get turns remaining until telegraph executes
     /// </summary>
-    private void StartCooldown(string bossId, string abilityId, int duration)
+    public int GetTelegraphTurnsRemaining(BossTelegraphStateData telegraph, int currentTurn)
     {
-        if (!_activeCooldowns.ContainsKey(bossId))
+        return Math.Max(0, telegraph.ChargeCompleteTurn - currentTurn);
+    }
+
+    /// <summary>
+    /// Clear all telegraphs for a boss (when combat ends)
+    /// </summary>
+    public void ClearTelegraphs(string bossId)
+    {
+        _repository.ClearTelegraphs(bossId);
+        _log.Information("Telegraphs cleared: Boss={BossId}", bossId);
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // HELPER METHODS
+    // ═══════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// Calculate damage for telegraphed ability
+    /// </summary>
+    private int CalculateDamage(Enemy boss, BossAbilityData ability)
+    {
+        // Use custom formula if provided
+        if (!string.IsNullOrEmpty(ability.DamageFormula))
         {
-            _activeCooldowns[bossId] = new List<AbilityCooldown>();
+            // TODO: Parse and evaluate damage formula
+            // For now, use standard calculation
         }
 
-        _activeCooldowns[bossId].Add(new AbilityCooldown
+        // Standard damage calculation
+        int damage = 0;
+        for (int i = 0; i < ability.BaseDamageDice; i++)
         {
-            AbilityId = abilityId,
-            RemainingTurns = duration,
-            TotalCooldown = duration
-        });
-    }
-
-    /// <summary>
-    /// Apply status effect to target
-    /// </summary>
-    private void ApplyStatusEffect(PlayerCharacter target, AbilityStatusEffect effect)
-    {
-        switch (effect.StatusName.ToLower())
-        {
-            case "stunned":
-                // Stun logic handled by CombatEngine
-                break;
-            case "bleeding":
-                // Bleeding logic handled by CombatEngine
-                break;
-            case "vulnerable":
-                // Vulnerability applied separately
-                break;
-            default:
-                _log.Warning("Unknown status effect: {StatusName}", effect.StatusName);
-                break;
+            damage += _diceService.RollD6();
         }
+
+        damage += ability.DamageBonus;
+        damage += boss.DamageBonus; // Add boss damage bonus
+
+        return Math.Max(1, damage);
     }
 
     /// <summary>
-    /// Apply special effects (healing, buffs, summons)
+    /// Apply status effects from JSON
     /// </summary>
-    private string ApplySpecialEffects(Enemy boss, AbilitySpecialEffects effects)
+    private string ApplyStatusEffects(PlayerCharacter target, string statusEffectsJson)
     {
         string logMessage = "";
 
-        // Healing
-        if (effects.HealAmount > 0)
+        try
         {
-            int healedAmount = Math.Min(effects.HealAmount, boss.MaxHP - boss.HP);
-            boss.HP += healedAmount;
-            logMessage += $"🔄 {boss.Name} heals for {healedAmount} HP ({boss.HP}/{boss.MaxHP})\n";
-        }
+            var statusEffects = JsonSerializer.Deserialize<List<StatusEffectDefinition>>(statusEffectsJson);
+            if (statusEffects == null) return logMessage;
 
-        // Defense buff
-        if (effects.DefenseBonus > 0 && effects.DefenseDuration > 0)
-        {
-            boss.DefenseBonus += effects.DefenseBonus;
-            boss.DefenseTurnsRemaining = effects.DefenseDuration;
-            logMessage += $"🛡️ {boss.Name} gains +{effects.DefenseBonus} Defense for {effects.DefenseDuration} turns\n";
-        }
+            foreach (var effect in statusEffects)
+            {
+                logMessage += $"🔴 {target.Name} is [{effect.StatusName}] for {effect.Duration} turns!\n";
 
-        // Summon adds (handled externally via AddWaveConfig)
-        if (effects.SummonAdds != null)
+                _log.Debug("Status effect applied: Target={TargetName}, Status={StatusName}, Duration={Duration}",
+                    target.Name, effect.StatusName, effect.Duration);
+
+                // Status effect application logic would go here
+                // (Integration with existing status effect system)
+            }
+        }
+        catch (Exception ex)
         {
-            logMessage += $"⚠️ {boss.Name} summons reinforcements!\n";
+            _log.Error(ex, "Failed to parse status effects: {Json}", statusEffectsJson);
         }
 
         return logMessage;
     }
 
     /// <summary>
-    /// Clear all tracking data
+    /// Apply special effects from JSON
     /// </summary>
-    public void Clear()
+    private string ApplySpecialEffects(Enemy boss, CombatState combatState, string specialEffectsJson)
     {
-        _activeCharges.Clear();
-        _activeCooldowns.Clear();
-        _currentTurn = 0;
+        string logMessage = "";
 
-        _log.Debug("Telegraphed ability service cleared");
+        try
+        {
+            var specialEffects = JsonSerializer.Deserialize<SpecialEffectDefinition>(specialEffectsJson);
+            if (specialEffects == null) return logMessage;
+
+            // Healing
+            if (specialEffects.HealAmount > 0)
+            {
+                int healedAmount = Math.Min(specialEffects.HealAmount, boss.MaxHP - boss.HP);
+                boss.HP += healedAmount;
+                logMessage += $"🔄 {boss.Name} heals for {healedAmount} HP ({boss.HP}/{boss.MaxHP})\n";
+            }
+
+            // Defense buff
+            if (specialEffects.DefenseBonus > 0 && specialEffects.DefenseDuration > 0)
+            {
+                boss.DefenseBonus += specialEffects.DefenseBonus;
+                boss.DefenseTurnsRemaining = specialEffects.DefenseDuration;
+                logMessage += $"🛡️ {boss.Name} gains +{specialEffects.DefenseBonus} Defense for {specialEffects.DefenseDuration} turns\n";
+            }
+
+            // Summon adds
+            if (specialEffects.SummonCount > 0 && specialEffects.SummonType != null)
+            {
+                for (int i = 0; i < specialEffects.SummonCount; i++)
+                {
+                    var summoned = EnemyFactory.CreateEnemy(specialEffects.SummonType.Value);
+                    combatState.Enemies.Add(summoned);
+                }
+                logMessage += $"⚠️ {boss.Name} summons {specialEffects.SummonCount}x {specialEffects.SummonType}!\n";
+            }
+
+            _log.Debug("Special effects applied: Boss={BossId}, Effects={Effects}", boss.Id, specialEffectsJson);
+        }
+        catch (Exception ex)
+        {
+            _log.Error(ex, "Failed to parse special effects: {Json}", specialEffectsJson);
+        }
+
+        return logMessage;
     }
+
+    /// <summary>
+    /// Apply staggered status to boss (from interrupt)
+    /// </summary>
+    private void ApplyStaggeredStatus(Enemy boss, int duration)
+    {
+        // Staggered status: -2 to all attributes for duration
+        boss.StaggeredTurnsRemaining = duration;
+
+        _log.Information("Staggered status applied: Boss={BossId}, Duration={Duration}", boss.Id, duration);
+    }
+}
+
+// ═══════════════════════════════════════════════════════════
+// HELPER DATA MODELS
+// ═══════════════════════════════════════════════════════════
+
+/// <summary>
+/// Status effect definition for JSON deserialization
+/// </summary>
+public class StatusEffectDefinition
+{
+    public string StatusName { get; set; } = string.Empty;
+    public int Duration { get; set; }
+    public int DamagePerTurn { get; set; }
+}
+
+/// <summary>
+/// Special effect definition for JSON deserialization
+/// </summary>
+public class SpecialEffectDefinition
+{
+    public int HealAmount { get; set; }
+    public int DefenseBonus { get; set; }
+    public int DefenseDuration { get; set; }
+    public int SummonCount { get; set; }
+    public EnemyType? SummonType { get; set; }
 }

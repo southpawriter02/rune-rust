@@ -15,7 +15,9 @@ public class BossEncounterTests
 {
     private BossEncounterRepository _repository = null!;
     private BossEncounterSeeder _seeder = null!;
+    private BossAbilitySeeder _abilitySeeder = null!;
     private BossEncounterService _service = null!;
+    private TelegraphedAbilityService _telegraphService = null!;
     private DiceService _diceService = null!;
     private string _testDbPath = string.Empty;
 
@@ -28,11 +30,14 @@ public class BossEncounterTests
 
         _repository = new BossEncounterRepository(testDir);
         _seeder = new BossEncounterSeeder(_repository);
+        _abilitySeeder = new BossAbilitySeeder(_repository);
         _diceService = new DiceService(seed: 42);
         _service = new BossEncounterService(_repository, _diceService);
+        _telegraphService = new TelegraphedAbilityService(_repository, _diceService);
 
-        // Seed boss encounters
+        // Seed boss encounters and abilities
         _seeder.SeedBossEncounters();
+        _abilitySeeder.SeedBossAbilities();
     }
 
     [TearDown]
@@ -404,6 +409,253 @@ public class BossEncounterTests
         Assert.That(phaseDef!.PhaseNumber, Is.EqualTo(2));
         Assert.That(phaseDef.PhaseName, Is.EqualTo("Emergency Protocols"));
         Assert.That(phaseDef.DamageModifier, Is.EqualTo(1.2f));
+    }
+
+    #endregion
+
+    #region Telegraphed Ability Tests (v0.23.2)
+
+    [Test]
+    public void BossAbilitySeeder_SeedsAllAbilities()
+    {
+        // Assert - verify abilities were seeded for all bosses
+        var ruinWardenConfig = _repository.GetBossEncounterByEncounterId(1);
+        Assert.That(ruinWardenConfig, Is.Not.Null);
+
+        var ruinWardenAbilities = _repository.GetBossAbilities(ruinWardenConfig!.BossEncounterId);
+        Assert.That(ruinWardenAbilities.Count, Is.GreaterThan(0));
+        Assert.That(ruinWardenAbilities.Any(a => a.IsTelegraphed), Is.True);
+        Assert.That(ruinWardenAbilities.Any(a => a.IsUltimate), Is.True);
+    }
+
+    [Test]
+    public void TelegraphedAbility_BeginsCharging()
+    {
+        // Arrange
+        var boss = CreateTestBoss(maxHP: 100, currentHP: 100);
+        _service.InitializeBossEncounter(boss, encounterId: 1);
+
+        var abilities = _repository.GetTelegraphedAbilities(
+            _repository.GetBossEncounterByEncounterId(1)!.BossEncounterId);
+        var telegraphedAbility = abilities.First(a => a.IsTelegraphed && !a.IsUltimate);
+
+        // Act
+        var message = _telegraphService.BeginTelegraph(boss, telegraphedAbility, currentTurn: 1);
+
+        // Assert
+        Assert.That(message, Is.Not.Null);
+        Assert.That(message, Does.Contain("WARNING"));
+        Assert.That(message, Does.Contain(telegraphedAbility.AbilityName));
+
+        var activeTelegraphs = _telegraphService.GetActiveTelegraphs(boss.Id);
+        Assert.That(activeTelegraphs.Count, Is.EqualTo(1));
+        Assert.That(activeTelegraphs[0].IsCharging, Is.True);
+    }
+
+    [Test]
+    public void TelegraphedAbility_ExecutesAfterChargeTurns()
+    {
+        // Arrange
+        var boss = CreateTestBoss(maxHP: 100, currentHP: 100);
+        var player = new PlayerCharacter { Name = "Test Player", HP = 50, MaxHP = 50 };
+        var combatState = new CombatState { Enemies = new List<Enemy> { boss } };
+
+        _service.InitializeBossEncounter(boss, encounterId: 1);
+
+        var abilities = _repository.GetTelegraphedAbilities(
+            _repository.GetBossEncounterByEncounterId(1)!.BossEncounterId);
+        var telegraphedAbility = abilities.First(a => a.IsTelegraphed && !a.IsUltimate);
+
+        // Start charging at turn 1
+        _telegraphService.BeginTelegraph(boss, telegraphedAbility, currentTurn: 1);
+
+        // Act - Process turns until ready
+        int chargeTurns = telegraphedAbility.TelegraphChargeTurns;
+        int executeTurn = 1 + chargeTurns;
+
+        var readyAbilities = _telegraphService.ProcessActiveTelegraphs(
+            new List<Enemy> { boss }, executeTurn);
+
+        // Assert
+        Assert.That(readyAbilities.Count, Is.EqualTo(1));
+        Assert.That(readyAbilities[0].ability.AbilityName, Is.EqualTo(telegraphedAbility.AbilityName));
+
+        // Execute the ability
+        var message = _telegraphService.ExecuteTelegraphedAbility(
+            boss, telegraphedAbility, player, combatState);
+
+        Assert.That(message, Does.Contain(telegraphedAbility.AbilityName.ToUpper()));
+        Assert.That(player.HP, Is.LessThan(50)); // Damage was dealt
+    }
+
+    [Test]
+    public void TelegraphedAbility_CanBeInterrupted()
+    {
+        // Arrange
+        var boss = CreateTestBoss(maxHP: 100, currentHP: 100);
+        _service.InitializeBossEncounter(boss, encounterId: 1);
+
+        var abilities = _repository.GetTelegraphedAbilities(
+            _repository.GetBossEncounterByEncounterId(1)!.BossEncounterId);
+        var telegraphedAbility = abilities.First(a => a.IsTelegraphed && a.InterruptDamageThreshold > 0);
+
+        // Start charging
+        _telegraphService.BeginTelegraph(boss, telegraphedAbility, currentTurn: 1);
+
+        // Act - Deal damage exceeding interrupt threshold
+        int damage = telegraphedAbility.InterruptDamageThreshold + 5;
+        var interruptMessage = _telegraphService.CheckTelegraphInterrupt(boss, damage);
+
+        // Assert
+        Assert.That(interruptMessage, Is.Not.Null);
+        Assert.That(interruptMessage, Does.Contain("INTERRUPTED"));
+        Assert.That(interruptMessage, Does.Contain(telegraphedAbility.AbilityName));
+
+        var activeTelegraphs = _telegraphService.GetActiveTelegraphs(boss.Id);
+        Assert.That(activeTelegraphs.Count, Is.EqualTo(0)); // Telegraph was removed
+    }
+
+    [Test]
+    public void TelegraphedAbility_AccumulatesInterruptDamage()
+    {
+        // Arrange
+        var boss = CreateTestBoss(maxHP: 100, currentHP: 100);
+        _service.InitializeBossEncounter(boss, encounterId: 1);
+
+        var abilities = _repository.GetTelegraphedAbilities(
+            _repository.GetBossEncounterByEncounterId(1)!.BossEncounterId);
+        var telegraphedAbility = abilities.First(a => a.IsTelegraphed && a.InterruptDamageThreshold > 10);
+
+        _telegraphService.BeginTelegraph(boss, telegraphedAbility, currentTurn: 1);
+
+        // Act - Deal damage in multiple hits
+        int threshold = telegraphedAbility.InterruptDamageThreshold;
+        _telegraphService.CheckTelegraphInterrupt(boss, threshold / 2);
+        _telegraphService.CheckTelegraphInterrupt(boss, threshold / 2);
+        var interruptMessage = _telegraphService.CheckTelegraphInterrupt(boss, 5);
+
+        // Assert - Should interrupt after accumulated damage exceeds threshold
+        Assert.That(interruptMessage, Is.Not.Null);
+        Assert.That(interruptMessage, Does.Contain("INTERRUPTED"));
+    }
+
+    [Test]
+    public void UltimateAbility_GrantsVulnerabilityWindow()
+    {
+        // Arrange
+        var boss = CreateTestBoss(maxHP: 100, currentHP: 100);
+        var player = new PlayerCharacter { Name = "Test Player", HP = 100, MaxHP = 100 };
+        var combatState = new CombatState { Enemies = new List<Enemy> { boss } };
+
+        _service.InitializeBossEncounter(boss, encounterId: 1);
+
+        var abilities = _repository.GetBossAbilities(
+            _repository.GetBossEncounterByEncounterId(1)!.BossEncounterId);
+        var ultimateAbility = abilities.First(a => a.IsUltimate);
+
+        // Act - Execute ultimate
+        var message = _telegraphService.ExecuteTelegraphedAbility(
+            boss, ultimateAbility, player, combatState);
+
+        // Assert
+        Assert.That(message, Does.Contain("VULNERABLE"));
+        Assert.That(boss.VulnerableTurnsRemaining, Is.GreaterThan(0));
+        Assert.That(boss.VulnerabilityDamageMultiplier, Is.GreaterThan(1.0f));
+    }
+
+    [Test]
+    public void VulnerabilityWindow_IncreaseDamageTaken()
+    {
+        // Arrange
+        var boss = CreateTestBoss(maxHP: 100, currentHP: 100);
+        _telegraphService.ApplyVulnerabilityWindow(boss, duration: 3, damageMultiplier: 1.5f);
+
+        // Act
+        var multiplier = _telegraphService.GetVulnerabilityMultiplier(boss);
+
+        // Assert
+        Assert.That(multiplier, Is.EqualTo(1.5f));
+        Assert.That(boss.VulnerableTurnsRemaining, Is.EqualTo(3));
+    }
+
+    [Test]
+    public void VulnerabilityWindow_ExpiresAfterTurns()
+    {
+        // Arrange
+        var boss = CreateTestBoss(maxHP: 100, currentHP: 100);
+        _telegraphService.ApplyVulnerabilityWindow(boss, duration: 2, damageMultiplier: 1.5f);
+
+        // Act - Process 2 turns
+        _telegraphService.ProcessVulnerabilityWindow(boss);
+        Assert.That(boss.VulnerableTurnsRemaining, Is.EqualTo(1));
+
+        var expiryMessage = _telegraphService.ProcessVulnerabilityWindow(boss);
+
+        // Assert
+        Assert.That(boss.VulnerableTurnsRemaining, Is.EqualTo(0));
+        Assert.That(boss.VulnerabilityDamageMultiplier, Is.EqualTo(1.0f));
+        Assert.That(expiryMessage, Does.Contain("ended"));
+    }
+
+    [Test]
+    public void BossAIPatterns_SeededForAllPhases()
+    {
+        // Arrange
+        var ruinWardenConfig = _repository.GetBossEncounterByEncounterId(1);
+        Assert.That(ruinWardenConfig, Is.Not.Null);
+
+        // Act
+        var aiPatterns = _repository.GetBossAIPatterns(ruinWardenConfig!.BossEncounterId);
+
+        // Assert
+        Assert.That(aiPatterns.Count, Is.EqualTo(3)); // 3 phases
+        Assert.That(aiPatterns[0].PhaseNumber, Is.EqualTo(1));
+        Assert.That(aiPatterns[1].PhaseNumber, Is.EqualTo(2));
+        Assert.That(aiPatterns[2].PhaseNumber, Is.EqualTo(3));
+
+        // Phase 3 should have highest telegraph frequency
+        Assert.That(aiPatterns[2].TelegraphFrequency, Is.GreaterThan(aiPatterns[0].TelegraphFrequency));
+    }
+
+    [Test]
+    public void BossAIPattern_RetrievedByPhase()
+    {
+        // Arrange
+        var ruinWardenConfig = _repository.GetBossEncounterByEncounterId(1);
+        Assert.That(ruinWardenConfig, Is.Not.Null);
+
+        // Act
+        var phase2Pattern = _repository.GetBossAIPattern(ruinWardenConfig!.BossEncounterId, 2);
+
+        // Assert
+        Assert.That(phase2Pattern, Is.Not.Null);
+        Assert.That(phase2Pattern!.PhaseNumber, Is.EqualTo(2));
+        Assert.That(phase2Pattern.PatternName, Is.Not.Empty);
+    }
+
+    [Test]
+    public void Telegraph_ClearedWhenCombatEnds()
+    {
+        // Arrange
+        var boss = CreateTestBoss(maxHP: 100, currentHP: 100);
+        _service.InitializeBossEncounter(boss, encounterId: 1);
+
+        var abilities = _repository.GetTelegraphedAbilities(
+            _repository.GetBossEncounterByEncounterId(1)!.BossEncounterId);
+        var telegraphedAbility = abilities.First(a => a.IsTelegraphed);
+
+        _telegraphService.BeginTelegraph(boss, telegraphedAbility, currentTurn: 1);
+
+        // Verify telegraph is active
+        var activeTelegraphs = _telegraphService.GetActiveTelegraphs(boss.Id);
+        Assert.That(activeTelegraphs.Count, Is.EqualTo(1));
+
+        // Act - Clear telegraphs
+        _telegraphService.ClearTelegraphs(boss.Id);
+
+        // Assert
+        activeTelegraphs = _telegraphService.GetActiveTelegraphs(boss.Id);
+        Assert.That(activeTelegraphs.Count, Is.EqualTo(0));
     }
 
     #endregion
