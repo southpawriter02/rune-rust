@@ -1,393 +1,529 @@
 using RuneAndRust.Core;
+using RuneAndRust.Persistence;
 using Serilog;
+using System.Text.Json;
 
 namespace RuneAndRust.Engine;
 
 /// <summary>
-/// v0.23.3: Handles boss loot generation with guaranteed quality tiers,
-/// legendary drops, and artifact system
+/// v0.23.3: Manages boss loot generation, artifact drops, and set bonuses
+/// with database persistence
 /// </summary>
 public class BossLootService
 {
     private static readonly ILogger _log = Log.ForContext<BossLootService>();
-    private readonly Random _random;
-    private readonly EquipmentDatabase _equipmentDatabase;
+    private readonly BossEncounterRepository _repository;
+    private readonly DiceService _diceService;
 
-    public BossLootService(EquipmentDatabase equipmentDatabase)
+    public BossLootService(BossEncounterRepository repository, DiceService diceService)
     {
-        _random = new Random();
-        _equipmentDatabase = equipmentDatabase;
+        _repository = repository;
+        _diceService = diceService;
     }
 
+    // ═══════════════════════════════════════════════════════════
+    // BOSS LOOT GENERATION
+    // ═══════════════════════════════════════════════════════════
+
     /// <summary>
-    /// Generate loot from a defeated boss using boss loot table
-    /// Returns list of equipment and currency amount
+    /// Generate loot from a boss encounter
+    /// Returns formatted combat log message
     /// </summary>
-    public (List<Equipment> equipment, int currency, Dictionary<ComponentType, int> materials) GenerateBossLoot(
-        Enemy boss,
-        BossLootTable lootTable,
-        PlayerCharacter? player = null,
-        int threatDifficultyRating = 0)
+    public LootGenerationResult GenerateBossLoot(int bossEncounterId, string characterId, int bossTdr)
     {
-        if (!boss.IsBoss)
+        _log.Information("Generating boss loot: BossEncounterId={BossEncounterId}, TDR={TDR}",
+            bossEncounterId, bossTdr);
+
+        var lootTable = _repository.GetBossLootTable(bossEncounterId);
+        if (lootTable == null)
         {
-            _log.Warning("Attempted to generate boss loot for non-boss enemy: {EnemyId}", boss.Id);
-            return (new List<Equipment>(), 0, new Dictionary<ComponentType, int>());
+            _log.Warning("No loot table found for boss encounter: {BossEncounterId}", bossEncounterId);
+            return new LootGenerationResult
+            {
+                LogMessage = "⚠️ No loot configuration found.\\n",
+                Items = new List<GeneratedItem>()
+            };
         }
 
-        var equipment = new List<Equipment>();
-        var materials = new Dictionary<ComponentType, int>();
+        var result = new LootGenerationResult();
+        string logMessage = "\\n╔═══════════════════════════════════════════════════════════════╗\\n";
+        logMessage += "║ 💰 BOSS LOOT GENERATION\\n";
+        logMessage += "╚═══════════════════════════════════════════════════════════════╝\\n\\n";
 
-        // Scale artifact chance based on TDR
-        int artifactChance = (int)(lootTable.ArtifactChance * (1.0 + (threatDifficultyRating * lootTable.TDRScalingFactor / 10.0)));
-        int legendaryChance = (int)(lootTable.LegendaryChance * (1.0 + (threatDifficultyRating * lootTable.TDRScalingFactor / 10.0)));
+        // Generate guaranteed quality drops
+        var guaranteedItems = GenerateGuaranteedDrops(lootTable, bossTdr);
+        result.Items.AddRange(guaranteedItems);
 
-        _log.Information("Generating boss loot: {BossType}, TDR={TDR}, ArtifactChance={Artifact}%, LegendaryChance={Legendary}%",
-            boss.Type, threatDifficultyRating, artifactChance, legendaryChance);
-
-        // Roll for artifact first (rarest)
-        if (_random.Next(100) < artifactChance)
+        foreach (var item in guaranteedItems)
         {
-            var artifact = RollArtifact(lootTable, threatDifficultyRating, player);
-            if (artifact != null)
+            logMessage += $"✨ [{item.QualityTier}] {item.ItemType} (Attributes: {FormatBonuses(item)})\\n";
+        }
+
+        // Roll for artifacts
+        var artifact = RollForArtifact(lootTable, bossEncounterId, characterId, bossTdr);
+        if (artifact != null)
+        {
+            result.Items.Add(artifact);
+            logMessage += $"\\n🔥 [ARTIFACT] {artifact.ItemName}!\\n";
+            logMessage += $"   {artifact.Description}\\n";
+
+            if (!string.IsNullOrEmpty(artifact.UniqueEffectName))
             {
-                equipment.Add(artifact);
-                _log.Information("🌟 ARTIFACT DROPPED: {BossType}, Item={ItemName}",
-                    boss.Type, artifact.Name);
+                logMessage += $"   ⚡ {artifact.UniqueEffectName}: {artifact.UniqueEffectDescription}\\n";
+            }
+
+            if (!string.IsNullOrEmpty(artifact.SetName))
+            {
+                logMessage += $"   📦 Part of {artifact.SetName} set ({artifact.SetPieceCount} pieces)\\n";
+                logMessage += DisplaySetBonuses(artifact.SetName);
             }
         }
-        // Roll for legendary (if no artifact)
-        else if (_random.Next(100) < legendaryChance)
+
+        // Generate unique items
+        var uniqueItems = GenerateUniqueItems(bossEncounterId, characterId);
+        result.Items.AddRange(uniqueItems);
+
+        foreach (var item in uniqueItems)
         {
-            var legendary = GenerateLegendaryItem(player);
-            equipment.Add(legendary);
-            _log.Information("⚡ LEGENDARY DROPPED: {BossType}, Item={ItemName}, Quality={Quality}",
-                boss.Type, legendary.Name, legendary.Quality);
-        }
-        // Roll for optimized
-        else if (_random.Next(100) < lootTable.OptimizedChance)
-        {
-            var optimized = GenerateOptimizedItem(player);
-            equipment.Add(optimized);
-            _log.Information("Boss loot: {BossType}, Item={ItemName}, Quality={Quality}",
-                boss.Type, optimized.Name, optimized.Quality);
-        }
-        // Guaranteed quality fallback
-        else
-        {
-            var guaranteed = GenerateGuaranteedItem(lootTable.GuaranteedQuality, player);
-            equipment.Add(guaranteed);
-            _log.Information("Boss loot (guaranteed): {BossType}, Item={ItemName}, Quality={Quality}",
-                boss.Type, guaranteed.Name, guaranteed.Quality);
+            logMessage += $"\\n💎 [UNIQUE] {item.ItemName}!\\n";
+            logMessage += $"   {item.Description}\\n";
         }
 
-        // Generate currency
-        int currency = _random.Next(lootTable.CurrencyDrop.Min, lootTable.CurrencyDrop.Max + 1);
-        _log.Information("Currency dropped: {BossType}, Amount={Amount} Cogs", boss.Type, currency);
+        // Generate currency rewards
+        int silverMarks = _diceService.RollBetween(lootTable.SilverMarksMin, lootTable.SilverMarksMax);
+        result.SilverMarks = silverMarks;
+        logMessage += $"\\n💰 {silverMarks} Silver Marks\\n";
 
-        // Generate materials
-        materials = GenerateBossMaterials(lootTable);
+        // Generate crafting materials
+        if (lootTable.DropsCraftingMaterials && !string.IsNullOrEmpty(lootTable.CraftingMaterialPool))
+        {
+            var craftingMaterials = GenerateCraftingMaterials(lootTable.CraftingMaterialPool, bossTdr);
+            result.CraftingMaterials.AddRange(craftingMaterials);
 
-        return (equipment, currency, materials);
+            foreach (var material in craftingMaterials)
+            {
+                logMessage += $"🔧 {material.Count}x {material.MaterialName}\\n";
+            }
+        }
+
+        _log.Information("Loot generated: Items={ItemCount}, Artifacts={ArtifactCount}, SilverMarks={Silver}",
+            result.Items.Count, result.Items.Count(i => i.IsArtifact), silverMarks);
+
+        result.LogMessage = logMessage;
+        return result;
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // GUARANTEED DROPS
+    // ═══════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// Generate guaranteed quality drops (Clan-Forged/Rune-Carved/Artifact)
+    /// </summary>
+    private List<GeneratedItem> GenerateGuaranteedDrops(BossLootTableData lootTable, int bossTdr)
+    {
+        var items = new List<GeneratedItem>();
+
+        for (int i = 0; i < lootTable.GuaranteedDropCount; i++)
+        {
+            string qualityTier = RollQualityTier(lootTable);
+            var item = GenerateItemByQuality(qualityTier, bossTdr);
+            items.Add(item);
+        }
+
+        return items;
     }
 
     /// <summary>
-    /// Roll for an artifact from the boss's artifact pool
+    /// Roll for quality tier based on loot table percentages
     /// </summary>
-    private Equipment? RollArtifact(BossLootTable lootTable, int tdr, PlayerCharacter? player)
+    private string RollQualityTier(BossLootTableData lootTable)
     {
-        // Filter artifacts by TDR requirement
-        var eligibleArtifacts = lootTable.UniqueArtifacts
-            .Where(a => a.MinimumTDR <= tdr)
-            .ToList();
+        int roll = _diceService.RollD100();
 
-        if (eligibleArtifacts.Count == 0)
+        // Cumulative probability
+        if (roll <= lootTable.ArtifactChance)
         {
-            _log.Debug("No eligible artifacts for TDR={TDR}", tdr);
+            return "Artifact";
+        }
+        else if (roll <= lootTable.ArtifactChance + lootTable.RuneCarvedChance)
+        {
+            return "Rune-Carved";
+        }
+        else
+        {
+            return "Clan-Forged";
+        }
+    }
+
+    /// <summary>
+    /// Generate item based on quality tier
+    /// </summary>
+    private GeneratedItem GenerateItemByQuality(string qualityTier, int bossTdr)
+    {
+        // Determine item type based on TDR
+        string[] itemTypes = { "Weapon", "Armor", "Accessory" };
+        string itemType = itemTypes[_diceService.RollBetween(0, itemTypes.Length - 1)];
+
+        var item = new GeneratedItem
+        {
+            ItemName = $"{qualityTier} {itemType}",
+            ItemType = itemType,
+            QualityTier = qualityTier,
+            IsArtifact = false,
+            Description = $"A {qualityTier.ToLower()} quality {itemType.ToLower()}."
+        };
+
+        // Assign bonuses based on quality
+        int bonusAmount = qualityTier switch
+        {
+            "Artifact" => _diceService.RollBetween(3, 5),
+            "Rune-Carved" => _diceService.RollBetween(2, 3),
+            "Clan-Forged" => _diceService.RollBetween(1, 2),
+            _ => 1
+        };
+
+        // Randomly assign bonuses to attributes
+        AssignRandomBonuses(item, bonusAmount);
+
+        return item;
+    }
+
+    /// <summary>
+    /// Assign random attribute bonuses to item
+    /// </summary>
+    private void AssignRandomBonuses(GeneratedItem item, int totalBonus)
+    {
+        // Distribute bonuses across attributes
+        for (int i = 0; i < totalBonus; i++)
+        {
+            int attributeRoll = _diceService.RollD6();
+
+            switch (attributeRoll)
+            {
+                case 1: item.MightBonus++; break;
+                case 2: item.FinesseBonus++; break;
+                case 3: item.WitsBonus++; break;
+                case 4: item.WillBonus++; break;
+                case 5: item.SturdinessBonus++; break;
+                case 6: item.DefenseBonus++; break;
+            }
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // ARTIFACT DROPS
+    // ═══════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// Roll for artifact drop based on loot table and TDR
+    /// Returns null if no artifact drops
+    /// </summary>
+    private GeneratedItem? RollForArtifact(BossLootTableData lootTable, int bossEncounterId,
+        string characterId, int bossTdr)
+    {
+        int artifactRoll = _diceService.RollD100();
+
+        // Artifact drop chance (10-20% based on boss tier)
+        int artifactChance = bossTdr switch
+        {
+            >= 80 => 20, // World Boss: 20%
+            >= 40 => 15, // Sector Boss: 15%
+            >= 20 => 10, // Elite: 10%
+            _ => 5       // Default: 5%
+        };
+
+        if (artifactRoll > artifactChance)
+        {
+            _log.Debug("Artifact roll failed: Roll={Roll}, Chance={Chance}", artifactRoll, artifactChance);
             return null;
         }
 
-        // Weighted random selection
-        int totalWeight = eligibleArtifacts.Sum(a => a.DropWeight);
-        int roll = _random.Next(totalWeight);
-        int currentWeight = 0;
+        // Get available artifacts by TDR
+        var availableArtifacts = _repository.GetArtifactsByTDR(bossTdr);
 
-        foreach (var artifact in eligibleArtifacts)
+        if (!availableArtifacts.Any())
         {
-            currentWeight += artifact.DropWeight;
-            if (roll < currentWeight)
-            {
-                return ConvertArtifactToEquipment(artifact);
-            }
+            _log.Warning("No artifacts available for TDR={TDR}", bossTdr);
+            return null;
         }
 
-        return null;
-    }
+        // Randomly select artifact
+        int artifactIndex = _diceService.RollBetween(0, availableArtifacts.Count - 1);
+        var artifactData = availableArtifacts[artifactIndex];
 
-    /// <summary>
-    /// Convert UniqueArtifact definition to Equipment item
-    /// </summary>
-    private Equipment ConvertArtifactToEquipment(UniqueArtifact artifact)
-    {
-        var equipment = new Equipment
+        // Convert ArtifactData to GeneratedItem
+        var artifact = new GeneratedItem
         {
-            Name = artifact.Name,
-            Description = artifact.Description,
-            Quality = QualityTier.MythForged, // Artifacts are always Myth-Forged
-            Bonuses = new List<EquipmentBonus>(artifact.Bonuses),
-            SpecialEffect = artifact.SpecialEffect
+            ArtifactId = artifactData.ArtifactId,
+            ItemName = artifactData.ArtifactName,
+            ItemType = artifactData.ArtifactType,
+            QualityTier = "Artifact",
+            IsArtifact = true,
+            Description = artifactData.Description ?? string.Empty,
+            FlavorText = artifactData.FlavorText,
+            MightBonus = artifactData.MightBonus,
+            FinesseBonus = artifactData.FinesseBonus,
+            WitsBonus = artifactData.WitsBonus,
+            WillBonus = artifactData.WillBonus,
+            SturdinessBonus = artifactData.SturdinessBonus,
+            MaxHpBonus = artifactData.MaxHpBonus,
+            MaxStaminaBonus = artifactData.MaxStaminaBonus,
+            MaxAetherBonus = artifactData.MaxAetherBonus,
+            DefenseBonus = artifactData.DefenseBonus,
+            SoakBonus = artifactData.SoakBonus,
+            AccuracyBonus = artifactData.AccuracyBonus,
+            UniqueEffectName = artifactData.UniqueEffectName,
+            UniqueEffectDescription = artifactData.UniqueEffectDescription,
+            SetName = artifactData.SetName,
+            SetPieceCount = artifactData.SetPieceCount
         };
 
-        switch (artifact.Type)
+        _log.Information("Artifact dropped: Name={ArtifactName}, TDR={TDR}",
+            artifactData.ArtifactName, bossTdr);
+
+        return artifact;
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // UNIQUE ITEM DROPS
+    // ═══════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// Generate unique items from boss (once-per-character tracking)
+    /// </summary>
+    private List<GeneratedItem> GenerateUniqueItems(int bossEncounterId, string characterId)
+    {
+        var items = new List<GeneratedItem>();
+        var uniqueItemConfigs = _repository.GetBossUniqueItems(bossEncounterId);
+
+        foreach (var config in uniqueItemConfigs)
         {
-            case ArtifactType.Weapon:
-                equipment.Type = EquipmentType.Weapon;
-                equipment.WeaponCategory = artifact.WeaponCategory;
-                equipment.DamageDice = artifact.DamageDice;
-                equipment.DamageBonus = artifact.DamageBonus;
-                equipment.WeaponAttribute = GetWeaponAttribute(artifact.WeaponCategory);
-                equipment.StaminaCost = 5;
-                break;
-
-            case ArtifactType.Armor:
-                equipment.Type = EquipmentType.Armor;
-                equipment.HPBonus = artifact.HPBonus;
-                equipment.DefenseBonus = artifact.DefenseBonus;
-                break;
-
-            case ArtifactType.Accessory:
-                equipment.Type = EquipmentType.Accessory;
-                break;
-
-            case ArtifactType.CraftingMaterial:
-                // Crafting materials are handled separately
-                _log.Warning("Artifact of type CraftingMaterial cannot be converted to Equipment: {ArtifactName}",
-                    artifact.Name);
-                break;
-        }
-
-        _log.Information("Artifact generated: {Name}, Type={Type}, Special={Special}",
-            artifact.Name, artifact.Type, artifact.SpecialEffect);
-
-        return equipment;
-    }
-
-    /// <summary>
-    /// Generate a random legendary (Myth-Forged) item for player's class
-    /// </summary>
-    private Equipment GenerateLegendaryItem(PlayerCharacter? player)
-    {
-        var characterClass = player?.CharacterClass ?? CharacterClass.Warrior;
-
-        // Generate Myth-Forged quality item
-        var weapon = GenerateWeaponForClass(characterClass, QualityTier.MythForged);
-
-        // Add special legendary effect
-        weapon.SpecialEffect = GetRandomLegendaryEffect();
-
-        return weapon;
-    }
-
-    /// <summary>
-    /// Generate an Optimized quality item
-    /// </summary>
-    private Equipment GenerateOptimizedItem(PlayerCharacter? player)
-    {
-        var characterClass = player?.CharacterClass ?? CharacterClass.Warrior;
-        return GenerateWeaponForClass(characterClass, QualityTier.Optimized);
-    }
-
-    /// <summary>
-    /// Generate guaranteed quality item
-    /// </summary>
-    private Equipment GenerateGuaranteedItem(QualityTier quality, PlayerCharacter? player)
-    {
-        var characterClass = player?.CharacterClass ?? CharacterClass.Warrior;
-        return GenerateWeaponForClass(characterClass, quality);
-    }
-
-    /// <summary>
-    /// Generate materials from boss loot table
-    /// </summary>
-    private Dictionary<ComponentType, int> GenerateBossMaterials(BossLootTable lootTable)
-    {
-        var materials = new Dictionary<ComponentType, int>();
-
-        // Add guaranteed materials
-        foreach (var material in lootTable.GuaranteedMaterials)
-        {
-            materials[material.Key] = material.Value;
-        }
-
-        // Roll for rare materials
-        foreach (var material in lootTable.RareMaterialChances)
-        {
-            if (_random.Next(100) < material.Value)
+            // Check once-per-character restriction
+            if (config.DropsOncePerCharacter)
             {
-                materials[material.Key] = materials.ContainsKey(material.Key)
-                    ? materials[material.Key] + 1
-                    : 1;
+                if (_repository.HasReceivedUniqueItem(characterId, config.ArtifactId))
+                {
+                    _log.Debug("Character already received unique item: CharacterId={CharacterId}, ArtifactId={ArtifactId}",
+                        characterId, config.ArtifactId);
+                    continue;
+                }
+            }
 
-                _log.Debug("Rare material dropped: {Material}", material.Key);
+            // Roll for drop
+            int dropRoll = _diceService.RollD100();
+            if (dropRoll > config.DropChance)
+            {
+                continue;
+            }
+
+            // Get artifact data
+            var artifactData = _repository.GetArtifact(config.ArtifactId);
+            if (artifactData == null)
+            {
+                _log.Warning("Artifact not found: ArtifactId={ArtifactId}", config.ArtifactId);
+                continue;
+            }
+
+            // Determine drop count
+            int dropCount = _diceService.RollBetween(config.DropCountMin, config.DropCountMax);
+
+            for (int i = 0; i < dropCount; i++)
+            {
+                var item = new GeneratedItem
+                {
+                    ArtifactId = artifactData.ArtifactId,
+                    ItemName = artifactData.ArtifactName,
+                    ItemType = artifactData.ArtifactType,
+                    QualityTier = "Unique",
+                    IsArtifact = true,
+                    IsUnique = true,
+                    Description = artifactData.Description ?? string.Empty,
+                    FlavorText = artifactData.FlavorText,
+                    MightBonus = artifactData.MightBonus,
+                    FinesseBonus = artifactData.FinesseBonus,
+                    WitsBonus = artifactData.WitsBonus,
+                    WillBonus = artifactData.WillBonus,
+                    SturdinessBonus = artifactData.SturdinessBonus,
+                    MaxHpBonus = artifactData.MaxHpBonus,
+                    MaxStaminaBonus = artifactData.MaxStaminaBonus,
+                    MaxAetherBonus = artifactData.MaxAetherBonus,
+                    DefenseBonus = artifactData.DefenseBonus,
+                    SoakBonus = artifactData.SoakBonus,
+                    AccuracyBonus = artifactData.AccuracyBonus,
+                    UniqueEffectName = artifactData.UniqueEffectName,
+                    UniqueEffectDescription = artifactData.UniqueEffectDescription
+                };
+
+                items.Add(item);
+            }
+
+            // Record unique item drop if once-per-character
+            if (config.DropsOncePerCharacter)
+            {
+                _repository.RecordUniqueItemDrop(characterId, config.ArtifactId);
+                _log.Information("Unique item dropped and recorded: CharacterId={CharacterId}, ArtifactId={ArtifactId}",
+                    characterId, config.ArtifactId);
             }
         }
 
-        // Roll for epic materials
-        foreach (var material in lootTable.EpicMaterialChances)
-        {
-            if (_random.Next(100) < material.Value)
-            {
-                materials[material.Key] = materials.ContainsKey(material.Key)
-                    ? materials[material.Key] + 1
-                    : 1;
+        return items;
+    }
 
-                _log.Debug("Epic material dropped: {Material}", material.Key);
+    // ═══════════════════════════════════════════════════════════
+    // CRAFTING MATERIALS
+    // ═══════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// Generate crafting materials from pool
+    /// </summary>
+    private List<CraftingMaterial> GenerateCraftingMaterials(string craftingMaterialPoolJson, int bossTdr)
+    {
+        var materials = new List<CraftingMaterial>();
+
+        try
+        {
+            var pool = JsonSerializer.Deserialize<List<CraftingMaterialDefinition>>(craftingMaterialPoolJson);
+            if (pool == null) return materials;
+
+            foreach (var definition in pool)
+            {
+                int dropRoll = _diceService.RollD100();
+                if (dropRoll <= definition.DropChance)
+                {
+                    int count = _diceService.RollBetween(definition.QuantityMin, definition.QuantityMax);
+                    materials.Add(new CraftingMaterial
+                    {
+                        MaterialName = definition.MaterialName,
+                        Count = count
+                    });
+                }
             }
+        }
+        catch (Exception ex)
+        {
+            _log.Error(ex, "Failed to parse crafting material pool: {Json}", craftingMaterialPoolJson);
         }
 
         return materials;
     }
 
+    // ═══════════════════════════════════════════════════════════
+    // SET BONUS SYSTEM
+    // ═══════════════════════════════════════════════════════════
+
     /// <summary>
-    /// Generate weapon for specific character class
+    /// Display set bonuses for a given set
     /// </summary>
-    private Equipment GenerateWeaponForClass(CharacterClass characterClass, QualityTier quality)
+    private string DisplaySetBonuses(string setName)
     {
-        var weaponCategory = characterClass switch
-        {
-            CharacterClass.Warrior => _random.Next(2) == 0 ? WeaponCategory.Axe : WeaponCategory.Greatsword,
-            CharacterClass.Scavenger => _random.Next(2) == 0 ? WeaponCategory.Spear : WeaponCategory.Dagger,
-            CharacterClass.Mystic => _random.Next(2) == 0 ? WeaponCategory.Staff : WeaponCategory.Focus,
-            _ => WeaponCategory.Axe
-        };
+        var setBonuses = _repository.GetSetBonuses(setName);
+        if (!setBonuses.Any()) return string.Empty;
 
-        var weapon = new Equipment
+        string message = "   Set Bonuses:\\n";
+        foreach (var bonus in setBonuses.OrderBy(b => b.PiecesRequired))
         {
-            Name = GenerateWeaponName(weaponCategory, quality),
-            Description = $"A {quality} quality weapon recovered from a fallen foe.",
-            Type = EquipmentType.Weapon,
-            Quality = quality,
-            WeaponCategory = weaponCategory,
-            WeaponAttribute = GetWeaponAttribute(weaponCategory),
-            DamageDice = GetDamageDiceForQuality(quality),
-            DamageBonus = GetDamageBonusForQuality(quality),
-            AccuracyBonus = quality >= QualityTier.Optimized ? 1 : 0,
-            StaminaCost = 5
-        };
-
-        // Add bonuses for higher quality items
-        if (quality >= QualityTier.ClanForged)
-        {
-            weapon.Bonuses.Add(new EquipmentBonus
-            {
-                AttributeName = GetWeaponAttribute(weaponCategory),
-                BonusValue = 1,
-                Description = $"+1 {GetWeaponAttribute(weaponCategory)}"
-            });
+            message += $"      ({bonus.PiecesRequired}): {bonus.BonusName} - {bonus.BonusDescription}\\n";
         }
 
-        return weapon;
+        return message;
     }
+
+    // ═══════════════════════════════════════════════════════════
+    // HELPER METHODS
+    // ═══════════════════════════════════════════════════════════
 
     /// <summary>
-    /// Generate weapon name based on category and quality
+    /// Format item bonuses for display
     /// </summary>
-    private string GenerateWeaponName(WeaponCategory? category, QualityTier quality)
+    private string FormatBonuses(GeneratedItem item)
     {
-        string[] prefixes = quality switch
-        {
-            QualityTier.MythForged => new[] { "Legendary", "Ancient", "Mythical", "Corrupted" },
-            QualityTier.Optimized => new[] { "Refined", "Enhanced", "Superior" },
-            QualityTier.ClanForged => new[] { "Forged", "Crafted", "Tempered" },
-            _ => new[] { "Scavenged", "Salvaged" }
-        };
+        var bonuses = new List<string>();
 
-        string prefix = prefixes[_random.Next(prefixes.Length)];
+        if (item.MightBonus > 0) bonuses.Add($"+{item.MightBonus} Might");
+        if (item.FinesseBonus > 0) bonuses.Add($"+{item.FinesseBonus} Finesse");
+        if (item.WitsBonus > 0) bonuses.Add($"+{item.WitsBonus} Wits");
+        if (item.WillBonus > 0) bonuses.Add($"+{item.WillBonus} Will");
+        if (item.SturdinessBonus > 0) bonuses.Add($"+{item.SturdinessBonus} Sturdiness");
+        if (item.DefenseBonus > 0) bonuses.Add($"+{item.DefenseBonus} Defense");
+        if (item.SoakBonus > 0) bonuses.Add($"+{item.SoakBonus} Soak");
+        if (item.MaxHpBonus > 0) bonuses.Add($"+{item.MaxHpBonus} HP");
+        if (item.MaxStaminaBonus > 0) bonuses.Add($"+{item.MaxStaminaBonus} Stamina");
+        if (item.MaxAetherBonus > 0) bonuses.Add($"+{item.MaxAetherBonus} Aether");
 
-        string weaponType = category switch
-        {
-            WeaponCategory.Axe => "Axe",
-            WeaponCategory.Greatsword => "Greatsword",
-            WeaponCategory.Spear => "Spear",
-            WeaponCategory.Dagger => "Dagger",
-            WeaponCategory.Staff => "Staff",
-            WeaponCategory.Focus => "Focus",
-            _ => "Weapon"
-        };
-
-        return $"{prefix} {weaponType}";
+        return bonuses.Any() ? string.Join(", ", bonuses) : "None";
     }
+}
 
-    /// <summary>
-    /// Get damage dice based on quality tier
-    /// </summary>
-    private int GetDamageDiceForQuality(QualityTier quality)
-    {
-        return quality switch
-        {
-            QualityTier.MythForged => 3,
-            QualityTier.Optimized => 2,
-            QualityTier.ClanForged => 2,
-            QualityTier.Scavenged => 1,
-            QualityTier.JuryRigged => 1,
-            _ => 1
-        };
-    }
+// ═══════════════════════════════════════════════════════════
+// RESULT MODELS
+// ═══════════════════════════════════════════════════════════
 
-    /// <summary>
-    /// Get damage bonus based on quality tier
-    /// </summary>
-    private int GetDamageBonusForQuality(QualityTier quality)
-    {
-        return quality switch
-        {
-            QualityTier.MythForged => 3,
-            QualityTier.Optimized => 2,
-            QualityTier.ClanForged => 1,
-            _ => 0
-        };
-    }
+/// <summary>
+/// Loot generation result
+/// </summary>
+public class LootGenerationResult
+{
+    public string LogMessage { get; set; } = string.Empty;
+    public List<GeneratedItem> Items { get; set; } = new();
+    public int SilverMarks { get; set; }
+    public List<CraftingMaterial> CraftingMaterials { get; set; } = new();
+}
 
-    /// <summary>
-    /// Get weapon attribute based on weapon category
-    /// </summary>
-    private string GetWeaponAttribute(WeaponCategory? category)
-    {
-        return category switch
-        {
-            WeaponCategory.Axe => "MIGHT",
-            WeaponCategory.Greatsword => "MIGHT",
-            WeaponCategory.Spear => "FINESSE",
-            WeaponCategory.Dagger => "FINESSE",
-            WeaponCategory.Staff => "WILL",
-            WeaponCategory.Focus => "WILL",
-            WeaponCategory.Blade => "FINESSE",
-            WeaponCategory.Blunt => "MIGHT",
-            WeaponCategory.EnergyMelee => "FINESSE",
-            WeaponCategory.Rifle => "FINESSE",
-            WeaponCategory.HeavyBlunt => "MIGHT",
-            _ => "MIGHT"
-        };
-    }
+/// <summary>
+/// Generated item from loot
+/// </summary>
+public class GeneratedItem
+{
+    public int? ArtifactId { get; set; }
+    public string ItemName { get; set; } = string.Empty;
+    public string ItemType { get; set; } = string.Empty;
+    public string QualityTier { get; set; } = string.Empty;
+    public bool IsArtifact { get; set; }
+    public bool IsUnique { get; set; }
+    public string Description { get; set; } = string.Empty;
+    public string? FlavorText { get; set; }
 
-    /// <summary>
-    /// Get random legendary effect for Myth-Forged items
-    /// </summary>
-    private string GetRandomLegendaryEffect()
-    {
-        string[] effects = new[]
-        {
-            "Inflicts [Bleeding] on critical hits (3 turns)",
-            "Ignores 50% of enemy armor",
-            "+2 damage per enemy defeated this combat",
-            "Regenerate 5 HP per kill",
-            "Critical hits restore 10 Stamina",
-            "+3 damage when below 50% HP",
-            "Attacks have 20% chance to stun (1 turn)",
-            "Gain +2 MIGHT when wielding this weapon",
-            "Deal +50% damage to Forlorn enemies"
-        };
+    // Attribute bonuses
+    public int MightBonus { get; set; }
+    public int FinesseBonus { get; set; }
+    public int WitsBonus { get; set; }
+    public int WillBonus { get; set; }
+    public int SturdinessBonus { get; set; }
 
-        return effects[_random.Next(effects.Length)];
-    }
+    // Combat bonuses
+    public int MaxHpBonus { get; set; }
+    public int MaxStaminaBonus { get; set; }
+    public int MaxAetherBonus { get; set; }
+    public int DefenseBonus { get; set; }
+    public int SoakBonus { get; set; }
+    public int AccuracyBonus { get; set; }
+
+    // Unique properties
+    public string? UniqueEffectName { get; set; }
+    public string? UniqueEffectDescription { get; set; }
+
+    // Set membership
+    public string? SetName { get; set; }
+    public int? SetPieceCount { get; set; }
+}
+
+/// <summary>
+/// Crafting material drop
+/// </summary>
+public class CraftingMaterial
+{
+    public string MaterialName { get; set; } = string.Empty;
+    public int Count { get; set; }
+}
+
+/// <summary>
+/// Crafting material definition for JSON deserialization
+/// </summary>
+public class CraftingMaterialDefinition
+{
+    public string MaterialName { get; set; } = string.Empty;
+    public int DropChance { get; set; } = 100;
+    public int QuantityMin { get; set; } = 1;
+    public int QuantityMax { get; set; } = 1;
 }

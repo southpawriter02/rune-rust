@@ -260,6 +260,144 @@ public class BossEncounterRepository
             ";
             createBossTelegraphStateTable.ExecuteNonQuery();
 
+            // v0.23.3: Boss_Loot_Tables table (guaranteed drops, quality distribution, rewards)
+            var createBossLootTablesTable = connection.CreateCommand();
+            createBossLootTablesTable.CommandText = @"
+                CREATE TABLE IF NOT EXISTS Boss_Loot_Tables (
+                    boss_loot_table_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    boss_encounter_id INTEGER NOT NULL UNIQUE,
+
+                    -- Guaranteed drops
+                    guaranteed_drop_count INTEGER DEFAULT 1,
+                    minimum_quality_tier TEXT DEFAULT 'Clan-Forged',
+
+                    -- Quality distribution (percentages)
+                    clan_forged_chance INTEGER DEFAULT 40,
+                    rune_carved_chance INTEGER DEFAULT 45,
+                    artifact_chance INTEGER DEFAULT 15,
+
+                    -- Currency rewards
+                    silver_marks_min INTEGER DEFAULT 100,
+                    silver_marks_max INTEGER DEFAULT 200,
+
+                    -- Special drops
+                    drops_unique_item INTEGER DEFAULT 1,
+                    unique_item_pool TEXT,
+
+                    -- Crafting materials
+                    drops_crafting_materials INTEGER DEFAULT 1,
+                    crafting_material_pool TEXT,
+
+                    FOREIGN KEY (boss_encounter_id) REFERENCES Boss_Encounters(boss_encounter_id) ON DELETE CASCADE
+                )
+            ";
+            createBossLootTablesTable.ExecuteNonQuery();
+
+            // v0.23.3: Artifacts table (legendary items with unique effects)
+            var createArtifactsTable = connection.CreateCommand();
+            createArtifactsTable.CommandText = @"
+                CREATE TABLE IF NOT EXISTS Artifacts (
+                    artifact_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    artifact_name TEXT NOT NULL UNIQUE,
+                    artifact_type TEXT NOT NULL,
+
+                    -- Item properties
+                    description TEXT,
+                    flavor_text TEXT,
+
+                    -- Stats
+                    might_bonus INTEGER DEFAULT 0,
+                    finesse_bonus INTEGER DEFAULT 0,
+                    wits_bonus INTEGER DEFAULT 0,
+                    will_bonus INTEGER DEFAULT 0,
+                    sturdiness_bonus INTEGER DEFAULT 0,
+
+                    max_hp_bonus INTEGER DEFAULT 0,
+                    max_stamina_bonus INTEGER DEFAULT 0,
+                    max_aether_bonus INTEGER DEFAULT 0,
+
+                    defense_bonus INTEGER DEFAULT 0,
+                    soak_bonus INTEGER DEFAULT 0,
+                    accuracy_bonus INTEGER DEFAULT 0,
+
+                    -- Unique properties
+                    unique_effect_name TEXT,
+                    unique_effect_description TEXT,
+                    unique_effect_script TEXT,
+
+                    -- Set membership (optional)
+                    set_name TEXT,
+                    set_piece_count INTEGER,
+
+                    -- Drop restrictions
+                    drops_from_boss_encounter_id INTEGER,
+                    minimum_tdr INTEGER DEFAULT 60,
+
+                    -- Rarity
+                    is_unique INTEGER DEFAULT 1,
+
+                    FOREIGN KEY (drops_from_boss_encounter_id) REFERENCES Boss_Encounters(boss_encounter_id)
+                )
+            ";
+            createArtifactsTable.ExecuteNonQuery();
+
+            // v0.23.3: Boss_Unique_Items table (boss-specific unique drops)
+            var createBossUniqueItemsTable = connection.CreateCommand();
+            createBossUniqueItemsTable.CommandText = @"
+                CREATE TABLE IF NOT EXISTS Boss_Unique_Items (
+                    unique_item_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    boss_encounter_id INTEGER NOT NULL,
+                    artifact_id INTEGER NOT NULL,
+
+                    -- Drop configuration
+                    drop_chance INTEGER DEFAULT 100,
+                    drop_count_min INTEGER DEFAULT 1,
+                    drop_count_max INTEGER DEFAULT 1,
+
+                    -- Restrictions
+                    drops_once_per_character INTEGER DEFAULT 0,
+
+                    FOREIGN KEY (boss_encounter_id) REFERENCES Boss_Encounters(boss_encounter_id) ON DELETE CASCADE,
+                    FOREIGN KEY (artifact_id) REFERENCES Artifacts(artifact_id)
+                )
+            ";
+            createBossUniqueItemsTable.ExecuteNonQuery();
+
+            // v0.23.3: Artifact_Set_Bonuses table (set bonus effects)
+            var createArtifactSetBonusesTable = connection.CreateCommand();
+            createArtifactSetBonusesTable.CommandText = @"
+                CREATE TABLE IF NOT EXISTS Artifact_Set_Bonuses (
+                    set_bonus_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    set_name TEXT NOT NULL,
+                    pieces_required INTEGER NOT NULL,
+
+                    -- Bonus effects
+                    bonus_name TEXT NOT NULL,
+                    bonus_description TEXT NOT NULL,
+                    bonus_effect_script TEXT,
+
+                    -- Display
+                    bonus_icon TEXT,
+
+                    UNIQUE(set_name, pieces_required)
+                )
+            ";
+            createArtifactSetBonusesTable.ExecuteNonQuery();
+
+            // v0.23.3: Character_Unique_Items_Received table (tracking once-per-character drops)
+            var createCharacterUniqueItemsReceivedTable = connection.CreateCommand();
+            createCharacterUniqueItemsReceivedTable.CommandText = @"
+                CREATE TABLE IF NOT EXISTS Character_Unique_Items_Received (
+                    character_unique_item_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    character_id TEXT NOT NULL,
+                    artifact_id INTEGER NOT NULL,
+                    received_at TEXT NOT NULL,
+
+                    UNIQUE(character_id, artifact_id)
+                )
+            ";
+            createCharacterUniqueItemsReceivedTable.ExecuteNonQuery();
+
             // Create indexes for efficient querying
             var createIndexCommands = new[]
             {
@@ -274,7 +412,14 @@ public class BossEncounterRepository
                 "CREATE INDEX IF NOT EXISTS idx_boss_ai_patterns_phase ON Boss_AI_Patterns(phase_number)",
                 "CREATE INDEX IF NOT EXISTS idx_boss_telegraph_state_enemy ON Boss_Telegraph_State(enemy_id)",
                 "CREATE INDEX IF NOT EXISTS idx_boss_telegraph_state_ability ON Boss_Telegraph_State(boss_ability_id)",
-                "CREATE INDEX IF NOT EXISTS idx_boss_telegraph_state_charging ON Boss_Telegraph_State(is_charging)"
+                "CREATE INDEX IF NOT EXISTS idx_boss_telegraph_state_charging ON Boss_Telegraph_State(is_charging)",
+                "CREATE INDEX IF NOT EXISTS idx_boss_loot_tables_boss ON Boss_Loot_Tables(boss_encounter_id)",
+                "CREATE INDEX IF NOT EXISTS idx_artifacts_boss ON Artifacts(drops_from_boss_encounter_id)",
+                "CREATE INDEX IF NOT EXISTS idx_artifacts_set ON Artifacts(set_name)",
+                "CREATE INDEX IF NOT EXISTS idx_artifacts_tdr ON Artifacts(minimum_tdr)",
+                "CREATE INDEX IF NOT EXISTS idx_boss_unique_items_boss ON Boss_Unique_Items(boss_encounter_id)",
+                "CREATE INDEX IF NOT EXISTS idx_artifact_set_bonuses_set ON Artifact_Set_Bonuses(set_name)",
+                "CREATE INDEX IF NOT EXISTS idx_character_unique_items_char ON Character_Unique_Items_Received(character_id)"
             };
 
             foreach (var indexSql in createIndexCommands)
@@ -1309,6 +1454,526 @@ public class BossEncounterRepository
     }
 
     // ═════════════════════════════════════════════════════════════
+    // v0.23.3: BOSS LOOT TABLES
+    // ═════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// Create boss loot table configuration
+    /// </summary>
+    public int CreateBossLootTable(BossLootTableData lootTable)
+    {
+        try
+        {
+            using var connection = new SqliteConnection(_connectionString);
+            connection.Open();
+
+            var command = connection.CreateCommand();
+            command.CommandText = @"
+                INSERT INTO Boss_Loot_Tables (
+                    boss_encounter_id, guaranteed_drop_count, minimum_quality_tier,
+                    clan_forged_chance, rune_carved_chance, artifact_chance,
+                    silver_marks_min, silver_marks_max,
+                    drops_unique_item, unique_item_pool,
+                    drops_crafting_materials, crafting_material_pool
+                )
+                VALUES (
+                    $bossEncounterId, $guaranteedDropCount, $minimumQualityTier,
+                    $clanForgedChance, $runeCarvedChance, $artifactChance,
+                    $silverMarksMin, $silverMarksMax,
+                    $dropsUniqueItem, $uniqueItemPool,
+                    $dropsCraftingMaterials, $craftingMaterialPool
+                )
+            ";
+
+            command.Parameters.AddWithValue("$bossEncounterId", lootTable.BossEncounterId);
+            command.Parameters.AddWithValue("$guaranteedDropCount", lootTable.GuaranteedDropCount);
+            command.Parameters.AddWithValue("$minimumQualityTier", lootTable.MinimumQualityTier);
+            command.Parameters.AddWithValue("$clanForgedChance", lootTable.ClanForgedChance);
+            command.Parameters.AddWithValue("$runeCarvedChance", lootTable.RuneCarvedChance);
+            command.Parameters.AddWithValue("$artifactChance", lootTable.ArtifactChance);
+            command.Parameters.AddWithValue("$silverMarksMin", lootTable.SilverMarksMin);
+            command.Parameters.AddWithValue("$silverMarksMax", lootTable.SilverMarksMax);
+            command.Parameters.AddWithValue("$dropsUniqueItem", lootTable.DropsUniqueItem ? 1 : 0);
+            command.Parameters.AddWithValue("$uniqueItemPool", lootTable.UniqueItemPool ?? (object)DBNull.Value);
+            command.Parameters.AddWithValue("$dropsCraftingMaterials", lootTable.DropsCraftingMaterials ? 1 : 0);
+            command.Parameters.AddWithValue("$craftingMaterialPool", lootTable.CraftingMaterialPool ?? (object)DBNull.Value);
+
+            command.ExecuteNonQuery();
+
+            return (int)connection.LastInsertRowId;
+        }
+        catch (Exception ex)
+        {
+            _log.Error(ex, "Failed to create boss loot table: BossEncounterId={BossEncounterId}", lootTable.BossEncounterId);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Get boss loot table configuration
+    /// </summary>
+    public BossLootTableData? GetBossLootTable(int bossEncounterId)
+    {
+        try
+        {
+            using var connection = new SqliteConnection(_connectionString);
+            connection.Open();
+
+            var command = connection.CreateCommand();
+            command.CommandText = @"
+                SELECT * FROM Boss_Loot_Tables
+                WHERE boss_encounter_id = $bossEncounterId
+            ";
+            command.Parameters.AddWithValue("$bossEncounterId", bossEncounterId);
+
+            using var reader = command.ExecuteReader();
+            if (reader.Read())
+            {
+                return MapBossLootTable(reader);
+            }
+
+            return null;
+        }
+        catch (Exception ex)
+        {
+            _log.Error(ex, "Failed to get boss loot table: BossEncounterId={BossEncounterId}", bossEncounterId);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Update boss loot table configuration
+    /// </summary>
+    public void UpdateBossLootTable(BossLootTableData lootTable)
+    {
+        try
+        {
+            using var connection = new SqliteConnection(_connectionString);
+            connection.Open();
+
+            var command = connection.CreateCommand();
+            command.CommandText = @"
+                UPDATE Boss_Loot_Tables SET
+                    guaranteed_drop_count = $guaranteedDropCount,
+                    minimum_quality_tier = $minimumQualityTier,
+                    clan_forged_chance = $clanForgedChance,
+                    rune_carved_chance = $runeCarvedChance,
+                    artifact_chance = $artifactChance,
+                    silver_marks_min = $silverMarksMin,
+                    silver_marks_max = $silverMarksMax,
+                    drops_unique_item = $dropsUniqueItem,
+                    unique_item_pool = $uniqueItemPool,
+                    drops_crafting_materials = $dropsCraftingMaterials,
+                    crafting_material_pool = $craftingMaterialPool
+                WHERE boss_loot_table_id = $lootTableId
+            ";
+
+            command.Parameters.AddWithValue("$lootTableId", lootTable.BossLootTableId);
+            command.Parameters.AddWithValue("$guaranteedDropCount", lootTable.GuaranteedDropCount);
+            command.Parameters.AddWithValue("$minimumQualityTier", lootTable.MinimumQualityTier);
+            command.Parameters.AddWithValue("$clanForgedChance", lootTable.ClanForgedChance);
+            command.Parameters.AddWithValue("$runeCarvedChance", lootTable.RuneCarvedChance);
+            command.Parameters.AddWithValue("$artifactChance", lootTable.ArtifactChance);
+            command.Parameters.AddWithValue("$silverMarksMin", lootTable.SilverMarksMin);
+            command.Parameters.AddWithValue("$silverMarksMax", lootTable.SilverMarksMax);
+            command.Parameters.AddWithValue("$dropsUniqueItem", lootTable.DropsUniqueItem ? 1 : 0);
+            command.Parameters.AddWithValue("$uniqueItemPool", lootTable.UniqueItemPool ?? (object)DBNull.Value);
+            command.Parameters.AddWithValue("$dropsCraftingMaterials", lootTable.DropsCraftingMaterials ? 1 : 0);
+            command.Parameters.AddWithValue("$craftingMaterialPool", lootTable.CraftingMaterialPool ?? (object)DBNull.Value);
+
+            command.ExecuteNonQuery();
+        }
+        catch (Exception ex)
+        {
+            _log.Error(ex, "Failed to update boss loot table: LootTableId={LootTableId}", lootTable.BossLootTableId);
+            throw;
+        }
+    }
+
+    // ═════════════════════════════════════════════════════════════
+    // v0.23.3: ARTIFACTS
+    // ═════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// Create artifact definition
+    /// </summary>
+    public int CreateArtifact(ArtifactData artifact)
+    {
+        try
+        {
+            using var connection = new SqliteConnection(_connectionString);
+            connection.Open();
+
+            var command = connection.CreateCommand();
+            command.CommandText = @"
+                INSERT INTO Artifacts (
+                    artifact_name, artifact_type, description, flavor_text,
+                    might_bonus, finesse_bonus, wits_bonus, will_bonus, sturdiness_bonus,
+                    max_hp_bonus, max_stamina_bonus, max_aether_bonus,
+                    defense_bonus, soak_bonus, accuracy_bonus,
+                    unique_effect_name, unique_effect_description, unique_effect_script,
+                    set_name, set_piece_count,
+                    drops_from_boss_encounter_id, minimum_tdr, is_unique
+                )
+                VALUES (
+                    $artifactName, $artifactType, $description, $flavorText,
+                    $mightBonus, $finesseBonus, $witsBonus, $willBonus, $sturdinessBonus,
+                    $maxHpBonus, $maxStaminaBonus, $maxAetherBonus,
+                    $defenseBonus, $soakBonus, $accuracyBonus,
+                    $uniqueEffectName, $uniqueEffectDescription, $uniqueEffectScript,
+                    $setName, $setPieceCount,
+                    $dropsFromBossEncounterId, $minimumTdr, $isUnique
+                )
+            ";
+
+            command.Parameters.AddWithValue("$artifactName", artifact.ArtifactName);
+            command.Parameters.AddWithValue("$artifactType", artifact.ArtifactType);
+            command.Parameters.AddWithValue("$description", artifact.Description ?? (object)DBNull.Value);
+            command.Parameters.AddWithValue("$flavorText", artifact.FlavorText ?? (object)DBNull.Value);
+            command.Parameters.AddWithValue("$mightBonus", artifact.MightBonus);
+            command.Parameters.AddWithValue("$finesseBonus", artifact.FinesseBonus);
+            command.Parameters.AddWithValue("$witsBonus", artifact.WitsBonus);
+            command.Parameters.AddWithValue("$willBonus", artifact.WillBonus);
+            command.Parameters.AddWithValue("$sturdinessBonus", artifact.SturdinessBonus);
+            command.Parameters.AddWithValue("$maxHpBonus", artifact.MaxHpBonus);
+            command.Parameters.AddWithValue("$maxStaminaBonus", artifact.MaxStaminaBonus);
+            command.Parameters.AddWithValue("$maxAetherBonus", artifact.MaxAetherBonus);
+            command.Parameters.AddWithValue("$defenseBonus", artifact.DefenseBonus);
+            command.Parameters.AddWithValue("$soakBonus", artifact.SoakBonus);
+            command.Parameters.AddWithValue("$accuracyBonus", artifact.AccuracyBonus);
+            command.Parameters.AddWithValue("$uniqueEffectName", artifact.UniqueEffectName ?? (object)DBNull.Value);
+            command.Parameters.AddWithValue("$uniqueEffectDescription", artifact.UniqueEffectDescription ?? (object)DBNull.Value);
+            command.Parameters.AddWithValue("$uniqueEffectScript", artifact.UniqueEffectScript ?? (object)DBNull.Value);
+            command.Parameters.AddWithValue("$setName", artifact.SetName ?? (object)DBNull.Value);
+            command.Parameters.AddWithValue("$setPieceCount", artifact.SetPieceCount ?? (object)DBNull.Value);
+            command.Parameters.AddWithValue("$dropsFromBossEncounterId", artifact.DropsFromBossEncounterId ?? (object)DBNull.Value);
+            command.Parameters.AddWithValue("$minimumTdr", artifact.MinimumTdr);
+            command.Parameters.AddWithValue("$isUnique", artifact.IsUnique ? 1 : 0);
+
+            command.ExecuteNonQuery();
+
+            return (int)connection.LastInsertRowId;
+        }
+        catch (Exception ex)
+        {
+            _log.Error(ex, "Failed to create artifact: ArtifactName={ArtifactName}", artifact.ArtifactName);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Get artifact by ID
+    /// </summary>
+    public ArtifactData? GetArtifact(int artifactId)
+    {
+        try
+        {
+            using var connection = new SqliteConnection(_connectionString);
+            connection.Open();
+
+            var command = connection.CreateCommand();
+            command.CommandText = "SELECT * FROM Artifacts WHERE artifact_id = $artifactId";
+            command.Parameters.AddWithValue("$artifactId", artifactId);
+
+            using var reader = command.ExecuteReader();
+            if (reader.Read())
+            {
+                return MapArtifact(reader);
+            }
+
+            return null;
+        }
+        catch (Exception ex)
+        {
+            _log.Error(ex, "Failed to get artifact: ArtifactId={ArtifactId}", artifactId);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Get all artifacts that can drop from enemies with given TDR
+    /// </summary>
+    public List<ArtifactData> GetArtifactsByTDR(int minimumTdr)
+    {
+        try
+        {
+            using var connection = new SqliteConnection(_connectionString);
+            connection.Open();
+
+            var command = connection.CreateCommand();
+            command.CommandText = @"
+                SELECT * FROM Artifacts
+                WHERE minimum_tdr <= $minimumTdr
+                ORDER BY minimum_tdr DESC
+            ";
+            command.Parameters.AddWithValue("$minimumTdr", minimumTdr);
+
+            var artifacts = new List<ArtifactData>();
+            using var reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                artifacts.Add(MapArtifact(reader));
+            }
+
+            return artifacts;
+        }
+        catch (Exception ex)
+        {
+            _log.Error(ex, "Failed to get artifacts by TDR: MinimumTdr={MinimumTdr}", minimumTdr);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Get all artifacts from a specific set
+    /// </summary>
+    public List<ArtifactData> GetArtifactsBySet(string setName)
+    {
+        try
+        {
+            using var connection = new SqliteConnection(_connectionString);
+            connection.Open();
+
+            var command = connection.CreateCommand();
+            command.CommandText = "SELECT * FROM Artifacts WHERE set_name = $setName";
+            command.Parameters.AddWithValue("$setName", setName);
+
+            var artifacts = new List<ArtifactData>();
+            using var reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                artifacts.Add(MapArtifact(reader));
+            }
+
+            return artifacts;
+        }
+        catch (Exception ex)
+        {
+            _log.Error(ex, "Failed to get artifacts by set: SetName={SetName}", setName);
+            throw;
+        }
+    }
+
+    // ═════════════════════════════════════════════════════════════
+    // v0.23.3: BOSS UNIQUE ITEMS
+    // ═════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// Create boss-specific unique item drop
+    /// </summary>
+    public int CreateBossUniqueItem(BossUniqueItemData uniqueItem)
+    {
+        try
+        {
+            using var connection = new SqliteConnection(_connectionString);
+            connection.Open();
+
+            var command = connection.CreateCommand();
+            command.CommandText = @"
+                INSERT INTO Boss_Unique_Items (
+                    boss_encounter_id, artifact_id, drop_chance,
+                    drop_count_min, drop_count_max, drops_once_per_character
+                )
+                VALUES (
+                    $bossEncounterId, $artifactId, $dropChance,
+                    $dropCountMin, $dropCountMax, $dropsOncePerCharacter
+                )
+            ";
+
+            command.Parameters.AddWithValue("$bossEncounterId", uniqueItem.BossEncounterId);
+            command.Parameters.AddWithValue("$artifactId", uniqueItem.ArtifactId);
+            command.Parameters.AddWithValue("$dropChance", uniqueItem.DropChance);
+            command.Parameters.AddWithValue("$dropCountMin", uniqueItem.DropCountMin);
+            command.Parameters.AddWithValue("$dropCountMax", uniqueItem.DropCountMax);
+            command.Parameters.AddWithValue("$dropsOncePerCharacter", uniqueItem.DropsOncePerCharacter ? 1 : 0);
+
+            command.ExecuteNonQuery();
+
+            return (int)connection.LastInsertRowId;
+        }
+        catch (Exception ex)
+        {
+            _log.Error(ex, "Failed to create boss unique item: BossEncounterId={BossEncounterId}, ArtifactId={ArtifactId}",
+                uniqueItem.BossEncounterId, uniqueItem.ArtifactId);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Get all unique items for a boss encounter
+    /// </summary>
+    public List<BossUniqueItemData> GetBossUniqueItems(int bossEncounterId)
+    {
+        try
+        {
+            using var connection = new SqliteConnection(_connectionString);
+            connection.Open();
+
+            var command = connection.CreateCommand();
+            command.CommandText = @"
+                SELECT * FROM Boss_Unique_Items
+                WHERE boss_encounter_id = $bossEncounterId
+            ";
+            command.Parameters.AddWithValue("$bossEncounterId", bossEncounterId);
+
+            var uniqueItems = new List<BossUniqueItemData>();
+            using var reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                uniqueItems.Add(MapBossUniqueItem(reader));
+            }
+
+            return uniqueItems;
+        }
+        catch (Exception ex)
+        {
+            _log.Error(ex, "Failed to get boss unique items: BossEncounterId={BossEncounterId}", bossEncounterId);
+            throw;
+        }
+    }
+
+    // ═════════════════════════════════════════════════════════════
+    // v0.23.3: ONCE-PER-CHARACTER TRACKING
+    // ═════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// Check if character has already received a unique item
+    /// </summary>
+    public bool HasReceivedUniqueItem(string characterId, int artifactId)
+    {
+        try
+        {
+            using var connection = new SqliteConnection(_connectionString);
+            connection.Open();
+
+            var command = connection.CreateCommand();
+            command.CommandText = @"
+                SELECT COUNT(*) FROM Character_Unique_Items_Received
+                WHERE character_id = $characterId AND artifact_id = $artifactId
+            ";
+            command.Parameters.AddWithValue("$characterId", characterId);
+            command.Parameters.AddWithValue("$artifactId", artifactId);
+
+            var count = (long)command.ExecuteScalar()!;
+            return count > 0;
+        }
+        catch (Exception ex)
+        {
+            _log.Error(ex, "Failed to check unique item receipt: CharacterId={CharacterId}, ArtifactId={ArtifactId}",
+                characterId, artifactId);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Record that character received a unique item
+    /// </summary>
+    public void RecordUniqueItemDrop(string characterId, int artifactId)
+    {
+        try
+        {
+            using var connection = new SqliteConnection(_connectionString);
+            connection.Open();
+
+            var command = connection.CreateCommand();
+            command.CommandText = @"
+                INSERT INTO Character_Unique_Items_Received (character_id, artifact_id, received_at)
+                VALUES ($characterId, $artifactId, $receivedAt)
+            ";
+            command.Parameters.AddWithValue("$characterId", characterId);
+            command.Parameters.AddWithValue("$artifactId", artifactId);
+            command.Parameters.AddWithValue("$receivedAt", DateTime.UtcNow.ToString("o"));
+
+            command.ExecuteNonQuery();
+        }
+        catch (Exception ex)
+        {
+            _log.Error(ex, "Failed to record unique item drop: CharacterId={CharacterId}, ArtifactId={ArtifactId}",
+                characterId, artifactId);
+            throw;
+        }
+    }
+
+    // ═════════════════════════════════════════════════════════════
+    // v0.23.3: SET BONUSES
+    // ═════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// Create set bonus definition
+    /// </summary>
+    public int CreateSetBonus(SetBonusData setBonus)
+    {
+        try
+        {
+            using var connection = new SqliteConnection(_connectionString);
+            connection.Open();
+
+            var command = connection.CreateCommand();
+            command.CommandText = @"
+                INSERT INTO Artifact_Set_Bonuses (
+                    set_name, pieces_required, bonus_name, bonus_description,
+                    bonus_effect_script, bonus_icon
+                )
+                VALUES (
+                    $setName, $piecesRequired, $bonusName, $bonusDescription,
+                    $bonusEffectScript, $bonusIcon
+                )
+            ";
+
+            command.Parameters.AddWithValue("$setName", setBonus.SetName);
+            command.Parameters.AddWithValue("$piecesRequired", setBonus.PiecesRequired);
+            command.Parameters.AddWithValue("$bonusName", setBonus.BonusName);
+            command.Parameters.AddWithValue("$bonusDescription", setBonus.BonusDescription);
+            command.Parameters.AddWithValue("$bonusEffectScript", setBonus.BonusEffectScript ?? (object)DBNull.Value);
+            command.Parameters.AddWithValue("$bonusIcon", setBonus.BonusIcon ?? (object)DBNull.Value);
+
+            command.ExecuteNonQuery();
+
+            return (int)connection.LastInsertRowId;
+        }
+        catch (Exception ex)
+        {
+            _log.Error(ex, "Failed to create set bonus: SetName={SetName}, PiecesRequired={PiecesRequired}",
+                setBonus.SetName, setBonus.PiecesRequired);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Get all set bonuses for a set
+    /// </summary>
+    public List<SetBonusData> GetSetBonuses(string setName)
+    {
+        try
+        {
+            using var connection = new SqliteConnection(_connectionString);
+            connection.Open();
+
+            var command = connection.CreateCommand();
+            command.CommandText = @"
+                SELECT * FROM Artifact_Set_Bonuses
+                WHERE set_name = $setName
+                ORDER BY pieces_required ASC
+            ";
+            command.Parameters.AddWithValue("$setName", setName);
+
+            var setBonuses = new List<SetBonusData>();
+            using var reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                setBonuses.Add(MapSetBonus(reader));
+            }
+
+            return setBonuses;
+        }
+        catch (Exception ex)
+        {
+            _log.Error(ex, "Failed to get set bonuses: SetName={SetName}", setName);
+            throw;
+        }
+    }
+
+    // ═════════════════════════════════════════════════════════════
     // HELPER METHODS
     // ═════════════════════════════════════════════════════════════
 
@@ -1448,6 +2113,87 @@ public class BossEncounterRepository
             InterruptDamageThreshold = reader.GetInt32(reader.GetOrdinal("interrupt_damage_threshold")),
             AccumulatedInterruptDamage = reader.GetInt32(reader.GetOrdinal("accumulated_interrupt_damage")),
             TargetCharacterIds = reader.GetString(reader.GetOrdinal("target_character_ids"))
+        };
+    }
+
+    // v0.23.3 Mappers
+
+    private BossLootTableData MapBossLootTable(SqliteDataReader reader)
+    {
+        return new BossLootTableData
+        {
+            BossLootTableId = reader.GetInt32(reader.GetOrdinal("boss_loot_table_id")),
+            BossEncounterId = reader.GetInt32(reader.GetOrdinal("boss_encounter_id")),
+            GuaranteedDropCount = reader.GetInt32(reader.GetOrdinal("guaranteed_drop_count")),
+            MinimumQualityTier = reader.GetString(reader.GetOrdinal("minimum_quality_tier")),
+            ClanForgedChance = reader.GetInt32(reader.GetOrdinal("clan_forged_chance")),
+            RuneCarvedChance = reader.GetInt32(reader.GetOrdinal("rune_carved_chance")),
+            ArtifactChance = reader.GetInt32(reader.GetOrdinal("artifact_chance")),
+            SilverMarksMin = reader.GetInt32(reader.GetOrdinal("silver_marks_min")),
+            SilverMarksMax = reader.GetInt32(reader.GetOrdinal("silver_marks_max")),
+            DropsUniqueItem = reader.GetInt32(reader.GetOrdinal("drops_unique_item")) == 1,
+            UniqueItemPool = reader.IsDBNull(reader.GetOrdinal("unique_item_pool")) ? null : reader.GetString(reader.GetOrdinal("unique_item_pool")),
+            DropsCraftingMaterials = reader.GetInt32(reader.GetOrdinal("drops_crafting_materials")) == 1,
+            CraftingMaterialPool = reader.IsDBNull(reader.GetOrdinal("crafting_material_pool")) ? null : reader.GetString(reader.GetOrdinal("crafting_material_pool"))
+        };
+    }
+
+    private ArtifactData MapArtifact(SqliteDataReader reader)
+    {
+        return new ArtifactData
+        {
+            ArtifactId = reader.GetInt32(reader.GetOrdinal("artifact_id")),
+            ArtifactName = reader.GetString(reader.GetOrdinal("artifact_name")),
+            ArtifactType = reader.GetString(reader.GetOrdinal("artifact_type")),
+            Description = reader.IsDBNull(reader.GetOrdinal("description")) ? null : reader.GetString(reader.GetOrdinal("description")),
+            FlavorText = reader.IsDBNull(reader.GetOrdinal("flavor_text")) ? null : reader.GetString(reader.GetOrdinal("flavor_text")),
+            MightBonus = reader.GetInt32(reader.GetOrdinal("might_bonus")),
+            FinesseBonus = reader.GetInt32(reader.GetOrdinal("finesse_bonus")),
+            WitsBonus = reader.GetInt32(reader.GetOrdinal("wits_bonus")),
+            WillBonus = reader.GetInt32(reader.GetOrdinal("will_bonus")),
+            SturdinessBonus = reader.GetInt32(reader.GetOrdinal("sturdiness_bonus")),
+            MaxHpBonus = reader.GetInt32(reader.GetOrdinal("max_hp_bonus")),
+            MaxStaminaBonus = reader.GetInt32(reader.GetOrdinal("max_stamina_bonus")),
+            MaxAetherBonus = reader.GetInt32(reader.GetOrdinal("max_aether_bonus")),
+            DefenseBonus = reader.GetInt32(reader.GetOrdinal("defense_bonus")),
+            SoakBonus = reader.GetInt32(reader.GetOrdinal("soak_bonus")),
+            AccuracyBonus = reader.GetInt32(reader.GetOrdinal("accuracy_bonus")),
+            UniqueEffectName = reader.IsDBNull(reader.GetOrdinal("unique_effect_name")) ? null : reader.GetString(reader.GetOrdinal("unique_effect_name")),
+            UniqueEffectDescription = reader.IsDBNull(reader.GetOrdinal("unique_effect_description")) ? null : reader.GetString(reader.GetOrdinal("unique_effect_description")),
+            UniqueEffectScript = reader.IsDBNull(reader.GetOrdinal("unique_effect_script")) ? null : reader.GetString(reader.GetOrdinal("unique_effect_script")),
+            SetName = reader.IsDBNull(reader.GetOrdinal("set_name")) ? null : reader.GetString(reader.GetOrdinal("set_name")),
+            SetPieceCount = reader.IsDBNull(reader.GetOrdinal("set_piece_count")) ? null : reader.GetInt32(reader.GetOrdinal("set_piece_count")),
+            DropsFromBossEncounterId = reader.IsDBNull(reader.GetOrdinal("drops_from_boss_encounter_id")) ? null : reader.GetInt32(reader.GetOrdinal("drops_from_boss_encounter_id")),
+            MinimumTdr = reader.GetInt32(reader.GetOrdinal("minimum_tdr")),
+            IsUnique = reader.GetInt32(reader.GetOrdinal("is_unique")) == 1
+        };
+    }
+
+    private BossUniqueItemData MapBossUniqueItem(SqliteDataReader reader)
+    {
+        return new BossUniqueItemData
+        {
+            UniqueItemId = reader.GetInt32(reader.GetOrdinal("unique_item_id")),
+            BossEncounterId = reader.GetInt32(reader.GetOrdinal("boss_encounter_id")),
+            ArtifactId = reader.GetInt32(reader.GetOrdinal("artifact_id")),
+            DropChance = reader.GetInt32(reader.GetOrdinal("drop_chance")),
+            DropCountMin = reader.GetInt32(reader.GetOrdinal("drop_count_min")),
+            DropCountMax = reader.GetInt32(reader.GetOrdinal("drop_count_max")),
+            DropsOncePerCharacter = reader.GetInt32(reader.GetOrdinal("drops_once_per_character")) == 1
+        };
+    }
+
+    private SetBonusData MapSetBonus(SqliteDataReader reader)
+    {
+        return new SetBonusData
+        {
+            SetBonusId = reader.GetInt32(reader.GetOrdinal("set_bonus_id")),
+            SetName = reader.GetString(reader.GetOrdinal("set_name")),
+            PiecesRequired = reader.GetInt32(reader.GetOrdinal("pieces_required")),
+            BonusName = reader.GetString(reader.GetOrdinal("bonus_name")),
+            BonusDescription = reader.GetString(reader.GetOrdinal("bonus_description")),
+            BonusEffectScript = reader.IsDBNull(reader.GetOrdinal("bonus_effect_script")) ? null : reader.GetString(reader.GetOrdinal("bonus_effect_script")),
+            BonusIcon = reader.IsDBNull(reader.GetOrdinal("bonus_icon")) ? null : reader.GetString(reader.GetOrdinal("bonus_icon"))
         };
     }
 }
@@ -1621,4 +2367,119 @@ public class BossTelegraphStateData
 
     // Target tracking (JSON)
     public string? TargetCharacterIds { get; set; }
+}
+
+// ═════════════════════════════════════════════════════════════
+// v0.23.3: BOSS LOOT DATA MODELS
+// ═════════════════════════════════════════════════════════════
+
+/// <summary>
+/// v0.23.3: Boss loot table configuration (maps to Boss_Loot_Tables table)
+/// </summary>
+public class BossLootTableData
+{
+    public int BossLootTableId { get; set; }
+    public int BossEncounterId { get; set; }
+
+    // Guaranteed drops
+    public int GuaranteedDropCount { get; set; } = 1;
+    public string MinimumQualityTier { get; set; } = "Clan-Forged";
+
+    // Quality distribution (percentages)
+    public int ClanForgedChance { get; set; } = 40;
+    public int RuneCarvedChance { get; set; } = 45;
+    public int ArtifactChance { get; set; } = 15;
+
+    // Currency rewards
+    public int SilverMarksMin { get; set; } = 100;
+    public int SilverMarksMax { get; set; } = 200;
+
+    // Special drops
+    public bool DropsUniqueItem { get; set; } = true;
+    public string? UniqueItemPool { get; set; }
+
+    // Crafting materials
+    public bool DropsCraftingMaterials { get; set; } = true;
+    public string? CraftingMaterialPool { get; set; }
+}
+
+/// <summary>
+/// v0.23.3: Artifact definition (maps to Artifacts table)
+/// </summary>
+public class ArtifactData
+{
+    public int ArtifactId { get; set; }
+    public string ArtifactName { get; set; } = string.Empty;
+    public string ArtifactType { get; set; } = string.Empty;
+
+    // Item properties
+    public string? Description { get; set; }
+    public string? FlavorText { get; set; }
+
+    // Stats
+    public int MightBonus { get; set; }
+    public int FinesseBonus { get; set; }
+    public int WitsBonus { get; set; }
+    public int WillBonus { get; set; }
+    public int SturdinessBonus { get; set; }
+
+    public int MaxHpBonus { get; set; }
+    public int MaxStaminaBonus { get; set; }
+    public int MaxAetherBonus { get; set; }
+
+    public int DefenseBonus { get; set; }
+    public int SoakBonus { get; set; }
+    public int AccuracyBonus { get; set; }
+
+    // Unique properties
+    public string? UniqueEffectName { get; set; }
+    public string? UniqueEffectDescription { get; set; }
+    public string? UniqueEffectScript { get; set; }
+
+    // Set membership (optional)
+    public string? SetName { get; set; }
+    public int? SetPieceCount { get; set; }
+
+    // Drop restrictions
+    public int? DropsFromBossEncounterId { get; set; }
+    public int MinimumTdr { get; set; } = 60;
+
+    // Rarity
+    public bool IsUnique { get; set; } = true;
+}
+
+/// <summary>
+/// v0.23.3: Boss-specific unique item drop (maps to Boss_Unique_Items table)
+/// </summary>
+public class BossUniqueItemData
+{
+    public int UniqueItemId { get; set; }
+    public int BossEncounterId { get; set; }
+    public int ArtifactId { get; set; }
+
+    // Drop configuration
+    public int DropChance { get; set; } = 100;
+    public int DropCountMin { get; set; } = 1;
+    public int DropCountMax { get; set; } = 1;
+
+    // Restrictions
+    public bool DropsOncePerCharacter { get; set; }
+}
+
+/// <summary>
+/// v0.23.3: Set bonus definition (maps to Artifact_Set_Bonuses table)
+/// </summary>
+public class SetBonusData
+{
+    public int SetBonusId { get; set; }
+    public string SetName { get; set; } = string.Empty;
+    public int PiecesRequired { get; set; }
+
+    // Bonus effects
+    public string BonusName { get; set; } = string.Empty;
+    public string BonusDescription { get; set; } = string.Empty;
+    public string? BonusEffectScript { get; set; }
+
+    // Display
+    public string? BonusIcon { get; set; }
 }
