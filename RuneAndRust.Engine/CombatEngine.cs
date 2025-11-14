@@ -218,6 +218,17 @@ public class CombatEngine
             }
         }
 
+        // v0.20.4: Calculate high ground bonus for attacker
+        if (combatState.Grid != null && player.Position != null && target.Position != null)
+        {
+            if (player.Position.Value.Elevation > target.Position.Value.Elevation)
+            {
+                bonusDice += 2;
+                combatState.AddLogEntry($"  [HIGH GROUND] Elevation advantage! +2 Accuracy!");
+                _log.Information("TACTICAL SUPERIORITY: Attacker={AttackerId}, ElevationAdvantage={Delta}", player.Name, player.Position.Value.Elevation - target.Position.Value.Elevation);
+            }
+        }
+
         var totalDice = attributeValue + bonusDice;
         var attackRoll = _diceService.Roll(totalDice);
 
@@ -237,8 +248,20 @@ public class CombatEngine
             }
         }
 
-        // Opponent defends (with flanking penalty and cover bonus)
-        var defendDice = Math.Max(1, target.Attributes.Sturdiness - flankingBonus.DefensePenalty + coverBonus.DefenseBonus);
+        // v0.20.4: Calculate high ground bonus for defender
+        int highGroundDefenseBonus = 0;
+        if (combatState.Grid != null && player.Position != null && target.Position != null)
+        {
+            if (target.Position.Value.Elevation > player.Position.Value.Elevation)
+            {
+                highGroundDefenseBonus = 2;
+                combatState.AddLogEntry($"  [HIGH GROUND] {target.Name} has elevation advantage! +2 Defense!");
+                _log.Information("DEFENSIVE ELEVATION: Defender={DefenderId}, ElevationAdvantage={Delta}", target.Name, target.Position.Value.Elevation - player.Position.Value.Elevation);
+            }
+        }
+
+        // Opponent defends (with flanking penalty, cover bonus, and high ground bonus)
+        var defendDice = Math.Max(1, target.Attributes.Sturdiness - flankingBonus.DefensePenalty + coverBonus.DefenseBonus + highGroundDefenseBonus);
         if (flankingBonus.DefensePenalty > 0)
         {
             combatState.AddLogEntry($"  [FLANKING] {target.Name}'s Defense algorithms overloaded! -{flankingBonus.DefensePenalty} Defense!");

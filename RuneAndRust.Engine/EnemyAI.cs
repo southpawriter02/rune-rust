@@ -665,6 +665,16 @@ public class EnemyAI
             combatState.AddLogEntry($"  [Dirge of Defeat] weakens {enemy.Name}'s attack! ({enemy.Attributes.Might} → {attackDice} dice)");
         }
 
+        // v0.20.4: Calculate high ground bonus for attacker
+        if (combatState.Grid != null && enemy.Position != null && player.Position != null)
+        {
+            if (enemy.Position.Value.Elevation > player.Position.Value.Elevation)
+            {
+                attackDice += 2;
+                combatState.AddLogEntry($"  [HIGH GROUND] {enemy.Name} has elevation advantage! +2 Accuracy!");
+            }
+        }
+
         var attackRoll = _diceService.Roll(attackDice);
         combatState.AddLogEntry($"  Rolled {attackDice}d6: {FormatRolls(attackRoll)} = {attackRoll.Successes} successes");
 
@@ -689,8 +699,19 @@ public class EnemyAI
             }
         }
 
-        // Player defends (with cover bonus)
-        var defendDice = Math.Max(1, player.Attributes.Sturdiness + coverBonus.DefenseBonus);
+        // v0.20.4: Calculate high ground bonus for defender
+        int highGroundDefenseBonus = 0;
+        if (combatState.Grid != null && enemy.Position != null && player.Position != null)
+        {
+            if (player.Position.Value.Elevation > enemy.Position.Value.Elevation)
+            {
+                highGroundDefenseBonus = 2;
+                combatState.AddLogEntry($"  [HIGH GROUND] Elevation advantage! +2 Defense!");
+            }
+        }
+
+        // Player defends (with cover bonus and high ground bonus)
+        var defendDice = Math.Max(1, player.Attributes.Sturdiness + coverBonus.DefenseBonus + highGroundDefenseBonus);
         var defendRoll = _diceService.Roll(defendDice);
         combatState.AddLogEntry($"{player.Name} defends!");
         combatState.AddLogEntry($"  Rolled {defendDice}d6: {FormatRolls(defendRoll)} = {defendRoll.Successes} successes");
