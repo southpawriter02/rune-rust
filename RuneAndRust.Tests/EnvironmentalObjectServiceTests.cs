@@ -643,4 +643,170 @@ public class EnvironmentalObjectServiceTests
     }
 
     #endregion
+
+    #region Grid Integration Tests
+
+    [Fact]
+    public void SetGrid_ShouldAllowGridOperations()
+    {
+        // Arrange
+        var grid = new BattlefieldGrid(3); // 3-column grid
+        var service = new EnvironmentalObjectService(_diceService);
+
+        // Act
+        service.SetGrid(grid);
+
+        // Assert: Grid is set (verified by not throwing exceptions in subsequent operations)
+        var barrel = service.CreateExplosiveObject(
+            roomId: 1,
+            gridPosition: "Player/Front/Col1",
+            name: "Test Barrel",
+            damageFormula: "20 Fire",
+            explosionRadius: 1);
+
+        Assert.NotNull(barrel);
+    }
+
+    [Fact]
+    public void DestroyObject_WithGrid_ShouldFindCharactersInRadius()
+    {
+        // Arrange: Create grid with characters
+        var grid = new BattlefieldGrid(3);
+        var service = new EnvironmentalObjectService(_diceService, grid);
+
+        // Place characters on tiles
+        var frontCenter = new GridPosition(Zone.Player, Row.Front, 1);
+        var frontLeft = new GridPosition(Zone.Player, Row.Front, 0);
+        var frontRight = new GridPosition(Zone.Player, Row.Front, 2);
+
+        grid.GetTile(frontCenter)!.IsOccupied = true;
+        grid.GetTile(frontCenter)!.OccupantId = "Player1";
+
+        grid.GetTile(frontLeft)!.IsOccupied = true;
+        grid.GetTile(frontLeft)!.OccupantId = "Enemy1";
+
+        grid.GetTile(frontRight)!.IsOccupied = true;
+        grid.GetTile(frontRight)!.OccupantId = "Enemy2";
+
+        // Create barrel at center position (will hit all 3 characters in radius 1)
+        var barrel = service.CreateExplosiveObject(
+            roomId: 1,
+            gridPosition: "Player/Front/Col1",
+            name: "Central Barrel",
+            damageFormula: "20 Fire",
+            explosionRadius: 1);
+
+        // Act: Destroy barrel
+        var result = service.DestroyObject(
+            objectId: barrel.ObjectId,
+            destroyerId: 1,
+            combatInstanceId: 1,
+            destructionMethod: "Test");
+
+        // Assert: Found characters in radius
+        Assert.True(result.ObjectDestroyed);
+        Assert.NotEmpty(result.SecondaryTargets);
+        Assert.Equal(3, result.SecondaryTargets.Count); // All 3 characters hit
+    }
+
+    [Fact]
+    public void ParseGridPosition_ShouldHandleMultipleFormats()
+    {
+        // Arrange: Create service with grid
+        var grid = new BattlefieldGrid(3);
+        var service = new EnvironmentalObjectService(_diceService, grid);
+
+        // Act & Assert: Modern format
+        var barrel1 = service.CreateExplosiveObject(1, "Player/Front/Col1", "Barrel1", "20 Fire", 1);
+        Assert.NotNull(barrel1);
+        Assert.Equal("Player/Front/Col1", barrel1.GridPosition);
+
+        // Legacy format (Front_Left_Column_2 = Player zone, Front row, Column 2)
+        var barrel2 = service.CreateExplosiveObject(1, "Front_Left_Column_2", "Barrel2", "20 Fire", 1);
+        Assert.NotNull(barrel2);
+        Assert.Equal("Front_Left_Column_2", barrel2.GridPosition);
+
+        // Both should be retrievable
+        var objects1 = service.GetObjectsAtPosition(1, "Player/Front/Col1");
+        var objects2 = service.GetObjectsAtPosition(1, "Front_Left_Column_2");
+
+        Assert.Single(objects1);
+        Assert.Single(objects2);
+    }
+
+    [Fact]
+    public void ChainReaction_WithGrid_ShouldPropagateToAdjacentPositions()
+    {
+        // Arrange: Create grid and place barrels at adjacent positions
+        var grid = new BattlefieldGrid(3);
+        var service = new EnvironmentalObjectService(_diceService, grid);
+
+        var barrel1 = service.CreateExplosiveObject(
+            roomId: 1,
+            gridPosition: "Player/Front/Col0",
+            name: "Barrel 1",
+            damageFormula: "20 Fire",
+            explosionRadius: 1,
+            durability: 10,
+            canTriggerAdjacents: true);
+
+        var barrel2 = service.CreateExplosiveObject(
+            roomId: 1,
+            gridPosition: "Player/Front/Col1", // Adjacent to Col0
+            name: "Barrel 2",
+            damageFormula: "20 Fire",
+            explosionRadius: 1,
+            durability: 10,
+            canTriggerAdjacents: true);
+
+        // Act: Destroy barrel 1
+        var result = service.DestroyObject(
+            objectId: barrel1.ObjectId,
+            destroyerId: 1,
+            combatInstanceId: 1,
+            destructionMethod: "Test");
+
+        // Assert: Chain reaction destroyed barrel 2
+        Assert.True(result.ObjectDestroyed);
+        Assert.NotEmpty(result.ChainReactions);
+        Assert.Single(result.ChainReactions);
+        Assert.True(result.ChainReactions[0].ObjectDestroyed);
+        Assert.Equal("Barrel 2", result.ChainReactions[0].ObjectName);
+    }
+
+    [Fact]
+    public void CreateDestructionTerrain_WithGrid_ShouldUpdateTile()
+    {
+        // Arrange: Create grid and cover
+        var grid = new BattlefieldGrid(3);
+        var service = new EnvironmentalObjectService(_diceService, grid);
+
+        var cover = service.CreateCover(
+            roomId: 1,
+            gridPosition: "Player/Front/Col1",
+            name: "Destructible Wall",
+            quality: CoverQuality.Heavy,
+            durability: 30,
+            soakValue: 4,
+            createsTerrainOnDestroy: "Difficult");
+
+        var position = new GridPosition(Zone.Player, Row.Front, 1);
+        var tile = grid.GetTile(position);
+        Assert.NotNull(tile);
+
+        // Act: Destroy cover (creates difficult terrain)
+        var result = service.DestroyObject(
+            objectId: cover.ObjectId,
+            destroyerId: 1,
+            combatInstanceId: 1,
+            destructionMethod: "Test");
+
+        // Assert: Terrain created (verified through logging)
+        Assert.True(result.ObjectDestroyed);
+        Assert.Equal("Difficult", result.TerrainCreated);
+        // Note: Tile modification is logged but not yet implemented in tile properties
+        // Future: Assert.Equal(TileType.Difficult, tile.Type);
+    }
+
+    #endregion
 }

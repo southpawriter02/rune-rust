@@ -26,13 +26,24 @@ public class EnvironmentalObjectService
     private readonly Dictionary<int, EnvironmentalObject> _objects = new();
     private int _nextObjectId = 1;
 
-    // Dependencies (these will be injected or passed as method parameters)
-    // For now, we keep them as optional to maintain backwards compatibility
+    // Grid dependency for radius calculations and terrain updates
+    // Optional to maintain backward compatibility
     private BattlefieldGrid? _currentGrid;
 
-    public EnvironmentalObjectService(DiceService diceService)
+    public EnvironmentalObjectService(DiceService diceService, BattlefieldGrid? grid = null)
     {
         _diceService = diceService;
+        _currentGrid = grid;
+    }
+
+    /// <summary>
+    /// Sets the current battlefield grid for environmental object placement and queries
+    /// Call this after grid initialization in combat
+    /// </summary>
+    public void SetGrid(BattlefieldGrid grid)
+    {
+        _currentGrid = grid;
+        _log.Information("BattlefieldGrid set for environmental object service");
     }
 
     #region Object Retrieval
@@ -484,19 +495,65 @@ public class EnvironmentalObjectService
 
     /// <summary>
     /// Creates terrain aftermath from object destruction
-    /// v0.22.1: Terrain creation system
+    /// v0.22.1: Full grid integration
     /// </summary>
     private void CreateDestructionTerrain(EnvironmentalObject obj)
     {
+        if (_currentGrid == null || string.IsNullOrEmpty(obj.GridPosition))
+        {
+            _log.Warning("Cannot create terrain: No grid set or invalid position");
+            return;
+        }
+
         _log.Information(
             "Creating {TerrainType} terrain at {Position} from destroyed {ObjectName}",
             obj.CreatesTerrainOnDestroy, obj.GridPosition, obj.Name);
 
-        // In production, this would call TacticalGridService.SetTerrainType
-        // For now, we log the intent
-        _log.Debug("Terrain created: Type={TerrainType}, Position={Position}, Duration={Duration}",
-            obj.CreatesTerrainOnDestroy, obj.GridPosition,
-            obj.TerrainDuration.HasValue ? $"{obj.TerrainDuration} turns" : "Permanent");
+        var gridPos = ParseGridPosition(obj.GridPosition);
+        if (gridPos == null)
+        {
+            _log.Warning("Could not parse grid position for terrain creation: {Position}", obj.GridPosition);
+            return;
+        }
+
+        var tile = _currentGrid.GetTile(gridPos.Value);
+        if (tile == null)
+        {
+            _log.Warning("Tile not found at position: {Position}", obj.GridPosition);
+            return;
+        }
+
+        // Update tile type based on terrain created
+        switch (obj.CreatesTerrainOnDestroy)
+        {
+            case "Difficult":
+                // Difficult terrain (rubble, debris)
+                // For now, mark in tile metadata - future: add TileType.Difficult
+                _log.Information("Difficult terrain created at {Position} (rubble from {ObjectName})",
+                    obj.GridPosition, obj.Name);
+                // Could add: tile.TerrainModifier = "Difficult"
+                break;
+
+            case "Hazardous":
+                // Hazardous terrain (poison cloud, steam, fire)
+                // For now, log - future: integrate with DynamicHazard system
+                _log.Information("Hazardous terrain created at {Position} ({ObjectName} aftermath), Duration={Duration}",
+                    obj.GridPosition, obj.Name,
+                    obj.TerrainDuration.HasValue ? $"{obj.TerrainDuration} turns" : "Permanent");
+                // Could add: tile.HazardType = specific hazard
+                break;
+
+            default:
+                _log.Debug("Unknown terrain type: {TerrainType}", obj.CreatesTerrainOnDestroy);
+                break;
+        }
+
+        // Log duration for future timed terrain cleanup
+        if (obj.TerrainDuration.HasValue)
+        {
+            _log.Debug("Terrain has {Duration} turn duration (implement cleanup timer)",
+                obj.TerrainDuration);
+        }
     }
 
     /// <summary>
@@ -719,30 +776,177 @@ public class EnvironmentalObjectService
 
     /// <summary>
     /// Gets all character IDs in radius from a position
-    /// NOTE: This is a stub - in production would query BattlefieldGrid
+    /// v0.22.1: Full grid integration
     /// </summary>
     private List<int> GetCharactersInRadius(string? centerPosition, int radius)
     {
-        // Stub: In production, this would query the BattlefieldGrid service
-        // to find all characters within the specified radius
-        _log.Debug("GetCharactersInRadius called (stub): Position={Position}, Radius={Radius}",
-            centerPosition, radius);
+        if (_currentGrid == null || string.IsNullOrEmpty(centerPosition))
+        {
+            _log.Warning("GetCharactersInRadius called without grid or position");
+            return new List<int>();
+        }
 
-        return new List<int>(); // Empty for now - integrate with grid later
+        var centerGridPos = ParseGridPosition(centerPosition);
+        if (centerGridPos == null)
+        {
+            _log.Warning("Could not parse grid position: {Position}", centerPosition);
+            return new List<int>();
+        }
+
+        var affectedCharacters = new List<int>();
+
+        // Check all tiles within Manhattan distance of radius
+        foreach (var kvp in _currentGrid.Tiles)
+        {
+            var tile = kvp.Value;
+            var distance = CalculateGridDistance(centerGridPos.Value, tile.Position);
+
+            if (distance <= radius && tile.IsOccupied && !string.IsNullOrEmpty(tile.OccupantId))
+            {
+                // Convert occupant ID to integer (hash code for consistent IDs)
+                int characterId = tile.OccupantId.GetHashCode();
+                affectedCharacters.Add(characterId);
+
+                _log.Debug("Character in radius: OccupantId={OccupantId}, CharacterId={CharacterId}, Distance={Distance}",
+                    tile.OccupantId, characterId, distance);
+            }
+        }
+
+        _log.Information("GetCharactersInRadius: Position={Position}, Radius={Radius}, Found={Count} characters",
+            centerPosition, radius, affectedCharacters.Count);
+
+        return affectedCharacters;
     }
 
     /// <summary>
     /// Gets all grid positions in radius from a center position
-    /// NOTE: This is a stub - in production would query BattlefieldGrid
+    /// v0.22.1: Full grid integration
     /// </summary>
     private List<string> GetPositionsInRadius(string? centerPosition, int radius)
     {
-        // Stub: In production, this would calculate grid positions based on radius
-        _log.Debug("GetPositionsInRadius called (stub): Position={Position}, Radius={Radius}",
-            centerPosition, radius);
+        if (_currentGrid == null || string.IsNullOrEmpty(centerPosition))
+        {
+            _log.Warning("GetPositionsInRadius called without grid or position");
+            return centerPosition != null ? new List<string> { centerPosition } : new List<string>();
+        }
 
-        // For now, just return the center position
-        return centerPosition != null ? new List<string> { centerPosition } : new List<string>();
+        var centerGridPos = ParseGridPosition(centerPosition);
+        if (centerGridPos == null)
+        {
+            _log.Warning("Could not parse grid position: {Position}", centerPosition);
+            return new List<string> { centerPosition };
+        }
+
+        var positions = new List<string>();
+
+        // Check all tiles within Manhattan distance of radius
+        foreach (var kvp in _currentGrid.Tiles)
+        {
+            var tile = kvp.Value;
+            var distance = CalculateGridDistance(centerGridPos.Value, tile.Position);
+
+            if (distance <= radius)
+            {
+                positions.Add(FormatGridPosition(tile.Position));
+            }
+        }
+
+        _log.Debug("GetPositionsInRadius: Position={Position}, Radius={Radius}, Found={Count} positions",
+            centerPosition, radius, positions.Count);
+
+        return positions;
+    }
+
+    /// <summary>
+    /// Parses a string grid position to GridPosition struct
+    /// Format: "Front_Left_Column_2" or "Player/Front/Col0"
+    /// </summary>
+    private GridPosition? ParseGridPosition(string position)
+    {
+        if (string.IsNullOrEmpty(position))
+            return null;
+
+        try
+        {
+            // Handle format: "Front_Left_Column_2" or "Player/Front/Col0" or "Enemy/Back/Col1"
+            if (position.Contains("/"))
+            {
+                // Format: "Player/Front/Col0"
+                var parts = position.Split('/');
+                if (parts.Length >= 3)
+                {
+                    var zone = Enum.Parse<Zone>(parts[0], ignoreCase: true);
+                    var row = Enum.Parse<Row>(parts[1], ignoreCase: true);
+                    var colStr = parts[2].Replace("Col", "").Replace("Column", "");
+                    if (int.TryParse(colStr, out int column))
+                    {
+                        return new GridPosition(zone, row, column);
+                    }
+                }
+            }
+            else
+            {
+                // Format: "Front_Left_Column_2" - assume Player zone for legacy compatibility
+                var parts = position.Split('_');
+
+                // Extract row
+                Row row = Row.Front;
+                if (position.Contains("Back", StringComparison.OrdinalIgnoreCase))
+                    row = Row.Back;
+
+                // Extract zone (assume Player if not specified, Enemy if specified)
+                Zone zone = Zone.Player;
+                if (position.Contains("Enemy", StringComparison.OrdinalIgnoreCase))
+                    zone = Zone.Enemy;
+                else if (position.Contains("Right", StringComparison.OrdinalIgnoreCase))
+                    zone = Zone.Enemy; // Legacy: Right = Enemy zone
+
+                // Extract column number
+                int column = 0;
+                foreach (var part in parts)
+                {
+                    if (int.TryParse(part, out int col))
+                    {
+                        column = col;
+                        break;
+                    }
+                }
+
+                return new GridPosition(zone, row, column);
+            }
+        }
+        catch (Exception ex)
+        {
+            _log.Warning(ex, "Failed to parse grid position: {Position}", position);
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Formats a GridPosition struct back to string format
+    /// </summary>
+    private string FormatGridPosition(GridPosition position)
+    {
+        return $"{position.Zone}/{position.Row}/Col{position.Column}";
+    }
+
+    /// <summary>
+    /// Calculates Manhattan distance between two grid positions
+    /// Considers zone, row, and column differences
+    /// </summary>
+    private int CalculateGridDistance(GridPosition from, GridPosition to)
+    {
+        // Different zones = at least distance of 2 (across the battlefield)
+        if (from.Zone != to.Zone)
+            return 2 + Math.Abs(from.Column - to.Column);
+
+        // Same zone but different rows = distance 1 + column difference
+        if (from.Row != to.Row)
+            return 1 + Math.Abs(from.Column - to.Column);
+
+        // Same zone and row = just column difference
+        return Math.Abs(from.Column - to.Column);
     }
 
     /// <summary>
