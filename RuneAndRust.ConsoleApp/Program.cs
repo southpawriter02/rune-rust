@@ -1745,11 +1745,11 @@ class Program
         // Map choice to StanceType
         StanceType newStanceType = stanceChoice switch
         {
-            "balanced" => StanceType.Balanced,
-            "offensive" => StanceType.Offensive,
+            "calculated" => StanceType.Calculated,
+            "aggressive" => StanceType.Aggressive,
             "defensive" => StanceType.Defensive,
             "evasive" => StanceType.Evasive,
-            _ => StanceType.Balanced
+            _ => StanceType.Calculated
         };
 
         var stanceService = new StanceService();

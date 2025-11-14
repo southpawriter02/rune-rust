@@ -807,29 +807,16 @@ public class EnemyAI
             }
         }
 
-        // v0.7.1: Apply Defensive Stance soak (+3 flat damage reduction) - Legacy
-        if (player.ActiveStance?.Type == StanceType.Defensive && player.ActiveStance.SoakBonus > 0)
+        // [v2.0] Apply Defensive Stance soak (+2 flat damage reduction)
+        var soakBonus = _stanceService.GetSoakBonus(player);
+        if (soakBonus > 0)
         {
-            int soakAmount = player.ActiveStance.SoakBonus;
-            int reducedDamage = Math.Max(0, damage - soakAmount);
+            int reducedDamage = Math.Max(0, damage - soakBonus);
             if (reducedDamage < damage)
             {
-                combatState.AddLogEntry($"{indent}[Defensive Stance - Legacy Soak] reduces damage by {soakAmount}! ({damage} → {reducedDamage})");
+                var stanceName = _stanceService.GetStanceName(player.ActiveStance!.Type);
+                combatState.AddLogEntry($"{indent}[{stanceName}] Soak reduces damage by {soakBonus}! ({damage} → {reducedDamage})");
                 damage = reducedDamage;
-            }
-        }
-
-        // [v0.21.1] Apply stance mitigation modifier (percentage-based damage reduction/increase)
-        if (player.ActiveStance != null && player.ActiveStance.MitigationModifier != 1.0f)
-        {
-            int originalDamage = damage;
-            damage = _stanceService.ApplyStanceMitigationModifier(player, damage);
-            if (damage != originalDamage)
-            {
-                var stanceName = _stanceService.GetStanceName(player.ActiveStance.Type);
-                var mitigationPercent = (int)((player.ActiveStance.MitigationModifier - 1.0f) * 100);
-                var sign = mitigationPercent >= 0 ? "+" : "";
-                combatState.AddLogEntry($"{indent}[{stanceName}] {originalDamage} → {damage} damage ({sign}{mitigationPercent}% mitigation)");
             }
         }
 
@@ -848,13 +835,13 @@ public class EnemyAI
         player.HP -= damage;
         combatState.AddLogEntry($"{indent}{player.Name} takes {damage} damage! (HP: {Math.Max(0, player.HP)}/{player.MaxHP})");
 
-        // [v0.21.1] Stance vulnerability stress - Offensive stance makes you vulnerable when attacked
+        // [v2.0] Stance vulnerability stress - Aggressive stance makes you vulnerable when attacked
         var stanceStress = _stanceService.CheckStanceVulnerabilityStress(player, wasAttacked: true);
         if (stanceStress > 0)
         {
             var traumaService = new TraumaEconomyService();
             traumaService.AddStress(player, stanceStress, source: "Stance Vulnerability");
-            combatState.AddLogEntry($"{indent}[Offensive Stance Vulnerability] +{stanceStress} Psychic Stress! (Current: {player.PsychicStress}/100)");
+            combatState.AddLogEntry($"{indent}[Aggressive Stance Vulnerability] +{stanceStress} Psychic Stress! (Current: {player.PsychicStress}/100)");
         }
     }
 
@@ -2023,7 +2010,17 @@ public class EnemyAI
         if (player.ActiveStance?.DefenseBonus > 0)
         {
             defenseSuccesses += player.ActiveStance.DefenseBonus;
-            combatState.AddLogEntry($"  Evasive Stance bonus: +{player.ActiveStance.DefenseBonus} Defense!");
+            combatState.AddLogEntry($"  [Evasive Stance] +{player.ActiveStance.DefenseBonus} Defense!");
+        }
+
+        // [v2.0] Apply stance Defense modifier (Aggressive: -3 Defense)
+        var defenseModifier = _stanceService.GetDefenseModifier(player);
+        if (defenseModifier != 0)
+        {
+            defenseSuccesses += defenseModifier;
+            var stanceName = _stanceService.GetStanceName(player.ActiveStance!.Type);
+            var sign = defenseModifier > 0 ? "+" : "";
+            combatState.AddLogEntry($"  [{stanceName}] {sign}{defenseModifier} Defense!");
         }
 
         return defenseSuccesses;

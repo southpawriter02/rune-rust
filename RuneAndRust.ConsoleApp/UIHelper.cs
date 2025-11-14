@@ -482,22 +482,22 @@ public static class UIHelper
         // Player status effects
         var playerEffects = new List<string>();
 
-        // [v0.21.1] Stance indicator - persistent display of current stance
+        // [v2.0] Stance indicator - persistent display of current stance
         var stanceService = new StanceService();
         var stanceName = stanceService.GetStanceName(combat.Player.ActiveStance.Type);
         var stanceColor = combat.Player.ActiveStance.Type switch
         {
-            StanceType.Offensive => "red",
+            StanceType.Aggressive => "red",
             StanceType.Defensive => "blue",
-            StanceType.Balanced => "white",
+            StanceType.Calculated => "white",
             StanceType.Evasive => "yellow",
             _ => "white"
         };
         var stanceIcon = combat.Player.ActiveStance.Type switch
         {
-            StanceType.Offensive => "⚔",
+            StanceType.Aggressive => "⚔",
             StanceType.Defensive => "🛡",
-            StanceType.Balanced => "⚖",
+            StanceType.Calculated => "⚖",
             StanceType.Evasive => "💨",
             _ => "•"
         };
@@ -802,7 +802,7 @@ public static class UIHelper
     public static string PromptStanceChoice(PlayerCharacter player)
     {
         var stanceService = new StanceService();
-        var currentStance = player.ActiveStance?.Type ?? StanceType.Balanced;
+        var currentStance = player.ActiveStance?.Type ?? StanceType.Calculated;
         var availableStances = stanceService.GetAvailableStances();
 
         var choices = new List<string>();

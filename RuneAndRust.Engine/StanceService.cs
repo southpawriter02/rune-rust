@@ -23,7 +23,7 @@ public class StanceService
     public bool SwitchStance(PlayerCharacter character, StanceType newStanceType, CombatState? combatState = null)
     {
         var oldStance = character.ActiveStance;
-        var oldStanceType = oldStance?.Type ?? StanceType.Balanced;
+        var oldStanceType = oldStance?.Type ?? StanceType.Calculated;
 
         // Check if already in the requested stance
         if (oldStanceType == newStanceType)
@@ -46,11 +46,11 @@ public class StanceService
         // Create new stance instance
         Stance newStance = newStanceType switch
         {
-            StanceType.Offensive => Stance.CreateOffensiveStance(),
+            StanceType.Aggressive => Stance.CreateAggressiveStance(),
             StanceType.Defensive => Stance.CreateDefensiveStance(),
             StanceType.Evasive => Stance.CreateEvasiveStance(),
-            StanceType.Balanced => Stance.CreateBalancedStance(),
-            _ => Stance.CreateBalancedStance()
+            StanceType.Calculated => Stance.CreateCalculatedStance(),
+            _ => Stance.CreateCalculatedStance()
         };
 
         // Apply stance change
@@ -74,37 +74,37 @@ public class StanceService
     }
 
     /// <summary>
-    /// Gets the display name for a stance type.
+    /// v2.0: Gets the display name for a stance type.
     /// </summary>
     public string GetStanceName(StanceType stanceType)
     {
         return stanceType switch
         {
-            StanceType.Offensive => "Offensive",
+            StanceType.Aggressive => "Aggressive",
             StanceType.Defensive => "Defensive",
             StanceType.Evasive => "Evasive",
-            StanceType.Balanced => "Balanced",
+            StanceType.Calculated => "Calculated",
             _ => "Unknown"
         };
     }
 
     /// <summary>
-    /// Gets a description of stance effects for display.
+    /// v2.0: Gets a description of stance effects for display.
     /// </summary>
     public string GetStanceDescription(StanceType stanceType)
     {
         return stanceType switch
         {
-            StanceType.Offensive => "Offensive: +15% Accuracy, -10% Mitigation, +5% Damage",
-            StanceType.Defensive => "Defensive: -10% Accuracy, +15% Mitigation, -10% Damage",
+            StanceType.Aggressive => "Aggressive: +4 Damage, -3 Defense, -2 WILL checks",
+            StanceType.Defensive => "Defensive: +2 Soak, +2 WILL checks, -25% Damage, -5 Stamina regen",
             StanceType.Evasive => "Evasive: +3 Defense, -50% Damage (Legacy)",
-            StanceType.Balanced => "Balanced: No modifiers",
+            StanceType.Calculated => "Calculated: No modifiers (balanced)",
             _ => "Unknown stance"
         };
     }
 
     /// <summary>
-    /// Logs stance effects to combat state.
+    /// v2.0: Logs stance effects to combat state.
     /// </summary>
     private void LogStanceEffects(StanceType stanceType, CombatState? combatState)
     {
@@ -112,98 +112,92 @@ public class StanceService
 
         switch (stanceType)
         {
-            case StanceType.Offensive:
-                combatState.AddLogEntry("    [+15% Accuracy | -10% Mitigation | +5% Damage]");
+            case StanceType.Aggressive:
+                combatState.AddLogEntry("    [+4 Damage | -3 Defense | -2 WILL checks]");
                 break;
             case StanceType.Defensive:
-                combatState.AddLogEntry("    [-10% Accuracy | +15% Mitigation | -10% Damage]");
+                combatState.AddLogEntry("    [+2 Soak | +2 WILL checks | -25% Damage | -5 Stamina regen]");
                 break;
             case StanceType.Evasive:
-                combatState.AddLogEntry("    [+3 Defense | -50% Damage]");
+                combatState.AddLogEntry("    [+3 Defense | -50% Damage] (Legacy)");
                 break;
-            case StanceType.Balanced:
-                combatState.AddLogEntry("    [No combat modifiers]");
+            case StanceType.Calculated:
+                combatState.AddLogEntry("    [Balanced interface - no modifiers]");
                 break;
         }
     }
 
     /// <summary>
-    /// v0.21.1: Applies stance accuracy modifier to ability rolls.
-    /// Called by CombatEngine during ability execution.
+    /// v2.0: Gets flat damage bonus from stance.
+    /// Aggressive: +4 flat damage added to all attacks.
     /// </summary>
-    /// <param name="character">The character using the ability</param>
-    /// <param name="baseDice">Base dice pool before stance modifiers</param>
-    /// <returns>Modified dice pool after stance accuracy modifier</returns>
-    public int ApplyStanceAccuracyModifier(PlayerCharacter character, int baseDice)
+    public int GetFlatDamageBonus(PlayerCharacter character)
     {
-        var stance = character.ActiveStance;
-        if (stance == null) return baseDice;
-
-        var accuracyModifier = stance.AccuracyModifier;
-        if (accuracyModifier == 1.0f) return baseDice;
-
-        int modifiedDice = (int)Math.Round(baseDice * accuracyModifier);
-
-        _log.Debug("Stance accuracy modifier: {Modifier:F2}x applied to {BaseDice} dice = {ModifiedDice} dice",
-            accuracyModifier, baseDice, modifiedDice);
-
-        return Math.Max(1, modifiedDice); // Always at least 1 die
+        return character.ActiveStance?.FlatDamageBonus ?? 0;
     }
 
     /// <summary>
-    /// v0.21.1: Applies stance damage modifier to outgoing damage.
-    /// Called by CombatEngine after damage calculation.
+    /// v2.0: Gets Defense Score modifier from stance.
+    /// Aggressive: -3 Defense (more vulnerable)
     /// </summary>
-    /// <param name="character">The character dealing damage</param>
-    /// <param name="baseDamage">Base damage before stance modifiers</param>
-    /// <returns>Modified damage after stance damage multiplier</returns>
-    public int ApplyStanceDamageModifier(PlayerCharacter character, int baseDamage)
+    public int GetDefenseModifier(PlayerCharacter character)
+    {
+        return character.ActiveStance?.DefenseModifier ?? 0;
+    }
+
+    /// <summary>
+    /// v2.0: Gets Soak bonus from stance.
+    /// Defensive: +2 Soak (flat damage reduction)
+    /// </summary>
+    public int GetSoakBonus(PlayerCharacter character)
+    {
+        return character.ActiveStance?.SoakBonus ?? 0;
+    }
+
+    /// <summary>
+    /// v2.0: Gets WILL check modifier from stance (for Trauma Economy).
+    /// Aggressive: -2 WILL (vulnerable to psychic stress)
+    /// Defensive: +2 WILL (reinforced coherence)
+    /// </summary>
+    public int GetWillModifier(PlayerCharacter character)
+    {
+        return character.ActiveStance?.WillModifier ?? 0;
+    }
+
+    /// <summary>
+    /// v2.0: Gets Stamina regeneration penalty from stance.
+    /// Defensive: -5 Stamina regen per turn
+    /// </summary>
+    public int GetStaminaRegenPenalty(PlayerCharacter character)
+    {
+        return character.ActiveStance?.StaminaRegenPenalty ?? 0;
+    }
+
+    /// <summary>
+    /// v2.0: Applies stance damage multiplier to outgoing damage.
+    /// Defensive: -25% damage output
+    /// Evasive: -50% damage output (legacy)
+    /// Called by CombatEngine after base damage + flat bonuses.
+    /// </summary>
+    public int ApplyDamageMultiplier(PlayerCharacter character, int baseDamage)
     {
         var stance = character.ActiveStance;
         if (stance == null) return baseDamage;
 
-        var damageMultiplier = stance.DamageMultiplier;
-        if (damageMultiplier == 1.0f) return baseDamage;
+        var multiplier = stance.DamageMultiplier;
+        if (multiplier == 1.0f) return baseDamage;
 
-        int modifiedDamage = (int)Math.Round(baseDamage * damageMultiplier);
+        int modifiedDamage = (int)Math.Round(baseDamage * multiplier);
 
-        _log.Debug("Stance damage modifier: {Multiplier:F2}x applied to {BaseDamage} damage = {ModifiedDamage} damage",
-            damageMultiplier, baseDamage, modifiedDamage);
+        _log.Debug("Stance damage multiplier: {Multiplier:F2}x applied to {BaseDamage} damage = {ModifiedDamage} damage",
+            multiplier, baseDamage, modifiedDamage);
 
-        return Math.Max(0, modifiedDamage); // Can't be negative
+        return Math.Max(0, modifiedDamage);
     }
 
     /// <summary>
-    /// v0.21.1: Applies stance mitigation modifier to incoming damage.
-    /// Higher mitigation = less damage taken (damage reduction).
-    /// Called by EnemyAI when calculating damage to player.
-    /// </summary>
-    /// <param name="character">The character receiving damage</param>
-    /// <param name="incomingDamage">Damage before stance mitigation</param>
-    /// <returns>Reduced damage after stance mitigation modifier</returns>
-    public int ApplyStanceMitigationModifier(PlayerCharacter character, int incomingDamage)
-    {
-        var stance = character.ActiveStance;
-        if (stance == null) return incomingDamage;
-
-        var mitigationModifier = stance.MitigationModifier;
-        if (mitigationModifier == 1.0f) return incomingDamage;
-
-        // Mitigation works inversely: higher mitigation = lower damage taken
-        // 1.15 mitigation = 85% damage taken (15% reduction)
-        // 0.90 mitigation = 110% damage taken (10% more vulnerable)
-        float damageMultiplier = 2.0f - mitigationModifier; // Inverse relationship
-        int modifiedDamage = (int)Math.Round(incomingDamage * damageMultiplier);
-
-        _log.Debug("Stance mitigation modifier: {Mitigation:F2} applied to {IncomingDamage} damage = {ModifiedDamage} damage (multiplier: {DamageMultiplier:F2})",
-            mitigationModifier, incomingDamage, modifiedDamage, damageMultiplier);
-
-        return Math.Max(0, modifiedDamage); // Can't be negative
-    }
-
-    /// <summary>
-    /// v0.21.1 SPEC: Checks if character is in a vulnerable stance (Offensive).
-    /// Being attacked while in Offensive Stance: +8-10 stress (vulnerability punishment)
+    /// v2.0 SPEC: Checks if character is in a vulnerable stance (Aggressive).
+    /// Being attacked while in Aggressive Stance: +8-10 stress (exposure vulnerability)
     /// </summary>
     /// <param name="character">The character to check</param>
     /// <param name="wasAttacked">Whether the character was just attacked</param>
@@ -213,36 +207,36 @@ public class StanceService
         if (!wasAttacked) return 0;
 
         var stance = character.ActiveStance;
-        if (stance == null || stance.Type != StanceType.Offensive) return 0;
+        if (stance == null || stance.Type != StanceType.Aggressive) return 0;
 
-        // v0.21.1 SPEC: Offensive stance vulnerability: +8-10 stress
+        // v2.0 SPEC: Aggressive stance vulnerability: +8-10 stress
         const int vulnerabilityStress = 8; // Using 8 (mid-range of 8-10)
 
-        _log.Debug("Character {CharacterName} caught in Offensive stance while being attacked, adding {Stress} stress",
+        _log.Debug("Character {CharacterName} caught in Aggressive stance while being attacked, adding {Stress} stress",
             character.Name, vulnerabilityStress);
 
         return vulnerabilityStress;
     }
 
     /// <summary>
-    /// v0.21.1: Calculates stress relief from optimal stance usage.
-    /// Successful defensive stance usage during combat reduces stress.
+    /// v2.0: Calculates stress relief from perfect defensive timing.
+    /// Successfully blocking major attack in Defensive Stance: -3 stress.
     /// </summary>
     /// <param name="character">The character using the stance</param>
     /// <param name="damageMitigated">Amount of damage mitigated by defensive stance</param>
     /// <returns>Stress reduction amount (negative value)</returns>
-    public int CalculateStanceMasteryStressRelief(PlayerCharacter character, int damageMitigated)
+    public int CalculateDefensiveBlockStressRelief(PlayerCharacter character, int damageMitigated)
     {
         var stance = character.ActiveStance;
         if (stance == null || stance.Type != StanceType.Defensive) return 0;
 
-        // Defensive stance provides stress relief when it mitigates significant damage
+        // v2.0 SPEC: Perfect defensive timing (blocking major attack): -3 stress
         if (damageMitigated >= 5)
         {
             const int stressRelief = -3; // Negative = stress reduction
 
-            _log.Debug("Character {CharacterName} successfully used Defensive stance to mitigate {Damage} damage, reducing stress by {Relief}",
-                character.Name, damageMitigated, Math.Abs(stressRelief));
+            _log.Debug("Character {CharacterName} successfully blocked major attack in Defensive stance, reducing stress by {Relief}",
+                character.Name, Math.Abs(stressRelief));
 
             return stressRelief;
         }
@@ -251,14 +245,14 @@ public class StanceService
     }
 
     /// <summary>
-    /// Gets all available stances as a list for UI display.
+    /// v2.0: Gets all available stances for UI display.
     /// </summary>
     public List<(StanceType Type, string Name, string Description)> GetAvailableStances()
     {
         return new List<(StanceType, string, string)>
         {
-            (StanceType.Balanced, GetStanceName(StanceType.Balanced), GetStanceDescription(StanceType.Balanced)),
-            (StanceType.Offensive, GetStanceName(StanceType.Offensive), GetStanceDescription(StanceType.Offensive)),
+            (StanceType.Calculated, GetStanceName(StanceType.Calculated), GetStanceDescription(StanceType.Calculated)),
+            (StanceType.Aggressive, GetStanceName(StanceType.Aggressive), GetStanceDescription(StanceType.Aggressive)),
             (StanceType.Defensive, GetStanceName(StanceType.Defensive), GetStanceDescription(StanceType.Defensive)),
             (StanceType.Evasive, GetStanceName(StanceType.Evasive), GetStanceDescription(StanceType.Evasive))
         };
@@ -288,17 +282,17 @@ public class StanceService
     }
 
     /// <summary>
-    /// v0.21.1 SPEC: Calculates stress relief from stance mastery.
-    /// Maintaining Offensive Stance for 3+ turns: -5 stress (confidence building)
+    /// v2.0 SPEC: Calculates stress relief from stance mastery.
+    /// Maintaining Aggressive Stance for 3+ turns: -5 stress (tactical confidence building)
     /// </summary>
     public int CheckStanceMasteryStressRelief(PlayerCharacter character)
     {
-        // v0.21.1 SPEC: Maintaining Offensive for 3+ turns reduces stress
-        if (character.ActiveStance.Type == StanceType.Offensive && character.StanceTurnsInCurrent >= 3)
+        // v2.0 SPEC: Maintaining Aggressive for 3+ turns reduces stress
+        if (character.ActiveStance.Type == StanceType.Aggressive && character.StanceTurnsInCurrent >= 3)
         {
             const int masteryStressRelief = -5; // Negative = stress reduction
 
-            _log.Debug("Character {CharacterName} has maintained Offensive stance for {Turns} turns, granting {Relief} stress relief",
+            _log.Debug("Character {CharacterName} has maintained Aggressive stance for {Turns} turns, granting {Relief} stress relief",
                 character.Name, character.StanceTurnsInCurrent, Math.Abs(masteryStressRelief));
 
             return masteryStressRelief;
