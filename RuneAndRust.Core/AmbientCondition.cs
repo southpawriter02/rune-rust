@@ -54,5 +54,6 @@ public enum AmbientConditionType
     ExtremeHeat,         // Fire hazard enhancement
     SubZeroTemperature,  // Movement penalty, cold damage risk
     HighRadiation,       // Cumulative exposure damage
-    ElectromagneticField // Electronics malfunction, compass useless
+    ElectromagneticField,// Electronics malfunction, compass useless
+    IntenseHeat          // v0.29.2: Muspelheim biome - STURDINESS DC 12, 2d6 Fire damage on failure
 }

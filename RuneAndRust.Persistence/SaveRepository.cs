@@ -698,7 +698,53 @@ public class SaveRepository
             insertResource.ExecuteNonQuery();
         }
 
-        _log.Information("Muspelheim biome data seeded: 1 biome, 8 room templates, 9 resources");
+        // Insert Environmental Hazards
+        var hazards = new[]
+        {
+            // Hazard 1: Burning Ground
+            ("[Burning Ground]", "Terrain", "Flames or superheated metal. Deals Fire damage each turn to those standing on it.", 8, "Fire", 15, 0, 0, 0, "Medium", "persistent_fire"),
+            // Hazard 2: Chasm/Lava River
+            ("[Chasm/Lava River]", "Obstacle", "Impassable molten slag river. Instant death if pushed/moved into. Controllers dream of this.", 999, "Fire", 10, 0, 1, 0, "High", "instant_death_on_enter"),
+            // Hazard 3: High-Pressure Steam Vent
+            ("[High-Pressure Steam Vent]", "Dynamic", "Pressure valve venting superheated steam. Deals burst damage + Disoriented. Destructible via Environmental Combat.", 16, "Fire", 5, 1, 0, 1, "High", "applies_disoriented,destructible"),
+            // Hazard 4: Volatile Gas Pocket
+            ("[Volatile Gas Pocket]", "Explosive", "Combustible gas pocket. Explodes when Fire damage dealt nearby (3-tile radius), causing 4d6 AoE Fire damage.", 24, "Fire", 3, 1, 0, 0, "Extreme", "chain_reaction,aoe_radius_3"),
+            // Hazard 5: Scorched Metal Plating
+            ("[Scorched Metal Plating]", "Terrain", "Heat-warped structural plating. Movement cost doubled (10 ft becomes 5 ft effective). No damage.", 0, null, 20, 0, 0, 0, "Low", "movement_cost_doubled"),
+            // Hazard 6: Molten Slag Pool
+            ("[Molten Slag Pool]", "Terrain", "Shallow pool of cooling slag. Deals Fire damage and applies [Slowed] (-50% movement speed).", 4, "Fire", 8, 0, 0, 0, "Medium", "applies_slowed"),
+            // Hazard 7: Collapsing Catwalk
+            ("[Collapsing Catwalk]", "Dynamic", "Unstable walkway. 20% chance per turn of collapse if occupied. Combatant falls to [Chasm] below.", 999, "Physical", 5, 0, 0, 0, "Extreme", "collapse_chance_20,fall_to_chasm"),
+            // Hazard 8: Thermal Mirage
+            ("[Thermal Mirage]", "Vision", "Heat shimmer distorts vision. Ranged attacks through affected tiles suffer -2 penalty.", 0, null, 25, 0, 0, 0, "Low", "ranged_attack_penalty_2")
+        };
+
+        foreach (var hazard in hazards)
+        {
+            var insertHazard = connection.CreateCommand();
+            insertHazard.CommandText = @"
+                INSERT OR IGNORE INTO Biome_EnvironmentalFeatures (
+                    biome_id, feature_name, feature_type, feature_description,
+                    damage_per_turn, damage_type, tile_coverage_percent,
+                    is_destructible, blocks_movement, blocks_line_of_sight,
+                    hazard_density_category, special_rules
+                ) VALUES (4, $name, $type, $desc, $damage, $damageType, $coverage, $destructible, $blocksMove, $blocksLOS, $density, $rules)
+            ";
+            insertHazard.Parameters.AddWithValue("$name", hazard.Item1);
+            insertHazard.Parameters.AddWithValue("$type", hazard.Item2);
+            insertHazard.Parameters.AddWithValue("$desc", hazard.Item3);
+            insertHazard.Parameters.AddWithValue("$damage", hazard.Item4);
+            insertHazard.Parameters.AddWithValue("$damageType", hazard.Item5 ?? (object)DBNull.Value);
+            insertHazard.Parameters.AddWithValue("$coverage", hazard.Item6);
+            insertHazard.Parameters.AddWithValue("$destructible", hazard.Item7);
+            insertHazard.Parameters.AddWithValue("$blocksMove", hazard.Item8);
+            insertHazard.Parameters.AddWithValue("$blocksLOS", hazard.Item9);
+            insertHazard.Parameters.AddWithValue("$density", hazard.Item10);
+            insertHazard.Parameters.AddWithValue("$rules", hazard.Item11);
+            insertHazard.ExecuteNonQuery();
+        }
+
+        _log.Information("Muspelheim biome data seeded: 1 biome, 8 room templates, 9 resources, 8 environmental hazards");
     }
 
     public void SaveGame(PlayerCharacter player, WorldState worldState, bool isProcedurallyGenerated = false)

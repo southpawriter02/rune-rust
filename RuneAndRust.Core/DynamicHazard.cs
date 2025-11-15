@@ -67,7 +67,17 @@ public enum DynamicHazardType
     FungalGrowth,        // Symbiotic Plate terrain barrier
     UnstableGrating,     // Corroded floor trap
     PsychicEcho,         // Trauma site resonance
-    RadiationSource      // Nuclear system leak
+    RadiationSource,     // Nuclear system leak
+
+    // v0.29.2 Muspelheim biome hazards
+    BurningGround,       // Persistent Fire damage terrain
+    LavaRiver,           // Instant death obstacle (lava-specific Chasm)
+    HighPressureSteamVent, // Burst damage + Disoriented status
+    VolatileGasPocket,   // Explosive AoE hazard (chain reaction)
+    ScorchedMetalPlating, // Movement impediment (doubled cost)
+    MoltenSlagPool,      // Damage + Slowed status
+    CollapsingCatwalk,   // Random structural failure
+    ThermalMirage        // Ranged attack penalty
 }
 
 /// <summary>
