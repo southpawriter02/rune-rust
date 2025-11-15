@@ -375,6 +375,105 @@ public class MuspelheimDataRepository
     }
 
     #endregion
+
+    #region Character Biome Status
+
+    /// <summary>
+    /// v0.29.5: Tracks deaths from environmental hazards (forced movement into lava, etc.)
+    /// Separate from heat deaths (ambient condition).
+    /// </summary>
+    /// <param name="characterId">Character ID from saves table</param>
+    /// <param name="hazardName">Name of the hazard that killed the character</param>
+    public void IncrementEnvironmentalDeaths(int characterId, string hazardName)
+    {
+        using var connection = new SqliteConnection(_connectionString);
+        connection.Open();
+
+        _log.Information(
+            "Environmental death tracked: Character={CharacterId}, Hazard={Hazard}, Biome=Muspelheim",
+            characterId, hazardName);
+
+        var command = connection.CreateCommand();
+        command.CommandText = @"
+            UPDATE Characters_BiomeStatus
+            SET times_died_to_environment = times_died_to_environment + 1,
+                last_updated = CURRENT_TIMESTAMP
+            WHERE character_id = $characterId AND biome_id = $biomeId
+        ";
+        command.Parameters.AddWithValue("$characterId", characterId);
+        command.Parameters.AddWithValue("$biomeId", MUSPELHEIM_BIOME_ID);
+
+        int rowsAffected = command.ExecuteNonQuery();
+
+        if (rowsAffected == 0)
+        {
+            _log.Warning(
+                "No biome status record found for Character={CharacterId}, Biome={BiomeId}. Creating new record.",
+                characterId, MUSPELHEIM_BIOME_ID);
+
+            // Create new record if it doesn't exist
+            var insertCommand = connection.CreateCommand();
+            insertCommand.CommandText = @"
+                INSERT INTO Characters_BiomeStatus (character_id, biome_id, times_died_to_environment)
+                VALUES ($characterId, $biomeId, 1)
+            ";
+            insertCommand.Parameters.AddWithValue("$characterId", characterId);
+            insertCommand.Parameters.AddWithValue("$biomeId", MUSPELHEIM_BIOME_ID);
+            insertCommand.ExecuteNonQuery();
+        }
+    }
+
+    /// <summary>
+    /// v0.29.5: Gets biome status for a character
+    /// </summary>
+    public CharacterBiomeStatus? GetBiomeStatus(int characterId)
+    {
+        using var connection = new SqliteConnection(_connectionString);
+        connection.Open();
+
+        var command = connection.CreateCommand();
+        command.CommandText = @"
+            SELECT
+                status_id,
+                character_id,
+                biome_id,
+                total_time_seconds,
+                rooms_explored,
+                enemies_defeated,
+                heat_damage_taken,
+                times_died_to_heat,
+                times_died_to_environment,
+                resources_collected,
+                has_reached_surtur
+            FROM Characters_BiomeStatus
+            WHERE character_id = $characterId AND biome_id = $biomeId
+        ";
+        command.Parameters.AddWithValue("$characterId", characterId);
+        command.Parameters.AddWithValue("$biomeId", MUSPELHEIM_BIOME_ID);
+
+        using var reader = command.ExecuteReader();
+        if (reader.Read())
+        {
+            return new CharacterBiomeStatus
+            {
+                StatusId = reader.GetInt32(0),
+                CharacterId = reader.GetInt32(1),
+                BiomeId = reader.GetInt32(2),
+                TotalTimeSeconds = reader.GetInt32(3),
+                RoomsExplored = reader.GetInt32(4),
+                EnemiesDefeated = reader.GetInt32(5),
+                HeatDamageTaken = reader.GetInt32(6),
+                TimesDiedToHeat = reader.GetInt32(7),
+                TimesDiedToEnvironment = reader.IsDBNull(8) ? 0 : reader.GetInt32(8),
+                ResourcesCollected = reader.GetInt32(9),
+                HasReachedSurtur = reader.GetInt32(10) == 1
+            };
+        }
+
+        return null;
+    }
+
+    #endregion
 }
 
 #region Data Transfer Objects
@@ -445,6 +544,24 @@ public class MuspelheimBiomeMetadata
     public string ZLevelRestriction { get; set; } = string.Empty;
     public int MinCharacterLevel { get; set; }
     public int MaxCharacterLevel { get; set; }
+}
+
+/// <summary>
+/// v0.29.5: Character biome status tracking
+/// </summary>
+public class CharacterBiomeStatus
+{
+    public int StatusId { get; set; }
+    public int CharacterId { get; set; }
+    public int BiomeId { get; set; }
+    public int TotalTimeSeconds { get; set; }
+    public int RoomsExplored { get; set; }
+    public int EnemiesDefeated { get; set; }
+    public int HeatDamageTaken { get; set; }
+    public int TimesDiedToHeat { get; set; }
+    public int TimesDiedToEnvironment { get; set; }
+    public int ResourcesCollected { get; set; }
+    public bool HasReachedSurtur { get; set; }
 }
 
 #endregion
