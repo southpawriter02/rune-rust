@@ -49,6 +49,10 @@ public class DataSeeder
         var strandhoggSeeder = new StrandhoggSeeder(_connectionString);
         strandhoggSeeder.SeedStrandhoggSpecialization();
 
+        // v0.25.2: Hlekkr-master (Chain-Master) specialization for Skirmisher
+        var hlekkmasterSeeder = new HlekkmasterSeeder(_connectionString);
+        hlekkmasterSeeder.SeedHlekkmasterSpecialization();
+
         _log.Information("Specialization data seeding completed successfully");
     }
 
