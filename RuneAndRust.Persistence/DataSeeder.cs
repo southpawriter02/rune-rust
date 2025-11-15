@@ -53,6 +53,10 @@ public class DataSeeder
         var hlekkmasterSeeder = new HlekkmasterSeeder(_connectionString);
         hlekkmasterSeeder.SeedHlekkmasterSpecialization();
 
+        // v0.26.1: Berserkr specialization for Warrior
+        var berserkrSeeder = new BerserkrSeeder(_connectionString);
+        berserkrSeeder.SeedBerserkrSpecialization();
+
         _log.Information("Specialization data seeding completed successfully");
     }
 
