@@ -45,6 +45,10 @@ public class DataSeeder
         var myrkgengrSeeder = new MyrkgengrSeeder(_connectionString);
         myrkgengrSeeder.SeedMyrkgengrSpecialization();
 
+        // v0.25.1: Strandhogg (Glitch-Raider) specialization for Skirmisher
+        var strandhoggSeeder = new StrandhoggSeeder(_connectionString);
+        strandhoggSeeder.SeedStrandhoggSpecialization();
+
         _log.Information("Specialization data seeding completed successfully");
     }
 
