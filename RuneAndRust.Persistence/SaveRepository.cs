@@ -258,6 +258,38 @@ public class SaveRepository
             indexCommand.ExecuteNonQuery();
         }
 
+        // v0.26.1: Characters_Fury table - tracks Fury resource for Berserkr specialization
+        var createCharactersFuryTable = connection.CreateCommand();
+        createCharactersFuryTable.CommandText = @"
+            CREATE TABLE IF NOT EXISTS Characters_Fury (
+                character_id INTEGER PRIMARY KEY,
+                current_fury INTEGER NOT NULL DEFAULT 0 CHECK(current_fury >= 0 AND current_fury <= 100),
+                max_fury INTEGER NOT NULL DEFAULT 100,
+                in_combat INTEGER NOT NULL DEFAULT 0,
+                last_fury_gain_timestamp TEXT,
+                total_fury_generated INTEGER NOT NULL DEFAULT 0,
+                total_fury_spent INTEGER NOT NULL DEFAULT 0,
+                unstoppable_fury_triggered INTEGER NOT NULL DEFAULT 0,
+                created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+            )
+        ";
+        createCharactersFuryTable.ExecuteNonQuery();
+
+        // Create indices for Characters_Fury table
+        var createFuryIndices = new[]
+        {
+            "CREATE INDEX IF NOT EXISTS idx_fury_character ON Characters_Fury(character_id)",
+            "CREATE INDEX IF NOT EXISTS idx_fury_in_combat ON Characters_Fury(in_combat)"
+        };
+
+        foreach (var indexSql in createFuryIndices)
+        {
+            var indexCommand = connection.CreateCommand();
+            indexCommand.CommandText = indexSql;
+            indexCommand.ExecuteNonQuery();
+        }
+
         _log.Information("Specialization system tables created successfully");
     }
 
