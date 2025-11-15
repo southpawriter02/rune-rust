@@ -103,6 +103,19 @@ public class EnvironmentalObjectService
             .ToList();
     }
 
+    /// <summary>
+    /// v0.29.5: Gets environmental objects by their IDs
+    /// Used for resolving tile EnvironmentalObjectIds list
+    /// </summary>
+    public List<EnvironmentalObject> GetObjectsByIds(List<int> objectIds)
+    {
+        return objectIds
+            .Select(id => _objects.TryGetValue(id, out var obj) ? obj : null)
+            .Where(obj => obj != null)
+            .Cast<EnvironmentalObject>()
+            .ToList();
+    }
+
     #endregion
 
     #region Object Creation
