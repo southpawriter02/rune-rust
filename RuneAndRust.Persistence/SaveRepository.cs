@@ -744,7 +744,40 @@ public class SaveRepository
             insertHazard.ExecuteNonQuery();
         }
 
-        _log.Information("Muspelheim biome data seeded: 1 biome, 8 room templates, 9 resources, 8 environmental hazards");
+        // Insert Enemy Spawns (v0.29.3)
+        var enemySpawns = new[]
+        {
+            // Enemy 1: Forge-Hardened Undying
+            ("Forge-Hardened Undying", "Undying", 7, 9, 150, "{\"fire_resistance\": 75, \"ice_resistance\": -50, \"tags\": [\"brittle_on_ice\", \"heat_immune\"]}"),
+            // Enemy 2: Magma Elemental
+            ("Magma Elemental", "Construct", 8, 11, 80, "{\"fire_resistance\": 100, \"ice_resistance\": -30, \"physical_resistance\": 25, \"tags\": [\"burning_trail\", \"death_explosion\", \"brittle_on_ice\", \"heat_immune\", \"construct\"]}"),
+            // Enemy 3: Rival Berserker
+            ("Rival Berserker", "Humanoid", 9, 12, 60, "{\"fire_resistance\": 50, \"ice_resistance\": -25, \"tags\": [\"fury_resource\", \"brittle_on_ice\", \"heat_adapted\"]}"),
+            // Enemy 4: Surtur's Herald (Boss)
+            ("Surtur's Herald", "Boss", 12, 12, 1, "{\"fire_resistance\": 90, \"ice_resistance\": -40, \"physical_resistance\": 50, \"lightning_resistance\": 50, \"tags\": [\"boss\", \"legendary_resistances\", \"brittle_on_ice\", \"heat_immune\", \"multi_phase\"]}"),
+            // Enemy 5: Iron-Bane Crusader
+            ("Iron-Bane Crusader", "Humanoid", 10, 12, 20, "{\"fire_resistance\": 60, \"ice_resistance\": 0, \"corruption_resistance\": 75, \"tags\": [\"construct_hunter\", \"brittle_on_ice\", \"heat_adapted\", \"potential_ally\"]}")
+        };
+
+        foreach (var enemy in enemySpawns)
+        {
+            var insertEnemy = connection.CreateCommand();
+            insertEnemy.CommandText = @"
+                INSERT OR IGNORE INTO Biome_EnemySpawns (
+                    biome_id, enemy_name, enemy_type,
+                    min_level, max_level, spawn_weight, spawn_rules_json
+                ) VALUES (4, $name, $type, $minLevel, $maxLevel, $spawnWeight, $rules)
+            ";
+            insertEnemy.Parameters.AddWithValue("$name", enemy.Item1);
+            insertEnemy.Parameters.AddWithValue("$type", enemy.Item2);
+            insertEnemy.Parameters.AddWithValue("$minLevel", enemy.Item3);
+            insertEnemy.Parameters.AddWithValue("$maxLevel", enemy.Item4);
+            insertEnemy.Parameters.AddWithValue("$spawnWeight", enemy.Item5);
+            insertEnemy.Parameters.AddWithValue("$rules", enemy.Item6);
+            insertEnemy.ExecuteNonQuery();
+        }
+
+        _log.Information("Muspelheim biome data seeded: 1 biome, 8 room templates, 9 resources, 8 environmental hazards, 5 enemy types");
     }
 
     public void SaveGame(PlayerCharacter player, WorldState worldState, bool isProcedurallyGenerated = false)
