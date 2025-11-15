@@ -38,11 +38,33 @@ public class BattlefieldTile
     }
 
     /// <summary>
-    /// Checks if this tile is passable (not occupied, not blocked by terrain)
+    /// Checks if this tile has a specific environmental feature by name.
+    /// v0.29.5: Required for Muspelheim hazard queries like tile.HasFeature("[Burning Ground]")
     /// </summary>
-    public bool IsPassable()
+    /// <param name="environmentalObjects">List of environmental objects on this tile</param>
+    /// <param name="featureName">Name of the feature to check for (e.g., "[Burning Ground]", "[Chasm/Lava River]")</param>
+    /// <returns>True if an object with matching name exists on this tile</returns>
+    public bool HasFeature(List<EnvironmentalObject> environmentalObjects, string featureName)
     {
-        return !IsOccupied;
+        return environmentalObjects.Any(obj => obj.Name == featureName);
+    }
+
+    /// <summary>
+    /// Checks if this tile is passable (not occupied, not blocked by terrain or hazards)
+    /// v0.29.5: Updated to check for blocking environmental objects (lava rivers, chasms)
+    /// </summary>
+    /// <param name="environmentalObjects">List of environmental objects on this tile (optional for backward compatibility)</param>
+    /// <returns>True if tile can be entered</returns>
+    public bool IsPassable(List<EnvironmentalObject>? environmentalObjects = null)
+    {
+        if (IsOccupied)
+            return false;
+
+        // v0.29.5: Check if any environmental objects block movement
+        if (environmentalObjects != null && environmentalObjects.Any(obj => obj.BlocksMovement))
+            return false;
+
+        return true;
     }
 
     /// <summary>

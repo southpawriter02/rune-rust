@@ -16,17 +16,20 @@ public class MuspelheimBiomeService
     private readonly IntenseHeatService _heatService;
     private readonly BrittlenessService _brittlenessService;
     private readonly DiceService _diceService;
+    private readonly EnvironmentalObjectService _environmentalObjectService; // v0.29.5
 
     public MuspelheimBiomeService(
         MuspelheimDataRepository dataRepository,
         IntenseHeatService heatService,
         BrittlenessService brittlenessService,
-        DiceService diceService)
+        DiceService diceService,
+        EnvironmentalObjectService environmentalObjectService) // v0.29.5
     {
         _dataRepository = dataRepository;
         _heatService = heatService;
         _brittlenessService = brittlenessService;
         _diceService = diceService;
+        _environmentalObjectService = environmentalObjectService; // v0.29.5
 
         _log.Information("MuspelheimBiomeService initialized");
     }
@@ -744,11 +747,117 @@ public class MuspelheimBiomeService
         };
     }
 
+    #region v0.29.5 - Tile Integration Helper Methods
+
     /// <summary>
-    /// Place hazards in a room based on template hazard_density.
+    /// v0.29.5: Creates a BattlefieldGrid for the room based on its size.
+    /// Small = 3x2, Medium = 4x3, Large = 5x3
+    /// </summary>
+    private BattlefieldGrid CreateGridForRoom(string roomSize)
+    {
+        int columns = roomSize switch
+        {
+            "Small" => 3,
+            "Medium" => 4,
+            "Large" => 5,
+            _ => 4 // Default to medium
+        };
+
+        var grid = new BattlefieldGrid
+        {
+            GridId = Guid.NewGuid().ToString(),
+            Columns = columns,
+            Tiles = new Dictionary<GridPosition, BattlefieldTile>()
+        };
+
+        // Create tiles for both zones (Player and Enemy)
+        foreach (Zone zone in new[] { Zone.Player, Zone.Enemy })
+        {
+            foreach (Row row in new[] { Row.Front, Row.Back })
+            {
+                for (int col = 0; col < columns; col++)
+                {
+                    var position = new GridPosition
+                    {
+                        Zone = zone,
+                        Row = row,
+                        Column = col,
+                        Elevation = 0
+                    };
+
+                    grid.Tiles[position] = new BattlefieldTile(position);
+                }
+            }
+        }
+
+        _log.Debug("Created {Columns}-column grid with {TileCount} tiles", columns, grid.Tiles.Count);
+        return grid;
+    }
+
+    /// <summary>
+    /// v0.29.5: Selects random tiles for hazard placement based on coverage percentage.
+    /// </summary>
+    private List<BattlefieldTile> SelectHazardTiles(BattlefieldGrid grid, int tileCoveragePercent, Random random)
+    {
+        var allTiles = grid.Tiles.Values.ToList();
+        int tileCount = Math.Max(1, (int)(allTiles.Count * (tileCoveragePercent / 100.0)));
+
+        // Randomly select tiles
+        var selectedTiles = allTiles
+            .OrderBy(_ => random.Next())
+            .Take(tileCount)
+            .ToList();
+
+        _log.Debug("Selected {Count} tiles for hazard placement ({Percent}% of {Total})",
+            selectedTiles.Count, tileCoveragePercent, allTiles.Count);
+
+        return selectedTiles;
+    }
+
+    /// <summary>
+    /// v0.29.5: Finds a valid unoccupied, passable tile for enemy spawn.
+    /// Prioritizes Enemy zone tiles.
+    /// </summary>
+    private BattlefieldTile? FindValidSpawnTile(BattlefieldGrid grid, Random random)
+    {
+        // Get enemy zone tiles that are unoccupied
+        var validTiles = grid.Tiles.Values
+            .Where(t => t.Position.Zone == Zone.Enemy && !t.IsOccupied)
+            .ToList();
+
+        // Filter by passable tiles (check if environmental objects would allow movement)
+        var passableTiles = validTiles
+            .Where(t =>
+            {
+                // Get environmental objects for this tile
+                var envObjects = _environmentalObjectService.GetObjectsByIds(t.EnvironmentalObjectIds);
+                return t.IsPassable(envObjects);
+            })
+            .ToList();
+
+        if (!passableTiles.Any())
+        {
+            _log.Warning("No valid spawn tiles found in Enemy zone");
+            return null;
+        }
+
+        // Randomly select one
+        var selectedTile = passableTiles[random.Next(passableTiles.Count)];
+        return selectedTile;
+    }
+
+    #endregion
+
+    /// <summary>
+    /// v0.29.5: Place hazards in a room based on template hazard_density.
+    /// NOW initializes BattlefieldGrid and places hazards on actual tiles.
     /// </summary>
     private void PlaceHazardsInRoom(MuspelheimRoom room, Random random)
     {
+        // v0.29.5: Initialize tactical grid for the room
+        room.Grid = CreateGridForRoom(room.RoomSize);
+        _log.Debug("Initialized {Size} grid for {RoomName}", room.RoomSize, room.Name);
+
         var eligibleHazards = _dataRepository.GetEnvironmentalHazards(room.HazardDensity);
 
         _log.Debug("Placing hazards in {RoomName}: {EligibleCount} eligible hazards (density: {Density})",
@@ -761,6 +870,41 @@ public class MuspelheimBiomeService
 
             if (random.NextDouble() < spawnChance)
             {
+                // v0.29.5: Select tiles for this hazard
+                var tilesToPlace = SelectHazardTiles(room.Grid, hazard.TileCoveragePercent, random);
+
+                // v0.29.5: Create EnvironmentalObject for each selected tile
+                foreach (var tile in tilesToPlace)
+                {
+                    var envObject = new EnvironmentalObject
+                    {
+                        RoomId = int.Parse(room.RoomId.GetHashCode().ToString()), // Convert string to int
+                        GridPosition = $"{tile.Position.Zone}_{tile.Position.Row}_Column_{tile.Position.Column}",
+                        ObjectType = EnvironmentalObjectType.Hazard,
+                        Name = hazard.FeatureName,
+                        Description = hazard.FeatureDescription,
+                        IsHazard = true,
+                        DamageFormula = $"{hazard.DamagePerTurn}d10 {hazard.DamageType}",
+                        DamageType = hazard.DamageType,
+                        StatusEffect = hazard.StatusEffectsJson,
+                        IsDestructible = hazard.IsDestructible,
+                        BlocksMovement = hazard.BlocksMovement,
+                        BlocksLineOfSight = hazard.BlocksLineOfSight,
+                        State = EnvironmentalObjectState.Active,
+                        HazardTrigger = HazardTrigger.OnEnter
+                    };
+
+                    // Create the environmental object in the service
+                    var createdObj = _environmentalObjectService.CreateObject(envObject);
+
+                    // Add to tile's EnvironmentalObjectIds list
+                    tile.EnvironmentalObjectIds.Add(createdObj.ObjectId);
+
+                    _log.Debug("Placed hazard {HazardName} on tile {Position}",
+                        hazard.FeatureName, tile.Position);
+                }
+
+                // v0.29.5: Keep metadata in room.Hazards for tracking
                 var placedHazard = new PlacedHazard
                 {
                     HazardName = hazard.FeatureName,
@@ -780,19 +924,27 @@ public class MuspelheimBiomeService
             }
         }
 
-        _log.Information("{RoomName}: Placed {Count} hazards", room.Name, room.Hazards.Count);
+        _log.Information("{RoomName}: Placed {Count} hazard types on grid tiles", room.Name, room.Hazards.Count);
     }
 
     /// <summary>
-    /// Place enemies in a room based on spawn weights.
+    /// v0.29.5: Place enemies in a room based on spawn weights.
+    /// NOW positions enemies on actual grid tiles.
     /// </summary>
     private void PlaceEnemiesInRoom(MuspelheimRoom room, int sectorDepth, Random random)
     {
         // Boss room special handling
         if (room.Name == "Containment Breach Zone")
         {
-            PlaceBossEnemy(room, sectorDepth);
+            PlaceBossEnemy(room, sectorDepth, random);
             return;
+        }
+
+        // v0.29.5: Ensure grid is initialized
+        if (room.Grid == null)
+        {
+            _log.Warning("{RoomName}: Grid not initialized, creating grid", room.Name);
+            room.Grid = CreateGridForRoom(room.RoomSize);
         }
 
         // Calculate enemy count based on room size
@@ -813,16 +965,33 @@ public class MuspelheimBiomeService
             var spawnData = SelectWeightedEnemy(eligibleEnemies, random);
             var enemy = CreateEnemyFromSpawn(spawnData, sectorDepth);
 
+            // v0.29.5: Find valid spawn tile and position enemy
+            var spawnTile = FindValidSpawnTile(room.Grid, random);
+            if (spawnTile != null)
+            {
+                enemy.Position = spawnTile.Position;
+                spawnTile.IsOccupied = true;
+                spawnTile.OccupantId = enemy.EnemyId.ToString();
+
+                _log.Debug("Positioned {EnemyName} at {Position}",
+                    enemy.Name, spawnTile.Position);
+            }
+            else
+            {
+                _log.Warning("Could not find valid spawn tile for {EnemyName}", enemy.Name);
+            }
+
             room.Enemies.Add(enemy);
         }
 
-        _log.Information("{RoomName}: Placed {Count} enemies", room.Name, room.Enemies.Count);
+        _log.Information("{RoomName}: Placed {Count} enemies on grid", room.Name, room.Enemies.Count);
     }
 
     /// <summary>
-    /// Place boss enemy (Surtur's Herald) in boss room.
+    /// v0.29.5: Place boss enemy (Surtur's Herald) in boss room.
+    /// NOW positions boss on grid tile.
     /// </summary>
-    private void PlaceBossEnemy(MuspelheimRoom room, int sectorDepth)
+    private void PlaceBossEnemy(MuspelheimRoom room, int sectorDepth, Random random)
     {
         var bossSpawn = _dataRepository.GetBossSpawn();
         if (bossSpawn == null)
@@ -831,10 +1000,32 @@ public class MuspelheimBiomeService
             return;
         }
 
-        var boss = CreateEnemyFromSpawn(bossSpawn, level: 12); // Always level 12
-        room.Enemies.Add(boss);
+        // v0.29.5: Ensure grid is initialized
+        if (room.Grid == null)
+        {
+            _log.Warning("{RoomName}: Grid not initialized, creating grid", room.Name);
+            room.Grid = CreateGridForRoom(room.RoomSize);
+        }
 
-        _log.Information("Placed boss: {BossName} in {RoomName}", boss.Name, room.Name);
+        var boss = CreateEnemyFromSpawn(bossSpawn, level: 12); // Always level 12
+
+        // v0.29.5: Position boss on grid
+        var spawnTile = FindValidSpawnTile(room.Grid, random);
+        if (spawnTile != null)
+        {
+            boss.Position = spawnTile.Position;
+            spawnTile.IsOccupied = true;
+            spawnTile.OccupantId = boss.EnemyId.ToString();
+
+            _log.Information("Positioned boss {BossName} at {Position} in {RoomName}",
+                boss.Name, spawnTile.Position, room.Name);
+        }
+        else
+        {
+            _log.Warning("Could not find valid spawn tile for boss {BossName}", boss.Name);
+        }
+
+        room.Enemies.Add(boss);
     }
 
     /// <summary>
@@ -1040,6 +1231,10 @@ public class MuspelheimRoom
     public bool IsEntrance { get; set; }
     public bool IsExit { get; set; }
     public bool IsBossRoom { get; set; }
+
+    // v0.29.5: Tactical grid for tile-based positioning
+    public BattlefieldGrid? Grid { get; set; }
+
     public List<PlacedHazard> Hazards { get; set; } = new();
     public List<Enemy> Enemies { get; set; } = new();
     public List<ResourceNode> ResourceNodes { get; set; } = new();

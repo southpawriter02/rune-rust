@@ -38,6 +38,10 @@ public class EnvironmentalObject
     public string? StatusEffect { get; set; } // "[Burning]", "[Poisoned]", "[Corroded]"
     public bool IgnoresSoak { get; set; } = false;
 
+    // Movement and visibility blocking (v0.29.5 - Muspelheim tile integration)
+    public bool BlocksMovement { get; set; } = false; // Prevents movement through this tile (lava rivers, chasms)
+    public bool BlocksLineOfSight { get; set; } = false; // Blocks line of sight for targeting
+
     // Cover properties (integrates with v0.20.2 CoverService)
     public bool ProvidesCover { get; set; } = false;
     public CoverQuality CoverQuality { get; set; } = CoverQuality.None;
