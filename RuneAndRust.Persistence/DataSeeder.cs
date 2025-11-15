@@ -61,6 +61,10 @@ public class DataSeeder
         var gorgeMawAsceticSeeder = new GorgeMawAsceticSeeder(_connectionString);
         gorgeMawAsceticSeeder.SeedGorgeMawAsceticSpecialization();
 
+        // v0.26.3: Skjaldmaer specialization for Warrior
+        var skjaldmaerSeeder = new SkjaldmaerSeeder(_connectionString);
+        skjaldmaerSeeder.SeedSkjaldmaerSpecialization();
+
         _log.Information("Specialization data seeding completed successfully");
     }
 
