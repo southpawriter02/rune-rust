@@ -73,6 +73,10 @@ public class DataSeeder
         var einbuiSeeder = new EinbuiSeeder(_connectionString);
         einbuiSeeder.SeedEinbuiSpecialization();
 
+        // v0.28.1: Seidkona specialization for Mystic
+        var seidkonaSeeder = new SeidkonaSeeder(_connectionString);
+        seidkonaSeeder.SeedSeidkonaSpecialization();
+
         _log.Information("Specialization data seeding completed successfully");
     }
 

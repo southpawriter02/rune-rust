@@ -290,6 +290,40 @@ public class SaveRepository
             indexCommand.ExecuteNonQuery();
         }
 
+        // v0.28.1: Characters_SpiritBargains table - tracks Spirit Bargain mechanics for Seidkona specialization
+        var createCharactersSpiritBargainsTable = connection.CreateCommand();
+        createCharactersSpiritBargainsTable.CommandText = @"
+            CREATE TABLE IF NOT EXISTS Characters_SpiritBargains (
+                character_id INTEGER PRIMARY KEY,
+                total_bargains_triggered INTEGER NOT NULL DEFAULT 0,
+                total_bargains_attempted INTEGER NOT NULL DEFAULT 0,
+                bargain_success_rate REAL NOT NULL DEFAULT 0.0,
+                fickle_fortune_rank INTEGER NOT NULL DEFAULT 0,
+                in_moment_of_clarity INTEGER NOT NULL DEFAULT 0,
+                clarity_turns_remaining INTEGER NOT NULL DEFAULT 0,
+                clarity_uses_this_combat INTEGER NOT NULL DEFAULT 0,
+                forced_bargain_used_this_combat INTEGER NOT NULL DEFAULT 0,
+                psychic_resonance_bonus_active INTEGER NOT NULL DEFAULT 0,
+                created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+            )
+        ";
+        createCharactersSpiritBargainsTable.ExecuteNonQuery();
+
+        // Create indices for Characters_SpiritBargains table
+        var createSpiritBargainIndices = new[]
+        {
+            "CREATE INDEX IF NOT EXISTS idx_spirit_bargains_character ON Characters_SpiritBargains(character_id)",
+            "CREATE INDEX IF NOT EXISTS idx_spirit_bargains_clarity ON Characters_SpiritBargains(in_moment_of_clarity)"
+        };
+
+        foreach (var indexSql in createSpiritBargainIndices)
+        {
+            var indexCommand = connection.CreateCommand();
+            indexCommand.CommandText = indexSql;
+            indexCommand.ExecuteNonQuery();
+        }
+
         _log.Information("Specialization system tables created successfully");
     }
 
