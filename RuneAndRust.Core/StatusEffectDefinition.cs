@@ -141,6 +141,16 @@ public class StatusEffectDefinition
             MaxStacks = 1,
             DefaultDuration = 4,
             Description = "All attackers gain +2 accuracy dice against this target."
+        },
+        new StatusEffectDefinition
+        {
+            EffectType = "Brittle",
+            DisplayName = "[Brittle]",
+            Category = StatusEffectCategory.StatModification,
+            CanStack = false,
+            MaxStacks = 1,
+            DefaultDuration = 2,
+            Description = "Flash-frozen tissue becomes vulnerable to Physical trauma. Fire-resistant enemies take +50% Physical damage. v0.29.2 Muspelheim mechanic."
         }
     };
 
