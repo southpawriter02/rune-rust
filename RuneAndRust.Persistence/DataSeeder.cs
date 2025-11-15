@@ -69,6 +69,10 @@ public class DataSeeder
         var skaldSeeder = new SkaldSeeder(_connectionString);
         skaldSeeder.SeedSkaldSpecialization();
 
+        // v0.27.2: Einbui specialization for Adept
+        var einbuiSeeder = new EinbuiSeeder(_connectionString);
+        einbuiSeeder.SeedEinbuiSpecialization();
+
         _log.Information("Specialization data seeding completed successfully");
     }
 
