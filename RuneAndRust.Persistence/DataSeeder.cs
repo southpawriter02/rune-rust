@@ -77,6 +77,10 @@ public class DataSeeder
         var seidkonaSeeder = new SeidkonaSeeder(_connectionString);
         seidkonaSeeder.SeedSeidkonaSpecialization();
 
+        // v0.28.2: Echo-Caller specialization for Mystic
+        var echoCallerSeeder = new EchoCallerSeeder(_connectionString);
+        echoCallerSeeder.SeedEchoCallerSpecialization();
+
         _log.Information("Specialization data seeding completed successfully");
     }
 

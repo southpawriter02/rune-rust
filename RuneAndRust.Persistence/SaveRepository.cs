@@ -324,6 +324,38 @@ public class SaveRepository
             indexCommand.ExecuteNonQuery();
         }
 
+        // v0.28.2: Characters_EchoChains table - tracks Echo Chain mechanics for Echo-Caller specialization
+        var createCharactersEchoChainsTable = connection.CreateCommand();
+        createCharactersEchoChainsTable.CommandText = @"
+            CREATE TABLE IF NOT EXISTS Characters_EchoChains (
+                character_id INTEGER PRIMARY KEY,
+                total_echoes_triggered INTEGER NOT NULL DEFAULT 0,
+                total_echo_chains_triggered INTEGER NOT NULL DEFAULT 0,
+                echo_cascade_rank INTEGER NOT NULL DEFAULT 0,
+                echo_chain_range INTEGER NOT NULL DEFAULT 1,
+                echo_chain_damage_multiplier REAL NOT NULL DEFAULT 0.5,
+                echo_chain_max_targets INTEGER NOT NULL DEFAULT 1,
+                silence_weapon_uses_this_combat INTEGER NOT NULL DEFAULT 0,
+                created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (character_id) REFERENCES saves(id) ON DELETE CASCADE
+            )
+        ";
+        createCharactersEchoChainsTable.ExecuteNonQuery();
+
+        // Create indices for Characters_EchoChains table
+        var createEchoChainIndices = new[]
+        {
+            "CREATE INDEX IF NOT EXISTS idx_echo_chains_character ON Characters_EchoChains(character_id)"
+        };
+
+        foreach (var indexSql in createEchoChainIndices)
+        {
+            var indexCommand = connection.CreateCommand();
+            indexCommand.CommandText = indexSql;
+            indexCommand.ExecuteNonQuery();
+        }
+
         _log.Information("Specialization system tables created successfully");
     }
 
