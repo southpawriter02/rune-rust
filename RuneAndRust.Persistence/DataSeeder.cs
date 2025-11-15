@@ -65,6 +65,10 @@ public class DataSeeder
         var skjaldmaerSeeder = new SkjaldmaerSeeder(_connectionString);
         skjaldmaerSeeder.SeedSkjaldmaerSpecialization();
 
+        // v0.27.1: Skald specialization for Adept
+        var skaldSeeder = new SkaldSeeder(_connectionString);
+        skaldSeeder.SeedSkaldSpecialization();
+
         _log.Information("Specialization data seeding completed successfully");
     }
 
