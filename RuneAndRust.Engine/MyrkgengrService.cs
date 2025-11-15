@@ -117,7 +117,7 @@ public class MyrkgengrService
                 {
                     TargetID = shadowWalker.CharacterID,
                     EffectType = "Hidden",
-                    Duration = -1, // Lasts until broken
+                    DurationRemaining = -1, // Lasts until broken
                     Category = StatusEffectCategory.Buff,
                     CanStack = false,
                     Metadata = "{ \"Source\": \"Enter the Void\" }"
@@ -194,7 +194,7 @@ public class MyrkgengrService
             attacker.Stamina -= staminaCost;
 
             // Calculate damage (guaranteed crit = double damage)
-            int weaponDamage = attacker.EquippedWeapon?.Damage ?? 10;
+            int weaponDamage = (attacker.EquippedWeapon?.DamageDice * 3 + attacker.EquippedWeapon?.DamageBonus) ?? 10;
             int finesseModifier = attacker.GetAttributeModifier("FINESSE");
 
             // Rank bonus damage
@@ -244,7 +244,7 @@ public class MyrkgengrService
                     {
                         TargetID = target.EnemyID,
                         EffectType = "Feared",
-                        Duration = fearDuration,
+                        DurationRemaining = fearDuration,
                         Category = StatusEffectCategory.ControlDebuff
                     };
                     target.StatusEffects.Add(fearEffect);
@@ -274,7 +274,7 @@ public class MyrkgengrService
                 {
                     TargetID = target.EnemyID,
                     EffectType = "Bleeding",
-                    Duration = 2,
+                    DurationRemaining = 2,
                     DamageBase = "2d6",
                     Category = StatusEffectCategory.DamageOverTime
                 };
@@ -406,7 +406,7 @@ public class MyrkgengrService
             {
                 TargetID = target.EnemyID,
                 EffectType = "Silenced",
-                Duration = silenceDuration,
+                DurationRemaining = silenceDuration,
                 Category = StatusEffectCategory.ControlDebuff
             };
             target.StatusEffects.Add(silencedEffect);
@@ -422,7 +422,7 @@ public class MyrkgengrService
             {
                 TargetID = target.EnemyID,
                 EffectType = "Bleeding",
-                Duration = 3,
+                DurationRemaining = 3,
                 DamageBase = "2d6",
                 Category = StatusEffectCategory.DamageOverTime
             };
@@ -543,7 +543,7 @@ public class MyrkgengrService
             };
 
             int diceDamage = _diceService.Roll(damageDice, 10);
-            int weaponDamage = attacker.EquippedWeapon?.Damage ?? 10;
+            int weaponDamage = (attacker.EquippedWeapon?.DamageDice * 3 + attacker.EquippedWeapon?.DamageBonus) ?? 10;
             int finesseModifier = attacker.GetAttributeModifier("FINESSE");
 
             // Total damage (weapon + dice + FINESSE x2)

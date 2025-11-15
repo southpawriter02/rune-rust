@@ -272,7 +272,13 @@ public class MyrkgengrSpecializationTests
         // Arrange
         var shadowWalker = CreateTestSkirmisher();
         shadowWalker.Stamina = 100;
-        shadowWalker.EquippedWeapon = new Weapon { Name = "Dagger", Damage = 10 };
+        shadowWalker.EquippedWeapon = new Equipment
+        {
+            Name = "Dagger",
+            DamageDice = 2,
+            DamageBonus = 10,
+            Type = EquipmentType.Weapon
+        };
 
         // Apply Hidden status
         shadowWalker.StatusEffects.Add(new StatusEffect
@@ -301,9 +307,20 @@ public class MyrkgengrSpecializationTests
         var shadowWalker = CreateTestSkirmisher();
         shadowWalker.Stamina = 100;
         shadowWalker.MaxStamina = 100;
-        shadowWalker.EquippedWeapon = new Weapon { Name = "Dagger", Damage = 50 };
+        shadowWalker.EquippedWeapon = new Equipment
+        {
+            Name = "Dagger",
+            DamageDice = 10,
+            DamageBonus = 50,
+            Type = EquipmentType.Weapon
+        };
 
-        shadowWalker.StatusEffects.Add(new StatusEffect { EffectType = "Hidden", Duration = -1 });
+        shadowWalker.StatusEffects.Add(new StatusEffect
+        {
+            EffectType = "Hidden",
+            DurationRemaining = -1,
+            Category = StatusEffectCategory.Buff
+        });
 
         var target = CreateTestEnemy();
         target.HP = 10; // Low HP to ensure kill
@@ -324,9 +341,20 @@ public class MyrkgengrSpecializationTests
         // Arrange
         var shadowWalker = CreateTestSkirmisher();
         shadowWalker.Stamina = 100;
-        shadowWalker.EquippedWeapon = new Weapon { Name = "Dagger", Damage = 10 };
+        shadowWalker.EquippedWeapon = new Equipment
+        {
+            Name = "Dagger",
+            DamageDice = 2,
+            DamageBonus = 10,
+            Type = EquipmentType.Weapon
+        };
 
-        shadowWalker.StatusEffects.Add(new StatusEffect { EffectType = "Hidden", Duration = -1 });
+        shadowWalker.StatusEffects.Add(new StatusEffect
+        {
+            EffectType = "Hidden",
+            DurationRemaining = -1,
+            Category = StatusEffectCategory.Buff
+        });
 
         var target = CreateTestEnemy();
 
@@ -349,7 +377,13 @@ public class MyrkgengrSpecializationTests
         // Arrange
         var shadowWalker = CreateTestSkirmisher();
         shadowWalker.Stamina = 100;
-        shadowWalker.EquippedWeapon = new Weapon { Name = "Dagger", Damage = 10 };
+        shadowWalker.EquippedWeapon = new Equipment
+        {
+            Name = "Dagger",
+            DamageDice = 2,
+            DamageBonus = 10,
+            Type = EquipmentType.Weapon
+        };
         var target = CreateTestEnemy();
 
         // Act
@@ -367,7 +401,13 @@ public class MyrkgengrSpecializationTests
         // Arrange
         var shadowWalker = CreateTestSkirmisher();
         shadowWalker.Stamina = 100;
-        shadowWalker.EquippedWeapon = new Weapon { Name = "Dagger", Damage = 10 };
+        shadowWalker.EquippedWeapon = new Equipment
+        {
+            Name = "Dagger",
+            DamageDice = 2,
+            DamageBonus = 10,
+            Type = EquipmentType.Weapon
+        };
         var target = CreateTestEnemy();
 
         // Act
@@ -385,11 +425,22 @@ public class MyrkgengrSpecializationTests
         // Arrange
         var shadowWalker = CreateTestSkirmisher();
         shadowWalker.Stamina = 100;
-        shadowWalker.EquippedWeapon = new Weapon { Name = "Dagger", Damage = 10 };
+        shadowWalker.EquippedWeapon = new Equipment
+        {
+            Name = "Dagger",
+            DamageDice = 2,
+            DamageBonus = 10,
+            Type = EquipmentType.Weapon
+        };
         var target = CreateTestEnemy();
 
         // Apply Feared status first
-        target.StatusEffects.Add(new StatusEffect { EffectType = "Feared", Duration = 2 });
+        target.StatusEffects.Add(new StatusEffect
+        {
+            EffectType = "Feared",
+            DurationRemaining = 2,
+            Category = StatusEffectCategory.ControlDebuff
+        });
 
         // Act
         var result = _myrkgengrService.ExecuteThroatCutter(shadowWalker, target, 3, true);
@@ -409,7 +460,12 @@ public class MyrkgengrSpecializationTests
         shadowWalker.MaxStamina = 100;
 
         // Apply Hidden status
-        shadowWalker.StatusEffects.Add(new StatusEffect { EffectType = "Hidden", Duration = -1 });
+        shadowWalker.StatusEffects.Add(new StatusEffect
+        {
+            EffectType = "Hidden",
+            DurationRemaining = -1,
+            Category = StatusEffectCategory.Buff
+        });
 
         var initialStress = shadowWalker.PsychicStress;
         var initialStamina = shadowWalker.Stamina;
@@ -451,10 +507,21 @@ public class MyrkgengrSpecializationTests
         // Arrange
         var shadowWalker = CreateTestSkirmisher();
         shadowWalker.Stamina = 100;
-        shadowWalker.EquippedWeapon = new Weapon { Name = "Dagger", Damage = 10 };
+        shadowWalker.EquippedWeapon = new Equipment
+        {
+            Name = "Dagger",
+            DamageDice = 2,
+            DamageBonus = 10,
+            Type = EquipmentType.Weapon
+        };
         shadowWalker.CombatFlags = new Dictionary<string, object>();
 
-        shadowWalker.StatusEffects.Add(new StatusEffect { EffectType = "Hidden", Duration = -1 });
+        shadowWalker.StatusEffects.Add(new StatusEffect
+        {
+            EffectType = "Hidden",
+            DurationRemaining = -1,
+            Category = StatusEffectCategory.Buff
+        });
 
         var target = CreateTestEnemy();
         target.PsychicStress = 0;
@@ -511,9 +578,20 @@ public class MyrkgengrSpecializationTests
         var shadowWalker = CreateTestSkirmisher();
         shadowWalker.Stamina = 100;
         shadowWalker.Corruption = 0;
-        shadowWalker.EquippedWeapon = new Weapon { Name = "Dagger", Damage = 10 };
+        shadowWalker.EquippedWeapon = new Equipment
+        {
+            Name = "Dagger",
+            DamageDice = 2,
+            DamageBonus = 10,
+            Type = EquipmentType.Weapon
+        };
 
-        shadowWalker.StatusEffects.Add(new StatusEffect { EffectType = "Hidden", Duration = -1 });
+        shadowWalker.StatusEffects.Add(new StatusEffect
+        {
+            EffectType = "Hidden",
+            DurationRemaining = -1,
+            Category = StatusEffectCategory.Buff
+        });
 
         var target = CreateTestEnemy();
         var initialHP = target.HP;
@@ -539,9 +617,20 @@ public class MyrkgengrSpecializationTests
         var shadowWalker = CreateTestSkirmisher();
         shadowWalker.Stamina = 100;
         shadowWalker.Corruption = 0;
-        shadowWalker.EquippedWeapon = new Weapon { Name = "Dagger", Damage = 10 };
+        shadowWalker.EquippedWeapon = new Equipment
+        {
+            Name = "Dagger",
+            DamageDice = 2,
+            DamageBonus = 10,
+            Type = EquipmentType.Weapon
+        };
 
-        shadowWalker.StatusEffects.Add(new StatusEffect { EffectType = "Hidden", Duration = -1 });
+        shadowWalker.StatusEffects.Add(new StatusEffect
+        {
+            EffectType = "Hidden",
+            DurationRemaining = -1,
+            Category = StatusEffectCategory.Buff
+        });
 
         var target = CreateTestEnemy();
 
@@ -561,9 +650,20 @@ public class MyrkgengrSpecializationTests
         var shadowWalker = CreateTestSkirmisher();
         shadowWalker.Stamina = 100;
         shadowWalker.Corruption = 0;
-        shadowWalker.EquippedWeapon = new Weapon { Name = "Dagger", Damage = 100 };
+        shadowWalker.EquippedWeapon = new Equipment
+        {
+            Name = "Dagger",
+            DamageDice = 10,
+            DamageBonus = 100,
+            Type = EquipmentType.Weapon
+        };
 
-        shadowWalker.StatusEffects.Add(new StatusEffect { EffectType = "Hidden", Duration = -1 });
+        shadowWalker.StatusEffects.Add(new StatusEffect
+        {
+            EffectType = "Hidden",
+            DurationRemaining = -1,
+            Category = StatusEffectCategory.Buff
+        });
 
         var target = CreateTestEnemy();
         target.HP = 10; // Low HP to ensure kill
@@ -584,7 +684,12 @@ public class MyrkgengrSpecializationTests
         // Arrange
         var shadowWalker = CreateTestSkirmisher();
         shadowWalker.Stamina = 50; // Below 60 required
-        shadowWalker.StatusEffects.Add(new StatusEffect { EffectType = "Hidden", Duration = -1 });
+        shadowWalker.StatusEffects.Add(new StatusEffect
+        {
+            EffectType = "Hidden",
+            DurationRemaining = -1,
+            Category = StatusEffectCategory.Buff
+        });
         var target = CreateTestEnemy();
 
         // Act
@@ -605,7 +710,7 @@ public class MyrkgengrSpecializationTests
         {
             CharacterID = 1,
             Name = "Test Shadow-Walker",
-            ArchetypeID = 4, // Skirmisher
+            Archetype = new Archetype { ArchetypeID = 4, Name = "Skirmisher" },
             CurrentLegend = 5,
             Stamina = 100,
             MaxStamina = 100,
@@ -615,10 +720,10 @@ public class MyrkgengrSpecializationTests
             Corruption = 0,
             StatusEffects = new List<StatusEffect>(),
             CombatFlags = new Dictionary<string, object>(),
-            Attributes = new Dictionary<string, int>
+            Attributes = new Attributes
             {
-                { "FINESSE", 16 }, // +3 modifier
-                { "WILL", 14 }     // +2 modifier
+                Finesse = 16, // +3 modifier
+                Will = 14     // +2 modifier
             }
         };
     }

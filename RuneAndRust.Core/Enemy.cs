@@ -39,12 +39,19 @@ public enum EnemyType
 
 public class Enemy
 {
+    // v0.24.2: Enemy ID for database tracking
+    public int EnemyID { get; set; }
+
     public string Name { get; set; } = string.Empty;
     public string Id { get; set; } = string.Empty;
     public EnemyType Type { get; set; }
     public int HP { get; set; }
     public int MaxHP { get; set; }
     public Attributes Attributes { get; set; } = new();
+
+    // v0.24.2: Trauma Economy for enemies
+    public int PsychicStress { get; set; } = 0; // 0-100, some abilities inflict this
+    public int Corruption { get; set; } = 0; // 0-100, corruption level
 
     // Combat
     public int BaseDamageDice { get; set; } = 1; // Number of d6s
@@ -96,6 +103,9 @@ public class Enemy
     public int MaxKineticEnergy { get; set; } = 100; // Maximum KE
     public int TilesMovedThisTurn { get; set; } = 0; // Number of tiles moved this turn
     public bool HasMovedThisTurn { get; set; } = false; // Whether movement occurred this turn
+
+    // v0.24.2: Advanced Status Effect System
+    public List<StatusEffect> StatusEffects { get; set; } = new(); // Modern status effect tracking
 
     public bool IsAlive => HP > 0;
 
