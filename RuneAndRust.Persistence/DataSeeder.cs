@@ -13,15 +13,17 @@ public class DataSeeder
     private static readonly ILogger _log = Log.ForContext<DataSeeder>();
     private readonly SpecializationRepository _specializationRepo;
     private readonly AbilityRepository _abilityRepo;
+    private readonly string _connectionString;
 
     public DataSeeder(string connectionString)
     {
+        _connectionString = connectionString;
         _specializationRepo = new SpecializationRepository(connectionString);
         _abilityRepo = new AbilityRepository(connectionString);
     }
 
     /// <summary>
-    /// Seed all existing specializations (BoneSetter, JotunReader, Skald, SkarHordeAspirant, IronBane, AtgeirWielder)
+    /// Seed all existing specializations (BoneSetter, JotunReader, Skald, SkarHordeAspirant, IronBane, AtgeirWielder, Veiðimaðr)
     /// </summary>
     public void SeedExistingSpecializations()
     {
@@ -34,6 +36,10 @@ public class DataSeeder
         SeedIronBaneSpecialization();
         SeedAtgeirWielderSpecialization();
         SeedScrapTinkerSpecialization();
+
+        // v0.24.1: Veiðimaðr (Hunter) specialization for Skirmisher
+        var veidimadurSeeder = new VeiðimaðrSeeder(_connectionString);
+        veidimadurSeeder.SeedVeiðimaðrSpecialization();
 
         _log.Information("Specialization data seeding completed successfully");
     }
