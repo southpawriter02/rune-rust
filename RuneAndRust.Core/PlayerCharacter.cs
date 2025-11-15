@@ -4,6 +4,9 @@ namespace RuneAndRust.Core;
 
 public class PlayerCharacter
 {
+    // v0.24.2: Character ID for database tracking
+    public int CharacterID { get; set; }
+
     public string Name { get; set; } = "Survivor";
     public CharacterClass Class { get; set; }
     public Specialization Specialization { get; set; } = Specialization.None; // v0.7: Unlocked with 10 PP
@@ -127,6 +130,12 @@ public class PlayerCharacter
     public int TilesMovedThisTurn { get; set; } = 0; // Number of tiles moved this turn
     public bool HasMovedThisTurn { get; set; } = false; // Whether movement occurred this turn
 
+    // v0.24.2: Advanced Status Effect System
+    public List<StatusEffect> StatusEffects { get; set; } = new(); // Modern status effect tracking
+
+    // v0.24.2: Combat state tracking
+    public Dictionary<string, object> CombatFlags { get; set; } = new(); // Per-combat state flags
+
     public bool IsAlive => HP > 0;
 
     public int GetAttributeValue(string attributeName)
@@ -140,6 +149,16 @@ public class PlayerCharacter
             "sturdiness" => Attributes.Sturdiness,
             _ => 0
         };
+    }
+
+    /// <summary>
+    /// v0.24.2: Get attribute modifier (bonus from attribute score)
+    /// D&D-style: (AttributeScore - 10) / 2
+    /// </summary>
+    public int GetAttributeModifier(string attributeName)
+    {
+        int attributeValue = GetAttributeValue(attributeName);
+        return (attributeValue - 10) / 2;
     }
 
     // v0.15: Trauma Economy Helper Methods

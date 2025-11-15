@@ -68,15 +68,12 @@ public class MarkingService
             // Apply Marked status effect to target
             var markedEffect = new StatusEffect
             {
-                Type = StatusEffectType.Marked,
-                Duration = duration,
-                SourceId = hunter.GetHashCode(), // Using character hash as ID
-                Metadata = new Dictionary<string, object>
-                {
-                    { "BonusDamageFromSource", bonusDamage },
-                    { "BonusDamageFromAllies", allyBonusDamage },
-                    { "SourceName", hunter.Name }
-                }
+                TargetID = target.EnemyID,
+                EffectType = "Marked",
+                DurationRemaining = duration,
+                AppliedBy = hunter.CharacterID,
+                Metadata = $"{{\"BonusDamageFromSource\": {bonusDamage}, \"BonusDamageFromAllies\": {allyBonusDamage}, \"SourceName\": \"{hunter.Name}\"}}",
+                Category = StatusEffectCategory.StatModification
             };
 
             target.StatusEffects.Add(markedEffect);
@@ -157,7 +154,7 @@ public class MarkingService
     /// </summary>
     public bool IsMarked(Enemy target)
     {
-        return target.StatusEffects.Any(e => e.Type == StatusEffectType.Marked);
+        return target.StatusEffects.Any(e => e.EffectType == "Marked");
     }
 
     /// <summary>
@@ -165,18 +162,46 @@ public class MarkingService
     /// </summary>
     public int GetMarkBonusDamage(Enemy target, PlayerCharacter attacker)
     {
-        var markedEffect = target.StatusEffects.FirstOrDefault(e => e.Type == StatusEffectType.Marked);
+        var markedEffect = target.StatusEffects.FirstOrDefault(e => e.EffectType == "Marked");
         if (markedEffect == null) return 0;
 
         // Check if this attacker is the source of the mark
-        int sourceId = markedEffect.SourceId;
-        if (sourceId == attacker.GetHashCode())
+        int sourceId = markedEffect.AppliedBy;
+        if (sourceId == attacker.CharacterID)
         {
-            return (int)(markedEffect.Metadata?["BonusDamageFromSource"] ?? 0);
+            // Parse metadata to get bonus damage (simplified)
+            if (markedEffect.Metadata != null && markedEffect.Metadata.Contains("BonusDamageFromSource"))
+            {
+                // Extract damage value from JSON string (simplified parsing)
+                var parts = markedEffect.Metadata.Split(',');
+                foreach (var part in parts)
+                {
+                    if (part.Contains("BonusDamageFromSource"))
+                    {
+                        var value = part.Split(':')[1].Trim().TrimEnd('}', ',');
+                        if (int.TryParse(value, out int damage))
+                            return damage;
+                    }
+                }
+            }
         }
 
         // Otherwise, get ally bonus if available
-        return (int)(markedEffect.Metadata?["BonusDamageFromAllies"] ?? 0);
+        if (markedEffect.Metadata != null && markedEffect.Metadata.Contains("BonusDamageFromAllies"))
+        {
+            var parts = markedEffect.Metadata.Split(',');
+            foreach (var part in parts)
+            {
+                if (part.Contains("BonusDamageFromAllies"))
+                {
+                    var value = part.Split(':')[1].Trim().TrimEnd('}', ',');
+                    if (int.TryParse(value, out int damage))
+                        return damage;
+                }
+            }
+        }
+
+        return 0;
     }
 
     /// <summary>
@@ -184,7 +209,7 @@ public class MarkingService
     /// </summary>
     public void RemoveMark(Enemy target)
     {
-        target.StatusEffects.RemoveAll(e => e.Type == StatusEffectType.Marked);
+        target.StatusEffects.RemoveAll(e => e.EffectType == "Marked");
         _log.Debug("Mark for Death removed from {Target}", target.Name);
     }
 

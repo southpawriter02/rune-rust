@@ -82,7 +82,7 @@ public class VeidimadurService
             hunter.Stamina -= staminaCost;
 
             // Calculate damage
-            int weaponDamage = hunter.EquippedWeapon?.Damage ?? 10; // Default to 10 if no weapon
+            int weaponDamage = (hunter.EquippedWeapon?.DamageDice * 3 + hunter.EquippedWeapon?.DamageBonus) ?? 10; // Default to 10 if no weapon
             int bonusDice = abilityRank switch
             {
                 3 => 2, // +2d6
@@ -117,9 +117,11 @@ public class VeidimadurService
                 {
                     var bleedingEffect = new StatusEffect
                     {
-                        Type = StatusEffectType.Bleeding,
-                        Duration = 2,
-                        DamagePerTurn = _diceService.Roll(1, 6)
+                        TargetID = target.EnemyID,
+                        EffectType = "Bleeding",
+                        DurationRemaining = 2,
+                        DamageBase = "1d6",
+                        Category = StatusEffectCategory.DamageOverTime
                     };
                     target.StatusEffects.Add(bleedingEffect);
                     _log.Information("Aimed Shot critical: Applied [Bleeding] for 2 turns");
@@ -258,9 +260,11 @@ public class VeidimadurService
 
         var toxinEffect = new StatusEffect
         {
-            Type = StatusEffectType.BlightedToxin,
-            Duration = toxinDuration,
-            DamagePerTurn = toxinDamageDice * 3 // Average of d6 per die
+            TargetID = target.EnemyID,
+            EffectType = "Blighted Toxin",
+            DurationRemaining = toxinDuration,
+            DamageBase = $"{toxinDamageDice}d6",
+            Category = StatusEffectCategory.DamageOverTime
         };
         target.StatusEffects.Add(toxinEffect);
 
@@ -280,8 +284,10 @@ public class VeidimadurService
             {
                 var glitchEffect = new StatusEffect
                 {
-                    Type = StatusEffectType.Glitched,
-                    Duration = abilityRank >= 3 ? 1 : 0
+                    TargetID = target.EnemyID,
+                    EffectType = "Glitched",
+                    DurationRemaining = abilityRank >= 3 ? 1 : 0,
+                    Category = StatusEffectCategory.ControlDebuff
                 };
                 target.StatusEffects.Add(glitchEffect);
                 statusApplied.Add("Glitch");
@@ -340,9 +346,11 @@ public class VeidimadurService
         // Apply charging status
         var chargingEffect = new StatusEffect
         {
-            Type = StatusEffectType.Charging,
-            Duration = 1,
-            Metadata = new Dictionary<string, object> { { "AbilityName", "Heartseeker Shot" } }
+            TargetID = hunter.CharacterID,
+            EffectType = "Charging",
+            DurationRemaining = 1,
+            Metadata = "{\"AbilityName\": \"Heartseeker Shot\"}",
+            Category = StatusEffectCategory.Buff
         };
         hunter.StatusEffects.Add(chargingEffect);
 
@@ -362,8 +370,8 @@ public class VeidimadurService
             hunter.Name, target.Name, abilityRank);
 
         // Check if charged
-        if (!hunter.StatusEffects.Any(e => e.Type == StatusEffectType.Charging &&
-            (string?)e.Metadata?["AbilityName"] == "Heartseeker Shot"))
+        if (!hunter.StatusEffects.Any(e => e.EffectType == "Charging" &&
+            e.Metadata != null && e.Metadata.Contains("Heartseeker Shot")))
         {
             return new VeidimadurAbilityResult
             {
@@ -440,7 +448,7 @@ public class VeidimadurService
         }
 
         // Remove charging status
-        hunter.StatusEffects.RemoveAll(e => e.Type == StatusEffectType.Charging);
+        hunter.StatusEffects.RemoveAll(e => e.EffectType == "Charging");
 
         _log.Information(
             "Heartseeker Shot: Damage={Damage}, CorruptionPurged={Purged}, Kill={IsKill}",
@@ -474,8 +482,8 @@ public class VeidimadurService
 
         // Check if already in stance
         var existingStance = hunter.StatusEffects.FirstOrDefault(e =>
-            e.Type == StatusEffectType.Stance &&
-            (string?)e.Metadata?["StanceName"] == "Blight-Stalker Stance");
+            e.EffectType == "Stance" &&
+            e.Metadata != null && e.Metadata.Contains("Blight-Stalker Stance"));
 
         if (existingStance != null)
         {
@@ -508,16 +516,11 @@ public class VeidimadurService
 
             var stanceEffect = new StatusEffect
             {
-                Type = StatusEffectType.Stance,
-                Duration = -1, // Permanent until toggled off
-                Metadata = new Dictionary<string, object>
-                {
-                    { "StanceName", "Blight-Stalker Stance" },
-                    { "StaminaUpkeep", staminaUpkeep },
-                    { "ImmuneVisualImpairment", true },
-                    { "StaggerChanceVsCorrupted", staggerChance },
-                    { "AttackBonusVsCorrupted", attackBonus }
-                }
+                TargetID = hunter.CharacterID,
+                EffectType = "Stance",
+                DurationRemaining = -1, // Permanent until toggled off
+                Metadata = $"{{\"StanceName\": \"Blight-Stalker Stance\", \"StaminaUpkeep\": {staminaUpkeep}, \"ImmuneVisualImpairment\": true, \"StaggerChanceVsCorrupted\": {staggerChance}, \"AttackBonusVsCorrupted\": {attackBonus}}}",
+                Category = StatusEffectCategory.Buff
             };
 
             hunter.StatusEffects.Add(stanceEffect);
