@@ -38,8 +38,8 @@ public class DataSeeder
         SeedScrapTinkerSpecialization();
 
         // v0.24.1: Veiðimaðr (Hunter) specialization for Skirmisher
-        var veidimadurSeeder = new VeiðimaðrSeeder(_connectionString);
-        veidimadurSeeder.SeedVeiðimaðrSpecialization();
+        var veidimadurSeeder = new VeidimadurSeeder(_connectionString);
+        veidimadurSeeder.SeedVeidimadurSpecialization();
 
         _log.Information("Specialization data seeding completed successfully");
     }

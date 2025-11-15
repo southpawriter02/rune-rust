@@ -7,7 +7,7 @@ namespace RuneAndRust.Engine;
 /// <summary>
 /// Result of a Veiðimaðr ability operation
 /// </summary>
-public class VeiðimaðrAbilityResult
+public class VeidimadurAbilityResult
 {
     public bool Success { get; set; }
     public string Message { get; set; } = string.Empty;
@@ -24,19 +24,19 @@ public class VeiðimaðrAbilityResult
 /// v0.24.1: Service for Veiðimaðr (Hunter) specialization abilities
 /// Implements all 9 Hunter abilities with corruption tracking and precision archery
 /// </summary>
-public class VeiðimaðrService
+public class VeidimadurService
 {
-    private static readonly ILogger _log = Log.ForContext<VeiðimaðrService>();
+    private static readonly ILogger _log = Log.ForContext<VeidimadurService>();
     private readonly CorruptionTrackingService _corruptionService;
     private readonly MarkingService _markingService;
     private readonly DiceService _diceService;
 
-    public VeiðimaðrService(string connectionString)
+    public VeidimadurService(string connectionString)
     {
         _corruptionService = new CorruptionTrackingService(connectionString);
         _markingService = new MarkingService(connectionString);
         _diceService = new DiceService();
-        _log.Debug("VeiðimaðrService initialized");
+        _log.Debug("VeidimadurService initialized");
     }
 
     #region Tier 1 Abilities
@@ -59,7 +59,7 @@ public class VeiðimaðrService
     /// Aimed Shot (Active)
     /// FINESSE-based ranged attack, bread-and-butter damage ability
     /// </summary>
-    public VeiðimaðrAbilityResult ExecuteAimedShot(PlayerCharacter hunter, Enemy target, int abilityRank)
+    public VeidimadurAbilityResult ExecuteAimedShot(PlayerCharacter hunter, Enemy target, int abilityRank)
     {
         _log.Information("Executing Aimed Shot: Hunter={Hunter}, Target={Target}, Rank={Rank}",
             hunter.Name, target.Name, abilityRank);
@@ -71,7 +71,7 @@ public class VeiðimaðrService
 
             if (hunter.Stamina < staminaCost)
             {
-                return new VeiðimaðrAbilityResult
+                return new VeidimadurAbilityResult
                 {
                     Success = false,
                     Message = $"Insufficient Stamina (need {staminaCost}, have {hunter.Stamina})"
@@ -134,7 +134,7 @@ public class VeiðimaðrService
                 "Aimed Shot: Damage={Damage}, Critical={IsCrit}, Kill={IsKill}",
                 totalDamage, isCritical, isKill);
 
-            return new VeiðimaðrAbilityResult
+            return new VeidimadurAbilityResult
             {
                 Success = true,
                 Message = $"Aimed Shot deals {totalDamage} damage{(isCritical ? " (CRITICAL!)" : "")}",
@@ -146,7 +146,7 @@ public class VeiðimaðrService
         catch (Exception ex)
         {
             _log.Error(ex, "Error executing Aimed Shot");
-            return new VeiðimaðrAbilityResult
+            return new VeidimadurAbilityResult
             {
                 Success = false,
                 Message = $"Error: {ex.Message}"
@@ -158,7 +158,7 @@ public class VeiðimaðrService
     /// Set Snare (Active)
     /// Place trap that Roots enemies
     /// </summary>
-    public VeiðimaðrAbilityResult SetSnare(PlayerCharacter hunter, int abilityRank)
+    public VeidimadurAbilityResult SetSnare(PlayerCharacter hunter, int abilityRank)
     {
         _log.Information("Setting Snare: Hunter={Hunter}, Rank={Rank}", hunter.Name, abilityRank);
 
@@ -166,7 +166,7 @@ public class VeiðimaðrService
 
         if (hunter.Stamina < staminaCost)
         {
-            return new VeiðimaðrAbilityResult
+            return new VeidimadurAbilityResult
             {
                 Success = false,
                 Message = $"Insufficient Stamina (need {staminaCost}, have {hunter.Stamina})"
@@ -186,7 +186,7 @@ public class VeiðimaðrService
 
         _log.Information("Snare set: Root duration={Duration}, Damage={Damage}", rootDuration, trapDamage);
 
-        return new VeiðimaðrAbilityResult
+        return new VeidimadurAbilityResult
         {
             Success = true,
             Message = $"Snare set (Root for {rootDuration} turns{(trapDamage > 0 ? $", {trapDamage} damage" : "")})"
@@ -226,7 +226,7 @@ public class VeiðimaðrService
     /// Blight-Tipped Arrow (Active)
     /// Physical damage + DoT + potential Glitch vs corrupted enemies
     /// </summary>
-    public VeiðimaðrAbilityResult ExecuteBlightTippedArrow(PlayerCharacter hunter, Enemy target, int abilityRank)
+    public VeidimadurAbilityResult ExecuteBlightTippedArrow(PlayerCharacter hunter, Enemy target, int abilityRank)
     {
         _log.Information("Executing Blight-Tipped Arrow: Hunter={Hunter}, Target={Target}, Rank={Rank}",
             hunter.Name, target.Name, abilityRank);
@@ -235,7 +235,7 @@ public class VeiðimaðrService
 
         if (hunter.Stamina < staminaCost)
         {
-            return new VeiðimaðrAbilityResult
+            return new VeidimadurAbilityResult
             {
                 Success = false,
                 Message = $"Insufficient Stamina (need {staminaCost}, have {hunter.Stamina})"
@@ -294,7 +294,7 @@ public class VeiðimaðrService
             "Blight-Tipped Arrow: Damage={Damage}, Toxin={ToxinDuration} turns",
             baseDamage, toxinDuration);
 
-        return new VeiðimaðrAbilityResult
+        return new VeidimadurAbilityResult
         {
             Success = true,
             Message = $"Blight-Tipped Arrow deals {baseDamage} damage + toxin ({toxinDuration} turns)",
@@ -333,7 +333,7 @@ public class VeiðimaðrService
     /// Heartseeker Shot (Active)
     /// Charge ability: massive damage + corruption purge if target marked
     /// </summary>
-    public VeiðimaðrAbilityResult ChargeHeartseekerShot(PlayerCharacter hunter)
+    public VeidimadurAbilityResult ChargeHeartseekerShot(PlayerCharacter hunter)
     {
         _log.Information("Charging Heartseeker Shot: Hunter={Hunter}", hunter.Name);
 
@@ -346,7 +346,7 @@ public class VeiðimaðrService
         };
         hunter.StatusEffects.Add(chargingEffect);
 
-        return new VeiðimaðrAbilityResult
+        return new VeidimadurAbilityResult
         {
             Success = true,
             Message = "Charging Heartseeker Shot (releases next turn)..."
@@ -356,7 +356,7 @@ public class VeiðimaðrService
     /// <summary>
     /// Release Heartseeker Shot after charging
     /// </summary>
-    public VeiðimaðrAbilityResult ReleaseHeartseekerShot(PlayerCharacter hunter, Enemy target, int abilityRank)
+    public VeidimadurAbilityResult ReleaseHeartseekerShot(PlayerCharacter hunter, Enemy target, int abilityRank)
     {
         _log.Information("Releasing Heartseeker Shot: Hunter={Hunter}, Target={Target}, Rank={Rank}",
             hunter.Name, target.Name, abilityRank);
@@ -365,7 +365,7 @@ public class VeiðimaðrService
         if (!hunter.StatusEffects.Any(e => e.Type == StatusEffectType.Charging &&
             (string?)e.Metadata?["AbilityName"] == "Heartseeker Shot"))
         {
-            return new VeiðimaðrAbilityResult
+            return new VeidimadurAbilityResult
             {
                 Success = false,
                 Message = "Must charge Heartseeker Shot for 1 full turn first"
@@ -377,7 +377,7 @@ public class VeiðimaðrService
 
         if (hunter.Stamina < staminaCost)
         {
-            return new VeiðimaðrAbilityResult
+            return new VeidimadurAbilityResult
             {
                 Success = false,
                 Message = $"Insufficient Stamina (need {staminaCost}, have {hunter.Stamina})"
@@ -446,7 +446,7 @@ public class VeiðimaðrService
             "Heartseeker Shot: Damage={Damage}, CorruptionPurged={Purged}, Kill={IsKill}",
             totalDamage, corruptionPurged, isKill);
 
-        return new VeiðimaðrAbilityResult
+        return new VeidimadurAbilityResult
         {
             Success = true,
             Message = $"Heartseeker Shot deals {totalDamage} damage{(corruptionPurged > 0 ? $" (purged {corruptionPurged} Corruption)" : "")}",
@@ -467,7 +467,7 @@ public class VeiðimaðrService
     /// Passive: Auto-reveal vulnerabilities on Mark
     /// Active: Toggle stance for vision immunity + stagger procs
     /// </summary>
-    public VeiðimaðrAbilityResult ActivateStalkerStance(PlayerCharacter hunter, int abilityRank)
+    public VeidimadurAbilityResult ActivateStalkerStance(PlayerCharacter hunter, int abilityRank)
     {
         _log.Information("Toggling Stalker of the Unseen stance: Hunter={Hunter}, Rank={Rank}",
             hunter.Name, abilityRank);
@@ -488,7 +488,7 @@ public class VeiðimaðrService
 
             _log.Information("Deactivated Stalker Stance, {Stress} Psychic Stress inflicted", stressPenalty);
 
-            return new VeiðimaðrAbilityResult
+            return new VeidimadurAbilityResult
             {
                 Success = true,
                 Message = $"Blight-Stalker Stance deactivated ({stressPenalty} Psychic Stress)"
@@ -525,7 +525,7 @@ public class VeiðimaðrService
             _log.Information("Activated Stalker Stance: Upkeep={Upkeep}, Stagger={Stagger}%, Bonus={Bonus}d10",
                 staminaUpkeep, staggerChance, attackBonus);
 
-            return new VeiðimaðrAbilityResult
+            return new VeidimadurAbilityResult
             {
                 Success = true,
                 Message = $"Blight-Stalker Stance activated ({staminaUpkeep} Stamina/turn)"

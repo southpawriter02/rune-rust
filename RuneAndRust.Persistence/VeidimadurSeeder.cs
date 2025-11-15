@@ -7,13 +7,13 @@ namespace RuneAndRust.Persistence;
 /// v0.24.1: Seeds Veiðimaðr (Hunter) specialization for Skirmisher archetype
 /// Patient predator who tracks Blighted targets, exploits corruption, and delivers precision ranged damage
 /// </summary>
-public class VeiðimaðrSeeder
+public class VeidimadurSeeder
 {
-    private static readonly ILogger _log = Log.ForContext<VeiðimaðrSeeder>();
+    private static readonly ILogger _log = Log.ForContext<VeidimadurSeeder>();
     private readonly SpecializationRepository _specializationRepo;
     private readonly AbilityRepository _abilityRepo;
 
-    public VeiðimaðrSeeder(string connectionString)
+    public VeidimadurSeeder(string connectionString)
     {
         _specializationRepo = new SpecializationRepository(connectionString);
         _abilityRepo = new AbilityRepository(connectionString);
@@ -24,7 +24,7 @@ public class VeiðimaðrSeeder
     /// Specialization ID: 24001
     /// Ability IDs: 24001-24009
     /// </summary>
-    public void SeedVeiðimaðrSpecialization()
+    public void SeedVeidimadurSpecialization()
     {
         _log.Information("Seeding Veiðimaðr (Hunter) specialization");
 
@@ -52,17 +52,17 @@ public class VeiðimaðrSeeder
         _specializationRepo.Insert(veidimadur);
 
         // Seed all ability tiers
-        SeedVeiðimaðrTier1();
-        SeedVeiðimaðrTier2();
-        SeedVeiðimaðrTier3();
-        SeedVeiðimaðrCapstone();
+        SeedVeidimadurTier1();
+        SeedVeidimadurTier2();
+        SeedVeidimadurTier3();
+        SeedVeidimadurCapstone();
 
         _log.Information("Veiðimaðr seeding complete: 9 abilities (3/3/2/1)");
     }
 
     #region Tier 1: Foundational Marksmanship (3 abilities, 3 PP each)
 
-    private void SeedVeiðimaðrTier1()
+    private void SeedVeidimadurTier1()
     {
         // Ability 1: Wilderness Acclimation I (Passive)
         _abilityRepo.Insert(new AbilityData
@@ -150,7 +150,7 @@ public class VeiðimaðrSeeder
 
     #region Tier 2: Advanced Tracking & Tactics (3 abilities, 4 PP each)
 
-    private void SeedVeiðimaðrTier2()
+    private void SeedVeidimadurTier2()
     {
         // Ability 4: Mark for Death (Active)
         _abilityRepo.Insert(new AbilityData
@@ -240,7 +240,7 @@ public class VeiðimaðrSeeder
 
     #region Tier 3: Mastery of the Hunt (2 abilities, 5 PP each)
 
-    private void SeedVeiðimaðrTier3()
+    private void SeedVeidimadurTier3()
     {
         // Ability 7: Exploit Corruption (Passive)
         _abilityRepo.Insert(new AbilityData
@@ -301,7 +301,7 @@ public class VeiðimaðrSeeder
 
     #region Capstone: Ultimate Expression (1 ability, 6 PP)
 
-    private void SeedVeiðimaðrCapstone()
+    private void SeedVeidimadurCapstone()
     {
         // Ability 9: Stalker of the Unseen (Passive + Active)
         _abilityRepo.Insert(new AbilityData

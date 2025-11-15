@@ -11,12 +11,12 @@ namespace RuneAndRust.Tests;
 /// Tests specialization seeding, ability structure, corruption tracking, and marking mechanics
 /// </summary>
 [TestFixture]
-public class VeiðimaðrSpecializationTests
+public class VeidimadurSpecializationTests
 {
     private string _connectionString = string.Empty;
     private SpecializationService _specializationService = null!;
     private AbilityService _abilityService = null!;
-    private VeiðimaðrService _veiðimaðrService = null!;
+    private VeidimadurService _veidimadurService = null!;
     private MarkingService _markingService = null!;
     private CorruptionTrackingService _corruptionService = null!;
     private DataSeeder _seeder = null!;
@@ -39,7 +39,7 @@ public class VeiðimaðrSpecializationTests
 
         _specializationService = new SpecializationService(_connectionString);
         _abilityService = new AbilityService(_connectionString);
-        _veiðimaðrService = new VeiðimaðrService(_connectionString);
+        _veidimadurService = new VeidimadurService(_connectionString);
         _markingService = new MarkingService(_connectionString);
         _corruptionService = new CorruptionTrackingService(_connectionString);
     }
@@ -170,15 +170,15 @@ public class VeiðimaðrSpecializationTests
     public void WildernessAcclimation_ProvidesCorrectBonuses()
     {
         // Test Rank 1
-        var rank1Bonus = _veiðimaðrService.GetWildernessAcklimationBonus(1);
+        var rank1Bonus = _veidimadurService.GetWildernessAcklimationBonus(1);
         Assert.That(rank1Bonus, Is.EqualTo(1), "Rank 1 should provide +1d10");
 
         // Test Rank 2
-        var rank2Bonus = _veiðimaðrService.GetWildernessAcklimationBonus(2);
+        var rank2Bonus = _veidimadurService.GetWildernessAcklimationBonus(2);
         Assert.That(rank2Bonus, Is.EqualTo(2), "Rank 2 should provide +2d10");
 
         // Test Rank 3
-        var rank3Bonus = _veiðimaðrService.GetWildernessAcklimationBonus(3);
+        var rank3Bonus = _veidimadurService.GetWildernessAcklimationBonus(3);
         Assert.That(rank3Bonus, Is.EqualTo(3), "Rank 3 should provide +3d10");
     }
 
@@ -192,7 +192,7 @@ public class VeiðimaðrSpecializationTests
         var target = CreateTestEnemy();
 
         // Act
-        var result = _veiðimaðrService.ExecuteAimedShot(hunter, target, 1);
+        var result = _veidimadurService.ExecuteAimedShot(hunter, target, 1);
 
         // Assert
         Assert.That(result.Success, Is.True);
@@ -210,7 +210,7 @@ public class VeiðimaðrSpecializationTests
         var target = CreateTestEnemy();
 
         // Act
-        var result = _veiðimaðrService.ExecuteAimedShot(hunter, target, 2);
+        var result = _veidimadurService.ExecuteAimedShot(hunter, target, 2);
 
         // Assert
         Assert.That(result.Success, Is.True);
@@ -226,7 +226,7 @@ public class VeiðimaðrSpecializationTests
         var target = CreateTestEnemy();
 
         // Act
-        var result = _veiðimaðrService.ExecuteAimedShot(hunter, target, 1);
+        var result = _veidimadurService.ExecuteAimedShot(hunter, target, 1);
 
         // Assert
         Assert.That(result.Success, Is.False);
@@ -241,7 +241,7 @@ public class VeiðimaðrSpecializationTests
         hunter.Stamina = 100;
 
         // Act
-        var result = _veiðimaðrService.SetSnare(hunter, 1);
+        var result = _veidimadurService.SetSnare(hunter, 1);
 
         // Assert
         Assert.That(result.Success, Is.True);
@@ -262,7 +262,7 @@ public class VeiðimaðrSpecializationTests
         var target = CreateTestEnemy();
 
         // Act
-        var result = _veiðimaðrService.ExecuteMarkForDeath(hunter, target, 1);
+        var result = _veidimadurService.ExecuteMarkForDeath(hunter, target, 1);
 
         // Assert
         Assert.That(result.Success, Is.True);
@@ -282,7 +282,7 @@ public class VeiðimaðrSpecializationTests
         var target = CreateTestEnemy();
 
         // Act
-        var result = _veiðimaðrService.ExecuteMarkForDeath(hunter, target, 3);
+        var result = _veidimadurService.ExecuteMarkForDeath(hunter, target, 3);
 
         // Assert
         Assert.That(result.Success, Is.True);
@@ -301,7 +301,7 @@ public class VeiðimaðrSpecializationTests
         target.Corruption = 0; // Not enough for Glitch
 
         // Act
-        var result = _veiðimaðrService.ExecuteBlightTippedArrow(hunter, target, 1);
+        var result = _veidimadurService.ExecuteBlightTippedArrow(hunter, target, 1);
 
         // Assert
         Assert.That(result.Success, Is.True);
@@ -324,7 +324,7 @@ public class VeiðimaðrSpecializationTests
         {
             hunter.Stamina = 100; // Reset stamina
             target.StatusEffects.Clear(); // Reset status effects
-            var result = _veiðimaðrService.ExecuteBlightTippedArrow(hunter, target, 1);
+            var result = _veidimadurService.ExecuteBlightTippedArrow(hunter, target, 1);
             if (result.StatusEffectsApplied.Contains("Glitch"))
             {
                 glitchCount++;
@@ -339,11 +339,11 @@ public class VeiðimaðrSpecializationTests
     public void PredatorsFocus_ProvidesResolveBonus_OnlyInBackRow()
     {
         // Test in back row
-        var backRowBonus = _veiðimaðrService.GetPredatorsFocusBonus(1, true);
+        var backRowBonus = _veidimadurService.GetPredatorsFocusBonus(1, true);
         Assert.That(backRowBonus, Is.EqualTo(1), "Should provide +1d10 in back row");
 
         // Test not in back row
-        var frontRowBonus = _veiðimaðrService.GetPredatorsFocusBonus(1, false);
+        var frontRowBonus = _veidimadurService.GetPredatorsFocusBonus(1, false);
         Assert.That(frontRowBonus, Is.EqualTo(0), "Should provide no bonus in front row");
     }
 
@@ -392,7 +392,7 @@ public class VeiðimaðrSpecializationTests
         var target = CreateTestEnemy();
 
         // Act - Try to release without charging
-        var result = _veiðimaðrService.ReleaseHeartseekerShot(hunter, target, 1);
+        var result = _veidimadurService.ReleaseHeartseekerShot(hunter, target, 1);
 
         // Assert
         Assert.That(result.Success, Is.False);
@@ -409,11 +409,11 @@ public class VeiðimaðrSpecializationTests
         var target = CreateTestEnemy();
 
         // Act - Charge
-        var chargeResult = _veiðimaðrService.ChargeHeartseekerShot(hunter);
+        var chargeResult = _veidimadurService.ChargeHeartseekerShot(hunter);
         Assert.That(chargeResult.Success, Is.True);
 
         // Act - Release
-        var releaseResult = _veiðimaðrService.ReleaseHeartseekerShot(hunter, target, 1);
+        var releaseResult = _veidimadurService.ReleaseHeartseekerShot(hunter, target, 1);
 
         // Assert
         Assert.That(releaseResult.Success, Is.True);
@@ -432,13 +432,13 @@ public class VeiðimaðrSpecializationTests
         target.Corruption = 50;
 
         // Mark the target first
-        _veiðimaðrService.ExecuteMarkForDeath(hunter, target, 1);
+        _veidimadurService.ExecuteMarkForDeath(hunter, target, 1);
 
         // Charge
-        _veiðimaðrService.ChargeHeartseekerShot(hunter);
+        _veidimadurService.ChargeHeartseekerShot(hunter);
 
         // Act - Release with Rank 3
-        var result = _veiðimaðrService.ReleaseHeartseekerShot(hunter, target, 3);
+        var result = _veidimadurService.ReleaseHeartseekerShot(hunter, target, 3);
 
         // Assert
         Assert.That(result.Success, Is.True);
@@ -457,12 +457,12 @@ public class VeiðimaðrSpecializationTests
         var hunter = CreateTestSkirmisher();
 
         // Act - Activate
-        var activateResult = _veiðimaðrService.ActivateStalkerStance(hunter, 1);
+        var activateResult = _veidimadurService.ActivateStalkerStance(hunter, 1);
         Assert.That(activateResult.Success, Is.True);
         Assert.That(activateResult.Message, Does.Contain("activated"));
 
         // Act - Deactivate
-        var deactivateResult = _veiðimaðrService.ActivateStalkerStance(hunter, 1);
+        var deactivateResult = _veidimadurService.ActivateStalkerStance(hunter, 1);
         Assert.That(deactivateResult.Success, Is.True);
         Assert.That(deactivateResult.Message, Does.Contain("deactivated"));
         Assert.That(hunter.PsychicStress, Is.EqualTo(10), "Should inflict 10 Psychic Stress on deactivation at Rank 1");
@@ -475,8 +475,8 @@ public class VeiðimaðrSpecializationTests
         var hunter = CreateTestSkirmisher();
 
         // Act - Activate and deactivate
-        _veiðimaðrService.ActivateStalkerStance(hunter, 3);
-        _veiðimaðrService.ActivateStalkerStance(hunter, 3);
+        _veidimadurService.ActivateStalkerStance(hunter, 3);
+        _veidimadurService.ActivateStalkerStance(hunter, 3);
 
         // Assert
         Assert.That(hunter.PsychicStress, Is.EqualTo(5), "Rank 3 should only inflict 5 Psychic Stress on deactivation");
