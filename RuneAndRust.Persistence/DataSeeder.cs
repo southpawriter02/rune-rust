@@ -41,6 +41,10 @@ public class DataSeeder
         var veidimadurSeeder = new VeidimadurSeeder(_connectionString);
         veidimadurSeeder.SeedVeidimadurSpecialization();
 
+        // v0.24.2: Myrk-gengr (Shadow-Walker) specialization for Skirmisher
+        var myrkgengrSeeder = new MyrkgengrSeeder(_connectionString);
+        myrkgengrSeeder.SeedMyrkgengrSpecialization();
+
         _log.Information("Specialization data seeding completed successfully");
     }
 
