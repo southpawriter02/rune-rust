@@ -101,4 +101,11 @@ public class Companion
     {
         return AbilityCooldowns.TryGetValue(abilityName, out int remaining) && remaining > 0;
     }
+
+    // v0.34.4: Direct command integration
+    /// <summary>
+    /// Queued action from direct command (command verb)
+    /// Overrides AI selection if set
+    /// </summary>
+    public CompanionAction? QueuedAction { get; set; } = null;
 }
