@@ -148,6 +148,9 @@ public class SaveRepository
             // v0.34.1: Create Companion System tables
             CreateCompanionTables(connection);
 
+            // v0.35.1: Create Territory Control & Dynamic World tables
+            CreateTerritoryControlTables(connection);
+
             _log.Information("Database initialized successfully");
         }
         catch (Exception ex)
@@ -2232,6 +2235,343 @@ public class SaveRepository
 
         var count = (long)command.ExecuteScalar()!;
         return count > 0;
+    }
+
+    /// <summary>
+    /// v0.35.1: Create Territory Control & Dynamic World tables and seed initial data
+    /// </summary>
+    private void CreateTerritoryControlTables(SqliteConnection connection)
+    {
+        _log.Debug("Creating Territory Control & Dynamic World tables");
+
+        // Table: Worlds
+        var createWorldsTable = connection.CreateCommand();
+        createWorldsTable.CommandText = @"
+            CREATE TABLE IF NOT EXISTS Worlds (
+                world_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                world_name TEXT NOT NULL UNIQUE,
+                world_description TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ";
+        createWorldsTable.ExecuteNonQuery();
+
+        // Table: Sectors
+        var createSectorsTable = connection.CreateCommand();
+        createSectorsTable.CommandText = @"
+            CREATE TABLE IF NOT EXISTS Sectors (
+                sector_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                world_id INTEGER NOT NULL,
+                sector_name TEXT NOT NULL,
+                sector_description TEXT,
+                biome_id INTEGER,
+                z_level TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+                FOREIGN KEY (world_id) REFERENCES Worlds(world_id) ON DELETE CASCADE,
+                FOREIGN KEY (biome_id) REFERENCES Biomes(biome_id) ON DELETE SET NULL,
+                UNIQUE(world_id, sector_name)
+            )
+        ";
+        createSectorsTable.ExecuteNonQuery();
+
+        // Table: Faction_Territory_Control
+        var createTerritoryControlTable = connection.CreateCommand();
+        createTerritoryControlTable.CommandText = @"
+            CREATE TABLE IF NOT EXISTS Faction_Territory_Control (
+                territory_control_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                world_id INTEGER NOT NULL,
+                sector_id INTEGER NOT NULL,
+                faction_name TEXT NOT NULL,
+                influence_value REAL NOT NULL DEFAULT 0.0,
+                control_state TEXT NOT NULL CHECK(control_state IN ('Stable', 'Contested', 'War', 'Independent', 'Ruined')),
+                last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+                FOREIGN KEY (world_id) REFERENCES Worlds(world_id) ON DELETE CASCADE,
+                FOREIGN KEY (sector_id) REFERENCES Sectors(sector_id) ON DELETE CASCADE,
+                FOREIGN KEY (faction_name) REFERENCES Factions(faction_name) ON DELETE CASCADE,
+                UNIQUE(world_id, sector_id, faction_name)
+            )
+        ";
+        createTerritoryControlTable.ExecuteNonQuery();
+
+        // Table: Faction_Wars
+        var createFactionWarsTable = connection.CreateCommand();
+        createFactionWarsTable.CommandText = @"
+            CREATE TABLE IF NOT EXISTS Faction_Wars (
+                war_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                world_id INTEGER NOT NULL,
+                sector_id INTEGER NOT NULL,
+                faction_a TEXT NOT NULL,
+                faction_b TEXT NOT NULL,
+                war_start_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                war_end_date TIMESTAMP,
+                war_balance REAL DEFAULT 0.0,
+                is_active BOOLEAN NOT NULL DEFAULT 1,
+                victor TEXT,
+                collateral_damage INTEGER DEFAULT 0,
+
+                FOREIGN KEY (world_id) REFERENCES Worlds(world_id) ON DELETE CASCADE,
+                FOREIGN KEY (sector_id) REFERENCES Sectors(sector_id) ON DELETE CASCADE,
+                FOREIGN KEY (faction_a) REFERENCES Factions(faction_name) ON DELETE CASCADE,
+                FOREIGN KEY (faction_b) REFERENCES Factions(faction_name) ON DELETE CASCADE,
+
+                CHECK(faction_a != faction_b),
+                CHECK(war_balance BETWEEN -100 AND 100)
+            )
+        ";
+        createFactionWarsTable.ExecuteNonQuery();
+
+        // Table: World_Events
+        var createWorldEventsTable = connection.CreateCommand();
+        createWorldEventsTable.CommandText = @"
+            CREATE TABLE IF NOT EXISTS World_Events (
+                event_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                world_id INTEGER NOT NULL,
+                sector_id INTEGER,
+                event_type TEXT NOT NULL CHECK(event_type IN (
+                    'Faction_War', 'Incursion', 'Supply_Raid', 'Diplomatic_Shift',
+                    'Catastrophe', 'Awakening_Ritual', 'Excavation_Discovery',
+                    'Purge_Campaign', 'Scavenger_Caravan'
+                )),
+                affected_faction TEXT,
+                event_title TEXT NOT NULL,
+                event_description TEXT NOT NULL,
+                event_start_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                event_end_date TIMESTAMP,
+                event_duration_days INTEGER DEFAULT 7,
+                is_resolved BOOLEAN NOT NULL DEFAULT 0,
+                player_influenced BOOLEAN NOT NULL DEFAULT 0,
+                outcome TEXT,
+                influence_change REAL DEFAULT 0.0,
+
+                FOREIGN KEY (world_id) REFERENCES Worlds(world_id) ON DELETE CASCADE,
+                FOREIGN KEY (sector_id) REFERENCES Sectors(sector_id) ON DELETE CASCADE,
+                FOREIGN KEY (affected_faction) REFERENCES Factions(faction_name) ON DELETE CASCADE
+            )
+        ";
+        createWorldEventsTable.ExecuteNonQuery();
+
+        // Table: Player_Territorial_Actions
+        var createPlayerActionsTable = connection.CreateCommand();
+        createPlayerActionsTable.CommandText = @"
+            CREATE TABLE IF NOT EXISTS Player_Territorial_Actions (
+                action_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                character_id INTEGER NOT NULL,
+                world_id INTEGER NOT NULL,
+                sector_id INTEGER NOT NULL,
+                action_type TEXT NOT NULL CHECK(action_type IN (
+                    'Kill_Enemy', 'Complete_Quest', 'Defend_Territory', 'Sabotage',
+                    'Escort_Caravan', 'Destroy_Hazard', 'Activate_Artifact'
+                )),
+                affected_faction TEXT NOT NULL,
+                influence_delta REAL NOT NULL,
+                action_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                notes TEXT,
+
+                FOREIGN KEY (character_id) REFERENCES saves(id) ON DELETE CASCADE,
+                FOREIGN KEY (world_id) REFERENCES Worlds(world_id) ON DELETE CASCADE,
+                FOREIGN KEY (sector_id) REFERENCES Sectors(sector_id) ON DELETE CASCADE,
+                FOREIGN KEY (affected_faction) REFERENCES Factions(faction_name) ON DELETE CASCADE,
+
+                CHECK(influence_delta BETWEEN -10.0 AND 10.0)
+            )
+        ";
+        createPlayerActionsTable.ExecuteNonQuery();
+
+        // Create indices for performance
+        var createIndices = new[]
+        {
+            "CREATE INDEX IF NOT EXISTS idx_worlds_name ON Worlds(world_name)",
+            "CREATE INDEX IF NOT EXISTS idx_sectors_world ON Sectors(world_id)",
+            "CREATE INDEX IF NOT EXISTS idx_sectors_name ON Sectors(sector_name)",
+            "CREATE INDEX IF NOT EXISTS idx_sectors_biome ON Sectors(biome_id)",
+            "CREATE INDEX IF NOT EXISTS idx_territory_control_sector ON Faction_Territory_Control(sector_id)",
+            "CREATE INDEX IF NOT EXISTS idx_territory_control_faction ON Faction_Territory_Control(faction_name)",
+            "CREATE INDEX IF NOT EXISTS idx_territory_control_state ON Faction_Territory_Control(control_state)",
+            "CREATE INDEX IF NOT EXISTS idx_territory_control_influence ON Faction_Territory_Control(influence_value DESC)",
+            "CREATE INDEX IF NOT EXISTS idx_wars_active ON Faction_Wars(is_active) WHERE is_active = 1",
+            "CREATE INDEX IF NOT EXISTS idx_wars_sector ON Faction_Wars(sector_id)",
+            "CREATE INDEX IF NOT EXISTS idx_wars_date ON Faction_Wars(war_start_date DESC)",
+            "CREATE INDEX IF NOT EXISTS idx_events_active ON World_Events(is_resolved) WHERE is_resolved = 0",
+            "CREATE INDEX IF NOT EXISTS idx_events_sector ON World_Events(sector_id)",
+            "CREATE INDEX IF NOT EXISTS idx_events_faction ON World_Events(affected_faction)",
+            "CREATE INDEX IF NOT EXISTS idx_events_type ON World_Events(event_type)",
+            "CREATE INDEX IF NOT EXISTS idx_player_actions_character ON Player_Territorial_Actions(character_id)",
+            "CREATE INDEX IF NOT EXISTS idx_player_actions_sector ON Player_Territorial_Actions(sector_id)",
+            "CREATE INDEX IF NOT EXISTS idx_player_actions_faction ON Player_Territorial_Actions(affected_faction)",
+            "CREATE INDEX IF NOT EXISTS idx_player_actions_date ON Player_Territorial_Actions(action_timestamp DESC)"
+        };
+
+        foreach (var indexSql in createIndices)
+        {
+            var indexCommand = connection.CreateCommand();
+            indexCommand.CommandText = indexSql;
+            indexCommand.ExecuteNonQuery();
+        }
+
+        // Seed initial territory data
+        SeedTerritoryData(connection);
+
+        _log.Information("Territory Control & Dynamic World tables created successfully");
+    }
+
+    /// <summary>
+    /// v0.35.1: Seed initial world, sectors, territory distribution, wars, and events
+    /// </summary>
+    private void SeedTerritoryData(SqliteConnection connection)
+    {
+        _log.Debug("Seeding territory control data");
+
+        // Seed World: Aethelgard
+        var seedWorld = connection.CreateCommand();
+        seedWorld.CommandText = @"
+            INSERT OR IGNORE INTO Worlds (world_id, world_name, world_description)
+            VALUES (1, 'Aethelgard', 'The World-Tree, an ancient structure containing the remnants of pre-Glitch civilization. A failing technological megastructure where reality coherence decreases with depth.')
+        ";
+        seedWorld.ExecuteNonQuery();
+
+        // Seed 10 Sectors
+        var sectorSeeds = new[]
+        {
+            @"INSERT OR IGNORE INTO Sectors (sector_id, world_id, sector_name, sector_description, biome_id, z_level)
+              VALUES (1, 1, 'Midgard', 'The Trunk level - main operational zones and habitable sectors. Neutral ground where Rust-Clans establish their trade networks.', NULL, 'Trunk')",
+            @"INSERT OR IGNORE INTO Sectors (sector_id, world_id, sector_name, sector_description, biome_id, z_level)
+              VALUES (2, 1, 'Muspelheim', 'Volcanic geothermal sectors with extreme temperatures. Iron-Banes patrol heavily to contain Runic Blight spreading from corrupted forges.', 3, 'Roots')",
+            @"INSERT OR IGNORE INTO Sectors (sector_id, world_id, sector_name, sector_description, biome_id, z_level)
+              VALUES (3, 1, 'Niflheim', 'Cryo-facilities frozen in catastrophic failure. Data repositories make this contested ground between Jötun-Readers and Rust-Clans.', 5, 'Roots')",
+            @"INSERT OR IGNORE INTO Sectors (sector_id, world_id, sector_name, sector_description, biome_id, z_level)
+              VALUES (4, 1, 'Alfheim', 'Ancient archives and data preservation zones. Jötun-Readers maintain primary research facilities here.', NULL, 'Canopy')",
+            @"INSERT OR IGNORE INTO Sectors (sector_id, world_id, sector_name, sector_description, biome_id, z_level)
+              VALUES (5, 1, 'Jotunheim', 'Assembly yards containing dormant Jötun-Forged constructs. Sacred ground for God-Sleeper cultists.', NULL, 'Trunk')",
+            @"INSERT OR IGNORE INTO Sectors (sector_id, world_id, sector_name, sector_description, biome_id, z_level)
+              VALUES (6, 1, 'Svartalfheim', 'Deep salvage zones rich in scrap and components. Rust-Clan stronghold with established trade routes.', NULL, 'Roots')",
+            @"INSERT OR IGNORE INTO Sectors (sector_id, world_id, sector_name, sector_description, biome_id, z_level)
+              VALUES (7, 1, 'Vanaheim', 'Transition zones between Trunk and Canopy. Contested between Independents and Iron-Banes.', NULL, 'Trunk')",
+            @"INSERT OR IGNORE INTO Sectors (sector_id, world_id, sector_name, sector_description, biome_id, z_level)
+              VALUES (8, 1, 'Helheim', 'Corrupted sectors with high Undying presence. Dangerous independent territory.', NULL, 'Roots')",
+            @"INSERT OR IGNORE INTO Sectors (sector_id, world_id, sector_name, sector_description, biome_id, z_level)
+              VALUES (9, 1, 'Asgard', 'Upper command structures near Canopy. Contested between God-Sleepers and Jötun-Readers.', NULL, 'Canopy')",
+            @"INSERT OR IGNORE INTO Sectors (sector_id, world_id, sector_name, sector_description, biome_id, z_level)
+              VALUES (10, 1, 'Valhalla', 'Historical defense installations. Iron-Bane operational headquarters.', NULL, 'Trunk')"
+        };
+
+        foreach (var sectorSeed in sectorSeeds)
+        {
+            var seedCommand = connection.CreateCommand();
+            seedCommand.CommandText = sectorSeed;
+            seedCommand.ExecuteNonQuery();
+        }
+
+        // Seed Territory Control (10 sectors × 5 factions = 50 records)
+        // NOTE: Using database faction names (IronBanes, GodSleeperCultists, JotunReaders, RustClans, Independents)
+        var territorySeeds = new[]
+        {
+            // Sector 1: Midgard - Independent
+            "(1, 1, 'RustClans', 35.0, 'Independent')",
+            "(1, 1, 'IronBanes', 30.0, 'Independent')",
+            "(1, 1, 'JotunReaders', 20.0, 'Independent')",
+            "(1, 1, 'GodSleeperCultists', 10.0, 'Independent')",
+            "(1, 1, 'Independents', 5.0, 'Independent')",
+
+            // Sector 2: Muspelheim - Iron-Bane Stable Control
+            "(1, 2, 'IronBanes', 65.0, 'Stable')",
+            "(1, 2, 'RustClans', 20.0, 'Stable')",
+            "(1, 2, 'JotunReaders', 10.0, 'Stable')",
+            "(1, 2, 'GodSleeperCultists', 3.0, 'Stable')",
+            "(1, 2, 'Independents', 2.0, 'Stable')",
+
+            // Sector 3: Niflheim - Contested
+            "(1, 3, 'JotunReaders', 48.0, 'Contested')",
+            "(1, 3, 'RustClans', 45.0, 'Contested')",
+            "(1, 3, 'IronBanes', 5.0, 'Contested')",
+            "(1, 3, 'GodSleeperCultists', 2.0, 'Contested')",
+            "(1, 3, 'Independents', 0.0, 'Contested')",
+
+            // Sector 4: Alfheim - Jötun-Reader Stable Control
+            "(1, 4, 'JotunReaders', 70.0, 'Stable')",
+            "(1, 4, 'Independents', 15.0, 'Stable')",
+            "(1, 4, 'GodSleeperCultists', 10.0, 'Stable')",
+            "(1, 4, 'RustClans', 3.0, 'Stable')",
+            "(1, 4, 'IronBanes', 2.0, 'Stable')",
+
+            // Sector 5: Jötunheim - God-Sleeper Stable Control
+            "(1, 5, 'GodSleeperCultists', 60.0, 'Stable')",
+            "(1, 5, 'Independents', 25.0, 'Stable')",
+            "(1, 5, 'JotunReaders', 10.0, 'Stable')",
+            "(1, 5, 'RustClans', 3.0, 'Stable')",
+            "(1, 5, 'IronBanes', 2.0, 'Stable')",
+
+            // Sector 6: Svartalfheim - Rust-Clan Stable Control
+            "(1, 6, 'RustClans', 62.0, 'Stable')",
+            "(1, 6, 'Independents', 20.0, 'Stable')",
+            "(1, 6, 'IronBanes', 10.0, 'Stable')",
+            "(1, 6, 'JotunReaders', 5.0, 'Stable')",
+            "(1, 6, 'GodSleeperCultists', 3.0, 'Stable')",
+
+            // Sector 7: Vanaheim - Contested
+            "(1, 7, 'Independents', 50.0, 'Contested')",
+            "(1, 7, 'IronBanes', 42.0, 'Contested')",
+            "(1, 7, 'RustClans', 5.0, 'Contested')",
+            "(1, 7, 'JotunReaders', 2.0, 'Contested')",
+            "(1, 7, 'GodSleeperCultists', 1.0, 'Contested')",
+
+            // Sector 8: Helheim - Independent
+            "(1, 8, 'Independents', 38.0, 'Independent')",
+            "(1, 8, 'IronBanes', 25.0, 'Independent')",
+            "(1, 8, 'GodSleeperCultists', 20.0, 'Independent')",
+            "(1, 8, 'RustClans', 12.0, 'Independent')",
+            "(1, 8, 'JotunReaders', 5.0, 'Independent')",
+
+            // Sector 9: Asgard - Contested
+            "(1, 9, 'GodSleeperCultists', 46.0, 'Contested')",
+            "(1, 9, 'JotunReaders', 44.0, 'Contested')",
+            "(1, 9, 'Independents', 8.0, 'Contested')",
+            "(1, 9, 'RustClans', 2.0, 'Contested')",
+            "(1, 9, 'IronBanes', 0.0, 'Contested')",
+
+            // Sector 10: Valhalla - Iron-Bane Stable Control
+            "(1, 10, 'IronBanes', 68.0, 'Stable')",
+            "(1, 10, 'Independents', 18.0, 'Stable')",
+            "(1, 10, 'RustClans', 10.0, 'Stable')",
+            "(1, 10, 'JotunReaders', 3.0, 'Stable')",
+            "(1, 10, 'GodSleeperCultists', 1.0, 'Stable')"
+        };
+
+        var territoryBulkInsert = connection.CreateCommand();
+        territoryBulkInsert.CommandText = @"
+            INSERT OR IGNORE INTO Faction_Territory_Control (world_id, sector_id, faction_name, influence_value, control_state)
+            VALUES " + string.Join(", ", territorySeeds);
+        territoryBulkInsert.ExecuteNonQuery();
+
+        // Seed initial war in Niflheim
+        var seedWar = connection.CreateCommand();
+        seedWar.CommandText = @"
+            INSERT OR IGNORE INTO Faction_Wars (war_id, world_id, sector_id, faction_a, faction_b, war_balance, is_active)
+            VALUES (1, 1, 3, 'JotunReaders', 'RustClans', 3.0, 1)
+        ";
+        seedWar.ExecuteNonQuery();
+
+        // Seed initial world events
+        var eventSeeds = new[]
+        {
+            @"INSERT OR IGNORE INTO World_Events (event_id, world_id, sector_id, event_type, affected_faction, event_title, event_description, event_duration_days)
+              VALUES (1, 1, 3, 'Faction_War', 'JotunReaders', 'The Data Wars', 'Jötun-Readers and Rust-Clans clash over control of ancient data repositories in Niflheim. The scavengers want the salvage, the archaeologists want the knowledge. Player actions could tip the balance.', 12)",
+            @"INSERT OR IGNORE INTO World_Events (event_id, world_id, sector_id, event_type, affected_faction, event_title, event_description, event_duration_days)
+              VALUES (2, 1, 9, 'Awakening_Ritual', 'GodSleeperCultists', 'The Awakening', 'God-Sleeper cultists attempt to reactivate dormant Jötun-Forged constructs in Asgard. If successful, they will gain significant territorial control. If disrupted, their influence will collapse.', 7)",
+            @"INSERT OR IGNORE INTO World_Events (event_id, world_id, sector_id, event_type, affected_faction, event_title, event_description, event_duration_days)
+              VALUES (3, 1, 8, 'Purge_Campaign', 'IronBanes', 'The Last Protocol', 'Iron-Banes launch systematic purge of Undying in Helheim. Their protocols demand complete eradication of corrupted processes. Success could establish Iron-Bane presence in this independent sector.', 10)"
+        };
+
+        foreach (var eventSeed in eventSeeds)
+        {
+            var seedCommand = connection.CreateCommand();
+            seedCommand.CommandText = eventSeed;
+            seedCommand.ExecuteNonQuery();
+        }
+
+        _log.Information("Territory data seeded: 1 world (Aethelgard), 10 sectors, 50 influence records, 1 war, 3 events");
+        _log.Information("For complete territory control functionality, implement services in v0.35.2-v0.35.4");
     }
 
     private int CalculateLegendToNextMilestone(int currentMilestone)
