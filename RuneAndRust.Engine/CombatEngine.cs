@@ -20,12 +20,13 @@ public class CombatEngine
     private readonly StanceService _stanceService; // [v0.21.1]
     private readonly AdvancedStatusEffectService? _statusEffectService; // [v0.21.3]
     private readonly CounterAttackService? _counterAttackService; // [v0.21.4]
+    private readonly CompanionService? _companionService; // [v0.34.4]
 
     // [v0.21.3] Target ID mapping for status effects
     // Player ID = 0, Enemy IDs = hash of enemy ID string
     private const int PLAYER_TARGET_ID = 0;
 
-    public CombatEngine(DiceService diceService, SagaService sagaService, LootService lootService, EquipmentService equipmentService, HazardService hazardService, CurrencyService currencyService, AdvancedStatusEffectService? statusEffectService = null, CounterAttackService? counterAttackService = null)
+    public CombatEngine(DiceService diceService, SagaService sagaService, LootService lootService, EquipmentService equipmentService, HazardService hazardService, CurrencyService currencyService, AdvancedStatusEffectService? statusEffectService = null, CounterAttackService? counterAttackService = null, string? connectionString = null)
     {
         _diceService = diceService;
         _sagaService = sagaService;
@@ -40,6 +41,7 @@ public class CombatEngine
         _stanceService = new StanceService(); // [v0.21.1]
         _statusEffectService = statusEffectService; // [v0.21.3]
         _counterAttackService = counterAttackService; // [v0.21.4]
+        _companionService = connectionString != null ? new CompanionService(connectionString) : null; // [v0.34.4]
     }
 
     /// <summary>
@@ -53,11 +55,12 @@ public class CombatEngine
 
     /// <summary>
     /// Initialize combat with the player and enemies, roll initiative
+    /// v0.34.4: Now supports companions
     /// </summary>
-    public CombatState InitializeCombat(PlayerCharacter player, List<Enemy> enemies, Room? currentRoom = null, bool canFlee = true)
+    public CombatState InitializeCombat(PlayerCharacter player, List<Enemy> enemies, Room? currentRoom = null, bool canFlee = true, int characterId = 0)
     {
-        _log.Information("Combat initiated: Player={PlayerName}, Enemies={EnemyCount}, CanFlee={CanFlee}, Room={RoomId}",
-            player.Name, enemies.Count, canFlee, currentRoom?.Id);
+        _log.Information("Combat initiated: Player={PlayerName}, Enemies={EnemyCount}, CanFlee={CanFlee}, Room={RoomId}, CharacterId={CharacterId}",
+            player.Name, enemies.Count, canFlee, currentRoom?.Id, characterId);
 
         var combatState = new CombatState
         {
@@ -65,21 +68,42 @@ public class CombatEngine
             Enemies = new List<Enemy>(enemies),
             IsActive = true,
             CanFlee = canFlee,
-            CurrentRoom = currentRoom
+            CurrentRoom = currentRoom,
+            CharacterId = characterId
         };
 
-        // [v0.20] Initialize tactical combat grid
+        // [v0.34.4] Load active party companions
+        if (_companionService != null && characterId > 0)
+        {
+            try
+            {
+                combatState.Companions = _companionService.GetPartyCompanions(characterId);
+                _log.Information("Loaded {CompanionCount} companions for combat", combatState.Companions.Count);
+            }
+            catch (Exception ex)
+            {
+                _log.Warning(ex, "Failed to load companions for combat, continuing without them");
+                combatState.Companions = new List<Companion>();
+            }
+        }
+
+        // [v0.20] Initialize tactical combat grid (now includes companions)
         combatState.Grid = _gridService.InitializeGrid(player, enemies);
         _gridService.ApplyEnvironmentalFeatures(combatState.Grid, currentRoom);
 
-        // Roll initiative for all participants
+        // Roll initiative for all participants (player, companions, enemies)
         RollInitiative(combatState);
 
         combatState.AddLogEntry("=== COMBAT BEGINS ===");
         combatState.AddLogEntry("Initiative order determined:");
         foreach (var participant in combatState.InitiativeOrder)
         {
-            var name = participant.IsPlayer ? combatState.Player.Name : ((Enemy)participant.Character!).Name;
+            // v0.34.4: Handle player, companion, and enemy names
+            var name = participant.IsPlayer
+                ? combatState.Player.Name
+                : participant.IsCompanion
+                    ? ((Companion)participant.Character!).DisplayName
+                    : ((Enemy)participant.Character!).Name;
             combatState.AddLogEntry($"  {name} (Initiative: {participant.InitiativeRoll})");
         }
         combatState.AddLogEntry("");
@@ -117,6 +141,7 @@ public class CombatEngine
 
     /// <summary>
     /// Roll initiative for all combatants and sort by initiative order
+    /// v0.34.4: Now includes companions in initiative order
     /// </summary>
     private void RollInitiative(CombatState combatState)
     {
@@ -136,10 +161,26 @@ public class CombatEngine
         {
             Name = combatState.Player.Name,
             IsPlayer = true,
+            IsCompanion = false,
             InitiativeRoll = playerInitiative,
             InitiativeAttribute = combatState.Player.Attributes.Finesse,
             Character = combatState.Player
         });
+
+        // v0.34.4: Companion initiative
+        foreach (var companion in combatState.Companions)
+        {
+            var companionInitiativeRoll = _diceService.Roll(companion.BaseFinesse);
+            participants.Add(new CombatParticipant
+            {
+                Name = companion.DisplayName,
+                IsPlayer = false,
+                IsCompanion = true,
+                InitiativeRoll = companionInitiativeRoll.Successes,
+                InitiativeAttribute = companion.BaseFinesse,
+                Character = companion
+            });
+        }
 
         // Enemy initiative
         foreach (var enemy in combatState.Enemies)
@@ -149,6 +190,7 @@ public class CombatEngine
             {
                 Name = enemy.Name,
                 IsPlayer = false,
+                IsCompanion = false,
                 InitiativeRoll = enemyInitiativeRoll.Successes,
                 InitiativeAttribute = enemy.Attributes.Finesse,
                 Character = enemy
@@ -2253,5 +2295,119 @@ public class CombatEngine
     private string FormatRolls(DiceResult result)
     {
         return string.Join(", ", result.Rolls);
+    }
+
+    // ============================================
+    // v0.34.4: COMPANION SYSTEM INTEGRATION
+    // ============================================
+
+    /// <summary>
+    /// Process a companion's turn in combat
+    /// Called when initiative order reaches a companion
+    /// </summary>
+    public void ProcessCompanionTurn(CombatState combatState, Companion companion)
+    {
+        if (_companionService == null)
+        {
+            _log.Warning("CompanionService not initialized, skipping companion turn");
+            combatState.AddLogEntry($"[ERROR] Companion system not available");
+            return;
+        }
+
+        combatState.AddLogEntry("");
+        combatState.AddLogEntry($"--- {companion.DisplayName}'s Turn ---");
+
+        // Check if incapacitated (System Crash)
+        if (companion.IsIncapacitated)
+        {
+            combatState.AddLogEntry($"{companion.DisplayName} is incapacitated (System Crash)");
+            return;
+        }
+
+        // Process companion turn via CompanionService
+        var action = _companionService.ProcessCompanionTurn(
+            companion,
+            combatState.Player,
+            combatState.Enemies.Where(e => e.IsAlive).ToList(),
+            combatState.Grid);
+
+        combatState.AddLogEntry($"{companion.DisplayName}: {action.Reason}");
+
+        // Execute the selected action
+        var success = _companionService.ExecuteCompanionAction(
+            companion,
+            action,
+            combatState.Enemies.Where(e => e.IsAlive).ToList(),
+            combatState.Player,
+            combatState.Grid);
+
+        if (!success)
+        {
+            combatState.AddLogEntry($"  Action failed!");
+        }
+    }
+
+    /// <summary>
+    /// Check if a participant is a companion
+    /// Helper method for combat flow
+    /// </summary>
+    public bool IsCompanionTurn(CombatState combatState)
+    {
+        return combatState.CurrentParticipant.IsCompanion;
+    }
+
+    /// <summary>
+    /// Get the companion for the current turn
+    /// </summary>
+    public Companion? GetCurrentCompanion(CombatState combatState)
+    {
+        if (!IsCompanionTurn(combatState))
+        {
+            return null;
+        }
+
+        return (Companion?)combatState.CurrentParticipant.Character;
+    }
+
+    /// <summary>
+    /// Apply damage to a companion and check for System Crash
+    /// Called when a companion is hit by an enemy attack
+    /// </summary>
+    public void DamageCompanion(CombatState combatState, Companion companion, int damage)
+    {
+        if (_companionService == null)
+        {
+            _log.Warning("CompanionService not initialized, cannot damage companion");
+            return;
+        }
+
+        var oldHP = companion.CurrentHitPoints;
+        _companionService.ApplyCompanionDamage(companion, damage, combatState.Player);
+
+        combatState.AddLogEntry($"  {companion.DisplayName} takes {damage} damage ({oldHP} → {companion.CurrentHitPoints} HP)");
+
+        // System Crash notification
+        if (companion.IsIncapacitated)
+        {
+            combatState.AddLogEntry($"  [SYSTEM CRASH] {companion.DisplayName} is incapacitated!");
+            combatState.AddLogEntry($"  You feel the psychic feedback (+10 Psychic Stress)");
+        }
+    }
+
+    /// <summary>
+    /// Recover all incapacitated companions after combat victory
+    /// </summary>
+    public void RecoverCompanionsAfterCombat(CombatState combatState)
+    {
+        if (_companionService == null || combatState.CharacterId == 0)
+        {
+            return;
+        }
+
+        foreach (var companion in combatState.Companions.Where(c => c.IsIncapacitated))
+        {
+            _companionService.RecoverCompanion(companion, combatState.CharacterId);
+            combatState.AddLogEntry($"{companion.DisplayName} recovered to {companion.CurrentHitPoints} HP (50% recovery)");
+        }
     }
 }

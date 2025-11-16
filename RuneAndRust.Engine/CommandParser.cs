@@ -43,7 +43,10 @@ public enum CommandType
     Sell,
     // v0.13 - Persistent World State / Destruction
     Destroy,
-    History
+    History,
+    // v0.34.4 - Companion System
+    Command,
+    Stance
 }
 
 public class ParsedCommand
@@ -166,6 +169,13 @@ public class CommandParser
         { "history", CommandType.History },
         { "changes", CommandType.History },
         { "modifications", CommandType.History },
+
+        // v0.34.4 - Companion System
+        { "command", CommandType.Command },
+        { "cmd", CommandType.Command },
+        { "order", CommandType.Command },
+        { "stance", CommandType.Stance },
+        { "mode", CommandType.Stance },
 
         // Utility
         { "help", CommandType.Help },
