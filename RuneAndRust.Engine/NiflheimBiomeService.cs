@@ -125,7 +125,7 @@ public class NiflheimBiomeService
         }
 
         // Check if enemy is Brittle-eligible (Ice Resistance > 0%)
-        bool eligible = _brittlenessService.IsBrittleEligible(enemy);
+        bool eligible = _brittlenessService.IsBrittleEligibleNiflheim(enemy);
         if (eligible)
         {
             _log.Information("{Enemy} is [Brittle]-eligible (Ice Resistance > 0%)", enemy.Name);
@@ -360,7 +360,7 @@ public class NiflheimBiomeService
         result.EnemyCurrentHP = enemy.HP;
 
         // Check if enemy is eligible for [Brittle]
-        bool eligible = _brittlenessService.IsBrittleEligible(enemy);
+        bool eligible = _brittlenessService.IsBrittleEligibleNiflheim(enemy);
         result.WasEligibleForBrittle = eligible;
 
         if (eligible)
@@ -477,3 +477,76 @@ public class NiflheimBiomeService
 
     #endregion
 }
+
+#region Result Data Transfer Objects
+
+public class NiflheimPreparednessReport
+{
+    public List<CharacterPreparedness> Characters { get; set; } = new();
+    public double AverageIceResistance { get; set; }
+    public bool PartyIsAdequatelyPrepared { get; set; }
+}
+
+public class CharacterPreparedness
+{
+    public string CharacterName { get; set; } = string.Empty;
+    public int IceResistancePercent { get; set; }
+    public int Finesse { get; set; }
+    public bool IsAdequatelyPrepared { get; set; }
+    public int RecommendedIceResistance { get; set; }
+    public string WarningLevel { get; set; } = string.Empty;
+    public string WarningMessage { get; set; } = string.Empty;
+    public string? FinesseWarning { get; set; }
+}
+
+public class ColdStressResult
+{
+    public string CharacterName { get; set; } = string.Empty;
+    public int PreviousStress { get; set; }
+    public int StressGained { get; set; }
+    public int CurrentStress { get; set; }
+    public string Message { get; set; } = string.Empty;
+}
+
+public class SlipperyTerrainResult
+{
+    public string CharacterName { get; set; } = string.Empty;
+    public int FinesseValue { get; set; }
+    public int SuccessesRolled { get; set; }
+    public bool CheckPassed { get; set; }
+    public bool WasKnockedDown { get; set; }
+    public int DamageDealt { get; set; }
+    public string Message { get; set; } = string.Empty;
+}
+
+public class BrittlenessResult
+{
+    public string EnemyName { get; set; } = string.Empty;
+    public int IceDamageDealt { get; set; }
+    public int EnemyCurrentHP { get; set; }
+    public bool WasEligibleForBrittle { get; set; }
+    public bool BrittleApplied { get; set; }
+    public string Message { get; set; } = string.Empty;
+}
+
+public class PhysicalDamageResult
+{
+    public string EnemyName { get; set; } = string.Empty;
+    public int BaseDamage { get; set; }
+    public int FinalDamage { get; set; }
+    public int DamageAmplified { get; set; }
+    public bool TargetWasBrittle { get; set; }
+    public int EnemyCurrentHP { get; set; }
+    public string Message { get; set; } = string.Empty;
+}
+
+public class CriticalHitResult
+{
+    public string TargetName { get; set; } = string.Empty;
+    public string AttackerName { get; set; } = string.Empty;
+    public bool SlowedApplied { get; set; }
+    public int SlowedDuration { get; set; }
+    public string Message { get; set; } = string.Empty;
+}
+
+#endregion

@@ -427,3 +427,67 @@ public class NiflheimDataRepository
 
     #endregion
 }
+
+#region Data Transfer Objects
+
+public class NiflheimRoomTemplate
+{
+    public int TemplateId { get; set; }
+    public string TemplateName { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+    public string RoomSize { get; set; } = string.Empty;
+    public int MinConnections { get; set; }
+    public int MaxConnections { get; set; }
+    public bool CanBeEntrance { get; set; }
+    public bool CanBeExit { get; set; }
+    public bool CanBeHub { get; set; }
+    public string HazardDensity { get; set; } = string.Empty;
+    public int EnemySpawnWeight { get; set; }
+    public double ResourceSpawnChance { get; set; }
+    public string WfcAdjacencyRules { get; set; } = string.Empty;
+    public string VerticalityTier { get; set; } = string.Empty; // Roots or Canopy
+}
+
+public class NiflheimEnemySpawn
+{
+    public int SpawnId { get; set; }
+    public string EnemyName { get; set; } = string.Empty;
+    public string EnemyType { get; set; } = string.Empty;
+    public int MinLevel { get; set; }
+    public int MaxLevel { get; set; }
+    public int SpawnWeight { get; set; }
+    public string SpawnRulesJson { get; set; } = string.Empty;
+    public string VerticalityTier { get; set; } = string.Empty; // Roots, Canopy, or Both
+}
+
+public class NiflheimHazard
+{
+    public int FeatureId { get; set; }
+    public string FeatureName { get; set; } = string.Empty;
+    public string FeatureType { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+    public int DamagePerTurn { get; set; }
+    public string? DamageType { get; set; }
+    public double TileCoveragePercent { get; set; }
+    public bool IsDestructible { get; set; }
+    public bool BlocksMovement { get; set; }
+    public bool BlocksLineOfSight { get; set; }
+    public string HazardDensity { get; set; } = string.Empty;
+    public string SpecialRules { get; set; } = string.Empty;
+}
+
+public class NiflheimResource
+{
+    public int ResourceDropId { get; set; }
+    public string ResourceName { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+    public int ResourceTier { get; set; }
+    public string Rarity { get; set; } = string.Empty;
+    public double BaseDropChance { get; set; }
+    public int MinQuantity { get; set; }
+    public int MaxQuantity { get; set; }
+    public bool RequiresSpecialNode { get; set; }
+    public int Weight { get; set; }
+}
+
+#endregion
