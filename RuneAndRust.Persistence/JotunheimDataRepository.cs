@@ -282,19 +282,125 @@ public class JotunheimDataRepository
 
     #endregion
 
-    #region Environmental Hazards (v0.32.2 - Placeholder)
+    #region Environmental Hazards (v0.32.2)
 
-    // TODO v0.32.2: Implement environmental hazards
-    // - [Live Power Conduit] (signature hazard)
-    // - [High-Pressure Steam Vent]
-    // - [Unstable Ceiling/Wall]
-    // - [Flooded] terrain (coolant spills)
-    // - [Toxic Haze]
-    // - [Cover] (shipping containers, engine blocks)
-    // - [Jötun Corpse Terrain]
-    // - [Assembly Line]
-    // - [Scrap Heap]
-    // - [Coolant Reservoir]
+    /// <summary>
+    /// Get all environmental hazards for Jötunheim
+    /// </summary>
+    public List<JotunheimHazard> GetEnvironmentalHazards(string? hazardDensity = null)
+    {
+        using var connection = new SqliteConnection(_connectionString);
+        connection.Open();
+
+        var command = connection.CreateCommand();
+        command.CommandText = @"
+            SELECT
+                feature_id,
+                feature_name,
+                feature_type,
+                feature_description,
+                damage_per_turn,
+                damage_type,
+                tile_coverage_percent,
+                is_destructible,
+                blocks_movement,
+                blocks_line_of_sight,
+                hazard_density_category,
+                special_rules
+            FROM Biome_EnvironmentalFeatures
+            WHERE biome_id = $biomeId
+        ";
+
+        if (!string.IsNullOrEmpty(hazardDensity))
+        {
+            command.CommandText += @"
+                AND (
+                    hazard_density_category = $density
+                    OR hazard_density_category = 'Low'
+                    OR hazard_density_category = 'None'
+                    OR (hazard_density_category = 'Medium' AND $density IN ('Medium', 'High', 'Extreme'))
+                    OR (hazard_density_category = 'High' AND $density IN ('High', 'Extreme'))
+                )
+            ";
+            command.Parameters.AddWithValue("$density", hazardDensity);
+        }
+
+        command.Parameters.AddWithValue("$biomeId", JOTUNHEIM_BIOME_ID);
+
+        var hazards = new List<JotunheimHazard>();
+
+        using var reader = command.ExecuteReader();
+        while (reader.Read())
+        {
+            hazards.Add(new JotunheimHazard
+            {
+                FeatureId = reader.GetInt32(0),
+                FeatureName = reader.GetString(1),
+                FeatureType = reader.GetString(2),
+                Description = reader.GetString(3),
+                DamagePerTurn = reader.IsDBNull(4) ? 0 : reader.GetInt32(4),
+                DamageType = reader.IsDBNull(5) ? null : reader.GetString(5),
+                TileCoveragePercent = reader.GetDouble(6),
+                IsDestructible = reader.GetInt32(7) == 1,
+                BlocksMovement = reader.GetInt32(8) == 1,
+                BlocksLineOfSight = reader.GetInt32(9) == 1,
+                HazardDensity = reader.GetString(10),
+                SpecialRules = reader.GetString(11)
+            });
+        }
+
+        _log.Information("Loaded {Count} environmental hazards for Jötunheim (density: {Density})",
+            hazards.Count, hazardDensity ?? "All");
+        return hazards;
+    }
+
+    /// <summary>
+    /// Get Live Power Conduit hazard (signature hazard)
+    /// </summary>
+    public JotunheimHazard? GetLivePowerConduit()
+    {
+        return GetEnvironmentalHazards().FirstOrDefault(h => h.FeatureName == "Live Power Conduit");
+    }
+
+    /// <summary>
+    /// Get High-Pressure Steam Vent hazard
+    /// </summary>
+    public JotunheimHazard? GetSteamVent()
+    {
+        return GetEnvironmentalHazards().FirstOrDefault(h => h.FeatureName == "High-Pressure Steam Vent");
+    }
+
+    /// <summary>
+    /// Get Unstable Ceiling/Wall hazard
+    /// </summary>
+    public JotunheimHazard? GetUnstableCeiling()
+    {
+        return GetEnvironmentalHazards().FirstOrDefault(h => h.FeatureName == "Unstable Ceiling/Wall");
+    }
+
+    /// <summary>
+    /// Get Jötun Corpse Terrain (special terrain type)
+    /// </summary>
+    public JotunheimHazard? GetJotunCorpseTerrain()
+    {
+        return GetEnvironmentalHazards().FirstOrDefault(h => h.FeatureName == "Jotun Corpse Terrain");
+    }
+
+    /// <summary>
+    /// Get Flooded (Coolant) terrain
+    /// </summary>
+    public JotunheimHazard? GetFloodedTerrain()
+    {
+        return GetEnvironmentalHazards().FirstOrDefault(h => h.FeatureName == "Flooded (Coolant)");
+    }
+
+    /// <summary>
+    /// Get Cover (Industrial) objects
+    /// </summary>
+    public List<JotunheimHazard> GetIndustrialCover()
+    {
+        return GetEnvironmentalHazards().Where(h => h.FeatureName == "Cover (Industrial)").ToList();
+    }
 
     #endregion
 
@@ -307,6 +413,60 @@ public class JotunheimDataRepository
     // - God-Sleeper Cultist (Medium Humanoid)
     // - Scrap-Tinker (Rare Humanoid)
     // - Iron-Husked Boar (Low Beast)
+
+    #endregion
+
+    #region Biome Info
+
+    /// <summary>
+    /// Get biome metadata for Jötunheim
+    /// </summary>
+    public JotunheimBiomeInfo GetBiomeInfo()
+    {
+        using var connection = new SqliteConnection(_connectionString);
+        connection.Open();
+
+        var command = connection.CreateCommand();
+        command.CommandText = @"
+            SELECT
+                biome_id,
+                biome_name,
+                biome_description,
+                z_level_restriction,
+                ambient_condition_id,
+                min_character_level,
+                max_character_level,
+                is_active
+            FROM Biomes
+            WHERE biome_id = $biomeId
+        ";
+
+        command.Parameters.AddWithValue("$biomeId", JOTUNHEIM_BIOME_ID);
+
+        using var reader = command.ExecuteReader();
+        if (reader.Read())
+        {
+            var info = new JotunheimBiomeInfo
+            {
+                BiomeId = reader.GetInt32(0),
+                BiomeName = reader.GetString(1),
+                Description = reader.GetString(2),
+                ZLevelRestriction = reader.GetString(3),
+                AmbientConditionId = reader.IsDBNull(4) ? null : (int?)reader.GetInt32(4),
+                MinCharacterLevel = reader.GetInt32(5),
+                MaxCharacterLevel = reader.GetInt32(6),
+                IsActive = reader.GetInt32(7) == 1
+            };
+
+            _log.Debug("Loaded Jötunheim biome info: {Name}, no ambient condition: {NoAmbient}",
+                info.BiomeName, info.AmbientConditionId == null);
+
+            return info;
+        }
+
+        _log.Error("Jötunheim biome not found in database (biome_id: {BiomeId})", JOTUNHEIM_BIOME_ID);
+        throw new InvalidOperationException($"Jötunheim biome not found (biome_id: {JOTUNHEIM_BIOME_ID})");
+    }
 
     #endregion
 
@@ -422,6 +582,34 @@ public class JotunheimResource
     public int MaxQuantity { get; set; }
     public bool RequiresSpecialNode { get; set; }
     public int Weight { get; set; }
+}
+
+public class JotunheimHazard
+{
+    public int FeatureId { get; set; }
+    public string FeatureName { get; set; } = string.Empty;
+    public string FeatureType { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+    public int DamagePerTurn { get; set; }
+    public string? DamageType { get; set; }
+    public double TileCoveragePercent { get; set; }
+    public bool IsDestructible { get; set; }
+    public bool BlocksMovement { get; set; }
+    public bool BlocksLineOfSight { get; set; }
+    public string HazardDensity { get; set; } = string.Empty;
+    public string SpecialRules { get; set; } = string.Empty;
+}
+
+public class JotunheimBiomeInfo
+{
+    public int BiomeId { get; set; }
+    public string BiomeName { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+    public string ZLevelRestriction { get; set; } = string.Empty;
+    public int? AmbientConditionId { get; set; }
+    public int MinCharacterLevel { get; set; }
+    public int MaxCharacterLevel { get; set; }
+    public bool IsActive { get; set; }
 }
 
 public class JotunheimIntegrityReport
