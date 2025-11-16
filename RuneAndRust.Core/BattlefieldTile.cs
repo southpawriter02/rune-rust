@@ -68,6 +68,27 @@ public class BattlefieldTile
     }
 
     /// <summary>
+    /// v0.29.5: Gets the name of the feature blocking movement on this tile.
+    /// Returns null if the tile is passable.
+    /// </summary>
+    /// <param name="environmentalObjects">List of environmental objects on this tile</param>
+    /// <returns>Name of blocking feature, or null if passable</returns>
+    public string? GetBlockingFeature(List<EnvironmentalObject>? environmentalObjects = null)
+    {
+        // Check environmental objects first
+        if (environmentalObjects != null)
+        {
+            var blockingObject = environmentalObjects.FirstOrDefault(obj => obj.BlocksMovement);
+            if (blockingObject != null)
+            {
+                return blockingObject.Name;
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
     /// Gets a string representation of the tile for debugging
     /// </summary>
     public override string ToString()

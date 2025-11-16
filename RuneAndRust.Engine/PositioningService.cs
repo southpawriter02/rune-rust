@@ -18,8 +18,9 @@ public class PositioningService
 
     /// <summary>
     /// Attempts to move a combatant to a new position on the grid
+    /// v0.29.5: Updated to check environmental objects for blocking hazards
     /// </summary>
-    public MovementResult MoveCombatant(object combatant, GridPosition targetPosition, BattlefieldGrid grid)
+    public MovementResult MoveCombatant(object combatant, GridPosition targetPosition, BattlefieldGrid grid, List<EnvironmentalObject>? environmentalObjects = null)
     {
         // Handle both PlayerCharacter and Enemy types
         var (currentPosition, stamina, isPlayer, combatantId, combatantName) = combatant switch
@@ -37,8 +38,8 @@ public class PositioningService
         _log.Information("Movement attempt: Combatant={CombatantName}, From={FromPos}, To={ToPos}",
             combatantName, currentPosition, targetPosition);
 
-        // Validate movement
-        if (!CanMove(currentPosition.Value, targetPosition, grid, out string reason))
+        // Validate movement (v0.29.5: now passes environmental objects)
+        if (!CanMove(currentPosition.Value, targetPosition, grid, environmentalObjects, out string reason))
         {
             _log.Warning("Movement blocked: Combatant={CombatantName}, Reason={Reason}",
                 combatantName, reason);
@@ -132,8 +133,9 @@ public class PositioningService
 
     /// <summary>
     /// Checks if a movement from one position to another is valid
+    /// v0.29.5: Updated to check environmental objects for blocking hazards
     /// </summary>
-    private bool CanMove(GridPosition from, GridPosition to, BattlefieldGrid grid, out string reason)
+    private bool CanMove(GridPosition from, GridPosition to, BattlefieldGrid grid, List<EnvironmentalObject>? environmentalObjects, out string reason)
     {
         // Cannot move across zones (Player <-> Enemy)
         if (from.Zone != to.Zone)
@@ -149,7 +151,7 @@ public class PositioningService
             return false;
         }
 
-        // Check if target tile is passable
+        // Check if target tile exists
         var targetTile = grid.GetTile(to);
         if (targetTile == null)
         {
@@ -157,9 +159,31 @@ public class PositioningService
             return false;
         }
 
-        if (!targetTile.IsPassable())
+        // v0.29.5: Get environmental objects for this tile
+        var tileEnvironmentalObjects = environmentalObjects?.Where(obj =>
+            obj.GridPosition == to.ToString()).ToList();
+
+        // v0.29.5: Check if target tile is passable (considering environmental objects)
+        if (!targetTile.IsPassable(tileEnvironmentalObjects))
         {
-            reason = "Target tile is occupied";
+            // Get blocking feature for better feedback
+            var blockingFeature = targetTile.GetBlockingFeature(tileEnvironmentalObjects);
+
+            if (blockingFeature != null)
+            {
+                reason = $"Path blocked by {blockingFeature}";
+                _log.Information("Movement blocked by environmental hazard: Feature={Feature}, Position={Position}",
+                    blockingFeature, to);
+            }
+            else if (targetTile.IsOccupied)
+            {
+                reason = "Target tile is occupied";
+            }
+            else
+            {
+                reason = "Target tile is not passable";
+            }
+
             return false;
         }
 
@@ -235,8 +259,9 @@ public class PositioningService
 
     /// <summary>
     /// Gets all valid movement positions for a combatant
+    /// v0.29.5: Updated to consider environmental objects
     /// </summary>
-    public List<GridPosition> GetValidMovementPositions(object combatant, BattlefieldGrid grid)
+    public List<GridPosition> GetValidMovementPositions(object combatant, BattlefieldGrid grid, List<EnvironmentalObject>? environmentalObjects = null)
     {
         var validPositions = new List<GridPosition>();
 
@@ -254,7 +279,7 @@ public class PositioningService
         foreach (var tile in grid.Tiles.Values)
         {
             if (tile.Position.Zone == currentPosition.Value.Zone &&
-                CanMove(currentPosition.Value, tile.Position, grid, out _))
+                CanMove(currentPosition.Value, tile.Position, grid, environmentalObjects, out _))
             {
                 validPositions.Add(tile.Position);
             }
