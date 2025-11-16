@@ -27,7 +27,11 @@ class Program
     // [v0.21.3] Advanced Status Effect System
     private static StatusEffectRepository _statusEffectRepository = new();
     private static AdvancedStatusEffectService _statusEffectService = new(_statusEffectRepository, _traumaService, _diceService);
-    private static CombatEngine _combatEngine = new(_diceService, _sagaService, _lootService, _equipmentService, _hazardService, _currencyService, _statusEffectService);
+    // [v0.34.4] Companion System
+    private static string _connectionString = "Data Source=runeandrust.db";
+    private static CompanionService _companionService = new(_connectionString);
+    private static CompanionCommands _companionCommands = new(_companionService);
+    private static CombatEngine _combatEngine = new(_diceService, _sagaService, _lootService, _equipmentService, _hazardService, _currencyService, _statusEffectService, null, _connectionString);
     private static EnemyAI _enemyAI = new(_diceService, _statusEffectService);
     private static AdvancedMovementService _advancedMovement = new(); // v0.20.4
     private static SaveRepository _saveRepository = new();
@@ -609,13 +613,14 @@ class Program
             AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to begin combat...[/]");
             Console.ReadLine();
 
-            // Initialize combat (v0.4: pass room for environmental hazards)
+            // Initialize combat (v0.4: pass room for environmental hazards; v0.34.4: pass characterId for companions)
             var canFlee = !_gameState.CurrentRoom.IsBossRoom;
             _gameState.Combat = _combatEngine.InitializeCombat(
                 _gameState.Player,
                 _gameState.CurrentRoom.Enemies,
                 _gameState.CurrentRoom,
-                canFlee);
+                canFlee,
+                characterId: _gameState.Player.CharacterID);
             _gameState.CurrentPhase = GamePhase.Combat;
             return;
         }
@@ -801,7 +806,8 @@ class Program
                             _gameState.Player,
                             _gameState.CurrentRoom.Enemies,
                             _gameState.CurrentRoom,
-                            canFlee);
+                            canFlee,
+                            characterId: _gameState.Player.CharacterID);
                         _gameState.CurrentPhase = GamePhase.Combat;
                     }
                     else
@@ -1622,6 +1628,20 @@ class Program
                 // Player turn
                 HandlePlayerTurn(combat);
             }
+            else if (currentParticipant.IsCompanion)
+            {
+                // v0.34.4: Companion turn
+                var companion = _combatEngine.GetCurrentCompanion(combat);
+                if (companion != null)
+                {
+                    _combatEngine.ProcessCompanionTurn(combat, companion);
+
+                    // Display combat log for companion action
+                    UIHelper.DisplayCombatLog(combat.CombatLog, 5);
+                    AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+                    Console.ReadLine();
+                }
+            }
             else
             {
                 // Enemy turn
@@ -1736,6 +1756,14 @@ class Program
 
                 case "item":
                     turnComplete = HandlePlayerUseConsumable(combat);
+                    break;
+
+                case "command": // v0.34.4: Direct companion command
+                    turnComplete = HandleCompanionCommand(combat);
+                    break;
+
+                case "companion_stance": // v0.34.4: Change companion stance
+                    turnComplete = HandleCompanionStanceChange(combat);
                     break;
 
                 case "flee":
@@ -2026,6 +2054,14 @@ class Program
         {
             // Victory!
             AnsiConsole.MarkupLine("[green]✓ Combat victory![/]");
+
+            // v0.34.4: Recover incapacitated companions
+            _combatEngine.RecoverCompanionsAfterCombat(combat);
+            if (combat.CombatLog.Count > 0)
+            {
+                UIHelper.DisplayCombatLog(combat.CombatLog, 5);
+            }
+
             _gameState.ClearCurrentRoom();
 
             // v0.8: Update quest objectives for defeated enemies
@@ -3353,5 +3389,120 @@ class Program
                 bar[i] = '▁';
         }
         return new string(bar);
+    }
+
+    // ============================================
+    // v0.34.4: COMPANION SYSTEM HANDLERS
+    // ============================================
+
+    /// <summary>
+    /// Handle companion direct command (command verb)
+    /// </summary>
+    static bool HandleCompanionCommand(CombatState combat)
+    {
+        // Show available companions
+        if (combat.Companions.Count == 0)
+        {
+            AnsiConsole.MarkupLine("[red]You have no companions in your party![/]");
+            AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+            Console.ReadLine();
+            return false;
+        }
+
+        AnsiConsole.MarkupLine("[yellow]Command a companion:[/]");
+        AnsiConsole.WriteLine();
+
+        // List active companions
+        foreach (var companion in combat.Companions)
+        {
+            var status = companion.IsIncapacitated ? "[red](INCAPACITATED)[/]" : $"[green]({companion.CurrentHitPoints}/{companion.MaxHitPoints} HP)[/]";
+            AnsiConsole.MarkupLine($"  • {companion.DisplayName.EscapeMarkup()} {status} - Stance: {companion.CurrentStance}");
+        }
+
+        AnsiConsole.WriteLine();
+        AnsiConsole.Markup("[dim]Enter command (e.g., 'command Kara shield_bash warden') or press ENTER to cancel: [/]");
+        var input = Console.ReadLine() ?? "";
+
+        if (string.IsNullOrWhiteSpace(input))
+        {
+            return false; // Cancelled
+        }
+
+        // Parse command via CompanionCommands
+        var result = _companionCommands.ParseCommandVerb(
+            input,
+            combat.Player.CharacterID,
+            combat.Player,
+            combat.Enemies.Where(e => e.IsAlive).ToList());
+
+        if (result.Success)
+        {
+            AnsiConsole.MarkupLine($"[green]✓ {result.Message.EscapeMarkup()}[/]");
+            combat.AddLogEntry($"Player: {result.Message}");
+        }
+        else
+        {
+            AnsiConsole.MarkupLine($"[red]✗ {result.Message.EscapeMarkup()}[/]");
+        }
+
+        AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+        Console.ReadLine();
+
+        // Commanding a companion is a free action (doesn't end turn)
+        return false;
+    }
+
+    /// <summary>
+    /// Handle companion stance change (stance verb)
+    /// </summary>
+    static bool HandleCompanionStanceChange(CombatState combat)
+    {
+        // Show available companions
+        if (combat.Companions.Count == 0)
+        {
+            AnsiConsole.MarkupLine("[red]You have no companions in your party![/]");
+            AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+            Console.ReadLine();
+            return false;
+        }
+
+        AnsiConsole.MarkupLine("[yellow]Change companion stance:[/]");
+        AnsiConsole.WriteLine();
+
+        // List active companions with current stance
+        foreach (var companion in combat.Companions)
+        {
+            var status = companion.IsIncapacitated ? "[red](INCAPACITATED)[/]" : $"[green]({companion.CurrentHitPoints}/{companion.MaxHitPoints} HP)[/]";
+            AnsiConsole.MarkupLine($"  • {companion.DisplayName.EscapeMarkup()} {status} - Current stance: [cyan]{companion.CurrentStance.ToUpper()}[/]");
+        }
+
+        AnsiConsole.WriteLine();
+        AnsiConsole.MarkupLine("[dim]Available stances: [cyan]aggressive[/], [cyan]defensive[/], [cyan]passive[/][/]");
+        AnsiConsole.Markup("[dim]Enter command (e.g., 'stance Kara defensive') or press ENTER to cancel: [/]");
+        var input = Console.ReadLine() ?? "";
+
+        if (string.IsNullOrWhiteSpace(input))
+        {
+            return false; // Cancelled
+        }
+
+        // Parse stance change via CompanionCommands
+        var result = _companionCommands.ParseStanceVerb(input, combat.Player.CharacterID);
+
+        if (result.Success)
+        {
+            AnsiConsole.MarkupLine($"[green]✓ {result.Message.EscapeMarkup()}[/]");
+            combat.AddLogEntry($"Player: {result.Message}");
+        }
+        else
+        {
+            AnsiConsole.MarkupLine($"[red]✗ {result.Message.EscapeMarkup()}[/]");
+        }
+
+        AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+        Console.ReadLine();
+
+        // Changing stance is a free action (doesn't end turn)
+        return false;
     }
 }
