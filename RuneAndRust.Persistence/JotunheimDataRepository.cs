@@ -404,15 +404,181 @@ public class JotunheimDataRepository
 
     #endregion
 
-    #region Enemy Spawns (v0.32.3 - Placeholder)
+    #region Enemy Spawns (v0.32.3)
 
-    // TODO v0.32.3: Implement enemy spawns
-    // - Rusted Servitor (Common Undying)
-    // - Rusted Warden (Medium Undying)
-    // - Draugr Juggernaut (Rare Undying)
-    // - God-Sleeper Cultist (Medium Humanoid)
-    // - Scrap-Tinker (Rare Humanoid)
-    // - Iron-Husked Boar (Low Beast)
+    /// <summary>
+    /// Get all enemy spawns for Jötunheim biome
+    /// </summary>
+    public List<JotunheimEnemy> GetEnemySpawns(string? enemyType = null, string? verticalityTier = null)
+    {
+        using var connection = new SqliteConnection(_connectionString);
+        connection.Open();
+
+        var command = connection.CreateCommand();
+        command.CommandText = @"
+            SELECT
+                spawn_id,
+                enemy_name,
+                enemy_type,
+                min_level,
+                max_level,
+                spawn_weight,
+                spawn_rules_json,
+                verticality_tier
+            FROM Biome_EnemySpawns
+            WHERE biome_id = $biomeId
+        ";
+
+        if (!string.IsNullOrEmpty(enemyType))
+        {
+            command.CommandText += " AND enemy_type LIKE $enemyType";
+            command.Parameters.AddWithValue("$enemyType", $"%{enemyType}%");
+        }
+
+        if (!string.IsNullOrEmpty(verticalityTier))
+        {
+            command.CommandText += " AND (verticality_tier = $verticalityTier OR verticality_tier = 'Both')";
+            command.Parameters.AddWithValue("$verticalityTier", verticalityTier);
+        }
+
+        command.Parameters.AddWithValue("$biomeId", JOTUNHEIM_BIOME_ID);
+
+        var enemies = new List<JotunheimEnemy>();
+
+        using var reader = command.ExecuteReader();
+        while (reader.Read())
+        {
+            enemies.Add(new JotunheimEnemy
+            {
+                SpawnId = reader.GetInt32(0),
+                EnemyName = reader.GetString(1),
+                EnemyType = reader.GetString(2),
+                MinLevel = reader.GetInt32(3),
+                MaxLevel = reader.GetInt32(4),
+                SpawnWeight = reader.GetInt32(5),
+                SpawnRulesJson = reader.GetString(6),
+                VerticalityTier = reader.GetString(7)
+            });
+        }
+
+        _log.Information("Loaded {Count} enemy spawns for Jötunheim (type: {Type}, tier: {Tier})",
+            enemies.Count, enemyType ?? "All", verticalityTier ?? "All");
+        return enemies;
+    }
+
+    /// <summary>
+    /// Get all Undying enemy spawns (~60% of spawns)
+    /// </summary>
+    public List<JotunheimEnemy> GetUndeadSpawns()
+    {
+        return GetEnemySpawns(enemyType: "Undying");
+    }
+
+    /// <summary>
+    /// Get all Humanoid enemy spawns (~29% of spawns)
+    /// </summary>
+    public List<JotunheimEnemy> GetHumanoidSpawns()
+    {
+        return GetEnemySpawns(enemyType: "Humanoid");
+    }
+
+    /// <summary>
+    /// Get all Beast enemy spawns (~12% of spawns)
+    /// </summary>
+    public List<JotunheimEnemy> GetBeastSpawns()
+    {
+        return GetEnemySpawns(enemyType: "Beast");
+    }
+
+    /// <summary>
+    /// Get Rusted Servitor (most common enemy - ~29% spawn weight)
+    /// </summary>
+    public JotunheimEnemy? GetRustedServitor()
+    {
+        return GetEnemySpawns().FirstOrDefault(e => e.EnemyName == "Rusted Servitor");
+    }
+
+    /// <summary>
+    /// Get Rusted Warden (common Undying - ~22% spawn weight)
+    /// </summary>
+    public JotunheimEnemy? GetRustedWarden()
+    {
+        return GetEnemySpawns().FirstOrDefault(e => e.EnemyName == "Rusted Warden");
+    }
+
+    /// <summary>
+    /// Get Draugr Juggernaut (rare elite teaching enemy - Physical Soak 10)
+    /// TEACHING MECHANIC: Requires armor-shredding or high damage attacks
+    /// </summary>
+    public JotunheimEnemy? GetDraugrJuggernaut()
+    {
+        return GetEnemySpawns().FirstOrDefault(e => e.EnemyName == "Draugr Juggernaut");
+    }
+
+    /// <summary>
+    /// Get God-Sleeper Cultist (cargo cult fanatic - ~19% spawn weight)
+    /// </summary>
+    public JotunheimEnemy? GetGodSleeperCultist()
+    {
+        return GetEnemySpawns().FirstOrDefault(e => e.EnemyName == "God-Sleeper Cultist");
+    }
+
+    /// <summary>
+    /// Get Scrap-Tinker (uncommon scavenger - ~10% spawn weight)
+    /// </summary>
+    public JotunheimEnemy? GetScrapTinker()
+    {
+        return GetEnemySpawns().FirstOrDefault(e => e.EnemyName == "Scrap-Tinker");
+    }
+
+    /// <summary>
+    /// Get Iron-Husked Boar (mutated beast - ~12% spawn weight)
+    /// </summary>
+    public JotunheimEnemy? GetIronHuskedBoar()
+    {
+        return GetEnemySpawns().FirstOrDefault(e => e.EnemyName == "Iron-Husked Boar");
+    }
+
+    /// <summary>
+    /// Get weighted enemy spawn table for procedural generation
+    /// </summary>
+    public Dictionary<string, int> GetEnemySpawnWeights(string? verticalityTier = null)
+    {
+        var enemies = GetEnemySpawns(verticalityTier: verticalityTier);
+        var weights = enemies.ToDictionary(e => e.EnemyName, e => e.SpawnWeight);
+
+        _log.Debug("Enemy spawn weights for {Tier}: {Weights}",
+            verticalityTier ?? "All tiers", string.Join(", ", weights.Select(kvp => $"{kvp.Key}:{kvp.Value}")));
+
+        return weights;
+    }
+
+    /// <summary>
+    /// Get enemy type distribution statistics
+    /// </summary>
+    public JotunheimEnemyDistribution GetEnemyDistribution()
+    {
+        var allEnemies = GetEnemySpawns();
+        var totalWeight = allEnemies.Sum(e => e.SpawnWeight);
+
+        var distribution = new JotunheimEnemyDistribution
+        {
+            TotalEnemyTypes = allEnemies.Count,
+            TotalSpawnWeight = totalWeight,
+            UndeadWeight = GetUndeadSpawns().Sum(e => e.SpawnWeight),
+            HumanoidWeight = GetHumanoidSpawns().Sum(e => e.SpawnWeight),
+            BeastWeight = GetBeastSpawns().Sum(e => e.SpawnWeight)
+        };
+
+        distribution.UndeadPercentage = (distribution.UndeadWeight * 100.0) / totalWeight;
+        distribution.HumanoidPercentage = (distribution.HumanoidWeight * 100.0) / totalWeight;
+        distribution.BeastPercentage = (distribution.BeastWeight * 100.0) / totalWeight;
+
+        _log.Information("Jötunheim enemy distribution - Undying: {Undead:F1}%, Humanoid: {Humanoid:F1}%, Beast: {Beast:F1}%",
+            distribution.UndeadPercentage, distribution.HumanoidPercentage, distribution.BeastPercentage);
+
+        return distribution;
+    }
 
     #endregion
 
@@ -610,6 +776,59 @@ public class JotunheimBiomeInfo
     public int MinCharacterLevel { get; set; }
     public int MaxCharacterLevel { get; set; }
     public bool IsActive { get; set; }
+}
+
+public class JotunheimEnemy
+{
+    public int SpawnId { get; set; }
+    public string EnemyName { get; set; } = string.Empty;
+    public string EnemyType { get; set; } = string.Empty;
+    public int MinLevel { get; set; }
+    public int MaxLevel { get; set; }
+    public int SpawnWeight { get; set; }
+    public string SpawnRulesJson { get; set; } = string.Empty;
+    public string VerticalityTier { get; set; } = string.Empty; // "Trunk", "Roots", or "Both"
+
+    /// <summary>
+    /// Deserialize spawn rules JSON to typed object
+    /// </summary>
+    public T? GetSpawnRules<T>() where T : class
+    {
+        if (string.IsNullOrEmpty(SpawnRulesJson))
+        {
+            return null;
+        }
+
+        try
+        {
+            return JsonSerializer.Deserialize<T>(SpawnRulesJson);
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
+    }
+}
+
+public class JotunheimEnemyDistribution
+{
+    public int TotalEnemyTypes { get; set; }
+    public int TotalSpawnWeight { get; set; }
+    public int UndeadWeight { get; set; }
+    public int HumanoidWeight { get; set; }
+    public int BeastWeight { get; set; }
+    public double UndeadPercentage { get; set; }
+    public double HumanoidPercentage { get; set; }
+    public double BeastPercentage { get; set; }
+
+    public override string ToString()
+    {
+        return $"Enemy Distribution:\n" +
+               $"  Total Types: {TotalEnemyTypes} (weight: {TotalSpawnWeight})\n" +
+               $"  Undying: {UndeadPercentage:F1}% (weight: {UndeadWeight})\n" +
+               $"  Humanoid: {HumanoidPercentage:F1}% (weight: {HumanoidWeight})\n" +
+               $"  Beast: {BeastPercentage:F1}% (weight: {BeastWeight})";
+    }
 }
 
 public class JotunheimIntegrityReport
