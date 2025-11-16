@@ -259,6 +259,141 @@ public class AlfheimBiomeService
 
     #endregion
 
+    #region Enemy Generation
+
+    /// <summary>
+    /// Generate enemy group for Alfheim encounter based on difficulty.
+    /// Uses weighted spawn system with elite limiting.
+    /// </summary>
+    public List<string> GenerateAlfheimEnemyGroup(int difficulty, Random? random = null)
+    {
+        var rng = random ?? new Random();
+
+        // Spawn weights (total: 430)
+        var weights = new Dictionary<string, int>
+        {
+            { "Aether-Vulture", 150 },      // ~35%
+            { "Crystalline Construct", 120 }, // ~28%
+            { "Energy Elemental", 100 },     // ~23%
+            { "Forlorn Echo", 60 }           // ~14% (Elite)
+        };
+
+        // Enemy count by difficulty
+        var (minEnemies, maxEnemies, maxElite) = difficulty switch
+        {
+            1 => (2, 3, 0),  // Easy: 2-3 enemies, no elite
+            2 => (3, 4, 1),  // Normal: 3-4 enemies, max 1 elite
+            3 => (4, 5, 2),  // Hard: 4-5 enemies, max 2 elite
+            4 => (5, 6, 3),  // Deadly: 5-6 enemies, max 3 elite
+            _ => (3, 4, 1)
+        };
+
+        int enemyCount = rng.Next(minEnemies, maxEnemies + 1);
+
+        var enemies = new List<string>();
+        int eliteCount = 0;
+
+        _log.Information(
+            "Generating Alfheim enemy group: Difficulty={Difficulty}, Count={Count}, MaxElite={MaxElite}",
+            difficulty, enemyCount, maxElite);
+
+        for (int i = 0; i < enemyCount; i++)
+        {
+            // Weighted random selection
+            var enemyType = SelectWeightedEnemy(weights, rng);
+
+            // Limit elite spawns (Forlorn Echo)
+            if (enemyType == "Forlorn Echo")
+            {
+                if (eliteCount >= maxElite)
+                {
+                    // Replace with common enemy
+                    enemyType = rng.Next(2) == 0 ? "Aether-Vulture" : "Crystalline Construct";
+                    _log.Debug("Elite limit reached, replacing Forlorn Echo with {Enemy}", enemyType);
+                }
+                else
+                {
+                    eliteCount++;
+                    _log.Debug("Spawning elite enemy: Forlorn Echo ({Count}/{Max})", eliteCount, maxElite);
+                }
+            }
+
+            enemies.Add(enemyType);
+        }
+
+        _log.Information(
+            "Generated enemy group: {Enemies} (Elite count: {EliteCount})",
+            string.Join(", ", enemies), eliteCount);
+
+        return enemies;
+    }
+
+    /// <summary>
+    /// Select random enemy type based on spawn weights.
+    /// </summary>
+    private string SelectWeightedEnemy(Dictionary<string, int> weights, Random rng)
+    {
+        int totalWeight = weights.Values.Sum();
+        int roll = rng.Next(totalWeight);
+
+        int cumulativeWeight = 0;
+        foreach (var kvp in weights)
+        {
+            cumulativeWeight += kvp.Value;
+            if (roll < cumulativeWeight)
+            {
+                return kvp.Key;
+            }
+        }
+
+        // Fallback (should never happen)
+        return "Crystalline Construct";
+    }
+
+    /// <summary>
+    /// Check if party can handle Alfheim encounter difficulty.
+    /// Returns recommended difficulty level.
+    /// </summary>
+    public int CalculateRecommendedDifficulty(List<PlayerCharacter> party)
+    {
+        // Calculate party strength
+        int avgLevel = (int)party.Average(c => c.Level);
+        double avgWill = party.Average(c => c.Attributes.Will);
+        int mysticCount = party.Count(c => c.Archetype == "Mystic");
+
+        // Base difficulty on level
+        int difficulty = avgLevel switch
+        {
+            <= 7 => 1,   // Easy
+            8 or 9 => 2, // Normal
+            10 or 11 => 3, // Hard
+            >= 12 => 4    // Deadly
+        };
+
+        // Adjust for WILL (Psychic Resonance resistance)
+        if (avgWill < 10)
+        {
+            difficulty = Math.Max(1, difficulty - 1); // Reduce difficulty if low WILL
+            _log.Warning("Low party WILL ({AvgWill}), reducing difficulty", avgWill);
+        }
+
+        // Adjust for Mystic count (Wild Magic Surges + Energy resistance)
+        if (mysticCount >= party.Count / 2)
+        {
+            // Half or more are Mystics - challenging due to energy resistances
+            _log.Information("High Mystic count ({Count}/{Total}), Alfheim enemies have high Energy resistance",
+                mysticCount, party.Count);
+        }
+
+        _log.Information(
+            "Recommended difficulty for party: {Difficulty} (Level: {Level}, WILL: {Will}, Mystics: {Mystics})",
+            difficulty, avgLevel, avgWill, mysticCount);
+
+        return difficulty;
+    }
+
+    #endregion
+
     #region Party Preparedness
 
     /// <summary>

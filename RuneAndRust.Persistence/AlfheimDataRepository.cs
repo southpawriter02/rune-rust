@@ -360,6 +360,103 @@ public class AlfheimDataRepository
     }
 
     #endregion
+
+    #region Enemy Spawns
+
+    /// <summary>
+    /// Get all enemy spawn definitions for Alfheim
+    /// </summary>
+    public List<AlfheimEnemySpawn> GetEnemySpawns(int? minLevel = null, int? maxLevel = null)
+    {
+        using var connection = new SqliteConnection(_connectionString);
+        connection.Open();
+
+        var command = connection.CreateCommand();
+        command.CommandText = @"
+            SELECT
+                spawn_id,
+                enemy_name,
+                enemy_type,
+                min_level,
+                max_level,
+                spawn_weight,
+                spawn_rules_json,
+                verticality_tier
+            FROM Biome_EnemySpawns
+            WHERE biome_id = $biomeId
+        ";
+
+        if (minLevel.HasValue)
+        {
+            command.CommandText += " AND max_level >= $minLevel";
+            command.Parameters.AddWithValue("$minLevel", minLevel.Value);
+        }
+
+        if (maxLevel.HasValue)
+        {
+            command.CommandText += " AND min_level <= $maxLevel";
+            command.Parameters.AddWithValue("$maxLevel", maxLevel.Value);
+        }
+
+        command.Parameters.AddWithValue("$biomeId", ALFHEIM_BIOME_ID);
+
+        var spawns = new List<AlfheimEnemySpawn>();
+
+        using var reader = command.ExecuteReader();
+        while (reader.Read())
+        {
+            spawns.Add(new AlfheimEnemySpawn
+            {
+                SpawnId = reader.GetInt32(0),
+                EnemyName = reader.GetString(1),
+                EnemyType = reader.GetString(2),
+                MinLevel = reader.GetInt32(3),
+                MaxLevel = reader.GetInt32(4),
+                SpawnWeight = reader.GetInt32(5),
+                SpawnRulesJson = reader.GetString(6),
+                VerticalityTier = reader.GetString(7)
+            });
+        }
+
+        _log.Information("Loaded {Count} enemy spawns for Alfheim (level: {MinLevel}-{MaxLevel})",
+            spawns.Count, minLevel, maxLevel);
+        return spawns;
+    }
+
+    /// <summary>
+    /// Get boss enemy spawn (All-Rune's Echo)
+    /// </summary>
+    public AlfheimEnemySpawn? GetBossSpawn()
+    {
+        return GetEnemySpawns().FirstOrDefault(e => e.EnemyType == "Reality_Glitch_Boss");
+    }
+
+    /// <summary>
+    /// Get elite enemy spawns (Forlorn Echo)
+    /// </summary>
+    public List<AlfheimEnemySpawn> GetEliteSpawns()
+    {
+        return GetEnemySpawns().Where(e => e.EnemyType.Contains("Elite")).ToList();
+    }
+
+    /// <summary>
+    /// Get enemy spawn data by name
+    /// </summary>
+    public AlfheimEnemySpawn? GetEnemySpawnByName(string enemyName)
+    {
+        return GetEnemySpawns().FirstOrDefault(e => e.EnemyName == enemyName);
+    }
+
+    /// <summary>
+    /// Get spawn weights for all non-boss enemies
+    /// </summary>
+    public Dictionary<string, int> GetSpawnWeights()
+    {
+        var spawns = GetEnemySpawns().Where(s => s.SpawnWeight > 0).ToList();
+        return spawns.ToDictionary(s => s.EnemyName, s => s.SpawnWeight);
+    }
+
+    #endregion
 }
 
 #region Data Transfer Objects
@@ -417,6 +514,18 @@ public class RunicInstabilityCondition
     public int ConditionId { get; set; }
     public string ConditionName { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
+}
+
+public class AlfheimEnemySpawn
+{
+    public int SpawnId { get; set; }
+    public string EnemyName { get; set; } = string.Empty;
+    public string EnemyType { get; set; } = string.Empty;
+    public int MinLevel { get; set; }
+    public int MaxLevel { get; set; }
+    public int SpawnWeight { get; set; }
+    public string SpawnRulesJson { get; set; } = string.Empty;
+    public string VerticalityTier { get; set; } = string.Empty; // Always "Canopy"
 }
 
 #endregion
