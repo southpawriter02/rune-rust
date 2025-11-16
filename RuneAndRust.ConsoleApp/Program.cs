@@ -51,6 +51,31 @@ class Program
         _hazardService
     );
 
+    // v0.29: Muspelheim Biome Services
+    private static BrittlenessService _brittlenessService = new();
+    private static IntenseHeatService _intenseHeatService = new(_diceService, _resolveCheckService, _traumaService);
+    private static MuspelheimDataRepository _muspelheimDataRepository = new("Data Source=runeandrust.db");
+    private static MuspelheimBiomeService _muspelheimBiomeService = new(
+        _muspelheimDataRepository,
+        _intenseHeatService,
+        _brittlenessService,
+        _diceService,
+        _environmentalObjectService
+    );
+
+    // v0.30: Niflheim Biome Services
+    private static FrigidColdService _frigidColdService = new();
+    private static SlipperyTerrainService _slipperyTerrainService = new(_diceService);
+    private static NiflheimDataRepository _niflheimDataRepository = new("Data Source=runeandrust.db");
+    private static NiflheimBiomeService _niflheimBiomeService = new(
+        _niflheimDataRepository,
+        _frigidColdService,
+        _slipperyTerrainService,
+        _brittlenessService,
+        _diceService,
+        _environmentalObjectService
+    );
+
     static void Main(string[] args)
     {
         // Configure Serilog (v0.8.1)

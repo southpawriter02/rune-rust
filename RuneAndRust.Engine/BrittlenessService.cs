@@ -4,16 +4,20 @@ using Serilog;
 namespace RuneAndRust.Engine;
 
 /// <summary>
-/// v0.29.3: Brittleness Service
-/// Handles [Brittle] debuff mechanic for Muspelheim biome.
-/// Fire Resistant enemies become vulnerable to Physical damage after taking Ice damage.
+/// v0.29.3: Brittleness Service (Updated v0.30.2 for Niflheim support)
+/// Handles [Brittle] debuff mechanic for both Muspelheim and Niflheim biomes.
 ///
-/// Mechanic:
+/// Muspelheim Mechanic:
 /// 1. Enemy has Fire Resistance > 0%
 /// 2. Enemy takes Ice damage
 /// 3. Apply [Brittle] debuff for 2 turns
 /// 4. While [Brittle]: Physical damage +50%
-/// 5. [Brittle] can be refreshed (reset duration)
+///
+/// Niflheim Mechanic:
+/// 1. Enemy has Ice Resistance > 0%
+/// 2. Enemy takes Ice damage
+/// 3. Apply [Brittle] debuff for 1 turn
+/// 4. While [Brittle]: Physical damage +50%
 /// </summary>
 public class BrittlenessService
 {
@@ -22,8 +26,13 @@ public class BrittlenessService
     // Store enemy resistances (temp solution until full resistance system)
     private readonly Dictionary<int, Dictionary<string, int>> _enemyResistances = new();
 
+    // Brittle duration constants
+    private const int MUSPELHEIM_BRITTLE_DURATION = 2; // Fire-resistant enemies in Muspelheim
+    private const int NIFLHEIM_BRITTLE_DURATION = 1;   // Ice-resistant enemies in Niflheim
+
     public BrittlenessService()
     {
+        _log.Information("BrittlenessService initialized (supports Muspelheim and Niflheim)");
     }
 
     /// <summary>
@@ -207,4 +216,98 @@ public class BrittlenessService
     {
         return $"💥 [Brittle] vulnerability: +{bonusDamage} Physical damage to {target.Name}!";
     }
+
+    #region Niflheim Support (v0.30.2)
+
+    /// <summary>
+    /// v0.30.2: Check if enemy qualifies for [Brittle] in Niflheim.
+    /// Requires Ice Resistance > 0%.
+    /// </summary>
+    public bool IsBrittleEligibleNiflheim(Enemy enemy)
+    {
+        int iceResistance = GetEnemyResistance(enemy.EnemyID, "Ice");
+        bool eligible = iceResistance > 0;
+
+        _log.Debug("{Enemy} Brittle eligibility (Niflheim): {Eligible} (Ice Resistance: {Percent}%)",
+            enemy.Name, eligible, iceResistance);
+
+        return eligible;
+    }
+
+    /// <summary>
+    /// v0.30.2: Apply [Brittle] debuff to enemy (Niflheim variant, 1 turn duration).
+    /// </summary>
+    public void ApplyBrittle(Enemy enemy)
+    {
+        ApplyBrittleStatusEffect(enemy, duration: NIFLHEIM_BRITTLE_DURATION);
+
+        _log.Information("{Enemy} is now [Brittle] - Physical damage +50% for {Duration} turn(s)",
+            enemy.Name, NIFLHEIM_BRITTLE_DURATION);
+    }
+
+    /// <summary>
+    /// v0.30.2: Apply [Brittle] debuff with specific duration.
+    /// </summary>
+    public void ApplyBrittle(Enemy enemy, int duration)
+    {
+        ApplyBrittleStatusEffect(enemy, duration);
+
+        _log.Information("{Enemy} is now [Brittle] - Physical damage +50% for {Duration} turn(s)",
+            enemy.Name, duration);
+    }
+
+    /// <summary>
+    /// v0.30.2: Check if enemy currently has [Brittle] status.
+    /// </summary>
+    public bool HasBrittle(Enemy enemy)
+    {
+        bool hasBrittle = HasStatusEffect(enemy, "Brittle");
+
+        _log.Debug("{Enemy} has [Brittle]: {HasBrittle}",
+            enemy.Name, hasBrittle);
+
+        return hasBrittle;
+    }
+
+    /// <summary>
+    /// v0.30.2: Try to apply [Brittle] to enemy in Niflheim biome.
+    /// Applies if target has Ice Resistance > 0% and took Ice damage.
+    /// </summary>
+    public void TryApplyBrittleNiflheim(Enemy target, int iceDamageDealt)
+    {
+        if (iceDamageDealt <= 0)
+        {
+            _log.Debug("No Ice damage dealt, [Brittle] not applied to {Enemy}", target.Name);
+            return;
+        }
+
+        int iceResistance = GetEnemyResistance(target.EnemyID, "Ice");
+
+        if (iceResistance <= 0)
+        {
+            _log.Information(
+                "{Target} has no Ice Resistance ({Percent}%), [Brittle] does not apply",
+                target.Name,
+                iceResistance
+            );
+            return;
+        }
+
+        _log.Information(
+            "{Target} has {IceRes}% Ice Resistance, applying [Brittle]",
+            target.Name,
+            iceResistance
+        );
+
+        // Apply or refresh [Brittle] debuff (1 turn for Niflheim)
+        ApplyBrittle(target);
+
+        _log.Information(
+            "{Target} is now [Brittle] - Physical damage +50% for {Duration} turn",
+            target.Name,
+            NIFLHEIM_BRITTLE_DURATION
+        );
+    }
+
+    #endregion
 }
