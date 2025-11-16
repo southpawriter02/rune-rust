@@ -142,6 +142,9 @@ public class SaveRepository
             // v0.30.1: Create Niflheim biome tables
             CreateNiflheimBiomeTables(connection);
 
+            // v0.33.1: Create Faction System tables
+            CreateFactionTables(connection);
+
             _log.Information("Database initialized successfully");
         }
         catch (Exception ex)
@@ -835,6 +838,162 @@ public class SaveRepository
 
         _log.Information("Niflheim biome minimal seed complete: 1 biome entry created");
         _log.Warning("For full Niflheim content, execute SQL files: v0.30.1, v0.30.2, v0.30.3");
+    }
+
+    /// <summary>
+    /// v0.33.1: Create Faction System tables and seed base faction definitions
+    /// </summary>
+    private void CreateFactionTables(SqliteConnection connection)
+    {
+        _log.Debug("Creating Faction System tables");
+
+        // Table: Factions
+        var createFactionsTable = connection.CreateCommand();
+        createFactionsTable.CommandText = @"
+            CREATE TABLE IF NOT EXISTS Factions (
+                faction_id INTEGER PRIMARY KEY,
+                faction_name TEXT NOT NULL UNIQUE,
+                display_name TEXT NOT NULL,
+                philosophy TEXT,
+                description TEXT,
+                primary_location TEXT,
+                allied_factions TEXT,
+                enemy_factions TEXT,
+                created_at TEXT DEFAULT CURRENT_TIMESTAMP
+            )
+        ";
+        createFactionsTable.ExecuteNonQuery();
+
+        // Table: Characters_FactionReputations
+        var createReputationsTable = connection.CreateCommand();
+        createReputationsTable.CommandText = @"
+            CREATE TABLE IF NOT EXISTS Characters_FactionReputations (
+                reputation_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                character_id INTEGER NOT NULL,
+                faction_id INTEGER NOT NULL,
+                reputation_value INTEGER DEFAULT 0 CHECK(reputation_value BETWEEN -100 AND 100),
+                reputation_tier TEXT CHECK(reputation_tier IN ('Hated', 'Hostile', 'Neutral', 'Friendly', 'Allied', 'Exalted')),
+                last_modified TEXT DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (character_id) REFERENCES saves(id) ON DELETE CASCADE,
+                FOREIGN KEY (faction_id) REFERENCES Factions(faction_id),
+                UNIQUE(character_id, faction_id)
+            )
+        ";
+        createReputationsTable.ExecuteNonQuery();
+
+        // Table: Faction_Quests
+        var createFactionQuestsTable = connection.CreateCommand();
+        createFactionQuestsTable.CommandText = @"
+            CREATE TABLE IF NOT EXISTS Faction_Quests (
+                faction_quest_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                quest_id TEXT NOT NULL,
+                faction_id INTEGER NOT NULL,
+                required_reputation INTEGER DEFAULT 0,
+                reputation_reward INTEGER DEFAULT 0,
+                is_repeatable INTEGER DEFAULT 0,
+                FOREIGN KEY (faction_id) REFERENCES Factions(faction_id)
+            )
+        ";
+        createFactionQuestsTable.ExecuteNonQuery();
+
+        // Table: Faction_Rewards
+        var createFactionRewardsTable = connection.CreateCommand();
+        createFactionRewardsTable.CommandText = @"
+            CREATE TABLE IF NOT EXISTS Faction_Rewards (
+                reward_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                faction_id INTEGER NOT NULL,
+                reward_type TEXT CHECK(reward_type IN ('Equipment', 'Consumable', 'Service', 'Ability', 'Discount')),
+                reward_name TEXT NOT NULL,
+                reward_description TEXT,
+                required_reputation INTEGER DEFAULT 0,
+                reward_data TEXT,
+                FOREIGN KEY (faction_id) REFERENCES Factions(faction_id)
+            )
+        ";
+        createFactionRewardsTable.ExecuteNonQuery();
+
+        // Create indices for performance
+        var createIndices = new[]
+        {
+            "CREATE INDEX IF NOT EXISTS idx_factions_name ON Factions(faction_name)",
+            "CREATE INDEX IF NOT EXISTS idx_char_faction_rep_character ON Characters_FactionReputations(character_id)",
+            "CREATE INDEX IF NOT EXISTS idx_char_faction_rep_faction ON Characters_FactionReputations(faction_id)",
+            "CREATE INDEX IF NOT EXISTS idx_char_faction_rep_tier ON Characters_FactionReputations(reputation_tier)",
+            "CREATE INDEX IF NOT EXISTS idx_faction_quests_faction ON Faction_Quests(faction_id)",
+            "CREATE INDEX IF NOT EXISTS idx_faction_quests_quest_id ON Faction_Quests(quest_id)",
+            "CREATE INDEX IF NOT EXISTS idx_faction_quests_rep_req ON Faction_Quests(required_reputation)",
+            "CREATE INDEX IF NOT EXISTS idx_faction_rewards_faction ON Faction_Rewards(faction_id)",
+            "CREATE INDEX IF NOT EXISTS idx_faction_rewards_type ON Faction_Rewards(reward_type)",
+            "CREATE INDEX IF NOT EXISTS idx_faction_rewards_rep_req ON Faction_Rewards(required_reputation)"
+        };
+
+        foreach (var indexSql in createIndices)
+        {
+            var indexCommand = connection.CreateCommand();
+            indexCommand.CommandText = indexSql;
+            indexCommand.ExecuteNonQuery();
+        }
+
+        // Seed base faction definitions
+        SeedFactionData(connection);
+
+        _log.Information("Faction System tables created successfully");
+    }
+
+    /// <summary>
+    /// v0.33.1: Seed the 5 major faction definitions
+    /// </summary>
+    private void SeedFactionData(SqliteConnection connection)
+    {
+        _log.Debug("Seeding faction data");
+
+        var factionSeeds = new[]
+        {
+            // Faction 1: Iron-Banes
+            @"INSERT OR IGNORE INTO Factions (faction_id, faction_name, display_name, philosophy, description, primary_location, allied_factions, enemy_factions)
+              VALUES (1, 'IronBanes', 'Iron-Banes',
+                'The Undying are corrupted processes that must be purged. Every autonomous construct following 800-year-old protocols is a threat to coherent reality. We follow purification protocols to restore system integrity.',
+                'Anti-Undying specialists who hunt corrupted constructs and prevent Runic Blight spread. Not religious zealots, but methodical anti-corruption technicians following purification protocols developed after the Glitch.',
+                'Trunk/Roots/Muspelheim', 'RustClans', 'GodSleeperCultists')",
+
+            // Faction 2: God-Sleeper Cultists
+            @"INSERT OR IGNORE INTO Factions (faction_id, faction_name, display_name, philosophy, description, primary_location, allied_factions, enemy_factions)
+              VALUES (2, 'GodSleeperCultists', 'God-Sleeper Cultists',
+                'The Jötun-Forged are sleeping gods awaiting the signal to awaken. Their dormancy is sacred. We are the caretakers, the faithful, the ones who will be there when they rise. Do not harm the sleepers.',
+                'Cargo cultists who interpret Jötun logic core broadcasts as divine messages. They protect dormant Jötun-Forged and establish temples in Jötunheim. Their faith is a misinterpretation of corrupted psychic broadcasts.',
+                'Jotunheim', 'Independents', 'IronBanes')",
+
+            // Faction 3: Jötun-Readers
+            @"INSERT OR IGNORE INTO Factions (faction_id, faction_name, display_name, philosophy, description, primary_location, allied_factions, enemy_factions)
+              VALUES (3, 'JotunReaders', 'Jötun-Readers',
+                'Knowledge is the only path to understanding the Glitch. Every corrupted log, every fragmented database, every Jötun logic core—these are the keys to comprehension. We preserve, we study, we learn.',
+                'Data archaeologists and system analysts dedicated to recovering Pre-Glitch knowledge. They study corrupted systems to understand the Great Silence and archive all recovered data. Knowledge is their highest value.',
+                'Alfheim', 'RustClans', '')",
+
+            // Faction 4: Rust-Clans
+            @"INSERT OR IGNORE INTO Factions (faction_id, faction_name, display_name, philosophy, description, primary_location, allied_factions, enemy_factions)
+              VALUES (4, 'RustClans', 'Rust-Clans',
+                'Survival first. No ideology, no worship, no grand theories. We scavenge, we trade, we defend our territory. The world crashed—we''re still here. That''s what matters.',
+                'Pragmatic Midgard survivors focused on resource acquisition and trade networks. They cooperate with both Iron-Banes and Jötun-Readers when beneficial, prioritizing practical survival over ideology.',
+                'Midgard', 'IronBanes,JotunReaders', '')",
+
+            // Faction 5: Independents
+            @"INSERT OR IGNORE INTO Factions (faction_id, faction_name, display_name, philosophy, description, primary_location, allied_factions, enemy_factions)
+              VALUES (5, 'Independents', 'Independents',
+                'Factions are chains. We walk our own path.',
+                'Unaffiliated individuals who reject faction membership. They maintain neutrality in faction conflicts and value personal freedom over collective identity. Gaining reputation with Independents requires actively declining other faction offers.',
+                'All', '', '')"
+        };
+
+        foreach (var seedSql in factionSeeds)
+        {
+            var seedCommand = connection.CreateCommand();
+            seedCommand.CommandText = seedSql;
+            seedCommand.ExecuteNonQuery();
+        }
+
+        _log.Information("Faction data seeded: 5 factions created");
+        _log.Information("For faction quests and rewards, execute SQL file: Data/v0.33.1_faction_schema.sql");
     }
 
     public void SaveGame(PlayerCharacter player, WorldState worldState, bool isProcedurallyGenerated = false)
