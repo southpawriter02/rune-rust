@@ -139,6 +139,9 @@ public class SaveRepository
             // v0.29.1: Create Muspelheim biome tables
             CreateMuspelheimBiomeTables(connection);
 
+            // v0.30.1: Create Niflheim biome tables
+            CreateNiflheimBiomeTables(connection);
+
             _log.Information("Database initialized successfully");
         }
         catch (Exception ex)
@@ -778,6 +781,60 @@ public class SaveRepository
         }
 
         _log.Information("Muspelheim biome data seeded: 1 biome, 8 room templates, 9 resources, 8 environmental hazards, 5 enemy types");
+    }
+
+    /// <summary>
+    /// v0.30.1: Create Niflheim biome tables (tables already created by Muspelheim, just seed data)
+    /// </summary>
+    private void CreateNiflheimBiomeTables(SqliteConnection connection)
+    {
+        _log.Debug("Creating Niflheim biome system (seeding data)");
+
+        // Tables already created by CreateMuspelheimBiomeTables
+        // Just seed Niflheim-specific data
+        SeedNiflheimBiomeData(connection);
+
+        _log.Information("Niflheim biome system created successfully");
+    }
+
+    /// <summary>
+    /// v0.30.1-v0.30.3: Seed Niflheim biome data
+    /// NOTE: For full data, execute SQL files: v0.30.1, v0.30.2, v0.30.3
+    /// This is a minimal seeding for database initialization
+    /// </summary>
+    private void SeedNiflheimBiomeData(SqliteConnection connection)
+    {
+        _log.Debug("Seeding Niflheim biome data (minimal seed)");
+
+        // v0.30.1: Insert Niflheim biome
+        var insertBiome = connection.CreateCommand();
+        insertBiome.CommandText = @"
+            INSERT OR IGNORE INTO Biomes (
+                biome_id, biome_name, biome_description, z_level_restriction,
+                ambient_condition_id, min_character_level, max_character_level, is_active
+            ) VALUES (
+                5, 'Niflheim',
+                'The Cryo-Facilities - catastrophic coolant system failure has transformed this zone into an absolute zero wasteland. Ruptured cryogenic containment has flash-frozen entire chambers, preserving machinery and victims alike in crystalline stasis.',
+                '[Roots,Canopy]', NULL, 7, 12, 1
+            )
+        ";
+        insertBiome.ExecuteNonQuery();
+
+        // NOTE: Full database seeding (room templates, hazards, enemies, resources)
+        // should be done by executing the following SQL files:
+        // - Data/v0.30.1_niflheim_schema.sql (8 room templates, 9 resources)
+        // - Data/v0.30.2_environmental_hazards.sql (9 hazards, 2 conditions)
+        // - Data/v0.30.3_enemy_definitions.sql (5 enemy types, 7 spawn variants)
+        //
+        // To execute manually:
+        //   sqlite3 runeandrust.db < Data/v0.30.1_niflheim_schema.sql
+        //   sqlite3 runeandrust.db < Data/v0.30.2_environmental_hazards.sql
+        //   sqlite3 runeandrust.db < Data/v0.30.3_environmental_hazards.sql
+        //
+        // Or integrate full seeding here following the Muspelheim pattern above.
+
+        _log.Information("Niflheim biome minimal seed complete: 1 biome entry created");
+        _log.Warning("For full Niflheim content, execute SQL files: v0.30.1, v0.30.2, v0.30.3");
     }
 
     public void SaveGame(PlayerCharacter player, WorldState worldState, bool isProcedurallyGenerated = false)
