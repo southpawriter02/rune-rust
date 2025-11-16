@@ -1,761 +1,358 @@
--- ============================================================================
--- v0.30.1: Niflheim Biome - Database Schema & Room Templates
--- ============================================================================
--- Part of: Rune & Rust v5.0 - Niflheim Biome Implementation
--- Status: Implementation Ready
+-- =====================================================
+-- v0.30.1: Niflheim Database Schema & Room Templates
+-- =====================================================
+-- Version: v0.30.1
+-- Author: Rune & Rust Development Team
+-- Date: 2025-11-16
+-- Prerequisites: v0.29.1 (Muspelheim database structure)
+-- =====================================================
+-- Document ID: RR-SPEC-v0.30.1-DATABASE
+-- Parent Specification: v0.30 Niflheim Biome Implementation
+-- Status: Design Complete — Ready for Implementation
 -- Timeline: 8-12 hours
--- Prerequisites: v0.29 (Muspelheim), v0.20 (Tactical Grid)
---
--- Purpose:
---   Complete database schema foundation for the Niflheim biome, including:
---   - Biome metadata (biome_id: 5)
---   - Room templates with WFC adjacency rules (8 templates)
---   - Resource drop definitions (9 resources, Tier 2-5)
---   - Dual verticality support ([Roots] and [Canopy] variants)
---
--- The Fantasy:
---   Niflheim is the cryogenic catastrophe biome - frozen wastes where
---   civilization's thermal regulation systems have failed catastrophically.
---   Deep cryogenic laboratories, coolant pumping stations, and high-altitude
---   research outposts locked in permanent, absolute zero. This is industrial
---   refrigeration run amok, not natural winter.
--- ============================================================================
+-- =====================================================
 
--- ============================================================================
--- SECTION 1: Biome Metadata
--- ============================================================================
--- Core biome definition for Niflheim (biome_id: 5)
--- Settings v5.0 Compliance: Technology failure, not magic
--- ============================================================================
+BEGIN TRANSACTION;
 
-INSERT INTO Biomes (
+-- =====================================================
+-- TABLE CREATION (IF NOT EXISTS from v0.29.1)
+-- =====================================================
+
+-- Tables should already exist from v0.29.1, but we include
+-- CREATE TABLE IF NOT EXISTS for safety.
+
+-- Table: Biomes (already created in v0.29.1)
+CREATE TABLE IF NOT EXISTS Biomes (
+    biome_id INTEGER PRIMARY KEY,
+    biome_name TEXT NOT NULL UNIQUE,
+    biome_description TEXT,
+    z_level_restriction TEXT,
+    ambient_condition_id INTEGER,
+    min_character_level INTEGER DEFAULT 1,
+    max_character_level INTEGER DEFAULT 12,
+    is_active INTEGER DEFAULT 1,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_biomes_name ON Biomes(biome_name);
+CREATE INDEX IF NOT EXISTS idx_biomes_active ON Biomes(is_active);
+
+-- Table: Biome_RoomTemplates (already created in v0.29.1)
+CREATE TABLE IF NOT EXISTS Biome_RoomTemplates (
+    template_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    biome_id INTEGER NOT NULL,
+    template_name TEXT NOT NULL,
+    template_description TEXT,
+    room_size_category TEXT CHECK(room_size_category IN ('Small', 'Medium', 'Large', 'XLarge')),
+    min_connections INTEGER DEFAULT 1,
+    max_connections INTEGER DEFAULT 4,
+    can_be_entrance INTEGER DEFAULT 0,
+    can_be_exit INTEGER DEFAULT 0,
+    can_be_hub INTEGER DEFAULT 0,
+    hazard_density TEXT CHECK(hazard_density IN ('None', 'Low', 'Medium', 'High', 'Extreme')),
+    enemy_spawn_weight INTEGER DEFAULT 100,
+    resource_spawn_chance REAL DEFAULT 0.3,
+    wfc_adjacency_rules TEXT,
+    z_level TEXT,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (biome_id) REFERENCES Biomes(biome_id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_biome_room_templates_biome ON Biome_RoomTemplates(biome_id);
+CREATE INDEX IF NOT EXISTS idx_biome_room_templates_size ON Biome_RoomTemplates(room_size_category);
+
+-- Table: Biome_ResourceDrops (already created in v0.29.1)
+CREATE TABLE IF NOT EXISTS Biome_ResourceDrops (
+    resource_drop_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    biome_id INTEGER NOT NULL,
+    resource_name TEXT NOT NULL,
+    resource_description TEXT,
+    resource_tier INTEGER CHECK(resource_tier >= 1 AND resource_tier <= 5),
+    rarity TEXT CHECK(rarity IN ('Common', 'Uncommon', 'Rare', 'Epic', 'Legendary')),
+    base_drop_chance REAL DEFAULT 0.1,
+    min_quantity INTEGER DEFAULT 1,
+    max_quantity INTEGER DEFAULT 1,
+    requires_special_node INTEGER DEFAULT 0,
+    weight INTEGER DEFAULT 100,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (biome_id) REFERENCES Biomes(biome_id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_biome_resources_biome ON Biome_ResourceDrops(biome_id);
+CREATE INDEX IF NOT EXISTS idx_biome_resources_tier ON Biome_ResourceDrops(resource_tier);
+CREATE INDEX IF NOT EXISTS idx_biome_resources_rarity ON Biome_ResourceDrops(rarity);
+
+-- Table: Characters_BiomeStatus (already created in v0.29.1)
+CREATE TABLE IF NOT EXISTS Characters_BiomeStatus (
+    status_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    character_id INTEGER NOT NULL,
+    biome_id INTEGER NOT NULL,
+    first_entry_timestamp TEXT,
+    total_time_seconds INTEGER DEFAULT 0,
+    rooms_explored INTEGER DEFAULT 0,
+    enemies_defeated INTEGER DEFAULT 0,
+    cold_damage_taken INTEGER DEFAULT 0,
+    times_died_to_cold INTEGER DEFAULT 0,
+    resources_collected INTEGER DEFAULT 0,
+    has_reached_frost_giant INTEGER DEFAULT 0,
+    last_updated TEXT DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (character_id) REFERENCES saves(id) ON DELETE CASCADE,
+    FOREIGN KEY (biome_id) REFERENCES Biomes(biome_id) ON DELETE CASCADE,
+    UNIQUE(character_id, biome_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_biome_status_character ON Characters_BiomeStatus(character_id);
+CREATE INDEX IF NOT EXISTS idx_biome_status_biome ON Characters_BiomeStatus(biome_id);
+
+-- =====================================================
+-- DATA SEEDING: BIOMES
+-- =====================================================
+
+-- Niflheim: The Cryo-Facilities
+-- biome_id: 5
+-- Verticality: Multiple (can appear in both Roots and Canopy)
+-- Level Range: 7-12 (Mid-to-Late Game, parallels Muspelheim)
+INSERT OR IGNORE INTO Biomes (
     biome_id,
-    name,
-    description,
-    ambient_condition,
-    difficulty_tier,
-    verticality_type,
-    dominant_damage_type,
-    counter_damage_type,
-    is_active,
-    created_at
+    biome_name,
+    biome_description,
+    z_level_restriction,
+    ambient_condition_id,
+    min_character_level,
+    max_character_level,
+    is_active
 ) VALUES (
     5,
     'Niflheim',
-    'Cryogenic catastrophe zone where thermal regulation systems have failed catastrophically. Coolant pumping stations and high-altitude research outposts locked in permanent sub-zero. Flash-frozen machinery, shattered atmospheric shields, and treacherous ice sheets mark this industrial refrigeration disaster. 800 years of system decay have created a frozen graveyard where the cold is hostile physics failure.',
-    'Frigid Cold',  -- Universal Ice vulnerability, critical hits cause [Slowed]
-    'Mid-Late',     -- Parallels Muspelheim as mid-to-late game challenge
-    'Dual',         -- Supports both [Roots] and [Canopy] variants
-    'Ice',          -- Primary damage type
-    'Fire',         -- Tactical counter (Fire damage provides advantage)
-    TRUE,
-    CURRENT_TIMESTAMP
-);
-
--- Biome feature tags for mechanical integration
-INSERT INTO Biome_FeatureTags (biome_id, tag_name, tag_value) VALUES
-    (5, 'movement_challenge', 'slippery_terrain'),
-    (5, 'ambient_vulnerability', 'ice_damage'),
-    (5, 'critical_debuff', 'slowed'),
-    (5, 'brittleness_mechanic', 'ice_to_brittle'),
-    (5, 'terrain_dominant', 'ice_sheets'),
-    (5, 'temperature_extreme', 'cryogenic'),
-    (5, 'system_failure_type', 'thermal_regulation'),
-    (5, 'verticality_zones', 'roots_and_canopy');
-
--- ============================================================================
--- SECTION 2: Room Templates (8 Templates)
--- ============================================================================
--- 4 [Roots] templates (underground cryogenic facilities)
--- 4 [Canopy] templates (high-altitude frozen outposts)
--- Each includes WFC adjacency rules for procedural generation
--- ============================================================================
-
--- ----------------------------------------------------------------------------
--- [ROOTS] TEMPLATES (Underground Cryogenic Facilities)
--- ----------------------------------------------------------------------------
-
--- Template 1: Cryogenic Storage Vault (Large, Entrance-capable, [Roots])
-INSERT INTO Biome_RoomTemplates (
-    biome_id,
-    template_name,
-    room_size,
-    connection_count_min,
-    connection_count_max,
-    hazard_density,
-    enemy_count_min,
-    enemy_count_max,
-    resource_spawn_chance,
-    is_entrance_eligible,
-    is_exit_eligible,
-    is_boss_room,
-    verticality_zone,
-    wfc_adjacency_rules,
-    description
-) VALUES (
-    5,
-    'Cryogenic Storage Vault',
-    'Large',
-    3,  -- High connectivity (entrance hub)
-    5,
-    0.25,  -- Moderate hazards (frozen equipment, ice sheets)
-    3,
-    4,
-    0.70,  -- High resource chance (preserved materials)
-    TRUE,  -- Entrance-eligible
-    FALSE,
-    FALSE,
-    'Roots',
-    '{
-        "allowed_neighbors": [
-            "Coolant Distribution Tunnel",
-            "Frozen Research Lab",
-            "Permafrost Containment Chamber",
-            "Emergency Thermal Junction"
-        ],
-        "preferred_connections": 4,
-        "wall_types": ["reinforced_cryogenic_walls", "frost_covered_metal"],
-        "floor_materials": ["slippery_ice_sheets", "frozen_grating"],
-        "lighting": "emergency_blue_dim"
-    }',
-    'Vast underground vault where biological samples and equipment were cryogenically preserved. Massive storage racks tower overhead, covered in thick frost. Liquid nitrogen pipes snake across the ceiling, many ruptured and leaking. The floor is treacherous ice, and the air is painfully cold. Pre-Glitch storage containers are sealed in ice blocks.'
-);
-
--- Template 2: Coolant Distribution Tunnel (Small, Connector, [Roots])
-INSERT INTO Biome_RoomTemplates (
-    biome_id,
-    template_name,
-    room_size,
-    connection_count_min,
-    connection_count_max,
-    hazard_density,
-    enemy_count_min,
-    enemy_count_max,
-    resource_spawn_chance,
-    is_entrance_eligible,
-    is_exit_eligible,
-    is_boss_room,
-    verticality_zone,
-    wfc_adjacency_rules,
-    description
-) VALUES (
-    5,
-    'Coolant Distribution Tunnel',
-    'Small',
-    2,
-    2,
-    0.40,  -- High hazard density (cryo-vents, icicles)
-    1,
-    2,
-    0.40,
-    FALSE,
-    FALSE,
-    FALSE,
-    'Roots',
-    '{
-        "allowed_neighbors": [
-            "Cryogenic Storage Vault",
-            "Frozen Research Lab",
-            "Permafrost Containment Chamber",
-            "Glacial Throne Room"
-        ],
-        "preferred_connections": 2,
-        "wall_types": ["exposed_coolant_pipes", "ice_encrusted_conduit"],
-        "floor_materials": ["frozen_metal_grating", "permafrost"],
-        "lighting": "flickering_cryogenic_blue"
-    }',
-    'Narrow service tunnel lined with massive coolant distribution pipes. Many have burst, spraying liquid nitrogen intermittently. Icicles hang from the ceiling like daggers. The walls glisten with frost patterns. Frozen maintenance drones are embedded in ice along the passage.'
-);
-
--- Template 3: Frozen Research Lab (Medium, High Hazards, [Roots])
-INSERT INTO Biome_RoomTemplates (
-    biome_id,
-    template_name,
-    room_size,
-    connection_count_min,
-    connection_count_max,
-    hazard_density,
-    enemy_count_min,
-    enemy_count_max,
-    resource_spawn_chance,
-    is_entrance_eligible,
-    is_exit_eligible,
-    is_boss_room,
-    verticality_zone,
-    wfc_adjacency_rules,
-    description
-) VALUES (
-    5,
-    'Frozen Research Lab',
-    'Medium',
-    2,
-    3,
-    0.50,  -- Very high hazards (unstable equipment, ice boulders)
-    2,
-    3,
-    0.65,  -- High resources (research materials)
-    FALSE,
-    FALSE,
-    FALSE,
-    'Roots',
-    '{
-        "allowed_neighbors": [
-            "Cryogenic Storage Vault",
-            "Coolant Distribution Tunnel",
-            "Emergency Thermal Junction"
-        ],
-        "preferred_connections": 2,
-        "wall_types": ["lab_partition_ice", "shattered_observation_glass"],
-        "floor_materials": ["frozen_tile", "ice_covered_equipment"],
-        "lighting": "dim_blue_emergency"
-    }',
-    'Pre-Glitch laboratory frozen mid-operation. Workstations are encased in ice, displays cracked and dark. Cryogenic fog drifts across the floor. Experimental equipment has shattered from thermal shock, creating hazardous debris fields. Frozen corpses of researchers are slumped at their stations, perfectly preserved.'
-);
-
--- Template 4: Permafrost Containment Chamber (Large, Legendary Resources, [Roots])
-INSERT INTO Biome_RoomTemplates (
-    biome_id,
-    template_name,
-    room_size,
-    connection_count_min,
-    connection_count_max,
-    hazard_density,
-    enemy_count_min,
-    enemy_count_max,
-    resource_spawn_chance,
-    is_entrance_eligible,
-    is_exit_eligible,
-    is_boss_room,
-    verticality_zone,
-    wfc_adjacency_rules,
-    description
-) VALUES (
-    5,
-    'Permafrost Containment Chamber',
-    'Large',
-    1,
-    2,
-    0.35,  -- Moderate hazards (brittle ice bridges, cryo-fog)
-    3,
-    4,
-    0.85,  -- Very high resource chance (rare materials)
-    FALSE,
-    FALSE,
-    FALSE,
-    'Roots',
-    '{
-        "allowed_neighbors": [
-            "Cryogenic Storage Vault",
-            "Coolant Distribution Tunnel"
-        ],
-        "preferred_connections": 1,
-        "wall_types": ["thick_permafrost", "reinforced_ice"],
-        "floor_materials": ["ancient_ice_layers", "frozen_bedrock"],
-        "lighting": "crystalline_blue_glow"
-    }',
-    'Massive chamber carved from ancient permafrost layers. The walls are translucent ice revealing frozen Pre-Glitch artifacts. Pristine ice cores protrude from the floor like pillars. The temperature is absolute zero. Rare resources are suspended in the ice, requiring extraction. Silence is absolute.'
-);
-
--- ----------------------------------------------------------------------------
--- [CANOPY] TEMPLATES (High-Altitude Frozen Outposts)
--- ----------------------------------------------------------------------------
-
--- Template 5: Atmospheric Shield Platform (XLarge, High Connectivity, [Canopy])
-INSERT INTO Biome_RoomTemplates (
-    biome_id,
-    template_name,
-    room_size,
-    connection_count_min,
-    connection_count_max,
-    hazard_density,
-    enemy_count_min,
-    enemy_count_max,
-    resource_spawn_chance,
-    is_entrance_eligible,
-    is_exit_eligible,
-    is_boss_room,
-    verticality_zone,
-    wfc_adjacency_rules,
-    description
-) VALUES (
-    5,
-    'Atmospheric Shield Platform',
-    'XLarge',
-    2,
-    4,
-    0.30,  -- Moderate hazards (wind exposure, unstable platforms)
-    4,
-    5,
-    0.60,
-    TRUE,  -- Entrance-eligible for [Canopy] entry
-    FALSE,
-    FALSE,
-    'Canopy',
-    '{
-        "allowed_neighbors": [
-            "Frozen Observatory Deck",
-            "High-Altitude Weather Station",
-            "Emergency Thermal Junction",
-            "Glacial Throne Room"
-        ],
-        "preferred_connections": 3,
-        "wall_types": ["shattered_atmospheric_shield", "exposed_platform_edge"],
-        "floor_materials": ["ice_covered_grating", "frozen_walkway"],
-        "lighting": "harsh_white_sunlight"
-    }',
-    'Exposed platform where atmospheric shield generators once maintained breathable air at high altitude. The shields have shattered, leaving crystalline debris scattered across frozen grating. Bitter winds howl through the ruins. The view extends for kilometers across frozen wastelands. Ice-adapted predators patrol the perimeter.'
-);
-
--- Template 6: Frozen Observatory Deck (Medium, Science Focus, [Canopy])
-INSERT INTO Biome_RoomTemplates (
-    biome_id,
-    template_name,
-    room_size,
-    connection_count_min,
-    connection_count_max,
-    hazard_density,
-    enemy_count_min,
-    enemy_count_max,
-    resource_spawn_chance,
-    is_entrance_eligible,
-    is_exit_eligible,
-    is_boss_room,
-    verticality_zone,
-    wfc_adjacency_rules,
-    description
-) VALUES (
-    5,
-    'Frozen Observatory Deck',
-    'Medium',
-    1,
-    3,
-    0.40,
-    2,
-    3,
-    0.75,  -- High resources (scientific instruments)
-    FALSE,
-    FALSE,
-    FALSE,
-    'Canopy',
-    '{
-        "allowed_neighbors": [
-            "Atmospheric Shield Platform",
-            "High-Altitude Weather Station"
-        ],
-        "preferred_connections": 2,
-        "wall_types": ["observatory_dome_ice", "reinforced_glass_shattered"],
-        "floor_materials": ["frozen_deck", "ice_covered_equipment"],
-        "lighting": "starlight_through_ice"
-    }',
-    'Astronomical observatory frozen at the moment of abandonment. Massive telescopes are locked in ice, pointed at the stars. Observation logs are flash-frozen mid-entry. The dome has cracked, allowing snow to drift inside. Scientific instruments are preserved in ice, potentially salvageable.'
-);
-
--- Template 7: High-Altitude Weather Station (Small, Connector, [Canopy])
-INSERT INTO Biome_RoomTemplates (
-    biome_id,
-    template_name,
-    room_size,
-    connection_count_min,
-    connection_count_max,
-    hazard_density,
-    enemy_count_min,
-    enemy_count_max,
-    resource_spawn_chance,
-    is_entrance_eligible,
-    is_exit_eligible,
-    is_boss_room,
-    verticality_zone,
-    wfc_adjacency_rules,
-    description
-) VALUES (
-    5,
-    'High-Altitude Weather Station',
-    'Small',
-    2,
-    4,
-    0.35,
-    1,
-    2,
-    0.50,
-    FALSE,
-    TRUE,  -- Exit-eligible for [Canopy]
-    FALSE,
-    'Canopy',
-    '{
-        "allowed_neighbors": [
-            "Atmospheric Shield Platform",
-            "Frozen Observatory Deck",
-            "Glacial Throne Room"
-        ],
-        "preferred_connections": 3,
-        "wall_types": ["prefab_metal_frozen", "sensor_array_ice"],
-        "floor_materials": ["frozen_metal", "ice_sheet"],
-        "lighting": "dim_emergency_blue"
-    }',
-    'Compact meteorological station perched at extreme altitude. Weather sensors are coated in thick ice, still transmitting garbled data. Wind howls constantly. The station creaks and sways. Frozen weather balloons hang from the ceiling. Emergency thermal systems failed long ago.'
-);
-
--- Template 8: Glacial Throne Room (XLarge, BOSS ROOM, Dual Verticality)
-INSERT INTO Biome_RoomTemplates (
-    biome_id,
-    template_name,
-    room_size,
-    connection_count_min,
-    connection_count_max,
-    hazard_density,
-    enemy_count_min,
-    enemy_count_max,
-    resource_spawn_chance,
-    is_entrance_eligible,
-    is_exit_eligible,
-    is_boss_room,
-    verticality_zone,
-    wfc_adjacency_rules,
-    description
-) VALUES (
-    5,
-    'Glacial Throne Room',
-    'XLarge',
-    1,
-    3,
-    0.60,  -- Extreme hazards (icicle ceiling, ice boulders, cryo-vents)
-    1,  -- Boss only: Frost-Giant
-    1,
-    0.95,  -- Guaranteed legendary resources
-    FALSE,
-    FALSE,
-    TRUE,  -- BOSS ROOM
-    'Both',  -- Accessible from either [Roots] or [Canopy]
-    '{
-        "allowed_neighbors": [
-            "Coolant Distribution Tunnel",
-            "Atmospheric Shield Platform",
-            "High-Altitude Weather Station",
-            "Emergency Thermal Junction"
-        ],
-        "preferred_connections": 2,
-        "wall_types": ["cathedral_ice_walls", "frozen_machinery_throne"],
-        "floor_materials": ["pristine_ice", "frozen_throne_platform"],
-        "lighting": "ethereal_blue_glow"
-    }',
-    'Cathedral-like chamber dominated by a massive throne of frozen machinery. A dormant Frost-Giant (Jötun-Forged warmachine) sits upon the throne, encased in ice but eyes glowing faintly. The chamber is silent except for the creak of ice. Icicles the size of pillars hang overhead. The floor is a sheet of perfect, treacherous ice. This is the heart of Niflheim.'
-);
-
--- Template 9: Emergency Thermal Junction (Small, Safe Haven, Dual Verticality)
-INSERT INTO Biome_RoomTemplates (
-    biome_id,
-    template_name,
-    room_size,
-    connection_count_min,
-    connection_count_max,
-    hazard_density,
-    enemy_count_min,
-    enemy_count_max,
-    resource_spawn_chance,
-    is_entrance_eligible,
-    is_exit_eligible,
-    is_boss_room,
-    verticality_zone,
-    wfc_adjacency_rules,
-    description
-) VALUES (
-    5,
-    'Emergency Thermal Junction',
-    'Small',
-    2,
-    4,
-    0.10,  -- Low hazards (safe respite)
-    0,  -- No enemies (safe room)
-    1,  -- Rare patrol
-    0.50,
-    FALSE,
-    TRUE,  -- Exit-eligible
-    FALSE,
-    'Both',  -- Bridge between [Roots] and [Canopy]
-    '{
-        "allowed_neighbors": [
-            "Cryogenic Storage Vault",
-            "Frozen Research Lab",
-            "Atmospheric Shield Platform",
-            "Glacial Throne Room"
-        ],
-        "preferred_connections": 3,
-        "wall_types": ["thermal_insulated_walls", "heat_exchanger_panels"],
-        "floor_materials": ["heated_grating", "warmth_radiating"],
-        "lighting": "warm_orange_glow"
-    }',
-    'Rare functioning emergency thermal system junction. Heat exchangers still operate, maintaining breathable temperature. This is a pocket of warmth in the frozen hell. Scavengers have left supply caches here. The sound of machinery is a comforting contrast to the silence outside. A temporary respite before venturing back into the cold.'
-);
-
--- ============================================================================
--- SECTION 3: Resource Drop Definitions (9 Resources)
--- ============================================================================
--- Tier 2-3: Common/Uncommon (Cryo-Coolant, Frost-Lichen, Ice-Bear Pelt)
--- Tier 4: Rare (Pristine Ice Core, Supercooled Alloy)
--- Tier 5: Legendary (Heart of Frost-Giant, Eternal Frost Crystal)
--- ============================================================================
-
--- Tier 2 (Common) - Basic salvage materials
-INSERT INTO Biome_ResourceDrops (
-    biome_id,
-    resource_name,
-    resource_tier,
-    rarity,
-    drop_weight,
-    quantity_min,
-    quantity_max,
-    requires_special_node,
-    description
-) VALUES
-(
-    5,
-    'Frost-Lichen',
-    2,
-    'Common',
-    150,  -- Very common
-    3,
+    'The Cryo-Facilities - catastrophic coolant system failure has created permanent flash-frozen sectors. Deep cryogenic laboratories and high-altitude research outposts locked in absolute zero. Not natural winter, but industrial refrigeration run amok.',
+    '[Roots,Canopy]',
+    NULL,
     7,
-    FALSE,
-    'Hardy bioluminescent lichen that thrives in extreme cold. Grows on frozen surfaces throughout Niflheim. Used in basic cold-resistance preparations and as a reagent for thermal insulation compounds. Emits a faint blue glow.'
-),
-(
-    5,
-    'Frozen Scrap Metal',
-    2,
-    'Common',
-    120,
-    2,
-    5,
-    FALSE,
-    'Metal fragments flash-frozen and preserved in pristine condition. Salvaged from shattered machinery and structural failures. Useful for basic repairs and crafting, superior to oxidized scrap due to preservation.'
+    12,
+    1
 );
 
--- Tier 3 (Uncommon) - Specialized materials
-INSERT INTO Biome_ResourceDrops (
-    biome_id,
-    resource_name,
-    resource_tier,
-    rarity,
-    drop_weight,
-    quantity_min,
-    quantity_max,
-    requires_special_node,
-    description
-) VALUES
-(
-    5,
-    'Cryo-Coolant Fluid',
-    3,
-    'Uncommon',
-    80,
-    1,
-    3,
-    FALSE,
-    'Industrial refrigerant from ruptured coolant systems. Remains liquid at extreme sub-zero temperatures. Highly valuable for crafting cold-resistance gear and as a component in advanced thermal regulation devices. Handle with insulated gloves.'
-),
-(
-    5,
-    'Ice-Bear Pelt',
-    3,
-    'Uncommon',
-    60,
-    1,
-    1,
-    FALSE,
-    'Thick fur from ice-adapted beasts. Provides exceptional thermal insulation. Prized for crafting cold-resistant armor and cloaks. The fur is dense and water-repellent, evolved for survival in Niflheim conditions.'
+-- =====================================================
+-- DATA SEEDING: ROOM TEMPLATES
+-- =====================================================
+-- 8 Room Templates: 4 for [Roots], 4 for [Canopy]
+-- =====================================================
+
+-- =====================================================
+-- ROOTS TEMPLATES (Deep Cryogenic Facilities)
+-- =====================================================
+
+-- Template 1: Cryo-Storage Bay (Large, Roots, Hub)
+INSERT OR IGNORE INTO Biome_RoomTemplates (
+    biome_id, template_name, template_description, room_size_category,
+    min_connections, max_connections, can_be_entrance, can_be_exit, can_be_hub,
+    hazard_density, enemy_spawn_weight, resource_spawn_chance, wfc_adjacency_rules, z_level
+) VALUES (
+    5, 'Cryo-Storage Bay',
+    'Vast chambers lined with row upon row of cryogenic suspension pods, their contents frozen for eight centuries. Frost coats every surface in crystalline sheets. The air is so cold it feels like breathing shards of glass. Many pods have shattered, their occupants preserved in blocks of ice.',
+    'Large', 3, 5, 1, 0, 1, 'Medium', 120, 0.7,
+    '{"allow": ["Coolant Pumping Station", "Ice-Choked Maintenance Tunnel"], "forbid": ["The Frost-Giant Tomb"]}',
+    'Roots'
 );
 
--- Tier 4 (Rare) - Advanced components
-INSERT INTO Biome_ResourceDrops (
-    biome_id,
-    resource_name,
-    resource_tier,
-    rarity,
-    drop_weight,
-    quantity_min,
-    quantity_max,
-    requires_special_node,
-    description
-) VALUES
-(
-    5,
-    'Pristine Ice Core',
-    4,
-    'Rare',
-    40,
-    1,
-    2,
-    TRUE,  -- Requires investigation of special ice pillars
-    'Ancient ice containing perfectly preserved Pre-Glitch materials. Acts as a Runic Catalyst for advanced crafting. The ice is impossibly clear and dense, defying natural formation processes. Extracting the contents requires careful thawing.'
-),
-(
-    5,
-    'Supercooled Alloy Sample',
-    4,
-    'Rare',
-    35,
-    1,
-    1,
-    TRUE,  -- Requires salvaging from specific frozen machinery
-    'Metal alloy that has undergone phase transformation at cryogenic temperatures. Exhibits unusual strength and conductivity properties. Valuable for crafting advanced equipment and understanding Pre-Glitch metallurgy.'
-),
-(
-    5,
-    'Cryogenic Data Core',
-    4,
-    'Rare',
-    50,
-    1,
-    1,
-    TRUE,  -- Requires extracting from frozen research stations
-    'Frozen data storage unit from Pre-Glitch research facilities. May contain technical schematics, research data, or operational logs. The extreme cold has preserved the data integrity. Requires specialized equipment to access.'
+-- Template 2: Coolant Pumping Station (Medium, Roots)
+INSERT OR IGNORE INTO Biome_RoomTemplates (
+    biome_id, template_name, template_description, room_size_category,
+    min_connections, max_connections, can_be_entrance, can_be_exit, can_be_hub,
+    hazard_density, enemy_spawn_weight, resource_spawn_chance, wfc_adjacency_rules, z_level
+) VALUES (
+    5, 'Coolant Pumping Station',
+    'Industrial-scale refrigeration equipment dominates the space. Massive pumps stand silent, their coolant lines ruptured and leaking liquid nitrogen in slow, frozen cascades. The floor is a treacherous sheet of ice. Pressure gauges are frozen at critical readings.',
+    'Medium', 2, 3, 0, 0, 0, 'High', 100, 0.5,
+    '{"allow": ["Cryo-Storage Bay", "Ice-Choked Maintenance Tunnel", "The Frost-Giant Tomb"], "forbid": []}',
+    'Roots'
 );
 
--- Tier 5 (Legendary) - Boss and ultra-rare drops
-INSERT INTO Biome_ResourceDrops (
-    biome_id,
-    resource_name,
-    resource_tier,
-    rarity,
-    drop_weight,
-    quantity_min,
-    quantity_max,
-    requires_special_node,
-    description
-) VALUES
-(
-    5,
-    'Heart of the Frost-Giant',
-    5,
-    'Legendary',
-    5,  -- Ultra-rare (boss drop)
-    1,
-    1,
-    TRUE,  -- Boss-only drop from Glacial Throne Room
-    'Legendary power core from a dormant Jötun-Forged warmachine. Pulses with cryogenic energy even when removed. The ultimate Runic Catalyst for ice-aligned crafting. Radiates cold that can flash-freeze moisture in the air. Contains advanced thermal regulation technology.'
-),
-(
-    5,
-    'Eternal Frost Crystal',
-    5,
-    'Legendary',
-    3,  -- Ultra-rare
-    1,
-    1,
-    TRUE,  -- Deepest permafrost chambers only
-    'Crystallized form of extreme cold, defying thermodynamic laws. Remains frozen at any ambient temperature. A perfect thermal sink. Can be used to craft legendary cold-resistance equipment or as a component in experimental cryogenic systems. Origin unknown.'
+-- Template 3: Ice-Choked Maintenance Tunnel (Small, Roots)
+INSERT OR IGNORE INTO Biome_RoomTemplates (
+    biome_id, template_name, template_description, room_size_category,
+    min_connections, max_connections, can_be_entrance, can_be_exit, can_be_hub,
+    hazard_density, enemy_spawn_weight, resource_spawn_chance, wfc_adjacency_rules, z_level
+) VALUES (
+    5, 'Ice-Choked Maintenance Tunnel',
+    'A narrow service corridor where coolant breach turned moisture into ice stalagmites and stalactites. The passage is treacherous, forcing careful navigation between jagged formations. Frozen condensation makes every surface slick. Emergency lighting flickers through layers of frost.',
+    'Small', 2, 2, 0, 1, 0, 'Medium', 80, 0.3,
+    '{"allow": ["Cryo-Storage Bay", "Coolant Pumping Station"], "forbid": ["The Frost-Giant Tomb"]}',
+    'Roots'
 );
 
--- ============================================================================
--- SECTION 4: Character Biome Status Tracking
--- ============================================================================
--- Extends Characters_BiomeStatus table for Niflheim-specific tracking
--- ============================================================================
-
--- Add Niflheim tracking columns (if not already generic)
--- Assumes Characters_BiomeStatus table exists from v0.29
--- Tracks: cold damage taken, deaths, rooms explored, boss defeated
-
--- Insert default status for existing characters
-INSERT INTO Characters_BiomeStatus (
-    character_id,
-    biome_id,
-    total_damage_taken,
-    total_kills,
-    times_died,
-    rooms_explored,
-    boss_defeated,
-    legendary_resources_found,
-    first_entered_at,
-    last_visited_at
-)
-SELECT
-    character_id,
-    5,  -- Niflheim biome_id
-    0,  -- No damage yet
-    0,  -- No kills yet
-    0,  -- No deaths yet
-    0,  -- No rooms explored yet
-    FALSE,  -- Boss not defeated
-    0,  -- No legendary resources found
-    NULL,  -- Not entered yet
-    NULL
-FROM Characters
-WHERE NOT EXISTS (
-    SELECT 1 FROM Characters_BiomeStatus
-    WHERE Characters_BiomeStatus.character_id = Characters.character_id
-    AND Characters_BiomeStatus.biome_id = 5
+-- Template 4: The Frost-Giant Tomb (Large, Roots, BOSS ROOM)
+INSERT OR IGNORE INTO Biome_RoomTemplates (
+    biome_id, template_name, template_description, room_size_category,
+    min_connections, max_connections, can_be_entrance, can_be_exit, can_be_hub,
+    hazard_density, enemy_spawn_weight, resource_spawn_chance, wfc_adjacency_rules, z_level
+) VALUES (
+    5, 'The Frost-Giant Tomb',
+    'A colossal chamber where a dormant Jotun-Forged warmachine stands frozen in place, its systems locked in cryogenic stasis. Ice has formed around its massive frame like a crystal sarcophagus. The silence here is absolute, broken only by the occasional crack of shifting ice.',
+    'Large', 1, 2, 0, 0, 0, 'Extreme', 10, 0.95,
+    '{"allow": ["Coolant Pumping Station"], "forbid": ["Cryo-Storage Bay", "Ice-Choked Maintenance Tunnel"]}',
+    'Roots'
 );
 
--- ============================================================================
--- SECTION 5: Validation Queries
--- ============================================================================
--- Quality assurance checks for schema integrity
--- ============================================================================
+-- =====================================================
+-- CANOPY TEMPLATES (High-Altitude Flash-Frozen Facilities)
+-- =====================================================
 
--- Verify biome entry
-SELECT
-    biome_id,
-    name,
-    ambient_condition,
-    difficulty_tier,
-    verticality_type,
-    dominant_damage_type,
-    counter_damage_type
-FROM Biomes
-WHERE biome_id = 5;
+-- Template 5: Flash-Frozen Skywalk (Small, Canopy)
+INSERT OR IGNORE INTO Biome_RoomTemplates (
+    biome_id, template_name, template_description, room_size_category,
+    min_connections, max_connections, can_be_entrance, can_be_exit, can_be_hub,
+    hazard_density, enemy_spawn_weight, resource_spawn_chance, wfc_adjacency_rules, z_level
+) VALUES (
+    5, 'Flash-Frozen Skywalk',
+    'A transparent bridge connecting high-altitude research platforms. When atmospheric shields failed, everything froze instantly. Pre-Glitch scientists are preserved mid-stride, their final moments captured in ice. The view beyond shows a world locked in winter. The bridge itself is dangerously slippery.',
+    'Small', 2, 2, 0, 1, 0, 'High', 90, 0.4,
+    '{"allow": ["Rimed Laboratory", "High-Altitude Observatory"], "forbid": ["Atmospheric Control Chamber"]}',
+    'Canopy'
+);
 
--- Verify room template count and variety
-SELECT
-    verticality_zone,
-    COUNT(*) as template_count,
-    SUM(CASE WHEN is_boss_room THEN 1 ELSE 0 END) as boss_rooms,
-    SUM(CASE WHEN is_entrance_eligible THEN 1 ELSE 0 END) as entrance_rooms,
-    SUM(CASE WHEN is_exit_eligible THEN 1 ELSE 0 END) as exit_rooms
-FROM Biome_RoomTemplates
-WHERE biome_id = 5
-GROUP BY verticality_zone;
+-- Template 6: Rimed Laboratory (Medium, Canopy, Hub)
+INSERT OR IGNORE INTO Biome_RoomTemplates (
+    biome_id, template_name, template_description, room_size_category,
+    min_connections, max_connections, can_be_entrance, can_be_exit, can_be_hub,
+    hazard_density, enemy_spawn_weight, resource_spawn_chance, wfc_adjacency_rules, z_level
+) VALUES (
+    5, 'Rimed Laboratory',
+    'A high-tech research facility where atmospheric failure flash-froze everything. Holographic displays are frozen mid-projection. Equipment is coated in thick layers of rime. Data terminals are locked solid. The researchers bodies are preserved at their workstations, a moment of panic captured forever.',
+    'Medium', 2, 4, 1, 0, 1, 'Medium', 110, 0.75,
+    '{"allow": ["Flash-Frozen Skywalk", "Atmospheric Control Chamber", "High-Altitude Observatory"], "forbid": []}',
+    'Canopy'
+);
 
--- Verify resource tier distribution
-SELECT
-    resource_tier,
-    rarity,
-    COUNT(*) as resource_count,
-    SUM(CASE WHEN requires_special_node THEN 1 ELSE 0 END) as special_nodes_required
-FROM Biome_ResourceDrops
-WHERE biome_id = 5
-GROUP BY resource_tier, rarity
-ORDER BY resource_tier;
+-- Template 7: Atmospheric Control Chamber (Large, Canopy)
+INSERT OR IGNORE INTO Biome_RoomTemplates (
+    biome_id, template_name, template_description, room_size_category,
+    min_connections, max_connections, can_be_entrance, can_be_exit, can_be_hub,
+    hazard_density, enemy_spawn_weight, resource_spawn_chance, wfc_adjacency_rules, z_level
+) VALUES (
+    5, 'Atmospheric Control Chamber',
+    'The heart of the environmental failure. Massive climate regulators are locked in catastrophic failure states. Warning klaxons are frozen mid-blare. The breach point where external cold flooded in is clearly visible, a jagged tear in the walls ringed with ice formations.',
+    'Large', 2, 3, 0, 0, 0, 'Extreme', 60, 0.6,
+    '{"allow": ["Rimed Laboratory"], "forbid": ["Flash-Frozen Skywalk", "High-Altitude Observatory"]}',
+    'Canopy'
+);
 
--- Verify WFC adjacency rules are valid JSON
-SELECT
-    template_name,
-    jsonb_pretty(wfc_adjacency_rules::jsonb) as adjacency_rules
-FROM Biome_RoomTemplates
-WHERE biome_id = 5
-LIMIT 3;
+-- Template 8: High-Altitude Observatory (Medium, Canopy)
+INSERT OR IGNORE INTO Biome_RoomTemplates (
+    biome_id, template_name, template_description, room_size_category,
+    min_connections, max_connections, can_be_entrance, can_be_exit, can_be_hub,
+    hazard_density, enemy_spawn_weight, resource_spawn_chance, wfc_adjacency_rules, z_level
+) VALUES (
+    5, 'High-Altitude Observatory',
+    'A research outpost with panoramic views of the frozen world. Observation equipment is coated in frost. The exposed location means extreme cold and wind chill. Ice crystals have formed intricate patterns across every surface, beautiful but deadly.',
+    'Medium', 1, 3, 0, 0, 0, 'Medium', 80, 0.5,
+    '{"allow": ["Flash-Frozen Skywalk", "Rimed Laboratory"], "forbid": ["Atmospheric Control Chamber"]}',
+    'Canopy'
+);
 
--- Check total drop weight distribution
-SELECT
-    SUM(drop_weight) as total_weight,
-    AVG(drop_weight) as avg_weight,
-    MAX(drop_weight) as max_weight,
-    MIN(drop_weight) as min_weight
-FROM Biome_ResourceDrops
-WHERE biome_id = 5;
+-- =====================================================
+-- DATA SEEDING: RESOURCE DROPS
+-- =====================================================
+-- 9 Resource Types across Tiers 2-5
+-- =====================================================
 
--- ============================================================================
--- SECTION 6: Success Criteria
--- ============================================================================
--- ✅ Biome metadata inserted (biome_id: 5)
--- ✅ 9 room templates created (4 Roots, 4 Canopy, 1 Both)
--- ✅ 9 resources defined across 5 tiers
--- ✅ WFC adjacency rules in valid JSON format
--- ✅ Dual verticality support ([Roots] and [Canopy])
--- ✅ Boss room identified (Glacial Throne Room)
--- ✅ Safe haven room (Emergency Thermal Junction)
--- ✅ Character tracking schema extended
--- ✅ Validation queries confirm data integrity
--- ============================================================================
+-- =====================================================
+-- TIER 2 (Common)
+-- =====================================================
 
--- End of v0.30.1_niflheim_schema.sql
+-- Resource 1: Cryo-Coolant Fluid (Tier 2, Very Common)
+INSERT OR IGNORE INTO Biome_ResourceDrops (biome_id, resource_name, resource_description, resource_tier, rarity, base_drop_chance, min_quantity, max_quantity, requires_special_node, weight)
+VALUES (5, 'Cryo-Coolant Fluid', 'Supercooled liquid nitrogen from ruptured coolant lines. Essential for thermal regulation equipment and cryogenic component crafting. Still viable after 800 years of system failure.', 2, 'Common', 0.35, 1, 3, 0, 150);
+
+-- Resource 2: Frost-Lichen (Tier 2, Common)
+INSERT OR IGNORE INTO Biome_ResourceDrops (biome_id, resource_name, resource_description, resource_tier, rarity, base_drop_chance, min_quantity, max_quantity, requires_special_node, weight)
+VALUES (5, 'Frost-Lichen', 'Hardy organism that thrives in extreme cold. Glows with faint bioluminescence. Used in cold resistance potions and medicinal compounds. Grows on frozen machinery and ice formations.', 2, 'Common', 0.30, 2, 5, 0, 120);
+
+-- Resource 3: Frozen Circuitry (Tier 2, Common)
+INSERT OR IGNORE INTO Biome_ResourceDrops (biome_id, resource_name, resource_description, resource_tier, rarity, base_drop_chance, min_quantity, max_quantity, requires_special_node, weight)
+VALUES (5, 'Frozen Circuitry', 'Electronic components preserved by extreme cold. Supercooled circuits operate with reduced resistance. Used in precision equipment and advanced sensors. Surprisingly functional despite 800 years of freezing.', 2, 'Common', 0.25, 1, 2, 0, 100);
+
+-- =====================================================
+-- TIER 3 (Uncommon)
+-- =====================================================
+
+-- Resource 4: Ice-Bear Pelt (Tier 3, Uncommon)
+INSERT OR IGNORE INTO Biome_ResourceDrops (biome_id, resource_name, resource_description, resource_tier, rarity, base_drop_chance, min_quantity, max_quantity, requires_special_node, weight)
+VALUES (5, 'Ice-Bear Pelt', 'Thick white fur from ice-adapted predators. Provides exceptional thermal insulation. Used in cold resistance armor and thermal suits. The fur has remarkable heat retention properties.', 3, 'Uncommon', 0.20, 1, 1, 0, 80);
+
+-- Resource 5: Supercooled Alloy (Tier 3, Uncommon)
+INSERT OR IGNORE INTO Biome_ResourceDrops (biome_id, resource_name, resource_description, resource_tier, rarity, base_drop_chance, min_quantity, max_quantity, requires_special_node, weight)
+VALUES (5, 'Supercooled Alloy', 'Metal alloy that has undergone phase changes at cryogenic temperatures. Exhibits unusual strength and brittleness. Used in specialized weapon and armor crafting. The material structure is unique to extreme cold exposure.', 3, 'Uncommon', 0.18, 1, 2, 1, 70);
+
+-- =====================================================
+-- TIER 4 (Rare)
+-- =====================================================
+
+-- Resource 6: Pristine Ice Core (Tier 4, Rare, Runic Catalyst)
+INSERT OR IGNORE INTO Biome_ResourceDrops (biome_id, resource_name, resource_description, resource_tier, rarity, base_drop_chance, min_quantity, max_quantity, requires_special_node, weight)
+VALUES (5, 'Pristine Ice Core', 'Perfectly formed ice crystal with unique molecular structure. Acts as runic catalyst for Ice-based effects. Found in the deepest cryogenic chambers. The crystal maintains absolute zero temperature indefinitely.', 4, 'Rare', 0.10, 1, 2, 1, 40);
+
+-- Resource 7: Cryogenic Data-Slate (Tier 4, Rare)
+INSERT OR IGNORE INTO Biome_ResourceDrops (biome_id, resource_name, resource_description, resource_tier, rarity, base_drop_chance, min_quantity, max_quantity, requires_special_node, weight)
+VALUES (5, 'Cryogenic Data-Slate', 'Pre-Glitch research data perfectly preserved by flash-freezing. Contains atmospheric control protocols and climate regulation data. Valuable to Jotun-Readers and scholars. The information is coherent and uncorrupted.', 4, 'Rare', 0.08, 1, 1, 1, 30);
+
+-- =====================================================
+-- TIER 5 (Legendary)
+-- =====================================================
+
+-- Resource 8: Heart of the Frost-Giant (Tier 5, Legendary, Boss Drop)
+INSERT OR IGNORE INTO Biome_ResourceDrops (biome_id, resource_name, resource_description, resource_tier, rarity, base_drop_chance, min_quantity, max_quantity, requires_special_node, weight)
+VALUES (5, 'Heart of the Frost-Giant', 'The core reactor of a dormant Jotun-Forged warmachine that was flash-frozen. Contains a self-sustaining cryogenic field. Essential component for legendary crafting. Radiates absolute zero in a contained field. Only obtainable from Frost-Giant encounters.', 5, 'Legendary', 0.05, 1, 1, 1, 5);
+
+-- Resource 9: Eternal Frost Crystal (Tier 5, Legendary)
+INSERT OR IGNORE INTO Biome_ResourceDrops (biome_id, resource_name, resource_description, resource_tier, rarity, base_drop_chance, min_quantity, max_quantity, requires_special_node, weight)
+VALUES (5, 'Eternal Frost Crystal', 'A perfect crystalline formation found only in the deepest cryo-storage chambers. Maintains absolute zero temperature through unknown physics. Used in myth-forged equipment with permanent cold effects. The crystal seems to violate thermodynamic laws.', 5, 'Legendary', 0.03, 1, 1, 1, 3);
+
+COMMIT;
+
+-- =====================================================
+-- END v0.30.1 SEEDING SCRIPT
+-- =====================================================
+
+-- =====================================================
+-- VERIFICATION QUERIES (Run these to verify seeding)
+-- =====================================================
+
+-- Test 1: Biome Entry Exists
+-- SELECT COUNT(*) FROM Biomes WHERE biome_id = 5;
+-- Expected: 1
+
+-- Test 2: Room Template Count
+-- SELECT COUNT(*) FROM Biome_RoomTemplates WHERE biome_id = 5;
+-- Expected: 8 (4 Roots, 4 Canopy)
+
+-- Test 3: Verticality Distribution
+-- SELECT z_level, COUNT(*) FROM Biome_RoomTemplates WHERE biome_id = 5 GROUP BY z_level;
+-- Expected: Roots: 4, Canopy: 4
+
+-- Test 4: Resource Drop Count
+-- SELECT COUNT(*) FROM Biome_ResourceDrops WHERE biome_id = 5;
+-- Expected: 9
+
+-- Test 5: Quality Tier Distribution
+-- SELECT resource_tier, COUNT(*) FROM Biome_ResourceDrops WHERE biome_id = 5 GROUP BY resource_tier;
+-- Expected: Tier 2: 3, Tier 3: 2, Tier 4: 2, Tier 5: 2
+
+-- Test 6: Drop Weight Validation
+-- SELECT resource_name, weight FROM Biome_ResourceDrops WHERE biome_id = 5 ORDER BY weight DESC;
+-- Expected: Cryo-Coolant Fluid highest (150), legendaries lowest (5, 3)
+
+-- =====================================================
+-- SUCCESS CRITERIA CHECKLIST
+-- =====================================================
+-- [ ] Biomes table contains Niflheim entry (biome_id: 5)
+-- [ ] 8 room templates seeded (4 Roots, 4 Canopy)
+-- [ ] All templates have valid spawn weights
+-- [ ] 9 resource types seeded across 4 tiers
+-- [ ] Resource drop weights correctly calibrated
+-- [ ] SQL migration script executes without errors
+-- [ ] All foreign key constraints satisfied
+-- [ ] All descriptions use v5.0 voice (technology, not magic)
+-- [ ] Entity names are ASCII-compliant
+-- [ ] Database integrity tests pass
+-- =====================================================
