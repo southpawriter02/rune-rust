@@ -76,6 +76,16 @@ class Program
         _environmentalObjectService
     );
 
+    // v0.31: Alfheim Biome Services
+    private static RunicInstabilityService _runicInstabilityService = new(_diceService);
+    private static RealityTearService _realityTearService = new(_diceService, null);
+    private static AlfheimDataRepository _alfheimDataRepository = new("Data Source=runeandrust.db");
+    private static AlfheimBiomeService _alfheimBiomeService = new(
+        _runicInstabilityService,
+        _realityTearService,
+        _diceService
+    );
+
     static void Main(string[] args)
     {
         // Configure Serilog (v0.8.1)
