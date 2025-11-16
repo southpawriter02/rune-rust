@@ -427,6 +427,98 @@ public class JotunheimBiomeService
     }
 
     #endregion
+
+    #region Enemy Generation (v0.32.4)
+
+    /// <summary>
+    /// Generate enemy group for Jötunheim encounter.
+    /// Uses weighted spawn system with Undying dominance (~60%).
+    /// </summary>
+    public List<string> GenerateEnemyGroup(int difficulty, string? verticalityTier = null)
+    {
+        _log.Information("Generating Jötunheim enemy group - difficulty {Difficulty}, tier {Tier}",
+            difficulty, verticalityTier ?? "Both");
+
+        var groupSize = difficulty switch
+        {
+            1 => _diceService.Roll(2, 3), // Easy: 2-3 enemies
+            2 => _diceService.Roll(3, 4), // Normal: 3-4 enemies
+            3 => _diceService.Roll(4, 5), // Hard: 4-5 enemies
+            4 => _diceService.Roll(5, 7), // Deadly: 5-7 enemies
+            _ => 3 // Default
+        };
+
+        var enemies = new List<string>();
+
+        for (int i = 0; i < groupSize; i++)
+        {
+            var enemy = RollWeightedEnemy(difficulty, verticalityTier);
+            enemies.Add(enemy);
+        }
+
+        _log.Information("Generated Jötunheim enemy group: {Count} enemies - {Enemies}",
+            enemies.Count, string.Join(", ", enemies));
+
+        return enemies;
+    }
+
+    /// <summary>
+    /// Roll weighted enemy spawn based on v0.32.3 spawn weights.
+    /// Spawn weights: Servitor 200, Warden 150, Cultist 130, Boar 80, Tinker 70, Juggernaut 60
+    /// Total: 690 (Undying: 410 = 59.4%, Humanoid: 200 = 29%, Beast: 80 = 11.6%)
+    /// </summary>
+    private string RollWeightedEnemy(int difficulty, string? verticalityTier)
+    {
+        // Get weighted spawn table from database
+        var spawnWeights = _dataRepository.GetEnemySpawnWeights(verticalityTier);
+
+        if (!spawnWeights.Any())
+        {
+            _log.Warning("No enemy spawn weights found for tier {Tier}, using default", verticalityTier ?? "Both");
+            return "Rusted Servitor"; // Fallback
+        }
+
+        // Calculate total weight
+        var totalWeight = spawnWeights.Sum(kvp => kvp.Value);
+
+        // Roll weighted selection
+        var roll = _diceService.Roll(1, totalWeight);
+        var currentWeight = 0;
+
+        foreach (var enemy in spawnWeights.OrderByDescending(kvp => kvp.Value))
+        {
+            currentWeight += enemy.Value;
+            if (roll <= currentWeight)
+            {
+                _log.Debug("Rolled {Roll}/{Total} - selected {Enemy} (weight {Weight})",
+                    roll, totalWeight, enemy.Key, enemy.Value);
+                return enemy.Key;
+            }
+        }
+
+        // Fallback (should never reach)
+        _log.Warning("Weighted enemy selection fell through - using fallback");
+        return spawnWeights.First().Key;
+    }
+
+    /// <summary>
+    /// Get enemy spawn distribution for current battlefield.
+    /// Used for analytics and balancing verification.
+    /// </summary>
+    public JotunheimEnemyDistribution GetEnemyDistribution()
+    {
+        return _dataRepository.GetEnemyDistribution();
+    }
+
+    /// <summary>
+    /// Get all available enemy types for Jötunheim.
+    /// </summary>
+    public List<JotunheimEnemy> GetAvailableEnemies(string? verticalityTier = null)
+    {
+        return _dataRepository.GetEnemySpawns(verticalityTier: verticalityTier);
+    }
+
+    #endregion
 }
 
 #region Data Transfer Objects
