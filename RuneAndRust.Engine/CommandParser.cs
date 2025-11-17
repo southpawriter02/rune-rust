@@ -54,7 +54,10 @@ public enum CommandType
     Parry,
     // v0.37.3 - Inventory & Equipment Commands
     Equipment,
-    Use
+    Use,
+    // v0.37.4 - System Commands
+    Journal,
+    Skills
 }
 
 public class ParsedCommand
@@ -104,6 +107,8 @@ public class CommandParser
         { "sheet", CommandType.Stats },
         { "legend", CommandType.Legend },
         { "saga", CommandType.Saga },
+        { "skills", CommandType.Skills }, // v0.37.4
+        { "abilities", CommandType.Skills },
         { "milestone", CommandType.Milestone },
         { "ms", CommandType.Milestone },
         { "spend", CommandType.Spend },
@@ -168,6 +173,8 @@ public class CommandParser
         { "quests", CommandType.Quests },
         { "questlog", CommandType.Quests },
         { "quest", CommandType.Quest },
+        { "journal", CommandType.Journal }, // v0.37.4
+        { "j", CommandType.Journal },
         { "reputation", CommandType.Reputation },
         { "rep", CommandType.Reputation },
         { "faction", CommandType.Reputation },

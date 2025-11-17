@@ -17,9 +17,10 @@ public class CommandDispatcher
         LootService lootService,
         EquipmentService equipmentService,
         CombatEngine? combatEngine = null,
-        StanceService? stanceService = null)
+        StanceService? stanceService = null,
+        CompanionService? companionService = null)
     {
-        _log.Information("Initializing CommandDispatcher with navigation, combat, and inventory commands");
+        _log.Information("Initializing CommandDispatcher with all command systems");
 
         _commandRegistry = new Dictionary<CommandType, ICommand>();
 
@@ -50,6 +51,18 @@ public class CommandDispatcher
         RegisterCommand(CommandType.Pickup, new TakeCommand(equipmentService));
         RegisterCommand(CommandType.Drop, new DropCommand(equipmentService));
         RegisterCommand(CommandType.Use, new UseCommand());
+
+        // Register v0.37.4 System Commands
+        RegisterCommand(CommandType.Journal, new JournalCommand());
+        RegisterCommand(CommandType.Saga, new SagaCommand());
+        RegisterCommand(CommandType.Skills, new SkillsCommand());
+        RegisterCommand(CommandType.Rest, new RestCommand());
+        RegisterCommand(CommandType.Talk, new TalkCommand());
+
+        if (companionService != null)
+        {
+            RegisterCommand(CommandType.Command, new CompanionCommandCommand(companionService));
+        }
 
         _log.Information("CommandDispatcher initialized with {CommandCount} commands", _commandRegistry.Count);
     }
