@@ -4,6 +4,7 @@ using RuneAndRust.Core.Dialogue;
 using RuneAndRust.Core.Population;
 using RuneAndRust.Core.Quests;
 using RuneAndRust.Engine;
+using RuneAndRust.Engine.Integration;
 using RuneAndRust.Persistence;
 using Serilog;
 using Serilog.Events;
@@ -90,6 +91,15 @@ class Program
         _diceService
     );
 
+    // v0.35: Territory Control & Dynamic World System
+    private static TerritoryControlService? _territoryControlService;
+    private static FactionWarService? _factionWarService;
+    private static WorldEventService? _worldEventService;
+    private static ReputationService? _reputationService;
+    private static TerritoryService? _territoryService;
+    private static FactionTerritoryIntegration? _factionTerritoryIntegration;
+    private static CompanionTerritoryReactions? _companionTerritoryReactions;
+
     static void Main(string[] args)
     {
         // Configure Serilog (v0.8.1)
@@ -123,6 +133,9 @@ class Program
 
                 // v0.8: Load NPC, Dialogue, and Quest databases
                 InitializeV08Systems();
+
+                // v0.35: Initialize Territory Control & Dynamic World
+                InitializeTerritorySystem();
 
                 DisplayWelcomeScreen();
 
@@ -257,6 +270,89 @@ class Program
                     }
                 }
             }
+        }
+    }
+
+    /// <summary>
+    /// v0.35: Initialize Territory Control & Dynamic World System
+    /// </summary>
+    static void InitializeTerritorySystem()
+    {
+        try
+        {
+            Log.Information("Initializing v0.35 Territory Control & Dynamic World System...");
+
+            // Initialize core territory services
+            _territoryControlService = new TerritoryControlService(_connectionString);
+            _factionWarService = new FactionWarService(_connectionString, _territoryControlService);
+            _worldEventService = new WorldEventService(_connectionString, _territoryControlService);
+            _reputationService = new ReputationService(_connectionString);
+
+            // Initialize orchestration layer
+            _territoryService = new TerritoryService(
+                _connectionString,
+                _territoryControlService,
+                _factionWarService,
+                _worldEventService,
+                _reputationService);
+
+            // Initialize integration helpers
+            _factionTerritoryIntegration = new FactionTerritoryIntegration(_territoryService, _reputationService);
+            _companionTerritoryReactions = new CompanionTerritoryReactions(_territoryService);
+
+            // Integrate with QuestService
+            _gameState.SetTerritoryService(_currencyService, _territoryService);
+
+            // Integrate with CombatEngine
+            _combatEngine = new CombatEngine(
+                _diceService,
+                _sagaService,
+                _lootService,
+                _equipmentService,
+                _hazardService,
+                _currencyService,
+                _statusEffectService,
+                null,
+                _connectionString,
+                _territoryService);
+
+            // Integrate with CompanionService
+            _companionService = new CompanionService(_connectionString, _companionTerritoryReactions);
+
+            Log.Information("v0.35 Territory Control system initialized successfully");
+        }
+        catch (Exception ex)
+        {
+            // Non-fatal error - game can continue without territory system
+            Log.Warning(ex, "Failed to initialize Territory Control system - game will continue without it");
+            Console.WriteLine($"Warning: Failed to initialize Territory Control system: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// v0.35: Process daily territory update (wars, events, influence shifts)
+    /// Called when player rests
+    /// </summary>
+    static void ProcessDailyTerritoryUpdate()
+    {
+        if (_territoryService == null)
+            return;
+
+        try
+        {
+            Log.Information("Processing daily territory update...");
+
+            _territoryService.ProcessDailyTerritoryUpdate();
+
+            // Note: Territory updates happen silently in background
+            // Major events (war resolutions, etc.) can be displayed to player later
+            // via territory status queries
+
+            Log.Information("Daily territory update complete");
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "Failed to process daily territory update");
         }
     }
 
@@ -1047,6 +1143,9 @@ class Program
         AnsiConsole.MarkupLine($"[green]✅ Psychic Stress:[/] {oldStress}/100 → {player.PsychicStress}/100");
         AnsiConsole.MarkupLine($"[yellow]⚠️ Corruption:[/]     {player.Corruption}/100 (unchanged - permanent)");
         AnsiConsole.WriteLine();
+
+        // v0.35: Process daily territory update
+        ProcessDailyTerritoryUpdate();
 
         // v0.7: Offer crafting option for Bone-Setters
         if (player.Specialization == Specialization.BoneSetter)

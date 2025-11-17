@@ -51,6 +51,13 @@ public class GameState
         QuestService = new QuestService("Data/Quests", currencyService);
     }
 
+    // v0.35: Set TerritoryService after GameState initialization
+    public void SetTerritoryService(CurrencyService? currencyService, TerritoryService? territoryService)
+    {
+        // Recreate QuestService with both CurrencyService and TerritoryService
+        QuestService = new QuestService("Data/Quests", currencyService, territoryService);
+    }
+
     public void MoveToRoom(string direction)
     {
         if (CurrentRoom.Exits.TryGetValue(direction.ToLower(), out var nextRoomName))

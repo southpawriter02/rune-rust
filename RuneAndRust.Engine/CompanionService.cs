@@ -1,4 +1,5 @@
 using RuneAndRust.Core;
+using RuneAndRust.Engine.Integration;
 using Microsoft.Data.Sqlite;
 using Serilog;
 using System.Text.Json;
@@ -9,6 +10,7 @@ namespace RuneAndRust.Engine;
 /// v0.34.4: Companion Service - Primary orchestration layer
 /// Integrates AI, recruitment, progression, and combat mechanics
 /// Handles combat turns, System Crash mechanics, and direct commands
+/// v0.35: Territory integration for companion reactions
 /// </summary>
 public class CompanionService
 {
@@ -17,17 +19,19 @@ public class CompanionService
     private readonly CompanionAIService _aiService;
     private readonly RecruitmentService _recruitmentService;
     private readonly CompanionProgressionService _progressionService;
+    private readonly CompanionTerritoryReactions? _territoryReactions; // v0.35
 
     // System Crash mechanics
     private const int SYSTEM_CRASH_PSYCHIC_STRESS = 10;
     private const double AFTER_COMBAT_RECOVERY_PERCENTAGE = 0.5; // 50% HP recovery
 
-    public CompanionService(string connectionString)
+    public CompanionService(string connectionString, CompanionTerritoryReactions? territoryReactions = null)
     {
         _connectionString = connectionString;
         _aiService = new CompanionAIService();
         _recruitmentService = new RecruitmentService(connectionString);
         _progressionService = new CompanionProgressionService(connectionString);
+        _territoryReactions = territoryReactions; // v0.35
     }
 
     // ============================================
@@ -662,6 +666,57 @@ public class CompanionService
         else if (companion.ResourceType == "Aether Pool")
         {
             companion.MaxAetherPool = scaledStats.MaxResource;
+        }
+    }
+
+    // ============================================
+    // v0.35: TERRITORY INTEGRATION
+    // ============================================
+
+    /// <summary>
+    /// v0.35: Process companion reaction when entering a sector
+    /// Returns dialogue and any buff/debuff to apply
+    /// </summary>
+    public (string dialogue, string? buffName, int duration, int value) OnCompanionEnterSector(
+        Companion companion,
+        int sectorId)
+    {
+        if (_territoryReactions == null)
+            return ("", null, 0, 0);
+
+        try
+        {
+            var reaction = _territoryReactions.GetCompanionReaction(companion, sectorId);
+
+            _log.Information(
+                "Companion {Name} entered sector {SectorId}: {Dialogue}",
+                companion.CompanionName, sectorId, reaction.dialogue);
+
+            return reaction;
+        }
+        catch (Exception ex)
+        {
+            _log.Error(ex, "Failed to get companion territory reaction");
+            return ("", null, 0, 0);
+        }
+    }
+
+    /// <summary>
+    /// v0.35: Get companion comment on current territory status
+    /// </summary>
+    public string GetCompanionTerritoryComment(Companion companion, int sectorId)
+    {
+        if (_territoryReactions == null)
+            return "";
+
+        try
+        {
+            return _territoryReactions.GetCompanionComment(companion, sectorId);
+        }
+        catch (Exception ex)
+        {
+            _log.Error(ex, "Failed to get companion territory comment");
+            return "";
         }
     }
 }

@@ -129,6 +129,10 @@ public class PlayerCharacter
 
     // v0.20: Tactical Combat Grid System
     public GridPosition? Position { get; set; } = null; // Current position on the combat grid
+
+    // v0.35: Territory Control System
+    public int? CurrentSectorId { get; set; } = 1; // Current sector (1 = Midgard by default)
+
     public int KineticEnergy { get; set; } = 0; // Movement-based resource (0-100)
     public int MaxKineticEnergy { get; set; } = 100; // Maximum KE
     public int TilesMovedThisTurn { get; set; } = 0; // Number of tiles moved this turn

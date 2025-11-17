@@ -21,12 +21,13 @@ public class CombatEngine
     private readonly AdvancedStatusEffectService? _statusEffectService; // [v0.21.3]
     private readonly CounterAttackService? _counterAttackService; // [v0.21.4]
     private readonly CompanionService? _companionService; // [v0.34.4]
+    private readonly TerritoryService? _territoryService; // [v0.35]
 
     // [v0.21.3] Target ID mapping for status effects
     // Player ID = 0, Enemy IDs = hash of enemy ID string
     private const int PLAYER_TARGET_ID = 0;
 
-    public CombatEngine(DiceService diceService, SagaService sagaService, LootService lootService, EquipmentService equipmentService, HazardService hazardService, CurrencyService currencyService, AdvancedStatusEffectService? statusEffectService = null, CounterAttackService? counterAttackService = null, string? connectionString = null)
+    public CombatEngine(DiceService diceService, SagaService sagaService, LootService lootService, EquipmentService equipmentService, HazardService hazardService, CurrencyService currencyService, AdvancedStatusEffectService? statusEffectService = null, CounterAttackService? counterAttackService = null, string? connectionString = null, TerritoryService? territoryService = null)
     {
         _diceService = diceService;
         _sagaService = sagaService;
@@ -42,6 +43,7 @@ public class CombatEngine
         _statusEffectService = statusEffectService; // [v0.21.3]
         _counterAttackService = counterAttackService; // [v0.21.4]
         _companionService = connectionString != null ? new CompanionService(connectionString) : null; // [v0.34.4]
+        _territoryService = territoryService; // [v0.35]
     }
 
     /// <summary>
@@ -420,6 +422,9 @@ public class CombatEngine
             combatState.AddLogEntry($"  {target.Name} is destroyed!");
 
             _log.Information("Enemy defeated: Enemy={EnemyName}, Killer={PlayerName}", target.Name, player.Name);
+
+            // v0.35: Record territorial action for enemy kill
+            RecordEnemyKillForTerritory(target, combatState.Player);
         }
 
         combatState.AddLogEntry("");
@@ -2409,5 +2414,68 @@ public class CombatEngine
             _companionService.RecoverCompanion(companion, combatState.CharacterId);
             combatState.AddLogEntry($"{companion.DisplayName} recovered to {companion.CurrentHitPoints} HP (50% recovery)");
         }
+    }
+
+    /// <summary>
+    /// v0.35: Record territorial action when enemy is killed
+    /// </summary>
+    private void RecordEnemyKillForTerritory(Enemy enemy, PlayerCharacter player)
+    {
+        if (_territoryService == null || !player.CurrentSectorId.HasValue)
+        {
+            return;
+        }
+
+        try
+        {
+            // Determine which faction benefits from this kill
+            string benefittingFaction = GetPlayerFaction(player);
+
+            if (!string.IsNullOrEmpty(benefittingFaction))
+            {
+                _territoryService.RecordPlayerAction(
+                    player.CharacterID,
+                    player.CurrentSectorId.Value,
+                    "Kill_Enemy",
+                    benefittingFaction,
+                    $"Killed: {enemy.Name}");
+
+                _log.Debug("Territorial kill recorded: Player={PlayerId}, Faction={Faction}, Enemy={Enemy}, Sector={Sector}",
+                    player.CharacterID, benefittingFaction, enemy.Name, player.CurrentSectorId.Value);
+            }
+        }
+        catch (Exception ex)
+        {
+            _log.Warning(ex, "Failed to record territorial action for enemy kill");
+        }
+    }
+
+    /// <summary>
+    /// v0.35: Get player's primary faction based on highest reputation
+    /// </summary>
+    private string GetPlayerFaction(PlayerCharacter player)
+    {
+        // Check if player has faction reputations
+        if (player.FactionReputations?.Reputations != null && player.FactionReputations.Reputations.Count > 0)
+        {
+            var topFaction = player.FactionReputations.Reputations
+                .OrderByDescending(r => r.ReputationValue)
+                .FirstOrDefault();
+
+            if (topFaction != null)
+            {
+                // Convert FactionType to faction name string
+                return topFaction.Faction switch
+                {
+                    FactionType.MidgardCombine => "IronBanes",
+                    FactionType.RustClans => "RustClans",
+                    FactionType.Independents => "Independents",
+                    _ => "Independents"
+                };
+            }
+        }
+
+        // Default to Independents if no reputation data
+        return "Independents";
     }
 }
