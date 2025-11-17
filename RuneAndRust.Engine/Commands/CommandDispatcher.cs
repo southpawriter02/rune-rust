@@ -15,10 +15,11 @@ public class CommandDispatcher
     public CommandDispatcher(
         DiceService diceService,
         LootService lootService,
+        EquipmentService equipmentService,
         CombatEngine? combatEngine = null,
         StanceService? stanceService = null)
     {
-        _log.Information("Initializing CommandDispatcher with navigation and combat commands");
+        _log.Information("Initializing CommandDispatcher with navigation, combat, and inventory commands");
 
         _commandRegistry = new Dictionary<CommandType, ICommand>();
 
@@ -42,6 +43,13 @@ public class CommandDispatcher
         {
             RegisterCommand(CommandType.Stance, new StanceCommand(stanceService));
         }
+
+        // Register v0.37.3 Inventory & Equipment Commands
+        RegisterCommand(CommandType.Inventory, new InventoryCommand());
+        RegisterCommand(CommandType.Equipment, new EquipmentCommand(equipmentService));
+        RegisterCommand(CommandType.Pickup, new TakeCommand(equipmentService));
+        RegisterCommand(CommandType.Drop, new DropCommand(equipmentService));
+        RegisterCommand(CommandType.Use, new UseCommand());
 
         _log.Information("CommandDispatcher initialized with {CommandCount} commands", _commandRegistry.Count);
     }

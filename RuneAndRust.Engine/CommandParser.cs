@@ -51,7 +51,10 @@ public enum CommandType
     Investigate,
     Search,
     // v0.37.2 - Combat Commands
-    Parry
+    Parry,
+    // v0.37.3 - Inventory & Equipment Commands
+    Equipment,
+    Use
 }
 
 public class ParsedCommand
@@ -113,6 +116,8 @@ public class CommandParser
         { "i", CommandType.Inventory },
 
         // Equipment (v0.3)
+        { "equipment", CommandType.Equipment }, // v0.37.3 - View loadout
+        { "eq", CommandType.Equipment },
         { "equip", CommandType.Equip },
         { "wear", CommandType.Equip },
         { "wield", CommandType.Equip },
@@ -122,6 +127,8 @@ public class CommandParser
         { "take", CommandType.Pickup },
         { "get", CommandType.Pickup },
         { "drop", CommandType.Drop },
+        { "use", CommandType.Use }, // v0.37.3 - Use consumables
+        { "consume", CommandType.Use },
         { "compare", CommandType.Compare },
         { "comp", CommandType.Compare },
 
