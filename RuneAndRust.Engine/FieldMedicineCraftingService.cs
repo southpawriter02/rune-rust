@@ -18,12 +18,12 @@ public class CraftingResult
 /// <summary>
 /// Manages crafting system for Field Medicine and other craftables
 /// </summary>
-public class CraftingService
+public class FieldMedicineCraftingService
 {
     private readonly DiceService _diceService;
     private readonly List<CraftingRecipe> _recipes = new();
 
-    public CraftingService(DiceService? diceService = null)
+    public FieldMedicineCraftingService(DiceService? diceService = null)
     {
         _diceService = diceService ?? new DiceService();
         InitializeRecipes();
