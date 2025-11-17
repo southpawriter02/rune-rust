@@ -9,7 +9,7 @@ namespace RuneAndRust.Engine;
 /// v0.38 Integration: Room Population Service
 /// Coordinates all descriptor services to procedurally populate rooms
 /// Integrates v0.38.1 (Room Descriptions), v0.38.2 (Environmental Features),
-/// v0.38.3 (Interactive Objects), v0.38.4 (Atmospheric Descriptors)
+/// v0.38.3 (Interactive Objects), v0.38.4 (Atmospheric Descriptors), v0.38.5 (Resource Nodes)
 /// </summary>
 public class RoomPopulationService
 {
@@ -18,6 +18,7 @@ public class RoomPopulationService
     private readonly EnvironmentalFeatureService _featureService;
     private readonly ObjectInteractionService _objectService;
     private readonly AtmosphericDescriptorService _atmosphericService;
+    private readonly ResourceNodeService _resourceNodeService;
     private readonly ILogger _logger;
     private readonly Random _random;
 
@@ -27,6 +28,7 @@ public class RoomPopulationService
         EnvironmentalFeatureService featureService,
         ObjectInteractionService objectService,
         AtmosphericDescriptorService atmosphericService,
+        ResourceNodeService resourceNodeService,
         ILogger logger,
         Random? random = null)
     {
@@ -35,6 +37,7 @@ public class RoomPopulationService
         _featureService = featureService;
         _objectService = objectService;
         _atmosphericService = atmosphericService;
+        _resourceNodeService = resourceNodeService;
         _logger = logger;
         _random = random ?? new Random();
     }
@@ -70,14 +73,18 @@ public class RoomPopulationService
             // Step 4: Generate interactive objects (v0.38.3)
             PopulateInteractiveObjects(room, biome, archetype);
 
-            // Step 5: Apply coherent glitch rules
+            // Step 5: Generate resource nodes (v0.38.5)
+            PopulateResourceNodes(room, biome, archetype);
+
+            // Step 6: Apply coherent glitch rules
             ApplyCoherentGlitchRules(room, biome);
 
             _logger.Information(
-                "Room population complete: {RoomId} - {Features} features, {Objects} objects, Atmosphere: {HasAtmosphere}",
+                "Room population complete: {RoomId} - {Features} features, {Objects} objects, {Resources} resources, Atmosphere: {HasAtmosphere}",
                 room.RoomId,
                 room.StaticTerrainFeatures.Count + room.DynamicHazardFeatures.Count,
                 room.InteractiveObjects.Count,
+                room.ResourceNodes.Count,
                 !string.IsNullOrEmpty(room.AtmosphericDescription));
         }
         catch (Exception ex)
@@ -371,6 +378,57 @@ public class RoomPopulationService
             Population.RoomArchetype.Chamber => _random.Next(1, 3),  // 1-2 objects
             Population.RoomArchetype.Corridor => _random.Next(0, 2),  // 0-1 objects
             _ => _random.Next(0, 2)  // 0-1 objects
+        };
+    }
+
+    #endregion
+
+    #region Resource Nodes (v0.38.5)
+
+    private void PopulateResourceNodes(Room room, string biome, Population.RoomArchetype archetype)
+    {
+        try
+        {
+            // Determine room size based on archetype
+            var roomSize = GetRoomSizeForArchetype(archetype);
+
+            // Get room ID
+            var roomId = int.TryParse(room.RoomId, out var id) ? id : room.Id;
+
+            // Generate resource nodes
+            var nodes = _resourceNodeService.GenerateResourceNodes(roomId, biome, roomSize);
+
+            foreach (var node in nodes)
+            {
+                room.ResourceNodes.Add(node);
+            }
+
+            _logger.Debug(
+                "Generated resource nodes: {RoomId} - {Count} nodes",
+                room.RoomId,
+                room.ResourceNodes.Count);
+        }
+        catch (Exception ex)
+        {
+            _logger.Error(ex,
+                "Error generating resource nodes: {RoomId}",
+                room.RoomId);
+        }
+    }
+
+    private string GetRoomSizeForArchetype(Population.RoomArchetype archetype)
+    {
+        return archetype switch
+        {
+            Population.RoomArchetype.BossArena => "Large",
+            Population.RoomArchetype.Chamber => "Medium",
+            Population.RoomArchetype.Corridor => "Small",
+            Population.RoomArchetype.Junction => "Medium",
+            Population.RoomArchetype.SecretRoom => "Small",
+            Population.RoomArchetype.StorageBay => "Large",
+            Population.RoomArchetype.PowerStation => "Large",
+            Population.RoomArchetype.Laboratory => "Medium",
+            _ => "Medium"  // Default
         };
     }
 

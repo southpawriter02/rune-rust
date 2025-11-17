@@ -76,6 +76,7 @@ public class Room
     public List<Descriptors.InteractiveObject> InteractiveObjects { get; set; } = new(); // v0.38.3
     public string? AtmosphericDescription { get; set; } = null; // v0.38.4
     public Descriptors.AtmosphericIntensity? AtmosphericIntensity { get; set; } = null; // v0.38.4
+    public List<Descriptors.ResourceNode> ResourceNodes { get; set; } = new(); // v0.38.5
 
     // v0.11 Metadata
     public bool IsHandcrafted { get; set; } = false; // True for Quest Anchor rooms (skip procedural population)
