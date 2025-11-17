@@ -36,4 +36,31 @@ public class Ability
     public bool SkipEnemyTurn { get; set; } = false; // For control abilities
     public int NextAttackBonusDice { get; set; } = 0; // For utility abilities
     public bool NegateNextAttack { get; set; } = false; // For dodge abilities
+
+    // v0.38.7: Galdr & Ability Flavor Text Integration
+    /// <summary>
+    /// Rune school for Galdr (magical) abilities.
+    /// Values: Fehu, Thurisaz, Ansuz, Raido, Hagalaz, Naudiz, Isa, Jera,
+    ///         Tiwaz, Berkanan, Mannaz, Laguz, null (non-Galdr)
+    /// </summary>
+    public string? RuneSchool { get; set; } = null;
+
+    /// <summary>
+    /// Ability category for non-Galdr abilities (Warrior/Adept abilities).
+    /// Values: WeaponArt, TacticalAbility, DefensiveAbility, PassiveAbility,
+    ///         ResourceAbility, null (Galdr ability)
+    /// </summary>
+    public string? AbilityCategory { get; set; } = null;
+
+    /// <summary>
+    /// Element associated with this ability (for manifestation descriptors).
+    /// Values: Fire, Ice, Lightning, Wind, Earth, Water, Healing, Shadow, Aether, null
+    /// </summary>
+    public string? Element { get; set; } = null;
+
+    /// <summary>
+    /// Whether this ability is a Galdr (magical) ability.
+    /// True if RuneSchool is set, false otherwise.
+    /// </summary>
+    public bool IsGaldr => !string.IsNullOrEmpty(RuneSchool);
 }

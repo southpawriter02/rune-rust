@@ -5,7 +5,8 @@ using Serilog;
 
 namespace RuneAndRust.Engine;
 
-public class CombatEngine
+// v0.38.7: Made partial to support CombatEngine_GaldrFlavorExtensions.cs
+public partial class CombatEngine
 {
     private static readonly ILogger _log = Log.ForContext<CombatEngine>();
     private readonly DiceService _diceService;
@@ -24,12 +25,13 @@ public class CombatEngine
     private readonly CompanionService? _companionService; // [v0.34.4]
     private readonly TerritoryService? _territoryService; // [v0.35]
     private readonly CombatFlavorTextService? _flavorTextService; // [v0.38.6]
+    // Note: _galdrFlavorTextService is declared in CombatEngine_GaldrFlavorExtensions.cs [v0.38.7]
 
     // [v0.21.3] Target ID mapping for status effects
     // Player ID = 0, Enemy IDs = hash of enemy ID string
     private const int PLAYER_TARGET_ID = 0;
 
-    public CombatEngine(DiceService diceService, SagaService sagaService, LootService lootService, EquipmentService equipmentService, HazardService hazardService, CurrencyService currencyService, AdvancedStatusEffectService? statusEffectService = null, CounterAttackService? counterAttackService = null, string? connectionString = null, TerritoryService? territoryService = null, CombatFlavorTextService? flavorTextService = null)
+    public CombatEngine(DiceService diceService, SagaService sagaService, LootService lootService, EquipmentService equipmentService, HazardService hazardService, CurrencyService currencyService, AdvancedStatusEffectService? statusEffectService = null, CounterAttackService? counterAttackService = null, string? connectionString = null, TerritoryService? territoryService = null, CombatFlavorTextService? flavorTextService = null, GaldrFlavorTextService? galdrFlavorTextService = null)
     {
         _diceService = diceService;
         _sagaService = sagaService;
@@ -47,6 +49,7 @@ public class CombatEngine
         _companionService = connectionString != null ? new CompanionService(connectionString) : null; // [v0.34.4]
         _territoryService = territoryService; // [v0.35]
         _flavorTextService = flavorTextService; // [v0.38.6]
+        _galdrFlavorTextService = galdrFlavorTextService; // [v0.38.7]
     }
 
     /// <summary>
