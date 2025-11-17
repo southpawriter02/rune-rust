@@ -466,4 +466,364 @@ public class CraftingRepository
     }
 
     #endregion
+
+    #region Modification Queries
+
+    /// <summary>
+    /// Get a runic inscription by ID
+    /// </summary>
+    public RunicInscription? GetInscriptionById(int inscriptionId)
+    {
+        _log.Debug("Getting inscription by ID: {InscriptionId}", inscriptionId);
+
+        using var connection = new SqliteConnection(_connectionString);
+        connection.Open();
+
+        using var command = connection.CreateCommand();
+        command.CommandText = @"
+            SELECT
+                inscription_id, inscription_name, inscription_tier, target_equipment_type,
+                effect_type, effect_value, is_temporary, uses_if_temporary,
+                component_requirements, crafting_cost_credits, inscription_description
+            FROM Runic_Inscriptions
+            WHERE inscription_id = @InscriptionId
+        ";
+        command.Parameters.AddWithValue("@InscriptionId", inscriptionId);
+
+        using var reader = command.ExecuteReader();
+        if (reader.Read())
+        {
+            return MapInscriptionFromReader(reader);
+        }
+
+        _log.Warning("Inscription not found: {InscriptionId}", inscriptionId);
+        return null;
+    }
+
+    /// <summary>
+    /// Get equipment item from character inventory
+    /// </summary>
+    public EquipmentItem? GetEquipmentItem(int characterId, int inventoryId)
+    {
+        _log.Debug("Getting equipment item: Character={CharacterId}, Inventory={InventoryId}",
+            characterId, inventoryId);
+
+        using var connection = new SqliteConnection(_connectionString);
+        connection.Open();
+
+        using var command = connection.CreateCommand();
+        command.CommandText = @"
+            SELECT ci.inventory_id, ci.item_id, i.item_name, i.item_type, i.quality_tier
+            FROM Character_Inventory ci
+            INNER JOIN Items i ON ci.item_id = i.item_id
+            WHERE ci.character_id = @CharacterId
+              AND ci.inventory_id = @InventoryId
+              AND i.item_type IN ('Weapon', 'Armor')
+        ";
+        command.Parameters.AddWithValue("@CharacterId", characterId);
+        command.Parameters.AddWithValue("@InventoryId", inventoryId);
+
+        using var reader = command.ExecuteReader();
+        if (reader.Read())
+        {
+            return new EquipmentItem
+            {
+                InventoryId = reader.GetInt32(0),
+                ItemId = reader.GetInt32(1),
+                ItemName = reader.GetString(2),
+                ItemType = reader.GetString(3),
+                QualityTier = reader.GetInt32(4)
+            };
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Get active modifications on equipment
+    /// </summary>
+    public List<EquipmentModification> GetActiveModifications(int equipmentInventoryId)
+    {
+        _log.Debug("Getting active modifications for equipment: {EquipmentId}", equipmentInventoryId);
+
+        using var connection = new SqliteConnection(_connectionString);
+        connection.Open();
+
+        var modifications = new List<EquipmentModification>();
+
+        using var command = connection.CreateCommand();
+        command.CommandText = @"
+            SELECT
+                modification_id, equipment_item_id, modification_type, modification_name,
+                modification_value, is_permanent, remaining_uses, applied_at, applied_by_recipe_id
+            FROM Equipment_Modifications
+            WHERE equipment_item_id = @EquipmentId
+              AND (is_permanent = 1 OR remaining_uses > 0)
+            ORDER BY applied_at ASC
+        ";
+        command.Parameters.AddWithValue("@EquipmentId", equipmentInventoryId);
+
+        using var reader = command.ExecuteReader();
+        while (reader.Read())
+        {
+            modifications.Add(new EquipmentModification
+            {
+                ModificationId = reader.GetInt32(0),
+                EquipmentItemId = reader.GetInt32(1),
+                ModificationType = reader.GetString(2),
+                ModificationName = reader.GetString(3),
+                ModificationValue = reader.GetString(4),
+                IsPermanent = reader.GetBoolean(5),
+                RemainingUses = reader.IsDBNull(6) ? null : reader.GetInt32(6),
+                AppliedAt = reader.GetDateTime(7),
+                AppliedByRecipeId = reader.IsDBNull(8) ? null : reader.GetInt32(8)
+            });
+        }
+
+        _log.Information("Found {Count} active modifications for equipment {EquipmentId}",
+            modifications.Count, equipmentInventoryId);
+        return modifications;
+    }
+
+    /// <summary>
+    /// Create a new modification on equipment
+    /// </summary>
+    public int CreateModification(
+        int equipmentInventoryId,
+        RunicInscription inscription)
+    {
+        _log.Debug("Creating modification on equipment: {EquipmentId}, Inscription: {InscriptionName}",
+            equipmentInventoryId, inscription.InscriptionName);
+
+        using var connection = new SqliteConnection(_connectionString);
+        connection.Open();
+
+        using var command = connection.CreateCommand();
+        command.CommandText = @"
+            INSERT INTO Equipment_Modifications (
+                equipment_item_id, modification_type, modification_name,
+                modification_value, is_permanent, remaining_uses, applied_at, applied_by_recipe_id
+            )
+            VALUES (
+                @EquipmentId, @ModificationType, @ModificationName,
+                @ModificationValue, @IsPermanent, @RemainingUses, @AppliedAt, NULL
+            );
+            SELECT last_insert_rowid();
+        ";
+        command.Parameters.AddWithValue("@EquipmentId", equipmentInventoryId);
+        command.Parameters.AddWithValue("@ModificationType", inscription.EffectType);
+        command.Parameters.AddWithValue("@ModificationName", inscription.InscriptionName);
+        command.Parameters.AddWithValue("@ModificationValue", inscription.EffectValue);
+        command.Parameters.AddWithValue("@IsPermanent", !inscription.IsTemporary);
+        command.Parameters.AddWithValue("@RemainingUses",
+            inscription.IsTemporary ? (object)inscription.UsesIfTemporary : DBNull.Value);
+        command.Parameters.AddWithValue("@AppliedAt", DateTime.UtcNow);
+
+        var modificationId = Convert.ToInt32(command.ExecuteScalar());
+
+        _log.Information("Created modification {ModificationId} on equipment {EquipmentId}",
+            modificationId, equipmentInventoryId);
+        return modificationId;
+    }
+
+    /// <summary>
+    /// Remove a modification from equipment
+    /// </summary>
+    public bool DeleteModification(int modificationId)
+    {
+        _log.Debug("Deleting modification: {ModificationId}", modificationId);
+
+        using var connection = new SqliteConnection(_connectionString);
+        connection.Open();
+
+        using var command = connection.CreateCommand();
+        command.CommandText = @"
+            DELETE FROM Equipment_Modifications
+            WHERE modification_id = @ModificationId
+        ";
+        command.Parameters.AddWithValue("@ModificationId", modificationId);
+
+        int rowsAffected = command.ExecuteNonQuery();
+
+        if (rowsAffected > 0)
+        {
+            _log.Information("Deleted modification {ModificationId}", modificationId);
+            return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Validate that a modification belongs to a character's equipment
+    /// </summary>
+    public bool ValidateModificationOwnership(int characterId, int modificationId)
+    {
+        _log.Debug("Validating modification ownership: Character={CharacterId}, Mod={ModificationId}",
+            characterId, modificationId);
+
+        using var connection = new SqliteConnection(_connectionString);
+        connection.Open();
+
+        using var command = connection.CreateCommand();
+        command.CommandText = @"
+            SELECT COUNT(*)
+            FROM Equipment_Modifications em
+            INNER JOIN Character_Inventory ci ON em.equipment_item_id = ci.inventory_id
+            WHERE em.modification_id = @ModificationId
+              AND ci.character_id = @CharacterId
+        ";
+        command.Parameters.AddWithValue("@ModificationId", modificationId);
+        command.Parameters.AddWithValue("@CharacterId", characterId);
+
+        int count = Convert.ToInt32(command.ExecuteScalar());
+        return count > 0;
+    }
+
+    /// <summary>
+    /// Decrement uses on temporary modifications and remove expired ones
+    /// </summary>
+    public void DecrementTemporaryModificationUses(int equipmentInventoryId)
+    {
+        _log.Debug("Decrementing modification uses for equipment: {EquipmentId}", equipmentInventoryId);
+
+        using var connection = new SqliteConnection(_connectionString);
+        connection.Open();
+
+        using var transaction = connection.BeginTransaction();
+        try
+        {
+            // Get temporary modifications
+            using var selectCommand = connection.CreateCommand();
+            selectCommand.Transaction = transaction;
+            selectCommand.CommandText = @"
+                SELECT modification_id, modification_name, remaining_uses
+                FROM Equipment_Modifications
+                WHERE equipment_item_id = @EquipmentId
+                  AND is_permanent = 0
+                  AND remaining_uses > 0
+            ";
+            selectCommand.Parameters.AddWithValue("@EquipmentId", equipmentInventoryId);
+
+            var modsToUpdate = new List<(int modId, string name, int uses)>();
+            using (var reader = selectCommand.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    modsToUpdate.Add((reader.GetInt32(0), reader.GetString(1), reader.GetInt32(2)));
+                }
+            }
+
+            foreach (var (modId, name, uses) in modsToUpdate)
+            {
+                int newUses = uses - 1;
+
+                if (newUses <= 0)
+                {
+                    // Remove expired modification
+                    using var deleteCommand = connection.CreateCommand();
+                    deleteCommand.Transaction = transaction;
+                    deleteCommand.CommandText = @"
+                        DELETE FROM Equipment_Modifications
+                        WHERE modification_id = @ModificationId
+                    ";
+                    deleteCommand.Parameters.AddWithValue("@ModificationId", modId);
+                    deleteCommand.ExecuteNonQuery();
+
+                    _log.Information("Temporary modification {ModificationId} ({Name}) expired on equipment {EquipmentId}",
+                        modId, name, equipmentInventoryId);
+                }
+                else
+                {
+                    // Decrement uses
+                    using var updateCommand = connection.CreateCommand();
+                    updateCommand.Transaction = transaction;
+                    updateCommand.CommandText = @"
+                        UPDATE Equipment_Modifications
+                        SET remaining_uses = @NewUses
+                        WHERE modification_id = @ModificationId
+                    ";
+                    updateCommand.Parameters.AddWithValue("@NewUses", newUses);
+                    updateCommand.Parameters.AddWithValue("@ModificationId", modId);
+                    updateCommand.ExecuteNonQuery();
+
+                    _log.Debug("Decremented modification {ModificationId} to {Uses} uses remaining",
+                        modId, newUses);
+                }
+            }
+
+            transaction.Commit();
+        }
+        catch (Exception ex)
+        {
+            _log.Error(ex, "Failed to decrement modification uses for equipment {EquipmentId}",
+                equipmentInventoryId);
+            transaction.Rollback();
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Get character's credit balance
+    /// </summary>
+    public int GetCharacterCredits(int characterId)
+    {
+        using var connection = new SqliteConnection(_connectionString);
+        connection.Open();
+
+        using var command = connection.CreateCommand();
+        command.CommandText = @"
+            SELECT COALESCE(credits, 0) FROM Characters WHERE character_id = @CharacterId
+        ";
+        command.Parameters.AddWithValue("@CharacterId", characterId);
+
+        var result = command.ExecuteScalar();
+        return result != null && result != DBNull.Value ? Convert.ToInt32(result) : 0;
+    }
+
+    /// <summary>
+    /// Deduct credits from character
+    /// </summary>
+    public void DeductCredits(int characterId, int amount)
+    {
+        _log.Debug("Deducting {Amount} credits from character {CharacterId}", amount, characterId);
+
+        using var connection = new SqliteConnection(_connectionString);
+        connection.Open();
+
+        using var command = connection.CreateCommand();
+        command.CommandText = @"
+            UPDATE Characters
+            SET credits = credits - @Amount
+            WHERE character_id = @CharacterId
+        ";
+        command.Parameters.AddWithValue("@CharacterId", characterId);
+        command.Parameters.AddWithValue("@Amount", amount);
+
+        command.ExecuteNonQuery();
+    }
+
+    #endregion
+
+    #region Helper Methods - Inscriptions
+
+    private RunicInscription MapInscriptionFromReader(SqliteDataReader reader)
+    {
+        return new RunicInscription
+        {
+            InscriptionId = reader.GetInt32(0),
+            InscriptionName = reader.GetString(1),
+            InscriptionTier = reader.GetInt32(2),
+            TargetEquipmentType = reader.GetString(3),
+            EffectType = reader.GetString(4),
+            EffectValue = reader.GetString(5),
+            IsTemporary = reader.GetBoolean(6),
+            UsesIfTemporary = reader.GetInt32(7),
+            ComponentRequirements = reader.GetString(8),
+            CraftingCostCredits = reader.GetInt32(9),
+            InscriptionDescription = reader.GetString(10)
+        };
+    }
+
+    #endregion
 }
