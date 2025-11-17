@@ -1174,7 +1174,7 @@ class Program
     static void HandleCrafting()
     {
         var player = _gameState.Player;
-        var craftingService = new CraftingService();
+        var craftingService = new FieldMedicineCraftingService();
 
         while (true)
         {
