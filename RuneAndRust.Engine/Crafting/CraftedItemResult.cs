@@ -23,6 +23,18 @@ public class CraftedItemResult
     /// Calculation breakdown for transparency
     /// </summary>
     public QualityCalculation? QualityCalculation { get; set; }
+
+    /// <summary>
+    /// Create a failure result
+    /// </summary>
+    public static CraftedItemResult FailureResult(string message)
+    {
+        return new CraftedItemResult
+        {
+            Success = false,
+            Message = message
+        };
+    }
 }
 
 /// <summary>

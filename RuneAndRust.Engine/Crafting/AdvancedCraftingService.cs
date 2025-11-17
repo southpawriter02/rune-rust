@@ -118,6 +118,9 @@ public class AdvancedCraftingService
             return FailureResult("Crafting succeeded but failed to add item to inventory.");
         }
 
+        // Increment times crafted counter
+        _repository.IncrementTimesCrafted(character.CharacterID, recipeId);
+
         _log.Information("Crafting succeeded: Recipe={RecipeName}, Quality={Quality}",
             recipe.RecipeName, qualityCalc.FinalQuality);
 
