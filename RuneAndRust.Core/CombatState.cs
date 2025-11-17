@@ -45,6 +45,15 @@ public class CombatState
         CombatLog.Add(message);
     }
 
+    /// <summary>
+    /// v0.37.2: Clear combat log for a new action
+    /// Used by commands to reset log before executing
+    /// </summary>
+    public void ClearLogForNewAction()
+    {
+        CombatLog.Clear();
+    }
+
     public void NextTurn()
     {
         CurrentTurnIndex = (CurrentTurnIndex + 1) % InitiativeOrder.Count;

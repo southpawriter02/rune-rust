@@ -14,9 +14,11 @@ public class CommandDispatcher
 
     public CommandDispatcher(
         DiceService diceService,
-        LootService lootService)
+        LootService lootService,
+        CombatEngine? combatEngine = null,
+        StanceService? stanceService = null)
     {
-        _log.Information("Initializing CommandDispatcher with navigation commands");
+        _log.Information("Initializing CommandDispatcher with navigation and combat commands");
 
         _commandRegistry = new Dictionary<CommandType, ICommand>();
 
@@ -24,7 +26,24 @@ public class CommandDispatcher
         RegisterCommand(CommandType.Look, new LookCommand());
         RegisterCommand(CommandType.Move, new GoCommand());
         RegisterCommand(CommandType.Solve, new InvestigateCommand(diceService)); // Using Solve for investigate
-        // Search command will be added when we have a proper mapping
+        // Note: Search command needs proper CommandType mapping (future work)
+
+        // Register v0.37.2 Combat Commands (if services available)
+        if (combatEngine != null)
+        {
+            RegisterCommand(CommandType.Attack, new AttackCommand(combatEngine));
+            RegisterCommand(CommandType.Ability, new AbilityCommand(combatEngine));
+            RegisterCommand(CommandType.Defend, new BlockCommand(combatEngine)); // Block/Defend
+            RegisterCommand(CommandType.Flee, new FleeCommand(combatEngine));
+
+            // Parry command requires counter-attack service (optional)
+            RegisterCommand(CommandType.Command, new ParryCommand(combatEngine)); // Using Command type temporarily
+        }
+
+        if (stanceService != null)
+        {
+            RegisterCommand(CommandType.Stance, new StanceCommand(stanceService));
+        }
 
         _log.Information("CommandDispatcher initialized with {CommandCount} commands", _commandRegistry.Count);
     }
