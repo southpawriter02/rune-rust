@@ -6,7 +6,7 @@ using Serilog;
 namespace RuneAndRust.Engine;
 
 /// <summary>
-/// Manages quest lifecycle and tracking (v0.8, v0.9)
+/// Manages quest lifecycle and tracking (v0.8, v0.9, v0.35)
 /// </summary>
 public class QuestService
 {
@@ -14,11 +14,13 @@ public class QuestService
     private readonly Dictionary<string, Quest> _questDatabase = new();
     private readonly string _questDataPath;
     private readonly CurrencyService? _currencyService; // v0.9 - optional for backward compatibility
+    private readonly TerritoryService? _territoryService; // v0.35 - optional for territory integration
 
-    public QuestService(string dataPath = "Data/Quests", CurrencyService? currencyService = null)
+    public QuestService(string dataPath = "Data/Quests", CurrencyService? currencyService = null, TerritoryService? territoryService = null)
     {
         _questDataPath = dataPath;
         _currencyService = currencyService; // v0.9
+        _territoryService = territoryService; // v0.35
     }
 
     /// <summary>
@@ -352,6 +354,30 @@ public class QuestService
             messages.AddRange(GrantReward(quest.Reward, player));
         }
 
+        // v0.35: Record territorial action if quest has faction affiliation
+        if (_territoryService != null &&
+            quest.Reward?.Faction != null &&
+            player.CurrentSectorId.HasValue)
+        {
+            try
+            {
+                string factionName = ConvertFactionTypeToName(quest.Reward.Faction.Value);
+
+                _territoryService.RecordPlayerAction(
+                    player.Id,
+                    player.CurrentSectorId.Value,
+                    "Complete_Quest",
+                    factionName,
+                    $"Quest: {quest.Title}");
+
+                messages.Add($"[Territory] {factionName} influence increased in this sector!");
+            }
+            catch (Exception ex)
+            {
+                _log.Warning(ex, "Failed to record territorial action for quest {QuestId}", questId);
+            }
+        }
+
         // Move quest from active to completed
         quest.Status = QuestStatus.TurnedIn;
         quest.CompletedAt = DateTime.UtcNow;
@@ -520,5 +546,20 @@ public class QuestService
     {
         return player.ActiveQuests.FirstOrDefault(q => q.Id == questId) ??
                player.CompletedQuests.FirstOrDefault(q => q.Id == questId);
+    }
+
+    /// <summary>
+    /// v0.35: Helper method to convert FactionType enum to faction name string
+    /// Maps legacy v0.8 faction types to v0.35 territory faction names
+    /// </summary>
+    private string ConvertFactionTypeToName(FactionType faction)
+    {
+        return faction switch
+        {
+            FactionType.MidgardCombine => "IronBanes", // Organized rebuilders map to Iron-Banes
+            FactionType.RustClans => "RustClans",
+            FactionType.Independents => "Independents",
+            _ => "Independents"
+        };
     }
 }
