@@ -4,6 +4,7 @@ using RuneAndRust.Core.Dialogue;
 using RuneAndRust.Core.Population;
 using RuneAndRust.Core.Quests;
 using RuneAndRust.Engine;
+using RuneAndRust.Engine.Commands;
 using RuneAndRust.Engine.Integration;
 using RuneAndRust.Persistence;
 using Serilog;
@@ -100,6 +101,10 @@ class Program
     private static FactionTerritoryIntegration? _factionTerritoryIntegration;
     private static CompanionTerritoryReactions? _companionTerritoryReactions;
 
+    // v0.37: Command System & Parser
+    private static StanceService _stanceService = new();
+    private static CommandDispatcher _commandDispatcher = null!; // Initialized in Main()
+
     static void Main(string[] args)
     {
         // Configure Serilog (v0.8.1)
@@ -123,6 +128,18 @@ class Program
         try
         {
             Log.Information("Rune & Rust starting up...");
+
+            // v0.37: Initialize Command Dispatcher with all services
+            _commandDispatcher = new CommandDispatcher(
+                _diceService,
+                _lootService,
+                _equipmentService,
+                _combatEngine,
+                _stanceService,
+                _companionService);
+
+            Log.Information("CommandDispatcher initialized with {CommandCount} commands",
+                _commandDispatcher.GetRegisteredCommands().Count());
 
             bool playAgain = true;
 
@@ -779,6 +796,28 @@ class Program
     {
         try
         {
+            // v0.37: Try CommandDispatcher first for registered commands
+            if (_commandDispatcher.IsCommandRegistered(command.Type))
+            {
+                var result = _commandDispatcher.Dispatch(command, _gameState);
+
+                // Display result with Spectre.Console formatting
+                if (result.Success)
+                {
+                    AnsiConsole.MarkupLine(result.Message.EscapeMarkup());
+                }
+                else
+                {
+                    AnsiConsole.MarkupLine($"[red]{result.Message.EscapeMarkup()}[/]");
+                }
+
+                AnsiConsole.WriteLine();
+                AnsiConsole.MarkupLine("[dim]Press [yellow]ENTER[/] to continue...[/]");
+                Console.ReadLine();
+                return;
+            }
+
+            // Fall back to existing switch for legacy commands
             switch (command.Type)
             {
                 case CommandType.Look:

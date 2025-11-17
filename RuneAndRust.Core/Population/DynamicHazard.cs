@@ -27,6 +27,14 @@ public abstract class DynamicHazard
     public double DamageMultiplier { get; set; } = 1.0;
     public double RangeMultiplier { get; set; } = 1.0;
     public bool IsEnhancedByRule { get; set; } = false; // Flagged by rule system
+
+    // v0.37.1: Investigation properties
+    public string FlavorText => Description; // Alias for command system
+    public bool IsActive { get; set; } = true;
+    public bool CanBeDisabled { get; set; } = false;
+    public bool HasBeenInvestigated { get; set; } = false;
+    public int InvestigationDC { get; set; } = 3;
+    public string? DisableHint { get; set; } = null;
 }
 
 /// <summary>

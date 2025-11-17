@@ -301,4 +301,142 @@ public class LootService
         // Puzzle always rewards Optimized-tier class-appropriate weapon
         return EquipmentDatabase.GetRandomWeaponForClass(characterClass, QualityTier.Optimized);
     }
+
+    /// <summary>
+    /// v0.37.1: Generate loot from a LootNode (container, corpse, etc.)
+    /// Returns equipment, components, and currency
+    /// </summary>
+    public GeneratedLoot? GenerateLootForNode(RuneAndRust.Core.Population.LootNode lootNode)
+    {
+        var result = new GeneratedLoot();
+
+        // Tier-based loot generation
+        var tier = lootNode.Tier;
+        var quality = tier switch
+        {
+            0 => QualityTier.JuryRigged,
+            1 => QualityTier.Scavenged,
+            2 => QualityTier.ClanForged,
+            3 => QualityTier.Optimized,
+            _ => QualityTier.JuryRigged
+        };
+
+        // Equipment drop (40% chance for tiers 0-1, 60% for tier 2+)
+        var equipmentChance = tier >= 2 ? 60 : 40;
+        if (_random.Next(100) < equipmentChance)
+        {
+            var item = GenerateRandomItem(quality, null);
+            if (item != null)
+            {
+                result.Equipment.Add(item);
+            }
+        }
+
+        // Currency (always drops)
+        result.Currency = tier switch
+        {
+            0 => _random.Next(5, 16),      // 5-15 Scrap
+            1 => _random.Next(15, 31),     // 15-30 Scrap
+            2 => _random.Next(30, 61),     // 30-60 Scrap
+            3 => _random.Next(50, 101),    // 50-100 Scrap
+            _ => _random.Next(5, 11)
+        };
+
+        // Crafting components (60% chance)
+        if (_random.Next(100) < 60)
+        {
+            var componentCount = _random.Next(1, 4); // 1-3 different components
+            for (int i = 0; i < componentCount; i++)
+            {
+                var component = GenerateRandomComponent(tier);
+                if (result.Components.ContainsKey(component.Item1))
+                {
+                    result.Components[component.Item1] += component.Item2;
+                }
+                else
+                {
+                    result.Components[component.Item1] = component.Item2;
+                }
+            }
+        }
+
+        _log.Information(
+            "Loot generated for node: NodeType={NodeType}, Tier={Tier}, Equipment={EquipCount}, Components={ComponentTypes}, Currency={Currency}",
+            lootNode.NodeType,
+            tier,
+            result.Equipment.Count,
+            result.Components.Count,
+            result.Currency);
+
+        return result;
+    }
+
+    /// <summary>
+    /// Generate a random crafting component based on tier
+    /// </summary>
+    private (ComponentType, int) GenerateRandomComponent(int tier)
+    {
+        // Select rarity based on tier
+        var rarityRoll = _random.Next(100);
+        ComponentType component;
+        int quantity;
+
+        if (tier >= 3 && rarityRoll < 10) // Epic (10% for tier 3+)
+        {
+            var epicMaterials = new[]
+            {
+                ComponentType.JotunCoreFragment,
+                ComponentType.RunicEtchingTemplate
+            };
+            component = epicMaterials[_random.Next(epicMaterials.Length)];
+            quantity = 1;
+        }
+        else if (tier >= 2 && rarityRoll < 25) // Rare (25% for tier 2+)
+        {
+            var rareMaterials = new[]
+            {
+                ComponentType.DvergrAlloyIngot,
+                ComponentType.CorruptedCrystal,
+                ComponentType.AncientCircuitBoard
+            };
+            component = rareMaterials[_random.Next(rareMaterials.Length)];
+            quantity = _random.Next(1, 3);
+        }
+        else if (rarityRoll < 60) // Uncommon (60%)
+        {
+            var uncommonMaterials = new[]
+            {
+                ComponentType.StructuralScrap,
+                ComponentType.AethericDust,
+                ComponentType.TemperedSprings,
+                ComponentType.MedicinalHerbs
+            };
+            component = uncommonMaterials[_random.Next(uncommonMaterials.Length)];
+            quantity = _random.Next(1, 4);
+        }
+        else // Common (40%)
+        {
+            var commonMaterials = new[]
+            {
+                ComponentType.ScrapMetal,
+                ComponentType.RustedComponents,
+                ComponentType.ClothScraps,
+                ComponentType.BoneShards
+            };
+            component = commonMaterials[_random.Next(commonMaterials.Length)];
+            quantity = _random.Next(2, 6);
+        }
+
+        return (component, quantity);
+    }
+}
+
+/// <summary>
+/// v0.37.1: Result of loot generation from containers
+/// </summary>
+public class GeneratedLoot
+{
+    public List<Equipment> Equipment { get; set; } = new();
+    public Dictionary<ComponentType, int> Components { get; set; } = new();
+    public int Currency { get; set; } = 0;
 }

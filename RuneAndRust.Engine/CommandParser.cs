@@ -46,7 +46,18 @@ public enum CommandType
     History,
     // v0.34.4 - Companion System
     Command,
-    Stance
+    Stance,
+    // v0.37.1 - Navigation Commands
+    Investigate,
+    Search,
+    // v0.37.2 - Combat Commands
+    Parry,
+    // v0.37.3 - Inventory & Equipment Commands
+    Equipment,
+    Use,
+    // v0.37.4 - System Commands
+    Journal,
+    Skills
 }
 
 public class ParsedCommand
@@ -70,6 +81,13 @@ public class CommandParser
         { "l", CommandType.Look },
         { "examine", CommandType.Look },
 
+        // Investigation & Search (v0.37.1)
+        { "investigate", CommandType.Investigate },
+        { "inspect", CommandType.Investigate },
+        { "check", CommandType.Investigate },
+        { "search", CommandType.Search },
+        { "loot", CommandType.Search },
+
         // Movement
         { "north", CommandType.Move },
         { "n", CommandType.Move },
@@ -89,6 +107,8 @@ public class CommandParser
         { "sheet", CommandType.Stats },
         { "legend", CommandType.Legend },
         { "saga", CommandType.Saga },
+        { "skills", CommandType.Skills }, // v0.37.4
+        { "abilities", CommandType.Skills },
         { "milestone", CommandType.Milestone },
         { "ms", CommandType.Milestone },
         { "spend", CommandType.Spend },
@@ -101,6 +121,8 @@ public class CommandParser
         { "i", CommandType.Inventory },
 
         // Equipment (v0.3)
+        { "equipment", CommandType.Equipment }, // v0.37.3 - View loadout
+        { "eq", CommandType.Equipment },
         { "equip", CommandType.Equip },
         { "wear", CommandType.Equip },
         { "wield", CommandType.Equip },
@@ -110,6 +132,8 @@ public class CommandParser
         { "take", CommandType.Pickup },
         { "get", CommandType.Pickup },
         { "drop", CommandType.Drop },
+        { "use", CommandType.Use }, // v0.37.3 - Use consumables
+        { "consume", CommandType.Use },
         { "compare", CommandType.Compare },
         { "comp", CommandType.Compare },
 
@@ -120,6 +144,8 @@ public class CommandParser
         { "defend", CommandType.Defend },
         { "d", CommandType.Defend },
         { "block", CommandType.Defend },
+        { "parry", CommandType.Parry },
+        { "riposte", CommandType.Parry },
         { "ability", CommandType.Ability },
         { "ab", CommandType.Ability },
         { "skill", CommandType.Ability },
@@ -147,6 +173,8 @@ public class CommandParser
         { "quests", CommandType.Quests },
         { "questlog", CommandType.Quests },
         { "quest", CommandType.Quest },
+        { "journal", CommandType.Journal }, // v0.37.4
+        { "j", CommandType.Journal },
         { "reputation", CommandType.Reputation },
         { "rep", CommandType.Reputation },
         { "faction", CommandType.Reputation },
