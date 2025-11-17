@@ -22,6 +22,14 @@ public abstract class LootNode
 
     // Positional Data
     public Vector2 Position { get; set; } = new Vector2(0, 0);
+
+    // v0.37.1: Investigation and Search properties
+    public string NodeType => Name; // Alias for command system
+    public string FlavorText => Description; // Alias for command system
+    public int Tier { get; set; } = 0; // Loot tier (0-3)
+    public bool RequiresInvestigation { get; set; } = false;
+    public int InvestigationDC { get; set; } = 2;
+    public bool HiddenContentRevealed { get; set; } = false;
 }
 
 /// <summary>

@@ -30,6 +30,18 @@ public class StaticTerrain
     // Coherent Glitch Context (v0.12)
     public bool IsFromCeilingCollapse { get; set; } = false; // Created by [Unstable Ceiling]
     public bool IsOrganized { get; set; } = false; // Arranged by Haugbui-Class
+
+    // v0.37.1: Investigation and Search properties
+    public string TerrainName => Name; // Alias for command system
+    public string FlavorText => Description; // Alias for command system
+    public bool IsInteractive { get; set; } = false;
+    public int InvestigationDC { get; set; } = 2;
+    public string? InvestigationSuccessText { get; set; } = null;
+    public string? InvestigationFailureText { get; set; } = null;
+    public bool HasBeenInvestigated { get; set; } = false;
+    public bool IsSearchable { get; set; } = false;
+    public bool HasBeenSearched { get; set; } = false;
+    public bool ContainsLoot { get; set; } = false;
 }
 
 /// <summary>
