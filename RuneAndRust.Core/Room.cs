@@ -70,6 +70,11 @@ public class Room
     public List<Population.LootNode> LootNodes { get; set; } = new();
     public List<Population.AmbientCondition> AmbientConditions { get; set; } = new();
 
+    // v0.38.x Descriptor-based Population
+    public List<Descriptors.StaticTerrainFeature> StaticTerrainFeatures { get; set; } = new(); // v0.38.2
+    public List<Descriptors.DynamicHazard> DynamicHazardFeatures { get; set; } = new(); // v0.38.2
+    public List<Descriptors.InteractiveObject> InteractiveObjects { get; set; } = new(); // v0.38.3
+
     // v0.11 Metadata
     public bool IsHandcrafted { get; set; } = false; // True for Quest Anchor rooms (skip procedural population)
 
