@@ -826,4 +826,180 @@ public class CraftingRepository
     }
 
     #endregion
+
+    #region Recipe Discovery
+
+    /// <summary>
+    /// Discover a recipe for a character
+    /// </summary>
+    public bool DiscoverRecipe(int characterId, int recipeId, string discoverySource)
+    {
+        _log.Debug("Discovering recipe: Character={CharacterId}, Recipe={RecipeId}, Source={Source}",
+            characterId, recipeId, discoverySource);
+
+        using var connection = new SqliteConnection(_connectionString);
+        connection.Open();
+
+        // Check if already known
+        using var checkCommand = connection.CreateCommand();
+        checkCommand.CommandText = @"
+            SELECT COUNT(*)
+            FROM Character_Recipes
+            WHERE character_id = @CharacterId AND recipe_id = @RecipeId
+        ";
+        checkCommand.Parameters.AddWithValue("@CharacterId", characterId);
+        checkCommand.Parameters.AddWithValue("@RecipeId", recipeId);
+
+        int exists = Convert.ToInt32(checkCommand.ExecuteScalar());
+        if (exists > 0)
+        {
+            _log.Information("Character {CharacterId} already knows recipe {RecipeId}",
+                characterId, recipeId);
+            return false; // Already known
+        }
+
+        // Add recipe knowledge
+        using var insertCommand = connection.CreateCommand();
+        insertCommand.CommandText = @"
+            INSERT INTO Character_Recipes (
+                character_id, recipe_id, is_unlocked, times_crafted,
+                discovered_at, discovery_source
+            )
+            VALUES (
+                @CharacterId, @RecipeId, 1, 0,
+                @DiscoveredAt, @Source
+            )
+        ";
+        insertCommand.Parameters.AddWithValue("@CharacterId", characterId);
+        insertCommand.Parameters.AddWithValue("@RecipeId", recipeId);
+        insertCommand.Parameters.AddWithValue("@DiscoveredAt", DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss"));
+        insertCommand.Parameters.AddWithValue("@Source", discoverySource);
+
+        insertCommand.ExecuteNonQuery();
+
+        _log.Information("Character {CharacterId} discovered recipe {RecipeId} via {Source}",
+            characterId, recipeId, discoverySource);
+
+        return true;
+    }
+
+    /// <summary>
+    /// Get all recipes known by a character
+    /// </summary>
+    public List<RecipeDetails> GetKnownRecipes(int characterId)
+    {
+        _log.Debug("Getting known recipes for character: {CharacterId}", characterId);
+
+        using var connection = new SqliteConnection(_connectionString);
+        connection.Open();
+
+        var recipes = new List<RecipeDetails>();
+
+        using var command = connection.CreateCommand();
+        command.CommandText = @"
+            SELECT
+                r.recipe_id, r.recipe_name, r.recipe_tier, r.crafted_item_type,
+                r.required_station, r.quality_bonus, r.base_value, r.crafting_time_minutes,
+                r.skill_attribute, r.skill_check_dc, r.discovery_method, r.recipe_description,
+                r.special_effects_json,
+                cr.times_crafted, cr.discovered_at, cr.discovery_source
+            FROM Crafting_Recipes r
+            INNER JOIN Character_Recipes cr ON r.recipe_id = cr.recipe_id
+            WHERE cr.character_id = @CharacterId AND cr.is_unlocked = 1
+            ORDER BY r.recipe_tier, r.recipe_name
+        ";
+        command.Parameters.AddWithValue("@CharacterId", characterId);
+
+        using var reader = command.ExecuteReader();
+        while (reader.Read())
+        {
+            var recipe = new RecipeDetails
+            {
+                RecipeId = reader.GetInt32(0),
+                RecipeName = reader.GetString(1),
+                RecipeTier = reader.GetString(2),
+                CraftedItemType = reader.GetString(3),
+                RequiredStation = reader.GetString(4),
+                QualityBonus = reader.GetInt32(5),
+                BaseValue = reader.GetInt32(6),
+                CraftingTimeMinutes = reader.GetInt32(7),
+                SkillAttribute = reader.GetString(8),
+                SkillCheckDC = reader.GetInt32(9),
+                DiscoveryMethod = reader.GetString(10),
+                RecipeDescription = reader.GetString(11),
+                SpecialEffectsJson = reader.IsDBNull(12) ? null : reader.GetString(12),
+                TimesCrafted = reader.GetInt32(13),
+                DiscoveredAt = reader.IsDBNull(14) ? null : DateTime.Parse(reader.GetString(14)),
+                DiscoverySource = reader.GetString(15)
+            };
+
+            // Load components for this recipe
+            recipe.RequiredComponents = GetRecipeComponents(connection, recipe.RecipeId);
+
+            recipes.Add(recipe);
+        }
+
+        _log.Information("Found {Count} known recipes for character {CharacterId}",
+            recipes.Count, characterId);
+        return recipes;
+    }
+
+    /// <summary>
+    /// Get recipes available from merchants
+    /// </summary>
+    public List<Recipe> GetMerchantRecipes()
+    {
+        _log.Debug("Getting merchant recipes");
+
+        using var connection = new SqliteConnection(_connectionString);
+        connection.Open();
+
+        var recipes = new List<Recipe>();
+
+        using var command = connection.CreateCommand();
+        command.CommandText = @"
+            SELECT
+                recipe_id, recipe_name, recipe_tier, crafted_item_type,
+                required_station, quality_bonus, base_value, crafting_time_minutes,
+                skill_attribute, skill_check_dc, discovery_method, recipe_description,
+                special_effects_json
+            FROM Crafting_Recipes
+            WHERE discovery_method IN ('Merchant', 'Default')
+            ORDER BY recipe_tier, recipe_name
+        ";
+
+        using var reader = command.ExecuteReader();
+        while (reader.Read())
+        {
+            recipes.Add(MapRecipeFromReader(reader));
+        }
+
+        _log.Information("Found {Count} merchant recipes", recipes.Count);
+        return recipes;
+    }
+
+    /// <summary>
+    /// Increment times crafted for a recipe
+    /// </summary>
+    public void IncrementTimesCrafted(int characterId, int recipeId)
+    {
+        _log.Debug("Incrementing times crafted: Character={CharacterId}, Recipe={RecipeId}",
+            characterId, recipeId);
+
+        using var connection = new SqliteConnection(_connectionString);
+        connection.Open();
+
+        using var command = connection.CreateCommand();
+        command.CommandText = @"
+            UPDATE Character_Recipes
+            SET times_crafted = times_crafted + 1
+            WHERE character_id = @CharacterId AND recipe_id = @RecipeId
+        ";
+        command.Parameters.AddWithValue("@CharacterId", characterId);
+        command.Parameters.AddWithValue("@RecipeId", recipeId);
+
+        command.ExecuteNonQuery();
+    }
+
+    #endregion
 }
