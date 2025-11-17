@@ -1,4 +1,5 @@
 using RuneAndRust.Core;
+using RuneAndRust.Core.CombatFlavor;
 using RuneAndRust.Persistence;
 using Serilog;
 
@@ -22,12 +23,13 @@ public class CombatEngine
     private readonly CounterAttackService? _counterAttackService; // [v0.21.4]
     private readonly CompanionService? _companionService; // [v0.34.4]
     private readonly TerritoryService? _territoryService; // [v0.35]
+    private readonly CombatFlavorTextService? _flavorTextService; // [v0.38.6]
 
     // [v0.21.3] Target ID mapping for status effects
     // Player ID = 0, Enemy IDs = hash of enemy ID string
     private const int PLAYER_TARGET_ID = 0;
 
-    public CombatEngine(DiceService diceService, SagaService sagaService, LootService lootService, EquipmentService equipmentService, HazardService hazardService, CurrencyService currencyService, AdvancedStatusEffectService? statusEffectService = null, CounterAttackService? counterAttackService = null, string? connectionString = null, TerritoryService? territoryService = null)
+    public CombatEngine(DiceService diceService, SagaService sagaService, LootService lootService, EquipmentService equipmentService, HazardService hazardService, CurrencyService currencyService, AdvancedStatusEffectService? statusEffectService = null, CounterAttackService? counterAttackService = null, string? connectionString = null, TerritoryService? territoryService = null, CombatFlavorTextService? flavorTextService = null)
     {
         _diceService = diceService;
         _sagaService = sagaService;
@@ -44,6 +46,7 @@ public class CombatEngine
         _counterAttackService = counterAttackService; // [v0.21.4]
         _companionService = connectionString != null ? new CompanionService(connectionString) : null; // [v0.34.4]
         _territoryService = territoryService; // [v0.35]
+        _flavorTextService = flavorTextService; // [v0.38.6]
     }
 
     /// <summary>
@@ -389,6 +392,51 @@ public class CombatEngine
         if (damage > 0)
         {
             target.HP -= damage;
+
+            // [v0.38.6] Generate combat flavor text if service is available
+            if (_flavorTextService != null)
+            {
+                // Determine combat outcome for flavor text
+                var outcome = CombatOutcomeCalculator.DetermineOutcome(
+                    attackRoll.Successes,
+                    defendRoll.Successes,
+                    damage,
+                    totalDamageDice * 6, // Max possible damage from dice
+                    isCriticalHit);
+
+                // Get weapon type for flavor text
+                var weaponType = GetWeaponType(player.EquippedWeapon);
+                var weaponName = player.EquippedWeapon?.Name ?? "fists";
+
+                // Generate attack flavor text
+                var attackFlavor = _flavorTextService.GeneratePlayerAttackText(
+                    weaponType,
+                    weaponName,
+                    target.Name,
+                    outcome);
+                combatState.AddLogEntry($"  {attackFlavor}");
+
+                // Generate enemy damage reaction
+                var enemyArchetype = EnemyArchetypeMapper.GetArchetype(target);
+                var reactionFlavor = _flavorTextService.GenerateEnemyDamageReaction(
+                    enemyArchetype,
+                    target.Name,
+                    damage,
+                    isDying: !target.IsAlive);
+                combatState.AddLogEntry($"  {reactionFlavor}");
+
+                // Environmental atmosphere (if room context available)
+                if (combatState.CurrentRoom != null)
+                {
+                    var envFlavor = _flavorTextService.GenerateEnvironmentalReaction(
+                        combatState.CurrentRoom.BiomeName);
+                    if (!string.IsNullOrEmpty(envFlavor))
+                    {
+                        combatState.AddLogEntry($"  {envFlavor}");
+                    }
+                }
+            }
+
             combatState.AddLogEntry($"  {target.Name} takes {damage} damage! (HP: {Math.Max(0, target.HP)}/{target.MaxHP})");
 
             _log.Information("Damage dealt: Attacker={Attacker}, Target={Target}, Damage={Damage}, AttackSuccesses={AttackSuccesses}, DefendSuccesses={DefendSuccesses}, RemainingHP={RemainingHP}",
@@ -410,7 +458,27 @@ public class CombatEngine
         }
         else
         {
-            combatState.AddLogEntry($"  The attack is deflected!");
+            // [v0.38.6] Generate miss/deflect flavor text
+            if (_flavorTextService != null)
+            {
+                var outcome = attackRoll.Successes > 0 && attackRoll.Successes == defendRoll.Successes
+                    ? CombatOutcome.Deflected
+                    : CombatOutcome.Miss;
+
+                var weaponType = GetWeaponType(player.EquippedWeapon);
+                var weaponName = player.EquippedWeapon?.Name ?? "fists";
+
+                var missFlavor = _flavorTextService.GeneratePlayerAttackText(
+                    weaponType,
+                    weaponName,
+                    target.Name,
+                    outcome);
+                combatState.AddLogEntry($"  {missFlavor}");
+            }
+            else
+            {
+                combatState.AddLogEntry($"  The attack is deflected!");
+            }
 
             _log.Debug("Attack deflected: Attacker={Attacker}, Target={Target}, AttackSuccesses={AttackSuccesses}, DefendSuccesses={DefendSuccesses}",
                 player.Name, target.Name, attackRoll.Successes, defendRoll.Successes);
@@ -2477,5 +2545,33 @@ public class CombatEngine
 
         // Default to Independents if no reputation data
         return "Independents";
+    }
+
+    /// <summary>
+    /// v0.38.6: Get weapon type for combat flavor text from equipped weapon
+    /// </summary>
+    private WeaponType GetWeaponType(Equipment? weapon)
+    {
+        if (weapon == null)
+        {
+            return WeaponType.Unarmed;
+        }
+
+        // Determine weapon type from equipment
+        // Check weapon category and hand requirement
+        return weapon.Category.ToLower() switch
+        {
+            "weapon" when weapon.Name.Contains("Bow") => WeaponType.Bow,
+            "weapon" when weapon.Name.Contains("Crossbow") => WeaponType.Crossbow,
+            "weapon" when weapon.Name.Contains("Sword") && weapon.HandRequirement == 2 => WeaponType.SwordTwoHanded,
+            "weapon" when weapon.Name.Contains("Sword") => WeaponType.SwordOneHanded,
+            "weapon" when weapon.Name.Contains("Axe") && weapon.HandRequirement == 2 => WeaponType.AxeTwoHanded,
+            "weapon" when weapon.Name.Contains("Axe") => WeaponType.AxeOneHanded,
+            "weapon" when weapon.Name.Contains("Hammer") && weapon.HandRequirement == 2 => WeaponType.HammerTwoHanded,
+            "weapon" when weapon.Name.Contains("Hammer") || weapon.Name.Contains("Mace") => WeaponType.HammerOneHanded,
+            "weapon" when weapon.HandRequirement == 2 => WeaponType.SwordTwoHanded,
+            "weapon" => WeaponType.SwordOneHanded,
+            _ => WeaponType.Unarmed
+        };
     }
 }
