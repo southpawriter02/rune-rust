@@ -7,8 +7,9 @@ namespace RuneAndRust.Persistence;
 /// <summary>
 /// v0.38: Data repository for the Descriptor Library Framework
 /// Provides database access to base templates, thematic modifiers, and composite descriptors
+/// v0.38.1: Extended with room descriptor fragments and function variants (see DescriptorRepository_RoomExtensions.cs)
 /// </summary>
-public class DescriptorRepository
+public partial class DescriptorRepository
 {
     private static readonly ILogger _log = Log.ForContext<DescriptorRepository>();
     private readonly string _connectionString;
