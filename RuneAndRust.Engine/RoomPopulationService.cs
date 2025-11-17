@@ -8,7 +8,8 @@ namespace RuneAndRust.Engine;
 /// <summary>
 /// v0.38 Integration: Room Population Service
 /// Coordinates all descriptor services to procedurally populate rooms
-/// Integrates v0.38.1 (Room Descriptions), v0.38.2 (Environmental Features), v0.38.3 (Interactive Objects)
+/// Integrates v0.38.1 (Room Descriptions), v0.38.2 (Environmental Features),
+/// v0.38.3 (Interactive Objects), v0.38.4 (Atmospheric Descriptors)
 /// </summary>
 public class RoomPopulationService
 {
@@ -16,6 +17,7 @@ public class RoomPopulationService
     private readonly RoomDescriptorService _roomDescriptorService;
     private readonly EnvironmentalFeatureService _featureService;
     private readonly ObjectInteractionService _objectService;
+    private readonly AtmosphericDescriptorService _atmosphericService;
     private readonly ILogger _logger;
     private readonly Random _random;
 
@@ -24,6 +26,7 @@ public class RoomPopulationService
         RoomDescriptorService roomDescriptorService,
         EnvironmentalFeatureService featureService,
         ObjectInteractionService objectService,
+        AtmosphericDescriptorService atmosphericService,
         ILogger logger,
         Random? random = null)
     {
@@ -31,6 +34,7 @@ public class RoomPopulationService
         _roomDescriptorService = roomDescriptorService;
         _featureService = featureService;
         _objectService = objectService;
+        _atmosphericService = atmosphericService;
         _logger = logger;
         _random = random ?? new Random();
     }
@@ -57,20 +61,24 @@ public class RoomPopulationService
             // Step 1: Generate room name and description (v0.38.1)
             PopulateRoomDescription(room, biome, archetype);
 
-            // Step 2: Generate static terrain and hazards (v0.38.2)
+            // Step 2: Generate atmospheric description (v0.38.4)
+            PopulateAtmosphere(room, biome, archetype);
+
+            // Step 3: Generate static terrain and hazards (v0.38.2)
             PopulateEnvironmentalFeatures(room, biome, archetype);
 
-            // Step 3: Generate interactive objects (v0.38.3)
+            // Step 4: Generate interactive objects (v0.38.3)
             PopulateInteractiveObjects(room, biome, archetype);
 
-            // Step 4: Apply coherent glitch rules
+            // Step 5: Apply coherent glitch rules
             ApplyCoherentGlitchRules(room, biome);
 
             _logger.Information(
-                "Room population complete: {RoomId} - {Features} features, {Objects} objects",
+                "Room population complete: {RoomId} - {Features} features, {Objects} objects, Atmosphere: {HasAtmosphere}",
                 room.RoomId,
                 room.StaticTerrainFeatures.Count + room.DynamicHazardFeatures.Count,
-                room.InteractiveObjects.Count);
+                room.InteractiveObjects.Count,
+                !string.IsNullOrEmpty(room.AtmosphericDescription));
         }
         catch (Exception ex)
         {
@@ -109,6 +117,48 @@ public class RoomPopulationService
             room.Name = $"{biome} {archetype}";
             room.Description = $"A {archetype.ToString().ToLower()} in {biome}.";
         }
+    }
+
+    #endregion
+
+    #region Atmospheric Description (v0.38.4)
+
+    private void PopulateAtmosphere(Room room, string biome, Population.RoomArchetype archetype)
+    {
+        try
+        {
+            // Determine intensity based on archetype
+            var intensity = GetAtmosphericIntensityForArchetype(archetype);
+
+            // Generate atmospheric description
+            room.AtmosphericDescription = _atmosphericService.GenerateAtmosphere(biome, intensity);
+            room.AtmosphericIntensity = intensity;
+
+            _logger.Debug(
+                "Generated atmosphere: {RoomId} - Intensity: {Intensity}",
+                room.RoomId,
+                intensity);
+        }
+        catch (Exception ex)
+        {
+            _logger.Error(ex,
+                "Error generating atmosphere: {RoomId}",
+                room.RoomId);
+            // Fallback: Leave atmosphere null
+            room.AtmosphericDescription = null;
+            room.AtmosphericIntensity = null;
+        }
+    }
+
+    private Descriptors.AtmosphericIntensity GetAtmosphericIntensityForArchetype(Population.RoomArchetype archetype)
+    {
+        return archetype switch
+        {
+            Population.RoomArchetype.BossArena => Descriptors.AtmosphericIntensity.Oppressive,  // Oppressive for boss fights
+            Population.RoomArchetype.Corridor => Descriptors.AtmosphericIntensity.Subtle,  // Subtle for corridors
+            Population.RoomArchetype.SecretRoom => Descriptors.AtmosphericIntensity.Subtle,  // Subtle for secrets
+            _ => Descriptors.AtmosphericIntensity.Moderate  // Moderate default
+        };
     }
 
     #endregion
