@@ -245,7 +245,8 @@ private readonly Dictionary<CommandType, ICommand> _commandRegistry;
 
 RegisterCommand(CommandType.Look, new LookCommand());
 RegisterCommand(CommandType.Move, new GoCommand());
-RegisterCommand(CommandType.Solve, new InvestigateCommand(diceService));
+RegisterCommand(CommandType.Investigate, new InvestigateCommand(diceService));
+RegisterCommand(CommandType.Search, new SearchCommand(lootService));
 ```
 
 **Argument Building:**

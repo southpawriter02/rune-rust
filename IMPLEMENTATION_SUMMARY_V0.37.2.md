@@ -141,7 +141,7 @@ Successfully implemented v0.37.2 Combat Commands, adding six combat-specific com
      - Ability → AbilityCommand
      - Stance → StanceCommand
      - Defend → BlockCommand
-     - Command → ParryCommand (temporary mapping)
+     - Parry → ParryCommand
      - Flee → FleeCommand
 
 ---
@@ -347,10 +347,8 @@ _log.Error(ex,
 
 ### Current Limitations:
 1. **No Dynamic Ability Routing in Parser** - Ability command requires explicit routing (future enhancement)
-2. **Parry Uses CommandType.Command** - Needs proper CommandType.Parry enum value
-3. **No Search CommandType** - Search command from v0.37.1 not yet registered
-4. **Turn Management** - Commands don't advance turn (handled by game loop)
-5. **No Resource Consumption Display** - Stamina/AP costs not shown in output
+2. **Turn Management** - Commands don't advance turn (handled by game loop)
+3. **No Resource Consumption Display** - Stamina/AP costs not shown in output
 
 ### Future Enhancements (v0.37.3+):
 1. Inventory/Equipment commands (use, equip, drop)

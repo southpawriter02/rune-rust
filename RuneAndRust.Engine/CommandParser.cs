@@ -46,7 +46,12 @@ public enum CommandType
     History,
     // v0.34.4 - Companion System
     Command,
-    Stance
+    Stance,
+    // v0.37.1 - Navigation Commands
+    Investigate,
+    Search,
+    // v0.37.2 - Combat Commands
+    Parry
 }
 
 public class ParsedCommand
@@ -69,6 +74,13 @@ public class CommandParser
         { "look", CommandType.Look },
         { "l", CommandType.Look },
         { "examine", CommandType.Look },
+
+        // Investigation & Search (v0.37.1)
+        { "investigate", CommandType.Investigate },
+        { "inspect", CommandType.Investigate },
+        { "check", CommandType.Investigate },
+        { "search", CommandType.Search },
+        { "loot", CommandType.Search },
 
         // Movement
         { "north", CommandType.Move },
@@ -120,6 +132,8 @@ public class CommandParser
         { "defend", CommandType.Defend },
         { "d", CommandType.Defend },
         { "block", CommandType.Defend },
+        { "parry", CommandType.Parry },
+        { "riposte", CommandType.Parry },
         { "ability", CommandType.Ability },
         { "ab", CommandType.Ability },
         { "skill", CommandType.Ability },

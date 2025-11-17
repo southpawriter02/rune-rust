@@ -25,8 +25,8 @@ public class CommandDispatcher
         // Register v0.37.1 Navigation Commands
         RegisterCommand(CommandType.Look, new LookCommand());
         RegisterCommand(CommandType.Move, new GoCommand());
-        RegisterCommand(CommandType.Solve, new InvestigateCommand(diceService)); // Using Solve for investigate
-        // Note: Search command needs proper CommandType mapping (future work)
+        RegisterCommand(CommandType.Investigate, new InvestigateCommand(diceService));
+        RegisterCommand(CommandType.Search, new SearchCommand(lootService));
 
         // Register v0.37.2 Combat Commands (if services available)
         if (combatEngine != null)
@@ -35,9 +35,7 @@ public class CommandDispatcher
             RegisterCommand(CommandType.Ability, new AbilityCommand(combatEngine));
             RegisterCommand(CommandType.Defend, new BlockCommand(combatEngine)); // Block/Defend
             RegisterCommand(CommandType.Flee, new FleeCommand(combatEngine));
-
-            // Parry command requires counter-attack service (optional)
-            RegisterCommand(CommandType.Command, new ParryCommand(combatEngine)); // Using Command type temporarily
+            RegisterCommand(CommandType.Parry, new ParryCommand(combatEngine));
         }
 
         if (stanceService != null)
