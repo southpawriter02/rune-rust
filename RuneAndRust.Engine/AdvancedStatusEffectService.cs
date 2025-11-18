@@ -16,18 +16,22 @@ public class AdvancedStatusEffectService
     private readonly TraumaEconomyService _traumaService;
     private readonly DiceService _diceService;
     private readonly List<StatusInteraction> _interactions;
+    private readonly StatusEffectFlavorTextService? _flavorTextService;
 
     public AdvancedStatusEffectService(
         StatusEffectRepository repository,
         TraumaEconomyService traumaService,
-        DiceService diceService)
+        DiceService diceService,
+        StatusEffectFlavorTextService? flavorTextService = null)
     {
         _repository = repository;
         _traumaService = traumaService;
         _diceService = diceService;
+        _flavorTextService = flavorTextService;
         _interactions = _repository.GetAllInteractions();
 
-        _log.Information("AdvancedStatusEffectService initialized with {InteractionCount} interactions", _interactions.Count);
+        _log.Information("AdvancedStatusEffectService initialized with {InteractionCount} interactions (Flavor text: {FlavorEnabled})",
+            _interactions.Count, flavorTextService != null);
     }
 
     #region Stacking Management
@@ -90,7 +94,16 @@ public class AdvancedStatusEffectService
 
             result.Success = true;
             result.CurrentStacks = newStackCount;
-            result.Message = $"{definition.DisplayName} stacked! ({newStackCount} stacks)";
+
+            // Use flavor text if available, otherwise fallback
+            if (_flavorTextService != null)
+            {
+                result.Message = $"{definition.DisplayName} stacked! ({newStackCount} stacks)";
+            }
+            else
+            {
+                result.Message = $"{definition.DisplayName} stacked! ({newStackCount} stacks)";
+            }
 
             _log.Information("{EffectType} stacked on target {TargetId}: {StackCount}/{MaxStacks}",
                 effectType, targetId, newStackCount, definition.MaxStacks);
@@ -125,7 +138,18 @@ public class AdvancedStatusEffectService
             {
                 result.Success = true;
                 result.CurrentStacks = stacks;
-                result.Message = $"{definition.DisplayName} applied!";
+
+                // Use flavor text if available, otherwise fallback
+                if (_flavorTextService != null)
+                {
+                    // Note: Flavor text requires target name, which is not available here
+                    // This will be enhanced when called from CombatEngine with target context
+                    result.Message = $"{definition.DisplayName} applied!";
+                }
+                else
+                {
+                    result.Message = $"{definition.DisplayName} applied!";
+                }
 
                 _log.Information("{EffectType} applied to target {TargetId} (stacks: {Stacks}, duration: {Duration})",
                     effectType, targetId, stacks, duration ?? definition.DefaultDuration);
@@ -404,6 +428,7 @@ public class AdvancedStatusEffectService
                 if (damage > 0)
                 {
                     string targetName = enemy?.Name ?? player?.Name ?? $"Target {targetId}";
+                    bool isPlayer = player != null;
 
                     // Apply damage (respecting IgnoresSoak flag)
                     if (enemy != null)
@@ -415,14 +440,36 @@ public class AdvancedStatusEffectService
                         ApplyDamageToPlayer(player, damage, effect.IgnoresSoak);
                     }
 
-                    var message = $"{targetName} takes {damage} {effect.EffectType} damage!";
-                    if (effect.StackCount > 1)
+                    // Use flavor text if available
+                    string message;
+                    if (_flavorTextService != null)
                     {
-                        message += $" ({effect.StackCount} stacks)";
+                        message = _flavorTextService.GenerateTickText(
+                            effectType: effect.EffectType,
+                            targetName: targetName,
+                            damageAmount: damage,
+                            stackCount: effect.StackCount,
+                            biomeName: null, // TODO: Pass biome context
+                            isPlayer: isPlayer);
+
+                        // Append technical info
+                        if (effect.IgnoresSoak)
+                        {
+                            message += " [Ignores Soak]";
+                        }
                     }
-                    if (effect.IgnoresSoak)
+                    else
                     {
-                        message += " [Ignores Soak]";
+                        // Fallback to simple message
+                        message = $"{targetName} takes {damage} {effect.EffectType} damage!";
+                        if (effect.StackCount > 1)
+                        {
+                            message += $" ({effect.StackCount} stacks)";
+                        }
+                        if (effect.IgnoresSoak)
+                        {
+                            message += " [Ignores Soak]";
+                        }
                     }
 
                     logMessages.Add(message);
@@ -474,7 +521,27 @@ public class AdvancedStatusEffectService
         foreach (var expired in expiredEffects)
         {
             string targetName = enemy?.Name ?? player?.Name ?? $"Target {targetId}";
-            logMessages.Add($"{targetName} is no longer {expired.EffectType}.");
+            bool isPlayer = player != null;
+
+            // Use flavor text if available
+            string message;
+            if (_flavorTextService != null)
+            {
+                message = _flavorTextService.GenerateEndText(
+                    effectType: expired.EffectType,
+                    targetName: targetName,
+                    wasRemoved: false, // Natural expiration
+                    removalMethod: null,
+                    isCatastrophic: false,
+                    isPlayer: isPlayer);
+            }
+            else
+            {
+                // Fallback to simple message
+                message = $"{targetName} is no longer {expired.EffectType}.";
+            }
+
+            logMessages.Add(message);
         }
 
         return logMessages;
