@@ -37,6 +37,10 @@ class Program
     private static AdvancedStatusEffectService _statusEffectService = new(_statusEffectRepository, _traumaService, _diceService, _statusEffectFlavorService);
     // [v0.38.9] Examination & Perception Flavor Text Service
     private static ExaminationFlavorTextService _examinationFlavorService = new(_descriptorRepository);
+    // [v0.38.10] Skill Usage Flavor Text Service
+    private static SkillUsageFlavorTextService _skillUsageFlavorService = new(_descriptorRepository);
+    // [v0.38.3/v0.38.10] Object Interaction Service with Skill Flavor Text
+    private static ObjectInteractionService _objectInteractionService = new(_descriptorRepository, Log.Logger, null, _skillUsageFlavorService);
     private static CompanionCommands _companionCommands = new(_companionService);
     private static CombatEngine _combatEngine = new(_diceService, _sagaService, _lootService, _equipmentService, _hazardService, _currencyService, _statusEffectService, null, _connectionString);
     private static EnemyAI _enemyAI = new(_diceService, _statusEffectService);
