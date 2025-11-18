@@ -1,17 +1,28 @@
 using System.Text;
 using RuneAndRust.Core;
+using RuneAndRust.Persistence;
 using Serilog;
 
 namespace RuneAndRust.Engine.Commands;
 
 /// <summary>
 /// v0.37.4: Talk Command
+/// v0.38.11: Integrated with NPCFlavorTextService for dynamic greetings
 /// Initiates dialogue with NPCs in the current room.
 /// Syntax: talk [to] [npc_name] (aliases: speak)
 /// </summary>
 public class TalkCommand : ICommand
 {
     private static readonly ILogger _log = Log.ForContext<TalkCommand>();
+    private readonly NPCFlavorTextService? _npcFlavorService;
+
+    public TalkCommand(DescriptorRepository? repository = null)
+    {
+        if (repository != null)
+        {
+            _npcFlavorService = new NPCFlavorTextService(repository);
+        }
+    }
 
     public CommandResult Execute(GameState state, string[] args)
     {
@@ -101,16 +112,34 @@ public class TalkCommand : ICommand
         output.AppendLine($"{npc.Name} looks at you.");
         output.AppendLine();
 
-        // Show initial greeting or dialogue
-        if (!string.IsNullOrEmpty(npc.InitialGreeting))
+        // v0.38.11: Generate dynamic greeting based on disposition and archetype
+        string greeting;
+        if (_npcFlavorService != null && !string.IsNullOrEmpty(npc.Archetype))
         {
-            output.AppendLine($"{npc.Name}: \"{npc.InitialGreeting}\"");
+            try
+            {
+                var dispositionTier = npc.GetDispositionTier();
+                greeting = _npcFlavorService.GeneratePlayerApproachReaction(
+                    npc.Archetype,
+                    npc.Subtype,
+                    dispositionTier);
+
+                _log.Debug("Generated dynamic greeting for {NpcName}: Archetype={Archetype}, Subtype={Subtype}, Disposition={Disposition}",
+                    npc.Name, npc.Archetype, npc.Subtype, dispositionTier);
+            }
+            catch (Exception ex)
+            {
+                _log.Warning(ex, "Failed to generate dynamic greeting for {NpcName}, using fallback", npc.Name);
+                greeting = !string.IsNullOrEmpty(npc.InitialGreeting) ? npc.InitialGreeting : "Greetings, traveler.";
+            }
         }
         else
         {
-            output.AppendLine($"{npc.Name}: \"Greetings, traveler.\"");
+            // Fallback to static greeting
+            greeting = !string.IsNullOrEmpty(npc.InitialGreeting) ? npc.InitialGreeting : "Greetings, traveler.";
         }
 
+        output.AppendLine($"{npc.Name}: \"{greeting}\"");
         output.AppendLine();
 
         // Dialogue system integration (placeholder)

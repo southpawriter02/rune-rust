@@ -3,6 +3,8 @@
   "Name": "Eydis the Survivor",
   "Description": "A disheveled woman with wild eyes and trembling hands. Dark veins spider across her skin - signs of advanced Corruption. She mutters to herself incoherently.",
   "InitialGreeting": "Stay... stay back! The voices... they won't stop...",
+  "Archetype": "Forlorn",
+  "Subtype": "Deteriorated",
   "RoomId": 22,
   "IsHostile": false,
   "Faction": "Independents",

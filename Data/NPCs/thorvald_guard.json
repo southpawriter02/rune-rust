@@ -3,6 +3,8 @@
   "Name": "Thorvald the Guard",
   "Description": "A stern-faced man in reinforced scrap armor bearing the Midgard Combine insignia. He stands watchful, clearly on duty.",
   "InitialGreeting": "Hail, traveler. I guard this outpost for the Combine. State your business.",
+  "Archetype": "Guard",
+  "Subtype": "Veteran",
   "RoomId": 12,
   "IsHostile": false,
   "Faction": "MidgardCombine",

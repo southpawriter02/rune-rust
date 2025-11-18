@@ -3,6 +3,8 @@
   "Name": "Astrid the Jötun-Reader",
   "Description": "A lean woman with ink-stained fingers, poring over ancient fragments of text. She looks up with curious, intelligent eyes.",
   "InitialGreeting": "Ah, another soul drawn to these ancient halls. Do you seek knowledge, or just loot?",
+  "Archetype": "Citizen",
+  "Subtype": "Artisan",
   "RoomId": 10,
   "IsHostile": false,
   "Faction": "Independents",
