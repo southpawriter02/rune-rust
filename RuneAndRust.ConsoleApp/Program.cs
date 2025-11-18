@@ -41,9 +41,11 @@ class Program
     private static SkillUsageFlavorTextService _skillUsageFlavorService = new(_descriptorRepository);
     // [v0.38.3/v0.38.10] Object Interaction Service with Skill Flavor Text
     private static ObjectInteractionService _objectInteractionService = new(_descriptorRepository, Log.Logger, null, _skillUsageFlavorService);
+    // [v0.38.12] Combat Mechanics Flavor Text Service
+    private static CombatFlavorTextService _combatFlavorService = new(_descriptorRepository);
     private static CompanionCommands _companionCommands = new(_companionService);
-    private static CombatEngine _combatEngine = new(_diceService, _sagaService, _lootService, _equipmentService, _hazardService, _currencyService, _statusEffectService, null, _connectionString);
-    private static EnemyAI _enemyAI = new(_diceService, _statusEffectService);
+    private static CombatEngine _combatEngine = new(_diceService, _sagaService, _lootService, _equipmentService, _hazardService, _currencyService, _statusEffectService, null, _connectionString, null, _combatFlavorService);
+    private static EnemyAI _enemyAI = new(_diceService, _statusEffectService, null, _combatFlavorService);
     private static AdvancedMovementService _advancedMovement = new(); // v0.20.4
     private static SaveRepository _saveRepository = new();
     // v0.13: Persistent World State System
@@ -110,8 +112,8 @@ class Program
     private static FactionTerritoryIntegration? _factionTerritoryIntegration;
     private static CompanionTerritoryReactions? _companionTerritoryReactions;
 
-    // v0.37: Command System & Parser
-    private static StanceService _stanceService = new();
+    // v0.37: Command System & Parser [v0.38.12: Integrated with combat flavor service]
+    private static StanceService _stanceService = new(_combatFlavorService);
     private static CommandDispatcher _commandDispatcher = null!; // Initialized in Main()
 
     static void Main(string[] args)
@@ -1995,8 +1997,7 @@ class Program
             _ => StanceType.Calculated
         };
 
-        var stanceService = new StanceService();
-        var success = stanceService.SwitchStance(combat.Player, newStanceType, combat);
+        var success = _stanceService.SwitchStance(combat.Player, newStanceType, combat);
 
         if (!success)
         {

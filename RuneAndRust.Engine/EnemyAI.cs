@@ -1,4 +1,5 @@
 using RuneAndRust.Core;
+using RuneAndRust.Core.CombatFlavor;
 
 namespace RuneAndRust.Engine;
 
@@ -69,23 +70,26 @@ public class EnemyAI
     private readonly StanceService _stanceService; // v0.21.1
     private readonly AdvancedStatusEffectService? _statusEffectService; // v0.21.3
     private readonly CounterAttackService? _counterAttackService; // v0.21.4
+    private readonly CombatFlavorTextService? _flavorTextService; // v0.38.12
 
-    public EnemyAI(DiceService diceService, AdvancedStatusEffectService? statusEffectService = null, CounterAttackService? counterAttackService = null)
+    public EnemyAI(DiceService diceService, AdvancedStatusEffectService? statusEffectService = null, CounterAttackService? counterAttackService = null, CombatFlavorTextService? flavorTextService = null)
     {
         _diceService = diceService;
         _statusEffectService = statusEffectService;
         _counterAttackService = counterAttackService;
+        _flavorTextService = flavorTextService;
         _random = new Random();
         _flankingService = new FlankingService(); // v0.20.1
         _coverService = new CoverService(); // v0.20.2
         _stanceService = new StanceService(); // v0.21.1
     }
 
-    public EnemyAI(DiceService diceService, int seed, AdvancedStatusEffectService? statusEffectService = null, CounterAttackService? counterAttackService = null)
+    public EnemyAI(DiceService diceService, int seed, AdvancedStatusEffectService? statusEffectService = null, CounterAttackService? counterAttackService = null, CombatFlavorTextService? flavorTextService = null)
     {
         _diceService = diceService;
         _statusEffectService = statusEffectService;
         _counterAttackService = counterAttackService;
+        _flavorTextService = flavorTextService;
         _random = new Random(seed);
         _flankingService = new FlankingService(); // v0.20.1
         _coverService = new CoverService(); // v0.20.2
@@ -695,10 +699,38 @@ public class EnemyAI
         var attackRoll = _diceService.Roll(attackDice);
         combatState.AddLogEntry($"  Rolled {attackDice}d6: {FormatRolls(attackRoll)} = {attackRoll.Successes} successes");
 
-        // Check if player has dodge active
+        // Check if player has dodge active [v0.38.12: Using defensive action descriptors]
         if (combatState.PlayerNegateNextAttack)
         {
-            combatState.AddLogEntry($"  {player.Name} dodges the attack completely!");
+            if (_flavorTextService != null)
+            {
+                // Determine attack intensity
+                string attackIntensity = attackRoll.Successes switch
+                {
+                    < 2 => "Light",
+                    < 4 => "Heavy",
+                    _ => "Overwhelming"
+                };
+
+                var dodgeText = _flavorTextService.GenerateDefensiveActionText(
+                    "Dodge",
+                    "Success",
+                    weaponType: null,
+                    attackIntensity: attackIntensity,
+                    environmentContext: null,
+                    variables: new Dictionary<string, string>
+                    {
+                        {"ActorName", player.Name},
+                        {"AttackerName", enemy.Name}
+                    });
+
+                combatState.AddLogEntry($"  {dodgeText}");
+            }
+            else
+            {
+                combatState.AddLogEntry($"  {player.Name} dodges the attack completely!");
+            }
+
             combatState.PlayerNegateNextAttack = false;
             combatState.AddLogEntry("");
             return;
@@ -770,32 +802,72 @@ public class EnemyAI
             _counterAttackService.ConsumeParryAttempt(player);
             player.ParryReactionPrepared = false;
 
-            // Display parry outcome
-            switch (parryResult.Outcome)
+            // Display parry outcome [v0.38.12: Using defensive action descriptors]
+            if (_flavorTextService != null)
             {
-                case ParryOutcome.Critical:
-                    combatState.AddLogEntry($"✦ CRITICAL PARRY! ✦");
-                    combatState.AddLogEntry($"  Parry Roll: {parryResult.ParryRoll} vs Accuracy: {parryResult.AccuracyRoll}");
-                    combatState.AddLogEntry($"  Attack completely deflected!");
-                    break;
+                // Map ParryOutcome to descriptor outcome type
+                string outcomeType = parryResult.Outcome switch
+                {
+                    ParryOutcome.Critical => "CriticalSuccess",
+                    ParryOutcome.Superior => "Success",
+                    ParryOutcome.Standard => "Success",
+                    ParryOutcome.Failed => "Failure",
+                    _ => "Success"
+                };
 
-                case ParryOutcome.Superior:
-                    combatState.AddLogEntry($"◆ SUPERIOR PARRY! ◆");
-                    combatState.AddLogEntry($"  Parry Roll: {parryResult.ParryRoll} vs Accuracy: {parryResult.AccuracyRoll}");
-                    combatState.AddLogEntry($"  Attack deflected!");
-                    break;
+                // Determine attack intensity based on accuracy
+                string attackIntensity = attackAccuracy switch
+                {
+                    < 3 => "Light",
+                    < 6 => "Heavy",
+                    _ => "Overwhelming"
+                };
 
-                case ParryOutcome.Standard:
-                    combatState.AddLogEntry($"▸ PARRY! ▸");
-                    combatState.AddLogEntry($"  Parry Roll: {parryResult.ParryRoll} vs Accuracy: {parryResult.AccuracyRoll}");
-                    combatState.AddLogEntry($"  Attack blocked!");
-                    break;
+                var parryText = _flavorTextService.GenerateDefensiveActionText(
+                    "Parry",
+                    outcomeType,
+                    weaponType: player.EquippedWeapon?.Type,
+                    attackIntensity: attackIntensity,
+                    environmentContext: null,
+                    variables: new Dictionary<string, string>
+                    {
+                        {"ActorName", player.Name},
+                        {"WeaponName", player.EquippedWeapon?.Name ?? "weapon"},
+                        {"AttackerName", attacker.Name}
+                    });
 
-                case ParryOutcome.Failed:
-                    combatState.AddLogEntry($"✗ PARRY FAILED! ✗");
-                    combatState.AddLogEntry($"  Parry Roll: {parryResult.ParryRoll} vs Accuracy: {parryResult.AccuracyRoll}");
-                    combatState.AddLogEntry($"  Attack hits normally!");
-                    break;
+                combatState.AddLogEntry($"  {parryText}");
+                combatState.AddLogEntry($"  Parry Roll: {parryResult.ParryRoll} vs Accuracy: {parryResult.AccuracyRoll}");
+            }
+            else
+            {
+                // Fallback to original display
+                switch (parryResult.Outcome)
+                {
+                    case ParryOutcome.Critical:
+                        combatState.AddLogEntry($"✦ CRITICAL PARRY! ✦");
+                        combatState.AddLogEntry($"  Parry Roll: {parryResult.ParryRoll} vs Accuracy: {parryResult.AccuracyRoll}");
+                        combatState.AddLogEntry($"  Attack completely deflected!");
+                        break;
+
+                    case ParryOutcome.Superior:
+                        combatState.AddLogEntry($"◆ SUPERIOR PARRY! ◆");
+                        combatState.AddLogEntry($"  Parry Roll: {parryResult.ParryRoll} vs Accuracy: {parryResult.AccuracyRoll}");
+                        combatState.AddLogEntry($"  Attack deflected!");
+                        break;
+
+                    case ParryOutcome.Standard:
+                        combatState.AddLogEntry($"▸ PARRY! ▸");
+                        combatState.AddLogEntry($"  Parry Roll: {parryResult.ParryRoll} vs Accuracy: {parryResult.AccuracyRoll}");
+                        combatState.AddLogEntry($"  Attack blocked!");
+                        break;
+
+                    case ParryOutcome.Failed:
+                        combatState.AddLogEntry($"✗ PARRY FAILED! ✗");
+                        combatState.AddLogEntry($"  Parry Roll: {parryResult.ParryRoll} vs Accuracy: {parryResult.AccuracyRoll}");
+                        combatState.AddLogEntry($"  Attack hits normally!");
+                        break;
+                }
             }
 
             // Handle Riposte
