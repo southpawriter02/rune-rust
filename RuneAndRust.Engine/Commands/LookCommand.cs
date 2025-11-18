@@ -14,6 +14,12 @@ namespace RuneAndRust.Engine.Commands;
 public class LookCommand : ICommand
 {
     private static readonly ILogger _log = Log.ForContext<LookCommand>();
+    private readonly ExaminationFlavorTextService? _flavorTextService;
+
+    public LookCommand(ExaminationFlavorTextService? flavorTextService = null)
+    {
+        _flavorTextService = flavorTextService;
+    }
 
     public CommandResult Execute(GameState state, string[] args)
     {
@@ -74,6 +80,37 @@ public class LookCommand : ICommand
         sb.AppendLine($"=== {room.Name} ===");
         sb.AppendLine(room.Description);
         sb.AppendLine();
+
+        // [v0.38.9] Add flora/fauna atmosphere
+        if (_flavorTextService != null && !string.IsNullOrEmpty(room.BiomeName))
+        {
+            // Randomly show flora or fauna (50% chance each)
+            var random = new Random();
+            if (random.Next(100) < 30) // 30% chance to show flora
+            {
+                var floraObservation = _flavorTextService.GenerateFloraObservation(
+                    biomeName: room.BiomeName,
+                    floraName: null,
+                    witsCheck: 0);
+
+                if (!string.IsNullOrEmpty(floraObservation))
+                {
+                    sb.AppendLine($"[Flora] {floraObservation}");
+                    sb.AppendLine();
+                }
+            }
+
+            if (random.Next(100) < 20) // 20% chance to show fauna
+            {
+                var faunaObservation = _flavorTextService.GetRandomAmbientCreature(room.BiomeName);
+
+                if (!string.IsNullOrEmpty(faunaObservation))
+                {
+                    sb.AppendLine($"[Fauna] {faunaObservation}");
+                    sb.AppendLine();
+                }
+            }
+        }
 
         // Exits
         if (room.Exits.Any())
@@ -173,6 +210,53 @@ public class LookCommand : ICommand
         {
             sb.AppendLine();
             sb.AppendLine($"Puzzle: {room.PuzzleDescription}");
+        }
+
+        // [v0.38.9] Passive perception checks for hidden elements
+        if (_flavorTextService != null && state.Player?.Attributes?.Wits != null)
+        {
+            var random = new Random();
+            var passivePerceptionDC = 12; // Standard DC for passive perception
+
+            // Roll passive perception (simplified: Wits attribute determines chance)
+            var perceptionRoll = random.Next(1, 21) + state.Player.Attributes.Wits;
+
+            if (perceptionRoll >= passivePerceptionDC)
+            {
+                // Check for hidden traps
+                var hiddenTraps = room.DynamicHazards?
+                    .Where(h => h.IsActive && h.IsHidden && !h.HasBeenDiscovered)
+                    .ToList();
+
+                if (hiddenTraps?.Any() == true && random.Next(100) < 40) // 40% chance to notice
+                {
+                    var trap = hiddenTraps.First();
+                    trap.HasBeenDiscovered = true;
+
+                    var perceptionText = _flavorTextService.GeneratePerceptionCheckText(
+                        detectionType: "HiddenTrap",
+                        checkResult: perceptionRoll,
+                        biomeName: room.BiomeName);
+
+                    sb.AppendLine();
+                    sb.AppendLine($"[Perception Check: {perceptionRoll} vs DC {passivePerceptionDC}] SUCCESS!");
+                    sb.AppendLine(perceptionText);
+                }
+                // Check for secret doors/passages
+                else if (room.HasSecretExit && !room.SecretExitRevealed && random.Next(100) < 25) // 25% chance
+                {
+                    room.SecretExitRevealed = true;
+
+                    var perceptionText = _flavorTextService.GeneratePerceptionCheckText(
+                        detectionType: "SecretDoor",
+                        checkResult: perceptionRoll,
+                        biomeName: room.BiomeName);
+
+                    sb.AppendLine();
+                    sb.AppendLine($"[Perception Check: {perceptionRoll} vs DC {passivePerceptionDC}] SUCCESS!");
+                    sb.AppendLine(perceptionText);
+                }
+            }
         }
 
         return sb.ToString();

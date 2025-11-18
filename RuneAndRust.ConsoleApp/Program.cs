@@ -28,10 +28,15 @@ class Program
     private static TransactionService _transactionService = new(_currencyService, _pricingService); // [v0.9]
     // [v0.21.3] Advanced Status Effect System
     private static StatusEffectRepository _statusEffectRepository = new();
-    private static AdvancedStatusEffectService _statusEffectService = new(_statusEffectRepository, _traumaService, _diceService);
     // [v0.34.4] Companion System
     private static string _connectionString = "Data Source=runeandrust.db";
     private static CompanionService _companionService = new(_connectionString);
+    // [v0.38.8] Status Effect Flavor Text Service
+    private static DescriptorRepository _descriptorRepository = new(_connectionString);
+    private static StatusEffectFlavorTextService _statusEffectFlavorService = new(_descriptorRepository);
+    private static AdvancedStatusEffectService _statusEffectService = new(_statusEffectRepository, _traumaService, _diceService, _statusEffectFlavorService);
+    // [v0.38.9] Examination & Perception Flavor Text Service
+    private static ExaminationFlavorTextService _examinationFlavorService = new(_descriptorRepository);
     private static CompanionCommands _companionCommands = new(_companionService);
     private static CombatEngine _combatEngine = new(_diceService, _sagaService, _lootService, _equipmentService, _hazardService, _currencyService, _statusEffectService, null, _connectionString);
     private static EnemyAI _enemyAI = new(_diceService, _statusEffectService);
@@ -136,7 +141,8 @@ class Program
                 _equipmentService,
                 _combatEngine,
                 _stanceService,
-                _companionService);
+                _companionService,
+                _examinationFlavorService);
 
             Log.Information("CommandDispatcher initialized with {CommandCount} commands",
                 _commandDispatcher.GetRegisteredCommands().Count());

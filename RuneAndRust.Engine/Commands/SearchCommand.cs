@@ -15,10 +15,12 @@ public class SearchCommand : ICommand
 {
     private static readonly ILogger _log = Log.ForContext<SearchCommand>();
     private readonly LootService _lootService;
+    private readonly ExaminationFlavorTextService? _flavorTextService;
 
-    public SearchCommand(LootService lootService)
+    public SearchCommand(LootService lootService, ExaminationFlavorTextService? flavorTextService = null)
     {
         _lootService = lootService ?? throw new ArgumentNullException(nameof(lootService));
+        _flavorTextService = flavorTextService;
     }
 
     public CommandResult Execute(GameState state, string[] args)
@@ -108,7 +110,23 @@ public class SearchCommand : ICommand
         }
 
         var sb = new StringBuilder();
-        sb.AppendLine($"You search the {lootNode.NodeType}...");
+
+        // [v0.38.9] Use examination flavor text if available
+        if (_flavorTextService != null)
+        {
+            var flavorText = _flavorTextService.GenerateExaminationText(
+                objectCategory: "Container",
+                objectType: lootNode.NodeType,
+                witsCheck: 0, // Basic search, no check
+                objectState: null,
+                biomeName: state.CurrentRoom?.BiomeName);
+            sb.AppendLine(flavorText);
+        }
+        else
+        {
+            sb.AppendLine($"You search the {lootNode.NodeType}...");
+        }
+
         sb.AppendLine();
 
         // Generate loot using LootService

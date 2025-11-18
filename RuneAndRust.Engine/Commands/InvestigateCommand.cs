@@ -15,10 +15,12 @@ public class InvestigateCommand : ICommand
 {
     private static readonly ILogger _log = Log.ForContext<InvestigateCommand>();
     private readonly DiceService _diceService;
+    private readonly ExaminationFlavorTextService? _flavorTextService;
 
-    public InvestigateCommand(DiceService diceService)
+    public InvestigateCommand(DiceService diceService, ExaminationFlavorTextService? flavorTextService = null)
     {
         _diceService = diceService ?? throw new ArgumentNullException(nameof(diceService));
+        _flavorTextService = flavorTextService;
     }
 
     public CommandResult Execute(GameState state, string[] args)
@@ -131,7 +133,38 @@ public class InvestigateCommand : ICommand
         {
             terrain.HasBeenInvestigated = true;
 
-            sb.AppendLine(terrain.InvestigationSuccessText ?? $"You discover something interesting about the {terrain.TerrainName}.");
+            // [v0.38.9] Use examination flavor text if available
+            if (_flavorTextService != null)
+            {
+                var flavorText = _flavorTextService.GenerateExaminationText(
+                    objectCategory: "Terrain",
+                    objectType: terrain.TerrainName,
+                    witsCheck: rollResult.Successes,
+                    objectState: null,
+                    biomeName: state.CurrentRoom?.BiomeName);
+
+                sb.AppendLine(flavorText);
+
+                // Add lore fragment for expert examination (DC 18+)
+                if (rollResult.Successes >= 18)
+                {
+                    var loreFragment = _flavorTextService.GetLoreFragment(
+                        objectType: terrain.TerrainName,
+                        detailLevel: "Expert",
+                        biomeName: state.CurrentRoom?.BiomeName);
+
+                    if (loreFragment != null)
+                    {
+                        sb.AppendLine();
+                        sb.AppendLine($"[Expert Discovery: {loreFragment.LoreTitle}]");
+                        sb.AppendLine(loreFragment.LoreText);
+                    }
+                }
+            }
+            else
+            {
+                sb.AppendLine(terrain.InvestigationSuccessText ?? $"You discover something interesting about the {terrain.TerrainName}.");
+            }
 
             // Grant rewards if any (this would require a rewards system)
             // TODO: Implement reward granting in future version
@@ -186,8 +219,22 @@ public class InvestigateCommand : ICommand
         {
             lootNode.HiddenContentRevealed = true;
 
-            sb.AppendLine($"You discover a hidden compartment in the {lootNode.NodeType}!");
-            sb.AppendLine("Use 'search' to collect the contents.");
+            // [v0.38.9] Use examination flavor text if available
+            if (_flavorTextService != null)
+            {
+                var flavorText = _flavorTextService.GeneratePerceptionCheckText(
+                    detectionType: "HiddenCache",
+                    checkResult: rollResult.Successes,
+                    biomeName: state.CurrentRoom?.BiomeName);
+
+                sb.AppendLine(flavorText);
+                sb.AppendLine("Use 'search' to collect the contents.");
+            }
+            else
+            {
+                sb.AppendLine($"You discover a hidden compartment in the {lootNode.NodeType}!");
+                sb.AppendLine("Use 'search' to collect the contents.");
+            }
         }
         else
         {
