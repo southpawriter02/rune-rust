@@ -18,17 +18,18 @@ public class CommandDispatcher
         EquipmentService equipmentService,
         CombatEngine? combatEngine = null,
         StanceService? stanceService = null,
-        CompanionService? companionService = null)
+        CompanionService? companionService = null,
+        ExaminationFlavorTextService? examinationFlavorService = null)
     {
         _log.Information("Initializing CommandDispatcher with all command systems");
 
         _commandRegistry = new Dictionary<CommandType, ICommand>();
 
         // Register v0.37.1 Navigation Commands
-        RegisterCommand(CommandType.Look, new LookCommand());
+        RegisterCommand(CommandType.Look, new LookCommand(examinationFlavorService));
         RegisterCommand(CommandType.Move, new GoCommand());
-        RegisterCommand(CommandType.Investigate, new InvestigateCommand(diceService));
-        RegisterCommand(CommandType.Search, new SearchCommand(lootService));
+        RegisterCommand(CommandType.Investigate, new InvestigateCommand(diceService, examinationFlavorService));
+        RegisterCommand(CommandType.Search, new SearchCommand(lootService, examinationFlavorService));
 
         // Register v0.37.2 Combat Commands (if services available)
         if (combatEngine != null)
