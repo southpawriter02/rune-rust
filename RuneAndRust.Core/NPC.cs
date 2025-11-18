@@ -12,6 +12,10 @@ public class NPC
     public string Description { get; set; } = string.Empty;
     public string InitialGreeting { get; set; } = string.Empty;
 
+    // v0.38.11: NPC Flavor Text Classification
+    public string Archetype { get; set; } = "Citizen"; // Dvergr, Seidkona, Bandit, Raider, Merchant, Guard, Citizen, Forlorn
+    public string Subtype { get; set; } = "Laborer"; // Varies by archetype
+
     // Placement
     public int RoomId { get; set; }
     public bool IsHostile { get; set; } = false;

@@ -3,6 +3,8 @@
   "Name": "Rolf the Hermit",
   "Description": "An old man wrapped in tattered robes, his eyes sharp despite his age. He seems to know more than he lets on.",
   "InitialGreeting": "Hmm. Not many find their way to this corner. Interesting.",
+  "Archetype": "Citizen",
+  "Subtype": "Elder",
   "RoomId": 18,
   "IsHostile": false,
   "Faction": "Independents",

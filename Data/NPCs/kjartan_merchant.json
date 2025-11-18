@@ -3,6 +3,8 @@
   "Name": "Kjartan the Merchant",
   "Description": "A weathered trader with shrewd eyes, surrounded by crates of weapons, armor, and supplies. His stall is one of the few reliable sources of quality gear in the ruins.",
   "InitialGreeting": "Looking to buy or sell? I deal in weapons, armor, and anything else that keeps you alive in these ruins.",
+  "Archetype": "Merchant",
+  "Subtype": "Prosperous",
   "RoomId": 5,
   "IsHostile": false,
   "Faction": "MidgardCombine",

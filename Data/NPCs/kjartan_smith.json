@@ -3,6 +3,8 @@
   "Name": "Kjartan the Rust-Smith",
   "Description": "A burly man surrounded by salvaged tools and scrap metal. His hands are stained with rust and oil from years of tinkering with pre-Glitch machinery.",
   "InitialGreeting": "Looking for repairs? Or just browsing my collection?",
+  "Archetype": "Dvergr",
+  "Subtype": "Tinkerer",
   "RoomId": 5,
   "IsHostile": false,
   "Faction": "MidgardCombine",

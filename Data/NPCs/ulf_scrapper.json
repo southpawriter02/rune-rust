@@ -3,6 +3,8 @@
   "Name": "Ulf the Scrapper",
   "Description": "A grimy scavenger with rust-stained hands and a permanent scowl. His collection of scrap metal, components, and oddities is chaotic but surprisingly comprehensive. He'll buy anything that isn't nailed down.",
   "InitialGreeting": "Got scrap? I'll take it off your hands. Need materials? I probably got some buried in this mess somewhere.",
+  "Archetype": "Merchant",
+  "Subtype": "Struggling",
   "RoomId": 19,
   "IsHostile": false,
   "Faction": "RustClans",
