@@ -43,6 +43,8 @@ class Program
     private static ObjectInteractionService _objectInteractionService = new(_descriptorRepository, Log.Logger, null, _skillUsageFlavorService);
     // [v0.38.12] Combat Mechanics Flavor Text Service
     private static CombatFlavorTextService _combatFlavorService = new(_descriptorRepository);
+    // [v0.38.13] Ambient Environmental Descriptors Service
+    private static AmbientEnvironmentService _ambientEnvironmentService = new(_descriptorRepository);
     private static CompanionCommands _companionCommands = new(_companionService);
     private static CombatEngine _combatEngine = new(_diceService, _sagaService, _lootService, _equipmentService, _hazardService, _currencyService, _statusEffectService, null, _connectionString, null, _combatFlavorService);
     private static EnemyAI _enemyAI = new(_diceService, _statusEffectService, null, _combatFlavorService);
@@ -711,6 +713,18 @@ class Program
         // Display room
         UIHelper.DisplayRoomDescription(_gameState.CurrentRoom, _gameState.GetAvailableDirections());
 
+        // [v0.38.13] Display ambient environmental events (30% chance per loop iteration)
+        if (Random.Shared.NextDouble() < 0.3)
+        {
+            var timeOfDay = GetCurrentTimeOfDay();
+            var ambientEvent = _ambientEnvironmentService.GenerateAmbientEvent(_gameState.CurrentRoom, timeOfDay);
+            if (!string.IsNullOrEmpty(ambientEvent))
+            {
+                AnsiConsole.MarkupLine($"[dim]{ambientEvent}[/]");
+                AnsiConsole.WriteLine();
+            }
+        }
+
         // Show tutorial hints in the entrance
         if (_gameState.CurrentRoom.IsStartRoom)
         {
@@ -1010,6 +1024,17 @@ class Program
         _gameState.MoveToRoom(direction);
         AnsiConsole.MarkupLine($"[dim]You move {direction}...[/]");
         AnsiConsole.WriteLine();
+
+        // [v0.38.13] Display ambient environmental descriptions on room entry
+        var roomEntryAmbience = _ambientEnvironmentService.GenerateRoomEntryAmbience(_gameState.CurrentRoom);
+        foreach (var ambient in roomEntryAmbience)
+        {
+            AnsiConsole.MarkupLine($"[dim]{ambient}[/]");
+        }
+        if (roomEntryAmbience.Count > 0)
+        {
+            AnsiConsole.WriteLine();
+        }
         System.Threading.Thread.Sleep(800); // Brief pause for atmosphere
 
         // [v0.6] Process check-based hazards on room entry (e.g., Unstable Flooring)
@@ -3653,5 +3678,14 @@ class Program
 
         // Changing stance is a free action (doesn't end turn)
         return false;
+    }
+
+    // [v0.38.13] Helper method to get current time of day for ambient events
+    static string GetCurrentTimeOfDay()
+    {
+        // Simple time-of-day logic based on game state progression
+        // Can be enhanced with a proper time system in the future
+        var hour = DateTime.Now.Hour;
+        return (hour >= 6 && hour < 18) ? "Day" : "Night";
     }
 }
