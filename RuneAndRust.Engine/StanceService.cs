@@ -1,4 +1,5 @@
 using RuneAndRust.Core;
+using RuneAndRust.Core.CombatFlavor;
 using Serilog;
 
 namespace RuneAndRust.Engine;
@@ -7,10 +8,17 @@ namespace RuneAndRust.Engine;
 /// v0.21.1: Advanced Stance System Service
 /// Manages stance state, transitions, and combat effect calculations.
 /// Integrates with Trauma Economy for stress vectors.
+/// v0.38.12: Integrated combat stance descriptors
 /// </summary>
 public class StanceService
 {
     private static readonly ILogger _log = Log.ForContext<StanceService>();
+    private readonly CombatFlavorTextService? _flavorTextService;
+
+    public StanceService(CombatFlavorTextService? flavorTextService = null)
+    {
+        _flavorTextService = flavorTextService;
+    }
 
     /// <summary>
     /// v0.21.1: Switches a character's active stance.
@@ -61,8 +69,53 @@ public class StanceService
         _log.Information("Character {CharacterName} changed stance from {OldStance} to {NewStance} (Shifts remaining: {ShiftsRemaining})",
             character.Name, oldStanceType, newStanceType, character.StanceShiftsRemaining);
 
-        // Log to combat state
-        combatState?.AddLogEntry($"  Shifted to {GetStanceName(newStanceType)} stance (free action).");
+        // Log to combat state [v0.38.12: Using stance descriptors]
+        if (_flavorTextService != null && combatState != null)
+        {
+            // Determine situation context based on combat state
+            string? situationContext = null;
+            if (combatState.Enemies != null && combatState.Enemies.Count > 0)
+            {
+                var playerHP = (float)character.HP / character.MaxHP;
+                var enemyCount = combatState.Enemies.Count(e => e.IsAlive);
+
+                situationContext = enemyCount switch
+                {
+                    > 3 => "Surrounded",
+                    > 1 => "Outnumbered",
+                    _ when playerHP > 0.7f => "Winning",
+                    _ when playerHP < 0.3f => "Losing",
+                    _ => "EvenMatch"
+                };
+            }
+
+            // Determine weapon configuration
+            string? weaponConfig = null;
+            if (character.EquippedWeapon != null && character.EquippedShield != null)
+                weaponConfig = "SwordAndShield";
+            else if (character.EquippedWeapon?.IsTwoHanded == true)
+                weaponConfig = "TwoHanded";
+            else if (character.EquippedWeapon != null)
+                weaponConfig = "SingleWeapon";
+
+            var stanceText = _flavorTextService.GenerateCombatStanceText(
+                GetStanceName(newStanceType),
+                "Entering",
+                previousStance: GetStanceName(oldStanceType),
+                situationContext: situationContext,
+                weaponConfiguration: weaponConfig,
+                variables: new Dictionary<string, string>
+                {
+                    {"ActorName", character.Name}
+                });
+
+            combatState.AddLogEntry($"  {stanceText}");
+        }
+        else
+        {
+            combatState?.AddLogEntry($"  Shifted to {GetStanceName(newStanceType)} stance (free action).");
+        }
+
         LogStanceEffects(newStanceType, combatState);
 
         if (character.StanceShiftsRemaining == 0)

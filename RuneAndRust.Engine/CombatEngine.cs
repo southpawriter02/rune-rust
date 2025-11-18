@@ -305,6 +305,16 @@ public partial class CombatEngine
         combatState.AddLogEntry($"{player.Name} attacks {target.Name}!");
         combatState.AddLogEntry($"  Rolled {totalDice}d6: {FormatRolls(attackRoll)} = {attackRoll.Successes} successes");
 
+        // v0.38.12: Check for fumble (0 successes and contains 1s, or all 1s)
+        bool isFumble = attackRoll.Successes == 0 && attackRoll.Rolls.Any(r => r == 1);
+        bool isCatastrophicFumble = attackRoll.Rolls.All(r => r == 1) && attackRoll.Rolls.Count > 0;
+
+        if (isFumble || isCatastrophicFumble)
+        {
+            ProcessAttackFumble(combatState, player, isCatastrophicFumble);
+            return; // Fumble ends the attack
+        }
+
         // v0.20.2: Calculate cover bonus for target
         CoverBonus coverBonus = CoverBonus.None();
         if (combatState.Grid != null)
@@ -364,7 +374,6 @@ public partial class CombatEngine
             if (isCriticalHit)
             {
                 totalDamageDice *= 2;
-                combatState.AddLogEntry($"  [CRITICAL HIT!] Targeting subroutines experience catastrophic failure!");
                 _log.Information("Critical hit: Attacker={Attacker}, Target={Target}, CritChance={CritChance}, Flanked={IsFlanked}",
                     player.Name, target.Name, critChance, flankingBonus.CriticalHitBonus > 0);
             }
@@ -399,25 +408,52 @@ public partial class CombatEngine
             // [v0.38.6] Generate combat flavor text if service is available
             if (_flavorTextService != null)
             {
-                // Determine combat outcome for flavor text
-                var outcome = CombatOutcomeCalculator.DetermineOutcome(
-                    attackRoll.Successes,
-                    defendRoll.Successes,
-                    damage,
-                    totalDamageDice * 6, // Max possible damage from dice
-                    isCriticalHit);
+                // [v0.38.12] Generate critical hit flavor text if critical
+                if (isCriticalHit)
+                {
+                    var attackCategory = DetermineAttackCategory(player.EquippedWeapon);
+                    var damageType = DetermineDamageType(player.EquippedWeapon);
+                    var weaponOrSpellType = GetWeaponOrSpellType(player.EquippedWeapon);
+                    var targetType = GetTargetType(target);
+                    var specialEffect = DetermineCriticalSpecialEffect(damage, target);
 
-                // Get weapon type for flavor text
-                var weaponType = GetWeaponType(player.EquippedWeapon);
-                var weaponName = player.EquippedWeapon?.Name ?? "fists";
+                    var criticalText = _flavorTextService.GenerateCriticalHitText(
+                        attackCategory,
+                        damageType,
+                        weaponOrSpellType,
+                        targetType,
+                        specialEffect,
+                        new Dictionary<string, string>
+                        {
+                            {"AttackerName", player.Name},
+                            {"WeaponName", player.EquippedWeapon?.Name ?? "fists"},
+                            {"TargetName", target.Name},
+                            {"DamageAmount", damage.ToString()}
+                        });
+                    combatState.AddLogEntry($"  {criticalText}");
+                }
+                else
+                {
+                    // Determine combat outcome for flavor text
+                    var outcome = CombatOutcomeCalculator.DetermineOutcome(
+                        attackRoll.Successes,
+                        defendRoll.Successes,
+                        damage,
+                        totalDamageDice * 6, // Max possible damage from dice
+                        isCriticalHit);
 
-                // Generate attack flavor text
-                var attackFlavor = _flavorTextService.GeneratePlayerAttackText(
-                    weaponType,
-                    weaponName,
-                    target.Name,
-                    outcome);
-                combatState.AddLogEntry($"  {attackFlavor}");
+                    // Get weapon type for flavor text
+                    var weaponType = GetWeaponType(player.EquippedWeapon);
+                    var weaponName = player.EquippedWeapon?.Name ?? "fists";
+
+                    // Generate attack flavor text
+                    var attackFlavor = _flavorTextService.GeneratePlayerAttackText(
+                        weaponType,
+                        weaponName,
+                        target.Name,
+                        outcome);
+                    combatState.AddLogEntry($"  {attackFlavor}");
+                }
 
                 // Generate enemy damage reaction
                 var enemyArchetype = EnemyArchetypeMapper.GetArchetype(target);
@@ -503,20 +539,51 @@ public partial class CombatEngine
 
     /// <summary>
     /// Process player defend action
+    /// v0.38.12: Integrated defensive action descriptors
     /// </summary>
     public void PlayerDefend(CombatState combatState)
     {
         var player = combatState.Player;
         var defendRoll = _diceService.Roll(player.Attributes.Sturdiness);
 
-        combatState.AddLogEntry($"{player.Name} takes a defensive stance!");
-        combatState.AddLogEntry($"  Rolled {player.Attributes.Sturdiness}d6: {FormatRolls(defendRoll)} = {defendRoll.Successes} successes");
-
         // Each success = 25% damage reduction, max 75%
         var defensePercent = Math.Min(75, defendRoll.Successes * 25);
         player.DefenseBonus = defensePercent;
         player.DefenseTurnsRemaining = 1; // Lasts until next turn
 
+        // Generate defensive flavor text
+        if (_flavorTextService != null)
+        {
+            // Determine success level based on defense percent
+            string outcomeType = defensePercent switch
+            {
+                >= 75 => "CriticalSuccess",
+                >= 50 => "Success",
+                >= 25 => "Success",
+                _ => "Failure"
+            };
+
+            var defenseText = _flavorTextService.GenerateDefensiveActionText(
+                "Block",
+                outcomeType,
+                weaponType: player.EquippedShield?.Type ?? player.EquippedWeapon?.Type,
+                attackIntensity: null,
+                environmentContext: null,
+                variables: new Dictionary<string, string>
+                {
+                    {"ActorName", player.Name},
+                    {"ShieldName", player.EquippedShield?.Name ?? "shield"},
+                    {"WeaponName", player.EquippedWeapon?.Name ?? "weapon"}
+                });
+
+            combatState.AddLogEntry($"{defenseText}");
+        }
+        else
+        {
+            combatState.AddLogEntry($"{player.Name} takes a defensive stance!");
+        }
+
+        combatState.AddLogEntry($"  Rolled {player.Attributes.Sturdiness}d6: {FormatRolls(defendRoll)} = {defendRoll.Successes} successes");
         combatState.AddLogEntry($"  Defense raised by {defensePercent}% for next attack");
         combatState.AddLogEntry("");
     }
@@ -2577,4 +2644,236 @@ public partial class CombatEngine
             _ => WeaponType.Unarmed
         };
     }
+
+    // ============================================
+    // v0.38.12: COMBAT MECHANICS DESCRIPTOR HELPERS
+    // ============================================
+
+    /// <summary>
+    /// v0.38.12: Determine attack category for critical hit descriptors
+    /// </summary>
+    private string DetermineAttackCategory(Equipment? weapon)
+    {
+        if (weapon == null)
+            return "Melee";
+
+        if (weapon.Name.Contains("Bow") || weapon.Name.Contains("Crossbow"))
+            return "Ranged";
+
+        // Check if it's a magic weapon/staff (future magic system)
+        if (weapon.Name.Contains("Staff") || weapon.Name.Contains("Wand"))
+            return "Magic";
+
+        return "Melee";
+    }
+
+    /// <summary>
+    /// v0.38.12: Determine damage type for critical hit descriptors
+    /// </summary>
+    private string DetermineDamageType(Equipment? weapon)
+    {
+        if (weapon == null)
+            return "Crushing"; // Unarmed
+
+        // Map weapon types to damage types
+        if (weapon.Name.Contains("Sword") || weapon.Name.Contains("Axe") || weapon.Name.Contains("Dagger"))
+            return "Slashing";
+
+        if (weapon.Name.Contains("Hammer") || weapon.Name.Contains("Mace") || weapon.Name.Contains("Club"))
+            return "Crushing";
+
+        if (weapon.Name.Contains("Spear") || weapon.Name.Contains("Rapier") || weapon.Name.Contains("Bow") || weapon.Name.Contains("Crossbow"))
+            return "Piercing";
+
+        // Magic types (future)
+        if (weapon.Name.Contains("Fire"))
+            return "Fire";
+        if (weapon.Name.Contains("Ice") || weapon.Name.Contains("Frost"))
+            return "Ice";
+        if (weapon.Name.Contains("Lightning") || weapon.Name.Contains("Shock"))
+            return "Lightning";
+
+        return "Slashing"; // Default
+    }
+
+    /// <summary>
+    /// v0.38.12: Get weapon or spell type for critical hit descriptors
+    /// </summary>
+    private string? GetWeaponOrSpellType(Equipment? weapon)
+    {
+        if (weapon == null)
+            return null;
+
+        // Specific weapon types
+        if (weapon.Name.Contains("Sword"))
+            return "Sword";
+        if (weapon.Name.Contains("Axe"))
+            return "Axe";
+        if (weapon.Name.Contains("Hammer") || weapon.Name.Contains("Mace"))
+            return "Hammer";
+        if (weapon.Name.Contains("Spear"))
+            return "Spear";
+        if (weapon.Name.Contains("Dagger"))
+            return "Dagger";
+        if (weapon.Name.Contains("Bow"))
+            return "Bow";
+        if (weapon.Name.Contains("Crossbow"))
+            return "Crossbow";
+
+        return null; // Use generic descriptors
+    }
+
+    /// <summary>
+    /// v0.38.12: Get target type for critical hit descriptors
+    /// </summary>
+    private string? GetTargetType(Enemy target)
+    {
+        // Map enemy types to descriptor categories
+        if (target.Name.Contains("Glitch") || target.Name.Contains("Shimmer") || target.Name.Contains("Tear"))
+            return "Glitch";
+
+        if (target.Name.Contains("Forlorn") || target.Name.Contains("Hollow") || target.Name.Contains("Wraith"))
+            return "Forlorn";
+
+        if (target.Name.Contains("Construct") || target.Name.Contains("Automaton") || target.Name.Contains("Drone"))
+            return "Construct";
+
+        if (target.Name.Contains("Wolf") || target.Name.Contains("Bear") || target.Name.Contains("Beast"))
+            return "Beast";
+
+        return "Humanoid"; // Default for most enemies
+    }
+
+    /// <summary>
+    /// v0.38.12: Determine special effect for critical hits
+    /// </summary>
+    private string? DetermineCriticalSpecialEffect(int damage, Enemy target)
+    {
+        // Instant kill on overkill
+        if (damage >= target.HP * 2)
+            return "InstantKill";
+
+        // Dying on near-death
+        if (!target.IsAlive)
+            return "Dying";
+
+        // High damage = bleeding for slashing/piercing
+        if (damage >= target.MaxHP * 0.4)
+            return "Bleeding";
+
+        // Moderate damage = stunned for crushing
+        if (damage >= target.MaxHP * 0.3)
+            return "Stunned";
+
+        return null; // Generic critical
+    }
+
+    /// <summary>
+    /// v0.38.12: Process attack fumble with consequences
+    /// </summary>
+    private void ProcessAttackFumble(CombatState combatState, PlayerCharacter player, bool isCatastrophic)
+    {
+        var random = new Random();
+
+        // Determine fumble severity
+        string severity = isCatastrophic ? "Catastrophic" :
+                         (random.NextDouble() < 0.3) ? "Severe" :
+                         (random.NextDouble() < 0.5) ? "Moderate" : "Minor";
+
+        // Determine fumble type based on severity
+        string fumbleType;
+        if (isCatastrophic)
+        {
+            // Catastrophic: worst outcomes
+            fumbleType = random.Next(3) switch
+            {
+                0 => "WeaponDrop",
+                1 => "SelfInjury",
+                _ => "Tripped"
+            };
+        }
+        else
+        {
+            // Regular fumble: lighter outcomes
+            fumbleType = random.Next(5) switch
+            {
+                0 => "WeaponDrop",
+                1 => "Stumble",
+                2 => "OffBalance",
+                3 => "Overextend",
+                _ => "Slip"
+            };
+        }
+
+        // Generate fumble flavor text
+        if (_flavorTextService != null)
+        {
+            var equipmentType = player.EquippedWeapon?.Type;
+            var fumbleText = _flavorTextService.GenerateFumbleText(
+                "AttackFumble",
+                fumbleType,
+                equipmentType,
+                severity,
+                environmentFactor: null,
+                variables: new Dictionary<string, string>
+                {
+                    {"ActorName", player.Name},
+                    {"WeaponName", player.EquippedWeapon?.Name ?? "weapon"}
+                });
+
+            combatState.AddLogEntry("");
+            combatState.AddLogEntry($"  ✗ FUMBLE! {fumbleText}");
+        }
+        else
+        {
+            combatState.AddLogEntry("");
+            combatState.AddLogEntry($"  ✗ FUMBLE! {player.Name} fumbles the attack!");
+        }
+
+        // Apply mechanical consequences
+        switch (fumbleType)
+        {
+            case "WeaponDrop":
+                if (player.EquippedWeapon != null)
+                {
+                    combatState.AddLogEntry($"  {player.Name} drops their {player.EquippedWeapon.Name}!");
+                    // TODO: Implement weapon drop mechanic when inventory system supports it
+                    _log.Information("Fumble: WeaponDrop - {PlayerName} dropped {WeaponName}",
+                        player.Name, player.EquippedWeapon.Name);
+                }
+                break;
+
+            case "SelfInjury":
+                int selfDamage = isCatastrophic ? random.Next(3, 9) : random.Next(1, 7); // 3d3 or 1d6
+                player.HP -= selfDamage;
+                combatState.AddLogEntry($"  {player.Name} takes {selfDamage} damage from their own weapon!");
+                _log.Information("Fumble: SelfInjury - {PlayerName} took {Damage} self-damage",
+                    player.Name, selfDamage);
+                break;
+
+            case "Tripped":
+                combatState.AddLogEntry($"  {player.Name} falls prone!");
+                // TODO: Apply prone status when status effect system supports it
+                _log.Information("Fumble: Tripped - {PlayerName} is now prone", player.Name);
+                break;
+
+            case "OffBalance":
+                combatState.AddLogEntry($"  {player.Name} is off-balance! (Defense -2 next turn)");
+                // TODO: Apply defense penalty when effect system supports it
+                break;
+
+            case "Overextend":
+                combatState.AddLogEntry($"  {player.Name} overextends! (Vulnerable to counter-attack)");
+                // TODO: Apply counter-attack vulnerability when system supports it
+                break;
+
+            case "Stumble":
+            case "Slip":
+                combatState.AddLogEntry($"  {player.Name} stumbles, losing their attack!");
+                break;
+        }
+
+        combatState.AddLogEntry("");
+    }
 }
+
