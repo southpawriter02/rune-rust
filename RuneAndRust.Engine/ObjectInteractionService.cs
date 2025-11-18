@@ -34,21 +34,25 @@ public interface IObjectInteractionService
 /// v0.38.3: Object Interaction Service
 /// Generates interactive objects from descriptor templates
 /// Handles interaction resolution, skill checks, and consequences
+/// v0.38.10: Integrated with SkillUsageFlavorTextService for rich skill check narratives
 /// </summary>
 public class ObjectInteractionService : IObjectInteractionService
 {
     private readonly DescriptorRepository _repository;
     private readonly ILogger _logger;
     private readonly Random _random;
+    private readonly SkillUsageFlavorTextService? _skillFlavorService;
 
     public ObjectInteractionService(
         DescriptorRepository repository,
         ILogger logger,
-        Random? random = null)
+        Random? random = null,
+        SkillUsageFlavorTextService? skillFlavorService = null)
     {
         _repository = repository;
         _logger = logger;
         _random = random ?? new Random();
+        _skillFlavorService = skillFlavorService;
     }
 
     /// <summary>
@@ -379,13 +383,61 @@ public class ObjectInteractionService : IObjectInteractionService
             successes,
             successes != 1 ? "es" : "");
 
+        // v0.38.10: Generate flavor text if service is available
+        string? attemptDescription = null;
+        string? resultDescription = null;
+
+        if (_skillFlavorService != null)
+        {
+            var (skillType, actionType) = MapToSkillFlavorType(checkType);
+
+            if (!string.IsNullOrEmpty(skillType) && !string.IsNullOrEmpty(actionType))
+            {
+                // Generate attempt description
+                attemptDescription = _skillFlavorService.GenerateAttemptDescription(
+                    skillType, actionType);
+
+                // Generate result description (success or failure)
+                // Use DC as target roll for flavor text compatibility
+                var totalRoll = successes; // Using successes as "roll" for flavor text
+
+                if (success)
+                {
+                    resultDescription = _skillFlavorService.GenerateSuccessDescription(
+                        skillType, actionType, totalRoll + dc, dc); // Ensure we beat DC
+                }
+                else
+                {
+                    resultDescription = _skillFlavorService.GenerateFailureDescription(
+                        skillType, actionType, totalRoll + dc - 3, dc); // Ensure we miss DC
+                }
+            }
+        }
+
         return new SkillCheckResult
         {
             Success = success,
             Successes = successes,
             Roll = roll,
             CheckType = checkType,
-            DC = dc
+            DC = dc,
+            AttemptDescription = attemptDescription,
+            ResultDescription = resultDescription
+        };
+    }
+
+    /// <summary>
+    /// v0.38.10: Maps SkillCheckType to SkillUsageFlavorTextService skill/action types
+    /// </summary>
+    private (string? skillType, string? actionType) MapToSkillFlavorType(SkillCheckType checkType)
+    {
+        return checkType switch
+        {
+            SkillCheckType.Lockpicking => ("SystemBypass", "Lockpicking"),
+            SkillCheckType.Hacking => ("SystemBypass", "TerminalHacking"),
+            SkillCheckType.WITS => ("WastelandSurvival", "Tracking"), // Generic WITS check
+            SkillCheckType.MIGHT => (null, null), // No flavor text for MIGHT yet
+            _ => (null, null)
         };
     }
 
@@ -410,16 +462,37 @@ public class ObjectInteractionService : IObjectInteractionService
             obj.Name,
             obj.ConsequenceType);
 
-        var description = $"You {obj.InteractionType.ToString().ToLower()} the {obj.Name}.";
+        // v0.38.10: Use rich flavor text if available
+        var description = "";
 
         if (checkResult != null)
         {
-            description += $" [{checkResult.CheckType} Check DC {checkResult.DC}] {checkResult.GetRollString()}. Success!";
+            // Use flavor text if available
+            if (!string.IsNullOrEmpty(checkResult.AttemptDescription))
+            {
+                description += checkResult.AttemptDescription + "\n\n";
+            }
+
+            if (!string.IsNullOrEmpty(checkResult.ResultDescription))
+            {
+                description += checkResult.ResultDescription;
+            }
+            else
+            {
+                // Fallback to basic description
+                description += $"You {obj.InteractionType.ToString().ToLower()} the {obj.Name}. ";
+                description += $"[{checkResult.CheckType} Check DC {checkResult.DC}] {checkResult.GetRollString()}. Success!";
+            }
+        }
+        else
+        {
+            // No skill check required
+            description = $"You {obj.InteractionType.ToString().ToLower()} the {obj.Name}.";
         }
 
         if (consequence.Executed)
         {
-            description += $" {consequence.Description}";
+            description += $"\n\n{consequence.Description}";
         }
 
         return new InteractionResult
@@ -554,19 +627,38 @@ public class ObjectInteractionService : IObjectInteractionService
             obj.Name,
             checkResult.GetRollString());
 
-        var description = $"You fail to {obj.InteractionType.ToString().ToLower()} the {obj.Name}.";
-        description += $" [{checkResult.CheckType} Check DC {checkResult.DC}] {checkResult.GetRollString()}. Failure.";
+        // v0.38.10: Use rich flavor text if available
+        var description = "";
+
+        // Use flavor text if available
+        if (!string.IsNullOrEmpty(checkResult.AttemptDescription))
+        {
+            description += checkResult.AttemptDescription + "\n\n";
+        }
+
+        if (!string.IsNullOrEmpty(checkResult.ResultDescription))
+        {
+            description += checkResult.ResultDescription;
+        }
+        else
+        {
+            // Fallback to basic description
+            description += $"You fail to {obj.InteractionType.ToString().ToLower()} the {obj.Name}. ";
+            description += $"[{checkResult.CheckType} Check DC {checkResult.DC}] {checkResult.GetRollString()}. Failure.";
+        }
 
         // Check for critical failure consequences
         if (!string.IsNullOrEmpty(obj.FailureConsequence))
         {
+            description += "\n\n";
+
             if (obj.FailureConsequence == "Lockout")
             {
-                description += " The console locks out, denying further access.";
+                description += "The console locks out, denying further access.";
             }
             else if (obj.FailureConsequence == "spawn_enemies")
             {
-                description += " The system activates an alarm! Servitors converge on your position.";
+                description += "The system activates an alarm! Servitors converge on your position.";
             }
         }
 

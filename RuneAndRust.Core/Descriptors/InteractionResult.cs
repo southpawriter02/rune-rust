@@ -96,6 +96,7 @@ public class InteractionResult
 
 /// <summary>
 /// v0.38.3: Result of skill check
+/// v0.38.10: Enhanced with flavor text support
 /// </summary>
 public class SkillCheckResult
 {
@@ -123,6 +124,16 @@ public class SkillCheckResult
     /// Difficulty class
     /// </summary>
     public int DC { get; set; }
+
+    /// <summary>
+    /// v0.38.10: Narrative flavor text for the skill check attempt
+    /// </summary>
+    public string? AttemptDescription { get; set; }
+
+    /// <summary>
+    /// v0.38.10: Narrative flavor text for the skill check result
+    /// </summary>
+    public string? ResultDescription { get; set; }
 
     /// <summary>
     /// Gets a formatted string of the roll
