@@ -33,15 +33,16 @@
 ## Executive Summary
 
 ### Purpose Statement
-The Ability Rank Advancement System provides incremental power scaling for abilities where players invest Progression Points (PP) to upgrade abilities from Rank 1 → Rank 2 → Rank 3, creating meaningful build investment and long-term character development.
+The Ability Rank Advancement System provides automatic incremental power scaling for abilities as players progress through specialization trees. Ranks increase automatically based on tree progression milestones (learning Tier 2 abilities grants Rank 2, Capstone grants Rank 3), creating meaningful power growth tied to specialization investment.
 
 ### Scope
 **In Scope**:
 - Ability learning mechanics within specialization trees
-- Rank progression system (Rank 1, Rank 2, Rank 3)
-- Rank scaling formulas (damage, healing, duration increases)
-- Rank-up PP costs (typically 5 PP for Rank 1→2)
-- Validation rules for ability learning and ranking
+- Automatic rank progression system (Tier 1: Rank 1→2→3, Tier 2: Rank 2→3, Tier 3/Capstone: single rank)
+- Rank advancement triggers (learning Tier 2 abilities, learning Capstone)
+- Rank scaling formulas (damage, healing, duration increases per rank)
+- PP costs for learning abilities (Tier 1=2 PP, Tier 2=4 PP, Tier 3=5 PP, Capstone=6 PP)
+- Validation rules for ability learning
 - Integration with specialization tier unlock system
 
 **Out of Scope**:
@@ -49,12 +50,13 @@ The Ability Rank Advancement System provides incremental power scaling for abili
 - Ability reset/respec mechanics → `SPEC-PROGRESSION-006` (future)
 - Individual ability design → Implementation documentation
 - Per-specialization balance tuning → Per-spec documents
+- Manual rank-up spending (ranks are automatic, not purchased)
 
 ### Success Criteria
-- **Player Experience**: Rank-ups feel impactful; players can see clear power increases
-- **Technical**: Rank scaling formulas apply correctly; PP costs deduct properly
-- **Design**: Rank progression pacing aligns with Milestone earning rate
-- **Balance**: Rank 3 abilities feel powerful but not mandatory for viability
+- **Player Experience**: Rank-ups feel like rewarding milestones; automatic upgrades feel exciting
+- **Technical**: Rank scaling applies correctly when triggers are met; all Tier 1/2 abilities upgrade simultaneously
+- **Design**: Rank progression naturally flows with specialization tree investment
+- **Balance**: Rank 3 abilities feel powerful and reward deep specialization investment
 
 ---
 
@@ -95,70 +97,79 @@ The Ability Rank Advancement System provides incremental power scaling for abili
 
 ### Design Pillars
 
-1. **Meaningful Investment**
-   - **Rationale**: Ranking abilities requires scarce PP; players must choose which abilities to invest in
-   - **Examples**: 5 PP for Rank 2 = 5 Milestones of earning; can't rank everything
+1. **Automatic Mastery Through Investment**
+   - **Rationale**: Ranks improve automatically as players invest in specialization; mastery comes from dedication, not micro-spending
+   - **Examples**: Learn 2 Tier 2 abilities → all Tier 1 abilities automatically upgrade to Rank 2; feels like a training montage reward
 
 2. **Clear Power Scaling**
    - **Rationale**: Rank increases must provide visible, measurable improvements
-   - **Examples**: Rank 2 deals +50% damage (2d6 → 3d6); Rank 3 adds status effects
+   - **Examples**: Rank 2 deals +50% damage (2d6 → 3d6); Rank 3 deals +100% damage (2d6 → 4d6)
 
-3. **Incremental Progression**
-   - **Rationale**: 3-rank system provides smooth progression curve, not binary on/off
-   - **Examples**: Rank 1 (basic), Rank 2 (improved), Rank 3 (mastery/capstone effects)
+3. **Milestone-Driven Progression**
+   - **Rationale**: Rank-ups tied to meaningful tree progression milestones (Tier 2 abilities, Capstone), not arbitrary PP spending
+   - **Examples**: Rank 1 (starting), Rank 2 (trained, unlocked Tier 2), Rank 3 (mastery, achieved Capstone)
 
 ### Player Experience Goals
-**Target Experience**: "I invested PP into this ability and it became noticeably stronger"
+**Target Experience**: "As I progress through my specialization, my foundational abilities automatically become stronger - my character is mastering their craft"
 
 **Moment-to-Moment Gameplay**:
-- Player browses abilities in specialization tree
-- Player learns ability at Rank 1 (3-4 PP cost)
-- Player uses ability in combat, sees Rank 1 power
-- After several Milestones, player ranks up ability to Rank 2 (5 PP cost)
-- Player uses ability, notices clear damage/effect increase
-- Eventually, player reaches Rank 3 (ultimate version)
+- Player unlocks specialization (grants 3 Tier 1 abilities at Rank 1)
+- Player uses Tier 1 abilities in combat, learns their mechanics
+- Player learns Tier 2 abilities to access advanced techniques
+- **Milestone moment**: After learning 2nd Tier 2 ability → all Tier 1 abilities automatically upgrade to Rank 2
+- Player notices Strike now deals 3d6 instead of 2d6 (exciting power spike)
+- Player progresses toward Capstone
+- **Ultimate moment**: Player learns Capstone → all Tier 1 abilities jump to Rank 3, all Tier 2 abilities jump to Rank 3
+- Player feels peak mastery of specialization
 
 **Learning Curve**:
-- **Novice** (0-2 hours): Learn Tier 1 abilities at Rank 1, understand basic mechanics
-- **Intermediate** (2-10 hours): Start ranking up key abilities to Rank 2
-- **Expert** (10+ hours): Achieve Rank 3 on signature abilities, optimize PP spending
+- **Novice** (0-2 hours): Learn Tier 1 abilities (Rank 1), understand specialization identity
+- **Intermediate** (2-10 hours): Unlock Tier 2, experience first automatic rank-up to Rank 2
+- **Expert** (10+ hours): Achieve Capstone, witness all abilities reach Rank 3 mastery
 
 ### Design Constraints
-- **Technical**: Must support 3 ranks for all rankable abilities
-- **Gameplay**: Rank 3 locked until future update (CostToRank3 = 0)
-- **Narrative**: Rank names could use Aethelgard terminology (future flavor)
-- **Scope**: v0.19 supports Rank 1→2 advancement only; Rank 3 future expansion
+- **Technical**: Must track learned abilities per tier to trigger automatic rank-ups
+- **Gameplay**: Tier 1 abilities have 3 ranks, Tier 2 have 2 ranks (start at Rank 2), Tier 3/Capstone have 1 rank
+- **Narrative**: Rank advancement represents mastery through practice and training
+- **Scope**: All 3 ranks implemented; automatic rank-up triggers based on tier progression
 
 ---
 
 ## Functional Requirements
 
-### FR-001: Learn Ability at Rank 1
+### FR-001: Learn Ability from Specialization Tree
 **Priority**: Critical
 **Status**: Implemented
 
 **Description**:
-Players can learn abilities from unlocked specializations by spending PP. All abilities start at Rank 1. Learning requires: specialization unlocked, tier unlocked (PP in tree threshold), sufficient PP, and prerequisites met.
+Players can learn abilities from unlocked specializations by spending PP. Abilities start at different ranks based on tier: Tier 1 starts at Rank 1, Tier 2 starts at Rank 2, Tier 3 starts at Rank 3, Capstone starts at Rank 3. Learning requires: specialization unlocked, tier unlocked (PP in tree threshold), sufficient PP, and prerequisites met.
 
 **Rationale**:
-Learning is the entry point to ability progression. Rank 1 provides baseline functionality; players rank up later for power.
+Learning is the entry point to ability progression. Initial rank depends on tier - higher tier abilities are inherently more powerful. Tier 1 abilities will rank up automatically as player progresses.
 
 **Acceptance Criteria**:
 - [ ] Player can browse abilities in unlocked specializations
-- [ ] Abilities display PP cost (varies by tier: Tier 1=0 PP, Tier 2=4 PP, Tier 3=5 PP, Capstone=6 PP)
+- [ ] Abilities display PP cost (Tier 1=2 PP, Tier 2=4 PP, Tier 3=5 PP, Capstone=6 PP)
 - [ ] Learning deducts PP from PlayerCharacter.ProgressionPoints
-- [ ] Ability added to character at Rank 1 (CurrentRank = 1)
-- [ ] Learned abilities tracked in CharacterAbility table
+- [ ] **Tier 1 abilities** added at Rank 1 (will auto-upgrade to Rank 2, then Rank 3)
+- [ ] **Tier 2 abilities** added at Rank 2 (will auto-upgrade to Rank 3 on Capstone)
+- [ ] **Tier 3 and Capstone abilities** added at Rank 3 (single rank only)
+- [ ] Learned abilities tracked in CharacterAbility table with correct starting rank
 - [ ] PP spent on ability added to specialization's PPSpentInTree counter
 - [ ] Error handling: insufficient PP, unmet prerequisites, tier locked
 
 **Example Scenarios**:
-1. **Scenario**: Warrior learns "Berserk Rage I" (Berserkr Tier 2 ability)
-   - **Input**: Warrior has Berserkr unlocked, 8 PP in Berserkr tree, 4 PP available
-   - **Expected Output**: Berserk Rage added at Rank 1, PP = 0, PPInTree = 12
-   - **Success Condition**: Ability usable in combat immediately
+1. **Scenario**: Warrior learns "Furious Strike" (Berserkr Tier 1 ability)
+   - **Input**: Warrior has Berserkr unlocked, 2 PP available
+   - **Expected Output**: Furious Strike added at Rank 1, PP = 0, PPInTree = 2
+   - **Success Condition**: Ability usable in combat at Rank 1 power
 
-2. **Edge Case**: Player tries to learn Tier 3 ability with only 10 PP in tree (requires 16)
+2. **Scenario**: Warrior learns "Berserk Rage" (Berserkr Tier 2 ability)
+   - **Input**: Warrior has Berserkr unlocked, 8 PP in Berserkr tree, 4 PP available
+   - **Expected Output**: Berserk Rage added at Rank 2 (starts powerful), PP = 0, PPInTree = 12
+   - **Success Condition**: Ability starts at Rank 2, will upgrade to Rank 3 when Capstone is learned
+
+3. **Edge Case**: Player tries to learn Tier 3 ability with only 10 PP in tree (requires 16)
    - **Input**: PP in tree = 10, tries to learn Tier 3 ability
    - **Expected Behavior**: Error "Requires 16 PP in specialization tree (you have 10)"
    - **Success Condition**: Learning blocked, PP not deducted
@@ -175,70 +186,120 @@ Learning is the entry point to ability progression. Rank 1 provides baseline fun
 
 ---
 
-### FR-002: Rank Up Ability (Rank 1 → Rank 2)
+### FR-002: Automatic Rank Advancement to Rank 2
 **Priority**: High
-**Status**: Implemented
+**Status**: Needs Implementation
 
 **Description**:
-Players can advance learned abilities from Rank 1 to Rank 2 by spending additional PP (typically 5 PP). Ranking up improves ability power: increased damage dice, improved healing, longer durations, or added effects.
+When a player learns their 2nd Tier 2 ability within a specialization, ALL Tier 1 abilities in that specialization automatically advance from Rank 1 to Rank 2. This advancement is free (no PP cost) and happens immediately. The power increase represents the character's growing mastery of the specialization's foundational techniques.
 
 **Rationale**:
-Rank progression creates long-term investment in signature abilities. 5 PP cost is significant (5 Milestones), making rank-ups meaningful choices.
+Automatic rank-ups reward specialization investment and create exciting "power spike" moments. Learning advanced techniques (Tier 2) naturally improves mastery of basic techniques (Tier 1). Free advancement removes micro-management and emphasizes milestone achievements.
 
 **Acceptance Criteria**:
-- [ ] Player can rank up any learned ability (CurrentRank = 1)
-- [ ] Rank 2 costs defined per ability (AbilityData.CostToRank2, typically 5 PP)
-- [ ] Ranking up deducts PP from PlayerCharacter.ProgressionPoints
-- [ ] CharacterAbility.CurrentRank incremented (1 → 2)
-- [ ] Rank 2 scaling applied automatically (damage dice +50%, healing +50%, duration +1-2 turns)
-- [ ] Rank-up PP cost added to specialization's PPSpentInTree
-- [ ] Cannot rank up abilities already at Rank 2 (until Rank 3 unlocked)
+- [ ] System tracks how many Tier 2 abilities player has learned per specialization
+- [ ] When 2nd Tier 2 ability is learned, trigger automatic rank-up event
+- [ ] ALL learned Tier 1 abilities in that specialization upgrade from Rank 1 → Rank 2
+- [ ] CharacterAbility.CurrentRank updated (1 → 2) for each Tier 1 ability
+- [ ] Rank 2 scaling applied automatically (+1d6 damage, +1 turn duration, etc.)
+- [ ] UI notification: "Your foundational abilities have improved! [List of Tier 1 abilities] are now Rank 2"
+- [ ] No PP cost for automatic rank-up (free mastery reward)
+- [ ] Multiple specializations track rank-ups independently
 
 **Example Scenarios**:
-1. **Scenario**: Warrior ranks up "Strike" from Rank 1 → Rank 2
-   - **Input**: Warrior has Strike at Rank 1 (2d6 damage), 5 PP available
-   - **Expected Output**: Strike now Rank 2 (3d6 damage, +50% dice), PP = 0
-   - **Success Condition**: Next use of Strike deals 3d6 damage instead of 2d6
+1. **Scenario**: Warrior learns 2nd Tier 2 ability in Berserkr tree
+   - **Input**: Warrior has learned 3 Tier 1 Berserkr abilities (Furious Strike, Battle Shout, Reckless Charge all Rank 1), just learned 2nd Tier 2 ability
+   - **Expected Output**: Furious Strike, Battle Shout, Reckless Charge all automatically upgrade to Rank 2
+   - **Success Condition**: Furious Strike damage increases from 2d6 → 3d6, all Tier 1 abilities gain +50% power
 
-2. **Scenario**: Mystic ranks up "Aether Dart" healing ability
-   - **Input**: Aether Dart Rank 1 (heals 2d6), 5 PP available
-   - **Expected Output**: Aether Dart Rank 2 (heals 3d6)
-   - **Success Condition**: Healing increased
+2. **Scenario**: Player has multiple specializations
+   - **Input**: Player has Berserkr (1 Tier 2 learned) and Skjaldmaer (2 Tier 2 learned)
+   - **Expected Output**: Only Skjaldmaer Tier 1 abilities are Rank 2; Berserkr Tier 1s remain Rank 1
+   - **Success Condition**: Rank-ups are per-specialization, not global
 
-3. **Edge Case**: Player tries to rank up with insufficient PP
-   - **Input**: Player has 3 PP, tries to rank up (costs 5 PP)
-   - **Expected Behavior**: Error "Requires 5 PP (you have 3)"
-   - **Success Condition**: Rank-up blocked, PP not deducted
+3. **Edge Case**: Player only learned 1 Tier 1 ability before reaching Tier 2
+   - **Input**: Skipped 2 Tier 1 abilities, learned 2nd Tier 2 ability
+   - **Expected Behavior**: Only the 1 learned Tier 1 ability upgrades to Rank 2 (can't upgrade unlearned abilities)
+   - **Success Condition**: Rank-up only affects learned abilities
 
 **Dependencies**:
-- Requires: FR-001 (ability must be learned first)
-- Requires: PP available → `SPEC-PROGRESSION-001:FR-002`
-- Blocks: Rank 3 advancement (future)
+- Requires: FR-001 (Tier 1 and Tier 2 abilities must be learned)
+- Requires: Tier tracking per specialization
+- Blocks: None (automatic system)
 
 **Implementation Notes**:
-- **Code Location**: `RuneAndRust.Engine/AbilityService.cs:RankUpAbility()`
-- **Data Requirements**: AbilityData.CostToRank2, CharacterAbility.CurrentRank
-- **Performance Considerations**: Database update on rank-up
+- **Code Location**: `RuneAndRust.Engine/AbilityService.cs:LearnAbility()` (check after learning Tier 2)
+- **Data Requirements**: Query CharacterAbility by SpecializationID and TierLevel
+- **Performance Considerations**: Batch update all Tier 1 abilities in single transaction
 
 ---
 
-### FR-003: Rank Scaling Formulas
+### FR-003: Automatic Rank Advancement to Rank 3 (Capstone Trigger)
+**Priority**: High
+**Status**: Needs Implementation
+
+**Description**:
+When a player learns the Capstone ability within a specialization, ALL Tier 1 and ALL Tier 2 abilities in that specialization automatically advance to Rank 3. This is the ultimate mastery moment - the character has completed the specialization tree and all their abilities reach peak power.
+
+**Rationale**:
+Capstone represents ultimate mastery. Learning it should trigger a cascade of power-ups across all abilities in the spec. This creates a climactic "power fantasy" moment and rewards deep specialization investment.
+
+**Acceptance Criteria**:
+- [ ] When Capstone ability is learned, trigger automatic Rank 3 advancement event
+- [ ] ALL learned Tier 1 abilities in specialization upgrade to Rank 3 (Rank 1→3 if skipped Tier 2, or Rank 2→3 if already ranked)
+- [ ] ALL learned Tier 2 abilities in specialization upgrade to Rank 3 (Rank 2→3)
+- [ ] CharacterAbility.CurrentRank updated to 3 for all affected abilities
+- [ ] Rank 3 scaling applied (+2d6 total from Rank 1, or +1d6 from Rank 2)
+- [ ] UI notification: "You have achieved mastery! ALL abilities in [Specialization] are now Rank 3!"
+- [ ] No PP cost (free mastery reward)
+- [ ] Tier 3 and Capstone abilities remain at Rank 3 (already at max)
+
+**Example Scenarios**:
+1. **Scenario**: Warrior learns Berserkr Capstone after full tree progression
+   - **Input**: Warrior has 3 Tier 1 (Rank 2), 3 Tier 2 (Rank 2), 2 Tier 3 (Rank 3), learns Capstone
+   - **Expected Output**: All 3 Tier 1 → Rank 3, all 3 Tier 2 → Rank 3, dramatic power spike
+   - **Success Condition**: Furious Strike goes from 3d6 (Rank 2) → 4d6 (Rank 3) damage
+
+2. **Scenario**: Player skipped some Tier 1 abilities, learned Capstone
+   - **Input**: Only learned 1 of 3 Tier 1 abilities (Rank 2), learned Capstone
+   - **Expected Output**: That 1 Tier 1 ability → Rank 3; unlearned abilities NOT affected
+   - **Success Condition**: Only learned abilities upgrade
+
+3. **Edge Case**: Player rushed to Capstone, only has 1 Tier 2 learned (never triggered Rank 2)
+   - **Input**: 2 Tier 1 abilities still Rank 1, learned Capstone
+   - **Expected Behavior**: Tier 1 abilities jump from Rank 1 → Rank 3 (skipping Rank 2 milestone)
+   - **Success Condition**: Capstone grants Rank 3 regardless of previous rank
+
+**Dependencies**:
+- Requires: FR-001 (abilities must be learned)
+- Requires: FR-002 (may have already triggered Rank 2)
+- Blocks: None (ultimate advancement)
+
+**Implementation Notes**:
+- **Code Location**: `RuneAndRust.Engine/AbilityService.cs:LearnAbility()` (detect Capstone tier)
+- **Data Requirements**: Query all learned abilities in specialization (Tier 1, Tier 2)
+- **Performance Considerations**: Batch update all rankable abilities
+
+---
+
+### FR-004: Rank Scaling Formulas
 **Priority**: High
 **Status**: Implemented
 
 **Description**:
-Abilities scale in power when ranked up according to standardized formulas. Damage abilities gain +50% dice per rank (2d6 → 3d6 → 4d6). Healing abilities gain +50% dice. Duration-based effects gain +1-2 turns per rank. Status effects may gain additional effects at higher ranks.
+Abilities scale in power when ranked up according to standardized formulas. Damage abilities gain +1d6 per rank (2d6 → 3d6 → 4d6). Healing abilities gain +1d6 per rank. Duration-based effects gain +1 turn per rank. Status effects may gain additional effects or targets at higher ranks.
 
 **Rationale**:
-Consistent scaling ensures all abilities benefit meaningfully from ranking. +50% damage is noticeable but not overwhelming.
+Consistent scaling ensures all abilities benefit meaningfully from automatic rank-ups. +1d6 per rank (~+3.5 average damage) is noticeable and impactful.
 
 **Acceptance Criteria**:
-- [ ] **Damage scaling**: Rank 1 = Nd6, Rank 2 = (N+1)d6, Rank 3 = (N+2)d6 (+50% per rank)
+- [ ] **Damage scaling**: Rank 1 = Nd6, Rank 2 = (N+1)d6, Rank 3 = (N+2)d6
 - [ ] **Healing scaling**: Same as damage (+1d6 per rank)
 - [ ] **Duration scaling**: Rank 1 = D turns, Rank 2 = D+1 turns, Rank 3 = D+2 turns
-- [ ] **Status effect scaling**: Rank 2 may add secondary effect, Rank 3 adds tertiary or AoE
-- [ ] Scaling applied automatically based on CurrentRank
+- [ ] **Status effect scaling**: Rank 2 may add secondary effect, Rank 3 may add AoE or enhanced effect
+- [ ] Scaling applied automatically when CurrentRank changes
 - [ ] Custom scaling supported per ability (some abilities scale differently)
+- [ ] Tier 2 abilities start at Rank 2 scaling (already powerful base values)
 
 **Example Scenarios**:
 1. **Scenario**: "Berserk Rage" damage scaling
@@ -267,7 +328,7 @@ Consistent scaling ensures all abilities benefit meaningfully from ranking. +50%
 
 ---
 
-### FR-004: Ability Tier Unlock Validation
+### FR-005: Ability Tier Unlock Validation
 **Priority**: High
 **Status**: Implemented
 
@@ -311,66 +372,91 @@ Tier gating ensures players progress through specialization gradually. Can't ski
 
 ## System Mechanics
 
-### Mechanic 1: Rank Progression Flow
+### Mechanic 1: Automatic Rank Progression Flow
 
 **Overview**:
-Ability ranking is a multi-step investment: learn at Rank 1 (tier-dependent PP cost), use ability in combat to evaluate power, invest 5 PP to rank up to Rank 2, ability becomes measurably stronger.
+Ability ranks advance automatically based on specialization tree progression milestones. No PP is spent on rank-ups - they are free rewards for deepening specialization investment. Tiers and ranks are separate concepts: tier determines when you can learn an ability, rank determines its power level.
 
 **How It Works**:
-1. Player unlocks specialization (3 PP, grants 3 free Tier 1 abilities)
-2. Player browses ability tree, selects ability to learn
-3. System validates: tier unlocked? prerequisites met? PP available?
-4. Player spends PP, ability added at Rank 1
-5. Player uses ability in combat (Rank 1 power)
-6. After earning more PP, player chooses to rank up ability
-7. Player spends 5 PP (typical), ability advances to Rank 2
-8. Scaling formula applies (+1d6 damage, +1 turn duration, etc.)
-9. Player uses ability, sees improved power
+1. **Specialization Unlock Phase** (3 PP):
+   - Player unlocks specialization
+   - Grants 3 Tier 1 abilities at Rank 1 (free, included in unlock)
+
+2. **Learning Phase**:
+   - Player spends PP to learn additional abilities:
+     - Tier 1: 2 PP each (start at Rank 1)
+     - Tier 2: 4 PP each (start at Rank 2)
+     - Tier 3: 5 PP each (start at Rank 3)
+     - Capstone: 6 PP (starts at Rank 3)
+
+3. **First Rank-Up Trigger** (Rank 2):
+   - Player learns 2nd Tier 2 ability
+   - System detects: "This character now has 2 Tier 2 abilities learned"
+   - **Automatic event**: ALL Tier 1 abilities (Rank 1) → Rank 2
+   - Free power spike (no PP cost)
+
+4. **Ultimate Rank-Up Trigger** (Rank 3):
+   - Player learns Capstone ability
+   - System detects: "Capstone acquired"
+   - **Automatic event**: ALL Tier 1 (Rank 1 or 2) → Rank 3, ALL Tier 2 (Rank 2) → Rank 3
+   - Massive power spike (no PP cost)
 
 **Formula/Logic**:
 ```
-Learning Cost = AbilityData.PPCost (varies by tier)
-  Tier 1: 0 PP (free with specialization unlock)
-  Tier 2: 4 PP
-  Tier 3: 5 PP
-  Capstone: 6 PP
+Learning Costs (Tier-based):
+  Tier 1: 2 PP → Start at Rank 1
+  Tier 2: 4 PP → Start at Rank 2
+  Tier 3: 5 PP → Start at Rank 3 (single rank)
+  Capstone: 6 PP → Start at Rank 3 (single rank)
 
-Rank-Up Cost = AbilityData.CostToRank2
-  Typically: 5 PP (Rank 1 → Rank 2)
-  Future: AbilityData.CostToRank3 (currently 0 = locked)
+Automatic Rank-Up Triggers:
+  Trigger 1: Learn 2nd Tier 2 ability
+    → ALL Tier 1 abilities: Rank 1 → Rank 2 (free)
 
-Damage Scaling:
-  Rank 1: Base dice (e.g., 2d6)
-  Rank 2: Base + 1d6 (e.g., 3d6) = +50% expected damage
-  Rank 3: Base + 2d6 (e.g., 4d6) = +100% expected damage (future)
+  Trigger 2: Learn Capstone
+    → ALL Tier 1 abilities: → Rank 3 (free)
+    → ALL Tier 2 abilities: Rank 2 → Rank 3 (free)
 
-Example (Strike ability):
-  Learn Strike (Tier 1): 0 PP (free with Warrior archetype)
-  Strike Rank 1: 2d6 damage (expected: 7 damage)
-  Rank up to Rank 2: 5 PP
-  Strike Rank 2: 3d6 damage (expected: 10.5 damage, +50%)
+Rank Scaling (applied automatically):
+  Rank 1→2: +1d6 damage / +1 turn duration
+  Rank 2→3: +1d6 damage / +1 turn duration
+  Total Rank 1→3: +2d6 damage / +2 turns duration
+
+Example (Berserkr Furious Strike):
+  Unlock Berserkr: Get Furious Strike Rank 1 (2d6 damage) FREE
+  Learn Tier 2 #1: No rank change
+  Learn Tier 2 #2: Furious Strike → Rank 2 (3d6 damage) AUTOMATIC
+  Learn Capstone: Furious Strike → Rank 3 (4d6 damage) AUTOMATIC
+
+Example (Tier 2 ability - Berserk Rage):
+  Learn Berserk Rage (Tier 2): Starts at Rank 2 (3d6 damage)
+  Learn Capstone: Berserk Rage → Rank 3 (4d6 damage) AUTOMATIC
 ```
 
 **Parameters**:
 | Parameter | Type | Range | Default | Description | Tunable? |
 |-----------|------|-------|---------|-------------|----------|
-| CostToRank2 | int | 3-10 | 5 | PP cost Rank 1→2 | Yes (per ability) |
-| CostToRank3 | int | 5-15 | 0 | PP cost Rank 2→3 (locked) | Yes (future) |
+| Tier2TriggerCount | int | 1-3 | 2 | Tier 2 abilities needed for Rank 2 | Yes (balance) |
 | DamageScalingPerRank | int | 1-2 | 1 | Dice added per rank | No (consistency) |
 | DurationScalingPerRank | int | 1-3 | 1 | Turns added per rank | Yes (per ability) |
 
 **Edge Cases**:
-1. **Ability already at max rank**: Cannot rank up further
-   - **Condition**: CurrentRank = 2, CostToRank3 = 0 (locked)
-   - **Behavior**: Error "Ability is at maximum rank (2)"
-   - **Example**: Rank 3 not yet implemented in v0.19
+1. **Player skips Tier 1 abilities, rushes to Capstone**:
+   - **Condition**: Only 1 Tier 1 ability learned, acquire Capstone
+   - **Behavior**: That 1 Tier 1 ability jumps Rank 1 → Rank 3 (skips Rank 2 milestone)
+   - **Example**: Extreme build, but mastery still applies to learned abilities
 
 2. **Custom scaling abilities**: Some abilities have non-standard scaling
-   - **Condition**: Ability defines custom Rank 2/3 effects
-   - **Behavior**: Use custom effects instead of formula
-   - **Example**: Capstone abilities may have unique Rank 2 effects
+   - **Condition**: Ability defines custom Rank 2/3 effects (e.g., AoE at Rank 3)
+   - **Behavior**: Use custom effects instead of +1d6 formula
+   - **Example**: "Intimidate" adds AoE fear at Rank 3 instead of +1d6
 
-**Related Requirements**: FR-001, FR-002, FR-003
+3. **Multiple specializations**: Rank-ups are per-spec
+   - **Condition**: Player has Berserkr (2 Tier 2) and Skjaldmaer (1 Tier 2)
+   - **Behavior**: Only Berserkr Tier 1s are Rank 2; Skjaldmaer Tier 1s stay Rank 1
+   - **Example**: Independent progression per specialization
+
+**Related Requirements**: FR-001, FR-002, FR-003, FR-004
 
 ---
 
@@ -380,36 +466,35 @@ Example (Strike ability):
 Each specialization tracks total PP spent on abilities within that tree. This value gates access to higher tiers (Tier 2 @ 8 PP, Tier 3 @ 16 PP, Capstone @ 24 PP).
 
 **How It Works**:
-1. Player unlocks specialization (3 PP spent, but this goes to unlock, not tree)
-2. Tier 1 abilities granted free (0 PP added to tree)
-3. Player learns Tier 2 ability (4 PP) → PPInTree = 4
-4. Player learns another Tier 2 (4 PP) → PPInTree = 8 (Tier 2 now fully unlocked)
-5. Player ranks up one ability (5 PP) → PPInTree = 13
-6. Player learns Tier 3 ability (5 PP) → PPInTree = 18 (Tier 3 unlocked at 16)
-7. PPInTree continues accumulating with each ability learned or ranked
+1. Player unlocks specialization (3 PP spent, but this goes to unlock cost, not tree)
+2. Tier 1 abilities granted free (0 PP added to tree) on unlock
+3. Player learns additional Tier 1 abilities (2 PP each) → PPInTree increases
+4. Player learns Tier 2 ability (4 PP) → PPInTree increases
+5. Player learns another Tier 2 (4 PP) → PPInTree increases, may unlock Tier 3
+6. Player learns Tier 3 ability (5 PP) → PPInTree increases
+7. PPInTree continues accumulating with each ability learned (NO rank-up costs, ranks are free)
 
 **Formula/Logic**:
 ```
-PP_In_Tree = SUM(
-  AbilityData.PPCost for all learned abilities in this specialization
-  + SUM(RankUpCost for all ranked abilities in this specialization)
-)
+PP_In_Tree = SUM(AbilityData.PPCost for all learned abilities in this specialization)
+
+Note: Automatic rank-ups do NOT add to PPInTree (ranks are free rewards)
 
 Tier Unlock Thresholds:
-  Tier 1: 0 PP (always available after specialization unlock)
+  Tier 1: 0 PP (always available after specialization unlock, 3 free abilities granted)
   Tier 2: 8 PP in tree
   Tier 3: 16 PP in tree
   Capstone: 24 PP in tree + both Tier 3 abilities learned
 
 Example (Bone-Setter progression):
   Unlock Bone-Setter: 3 PP (not counted in tree)
-  Tier 1 (3 abilities): 0 PP (granted free) → PPInTree = 0
+  Tier 1 (3 abilities granted free): 0 PP → PPInTree = 0
   Learn Tier 2 ability #1: 4 PP → PPInTree = 4
-  Learn Tier 2 ability #2: 4 PP → PPInTree = 8 (Tier 2 fully unlocked)
-  Rank up Tier 1 ability: 5 PP → PPInTree = 13
-  Learn Tier 3 ability #1: 5 PP → PPInTree = 18 (Tier 3 unlocked)
-  Learn Tier 3 ability #2: 5 PP → PPInTree = 23
-  Learn Capstone: 6 PP → PPInTree = 29 (tree complete)
+  Learn Tier 2 ability #2: 4 PP → PPInTree = 8 (Tier 2 fully unlocked, Tier 1s → Rank 2 AUTOMATIC)
+  Learn Tier 2 ability #3: 4 PP → PPInTree = 12
+  Learn Tier 3 ability #1: 5 PP → PPInTree = 17 (Tier 3 unlocked at 16)
+  Learn Tier 3 ability #2: 5 PP → PPInTree = 22
+  Learn Capstone: 6 PP → PPInTree = 28 (tree complete, ALL abilities → Rank 3 AUTOMATIC)
 ```
 
 **Data Flow**:
@@ -508,8 +593,11 @@ Example (Bone-Setter Capstone):
 
 | Parameter | Location | Current Value | Min | Max | Impact | Change Frequency |
 |-----------|----------|---------------|-----|-----|--------|------------------|
-| CostToRank2 | AbilityData | 5 PP | 3 | 10 | Rank progression pacing | Medium |
-| CostToRank3 | AbilityData | 0 (locked) | 5 | 15 | Future rank 3 gating | Low (future) |
+| Tier 1 Ability Cost | AbilityData | 2 PP | 1 | 5 | Tier 1 learning cost | Low |
+| Tier 2 Ability Cost | AbilityData | 4 PP | 2 | 8 | Tier 2 learning cost | Low |
+| Tier 3 Ability Cost | AbilityData | 5 PP | 3 | 10 | Tier 3 learning cost | Low |
+| Capstone Ability Cost | AbilityData | 6 PP | 4 | 12 | Capstone learning cost | Low |
+| Rank 2 Trigger Count | Hardcoded | 2 Tier 2s | 1 | 3 | How soon Rank 2 occurs | Medium |
 | Tier 2 PP Requirement | SpecializationValidator | 8 PP | 4 | 12 | Tier 2 unlock speed | Low |
 | Tier 3 PP Requirement | SpecializationValidator | 16 PP | 10 | 20 | Tier 3 unlock speed | Low |
 | Capstone PP Requirement | SpecializationValidator | 24 PP | 18 | 30 | Capstone unlock speed | Low |
@@ -517,23 +605,29 @@ Example (Bone-Setter Capstone):
 
 ### Balance Targets
 
-**Target 1: First Rank 2 by Milestone 8-10**
-- **Metric**: Average Milestone when player first ranks up an ability
-- **Current**: Milestone 8-9 (5 PP earned from Milestones 3-8)
-- **Target**: Milestone 8-12 (gives flexibility for attribute investment)
-- **Levers**: CostToRank2 (currently 5 PP)
+**Target 1: First Rank 2 Trigger by Milestone 6-8**
+- **Metric**: Average Milestone when player learns 2nd Tier 2 ability (Rank 2 trigger)
+- **Current**: Milestone 6-8 (unlock spec Milestone 3, earn 8 PP in tree by Milestone 6-8)
+- **Target**: Milestone 6-10 (gives flexibility for Tier 1 vs. Tier 2 learning order)
+- **Levers**: Tier 2 PP requirement (currently 8 PP), Rank 2 trigger count (currently 2 Tier 2s)
 
 **Target 2: Rank 2 Abilities ~50% Stronger**
-- **Metric**: Expected damage increase from Rank 1 → Rank 2
+- **Metric**: Expected damage increase from Rank 1 → Rank 2 (automatic)
 - **Current**: 2d6 (avg 7) → 3d6 (avg 10.5) = +50%
-- **Target**: 40-60% increase (noticeable, not overwhelming)
+- **Target**: 40-60% increase (noticeable power spike)
 - **Levers**: Damage scaling formula (+1d6 per rank)
 
-**Target 3: Complete One Specialization by Milestone 25-30**
-- **Metric**: Milestones needed to learn all 9 abilities + rank some to Rank 2
-- **Current**: 28 PP for full tree + ranking = ~30 Milestones
+**Target 3: Complete One Specialization Tree by Milestone 25-30**
+- **Metric**: Milestones needed to learn all 9 abilities (total 28 PP)
+- **Current**: 28 PP for full tree = ~25-28 Milestones (accounting for starting PP and attribute spending)
 - **Target**: Achievable in medium-length campaign (20-40 hours)
-- **Levers**: PP per Milestone (currently 1), Tier unlock thresholds
+- **Levers**: PP per Milestone (currently 1), Tier unlock thresholds, ability costs
+
+**Target 4: Capstone Achievement (Rank 3 trigger) by Milestone 30-35**
+- **Metric**: Average Milestone when player learns Capstone (triggers Rank 3 for all abilities)
+- **Current**: Requires 24 PP in tree + 6 PP for Capstone = ~30 PP total
+- **Target**: Ultimate power moment in late campaign
+- **Levers**: Capstone PP requirement (currently 24 PP in tree), Capstone cost (6 PP)
 
 ---
 
@@ -543,17 +637,18 @@ Example (Bone-Setter Capstone):
 
 | ID | Question | Priority | Blocking? | Owner | Resolution Date |
 |----|----------|----------|-----------|-------|-----------------|
-| Q-001 | Should Rank 3 be implemented in v0.20 or delayed further? | Medium | No | Design | - |
-| Q-002 | Should some abilities have variable rank costs (not all 5 PP)? | Low | No | Balance | - |
-| Q-003 | Should capstone abilities have higher rank-up costs? | Low | No | Balance | - |
+| Q-001 | Should the Rank 2 trigger require 2 or 3 Tier 2 abilities? | Medium | No | Balance | - |
+| Q-002 | Should Tier 2 abilities at Rank 3 gain custom effects beyond +1d6? | Low | No | Design | - |
+| Q-003 | Should there be a UI celebration/animation when automatic rank-up triggers? | Low | No | UX/UI | - |
 
 ### Future Enhancements
 
-**Enhancement 1: Rank 3 Implementation**
-- **Rationale**: Completes 3-rank progression; provides ultimate power level
-- **Complexity**: Medium (requires balance testing, new effects)
-- **Priority**: Medium (post-v0.20)
-- **Dependencies**: Milestone cap increase (currently 3, need 15+ for Rank 3 progression)
+**Enhancement 1: Custom Rank 3 Effects for Tier 2 Abilities**
+- **Rationale**: Tier 2 abilities currently just gain +1d6 at Rank 3; could gain unique effects instead
+- **Complexity**: Medium (requires per-ability design and balance testing)
+- **Priority**: Medium (post-core implementation)
+- **Dependencies**: Rank 3 triggers implemented
+- **Example**: "Berserk Rage" at Rank 3 adds [Vulnerable] status to enemies in addition to damage
 
 **Enhancement 2: Ability Synergy Bonuses**
 - **Rationale**: Reward learning multiple related abilities (e.g., all fire abilities grant +10% fire damage)
@@ -561,11 +656,12 @@ Example (Bone-Setter Capstone):
 - **Priority**: Low (nice-to-have)
 - **Dependencies**: Ability categorization system (Element, School, etc.)
 
-**Enhancement 3: Prestige Abilities**
-- **Rationale**: Ultra-rare abilities unlocked via quests or achievements
-- **Complexity**: Medium (requires unlock condition system)
-- **Priority**: Low (post-launch content)
-- **Dependencies**: Quest system, achievement system
+**Enhancement 3: Visual Rank-Up Celebrations**
+- **Rationale**: Make automatic rank-ups feel even more rewarding with UI animations
+- **Complexity**: Low (UI/UX work)
+- **Priority**: Medium (enhances player experience)
+- **Dependencies**: UI framework for notifications and animations
+- **Example**: Flash effect + sound + "Your abilities have evolved!" message
 
 ---
 
@@ -573,40 +669,48 @@ Example (Bone-Setter Capstone):
 
 ### Appendix A: Rank Scaling Examples
 
-**Damage Ability (Strike)**:
+**Damage Ability (Strike - Tier 1)**:
 - Rank 1: 2d6 damage, 10 Stamina cost
-- Rank 2: 3d6 damage, 10 Stamina cost (+50% damage, same cost)
-- Rank 3: 4d6 damage, 10 Stamina cost (+100% damage) [FUTURE]
+- Rank 2: 3d6 damage, 10 Stamina cost (+50% damage, same cost) - *Automatic after learning 2 Tier 2 abilities*
+- Rank 3: 4d6 damage, 10 Stamina cost (+100% damage, same cost) - *Automatic after learning Capstone*
 
-**Healing Ability (Mend Wound)**:
+**Healing Ability (Mend Wound - Tier 1)**:
 - Rank 1: Heals 2d6 HP, 8 Stamina cost
-- Rank 2: Heals 3d6 HP, 8 Stamina cost
-- Rank 3: Heals 4d6 HP + removes [Bleeding], 8 Stamina cost [FUTURE]
+- Rank 2: Heals 3d6 HP, 8 Stamina cost - *Automatic*
+- Rank 3: Heals 4d6 HP + removes [Bleeding], 8 Stamina cost - *Automatic*
 
-**Buff Ability (Defensive Stance)**:
+**Buff Ability (Defensive Stance - Tier 1)**:
 - Rank 1: +3 Defense for 2 turns, 15 Stamina
-- Rank 2: +3 Defense for 3 turns, 15 Stamina
-- Rank 3: +4 Defense for 4 turns, 15 Stamina [FUTURE]
+- Rank 2: +3 Defense for 3 turns, 15 Stamina - *Automatic*
+- Rank 3: +4 Defense for 4 turns, 15 Stamina - *Automatic*
 
-**Status Effect Ability (Intimidate)**:
+**Status Effect Ability (Intimidate - Tier 1)**:
 - Rank 1: Applies [Feared] to 1 enemy for 2 turns
-- Rank 2: Applies [Feared] to 1 enemy for 3 turns
-- Rank 3: Applies [Feared] to all enemies for 2 turns (AoE upgrade) [FUTURE]
+- Rank 2: Applies [Feared] to 1 enemy for 3 turns - *Automatic*
+- Rank 3: Applies [Feared] to all enemies for 2 turns (AoE upgrade) - *Automatic*
+
+**Tier 2 Ability (Berserk Rage - starts at Rank 2)**:
+- Rank 2: 3d6 damage, costs 15 Stamina (inherently powerful)
+- Rank 3: 4d6 damage, costs 15 Stamina - *Automatic after learning Capstone*
 
 ### Appendix B: PP Progression Table
 
-| Milestone | Cumulative PP | Can Afford |
-|-----------|---------------|------------|
-| 0 (Start) | 2 (starting) | 2 attribute increases |
-| 1 | 3 | Unlock specialization OR 3 attributes |
-| 2 | 4 | 4 attributes OR unlock spec + 1 attribute |
-| 3 | 5 | Unlock spec + 2 attributes OR first Rank 2 |
-| 5 | 7 | Unlock spec + Rank 2 + 1 attribute |
-| 8 | 10 | Unlock spec + 2 Rank 2s OR spec + 7 attributes |
-| 10 | 12 | Unlock spec + 2 Rank 2s + 2 attributes |
-| 15 | 17 | Unlock spec + 3 Rank 2s + learn Tier 3 abilities |
-| 20 | 22 | Near-complete one specialization tree |
-| 30 | 32 | Complete one spec + start second OR multi-spec build |
+**Note**: Ranks advance automatically (free). This table shows learning costs only.
+
+| Milestone | Cumulative PP | Progression Example | Notes |
+|-----------|---------------|---------------------|-------|
+| 0 (Start) | 2 (starting) | 2 attribute increases OR save for spec | - |
+| 3 | 5 | Unlock specialization (3 PP) + 2 attributes | Grants 3 Tier 1 abilities free |
+| 4 | 6 | Learn 1 Tier 1 (2 PP) OR 1 attribute | - |
+| 5 | 7 | Learn 2 Tier 1s (4 PP) + 1 attribute | - |
+| 6 | 8 | Learn 1st Tier 2 (4 PP) | 8 PP in tree unlocks Tier 2 |
+| 7 | 9 | Save for 2nd Tier 2 | - |
+| 8 | 10 | Learn 2nd Tier 2 (4 PP) | **Rank 2 TRIGGER: All Tier 1s → Rank 2** |
+| 10 | 12 | Learn 3rd Tier 2 (4 PP) | - |
+| 15 | 17 | Learn Tier 3 abilities (5 PP each) | 16 PP in tree unlocks Tier 3 |
+| 20 | 22 | Learn both Tier 3s (10 PP) | - |
+| 25 | 27 | Learn Capstone (6 PP, need 24 PP in tree) | **Rank 3 TRIGGER: ALL → Rank 3** |
+| 30 | 32 | Spec complete, start 2nd spec or attributes | Ultimate mastery achieved |
 
 ---
 
