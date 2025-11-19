@@ -12,6 +12,7 @@
 | Resource | Purpose | When to Use |
 |----------|---------|-------------|
 | **[This Document]** | Onboarding & workflow | Start every spec session here |
+| **[SPEC_BACKLOG.md](./SPEC_BACKLOG.md)** | Spec registry & backlog | See what specs exist & what's needed |
 | **[TEMPLATE.md](./TEMPLATE.md)** | Master specification template | Copy this to create new specs |
 | **[README.md](./README.md)** | Complete writing guide (2,050 lines) | Deep dive on governance, walkthroughs |
 | **[SETTING_COMPLIANCE.md](./SETTING_COMPLIANCE.md)** | Aethelgard lore validation | Check during draft & review |
@@ -28,6 +29,12 @@
 2. What domain does this belong to? (Combat, Progression, World, Narrative, Economy)
 3. What existing systems does this integrate with?
 4. Has the user provided context documents or files to reference?
+
+**Check the backlog first:**
+- Read **[SPEC_BACKLOG.md](./SPEC_BACKLOG.md)** to see if this spec is already planned
+- If planned: Review "Proposed Scope" and "Dependencies" sections
+- If not planned: Add an entry to the backlog after completing the spec
+- Note the recommended Spec ID (SPEC-{DOMAIN}-{NUMBER})
 
 **Action**: Read the user's request carefully and ask clarifying questions if:
 - The scope is ambiguous (what's in vs. out of scope)

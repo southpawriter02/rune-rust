@@ -16,6 +16,12 @@ This quick-start guide provides:
 - **Critical reminders** for setting compliance and quality standards
 - **Quick navigation** to all key resources
 
+**Looking for what to work on?** See **[SPEC_BACKLOG.md](./SPEC_BACKLOG.md)** for:
+- **Registry of all specifications** (3 completed, 14 planned)
+- **Priority matrix** and recommended drafting order
+- **Dependencies** between specifications
+- **Proposed scope** for each planned spec
+
 **Experienced?** Jump directly to:
 - **[TEMPLATE.md](./TEMPLATE.md)** - Copy this to create new specs
 - **[SETTING_COMPLIANCE.md](./SETTING_COMPLIANCE.md)** - Validate against Aethelgard canon
