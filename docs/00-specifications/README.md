@@ -17,7 +17,7 @@ This quick-start guide provides:
 - **Quick navigation** to all key resources
 
 **Looking for what to work on?** See **[SPEC_BACKLOG.md](./SPEC_BACKLOG.md)** for:
-- **Registry of all specifications** (3 completed, 14 planned)
+- **Registry of all specifications** (3 completed, 34 planned, 37 total)
 - **Priority matrix** and recommended drafting order
 - **Dependencies** between specifications
 - **Proposed scope** for each planned spec

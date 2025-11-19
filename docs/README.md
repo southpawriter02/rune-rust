@@ -75,7 +75,7 @@ Design intent, power budget analysis, role effectiveness matrices, difficulty tu
 
 **See**:
 - **[START_HERE.md](./00-specifications/START_HERE.md)** - Quick start for AI sessions drafting new specs
-- **[SPEC_BACKLOG.md](./00-specifications/SPEC_BACKLOG.md)** - Registry of all specs (3 completed, 14 planned)
+- **[SPEC_BACKLOG.md](./00-specifications/SPEC_BACKLOG.md)** - Registry of all specs (3 completed, 34 planned, 37 total)
 - **[Specification Writing Guide](./00-specifications/README.md)** - Complete governance, standards, and templates
 
 ### 📖 [01 - System Documentation](./01-systems/)
