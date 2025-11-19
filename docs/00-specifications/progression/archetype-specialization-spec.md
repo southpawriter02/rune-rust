@@ -37,7 +37,7 @@ The Archetype & Specialization System provides players with distinct character i
 
 ### Scope
 **In Scope**:
-- 3 Core Archetypes: Warrior, Skirmisher, Mystic
+- 4 Core Archetypes: Warrior, Adept, Skirmisher, Mystic
 - Archetype selection at character creation
 - Starting attribute distributions per archetype
 - Starting abilities per archetype (3 abilities)
@@ -58,7 +58,7 @@ The Archetype & Specialization System provides players with distinct character i
 - **Player Experience**: Archetypes feel distinct in combat; specializations provide meaningful build direction
 - **Technical**: Archetype attributes correctly initialize; specializations unlock with PP spending
 - **Design**: Each archetype supports 4+ viable specializations
-- **Balance**: All 3 archetypes viable in solo and party play
+- **Balance**: All 4 archetypes viable in solo and party play
 
 ---
 
@@ -133,7 +133,7 @@ The Archetype & Specialization System provides players with distinct character i
 - **Technical**: Must support extensible specialization system (easy to add new specializations)
 - **Gameplay**: Archetypes must remain balanced across solo and party scenarios
 - **Narrative**: Archetypes must fit Aethelgard setting (no traditional "mage" fantasy)
-- **Scope**: 3 archetypes for v1.0; expandable to 5+ in future
+- **Scope**: 4 archetypes currently implemented; expandable to more in future
 
 ---
 
@@ -144,13 +144,13 @@ The Archetype & Specialization System provides players with distinct character i
 **Status**: Implemented
 
 **Description**:
-At character creation, player selects one of 3 archetypes: Warrior, Skirmisher, or Mystic. This choice is permanent and determines starting attributes, starting abilities, and primary resource system.
+At character creation, player selects one of 4 archetypes: Warrior, Adept, Skirmisher, or Mystic. This choice is permanent and determines starting attributes, starting abilities, and primary resource system.
 
 **Rationale**:
 Archetype is the foundation of character identity. Must be set at creation to establish core playstyle.
 
 **Acceptance Criteria**:
-- [ ] Player presented with 3 archetype choices during character creation
+- [ ] Player presented with 4 archetype choices during character creation
 - [ ] Each archetype displays: name, tagline, starting attributes, primary resource, starting abilities
 - [ ] Selection is confirmed before character is created
 - [ ] Selection cannot be changed after character creation (no respec)
@@ -191,6 +191,7 @@ Attribute distributions encode archetype playstyle: Warriors favor physical stat
 
 **Acceptance Criteria**:
 - [ ] **Warrior**: MIGHT 4, FINESSE 3, WITS 2, WILL 2, STURDINESS 4 (total 15)
+- [ ] **Adept**: MIGHT 3, FINESSE 3, WITS 3, WILL 2, STURDINESS 3 (total 14) - Note: Adept has 14 points, not 15
 - [ ] **Skirmisher**: MIGHT 3, FINESSE 4, WITS 3, WILL 2, STURDINESS 3 (total 15)
 - [ ] **Mystic**: MIGHT 2, FINESSE 3, WITS 4, WILL 4, STURDINESS 2 (total 15)
 - [ ] Starting attributes applied at character creation
@@ -232,6 +233,7 @@ Starting abilities establish archetype identity immediately. Players must have f
 
 **Acceptance Criteria**:
 - [ ] **Warrior** receives: Strike (basic attack), Defensive Stance (tank mode), Warrior's Vigor (passive +10% HP)
+- [ ] **Adept** receives: Exploit Weakness (analyze enemy), Scavenge (find resources), Resourceful (passive +item effectiveness)
 - [ ] **Skirmisher** receives: Quick Strike (agile attack), Evasive Stance (dodge mode), Fleet Footed (passive +movement)
 - [ ] **Mystic** receives: Aether Dart (ranged magic attack), Focus Aether (restore AP), Aetheric Attunement (passive +AP regen)
 - [ ] Abilities added to Character.Abilities list at creation
@@ -273,10 +275,11 @@ Resource systems reinforce archetype identity and create distinct resource manag
 
 **Acceptance Criteria**:
 - [ ] **Warrior**: Primary resource = Stamina, MaxStamina = 20 + (MIGHT + FINESSE) × 5
+- [ ] **Adept**: Primary resource = Stamina, MaxStamina = 20 + (MIGHT + FINESSE) × 5
 - [ ] **Skirmisher**: Primary resource = Stamina, MaxStamina = 20 + (MIGHT + FINESSE) × 5
 - [ ] **Mystic**: Primary resource = Aether Pool (AP), MaxAP = 20 + (WILL + WITS) × 5
 - [ ] All archetypes have Stamina pool (for movement/dodging)
-- [ ] Mystic abilities cost AP; Warrior/Skirmisher abilities cost Stamina
+- [ ] Mystic abilities cost AP; Warrior/Adept/Skirmisher abilities cost Stamina
 - [ ] Resource pools restore on rest (full restore)
 - [ ] Resource pools do NOT restore on Milestone (only HP restores)
 
@@ -471,7 +474,8 @@ Each archetype has a predefined attribute distribution totaling 15 points. Distr
 | Archetype | MIGHT | FINESSE | WITS | WILL | STURDINESS | Total | Playstyle |
 |-----------|-------|---------|------|------|------------|-------|-----------|
 | **Warrior** | 4 | 3 | 2 | 2 | 4 | 15 | High HP/Stamina, melee damage, tank |
-| **Skirmisher** | 3 | 4 | 3 | 2 | 3 | 15 | Balanced, agile, precision attacks |
+| **Adept** | 3 | 3 | 3 | 2 | 3 | 14 | Balanced generalist, skill-based, non-magical |
+| **Skirmisher** | 3 | 4 | 3 | 2 | 3 | 15 | Agile, precision, hit-and-run tactics |
 | **Mystic** | 2 | 3 | 4 | 4 | 2 | 15 | High AP, spell damage, fragile |
 
 **Derived Stats from Attributes**:
@@ -504,6 +508,7 @@ Mystic Example (WILL 4, WITS 4):
 
 **Design Intent**:
 - **Warrior**: Highest HP (90) and good Stamina (55) for sustained melee combat
+- **Adept**: Truly balanced (all 3s), medium HP (80), medium Stamina (50), versatile
 - **Skirmisher**: Balanced stats, same Stamina as Warrior (55) but lower HP (80)
 - **Mystic**: Lowest HP (70) and Stamina (45), but highest Aether Pool (60) for spellcasting
 
@@ -716,19 +721,25 @@ WARRIOR (ArchetypeID = 1):
   - Atgeir-wielder (ID: 12)
   - GorgeMawAscetic (ID: 26002)
 
+ADEPT (ArchetypeID = 2):
+  - Bone-Setter (ID: 1) - Healer/Support, non-magical medic
+  - Jötun-Reader (ID: 2) - Utility/Analyst, system diagnostician
+  - Skald (ID: 3) - Bard/Buffer, morale and inspiration
+  - Scrap-Tinker (ID: 14) - Crafting specialist, brewmaster & gadgeteer
+  - Einbui (ID: 27002) - Lone survivor, self-sufficient
+
 SKIRMISHER (ArchetypeID = 4):
-  - Veiðimaðr (ID: 24001)
-  - Myrk-gengr (ID: 24002)
-  - Strandhogg (ID: 25001)
-  - Hlekkr-master (ID: 25002)
+  - Veiðimaðr (ID: 24001) - Hunter, tracking and precision
+  - Myrk-gengr (ID: 24002) - Shadow-Walker, stealth and ambush
+  - Strandhogg (ID: 25001) - Glitch-Raider, exploits Jötun systems
+  - Hlekkr-master (ID: 25002) - Chain-Master, crowd control
 
 MYSTIC (ArchetypeID = 5):
-  - Seidkona (ID: 28001)
-  - EchoCaller (ID: 28002)
+  - Seidkona (ID: 28001) - Seer, divination and support magic
+  - EchoCaller (ID: 28002) - Sound magic, debuffs and control
 
-Note: Adept specializations (Bone-Setter, Jötun-Reader, Skald, Scrap-Tinker, Einbui)
-exist in database with ArchetypeID=2 but "Adept" is NOT a formal Archetype.
-This is legacy data from CharacterClass enum (which includes Adept, Scavenger).
+Note: "Scavenger" appears in CharacterClass enum but is NOT a formal Archetype.
+It has no ArchetypeID and no specializations.
 ```
 
 **Validation Logic**:
@@ -749,10 +760,10 @@ Example (Warrior tries to unlock Seidkona):
 ```
 
 **Edge Cases**:
-1. **Adept/Scavenger legacy classes**: CharacterClass enum includes these, but no formal Archetype
-   - **Condition**: Player created with CharacterClass.Adept (legacy)
-   - **Behavior**: Can access Adept specializations (Bone-Setter, etc.) via ArchetypeID=2
-   - **Note**: This is technical debt; ideally Adept would be removed or formalized
+1. **Scavenger legacy class**: CharacterClass enum includes Scavenger, but it has NO formal Archetype
+   - **Condition**: Player created with CharacterClass.Scavenger (legacy)
+   - **Behavior**: No Archetype instance, manually set attributes, no specializations available
+   - **Note**: This is technical debt; Scavenger should be removed or converted to formal Archetype
 
 2. **Future archetype additions**: System is extensible
    - **Condition**: New archetype added (e.g., ArchetypeID=6 for "Rune-Caster")
@@ -887,10 +898,10 @@ See `RuneAndRust.Persistence/DataSeeder.cs:87-131` (Bone-Setter example):
 
 ### Common Mistakes to Avoid
 
-**❌ Mistake 1**: Confusing CharacterClass enum with Archetype classes
-- **Problem**: CharacterClass enum includes legacy entries (Adept, Scavenger) that are NOT formal Archetypes
-- **Solution**: Use Archetype classes (WarriorArchetype, etc.) for archetype logic; CharacterClass is for backward compatibility only
-- **Example**: Don't check `character.Class == CharacterClass.Warrior`, instead check `character.Archetype is WarriorArchetype` or `character.Archetype.ArchetypeID == 1`
+**❌ Mistake 1**: Confusing CharacterClass enum with Archetype system
+- **Problem**: CharacterClass enum includes "Scavenger" which is NOT a formal Archetype (no ArchetypeID, no specializations)
+- **Solution**: Use Archetype.ArchetypeID for archetype logic; CharacterClass is for backward compatibility only
+- **Example**: Valid Archetypes have ArchetypeID: Warrior (1), Adept (2), Skirmisher (4), Mystic (5). Scavenger has NONE.
 
 **❌ Mistake 2**: Allowing cross-archetype specialization unlocks
 - **Problem**: Warrior unlocking Mystic specializations breaks archetype identity
@@ -1001,7 +1012,7 @@ CREATE TABLE CharacterSpecialization (
 
 ### Archetype Balance Targets
 
-**Design Goal**: All 3 archetypes should be viable in solo play and contribute meaningfully in party play.
+**Design Goal**: All 4 archetypes should be viable in solo play and contribute meaningfully in party play.
 
 **Warrior Balance**:
 - **Strengths**: High HP (90), high Stamina (55), melee damage, tanking
@@ -1009,9 +1020,15 @@ CREATE TABLE CharacterSpecialization (
 - **Balance Check**: Can Warrior solo standard encounters? (Target: Yes, 70% win rate)
 - **Tuning Lever**: If too weak, increase starting MIGHT 4→5 OR increase STURDINESS scaling
 
+**Adept Balance**:
+- **Strengths**: Truly balanced (all 3s), versatile, skill-based (non-magical)
+- **Weaknesses**: No standout strength, 14 attribute points (not 15), jack-of-all-trades
+- **Balance Check**: Does Adept provide unique value? (Target: Yes, via crafting/support specializations)
+- **Tuning Lever**: If too weak, add 1 attribute point to reach 15 total OR boost specialization utility
+
 **Skirmisher Balance**:
-- **Strengths**: Balanced stats, high FINESSE (4) for initiative, versatile
-- **Weaknesses**: Jack-of-all-trades (no standout strength), medium HP (80)
+- **Strengths**: High FINESSE (4) for initiative, agile, hit-and-run tactics
+- **Weaknesses**: Medium HP (80), no extreme strengths
 - **Balance Check**: Does Skirmisher feel distinct from Warrior? (Target: Yes, plays differently)
 - **Tuning Lever**: If too similar to Warrior, increase WITS 3→4 OR add unique mobility mechanics
 
@@ -1029,16 +1046,18 @@ CREATE TABLE CharacterSpecialization (
 
 **Current Specialization Counts**:
 - **Warrior**: 6 specializations (Berserkr, Iron-Bane, Skjaldmaer, Skar-Horde Aspirant, Atgeir-wielder, GorgeMawAscetic)
+- **Adept**: 5 specializations (Bone-Setter, Jötun-Reader, Skald, Scrap-Tinker, Einbui)
 - **Skirmisher**: 4 specializations (Veiðimaðr, Myrk-gengr, Strandhogg, Hlekkr-master)
 - **Mystic**: 2 specializations (Seidkona, EchoCaller) **← Needs more specializations**
 
 **Diversity Metrics**:
 - **MechanicalRole Spread**: Each archetype should have Tank, DPS, Support, Controller options
   - Warrior: Heavy on Tank/DPS, needs Support spec
-  - Skirmisher: Good spread across roles
-  - Mystic: Needs Tank or Controller spec
+  - Adept: Heavy on Support/Utility (Bone-Setter, Skald), good diversity
+  - Skirmisher: Good spread across roles (DPS, Stealth, Control)
+  - Mystic: Needs Tank or Controller spec (only 2 total)
 - **PathType Balance**: ~70% Coherent, ~30% Heretical (Heretical requires Corruption investment)
-- **ResourceSystem Variety**: Warrior/Skirmisher use Stamina, Mystic uses AP (good separation)
+- **ResourceSystem Variety**: Warrior/Adept/Skirmisher use Stamina, Mystic uses AP (good separation)
 
 ---
 
@@ -1177,6 +1196,37 @@ Milestone 15+ (Legend 3400+): +18 PP = 30 PP total earned
 - Skar-Horde Aspirant (Savage berserker, Savagery resource)
 - Atgeir-wielder (Reach weapon specialist, versatile)
 - GorgeMawAscetic (Heretical, Corruption-focused)
+
+---
+
+### Adept Archetype
+
+**Identity**: Balanced skill-based generalist, non-magical specialist
+
+**Starting Attributes**:
+- MIGHT: 3
+- FINESSE: 3
+- WITS: 3
+- WILL: 2 (lowest)
+- STURDINESS: 3
+- **Total**: 14 (Note: Only archetype with 14 points, not 15)
+
+**Starting Abilities**:
+1. **Exploit Weakness**: Analyze enemy defenses, grant +2 bonus dice to next attack, 5 Stamina
+2. **Scavenge**: Search area for resources, find consumable items, 10 Stamina
+3. **Resourceful** (Passive): +20% effectiveness of consumable items (potions, poultices, etc.)
+
+**Resource Pools** (at creation, Milestone 0):
+- HP: 50 + (3 × 10) = **80 HP**
+- Stamina: 20 + (3+3) × 5 = **50 Stamina**
+- AP: **10 AP** (minimal, not primary resource)
+
+**Available Specializations**:
+- Bone-Setter (Healer/Support, non-magical medic, field medicine)
+- Jötun-Reader (Utility/Analyst, system diagnostician, lore specialist)
+- Skald (Bard/Buffer, morale and inspiration, performance)
+- Scrap-Tinker (Crafting specialist, brewmaster & gadgeteer)
+- Einbui (Lone survivor, self-sufficient, isolation specialist)
 
 ---
 

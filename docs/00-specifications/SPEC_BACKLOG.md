@@ -143,7 +143,7 @@
 **Layer 1 Docs**: None (this spec provides comprehensive design documentation)
 
 **Scope**:
-- 3 Core Archetypes: Warrior, Skirmisher, Mystic
+- 4 Core Archetypes: Warrior, Adept, Skirmisher, Mystic
 - Archetype selection at character creation
 - Starting attribute distributions per archetype
 - Starting abilities per archetype (3 abilities each)
@@ -157,14 +157,14 @@
 - SPEC-PROGRESSION-001 (Character Progression) - Completed
 - SPEC-PROGRESSION-003 (Ability System) - Not yet drafted
 
-**Why Complete**: Formal design specification created documenting the 3 Archetypes (correcting previous confusion with CharacterClass enum), specialization unlock mechanics, and complete system integration.
+**Why Complete**: Formal design specification created documenting the 4 Archetypes (correcting previous confusion with CharacterClass enum), specialization unlock mechanics, and complete system integration.
 
 **Implementation Exists**: Yes (`RuneAndRust.Core/Archetypes/`, `RuneAndRust.Engine/SpecializationService.cs`, `RuneAndRust.Persistence/DataSeeder.cs`)
 
 **Notable Corrections**:
-- Clarified that only 3 formal Archetypes exist (Warrior, Skirmisher, Mystic)
-- Documented that "Adept" and "Scavenger" in CharacterClass enum are legacy entries, NOT formal Archetypes
-- Mapped all existing specializations to their correct archetypes (6 Warrior, 4 Skirmisher, 2 Mystic, 5 legacy Adept)
+- Clarified that 4 formal Archetypes exist: Warrior, Adept, Skirmisher, Mystic
+- Documented that "Scavenger" in CharacterClass enum is a legacy entry, NOT a formal Archetype
+- Mapped all existing specializations to their correct archetypes (6 Warrior, 5 Adept, 4 Skirmisher, 2 Mystic)
 
 ---
 
