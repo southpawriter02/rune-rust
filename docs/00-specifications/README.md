@@ -13,11 +13,17 @@
 3. [Directory Structure](#directory-structure)
 4. [Writing Standards](#writing-standards)
 5. [Specification Lifecycle](#specification-lifecycle)
-6. [Checklists & Templates](#checklists--templates)
-7. [Cross-Referencing System](#cross-referencing-system)
-8. [AI Collaboration Guidelines](#ai-collaboration-guidelines)
-9. [Common Patterns & Anti-Patterns](#common-patterns--anti-patterns)
-10. [FAQ](#faq)
+6. [Comprehensive Walkthroughs](#comprehensive-walkthroughs)
+   - [Walkthrough 1: Analyzing an Existing System](#walkthrough-1-analyzing-an-existing-system)
+   - [Walkthrough 2: Planning a New Specification](#walkthrough-2-planning-a-new-specification)
+   - [Walkthrough 3: Mapping System Relationships](#walkthrough-3-mapping-system-relationships)
+   - [Walkthrough 4: Drafting the Specification](#walkthrough-4-drafting-the-specification)
+   - [Walkthrough 5: Leveraging Existing Documentation](#walkthrough-5-leveraging-existing-documentation)
+7. [Checklists & Templates](#checklists--templates)
+8. [Cross-Referencing System](#cross-referencing-system)
+9. [AI Collaboration Guidelines](#ai-collaboration-guidelines)
+10. [Common Patterns & Anti-Patterns](#common-patterns--anti-patterns)
+11. [FAQ](#faq)
 
 ---
 
@@ -356,6 +362,1351 @@ docs/00-specifications/
 3. Link to replacement specification (if any)
 4. Update version history with deprecation date
 5. Move to archive after one version cycle
+
+---
+
+## Comprehensive Walkthroughs
+
+> **Purpose**: Step-by-step workflows for creating thorough, well-researched specifications by systematically analyzing systems, mapping relationships, and leveraging existing documentation.
+
+---
+
+### Walkthrough 1: Analyzing an Existing System
+
+**Goal**: Deeply understand a system before specifying it
+
+**When to Use**: When documenting an existing system (retroactive specification)
+
+---
+
+#### Step 1: Identify the System Scope
+
+**Questions to Answer**:
+- What is the official name of this system?
+- What player-facing problem does it solve?
+- When/where does the player interact with this system?
+- What are the clear boundaries (in scope vs out of scope)?
+
+**Actions**:
+```bash
+# Search for system references in code
+cd /home/user/rune-rust
+grep -r "SystemName" RuneAndRust.Engine/ --include="*.cs"
+grep -r "SystemName" RuneAndRust.Core/ --include="*.cs"
+
+# Find related documentation
+ls docs/01-systems/ | grep -i "system"
+ls docs/02-statistical-registry/ | grep -i "system"
+```
+
+**Output**: System name, scope definition, boundary list
+
+---
+
+#### Step 2: Map the Code Implementation
+
+**Questions to Answer**:
+- Which service class implements this system?
+- Which models/POCOs store system data?
+- Which database tables persist system state?
+- What are the entry points (public methods)?
+
+**Actions**:
+```bash
+# Find service implementation
+find RuneAndRust.Engine -name "*SystemName*Service.cs"
+
+# Find models
+find RuneAndRust.Core -name "*SystemName*.cs"
+
+# Find database schemas
+find Data -name "*system*.sql" | sort
+
+# Count lines of code (complexity indicator)
+wc -l RuneAndRust.Engine/SystemNameService.cs
+```
+
+**Read Key Files**:
+1. Service file (main business logic)
+2. Model files (data structures)
+3. Related factories/databases
+
+**Output**: File paths, line counts, entry point methods
+
+---
+
+#### Step 3: Extract Functional Requirements
+
+**Questions to Answer**:
+- What MUST the system do? (core requirements)
+- What edge cases exist?
+- What failure modes are handled?
+- What validation rules apply?
+
+**Actions**:
+1. **Read service public methods**:
+   - Each public method likely maps to a functional requirement
+   - Method signature reveals inputs/outputs
+   - XML comments (if present) explain purpose
+
+2. **Trace a typical execution path**:
+   - Pick common use case (e.g., "player uses ability")
+   - Follow code from entry point to completion
+   - Note all validation checks, state changes, integrations
+
+3. **Identify edge cases in code**:
+   ```csharp
+   // Look for patterns like:
+   if (value <= 0) return; // Edge: zero/negative input
+   if (count >= MAX) throw; // Edge: overflow
+   if (resource == null) // Edge: missing dependency
+   ```
+
+**Output**: List of 5-10 functional requirements with acceptance criteria
+
+---
+
+#### Step 4: Document System Mechanics
+
+**Questions to Answer**:
+- What formulas/algorithms drive the system?
+- What parameters are configurable?
+- How do inputs transform to outputs?
+- What random elements exist (dice rolls, RNG)?
+
+**Actions**:
+1. **Extract formulas from code**:
+   ```csharp
+   // Example: Find damage calculation
+   var damage = (successes * baseDamage) - targetArmor;
+
+   // Convert to specification format:
+   // Damage = (Successes × BaseDamage) - TargetArmor
+   ```
+
+2. **Identify tunable parameters**:
+   - Look for hardcoded constants: `const int MAX_HP = 100;`
+   - Look for database lookups: `_database.GetBaseDamage(weaponId)`
+   - Check configuration files: JSON, SQL seed data
+
+3. **Create worked examples**:
+   - Use actual values from code/database
+   - Show step-by-step calculation
+   - Verify against unit tests (if available)
+
+**Output**: Formulas with parameters, worked examples, parameter tables
+
+---
+
+#### Step 5: Map Integration Points
+
+**Questions to Answer**:
+- Which systems does this system CALL (dependencies)?
+- Which systems CALL this system (dependents)?
+- What events does it publish?
+- What events does it subscribe to?
+
+**Actions**:
+1. **Find constructor dependencies** (injected services):
+   ```csharp
+   public SystemService(
+       DependencyA depA,  // This system uses DependencyA
+       DependencyB depB   // This system uses DependencyB
+   )
+   ```
+
+2. **Search for event subscriptions**:
+   ```bash
+   grep -n "OnEventName +=" RuneAndRust.Engine/SystemService.cs
+   ```
+
+3. **Search for event publications**:
+   ```bash
+   grep -n "OnEventName?.Invoke" RuneAndRust.Engine/SystemService.cs
+   ```
+
+4. **Find calling code** (who uses this system):
+   ```bash
+   grep -r "new SystemService" RuneAndRust.Engine/
+   grep -r "_systemService\." RuneAndRust.Engine/
+   ```
+
+**Output**: Dependency graph, event list, integration notes
+
+---
+
+#### Step 6: Gather Statistical Data
+
+**Questions to Answer**:
+- What are typical/min/max values?
+- What probabilities govern outcomes?
+- What balance targets exist?
+
+**Actions**:
+1. **Check existing Layer 1 docs**: `docs/01-systems/system-name.md`
+2. **Check statistical registry**: `docs/02-statistical-registry/`
+3. **Check balance reference**: `docs/05-balance-reference/`
+4. **Extract from database**:
+   ```bash
+   # Example: Find all enemy HP values
+   sqlite3 Data/game.db "SELECT name, hp FROM enemies ORDER BY hp;"
+   ```
+
+5. **Read unit tests** for expected values:
+   ```bash
+   grep -A 5 "Assert.AreEqual" RuneAndRust.Tests/SystemServiceTests.cs
+   ```
+
+**Output**: Value ranges, probability tables, balance notes
+
+---
+
+#### Step 7: Review Player Experience
+
+**Questions to Answer**:
+- How does the player perceive this system?
+- What feedback does the system provide?
+- What decisions does the player make?
+- What emotions should the player feel?
+
+**Actions**:
+1. **Read UI code**: `RuneAndRust.ConsoleApp/` - see how system is presented
+2. **Review combat logs**: What messages are displayed?
+3. **Check descriptor systems**: Flavor text, feedback messages
+4. **Playtest mentally**: Walk through player interaction step-by-step
+
+**Output**: Player experience description, UX flow, feedback mechanisms
+
+---
+
+#### Step 8: Consolidate Findings
+
+**Actions**:
+1. Create specification outline from template
+2. Fill in sections with gathered information:
+   - Executive Summary ← Steps 1, 7
+   - Functional Requirements ← Step 3
+   - System Mechanics ← Step 4
+   - Integration Points ← Step 5
+   - Balance & Tuning ← Step 6
+   - Implementation Guidance ← Step 2
+
+3. Cross-reference all claims to code:
+   - Every formula → code line number
+   - Every requirement → method name
+   - Every parameter → constant/database location
+
+**Output**: Complete specification draft
+
+---
+
+### Walkthrough 2: Planning a New Specification
+
+**Goal**: Plan a specification for a system that doesn't exist yet (forward-looking design)
+
+**When to Use**: Before implementing a new feature
+
+---
+
+#### Step 1: Define the Design Problem
+
+**Questions to Answer**:
+- What player problem are we solving?
+- What is the "happy path" player experience?
+- What are we NOT solving (scope boundaries)?
+- Why does this system need to exist?
+
+**Actions**:
+1. **Write a problem statement**:
+   ```
+   Problem: Players feel progression is too linear and lacks meaningful choice.
+   Goal: Create a branching skill tree with mutually exclusive choices.
+   Non-Goal: Rebalance existing abilities (out of scope).
+   ```
+
+2. **Define success criteria**:
+   ```
+   Success Metrics:
+   - Players can create 3+ distinct builds with same archetype
+   - Each build is competitively viable
+   - Choices feel impactful (no "trap" options)
+   ```
+
+3. **Identify design constraints**:
+   - **Technical**: Must work with existing PP system
+   - **Gameplay**: No ability respecs (choices are permanent)
+   - **Scope**: v0.1 supports 2 tiers only (expand later)
+
+**Output**: Problem statement, success criteria, constraints
+
+---
+
+#### Step 2: Research Similar Systems
+
+**Questions to Answer**:
+- Do we have similar systems already? (reuse patterns)
+- What have other games done? (inspiration)
+- What pitfalls should we avoid?
+
+**Actions**:
+1. **Search existing codebase**:
+   ```bash
+   # Find similar patterns
+   grep -r "SkillTree\|TalentTree\|AbilityTree" RuneAndRust.Engine/
+   grep -r "BranchingChoice\|MutuallyExclusive" RuneAndRust.Engine/
+   ```
+
+2. **Review existing specifications**:
+   - Check `docs/00-specifications/` for related systems
+   - Note reusable patterns (PP spending, validation, etc.)
+
+3. **External research** (if needed):
+   - Check design notes, wikis, references
+   - Document inspirations in spec appendix
+
+**Output**: Related systems list, inspiration notes, pattern library
+
+---
+
+#### Step 3: Draft Core Requirements
+
+**Questions to Answer**:
+- What are the 5-10 critical requirements?
+- What edge cases must be handled?
+- What validation rules apply?
+
+**Actions**:
+1. **Brainstorm user stories**:
+   ```
+   As a player, I want to unlock skills in a tree so that I can specialize my character.
+   As a player, I want to see prerequisites clearly so that I can plan my build.
+   As a designer, I want to prevent invalid builds so that balance is maintained.
+   ```
+
+2. **Convert to functional requirements**:
+   ```
+   FR-001: Display Skill Tree with Prerequisites
+   FR-002: Unlock Skill with PP Payment
+   FR-003: Validate Prerequisites Before Unlock
+   FR-004: Prevent Unlocking Mutually Exclusive Skills
+   FR-005: Persist Unlocked Skills Across Sessions
+   ```
+
+3. **Define acceptance criteria for each**:
+   - What inputs trigger this?
+   - What outputs result?
+   - What error conditions exist?
+
+**Output**: 5-10 functional requirements with acceptance criteria
+
+---
+
+#### Step 4: Design System Mechanics
+
+**Questions to Answer**:
+- What formulas govern the system?
+- What parameters need tuning?
+- How does data flow through the system?
+
+**Actions**:
+1. **Draft formulas** (can be rough):
+   ```
+   Skill_Cost = Base_Cost + (Tier × 2)
+
+   Example:
+     Tier 1 Skill: 2 + (1 × 2) = 4 PP
+     Tier 2 Skill: 2 + (2 × 2) = 6 PP
+   ```
+
+2. **Identify tunable parameters**:
+   - What designer might want to change later?
+   - Mark as "Tunable: Yes" in parameter tables
+
+3. **Create data flow diagram** (ASCII art is fine):
+   ```
+   Player Clicks Skill
+     ↓
+   Check PP >= Cost? → NO → Error Message
+     ↓ YES
+   Check Prerequisites Met? → NO → Error Message
+     ↓ YES
+   Deduct PP, Unlock Skill, Update UI
+   ```
+
+**Output**: Formulas, parameter tables, data flow diagrams
+
+---
+
+#### Step 5: Map Planned Integrations
+
+**Questions to Answer**:
+- Which existing systems will this integrate with?
+- What new dependencies are needed?
+- What events should be published?
+
+**Actions**:
+1. **List dependencies**:
+   ```
+   Depends On:
+   - Progression System (PP spending) → SPEC-PROGRESSION-001
+   - Save System (persist unlocks) → Existing SaveService
+   - UI System (display tree) → New SkillTreeUI component
+   ```
+
+2. **List dependents** (who will use this):
+   ```
+   Consumed By:
+   - Ability System (check if skill unlocked) → SPEC-PROGRESSION-003
+   - Character Sheet UI (display unlocks)
+   ```
+
+3. **Plan events**:
+   ```
+   Events to Publish:
+   - OnSkillUnlocked (SkillID, PlayerID)
+   - OnSkillTreeOpened (PlayerID)
+
+   Events to Subscribe:
+   - OnPPChanged (to update UI)
+   ```
+
+**Output**: Integration plan, dependency list, event list
+
+---
+
+#### Step 6: Plan Implementation Strategy
+
+**Questions to Answer**:
+- What code needs to be written?
+- What models/services are needed?
+- What database changes are required?
+- What's the implementation order?
+
+**Actions**:
+1. **Architect the solution**:
+   ```
+   Models (RuneAndRust.Core):
+   - SkillNode.cs (skill definition)
+   - SkillTree.cs (tree structure)
+   - UnlockedSkill.cs (player progress)
+
+   Services (RuneAndRust.Engine):
+   - SkillTreeService.cs (business logic)
+   - SkillTreeFactory.cs (tree creation)
+
+   Database (Data/):
+   - v0.XX_skill_tree_schema.sql
+   ```
+
+2. **Define implementation order**:
+   ```
+   Phase 1: Models + Database
+   Phase 2: Service (unlock logic)
+   Phase 3: UI Integration
+   Phase 4: Testing
+   ```
+
+3. **Add to Implementation Guidance section** of spec
+
+**Output**: Code architecture plan, implementation order
+
+---
+
+#### Step 7: Write the Specification
+
+**Actions**:
+1. Copy `TEMPLATE.md` to new file:
+   ```bash
+   cp docs/00-specifications/TEMPLATE.md \
+      docs/00-specifications/progression/skill-tree-spec.md
+   ```
+
+2. Fill in all sections using gathered information:
+   - Executive Summary ← Step 1
+   - Functional Requirements ← Step 3
+   - System Mechanics ← Step 4
+   - Integration Points ← Step 5
+   - Implementation Guidance ← Step 6
+
+3. Mark status as "Draft"
+
+4. Work through document completeness checklist
+
+**Output**: Complete specification draft
+
+---
+
+### Walkthrough 3: Mapping System Relationships
+
+**Goal**: Create a comprehensive dependency map showing how systems interconnect
+
+**When to Use**: Before implementing complex features, during architecture reviews
+
+---
+
+#### Step 1: Identify All Systems in Scope
+
+**Actions**:
+```bash
+# List all specifications
+ls -1 docs/00-specifications/*/*.md | grep -v "README\|TEMPLATE"
+
+# List all service files
+ls -1 RuneAndRust.Engine/*Service.cs | wc -l
+
+# List all major system docs
+ls -1 docs/01-systems/*.md
+```
+
+**Create Master System List**:
+```
+1. Combat Resolution (SPEC-COMBAT-001)
+2. Character Progression (SPEC-PROGRESSION-001)
+3. Trauma Economy (SPEC-ECONOMY-003)
+4. Ability System (SPEC-PROGRESSION-003)
+5. Equipment System (SPEC-ECONOMY-002)
+... (continue for all systems)
+```
+
+**Output**: Numbered list of all systems
+
+---
+
+#### Step 2: Extract Dependencies from Specifications
+
+**For each specification**:
+
+**Actions**:
+1. Open specification file
+2. Find "Dependencies" section
+3. Extract "Depends On" list
+4. Extract "Depended Upon By" list
+
+**Example**:
+```markdown
+From SPEC-COMBAT-001:
+  Depends On:
+    - Dice Service
+    - Attribute System (SPEC-PROGRESSION-001)
+    - Room System
+
+  Depended Upon By:
+    - Damage Calculation (SPEC-COMBAT-002)
+    - Status Effects (SPEC-COMBAT-003)
+    - Boss Encounters (SPEC-COMBAT-004)
+```
+
+**Output**: Dependency list per system
+
+---
+
+#### Step 3: Create Dependency Matrix
+
+**Actions**:
+Create a table showing which systems depend on which:
+
+```
+| System A | Depends On System B? |
+|----------|----------------------|
+| Combat Resolution | ✅ Progression (FINESSE) |
+| Combat Resolution | ✅ Dice Service |
+| Combat Resolution | ✅ Room System |
+| Progression | ❌ Combat |
+| Trauma Economy | ✅ Progression (WILL) |
+| Trauma Economy | ✅ Combat (stress sources) |
+```
+
+**Identify Circular Dependencies**:
+```
+⚠️ CIRCULAR: Combat → Progression (uses FINESSE)
+              Progression → Combat (awards Legend)
+
+Resolution: Extract shared concept (Attributes) as separate system
+```
+
+**Output**: Dependency matrix, circular dependency warnings
+
+---
+
+#### Step 4: Visualize the Dependency Graph
+
+**Actions**:
+Create ASCII art dependency graph (or use tools like Mermaid):
+
+```
+┌──────────────┐
+│ Dice Service │ (Foundation - no dependencies)
+└──────┬───────┘
+       │
+       ├──────> ┌─────────────┐
+       │        │ Attributes  │
+       │        │ (SPEC-PROG-X)│
+       │        └──────┬──────┘
+       │               │
+       ▼               ▼
+┌──────────────┐ ┌────────────────┐
+│Combat Resolu-│ │ Progression    │
+│tion (001)    │◄┤ System (001)   │
+└──────┬───────┘ └────────────────┘
+       │
+       ├──────> ┌─────────────────┐
+       │        │ Damage Calc     │
+       │        │ (SPEC-COMBAT-002)│
+       │        └─────────────────┘
+       │
+       └──────> ┌─────────────────┐
+                │ Status Effects  │
+                │ (SPEC-COMBAT-003)│
+                └─────────────────┘
+```
+
+**Layers**:
+- **Layer 0** (Foundation): Dice Service, Utilities
+- **Layer 1** (Core Data): Attributes, Resources
+- **Layer 2** (Systems): Combat, Progression, Trauma
+- **Layer 3** (Features): Abilities, Equipment, Quests
+
+**Output**: Dependency graph, layering diagram
+
+---
+
+#### Step 5: Map Data Flow
+
+**Actions**:
+For critical paths, map how data flows through systems:
+
+**Example: Combat Victory Flow**:
+```
+1. CombatEngine detects all enemies dead
+   ↓
+2. CombatEngine calls SagaService.AwardLegend(player, legendAmount)
+   ↓
+3. SagaService adds Legend to PlayerCharacter.CurrentLegend
+   ↓
+4. SagaService checks if CurrentLegend >= LegendToNextMilestone
+   ↓
+5. IF YES: SagaService triggers Milestone advancement
+   ↓
+6. Milestone grants: +10 HP, +5 Stamina, +1 PP, Full Heal
+   ↓
+7. SagaService publishes OnMilestoneReached event
+   ↓
+8. UI subscribes to event, displays celebration screen
+```
+
+**Output**: Data flow diagrams for key interactions
+
+---
+
+#### Step 6: Identify Integration Risks
+
+**Questions to Answer**:
+- Are there hidden circular dependencies?
+- Are there single points of failure?
+- Are there tightly coupled systems that should be decoupled?
+- Are there missing abstraction layers?
+
+**Actions**:
+1. **Check for coupling smells**:
+   - System A directly modifies System B's state (tight coupling)
+   - System A knows too much about System B's internals
+   - Changes to System B always break System A
+
+2. **Identify shared concerns**:
+   - Multiple systems implement same logic (duplication)
+   - Multiple systems need same data (missing shared service)
+
+3. **Document integration risks**:
+   ```
+   RISK-001: Combat and Progression are tightly coupled via Legend awards
+     Impact: Changes to Legend calculation require touching both systems
+     Mitigation: Consider extracting RewardService abstraction
+   ```
+
+**Output**: Integration risk register
+
+---
+
+#### Step 7: Document Relationships in Specifications
+
+**Actions**:
+For each specification, ensure "Integration Points" section includes:
+
+1. **Systems This System Consumes**:
+   - What we use from them
+   - How we use it
+   - What happens if they fail
+
+2. **Systems That Consume This System**:
+   - What they use from us
+   - Stability contracts (what we guarantee)
+
+3. **Event System Integration**:
+   - Events we publish
+   - Events we subscribe to
+
+**Update specifications** if relationships are missing or incorrect.
+
+**Output**: Updated Integration Points sections in all specs
+
+---
+
+### Walkthrough 4: Drafting the Specification
+
+**Goal**: Write a complete, thorough specification from scratch using the template
+
+**When to Use**: After completing analysis (Walkthrough 1) or planning (Walkthrough 2)
+
+---
+
+#### Phase 1: Setup (5 minutes)
+
+**Actions**:
+1. Copy template:
+   ```bash
+   cp docs/00-specifications/TEMPLATE.md \
+      docs/00-specifications/[domain]/[system-name]-spec.md
+   ```
+
+2. Fill in header metadata:
+   ```markdown
+   # [System Name] Specification
+
+   > **Template Version**: 1.0
+   > **Last Updated**: 2025-11-19
+   > **Status**: Draft
+   > **Specification ID**: SPEC-[DOMAIN]-[NUMBER]
+   ```
+
+3. Fill in Document Control table:
+   - Version: 1.0
+   - Date: Today
+   - Author: Your name or "AI + Human"
+   - Changes: "Initial specification"
+
+**Output**: Initialized specification file
+
+---
+
+#### Phase 2: Executive Summary (15 minutes)
+
+**Actions**:
+1. **Write Purpose Statement** (1-2 sentences):
+   ```markdown
+   The [System Name] provides [core functionality] where [key mechanic]
+   determines [outcome/player experience].
+   ```
+
+   Examples:
+   - "Combat Resolution provides turn-based tactical combat where initiative
+     determines turn order and tactical choices drive outcomes."
+   - "Trauma Economy tracks psychological cost of survival through Stress and
+     Corruption, creating tension between power and mental stability."
+
+2. **Define Scope** (bulleted lists):
+   **In Scope**: List 5-7 core features
+   **Out of Scope**: List 3-5 related but excluded features (link to other specs)
+
+3. **Write Success Criteria** (3-5 criteria):
+   - Player Experience: Emotional/cognitive goal
+   - Technical: Performance/reliability goal
+   - Design: Gameplay goal
+   - Balance: Numerical target
+
+**Output**: Complete Executive Summary
+
+---
+
+#### Phase 3: Related Documentation (10 minutes)
+
+**Actions**:
+1. **Map Dependencies**:
+   - List systems this depends on
+   - Link to their SPECs or docs
+   - Explain WHY each dependency exists
+
+2. **Map Dependents**:
+   - List systems that depend on this
+   - Link to their SPECs
+   - Explain WHAT they use
+
+3. **Link Implementation Docs**:
+   - Layer 1: `docs/01-systems/[file].md`
+   - Layer 2: `docs/02-statistical-registry/`
+   - Layer 3: `docs/03-technical-reference/`
+   - Layer 5: `docs/05-balance-reference/`
+
+4. **Link Code**:
+   - Primary Service: `RuneAndRust.Engine/[Service].cs:line`
+   - Core Models: `RuneAndRust.Core/[Model].cs`
+   - Tests: `RuneAndRust.Tests/[Tests].cs`
+
+**Output**: Complete Related Documentation section
+
+---
+
+#### Phase 4: Design Philosophy (20 minutes)
+
+**Actions**:
+1. **Define 2-4 Design Pillars**:
+   For each pillar:
+   - **Name**: Short phrase (e.g., "Turn Order Clarity")
+   - **Rationale**: Why this matters (1 sentence)
+   - **Examples**: How it manifests in gameplay (2-3 bullets)
+
+2. **Describe Player Experience**:
+   - **Target Experience**: Emotional/cognitive state (1 sentence)
+   - **Moment-to-Moment**: What players do second-to-second (3-4 bullets)
+   - **Learning Curve**:
+     - Novice (0-2 hours): What they learn
+     - Intermediate (2-10 hours): Deepening understanding
+     - Expert (10+ hours): Mastery elements
+
+3. **List Design Constraints** (4 categories):
+   - Technical: Platform, engine limitations
+   - Gameplay: Genre conventions, accessibility
+   - Narrative: Lore consistency, thematic requirements
+   - Scope: Time, budget, team constraints
+
+**Output**: Complete Design Philosophy section
+
+---
+
+#### Phase 5: Functional Requirements (45-60 minutes)
+
+**THIS IS THE CORE OF THE SPECIFICATION - TAKE TIME HERE**
+
+**For each requirement** (aim for 5-10 total):
+
+1. **Assign ID**: FR-001, FR-002, etc. (sequential)
+
+2. **Set Priority**: Critical | High | Medium | Low
+
+3. **Write Description** (2-3 sentences):
+   - Use active voice
+   - Be specific about inputs, outputs, behavior
+   - Avoid implementation details
+
+4. **Write Rationale** (1-2 sentences):
+   - WHY this requirement exists
+   - Link to design goals or player experience
+
+5. **Define Acceptance Criteria** (checkbox list):
+   ```markdown
+   - [ ] Specific, measurable criterion 1
+   - [ ] Specific, measurable criterion 2
+   - [ ] Edge case handling criterion 3
+   ```
+
+   Aim for 4-6 criteria per requirement
+
+6. **Create Example Scenarios** (2-3 per requirement):
+   ```markdown
+   1. **Scenario**: [Normal case description]
+      - **Input**: [Concrete input values]
+      - **Expected Output**: [Concrete output]
+      - **Success Condition**: [How to verify]
+
+   2. **Edge Case**: [Boundary condition]
+      - **Input**: [Edge case input]
+      - **Expected Behavior**: [How system handles it]
+   ```
+
+7. **List Dependencies**:
+   - Requires: Other FR-IDs or systems needed first
+   - Blocks: FR-IDs that can't proceed without this
+
+8. **Add Implementation Notes**:
+   - Code Location: File path and method
+   - Data Requirements: What data this needs
+   - Performance Considerations: Any constraints
+
+**Repeat for all requirements**
+
+**Output**: 5-10 complete functional requirements
+
+---
+
+#### Phase 6: System Mechanics (45-60 minutes)
+
+**For each core mechanic** (aim for 3-5 total):
+
+1. **Write Overview** (2-3 sentences):
+   - Plain language explanation
+   - Why this mechanic exists
+
+2. **Describe How It Works** (numbered steps):
+   ```markdown
+   1. [Step 1 in the process]
+   2. [Step 2 in the process]
+   3. [Step 3 in the process]
+   ```
+
+3. **Document Formula/Logic**:
+   ```markdown
+   Formula:
+     Result = (Input1 × Multiplier) + Bonus
+
+   Example:
+     Given:
+       Input1 = 5
+       Multiplier = 3
+       Bonus = 2
+
+     Calculation:
+       Result = (5 × 3) + 2 = 17
+   ```
+
+4. **Create Parameter Table**:
+   | Parameter | Type | Range | Default | Description | Tunable? |
+   |-----------|------|-------|---------|-------------|----------|
+   | Input1 | int | 1-10 | 5 | ... | Yes |
+   | Multiplier | int | 1-5 | 3 | ... | Yes |
+
+5. **Document Data Flow**:
+   ```markdown
+   Input Sources:
+     → [Source 1]
+     → [Source 2]
+
+   Processing:
+     → [Step 1]
+     → [Step 2]
+
+   Output Destinations:
+     → [Destination 1]
+     → [Destination 2]
+   ```
+
+6. **List Edge Cases** (2-4 per mechanic):
+   ```markdown
+   1. **[Edge Case Name]**: [Description]
+      - **Condition**: [When this occurs]
+      - **Behavior**: [How system handles it]
+      - **Example**: [Concrete example]
+   ```
+
+7. **Link Related Requirements**: FR-001, FR-003, etc.
+
+**Repeat for all mechanics**
+
+**Output**: 3-5 complete system mechanics
+
+---
+
+#### Phase 7: Integration Points (30 minutes)
+
+**For Systems This System Consumes**:
+
+For each consumed system:
+1. **What We Use**: Specific functionality/data
+2. **How We Use It**: Description of integration
+3. **Dependency Type**: Hard | Soft | Optional
+4. **Failure Handling**: What happens if it fails
+5. **API/Interface**: Code example
+6. **Data Contract**: Input/output specification
+
+**For Systems That Consume This System**:
+
+For each consumer:
+1. **What They Use**: Functionality we provide
+2. **How They Use It**: Description
+3. **Stability Contract**: What we guarantee not to break
+4. **API We Expose**: Public interface example
+
+**Event System**:
+
+Create two tables:
+1. **Events Published**: Name, Trigger, Payload, Consumers
+2. **Events Subscribed**: Name, Source, Handler, Purpose
+
+**Output**: Complete Integration Points section
+
+---
+
+#### Phase 8: Implementation Guidance (30 minutes)
+
+**For AI Implementers**:
+
+1. **Current State**: Not Started | Partial | Complete | Refactor Needed
+
+2. **Completed Checklist**:
+   ```markdown
+   - [ ] Core models created
+   - [ ] Service/Engine implemented
+   - [ ] Factory (if needed) implemented
+   - [ ] Database/Registry populated
+   - [ ] Integration with dependent systems
+   - [ ] Unit tests written
+   - [ ] Integration tests written
+   - [ ] Balance testing completed
+   - [ ] Documentation updated
+   ```
+
+3. **Code Architecture**:
+   ```markdown
+   Recommended Structure:
+   RuneAndRust.Core/
+     └─ [SystemName]/
+         ├─ [Model1].cs
+         └─ [Model2].cs
+
+   RuneAndRust.Engine/
+     └─ [SystemName]/
+         ├─ [Service].cs
+         └─ [Factory].cs
+   ```
+
+4. **Implementation Checklist** (5-10 items):
+   - [ ] Create POCOs in RuneAndRust.Core
+   - [ ] Create service with dependency injection
+   - [ ] Add error handling and validation
+   - [ ] etc.
+
+5. **Code Examples**:
+   ```csharp
+   // Example service structure
+   public class SystemService
+   {
+       // Constructor, methods, etc.
+   }
+   ```
+
+6. **Implementation Notes**:
+   - Performance Considerations
+   - Error Handling
+   - Future Extensibility
+
+**Output**: Complete Implementation Guidance section
+
+---
+
+#### Phase 9: Balance & Tuning (20 minutes)
+
+1. **Tunable Parameters Table**:
+   | Parameter | Location | Current Value | Min | Max | Impact | Change Frequency |
+   |-----------|----------|---------------|-----|-----|--------|------------------|
+   | [Param1] | [File:line] | [Value] | [Min] | [Max] | [Effect] | High/Med/Low |
+
+2. **Balance Targets** (3-5 targets):
+   For each:
+   - **Target Name**: Specific measurable goal
+   - **Metric**: How we measure
+   - **Current**: Current state (if known)
+   - **Target**: Desired state
+   - **Levers**: Parameters to adjust
+
+3. **Testing Scenarios** (2-4 scenarios):
+   For each:
+   - **Purpose**: What this tests
+   - **Setup**: Preconditions
+   - **Procedure**: Steps
+   - **Expected Results**: Success criteria
+   - **Pass Criteria**: Definition of success
+
+**Output**: Complete Balance & Tuning section
+
+---
+
+#### Phase 10: Review & Polish (30 minutes)
+
+**Actions**:
+1. **Run through Document Completeness Checklist**:
+   - [ ] All required sections present
+   - [ ] Version history populated
+   - [ ] All cross-references valid
+   - [ ] All formulas have examples
+   - [ ] All requirements have IDs
+   - [ ] All edge cases documented
+   - [ ] All placeholders ([TBD]) resolved
+
+2. **Verify Cross-References**:
+   ```bash
+   # Check if files exist
+   ls -la RuneAndRust.Engine/SystemService.cs
+   ls -la docs/01-systems/system-name.md
+   ```
+
+3. **Proofread**:
+   - Spelling and grammar
+   - Consistent terminology
+   - Clear, unambiguous language
+   - No implementation details in design sections
+
+4. **Add Appendices** (if needed):
+   - Terminology definitions
+   - Diagrams
+   - Mathematical derivations
+   - References
+
+5. **Update status**:
+   - Change from "Draft" to "Review" when ready
+
+**Output**: Complete, polished specification
+
+---
+
+### Walkthrough 5: Leveraging Existing Documentation
+
+**Goal**: Maximize efficiency by extracting information from existing Layer 1-5 documentation
+
+**When to Use**: When retroactively creating specifications for documented systems
+
+---
+
+#### Mining Layer 1: System Documentation
+
+**Location**: `docs/01-systems/`
+
+**What to Extract**:
+1. **Functional Overview** → Use for Executive Summary, Design Philosophy
+2. **Player Experience Flow** → Use for UX Flow section
+3. **Key Features List** → Convert to Functional Requirements
+4. **Edge Cases** → Add to FR acceptance criteria
+5. **Integration Points** → Use for Integration Points section
+
+**Actions**:
+```bash
+# Find system docs
+ls docs/01-systems/*.md
+
+# Read relevant system doc
+# Copy functional descriptions to spec Executive Summary
+# Extract bullet points as FR starting points
+```
+
+**Example Extraction**:
+```markdown
+From docs/01-systems/combat-resolution.md:
+
+"Combat begins when player encounters enemies"
+→ Becomes FR-001: Initialize Combat Encounter
+
+"Initiative based on FINESSE rolls"
+→ Becomes Mechanic 1: Initiative Rolling
+
+"Player can flee if CanFlee=true"
+→ Becomes FR-008: Handle Flee Attempt
+```
+
+**Output**: Executive Summary draft, FR list, mechanics outline
+
+---
+
+#### Mining Layer 2: Statistical Registry
+
+**Location**: `docs/02-statistical-registry/` or `docs/02-abilities/`, `docs/03-equipment/`, `docs/04-enemies/`
+
+**What to Extract**:
+1. **Formulas** → Use for System Mechanics formulas
+2. **Stat Ranges** → Use for Parameter tables (min/max/default)
+3. **Probability Tables** → Use for Appendices
+4. **Cost Tables** → Use for Balance & Tuning
+
+**Actions**:
+```bash
+# Find registry files
+ls docs/02-statistical-registry/*.md
+ls docs/02-abilities/*.md
+
+# Search for formulas
+grep -n "Formula:" docs/02-statistical-registry/*.md
+grep -n "Calculation:" docs/02-statistical-registry/*.md
+```
+
+**Example Extraction**:
+```markdown
+From docs/02-statistical-registry/damage-formulas.md:
+
+Damage = (Successes × BaseDamage) - TargetArmor
+
+→ Copy directly to System Mechanics section
+→ Add to parameter table:
+  | BaseDamage | int | 1-100 | 5 | Damage per success | Yes |
+  | TargetArmor | int | 0-50 | 0 | Damage reduction | No |
+```
+
+**Output**: Formulas, parameter tables, balance data
+
+---
+
+#### Mining Layer 3: Technical Reference
+
+**Location**: `docs/03-technical-reference/`
+
+**What to Extract**:
+1. **Service Architecture** → Use for Integration Points
+2. **Database Schemas** → Use for Data Requirements, State Management
+3. **Code Patterns** → Use for Implementation Guidance
+4. **API Documentation** → Use for Integration APIs
+
+**Actions**:
+```bash
+# Find technical docs
+ls docs/03-technical-reference/*.md
+
+# Extract architecture info
+grep -A 10 "Service Dependencies" docs/03-technical-reference/*.md
+```
+
+**Example Extraction**:
+```markdown
+From docs/03-technical-reference/service-architecture.md:
+
+CombatEngine depends on:
+- DiceService
+- SagaService
+- LootService
+
+→ Add to Integration Points > Systems This System Consumes:
+  - DiceService: Random number generation for initiative
+  - SagaService: XP/Legend awards on victory
+  - LootService: Loot generation on victory
+```
+
+**Output**: Integration mappings, code architecture notes
+
+---
+
+#### Mining Layer 5: Balance Reference
+
+**Location**: `docs/05-balance-reference/`
+
+**What to Extract**:
+1. **Design Intent** → Use for Design Philosophy
+2. **Power Budgets** → Use for Balance Targets
+3. **Tuning Notes** → Use for Tunable Parameters
+4. **Playtesting Results** → Use for Known Issues, Future Work
+
+**Actions**:
+```bash
+# Find balance docs
+ls docs/05-balance-reference/*.md
+
+# Extract balance targets
+grep -n "Target:" docs/05-balance-reference/*.md
+grep -n "Goal:" docs/05-balance-reference/*.md
+```
+
+**Example Extraction**:
+```markdown
+From docs/05-balance-reference/combat-pacing.md:
+
+"Target: Average combat duration 8-15 turns"
+
+→ Add to Balance & Tuning > Balance Targets:
+  Target 2: Combat Duration
+  - Metric: Average turns to victory
+  - Current: 8-15 turns
+  - Target: 5-20 turns (prevent too fast or slow)
+  - Levers: Enemy HP, damage values, hazard damage
+```
+
+**Output**: Balance targets, design intent notes
+
+---
+
+#### Mining Code Comments & Documentation
+
+**What to Extract**:
+1. **XML Comments** → Use for FR descriptions, method explanations
+2. **Inline Comments** → Use for edge case documentation
+3. **Test Names** → Convert to test scenarios
+
+**Actions**:
+```bash
+# Find well-commented code
+grep -B 2 "///" RuneAndRust.Engine/CombatEngine.cs | head -50
+
+# Find edge case comments
+grep -n "Edge:" RuneAndRust.Engine/*.cs
+grep -n "Special case:" RuneAndRust.Engine/*.cs
+```
+
+**Example Extraction**:
+```csharp
+/// <summary>
+/// Initializes combat with player and enemies, rolls initiative
+/// </summary>
+/// <returns>CombatState with initialized turn order</returns>
+public CombatState InitializeCombat(...)
+
+→ Becomes FR-001 description:
+  "System must initialize combat state with player, enemies, and room
+   context, then roll initiative to determine turn order."
+```
+
+**Output**: FR descriptions, implementation notes
+
+---
+
+#### Mining Database Schemas
+
+**Location**: `Data/*.sql`
+
+**What to Extract**:
+1. **Table Definitions** → Use for Data Requirements
+2. **Column Names/Types** → Use for state variables
+3. **Constraints** → Use for validation rules
+4. **Relationships** → Use for integration mappings
+
+**Actions**:
+```bash
+# Find schemas
+ls Data/*.sql | grep -i "system\|combat\|progression"
+
+# Extract table definitions
+grep "CREATE TABLE" Data/v0.*.sql
+```
+
+**Example Extraction**:
+```sql
+CREATE TABLE combat_state (
+    id INTEGER PRIMARY KEY,
+    current_turn_index INTEGER NOT NULL,
+    is_active BOOLEAN DEFAULT 1,
+    can_flee BOOLEAN DEFAULT 1
+);
+
+→ Add to State Management > State Variables:
+  | CurrentTurnIndex | int | Session | 0 | Index in initiative order |
+  | IsActive | bool | Session | false | Whether combat ongoing |
+  | CanFlee | bool | Session | true | Whether flee available |
+```
+
+**Output**: State variables, persistence requirements
+
+---
+
+#### Consolidation Strategy
+
+**After mining all layers**:
+
+1. **Prioritize Sources**:
+   - Layer 1 (System Docs) → Most comprehensive, start here
+   - Layer 2 (Stats) → Formulas and numbers
+   - Layer 5 (Balance) → Design intent
+   - Code → Fill gaps, verify claims
+
+2. **Cross-Verify Information**:
+   - If Layer 1 says "Formula: X" and code says "Formula: Y", investigate
+   - Note discrepancies in specification as open questions
+   - Prefer code as source of truth for implementation
+
+3. **Fill Template Systematically**:
+   - Executive Summary ← Layer 1 + Layer 5
+   - Functional Requirements ← Layer 1 + Code
+   - System Mechanics ← Layer 2 + Code
+   - Integration Points ← Layer 3 + Code
+   - Balance & Tuning ← Layer 5
+   - Implementation Guidance ← Code + Layer 3
+
+4. **Cross-Reference Everything**:
+   - Every formula links to Layer 2 doc AND code line
+   - Every requirement links to Layer 1 section
+   - Every parameter links to database or constant location
+
+**Output**: Complete specification leveraging all existing documentation
 
 ---
 
