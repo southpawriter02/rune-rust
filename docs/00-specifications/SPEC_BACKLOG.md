@@ -3,22 +3,22 @@
 **Purpose**: Central tracking document for all specifications (existing, in-progress, and planned)
 
 **Last Updated**: 2025-11-19
-**Total Specs**: 4 completed, 33 planned, 37 total
+**Total Specs**: 5 completed, 0 in progress, 34 planned, 39 total
 
 ---
 
 ## Quick Status Summary
 
-| Domain | Completed | Planned | Total | Coverage |
-|--------|-----------|---------|-------|----------|
-| Combat | 1 | 10 | 11 | 9% |
-| Progression | 2 | 3 | 5 | 40% |
-| Economy | 1 | 5 | 6 | 17% |
-| World | 0 | 8 | 8 | 0% |
-| Narrative | 0 | 6 | 6 | 0% |
-| Faction | 0 | 3 | 3 | 0% |
-| AI | 0 | 2 | 2 | 0% |
-| **TOTAL** | **4** | **33** | **37** | **11%** |
+| Domain | Completed | In Progress | Planned | Total | Coverage |
+|--------|-----------|-------------|---------|-------|----------|
+| Combat | 1 | 0 | 10 | 11 | 9% |
+| Progression | 3 | 0 | 4 | 7 | 43% |
+| Economy | 1 | 0 | 5 | 6 | 17% |
+| World | 0 | 0 | 8 | 8 | 0% |
+| Narrative | 0 | 0 | 6 | 6 | 0% |
+| Faction | 0 | 0 | 3 | 3 | 0% |
+| AI | 0 | 0 | 2 | 2 | 0% |
+| **TOTAL** | **5** | **0** | **34** | **39** | **13%** |
 
 ---
 
@@ -168,27 +168,37 @@
 
 ---
 
-### 📋 SPEC-PROGRESSION-003: Ability & Skill Advancement System
-**Status**: Planned
+### ✅ SPEC-PROGRESSION-003: Ability Rank Advancement System
+**Status**: Completed
+**File**: `progression/ability-rank-advancement-spec.md`
+**Lines**: ~550
+**Completed**: 2025-11-19
 **Priority**: High
 **Domain**: Progression
-**Layer 1 Docs**: 🔗 None (partial docs in `docs/02-statistical-registry/abilities/`)
+**Layer 1 Docs**: 🔗 None (this spec provides design documentation)
 
-**Proposed Scope**:
-- Ability unlock mechanics
-- Ability rank progression (Rank 1 → Rank 2 → Rank 3)
-- PP costs for ability upgrades
-- Skill tree structure and branching
-- Prerequisites and dependencies
-- Ability reset/respec mechanics (if any)
+**Scope** (REDUCED FOCUS):
+- Ability learning mechanics within specialization trees
+- Ability rank progression system (Rank 1 → Rank 2, Rank 3 future)
+- Rank scaling formulas (+1d6 damage/rank, +1 turn duration/rank)
+- Rank-up PP costs (5 PP for Rank 2)
+- Tier unlock validation (8/16/24 PP in tree thresholds)
+- PP-in-tree tracking per specialization
+- Prerequisite validation (capstones require Tier 3)
+
+**Out of Scope**:
+- Skill tree structure → SPEC-PROGRESSION-002
+- Ability reset/respec → SPEC-PROGRESSION-006
+- Individual ability design → Implementation docs
+- Per-specialization balance → Per-spec tuning
 
 **Dependencies**:
 - SPEC-PROGRESSION-001 (Character Progression) - Completed
-- SPEC-PROGRESSION-002 (Archetype System) - Not yet drafted
+- SPEC-PROGRESSION-002 (Archetype & Specialization System) - Completed
 
-**Why Needed**: Ability progression is referenced in PP economy but not comprehensively specified.
+**Why Complete**: Rank advancement is core investment mechanic; needed formal design specification for scaling formulas and PP costs.
 
-**Implementation Exists**: Yes (partial, in ability-related services)
+**Implementation Exists**: Yes (`AbilityService.cs:LearnAbility()`, `AbilityService.cs:RankUpAbility()`, `AbilityRepository.cs`)
 
 ---
 
@@ -883,11 +893,35 @@ The following specifications have been identified based on existing implementati
 
 **Dependencies**:
 - SPEC-COMBAT-001 (Combat Resolution) - Completed
-- SPEC-PROGRESSION-002 (Archetype System) - Not yet drafted
+- SPEC-PROGRESSION-002 (Archetype System) - Completed
 
 **Why Needed**: StanceService exists but lacks design specification for stance mechanics and switching rules.
 
 **Implementation Exists**: Yes (`RuneAndRust.Engine/StanceService.cs`)
+
+---
+
+### 📋 SPEC-PROGRESSION-006: Ability Respec & Reset System
+**Status**: Planned
+**Priority**: Low
+**Domain**: Progression
+**Layer 1 Docs**: None
+
+**Proposed Scope**:
+- Ability unlearning mechanics (refund PP or permanent?)
+- Rank reset rules (can abilities be de-ranked?)
+- Respec costs and limitations (currency, one-time, cooldowns)
+- Specialization unlearning (if allowed)
+- Full character respec vs. partial ability respec
+- Persistence of respec history (for analytics/restrictions)
+
+**Dependencies**:
+- SPEC-PROGRESSION-003 (Ability Rank Advancement) - In Progress
+- SPEC-PROGRESSION-001 (Character Progression) - Completed
+
+**Why Needed**: Allows player experimentation and build pivots without starting new character. Design philosophy not yet decided (permanent choices vs. flexible respec).
+
+**Implementation Exists**: No (future feature)
 
 ---
 
