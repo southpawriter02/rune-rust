@@ -8,29 +8,78 @@
 
 ## Documentation Structure
 
-This documentation follows a **5-layer architecture** for complete coverage:
+This documentation follows a **6-layer architecture** for complete coverage:
 
-### Layer 1: Functional (What It Does)
+### Layer 0: Specifications (Design Intent - WHAT & WHY)
+**NEW** - High-level feature/system specifications defining WHAT systems do and WHY they exist
+- Design-focused (non-technical, implementation-agnostic)
+- Functional requirements, acceptance criteria, design philosophy
+- Player experience goals, balance targets, success metrics
+- Serves as contract between design intent and implementation
+- **Location**: `docs/00-specifications/` (organized by domain: combat, progression, world, narrative, economy)
+
+### Layer 1: Functional (What It Does - HOW)
 Player-facing descriptions, system overviews, feature lists, UI/UX documentation
+- Technical implementation details
+- System integration guides
+- **Location**: `docs/01-systems/`
 
 ### Layer 2: Statistical (The Numbers)
 All formulas, stat values, scaling curves, probability tables
+- **Location**: `docs/02-statistical-registry/`
 
 ### Layer 3: Technical (How It Works)
 Database schemas, service APIs, class hierarchies, integration patterns
+- **Location**: `docs/03-technical-reference/`
 
 ### Layer 4: Testing (How We Verify)
 Test coverage reports, test specifications, QA checklists, regression tests
+- **Location**: `docs/04-testing-qa/`
 
 ### Layer 5: Balance (Why These Numbers)
 Design intent, power budget analysis, role effectiveness matrices, difficulty tuning
+- **Location**: `docs/05-balance-reference/`
 
 ---
 
 ## Documentation Sections
 
+### 📐 [00 - Feature & System Specifications](./00-specifications/)
+**NEW** - High-level design specifications organized by domain:
+
+**Combat Domain:**
+- Combat Resolution System (initiative, turn order, combat flow)
+- Status Effects System (buffs, debuffs, DoT mechanics)
+- Boss Encounter System (multi-phase mechanics, special abilities)
+
+**Progression Domain:**
+- Character Progression System (Legend/XP, Milestones, Progression Points)
+- Archetype & Specialization System (class mechanics, skill trees)
+- Ability Advancement System (ability ranks, costs, upgrades)
+
+**World Domain:**
+- Procedural Generation System (Wave Function Collapse, room design)
+- Biome System (environmental themes, hazards)
+- Room & Hazard System (environmental mechanics)
+
+**Narrative Domain:**
+- Descriptor Framework (flavor text, atmospheric descriptions)
+- Dialogue System (branching conversations, skill checks)
+- Faction & Reputation System (territory, faction interactions)
+- Quest System (quest generation, objectives, rewards)
+
+**Economy Domain:**
+- Loot & Equipment System (quality tiers, drop tables)
+- Crafting System (recipes, resources, components)
+- Trauma Economy System (Psychic Stress, Corruption, Breaking Points)
+
+**See**:
+- **[START_HERE.md](./00-specifications/START_HERE.md)** - Quick start for AI sessions drafting new specs
+- **[SPEC_BACKLOG.md](./00-specifications/SPEC_BACKLOG.md)** - Registry of all specs (3 completed, 34 planned, 37 total)
+- **[Specification Writing Guide](./00-specifications/README.md)** - Complete governance, standards, and templates
+
 ### 📖 [01 - System Documentation](./01-systems/)
-Complete documentation of all game systems using the 5-layer structure:
+Complete technical documentation of all game systems using the 5-layer structure:
 
 - **Combat Systems** - Combat resolution, damage, accuracy, status effects
 - **Progression & Resources** - Legend/XP, PP, attributes, HP/Stamina
@@ -101,17 +150,19 @@ At-a-glance reference materials:
 
 ## How to Use This Documentation
 
-### For Developers
-1. Start with **System Documentation** to understand how systems work
-2. Reference **Technical Reference** for implementation details
-3. Use **Testing & QA** to verify your changes
-4. Check **Statistical Registry** for exact values
+### For Developers (Human & AI)
+1. **Start with Specifications** (`00-specifications/`) to understand WHAT the system should do and WHY
+2. Reference **System Documentation** (`01-systems/`) for HOW it's currently implemented
+3. Use **Technical Reference** (`03-technical-reference/`) for code architecture details
+4. Verify with **Testing & QA** (`04-testing-qa/`) to ensure correctness
+5. Check **Statistical Registry** (`02-statistical-registry/`) for exact values
 
 ### For Balance Designers
-1. Start with **Balance Reference** to understand current state
-2. Use **Statistical Registry** to find outliers
-3. Reference **System Documentation** for design intent
-4. Test changes against **QA Checklists**
+1. Start with **Specifications** (`00-specifications/`) for design intent and balance targets
+2. Reference **Balance Reference** (`05-balance-reference/`) to understand current state
+3. Use **Statistical Registry** (`02-statistical-registry/`) to find outliers
+4. Reference **System Documentation** (`01-systems/`) for implementation constraints
+5. Test changes against **QA Checklists** (`04-testing-qa/`)
 
 ### For Content Creators
 1. Start with **Statistical Registry** for templates
@@ -184,9 +235,11 @@ When adding or updating documentation:
 
 ## Next Steps
 
-👉 **Start with System Documentation**: [Combat Systems](./01-systems/combat-systems.md)
-👉 **Browse Ability Registry**: [Abilities](./02-statistical-registry/abilities-registry.md)
-👉 **Check Test Coverage**: [Testing & QA](./04-testing-qa/test-coverage-report.md)
+👉 **NEW: Read Specifications First**: [Specification Writing Guide](./00-specifications/README.md)
+👉 **Browse Core Specifications**: [Combat Resolution](./00-specifications/combat/combat-resolution-spec.md) | [Character Progression](./00-specifications/progression/character-progression-spec.md) | [Trauma Economy](./00-specifications/economy/trauma-economy-spec.md)
+👉 **Then Reference Implementation**: [System Documentation](./01-systems/)
+👉 **Browse Ability Registry**: [Abilities](./02-statistical-registry/)
+👉 **Check Test Coverage**: [Testing & QA](./04-testing-qa/)
 
 ---
 
