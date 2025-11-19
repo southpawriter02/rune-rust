@@ -6,6 +6,23 @@
 
 ---
 
+## 🚀 Quick Start for AI Sessions
+
+**New to drafting specifications?** Start here: **[START_HERE.md](./START_HERE.md)**
+
+This quick-start guide provides:
+- **5-step workflow** for creating specifications (onboarding → exploration → planning → drafting → validation)
+- **Example specifications** to model your work on
+- **Critical reminders** for setting compliance and quality standards
+- **Quick navigation** to all key resources
+
+**Experienced?** Jump directly to:
+- **[TEMPLATE.md](./TEMPLATE.md)** - Copy this to create new specs
+- **[SETTING_COMPLIANCE.md](./SETTING_COMPLIANCE.md)** - Validate against Aethelgard canon
+- **[Walkthroughs](#comprehensive-walkthroughs)** (below) - Detailed step-by-step processes
+
+---
+
 ## Table of Contents
 
 1. [Purpose & Philosophy](#purpose--philosophy)

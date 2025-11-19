@@ -73,7 +73,9 @@ Design intent, power budget analysis, role effectiveness matrices, difficulty tu
 - Crafting System (recipes, resources, components)
 - Trauma Economy System (Psychic Stress, Corruption, Breaking Points)
 
-**See**: [Specification Writing Guide](./00-specifications/README.md) for governance, standards, and templates
+**See**:
+- **[START_HERE.md](./00-specifications/START_HERE.md)** - Quick start for AI sessions drafting new specs
+- **[Specification Writing Guide](./00-specifications/README.md)** - Complete governance, standards, and templates
 
 ### 📖 [01 - System Documentation](./01-systems/)
 Complete technical documentation of all game systems using the 5-layer structure:
