@@ -3,7 +3,7 @@
 **Purpose**: Central tracking document for all specifications (existing, in-progress, and planned)
 
 **Last Updated**: 2025-11-19
-**Total Specs**: 3 completed, 34 planned, 37 total
+**Total Specs**: 4 completed, 33 planned, 37 total
 
 ---
 
@@ -12,13 +12,13 @@
 | Domain | Completed | Planned | Total | Coverage |
 |--------|-----------|---------|-------|----------|
 | Combat | 1 | 10 | 11 | 9% |
-| Progression | 1 | 4 | 5 | 20% |
+| Progression | 2 | 3 | 5 | 40% |
 | Economy | 1 | 5 | 6 | 17% |
 | World | 0 | 8 | 8 | 0% |
 | Narrative | 0 | 6 | 6 | 0% |
 | Faction | 0 | 3 | 3 | 0% |
 | AI | 0 | 2 | 2 | 0% |
-| **TOTAL** | **3** | **34** | **37** | **8%** |
+| **TOTAL** | **4** | **33** | **37** | **11%** |
 
 ---
 
@@ -133,27 +133,38 @@
 
 ---
 
-### 📋 SPEC-PROGRESSION-002: Archetype & Specialization System
-**Status**: Planned
+### ✅ SPEC-PROGRESSION-002: Archetype & Specialization System
+**Status**: Completed
+**File**: `progression/archetype-specialization-spec.md`
+**Lines**: ~1240
+**Completed**: 2025-11-19
 **Priority**: High
 **Domain**: Progression
-**Layer 1 Docs**: 🔗 None (implementation exists but no comprehensive Layer 1 doc)
+**Layer 1 Docs**: None (this spec provides comprehensive design documentation)
 
-**Proposed Scope**:
-- Archetype selection (Mystic, Warden, Blade, Rune-Caster, Shadowmancer, Naturalist)
-- Specialization mechanics and restrictions
-- Starting attribute distributions
-- Signature abilities per archetype
-- Multi-classing rules (if any)
-- Integration with ability trees
+**Scope**:
+- 4 Core Archetypes: Warrior, Adept, Skirmisher, Mystic
+- Archetype selection at character creation
+- Starting attribute distributions per archetype
+- Starting abilities per archetype (3 abilities each)
+- Resource systems (Stamina vs Aether Pool)
+- Specialization unlock mechanics (3 PP cost)
+- Specialization ability tree structure (9 abilities, 4 tiers)
+- Specialization validation rules
+- Archetype-specialization compatibility
 
 **Dependencies**:
 - SPEC-PROGRESSION-001 (Character Progression) - Completed
 - SPEC-PROGRESSION-003 (Ability System) - Not yet drafted
 
-**Why Needed**: Archetypes are implemented but design philosophy, balance targets, and player experience goals not formally documented.
+**Why Complete**: Formal design specification created documenting the 4 Archetypes (correcting previous confusion with CharacterClass enum), specialization unlock mechanics, and complete system integration.
 
-**Implementation Exists**: Yes (in `RuneAndRust.Core/Models/Specialization.cs` and related)
+**Implementation Exists**: Yes (`RuneAndRust.Core/Archetypes/`, `RuneAndRust.Engine/SpecializationService.cs`, `RuneAndRust.Persistence/DataSeeder.cs`)
+
+**Notable Corrections**:
+- Clarified that 4 formal Archetypes exist: Warrior, Adept, Skirmisher, Mystic
+- Documented that "Scavenger" in CharacterClass enum is a legacy entry, NOT a formal Archetype
+- Mapped all existing specializations to their correct archetypes (6 Warrior, 5 Adept, 4 Skirmisher, 2 Mystic)
 
 ---
 
