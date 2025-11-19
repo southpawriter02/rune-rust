@@ -120,12 +120,12 @@ The Archetype & Specialization System provides players with distinct character i
 **Target Experience**: "My character feels unique and reflects my playstyle preferences"
 
 **Moment-to-Moment Gameplay**:
-- Archetype determines core combat loop (melee strikes vs spellcasting vs hit-and-run)
+- Archetype determines core combat loop (melee strikes vs Weaving vs hit-and-run)
 - Specialization enhances chosen combat loop with thematic abilities
 - Players feel archetype identity from Level 1; specialization identity emerges post-unlock
 
 **Learning Curve**:
-- **Novice** (0-2 hours): Understand archetype basics (Warrior = tough, Mystic = magic, Skirmisher = agile)
+- **Novice** (0-2 hours): Understand archetype basics (Warrior = tough, Mystic = Aether-wielder, Skirmisher = agile)
 - **Intermediate** (2-10 hours): Unlock first specialization, explore synergies with archetype
 - **Expert** (10+ hours): Theory-craft builds combining specialization abilities with archetype strengths
 
@@ -235,7 +235,7 @@ Starting abilities establish archetype identity immediately. Players must have f
 - [ ] **Warrior** receives: Strike (basic attack), Defensive Stance (tank mode), Warrior's Vigor (passive +10% HP)
 - [ ] **Adept** receives: Exploit Weakness (analyze enemy), Scavenge (find resources), Resourceful (passive +item effectiveness)
 - [ ] **Skirmisher** receives: Quick Strike (agile attack), Evasive Stance (dodge mode), Fleet Footed (passive +movement)
-- [ ] **Mystic** receives: Aether Dart (ranged magic attack), Focus Aether (restore AP), Aetheric Attunement (passive +AP regen)
+- [ ] **Mystic** receives: Aether Dart (ranged Aetheric attack), Focus Aether (restore AP), Aetheric Attunement (passive +AP regen)
 - [ ] Abilities added to Character.Abilities list at creation
 - [ ] Abilities are immediately usable in combat
 - [ ] Starting abilities cannot be unlearned or removed
@@ -248,7 +248,7 @@ Starting abilities establish archetype identity immediately. Players must have f
 
 2. **Scenario**: Mystic starting abilities use Aether Pool (AP), not Stamina
    - **Input**: Mystic uses Aether Dart ability
-   - **Expected Output**: Costs 5 AP (not Stamina), deals magic damage
+   - **Expected Output**: Costs 5 AP (not Stamina), deals Aetheric damage
    - **Success Condition**: Resource consumption matches archetype resource system
 
 **Dependencies**:
@@ -268,7 +268,7 @@ Starting abilities establish archetype identity immediately. Players must have f
 **Status**: Implemented
 
 **Description**:
-Archetypes use different primary resources for abilities. Warrior and Skirmisher use Stamina (physical exertion). Mystic uses Aether Pool (magical energy). Resource pools scale with attributes.
+Archetypes use different primary resources for abilities. Warrior and Skirmisher use Stamina (physical exertion). Mystic uses Aether Pool (Aetheric energy). Resource pools scale with attributes.
 
 **Rationale**:
 Resource systems reinforce archetype identity and create distinct resource management challenges.
@@ -294,7 +294,7 @@ Resource systems reinforce archetype identity and create distinct resource manag
    - **Expected Output**: MaxAP = 20 + (4+4)×5 = 20 + 40 = 60
    - **Success Condition**: Aether Pool correctly calculated
 
-3. **Edge Case**: Mystic also has Stamina pool (for non-magical actions)
+3. **Edge Case**: Mystic also has Stamina pool (for non-Aetheric actions)
    - **Input**: Mystic with MIGHT 2, FINESSE 3
    - **Expected Behavior**: MaxStamina = 20 + (2+3)×5 = 45 (lower than Warrior, but still present)
    - **Success Condition**: Mystic can perform physical actions, but less efficiently than martial archetypes
@@ -460,7 +460,7 @@ Ensures all specializations are complete and balanced. Prevents broken or incomp
 ### Mechanic 1: Archetype Attribute Distributions
 
 **Overview**:
-Each archetype has a predefined attribute distribution totaling 15 points. Distributions are designed to encode playstyle: Warrior (tank/melee), Skirmisher (agile/versatile), Mystic (magic/support).
+Each archetype has a predefined attribute distribution totaling 15 points. Distributions are designed to encode playstyle: Warrior (tank/melee), Skirmisher (agile/versatile), Mystic (Aetheric/support).
 
 **How It Works**:
 1. Player selects archetype during character creation
@@ -474,9 +474,9 @@ Each archetype has a predefined attribute distribution totaling 15 points. Distr
 | Archetype | MIGHT | FINESSE | WITS | WILL | STURDINESS | Total | Playstyle |
 |-----------|-------|---------|------|------|------------|-------|-----------|
 | **Warrior** | 4 | 3 | 2 | 2 | 4 | 15 | High HP/Stamina, melee damage, tank |
-| **Adept** | 3 | 3 | 3 | 2 | 3 | 14 | Balanced generalist, skill-based, non-magical |
+| **Adept** | 3 | 3 | 3 | 2 | 3 | 14 | Balanced generalist, skill-based, non-Aetheric |
 | **Skirmisher** | 3 | 4 | 3 | 2 | 3 | 15 | Agile, precision, hit-and-run tactics |
-| **Mystic** | 2 | 3 | 4 | 4 | 2 | 15 | High AP, spell damage, fragile |
+| **Mystic** | 2 | 3 | 4 | 4 | 2 | 15 | High AP, Aetheric damage, fragile |
 
 **Derived Stats from Attributes**:
 
@@ -510,7 +510,7 @@ Mystic Example (WILL 4, WITS 4):
 - **Warrior**: Highest HP (90) and good Stamina (55) for sustained melee combat
 - **Adept**: Truly balanced (all 3s), medium HP (80), medium Stamina (50), versatile
 - **Skirmisher**: Balanced stats, same Stamina as Warrior (55) but lower HP (80)
-- **Mystic**: Lowest HP (70) and Stamina (45), but highest Aether Pool (60) for spellcasting
+- **Mystic**: Lowest HP (70) and Stamina (45), but highest Aether Pool (60) for Weaving
 
 **Edge Cases**:
 1. **Attribute increases via PP spending**: Attributes can increase to max 6, altering derived stats
@@ -722,7 +722,7 @@ WARRIOR (ArchetypeID = 1):
   - GorgeMawAscetic (ID: 26002)
 
 ADEPT (ArchetypeID = 2):
-  - Bone-Setter (ID: 1) - Healer/Support, non-magical medic
+  - Bone-Setter (ID: 1) - Healer/Support, mundane medic
   - Jötun-Reader (ID: 2) - Utility/Analyst, system diagnostician
   - Skald (ID: 3) - Bard/Buffer, morale and inspiration
   - Scrap-Tinker (ID: 14) - Crafting specialist, brewmaster & gadgeteer
@@ -735,8 +735,8 @@ SKIRMISHER (ArchetypeID = 4):
   - Hlekkr-master (ID: 25002) - Chain-Master, crowd control
 
 MYSTIC (ArchetypeID = 5):
-  - Seidkona (ID: 28001) - Seer, divination and support magic
-  - EchoCaller (ID: 28002) - Sound magic, debuffs and control
+  - Seidkona (ID: 28001) - Seer, divination and Aetheric support
+  - EchoCaller (ID: 28002) - Aetheric sound manipulation, debuffs and control
 
 Note: "Scavenger" appears in CharacterClass enum but is NOT a formal Archetype.
 It has no ArchetypeID and no specializations.
@@ -1016,12 +1016,12 @@ CREATE TABLE CharacterSpecialization (
 
 **Warrior Balance**:
 - **Strengths**: High HP (90), high Stamina (55), melee damage, tanking
-- **Weaknesses**: Low WITS/WILL (2), poor at mental challenges, vulnerable to magic
+- **Weaknesses**: Low WITS/WILL (2), poor at mental challenges, vulnerable to Aetheric attacks
 - **Balance Check**: Can Warrior solo standard encounters? (Target: Yes, 70% win rate)
 - **Tuning Lever**: If too weak, increase starting MIGHT 4→5 OR increase STURDINESS scaling
 
 **Adept Balance**:
-- **Strengths**: Truly balanced (all 3s), versatile, skill-based (non-magical)
+- **Strengths**: Truly balanced (all 3s), versatile, skill-based (mundane specialist)
 - **Weaknesses**: No standout strength, 14 attribute points (not 15), jack-of-all-trades
 - **Balance Check**: Does Adept provide unique value? (Target: Yes, via crafting/support specializations)
 - **Tuning Lever**: If too weak, add 1 attribute point to reach 15 total OR boost specialization utility
@@ -1033,10 +1033,10 @@ CREATE TABLE CharacterSpecialization (
 - **Tuning Lever**: If too similar to Warrior, increase WITS 3→4 OR add unique mobility mechanics
 
 **Mystic Balance**:
-- **Strengths**: High AP (60), spell damage, WILL/WITS (4) for mental challenges
+- **Strengths**: High AP (60), Aetheric damage, WILL/WITS (4) for mental challenges
 - **Weaknesses**: Low HP (70), low Stamina (45), fragile in melee
 - **Balance Check**: Can Mystic survive without constant healing? (Target: Yes with smart play)
-- **Tuning Lever**: If too fragile, increase starting HP formula OR add defensive spell options
+- **Tuning Lever**: If too fragile, increase starting HP formula OR add defensive Aetheric abilities
 
 ---
 
@@ -1053,7 +1053,7 @@ CREATE TABLE CharacterSpecialization (
 **Diversity Metrics**:
 - **MechanicalRole Spread**: Each archetype should have Tank, DPS, Support, Controller options
   - Warrior: Heavy on Tank/DPS, needs Support spec
-  - Adept: Heavy on Support/Utility (Bone-Setter, Skald), good diversity
+  - Adept: Heavy on Support/Utility (Bone-Setter, Skald), good diversity (mundane specialist)
   - Skirmisher: Good spread across roles (DPS, Stealth, Control)
   - Mystic: Needs Tank or Controller spec (only 2 total)
 - **PathType Balance**: ~70% Coherent, ~30% Heretical (Heretical requires Corruption investment)
@@ -1201,7 +1201,7 @@ Milestone 15+ (Legend 3400+): +18 PP = 30 PP total earned
 
 ### Adept Archetype
 
-**Identity**: Balanced skill-based generalist, non-magical specialist
+**Identity**: Balanced skill-based generalist, mundane specialist
 
 **Starting Attributes**:
 - MIGHT: 3
@@ -1222,7 +1222,7 @@ Milestone 15+ (Legend 3400+): +18 PP = 30 PP total earned
 - AP: **10 AP** (minimal, not primary resource)
 
 **Available Specializations**:
-- Bone-Setter (Healer/Support, non-magical medic, field medicine)
+- Bone-Setter (Healer/Support, mundane medic, field medicine)
 - Jötun-Reader (Utility/Analyst, system diagnostician, lore specialist)
 - Skald (Bard/Buffer, morale and inspiration, performance)
 - Scrap-Tinker (Crafting specialist, brewmaster & gadgeteer)
@@ -1262,7 +1262,7 @@ Milestone 15+ (Legend 3400+): +18 PP = 30 PP total earned
 
 ### Mystic Archetype
 
-**Identity**: Aether-wielding spellcaster, mental challenges specialist
+**Identity**: Aether-wielding Weaver, mental challenges specialist
 
 **Starting Attributes**:
 - MIGHT: 2 (lowest)
@@ -1273,7 +1273,7 @@ Milestone 15+ (Legend 3400+): +18 PP = 30 PP total earned
 - **Total**: 15
 
 **Starting Abilities**:
-1. **Aether Dart**: Ranged magic attack, 2d6+WILL damage, 5 AP
+1. **Aether Dart**: Ranged Aetheric attack, 2d6+WILL damage, 5 AP
 2. **Focus Aether**: Restore 15 AP, 10 Stamina cost, channeling action
 3. **Aetheric Attunement** (Passive): +10 Maximum AP, +1 AP regen per turn
 
@@ -1283,8 +1283,8 @@ Milestone 15+ (Legend 3400+): +18 PP = 30 PP total earned
 - AP: 20 + (4+4) × 5 + 10 (Attunement) = **70 AP** (highest)
 
 **Available Specializations**:
-- Seidkona (Seer, divination and support magic)
-- EchoCaller (Sound magic, debuffs and control)
+- Seidkona (Seer, divination and Aetheric support)
+- EchoCaller (Aetheric sound manipulation, debuffs and control)
 
 ---
 
