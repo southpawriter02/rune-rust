@@ -113,7 +113,8 @@ The Ability Rank Advancement System provides automatic incremental power scaling
 **Target Experience**: "As I progress through my specialization, my foundational abilities automatically become stronger - my character is mastering their craft"
 
 **Moment-to-Moment Gameplay**:
-- Player unlocks specialization (grants 3 Tier 1 abilities at Rank 1)
+- Player unlocks specialization (grants ACCESS to learn Tier 1 abilities)
+- Player spends PP to learn Tier 1 abilities (2 PP each) at Rank 1
 - Player uses Tier 1 abilities in combat, learns their mechanics
 - Player learns Tier 2 abilities to access advanced techniques
 - **Milestone moment**: After learning 2nd Tier 2 ability → all Tier 1 abilities automatically upgrade to Rank 2
@@ -339,7 +340,7 @@ Abilities are organized into tiers (1/2/3/Capstone) within specialization trees.
 Tier gating ensures players progress through specialization gradually. Can't skip straight to Capstone; must invest in lower tiers first.
 
 **Acceptance Criteria**:
-- [ ] Tier 1 abilities: 0 PP in tree required (granted free on specialization unlock)
+- [ ] Tier 1 abilities: 0 PP in tree required (available after specialization unlock, cost 2 PP each to learn)
 - [ ] Tier 2 abilities: 8 PP in tree required
 - [ ] Tier 3 abilities: 16 PP in tree required
 - [ ] Capstone ability: 24 PP in tree required + both Tier 3 abilities learned
@@ -380,10 +381,11 @@ Ability ranks advance automatically based on specialization tree progression mil
 **How It Works**:
 1. **Specialization Unlock Phase** (3 PP):
    - Player unlocks specialization
-   - Grants 3 Tier 1 abilities at Rank 1 (free, included in unlock)
+   - Grants ACCESS to learn abilities from this specialization's tree
+   - All Tier 1 abilities become available to learn (2 PP each)
 
 2. **Learning Phase**:
-   - Player spends PP to learn additional abilities:
+   - Player spends PP to learn abilities:
      - Tier 1: 2 PP each (start at Rank 1)
      - Tier 2: 4 PP each (start at Rank 2)
      - Tier 3: 5 PP each (start at Rank 3)
@@ -423,7 +425,8 @@ Rank Scaling (applied automatically):
   Total Rank 1→3: +2d6 damage / +2 turns duration
 
 Example (Berserkr Furious Strike):
-  Unlock Berserkr: Get Furious Strike Rank 1 (2d6 damage) FREE
+  Unlock Berserkr: Gain access to Berserkr abilities
+  Learn Furious Strike (Tier 1): 2 PP → Starts at Rank 1 (2d6 damage)
   Learn Tier 2 #1: No rank change
   Learn Tier 2 #2: Furious Strike → Rank 2 (3d6 damage) AUTOMATIC
   Learn Capstone: Furious Strike → Rank 3 (4d6 damage) AUTOMATIC
@@ -467,8 +470,8 @@ Each specialization tracks total PP spent on abilities within that tree. This va
 
 **How It Works**:
 1. Player unlocks specialization (3 PP spent, but this goes to unlock cost, not tree)
-2. Tier 1 abilities granted free (0 PP added to tree) on unlock
-3. Player learns additional Tier 1 abilities (2 PP each) → PPInTree increases
+2. Tier 1 abilities become available to learn (2 PP each)
+3. Player learns Tier 1 abilities (2 PP each) → PPInTree increases
 4. Player learns Tier 2 ability (4 PP) → PPInTree increases
 5. Player learns another Tier 2 (4 PP) → PPInTree increases, may unlock Tier 3
 6. Player learns Tier 3 ability (5 PP) → PPInTree increases
@@ -481,20 +484,22 @@ PP_In_Tree = SUM(AbilityData.PPCost for all learned abilities in this specializa
 Note: Automatic rank-ups do NOT add to PPInTree (ranks are free rewards)
 
 Tier Unlock Thresholds:
-  Tier 1: 0 PP (always available after specialization unlock, 3 free abilities granted)
+  Tier 1: 0 PP (available after specialization unlock, costs 2 PP each to learn)
   Tier 2: 8 PP in tree
   Tier 3: 16 PP in tree
   Capstone: 24 PP in tree + both Tier 3 abilities learned
 
 Example (Bone-Setter progression):
-  Unlock Bone-Setter: 3 PP (not counted in tree)
-  Tier 1 (3 abilities granted free): 0 PP → PPInTree = 0
-  Learn Tier 2 ability #1: 4 PP → PPInTree = 4
-  Learn Tier 2 ability #2: 4 PP → PPInTree = 8 (Tier 2 fully unlocked, Tier 1s → Rank 2 AUTOMATIC)
-  Learn Tier 2 ability #3: 4 PP → PPInTree = 12
-  Learn Tier 3 ability #1: 5 PP → PPInTree = 17 (Tier 3 unlocked at 16)
-  Learn Tier 3 ability #2: 5 PP → PPInTree = 22
-  Learn Capstone: 6 PP → PPInTree = 28 (tree complete, ALL abilities → Rank 3 AUTOMATIC)
+  Unlock Bone-Setter: 3 PP (not counted in tree) → PPInTree = 0
+  Learn Tier 1 ability #1: 2 PP → PPInTree = 2
+  Learn Tier 1 ability #2: 2 PP → PPInTree = 4
+  Learn Tier 1 ability #3: 2 PP → PPInTree = 6
+  Learn Tier 2 ability #1: 4 PP → PPInTree = 10 (Tier 2 unlocked at 8)
+  Learn Tier 2 ability #2: 4 PP → PPInTree = 14 (Tier 1s → Rank 2 AUTOMATIC)
+  Learn Tier 2 ability #3: 4 PP → PPInTree = 18 (Tier 3 unlocked at 16)
+  Learn Tier 3 ability #1: 5 PP → PPInTree = 23
+  Learn Tier 3 ability #2: 5 PP → PPInTree = 28 (Capstone unlocked at 24)
+  Learn Capstone: 6 PP → PPInTree = 34 (ALL abilities → Rank 3 AUTOMATIC)
 ```
 
 **Data Flow**:
@@ -700,10 +705,10 @@ Example (Bone-Setter Capstone):
 | Milestone | Cumulative PP | Progression Example | Notes |
 |-----------|---------------|---------------------|-------|
 | 0 (Start) | 2 (starting) | 2 attribute increases OR save for spec | - |
-| 3 | 5 | Unlock specialization (3 PP) + 2 attributes | Grants 3 Tier 1 abilities free |
-| 4 | 6 | Learn 1 Tier 1 (2 PP) OR 1 attribute | - |
-| 5 | 7 | Learn 2 Tier 1s (4 PP) + 1 attribute | - |
-| 6 | 8 | Learn 1st Tier 2 (4 PP) | 8 PP in tree unlocks Tier 2 |
+| 3 | 5 | Unlock specialization (3 PP) + 2 attributes | Grants ACCESS to learn Tier 1 abilities |
+| 4 | 6 | Learn 1 Tier 1 (2 PP) OR 1 attribute | PPInTree = 2 |
+| 5 | 7 | Learn 2 Tier 1s (4 PP) + 1 attribute | PPInTree = 6 |
+| 6 | 8 | Learn 1st Tier 2 (4 PP) | 8 PP in tree unlocks Tier 2, PPInTree = 10 |
 | 7 | 9 | Save for 2nd Tier 2 | - |
 | 8 | 10 | Learn 2nd Tier 2 (4 PP) | **Rank 2 TRIGGER: All Tier 1s → Rank 2** |
 | 10 | 12 | Learn 3rd Tier 2 (4 PP) | - |

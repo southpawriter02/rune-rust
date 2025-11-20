@@ -171,17 +171,17 @@
 ### ✅ SPEC-PROGRESSION-003: Ability Rank Advancement System
 **Status**: Completed
 **File**: `progression/ability-rank-advancement-spec.md`
-**Lines**: ~550
+**Lines**: ~720
 **Completed**: 2025-11-19
 **Priority**: High
 **Domain**: Progression
 **Layer 1 Docs**: 🔗 None (this spec provides design documentation)
 
-**Scope** (REDUCED FOCUS):
-- Ability learning mechanics within specialization trees
-- Ability rank progression system (Rank 1 → Rank 2, Rank 3 future)
+**Scope**:
+- Ability learning mechanics within specialization trees (Tier 1=2 PP, Tier 2=4 PP, Tier 3=5 PP, Capstone=6 PP)
+- Automatic rank progression system (Tier 1: Rank 1→2→3, Tier 2: Rank 2→3, Tier 3/Capstone: single rank)
+- Rank advancement triggers (learning 2nd Tier 2 ability grants Rank 2, Capstone grants Rank 3)
 - Rank scaling formulas (+1d6 damage/rank, +1 turn duration/rank)
-- Rank-up PP costs (5 PP for Rank 2)
 - Tier unlock validation (8/16/24 PP in tree thresholds)
 - PP-in-tree tracking per specialization
 - Prerequisite validation (capstones require Tier 3)
@@ -196,7 +196,7 @@
 - SPEC-PROGRESSION-001 (Character Progression) - Completed
 - SPEC-PROGRESSION-002 (Archetype & Specialization System) - Completed
 
-**Why Complete**: Rank advancement is core investment mechanic; needed formal design specification for scaling formulas and PP costs.
+**Why Complete**: Automatic rank advancement is core progression mechanic; needed formal design specification for automatic triggers, scaling formulas, and milestone-driven power progression.
 
 **Implementation Exists**: Yes (`AbilityService.cs:LearnAbility()`, `AbilityService.cs:RankUpAbility()`, `AbilityRepository.cs`)
 
