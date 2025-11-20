@@ -2,8 +2,8 @@
 
 **Purpose**: Central tracking document for all specifications (existing, in-progress, and planned)
 
-**Last Updated**: 2025-11-19
-**Total Specs**: 5 completed, 0 in progress, 34 planned, 39 total
+**Last Updated**: 2025-11-20
+**Total Specs**: 7 completed, 0 in progress, 32 planned, 39 total
 
 ---
 
@@ -11,14 +11,14 @@
 
 | Domain | Completed | In Progress | Planned | Total | Coverage |
 |--------|-----------|-------------|---------|-------|----------|
-| Combat | 1 | 0 | 10 | 11 | 9% |
+| Combat | 3 | 0 | 8 | 11 | 27% |
 | Progression | 3 | 0 | 4 | 7 | 43% |
 | Economy | 1 | 0 | 5 | 6 | 17% |
 | World | 0 | 0 | 8 | 8 | 0% |
 | Narrative | 0 | 0 | 6 | 6 | 0% |
 | Faction | 0 | 0 | 3 | 3 | 0% |
 | AI | 0 | 0 | 2 | 2 | 0% |
-| **TOTAL** | **5** | **0** | **34** | **39** | **13%** |
+| **TOTAL** | **7** | **0** | **32** | **39** | **18%** |
 
 ---
 
@@ -37,7 +37,7 @@
 ### ✅ SPEC-COMBAT-001: Combat Resolution System
 **Status**: Completed
 **File**: `combat/combat-resolution-spec.md`
-**Lines**: ~600
+**Lines**: ~939
 **Completed**: 2025-11-19
 **Layer 1 Docs**: 🔗 `docs/01-systems/combat-resolution.md`
 
@@ -47,51 +47,74 @@
 
 ---
 
-### 📋 SPEC-COMBAT-002: Damage Calculation System
-**Status**: Planned
+### ✅ SPEC-COMBAT-002: Damage Calculation System
+**Status**: Completed
+**File**: `combat/damage-calculation-spec.md`
+**Lines**: ~1832
+**Completed**: 2025-11-19
 **Priority**: High
 **Domain**: Combat
 **Layer 1 Docs**: 🔗 `docs/01-systems/damage-calculation.md`
 
-**Proposed Scope**:
-- Base damage calculation formulas
-- Damage type system (Physical, Aetheric, Corruption)
-- Armor/resistance application
-- Critical hits and critical failures
-- Damage mitigation mechanics
-- Integration with equipment stats
+**Scope**:
+- Base damage calculation (weapon damage dice + flat bonuses)
+- Attribute-based attack accuracy (FINESSE/MIGHT/WILL attack rolls)
+- Status effect damage modifiers (Vulnerable, Inspired, Defensive Stance)
+- Damage mitigation mechanics (Defense Bonus, Soak/armor)
+- Minimum damage rule (successful hits deal ≥1 damage)
+- Ignore Armor mechanic (abilities bypass defense)
+- Critical hit mechanics (flanking-based, double damage dice)
+- Stance-based flat damage bonuses (Aggressive stance +4 damage)
+
+**Out of Scope**:
+- Status effect application/removal → SPEC-COMBAT-003
+- Equipment acquisition → SPEC-ECONOMY-001
+- Environmental damage → SPEC-WORLD-003
 
 **Dependencies**:
 - SPEC-COMBAT-001 (Combat Resolution) - Completed
-- SPEC-ECONOMY-001 (Equipment System) - Not yet drafted
+- Dice Pool System - Documented in Layer 1
 
-**Why Needed**: Damage calculation is referenced in combat resolution but not fully specified. Layer 1 docs exist but design-level spec needed for consistency.
+**Why Complete**: Damage calculation is core to combat outcomes; needed formal specification for damage formulas, mitigation mechanics, and balance targets.
 
-**Implementation Exists**: Yes (partial, in `RuneAndRust.Engine/Services/CombatEngine.cs`)
+**Implementation Exists**: Yes (`RuneAndRust.Engine/Services/CombatEngine.cs`)
 
 ---
 
-### 📋 SPEC-COMBAT-003: Status Effects System
-**Status**: Planned
+### ✅ SPEC-COMBAT-003: Status Effects System
+**Status**: Completed
+**File**: `combat/status-effects-spec.md`
+**Lines**: ~1931
+**Completed**: 2025-11-19
 **Priority**: High
 **Domain**: Combat
 **Layer 1 Docs**: 🔗 `docs/01-systems/status-effects.md`
 
-**Proposed Scope**:
-- Status effect types (buffs, debuffs, DoT, HoT)
-- Duration tracking and expiration
-- Stacking rules (stack vs. refresh vs. replace)
-- Status effect application and removal
-- Immunity and resistance
-- Integration with combat turn sequence
+**Scope**:
+- Four status effect categories (Control Debuffs, DoT, Stat Modifications, Buffs)
+- 11+ implemented status effects with defined behaviors
+- Stacking mechanics with per-effect maximum stack limits
+- Duration tracking with turn-based decrement
+- Three interaction types (Conversion, Amplification, Suppression)
+- Start-of-turn and end-of-turn processing
+- Damage Over Time (DoT) calculation with stacking
+- Stat modification application to damage/accuracy/defense
+- Control effect enforcement (action restrictions)
+- Effect removal and cleansing mechanics
+- Trauma Economy integration (stress from debuffs)
+
+**Out of Scope**:
+- Persistent character buffs → Equipment/Progression systems
+- Environmental hazards → SPEC-WORLD-003
+- Specific ability implementations → Ability System spec
 
 **Dependencies**:
 - SPEC-COMBAT-001 (Combat Resolution) - Completed
-- SPEC-COMBAT-002 (Damage Calculation) - Not yet drafted (for DoT mechanics)
+- SPEC-COMBAT-002 (Damage Calculation) - Completed
 
-**Why Needed**: Status effects are mentioned throughout combat docs but lack comprehensive design specification.
+**Why Complete**: Status effects create tactical depth in combat; needed comprehensive design specification for stacking rules, interactions, and balance.
 
-**Implementation Exists**: Yes (partial, in `RuneAndRust.Engine/Services/StatusEffectService.cs`)
+**Implementation Exists**: Yes (`RuneAndRust.Engine/Services/StatusEffectService.cs`)
 
 ---
 
@@ -916,7 +939,7 @@ The following specifications have been identified based on existing implementati
 - Persistence of respec history (for analytics/restrictions)
 
 **Dependencies**:
-- SPEC-PROGRESSION-003 (Ability Rank Advancement) - In Progress
+- SPEC-PROGRESSION-003 (Ability Rank Advancement) - Completed
 - SPEC-PROGRESSION-001 (Character Progression) - Completed
 
 **Why Needed**: Allows player experimentation and build pivots without starting new character. Design philosophy not yet decided (permanent choices vs. flexible respec).
@@ -1185,6 +1208,6 @@ When you identify a new system that needs a specification, add an entry using th
 
 ---
 
-**Last Updated**: 2025-11-19
+**Last Updated**: 2025-11-20
 **Maintained By**: Specification governance framework
 **Update Frequency**: Update this document whenever specifications are completed or new systems are identified
