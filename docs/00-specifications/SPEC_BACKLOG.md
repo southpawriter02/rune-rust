@@ -3,7 +3,7 @@
 **Purpose**: Central tracking document for all specifications (existing, in-progress, and planned)
 
 **Last Updated**: 2025-11-20
-**Total Specs**: 7 completed, 0 in progress, 32 planned, 39 total
+**Total Specs**: 8 completed, 0 in progress, 31 planned, 39 total
 
 ---
 
@@ -11,14 +11,14 @@
 
 | Domain | Completed | In Progress | Planned | Total | Coverage |
 |--------|-----------|-------------|---------|-------|----------|
-| Combat | 3 | 0 | 8 | 11 | 27% |
+| Combat | 4 | 0 | 7 | 11 | 36% |
 | Progression | 3 | 0 | 4 | 7 | 43% |
 | Economy | 1 | 0 | 5 | 6 | 17% |
 | World | 0 | 0 | 8 | 8 | 0% |
 | Narrative | 0 | 0 | 6 | 6 | 0% |
 | Faction | 0 | 0 | 3 | 3 | 0% |
 | AI | 0 | 0 | 2 | 2 | 0% |
-| **TOTAL** | **7** | **0** | **32** | **39** | **18%** |
+| **TOTAL** | **8** | **0** | **31** | **39** | **21%** |
 
 ---
 
@@ -118,26 +118,46 @@
 
 ---
 
-### 📋 SPEC-COMBAT-004: Accuracy & Evasion System
-**Status**: Planned
+### ✅ SPEC-COMBAT-004: Accuracy & Evasion System
+**Status**: Completed
+**File**: `combat/accuracy-evasion-spec.md`
+**Lines**: ~1488
+**Completed**: 2025-11-20
 **Priority**: Medium
 **Domain**: Combat
 **Layer 1 Docs**: 🔗 `docs/01-systems/accuracy-evasion.md`
 
-**Proposed Scope**:
-- Accuracy roll mechanics (opposed FINESSE checks)
-- Evasion calculation and modifiers
-- Cover and environmental factors
-- Status effect impacts on accuracy/evasion
-- Critical hit/miss thresholds
+**Scope**:
+- Opposed dice pool mechanics (attack roll vs defense roll)
+- Attack dice pool calculation (base attribute + accuracy bonuses)
+- Defense dice pool calculation (STURDINESS attribute)
+- Net success determination (attack successes - defense successes)
+- Hit/miss resolution (net > 0 = hit, ≤ 0 = miss)
+- Accuracy bonus sources (equipment, abilities, status effects)
+- Tie-breaking rule (defender wins ties)
+- Combat log integration for roll display
+- Probability balancing and hit chance targets
+- 5 detailed combat examples
+- Comprehensive probability tables (hit chance matrix, bonus impact, build archetypes)
+- Balance targets and known issues documentation
+
+**Out of Scope**:
+- Damage calculation after hit lands → SPEC-COMBAT-002
+- Status effect application mechanics → SPEC-COMBAT-003
+- Critical hit damage multipliers → Future enhancement
+- Flanking position calculation → SPEC-COMBAT-008
+- Environmental accuracy modifiers → SPEC-WORLD-003
+- Cover and concealment → SPEC-COMBAT-007
 
 **Dependencies**:
 - SPEC-COMBAT-001 (Combat Resolution) - Completed
-- SPEC-COMBAT-003 (Status Effects) - Not yet drafted
+- SPEC-COMBAT-002 (Damage Calculation) - Completed
+- SPEC-COMBAT-003 (Status Effects) - Completed
+- SPEC-PROGRESSION-001 (Character Progression) - Completed
 
-**Why Needed**: Layer 1 docs exist but design rationale and balance targets not formally specified.
+**Why Complete**: Opposed dice pool accuracy system is core combat mechanic; needed comprehensive design specification for roll mechanics, accuracy bonus economy, probability targets, and balance tuning parameters. Layer 1 implementation docs existed but design philosophy and player experience goals were not formally specified.
 
-**Implementation Exists**: Yes (in `RuneAndRust.Engine/Services/CombatEngine.cs`)
+**Implementation Exists**: Yes (`RuneAndRust.Engine/CombatEngine.cs`, `DiceService.cs`)
 
 ---
 
