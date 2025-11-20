@@ -465,3 +465,207 @@ Transparency builds player trust in the dice system. Showing individual die resu
 - **Performance Considerations**: String formatting cost negligible compared to combat logic
 
 ---
+
+## System Mechanics
+
+### Mechanic 1: Opposed Dice Pool Resolution
+
+**Overview**:
+The accuracy system uses opposed dice pool rolls where both attacker and defender roll simultaneously, count successes (5-6 on d6), and compare results to determine hit/miss. This creates dynamic, probabilistic combat where neither side has guaranteed outcomes.
+
+**How It Works**:
+1. **Attack Declaration**: Player or AI declares attack action against target
+2. **Bonus Aggregation**: System gathers all accuracy bonuses (equipment, status, abilities)
+3. **Attack Dice Calculation**: Base attribute + all bonuses = attack dice pool (cap at 20)
+4. **Defense Dice Calculation**: Defender's STURDINESS = defense dice pool
+5. **Simultaneous Rolls**: Both pools rolled simultaneously using DiceService.Roll()
+6. **Success Counting**: Count dice showing 5-6 as successes for each pool
+7. **Net Success Calculation**: Attack successes - Defense successes = net
+8. **Hit Determination**: If net > 0, proceed to damage; if net ≤ 0, miss
+9. **Combat Log**: Display all steps, rolls, and outcome
+
+**Formula/Logic**:
+```
+Attack_Dice = Base_Attribute + Equipment_Bonus + Ability_Bonus + Status_Bonuses
+Attack_Dice = MIN(Attack_Dice, 20) // Cap at 20 dice
+
+Defense_Dice = Defender.STURDINESS
+
+Attack_Roll = DiceService.Roll(Attack_Dice)
+Defense_Roll = DiceService.Roll(Defense_Dice)
+
+Net_Successes = Attack_Roll.Successes - Defense_Roll.Successes
+
+IF Net_Successes > 0:
+  Hit = TRUE
+  Proceed_To_Damage()
+ELSE:
+  Hit = FALSE
+  Log("Attack deflected")
+END IF
+```
+
+**Parameters**:
+| Parameter | Type | Range | Default | Description | Tunable? |
+|-----------|------|-------|---------|-------------|----------|
+| Success_Threshold | int | 1-6 | 5 | Minimum die value for success (5-6 = success) | No (core mechanic) |
+| Max_Dice_Pool | int | 10-30 | 20 | Maximum dice in attack/defense pool | Yes (performance) |
+| Defender_Wins_Ties | bool | - | TRUE | Ties (net 0) result in miss | Yes (balance) |
+| Attribute_Cap | int | 5-15 | 10 | Maximum attribute value | No (progression system) |
+
+**Edge Cases**:
+1. **Zero defense (STURDINESS 0)**:
+   - **Condition**: Defender has 0 STURDINESS (impossible in normal play, debug only)
+   - **Behavior**: Defense roll = 0d6 = 0 successes → attacker always hits
+   - **Example**: Attack roll 3 successes - Defense 0 successes = 3 net → HIT
+
+2. **Dice pool overflow (20+ dice)**:
+   - **Condition**: Base attribute 10 + bonuses 12 = 22 dice
+   - **Behavior**: Capped at 20 dice, log warns "Attack dice capped at 20"
+   - **Example**: Prevents performance issues with massive dice pools
+
+3. **Perfect rolls (all 6s or all 1s)**:
+   - **Condition**: All dice show max (6) or min (1-4)
+   - **Behavior**: Log shows special message for perfect/terrible rolls
+   - **Example**: 5d6 = [6,6,6,6,6] → "PERFECT ROLL! 5 successes"
+
+**Related Requirements**: FR-001, FR-002, FR-003
+
+---
+
+### Mechanic 2: Accuracy Bonus Economy
+
+**Overview**:
+Accuracy bonuses from various sources (equipment, abilities, status effects) stack additively to increase attack dice pools. Each +1 bonus die adds ~0.33 average successes, translating to ~10-15% increased hit chance depending on opponent's defense.
+
+**How It Works**:
+1. **Equipment Bonuses**: Weapons/gear grant static accuracy bonuses (0-3 typical range)
+2. **Status Effect Bonuses**: [Analyzed], Battle Rage grant +2 dice while active
+3. **Ability Bonuses**: Temporary bonuses from abilities (e.g., +3 for next attack)
+4. **Performance Bonuses**: Saga of Courage grants +2 while performing
+5. **Additive Stacking**: All bonuses sum together before applying to base attribute
+6. **No Diminishing Returns**: Each +1 adds exactly +1 die (linear scaling)
+7. **Consumption**: Temporary bonuses (ability) consumed after use, others persist
+
+**Formula/Logic**:
+```
+Total_Bonus = 0
+
+// Equipment (persistent)
+Total_Bonus += EquippedWeapon.AccuracyBonus
+
+// Ability (temporary, consumed after attack)
+Total_Bonus += CombatState.PlayerNextAttackBonusDice
+
+// Status Effects (duration-based)
+IF Target.AnalyzedTurnsRemaining > 0:
+  Total_Bonus += 2
+
+IF Attacker.BattleRageTurnsRemaining > 0:
+  Total_Bonus += 2
+
+// Performance (active check)
+IF Attacker.IsPerforming AND Attacker.CurrentPerformance == "Saga of Courage":
+  Total_Bonus += 2
+
+Attack_Dice = Base_Attribute + Total_Bonus
+```
+
+**Parameters**:
+| Parameter | Type | Range | Default | Description | Tunable? |
+|-----------|------|-------|---------|-------------|----------|
+| Equipment_Accuracy_Max | int | 0-5 | 3 | Maximum equipment accuracy bonus | Yes (balance) |
+| Analyzed_Bonus | int | 0-5 | 2 | Accuracy bonus from [Analyzed] status | Yes (balance) |
+| Battle_Rage_Bonus | int | 0-5 | 2 | Accuracy bonus from Battle Rage | Yes (balance) |
+| Saga_Bonus | int | 0-5 | 2 | Accuracy bonus from Saga of Courage | Yes (balance) |
+| Bonus_Cap | int | 0-15 | None | Maximum total bonuses (currently uncapped) | Yes (future) |
+
+**Edge Cases**:
+1. **Bonus cap enforcement (future)**:
+   - **Condition**: If bonus cap implemented (e.g., max +7 total)
+   - **Behavior**: Total_Bonus = MIN(calculated_bonus, cap)
+   - **Example**: Equipment +3 + [Analyzed] +2 + Battle Rage +2 + Ability +3 = 10 → capped at 7
+
+2. **Temporary bonus expiration mid-combat**:
+   - **Condition**: [Analyzed] duration expires between attacks
+   - **Behavior**: Bonus active for attack 1, inactive for attack 2
+   - **Example**: Turn 1: 10d6 (with [Analyzed]), Turn 3: 8d6 (expired)
+
+3. **Ability bonus consumption**:
+   - **Condition**: Ability grants +5 for "next attack"
+   - **Behavior**: First attack uses +5, CombatState.PlayerNextAttackBonusDice resets to 0
+   - **Example**: Attack 1: 13d6, Attack 2: 8d6 (bonus consumed)
+
+**Related Requirements**: FR-001, FR-004
+
+---
+
+### Mechanic 3: Probabilistic Hit Chance Scaling
+
+**Overview**:
+Each die in the attack or defense pool has a 33% chance of success (rolling 5-6 on d6). Higher dice pools produce more consistent results due to law of large numbers, while small pools (1-3 dice) have high variance. This creates meaningful differences between builds.
+
+**How It Works**:
+1. **Individual Die Success Rate**: Each d6 has 2/6 (33.33%) chance of success
+2. **Expected Successes**: Dice pool size × 0.33 = average successes
+3. **Variance**: Larger pools have lower relative variance (more predictable)
+4. **Small Pools**: 1-3 dice highly variable (0-3 successes range)
+5. **Large Pools**: 10+ dice more predictable (~3-4 success range typical)
+
+**Formula/Logic**:
+```
+Expected_Successes(dice_count) = dice_count × 0.333
+
+Variance(dice_count) = dice_count × p × (1 - p)
+  where p = 0.333 (success rate)
+
+Standard_Deviation(dice_count) = SQRT(Variance)
+
+// Example: 6d6 attack vs 5d6 defense
+Attack_Expected = 6 × 0.333 = 2.0 successes
+Defense_Expected = 5 × 0.333 = 1.67 successes
+Expected_Net = 2.0 - 1.67 = 0.33 successes
+
+// Probability of hit (approximate)
+Hit_Chance ≈ 55-60% (due to variance and defender-wins-ties rule)
+```
+
+**Hit Chance Table (Attack Dice vs Defense Dice)**:
+| Attack | vs 3d6 (STR 3) | vs 5d6 (STR 5) | vs 7d6 (STR 7) | vs 10d6 (STR 10) |
+|--------|----------------|----------------|----------------|-------------------|
+| 3d6 (ATT 3) | 50% | 30% | 15% | 5% |
+| 5d6 (ATT 5) | 70% | 50% | 30% | 15% |
+| 7d6 (ATT 7) | 85% | 70% | 50% | 30% |
+| 10d6 (ATT 10) | 95% | 85% | 70% | 50% |
+| 12d6 (ATT 6 +6 bonus) | 98% | 92% | 80% | 65% |
+| 15d6 (ATT 8 +7 bonus) | 99% | 96% | 88% | 75% |
+
+*Approximate probabilities based on dice pool variance analysis*
+
+**Parameters**:
+| Parameter | Type | Range | Default | Description | Tunable? |
+|-----------|------|-------|---------|-------------|----------|
+| Die_Sides | int | 4-20 | 6 | Sides on each die (d6 standard) | No (core mechanic) |
+| Success_Rate_Per_Die | float | 0.1-0.9 | 0.333 | Probability per die (5-6 on d6) | No (core mechanic) |
+| Min_Pool_Size | int | 0-5 | 1 | Minimum dice in pool | No (attribute minimum) |
+| Max_Pool_Size | int | 10-30 | 20 | Maximum dice in pool | Yes (performance) |
+
+**Edge Cases**:
+1. **Extreme mismatch (15d6 vs 1d6)**:
+   - **Condition**: Glass cannon (MIGHT 10 + bonuses 5) vs low-STURDINESS enemy (1)
+   - **Behavior**: Hit chance ~98-99% (nearly guaranteed)
+   - **Example**: Expected net successes = 5.0 - 0.33 = 4.67 → almost always positive
+
+2. **Perfect balance (equal pools)**:
+   - **Condition**: 6d6 attack vs 6d6 defense
+   - **Behavior**: Hit chance ~45-48% (slightly favors defender due to tie rule)
+   - **Example**: Expected net = 2.0 - 2.0 = 0 → coin flip with defensive bias
+
+3. **Variance extremes (small pools)**:
+   - **Condition**: 2d6 attack vs 2d6 defense
+   - **Behavior**: High variance - possible outcomes 0-2 net successes or 0-2 net failures
+   - **Example**: Actual results wildly variable (could be -2, -1, 0, +1, +2 net)
+
+**Related Requirements**: FR-001, FR-002, FR-003
+
+---
