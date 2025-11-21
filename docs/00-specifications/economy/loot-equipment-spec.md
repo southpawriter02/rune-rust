@@ -403,7 +403,7 @@ Armor categories create build diversity (glass cannon vs tank); trade-offs force
 **Status**: Implemented
 
 **Description**:
-Equipment can grant attribute bonuses (+MIGHT, +FINESSE, +WILL, +STURDINESS) that stack additively with base attributes and exceed the normal attribute cap of 6. A character with MIGHT 6 (cap) + Myth-Forged weapon (+3 MIGHT) effectively has MIGHT 9 for attack rolls and damage calculations.
+Equipment can grant attribute bonuses (+MIGHT, +FINESSE, +WITS, +WILL, +STURDINESS) that stack additively with base attributes and exceed the normal attribute cap of 6. A character with MIGHT 6 (cap) + Myth-Forged weapon (+3 MIGHT) effectively has MIGHT 9 for attack rolls and damage calculations.
 
 **Rationale**:
 Equipment bonuses bypass attribute cap to enable late-game power scaling; Myth-Forged items provide ~50% power increase beyond base cap; creates incentive to find high-tier equipment even at max attribute investment.
@@ -429,6 +429,13 @@ Equipment bonuses bypass attribute cap to enable late-game power scaling; Myth-F
    - **Input**: Clan-Forged Axe (+1 MIGHT) + Clan-Forged Full Plate (+2 STURDINESS)
    - **Expected Output**: +1 MIGHT, +2 STURDINESS applied to character
    - **Success Condition**: Multiple equipment bonuses stack without conflict
+
+3. **Scenario**: Tech equipment grants WITS bonuses
+   - **Input**: Skirmisher finds Arc-Cannon (Myth-Forged Rifle, +4 WITS, +3 FINESSE)
+   - **Before**: WITS 4 → 4d6 for tech/perception checks
+   - **After**: WITS 8 → 8d6 for tech/perception checks, +3 FINESSE for attacks
+   - **Impact**: Dramatically improves tech interactions, hacking, perception; tech weapons synergize with WITS
+   - **Success Condition**: WITS bonuses apply to all tech checks and perception rolls
 
 **Dependencies**:
 - Requires: Attribute System with cap (`SPEC-PROGRESSION-001`)
