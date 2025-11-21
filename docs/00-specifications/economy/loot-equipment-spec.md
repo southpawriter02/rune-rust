@@ -69,7 +69,7 @@ The Loot & Equipment System provides the primary power progression mechanism bey
 - Damage Calculation System: Weapon damage dice and bonuses used in combat → `SPEC-COMBAT-002`
 - Accuracy & Evasion System: Weapon accuracy bonuses, armor defense bonuses → `SPEC-COMBAT-004`
 - Character Progression: Attribute system for equipment bonuses → `SPEC-PROGRESSION-001`
-- Archetype System: Class-appropriate loot generation (Warrior/Scavenger/Mystic) → `SPEC-PROGRESSION-002`
+- Archetype System: Class-appropriate loot generation (Warrior/Adept/Skirmisher/Mystic) → `SPEC-PROGRESSION-002`
 - Combat Resolution: Loot drops after enemy defeat → `SPEC-COMBAT-001`
 
 **Depended Upon By**:
@@ -101,8 +101,8 @@ The Loot & Equipment System provides the primary power progression mechanism bey
   - Lines 68-157: `Equipment` class (main data structure)
 - **Equipment Database**: `RuneAndRust.Engine/EquipmentDatabase.cs`
   - Lines 106-288: Warrior weapons (Axes, Greatswords)
-  - Lines 293-432: Scavenger weapons (Spears, Daggers)
-  - Lines 437-605: Mystic weapons (Staves, Focuses)
+  - Lines 293-432: Skirmisher weapons (Spears, Daggers) - *Code uses legacy "Scavenger" term*
+  - Lines 437-605: Mystic/Adept weapons (Staves, Focuses)
   - Lines 610-797: Armor (Light, Medium, Heavy by tier)
   - Lines 801-1186: v0.16 Content Expansion (new weapon/armor types)
 - **Loot Service**: `RuneAndRust.Engine/LootService.cs`
@@ -126,11 +126,11 @@ The Loot & Equipment System provides the primary power progression mechanism bey
    - **Trade-offs**: Power progression risk-dependent on RNG drops; player may finish run without finding desired tier
 
 2. **Class Identity Through Equipment**
-   - **Rationale**: Weapon categories align with character archetypes (Warrior=MIGHT, Scavenger=FINESSE, Mystic=WILL), reinforcing class fantasy and ensuring loot feels appropriate for player build
+   - **Rationale**: Weapon categories align with character archetypes (Warrior=MIGHT, Skirmisher=FINESSE, Mystic/Adept=WILL), reinforcing class fantasy and ensuring loot feels appropriate for player build
    - **Examples**:
      - Warriors use Axes (balanced) and Greatswords (high damage, two-handed)
-     - Scavengers use Spears (reach) and Daggers (fast, low stamina)
-     - Mystics use Staves (Aether reduction) and Focuses (ability amplification, no melee)
+     - Skirmishers use Spears (reach) and Daggers (fast, low stamina)
+     - Mystics/Adepts use Staves (Aether reduction) and Focuses (ability amplification, no melee)
      - Boss loot tables prioritize class-appropriate drops (60% chance for player class weapon)
    - **Trade-offs**: Class restrictions limit build experimentation; can't create FINESSE-based Warrior without hybrid design
 
@@ -232,7 +232,7 @@ Quality tiers create clear progression milestones; players instantly recognize M
 Weapons are categorized by type (Axe, Greatsword, Spear, Dagger, Staff, Focus, plus v0.16 additions: Blade, Blunt, EnergyMelee, Rifle, HeavyBlunt) and each category scales with a specific attribute (MIGHT, FINESSE, or WILL). Weapon categories determine damage dice range, stamina cost, and special properties like reach or ability amplification.
 
 **Rationale**:
-Weapon categories reinforce class archetypes; Warriors use MIGHT weapons (Axe, Greatsword), Scavengers use FINESSE (Spear, Dagger), Mystics use WILL (Staff, Focus); ensures loot generation can create class-appropriate drops.
+Weapon categories reinforce class archetypes; Warriors use MIGHT weapons (Axe, Greatsword), Skirmishers use FINESSE (Spear, Dagger), Mystics/Adepts use WILL (Staff, Focus); ensures loot generation can create class-appropriate drops.
 
 **Acceptance Criteria**:
 - [ ] 11 weapon categories defined: Axe, Greatsword, Spear, Dagger, Staff, Focus, Blade, Blunt, EnergyMelee, Rifle, HeavyBlunt
@@ -319,18 +319,18 @@ Enemy-specific drop tables ensure loot quality matches encounter difficulty; pla
 **Status**: Implemented
 
 **Description**:
-When generating loot, the system has a 60% chance to drop weapons appropriate for the player's character class (Warriors get Axes/Greatswords, Scavengers get Spears/Daggers, Mystics get Staves/Focuses). Boss loot is always class-appropriate. This ensures players receive useful equipment without forcing rigid class restrictions on all drops.
+When generating loot, the system has a 60% chance to drop weapons appropriate for the player's character archetype (Warriors get Axes/Greatswords, Skirmishers get Spears/Daggers, Mystics/Adepts get Staves/Focuses). Boss loot is always class-appropriate. This ensures players receive useful equipment without forcing rigid class restrictions on all drops.
 
 **Rationale**:
-Class-appropriate loot reduces frustration of receiving unusable weapons (Warrior finding Staff); 60% chance balances targeted drops vs build experimentation; boss loot guarantees meaningful reward for class.
+Class-appropriate loot reduces frustration of receiving unusable weapons (Warrior finding Staff); 60% chance balances targeted drops vs build experimentation; boss loot guarantees meaningful reward for archetype.
 
 **Acceptance Criteria**:
 - [ ] `GenerateRandomItem(quality, player)` checks player.Class
 - [ ] 60% chance to filter EquipmentDatabase for class-appropriate weapons
-- [ ] Class weapon mappings:
+- [ ] Archetype weapon mappings:
   - Warrior: Axe, Greatsword
-  - Scavenger: Spear, Dagger
-  - Mystic: Staff, Focus
+  - Skirmisher: Spear, Dagger
+  - Mystic/Adept: Staff, Focus
 - [ ] Boss loot (`GenerateClassAppropriateItem`) always filters by class (100% appropriate)
 - [ ] 40% of non-boss drops can be off-class (enables build experimentation)
 - [ ] Armor drops are not class-restricted (all classes can use all armor)
@@ -376,7 +376,7 @@ Armor categories create build diversity (glass cannon vs tank); trade-offs force
 - [ ] All classes can equip all armor (no class restrictions on armor)
 
 **Example Scenarios**:
-1. **Scenario**: Glass cannon Scavenger chooses armor
+1. **Scenario**: Glass cannon Skirmisher chooses armor
    - **Choice A**: Shadow Weave (Light, Tier 4) - +15 HP, +2 FINESSE, +2 Evasion, no penalty
    - **Choice B**: Juggernaut Frame (Heavy, Tier 4) - +40 HP, +3 STURDINESS, -2 FINESSE
    - **Decision**: Light armor synergizes with FINESSE build (+2 attack/defense dice), Heavy penalizes
