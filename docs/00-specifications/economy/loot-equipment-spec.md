@@ -500,3 +500,236 @@ Special effects make Myth-Forged items feel legendary and unique; effects change
 - **Design Note**: Effects are descriptive text; combat systems must implement logic
 
 ---
+
+## System Mechanics
+
+> **Completeness Checklist**:
+> - [x] All mechanics have clear inputs/outputs
+> - [x] All formulas are documented with examples
+> - [x] All parameters have ranges and defaults
+> - [x] All edge cases are documented
+> - [x] All mechanics link to functional requirements
+> - [x] All mechanics have example calculations
+
+### Mechanic 1: Enemy-Based Loot Generation Algorithm
+
+**Overview**:
+When an enemy is defeated in combat, the LootService.GenerateLoot() method determines whether equipment drops and what quality tier it will be. The algorithm uses weighted random number generation based on enemy type, with trash mobs dropping low-tier loot and bosses guaranteeing high-tier rewards.
+
+**How It Works**:
+1. Combat system calls `LootService.GenerateLoot(Enemy enemy, PlayerCharacter player)` after enemy defeat
+2. LootService routes to enemy-specific method based on `enemy.Type` (Servitor, Drone, Boss)
+3. Enemy-specific method generates random number 0-99 using `Random.Next(100)`
+4. Random number compared against tier thresholds to determine quality or null drop
+5. If quality determined, call `GenerateRandomItem(quality, player)` to select specific equipment
+6. Equipment added to room ground or returned to combat system
+
+**Formula/Logic**:
+```csharp
+// Enemy Type → Loot Method Routing
+Equipment? GenerateLoot(Enemy enemy, PlayerCharacter? player)
+{
+    return enemy.Type switch
+    {
+        EnemyType.CorruptedServitor => GenerateServitorLoot(player),  // Trash mob
+        EnemyType.BlightDrone => GenerateDroneLoot(player),           // Standard enemy
+        EnemyType.RuinWarden => GenerateBossLoot(player),             // Boss
+        _ => null
+    };
+}
+
+// Servitor Drop Table (Tier 0-1 enemy)
+Equipment? GenerateServitorLoot(PlayerCharacter? player)
+{
+    int roll = Random.Next(100);  // 0-99
+
+    if (roll < 10) return null;                    // 10% no drop
+    else if (roll < 70) quality = QualityTier.JuryRigged;   // 60% Tier 0
+    else quality = QualityTier.Scavenged;                   // 30% Tier 1
+
+    return GenerateRandomItem(quality, player);
+}
+
+// Drone Drop Table (Tier 1-3 enemy)
+Equipment? GenerateDroneLoot(PlayerCharacter? player)
+{
+    int roll = Random.Next(100);
+
+    if (roll < 40) quality = QualityTier.Scavenged;      // 40% Tier 1
+    else if (roll < 80) quality = QualityTier.ClanForged;  // 40% Tier 2
+    else quality = QualityTier.Optimized;                 // 20% Tier 3
+
+    return GenerateRandomItem(quality, player);
+}
+
+// Boss Drop Table (Tier 3-4 enemy)
+Equipment? GenerateBossLoot(PlayerCharacter? player)
+{
+    int roll = Random.Next(100);
+
+    if (roll < 30) quality = QualityTier.Optimized;     // 30% Tier 3
+    else quality = QualityTier.MythForged;             // 70% Tier 4
+
+    return GenerateClassAppropriateItem(quality, player);  // Boss always class-appropriate
+}
+
+Example:
+  Enemy = CorruptedServitor (Tier 0 trash mob)
+  Random roll = 45
+
+  Check thresholds:
+    45 < 10? No (not null drop)
+    45 < 70? Yes → QualityTier.JuryRigged (Tier 0)
+
+  Result: Tier 0 equipment will be generated
+```
+
+**Parameters**:
+| Parameter | Type | Range | Default | Description | Tunable? |
+|-----------|------|-------|---------|-------------|----------|
+| enemy.Type | EnemyType | Enum | - | Determines which loot table to use | No |
+| Random seed | int | 0-99 | - | RNG for tier determination | No |
+| Servitor null rate | % | 0-100 | 10 | Chance of no drop from trash mobs | Yes |
+| Servitor Tier 0 rate | % | 0-100 | 60 | Chance of Jury-Rigged from Servitor | Yes |
+| Boss Tier 4 rate | % | 0-100 | 70 | Chance of Myth-Forged from boss | Yes |
+
+**Data Flow**:
+```
+Input Sources:
+  → Enemy.Type (from defeated enemy in combat)
+  → PlayerCharacter.Class (for class-appropriate filtering)
+  → System.Random (for RNG)
+
+Processing:
+  → Route to enemy-specific loot table method
+  → Generate random number 0-99
+  → Compare against tier thresholds
+  → Determine QualityTier or null
+  → Call GenerateRandomItem() with quality + player
+
+Output Destinations:
+  → Room.ItemsOnGround (equipment added to room)
+  → Combat log (loot notification displayed)
+  → Player inventory (if auto-pickup enabled)
+```
+
+**Edge Cases**:
+1. **No Loot Drop**: When RNG roll falls in null range (10% for Servitor)
+   - **Condition**: `roll < 10` for Servitor
+   - **Behavior**: Return null, no equipment generated
+   - **Example**: Servitor defeated, roll = 5 → No loot message in combat log
+
+2. **Boss Always Drops**: Bosses have 100% drop rate (no null outcome)
+   - **Condition**: enemy.Type == RuinWarden
+   - **Behavior**: Always returns equipment (30% Tier 3, 70% Tier 4)
+   - **Example**: Boss defeated, roll = 95 → Myth-Forged weapon guaranteed
+
+3. **Player is Null**: When player reference not provided
+   - **Condition**: player == null in GenerateRandomItem()
+   - **Behavior**: Skip class-appropriate filtering, generate fully random item
+   - **Example**: Useful for pre-placed loot, environmental drops
+
+**Related Requirements**: FR-003, FR-004
+
+---
+
+### Mechanic 2: Class-Appropriate Item Selection
+
+**Overview**:
+After quality tier is determined, the system selects a specific equipment item from the database. For standard enemies, there's a 60% chance to filter for class-appropriate weapons. For bosses, class filtering is always applied (100%). This ensures players receive useful loot while allowing build experimentation.
+
+**How It Works**:
+1. `GenerateRandomItem(QualityTier quality, PlayerCharacter? player)` receives quality tier
+2. Roll 50/50 to decide weapon vs armor type
+3. If weapon AND player exists, roll 60% chance for class-appropriate filtering
+4. Query EquipmentDatabase for all items matching: quality tier + item type + (optional) class filter
+5. Select random item from filtered results using `Random.Next(filteredList.Count)`
+6. Return selected equipment
+
+**Formula/Logic**:
+```csharp
+// Class-Appropriate Weapon Selection
+Equipment? GenerateRandomItem(QualityTier quality, PlayerCharacter? player)
+{
+    bool isWeapon = Random.Next(2) == 0;  // 50/50 weapon or armor
+
+    if (isWeapon && player != null)
+    {
+        // 60% chance for class-appropriate weapon
+        if (Random.Next(100) < 60)
+        {
+            Equipment? weapon = GetRandomWeaponForClass(player.Class, quality);
+            if (weapon != null) return weapon;
+        }
+    }
+
+    // Fallback: fully random item of this quality
+    var allItems = EquipmentDatabase.GetAllEquipment()
+        .Where(e => e.Quality == quality)
+        .ToList();
+
+    var filtered = allItems.Where(e =>
+        isWeapon ? e.Type == EquipmentType.Weapon : e.Type == EquipmentType.Armor
+    ).ToList();
+
+    return filtered[Random.Next(filtered.Count)];
+}
+
+// Class Weapon Mapping (from EquipmentDatabase)
+Equipment? GetRandomWeaponForClass(CharacterClass characterClass, QualityTier quality)
+{
+    var weapons = characterClass switch
+    {
+        CharacterClass.Warrior => AllEquipment
+            .Where(e => e.Type == Weapon &&
+                   (e.WeaponCategory == Axe || e.WeaponCategory == Greatsword) &&
+                   e.Quality == quality),
+        CharacterClass.Scavenger => AllEquipment  // Legacy, maps to Skirmisher
+            .Where(e => e.Type == Weapon &&
+                   (e.WeaponCategory == Spear || e.WeaponCategory == Dagger) &&
+                   e.Quality == quality),
+        CharacterClass.Mystic => AllEquipment
+            .Where(e => e.Type == Weapon &&
+                   (e.WeaponCategory == Staff || e.WeaponCategory == Focus) &&
+                   e.Quality == quality),
+        _ => []
+    };
+
+    return weapons.Any() ? weapons[Random.Next(weapons.Count)] : null;
+}
+
+Example:
+  Player = Warrior (MIGHT-based)
+  Quality = QualityTier.ClanForged (Tier 2)
+
+  Step 1: Roll weapon vs armor → Result: Weapon (50% chance)
+  Step 2: Roll class-appropriate → Result: 45 < 60, YES
+  Step 3: Filter for Warrior weapons at Tier 2:
+    - Clan-Forged Axe (1d6+3, +1 MIGHT)
+    - Clan-Forged Greatsword (1d6+5, +1 MIGHT)
+  Step 4: Random selection → Clan-Forged Axe selected
+
+  Result: Warrior receives useful MIGHT weapon
+```
+
+**Parameters**:
+| Parameter | Type | Range | Default | Description | Tunable? |
+|-----------|------|-------|---------|-------------|----------|
+| Class-appropriate % | int | 0-100 | 60 | Chance to filter by player class | Yes |
+| Weapon vs Armor % | int | 0-100 | 50 | Base chance for weapon over armor | Yes |
+| Boss class filter | bool | true/false | true | Whether bosses always filter by class | Yes |
+
+**Edge Cases**:
+1. **No Class-Appropriate Items Found**: When filtering returns empty list
+   - **Condition**: GetRandomWeaponForClass() returns null
+   - **Behavior**: Fallback to fully random item selection
+   - **Example**: Tier 4 Mystic weapons exhausted → Any Tier 4 item selected
+
+2. **Armor Always Classless**: Armor drops ignore class filtering
+   - **Condition**: isWeapon == false
+   - **Behavior**: Select random armor of quality tier, no class check
+   - **Example**: Warrior can receive Light/Medium/Heavy armor equally
+
+**Related Requirements**: FR-002, FR-004
+
+---
