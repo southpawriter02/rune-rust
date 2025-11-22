@@ -3,7 +3,7 @@
 **Purpose**: Central tracking document for all specifications (existing, in-progress, and planned)
 
 **Last Updated**: 2025-11-22
-**Total Specs**: 11 completed, 0 in progress, 29 planned, 40 total
+**Total Specs**: 12 completed, 0 in progress, 28 planned, 40 total
 
 ---
 
@@ -11,14 +11,14 @@
 
 | Domain | Completed | In Progress | Planned | Total | Coverage |
 |--------|-----------|-------------|---------|-------|----------|
-| Combat | 6 | 0 | 6 | 12 | 50% |
+| Combat | 7 | 0 | 5 | 12 | 58% |
 | Progression | 3 | 0 | 4 | 7 | 43% |
 | Economy | 2 | 0 | 4 | 6 | 33% |
 | World | 0 | 0 | 8 | 8 | 0% |
 | Narrative | 0 | 0 | 6 | 6 | 0% |
 | Faction | 0 | 0 | 3 | 3 | 0% |
 | AI | 0 | 0 | 2 | 2 | 0% |
-| **TOTAL** | **11** | **0** | **29** | **40** | **27.5%** |
+| **TOTAL** | **12** | **0** | **28** | **40** | **30%** |
 
 ---
 
@@ -213,6 +213,60 @@
 - Boss loot system with guaranteed quality drops, artifacts, unique items, crafting materials
 - Balance targets for TTK (8-25 turns), damage output, and phase timing
 - 3 appendices: Boss stat reference tables, design checklist, full Ruin-Warden example
+
+---
+
+### ✅ SPEC-COMBAT-006: Counter-Attack & Parry System
+**Status**: Completed
+**File**: `combat/counter-attack-parry-spec.md`
+**Lines**: ~1913
+**Completed**: 2025-11-22
+**Priority**: High
+**Domain**: Combat
+**Layer 1 Docs**: 🔗 `COUNTER_ATTACK_INTEGRATION.md`
+
+**Scope**:
+- Universal parry mechanics (FINESSE + Weapon Skill + bonus dice)
+- Four-tier parry outcomes (Failed, Standard, Superior, Critical)
+- Parry pool calculation with specialization/equipment bonuses
+- Riposte and counter-attack system (free attacks on successful parries)
+- Riposte trigger conditions (Critical = all characters, Superior = Hólmgangr only)
+- Hólmgangr Reactive Parry specialization (3 ranks: +1d10/+2d10, Superior Riposte, 2 parries/round)
+- Atgeir-wielder parry bonus (+1d10 reach advantage)
+- Trauma economy integration (stress relief/gain by parry outcome)
+- Parry limits and turn management (1-2 parries per round)
+- Persistent statistics tracking (ParryStatistics, ParryBonuses, ParryAttempts tables)
+- Combat flow integration (reactive parry preparation and execution)
+- Balance targets (success rates 40-85%, riposte damage contribution 5-50%)
+
+**Out of Scope**:
+- Enemy parrying mechanics → Future enhancement
+- Shield equipment parry bonuses → SPEC-COMBAT-007 (planned)
+- Status effect interactions with parry pool → SPEC-COMBAT-003
+- Specific ability implementations → Ability System spec
+
+**Dependencies**:
+- SPEC-COMBAT-001 (Combat Resolution) - Completed
+- SPEC-COMBAT-002 (Damage Calculation) - Completed
+- SPEC-PROGRESSION-001 (Character Progression & Specializations) - Completed
+- SPEC-MENTAL-001 (Trauma Economy) - Completed
+
+**Why Complete**: Counter-attack and parry system is fully implemented; needed comprehensive design specification for universal parry mechanics, quality-based outcomes, riposte triggers, specialization integration, and balance targets.
+
+**Implementation Exists**: Yes (`RuneAndRust.Engine/CounterAttackService.cs`, `RuneAndRust.Core/CounterAttack.cs`, `RuneAndRust.Persistence/CounterAttackRepository.cs`, `RuneAndRust.Engine/Commands/ParryCommand.cs`)
+
+**Key Features**:
+- 6 functional requirements (FR-001 through FR-006) covering full parry/riposte lifecycle
+- Universal parry pool calculation (FINESSE + Weapon Skill + Bonus Dice × d10)
+- Four-tier outcome system with distinct mechanical effects (Failed/Standard/Superior/Critical)
+- Critical parry threshold (5+ margin) triggering universal riposte
+- Hólmgangr Reactive Parry specialization with 3 ranks (escalating bonuses)
+- Superior Riposte capability (Hólmgangr exclusive for Superior parries)
+- Trauma economy integration (-8 stress for Critical Parry, +5 stress for Failed Parry)
+- Parry limit system (1/round standard, 2/round for Hólmgangr Rank 3 Mastery)
+- Database persistence (3 tables: ParryStatistics, ParryBonuses, ParryAttempts)
+- Balance targets and design guidelines for future extensions
+- 3 appendices: Parry outcome reference tables, full combat example, design checklist
 
 ---
 
