@@ -379,3 +379,404 @@ BaseLegendValue = 75 // 1.07 Legend/HP ratio (above average for trauma inflictio
 
 ---
 
+### FR-004: Special Mechanics Flags
+
+**Description**: Enemies must support special mechanics flags (IsForlorn, IsBoss, IsChampion, Soak) that modify combat behavior and create tactical variety.
+
+**Rationale**: Special mechanics:
+1. **Create memorable encounters** - Forlorn enemies feel distinct through trauma aura
+2. **Enable build variety** - Soak/armor requires armor-piercing strategies
+3. **Support procedural variation** - Champion variants add surprise to familiar enemies
+4. **Integrate horror themes** - IsForlorn connects combat to trauma economy
+
+**Special Mechanics** (from `Enemy.cs`):
+
+#### IsForlorn (Trauma Aura)
+**Purpose**: Inflicts passive Psychic Stress/Corruption aura, creating psychological horror tension
+**Stat Impact**: +10-20% Legend value bonus (inflicting trauma increases difficulty)
+**Examples**:
+- **Forlorn Scholar**: IsForlorn = true, inflicts 5 Stress/turn proximity aura
+- **Shrieker**: IsForlorn = true, psychic scream AOE + Stress
+- **Forlorn Archivist** (Boss): IsForlorn = true, 5 Stress/turn on top of room's Heavy Psychic Resonance
+
+**Design Guidelines**:
+- Use for horror-themed enemies (Symbiotic Plate, corrupted humans, psychic entities)
+- Balance trauma infliction with combat difficulty (high trauma = avoid if possible, creating player choice)
+- Limit IsForlorn to ~30% of enemy roster (overuse dilutes horror atmosphere)
+
+#### IsBoss (Multi-Phase Combat)
+**Purpose**: Enables phase-based AI, special abilities, guaranteed high-tier loot
+**Stat Impact**: 75-100 HP, 13-20 attr points, 100-150 Legend value
+**Examples**:
+- **Ruin-Warden**: IsBoss = true, Phase 1 (1-40 HP threshold transitions)
+- **Aetheric Aberration**: IsBoss = true, summons echoes, phase transitions at HP thresholds
+- **Omega Sentinel**: IsBoss = true, 3-phase combat (PowerDraw → OverchargedMaul → OmegaProtocol)
+
+**Design Guidelines**:
+- Bosses have 2-3 distinct phases with different AI priorities
+- Phase transitions at HP thresholds (Phase 2 at 50% HP, Phase 3 at 25% HP typical)
+- Each phase introduces new mechanic or escalates existing ones
+
+#### IsChampion (Elite Variants)
+**Purpose**: Procedurally create elite versions of standard enemies (+50% stats, unique ability)
+**Stat Impact**: +50% HP, +1-2 attribute points, +25% damage, +20% Legend value
+**Examples** (from `DormantProcess.cs`):
+- **Champion Servitor**: 22 HP (15 × 1.5), attributes 3/3/0/0/3, 1d6+1 damage, 15 Legend
+- **Champion Drone**: 37 HP (25 × 1.5), attributes 4/4/0/0/4, 1d6+2 damage, 37 Legend
+
+**Design Guidelines**:
+- Champion spawn rate: 10-15% for Low/Medium, 20% for High tier enemies
+- Champions get unique ability from enemy's ability pool (e.g., Champion Servitor gains RapidStrike)
+- Visual distinction required (descriptors, icons, color coding)
+
+#### Soak (Flat Damage Reduction)
+**Purpose**: Armor/damage reduction mechanic, forces armor-piercing or DoT strategies
+**Stat Impact**: High HP + Soak = significantly longer TTK (requires balance testing)
+**Examples**:
+- **Vault Custodian**: Soak 4 (reduced from 6 in v0.18 to prevent excessive tankiness)
+- **Omega Sentinel**: Soak 6 (reduced from 8 in v0.18 for same reason)
+- **Failure Colossus**: Soak 4 (heavy armor)
+
+**v0.18 Balance Lessons**:
+- **Vault Custodian Soak reduced 6 → 4**: Original Soak 6 made 70 HP feel like 120+ HP effective (frustrating)
+- **Omega Sentinel Soak reduced 8 → 6**: Soak 8 created 5+ minute boss fights (too slow)
+- **Soak cap**: Max Soak 6 for bosses, max Soak 4 for non-bosses
+
+**Acceptance Criteria**:
+- [ ] IsForlorn enemies inflict documented Stress/Corruption values
+- [ ] IsBoss enemies have phase transitions implemented
+- [ ] IsChampion variants spawn at configured rates (10-20%)
+- [ ] Soak values capped per tier (non-boss max 4, boss max 6)
+
+**Example** (from `EnemyFactory.cs:297-318`):
+```csharp
+// Vault Custodian: Mini-Boss with Soak and Phase mechanics
+MaxHP = 70,
+Soak = 4, // v0.18: Reduced from 6 to prevent excessive tankiness
+IsBoss = false, // Mini-boss, not full boss
+Phase = 1, // Phase-based AI
+BaseLegendValue = 75 // Moderate-High Act (mini-boss)
+```
+
+**Dependencies**:
+- SPEC-ECONOMY-003 (Trauma Economy) - Stress/Corruption infliction mechanics
+- SPEC-COMBAT-005 (Boss Encounters) - Phase transition triggers
+
+---
+
+### FR-005: AI Behavior Decision-Making
+
+**Description**: Enemy AI must use probability-based decision trees that vary by archetype and create predictable but tactically interesting combat patterns.
+
+**Rationale**: Probability-based AI:
+1. **Creates consistency** - Players learn enemy patterns through repeated encounters
+2. **Prevents exploitability** - Randomness prevents perfect player counter-strategies
+3. **Supports archetype identity** - Aggressive enemies attack 80%+, Defensive enemies use utility 50%
+4. **Enables phase-based progression** - Bosses change probabilities per phase
+
+**AI Decision Pattern** (from `EnemyAI.cs`):
+
+```csharp
+public EnemyAction DetermineAction(Enemy enemy)
+{
+    // Skip turn if stunned
+    if (enemy.IsStunned) return EnemyAction.BasicAttack; // Will be handled specially
+
+    // Route to enemy-specific AI logic
+    return enemy.Type switch
+    {
+        EnemyType.CorruptedServitor => DetermineServitorAction(),
+        EnemyType.BlightDrone => DetermineDroneAction(),
+        EnemyType.RuinWarden => DetermineWardenAction(enemy), // HP-based phase logic
+        // ... 20+ enemy types
+    };
+}
+```
+
+**AI Archetype Patterns** (probability distributions):
+
+#### Aggressive (Glass Cannon, DPS, Swarm)
+```csharp
+private EnemyAction DetermineServitorAction()
+{
+    var roll = _random.Next(100);
+
+    if (roll < 80) return EnemyAction.BasicAttack; // 80% attack
+    else return EnemyAction.Defend; // 20% defend
+}
+```
+**Pattern**: 70-90% offensive actions, 10-30% defensive/utility
+
+#### Defensive (Tank)
+```csharp
+private EnemyAction DetermineVaultCustodianAction(Enemy enemy)
+{
+    if (enemy.HP < enemy.MaxHP * 0.3) // Low HP
+        return EnemyAction.GuardianProtocol; // Self-heal priority
+
+    var roll = _random.Next(100);
+    if (roll < 40) return EnemyAction.HalberdSweep; // 40% attack
+    else if (roll < 70) return EnemyAction.DefensiveStance; // 30% defense buff
+    else return EnemyAction.GuardianProtocol; // 30% self-heal
+}
+```
+**Pattern**: 40-50% attacks, 30-40% defense, 20-30% self-heal
+
+#### Tactical (Support, Caster)
+```csharp
+private EnemyAction DetermineCorruptedEngineerAction(Enemy enemy)
+{
+    var roll = _random.Next(100);
+
+    if (roll < 40) return EnemyAction.ArcDischarge; // 40% attack
+    else if (roll < 70) return EnemyAction.OverchargeAlly; // 30% buff ally
+    else return EnemyAction.EmergencyRepairAlly; // 30% heal ally
+}
+```
+**Pattern**: 30-50% attacks, 30-40% buffs/debuffs, 20-30% heals/summons
+
+#### Phase-Based (Boss, Mini-Boss)
+```csharp
+private EnemyAction DetermineWardenAction(Enemy enemy)
+{
+    // Phase 1 (HP > 50%): Defensive testing
+    if (enemy.HP > enemy.MaxHP * 0.5)
+    {
+        var roll = _random.Next(100);
+        if (roll < 60) return EnemyAction.BasicAttack; // 60% basic
+        else return EnemyAction.HeavyStrike; // 40% heavy
+    }
+    // Phase 2 (HP ≤ 50%): Aggressive escalation
+    else
+    {
+        var roll = _random.Next(100);
+        if (roll < 40) return EnemyAction.BerserkStrike; // 40% berserk (high damage)
+        else if (roll < 70) return EnemyAction.HeavyStrike; // 30% heavy
+        else return EnemyAction.ChargeDefense; // 30% charge (telegraphed attack)
+    }
+}
+```
+**Pattern**: Phase transitions at HP thresholds change probability distributions
+
+**Acceptance Criteria**:
+- [ ] AI decision logic uses Random.Next(100) probability rolls
+- [ ] Each enemy type has documented probability distribution
+- [ ] Archetype patterns consistent across similar enemies
+- [ ] Phase-based enemies modify distributions at HP thresholds
+
+**Dependencies**:
+- SPEC-AI-001 (Enemy AI System) - Comprehensive AI behavior documentation
+- SPEC-COMBAT-005 (Boss Encounters) - Phase transition mechanics
+
+---
+
+### FR-006: Enemy Scaling vs. Player Progression
+
+**Description**: Enemy stats must scale with player Legend/level to maintain challenge across progression, without creating bullet sponges or one-shot deaths.
+
+**Rationale**: Scaling ensures:
+1. **Consistent challenge** - Early enemies stay relevant in late-game encounters
+2. **Rewards progression** - Player power growth feels meaningful
+3. **Avoids trivialization** - Level 1 enemies don't become irrelevant at Level 10
+4. **Maintains TTK targets** - Time-to-kill stays in 2-12 turn range
+
+**Scaling Formula** (proposed, based on existing Legend system):
+
+**HP Scaling**:
+```
+Scaled_HP = Base_HP + (Player_Legend × HP_Scaling_Factor)
+
+Where:
+  HP_Scaling_Factor varies by threat tier:
+    Low:    0.5 HP per Legend (Servitor: 15 + 5 Legend × 0.5 = 17.5 HP at Legend 5)
+    Medium: 1.0 HP per Legend (Drone: 25 + 5 × 1.0 = 30 HP at Legend 5)
+    High:   1.5 HP per Legend (Bone-Keeper: 60 + 5 × 1.5 = 67.5 HP at Legend 5)
+    Boss:   2.0 HP per Legend (Ruin-Warden: 80 + 5 × 2.0 = 90 HP at Legend 5)
+```
+
+**Damage Scaling**:
+```
+Scaled_Damage = Base_Damage_Dice + (Player_Legend ÷ 3)d6
+
+Where:
+  Damage dice increase every 3 Legend levels:
+    Legend 1-2: Base damage (Servitor: 1d6)
+    Legend 3-5: +1d6 (Servitor: 2d6)
+    Legend 6-8: +2d6 (Servitor: 3d6)
+    Legend 9+:  +3d6 (Servitor: 4d6)
+```
+
+**Attribute Scaling**:
+```
+Scaled_Attribute = Base_Attribute + (Player_Legend ÷ 5)
+
+Where:
+  Attributes increase every 5 Legend levels:
+    Legend 1-4: Base attributes (Servitor: 2/2/0/0/2)
+    Legend 5-9: +1 all attributes (Servitor: 3/3/0/0/3)
+    Legend 10+: +2 all attributes (Servitor: 4/4/0/0/4)
+```
+
+**Example Scaling** (Corrupted Servitor at Legend 1 vs. Legend 10):
+
+| Stat | Legend 1 (Base) | Legend 5 | Legend 10 |
+|------|----------------|----------|-----------|
+| HP | 15 | 17.5 | 20 |
+| Damage | 1d6 (avg 3.5) | 2d6 (avg 7) | 3d6 (avg 10.5) |
+| Attributes | 2/2/0/0/2 | 3/3/0/0/3 | 4/4/0/0/4 |
+| Legend Value | 10 | 15 | 20 |
+
+**Balance Targets** (time-to-kill):
+
+| Enemy Tier | Solo Player TTK | 2-Player Party TTK |
+|------------|-----------------|-------------------|
+| Low | 2-3 turns | 1-2 turns |
+| Medium | 3-5 turns | 2-3 turns |
+| High | 5-8 turns | 3-5 turns |
+| Lethal | 7-10 turns | 4-6 turns |
+| Boss | 10-15 turns | 6-10 turns |
+
+**Acceptance Criteria**:
+- [ ] Scaling formulas implemented per threat tier
+- [ ] TTK targets validated through playtesting
+- [ ] Damage scaling doesn't create one-shot deaths (max 50% player HP per hit)
+- [ ] HP scaling doesn't create bullet sponges (TTK stays within targets)
+
+**Note**: This FR proposes scaling formulas not currently implemented. Current implementation uses static stats from `EnemyFactory.cs`. Implementation would require adding scaling logic to enemy instantiation.
+
+**Dependencies**:
+- SPEC-PROGRESSION-001 (Character Progression) - Legend/XP scaling context
+- SPEC-COMBAT-002 (Damage Calculation) - Damage formula integration
+
+---
+
+### FR-007: Loot Table Integration
+
+**Description**: Enemy threat tiers must map to equipment quality tiers to ensure loot rewards match difficulty.
+
+**Rationale**: Loot-difficulty correlation ensures:
+1. **Risk-reward balance** - Harder enemies drop better loot
+2. **Progression pacing** - Players acquire Tier 2-3 gear from appropriate enemies
+3. **Boss excitement** - 70% Tier 4 drop rate makes boss kills rewarding
+4. **Vendor trash filtering** - Low enemies drop T0-T1, preventing inventory bloat with worthless items
+
+**Enemy-to-Loot Quality Mapping** (from `LootService.cs` and SPEC-ECONOMY-001):
+
+| Enemy Threat Tier | Primary Loot Quality | Secondary Loot Quality | No Drop Rate |
+|-------------------|---------------------|----------------------|--------------|
+| **Low** | Tier 0 (60%) | Tier 1 (30%) | 10% |
+| **Medium** | Tier 1 (40%) | Tier 2 (40%), Tier 3 (20%) | 0% |
+| **High** | Tier 2 (40%) | Tier 3 (40%), Tier 4 (20%) | 0% |
+| **Lethal** | Tier 3 (50%) | Tier 4 (50%) | 0% |
+| **Boss** | Tier 4 (70%) | Tier 3 (30%) | 0% |
+
+**Loot Generation Logic** (from `LootService.cs:22-43`):
+```csharp
+public Equipment? GenerateLoot(Enemy enemy, PlayerCharacter? player)
+{
+    return enemy.Type switch
+    {
+        EnemyType.CorruptedServitor => GenerateServitorLoot(player),  // Low tier
+        EnemyType.BlightDrone => GenerateDroneLoot(player),           // Medium tier
+        EnemyType.RuinWarden => GenerateBossLoot(player),             // Boss tier
+        _ => null
+    };
+}
+```
+
+**Acceptance Criteria**:
+- [ ] Enemy threat tier → loot quality mapping documented
+- [ ] Boss enemies guarantee 70% Tier 4 drops
+- [ ] Low enemies have 10% no-drop rate to prevent inventory spam
+- [ ] Class-appropriate filtering applied (60% for standard, 100% for bosses)
+
+**Example** (Boss loot value):
+- **Ruin-Warden** (Boss, 100 Legend): 70% Tier 4 weapon/armor (avg value ~1500 scrap equivalent)
+- **Risk-Reward**: 10-15 turn boss fight yields best equipment in game
+
+**Dependencies**:
+- SPEC-ECONOMY-001 (Loot & Equipment System) - Quality tier definitions, drop rate formulas
+
+---
+
+### FR-008: Trauma Economy Integration
+
+**Description**: Forlorn enemies and specific enemy actions must inflict Psychic Stress and Corruption according to trauma economy rules.
+
+**Rationale**: Trauma integration creates:
+1. **Horror atmosphere** - Combat has psychological consequences beyond HP loss
+2. **Risk-reward choices** - Players may flee Forlorn enemies despite good loot
+3. **Build diversity** - High-WILL builds resist trauma better
+4. **Long-term consequences** - Corruption accumulation affects future runs
+
+**Trauma Infliction Rules** (integration with SPEC-ECONOMY-003):
+
+#### Psychic Stress Sources
+**On Encounter**:
+- Non-Forlorn enemies: +0 Stress (normal combat)
+- Forlorn enemies: +5 Stress on first sight (Forlorn Scholar, Shrieker)
+- Boss enemies: +10 Stress on encounter (Forlorn Archivist, Aetheric Aberration)
+
+**Proximity Aura** (per turn):
+- Forlorn enemies within 2 tiles: +3 Stress/turn
+- Forlorn bosses: +5 Stress/turn
+
+**On Attack Received**:
+- Physical attacks: +0 Stress
+- Psychic attacks: +2 Stress (Forlorn Scholar's AethericBolt)
+- Traumatic abilities: +5 Stress (Forlorn Archivist's PsychicScream)
+
+**On Death** (enemy killed by player):
+- Normal enemies: +0 Stress
+- Forlorn humanoids: +3 Stress (killing corrupted humans)
+- Body horror enemies: +5 Stress (Bone-Keeper, Husk Enforcer)
+
+#### Corruption Sources
+**Jötun-Reader Enemies**:
+- **Jötun-Reader Fragment**: +2 Corruption per turn in combat
+- **Proximity**: +1 Corruption/turn within 3 tiles
+
+**Symbiotic Plate Enemies** (body horror):
+- **On Attack**: +1 Corruption if hit by Symbiotic Plate melee attack
+- **On Death**: +2 Corruption (witnessing transformation)
+
+**Boss Encounters**:
+- **Forlorn Archivist**: +5 Corruption on PsychicStorm ability (Phase 3)
+- **Aetheric Aberration**: +3 Corruption on RealityTear ability
+
+**WILL-Based Resistance** (from SPEC-ECONOMY-003):
+```
+Stress_Inflicted = Base_Stress - (Player_WILL × 0.5)
+Corruption_Inflicted = Base_Corruption - (Player_WILL × 0.25)
+
+Example:
+  Forlorn Scholar encounter (Base +5 Stress)
+  Player with WILL 4: 5 - (4 × 0.5) = 3 Stress inflicted
+  Player with WILL 6: 5 - (6 × 0.5) = 2 Stress inflicted (min 0)
+```
+
+**Acceptance Criteria**:
+- [ ] IsForlorn enemies inflict documented Stress/Corruption values
+- [ ] WILL-based resistance formula applied
+- [ ] Trauma accumulation tracked per combat encounter
+- [ ] Breaking point mechanics trigger at 100 Stress (SPEC-ECONOMY-003)
+
+**Example** (Forlorn Scholar encounter):
+```csharp
+// Forlorn Scholar: Caster with trauma aura
+IsForlorn = true, // Inflicts passive Psychic Stress aura
+BaseLegendValue = 35 // Moderate Act (can avoid combat to reduce stress)
+
+// Trauma infliction:
+// - On encounter: +5 Stress
+// - Per turn proximity: +3 Stress/turn
+// - On AethericBolt attack: +2 Stress
+// - On death: +3 Stress (killed corrupted human)
+// Total encounter cost: ~15-20 Stress (10-20% of Breaking Point threshold)
+```
+
+**Dependencies**:
+- SPEC-ECONOMY-003 (Trauma Economy System) - Stress/Corruption mechanics, Breaking Points
+
+---
+
