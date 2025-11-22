@@ -2,8 +2,8 @@
 
 **Purpose**: Central tracking document for all specifications (existing, in-progress, and planned)
 
-**Last Updated**: 2025-11-21
-**Total Specs**: 9 completed, 0 in progress, 30 planned, 39 total
+**Last Updated**: 2025-11-22
+**Total Specs**: 10 completed, 0 in progress, 30 planned, 40 total
 
 ---
 
@@ -11,14 +11,14 @@
 
 | Domain | Completed | In Progress | Planned | Total | Coverage |
 |--------|-----------|-------------|---------|-------|----------|
-| Combat | 4 | 0 | 7 | 11 | 36% |
+| Combat | 5 | 0 | 7 | 12 | 42% |
 | Progression | 3 | 0 | 4 | 7 | 43% |
 | Economy | 2 | 0 | 4 | 6 | 33% |
 | World | 0 | 0 | 8 | 8 | 0% |
 | Narrative | 0 | 0 | 6 | 6 | 0% |
 | Faction | 0 | 0 | 3 | 3 | 0% |
 | AI | 0 | 0 | 2 | 2 | 0% |
-| **TOTAL** | **9** | **0** | **30** | **39** | **23%** |
+| **TOTAL** | **10** | **0** | **30** | **40** | **25%** |
 
 ---
 
@@ -158,6 +158,57 @@
 **Why Complete**: Opposed dice pool accuracy system is core combat mechanic; needed comprehensive design specification for roll mechanics, accuracy bonus economy, probability targets, and balance tuning parameters. Layer 1 implementation docs existed but design philosophy and player experience goals were not formally specified.
 
 **Implementation Exists**: Yes (`RuneAndRust.Engine/CombatEngine.cs`, `DiceService.cs`)
+
+---
+
+### ✅ SPEC-COMBAT-012: Enemy Design & Bestiary System
+**Status**: Completed
+**File**: `combat/enemy-design-spec.md`
+**Lines**: ~1494
+**Completed**: 2025-11-22
+**Priority**: High
+**Domain**: Combat
+**Layer 1 Docs**: None (this spec provides comprehensive design documentation)
+
+**Scope**:
+- Threat Level Classification System (5 tiers: Low, Medium, High, Lethal, Boss)
+- Stat Budget Allocation formulas per tier (HP, attributes, damage ranges)
+- Enemy Archetype Taxonomy (8 archetypes: Tank, DPS, Glass Cannon, Support, Swarm, Caster, Mini-Boss, Boss)
+- Special Mechanics Flags (IsForlorn trauma aura, IsBoss multi-phase, IsChampion elite variants, Soak damage reduction)
+- AI Behavior Decision-Making (probability-based patterns per archetype)
+- Enemy Scaling vs. Player Progression (Legend-based scaling formulas)
+- Loot Table Integration (threat tier → equipment quality mapping)
+- Trauma Economy Integration (Stress/Corruption infliction rules)
+- Balance & Tuning (TTK targets, damage output balance, encounter composition guidelines, tunable parameters)
+- Complete enemy statistics for all 20 implemented enemies organized by tier and archetype
+- v0.18 balance adjustment rationale and lessons learned
+
+**Out of Scope**:
+- Individual enemy lore/narrative descriptions → Enemy Bestiary entries
+- Specific boss encounter mechanics → SPEC-COMBAT-005
+- AI pathfinding implementation → AI Domain specs
+- Enemy spawning/population mechanics → World Domain specs
+
+**Dependencies**:
+- SPEC-COMBAT-001 (Combat Resolution) - Completed
+- SPEC-COMBAT-002 (Damage Calculation) - Completed
+- SPEC-COMBAT-003 (Status Effects) - Completed
+- SPEC-PROGRESSION-001 (Character Progression) - Completed (Legend scaling)
+- SPEC-ECONOMY-001 (Loot & Equipment) - Completed (loot quality mapping)
+
+**Why Complete**: Enemy design system needed formal specification for stat budgets, archetype patterns, AI behavior, and balance targets. Implementation exists for 20 enemies but design philosophy and balance guidelines were undocumented. This spec provides comprehensive design framework for creating balanced enemies across all threat tiers with detailed balance tuning parameters and TTK targets.
+
+**Implementation Exists**: Yes (`RuneAndRust.Engine/EnemyFactory.cs`, `RuneAndRust.Engine/EnemyAI.cs`, `RuneAndRust.Core/Enemy.cs`)
+
+**Key Features**:
+- Analyzed all 20 implemented enemies to derive stat budget formulas
+- 8 enemy archetypes with tactical roles and AI patterns
+- TTK analysis: Solo player 2-3 turns (Low) to 12-20 turns (Boss)
+- Damage balance: No one-shots rule, variance caps, sustained threat design
+- Encounter composition guidelines: ETS formula, recommended group types
+- Tunable parameters: Safe adjustments (HP ±20%, Soak ±1-2) vs. dangerous (damage dice, threat tier changes)
+- v0.18 balance lessons: Soak caps (8→6), damage redistribution (4d6+3→3d6+4), variance reduction (5d6→4d6)
+- 4 comprehensive appendices: Enemy stats by tier, stats by archetype, special mechanics reference, v0.18 adjustment summary
 
 ---
 
