@@ -168,7 +168,7 @@
 **Completed**: 2025-11-22
 **Priority**: High
 **Domain**: Combat
-**Layer 1 Docs**: None (this spec provides comprehensive design documentation)
+**Layer 1 Docs**: 🔗 6 Templates (Enemy Design Proposal, Enemy Design Worksheet, AI Behavior Pattern, Design Review Checklist, Encounter Composition Calculator, Enemy Bestiary Entry)
 
 **Scope**:
 - Threat Level Classification System (5 tiers: Low, Medium, High, Lethal, Boss)
@@ -209,6 +209,13 @@
 - Tunable parameters: Safe adjustments (HP ±20%, Soak ±1-2) vs. dangerous (damage dice, threat tier changes)
 - v0.18 balance lessons: Soak caps (8→6), damage redistribution (4d6+3→3d6+4), variance reduction (5d6→4d6)
 - 4 comprehensive appendices: Enemy stats by tier, stats by archetype, special mechanics reference, v0.18 adjustment summary
+- **6 practical templates** covering full enemy design lifecycle:
+  - **Enemy Design Proposal** (153 lines) - Concept pitch with roster diversity validation
+  - **Enemy Design Worksheet** (333 lines) - Full stat allocation and balance validation
+  - **AI Behavior Pattern Template** (658 lines) - Code templates for EnemyAI.cs implementation
+  - **Design Review Checklist** (307 lines) - Pre-implementation reviewer validation
+  - **Encounter Composition Calculator** (650 lines) - Multi-enemy encounter balancing
+  - **Enemy Bestiary Entry** (284 lines) - Post-implementation documentation
 
 ---
 

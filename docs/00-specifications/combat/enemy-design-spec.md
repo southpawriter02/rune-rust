@@ -66,15 +66,34 @@ This specification is successful if:
 
 ### Practical Workflow
 
-**For Enemy Designers**: Before implementing a new enemy, use the **Enemy Design Worksheet** (`/docs/templates/enemy-design-worksheet.md`) to:
-1. Select threat tier and archetype (Step 1)
-2. Allocate stats within budget formulas (Step 2)
-3. Configure special mechanics (IsForlorn, IsBoss, Soak) (Step 3)
-4. Design AI behavior probabilities (Step 4)
-5. Validate TTK and damage output targets (Step 5)
-6. Implement in 4-5 code files with automatic validation checks (Step 6)
+**For Enemy Designers**: The complete enemy design workflow follows an 8-step process from concept to implementation:
 
-The worksheet distills this 1,494-line specification into a practical 2-page checklist that enforces all design guidelines.
+**Phase 1: Proposal** (Pre-Design)
+1. **Enemy Design Proposal** (`/docs/templates/enemy-design-proposal.md`) - Pitch concept for team review
+   - Define enemy concept, thematic justification, proposed tier/archetype
+   - Validate roster diversity (avoid redundancy)
+   - Get approval before committing to full design
+
+**Phase 2: Design** (Worksheet)
+2. **Enemy Design Worksheet** (`/docs/templates/enemy-design-worksheet.md`) - Full stat allocation and balance validation
+   - Select threat tier and archetype (Step 1)
+   - Allocate stats within budget formulas (Step 2)
+   - Configure special mechanics (IsForlorn, IsBoss, Soak) (Step 3)
+   - Design AI behavior probabilities (Step 4)
+   - Validate TTK and damage output targets (Step 5)
+   - Plan implementation across 4-5 code files (Step 6)
+
+**Phase 3: Review** (Pre-Implementation)
+3. **Design Review Checklist** (`/docs/templates/design-review-checklist.md`) - Reviewer validation before coding
+   - Verify thematic consistency, stat budget compliance, balance targets
+   - Prevent v0.18 pitfalls (one-shots, bullet sponges, damage variance)
+   - Approve or request revisions
+
+**Phase 4: Implementation** (Code + Documentation)
+4. Implement in code files (Enemy.cs, EnemyFactory.cs, EnemyAI.cs, LootService.cs)
+5. Create bestiary entry (`/docs/templates/enemy-bestiary-entry.md`)
+
+The templates distill this 1,494-line specification into practical checklists that enforce all design guidelines across the full lifecycle.
 
 ---
 
@@ -109,8 +128,17 @@ The worksheet distills this 1,494-line specification into a practical 2-page che
 
 ### Layer 1 Documentation
 
-**Templates**:
-- `/docs/templates/enemy-design-worksheet.md` - **Enemy Design Worksheet** (333 lines) - **START HERE** when creating new enemies
+**Templates** (ordered by workflow phase):
+
+**Phase 1: Proposal**
+- `/docs/templates/enemy-design-proposal.md` - **Enemy Design Proposal** (153 lines) - **START HERE** when proposing new enemies
+  - Lightweight 1-page concept pitch for team review
+  - Thematic justification, archetype/tier selection, design intent
+  - Roster diversity validation (prevent redundancy)
+  - Approval checklist for reviewers before worksheet phase
+
+**Phase 2: Design**
+- `/docs/templates/enemy-design-worksheet.md` - **Enemy Design Worksheet** (333 lines) - Full stat allocation and balance validation
   - Fill-in-the-blank checklist enforcing SPEC-COMBAT-012 guidelines
   - Validates stat budgets, archetype patterns, AI probabilities, TTK targets
   - Prevents v0.18 balance mistakes (one-shots, bullet sponges, damage variance)
@@ -120,6 +148,15 @@ The worksheet distills this 1,494-line specification into a practical 2-page che
   - Copy-paste starter code for EnemyAI.cs with probability-based decision making
   - Examples for 8 enemy types with full implementation (Tank, DPS, Swarm, Caster, Support, Mini-Boss, Boss)
   - Testing checklist and frequency analysis methodology
+
+**Phase 3: Review**
+- `/docs/templates/design-review-checklist.md` - **Design Review Checklist** (307 lines) - Reviewer validation before implementation
+  - 8-section validation checklist for completed worksheets
+  - Verifies thematic consistency, stat budget compliance, balance targets
+  - Critical v0.18 pitfall checks (one-shot prevention, Soak caps, damage variance)
+  - Approval/revision/rejection decision framework
+
+**Phase 4: Multi-Enemy Encounters**
 - `/docs/templates/encounter-composition-calculator.md` - **Encounter Composition Calculator** (650 lines) - Use when designing multi-enemy encounters
   - ETS (Encounter Threat Score) formula calculator with automatic validation
   - Validates encounter difficulty vs. player Legend level (Easy/Medium/Hard/Boss ranges)
@@ -127,6 +164,8 @@ The worksheet distills this 1,494-line specification into a practical 2-page che
   - 7 encounter archetype patterns (Balanced, Tank+DPS, Swarm, Caster+Shield, Mixed Threat, Boss+Reinforcements, Elite Solo)
   - 4 fully-worked example encounters with validation and adjustments
   - Adjustment recommendations for encounters that are too easy/hard/unbalanced
+
+**Phase 5: Post-Implementation Documentation**
 - `/docs/templates/enemy-bestiary-entry.md` - **Enemy Bestiary Entry** (284 lines) - Use after implementation for documentation
 
 ---
