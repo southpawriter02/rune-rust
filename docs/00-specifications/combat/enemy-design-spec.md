@@ -115,7 +115,12 @@ The worksheet distills this 1,494-line specification into a practical 2-page che
   - Validates stat budgets, archetype patterns, AI probabilities, TTK targets
   - Prevents v0.18 balance mistakes (one-shots, bullet sponges, damage variance)
   - References all FR sections with automatic ✓/✗ validation checks
-- `/docs/templates/enemy-bestiary-entry.md` - Bestiary entry template (284 lines) - Use after implementation for documentation
+- `/docs/templates/ai-behavior-pattern-template.md` - **AI Behavior Pattern Template** (658 lines) - Use after Step 4 of worksheet for implementation
+  - Code templates for 5 archetype patterns (Aggressive, Defensive, Tactical, Phase-Based, Conditional)
+  - Copy-paste starter code for EnemyAI.cs with probability-based decision making
+  - Examples for 8 enemy types with full implementation (Tank, DPS, Swarm, Caster, Support, Mini-Boss, Boss)
+  - Testing checklist and frequency analysis methodology
+- `/docs/templates/enemy-bestiary-entry.md` - **Enemy Bestiary Entry** (284 lines) - Use after implementation for documentation
 
 ---
 

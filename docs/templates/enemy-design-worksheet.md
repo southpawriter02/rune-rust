@@ -134,6 +134,8 @@ If **Yes**, specify:
 
 **Selected Archetype Pattern** (from Step 1): _______________________
 
+**Implementation Reference**: After designing your AI probabilities below, use `/docs/templates/ai-behavior-pattern-template.md` for code templates that implement these patterns in `EnemyAI.cs`.
+
 **AI Probability Distribution** (must total 100%):
 
 **For Aggressive Pattern** (Glass Cannon, DPS, Swarm):
@@ -237,10 +239,10 @@ Manual calculation:
 
 **3. EnemyAI.cs** (`RuneAndRust.Engine/EnemyAI.cs`):
 - [ ] Add switch case in `DetermineAction()` method
-- [ ] Implement `Determine[YourEnemyName]Action(Enemy enemy)` method:
+- [ ] Implement `Determine[YourEnemyName]Action(Enemy enemy)` method (see `/docs/templates/ai-behavior-pattern-template.md` for code templates):
   - [ ] Use `Random.Next(100)` for probability rolls
-  - [ ] Implement archetype-appropriate probability distribution
-  - [ ] Add phase logic if mini-boss/boss (check `enemy.HP` thresholds)
+  - [ ] Implement archetype-appropriate probability distribution (see Template 1-5 for your archetype)
+  - [ ] Add phase logic if mini-boss/boss (check `enemy.HP` thresholds, see Template 4)
 
 **4. LootService.cs** (`RuneAndRust.Engine/LootService.cs`):
 - [ ] Add switch case in `GenerateLoot()` method (line ~22-43)
@@ -329,5 +331,6 @@ Manual calculation:
 
 **Reference Documentation**:
 - **SPEC-COMBAT-012**: `/docs/00-specifications/combat/enemy-design-spec.md` (1,494 lines, complete design system)
+- **AI Behavior Template**: `/docs/templates/ai-behavior-pattern-template.md` (658 lines, AI implementation code templates)
 - **Bestiary Template**: `/docs/templates/enemy-bestiary-entry.md` (284 lines, documentation template)
 - **Implementation Files**: `RuneAndRust.Core/Enemy.cs`, `RuneAndRust.Engine/EnemyFactory.cs`, `RuneAndRust.Engine/EnemyAI.cs`
