@@ -2,8 +2,8 @@
 
 **Purpose**: Central tracking document for all specifications (existing, in-progress, and planned)
 
-**Last Updated**: 2025-11-20
-**Total Specs**: 8 completed, 0 in progress, 31 planned, 39 total
+**Last Updated**: 2025-11-21
+**Total Specs**: 9 completed, 0 in progress, 30 planned, 39 total
 
 ---
 
@@ -13,12 +13,12 @@
 |--------|-----------|-------------|---------|-------|----------|
 | Combat | 4 | 0 | 7 | 11 | 36% |
 | Progression | 3 | 0 | 4 | 7 | 43% |
-| Economy | 1 | 0 | 5 | 6 | 17% |
+| Economy | 2 | 0 | 4 | 6 | 33% |
 | World | 0 | 0 | 8 | 8 | 0% |
 | Narrative | 0 | 0 | 6 | 6 | 0% |
 | Faction | 0 | 0 | 3 | 3 | 0% |
 | AI | 0 | 0 | 2 | 2 | 0% |
-| **TOTAL** | **8** | **0** | **31** | **39** | **21%** |
+| **TOTAL** | **9** | **0** | **30** | **39** | **23%** |
 
 ---
 
@@ -260,28 +260,41 @@
 
 ---
 
-### 📋 SPEC-ECONOMY-001: Loot & Equipment System
-**Status**: Planned
+### ✅ SPEC-ECONOMY-001: Loot & Equipment System
+**Status**: Completed
+**File**: `economy/loot-equipment-spec.md`
+**Lines**: ~1595
+**Completed**: 2025-11-21
 **Priority**: High
 **Domain**: Economy
-**Layer 1 Docs**: 🔗 None (equipment stats exist in `docs/02-statistical-registry/equipment/`)
+**Layer 1 Docs**: 🔗 `docs/03-equipment/equipment-overview.md`
 
-**Proposed Scope**:
-- Equipment slots and restrictions
-- Quality tiers (Mundane, Fine, Masterwork, Runic, Artifact)
-- Loot drop tables and rarity
-- Enemy-based loot generation
-- Equipment stat generation (ranges, variance)
-- Unique/legendary item rules
-- Integration with crafting system
+**Scope**:
+- 5 quality tier system (Jury-Rigged → Scavenged → Clan-Forged → Optimized → Myth-Forged)
+- 2 equipment slots (weapon + armor) with 5-item inventory
+- 11 weapon categories (Axe, Greatsword, Spear, Dagger, Staff, Focus, Blade, Blunt, EnergyMelee, Rifle, HeavyBlunt)
+- 3 armor categories (Light, Medium, Heavy) with distinct trade-offs
+- Enemy-based loot generation (Servitors 60% T0, Drones 40% T2, Bosses 70% T4)
+- Class-appropriate loot filtering (60% for standard enemies, 100% for bosses)
+- Equipment attribute bonuses beyond cap (Tier 2-4 grant +1 to +4 attributes)
+- Power curve balancing (~3-5× damage increase, ~2× survivability increase from T0→T4)
+- Special effects (Tier 4 Myth-Forged exclusive)
+- v0.18 balance adjustments (starter weapon buffs, heavy armor FINESSE penalties)
+
+**Out of Scope**:
+- Crafting system mechanics → SPEC-ECONOMY-002
+- Equipment durability/repair → Future enhancement
+- Set bonuses → Future enhancement
 
 **Dependencies**:
-- SPEC-COMBAT-002 (Damage Calculation) - Not yet drafted (for weapon stats)
-- SPEC-ECONOMY-002 (Crafting System) - Not yet drafted
+- SPEC-COMBAT-002 (Damage Calculation) - Completed
+- SPEC-COMBAT-004 (Accuracy & Evasion) - Completed
+- SPEC-PROGRESSION-001 (Character Progression) - Completed
+- SPEC-PROGRESSION-002 (Archetype & Specialization) - Completed
 
-**Why Needed**: Equipment is implemented but design philosophy for loot economy, rarity balance, and progression pacing not specified.
+**Why Complete**: Comprehensive design specification created for loot economy, quality tier progression, drop rate balancing, and equipment stat scaling. Includes 6 appendices with complete stat tables, tier progression examples, loot simulation, BiS recommendations, and equipment comparison formulas.
 
-**Implementation Exists**: Yes (in `RuneAndRust.Core/Models/Equipment/` and `RuneAndRust.Engine/Services/LootService.cs`)
+**Implementation Exists**: Yes (`RuneAndRust.Core/Equipment.cs`, `RuneAndRust.Engine/EquipmentDatabase.cs`, `RuneAndRust.Engine/LootService.cs`)
 
 ---
 
@@ -1228,6 +1241,6 @@ When you identify a new system that needs a specification, add an entry using th
 
 ---
 
-**Last Updated**: 2025-11-20
+**Last Updated**: 2025-11-21
 **Maintained By**: Specification governance framework
 **Update Frequency**: Update this document whenever specifications are completed or new systems are identified
