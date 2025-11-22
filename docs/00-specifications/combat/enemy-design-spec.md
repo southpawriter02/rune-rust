@@ -64,6 +64,18 @@ This specification is successful if:
 4. **Enemies feel distinct** - Each archetype has clear tactical identity
 5. **Trauma atmosphere maintained** - Forlorn enemies create horror tension without frustration
 
+### Practical Workflow
+
+**For Enemy Designers**: Before implementing a new enemy, use the **Enemy Design Worksheet** (`/docs/templates/enemy-design-worksheet.md`) to:
+1. Select threat tier and archetype (Step 1)
+2. Allocate stats within budget formulas (Step 2)
+3. Configure special mechanics (IsForlorn, IsBoss, Soak) (Step 3)
+4. Design AI behavior probabilities (Step 4)
+5. Validate TTK and damage output targets (Step 5)
+6. Implement in 4-5 code files with automatic validation checks (Step 6)
+
+The worksheet distills this 1,494-line specification into a practical 2-page checklist that enforces all design guidelines.
+
 ---
 
 ## Related Documentation
@@ -97,7 +109,13 @@ This specification is successful if:
 
 ### Layer 1 Documentation
 
-- `/docs/templates/enemy-bestiary-entry.md` - Bestiary entry template (not yet used)
+**Templates**:
+- `/docs/templates/enemy-design-worksheet.md` - **Enemy Design Worksheet** (333 lines) - **START HERE** when creating new enemies
+  - Fill-in-the-blank checklist enforcing SPEC-COMBAT-012 guidelines
+  - Validates stat budgets, archetype patterns, AI probabilities, TTK targets
+  - Prevents v0.18 balance mistakes (one-shots, bullet sponges, damage variance)
+  - References all FR sections with automatic ✓/✗ validation checks
+- `/docs/templates/enemy-bestiary-entry.md` - Bestiary entry template (284 lines) - Use after implementation for documentation
 
 ---
 
