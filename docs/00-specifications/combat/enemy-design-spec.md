@@ -120,6 +120,13 @@ The worksheet distills this 1,494-line specification into a practical 2-page che
   - Copy-paste starter code for EnemyAI.cs with probability-based decision making
   - Examples for 8 enemy types with full implementation (Tank, DPS, Swarm, Caster, Support, Mini-Boss, Boss)
   - Testing checklist and frequency analysis methodology
+- `/docs/templates/encounter-composition-calculator.md` - **Encounter Composition Calculator** (650 lines) - Use when designing multi-enemy encounters
+  - ETS (Encounter Threat Score) formula calculator with automatic validation
+  - Validates encounter difficulty vs. player Legend level (Easy/Medium/Hard/Boss ranges)
+  - Balance warnings for enemy count, damage output, TTK estimates
+  - 7 encounter archetype patterns (Balanced, Tank+DPS, Swarm, Caster+Shield, Mixed Threat, Boss+Reinforcements, Elite Solo)
+  - 4 fully-worked example encounters with validation and adjustments
+  - Adjustment recommendations for encounters that are too easy/hard/unbalanced
 - `/docs/templates/enemy-bestiary-entry.md` - **Enemy Bestiary Entry** (284 lines) - Use after implementation for documentation
 
 ---
