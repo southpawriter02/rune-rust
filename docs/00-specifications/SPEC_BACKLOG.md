@@ -2,8 +2,8 @@
 
 **Purpose**: Central tracking document for all specifications (existing, in-progress, and planned)
 
-**Last Updated**: 2025-11-20
-**Total Specs**: 8 completed, 0 in progress, 31 planned, 39 total
+**Last Updated**: 2025-11-22
+**Total Specs**: 10 completed, 0 in progress, 30 planned, 40 total
 
 ---
 
@@ -11,14 +11,14 @@
 
 | Domain | Completed | In Progress | Planned | Total | Coverage |
 |--------|-----------|-------------|---------|-------|----------|
-| Combat | 4 | 0 | 7 | 11 | 36% |
+| Combat | 5 | 0 | 7 | 12 | 42% |
 | Progression | 3 | 0 | 4 | 7 | 43% |
-| Economy | 1 | 0 | 5 | 6 | 17% |
+| Economy | 2 | 0 | 4 | 6 | 33% |
 | World | 0 | 0 | 8 | 8 | 0% |
 | Narrative | 0 | 0 | 6 | 6 | 0% |
 | Faction | 0 | 0 | 3 | 3 | 0% |
 | AI | 0 | 0 | 2 | 2 | 0% |
-| **TOTAL** | **8** | **0** | **31** | **39** | **21%** |
+| **TOTAL** | **10** | **0** | **30** | **40** | **25%** |
 
 ---
 
@@ -161,6 +161,64 @@
 
 ---
 
+### ✅ SPEC-COMBAT-012: Enemy Design & Bestiary System
+**Status**: Completed
+**File**: `combat/enemy-design-spec.md`
+**Lines**: ~1494
+**Completed**: 2025-11-22
+**Priority**: High
+**Domain**: Combat
+**Layer 1 Docs**: 🔗 6 Templates (Enemy Design Proposal, Enemy Design Worksheet, AI Behavior Pattern, Design Review Checklist, Encounter Composition Calculator, Enemy Bestiary Entry)
+
+**Scope**:
+- Threat Level Classification System (5 tiers: Low, Medium, High, Lethal, Boss)
+- Stat Budget Allocation formulas per tier (HP, attributes, damage ranges)
+- Enemy Archetype Taxonomy (8 archetypes: Tank, DPS, Glass Cannon, Support, Swarm, Caster, Mini-Boss, Boss)
+- Special Mechanics Flags (IsForlorn trauma aura, IsBoss multi-phase, IsChampion elite variants, Soak damage reduction)
+- AI Behavior Decision-Making (probability-based patterns per archetype)
+- Enemy Scaling vs. Player Progression (Legend-based scaling formulas)
+- Loot Table Integration (threat tier → equipment quality mapping)
+- Trauma Economy Integration (Stress/Corruption infliction rules)
+- Balance & Tuning (TTK targets, damage output balance, encounter composition guidelines, tunable parameters)
+- Complete enemy statistics for all 20 implemented enemies organized by tier and archetype
+- v0.18 balance adjustment rationale and lessons learned
+
+**Out of Scope**:
+- Individual enemy lore/narrative descriptions → Enemy Bestiary entries
+- Specific boss encounter mechanics → SPEC-COMBAT-005
+- AI pathfinding implementation → AI Domain specs
+- Enemy spawning/population mechanics → World Domain specs
+
+**Dependencies**:
+- SPEC-COMBAT-001 (Combat Resolution) - Completed
+- SPEC-COMBAT-002 (Damage Calculation) - Completed
+- SPEC-COMBAT-003 (Status Effects) - Completed
+- SPEC-PROGRESSION-001 (Character Progression) - Completed (Legend scaling)
+- SPEC-ECONOMY-001 (Loot & Equipment) - Completed (loot quality mapping)
+
+**Why Complete**: Enemy design system needed formal specification for stat budgets, archetype patterns, AI behavior, and balance targets. Implementation exists for 20 enemies but design philosophy and balance guidelines were undocumented. This spec provides comprehensive design framework for creating balanced enemies across all threat tiers with detailed balance tuning parameters and TTK targets.
+
+**Implementation Exists**: Yes (`RuneAndRust.Engine/EnemyFactory.cs`, `RuneAndRust.Engine/EnemyAI.cs`, `RuneAndRust.Core/Enemy.cs`)
+
+**Key Features**:
+- Analyzed all 20 implemented enemies to derive stat budget formulas
+- 8 enemy archetypes with tactical roles and AI patterns
+- TTK analysis: Solo player 2-3 turns (Low) to 12-20 turns (Boss)
+- Damage balance: No one-shots rule, variance caps, sustained threat design
+- Encounter composition guidelines: ETS formula, recommended group types
+- Tunable parameters: Safe adjustments (HP ±20%, Soak ±1-2) vs. dangerous (damage dice, threat tier changes)
+- v0.18 balance lessons: Soak caps (8→6), damage redistribution (4d6+3→3d6+4), variance reduction (5d6→4d6)
+- 4 comprehensive appendices: Enemy stats by tier, stats by archetype, special mechanics reference, v0.18 adjustment summary
+- **6 practical templates** covering full enemy design lifecycle:
+  - **Enemy Design Proposal** (153 lines) - Concept pitch with roster diversity validation
+  - **Enemy Design Worksheet** (333 lines) - Full stat allocation and balance validation
+  - **AI Behavior Pattern Template** (658 lines) - Code templates for EnemyAI.cs implementation
+  - **Design Review Checklist** (307 lines) - Pre-implementation reviewer validation
+  - **Encounter Composition Calculator** (650 lines) - Multi-enemy encounter balancing
+  - **Enemy Bestiary Entry** (284 lines) - Post-implementation documentation
+
+---
+
 ## PROGRESSION Domain
 
 ### ✅ SPEC-PROGRESSION-001: Character Progression System
@@ -260,28 +318,41 @@
 
 ---
 
-### 📋 SPEC-ECONOMY-001: Loot & Equipment System
-**Status**: Planned
+### ✅ SPEC-ECONOMY-001: Loot & Equipment System
+**Status**: Completed
+**File**: `economy/loot-equipment-spec.md`
+**Lines**: ~1595
+**Completed**: 2025-11-21
 **Priority**: High
 **Domain**: Economy
-**Layer 1 Docs**: 🔗 None (equipment stats exist in `docs/02-statistical-registry/equipment/`)
+**Layer 1 Docs**: 🔗 `docs/03-equipment/equipment-overview.md`
 
-**Proposed Scope**:
-- Equipment slots and restrictions
-- Quality tiers (Mundane, Fine, Masterwork, Runic, Artifact)
-- Loot drop tables and rarity
-- Enemy-based loot generation
-- Equipment stat generation (ranges, variance)
-- Unique/legendary item rules
-- Integration with crafting system
+**Scope**:
+- 5 quality tier system (Jury-Rigged → Scavenged → Clan-Forged → Optimized → Myth-Forged)
+- 2 equipment slots (weapon + armor) with 5-item inventory
+- 11 weapon categories (Axe, Greatsword, Spear, Dagger, Staff, Focus, Blade, Blunt, EnergyMelee, Rifle, HeavyBlunt)
+- 3 armor categories (Light, Medium, Heavy) with distinct trade-offs
+- Enemy-based loot generation (Servitors 60% T0, Drones 40% T2, Bosses 70% T4)
+- Class-appropriate loot filtering (60% for standard enemies, 100% for bosses)
+- Equipment attribute bonuses beyond cap (Tier 2-4 grant +1 to +4 attributes)
+- Power curve balancing (~3-5× damage increase, ~2× survivability increase from T0→T4)
+- Special effects (Tier 4 Myth-Forged exclusive)
+- v0.18 balance adjustments (starter weapon buffs, heavy armor FINESSE penalties)
+
+**Out of Scope**:
+- Crafting system mechanics → SPEC-ECONOMY-002
+- Equipment durability/repair → Future enhancement
+- Set bonuses → Future enhancement
 
 **Dependencies**:
-- SPEC-COMBAT-002 (Damage Calculation) - Not yet drafted (for weapon stats)
-- SPEC-ECONOMY-002 (Crafting System) - Not yet drafted
+- SPEC-COMBAT-002 (Damage Calculation) - Completed
+- SPEC-COMBAT-004 (Accuracy & Evasion) - Completed
+- SPEC-PROGRESSION-001 (Character Progression) - Completed
+- SPEC-PROGRESSION-002 (Archetype & Specialization) - Completed
 
-**Why Needed**: Equipment is implemented but design philosophy for loot economy, rarity balance, and progression pacing not specified.
+**Why Complete**: Comprehensive design specification created for loot economy, quality tier progression, drop rate balancing, and equipment stat scaling. Includes 6 appendices with complete stat tables, tier progression examples, loot simulation, BiS recommendations, and equipment comparison formulas.
 
-**Implementation Exists**: Yes (in `RuneAndRust.Core/Models/Equipment/` and `RuneAndRust.Engine/Services/LootService.cs`)
+**Implementation Exists**: Yes (`RuneAndRust.Core/Equipment.cs`, `RuneAndRust.Engine/EquipmentDatabase.cs`, `RuneAndRust.Engine/LootService.cs`)
 
 ---
 
@@ -1228,6 +1299,6 @@ When you identify a new system that needs a specification, add an entry using th
 
 ---
 
-**Last Updated**: 2025-11-20
+**Last Updated**: 2025-11-21
 **Maintained By**: Specification governance framework
 **Update Frequency**: Update this document whenever specifications are completed or new systems are identified
