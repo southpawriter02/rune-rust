@@ -780,3 +780,715 @@ BaseLegendValue = 35 // Moderate Act (can avoid combat to reduce stress)
 
 ---
 
+## Balance & Tuning
+
+### Time-to-Kill (TTK) Analysis
+
+**TTK Targets by Threat Tier**:
+
+| Threat Tier | Solo Player | 2-Player Party | 4-Player Party | Design Intent |
+|-------------|-------------|----------------|----------------|---------------|
+| **Low** | 2-3 turns | 1-2 turns | 1 turn | Quick clears, fodder, swarm threats |
+| **Medium** | 4-6 turns | 2-3 turns | 1-2 turns | Standard combat duration, tactical decisions matter |
+| **High** | 7-10 turns | 4-5 turns | 2-3 turns | Challenging combat, resource management required |
+| **Lethal** | 10-15 turns | 6-8 turns | 3-5 turns | Boss-adjacent difficulty, party-wiping potential |
+| **Boss** | 12-20 turns | 8-12 turns | 5-8 turns | Multi-phase encounters, narrative setpieces |
+
+**TTK Calculation Methodology**:
+
+```
+Assumptions:
+- Player base damage: 1d6+MIGHT (avg 5-7 at Legend 1)
+- Player attack accuracy: 60-70% hit rate vs. enemy Defense
+- Enemy HP regeneration: 0 (most enemies don't heal)
+- Critical hits: 10% chance for 2× damage (not yet implemented in v0.24)
+
+TTK Formula:
+Effective DPS = (Base Damage × Hit Rate) + (Crit Damage × Crit Rate)
+TTK = Enemy HP ÷ Effective DPS
+
+Example: Corrupted Servitor (Low Tier)
+- HP: 15
+- Player DPS: 5 damage × 0.65 hit rate = 3.25 damage/turn
+- TTK: 15 ÷ 3.25 = 4.6 turns ≈ 5 turns (solo player)
+- Actual v0.24 playtests: 3-4 turns (confirms formula within 1 turn margin)
+```
+
+**TTK Variance Factors**:
+
+1. **Player Build Variance**: ±30% TTK variance based on MIGHT/FINESSE investment
+   - Berserker (MIGHT 7 at Legend 3): TTK reduced by ~25%
+   - Scholar (MIGHT 2 at Legend 3): TTK increased by ~40%
+
+2. **Enemy Soak Impact**: Each point of Soak increases TTK by ~15-20%
+   - Vault Custodian (Soak 4): Expected 7-turn TTK becomes 10-turn TTK
+   - Design lesson: Cap Soak at 4 for non-boss, 6 for boss (v0.18 adjustment)
+
+3. **Special Ability Usage**: Boss phase transitions add 2-4 turns to TTK
+   - Ruin-Warden Phase 2 (Berserk Strike): +3 turns to TTK due to increased threat forcing defensive play
+
+**TTK Balance Guidelines**:
+
+- **Low Tier**: Should never survive more than 5 turns solo (risk of player boredom in trash fights)
+- **Medium Tier**: 6+ turns is acceptable if enemy has engaging abilities (Test Subject's Berserk Strike)
+- **High Tier**: 10+ turns requires multiple tactical abilities to maintain engagement
+- **Boss Tier**: 15+ turns requires phase transitions or reinforcement waves (Omega Sentinel v0.6)
+
+---
+
+### Damage Output Balance
+
+**Enemy DPS vs. Player HP Thresholds**:
+
+```
+Player HP Pools (v0.24):
+- Legend 1: 30 HP (10 + (4×STURDINESS))
+- Legend 3: 45 HP (10 + (7×STURDINESS))
+- Legend 5: 60 HP (10 + (10×STURDINESS))
+
+Lethality Thresholds:
+- 3-Turn Kill: Enemy must deal 33% player HP per turn (10 damage/turn at Legend 1)
+- 5-Turn Kill: Enemy must deal 20% player HP per turn (6 damage/turn at Legend 1)
+- 10-Turn Kill: Enemy must deal 10% player HP per turn (3 damage/turn at Legend 1)
+```
+
+**Damage Output Targets by Tier**:
+
+| Threat Tier | Damage Per Turn (Avg) | % of Player HP | Turns to Kill Player | Design Intent |
+|-------------|----------------------|----------------|---------------------|---------------|
+| **Low** | 3-5 damage | 10-15% | 8-12 turns | Chip damage, attrition threats |
+| **Medium** | 6-10 damage | 15-25% | 5-7 turns | Meaningful threat, requires healing |
+| **High** | 11-16 damage | 30-40% | 3-5 turns | Dangerous, forces defensive play |
+| **Lethal** | 17-24 damage | 45-60% | 2-3 turns | Two-shot potential, demands priority targeting |
+| **Boss** | 12-20 damage | 30-50% | 3-6 turns | Sustained threat, long fights |
+
+**v0.18 Damage Cap Rationale**:
+
+```csharp
+// BEFORE v0.18: Failure Colossus (Lethal Tier)
+BaseDamageDice = 4, DamageBonus = 3 // 4d6+3 = 17-27 damage (avg 21)
+// Problem: 70% chance to one-shot Legend 1 player (30 HP)
+
+// AFTER v0.18: Damage redistribution
+BaseDamageDice = 3, DamageBonus = 4 // 3d6+4 = 7-22 damage (avg 14.5)
+// Result: 0% one-shot chance, 48% two-shot chance (balanced threat)
+
+// BEFORE v0.18: Sentinel Prime (Lethal Tier)
+BaseDamageDice = 5, DamageBonus = 0 // 5d6 = 5-30 damage (avg 17.5)
+// Problem: Extreme variance (5 damage vs. 30 damage) feels unfair
+
+// AFTER v0.18: Reduced variance
+BaseDamageDice = 4, DamageBonus = 0 // 4d6 = 4-24 damage (avg 14)
+// Result: More predictable threat, still dangerous but not RNG-dependent
+```
+
+**Design Principles**:
+
+1. **No One-Shots**: Non-boss enemies should never one-shot a full-HP Legend-appropriate player
+   - Maximum single-hit damage: 80% of player HP at same Legend level
+   - Boss exception: Phase 2 abilities may exceed this (Ruin-Warden's Berserk Strike)
+
+2. **Damage Variance**: Keep max/min damage ratio under 4:1
+   - 1d6 (1-6) = 6:1 ratio → acceptable for Low tier
+   - 5d6 (5-30) = 6:1 ratio → too swingy for Lethal tier
+   - Prefer bonus damage over extra dice for high tiers (3d6+4 vs. 5d6)
+
+3. **Sustained Threat**: Bosses should threaten 3-6 turn kills, not instant kills
+   - Forces resource management (healing, defense) over entire encounter
+   - Allows dramatic recovery moments (from 10% HP back to 50% via healing)
+
+---
+
+### Encounter Composition Guidelines
+
+**Single-Enemy Encounters**:
+
+```
+Suitable for:
+- Boss/Lethal tier (Ruin-Warden, Omega Sentinel, Sentinel Prime)
+- High tier mini-bosses (Vault Custodian, Rust-Witch)
+- Tutorial/narrative encounters (Forlorn Scholar social interaction)
+
+Avoid:
+- Low tier solo enemies (too trivial, feels unrewarding)
+- Medium tier solo without special abilities (boring combat)
+```
+
+**2-3 Enemy Encounters** (Standard Combat):
+
+| Group Type | Composition | Example | Difficulty | Design Pattern |
+|------------|-------------|---------|------------|----------------|
+| **Balanced** | 2× Medium | 2× Blight-Drone | Medium | No focus-fire priority, AoE valuable |
+| **Tank + DPS** | 1× High + 1× Medium | Vault Custodian + Test Subject | High | Priority: Kill DPS first |
+| **Swarm** | 3× Low | 3× Corrupted Servitor | Medium | AoE/cleave testing, attrition threat |
+| **Caster + Meat Shield** | 1× Medium (Tank) + 1× Medium (Caster) | Maintenance Construct + Forlorn Scholar | High | Protect priority, tactical positioning |
+
+**4-6 Enemy Encounters** (Large Battles):
+
+```
+Recommended Compositions:
+
+1. Swarm Wave: 5× Low tier (Scrap-Hound, Corroded Sentry)
+   - Tests AoE abilities, resource attrition, spatial control
+   - Total HP: 50-75 (equivalent to 1× High tier)
+   - Individual TTK: 1-2 turns, Group TTK: 8-12 turns
+
+2. Mixed Threat: 2× Low + 1× Medium + 1× High
+   - Example: 2× Corrupted Servitor + 1× Blight-Drone + 1× Bone-Keeper
+   - Tests target prioritization, threat assessment
+   - Clear order: High → Medium → Low (optimal strategy)
+
+3. Reinforcement Waves: 2× Medium, then +2× Low after 3 turns
+   - Boss encounter structure (Omega Sentinel v0.6)
+   - Tests sustained resource management, prevents burst strategies
+
+Balance Warning:
+- AVOID 4+ Medium tier enemies (overwhelming damage, unfun difficulty spike)
+- AVOID 6+ enemies total (UI clutter, turn resolution time exceeds 2 minutes)
+```
+
+**Encounter Difficulty Formula**:
+
+```
+Encounter Threat Score (ETS) = Σ(Enemy Legend Value × Enemy Count)
+
+Difficulty Tiers:
+- Easy: ETS 10-25 (tutorial, rest area ambushes)
+- Medium: ETS 25-50 (standard combat)
+- Hard: ETS 50-100 (challenging setpiece)
+- Boss: ETS 100-200 (end-of-act encounters)
+
+Example:
+2× Corrupted Servitor (10 Legend each) + 1× Vault Custodian (75 Legend)
+ETS = (10 × 2) + (75 × 1) = 95 (Hard encounter)
+
+Player Legend-Appropriate Encounters:
+- Legend 1 players: ETS 15-30 (easy), 30-50 (medium), 50-80 (hard)
+- Legend 3 players: ETS 30-60 (easy), 60-100 (medium), 100-150 (hard)
+- Legend 5 players: ETS 50-100 (easy), 100-150 (medium), 150-250 (hard)
+```
+
+---
+
+### Tunable Parameters
+
+**Safe to Adjust** (Minimal ripple effects):
+
+1. **HP Pools** (±20%):
+   - Increases/decreases TTK linearly
+   - Preserves tactical role, doesn't break AI logic
+   - Example: Corrupted Servitor 15 HP → 18 HP (adds 1 turn TTK)
+
+2. **Damage Bonus** (Flat +X):
+   - Affects lethality without changing variance
+   - Easier to balance than changing dice count
+   - Example: Blight-Drone 1d6+1 → 1d6+2 (adds ~1 damage/turn avg)
+
+3. **Soak** (±1-2 points):
+   - Major TTK impact: +1 Soak ≈ +15% effective HP
+   - Stay within caps: 0-4 for non-boss, 0-6 for boss
+   - Example: Vault Custodian Soak 4 → 5 (10-turn TTK → 12-turn TTK)
+
+4. **BaseLegendValue** (±10 points):
+   - Affects loot quality and player XP rewards (SPEC-ECONOMY-001)
+   - Negligible combat impact, safe for reward tuning
+
+5. **AI Probability Distributions** (±10%):
+   - Changes tactical behavior without breaking roles
+   - Example: Corrupted Servitor 80% attack → 70% attack, 30% defend (less aggressive)
+
+**Dangerous to Adjust** (System-wide impact):
+
+1. **Damage Dice Count** (e.g., 2d6 → 3d6):
+   - Increases max damage, one-shot risk, damage variance simultaneously
+   - Requires TTK recalculation, lethality testing, balance validation
+   - Prefer adding +1 flat bonus over +1d6
+
+2. **Attribute Distributions**:
+   - Affects Defense Score, Initiative, damage scaling (MIGHT/FINESSE)
+   - May invalidate archetype classification (Tank → DPS if MIGHT increased)
+   - Requires holistic review of enemy role
+
+3. **Special Ability Flags** (IsBoss, IsForlorn, IsChampion):
+   - IsBoss: Triggers phase-based AI, boss-specific UI, loot tables
+   - IsForlorn: Adds trauma infliction, changes encounter tone
+   - IsChampion: +50% all stats (massive TTK/lethality shift)
+
+4. **ThreatLevel Classification**:
+   - Affects Legend-based spawning, population tables, reward scaling
+   - Changing Corrupted Servitor from Low → Medium affects 15+ encounters (DormantProcess)
+
+**Recommended Tuning Workflow**:
+
+```
+1. Identify Problem: "Corrupted Servitor feels too easy at Legend 3"
+2. Measure Baseline: Current TTK 2 turns (target: 3-4 turns)
+3. Select Safe Parameter: HP 15 → 18 (+20% HP)
+4. Predict Impact: 2-turn TTK → 2.4-turn TTK (still short of target)
+5. Iterate: Also adjust Soak 0 → 1 (adds another +15% effective HP)
+6. Final Result: 2-turn TTK → 3.2-turn TTK (within target range)
+7. Playtest: Validate feels more threatening without becoming tedious
+```
+
+---
+
+### v0.18 Balance Lessons Learned
+
+**Problem 1: Damage Variance Feels Unfair**
+
+```
+Sentinel Prime (BEFORE v0.18):
+BaseDamageDice = 5, DamageBonus = 0 // 5d6 = 5-30 damage
+
+Player Experience:
+- Roll 5-8 damage: "This boss is a joke, I'm barely taking damage"
+- Roll 28-30 damage: "That's bullshit, I went from full HP to dead in one hit"
+
+Root Cause:
+High dice counts create 6:1 variance. Player interprets as "unfair RNG" rather than "exciting risk."
+
+Solution (AFTER v0.18):
+BaseDamageDice = 4, DamageBonus = 0 // 4d6 = 4-24 damage
+- Reduced variance to 6:1 (same ratio but lower absolute swing)
+- Average damage reduced from 17.5 → 14 (no longer one-shot capable)
+- Player perception: "Consistent threat that requires healing" vs. "RNG lottery"
+
+Design Principle:
+For Lethal/Boss tier, prefer 3d6+X over 5d6+0 to reduce perceived unfairness.
+```
+
+**Problem 2: Soak Creates Bullet Sponges**
+
+```
+Omega Sentinel (BEFORE v0.18):
+MaxHP = 100, Soak = 8
+
+Player Experience:
+- Player deals 12 damage → reduced to 4 damage after Soak
+- Expected 8-turn kill (100 HP ÷ 12 DPS) becomes 25-turn kill (100 HP ÷ 4 DPS)
+- Combat duration: 15+ minutes, feels tedious rather than epic
+
+Root Cause:
+Soak scales multiplicatively with HP. High Soak + High HP creates exponential TTK growth.
+
+Solution (AFTER v0.18):
+MaxHP = 100, Soak = 6 (reduced by 25%)
+- 12 damage → 6 damage after Soak
+- TTK: 16-17 turns (still long, but within 10-minute combat window)
+
+Design Principle:
+Soak Cap = 6 for Boss tier, 4 for all others. Balance tankiness with HP, not Soak.
+If enemy feels too squishy, add +20% HP before adding +1 Soak.
+```
+
+**Problem 3: One-Shot Potential Invalidates Player Choices**
+
+```
+Failure Colossus (BEFORE v0.18):
+BaseDamageDice = 4, DamageBonus = 3 // 4d6+3 = 17-27 damage (avg 21)
+
+Player Experience (Legend 1, 30 HP):
+- 70% of attacks deal 21+ damage (one-shot kill from 70% HP)
+- Player healing/defense decisions don't matter (killed regardless)
+- Encounter becomes "reload simulator" rather than tactical challenge
+
+Root Cause:
+Damage ceiling exceeds 80% of player HP pool, negating healing/defensive counterplay.
+
+Solution (AFTER v0.18):
+BaseDamageDice = 3, DamageBonus = 4 // 3d6+4 = 7-22 damage (avg 14.5)
+- 0% one-shot chance from full HP
+- 48% two-shot chance (player has 1 turn to heal/defend)
+- Maintains "dangerous threat" while allowing counterplay
+
+Design Principle:
+Maximum single-hit damage ≤ 80% of Legend-appropriate player HP.
+Lethality comes from sustained pressure (3-4 turn kills), not instant kills.
+```
+
+**Problem 4: Low-Tier Enemies Don't Scale Into Late Game**
+
+```
+Corrupted Servitor (v0.3 implementation):
+MaxHP = 15 (fixed), Damage = 1d6 (fixed)
+
+Player Experience (Legend 5):
+- Player HP: 60, Damage: 12-18
+- Enemy dies in 1 turn, deals 3 damage (5% of player HP)
+- Encounter feels like "clicking through trash" rather than combat
+
+Root Cause:
+No enemy scaling vs. player Legend progression. Early-game threats become trivial.
+
+Solution (Proposed in FR-006, not yet implemented):
+HP_Scaling = Base_HP + (Player_Legend × 3)
+Damage_Scaling = Base_Damage + (Player_Legend ÷ 3)
+
+Corrupted Servitor at Legend 5:
+- HP: 15 + (5 × 3) = 30 HP (2-turn kill instead of 1-turn)
+- Damage: 1d6 + (5 ÷ 3) = 1d6+1 (4 damage avg, 7% of player HP)
+
+Design Principle:
+Low-tier enemies should always require 2-3 turns to kill, regardless of player Legend.
+Implement scaling formula before Legend 3 content (when gap becomes noticeable).
+```
+
+---
+
+## Appendices
+
+### Appendix A: Complete Enemy Statistics by Threat Tier
+
+#### Low Tier Enemies (Legend 10-15)
+
+| Enemy Name | HP | Damage | Attributes (M/F/Wi/Wl/St) | Soak | Special | Legend | Notes |
+|------------|----|----|---------------------------|------|---------|--------|-------|
+| **Corrupted Servitor** | 15 | 1d6 | 2/2/0/0/2 (6 total) | 0 | - | 10 | Baseline Low tier, aggressive AI |
+| **Scrap-Hound** | 10 | 1d6 | 2/4/0/0/1 (7 total) | 0 | - | 10 | Glass cannon, high FINESSE |
+| **Sludge-Crawler** | 12 | 1d6 | 2/3/0/0/1 (6 total) | 0 | Poison | 10 | Swarm enemy, poison DoT |
+| **Corroded Sentry** | 15 | 1d6 | 2/1/0/0/2 (5 total) | 0 | -1 Defense | 10 | Rusted, low accuracy |
+| **Maintenance Construct** | 25 | 1d6+1 | 3/2/0/0/4 (9 total) | 0 | Self-heal | 15 | Balanced, sustain threat |
+
+**Design Notes**:
+- HP Range: 10-25 (avg 15.4)
+- Attribute Budget: 5-9 points (avg 6.8)
+- Damage Range: 1d6 to 1d6+1 (avg 3.5-5 damage/turn)
+- Legend Value: 10-15 (low reward)
+- Special Mechanics: 2/5 have unique abilities (poison, self-heal)
+
+---
+
+#### Medium Tier Enemies (Legend 18-50)
+
+| Enemy Name | HP | Damage | Attributes (M/F/Wi/Wl/St) | Soak | Special | Legend | Notes |
+|------------|----|----|---------------------------|------|---------|--------|-------|
+| **Husk Enforcer** | 25 | 1d6+2 | 3/1/0/0/3 (7 total) | 0 | - | 18 | Reanimated corpse, slow |
+| **Test Subject** | 15 | 1d6+2 | 3/5/0/0/2 (10 total) | 0 | Berserk | 20 | Glass cannon, unstable |
+| **Blight-Drone** | 25 | 1d6+1 | 3/3/0/0/3 (9 total) | 0 | - | 25 | Balanced DPS, ranged |
+| **Arc-Welder Unit** | 30 | 2d6 | 2/3/0/0/3 (8 total) | 0 | Lightning | 25 | Industrial robot, electrical |
+| **Corrupted Engineer** | 30 | 2d6 | 2/3/5/0/2 (12 total) | 0 | Buff allies | 30 | Support caster, high WITS |
+| **Shrieker** | 35 | 1d6 | 2/2/0/4/2 (10 total) | 0 | IsForlorn | 30 | Psychic scream AoE |
+| **Forlorn Scholar** | 30 | 2d6 | 2/3/4/5/2 (16 total) | 0 | IsForlorn | 35 | Caster, can negotiate |
+| **Jötun-Reader Fragment** | 40 | 2d6 | 1/4/5/5/3 (18 total) | 0 | IsForlorn | 35 | AI fragment, Corruption |
+| **Servitor Swarm** | 50 | 2d6 | 3/3/0/0/2 (8 total) | 0 | -2 Defense | 40 | Collective, low defense |
+| **War-Frame** | 50 | 2d6 | 4/3/0/0/4 (11 total) | 0 | - | 50 | Mini-boss tier HP |
+
+**Design Notes**:
+- HP Range: 15-50 (avg 31)
+- Attribute Budget: 7-18 points (avg 10.3)
+- Damage Range: 1d6+1 to 2d6 (avg 5-10 damage/turn)
+- Legend Value: 18-50 (moderate reward)
+- Special Mechanics: 4/10 are IsForlorn (40% trauma enemies)
+- High variance: Test Subject (15 HP glass cannon) vs. War-Frame (50 HP bruiser)
+
+---
+
+#### High Tier Enemies (Legend 55-75)
+
+| Enemy Name | HP | Damage | Attributes (M/F/Wi/Wl/St) | Soak | Special | Legend | Notes |
+|------------|----|----|---------------------------|------|---------|--------|-------|
+| **Bone-Keeper** | 60 | 3d6 | 4/3/0/3/4 (14 total) | 0 | IsForlorn | 55 | Skeletal horror, armor-piercing |
+| **Vault Custodian** | 70 | 2d6+2 | 5/2/0/0/5 (12 total) | 4 | Phase AI | 75 | Mini-boss, heavy armor |
+
+**Design Notes**:
+- HP Range: 60-70 (avg 65)
+- Attribute Budget: 12-14 points (avg 13)
+- Damage Range: 2d6+2 to 3d6 (avg 11-16 damage/turn)
+- Legend Value: 55-75 (high reward)
+- Special Mechanics: 1/2 is mini-boss with phase-based AI, 1/2 has Soak 4
+- Vault Custodian: v0.18 Soak reduced from 6 → 4 to prevent bullet sponge
+
+---
+
+#### Lethal Tier Enemies (Legend 60-100)
+
+| Enemy Name | HP | Damage | Attributes (M/F/Wi/Wl/St) | Soak | Special | Legend | Notes |
+|------------|----|----|---------------------------|------|---------|--------|-------|
+| **Failure Colossus** | 80 | 3d6+4 | 6/1/0/0/6 (13 total) | 4 | - | 60 | Construction automaton, slow |
+| **Rust-Witch** | 70 | 3d6 | 2/3/4/5/3 (17 total) | 0 | IsForlorn | 75 | Symbiotic Plate caster |
+| **Sentinel Prime** | 90 | 4d6 | 5/5/4/0/6 (20 total) | 6 | Phase AI | 100 | Elite military unit, tactical |
+
+**Design Notes**:
+- HP Range: 70-90 (avg 80)
+- Attribute Budget: 13-20 points (avg 16.7)
+- Damage Range: 3d6 to 4d6 (avg 14-18 damage/turn)
+- Legend Value: 60-100 (very high reward)
+- Special Mechanics: All have either Soak (4-6), IsForlorn, or Phase AI
+- v0.18 Adjustments:
+  - Failure Colossus: 4d6+3 → 3d6+4 (prevent one-shots)
+  - Sentinel Prime: 5d6 → 4d6 (reduce variance)
+
+---
+
+#### Boss Tier Enemies (Legend 100-150)
+
+| Enemy Name | HP | Damage | Attributes (M/F/Wi/Wl/St) | Soak | Special | Legend | Notes |
+|------------|----|----|---------------------------|------|---------|--------|-------|
+| **Ruin-Warden** | 80 | 2d6 | 5/3/0/0/5 (13 total) | 0 | IsBoss | 100 | Act 1 boss, phase-based |
+| **Aetheric Aberration** | 75 | 3d6 | 2/4/5/6/3 (20 total) | 0 | IsBoss, IsForlorn | 100 | Act 1 boss, magic focus |
+| **Forlorn Archivist** | 80 | 3d6 | 2/4/4/7/3 (20 total) | 0 | IsBoss, IsForlorn | 150 | Act 2 boss, psychic/summoner |
+| **Omega Sentinel** | 100 | 3d6+3 | 6/3/0/0/6 (15 total) | 6 | IsBoss | 150 | Act 2 boss, physical tank |
+
+**Design Notes**:
+- HP Range: 75-100 (avg 83.75)
+- Attribute Budget: 13-20 points (avg 17)
+- Damage Range: 2d6 to 3d6+3 (avg 12-18 damage/turn)
+- Legend Value: 100-150 (boss reward)
+- Special Mechanics: 4/4 are IsBoss (100%), 2/4 are IsForlorn (50%)
+- Boss Variance: Ruin-Warden (tank) vs. Aetheric Aberration (caster)
+- v0.18 Adjustments:
+  - Aetheric Aberration: HP 60 → 75 (match 100 Legend value)
+  - Omega Sentinel: Soak 8 → 6 (prevent 25-turn TTK)
+
+---
+
+### Appendix B: Enemy Statistics by Archetype
+
+#### Tank Archetype (High HP, High STURDINESS, Moderate Damage)
+
+| Enemy Name | Tier | HP | Damage | Attributes (M/F/Wi/Wl/St) | Soak | TTK (Solo) | Role |
+|------------|------|----|----|---------------------------|------|------------|------|
+| **Vault Custodian** | High | 70 | 2d6+2 | 5/2/0/0/5 | 4 | 10-12 turns | Mini-boss guardian |
+| **Omega Sentinel** | Boss | 100 | 3d6+3 | 6/3/0/0/6 | 6 | 16-20 turns | Final boss tank |
+| **Failure Colossus** | Lethal | 80 | 3d6+4 | 6/1/0/0/6 | 4 | 12-15 turns | Heavy construction unit |
+
+**Archetype Pattern**:
+- HP: 70-100 (avg 83)
+- STURDINESS: 5-6 (always max or near-max)
+- Soak: 4-6 (always present)
+- TTK: 10-20 turns (longest fights)
+- AI Pattern: Defensive (40-50% attack, 30-40% defend)
+- Design Intent: Absorb damage, protect squishier allies, force long encounters
+
+---
+
+#### DPS Archetype (Balanced Stats, Consistent Damage)
+
+| Enemy Name | Tier | HP | Damage | Attributes (M/F/Wi/Wl/St) | Soak | TTK (Solo) | Role |
+|------------|------|----|----|---------------------------|------|------------|------|
+| **Blight-Drone** | Medium | 25 | 1d6+1 | 3/3/0/0/3 | 0 | 4-6 turns | Ranged harasser |
+| **War-Frame** | Medium | 50 | 2d6 | 4/3/0/0/4 | 0 | 6-8 turns | Elite combat unit |
+| **Ruin-Warden** | Boss | 80 | 2d6 | 5/3/0/0/5 | 0 | 12-15 turns | Boss DPS hybrid |
+
+**Archetype Pattern**:
+- HP: 25-80 (variable by tier)
+- Attributes: Balanced (no dump stats below 3)
+- Damage: Tier-appropriate (1d6+1 for Medium, 2d6 for Boss)
+- TTK: 4-15 turns (tier-dependent)
+- AI Pattern: Aggressive (70-80% attack, 20-30% defend)
+- Design Intent: Reliable threat, no gimmicks, straightforward combat
+
+---
+
+#### Glass Cannon Archetype (High FINESSE/Damage, Low HP)
+
+| Enemy Name | Tier | HP | Damage | Attributes (M/F/Wi/Wl/St) | Soak | TTK (Solo) | Role |
+|------------|------|----|----|---------------------------|------|------------|------|
+| **Scrap-Hound** | Low | 10 | 1d6 | 2/4/0/0/1 | 0 | 2-3 turns | Fast harasser |
+| **Test Subject** | Medium | 15 | 1d6+2 | 3/5/0/0/2 | 0 | 3-4 turns | Unstable experiment |
+
+**Archetype Pattern**:
+- HP: 10-15 (lowest in tier)
+- FINESSE: 4-5 (highest in tier)
+- STURDINESS: 1-2 (lowest possible)
+- Damage: High for tier (1d6+2 at Medium tier)
+- TTK: 2-4 turns (dies fast)
+- AI Pattern: Hyper-aggressive (80-90% attack, 10-20% flee at low HP)
+- Design Intent: High-priority target, burst damage threat, "kill before it kills you"
+
+---
+
+#### Support Archetype (High WITS/WILL, Buff/Debuff Focus)
+
+| Enemy Name | Tier | HP | Damage | Attributes (M/F/Wi/Wl/St) | Soak | TTK (Solo) | Role |
+|------------|------|----|----|---------------------------|------|------------|------|
+| **Corrupted Engineer** | Medium | 30 | 2d6 | 2/3/5/0/2 | 0 | 5-6 turns | Ally buffer |
+
+**Archetype Pattern**:
+- HP: Tier-appropriate (30 for Medium)
+- WITS: 5+ (enables tactical abilities)
+- Damage: Moderate (2d6)
+- TTK: 5-6 turns (standard)
+- AI Pattern: Tactical (30-40% attack, 30-40% buff allies, 20-30% debuff player)
+- Design Intent: Priority kill target, force tactical decisions, multiplies ally effectiveness
+
+---
+
+#### Swarm Archetype (Low Individual HP, Numbers-Based Threat)
+
+| Enemy Name | Tier | HP | Damage | Attributes (M/F/Wi/Wl/St) | Soak | TTK (Solo) | Role |
+|------------|------|----|----|---------------------------|------|------------|------|
+| **Corrupted Servitor** | Low | 15 | 1d6 | 2/2/0/0/2 | 0 | 2-3 turns | Baseline minion |
+| **Sludge-Crawler** | Low | 12 | 1d6 | 2/3/0/0/1 | 0 | 2-3 turns | Poison swarm |
+| **Servitor Swarm** | Medium | 50 | 2d6 | 3/3/0/0/2 | 0 | 6-8 turns | Collective entity |
+
+**Archetype Pattern**:
+- HP: 12-50 (variable, Servitor Swarm represents 3-5 units)
+- Defense: Often penalty (-2 Defense for Servitor Swarm)
+- Damage: Moderate (1d6 to 2d6)
+- TTK: 2-8 turns (fast individual kills, high group HP)
+- AI Pattern: Aggressive swarm (70-80% attack, 20-30% surround)
+- Design Intent: AoE testing, attrition damage, overwhelm player via numbers
+
+---
+
+#### Caster Archetype (High WILL, Psychic/Magic Damage)
+
+| Enemy Name | Tier | HP | Damage | Attributes (M/F/Wi/Wl/St) | Soak | Special | TTK (Solo) | Role |
+|------------|------|----|----|---------------------------|------|---------|------------|------|
+| **Forlorn Scholar** | Medium | 30 | 2d6 | 2/3/4/5/2 | 0 | IsForlorn | 5-6 turns | Corrupted human caster |
+| **Jötun-Reader Fragment** | Medium | 40 | 2d6 | 1/4/5/5/3 | 0 | IsForlorn | 6-7 turns | AI psychic fragment |
+| **Rust-Witch** | Lethal | 70 | 3d6 | 2/3/4/5/3 | 0 | IsForlorn | 10-12 turns | Symbiotic Plate caster |
+| **Aetheric Aberration** | Boss | 75 | 3d6 | 2/4/5/6/3 | 0 | IsBoss, IsForlorn | 12-15 turns | Magic-focused boss |
+| **Forlorn Archivist** | Boss | 80 | 3d6 | 2/4/4/7/3 | 0 | IsBoss, IsForlorn | 14-18 turns | Psychic summoner boss |
+
+**Archetype Pattern**:
+- HP: 30-80 (tier-appropriate)
+- WILL: 5-7 (highest attribute)
+- WITS: 4-5 (second-highest for spell variety)
+- Damage: Psychic (ignores armor)
+- Special: 5/5 are IsForlorn (100% trauma infliction)
+- TTK: 5-18 turns (tier-dependent)
+- AI Pattern: Tactical caster (30-50% attack, 30-40% debuff, 20-30% summon/buff)
+- Design Intent: Trauma economy integration, psychic damage, high WILL resistance checks
+
+---
+
+#### Mini-Boss Archetype (Phase AI, Elite Stats, Not Full Boss)
+
+| Enemy Name | Tier | HP | Damage | Attributes (M/F/Wi/Wl/St) | Soak | Special | TTK (Solo) | Role |
+|------------|------|----|----|---------------------------|------|---------|------------|------|
+| **Vault Custodian** | High | 70 | 2d6+2 | 5/2/0/0/5 | 4 | Phase AI | 10-12 turns | Guardian mini-boss |
+| **Sentinel Prime** | Lethal | 90 | 4d6 | 5/5/4/0/6 | 6 | Phase AI | 14-16 turns | Elite military unit |
+
+**Archetype Pattern**:
+- HP: 70-90 (boss-tier HP)
+- Attributes: 12-20 points (high budget)
+- Soak: 4-6 (always present)
+- Phase AI: HP-based behavior changes
+- IsBoss Flag: False (not true boss, but elite)
+- TTK: 10-16 turns (long but not boss-length)
+- AI Pattern: Phase-based (changes at 50% HP threshold)
+- Design Intent: Act-ending challenges, skill checks before bosses, "sub-boss" encounters
+
+---
+
+### Appendix C: Special Mechanics Reference
+
+#### IsForlorn Enemies (Trauma Aura)
+
+| Enemy Name | Tier | Stress/Turn | Corruption/Encounter | Aura Range | Total Trauma Cost |
+|------------|------|-------------|----------------------|------------|-------------------|
+| **Shrieker** | Medium | +3 | +2 | 3 rows | ~10-15 Stress |
+| **Forlorn Scholar** | Medium | +3 | +5 | 3 rows | ~15-20 Stress |
+| **Jötun-Reader Fragment** | Medium | +2 | +8 | 2 rows | ~15-25 Corruption |
+| **Bone-Keeper** | High | +4 | +3 | 2 rows | ~15-25 Stress |
+| **Rust-Witch** | Lethal | +5 | +10 | 4 rows | ~25-40 Corruption |
+| **Aetheric Aberration** | Boss | +6 | +8 | 4 rows | ~30-50 Stress |
+| **Forlorn Archivist** | Boss | +8 | +12 | 5 rows | ~50-80 Stress |
+
+**Design Pattern**:
+- All IsForlorn enemies inflict passive Psychic Stress per turn within aura range
+- Corruption is inflicted on encounter start and on special ability hits
+- Higher tiers have larger aura ranges (2-5 rows)
+- Total trauma cost scales with tier: Medium 10-25, High 15-25, Lethal 25-40, Boss 30-80
+- Forces player to balance combat duration vs. trauma accumulation
+
+---
+
+#### IsBoss Enemies (Multi-Phase Combat)
+
+| Enemy Name | HP Phases | Phase 1 AI | Phase 2 AI (< 50% HP) | Phase 3 AI (< 25% HP) | Legend |
+|------------|-----------|------------|----------------------|---------------------|--------|
+| **Ruin-Warden** | 2-phase | 60% attack, 40% heavy strike | 40% berserk, 30% heavy, 30% charge defense | - | 100 |
+| **Aetheric Aberration** | 3-phase | 50% aetheric bolt, 30% psychic scream, 20% phase shift | 40% psychic scream, 30% aetheric bolt, 30% summon | 50% void collapse (AoE), 30% summon, 20% heal | 100 |
+| **Forlorn Archivist** | 3-phase | 50% mind spike, 30% memory drain, 20% summon | 40% summon, 30% mind spike, 30% AoE fear | 50% final summoning, 30% AoE, 20% desperation attack | 150 |
+| **Omega Sentinel** | 3-phase | 60% railgun, 30% missile barrage, 10% defensive protocols | 40% missile barrage, 40% railgun, 20% shield recharge | 50% overcharge (massive damage), 30% defensive, 20% summon reinforcements | 150 |
+
+**Design Pattern**:
+- All bosses have 2-3 phases triggered by HP thresholds (50%, 25%)
+- Phase 1: Standard attack rotations (50-60% primary attack)
+- Phase 2: Increased special ability usage (30-40% AoE/summons)
+- Phase 3 (if present): Desperation moves (50% high-damage abilities)
+- IsBoss flag triggers: Phase-based AI, boss UI, special loot tables, narrative beats
+
+---
+
+#### Soak Mechanics (Flat Damage Reduction)
+
+| Enemy Name | Soak | Effective HP Multiplier | v0.18 Adjustment | Design Rationale |
+|------------|------|-------------------------|------------------|------------------|
+| **Vault Custodian** | 4 | ×1.6 (70 HP → 112 effective HP) | Reduced from 6 → 4 | Prevent bullet sponge |
+| **Failure Colossus** | 4 | ×1.6 (80 HP → 128 effective HP) | No change | Heavy armor tank |
+| **Sentinel Prime** | 6 | ×2.0 (90 HP → 180 effective HP) | Reduced from 8 → 6 | Military-grade armor, still tough |
+| **Omega Sentinel** | 6 | ×1.6 (100 HP → 160 effective HP) | Reduced from 8 → 6 | Boss tank, capped to prevent 25-turn TTK |
+
+**Soak Calculation**:
+```
+Effective HP = Base HP ÷ (1 - (Soak ÷ Average Player Damage))
+
+Example: Vault Custodian
+- Base HP: 70
+- Soak: 4
+- Player Damage: 10 avg
+- Damage Reduction: 4 ÷ 10 = 40%
+- Effective HP: 70 ÷ (1 - 0.4) = 70 ÷ 0.6 = 117 effective HP
+- TTK: 117 ÷ 10 = 11.7 turns (vs. 7 turns without Soak)
+```
+
+**Design Caps**:
+- Non-Boss Maximum: Soak 4 (40% reduction vs. 10 damage)
+- Boss Maximum: Soak 6 (60% reduction vs. 10 damage)
+- v0.18 Lesson: Soak scales multiplicatively with HP, creating exponential TTK growth
+- Balance Rule: Add +20% HP before adding +1 Soak
+
+---
+
+#### IsChampion Enemies (Elite Variants)
+
+**Champion Stat Modifiers** (Not yet implemented in v0.24, reserved for future use):
+```
+Champion Multipliers:
+- HP: ×1.5 (Example: Corrupted Servitor 15 HP → 22 HP)
+- Damage: ×1.5 (Example: 1d6 → 1d6+3)
+- Attributes: ×1.5 rounded down (Example: MIGHT 2 → 3)
+- Legend Value: ×1.5 (Example: 10 Legend → 15 Legend)
+- Special: +1 Soak, or unique ability
+
+Design Intent:
+- Rare spawns (5-10% chance)
+- Named variants ("Champion Corrupted Servitor: 'Rust-Eater'")
+- Higher reward (loot quality +1 tier)
+- Used for dynamic difficulty scaling
+```
+
+---
+
+### Appendix D: v0.18 Balance Adjustment Summary
+
+| Enemy Name | Property | Before v0.18 | After v0.18 | Reason |
+|------------|----------|--------------|-------------|--------|
+| **Aetheric Aberration** | HP | 60 | 75 | Match 100 Legend value, boss durability |
+| **Vault Custodian** | Soak | 6 | 4 | Prevent bullet sponge (25-turn TTK → 12-turn TTK) |
+| **Omega Sentinel** | Soak | 8 | 6 | Prevent frustrating 25+ turn combat |
+| **Failure Colossus** | Damage | 4d6+3 (17-27 avg 21) | 3d6+4 (7-22 avg 14.5) | Prevent one-shots (70% one-shot → 0%) |
+| **Sentinel Prime** | Damage | 5d6 (5-30 avg 17.5) | 4d6 (4-24 avg 14) | Reduce variance (6:1 ratio feels unfair) |
+| **Corroded Sentry** | Legend | 5 | 10 | Match HP investment (0.67 Legend/HP ratio) |
+| **Husk Enforcer** | Legend | 15 | 18 | Match 25 HP + high damage (0.72 Legend/HP) |
+| **Arc-Welder Unit** | Legend | 20 | 25 | Match 30 HP pool (0.83 Legend/HP) |
+| **Servitor Swarm** | Legend | 30 | 40 | Match 50 HP collective (0.80 Legend/HP) |
+| **Bone-Keeper** | Legend | 50 | 55 | Match high damage output (0.92 Legend/HP) |
+
+**Key Lessons**:
+1. **Soak Caps Matter**: Soak 8 → 6 reduced Omega Sentinel TTK from 25 turns → 16 turns (playable)
+2. **Damage Variance > Average**: 5d6 avg 17.5 feels worse than 4d6 avg 14 due to swing (5-30 vs. 4-24)
+3. **One-Shots Kill Fun**: 70% one-shot chance → reload simulator (Failure Colossus 4d6+3)
+4. **Legend/HP Ratio**: Target 0.67-1.0 Legend per HP for fair reward scaling
+5. **Boss HP Floors**: Bosses should have 75+ HP to match 100+ Legend value (durability expectation)
+
+---
+
+**End of Appendices**
+
+---
+
