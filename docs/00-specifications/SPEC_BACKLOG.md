@@ -3,7 +3,7 @@
 **Purpose**: Central tracking document for all specifications (existing, in-progress, and planned)
 
 **Last Updated**: 2025-11-22
-**Total Specs**: 10 completed, 0 in progress, 30 planned, 40 total
+**Total Specs**: 12 completed, 0 in progress, 28 planned, 40 total
 
 ---
 
@@ -11,14 +11,14 @@
 
 | Domain | Completed | In Progress | Planned | Total | Coverage |
 |--------|-----------|-------------|---------|-------|----------|
-| Combat | 5 | 0 | 7 | 12 | 42% |
+| Combat | 7 | 0 | 5 | 12 | 58% |
 | Progression | 3 | 0 | 4 | 7 | 43% |
 | Economy | 2 | 0 | 4 | 6 | 33% |
 | World | 0 | 0 | 8 | 8 | 0% |
 | Narrative | 0 | 0 | 6 | 6 | 0% |
 | Faction | 0 | 0 | 3 | 3 | 0% |
 | AI | 0 | 0 | 2 | 2 | 0% |
-| **TOTAL** | **10** | **0** | **30** | **40** | **25%** |
+| **TOTAL** | **12** | **0** | **28** | **40** | **30%** |
 
 ---
 
@@ -158,6 +158,115 @@
 **Why Complete**: Opposed dice pool accuracy system is core combat mechanic; needed comprehensive design specification for roll mechanics, accuracy bonus economy, probability targets, and balance tuning parameters. Layer 1 implementation docs existed but design philosophy and player experience goals were not formally specified.
 
 **Implementation Exists**: Yes (`RuneAndRust.Engine/CombatEngine.cs`, `DiceService.cs`)
+
+---
+
+### ✅ SPEC-COMBAT-005: Boss Encounter System
+**Status**: Completed
+**File**: `combat/boss-encounter-spec.md`
+**Lines**: ~1530
+**Completed**: 2025-11-22
+**Priority**: High
+**Domain**: Combat
+**Layer 1 Docs**: 🔗 `BOSS_COMBAT_INTEGRATION_GUIDE.md`
+
+**Scope**:
+- Multi-phase boss combat mechanics (2-4 phases per boss)
+- HP threshold-based phase transitions (75%, 50%, 25%)
+- Telegraphed ability system with charge times and interrupt mechanics
+- Enrage triggers (HP-based and turn-based timers)
+- Vulnerability windows after ultimate abilities
+- Phase-specific stat modifiers (damage, defense, regeneration, bonus actions)
+- Add wave spawning during phase transitions
+- Invulnerability mechanics during phase transitions
+- Boss loot table system (artifacts, guaranteed drops, unique items, set bonuses)
+- 4 implemented boss archetypes (Ruin-Warden, Aetheric Aberration, Forlorn Archivist, Omega Sentinel)
+- Balance targets (TTK, damage output, phase timing)
+- Boss encounter design checklist
+
+**Out of Scope**:
+- General enemy design guidelines → SPEC-COMBAT-012
+- Standard enemy AI behavior → SPEC-AI-001 (planned)
+- Movement and positioning mechanics → SPEC-COMBAT-009 (planned)
+- Status effect mechanics → SPEC-COMBAT-003
+- Individual boss lore and narrative descriptions → Bestiary entries
+
+**Dependencies**:
+- SPEC-COMBAT-001 (Combat Resolution) - Completed
+- SPEC-COMBAT-002 (Damage Calculation) - Completed
+- SPEC-COMBAT-003 (Status Effects) - Completed
+- SPEC-COMBAT-012 (Enemy Design & Bestiary) - Completed
+- SPEC-ECONOMY-001 (Loot & Equipment) - Completed
+- SPEC-PROGRESSION-001 (Character Progression) - Completed
+
+**Why Complete**: Boss encounter system is fully implemented; needed comprehensive design specification for multi-phase mechanics, telegraphed abilities, enrage system, and boss loot economy.
+
+**Implementation Exists**: Yes (`RuneAndRust.Engine/BossEncounterService.cs`, `BossCombatIntegration.cs`, `BossDatabase.cs`, `BossLootService.cs`, `TelegraphedAbilityService.cs`)
+
+**Key Features**:
+- 6 functional requirements (FR-001 through FR-006) covering full boss encounter lifecycle
+- Detailed phase transition mechanics with invulnerability and stat modifiers
+- Comprehensive telegraphed ability system (4 ability types: Standard, Telegraphed, Ultimate, Passive)
+- Interrupt mechanics with damage thresholds and stagger effects
+- Vulnerability window system for ultimate abilities
+- Enrage triggers with HP-based and turn-based conditions
+- Boss loot system with guaranteed quality drops, artifacts, unique items, crafting materials
+- Balance targets for TTK (8-25 turns), damage output, and phase timing
+- 3 appendices: Boss stat reference tables, design checklist, full Ruin-Warden example
+
+---
+
+### ✅ SPEC-COMBAT-006: Counter-Attack & Parry System
+**Status**: Completed
+**File**: `combat/counter-attack-parry-spec.md`
+**Lines**: ~1913
+**Completed**: 2025-11-22
+**Priority**: High
+**Domain**: Combat
+**Layer 1 Docs**: 🔗 `COUNTER_ATTACK_INTEGRATION.md`
+
+**Scope**:
+- Universal parry mechanics (FINESSE + Weapon Skill + bonus dice)
+- Four-tier parry outcomes (Failed, Standard, Superior, Critical)
+- Parry pool calculation with specialization/equipment bonuses
+- Riposte and counter-attack system (free attacks on successful parries)
+- Riposte trigger conditions (Critical = all characters, Superior = Hólmgangr only)
+- Hólmgangr Reactive Parry specialization (3 ranks: +1d10/+2d10, Superior Riposte, 2 parries/round)
+- Atgeir-wielder parry bonus (+1d10 reach advantage)
+- Trauma economy integration (stress relief/gain by parry outcome)
+- Parry limits and turn management (1-2 parries per round)
+- Persistent statistics tracking (ParryStatistics, ParryBonuses, ParryAttempts tables)
+- Combat flow integration (reactive parry preparation and execution)
+- Balance targets (success rates 40-85%, riposte damage contribution 5-50%)
+
+**Out of Scope**:
+- Enemy parrying mechanics → Future enhancement
+- Shield equipment parry bonuses → SPEC-COMBAT-007 (planned)
+- Status effect interactions with parry pool → SPEC-COMBAT-003
+- Specific ability implementations → Ability System spec
+
+**Dependencies**:
+- SPEC-COMBAT-001 (Combat Resolution) - Completed
+- SPEC-COMBAT-002 (Damage Calculation) - Completed
+- SPEC-PROGRESSION-001 (Character Progression & Specializations) - Completed
+- SPEC-MENTAL-001 (Trauma Economy) - Completed
+
+**Why Complete**: Counter-attack and parry system is fully implemented; needed comprehensive design specification for universal parry mechanics, quality-based outcomes, riposte triggers, specialization integration, and balance targets.
+
+**Implementation Exists**: Yes (`RuneAndRust.Engine/CounterAttackService.cs`, `RuneAndRust.Core/CounterAttack.cs`, `RuneAndRust.Persistence/CounterAttackRepository.cs`, `RuneAndRust.Engine/Commands/ParryCommand.cs`)
+
+**Key Features**:
+- 6 functional requirements (FR-001 through FR-006) covering full parry/riposte lifecycle
+- Universal parry pool calculation (FINESSE + Weapon Skill + Bonus Dice × d10)
+- Four-tier outcome system with distinct mechanical effects (Failed/Standard/Superior/Critical)
+- Critical parry threshold (5+ margin) triggering universal riposte
+- Hólmgangr Reactive Parry specialization with 3 ranks (escalating bonuses)
+- Superior Riposte capability (Hólmgangr exclusive for Superior parries)
+- Trauma economy integration (-8 stress for Critical Parry, +5 stress for Failed Parry)
+- Parry limit system (1/round standard, 2/round for Hólmgangr Rank 3 Mastery)
+- Database persistence (3 tables: ParryStatistics, ParryBonuses, ParryAttempts)
+- Balance targets and design guidelines for future extensions
+- 3 appendices: Parry outcome reference tables, full combat example, design checklist
 
 ---
 
@@ -618,28 +727,58 @@ The following specifications have been identified based on existing implementati
 
 ### COMBAT Domain (Additional 7 specs)
 
-### 📋 SPEC-COMBAT-005: Boss Encounter System
-**Status**: Planned
+### ✅ SPEC-COMBAT-005: Boss Encounter System
+**Status**: Completed
+**File**: `combat/boss-encounter-spec.md`
+**Lines**: ~1530
+**Completed**: 2025-11-22
 **Priority**: High
 **Domain**: Combat
-**Layer 1 Docs**: None (see `BOSS_COMBAT_INTEGRATION_GUIDE.md`)
+**Layer 1 Docs**: 🔗 `BOSS_COMBAT_INTEGRATION_GUIDE.md`
 
-**Proposed Scope**:
-- Boss encounter initialization and phase mechanics
-- Phase transitions with add spawning
-- Enrage triggers and timing
-- Vulnerability windows
-- Boss-specific telegraphed abilities
-- Boss loot table generation
-- Multi-phase combat mechanics
+**Scope**:
+- Multi-phase boss combat mechanics (2-4 phases per boss)
+- HP threshold-based phase transitions (75%, 50%, 25%)
+- Telegraphed ability system with charge times and interrupt mechanics
+- Enrage triggers (HP-based and turn-based timers)
+- Vulnerability windows after ultimate abilities
+- Phase-specific stat modifiers (damage, defense, regeneration, bonus actions)
+- Add wave spawning during phase transitions
+- Invulnerability mechanics during phase transitions
+- Boss loot table system (artifacts, guaranteed drops, unique items, set bonuses)
+- 4 implemented boss archetypes (Ruin-Warden, Aetheric Aberration, Forlorn Archivist, Omega Sentinel)
+- Balance targets (TTK, damage output, phase timing)
+- Boss encounter design checklist
+
+**Out of Scope**:
+- General enemy design guidelines → SPEC-COMBAT-012
+- Standard enemy AI behavior → SPEC-AI-001 (planned)
+- Movement and positioning mechanics → SPEC-COMBAT-009 (planned)
+- Status effect mechanics → SPEC-COMBAT-003
+- Individual boss lore and narrative descriptions → Bestiary entries
 
 **Dependencies**:
 - SPEC-COMBAT-001 (Combat Resolution) - Completed
-- SPEC-COMBAT-010 (Telegraphed Abilities) - Not yet drafted
+- SPEC-COMBAT-002 (Damage Calculation) - Completed
+- SPEC-COMBAT-003 (Status Effects) - Completed
+- SPEC-COMBAT-012 (Enemy Design & Bestiary) - Completed
+- SPEC-ECONOMY-001 (Loot & Equipment) - Completed
+- SPEC-PROGRESSION-001 (Character Progression) - Completed
 
-**Why Needed**: Boss encounter system is fully implemented with BossEncounterService, BossCombatIntegration, BossDatabase, and BossLootService but lacks design-level specification for phase mechanics and balance targets.
+**Why Complete**: Boss encounter system is fully implemented; needed comprehensive design specification for multi-phase mechanics, telegraphed abilities, enrage system, and boss loot economy.
 
-**Implementation Exists**: Yes (`RuneAndRust.Engine/BossEncounterService.cs`, `BossCombatIntegration.cs`, `BossDatabase.cs`, `BossLootService.cs`)
+**Implementation Exists**: Yes (`RuneAndRust.Engine/BossEncounterService.cs`, `BossCombatIntegration.cs`, `BossDatabase.cs`, `BossLootService.cs`, `TelegraphedAbilityService.cs`)
+
+**Key Features**:
+- 6 functional requirements (FR-001 through FR-006) covering full boss encounter lifecycle
+- Detailed phase transition mechanics with invulnerability and stat modifiers
+- Comprehensive telegraphed ability system (4 ability types: Standard, Telegraphed, Ultimate, Passive)
+- Interrupt mechanics with damage thresholds and stagger effects
+- Vulnerability window system for ultimate abilities
+- Enrage triggers with HP-based and turn-based conditions
+- Boss loot system with guaranteed quality drops, artifacts, unique items, crafting materials
+- Balance targets for TTK (8-25 turns), damage output, and phase timing
+- 3 appendices: Boss stat reference tables, design checklist, full Ruin-Warden example
 
 ---
 
