@@ -1,3 +1,5 @@
+using RuneAndRust.Core.Spatial;
+
 namespace RuneAndRust.Core;
 
 public class Room
@@ -13,6 +15,11 @@ public class Room
     public NodeType? GeneratedNodeType { get; set; } = null; // Node type in generation graph
     public bool IsProcedurallyGenerated { get; set; } = false;
     public Population.RoomArchetype Archetype { get; set; } = Population.RoomArchetype.Chamber; // Room archetype (Chamber, Corridor, etc.)
+
+    // v0.39.1: 3D Spatial Properties
+    public RoomPosition Position { get; set; } = RoomPosition.Origin; // 3D coordinates (X, Y, Z)
+    public VerticalLayer Layer { get; set; } = VerticalLayer.GroundLevel; // Vertical layer classification
+    public List<VerticalConnection> VerticalConnections { get; set; } = new(); // Connections to rooms above/below
 
     // Combat
     public List<Enemy> Enemies { get; set; } = new();
@@ -88,5 +95,35 @@ public class Room
     public bool HasAmbientCondition(string conditionName)
     {
         return AmbientConditions.Any(c => c.ConditionName.Contains(conditionName.Trim('[', ']'), StringComparison.OrdinalIgnoreCase));
+    }
+
+    // v0.39.1: Spatial helper methods
+    public bool IsAtLayer(VerticalLayer layer) => Layer == layer;
+
+    public bool HasVerticalConnectionTo(string roomId)
+    {
+        return VerticalConnections.Any(c => c.ToRoomId == roomId && !c.IsBlocked);
+    }
+
+    public int GetDepthInMeters()
+    {
+        return Layer.GetApproximateDepth();
+    }
+
+    public string GetDepthNarrative()
+    {
+        return Layer.GetDepthNarrative();
+    }
+
+    public VerticalConnection? GetVerticalConnectionTo(string roomId)
+    {
+        return VerticalConnections.FirstOrDefault(c =>
+            (c.ToRoomId == roomId || (c.IsBidirectional && c.FromRoomId == roomId)) &&
+            !c.IsBlocked);
+    }
+
+    public List<VerticalConnection> GetTraversableVerticalConnections()
+    {
+        return VerticalConnections.Where(c => c.CanTraverse()).ToList();
     }
 }
