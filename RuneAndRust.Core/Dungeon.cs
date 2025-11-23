@@ -1,7 +1,10 @@
+using RuneAndRust.Core.Spatial;
+
 namespace RuneAndRust.Core;
 
 /// <summary>
 /// Represents a complete procedurally generated dungeon (v0.10)
+/// v0.39.1: Extended with 3D spatial coordinates and vertical connections
 /// </summary>
 public class Dungeon
 {
@@ -14,6 +17,10 @@ public class Dungeon
     public Dictionary<string, Room> Rooms { get; set; } = new(); // RoomId -> Room
     public string StartRoomId { get; set; } = string.Empty;
     public string BossRoomId { get; set; } = string.Empty;
+
+    // v0.39.1: Spatial Layout
+    public Dictionary<string, RoomPosition> RoomPositions { get; set; } = new(); // RoomId -> Position
+    public List<VerticalConnection> VerticalConnections { get; set; } = new(); // All vertical connections in dungeon
 
     // Metadata
     public DateTime GeneratedAt { get; set; } = DateTime.UtcNow;
@@ -128,4 +135,69 @@ public class Dungeon
     {
         return $"Dungeon {DungeonId}: Seed={Seed}, Rooms={TotalRoomCount}, Biome={Biome}";
     }
+
+    #region v0.39.1: Spatial Query Methods
+
+    /// <summary>
+    /// Gets all rooms at a specific vertical layer
+    /// </summary>
+    public List<Room> GetRoomsAtLayer(VerticalLayer layer)
+    {
+        return Rooms.Values.Where(r => r.Layer == layer).ToList();
+    }
+
+    /// <summary>
+    /// Gets the position of a room
+    /// </summary>
+    public RoomPosition? GetRoomPosition(string roomId)
+    {
+        return RoomPositions.GetValueOrDefault(roomId);
+    }
+
+    /// <summary>
+    /// Gets vertical connection between two rooms
+    /// </summary>
+    public VerticalConnection? GetVerticalConnection(string fromRoomId, string toRoomId)
+    {
+        return VerticalConnections.FirstOrDefault(c =>
+            (c.FromRoomId == fromRoomId && c.ToRoomId == toRoomId) ||
+            (c.IsBidirectional && c.FromRoomId == toRoomId && c.ToRoomId == fromRoomId));
+    }
+
+    /// <summary>
+    /// Gets all vertical connections from a room
+    /// </summary>
+    public List<VerticalConnection> GetVerticalConnectionsFrom(string roomId)
+    {
+        return VerticalConnections.Where(c =>
+            c.FromRoomId == roomId ||
+            (c.IsBidirectional && c.ToRoomId == roomId))
+            .ToList();
+    }
+
+    /// <summary>
+    /// Gets spatial statistics for the dungeon
+    /// </summary>
+    public Dictionary<string, object> GetSpatialStatistics()
+    {
+        var layerCounts = new Dictionary<VerticalLayer, int>();
+        foreach (var room in Rooms.Values)
+        {
+            if (!layerCounts.ContainsKey(room.Layer))
+                layerCounts[room.Layer] = 0;
+            layerCounts[room.Layer]++;
+        }
+
+        return new Dictionary<string, object>
+        {
+            ["TotalRooms"] = TotalRoomCount,
+            ["VerticalConnections"] = VerticalConnections.Count,
+            ["LayersOccupied"] = layerCounts.Count,
+            ["DeepestRoom"] = Rooms.Values.Any() ? Rooms.Values.Min(r => r.Position.Z) : 0,
+            ["HighestRoom"] = Rooms.Values.Any() ? Rooms.Values.Max(r => r.Position.Z) : 0,
+            ["LayerDistribution"] = layerCounts
+        };
+    }
+
+    #endregion
 }

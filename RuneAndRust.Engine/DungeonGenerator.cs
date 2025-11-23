@@ -1,4 +1,5 @@
 using RuneAndRust.Core;
+using RuneAndRust.Engine.Spatial;
 using Serilog;
 
 namespace RuneAndRust.Engine;
@@ -6,6 +7,7 @@ namespace RuneAndRust.Engine;
 /// <summary>
 /// Generates procedural dungeon layouts using graph-based algorithm (v0.10)
 /// v0.11: Integrated with PopulationPipeline for enemy/hazard/loot spawning
+/// v0.39.1: Integrated with SpatialLayoutService for 3D coordinate assignment
 /// </summary>
 public class DungeonGenerator
 {
@@ -13,6 +15,8 @@ public class DungeonGenerator
     private readonly TemplateLibrary _templateLibrary;
     private readonly PopulationPipeline? _populationPipeline; // v0.11 - optional for backward compatibility
     private readonly AnchorInserter? _anchorInserter; // v0.11 - Quest Anchor support
+    private readonly ISpatialLayoutService? _spatialLayoutService; // v0.39.1 - 3D layout (optional for backward compatibility)
+    private readonly ISpatialValidationService? _spatialValidationService; // v0.39.1 - Spatial validation
     private Random _rng = null!;
     private int _seed;
     private BiomeDefinition? _currentBiome;
@@ -20,11 +24,15 @@ public class DungeonGenerator
     public DungeonGenerator(
         TemplateLibrary templateLibrary,
         PopulationPipeline? populationPipeline = null,
-        AnchorInserter? anchorInserter = null)
+        AnchorInserter? anchorInserter = null,
+        ISpatialLayoutService? spatialLayoutService = null,
+        ISpatialValidationService? spatialValidationService = null)
     {
         _templateLibrary = templateLibrary;
         _populationPipeline = populationPipeline;
         _anchorInserter = anchorInserter;
+        _spatialLayoutService = spatialLayoutService;
+        _spatialValidationService = spatialValidationService;
     }
 
     /// <summary>
@@ -100,16 +108,71 @@ public class DungeonGenerator
     /// <summary>
     /// Generates a complete playable dungeon (graph + instantiated rooms) from a seed
     /// v0.11: Now includes population (enemies, hazards, terrain, loot, conditions)
+    /// v0.39.1: Now includes 3D spatial layout with vertical connections
     /// </summary>
     public Dungeon GenerateComplete(int seed, int dungeonId = 1, int targetRoomCount = 7, BiomeDefinition? biome = null)
     {
         // Step 1: Generate graph
         var graph = Generate(seed, targetRoomCount, biome);
 
-        // Step 2: Instantiate rooms
+        // Step 2 (v0.39.1): Convert graph to 3D spatial layout
+        Dictionary<string, Core.Spatial.RoomPosition>? positions = null;
+        List<Core.Spatial.VerticalConnection>? verticalConnections = null;
+
+        if (_spatialLayoutService != null)
+        {
+            _log.Information("Converting graph to 3D spatial layout...");
+            positions = _spatialLayoutService.ConvertGraphTo3DLayout(graph, seed);
+
+            // Validate no overlaps
+            var templates = graph.GetNodes().ToDictionary(
+                n => n.Id.ToString(),
+                n => n.Template);
+            var noOverlaps = _spatialLayoutService.ValidateNoOverlaps(positions, templates);
+
+            if (!noOverlaps)
+            {
+                _log.Warning("Room overlaps detected in spatial layout - proceeding anyway");
+            }
+
+            // Generate vertical connections
+            verticalConnections = _spatialLayoutService.GenerateVerticalConnections(positions, _rng);
+
+            _log.Information("3D layout complete: {RoomCount} rooms positioned, {ConnectionCount} vertical connections",
+                positions.Count, verticalConnections.Count);
+
+            // Run spatial validation
+            if (_spatialValidationService != null)
+            {
+                var validationIssues = _spatialValidationService.ValidateSector(positions, verticalConnections, graph);
+
+                var criticalIssues = validationIssues.Where(i => i.Severity == "Critical").ToList();
+                if (criticalIssues.Any())
+                {
+                    _log.Error("Critical spatial validation issues detected: {IssueCount}", criticalIssues.Count);
+                    foreach (var issue in criticalIssues)
+                    {
+                        _log.Error("  - {Issue}", issue.Description);
+                    }
+                    throw new InvalidOperationException($"Spatial validation failed with {criticalIssues.Count} critical issues");
+                }
+
+                var warnings = validationIssues.Where(i => i.Severity == "Warning").ToList();
+                if (warnings.Any())
+                {
+                    _log.Warning("Spatial validation warnings: {WarningCount}", warnings.Count);
+                }
+            }
+        }
+        else
+        {
+            _log.Debug("Spatial layout service not available (v0.10 mode)");
+        }
+
+        // Step 3: Instantiate rooms
         _log.Debug("Instantiating rooms...");
         var instantiator = new RoomInstantiator();
-        var dungeon = instantiator.Instantiate(graph, dungeonId, seed);
+        var dungeon = instantiator.Instantiate(graph, dungeonId, seed, positions, verticalConnections);
 
         // Set biome on dungeon
         if (biome != null)
@@ -117,7 +180,7 @@ public class DungeonGenerator
             dungeon.Biome = biome.BiomeId;
         }
 
-        // Step 3: v0.11 - Populate rooms with enemies, hazards, terrain, loot, conditions
+        // Step 4: v0.11 - Populate rooms with enemies, hazards, terrain, loot, conditions
         if (_populationPipeline != null && biome != null)
         {
             _log.Information("Populating dungeon with v0.11 population pipeline...");
