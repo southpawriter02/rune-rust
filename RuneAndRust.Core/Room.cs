@@ -21,6 +21,12 @@ public class Room
     public VerticalLayer Layer { get; set; } = VerticalLayer.GroundLevel; // Vertical layer classification
     public List<VerticalConnection> VerticalConnections { get; set; } = new(); // Connections to rooms above/below
 
+    // v0.39.2: Biome Transition & Blending
+    public string PrimaryBiome { get; set; } = "TheRoots"; // Primary biome for this room
+    public string? SecondaryBiome { get; set; } = null; // Secondary biome (null for pure single-biome rooms)
+    public float BiomeBlendRatio { get; set; } = 0.0f; // 0.0 = 100% primary, 1.0 = 100% secondary
+    public Dictionary<string, float> EnvironmentalProperties { get; set; } = new(); // Temperature, AethericIntensity, Scale, etc.
+
     // Combat
     public List<Enemy> Enemies { get; set; } = new();
     public bool HasBeenCleared { get; set; } = false;
@@ -125,5 +131,39 @@ public class Room
     public List<VerticalConnection> GetTraversableVerticalConnections()
     {
         return VerticalConnections.Where(c => c.CanTraverse()).ToList();
+    }
+
+    // v0.39.2: Biome blending helper methods
+    public bool IsTransitionRoom() => SecondaryBiome != null && BiomeBlendRatio > 0.0f;
+
+    public bool IsPureBiomeRoom() => SecondaryBiome == null || BiomeBlendRatio == 0.0f;
+
+    public string GetDominantBiome()
+    {
+        if (SecondaryBiome == null || BiomeBlendRatio < 0.5f)
+            return PrimaryBiome;
+        return SecondaryBiome;
+    }
+
+    public (string biome, float weight)[] GetBiomeWeights()
+    {
+        if (SecondaryBiome == null)
+            return new[] { (PrimaryBiome, 1.0f) };
+
+        return new[]
+        {
+            (PrimaryBiome, 1.0f - BiomeBlendRatio),
+            (SecondaryBiome, BiomeBlendRatio)
+        };
+    }
+
+    public float? GetEnvironmentalProperty(string propertyName)
+    {
+        return EnvironmentalProperties.TryGetValue(propertyName, out var value) ? value : null;
+    }
+
+    public void SetEnvironmentalProperty(string propertyName, float value)
+    {
+        EnvironmentalProperties[propertyName] = value;
     }
 }

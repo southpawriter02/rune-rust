@@ -85,6 +85,16 @@
 -- .read Data/v0.32.1_jotunheim_schema.sql
 
 -- ==============================================================================
+-- v0.39: Advanced Dynamic Room Engine
+-- ==============================================================================
+
+-- v0.39.1: 3D Vertical Layer System
+.read Data/v0.39.1_spatial_layout_schema.sql
+
+-- v0.39.2: Biome Transition & Blending
+.read Data/v0.39.2_biome_transition_schema.sql
+
+-- ==============================================================================
 -- Verification Queries
 -- ==============================================================================
 
@@ -94,3 +104,6 @@ SELECT 'Ambient Sounds: ' || COUNT(*) AS count FROM Ambient_Sound_Descriptors;
 SELECT 'Ambient Smells: ' || COUNT(*) AS count FROM Ambient_Smell_Descriptors;
 SELECT 'Atmospheric Details: ' || COUNT(*) AS count FROM Ambient_Atmospheric_Detail_Descriptors;
 SELECT 'Background Activities: ' || COUNT(*) AS count FROM Ambient_Background_Activity_Descriptors;
+
+SELECT '--- v0.39: Advanced Room Engine ---' AS category;
+SELECT 'Biome Adjacency Rules: ' || COUNT(*) AS count FROM Biome_Adjacency;
