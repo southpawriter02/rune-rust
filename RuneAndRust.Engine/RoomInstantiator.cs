@@ -1,10 +1,12 @@
 using RuneAndRust.Core;
+using RuneAndRust.Core.Spatial;
 using Serilog;
 
 namespace RuneAndRust.Engine;
 
 /// <summary>
 /// Converts DungeonGraph to Dungeon with instantiated Room objects (v0.10)
+/// v0.39.1: Extended to apply 3D spatial positions and vertical connections
 /// </summary>
 public class RoomInstantiator
 {
@@ -13,13 +15,19 @@ public class RoomInstantiator
 
     /// <summary>
     /// Instantiates a complete dungeon from a graph
+    /// v0.39.1: Optional parameters for 3D spatial layout
     /// </summary>
-    public Dungeon Instantiate(DungeonGraph graph, int dungeonId, int seed)
+    public Dungeon Instantiate(
+        DungeonGraph graph,
+        int dungeonId,
+        int seed,
+        Dictionary<string, RoomPosition>? positions = null,
+        List<VerticalConnection>? verticalConnections = null)
     {
         _rng = new Random(seed);
 
-        _log.Information("Instantiating dungeon: DungeonId={DungeonId}, Seed={Seed}, Nodes={Nodes}",
-            dungeonId, seed, graph.NodeCount);
+        _log.Information("Instantiating dungeon: DungeonId={DungeonId}, Seed={Seed}, Nodes={Nodes}, Spatial={HasSpatial}",
+            dungeonId, seed, graph.NodeCount, positions != null);
 
         var dungeon = new Dungeon
         {
@@ -76,8 +84,66 @@ public class RoomInstantiator
             }
         }
 
-        _log.Information("Dungeon instantiation complete: {RoomCount} rooms, {ExitCount} exits",
-            dungeon.TotalRoomCount, dungeon.Rooms.Values.Sum(r => r.Exits.Count));
+        // Step 3 (v0.39.1): Apply 3D spatial positions to rooms
+        if (positions != null)
+        {
+            _log.Debug("Applying 3D spatial positions to {RoomCount} rooms", positions.Count);
+
+            foreach (var kvp in positions)
+            {
+                var roomId = kvp.Key;
+                var position = kvp.Value;
+
+                if (dungeon.Rooms.TryGetValue(roomId, out var room))
+                {
+                    room.Position = position;
+                    room.Layer = VerticalLayerExtensions.FromZCoordinate(position.Z);
+
+                    _log.Debug("Applied position to room {RoomId}: {Position} ({Layer})",
+                        roomId, position, room.Layer);
+                }
+            }
+
+            // Store positions in dungeon
+            dungeon.RoomPositions = new Dictionary<string, RoomPosition>(positions);
+
+            _log.Information("Spatial positions applied: {PositionCount} rooms positioned", positions.Count);
+        }
+
+        // Step 4 (v0.39.1): Apply vertical connections to rooms
+        if (verticalConnections != null && verticalConnections.Count > 0)
+        {
+            _log.Debug("Applying {ConnectionCount} vertical connections", verticalConnections.Count);
+
+            foreach (var connection in verticalConnections)
+            {
+                // Add connection to FROM room
+                if (dungeon.Rooms.TryGetValue(connection.FromRoomId, out var fromRoom))
+                {
+                    fromRoom.VerticalConnections.Add(connection);
+                }
+
+                // If bidirectional, also add reverse connection to TO room
+                if (connection.IsBidirectional && dungeon.Rooms.TryGetValue(connection.ToRoomId, out var toRoom))
+                {
+                    // Create reverse connection reference (same object, bidirectional means both rooms can access it)
+                    if (!toRoom.VerticalConnections.Contains(connection))
+                    {
+                        toRoom.VerticalConnections.Add(connection);
+                    }
+                }
+            }
+
+            // Store vertical connections in dungeon
+            dungeon.VerticalConnections = new List<VerticalConnection>(verticalConnections);
+
+            _log.Information("Vertical connections applied: {ConnectionCount} connections", verticalConnections.Count);
+        }
+
+        _log.Information("Dungeon instantiation complete: {RoomCount} rooms, {ExitCount} exits, {VerticalCount} vertical",
+            dungeon.TotalRoomCount,
+            dungeon.Rooms.Values.Sum(r => r.Exits.Count),
+            dungeon.VerticalConnections.Count);
 
         // Validate
         var (isValid, errors) = dungeon.Validate();
