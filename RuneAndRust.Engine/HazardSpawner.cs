@@ -77,9 +77,20 @@ public class HazardSpawner
 
     /// <summary>
     /// Determines how many hazards to spawn in a room
+    /// v0.39.3: Now uses allocated budget from density system when available
     /// </summary>
     private int DetermineHazardCount(Room room, Random rng)
     {
+        // v0.39.3: Use allocated budget if available
+        if (room.AllocatedHazardBudget > 0 || (room.DensityClassification.HasValue && room.DensityClassification == RoomDensity.Empty))
+        {
+            _log.Debug("Using v0.39.3 allocated hazard budget: {Budget}", room.AllocatedHazardBudget);
+            return room.AllocatedHazardBudget;
+        }
+
+        // Fallback to v0.11 heuristic calculation for backward compatibility
+        _log.Debug("Using v0.11 fallback hazard count calculation");
+
         // Entry halls: 0-1 hazards (safe)
         if (room.IsStartRoom || room.GeneratedNodeType == NodeType.Start)
         {

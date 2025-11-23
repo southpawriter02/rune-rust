@@ -87,9 +87,20 @@ public class LootSpawner
 
     /// <summary>
     /// Determines how many loot nodes to spawn
+    /// v0.39.3: Now uses allocated budget from density system when available
     /// </summary>
     private int DetermineLootCount(Room room, Random rng)
     {
+        // v0.39.3: Use allocated budget if available
+        if (room.AllocatedLootBudget > 0 || (room.DensityClassification.HasValue && room.DensityClassification == RoomDensity.Empty))
+        {
+            _log.Debug("Using v0.39.3 allocated loot budget: {Budget}", room.AllocatedLootBudget);
+            return room.AllocatedLootBudget;
+        }
+
+        // Fallback to v0.11 heuristic calculation for backward compatibility
+        _log.Debug("Using v0.11 fallback loot count calculation");
+
         // Entry halls: 0-1 (minimal loot)
         if (room.IsStartRoom || room.GeneratedNodeType == NodeType.Start)
         {
