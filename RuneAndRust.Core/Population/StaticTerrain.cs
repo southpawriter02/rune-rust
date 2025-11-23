@@ -141,3 +141,20 @@ public class ElevatedPlatform : StaticTerrain
     public bool RequiresClimbing { get; set; } = true;
     public int ClimbDC { get; set; } = 10;
 }
+
+/// <summary>
+/// Types of static terrain for v0.11
+/// </summary>
+public enum StaticTerrainType
+{
+    CollapsedPillar,    // Full cover, blocks LoS and movement
+    RubblePile,         // Partial cover, difficult terrain
+    RustedBulkhead,     // Full cover, blocks LoS
+    Chasm,              // Blocks movement, fall damage if forced in
+    ElevatedPlatform,   // Tactical high ground
+    CorrodedGrating,    // Fragile floor (also a hazard)
+    BrokenGantry,       // Partial bridge over chasm
+    CollapseDebris,     // Difficult terrain, no cover
+    SteelBarricade,     // Full cover, destructible
+    ExposedConduit      // Light cover, electrical hazard adjacent
+}

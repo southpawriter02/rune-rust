@@ -38,7 +38,7 @@ public class ThreatHeatmapService
 
             var threatLevel = allocation.AllocatedEnemies + allocation.AllocatedHazards;
 
-            heatmap.RoomThreatLevels[room.RoomId] = new ThreatLevel
+            heatmap.RoomThreatLevels[room.RoomId] = new RoomThreatData
             {
                 RoomId = room.RoomId,
                 Position = room.Position,
