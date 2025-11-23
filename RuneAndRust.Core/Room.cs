@@ -97,6 +97,15 @@ public class Room
     // v0.12 Coherent Glitch tracking
     public int CoherentGlitchRulesFired { get; set; } = 0;
 
+    // v0.39.3: Content Density & Population Budget
+    public Population.RoomDensity? DensityClassification { get; set; } = null; // Density type (Empty, Light, Medium, Heavy, Boss)
+    public int AllocatedEnemyBudget { get; set; } = 0; // Enemies allocated to this room
+    public int AllocatedHazardBudget { get; set; } = 0; // Hazards allocated to this room
+    public int AllocatedLootBudget { get; set; } = 0; // Loot nodes allocated to this room
+    public int ActualEnemiesSpawned { get; set; } = 0; // Enemies actually spawned (for validation)
+    public int ActualHazardsSpawned { get; set; } = 0; // Hazards actually spawned (for validation)
+    public int ActualLootSpawned { get; set; } = 0; // Loot nodes actually spawned (for validation)
+
     // Helper methods
     public bool HasAmbientCondition(string conditionName)
     {

@@ -9,6 +9,7 @@ namespace RuneAndRust.Engine;
 /// v0.11 Population Pipeline
 /// Coordinates all population spawners to fill rooms with enemies, hazards, terrain, loot, and conditions
 /// Implements the v2.0 data-driven population system
+/// v0.39.3: Integrated with global content density budget system
 /// </summary>
 public class PopulationPipeline
 {
@@ -20,30 +21,84 @@ public class PopulationPipeline
     private readonly LootSpawner _lootSpawner;
     private readonly ConditionApplier _conditionApplier;
 
+    // v0.39.3: Density management services
+    private readonly ContentDensityService _densityService;
+    private readonly DensityClassificationService _classificationService;
+    private readonly BudgetDistributionService _distributionService;
+    private readonly ThreatHeatmapService _heatmapService;
+
     public PopulationPipeline(
         DormantProcessSpawner processSpawner,
         HazardSpawner hazardSpawner,
         TerrainSpawner terrainSpawner,
         LootSpawner lootSpawner,
-        ConditionApplier conditionApplier)
+        ConditionApplier conditionApplier,
+        ContentDensityService? densityService = null,
+        DensityClassificationService? classificationService = null,
+        BudgetDistributionService? distributionService = null,
+        ThreatHeatmapService? heatmapService = null)
     {
         _processSpawner = processSpawner;
         _hazardSpawner = hazardSpawner;
         _terrainSpawner = terrainSpawner;
         _lootSpawner = lootSpawner;
         _conditionApplier = conditionApplier;
+
+        // v0.39.3: Optional for backward compatibility
+        _densityService = densityService ?? new ContentDensityService();
+        _classificationService = classificationService ?? new DensityClassificationService();
+        _distributionService = distributionService ?? new BudgetDistributionService();
+        _heatmapService = heatmapService ?? new ThreatHeatmapService();
     }
 
     /// <summary>
     /// Populates all rooms in a dungeon with enemies, hazards, terrain, loot, and conditions
     /// Pipeline order: Conditions → Hazards → Terrain → Enemies → Loot
     /// (Conditions first so they can affect spawn weights via Coherent Glitch rules)
+    /// v0.39.3: Now uses global budget system to prevent over-saturation
     /// </summary>
-    public void PopulateDungeon(Dungeon dungeon, BiomeDefinition biome, Random rng)
+    public void PopulateDungeon(Dungeon dungeon, BiomeDefinition biome, Random rng, DifficultyTier difficulty = DifficultyTier.Normal)
     {
         var stopwatch = Stopwatch.StartNew();
-        _log.Information("Starting population pipeline for dungeon {DungeonId}, biome {BiomeName}",
-            dungeon.DungeonId, biome.Name);
+        _log.Information("Starting v0.39.3 population pipeline for dungeon {DungeonId}, biome {BiomeName}, difficulty {Difficulty}",
+            dungeon.DungeonId, biome.Name, difficulty);
+
+        // === v0.39.3: Global Budget & Density System ===
+
+        // Step 1: Calculate global budget
+        var rooms = dungeon.Rooms.Values.Where(r => !r.IsHandcrafted).ToList();
+        var globalBudget = _densityService.CalculateGlobalBudget(
+            rooms.Count,
+            difficulty,
+            biome.BiomeId);
+
+        // Step 2: Classify room densities
+        var densityMap = _classificationService.ClassifyRooms(rooms, rng);
+
+        // Step 3: Distribute budget across rooms
+        var populationPlan = _distributionService.DistributeBudget(
+            globalBudget,
+            densityMap,
+            rng);
+
+        // Step 4: Apply allocations to Room properties
+        foreach (var room in rooms)
+        {
+            if (populationPlan.RoomAllocations.TryGetValue(room.RoomId, out var allocation))
+            {
+                room.DensityClassification = allocation.Density;
+                room.AllocatedEnemyBudget = allocation.AllocatedEnemies;
+                room.AllocatedHazardBudget = allocation.AllocatedHazards;
+                room.AllocatedLootBudget = allocation.AllocatedLoot;
+
+                _log.Debug(
+                    "Room {RoomId} allocated: Density={Density}, Enemies={Enemies}, Hazards={Hazards}, Loot={Loot}",
+                    room.RoomId, allocation.Density, allocation.AllocatedEnemies,
+                    allocation.AllocatedHazards, allocation.AllocatedLoot);
+            }
+        }
+
+        // === Standard v0.11 Population ===
 
         int populatedRoomCount = 0;
         int skippedHandcraftedCount = 0;
@@ -61,10 +116,16 @@ public class PopulationPipeline
             populatedRoomCount++;
         }
 
+        // === v0.39.3: Generate Threat Heatmap ===
+
+        var heatmap = _heatmapService.GenerateHeatmap(dungeon, populationPlan);
+        _heatmapService.LogHeatmapStatistics(heatmap, dungeon.DungeonId.ToString());
+
         stopwatch.Stop();
         _log.Information(
-            "Population pipeline complete: {PopulatedRooms} rooms populated, {SkippedRooms} handcrafted rooms skipped, duration: {Duration}ms",
-            populatedRoomCount, skippedHandcraftedCount, stopwatch.ElapsedMilliseconds);
+            "Population pipeline complete: {PopulatedRooms} rooms populated, {SkippedRooms} handcrafted rooms skipped, " +
+            "avg threat level: {AvgThreats:F2}, duration: {Duration}ms",
+            populatedRoomCount, skippedHandcraftedCount, heatmap.AverageThreatLevel, stopwatch.ElapsedMilliseconds);
 
         // Validation
         ValidatePopulation(dungeon);

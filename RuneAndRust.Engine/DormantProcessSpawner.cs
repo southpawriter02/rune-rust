@@ -96,9 +96,20 @@ public class DormantProcessSpawner
 
     /// <summary>
     /// Calculates spawn budget based on room size, archetype, and depth
+    /// v0.39.3: Now uses allocated budget from density system when available
     /// </summary>
     private int CalculateSpawnBudget(Room room)
     {
+        // v0.39.3: Use allocated budget if available
+        if (room.AllocatedEnemyBudget > 0)
+        {
+            _log.Debug("Using v0.39.3 allocated enemy budget: {Budget}", room.AllocatedEnemyBudget);
+            return room.AllocatedEnemyBudget;
+        }
+
+        // Fallback to v0.11 budget calculation for backward compatibility
+        _log.Debug("Using v0.11 fallback budget calculation");
+
         // Base budget by room type (heuristic based on node type)
         int baseBudget = room.GeneratedNodeType switch
         {
@@ -115,11 +126,6 @@ public class DormantProcessSpawner
         {
             baseBudget = Math.Max(1, baseBudget - 2); // Entry halls are safer
         }
-
-        // Difficulty multiplier by depth (if tracked - for now use heuristic)
-        // In future, room.Depth could be set during generation
-        // For now, assume depth scales with distance from start
-        // This would be enhanced in integration phase
 
         return baseBudget;
     }
