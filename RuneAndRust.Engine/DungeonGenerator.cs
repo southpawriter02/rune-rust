@@ -541,6 +541,7 @@ public class DungeonGenerator
 
     /// <summary>
     /// Populates rooms using budget allocations from the population plan
+    /// Integrates with existing v0.11 spawners which respect allocated budgets
     /// </summary>
     private void PopulateRoomsWithBudgets(
         Dungeon dungeon,
@@ -548,74 +549,198 @@ public class DungeonGenerator
         BiomeDefinition biome,
         Random rng)
     {
+        // Step 1: Set allocated budgets on all rooms
         foreach (var room in dungeon.Rooms.Values)
         {
-            if (!plan.RoomAllocations.TryGetValue(room.RoomId, out var allocation))
+            if (plan.RoomAllocations.TryGetValue(room.RoomId, out var allocation))
             {
-                _log.Debug("Room {RoomId} has no allocation, leaving empty", room.RoomId);
-                continue;
-            }
+                room.AllocatedEnemyBudget = allocation.AllocatedEnemies;
+                room.AllocatedHazardBudget = allocation.AllocatedHazards;
+                room.AllocatedLootBudget = allocation.AllocatedLoot;
+                room.DensityClassification = allocation.Density;
 
-            // Use population pipeline for actual spawning if available
-            if (_populationPipeline != null)
-            {
-                // TODO: Modify PopulationPipeline to accept budget constraints
-                // For now, use simplified spawning
-                SpawnEnemiesInRoom(room, allocation.AllocatedEnemies, biome, rng);
-                SpawnHazardsInRoom(room, allocation.AllocatedHazards, biome, rng);
-                SpawnLootInRoom(room, allocation.AllocatedLoot, biome, rng);
+                _log.Debug(
+                    "Room {RoomId} budgets set: Enemies={Enemies}, Hazards={Hazards}, Loot={Loot}, Density={Density}",
+                    room.RoomId, allocation.AllocatedEnemies, allocation.AllocatedHazards,
+                    allocation.AllocatedLoot, allocation.Density);
             }
             else
             {
-                // Fallback: simple spawning
-                SpawnEnemiesInRoom(room, allocation.AllocatedEnemies, biome, rng);
-                SpawnHazardsInRoom(room, allocation.AllocatedHazards, biome, rng);
-                SpawnLootInRoom(room, allocation.AllocatedLoot, biome, rng);
+                _log.Debug("Room {RoomId} has no allocation, will remain empty", room.RoomId);
             }
+        }
 
-            _log.Debug("Populated room {RoomId}: {Enemies} enemies, {Hazards} hazards, {Loot} loot, Density={Density}",
-                room.RoomId, allocation.AllocatedEnemies, allocation.AllocatedHazards,
-                allocation.AllocatedLoot, allocation.Density);
+        // Step 2: Use PopulationPipeline if available (it respects allocated budgets)
+        if (_populationPipeline != null)
+        {
+            _log.Information("Using PopulationPipeline with v0.39.3 budget constraints");
+
+            foreach (var room in dungeon.Rooms.Values)
+            {
+                if (room.IsHandcrafted)
+                {
+                    _log.Debug("Skipping handcrafted room {RoomId}", room.RoomId);
+                    continue;
+                }
+
+                // PopulateRoom will check AllocatedEnemyBudget, AllocatedHazardBudget, etc.
+                _populationPipeline.PopulateRoom(room, biome, rng);
+            }
+        }
+        else if (biome.Elements != null)
+        {
+            // Fallback: Use biome element tables directly
+            _log.Information("PopulationPipeline not available, using biome element tables directly");
+
+            foreach (var room in dungeon.Rooms.Values)
+            {
+                if (!plan.RoomAllocations.TryGetValue(room.RoomId, out var allocation))
+                    continue;
+
+                SpawnEnemiesFromBiomeElements(room, allocation.AllocatedEnemies, biome, rng);
+                SpawnHazardsFromBiomeElements(room, allocation.AllocatedHazards, biome, rng);
+                SpawnLootFromBiomeElements(room, allocation.AllocatedLoot, biome, rng);
+            }
+        }
+        else
+        {
+            // Last resort: Use placeholder spawning for testing without full biome data
+            _log.Warning("Neither PopulationPipeline nor BiomeElements available, using placeholder spawning");
+
+            foreach (var room in dungeon.Rooms.Values)
+            {
+                if (!plan.RoomAllocations.TryGetValue(room.RoomId, out var allocation))
+                    continue;
+
+                SpawnPlaceholderContent(room, allocation, biome, rng);
+            }
         }
     }
 
-    private void SpawnEnemiesInRoom(Room room, int count, BiomeDefinition biome, Random rng)
+    /// <summary>
+    /// Spawns enemies using biome element tables (fallback when PopulationPipeline unavailable)
+    /// </summary>
+    private void SpawnEnemiesFromBiomeElements(Room room, int budget, BiomeDefinition biome, Random rng)
     {
-        // TODO: Implement proper enemy spawning from biome enemy pools
-        // For now, placeholder
+        if (budget <= 0 || biome.Elements == null) return;
+
+        var availableEnemies = biome.Elements.GetEligibleElements(
+            BiomeElementType.DormantProcess, room, rng);
+
+        if (availableEnemies.Count == 0)
+        {
+            _log.Debug("No eligible enemies for room {RoomId}", room.RoomId);
+            return;
+        }
+
+        int spawnedCount = 0;
+        while (budget > 0 && availableEnemies.Count > 0)
+        {
+            var selected = biome.Elements.WeightedRandomSelection(availableEnemies, rng);
+            if (selected == null) break;
+
+            if (selected.SpawnCost > budget)
+            {
+                availableEnemies = availableEnemies.Where(e => e.SpawnCost <= budget).ToList();
+                continue;
+            }
+
+            // Create simplified enemy spawn
+            room.Enemies.Add(new Core.Population.EnemySpawn
+            {
+                EnemyId = selected.AssociatedDataId ?? selected.ElementName,
+                SpawnWeight = selected.Weight
+            });
+
+            budget -= selected.SpawnCost;
+            spawnedCount++;
+        }
+
+        _log.Debug("Spawned {Count} enemies in room {RoomId}", spawnedCount, room.RoomId);
+    }
+
+    /// <summary>
+    /// Spawns hazards using biome element tables (fallback when PopulationPipeline unavailable)
+    /// </summary>
+    private void SpawnHazardsFromBiomeElements(Room room, int count, BiomeDefinition biome, Random rng)
+    {
+        if (count <= 0 || biome.Elements == null) return;
+
+        var availableHazards = biome.Elements.GetEligibleElements(
+            BiomeElementType.DynamicHazard, room, rng);
+
+        if (availableHazards.Count == 0) return;
+
         for (int i = 0; i < count; i++)
+        {
+            var selected = biome.Elements.WeightedRandomSelection(availableHazards, rng);
+            if (selected == null) break;
+
+            room.Hazards.Add(new Core.Population.HazardSpawn
+            {
+                HazardId = selected.AssociatedDataId ?? selected.ElementName,
+                SpawnWeight = selected.Weight
+            });
+
+            // Remove to avoid duplicates
+            availableHazards = availableHazards.Where(h => h.ElementName != selected.ElementName).ToList();
+        }
+    }
+
+    /// <summary>
+    /// Spawns loot using biome element tables (fallback when PopulationPipeline unavailable)
+    /// </summary>
+    private void SpawnLootFromBiomeElements(Room room, int count, BiomeDefinition biome, Random rng)
+    {
+        if (count <= 0 || biome.Elements == null) return;
+
+        var availableLoot = biome.Elements.GetEligibleElements(
+            BiomeElementType.LootNode, room, rng);
+
+        if (availableLoot.Count == 0) return;
+
+        for (int i = 0; i < count; i++)
+        {
+            var selected = biome.Elements.WeightedRandomSelection(availableLoot, rng);
+            if (selected == null) break;
+
+            room.Loot.Add(new Core.Population.LootNode
+            {
+                LootNodeId = selected.AssociatedDataId ?? selected.ElementName,
+                LootTier = LootTier.Common // Could be enhanced based on element data
+            });
+        }
+    }
+
+    /// <summary>
+    /// Placeholder spawning for testing without full biome data
+    /// Only used when neither PopulationPipeline nor BiomeElements are available
+    /// </summary>
+    private void SpawnPlaceholderContent(Room room, RoomAllocation allocation, BiomeDefinition biome, Random rng)
+    {
+        for (int i = 0; i < allocation.AllocatedEnemies; i++)
         {
             room.Enemies.Add(new Core.Population.EnemySpawn
             {
-                EnemyId = $"enemy_{biome.BiomeId}_{i}",
+                EnemyId = $"placeholder_enemy_{biome.BiomeId}_{i}",
                 SpawnWeight = 1.0f
             });
         }
-    }
 
-    private void SpawnHazardsInRoom(Room room, int count, BiomeDefinition biome, Random rng)
-    {
-        // TODO: Implement proper hazard spawning from biome hazard pools
-        // For now, placeholder
-        for (int i = 0; i < count; i++)
+        for (int i = 0; i < allocation.AllocatedHazards; i++)
         {
             room.Hazards.Add(new Core.Population.HazardSpawn
             {
-                HazardId = $"hazard_{biome.BiomeId}_{i}",
+                HazardId = $"placeholder_hazard_{biome.BiomeId}_{i}",
                 SpawnWeight = 1.0f
             });
         }
-    }
 
-    private void SpawnLootInRoom(Room room, int count, BiomeDefinition biome, Random rng)
-    {
-        // TODO: Implement proper loot spawning
-        // For now, placeholder
-        for (int i = 0; i < count; i++)
+        for (int i = 0; i < allocation.AllocatedLoot; i++)
         {
             room.Loot.Add(new Core.Population.LootNode
             {
-                LootNodeId = $"loot_{biome.BiomeId}_{i}",
+                LootNodeId = $"placeholder_loot_{biome.BiomeId}_{i}",
                 LootTier = LootTier.Common
             });
         }
