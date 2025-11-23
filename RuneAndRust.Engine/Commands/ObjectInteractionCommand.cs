@@ -2,6 +2,8 @@ using RuneAndRust.Core;
 using RuneAndRust.Core.Descriptors;
 using Serilog;
 using System.Text;
+using CoreInteractionType = RuneAndRust.Core.InteractionType;
+using CoreInteractionResult = RuneAndRust.Core.InteractionResult;
 
 namespace RuneAndRust.Engine.Commands;
 

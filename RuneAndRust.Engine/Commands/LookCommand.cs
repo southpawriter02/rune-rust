@@ -1,4 +1,6 @@
 using RuneAndRust.Core;
+using PopulationLootNode = RuneAndRust.Core.Population.LootNode;
+using PopulationDynamicHazard = RuneAndRust.Core.Population.DynamicHazard;
 using RuneAndRust.Core.Population;
 using Serilog;
 using System.Text;
@@ -374,7 +376,7 @@ public class LookCommand : ICommand
         return $"{terrain.TerrainName}: {terrain.FlavorText ?? "A static terrain feature."}";
     }
 
-    private string DescribeLootNode(LootNode lootNode)
+    private string DescribeLootNode(PopulationLootNode lootNode)
     {
         if (lootNode.HasBeenLooted)
         {
@@ -384,7 +386,7 @@ public class LookCommand : ICommand
         return $"{lootNode.NodeType}: {lootNode.FlavorText ?? "You could search this."}\nUse 'search {lootNode.NodeType}' to investigate.";
     }
 
-    private string DescribeHazard(DynamicHazard hazard)
+    private string DescribeHazard(PopulationDynamicHazard hazard)
     {
         var status = hazard.IsActive ? "ACTIVE" : "Disabled";
         return $"{hazard.HazardName} ({status}): {hazard.FlavorText ?? "A dangerous hazard."}";

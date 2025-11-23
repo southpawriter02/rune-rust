@@ -1,5 +1,7 @@
 using RuneAndRust.Core;
 using RuneAndRust.Core.Descriptors;
+using PopulationLootNode = RuneAndRust.Core.Population.LootNode;
+using PopulationDynamicHazard = RuneAndRust.Core.Population.DynamicHazard;
 using RuneAndRust.Core.Population;
 using Serilog;
 using System.Text;
@@ -273,7 +275,7 @@ public class EnhancedInvestigateCommand : ICommand
         return CommandResult.Success(sb.ToString(), redrawRoom: success);
     }
 
-    private CommandResult InvestigateLootNode(GameState state, LootNode lootNode)
+    private CommandResult InvestigateLootNode(GameState state, PopulationLootNode lootNode)
     {
         if (lootNode.HasBeenLooted)
         {
@@ -318,7 +320,7 @@ public class EnhancedInvestigateCommand : ICommand
         return CommandResult.Success(sb.ToString(), redrawRoom: success);
     }
 
-    private CommandResult InvestigateHazard(GameState state, DynamicHazard hazard)
+    private CommandResult InvestigateHazard(GameState state, PopulationDynamicHazard hazard)
     {
         if (!hazard.IsActive)
         {
