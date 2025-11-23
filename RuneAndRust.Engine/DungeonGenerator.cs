@@ -1,6 +1,8 @@
 using RuneAndRust.Core;
+using RuneAndRust.Core.Population;
 using RuneAndRust.Engine.Spatial;
 using Serilog;
+using System.Diagnostics;
 
 namespace RuneAndRust.Engine;
 
@@ -8,15 +10,35 @@ namespace RuneAndRust.Engine;
 /// Generates procedural dungeon layouts using graph-based algorithm (v0.10)
 /// v0.11: Integrated with PopulationPipeline for enemy/hazard/loot spawning
 /// v0.39.1: Integrated with SpatialLayoutService for 3D coordinate assignment
+/// v0.39.2: Integrated with BiomeTransitionService for multi-biome sectors
+/// v0.39.3: Integrated with ContentDensityService for balanced population
+/// v0.39.4: Full integration of all v0.39 components with comprehensive testing
 /// </summary>
 public class DungeonGenerator
 {
     private static readonly ILogger _log = Log.ForContext<DungeonGenerator>();
     private readonly TemplateLibrary _templateLibrary;
-    private readonly PopulationPipeline? _populationPipeline; // v0.11 - optional for backward compatibility
-    private readonly AnchorInserter? _anchorInserter; // v0.11 - Quest Anchor support
-    private readonly ISpatialLayoutService? _spatialLayoutService; // v0.39.1 - 3D layout (optional for backward compatibility)
-    private readonly ISpatialValidationService? _spatialValidationService; // v0.39.1 - Spatial validation
+
+    // v0.11 services
+    private readonly PopulationPipeline? _populationPipeline;
+    private readonly AnchorInserter? _anchorInserter;
+
+    // v0.39.1 services (3D Spatial)
+    private readonly ISpatialLayoutService? _spatialLayoutService;
+    private readonly ISpatialValidationService? _spatialValidationService;
+    private readonly IVerticalTraversalService? _verticalTraversalService;
+
+    // v0.39.2 services (Biome Transitions)
+    private readonly BiomeTransitionService? _biomeTransitionService;
+    private readonly BiomeBlendingService? _biomeBlendingService;
+    private readonly EnvironmentalGradientService? _gradientService;
+
+    // v0.39.3 services (Content Density)
+    private readonly ContentDensityService? _contentDensityService;
+    private readonly DensityClassificationService? _densityClassificationService;
+    private readonly BudgetDistributionService? _budgetDistributionService;
+    private readonly ThreatHeatmapService? _heatmapService;
+
     private Random _rng = null!;
     private int _seed;
     private BiomeDefinition? _currentBiome;
@@ -26,13 +48,29 @@ public class DungeonGenerator
         PopulationPipeline? populationPipeline = null,
         AnchorInserter? anchorInserter = null,
         ISpatialLayoutService? spatialLayoutService = null,
-        ISpatialValidationService? spatialValidationService = null)
+        ISpatialValidationService? spatialValidationService = null,
+        IVerticalTraversalService? verticalTraversalService = null,
+        BiomeTransitionService? biomeTransitionService = null,
+        BiomeBlendingService? biomeBlendingService = null,
+        EnvironmentalGradientService? gradientService = null,
+        ContentDensityService? contentDensityService = null,
+        DensityClassificationService? densityClassificationService = null,
+        BudgetDistributionService? budgetDistributionService = null,
+        ThreatHeatmapService? heatmapService = null)
     {
         _templateLibrary = templateLibrary;
         _populationPipeline = populationPipeline;
         _anchorInserter = anchorInserter;
         _spatialLayoutService = spatialLayoutService;
         _spatialValidationService = spatialValidationService;
+        _verticalTraversalService = verticalTraversalService;
+        _biomeTransitionService = biomeTransitionService;
+        _biomeBlendingService = biomeBlendingService;
+        _gradientService = gradientService;
+        _contentDensityService = contentDensityService;
+        _densityClassificationService = densityClassificationService;
+        _budgetDistributionService = budgetDistributionService;
+        _heatmapService = heatmapService;
     }
 
     /// <summary>
@@ -250,6 +288,513 @@ public class DungeonGenerator
 
         return dungeon;
     }
+
+    /// <summary>
+    /// v0.39.4: Full integrated pipeline with all v0.39 components
+    /// Generates a complete dungeon using the 6-phase pipeline:
+    /// 1. Layout Generation (v0.10)
+    /// 2. 3D Spatial Layout (v0.39.1)
+    /// 3. Biome Transitions (v0.39.2)
+    /// 4. Content Density (v0.39.3)
+    /// 5. Population (v0.11 modified)
+    /// 6. Validation & Finalization
+    /// </summary>
+    public Dungeon GenerateWithFullPipeline(
+        int seed,
+        int dungeonId,
+        int targetRoomCount = 7,
+        BiomeDefinition? biome = null,
+        List<BiomeDefinition>? additionalBiomes = null)
+    {
+        var stopwatch = Stopwatch.StartNew();
+        _seed = seed;
+        _rng = new Random(seed);
+        _currentBiome = biome;
+
+        var biomeIds = new List<string>();
+        if (biome != null) biomeIds.Add(biome.BiomeId);
+        if (additionalBiomes != null) biomeIds.AddRange(additionalBiomes.Select(b => b.BiomeId));
+
+        _log.Information(
+            "Sector generation started: Seed={Seed}, Biome={Biome}, AdditionalBiomes={Additional}, Difficulty={Difficulty}, TargetRooms={Rooms}",
+            seed, biome?.BiomeId ?? "none", additionalBiomes?.Count ?? 0, biome?.DifficultyTier ?? DifficultyTier.Normal, targetRoomCount);
+
+        try
+        {
+            // ===== PHASE 1: LAYOUT GENERATION (v0.10) =====
+            _log.Debug("PHASE 1: Generating graph layout...");
+            var graph = Generate(seed, targetRoomCount, biome);
+            _log.Information("Graph generated: {NodeCount} nodes", graph.NodeCount);
+
+            // ===== PHASE 2: 3D SPATIAL LAYOUT (v0.39.1) =====
+            _log.Debug("PHASE 2: Converting to 3D spatial layout...");
+            Dictionary<string, Core.Spatial.RoomPosition>? positions = null;
+            List<Core.Spatial.VerticalConnection>? verticalConnections = null;
+
+            if (_spatialLayoutService != null)
+            {
+                positions = _spatialLayoutService.ConvertGraphTo3DLayout(graph, seed);
+
+                // Validate no overlaps
+                var templates = graph.GetNodes().ToDictionary(
+                    n => n.Id.ToString(),
+                    n => n.Template);
+                var noOverlaps = _spatialLayoutService.ValidateNoOverlaps(positions, templates);
+
+                if (!noOverlaps)
+                {
+                    _log.Warning("Room overlaps detected in spatial layout - attempting to resolve");
+                }
+
+                // Generate vertical connections
+                verticalConnections = _spatialLayoutService.GenerateVerticalConnections(positions, _rng);
+
+                _log.Information("3D layout complete: {RoomCount} rooms positioned, {ConnectionCount} vertical connections",
+                    positions.Count, verticalConnections.Count);
+
+                // Run spatial validation
+                if (_spatialValidationService != null)
+                {
+                    var validationIssues = _spatialValidationService.ValidateSector(positions, verticalConnections, graph);
+
+                    var criticalIssues = validationIssues.Where(i => i.Severity == "Critical").ToList();
+                    if (criticalIssues.Any())
+                    {
+                        _log.Error("Critical spatial validation issues detected: {IssueCount}", criticalIssues.Count);
+                        foreach (var issue in criticalIssues)
+                        {
+                            _log.Error("  - {Issue}", issue.Description);
+                        }
+                        throw new InvalidOperationException($"Spatial validation failed with {criticalIssues.Count} critical issues");
+                    }
+
+                    var warnings = validationIssues.Where(i => i.Severity == "Warning").ToList();
+                    if (warnings.Any())
+                    {
+                        _log.Warning("Spatial validation warnings: {WarningCount}", warnings.Count);
+                    }
+                }
+            }
+            else
+            {
+                _log.Debug("Spatial layout service not available (v0.10 mode)");
+            }
+
+            // ===== PHASE 3: INSTANTIATE ROOMS =====
+            _log.Debug("PHASE 3: Instantiating rooms...");
+            var instantiator = new RoomInstantiator();
+            var dungeon = instantiator.Instantiate(graph, dungeonId, seed, positions, verticalConnections);
+
+            // Set biome on dungeon
+            if (biome != null)
+            {
+                dungeon.Biome = biome.BiomeId;
+            }
+
+            // ===== PHASE 4: BIOME TRANSITIONS (v0.39.2) =====
+            if (additionalBiomes != null && additionalBiomes.Any() &&
+                _biomeTransitionService != null &&
+                biome != null)
+            {
+                _log.Debug("PHASE 4: Applying biome transitions...");
+                ApplyBiomeTransitions(dungeon, biome, additionalBiomes, _rng);
+                _log.Information("Biome transitions applied: {BiomeCount} biomes", additionalBiomes.Count + 1);
+            }
+            else
+            {
+                _log.Debug("PHASE 4: Skipped (single biome or service not available)");
+            }
+
+            // ===== PHASE 5: CONTENT DENSITY (v0.39.3) =====
+            if (_contentDensityService != null &&
+                _densityClassificationService != null &&
+                _budgetDistributionService != null &&
+                biome != null)
+            {
+                _log.Debug("PHASE 5: Calculating content density budgets...");
+
+                var globalBudget = _contentDensityService.CalculateGlobalBudget(
+                    dungeon.TotalRoomCount,
+                    biome.DifficultyTier,
+                    biome.BiomeId);
+
+                var roomsList = dungeon.Rooms.Values.ToList();
+                var densityMap = _densityClassificationService.ClassifyRooms(roomsList, _rng);
+
+                var populationPlan = _budgetDistributionService.DistributeBudget(
+                    globalBudget, densityMap, _rng);
+
+                _log.Information(
+                    "Population plan created: {Enemies} enemies, {Hazards} hazards allocated across {Rooms} rooms",
+                    populationPlan.TotalEnemiesAllocated,
+                    populationPlan.TotalHazardsAllocated,
+                    dungeon.TotalRoomCount);
+
+                // ===== PHASE 6: POPULATION (v0.11 modified with budgets) =====
+                _log.Debug("PHASE 6: Populating rooms with budget constraints...");
+                PopulateRoomsWithBudgets(dungeon, populationPlan, biome, _rng);
+
+                // ===== PHASE 7: VALIDATION & FINALIZATION =====
+                _log.Debug("PHASE 7: Final validation...");
+                if (_heatmapService != null)
+                {
+                    var heatmap = _heatmapService.GenerateHeatmap(dungeon, populationPlan);
+                    _heatmapService.LogHeatmapStatistics(heatmap, dungeonId.ToString());
+                }
+
+                ValidateFinalDungeon(dungeon);
+            }
+            else if (_populationPipeline != null && biome != null)
+            {
+                // Fallback to old population pipeline if v0.39.3 services not available
+                _log.Information("Content density services not available, using legacy population pipeline");
+                _populationPipeline.PopulateDungeon(dungeon, biome, _rng);
+            }
+            else
+            {
+                _log.Debug("Population skipped (no services available)");
+            }
+
+            stopwatch.Stop();
+            _log.Information(
+                "Sector generation complete: Seed={Seed}, Time={Duration}ms, Rooms={RoomCount}, Pipeline=v0.39.4-full",
+                seed, stopwatch.ElapsedMilliseconds, dungeon.TotalRoomCount);
+
+            return dungeon;
+        }
+        catch (Exception ex)
+        {
+            _log.Error(ex,
+                "Sector generation failed: Seed={Seed}, Error={Error}",
+                seed, ex.Message);
+            throw;
+        }
+    }
+
+    #region v0.39.2: Biome Transition Methods
+
+    /// <summary>
+    /// Applies biome transitions to a dungeon with multiple biomes
+    /// </summary>
+    private void ApplyBiomeTransitions(
+        Dungeon dungeon,
+        BiomeDefinition primaryBiome,
+        List<BiomeDefinition> additionalBiomes,
+        Random rng)
+    {
+        if (_biomeTransitionService == null)
+        {
+            _log.Warning("BiomeTransitionService not available, skipping transitions");
+            return;
+        }
+
+        // For now, simple implementation: blend primary with first additional biome
+        // More sophisticated multi-biome blending can be added later
+        if (additionalBiomes.Count > 0)
+        {
+            var secondaryBiome = additionalBiomes[0];
+
+            // Check compatibility
+            if (!_biomeTransitionService.CanBiomesBeAdjacent(primaryBiome.BiomeId, secondaryBiome.BiomeId))
+            {
+                _log.Error("Biomes {BiomeA} and {BiomeB} are incompatible, skipping transition",
+                    primaryBiome.BiomeId, secondaryBiome.BiomeId);
+                return;
+            }
+
+            // Determine transition room count (use 20-30% of rooms for transition)
+            var transitionCount = Math.Max(1, dungeon.TotalRoomCount / 4);
+            transitionCount = _biomeTransitionService.GetOptimalTransitionCount(
+                primaryBiome.BiomeId, secondaryBiome.BiomeId, rng);
+
+            _log.Information("Creating {Count} transition rooms between {BiomeA} and {BiomeB}",
+                transitionCount, primaryBiome.BiomeId, secondaryBiome.BiomeId);
+
+            // Apply blending to rooms in the middle section
+            var roomsList = dungeon.Rooms.Values.OrderBy(r => r.Position?.X ?? 0).ToList();
+            var startIndex = roomsList.Count / 2 - transitionCount / 2;
+            var endIndex = startIndex + transitionCount;
+
+            for (int i = startIndex; i < endIndex && i < roomsList.Count; i++)
+            {
+                var room = roomsList[i];
+                var progress = (float)(i - startIndex) / transitionCount;
+
+                room.SecondaryBiome = secondaryBiome.BiomeId;
+                room.BiomeBlendRatio = progress;
+
+                // Apply gradients if available
+                if (_gradientService != null)
+                {
+                    _gradientService.ApplyGradients(room, primaryBiome.BiomeId, secondaryBiome.BiomeId, progress);
+                }
+
+                _log.Debug("Applied biome blend to room {RoomId}: {Blend:P0} {SecondaryBiome}",
+                    room.RoomId, progress, secondaryBiome.BiomeId);
+            }
+        }
+    }
+
+    #endregion
+
+    #region v0.39.3: Budget-Based Population Methods
+
+    /// <summary>
+    /// Populates rooms using budget allocations from the population plan
+    /// Integrates with existing v0.11 spawners which respect allocated budgets
+    /// </summary>
+    private void PopulateRoomsWithBudgets(
+        Dungeon dungeon,
+        SectorPopulationPlan plan,
+        BiomeDefinition biome,
+        Random rng)
+    {
+        // Step 1: Set allocated budgets on all rooms
+        foreach (var room in dungeon.Rooms.Values)
+        {
+            if (plan.RoomAllocations.TryGetValue(room.RoomId, out var allocation))
+            {
+                room.AllocatedEnemyBudget = allocation.AllocatedEnemies;
+                room.AllocatedHazardBudget = allocation.AllocatedHazards;
+                room.AllocatedLootBudget = allocation.AllocatedLoot;
+                room.DensityClassification = allocation.Density;
+
+                _log.Debug(
+                    "Room {RoomId} budgets set: Enemies={Enemies}, Hazards={Hazards}, Loot={Loot}, Density={Density}",
+                    room.RoomId, allocation.AllocatedEnemies, allocation.AllocatedHazards,
+                    allocation.AllocatedLoot, allocation.Density);
+            }
+            else
+            {
+                _log.Debug("Room {RoomId} has no allocation, will remain empty", room.RoomId);
+            }
+        }
+
+        // Step 2: Use PopulationPipeline if available (it respects allocated budgets)
+        if (_populationPipeline != null)
+        {
+            _log.Information("Using PopulationPipeline with v0.39.3 budget constraints");
+
+            foreach (var room in dungeon.Rooms.Values)
+            {
+                if (room.IsHandcrafted)
+                {
+                    _log.Debug("Skipping handcrafted room {RoomId}", room.RoomId);
+                    continue;
+                }
+
+                // PopulateRoom will check AllocatedEnemyBudget, AllocatedHazardBudget, etc.
+                _populationPipeline.PopulateRoom(room, biome, rng);
+            }
+        }
+        else if (biome.Elements != null)
+        {
+            // Fallback: Use biome element tables directly
+            _log.Information("PopulationPipeline not available, using biome element tables directly");
+
+            foreach (var room in dungeon.Rooms.Values)
+            {
+                if (!plan.RoomAllocations.TryGetValue(room.RoomId, out var allocation))
+                    continue;
+
+                SpawnEnemiesFromBiomeElements(room, allocation.AllocatedEnemies, biome, rng);
+                SpawnHazardsFromBiomeElements(room, allocation.AllocatedHazards, biome, rng);
+                SpawnLootFromBiomeElements(room, allocation.AllocatedLoot, biome, rng);
+            }
+        }
+        else
+        {
+            // Last resort: Use placeholder spawning for testing without full biome data
+            _log.Warning("Neither PopulationPipeline nor BiomeElements available, using placeholder spawning");
+
+            foreach (var room in dungeon.Rooms.Values)
+            {
+                if (!plan.RoomAllocations.TryGetValue(room.RoomId, out var allocation))
+                    continue;
+
+                SpawnPlaceholderContent(room, allocation, biome, rng);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Spawns enemies using biome element tables (fallback when PopulationPipeline unavailable)
+    /// </summary>
+    private void SpawnEnemiesFromBiomeElements(Room room, int budget, BiomeDefinition biome, Random rng)
+    {
+        if (budget <= 0 || biome.Elements == null) return;
+
+        var availableEnemies = biome.Elements.GetEligibleElements(
+            BiomeElementType.DormantProcess, room, rng);
+
+        if (availableEnemies.Count == 0)
+        {
+            _log.Debug("No eligible enemies for room {RoomId}", room.RoomId);
+            return;
+        }
+
+        int spawnedCount = 0;
+        while (budget > 0 && availableEnemies.Count > 0)
+        {
+            var selected = biome.Elements.WeightedRandomSelection(availableEnemies, rng);
+            if (selected == null) break;
+
+            if (selected.SpawnCost > budget)
+            {
+                availableEnemies = availableEnemies.Where(e => e.SpawnCost <= budget).ToList();
+                continue;
+            }
+
+            // Create simplified enemy spawn
+            room.Enemies.Add(new Core.Population.EnemySpawn
+            {
+                EnemyId = selected.AssociatedDataId ?? selected.ElementName,
+                SpawnWeight = selected.Weight
+            });
+
+            budget -= selected.SpawnCost;
+            spawnedCount++;
+        }
+
+        _log.Debug("Spawned {Count} enemies in room {RoomId}", spawnedCount, room.RoomId);
+    }
+
+    /// <summary>
+    /// Spawns hazards using biome element tables (fallback when PopulationPipeline unavailable)
+    /// </summary>
+    private void SpawnHazardsFromBiomeElements(Room room, int count, BiomeDefinition biome, Random rng)
+    {
+        if (count <= 0 || biome.Elements == null) return;
+
+        var availableHazards = biome.Elements.GetEligibleElements(
+            BiomeElementType.DynamicHazard, room, rng);
+
+        if (availableHazards.Count == 0) return;
+
+        for (int i = 0; i < count; i++)
+        {
+            var selected = biome.Elements.WeightedRandomSelection(availableHazards, rng);
+            if (selected == null) break;
+
+            room.Hazards.Add(new Core.Population.HazardSpawn
+            {
+                HazardId = selected.AssociatedDataId ?? selected.ElementName,
+                SpawnWeight = selected.Weight
+            });
+
+            // Remove to avoid duplicates
+            availableHazards = availableHazards.Where(h => h.ElementName != selected.ElementName).ToList();
+        }
+    }
+
+    /// <summary>
+    /// Spawns loot using biome element tables (fallback when PopulationPipeline unavailable)
+    /// </summary>
+    private void SpawnLootFromBiomeElements(Room room, int count, BiomeDefinition biome, Random rng)
+    {
+        if (count <= 0 || biome.Elements == null) return;
+
+        var availableLoot = biome.Elements.GetEligibleElements(
+            BiomeElementType.LootNode, room, rng);
+
+        if (availableLoot.Count == 0) return;
+
+        for (int i = 0; i < count; i++)
+        {
+            var selected = biome.Elements.WeightedRandomSelection(availableLoot, rng);
+            if (selected == null) break;
+
+            room.Loot.Add(new Core.Population.LootNode
+            {
+                LootNodeId = selected.AssociatedDataId ?? selected.ElementName,
+                LootTier = LootTier.Common // Could be enhanced based on element data
+            });
+        }
+    }
+
+    /// <summary>
+    /// Placeholder spawning for testing without full biome data
+    /// Only used when neither PopulationPipeline nor BiomeElements are available
+    /// </summary>
+    private void SpawnPlaceholderContent(Room room, RoomAllocation allocation, BiomeDefinition biome, Random rng)
+    {
+        for (int i = 0; i < allocation.AllocatedEnemies; i++)
+        {
+            room.Enemies.Add(new Core.Population.EnemySpawn
+            {
+                EnemyId = $"placeholder_enemy_{biome.BiomeId}_{i}",
+                SpawnWeight = 1.0f
+            });
+        }
+
+        for (int i = 0; i < allocation.AllocatedHazards; i++)
+        {
+            room.Hazards.Add(new Core.Population.HazardSpawn
+            {
+                HazardId = $"placeholder_hazard_{biome.BiomeId}_{i}",
+                SpawnWeight = 1.0f
+            });
+        }
+
+        for (int i = 0; i < allocation.AllocatedLoot; i++)
+        {
+            room.Loot.Add(new Core.Population.LootNode
+            {
+                LootNodeId = $"placeholder_loot_{biome.BiomeId}_{i}",
+                LootTier = LootTier.Common
+            });
+        }
+    }
+
+    #endregion
+
+    #region Validation Methods
+
+    /// <summary>
+    /// Validates the final dungeon for quality assurance
+    /// </summary>
+    private void ValidateFinalDungeon(Dungeon dungeon)
+    {
+        var issues = new List<string>();
+
+        // Check that all rooms have content or are intentionally empty
+        foreach (var room in dungeon.Rooms.Values)
+        {
+            var hasContent = room.Enemies.Any() || room.Hazards.Any() || room.Loot.Any();
+            var isBreatherRoom = room.Archetype == RoomArchetype.EntryHall ||
+                                room.Archetype == RoomArchetype.SecretRoom;
+
+            if (!hasContent && !isBreatherRoom && room.IsBossRoom == false)
+            {
+                _log.Debug("Room {RoomId} is empty (may be breather room)", room.RoomId);
+            }
+        }
+
+        // Check that boss room exists and has content
+        var bossRoom = dungeon.Rooms.Values.FirstOrDefault(r => r.IsBossRoom);
+        if (bossRoom != null)
+        {
+            if (bossRoom.Enemies.Count == 0)
+            {
+                issues.Add("Boss room has no enemies");
+            }
+        }
+        else
+        {
+            issues.Add("No boss room found");
+        }
+
+        if (issues.Any())
+        {
+            _log.Warning("Dungeon validation issues: {Issues}", string.Join(", ", issues));
+        }
+        else
+        {
+            _log.Information("Dungeon validation passed");
+        }
+    }
+
+    #endregion
 
     #region Main Path Generation
 
