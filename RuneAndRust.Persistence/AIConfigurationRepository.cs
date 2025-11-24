@@ -55,6 +55,9 @@ public class AIConfigurationRepository : RuneAndRust.Engine.AI.IAIConfigurationR
             // Seed default threat weights
             SeedDefaultThreatWeights(connection);
 
+            // v0.42.4: Performance monitoring tables
+            CreatePerformanceMonitoringTables(connection);
+
             _log.Information("AI configuration tables initialized successfully");
         }
         catch (Exception ex)
@@ -62,6 +65,60 @@ public class AIConfigurationRepository : RuneAndRust.Engine.AI.IAIConfigurationR
             _log.Error(ex, "Failed to initialize AI configuration tables");
             throw;
         }
+    }
+
+    private void CreatePerformanceMonitoringTables(SqliteConnection connection)
+    {
+        // Create AIPerformanceMetrics table
+        var createMetricsTable = connection.CreateCommand();
+        createMetricsTable.CommandText = @"
+            CREATE TABLE IF NOT EXISTS AIPerformanceMetrics (
+                MetricId INTEGER PRIMARY KEY AUTOINCREMENT,
+                OperationName TEXT NOT NULL,
+                DurationMs INTEGER NOT NULL,
+                GameSessionId TEXT,
+                CombatEncounterId TEXT,
+                CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        ";
+        createMetricsTable.ExecuteNonQuery();
+
+        // Create index for performance queries
+        var createMetricsIndex = connection.CreateCommand();
+        createMetricsIndex.CommandText = @"
+            CREATE INDEX IF NOT EXISTS IX_PerfMetrics_Operation
+            ON AIPerformanceMetrics(OperationName)
+        ";
+        createMetricsIndex.ExecuteNonQuery();
+
+        // Create AIDifficultyScalingLog table
+        var createDifficultyLog = connection.CreateCommand();
+        createDifficultyLog.CommandText = @"
+            CREATE TABLE IF NOT EXISTS AIDifficultyScalingLog (
+                LogId INTEGER PRIMARY KEY AUTOINCREMENT,
+                GameSessionId TEXT,
+                EnemyId INTEGER NOT NULL,
+                IntelligenceLevel INTEGER NOT NULL,
+                NGPlusTier INTEGER NOT NULL,
+                EndlessWave INTEGER,
+                IsChallengeSector INTEGER NOT NULL,
+                IsBossGauntlet INTEGER NOT NULL,
+                MadeIntentionalError INTEGER NOT NULL,
+                ErrorType TEXT,
+                CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        ";
+        createDifficultyLog.ExecuteNonQuery();
+
+        // Create index for difficulty log queries
+        var createDifficultyIndex = connection.CreateCommand();
+        createDifficultyIndex.CommandText = @"
+            CREATE INDEX IF NOT EXISTS IX_DifficultyLog_Session
+            ON AIDifficultyScalingLog(GameSessionId)
+        ";
+        createDifficultyIndex.ExecuteNonQuery();
+
+        _log.Debug("Performance monitoring tables created");
     }
 
     private void SeedDefaultThreatWeights(SqliteConnection connection)
