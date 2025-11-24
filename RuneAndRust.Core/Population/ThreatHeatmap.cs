@@ -9,7 +9,7 @@ public class ThreatHeatmap
     /// <summary>
     /// Threat levels indexed by room ID
     /// </summary>
-    public Dictionary<string, ThreatLevel> RoomThreatLevels { get; set; } = new();
+    public Dictionary<string, RoomThreatData> RoomThreatLevels { get; set; } = new();
 
     /// <summary>
     /// Average threat level across all rooms

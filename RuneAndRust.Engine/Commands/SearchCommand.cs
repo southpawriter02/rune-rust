@@ -1,4 +1,5 @@
 using RuneAndRust.Core;
+using PopulationLootNode = RuneAndRust.Core.Population.LootNode;
 using RuneAndRust.Core.Population;
 using Serilog;
 using System.Text;
@@ -94,7 +95,7 @@ public class SearchCommand : ICommand
     /// <summary>
     /// Search a loot node and collect contents
     /// </summary>
-    private CommandResult SearchLootNode(GameState state, LootNode lootNode)
+    private CommandResult SearchLootNode(GameState state, PopulationLootNode lootNode)
     {
         // Check if already looted
         if (lootNode.HasBeenLooted)

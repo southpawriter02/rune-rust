@@ -6,7 +6,7 @@ namespace RuneAndRust.Core.Population;
 /// v0.39.3: Threat level data for a single room in the heatmap
 /// Used for visualization and balance analysis
 /// </summary>
-public class ThreatLevel
+public class RoomThreatData
 {
     /// <summary>
     /// Room identifier

@@ -1500,7 +1500,9 @@ public class BossEncounterRepository
 
             command.ExecuteNonQuery();
 
-            return (int)connection.LastInsertRowId;
+            var lastIdCommand = connection.CreateCommand();
+            lastIdCommand.CommandText = "SELECT last_insert_rowid()";
+            return Convert.ToInt32(lastIdCommand.ExecuteScalar());
         }
         catch (Exception ex)
         {
@@ -1652,7 +1654,9 @@ public class BossEncounterRepository
 
             command.ExecuteNonQuery();
 
-            return (int)connection.LastInsertRowId;
+            var lastIdCommand = connection.CreateCommand();
+            lastIdCommand.CommandText = "SELECT last_insert_rowid()";
+            return Convert.ToInt32(lastIdCommand.ExecuteScalar());
         }
         catch (Exception ex)
         {
@@ -1789,7 +1793,9 @@ public class BossEncounterRepository
 
             command.ExecuteNonQuery();
 
-            return (int)connection.LastInsertRowId;
+            var lastIdCommand = connection.CreateCommand();
+            lastIdCommand.CommandText = "SELECT last_insert_rowid()";
+            return Convert.ToInt32(lastIdCommand.ExecuteScalar());
         }
         catch (Exception ex)
         {
@@ -1929,7 +1935,9 @@ public class BossEncounterRepository
 
             command.ExecuteNonQuery();
 
-            return (int)connection.LastInsertRowId;
+            var lastIdCommand = connection.CreateCommand();
+            lastIdCommand.CommandText = "SELECT last_insert_rowid()";
+            return Convert.ToInt32(lastIdCommand.ExecuteScalar());
         }
         catch (Exception ex)
         {

@@ -1,4 +1,6 @@
 using RuneAndRust.Core;
+using PopulationLootNode = RuneAndRust.Core.Population.LootNode;
+using PopulationDynamicHazard = RuneAndRust.Core.Population.DynamicHazard;
 using RuneAndRust.Core.Population;
 using Serilog;
 using System.Text;
@@ -180,7 +182,7 @@ public class InvestigateCommand : ICommand
     /// <summary>
     /// Investigate loot node (usually auto-succeeds, but may have hidden compartments)
     /// </summary>
-    private CommandResult InvestigateLootNode(GameState state, LootNode lootNode)
+    private CommandResult InvestigateLootNode(GameState state, PopulationLootNode lootNode)
     {
         // If already looted, no point investigating
         if (lootNode.HasBeenLooted)
@@ -247,7 +249,7 @@ public class InvestigateCommand : ICommand
     /// <summary>
     /// Investigate hazard to learn about disabling mechanism
     /// </summary>
-    private CommandResult InvestigateHazard(GameState state, DynamicHazard hazard)
+    private CommandResult InvestigateHazard(GameState state, PopulationDynamicHazard hazard)
     {
         if (!hazard.IsActive)
         {

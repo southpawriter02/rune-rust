@@ -700,36 +700,6 @@ public partial class DescriptorRepository
     #region Utility Methods
 
     /// <summary>
-    /// Selects a random descriptor from a weighted list
-    /// </summary>
-    private T? SelectWeightedRandom<T>(List<T> descriptors) where T : class
-    {
-        if (descriptors.Count == 0)
-            return null;
-
-        // Extract weight using reflection
-        var weightProperty = typeof(T).GetProperty("Weight");
-        if (weightProperty == null)
-            return descriptors[new Random().Next(descriptors.Count)];
-
-        var totalWeight = descriptors.Sum(d => (float)(weightProperty.GetValue(d) ?? 1.0f));
-        var random = new Random().NextDouble() * totalWeight;
-        var cumulativeWeight = 0.0;
-
-        foreach (var descriptor in descriptors)
-        {
-            var weight = (float)(weightProperty.GetValue(descriptor) ?? 1.0f);
-            cumulativeWeight += weight;
-            if (random <= cumulativeWeight)
-            {
-                return descriptor;
-            }
-        }
-
-        return descriptors.Last();
-    }
-
-    /// <summary>
     /// Gets statistics for combat mechanics descriptors
     /// </summary>
     public (int DefensiveActions, int Stances, int CriticalHits, int Fumbles, int Maneuvers) GetCombatMechanicsStats()

@@ -54,7 +54,7 @@ public class HazardDensityModifier
     /// <summary>
     /// Calculate hazard spawn chance based on density
     /// </summary>
-    public double CalculateHazardSpawnChance(double baseSp awnChance, double densityMultiplier)
+    public double CalculateHazardSpawnChance(double baseSpawnChance, double densityMultiplier)
     {
         double modifiedChance = baseSpawnChance * densityMultiplier;
 
