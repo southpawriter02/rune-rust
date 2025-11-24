@@ -1,5 +1,5 @@
 using RuneAndRust.Core;
-using RuneAndRust.Core.Population;
+using RuneAndRust.Core.Descriptors;
 
 namespace RuneAndRust.Engine.CoherentGlitch.Rules;
 

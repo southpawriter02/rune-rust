@@ -1,3 +1,5 @@
+using RuneAndRust.Core.Descriptors;
+
 namespace RuneAndRust.Core;
 
 /// <summary>

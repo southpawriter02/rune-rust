@@ -1,8 +1,10 @@
 using RuneAndRust.Core;
+using RuneAndRust.Core.Descriptors;
 using RuneAndRust.Core.Population;
 using RuneAndRust.Engine.Spatial;
 using Serilog;
 using System.Diagnostics;
+using RoomArchetype = RuneAndRust.Core.Descriptors.RoomArchetype;
 
 namespace RuneAndRust.Engine;
 
@@ -26,7 +28,8 @@ public class DungeonGenerator
     // v0.39.1 services (3D Spatial)
     private readonly ISpatialLayoutService? _spatialLayoutService;
     private readonly ISpatialValidationService? _spatialValidationService;
-    private readonly IVerticalTraversalService? _verticalTraversalService;
+    // Disabled: IVerticalTraversalService not implemented yet
+    // private readonly IVerticalTraversalService? _verticalTraversalService;
 
     // v0.39.2 services (Biome Transitions)
     private readonly BiomeTransitionService? _biomeTransitionService;
@@ -49,7 +52,7 @@ public class DungeonGenerator
         AnchorInserter? anchorInserter = null,
         ISpatialLayoutService? spatialLayoutService = null,
         ISpatialValidationService? spatialValidationService = null,
-        IVerticalTraversalService? verticalTraversalService = null,
+        // IVerticalTraversalService? verticalTraversalService = null,  // Disabled: not implemented yet
         BiomeTransitionService? biomeTransitionService = null,
         BiomeBlendingService? biomeBlendingService = null,
         EnvironmentalGradientService? gradientService = null,
@@ -63,7 +66,7 @@ public class DungeonGenerator
         _anchorInserter = anchorInserter;
         _spatialLayoutService = spatialLayoutService;
         _spatialValidationService = spatialValidationService;
-        _verticalTraversalService = verticalTraversalService;
+        // _verticalTraversalService = verticalTraversalService;  // Disabled
         _biomeTransitionService = biomeTransitionService;
         _biomeBlendingService = biomeBlendingService;
         _gradientService = gradientService;

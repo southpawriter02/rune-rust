@@ -49,7 +49,7 @@ public class EnvironmentalObject
 
     // Interactive properties
     public bool IsInteractive { get; set; } = false;
-    public InteractionType InteractionType { get; set; } = InteractionType.None;
+    public EnvironmentalInteractionType InteractionType { get; set; } = EnvironmentalInteractionType.None;
     public int InteractionCost { get; set; } = 0; // Stamina cost
     public string? InteractionSkillCheck { get; set; } // "System Bypass DC 14"
 
@@ -140,9 +140,9 @@ public enum CoverQuality
 }
 
 /// <summary>
-/// Type of interaction possible with object
+/// Type of interaction possible with environmental object
 /// </summary>
-public enum InteractionType
+public enum EnvironmentalInteractionType
 {
     None,           // Cannot be interacted with
     Trigger,        // Trigger an effect (explosive barrel detonation)

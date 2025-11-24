@@ -1,5 +1,7 @@
 using RuneAndRust.Core;
+using RuneAndRust.Core.Descriptors;
 using Serilog;
+using CoverQuality = RuneAndRust.Core.Descriptors.CoverQuality;
 
 namespace RuneAndRust.Engine;
 

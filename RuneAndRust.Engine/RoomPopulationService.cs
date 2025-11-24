@@ -2,6 +2,8 @@ using RuneAndRust.Core;
 using RuneAndRust.Core.Descriptors;
 using RuneAndRust.Persistence;
 using Serilog;
+using RoomArchetype = RuneAndRust.Core.Descriptors.RoomArchetype;
+using DynamicHazard = RuneAndRust.Core.Descriptors.DynamicHazard;
 
 namespace RuneAndRust.Engine;
 
@@ -45,7 +47,7 @@ public class RoomPopulationService
     /// <summary>
     /// Fully populates a room with descriptors, features, and interactive objects
     /// </summary>
-    public void PopulateRoom(Room room, string biome, Population.RoomArchetype archetype)
+    public void PopulateRoom(Room room, string biome, RoomArchetype archetype)
     {
         if (room.IsHandcrafted)
         {
@@ -99,11 +101,11 @@ public class RoomPopulationService
 
     #region Room Description (v0.38.1)
 
-    private void PopulateRoomDescription(Room room, string biome, Population.RoomArchetype archetype)
+    private void PopulateRoomDescription(Room room, string biome, RoomArchetype archetype)
     {
         try
         {
-            // Convert Population.RoomArchetype to Descriptors.RoomArchetype
+            // Convert RoomArchetype to RoomArchetype
             var descriptorArchetype = ConvertArchetype(archetype);
 
             // Generate name and description
@@ -130,7 +132,7 @@ public class RoomPopulationService
 
     #region Atmospheric Description (v0.38.4)
 
-    private void PopulateAtmosphere(Room room, string biome, Population.RoomArchetype archetype)
+    private void PopulateAtmosphere(Room room, string biome, RoomArchetype archetype)
     {
         try
         {
@@ -157,14 +159,14 @@ public class RoomPopulationService
         }
     }
 
-    private Descriptors.AtmosphericIntensity GetAtmosphericIntensityForArchetype(Population.RoomArchetype archetype)
+    private AtmosphericIntensity GetAtmosphericIntensityForArchetype(RoomArchetype archetype)
     {
         return archetype switch
         {
-            Population.RoomArchetype.BossArena => Descriptors.AtmosphericIntensity.Oppressive,  // Oppressive for boss fights
-            Population.RoomArchetype.Corridor => Descriptors.AtmosphericIntensity.Subtle,  // Subtle for corridors
-            Population.RoomArchetype.SecretRoom => Descriptors.AtmosphericIntensity.Subtle,  // Subtle for secrets
-            _ => Descriptors.AtmosphericIntensity.Moderate  // Moderate default
+            RoomArchetype.BossArena => AtmosphericIntensity.Oppressive,  // Oppressive for boss fights
+            RoomArchetype.Corridor => AtmosphericIntensity.Subtle,  // Subtle for corridors
+            RoomArchetype.SecretRoom => AtmosphericIntensity.Subtle,  // Subtle for secrets
+            _ => AtmosphericIntensity.Moderate  // Moderate default
         };
     }
 
@@ -172,7 +174,7 @@ public class RoomPopulationService
 
     #region Environmental Features (v0.38.2)
 
-    private void PopulateEnvironmentalFeatures(Room room, string biome, Population.RoomArchetype archetype)
+    private void PopulateEnvironmentalFeatures(Room room, string biome, RoomArchetype archetype)
     {
         try
         {
@@ -213,7 +215,7 @@ public class RoomPopulationService
         }
     }
 
-    private StaticTerrainFeature? GenerateRandomStaticTerrain(string biome, Population.RoomArchetype archetype)
+    private StaticTerrainFeature? GenerateRandomStaticTerrain(string biome, RoomArchetype archetype)
     {
         // Get modifier for biome
         var modifier = GetModifierForBiome(biome);
@@ -223,13 +225,13 @@ public class RoomPopulationService
         // Choose random static terrain template based on archetype
         var template = archetype switch
         {
-            Population.RoomArchetype.BossArena => _random.Next(3) switch
+            RoomArchetype.BossArena => _random.Next(3) switch
             {
                 0 => "Pillar_Base",  // Cover for tactical combat
                 1 => "Elevation_Base",  // Tactical advantage
                 _ => "Rubble_Pile_Base"  // Difficult terrain
             },
-            Population.RoomArchetype.Corridor => _random.Next(2) switch
+            RoomArchetype.Corridor => _random.Next(2) switch
             {
                 0 => "Crate_Stack_Base",  // Light cover
                 _ => "Rubble_Pile_Base"  // Difficult terrain
@@ -253,7 +255,7 @@ public class RoomPopulationService
         }
     }
 
-    private DynamicHazard? GenerateRandomDynamicHazard(string biome, Population.RoomArchetype archetype)
+    private DynamicHazard? GenerateRandomDynamicHazard(string biome, RoomArchetype archetype)
     {
         // Get modifier for biome
         var modifier = GetModifierForBiome(biome);
@@ -261,7 +263,7 @@ public class RoomPopulationService
             return null;
 
         // Boss arenas get more dangerous hazards
-        var template = archetype == Population.RoomArchetype.BossArena
+        var template = archetype == RoomArchetype.BossArena
             ? _random.Next(3) switch
             {
                 0 => "Burning_Ground_Base",
@@ -286,15 +288,15 @@ public class RoomPopulationService
         }
     }
 
-    private (int staticCount, int hazardCount) GetFeatureCountsForArchetype(Population.RoomArchetype archetype)
+    private (int staticCount, int hazardCount) GetFeatureCountsForArchetype(RoomArchetype archetype)
     {
         return archetype switch
         {
-            Population.RoomArchetype.BossArena => (3, 2),  // 3 static, 2 hazards
-            Population.RoomArchetype.Chamber => (2, 1),  // 2 static, 1 hazard
-            Population.RoomArchetype.Corridor => (1, 0),  // 1 static, no hazards
-            Population.RoomArchetype.Junction => (1, 1),  // 1 static, 1 hazard
-            Population.RoomArchetype.SecretRoom => (0, 0),  // No features, focus on loot
+            RoomArchetype.BossArena => (3, 2),  // 3 static, 2 hazards
+            RoomArchetype.Chamber => (2, 1),  // 2 static, 1 hazard
+            RoomArchetype.Corridor => (1, 0),  // 1 static, no hazards
+            RoomArchetype.Junction => (1, 1),  // 1 static, 1 hazard
+            RoomArchetype.SecretRoom => (0, 0),  // No features, focus on loot
             _ => (1, 0)  // Default: 1 static, no hazards
         };
     }
@@ -303,7 +305,7 @@ public class RoomPopulationService
 
     #region Interactive Objects (v0.38.3)
 
-    private void PopulateInteractiveObjects(Room room, string biome, Population.RoomArchetype archetype)
+    private void PopulateInteractiveObjects(Room room, string biome, RoomArchetype archetype)
     {
         try
         {
@@ -332,7 +334,7 @@ public class RoomPopulationService
         }
     }
 
-    private InteractiveObject? GenerateRandomInteractiveObject(Room room, string biome, Population.RoomArchetype archetype)
+    private InteractiveObject? GenerateRandomInteractiveObject(Room room, string biome, RoomArchetype archetype)
     {
         var modifier = GetModifierForBiome(biome);
         if (modifier == null)
@@ -341,9 +343,9 @@ public class RoomPopulationService
         // Choose object type based on archetype
         var (template, function) = archetype switch
         {
-            Population.RoomArchetype.BossArena => ("Corpse_Base", "Warrior"),  // Fallen warrior corpse
-            Population.RoomArchetype.SecretRoom => ("Chest_Base", "Weapon_Locker"),  // Valuable chest
-            Population.RoomArchetype.Chamber => _random.Next(3) switch
+            RoomArchetype.BossArena => ("Corpse_Base", "Warrior"),  // Fallen warrior corpse
+            RoomArchetype.SecretRoom => ("Chest_Base", "Weapon_Locker"),  // Valuable chest
+            RoomArchetype.Chamber => _random.Next(3) switch
             {
                 0 => ("Console_Base", "Hazard_Control"),  // Console to disable hazards
                 1 => ("Chest_Base", "Supply_Cache"),  // Loot chest
@@ -369,14 +371,14 @@ public class RoomPopulationService
         }
     }
 
-    private int GetObjectCountForArchetype(Population.RoomArchetype archetype)
+    private int GetObjectCountForArchetype(RoomArchetype archetype)
     {
         return archetype switch
         {
-            Population.RoomArchetype.BossArena => 1,  // 1 object (usually corpse or console)
-            Population.RoomArchetype.SecretRoom => 2,  // 2 objects (focus on loot)
-            Population.RoomArchetype.Chamber => _random.Next(1, 3),  // 1-2 objects
-            Population.RoomArchetype.Corridor => _random.Next(0, 2),  // 0-1 objects
+            RoomArchetype.BossArena => 1,  // 1 object (usually corpse or console)
+            RoomArchetype.SecretRoom => 2,  // 2 objects (focus on loot)
+            RoomArchetype.Chamber => _random.Next(1, 3),  // 1-2 objects
+            RoomArchetype.Corridor => _random.Next(0, 2),  // 0-1 objects
             _ => _random.Next(0, 2)  // 0-1 objects
         };
     }
@@ -385,7 +387,7 @@ public class RoomPopulationService
 
     #region Resource Nodes (v0.38.5)
 
-    private void PopulateResourceNodes(Room room, string biome, Population.RoomArchetype archetype)
+    private void PopulateResourceNodes(Room room, string biome, RoomArchetype archetype)
     {
         try
         {
@@ -416,18 +418,18 @@ public class RoomPopulationService
         }
     }
 
-    private string GetRoomSizeForArchetype(Population.RoomArchetype archetype)
+    private string GetRoomSizeForArchetype(RoomArchetype archetype)
     {
         return archetype switch
         {
-            Population.RoomArchetype.BossArena => "Large",
-            Population.RoomArchetype.Chamber => "Medium",
-            Population.RoomArchetype.Corridor => "Small",
-            Population.RoomArchetype.Junction => "Medium",
-            Population.RoomArchetype.SecretRoom => "Small",
-            Population.RoomArchetype.StorageBay => "Large",
-            Population.RoomArchetype.PowerStation => "Large",
-            Population.RoomArchetype.Laboratory => "Medium",
+            RoomArchetype.BossArena => "Large",
+            RoomArchetype.Chamber => "Medium",
+            RoomArchetype.Corridor => "Small",
+            RoomArchetype.Junction => "Medium",
+            RoomArchetype.SecretRoom => "Small",
+            RoomArchetype.StorageBay => "Large",
+            RoomArchetype.PowerStation => "Large",
+            RoomArchetype.Laboratory => "Medium",
             _ => "Medium"  // Default
         };
     }
@@ -507,26 +509,26 @@ public class RoomPopulationService
         };
     }
 
-    private Descriptors.RoomArchetype ConvertArchetype(Population.RoomArchetype archetype)
+    private RoomArchetype ConvertArchetype(RoomArchetype archetype)
     {
         return archetype switch
         {
-            Population.RoomArchetype.EntryHall => Descriptors.RoomArchetype.EntryHall,
-            Population.RoomArchetype.Corridor => Descriptors.RoomArchetype.Corridor,
-            Population.RoomArchetype.Chamber => Descriptors.RoomArchetype.Chamber,
-            Population.RoomArchetype.Junction => Descriptors.RoomArchetype.Junction,
-            Population.RoomArchetype.BossArena => Descriptors.RoomArchetype.BossArena,
-            Population.RoomArchetype.SecretRoom => Descriptors.RoomArchetype.SecretRoom,
-            Population.RoomArchetype.VerticalShaft => Descriptors.RoomArchetype.VerticalShaft,
-            Population.RoomArchetype.MaintenanceHub => Descriptors.RoomArchetype.MaintenanceHub,
-            Population.RoomArchetype.StorageBay => Descriptors.RoomArchetype.StorageBay,
-            Population.RoomArchetype.ObservationPlatform => Descriptors.RoomArchetype.ObservationPlatform,
-            Population.RoomArchetype.PowerStation => Descriptors.RoomArchetype.PowerStation,
-            Population.RoomArchetype.Laboratory => Descriptors.RoomArchetype.Laboratory,
-            Population.RoomArchetype.Barracks => Descriptors.RoomArchetype.Barracks,
-            Population.RoomArchetype.ForgeCharnber => Descriptors.RoomArchetype.ForgeCharnber,
-            Population.RoomArchetype.CryoVault => Descriptors.RoomArchetype.CryoVault,
-            _ => Descriptors.RoomArchetype.Chamber  // Fallback
+            RoomArchetype.EntryHall => RoomArchetype.EntryHall,
+            RoomArchetype.Corridor => RoomArchetype.Corridor,
+            RoomArchetype.Chamber => RoomArchetype.Chamber,
+            RoomArchetype.Junction => RoomArchetype.Junction,
+            RoomArchetype.BossArena => RoomArchetype.BossArena,
+            RoomArchetype.SecretRoom => RoomArchetype.SecretRoom,
+            RoomArchetype.VerticalShaft => RoomArchetype.VerticalShaft,
+            RoomArchetype.MaintenanceHub => RoomArchetype.MaintenanceHub,
+            RoomArchetype.StorageBay => RoomArchetype.StorageBay,
+            RoomArchetype.ObservationPlatform => RoomArchetype.ObservationPlatform,
+            RoomArchetype.PowerStation => RoomArchetype.PowerStation,
+            RoomArchetype.Laboratory => RoomArchetype.Laboratory,
+            RoomArchetype.Barracks => RoomArchetype.Barracks,
+            RoomArchetype.ForgeCharnber => RoomArchetype.ForgeCharnber,
+            RoomArchetype.CryoVault => RoomArchetype.CryoVault,
+            _ => RoomArchetype.Chamber  // Fallback
         };
     }
 

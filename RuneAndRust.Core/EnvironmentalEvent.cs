@@ -156,16 +156,3 @@ public class CoverData
     public int? RemainingDurability { get; set; }
     public string? Description { get; set; }
 }
-
-/// <summary>
-/// Result of interaction attempt
-/// </summary>
-public class InteractionResult
-{
-    public bool Success { get; set; }
-    public int StaminaCost { get; set; }
-    public string? EffectDescription { get; set; }
-    public int DamageDealt { get; set; } = 0;
-    public List<int> AffectedCharacters { get; set; } = new();
-    public string LogMessage { get; set; } = string.Empty;
-}

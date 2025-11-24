@@ -1,6 +1,6 @@
 using RuneAndRust.Core;
-using RuneAndRust.Core.Population;
-using PopulationRoomArchetype = RuneAndRust.Core.Population.RoomArchetype;
+using RuneAndRust.Core.Descriptors;
+using PopulationRoomArchetype = RuneAndRust.Core.Descriptors.RoomArchetype;
 
 namespace RuneAndRust.Engine.CoherentGlitch.Rules;
 
