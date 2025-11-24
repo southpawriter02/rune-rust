@@ -452,22 +452,29 @@ public class CombatViewModel : ViewModelBase
 
         try
         {
-            var attackerPos = _combatState.Player.CurrentPosition;
-            if (!attackerPos.HasValue) return;
+            // Find player position from unit data
+            var attackerPos = _unitData.FirstOrDefault(kvp => kvp.Value.IsPlayer).Key;
+            if (attackerPos == default(GridPosition)) return;
+
+            var targetHpBefore = target.HP;
+            var logCountBefore = _combatState.CombatLog.Count;
+
+            var attackResult = _combatEngine.PlayerAttack(_combatState, target);
+            var damage = targetHpBefore - target.HP;
+
+            // Check combat log for critical hit
+            var recentLog = _combatState.CombatLog.Skip(logCountBefore).ToList();
+            var wasCritical = recentLog.Any(log => log.Contains("CRITICAL", StringComparison.OrdinalIgnoreCase));
 
             // Trigger attack animation (fire-and-forget)
             _ = Task.Run(async () =>
             {
-                // Get result preview for animation
-                var attackResult = _combatEngine.PlayerAttack(_combatState, target);
-                var damage = attackResult ? target.MaxHP - target.CurrentHP : 0; // Approximate
-
                 await _animationService.PlayAttackAnimationAsync(
-                    attackerPos.Value,
+                    attackerPos,
                     position,
                     attackResult,
                     Math.Max(0, damage),
-                    false); // TODO: Get critical from combat log
+                    wasCritical);
             });
 
             SyncCombatLog();
@@ -578,7 +585,40 @@ public class CombatViewModel : ViewModelBase
             {
                 _log.Information("Processing enemy turn for {EnemyName}", currentEnemy.Name);
 
+                var playerHpBefore = _combatState.Player.HP;
+                var logCountBefore = _combatState.CombatLog.Count;
+
                 _enemyAI.ExecuteTurn(_combatState, currentEnemy);
+
+                // Trigger enemy attack animation if player took damage
+                var playerHpAfter = _combatState.Player.HP;
+                if (playerHpAfter < playerHpBefore && currentEnemy.Position.HasValue)
+                {
+                    var damage = playerHpBefore - playerHpAfter;
+                    var playerPos = _unitData.FirstOrDefault(kvp => kvp.Value.IsPlayer).Key;
+
+                    if (playerPos != default(GridPosition))
+                    {
+                        // Check combat log for critical hit
+                        var recentLog = _combatState.CombatLog.Skip(logCountBefore).ToList();
+                        var wasCritical = recentLog.Any(log => log.Contains("CRITICAL", StringComparison.OrdinalIgnoreCase));
+
+                        // Trigger animation (fire-and-forget)
+                        _ = Task.Run(async () =>
+                        {
+                            await _animationService.PlayAttackAnimationAsync(
+                                currentEnemy.Position.Value,
+                                playerPos,
+                                true,
+                                damage,
+                                wasCritical);
+                        });
+
+                        // Brief delay to let animation start
+                        Task.Delay(100).Wait();
+                    }
+                }
+
                 SyncCombatLog();
                 RefreshGridAndSprites();
 
@@ -633,26 +673,58 @@ public class CombatViewModel : ViewModelBase
         _unitSprites.Clear();
         _unitData.Clear();
 
+        // Find player position from grid (scan occupied positions)
+        GridPosition? playerPosition = null;
+        for (int row = 0; row < _combatState.Grid.Rows; row++)
+        {
+            for (int col = 0; col < _combatState.Grid.Columns; col++)
+            {
+                var tile = _combatState.Grid.GetTile(row, col);
+                if (tile != null && tile.OccupiedBy != null && tile.OccupiedBy.IsPlayer)
+                {
+                    playerPosition = new GridPosition(tile.Zone, tile.Row, col);
+                    break;
+                }
+            }
+            if (playerPosition.HasValue) break;
+        }
+
         // Add player
-        if (_combatState.Player.CurrentPosition != null)
+        if (playerPosition.HasValue)
         {
             var sprite = _spriteService.GetSpriteBitmap("warrior", 3);
             if (sprite != null)
             {
-                _unitSprites[_combatState.Player.CurrentPosition.Value] = sprite;
-                _unitData[_combatState.Player.CurrentPosition.Value] = _combatState.Player;
+                var playerCombatant = new Combatant(_combatState.Player);
+                Combatant.SetPlayerPositionStatic(playerPosition.Value);
+
+                _unitSprites[playerPosition.Value] = sprite;
+                _unitData[playerPosition.Value] = playerCombatant;
             }
         }
 
-        // Add enemies
-        foreach (var enemy in _combatState.Enemies.Where(e => e.IsAlive && e.CurrentPosition != null))
+        // Add enemies (Note: Enemy uses Position property, not CurrentPosition)
+        foreach (var enemy in _combatState.Enemies.Where(e => e.IsAlive && e.Position != null))
         {
             var spriteName = GetEnemySpriteNameFrom(enemy);
             var sprite = _spriteService.GetSpriteBitmap(spriteName, 3);
             if (sprite != null)
             {
-                _unitSprites[enemy.CurrentPosition!.Value] = sprite;
-                _unitData[enemy.CurrentPosition!.Value] = enemy;
+                var enemyCombatant = new Combatant(enemy);
+                _unitSprites[enemy.Position!.Value] = sprite;
+                _unitData[enemy.Position!.Value] = enemyCombatant;
+            }
+        }
+
+        // Add companions
+        foreach (var companion in _combatState.Companions.Where(c => c.IsAlive && c.Position != null))
+        {
+            var sprite = _spriteService.GetSpriteBitmap("warrior", 3); // TODO: Companion-specific sprites
+            if (sprite != null)
+            {
+                var companionCombatant = new Combatant(companion);
+                _unitSprites[companion.Position!.Value] = sprite;
+                _unitData[companion.Position!.Value] = companionCombatant;
             }
         }
 
@@ -754,9 +826,11 @@ public class CombatViewModel : ViewModelBase
         // For v0.43.5, show adjacent empty cells as placeholder
         _highlightedPositions.Clear();
 
-        if (_combatState?.Player.CurrentPosition == null) return;
+        // Find player position from unit data
+        var playerEntry = _unitData.FirstOrDefault(kvp => kvp.Value.IsPlayer);
+        if (playerEntry.Value == null) return;
 
-        var currentPos = _combatState.Player.CurrentPosition.Value;
+        var currentPos = playerEntry.Key;
 
         // Adjacent columns in same row/zone
         for (int colOffset = -1; colOffset <= 1; colOffset++)
@@ -830,7 +904,68 @@ public class CombatViewModel : ViewModelBase
 
         LoadCombatState(demoCombatState);
 
-        _log.Information("Demo combat scenario initialized");
+        // Create demo environmental objects for v0.43.7 hazard visualization testing
+        EnvironmentalObjects = new List<EnvironmentalObject>
+        {
+            // Fire hazard (animated) - Front Left Center
+            new EnvironmentalObject
+            {
+                ObjectId = 1,
+                Name = "Fire Pit",
+                Description = "A roaring fire that damages anyone who enters",
+                ObjectType = EnvironmentalObjectType.Hazard,
+                IsHazard = true,
+                DamageType = "Fire",
+                DamageFormula = "2d6 Fire",
+                StatusEffect = "[Burning]",
+                GridPosition = "Front_Left_Column_1",
+                State = EnvironmentalObjectState.Active
+            },
+            // Poison cloud - Front Right Center
+            new EnvironmentalObject
+            {
+                ObjectId = 2,
+                Name = "Toxic Cloud",
+                Description = "A noxious cloud of poison gas",
+                ObjectType = EnvironmentalObjectType.Hazard,
+                IsHazard = true,
+                DamageType = "Poison",
+                DamageFormula = "1d8 Poison",
+                StatusEffect = "[Poisoned]",
+                GridPosition = "Front_Right_Column_1",
+                State = EnvironmentalObjectState.Active
+            },
+            // Ice hazard - Back Left Center
+            new EnvironmentalObject
+            {
+                ObjectId = 3,
+                Name = "Frozen Ground",
+                Description = "Slippery ice that slows movement",
+                ObjectType = EnvironmentalObjectType.Hazard,
+                IsHazard = true,
+                DamageType = "Ice",
+                DamageFormula = "1d6 Ice",
+                StatusEffect = "[Slowed]",
+                GridPosition = "Back_Left_Column_1",
+                State = EnvironmentalObjectState.Active
+            },
+            // Lightning hazard (animated) - Back Right Center
+            new EnvironmentalObject
+            {
+                ObjectId = 4,
+                Name = "Electric Trap",
+                Description = "Crackling electricity that shocks intruders",
+                ObjectType = EnvironmentalObjectType.Hazard,
+                IsHazard = true,
+                DamageType = "Lightning",
+                DamageFormula = "2d8 Lightning",
+                StatusEffect = "[Stunned]",
+                GridPosition = "Back_Right_Column_1",
+                State = EnvironmentalObjectState.Active
+            }
+        };
+
+        _log.Information("Demo combat scenario initialized with {HazardCount} environmental hazards", EnvironmentalObjects.Count);
     }
 
     #endregion
