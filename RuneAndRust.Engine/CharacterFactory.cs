@@ -8,9 +8,19 @@ public class CharacterFactory
 {
     private static readonly ILogger _log = Log.ForContext<CharacterFactory>();
 
-    public static PlayerCharacter CreateCharacter(CharacterClass characterClass, string name = "Survivor")
+    /// <summary>
+    /// v0.41: Create character with optional account progression integration
+    /// </summary>
+    public static PlayerCharacter CreateCharacter(
+        CharacterClass characterClass,
+        string name = "Survivor",
+        int? accountId = null,
+        AccountProgressionService? accountService = null,
+        string? alternativeStartId = null,
+        AlternativeStartService? alternativeStartService = null)
     {
-        _log.Information("Creating character: Name={Name}, Class={Class}", name, characterClass);
+        _log.Information("Creating character: Name={Name}, Class={Class}, AccountID={AccountId}, AlternativeStart={AlternativeStart}",
+            name, characterClass, accountId, alternativeStartId);
 
         var character = new PlayerCharacter
         {
@@ -43,8 +53,25 @@ public class CharacterFactory
         // [v0.9] Set starting currency
         character.Currency = 50; // Starting Dvergr Cogs
 
-        _log.Information("Character created successfully: Name={Name}, Class={Class}, HP={HP}, Stamina={Stamina}, Currency={Currency}, Abilities={AbilityCount}",
-            character.Name, character.Class, character.HP, character.Stamina, character.Currency, character.Abilities.Count);
+        // [v0.41] Apply account unlocks and alternative starts
+        if (accountId.HasValue && accountService != null)
+        {
+            _log.Information("Applying account unlocks for AccountID={AccountId}", accountId.Value);
+            accountService.ApplyAccountUnlocksToCharacter(accountId.Value, character);
+
+            // Track character creation
+            accountService.OnCharacterCreated(accountId.Value);
+        }
+
+        // [v0.41] Apply alternative start scenario
+        if (accountId.HasValue && !string.IsNullOrEmpty(alternativeStartId) && alternativeStartService != null)
+        {
+            _log.Information("Applying alternative start: {StartId}", alternativeStartId);
+            alternativeStartService.InitializeCharacterWithScenario(accountId.Value, character, alternativeStartId);
+        }
+
+        _log.Information("Character created successfully: Name={Name}, Class={Class}, HP={HP}, Stamina={Stamina}, Currency={Currency}, Abilities={AbilityCount}, AccountUnlocksApplied={UnlocksApplied}",
+            character.Name, character.Class, character.HP, character.Stamina, character.Currency, character.Abilities.Count, accountId.HasValue);
 
         return character;
     }
