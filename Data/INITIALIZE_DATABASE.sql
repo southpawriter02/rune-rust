@@ -95,6 +95,24 @@
 .read Data/v0.39.2_biome_transition_schema.sql
 
 -- ==============================================================================
+-- v0.40: Endgame Content & Replayability
+-- ==============================================================================
+
+-- v0.40.1: New Game+ System
+.read Data/v0.40.1_new_game_plus_schema.sql
+
+-- v0.40.2: Challenge Sectors
+.read Data/v0.40.2_challenge_sectors_schema.sql
+.read Data/v0.40.2_challenge_sectors_data.sql
+
+-- v0.40.3: Boss Gauntlet Mode
+.read Data/v0.40.3_boss_gauntlet_schema.sql
+.read Data/v0.40.3_boss_gauntlet_data.sql
+
+-- v0.40.4: Endless Mode & Leaderboards
+.read Data/v0.40.4_endless_mode_schema.sql
+
+-- ==============================================================================
 -- Verification Queries
 -- ==============================================================================
 
