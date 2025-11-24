@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Input;
 
 namespace RuneAndRust.DesktopUI.ViewModels;
@@ -89,6 +90,14 @@ public class DungeonExplorationViewModel : ViewModelBase
     private string _statusMessage = string.Empty;
     private bool _isSearched = false;
     private PlayerCharacter? _character;
+    private MinimapViewModel _minimap = new();
+    private bool _isMinimapVisible = true;
+
+    // v0.43.14: Room Interactions & Search
+    private bool _isSearching = false;
+    private SearchResultViewModel? _searchResult = null;
+    private bool _isRestDialogVisible = false;
+    private RestConfirmationViewModel? _restConfirmation = null;
 
     #region Properties
 
@@ -213,6 +222,78 @@ public class DungeonExplorationViewModel : ViewModelBase
     /// </summary>
     public string StressDisplay => Character != null ? $"{Character.PsychicStress}/100" : "?/100";
 
+    /// <summary>
+    /// The minimap view model.
+    /// </summary>
+    public MinimapViewModel Minimap
+    {
+        get => _minimap;
+        private set => this.RaiseAndSetIfChanged(ref _minimap, value);
+    }
+
+    /// <summary>
+    /// Whether the minimap is visible.
+    /// </summary>
+    public bool IsMinimapVisible
+    {
+        get => _isMinimapVisible;
+        set => this.RaiseAndSetIfChanged(ref _isMinimapVisible, value);
+    }
+
+    #endregion
+
+    #region v0.43.14: Room Interactions & Search Properties
+
+    /// <summary>
+    /// Whether a search is currently in progress.
+    /// </summary>
+    public bool IsSearching
+    {
+        get => _isSearching;
+        set
+        {
+            this.RaiseAndSetIfChanged(ref _isSearching, value);
+            this.RaisePropertyChanged(nameof(CanSearch));
+        }
+    }
+
+    /// <summary>
+    /// The current search result (null if no search has been performed).
+    /// </summary>
+    public SearchResultViewModel? SearchResult
+    {
+        get => _searchResult;
+        set => this.RaiseAndSetIfChanged(ref _searchResult, value);
+    }
+
+    /// <summary>
+    /// Whether a search result overlay is visible.
+    /// </summary>
+    public bool IsSearchResultVisible => SearchResult != null;
+
+    /// <summary>
+    /// Whether the player can search (room not already searched, not currently searching).
+    /// </summary>
+    public bool CanSearch => CurrentRoom != null && !IsSearched && !IsSearching;
+
+    /// <summary>
+    /// Whether the rest confirmation dialog is visible.
+    /// </summary>
+    public bool IsRestDialogVisible
+    {
+        get => _isRestDialogVisible;
+        set => this.RaiseAndSetIfChanged(ref _isRestDialogVisible, value);
+    }
+
+    /// <summary>
+    /// The rest confirmation view model.
+    /// </summary>
+    public RestConfirmationViewModel? RestConfirmation
+    {
+        get => _restConfirmation;
+        set => this.RaiseAndSetIfChanged(ref _restConfirmation, value);
+    }
+
     #endregion
 
     #region Commands
@@ -252,18 +333,58 @@ public class DungeonExplorationViewModel : ViewModelBase
     /// </summary>
     public ICommand EngageCommand { get; }
 
+    /// <summary>
+    /// Command to toggle minimap visibility.
+    /// </summary>
+    public ICommand ToggleMinimapCommand { get; }
+
+    // v0.43.14: Room Interactions Commands
+
+    /// <summary>
+    /// Command to collect loot from search results.
+    /// </summary>
+    public ICommand CollectLootCommand { get; }
+
+    /// <summary>
+    /// Command to close search results overlay.
+    /// </summary>
+    public ICommand CloseSearchResultCommand { get; }
+
+    /// <summary>
+    /// Command to show rest confirmation dialog.
+    /// </summary>
+    public ICommand ShowRestDialogCommand { get; }
+
+    /// <summary>
+    /// Command to confirm rest.
+    /// </summary>
+    public ICommand ConfirmRestCommand { get; }
+
+    /// <summary>
+    /// Command to cancel rest dialog.
+    /// </summary>
+    public ICommand CancelRestCommand { get; }
+
     #endregion
 
     public DungeonExplorationViewModel()
     {
         // Initialize commands
         MoveCommand = ReactiveCommand.Create<ExitViewModel>(Move);
-        SearchRoomCommand = ReactiveCommand.Create(SearchRoom);
-        RestCommand = ReactiveCommand.Create(Rest);
+        SearchRoomCommand = ReactiveCommand.CreateFromTask(SearchRoomAsync);
+        RestCommand = ReactiveCommand.Create(ShowRestDialog);
         ViewCharacterCommand = ReactiveCommand.Create(ViewCharacter);
         ViewInventoryCommand = ReactiveCommand.Create(ViewInventory);
         InteractCommand = ReactiveCommand.Create<RoomFeatureViewModel>(Interact);
         EngageCommand = ReactiveCommand.Create(EngageEnemies);
+        ToggleMinimapCommand = ReactiveCommand.Create(ToggleMinimap);
+
+        // v0.43.14: Room Interactions Commands
+        CollectLootCommand = ReactiveCommand.Create(CollectLoot);
+        CloseSearchResultCommand = ReactiveCommand.Create(CloseSearchResult);
+        ShowRestDialogCommand = ReactiveCommand.Create(ShowRestDialog);
+        ConfirmRestCommand = ReactiveCommand.Create(ConfirmRest);
+        CancelRestCommand = ReactiveCommand.Create(CancelRest);
 
         // Load demo dungeon
         LoadDemoDungeon();
@@ -282,8 +403,15 @@ public class DungeonExplorationViewModel : ViewModelBase
     public void LoadDungeon(Dungeon dungeon, string startRoomId)
     {
         CurrentDungeon = dungeon;
-        CurrentRoom = dungeon.GetRoom(startRoomId) ?? dungeon.GetStartRoom();
+        var startRoom = dungeon.GetRoom(startRoomId) ?? dungeon.GetStartRoom();
+        CurrentRoom = startRoom;
         StatusMessage = $"Entering {dungeon.Biome}...";
+
+        // Initialize minimap with dungeon data
+        if (startRoom != null)
+        {
+            Minimap.LoadDungeon(dungeon, startRoom);
+        }
     }
 
     /// <summary>
@@ -324,7 +452,7 @@ public class DungeonExplorationViewModel : ViewModelBase
             BossRoomId = "room_05"
         };
 
-        // Room 1: Entry Hall
+        // Room 1: Entry Hall (0, 0, 0) - Origin
         dungeon.Rooms["room_01"] = new Room
         {
             RoomId = "room_01",
@@ -332,6 +460,7 @@ public class DungeonExplorationViewModel : ViewModelBase
             Description = "You stand in a vast entry hall, the ceiling lost in shadows above. Corroded pipes line the walls like metallic veins, occasionally hissing with escaping steam. The air is thick with the smell of rust and ozone. Faded runic glyphs flicker weakly on a crumbling archway to the north.",
             PrimaryBiome = "The_Roots",
             Layer = VerticalLayer.GroundLevel,
+            Position = new RoomPosition(0, 0, 0),
             IsStartRoom = true,
             Exits = new Dictionary<string, string>
             {
@@ -341,7 +470,7 @@ public class DungeonExplorationViewModel : ViewModelBase
             IsSanctuary = true
         };
 
-        // Room 2: Maintenance Corridor
+        // Room 2: Maintenance Corridor (0, 1, 0) - North of Entry
         dungeon.Rooms["room_02"] = new Room
         {
             RoomId = "room_02",
@@ -349,6 +478,7 @@ public class DungeonExplorationViewModel : ViewModelBase
             Description = "A narrow maintenance corridor stretches before you, barely wide enough for two people to walk abreast. Exposed conduits spark intermittently overhead, casting dancing shadows on the grime-covered walls. The floor is slick with condensation, and you hear the distant grinding of machinery.",
             PrimaryBiome = "The_Roots",
             Layer = VerticalLayer.GroundLevel,
+            Position = new RoomPosition(0, 1, 0),
             Exits = new Dictionary<string, string>
             {
                 ["south"] = "room_01",
@@ -361,7 +491,7 @@ public class DungeonExplorationViewModel : ViewModelBase
             HazardType = HazardType.Electrical
         };
 
-        // Room 3: Storage Chamber
+        // Room 3: Storage Chamber (1, 0, 0) - East of Entry (also connected west to room_02)
         dungeon.Rooms["room_03"] = new Room
         {
             RoomId = "room_03",
@@ -369,6 +499,7 @@ public class DungeonExplorationViewModel : ViewModelBase
             Description = "Towering shelves of corroded metal fill this chamber, most collapsed into heaps of rust and debris. Among the wreckage, you spot containers that might still hold useful salvage. Something skitters in the darkness between the shelving units.",
             PrimaryBiome = "The_Roots",
             Layer = VerticalLayer.GroundLevel,
+            Position = new RoomPosition(1, 0, 0),
             Exits = new Dictionary<string, string>
             {
                 ["west"] = "room_01",
@@ -380,7 +511,7 @@ public class DungeonExplorationViewModel : ViewModelBase
             }
         };
 
-        // Room 4: Junction with Vertical Access
+        // Room 4: Junction with Vertical Access (0, 2, 0) - North of Corridor
         dungeon.Rooms["room_04"] = new Room
         {
             RoomId = "room_04",
@@ -390,6 +521,7 @@ public class DungeonExplorationViewModel : ViewModelBase
             SecondaryBiome = "Niflheim",
             BiomeBlendRatio = 0.3f,
             Layer = VerticalLayer.GroundLevel,
+            Position = new RoomPosition(0, 2, 0),
             Exits = new Dictionary<string, string>
             {
                 ["south"] = "room_02",
@@ -403,7 +535,7 @@ public class DungeonExplorationViewModel : ViewModelBase
             PuzzleDescription = "A control panel with flickering lights. Perhaps it controls something important."
         };
 
-        // Room 5: Boss Chamber
+        // Room 5: Boss Chamber (0, 3, 0) - North of Junction
         dungeon.Rooms["room_05"] = new Room
         {
             RoomId = "room_05",
@@ -411,6 +543,7 @@ public class DungeonExplorationViewModel : ViewModelBase
             Description = "A massive chamber opens before you, dominated by the hulking remains of an ancient processing core. Cables hang like dead vines from the ceiling, and the air thrums with residual Aetheric energy. Something massive stirs in the shadows...",
             PrimaryBiome = "The_Roots",
             Layer = VerticalLayer.GroundLevel,
+            Position = new RoomPosition(0, 3, 0),
             IsBossRoom = true,
             Exits = new Dictionary<string, string>
             {
@@ -423,7 +556,7 @@ public class DungeonExplorationViewModel : ViewModelBase
             PsychicResonance = PsychicResonanceLevel.High
         };
 
-        // Room 6: Lower Level (Vertical connection target)
+        // Room 6: Lower Level (0, 2, -1) - Below Junction (Vertical connection target)
         dungeon.Rooms["room_06"] = new Room
         {
             RoomId = "room_06",
@@ -431,6 +564,7 @@ public class DungeonExplorationViewModel : ViewModelBase
             Description = "The stairs have led you down to a lower level. Steam vents hiss from cracks in the floor, and the temperature here is noticeably higher. Ancient geothermal pipes snake along the walls, some still carrying scalding water.",
             PrimaryBiome = "Muspelheim",
             Layer = VerticalLayer.UpperRoots,
+            Position = new RoomPosition(0, 2, -1),
             Exits = new Dictionary<string, string>(),
             VerticalConnections = new List<VerticalConnection>
             {
@@ -450,8 +584,15 @@ public class DungeonExplorationViewModel : ViewModelBase
             HazardType = HazardType.Fire
         };
 
+        // Initialize minimap with dungeon
+        var startRoom = dungeon.GetStartRoom();
+        if (startRoom != null)
+        {
+            Minimap.LoadDungeon(dungeon, startRoom);
+        }
+
         CurrentDungeon = dungeon;
-        CurrentRoom = dungeon.GetStartRoom();
+        CurrentRoom = startRoom;
         StatusMessage = "You descend into The Roots...";
     }
 
@@ -642,6 +783,9 @@ public class DungeonExplorationViewModel : ViewModelBase
             string previousRoom = CurrentRoom.Name;
             CurrentRoom = nextRoom;
 
+            // Update minimap with new room
+            Minimap.UpdateCurrentRoom(nextRoom);
+
             // Check for random encounter on arrival
             if (ShouldTriggerEncounter())
             {
@@ -660,42 +804,190 @@ public class DungeonExplorationViewModel : ViewModelBase
     }
 
     /// <summary>
-    /// Searches the current room.
+    /// Searches the current room asynchronously with visual feedback.
     /// </summary>
-    private void SearchRoom()
+    private async Task SearchRoomAsync()
     {
-        if (CurrentRoom == null) return;
+        if (CurrentRoom == null || !CanSearch) return;
 
-        if (IsSearched)
-        {
-            StatusMessage = "You've already thoroughly searched this area.";
-            return;
-        }
+        IsSearching = true;
+        StatusMessage = "Searching the area...";
+
+        // Simulate search delay for visual feedback
+        await Task.Delay(800);
 
         IsSearched = true;
 
-        // Simulate search results
+        // Generate search results
         var rng = new Random();
-        if (rng.NextDouble() < 0.3) // 30% chance to find something
+        var roll = rng.NextDouble();
+
+        if (roll < 0.35) // 35% chance to find loot
         {
-            StatusMessage = "Your search reveals a hidden compartment containing salvage!";
-            // In full implementation, would add items to inventory
+            var lootItems = GenerateRandomLoot(rng);
+            var secrets = GenerateEnvironmentalSecrets(rng);
+
+            SearchResult = SearchResultViewModel.WithLoot(lootItems, secrets);
+            StatusMessage = "Your search reveals something!";
         }
-        else if (rng.NextDouble() < 0.15) // 15% chance to trigger encounter
+        else if (roll < 0.50) // 15% chance to trigger encounter
         {
-            StatusMessage = "Your searching disturbs something in the shadows...";
-            // In full implementation, would trigger combat
+            SearchResult = SearchResultViewModel.WithEncounter(
+                "Your searching disturbs something lurking in the shadows...",
+                null);
+            StatusMessage = "Something stirs in the darkness!";
         }
-        else
+        else if (roll < 0.70) // 20% chance to find secrets only
         {
+            var secrets = GenerateEnvironmentalSecrets(rng);
+            if (secrets.Any())
+            {
+                SearchResult = SearchResultViewModel.WithSecrets(secrets);
+                StatusMessage = "You discover something interesting...";
+            }
+            else
+            {
+                SearchResult = SearchResultViewModel.Empty();
+                StatusMessage = "Your search reveals nothing of interest.";
+            }
+        }
+        else // 30% chance to find nothing
+        {
+            SearchResult = SearchResultViewModel.Empty();
             StatusMessage = "Your search reveals nothing of interest.";
         }
+
+        IsSearching = false;
+        this.RaisePropertyChanged(nameof(IsSearchResultVisible));
+        this.RaisePropertyChanged(nameof(CanSearch));
     }
 
     /// <summary>
-    /// Rests in the current room.
+    /// Generates random loot items for search results.
     /// </summary>
-    private void Rest()
+    private List<LootItemViewModel> GenerateRandomLoot(Random rng)
+    {
+        var items = new List<LootItemViewModel>();
+        var numItems = rng.Next(1, 4); // 1-3 items
+
+        for (int i = 0; i < numItems; i++)
+        {
+            var itemType = rng.Next(100);
+            if (itemType < 40) // 40% materials
+            {
+                var materials = new[] { "Scrap Metal", "Corroded Wire", "Crystalline Shard", "Machine Oil", "Rusted Gears" };
+                items.Add(LootItemViewModel.ForMaterial(
+                    materials[rng.Next(materials.Length)],
+                    "Salvageable materials useful for crafting.",
+                    rng.Next(1, 4)));
+            }
+            else if (itemType < 60) // 20% currency
+            {
+                var currencyType = rng.Next(2) == 0 ? "Scrap" : "Aether Shards";
+                items.Add(LootItemViewModel.ForCurrency(currencyType, rng.Next(5, 25)));
+            }
+            else // 40% equipment
+            {
+                var equipment = new Equipment
+                {
+                    Name = GenerateRandomItemName(rng),
+                    Type = (EquipmentType)rng.Next(3),
+                    Quality = (QualityTier)rng.Next(3),
+                    Description = "A piece of salvaged equipment.",
+                    DamageDice = rng.Next(1, 3),
+                    DamageDieSize = 6,
+                    DefenseBonus = rng.Next(1, 5)
+                };
+                items.Add(LootItemViewModel.FromEquipment(equipment));
+            }
+        }
+
+        return items;
+    }
+
+    /// <summary>
+    /// Generates a random item name.
+    /// </summary>
+    private string GenerateRandomItemName(Random rng)
+    {
+        var prefixes = new[] { "Corroded", "Salvaged", "Ancient", "Damaged", "Modified" };
+        var items = new[] { "Blade", "Shield", "Gauntlet", "Helm", "Ring" };
+        return $"{prefixes[rng.Next(prefixes.Length)]} {items[rng.Next(items.Length)]}";
+    }
+
+    /// <summary>
+    /// Generates environmental secrets/discoveries.
+    /// </summary>
+    private List<string> GenerateEnvironmentalSecrets(Random rng)
+    {
+        var secrets = new List<string>();
+        var allSecrets = new[]
+        {
+            "Faded runes on the wall seem to depict an ancient ritual.",
+            "You find scratch marks suggesting something large passed through here.",
+            "A hidden compartment contains old documents, mostly illegible.",
+            "The temperature here is noticeably different than nearby areas.",
+            "You notice strange stains on the floor that seem to shimmer faintly.",
+            "An old terminal flickers with corrupted data logs.",
+            "The walls bear evidence of a past battle.",
+            "You discover a hidden maintenance passage (now collapsed)."
+        };
+
+        if (rng.NextDouble() < 0.6) // 60% chance to find at least one secret
+        {
+            var numSecrets = rng.Next(1, 3);
+            var shuffled = allSecrets.OrderBy(_ => rng.Next()).Take(numSecrets);
+            secrets.AddRange(shuffled);
+        }
+
+        return secrets;
+    }
+
+    /// <summary>
+    /// Collects loot from search results.
+    /// </summary>
+    private void CollectLoot()
+    {
+        if (SearchResult == null || !SearchResult.FoundLoot || Character == null) return;
+
+        // Add items to character inventory (simplified for demo)
+        foreach (var item in SearchResult.LootItems)
+        {
+            if (item.Equipment != null)
+            {
+                Character.Inventory.Add(item.Equipment);
+            }
+        }
+
+        SearchResult.IsCollected = true;
+        StatusMessage = $"Collected {SearchResult.LootItems.Count} item(s).";
+
+        // Auto-close after collection
+        CloseSearchResult();
+    }
+
+    /// <summary>
+    /// Closes the search result overlay.
+    /// </summary>
+    private void CloseSearchResult()
+    {
+        // If encounter was triggered, navigate to combat
+        if (SearchResult?.TriggeredEncounter == true)
+        {
+            SearchResult = null;
+            this.RaisePropertyChanged(nameof(IsSearchResultVisible));
+            _navigationService?.NavigateTo<CombatViewModel>();
+            return;
+        }
+
+        SearchResult = null;
+        this.RaisePropertyChanged(nameof(IsSearchResultVisible));
+    }
+
+    /// <summary>
+    /// Shows the rest confirmation dialog.
+    /// </summary>
+    private void ShowRestDialog()
     {
         if (CurrentRoom == null || Character == null) return;
 
@@ -707,10 +999,34 @@ public class DungeonExplorationViewModel : ViewModelBase
 
         if (CurrentRoom.IsSanctuary)
         {
+            RestConfirmation = RestConfirmationViewModel.ForSanctuary(
+                Character.HP, Character.MaxHP,
+                Character.Stamina, Character.MaxStamina);
+        }
+        else
+        {
+            RestConfirmation = RestConfirmationViewModel.ForRegularRest(
+                Character.HP, Character.MaxHP,
+                Character.Stamina, Character.MaxStamina,
+                Character.PsychicStress);
+        }
+
+        IsRestDialogVisible = true;
+    }
+
+    /// <summary>
+    /// Confirms and executes rest.
+    /// </summary>
+    private void ConfirmRest()
+    {
+        if (CurrentRoom == null || Character == null || RestConfirmation == null) return;
+
+        if (RestConfirmation.IsSanctuary)
+        {
             // Sanctuary rest - full recovery, no stress
             Character.HP = Character.MaxHP;
             Character.Stamina = Character.MaxStamina;
-            StatusMessage = "You rest in the sanctuary. HP and Stamina fully restored.";
+            StatusMessage = "You rest peacefully in the sanctuary. Fully restored.";
         }
         else
         {
@@ -718,12 +1034,23 @@ public class DungeonExplorationViewModel : ViewModelBase
             Character.HP = Math.Min(Character.MaxHP, Character.HP + Character.MaxHP / 4);
             Character.Stamina = Math.Min(Character.MaxStamina, Character.Stamina + Character.MaxStamina / 2);
             Character.PsychicStress = Math.Min(100, Character.PsychicStress + 5);
-            StatusMessage = "You rest uneasily. HP/Stamina partially restored, but stress increases.";
+            StatusMessage = "You rest uneasily. Partially restored, but stress increases.";
         }
 
         this.RaisePropertyChanged(nameof(HPDisplay));
         this.RaisePropertyChanged(nameof(StaminaDisplay));
         this.RaisePropertyChanged(nameof(StressDisplay));
+
+        CancelRest(); // Close dialog
+    }
+
+    /// <summary>
+    /// Cancels the rest dialog.
+    /// </summary>
+    private void CancelRest()
+    {
+        IsRestDialogVisible = false;
+        RestConfirmation = null;
     }
 
     /// <summary>
@@ -764,6 +1091,15 @@ public class DungeonExplorationViewModel : ViewModelBase
 
         StatusMessage = "Engaging hostiles!";
         _navigationService?.NavigateTo<CombatViewModel>();
+    }
+
+    /// <summary>
+    /// Toggles minimap visibility.
+    /// </summary>
+    private void ToggleMinimap()
+    {
+        IsMinimapVisible = !IsMinimapVisible;
+        StatusMessage = IsMinimapVisible ? "Map opened." : "Map closed.";
     }
 
     /// <summary>
