@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:RuneAndRust.DesktopUI.ViewModels"
+             xmlns:controls="using:RuneAndRust.DesktopUI.Controls"
              x:Class="RuneAndRust.DesktopUI.Views.DungeonExplorationView"
              x:DataType="vm:DungeonExplorationViewModel">
 
@@ -34,7 +35,7 @@
         </Style>
     </UserControl.Styles>
 
-    <Grid ColumnDefinitions="*,280" Margin="15">
+    <Grid ColumnDefinitions="*,280,Auto" Margin="15">
         <!-- Main Room Display -->
         <Border Grid.Column="0"
                 Background="#2C2C2C"
@@ -317,6 +318,15 @@
                     </StackPanel>
                 </Button>
 
+                <!-- Toggle Map -->
+                <Button Classes="ActionButton"
+                        Command="{Binding ToggleMinimapCommand}">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="Map" FontWeight="SemiBold"/>
+                        <TextBlock Text="(M)" Foreground="#888888" FontSize="10" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+
                 <!-- Sanctuary indicator -->
                 <Border Background="#2E4A2E"
                         CornerRadius="4"
@@ -335,6 +345,150 @@
                     </StackPanel>
                 </Border>
             </StackPanel>
+        </Border>
+
+        <!-- Minimap Panel (Column 2) -->
+        <Border Grid.Column="2"
+                Width="300"
+                Margin="10,0,0,0"
+                IsVisible="{Binding IsMinimapVisible}">
+            <Grid RowDefinitions="Auto,*,Auto">
+                <!-- Header with layer info -->
+                <Border Grid.Row="0"
+                        Background="#2C2C2C"
+                        Padding="10,8"
+                        CornerRadius="6,6,0,0">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <!-- Layer Information -->
+                        <StackPanel Grid.Column="0" Spacing="2">
+                            <TextBlock Text="Dungeon Map"
+                                       FontSize="14"
+                                       FontWeight="Bold"
+                                       Foreground="White"/>
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <TextBlock Text="{Binding Minimap.LayerDisplayName}"
+                                           FontSize="12"
+                                           Foreground="#4A90E2"
+                                           FontWeight="SemiBold"/>
+                                <TextBlock Text="{Binding Minimap.LayerDepthDisplay}"
+                                           FontSize="10"
+                                           Foreground="#888888"
+                                           VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </StackPanel>
+
+                        <!-- Layer Navigation -->
+                        <StackPanel Grid.Column="1"
+                                    Orientation="Horizontal"
+                                    Spacing="4"
+                                    VerticalAlignment="Center">
+                            <Button Width="28" Height="24"
+                                    Padding="0"
+                                    Background="#3C3C3C"
+                                    Command="{Binding Minimap.LayerUpCommand}"
+                                    IsEnabled="{Binding Minimap.CanGoUp}"
+                                    ToolTip.Tip="Go to higher layer">
+                                <TextBlock Text="^" FontWeight="Bold" HorizontalAlignment="Center"/>
+                            </Button>
+                            <Button Width="28" Height="24"
+                                    Padding="0"
+                                    Background="#3C3C3C"
+                                    Command="{Binding Minimap.LayerDownCommand}"
+                                    IsEnabled="{Binding Minimap.CanGoDown}"
+                                    ToolTip.Tip="Go to lower layer">
+                                <TextBlock Text="v" FontWeight="Bold" HorizontalAlignment="Center"/>
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- Minimap Canvas -->
+                <Border Grid.Row="1"
+                        Background="#1C1C1C"
+                        BorderBrush="#3C3C3C"
+                        BorderThickness="1"
+                        ClipToBounds="True"
+                        MinHeight="250">
+                    <Grid>
+                        <!-- The custom minimap control -->
+                        <controls:MinimapControl ViewModel="{Binding Minimap}"
+                                                 RoomSize="40"/>
+
+                        <!-- Zoom Controls Overlay (top-left) -->
+                        <StackPanel HorizontalAlignment="Left"
+                                    VerticalAlignment="Top"
+                                    Margin="6"
+                                    Spacing="3">
+                            <Button Width="24" Height="24"
+                                    Padding="0"
+                                    Background="#2C2C2CCC"
+                                    Command="{Binding Minimap.ZoomInCommand}"
+                                    ToolTip.Tip="Zoom In">
+                                <TextBlock Text="+" FontSize="14" FontWeight="Bold" HorizontalAlignment="Center"/>
+                            </Button>
+                            <Button Width="24" Height="24"
+                                    Padding="0"
+                                    Background="#2C2C2CCC"
+                                    Command="{Binding Minimap.ZoomOutCommand}"
+                                    ToolTip.Tip="Zoom Out">
+                                <TextBlock Text="-" FontSize="14" FontWeight="Bold" HorizontalAlignment="Center"/>
+                            </Button>
+                            <Button Width="24" Height="24"
+                                    Padding="0"
+                                    Background="#2C2C2CCC"
+                                    Command="{Binding Minimap.CenterOnPlayerCommand}"
+                                    ToolTip.Tip="Center on Player">
+                                <TextBlock Text="C" FontSize="10" FontWeight="Bold" HorizontalAlignment="Center"/>
+                            </Button>
+                        </StackPanel>
+
+                        <!-- Legend Overlay (bottom-left) -->
+                        <Border HorizontalAlignment="Left"
+                                VerticalAlignment="Bottom"
+                                Background="#2C2C2CCC"
+                                CornerRadius="4"
+                                Padding="6"
+                                Margin="6">
+                            <StackPanel Spacing="3">
+                                <TextBlock Text="Legend"
+                                           FontSize="9"
+                                           FontWeight="Bold"
+                                           Foreground="#888888"
+                                           Margin="0,0,0,2"/>
+
+                                <!-- Current Room -->
+                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                    <Border Width="10" Height="10"
+                                            Background="#4A4A4A"
+                                            BorderBrush="#FFD700"
+                                            BorderThickness="2"
+                                            CornerRadius="2"/>
+                                    <TextBlock Text="Current" FontSize="8" Foreground="#AAAAAA" VerticalAlignment="Center"/>
+                                </StackPanel>
+
+                                <!-- Vertical Indicators -->
+                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                    <TextBlock Text="^" FontWeight="Bold" FontSize="10" Foreground="#FFFF00" Width="10" TextAlignment="Center"/>
+                                    <TextBlock Text="Up" FontSize="8" Foreground="#AAAAAA" VerticalAlignment="Center"/>
+                                    <TextBlock Text="v" FontWeight="Bold" FontSize="10" Foreground="#00FFFF" Width="10" TextAlignment="Center" Margin="4,0,0,0"/>
+                                    <TextBlock Text="Down" FontSize="8" Foreground="#AAAAAA" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </Border>
+
+                <!-- Footer with exploration progress -->
+                <Border Grid.Row="2"
+                        Background="#2C2C2C"
+                        Padding="8,4"
+                        CornerRadius="0,0,6,6">
+                    <TextBlock Text="{Binding Minimap.ExplorationProgress}"
+                               FontSize="10"
+                               Foreground="#888888"
+                               HorizontalAlignment="Center"/>
+                </Border>
+            </Grid>
         </Border>
     </Grid>
 </UserControl>

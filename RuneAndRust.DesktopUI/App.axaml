@@ -32,5 +32,8 @@
         <DataTemplate DataType="vm:SpecializationTreeViewModel">
             <views:SpecializationTreeView />
         </DataTemplate>
+        <DataTemplate DataType="vm:MinimapViewModel">
+            <views:MinimapView />
+        </DataTemplate>
     </Application.DataTemplates>
 </Application>

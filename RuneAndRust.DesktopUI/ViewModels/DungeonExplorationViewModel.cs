@@ -89,6 +89,8 @@ public class DungeonExplorationViewModel : ViewModelBase
     private string _statusMessage = string.Empty;
     private bool _isSearched = false;
     private PlayerCharacter? _character;
+    private MinimapViewModel _minimap = new();
+    private bool _isMinimapVisible = true;
 
     #region Properties
 
@@ -213,6 +215,24 @@ public class DungeonExplorationViewModel : ViewModelBase
     /// </summary>
     public string StressDisplay => Character != null ? $"{Character.PsychicStress}/100" : "?/100";
 
+    /// <summary>
+    /// The minimap view model.
+    /// </summary>
+    public MinimapViewModel Minimap
+    {
+        get => _minimap;
+        private set => this.RaiseAndSetIfChanged(ref _minimap, value);
+    }
+
+    /// <summary>
+    /// Whether the minimap is visible.
+    /// </summary>
+    public bool IsMinimapVisible
+    {
+        get => _isMinimapVisible;
+        set => this.RaiseAndSetIfChanged(ref _isMinimapVisible, value);
+    }
+
     #endregion
 
     #region Commands
@@ -252,6 +272,11 @@ public class DungeonExplorationViewModel : ViewModelBase
     /// </summary>
     public ICommand EngageCommand { get; }
 
+    /// <summary>
+    /// Command to toggle minimap visibility.
+    /// </summary>
+    public ICommand ToggleMinimapCommand { get; }
+
     #endregion
 
     public DungeonExplorationViewModel()
@@ -264,6 +289,7 @@ public class DungeonExplorationViewModel : ViewModelBase
         ViewInventoryCommand = ReactiveCommand.Create(ViewInventory);
         InteractCommand = ReactiveCommand.Create<RoomFeatureViewModel>(Interact);
         EngageCommand = ReactiveCommand.Create(EngageEnemies);
+        ToggleMinimapCommand = ReactiveCommand.Create(ToggleMinimap);
 
         // Load demo dungeon
         LoadDemoDungeon();
@@ -282,8 +308,15 @@ public class DungeonExplorationViewModel : ViewModelBase
     public void LoadDungeon(Dungeon dungeon, string startRoomId)
     {
         CurrentDungeon = dungeon;
-        CurrentRoom = dungeon.GetRoom(startRoomId) ?? dungeon.GetStartRoom();
+        var startRoom = dungeon.GetRoom(startRoomId) ?? dungeon.GetStartRoom();
+        CurrentRoom = startRoom;
         StatusMessage = $"Entering {dungeon.Biome}...";
+
+        // Initialize minimap with dungeon data
+        if (startRoom != null)
+        {
+            Minimap.LoadDungeon(dungeon, startRoom);
+        }
     }
 
     /// <summary>
@@ -324,7 +357,7 @@ public class DungeonExplorationViewModel : ViewModelBase
             BossRoomId = "room_05"
         };
 
-        // Room 1: Entry Hall
+        // Room 1: Entry Hall (0, 0, 0) - Origin
         dungeon.Rooms["room_01"] = new Room
         {
             RoomId = "room_01",
@@ -332,6 +365,7 @@ public class DungeonExplorationViewModel : ViewModelBase
             Description = "You stand in a vast entry hall, the ceiling lost in shadows above. Corroded pipes line the walls like metallic veins, occasionally hissing with escaping steam. The air is thick with the smell of rust and ozone. Faded runic glyphs flicker weakly on a crumbling archway to the north.",
             PrimaryBiome = "The_Roots",
             Layer = VerticalLayer.GroundLevel,
+            Position = new RoomPosition(0, 0, 0),
             IsStartRoom = true,
             Exits = new Dictionary<string, string>
             {
@@ -341,7 +375,7 @@ public class DungeonExplorationViewModel : ViewModelBase
             IsSanctuary = true
         };
 
-        // Room 2: Maintenance Corridor
+        // Room 2: Maintenance Corridor (0, 1, 0) - North of Entry
         dungeon.Rooms["room_02"] = new Room
         {
             RoomId = "room_02",
@@ -349,6 +383,7 @@ public class DungeonExplorationViewModel : ViewModelBase
             Description = "A narrow maintenance corridor stretches before you, barely wide enough for two people to walk abreast. Exposed conduits spark intermittently overhead, casting dancing shadows on the grime-covered walls. The floor is slick with condensation, and you hear the distant grinding of machinery.",
             PrimaryBiome = "The_Roots",
             Layer = VerticalLayer.GroundLevel,
+            Position = new RoomPosition(0, 1, 0),
             Exits = new Dictionary<string, string>
             {
                 ["south"] = "room_01",
@@ -361,7 +396,7 @@ public class DungeonExplorationViewModel : ViewModelBase
             HazardType = HazardType.Electrical
         };
 
-        // Room 3: Storage Chamber
+        // Room 3: Storage Chamber (1, 0, 0) - East of Entry (also connected west to room_02)
         dungeon.Rooms["room_03"] = new Room
         {
             RoomId = "room_03",
@@ -369,6 +404,7 @@ public class DungeonExplorationViewModel : ViewModelBase
             Description = "Towering shelves of corroded metal fill this chamber, most collapsed into heaps of rust and debris. Among the wreckage, you spot containers that might still hold useful salvage. Something skitters in the darkness between the shelving units.",
             PrimaryBiome = "The_Roots",
             Layer = VerticalLayer.GroundLevel,
+            Position = new RoomPosition(1, 0, 0),
             Exits = new Dictionary<string, string>
             {
                 ["west"] = "room_01",
@@ -380,7 +416,7 @@ public class DungeonExplorationViewModel : ViewModelBase
             }
         };
 
-        // Room 4: Junction with Vertical Access
+        // Room 4: Junction with Vertical Access (0, 2, 0) - North of Corridor
         dungeon.Rooms["room_04"] = new Room
         {
             RoomId = "room_04",
@@ -390,6 +426,7 @@ public class DungeonExplorationViewModel : ViewModelBase
             SecondaryBiome = "Niflheim",
             BiomeBlendRatio = 0.3f,
             Layer = VerticalLayer.GroundLevel,
+            Position = new RoomPosition(0, 2, 0),
             Exits = new Dictionary<string, string>
             {
                 ["south"] = "room_02",
@@ -403,7 +440,7 @@ public class DungeonExplorationViewModel : ViewModelBase
             PuzzleDescription = "A control panel with flickering lights. Perhaps it controls something important."
         };
 
-        // Room 5: Boss Chamber
+        // Room 5: Boss Chamber (0, 3, 0) - North of Junction
         dungeon.Rooms["room_05"] = new Room
         {
             RoomId = "room_05",
@@ -411,6 +448,7 @@ public class DungeonExplorationViewModel : ViewModelBase
             Description = "A massive chamber opens before you, dominated by the hulking remains of an ancient processing core. Cables hang like dead vines from the ceiling, and the air thrums with residual Aetheric energy. Something massive stirs in the shadows...",
             PrimaryBiome = "The_Roots",
             Layer = VerticalLayer.GroundLevel,
+            Position = new RoomPosition(0, 3, 0),
             IsBossRoom = true,
             Exits = new Dictionary<string, string>
             {
@@ -423,7 +461,7 @@ public class DungeonExplorationViewModel : ViewModelBase
             PsychicResonance = PsychicResonanceLevel.High
         };
 
-        // Room 6: Lower Level (Vertical connection target)
+        // Room 6: Lower Level (0, 2, -1) - Below Junction (Vertical connection target)
         dungeon.Rooms["room_06"] = new Room
         {
             RoomId = "room_06",
@@ -431,6 +469,7 @@ public class DungeonExplorationViewModel : ViewModelBase
             Description = "The stairs have led you down to a lower level. Steam vents hiss from cracks in the floor, and the temperature here is noticeably higher. Ancient geothermal pipes snake along the walls, some still carrying scalding water.",
             PrimaryBiome = "Muspelheim",
             Layer = VerticalLayer.UpperRoots,
+            Position = new RoomPosition(0, 2, -1),
             Exits = new Dictionary<string, string>(),
             VerticalConnections = new List<VerticalConnection>
             {
@@ -450,8 +489,15 @@ public class DungeonExplorationViewModel : ViewModelBase
             HazardType = HazardType.Fire
         };
 
+        // Initialize minimap with dungeon
+        var startRoom = dungeon.GetStartRoom();
+        if (startRoom != null)
+        {
+            Minimap.LoadDungeon(dungeon, startRoom);
+        }
+
         CurrentDungeon = dungeon;
-        CurrentRoom = dungeon.GetStartRoom();
+        CurrentRoom = startRoom;
         StatusMessage = "You descend into The Roots...";
     }
 
@@ -642,6 +688,9 @@ public class DungeonExplorationViewModel : ViewModelBase
             string previousRoom = CurrentRoom.Name;
             CurrentRoom = nextRoom;
 
+            // Update minimap with new room
+            Minimap.UpdateCurrentRoom(nextRoom);
+
             // Check for random encounter on arrival
             if (ShouldTriggerEncounter())
             {
@@ -764,6 +813,15 @@ public class DungeonExplorationViewModel : ViewModelBase
 
         StatusMessage = "Engaging hostiles!";
         _navigationService?.NavigateTo<CombatViewModel>();
+    }
+
+    /// <summary>
+    /// Toggles minimap visibility.
+    /// </summary>
+    private void ToggleMinimap()
+    {
+        IsMinimapVisible = !IsMinimapVisible;
+        StatusMessage = IsMinimapVisible ? "Map opened." : "Map closed.";
     }
 
     /// <summary>
