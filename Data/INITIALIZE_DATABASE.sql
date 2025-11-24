@@ -109,6 +109,9 @@
 .read Data/v0.40.3_boss_gauntlet_schema.sql
 .read Data/v0.40.3_boss_gauntlet_data.sql
 
+-- v0.40.4: Endless Mode & Leaderboards
+.read Data/v0.40.4_endless_mode_schema.sql
+
 -- ==============================================================================
 -- Verification Queries
 -- ==============================================================================
