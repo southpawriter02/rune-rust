@@ -37,4 +37,34 @@ public interface IAIConfigurationRepository
     /// Called during migration/initialization.
     /// </summary>
     Task SeedDefaultThreatWeightsAsync();
+
+    // v0.42.2: Archetype Configuration Methods
+
+    /// <summary>
+    /// Gets the archetype configuration for a specific AI archetype.
+    /// Results are cached to avoid repeated database queries.
+    /// </summary>
+    /// <param name="archetype">The AI archetype.</param>
+    /// <returns>The archetype configuration.</returns>
+    Task<AIArchetypeConfiguration> GetArchetypeConfigurationAsync(AIArchetype archetype);
+
+    /// <summary>
+    /// Gets all archetype configurations.
+    /// Used for caching on service startup.
+    /// </summary>
+    /// <returns>Dictionary of archetype to configuration.</returns>
+    Task<Dictionary<AIArchetype, AIArchetypeConfiguration>> GetAllArchetypeConfigurationsAsync();
+
+    /// <summary>
+    /// Updates the archetype configuration.
+    /// Used for balancing and tuning.
+    /// </summary>
+    /// <param name="config">The updated configuration.</param>
+    Task UpdateArchetypeConfigurationAsync(AIArchetypeConfiguration config);
+
+    /// <summary>
+    /// Seeds the default archetype configurations into the database.
+    /// Called during migration/initialization.
+    /// </summary>
+    Task SeedDefaultArchetypeConfigurationsAsync();
 }
