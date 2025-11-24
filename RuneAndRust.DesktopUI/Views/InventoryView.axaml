@@ -1,0 +1,26 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:RuneAndRust.DesktopUI.ViewModels"
+             x:Class="RuneAndRust.DesktopUI.Views.InventoryView"
+             x:DataType="vm:InventoryViewModel">
+
+    <Design.DataContext>
+        <vm:InventoryViewModel/>
+    </Design.DataContext>
+
+    <Grid>
+        <StackPanel VerticalAlignment="Center"
+                    HorizontalAlignment="Center"
+                    Spacing="20">
+            <TextBlock Text="{Binding Title}"
+                       FontSize="48"
+                       FontWeight="Bold"
+                       HorizontalAlignment="Center"/>
+            <TextBlock Text="{Binding PlaceholderMessage}"
+                       FontSize="18"
+                       Opacity="0.7"
+                       HorizontalAlignment="Center"/>
+        </StackPanel>
+    </Grid>
+
+</UserControl>

@@ -1,0 +1,24 @@
+{
+  "Name": "status_bleeding",
+  "PixelData": [
+    "                ",
+    "                ",
+    "   RR      RR   ",
+    "   RRR    RRR   ",
+    "    RRR  RRR    ",
+    "     RRRRRR     ",
+    "    RRRRRRRR    ",
+    "   RRRRRRRRRR   ",
+    "   RRRRRRRRRR   ",
+    "    RRRRRRRR    ",
+    "     RRRRRR     ",
+    "      RRRR      ",
+    "       RR       ",
+    "                ",
+    "                ",
+    "                "
+  ],
+  "Palette": {
+    "R": "#DC143C"
+  }
+}

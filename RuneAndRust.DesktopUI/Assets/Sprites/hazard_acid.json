@@ -1,0 +1,25 @@
+{
+  "Name": "hazard_acid",
+  "PixelData": [
+    "                ",
+    "   GG      GG   ",
+    "  GGGG    GGGG  ",
+    "  GGAGG  GGAGG  ",
+    " GGAAGGGGGGAAGG ",
+    " GAAAAGGGAAAAG  ",
+    "  GAAAAAAAAAGG  ",
+    "  GGAAAAAAGG    ",
+    "   GGAAAGG      ",
+    "    GGAGG       ",
+    "     GGG        ",
+    "      GG        ",
+    "       G        ",
+    "                ",
+    "                ",
+    "                "
+  ],
+  "Palette": {
+    "G": "#32CD32",
+    "A": "#7FFF00"
+  }
+}

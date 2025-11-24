@@ -1,0 +1,24 @@
+{
+  "Name": "status_hasted",
+  "PixelData": [
+    "                ",
+    "  Y             ",
+    "  YY            ",
+    "  YYY           ",
+    "  YYYY          ",
+    "  YYYYY         ",
+    "  YYYYYY        ",
+    "  YYYYYYY       ",
+    "  YYYYYY        ",
+    "  YYYYY         ",
+    "  YYYY          ",
+    "  YYY           ",
+    "  YY            ",
+    "  Y             ",
+    "                ",
+    "                "
+  ],
+  "Palette": {
+    "Y": "#FFFF00"
+  }
+}

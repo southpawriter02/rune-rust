@@ -1,0 +1,33 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:RuneAndRust.DesktopUI.ViewModels"
+             xmlns:views="using:RuneAndRust.DesktopUI.Views"
+             x:Class="RuneAndRust.DesktopUI.App"
+             RequestedThemeVariant="Dark">
+    <!-- Application resources and styles -->
+    <Application.Styles>
+        <FluentTheme />
+    </Application.Styles>
+
+    <!-- DataTemplate mapping ViewModels to Views -->
+    <Application.DataTemplates>
+        <DataTemplate DataType="vm:MenuViewModel">
+            <views:MenuView />
+        </DataTemplate>
+        <DataTemplate DataType="vm:SpriteDemoViewModel">
+            <views:SpriteDemoView />
+        </DataTemplate>
+        <DataTemplate DataType="vm:CombatViewModel">
+            <views:CombatView />
+        </DataTemplate>
+        <DataTemplate DataType="vm:CharacterSheetViewModel">
+            <views:CharacterSheetView />
+        </DataTemplate>
+        <DataTemplate DataType="vm:InventoryViewModel">
+            <views:InventoryView />
+        </DataTemplate>
+        <DataTemplate DataType="vm:DungeonExplorationViewModel">
+            <views:DungeonExplorationView />
+        </DataTemplate>
+    </Application.DataTemplates>
+</Application>

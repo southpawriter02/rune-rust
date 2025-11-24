@@ -1,0 +1,25 @@
+{
+  "Name": "hazard_corruption",
+  "PixelData": [
+    "                ",
+    "  M    M    M   ",
+    "  MM  MMM  MM   ",
+    " MMMM MMMM MMM  ",
+    " MMMPMMMPMMMPPM ",
+    "  MMPMMMPMMMPM  ",
+    "   MPMMMPMMMP   ",
+    "    PMMMPMMM    ",
+    "    MPMMPMMM    ",
+    "   MMPMMPMMM    ",
+    "   MMMPMMPMMM   ",
+    "  MMMMPMMMPMMM  ",
+    "  MMMMMMMMMMMMM ",
+    "   MMMMMMMMMM   ",
+    "    MMMMMMM     ",
+    "                "
+  ],
+  "Palette": {
+    "M": "#FF00FF",
+    "P": "#8B008B"
+  }
+}

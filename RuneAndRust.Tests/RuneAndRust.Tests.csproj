@@ -24,6 +24,7 @@
     <ProjectReference Include="..\RuneAndRust.Core\RuneAndRust.Core.csproj" />
     <ProjectReference Include="..\RuneAndRust.Engine\RuneAndRust.Engine.csproj" />
     <ProjectReference Include="..\RuneAndRust.Persistence\RuneAndRust.Persistence.csproj" />
+    <ProjectReference Include="..\RuneAndRust.DesktopUI\RuneAndRust.DesktopUI.csproj" />
   </ItemGroup>
 
 </Project>

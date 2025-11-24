@@ -1,0 +1,24 @@
+{
+  "Name": "status_corroded",
+  "PixelData": [
+    "                ",
+    "  G    G    G   ",
+    "   G  G G  G    ",
+    "    GG   GG     ",
+    " G    GGG    G  ",
+    "  GG       GG   ",
+    "   GGGGGGGGG    ",
+    "  GGGGGGGGGGG   ",
+    "   GGGGGGGGG    ",
+    "  GG       GG   ",
+    " G    GGG    G  ",
+    "    GG   GG     ",
+    "   G  G G  G    ",
+    "  G    G    G   ",
+    "                ",
+    "                "
+  ],
+  "Palette": {
+    "G": "#228B22"
+  }
+}
