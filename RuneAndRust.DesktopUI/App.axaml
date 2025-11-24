@@ -35,5 +35,8 @@
         <DataTemplate DataType="vm:MinimapViewModel">
             <views:MinimapView />
         </DataTemplate>
+        <DataTemplate DataType="vm:MetaProgressionViewModel">
+            <views:MetaProgressionView />
+        </DataTemplate>
     </Application.DataTemplates>
 </Application>

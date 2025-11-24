@@ -13,6 +13,7 @@ public class MenuViewModel : ViewModelBase
 {
     private readonly INavigationService? _navigationService;
     private readonly ISpriteService? _spriteService;
+    private readonly IMetaProgressionService? _metaProgressionService;
     /// <summary>
     /// Command to start a new game.
     /// </summary>
@@ -74,10 +75,14 @@ public class MenuViewModel : ViewModelBase
     /// <summary>
     /// Initializes a new instance with navigation support.
     /// </summary>
-    public MenuViewModel(INavigationService navigationService, ISpriteService spriteService) : this()
+    public MenuViewModel(
+        INavigationService navigationService,
+        ISpriteService spriteService,
+        IMetaProgressionService metaProgressionService) : this()
     {
         _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
         _spriteService = spriteService ?? throw new ArgumentNullException(nameof(spriteService));
+        _metaProgressionService = metaProgressionService ?? throw new ArgumentNullException(nameof(metaProgressionService));
     }
 
     private void OnNewGame()
@@ -106,8 +111,17 @@ public class MenuViewModel : ViewModelBase
 
     private void OnAchievements()
     {
-        // Placeholder - will show achievements in v0.43.15
-        Console.WriteLine("[MENU] Achievements selected");
+        if (_navigationService != null && _metaProgressionService != null)
+        {
+            // Navigate to meta-progression view (v0.43.15)
+            var metaProgressionViewModel = new MetaProgressionViewModel(_metaProgressionService, _navigationService);
+            _navigationService.NavigateTo(metaProgressionViewModel);
+            Console.WriteLine("[MENU] Navigated to Meta-Progression & Achievements");
+        }
+        else
+        {
+            Console.WriteLine("[MENU] Achievements selected (navigation not available)");
+        }
     }
 
     private void OnSpriteDemo()

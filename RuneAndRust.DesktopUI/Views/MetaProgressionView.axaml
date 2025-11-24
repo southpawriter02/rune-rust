@@ -1,0 +1,423 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:RuneAndRust.DesktopUI.ViewModels"
+             xmlns:conv="using:RuneAndRust.DesktopUI.Converters"
+             mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
+             x:Class="RuneAndRust.DesktopUI.Views.MetaProgressionView"
+             x:DataType="vm:MetaProgressionViewModel"
+             Background="#1A1A1A">
+
+    <Design.DataContext>
+        <vm:MetaProgressionViewModel/>
+    </Design.DataContext>
+
+    <UserControl.Resources>
+        <conv:UnlockedBackgroundConverter x:Key="UnlockedBackgroundConverter"/>
+        <conv:UnlockedBorderConverter x:Key="UnlockedBorderConverter"/>
+        <conv:AchievementIconConverter x:Key="AchievementIconConverter"/>
+        <conv:CategoryColorConverter x:Key="CategoryColorConverter"/>
+        <conv:InverseBoolConverter x:Key="InverseBoolConverter"/>
+        <conv:StringToBrushConverter x:Key="StringToBrushConverter"/>
+    </UserControl.Resources>
+
+    <UserControl.Styles>
+        <!-- Category filter button style -->
+        <Style Selector="Button.CategoryButton">
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="Background" Value="#2C2C2C"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Margin" Value="2"/>
+        </Style>
+        <Style Selector="Button.CategoryButton:pointerover">
+            <Setter Property="Background" Value="#3C3C3C"/>
+        </Style>
+    </UserControl.Styles>
+
+    <Grid RowDefinitions="Auto,Auto,*" Margin="20">
+        <!-- Header with Back Button and Title -->
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,15">
+            <Button Grid.Column="0"
+                    Command="{Binding BackCommand}"
+                    Background="#2C2C2C"
+                    Foreground="White"
+                    Padding="15,8"
+                    CornerRadius="4">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <TextBlock Text="←" FontSize="16"/>
+                    <TextBlock Text="Back" VerticalAlignment="Center"/>
+                </StackPanel>
+            </Button>
+
+            <TextBlock Grid.Column="1"
+                       Text="Meta-Progression &amp; Achievements"
+                       FontSize="28"
+                       FontWeight="Bold"
+                       Foreground="White"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"/>
+
+            <Button Grid.Column="2"
+                    Command="{Binding RefreshCommand}"
+                    Background="#2C2C2C"
+                    Foreground="White"
+                    Padding="15,8"
+                    CornerRadius="4"
+                    ToolTip.Tip="Refresh data">
+                <TextBlock Text="↻" FontSize="16"/>
+            </Button>
+        </Grid>
+
+        <!-- Statistics Header -->
+        <Border Grid.Row="1"
+                Background="#2C2C2C"
+                Padding="20"
+                Margin="0,0,0,15"
+                CornerRadius="8">
+            <Grid ColumnDefinitions="*,*,*,*,*">
+                <!-- Total Play Time -->
+                <StackPanel Grid.Column="0" HorizontalAlignment="Center">
+                    <TextBlock Text="Play Time"
+                               Foreground="#888888"
+                               FontSize="12"
+                               HorizontalAlignment="Center"/>
+                    <TextBlock Text="{Binding TotalPlayTimeDisplay}"
+                               FontSize="24"
+                               FontWeight="Bold"
+                               Foreground="#4A90E2"
+                               HorizontalAlignment="Center"/>
+                </StackPanel>
+
+                <!-- Total Runs -->
+                <StackPanel Grid.Column="1" HorizontalAlignment="Center">
+                    <TextBlock Text="Campaigns"
+                               Foreground="#888888"
+                               FontSize="12"
+                               HorizontalAlignment="Center"/>
+                    <TextBlock FontSize="24" FontWeight="Bold" HorizontalAlignment="Center">
+                        <Run Text="{Binding SuccessfulRuns}" Foreground="#4CAF50"/>
+                        <Run Text=" completed" Foreground="#888888" FontSize="12"/>
+                    </TextBlock>
+                </StackPanel>
+
+                <!-- Milestone Tier -->
+                <StackPanel Grid.Column="2" HorizontalAlignment="Center">
+                    <TextBlock Text="Milestone Tier"
+                               Foreground="#888888"
+                               FontSize="12"
+                               HorizontalAlignment="Center"/>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <TextBlock Text="{Binding CurrentMilestoneTier}"
+                                   FontSize="24"
+                                   FontWeight="Bold"
+                                   Foreground="#FFD700"/>
+                        <TextBlock Text=" - "
+                                   FontSize="16"
+                                   Foreground="#888888"
+                                   VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding CurrentTierName}"
+                                   FontSize="16"
+                                   Foreground="#FFD700"
+                                   VerticalAlignment="Center"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- Achievement Points -->
+                <StackPanel Grid.Column="3" HorizontalAlignment="Center">
+                    <TextBlock Text="Achievement Points"
+                               Foreground="#888888"
+                               FontSize="12"
+                               HorizontalAlignment="Center"/>
+                    <TextBlock Text="{Binding TotalAchievementPoints}"
+                               FontSize="24"
+                               FontWeight="Bold"
+                               Foreground="#9400D3"
+                               HorizontalAlignment="Center"/>
+                </StackPanel>
+
+                <!-- Achievement Progress -->
+                <StackPanel Grid.Column="4" HorizontalAlignment="Center">
+                    <TextBlock Text="Achievements"
+                               Foreground="#888888"
+                               FontSize="12"
+                               HorizontalAlignment="Center"/>
+                    <TextBlock FontSize="24" FontWeight="Bold" HorizontalAlignment="Center">
+                        <Run Text="{Binding UnlockedAchievements}" Foreground="#FFD700"/>
+                        <Run Text=" / " Foreground="#888888"/>
+                        <Run Text="{Binding TotalAchievements}" Foreground="White"/>
+                    </TextBlock>
+                    <ProgressBar Value="{Binding CompletionPercentage}"
+                                 Maximum="1.0"
+                                 Height="6"
+                                 Width="120"
+                                 Foreground="#FFD700"
+                                 Background="#1C1C1C"
+                                 Margin="0,5,0,0"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Main Content: Achievements, Unlocks, Cosmetics -->
+        <Grid Grid.Row="2" ColumnDefinitions="*,300,250">
+            <!-- Achievements List (Left Panel) -->
+            <Border Grid.Column="0"
+                    Background="#2C2C2C"
+                    Padding="15"
+                    Margin="0,0,10,0"
+                    CornerRadius="8">
+                <Grid RowDefinitions="Auto,Auto,*">
+                    <!-- Section Title -->
+                    <TextBlock Grid.Row="0"
+                               Text="Achievements"
+                               FontSize="18"
+                               FontWeight="Bold"
+                               Foreground="White"
+                               Margin="0,0,0,10"/>
+
+                    <!-- Category Filter -->
+                    <ScrollViewer Grid.Row="1"
+                                  HorizontalScrollBarVisibility="Auto"
+                                  VerticalScrollBarVisibility="Disabled"
+                                  Margin="0,0,0,10">
+                        <ItemsControl ItemsSource="{Binding Categories}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal" Spacing="4"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Button Classes="CategoryButton"
+                                            Content="{Binding}"
+                                            Command="{Binding $parent[UserControl].((vm:MetaProgressionViewModel)DataContext).RefreshCommand}"
+                                            Tag="{Binding}"/>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+
+                    <!-- Achievements ScrollViewer -->
+                    <ScrollViewer Grid.Row="2">
+                        <ItemsControl ItemsSource="{Binding Achievements}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="vm:AchievementViewModel">
+                                    <Border Background="{Binding BackgroundColor, Converter={StaticResource StringToBrushConverter}}"
+                                            BorderBrush="{Binding BorderColor, Converter={StaticResource StringToBrushConverter}}"
+                                            BorderThickness="2"
+                                            Padding="15"
+                                            Margin="0,0,0,8"
+                                            CornerRadius="6">
+                                        <Grid ColumnDefinitions="50,*,Auto">
+                                            <!-- Achievement Icon -->
+                                            <Border Grid.Column="0"
+                                                    Width="40"
+                                                    Height="40"
+                                                    Background="#1C1C1C"
+                                                    CornerRadius="20"
+                                                    VerticalAlignment="Top">
+                                                <TextBlock Text="{Binding IconText}"
+                                                           FontSize="24"
+                                                           Foreground="{Binding IconColor, Converter={StaticResource StringToBrushConverter}}"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center"/>
+                                            </Border>
+
+                                            <!-- Achievement Info -->
+                                            <StackPanel Grid.Column="1" Margin="10,0,0,0">
+                                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                                    <TextBlock Text="{Binding DisplayName}"
+                                                               FontWeight="Bold"
+                                                               FontSize="14"
+                                                               Foreground="White"/>
+                                                    <Border Background="{Binding Category, Converter={StaticResource CategoryColorConverter}}"
+                                                            Padding="6,2"
+                                                            CornerRadius="3"
+                                                            VerticalAlignment="Center">
+                                                        <TextBlock Text="{Binding Category}"
+                                                                   FontSize="10"
+                                                                   Foreground="White"/>
+                                                    </Border>
+                                                </StackPanel>
+                                                <TextBlock Text="{Binding DisplayDescription}"
+                                                           FontSize="12"
+                                                           Foreground="#AAAAAA"
+                                                           TextWrapping="Wrap"
+                                                           Margin="0,4,0,0"/>
+
+                                                <!-- Progress Bar (if not unlocked) -->
+                                                <StackPanel IsVisible="{Binding IsUnlocked, Converter={StaticResource InverseBoolConverter}}"
+                                                            Margin="0,8,0,0">
+                                                    <Grid ColumnDefinitions="*,Auto">
+                                                        <ProgressBar Grid.Column="0"
+                                                                     Value="{Binding Progress}"
+                                                                     Maximum="1.0"
+                                                                     Height="6"
+                                                                     Foreground="#4A90E2"
+                                                                     Background="#1C1C1C"/>
+                                                        <TextBlock Grid.Column="1"
+                                                                   Margin="8,0,0,0"
+                                                                   FontSize="10"
+                                                                   Foreground="#888888"
+                                                                   VerticalAlignment="Center">
+                                                            <Run Text="{Binding CurrentValue}"/>
+                                                            <Run Text="/"/>
+                                                            <Run Text="{Binding TargetValue}"/>
+                                                        </TextBlock>
+                                                    </Grid>
+                                                </StackPanel>
+
+                                                <!-- Reward (if unlocked) -->
+                                                <TextBlock Text="{Binding RewardDescription}"
+                                                           FontSize="11"
+                                                           Foreground="#FFD700"
+                                                           IsVisible="{Binding IsUnlocked}"
+                                                           Margin="0,4,0,0"/>
+                                            </StackPanel>
+
+                                            <!-- Points Badge -->
+                                            <Border Grid.Column="2"
+                                                    Background="#1C1C1C"
+                                                    Padding="8,4"
+                                                    CornerRadius="4"
+                                                    VerticalAlignment="Top">
+                                                <TextBlock FontSize="12" FontWeight="Bold">
+                                                    <Run Text="+"/>
+                                                    <Run Text="{Binding AchievementPoints}"/>
+                                                    <Run Text=" pts" Foreground="#888888" FontSize="10"/>
+                                                </TextBlock>
+                                            </Border>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Grid>
+            </Border>
+
+            <!-- Unlocks Panel (Middle) -->
+            <Border Grid.Column="1"
+                    Background="#2C2C2C"
+                    Padding="15"
+                    Margin="0,0,10,0"
+                    CornerRadius="8">
+                <Grid RowDefinitions="Auto,*">
+                    <TextBlock Grid.Row="0"
+                               Text="Account Unlocks"
+                               FontSize="18"
+                               FontWeight="Bold"
+                               Foreground="White"
+                               Margin="0,0,0,10"/>
+
+                    <ScrollViewer Grid.Row="1">
+                        <ItemsControl ItemsSource="{Binding Unlocks}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="vm:UnlockViewModel">
+                                    <Border Background="{Binding BackgroundColor, Converter={StaticResource StringToBrushConverter}}"
+                                            BorderBrush="{Binding BorderColor, Converter={StaticResource StringToBrushConverter}}"
+                                            BorderThickness="1"
+                                            Padding="12"
+                                            Margin="0,0,0,8"
+                                            CornerRadius="6">
+                                        <StackPanel>
+                                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                                <TextBlock Grid.Column="0"
+                                                           Text="{Binding TypeIcon}"
+                                                           FontSize="20"
+                                                           VerticalAlignment="Center"
+                                                           Margin="0,0,8,0"/>
+                                                <TextBlock Grid.Column="1"
+                                                           Text="{Binding Name}"
+                                                           FontWeight="Bold"
+                                                           FontSize="13"
+                                                           Foreground="White"
+                                                           VerticalAlignment="Center"/>
+                                                <Border Grid.Column="2"
+                                                        Background="{Binding TypeColor, Converter={StaticResource StringToBrushConverter}}"
+                                                        Padding="6,2"
+                                                        CornerRadius="3">
+                                                    <TextBlock Text="{Binding TypeDisplay}"
+                                                               FontSize="9"
+                                                               Foreground="White"/>
+                                                </Border>
+                                            </Grid>
+                                            <TextBlock Text="{Binding Description}"
+                                                       FontSize="11"
+                                                       Foreground="#AAAAAA"
+                                                       TextWrapping="Wrap"
+                                                       Margin="0,6,0,0"/>
+                                            <TextBlock Text="{Binding Requirement}"
+                                                       FontSize="10"
+                                                       Foreground="#666666"
+                                                       FontStyle="Italic"
+                                                       Margin="0,4,0,0"
+                                                       IsVisible="{Binding IsUnlocked, Converter={StaticResource InverseBoolConverter}}"/>
+                                            <TextBlock Text="Unlocked!"
+                                                       FontSize="10"
+                                                       Foreground="#4CAF50"
+                                                       FontWeight="Bold"
+                                                       Margin="0,4,0,0"
+                                                       IsVisible="{Binding IsUnlocked}"/>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Grid>
+            </Border>
+
+            <!-- Cosmetics Panel (Right) -->
+            <Border Grid.Column="2"
+                    Background="#2C2C2C"
+                    Padding="15"
+                    CornerRadius="8">
+                <Grid RowDefinitions="Auto,*">
+                    <TextBlock Grid.Row="0"
+                               Text="Cosmetics"
+                               FontSize="18"
+                               FontWeight="Bold"
+                               Foreground="White"
+                               Margin="0,0,0,10"/>
+
+                    <ScrollViewer Grid.Row="1">
+                        <ItemsControl ItemsSource="{Binding Cosmetics}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="vm:CosmeticViewModel">
+                                    <Border Background="#1C1C1C"
+                                            Padding="10"
+                                            Margin="0,0,0,6"
+                                            CornerRadius="6">
+                                        <StackPanel>
+                                            <Grid ColumnDefinitions="Auto,*">
+                                                <TextBlock Grid.Column="0"
+                                                           Text="{Binding TypeIcon}"
+                                                           FontSize="16"
+                                                           VerticalAlignment="Center"
+                                                           Margin="0,0,6,0"/>
+                                                <TextBlock Grid.Column="1"
+                                                           Text="{Binding Name}"
+                                                           FontWeight="Bold"
+                                                           FontSize="12"
+                                                           Foreground="{Binding TypeColor, Converter={StaticResource StringToBrushConverter}}"
+                                                           VerticalAlignment="Center"/>
+                                            </Grid>
+                                            <TextBlock Text="{Binding Description}"
+                                                       FontSize="10"
+                                                       Foreground="#888888"
+                                                       TextWrapping="Wrap"
+                                                       Margin="0,4,0,0"/>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>
