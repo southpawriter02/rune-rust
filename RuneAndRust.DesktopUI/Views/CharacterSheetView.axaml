@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:RuneAndRust.DesktopUI.ViewModels"
+             xmlns:converters="using:RuneAndRust.DesktopUI.Converters"
              x:Class="RuneAndRust.DesktopUI.Views.CharacterSheetView"
              x:DataType="vm:CharacterSheetViewModel">
 
@@ -8,19 +9,476 @@
         <vm:CharacterSheetViewModel/>
     </Design.DataContext>
 
-    <Grid>
-        <StackPanel VerticalAlignment="Center"
-                    HorizontalAlignment="Center"
-                    Spacing="20">
-            <TextBlock Text="{Binding Title}"
-                       FontSize="48"
-                       FontWeight="Bold"
-                       HorizontalAlignment="Center"/>
-            <TextBlock Text="{Binding PlaceholderMessage}"
-                       FontSize="18"
-                       Opacity="0.7"
-                       HorizontalAlignment="Center"/>
+    <UserControl.Styles>
+        <!-- Section Header Style -->
+        <Style Selector="TextBlock.SectionHeader">
+            <Setter Property="FontSize" Value="20"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Margin" Value="0,0,0,10"/>
+        </Style>
+
+        <!-- Attribute Label Style -->
+        <Style Selector="TextBlock.AttrLabel">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+
+        <!-- Attribute Value Style -->
+        <Style Selector="TextBlock.AttrValue">
+            <Setter Property="FontSize" Value="28"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+
+        <!-- Attribute Description Style -->
+        <Style Selector="TextBlock.AttrDesc">
+            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="Foreground" Value="#888888"/>
+        </Style>
+
+        <!-- Stat Label Style -->
+        <Style Selector="TextBlock.StatLabel">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Foreground" Value="#CCCCCC"/>
+        </Style>
+
+        <!-- Stat Value Style -->
+        <Style Selector="TextBlock.StatValue">
+            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+
+        <!-- Section Border Style -->
+        <Style Selector="Border.Section">
+            <Setter Property="Background" Value="#2C2C2C"/>
+            <Setter Property="Padding" Value="15"/>
+            <Setter Property="CornerRadius" Value="8"/>
+        </Style>
+
+        <!-- Progress Bar Styles -->
+        <Style Selector="ProgressBar.HP">
+            <Setter Property="Foreground" Value="#228B22"/>
+            <Setter Property="Background" Value="#1A1A1A"/>
+            <Setter Property="Height" Value="20"/>
+            <Setter Property="CornerRadius" Value="4"/>
+        </Style>
+
+        <Style Selector="ProgressBar.Stamina">
+            <Setter Property="Foreground" Value="#4A90E2"/>
+            <Setter Property="Background" Value="#1A1A1A"/>
+            <Setter Property="Height" Value="20"/>
+            <Setter Property="CornerRadius" Value="4"/>
+        </Style>
+
+        <Style Selector="ProgressBar.Stress">
+            <Setter Property="Foreground" Value="#9400D3"/>
+            <Setter Property="Background" Value="#1A1A1A"/>
+            <Setter Property="Height" Value="20"/>
+            <Setter Property="CornerRadius" Value="4"/>
+        </Style>
+
+        <Style Selector="ProgressBar.Corruption">
+            <Setter Property="Foreground" Value="#8B0000"/>
+            <Setter Property="Background" Value="#1A1A1A"/>
+            <Setter Property="Height" Value="20"/>
+            <Setter Property="CornerRadius" Value="4"/>
+        </Style>
+
+        <Style Selector="ProgressBar.XP">
+            <Setter Property="Foreground" Value="#FFD700"/>
+            <Setter Property="Background" Value="#1A1A1A"/>
+            <Setter Property="Height" Value="15"/>
+            <Setter Property="CornerRadius" Value="4"/>
+        </Style>
+
+        <Style Selector="ProgressBar.Savagery">
+            <Setter Property="Foreground" Value="#DC143C"/>
+            <Setter Property="Background" Value="#1A1A1A"/>
+            <Setter Property="Height" Value="16"/>
+            <Setter Property="CornerRadius" Value="4"/>
+        </Style>
+    </UserControl.Styles>
+
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled"
+                  VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="20" Spacing="20" MaxWidth="900">
+
+            <!-- Character Header -->
+            <StackPanel Spacing="4">
+                <TextBlock Text="{Binding CharacterName}"
+                           FontSize="36"
+                           FontWeight="Bold"
+                           Foreground="#FFD700"/>
+
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                    <TextBlock Text="{Binding ClassName}"
+                               FontSize="18"
+                               Foreground="#CCCCCC"/>
+                    <TextBlock Text="-"
+                               FontSize="18"
+                               Foreground="#666666"/>
+                    <TextBlock Text="{Binding SpecializationName}"
+                               FontSize="18"
+                               Foreground="#4A90E2"/>
+                </StackPanel>
+
+                <TextBlock Text="{Binding CurrentStanceName, StringFormat='Stance: {0}'}"
+                           FontSize="14"
+                           Foreground="#888888"
+                           Margin="0,4,0,0"/>
+            </StackPanel>
+
+            <!-- Two Column Layout -->
+            <Grid ColumnDefinitions="*,20,*">
+
+                <!-- Left Column -->
+                <StackPanel Grid.Column="0" Spacing="20">
+
+                    <!-- Core Attributes -->
+                    <Border Classes="Section">
+                        <StackPanel Spacing="15">
+                            <TextBlock Text="Core Attributes" Classes="SectionHeader"/>
+
+                            <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto" RowSpacing="15" ColumnSpacing="15">
+
+                                <!-- MIGHT -->
+                                <Border Grid.Row="0" Grid.Column="0"
+                                        Background="#3C2020" Padding="12" CornerRadius="6">
+                                    <StackPanel>
+                                        <TextBlock Text="MIGHT" Classes="AttrLabel" Foreground="#DC143C"/>
+                                        <TextBlock Text="{Binding Might}" Classes="AttrValue"/>
+                                        <TextBlock Text="Physical power, melee damage" Classes="AttrDesc"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- FINESSE -->
+                                <Border Grid.Row="0" Grid.Column="1"
+                                        Background="#202040" Padding="12" CornerRadius="6">
+                                    <StackPanel>
+                                        <TextBlock Text="FINESSE" Classes="AttrLabel" Foreground="#4A90E2"/>
+                                        <TextBlock Text="{Binding Finesse}" Classes="AttrValue"/>
+                                        <TextBlock Text="Dexterity, ranged accuracy" Classes="AttrDesc"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- WITS -->
+                                <Border Grid.Row="1" Grid.Column="0"
+                                        Background="#403820" Padding="12" CornerRadius="6">
+                                    <StackPanel>
+                                        <TextBlock Text="WITS" Classes="AttrLabel" Foreground="#FFD700"/>
+                                        <TextBlock Text="{Binding Wits}" Classes="AttrValue"/>
+                                        <TextBlock Text="Perception, initiative, crit" Classes="AttrDesc"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- WILL -->
+                                <Border Grid.Row="1" Grid.Column="1"
+                                        Background="#302040" Padding="12" CornerRadius="6">
+                                    <StackPanel>
+                                        <TextBlock Text="WILL" Classes="AttrLabel" Foreground="#9400D3"/>
+                                        <TextBlock Text="{Binding Will}" Classes="AttrValue"/>
+                                        <TextBlock Text="Mental fortitude, magic power" Classes="AttrDesc"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- STURDINESS -->
+                                <Border Grid.Row="2" Grid.Column="0"
+                                        Background="#203020" Padding="12" CornerRadius="6">
+                                    <StackPanel>
+                                        <TextBlock Text="STURDINESS" Classes="AttrLabel" Foreground="#228B22"/>
+                                        <TextBlock Text="{Binding Sturdiness}" Classes="AttrValue"/>
+                                        <TextBlock Text="HP, defense, endurance" Classes="AttrDesc"/>
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Combat Statistics -->
+                    <Border Classes="Section">
+                        <StackPanel Spacing="10">
+                            <TextBlock Text="Combat Statistics" Classes="SectionHeader"/>
+
+                            <Grid ColumnDefinitions="*,*,*" RowDefinitions="Auto,Auto,Auto" RowSpacing="12" ColumnSpacing="10">
+
+                                <!-- Speed -->
+                                <StackPanel Grid.Row="0" Grid.Column="0">
+                                    <TextBlock Text="Speed" Classes="StatLabel"/>
+                                    <TextBlock Text="{Binding Speed}" Classes="StatValue"/>
+                                </StackPanel>
+
+                                <!-- Accuracy -->
+                                <StackPanel Grid.Row="0" Grid.Column="1">
+                                    <TextBlock Text="Accuracy" Classes="StatLabel"/>
+                                    <TextBlock Text="{Binding Accuracy, StringFormat='+{0}'}" Classes="StatValue"/>
+                                </StackPanel>
+
+                                <!-- Evasion -->
+                                <StackPanel Grid.Row="0" Grid.Column="2">
+                                    <TextBlock Text="Evasion" Classes="StatLabel"/>
+                                    <TextBlock Text="{Binding Evasion}" Classes="StatValue"/>
+                                </StackPanel>
+
+                                <!-- Attack Power -->
+                                <StackPanel Grid.Row="1" Grid.Column="0">
+                                    <TextBlock Text="Attack Power" Classes="StatLabel"/>
+                                    <TextBlock Text="{Binding AttackPower, StringFormat='{0}d6'}" Classes="StatValue"/>
+                                </StackPanel>
+
+                                <!-- Critical Chance -->
+                                <StackPanel Grid.Row="1" Grid.Column="1">
+                                    <TextBlock Text="Crit Chance" Classes="StatLabel"/>
+                                    <TextBlock Text="{Binding CritChance, StringFormat='{0}%'}" Classes="StatValue"/>
+                                </StackPanel>
+
+                                <!-- Initiative -->
+                                <StackPanel Grid.Row="1" Grid.Column="2">
+                                    <TextBlock Text="Initiative" Classes="StatLabel"/>
+                                    <TextBlock Text="{Binding Initiative, StringFormat='+{0}'}" Classes="StatValue"/>
+                                </StackPanel>
+
+                                <!-- Physical Defense -->
+                                <StackPanel Grid.Row="2" Grid.Column="0">
+                                    <TextBlock Text="Physical Def" Classes="StatLabel"/>
+                                    <TextBlock Text="{Binding PhysicalDefense}" Classes="StatValue"/>
+                                </StackPanel>
+
+                                <!-- Metaphysical Defense -->
+                                <StackPanel Grid.Row="2" Grid.Column="1">
+                                    <TextBlock Text="Meta Def" Classes="StatLabel"/>
+                                    <TextBlock Text="{Binding MetaphysicalDefense}" Classes="StatValue"/>
+                                </StackPanel>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Equipment Summary -->
+                    <Border Classes="Section">
+                        <StackPanel Spacing="10">
+                            <TextBlock Text="Equipment" Classes="SectionHeader"/>
+
+                            <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="8" ColumnSpacing="15">
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Weapon:" Classes="StatLabel"/>
+                                <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding EquippedWeaponName}"
+                                           Classes="StatValue" FontSize="14"/>
+
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Armor:" Classes="StatLabel"/>
+                                <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding EquippedArmorName}"
+                                           Classes="StatValue" FontSize="14"/>
+
+                                <TextBlock Grid.Row="2" Grid.Column="0" Text="Abilities:" Classes="StatLabel"/>
+                                <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding AbilityCount}"
+                                           Classes="StatValue" FontSize="14"/>
+
+                                <TextBlock Grid.Row="3" Grid.Column="0" Text="Inventory:" Classes="StatLabel"/>
+                                <StackPanel Grid.Row="3" Grid.Column="1" Orientation="Horizontal">
+                                    <TextBlock Text="{Binding InventoryCount}" Classes="StatValue" FontSize="14"/>
+                                    <TextBlock Text=" / " Foreground="#666666" FontSize="14" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding MaxInventorySize}" Foreground="#888888" FontSize="14" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                </StackPanel>
+
+                <!-- Right Column -->
+                <StackPanel Grid.Column="2" Spacing="20">
+
+                    <!-- Resource Pools -->
+                    <Border Classes="Section">
+                        <StackPanel Spacing="15">
+                            <TextBlock Text="Resources" Classes="SectionHeader"/>
+
+                            <!-- HP -->
+                            <StackPanel Spacing="4">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Text="Hit Points" Foreground="#228B22" FontWeight="SemiBold"/>
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                        <TextBlock Text="{Binding CurrentHP}" Foreground="#228B22" FontWeight="Bold"/>
+                                        <TextBlock Text=" / " Foreground="#666666"/>
+                                        <TextBlock Text="{Binding MaxHP}" Foreground="#888888"/>
+                                    </StackPanel>
+                                </Grid>
+                                <ProgressBar Classes="HP"
+                                             Value="{Binding HPPercent}"
+                                             Maximum="1"/>
+                            </StackPanel>
+
+                            <!-- Stamina -->
+                            <StackPanel Spacing="4">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Text="Stamina" Foreground="#4A90E2" FontWeight="SemiBold"/>
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                        <TextBlock Text="{Binding CurrentStamina}" Foreground="#4A90E2" FontWeight="Bold"/>
+                                        <TextBlock Text=" / " Foreground="#666666"/>
+                                        <TextBlock Text="{Binding MaxStamina}" Foreground="#888888"/>
+                                    </StackPanel>
+                                </Grid>
+                                <ProgressBar Classes="Stamina"
+                                             Value="{Binding StaminaPercent}"
+                                             Maximum="1"/>
+                            </StackPanel>
+
+                            <!-- Savagery (conditional) -->
+                            <StackPanel Spacing="4" IsVisible="{Binding HasSavagery}">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Text="Savagery" Foreground="#DC143C" FontWeight="SemiBold"/>
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                        <TextBlock Text="{Binding Savagery}" Foreground="#DC143C" FontWeight="Bold"/>
+                                        <TextBlock Text=" / " Foreground="#666666"/>
+                                        <TextBlock Text="{Binding MaxSavagery}" Foreground="#888888"/>
+                                    </StackPanel>
+                                </Grid>
+                                <ProgressBar Classes="Savagery"
+                                             Value="{Binding Savagery}"
+                                             Maximum="{Binding MaxSavagery}"/>
+                            </StackPanel>
+
+                            <!-- Righteous Fervor (conditional) -->
+                            <StackPanel Spacing="4" IsVisible="{Binding HasRighteousFervor}">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Text="Righteous Fervor" Foreground="#FFD700" FontWeight="SemiBold"/>
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                        <TextBlock Text="{Binding RighteousFervor}" Foreground="#FFD700" FontWeight="Bold"/>
+                                        <TextBlock Text=" / " Foreground="#666666"/>
+                                        <TextBlock Text="{Binding MaxRighteousFervor}" Foreground="#888888"/>
+                                    </StackPanel>
+                                </Grid>
+                                <ProgressBar Foreground="#FFD700" Background="#1A1A1A" Height="16" CornerRadius="4"
+                                             Value="{Binding RighteousFervor}"
+                                             Maximum="{Binding MaxRighteousFervor}"/>
+                            </StackPanel>
+
+                            <!-- Aether Pool (conditional) -->
+                            <StackPanel Spacing="4" IsVisible="{Binding HasAetherPool}">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Text="Aether Pool" Foreground="#9400D3" FontWeight="SemiBold"/>
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                        <TextBlock Text="{Binding CurrentAP}" Foreground="#9400D3" FontWeight="Bold"/>
+                                        <TextBlock Text=" / " Foreground="#666666"/>
+                                        <TextBlock Text="{Binding MaxAP}" Foreground="#888888"/>
+                                    </StackPanel>
+                                </Grid>
+                                <ProgressBar Foreground="#9400D3" Background="#1A1A1A" Height="16" CornerRadius="4"
+                                             Value="{Binding CurrentAP}"
+                                             Maximum="{Binding MaxAP}"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Trauma & Corruption -->
+                    <Border Classes="Section">
+                        <StackPanel Spacing="15">
+                            <TextBlock Text="Trauma &amp; Corruption" Classes="SectionHeader"/>
+
+                            <!-- Psychic Stress -->
+                            <StackPanel Spacing="4">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <TextBlock Text="Psychic Stress" Foreground="#9400D3" FontWeight="SemiBold"/>
+                                        <Border Background="#9400D3" CornerRadius="4" Padding="6,2"
+                                                IsVisible="{Binding PsychicStress, Converter={x:Static converters:IntGreaterThanConverter.Instance}, ConverterParameter=49}">
+                                            <TextBlock Text="{Binding PsychicStressLevel}"
+                                                       FontSize="10" FontWeight="Bold" Foreground="White"/>
+                                        </Border>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                        <TextBlock Text="{Binding PsychicStress}" Foreground="#9400D3" FontWeight="Bold"/>
+                                        <TextBlock Text=" / " Foreground="#666666"/>
+                                        <TextBlock Text="{Binding MaxPsychicStress}" Foreground="#888888"/>
+                                    </StackPanel>
+                                </Grid>
+                                <ProgressBar Classes="Stress"
+                                             Value="{Binding PsychicStressPercent}"
+                                             Maximum="1"/>
+                                <TextBlock Text="Recoverable at Sanctuary" FontSize="10" Foreground="#666666"/>
+                            </StackPanel>
+
+                            <!-- Corruption -->
+                            <StackPanel Spacing="4">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <TextBlock Text="Corruption" Foreground="#8B0000" FontWeight="SemiBold"/>
+                                        <Border Background="#8B0000" CornerRadius="4" Padding="6,2"
+                                                IsVisible="{Binding Corruption, Converter={x:Static converters:IntGreaterThanConverter.Instance}, ConverterParameter=49}">
+                                            <TextBlock Text="{Binding CorruptionLevel}"
+                                                       FontSize="10" FontWeight="Bold" Foreground="White"/>
+                                        </Border>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                        <TextBlock Text="{Binding Corruption}" Foreground="#8B0000" FontWeight="Bold"/>
+                                        <TextBlock Text=" / " Foreground="#666666"/>
+                                        <TextBlock Text="{Binding MaxCorruption}" Foreground="#888888"/>
+                                    </StackPanel>
+                                </Grid>
+                                <ProgressBar Classes="Corruption"
+                                             Value="{Binding CorruptionPercent}"
+                                             Maximum="1"/>
+                                <TextBlock Text="Permanent - cannot be removed" FontSize="10" Foreground="#666666"/>
+                            </StackPanel>
+
+                            <!-- Trauma Count -->
+                            <StackPanel Orientation="Horizontal" Spacing="10" IsVisible="{Binding HasTraumas}">
+                                <TextBlock Text="Permanent Traumas:" Foreground="#888888"/>
+                                <TextBlock Text="{Binding TraumaCount}" Foreground="#DC143C" FontWeight="Bold"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Progression -->
+                    <Border Classes="Section">
+                        <StackPanel Spacing="15">
+                            <TextBlock Text="Progression" Classes="SectionHeader"/>
+
+                            <!-- Legend/Milestone -->
+                            <Grid ColumnDefinitions="*,Auto">
+                                <StackPanel>
+                                    <TextBlock Text="Milestone" Foreground="#FFD700" FontWeight="SemiBold"/>
+                                    <TextBlock Text="{Binding Milestone}" FontSize="32" FontWeight="Bold" Foreground="#FFD700"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" HorizontalAlignment="Right">
+                                    <TextBlock Text="Progression Points" Foreground="#4A90E2" FontWeight="SemiBold" HorizontalAlignment="Right"/>
+                                    <TextBlock Text="{Binding ProgressionPoints}" FontSize="28" FontWeight="Bold" Foreground="#4A90E2" HorizontalAlignment="Right"/>
+                                </StackPanel>
+                            </Grid>
+
+                            <!-- XP Progress -->
+                            <StackPanel Spacing="4">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Text="Legend Progress" Foreground="#CCCCCC"/>
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                        <TextBlock Text="{Binding CurrentXP}" Foreground="#FFD700"/>
+                                        <TextBlock Text=" / " Foreground="#666666"/>
+                                        <TextBlock Text="{Binding XPToNextLevel}" Foreground="#888888"/>
+                                    </StackPanel>
+                                </Grid>
+                                <ProgressBar Classes="XP"
+                                             Value="{Binding XPProgress}"
+                                             Maximum="1"/>
+                            </StackPanel>
+
+                            <!-- Currency -->
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <TextBlock Text="Dvergr Cogs:" Foreground="#888888"/>
+                                <TextBlock Text="{Binding Currency}" Foreground="#FFD700" FontWeight="Bold"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                </StackPanel>
+            </Grid>
+
+            <!-- Footer hint -->
+            <TextBlock Text="Press [C] to toggle character sheet, [I] for inventory, [ESC] for menu"
+                       FontSize="12"
+                       Foreground="#555555"
+                       HorizontalAlignment="Center"
+                       Margin="0,10,0,0"/>
+
         </StackPanel>
-    </Grid>
+    </ScrollViewer>
 
 </UserControl>
