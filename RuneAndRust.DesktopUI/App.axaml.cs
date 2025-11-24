@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using RuneAndRust.DesktopUI.Services;
 using RuneAndRust.DesktopUI.ViewModels;
 using RuneAndRust.DesktopUI.Views;
+using RuneAndRust.Engine;
 using Serilog;
 using System;
 using System.IO;
@@ -44,7 +45,7 @@ public partial class App : Application
             .WriteTo.Console()
             .CreateLogger();
 
-        Log.Information("Rune & Rust Desktop UI v0.43.4 starting...");
+        Log.Information("Rune & Rust Desktop UI v0.43.5 starting...");
 
         try
         {
@@ -96,6 +97,17 @@ public partial class App : Application
         // Sprite Services (v0.43.2)
         services.AddSingleton<ISpriteService, SpriteService>();
 
+        // Engine Services (v0.43.5)
+        services.AddSingleton<DiceService>();
+        services.AddSingleton<SagaService>();
+        services.AddSingleton<LootService>();
+        services.AddSingleton<EquipmentService>();
+        services.AddSingleton<HazardService>();
+        services.AddSingleton<CurrencyService>();
+        services.AddSingleton<AdvancedStatusEffectService>();
+        services.AddSingleton<CombatEngine>();
+        services.AddSingleton<EnemyAI>();
+
         // ViewModels
         services.AddTransient<MainWindowViewModel>();
         services.AddTransient<MenuViewModel>();
@@ -105,9 +117,7 @@ public partial class App : Application
         services.AddTransient<InventoryViewModel>();
         services.AddTransient<DungeonExplorationViewModel>();
 
-        // Note: Engine services (CombatEngine, DungeonGenerator, etc.) will be registered
-        // in later specs when they are actually used by the UI.
-        // For v0.43.1-v0.43.4, we're establishing the foundation.
+        // Note: Additional engine services will be registered as needed in future specs.
 
         Log.Debug("Registered {ServiceCount} service types", services.Count);
     }
