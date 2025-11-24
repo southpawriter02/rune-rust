@@ -101,6 +101,10 @@
 -- v0.40.1: New Game+ System
 .read Data/v0.40.1_new_game_plus_schema.sql
 
+-- v0.40.2: Challenge Sectors
+.read Data/v0.40.2_challenge_sectors_schema.sql
+.read Data/v0.40.2_challenge_sectors_data.sql
+
 -- ==============================================================================
 -- Verification Queries
 -- ==============================================================================
