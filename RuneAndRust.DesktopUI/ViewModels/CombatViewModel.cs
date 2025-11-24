@@ -27,6 +27,7 @@ public class CombatViewModel : ViewModelBase
     private readonly CombatEngine _combatEngine;
     private readonly EnemyAI _enemyAI;
     private readonly IStatusEffectIconService _statusEffectIconService;
+    private readonly IHazardVisualizationService _hazardVisualizationService;
 
     private CombatState? _combatState;
     private int _columns = 3;
@@ -36,6 +37,7 @@ public class CombatViewModel : ViewModelBase
     private HashSet<GridPosition> _highlightedPositions = new();
     private Dictionary<GridPosition, SKBitmap> _unitSprites = new();
     private Dictionary<GridPosition, Combatant> _unitData = new();
+    private List<EnvironmentalObject> _environmentalObjects = new();
     private string _statusMessage = "Combat will begin once initialized...";
     private TargetingMode _targetingMode = TargetingMode.None;
     private string? _selectedAbilityName;
@@ -125,6 +127,25 @@ public class CombatViewModel : ViewModelBase
     public IStatusEffectIconService StatusEffectIconService => _statusEffectIconService;
 
     /// <summary>
+    /// Gets the battlefield grid with tiles, cover, and terrain data.
+    /// </summary>
+    public BattlefieldGrid? Grid => _combatState?.Grid;
+
+    /// <summary>
+    /// Gets the list of environmental objects (hazards, cover, interactive objects).
+    /// </summary>
+    public List<EnvironmentalObject> EnvironmentalObjects
+    {
+        get => _environmentalObjects;
+        private set => this.RaiseAndSetIfChanged(ref _environmentalObjects, value);
+    }
+
+    /// <summary>
+    /// Gets the hazard visualization service.
+    /// </summary>
+    public IHazardVisualizationService HazardVisualizationService => _hazardVisualizationService;
+
+    /// <summary>
     /// Gets the current status message.
     /// </summary>
     public string StatusMessage
@@ -198,13 +219,15 @@ public class CombatViewModel : ViewModelBase
         IDialogService dialogService,
         CombatEngine combatEngine,
         EnemyAI enemyAI,
-        IStatusEffectIconService statusEffectIconService)
+        IStatusEffectIconService statusEffectIconService,
+        IHazardVisualizationService hazardVisualizationService)
     {
         _spriteService = spriteService ?? throw new ArgumentNullException(nameof(spriteService));
         _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
         _combatEngine = combatEngine ?? throw new ArgumentNullException(nameof(combatEngine));
         _enemyAI = enemyAI ?? throw new ArgumentNullException(nameof(enemyAI));
         _statusEffectIconService = statusEffectIconService ?? throw new ArgumentNullException(nameof(statusEffectIconService));
+        _hazardVisualizationService = hazardVisualizationService ?? throw new ArgumentNullException(nameof(hazardVisualizationService));
 
         // Observable for whether it's player's turn
         var canExecutePlayerAction = this.WhenAnyValue(x => x.IsPlayerTurn);

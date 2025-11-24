@@ -1,0 +1,25 @@
+{
+  "Name": "hazard_darkness",
+  "PixelData": [
+    "                ",
+    " PPPPPPPPPPPPPP ",
+    " PPBBBBBBBBBBBP ",
+    " PPBBBBBBBBBBPP ",
+    " PPBBBBBBBBBPPP ",
+    " PPBBBBBBBBPPPP ",
+    " PPBBBBBBBPPPPP ",
+    " PPBBBBBBPPPPPP ",
+    " PPBBBBBPPPPPPP ",
+    " PPBBBBPPPPPPPP ",
+    " PPBBBPPPPPPPPP ",
+    " PPBBPPPPPPPPPP ",
+    " PPBPPPPPPPPPPP ",
+    " PPPPPPPPPPPPPP ",
+    " PPPPPPPPPPPPPP ",
+    "                "
+  ],
+  "Palette": {
+    "B": "#000000",
+    "P": "#9400D3"
+  }
+}

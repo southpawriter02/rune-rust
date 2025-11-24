@@ -43,6 +43,15 @@ public class CombatGridControl : Control
     public static readonly StyledProperty<IStatusEffectIconService?> StatusEffectIconServiceProperty =
         AvaloniaProperty.Register<CombatGridControl, IStatusEffectIconService?>(nameof(StatusEffectIconService));
 
+    public static readonly StyledProperty<BattlefieldGrid?> GridProperty =
+        AvaloniaProperty.Register<CombatGridControl, BattlefieldGrid?>(nameof(Grid));
+
+    public static readonly StyledProperty<List<EnvironmentalObject>?> EnvironmentalObjectsProperty =
+        AvaloniaProperty.Register<CombatGridControl, List<EnvironmentalObject>?>(nameof(EnvironmentalObjects));
+
+    public static readonly StyledProperty<IHazardVisualizationService?> HazardVisualizationServiceProperty =
+        AvaloniaProperty.Register<CombatGridControl, IHazardVisualizationService?>(nameof(HazardVisualizationService));
+
     // Properties
     public int Columns
     {
@@ -92,6 +101,24 @@ public class CombatGridControl : Control
         set => SetValue(StatusEffectIconServiceProperty, value);
     }
 
+    public BattlefieldGrid? Grid
+    {
+        get => GetValue(GridProperty);
+        set => SetValue(GridProperty, value);
+    }
+
+    public List<EnvironmentalObject>? EnvironmentalObjects
+    {
+        get => GetValue(EnvironmentalObjectsProperty);
+        set => SetValue(EnvironmentalObjectsProperty, value);
+    }
+
+    public IHazardVisualizationService? HazardVisualizationService
+    {
+        get => GetValue(HazardVisualizationServiceProperty);
+        set => SetValue(HazardVisualizationServiceProperty, value);
+    }
+
     // Events
     public event EventHandler<GridPosition>? CellClicked;
     public event EventHandler<GridPosition>? CellHovered;
@@ -100,6 +127,9 @@ public class CombatGridControl : Control
     private const double GridLineWidth = 2.0;
     private const double CenterLineWidth = 4.0;
     private const int SpriteScale = 3; // 16×16 sprites scaled 3x = 48×48
+
+    // Animation state
+    private float _animationTime = 0f;
 
     static CombatGridControl()
     {
@@ -111,7 +141,10 @@ public class CombatGridControl : Control
             HighlightedPositionsProperty,
             UnitSpritesProperty,
             UnitDataProperty,
-            StatusEffectIconServiceProperty);
+            StatusEffectIconServiceProperty,
+            GridProperty,
+            EnvironmentalObjectsProperty,
+            HazardVisualizationServiceProperty);
 
         AffectsMeasure<CombatGridControl>(
             ColumnsProperty,
@@ -142,12 +175,19 @@ public class CombatGridControl : Control
 
             canvas.Clear(SKColors.Transparent);
 
-            // Render grid elements
+            // Render grid elements (layered from back to front)
             RenderGridBackground(canvas);
+            RenderTileTypes(canvas);           // v0.43.7: Elevation tints, terrain types
+            RenderCover(canvas);                // v0.43.7: Cover indicators
+            RenderHazards(canvas);              // v0.43.7: Environmental hazards
             RenderGridLines(canvas);
             RenderCenterLine(canvas);
             RenderCellHighlights(canvas);
             RenderUnitSprites(canvas);
+
+            // Increment animation time for animated hazards
+            _animationTime += 0.05f;
+            if (_animationTime > Math.PI * 2) _animationTime = 0f;
         }
     }
 
@@ -294,6 +334,170 @@ public class CombatGridControl : Control
             {
                 DrawHPBar(canvas, cellRect, unit);
                 DrawStatusEffects(canvas, cellRect, unit);
+            }
+        }
+    }
+
+    private void RenderTileTypes(SKCanvas canvas)
+    {
+        if (Grid == null || HazardVisualizationService == null)
+            return;
+
+        using var paint = new SKPaint { IsAntialias = true };
+
+        foreach (var (pos, tile) in Grid.Tiles)
+        {
+            var cellRect = GetCellRect(pos);
+
+            // Draw tile type tint
+            if (tile.Type != TileType.Normal)
+            {
+                paint.Color = HazardVisualizationService.GetTileTypeColor(tile.Type);
+                if (paint.Color != SKColors.Transparent)
+                {
+                    canvas.DrawRect(cellRect, paint);
+                }
+            }
+
+            // Draw elevation indicator in top-right corner
+            if (pos.Elevation != 0)
+            {
+                using var textPaint = new SKPaint
+                {
+                    Color = pos.Elevation > 0 ? new SKColor(255, 215, 0) : new SKColor(0, 191, 255),
+                    TextSize = 14,
+                    IsAntialias = true,
+                    TextAlign = SKTextAlign.Right,
+                    Typeface = SKTypeface.FromFamilyName("Arial", SKFontStyle.Bold)
+                };
+
+                var elevText = pos.Elevation > 0 ? $"+{pos.Elevation}" : pos.Elevation.ToString();
+                canvas.DrawText(elevText, cellRect.Right - 5, cellRect.Top + 20, textPaint);
+            }
+        }
+    }
+
+    private void RenderCover(SKCanvas canvas)
+    {
+        if (Grid == null || HazardVisualizationService == null)
+            return;
+
+        foreach (var (pos, tile) in Grid.Tiles)
+        {
+            if (tile.Cover == CoverType.None)
+                continue;
+
+            var cellRect = GetCellRect(pos);
+            var coverIcon = HazardVisualizationService.GetCoverIcon(tile.Cover);
+            var coverColor = HazardVisualizationService.GetCoverColor(tile.Cover);
+
+            // Draw cover icon in top-left corner
+            using var iconPaint = new SKPaint
+            {
+                Color = coverColor,
+                TextSize = 24,
+                IsAntialias = true,
+                TextAlign = SKTextAlign.Left,
+                Typeface = SKTypeface.FromFamilyName("Arial", SKFontStyle.Bold)
+            };
+
+            canvas.DrawText(coverIcon, cellRect.Left + 5, cellRect.Top + 25, iconPaint);
+
+            // Draw cover health if available
+            if (tile.CoverHealth.HasValue)
+            {
+                using var healthPaint = new SKPaint
+                {
+                    Color = SKColors.White,
+                    TextSize = 10,
+                    IsAntialias = true,
+                    TextAlign = SKTextAlign.Left,
+                    Typeface = SKTypeface.FromFamilyName("Arial", SKFontStyle.Bold)
+                };
+
+                // Black shadow
+                using var shadowPaint = new SKPaint
+                {
+                    Color = SKColors.Black,
+                    TextSize = 10,
+                    IsAntialias = true,
+                    TextAlign = SKTextAlign.Left,
+                    Typeface = SKTypeface.FromFamilyName("Arial", SKFontStyle.Bold)
+                };
+
+                canvas.DrawText($"HP:{tile.CoverHealth}", cellRect.Left + 6, cellRect.Bottom - 4, shadowPaint);
+                canvas.DrawText($"HP:{tile.CoverHealth}", cellRect.Left + 5, cellRect.Bottom - 5, healthPaint);
+            }
+        }
+    }
+
+    private void RenderHazards(SKCanvas canvas)
+    {
+        if (Grid == null || EnvironmentalObjects == null || HazardVisualizationService == null)
+            return;
+
+        foreach (var (pos, tile) in Grid.Tiles)
+        {
+            // Get hazards at this position
+            var hazardsAtTile = EnvironmentalObjects
+                .Where(obj => obj.IsHazard &&
+                             tile.EnvironmentalObjectIds.Contains(obj.ObjectId))
+                .ToList();
+
+            if (!hazardsAtTile.Any())
+                continue;
+
+            var cellRect = GetCellRect(pos);
+
+            // Draw first hazard (most prominent)
+            var hazard = hazardsAtTile.First();
+
+            // Draw hazard overlay tint
+            var overlayColor = HazardVisualizationService.GetHazardOverlayColor(hazard.DamageType ?? "");
+
+            // Animate if appropriate
+            if (HazardVisualizationService.ShouldAnimateHazard(hazard.DamageType ?? ""))
+            {
+                var pulse = (float)Math.Sin(_animationTime) * 0.3f + 0.7f;
+                overlayColor = overlayColor.WithAlpha((byte)(overlayColor.Alpha * pulse));
+            }
+
+            using var overlayPaint = new SKPaint { Color = overlayColor, IsAntialias = true };
+            canvas.DrawRect(cellRect, overlayPaint);
+
+            // Draw hazard sprite
+            var hazardSprite = HazardVisualizationService.GetHazardSprite(hazard.DamageType ?? "");
+            if (hazardSprite != null)
+            {
+                var spriteX = cellRect.Left + (cellRect.Width - 48) / 2;
+                var spriteY = cellRect.Top + (cellRect.Height - 48) / 2;
+                canvas.DrawBitmap(hazardSprite, spriteX, spriteY);
+            }
+
+            // Draw hazard count if multiple
+            if (hazardsAtTile.Count > 1)
+            {
+                using var countPaint = new SKPaint
+                {
+                    Color = SKColors.White,
+                    TextSize = 12,
+                    IsAntialias = true,
+                    TextAlign = SKTextAlign.Right,
+                    Typeface = SKTypeface.FromFamilyName("Arial", SKFontStyle.Bold)
+                };
+
+                // Black shadow
+                using var shadowPaint = new SKPaint
+                {
+                    Color = SKColors.Black,
+                    TextSize = 12,
+                    IsAntialias = true,
+                    TextAlign = SKTextAlign.Right,
+                    Typeface = SKTypeface.FromFamilyName("Arial", SKFontStyle.Bold)
+                };
+
+                canvas.DrawText($"×{hazardsAtTile.Count}", cellRect.Right - 4, cellRect.Bottom - 4, shadowPaint);
+                canvas.DrawText($"×{hazardsAtTile.Count}", cellRect.Right - 5, cellRect.Bottom - 5, countPaint);
             }
         }
     }

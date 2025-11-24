@@ -1,0 +1,25 @@
+{
+  "Name": "hazard_lightning",
+  "PixelData": [
+    "       Y        ",
+    "      YYY       ",
+    "     YYYYW      ",
+    "    YYWWWW      ",
+    "   YYWWW        ",
+    "  YYWW          ",
+    " YYWW           ",
+    "YYWW            ",
+    "YWW       YY    ",
+    " WW      YYWW   ",
+    "        YYWWW   ",
+    "       YYWWWW   ",
+    "      YYWWWW    ",
+    "     YYWWW      ",
+    "    YYWW        ",
+    "   YYW          "
+  ],
+  "Palette": {
+    "Y": "#FFFF00",
+    "W": "#FFFFFF"
+  }
+}

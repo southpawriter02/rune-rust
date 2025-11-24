@@ -41,6 +41,9 @@
                     UnitSprites="{Binding UnitSprites}"
                     UnitData="{Binding UnitData}"
                     StatusEffectIconService="{Binding StatusEffectIconService}"
+                    Grid="{Binding Grid}"
+                    EnvironmentalObjects="{Binding EnvironmentalObjects}"
+                    HazardVisualizationService="{Binding HazardVisualizationService}"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"/>
 

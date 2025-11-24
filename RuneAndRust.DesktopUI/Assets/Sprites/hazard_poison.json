@@ -1,0 +1,25 @@
+{
+  "Name": "hazard_poison",
+  "PixelData": [
+    "                ",
+    "   PP      PP   ",
+    "  PPPP    PPPP  ",
+    "  PPGPP  PPGPP  ",
+    " PPGGPPPPPGGPP  ",
+    " PGGGGPPGGGGP   ",
+    "  PGGGGGGGGPP   ",
+    "  PPGGGGGGPP    ",
+    "   PPGGGGPP     ",
+    "    PPGGPP      ",
+    "     PPPP       ",
+    "      PP        ",
+    "                ",
+    "                ",
+    "                ",
+    "                "
+  ],
+  "Palette": {
+    "P": "#9400D3",
+    "G": "#00FF00"
+  }
+}
