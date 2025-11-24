@@ -52,6 +52,9 @@ public class CombatGridControl : Control
     public static readonly StyledProperty<IHazardVisualizationService?> HazardVisualizationServiceProperty =
         AvaloniaProperty.Register<CombatGridControl, IHazardVisualizationService?>(nameof(HazardVisualizationService));
 
+    public static readonly StyledProperty<IAnimationService?> AnimationServiceProperty =
+        AvaloniaProperty.Register<CombatGridControl, IAnimationService?>(nameof(AnimationService));
+
     // Properties
     public int Columns
     {
@@ -119,6 +122,12 @@ public class CombatGridControl : Control
         set => SetValue(HazardVisualizationServiceProperty, value);
     }
 
+    public IAnimationService? AnimationService
+    {
+        get => GetValue(AnimationServiceProperty);
+        set => SetValue(AnimationServiceProperty, value);
+    }
+
     // Events
     public event EventHandler<GridPosition>? CellClicked;
     public event EventHandler<GridPosition>? CellHovered;
@@ -130,6 +139,7 @@ public class CombatGridControl : Control
 
     // Animation state
     private float _animationTime = 0f;
+    private System.Timers.Timer? _animationTimer;
 
     static CombatGridControl()
     {
@@ -144,7 +154,8 @@ public class CombatGridControl : Control
             StatusEffectIconServiceProperty,
             GridProperty,
             EnvironmentalObjectsProperty,
-            HazardVisualizationServiceProperty);
+            HazardVisualizationServiceProperty,
+            AnimationServiceProperty);
 
         AffectsMeasure<CombatGridControl>(
             ColumnsProperty,
@@ -154,6 +165,15 @@ public class CombatGridControl : Control
     public CombatGridControl()
     {
         ClipToBounds = false;
+
+        // Setup 60 FPS animation timer
+        _animationTimer = new System.Timers.Timer(16.67); // ~60 FPS
+        _animationTimer.Elapsed += (s, e) =>
+        {
+            AnimationService?.Update();
+            Avalonia.Threading.Dispatcher.UIThread.Post(InvalidateVisual);
+        };
+        _animationTimer.Start();
     }
 
     protected override Size MeasureOverride(Size availableSize)
@@ -184,6 +204,7 @@ public class CombatGridControl : Control
             RenderCenterLine(canvas);
             RenderCellHighlights(canvas);
             RenderUnitSprites(canvas);
+            RenderActiveAnimations(canvas);     // v0.43.8: Combat animations
 
             // Increment animation time for animated hazards
             _animationTime += 0.05f;
@@ -669,6 +690,217 @@ public class CombatGridControl : Control
             };
             canvas.DrawText("+", moreIconX + iconSize / 2.0f, moreIconY + iconSize / 2.0f + 4.0f, plusPaint);
         }
+    }
+
+    private void RenderActiveAnimations(SKCanvas canvas)
+    {
+        if (AnimationService == null)
+            return;
+
+        foreach (var animation in AnimationService.GetActiveAnimations())
+        {
+            switch (animation)
+            {
+                case ProjectileAnimation proj:
+                    RenderProjectile(canvas, proj);
+                    break;
+                case DamageNumberAnimation dmg:
+                    RenderDamageNumber(canvas, dmg);
+                    break;
+                case ParticleAnimation particle:
+                    RenderParticles(canvas, particle);
+                    break;
+                case TextAnimation text:
+                    RenderTextAnimation(canvas, text);
+                    break;
+                case FlashAnimation flash:
+                    RenderFlash(canvas, flash);
+                    break;
+                case StatusEffectAnimation status:
+                    RenderStatusEffectAnimation(canvas, status);
+                    break;
+            }
+        }
+    }
+
+    private void RenderProjectile(SKCanvas canvas, ProjectileAnimation anim)
+    {
+        var startRect = GetCellRect(anim.StartPosition);
+        var endRect = GetCellRect(anim.EndPosition);
+
+        var startX = startRect.Left + startRect.Width / 2;
+        var startY = startRect.Top + startRect.Height / 2;
+        var endX = endRect.Left + endRect.Width / 2;
+        var endY = endRect.Top + endRect.Height / 2;
+
+        var currentX = startX + (endX - startX) * anim.Progress;
+        var currentY = startY + (endY - startY) * anim.Progress;
+
+        using var paint = new SKPaint
+        {
+            Color = anim.ProjectileColor,
+            IsAntialias = true
+        };
+
+        canvas.DrawCircle(currentX, currentY, 5, paint);
+    }
+
+    private void RenderDamageNumber(SKCanvas canvas, DamageNumberAnimation anim)
+    {
+        var cellRect = GetCellRect(anim.Position);
+        var x = cellRect.Left + cellRect.Width / 2;
+        var y = cellRect.Top + cellRect.Height / 2;
+
+        // Float upward
+        y -= 30 * anim.Progress;
+
+        // Fade out
+        var alpha = (byte)(255 * (1 - anim.Progress));
+        var color = anim.Color.WithAlpha(alpha);
+
+        using var paint = new SKPaint
+        {
+            Color = color,
+            TextSize = anim.IsHealing ? 24 : 20,
+            IsAntialias = true,
+            TextAlign = SKTextAlign.Center,
+            Typeface = SKTypeface.FromFamilyName("Arial", SKFontStyle.Bold)
+        };
+
+        var text = anim.IsHealing ? $"+{anim.Damage}" : anim.Damage.ToString();
+
+        // Black shadow for readability
+        using var shadowPaint = new SKPaint
+        {
+            Color = SKColors.Black.WithAlpha(alpha),
+            TextSize = paint.TextSize,
+            IsAntialias = true,
+            TextAlign = SKTextAlign.Center,
+            Typeface = paint.Typeface
+        };
+
+        canvas.DrawText(text, x + 1, y + 1, shadowPaint);
+        canvas.DrawText(text, x, y, paint);
+    }
+
+    private void RenderParticles(SKCanvas canvas, ParticleAnimation anim)
+    {
+        var cellRect = GetCellRect(anim.Position);
+        var centerX = cellRect.Left + cellRect.Width / 2;
+        var centerY = cellRect.Top + cellRect.Height / 2;
+
+        for (int i = 0; i < anim.ParticleCount; i++)
+        {
+            var angle = (float)(i * 2 * Math.PI / anim.ParticleCount);
+            var distance = 30 * anim.Progress;
+
+            float x, y;
+            if (anim.Direction == ParticleDirection.Up)
+            {
+                // Particles rise upward and spread slightly
+                x = centerX + (float)Math.Cos(angle) * distance * 0.3f;
+                y = centerY - 40 * anim.Progress;
+            }
+            else if (anim.Direction == ParticleDirection.Radial)
+            {
+                // Particles spread radially
+                x = centerX + (float)Math.Cos(angle) * distance;
+                y = centerY + (float)Math.Sin(angle) * distance;
+            }
+            else // Down
+            {
+                x = centerX + (float)Math.Cos(angle) * distance * 0.3f;
+                y = centerY + 40 * anim.Progress;
+            }
+
+            var alpha = (byte)(255 * (1 - anim.Progress));
+            using var paint = new SKPaint
+            {
+                Color = anim.Color.WithAlpha(alpha),
+                IsAntialias = true
+            };
+
+            canvas.DrawCircle(x, y, 3, paint);
+        }
+    }
+
+    private void RenderTextAnimation(SKCanvas canvas, TextAnimation anim)
+    {
+        var cellRect = GetCellRect(anim.Position);
+        var x = cellRect.Left + cellRect.Width / 2;
+        var y = cellRect.Top + cellRect.Height / 2 - 40;
+
+        // Scale up then fade
+        var scale = 0.5f + anim.Progress * 0.5f * anim.Scale;
+        var alpha = (byte)(255 * (1 - anim.Progress));
+
+        using var paint = new SKPaint
+        {
+            Color = anim.Color.WithAlpha(alpha),
+            TextSize = 18 * scale,
+            IsAntialias = true,
+            TextAlign = SKTextAlign.Center,
+            Typeface = SKTypeface.FromFamilyName("Arial", SKFontStyle.Bold)
+        };
+
+        // Black shadow
+        using var shadowPaint = new SKPaint
+        {
+            Color = SKColors.Black.WithAlpha(alpha),
+            TextSize = paint.TextSize,
+            IsAntialias = true,
+            TextAlign = SKTextAlign.Center,
+            Typeface = paint.Typeface
+        };
+
+        canvas.DrawText(anim.Text, x + 2, y + 2, shadowPaint);
+        canvas.DrawText(anim.Text, x, y, paint);
+    }
+
+    private void RenderFlash(SKCanvas canvas, FlashAnimation anim)
+    {
+        var cellRect = GetCellRect(anim.Position);
+
+        var alpha = (byte)(150 * (1 - anim.Progress));
+        using var paint = new SKPaint
+        {
+            Color = anim.Color.WithAlpha(alpha),
+            IsAntialias = true
+        };
+
+        canvas.DrawRect(cellRect, paint);
+    }
+
+    private void RenderStatusEffectAnimation(SKCanvas canvas, StatusEffectAnimation anim)
+    {
+        var cellRect = GetCellRect(anim.Position);
+        var centerX = cellRect.Left + cellRect.Width / 2;
+        var centerY = cellRect.Top + cellRect.Height / 2;
+
+        // Expanding ring effect
+        var radius = 20 * anim.Progress;
+        var alpha = (byte)(200 * (1 - anim.Progress));
+
+        using var paint = new SKPaint
+        {
+            Style = SKPaintStyle.Stroke,
+            Color = anim.Color.WithAlpha(alpha),
+            StrokeWidth = 3,
+            IsAntialias = true
+        };
+
+        canvas.DrawCircle(centerX, centerY, radius, paint);
+
+        // Inner glow
+        var glowAlpha = (byte)(100 * (1 - anim.Progress));
+        using var glowPaint = new SKPaint
+        {
+            Style = SKPaintStyle.Fill,
+            Color = anim.Color.WithAlpha(glowAlpha),
+            IsAntialias = true
+        };
+
+        canvas.DrawCircle(centerX, centerY, radius * 0.5f, glowPaint);
     }
 
     private SKRect GetCellRect(GridPosition pos)

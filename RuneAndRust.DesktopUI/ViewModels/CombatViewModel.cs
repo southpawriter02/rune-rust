@@ -28,6 +28,7 @@ public class CombatViewModel : ViewModelBase
     private readonly EnemyAI _enemyAI;
     private readonly IStatusEffectIconService _statusEffectIconService;
     private readonly IHazardVisualizationService _hazardVisualizationService;
+    private readonly IAnimationService _animationService;
 
     private CombatState? _combatState;
     private int _columns = 3;
@@ -146,6 +147,11 @@ public class CombatViewModel : ViewModelBase
     public IHazardVisualizationService HazardVisualizationService => _hazardVisualizationService;
 
     /// <summary>
+    /// Gets the animation service.
+    /// </summary>
+    public IAnimationService AnimationService => _animationService;
+
+    /// <summary>
     /// Gets the current status message.
     /// </summary>
     public string StatusMessage
@@ -220,7 +226,8 @@ public class CombatViewModel : ViewModelBase
         CombatEngine combatEngine,
         EnemyAI enemyAI,
         IStatusEffectIconService statusEffectIconService,
-        IHazardVisualizationService hazardVisualizationService)
+        IHazardVisualizationService hazardVisualizationService,
+        IAnimationService animationService)
     {
         _spriteService = spriteService ?? throw new ArgumentNullException(nameof(spriteService));
         _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
@@ -228,6 +235,7 @@ public class CombatViewModel : ViewModelBase
         _enemyAI = enemyAI ?? throw new ArgumentNullException(nameof(enemyAI));
         _statusEffectIconService = statusEffectIconService ?? throw new ArgumentNullException(nameof(statusEffectIconService));
         _hazardVisualizationService = hazardVisualizationService ?? throw new ArgumentNullException(nameof(hazardVisualizationService));
+        _animationService = animationService ?? throw new ArgumentNullException(nameof(animationService));
 
         // Observable for whether it's player's turn
         var canExecutePlayerAction = this.WhenAnyValue(x => x.IsPlayerTurn);
@@ -444,7 +452,24 @@ public class CombatViewModel : ViewModelBase
 
         try
         {
-            _combatEngine.PlayerAttack(_combatState, target);
+            var attackerPos = _combatState.Player.CurrentPosition;
+            if (!attackerPos.HasValue) return;
+
+            // Trigger attack animation (fire-and-forget)
+            _ = Task.Run(async () =>
+            {
+                // Get result preview for animation
+                var attackResult = _combatEngine.PlayerAttack(_combatState, target);
+                var damage = attackResult ? target.MaxHP - target.CurrentHP : 0; // Approximate
+
+                await _animationService.PlayAttackAnimationAsync(
+                    attackerPos.Value,
+                    position,
+                    attackResult,
+                    Math.Max(0, damage),
+                    false); // TODO: Get critical from combat log
+            });
+
             SyncCombatLog();
             RefreshGridAndSprites();
 

@@ -44,6 +44,7 @@
                     Grid="{Binding Grid}"
                     EnvironmentalObjects="{Binding EnvironmentalObjects}"
                     HazardVisualizationService="{Binding HazardVisualizationService}"
+                    AnimationService="{Binding AnimationService}"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"/>
 

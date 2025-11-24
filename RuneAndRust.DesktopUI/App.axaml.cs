@@ -45,7 +45,7 @@ public partial class App : Application
             .WriteTo.Console()
             .CreateLogger();
 
-        Log.Information("Rune & Rust Desktop UI v0.43.7 starting...");
+        Log.Information("Rune & Rust Desktop UI v0.43.8 starting...");
 
         try
         {
@@ -98,6 +98,9 @@ public partial class App : Application
         services.AddSingleton<ISpriteService, SpriteService>();
         services.AddSingleton<IStatusEffectIconService, StatusEffectIconService>();
         services.AddSingleton<IHazardVisualizationService, HazardVisualizationService>();
+
+        // Animation Services (v0.43.8)
+        services.AddSingleton<IAnimationService, AnimationService>();
 
         // Engine Services (v0.43.5)
         services.AddSingleton<DiceService>();
