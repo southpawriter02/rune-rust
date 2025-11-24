@@ -1,0 +1,558 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:RuneAndRust.DesktopUI.ViewModels"
+             xmlns:conv="using:RuneAndRust.DesktopUI.Converters"
+             xmlns:svc="using:RuneAndRust.DesktopUI.Services"
+             mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
+             x:Class="RuneAndRust.DesktopUI.Views.EndgameModeView"
+             x:DataType="vm:EndgameModeViewModel"
+             Background="#1A1A1A">
+
+    <Design.DataContext>
+        <vm:EndgameModeViewModel/>
+    </Design.DataContext>
+
+    <UserControl.Resources>
+        <conv:EndgameModeNameConverter x:Key="EndgameModeNameConverter"/>
+        <conv:EndgameModeIconConverter x:Key="EndgameModeIconConverter"/>
+        <conv:EndgameModeColorConverter x:Key="EndgameModeColorConverter"/>
+        <conv:IsNGPlusConverter x:Key="IsNGPlusConverter"/>
+        <conv:IsChallengeSectorConverter x:Key="IsChallengeSectorConverter"/>
+        <conv:IsBossGauntletConverter x:Key="IsBossGauntletConverter"/>
+        <conv:IsEndlessModeConverter x:Key="IsEndlessModeConverter"/>
+        <conv:ModifierColorConverter x:Key="ModifierColorConverter"/>
+        <conv:DifficultyTierColorConverter x:Key="DifficultyTierColorConverter"/>
+        <conv:NGPlusTierDisplayConverter x:Key="NGPlusTierDisplayConverter"/>
+        <conv:StringToBrushConverter x:Key="StringToBrushConverter"/>
+        <conv:InverseBoolConverter x:Key="InverseBoolConverter"/>
+    </UserControl.Resources>
+
+    <UserControl.Styles>
+        <!-- Mode selection button style -->
+        <Style Selector="Button.ModeButton">
+            <Setter Property="Height" Value="60"/>
+            <Setter Property="Padding" Value="15,10"/>
+            <Setter Property="Background" Value="#2C2C2C"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Margin" Value="0,5"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+        </Style>
+        <Style Selector="Button.ModeButton:pointerover">
+            <Setter Property="Background" Value="#3C3C3C"/>
+        </Style>
+        <Style Selector="Button.ModeButton:pressed">
+            <Setter Property="Background" Value="#4C4C4C"/>
+        </Style>
+
+        <!-- Tier button style -->
+        <Style Selector="Button.TierButton">
+            <Setter Property="Width" Value="60"/>
+            <Setter Property="Height" Value="60"/>
+            <Setter Property="Background" Value="#2C2C2C"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="FontSize" Value="28"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+        </Style>
+        <Style Selector="Button.TierButton:pointerover">
+            <Setter Property="Background" Value="#3C3C3C"/>
+        </Style>
+        <Style Selector="Button.TierButton:disabled">
+            <Setter Property="Background" Value="#1C1C1C"/>
+            <Setter Property="Foreground" Value="#555555"/>
+        </Style>
+
+        <!-- Start button style -->
+        <Style Selector="Button.StartButton">
+            <Setter Property="Height" Value="60"/>
+            <Setter Property="Background" Value="#2D5A2D"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="20"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="CornerRadius" Value="8"/>
+        </Style>
+        <Style Selector="Button.StartButton:pointerover">
+            <Setter Property="Background" Value="#3D6A3D"/>
+        </Style>
+        <Style Selector="Button.StartButton:disabled">
+            <Setter Property="Background" Value="#1C1C1C"/>
+            <Setter Property="Foreground" Value="#555555"/>
+        </Style>
+    </UserControl.Styles>
+
+    <Grid ColumnDefinitions="280,*" Margin="20">
+        <!-- Left Sidebar: Mode Selection -->
+        <Border Grid.Column="0"
+                Background="#2C2C2C"
+                Padding="15"
+                Margin="0,0,10,0"
+                CornerRadius="8">
+            <Grid RowDefinitions="Auto,*,Auto">
+                <!-- Header -->
+                <StackPanel Grid.Row="0" Margin="0,0,0,15">
+                    <Button Command="{Binding BackCommand}"
+                            Background="Transparent"
+                            Foreground="#888888"
+                            Padding="0"
+                            HorizontalAlignment="Left"
+                            Margin="0,0,0,10">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="←" FontSize="14"/>
+                            <TextBlock Text="Back" FontSize="12"/>
+                        </StackPanel>
+                    </Button>
+                    <TextBlock Text="Endgame Modes"
+                               FontSize="22"
+                               FontWeight="Bold"
+                               Foreground="White"/>
+                    <TextBlock Text="Select your challenge"
+                               FontSize="12"
+                               Foreground="#888888"
+                               Margin="0,4,0,0"/>
+                </StackPanel>
+
+                <!-- Mode List -->
+                <ScrollViewer Grid.Row="1">
+                    <ItemsControl ItemsSource="{Binding AvailableModes}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="svc:EndgameMode">
+                                <Button Classes="ModeButton"
+                                        Command="{Binding $parent[UserControl].((vm:EndgameModeViewModel)DataContext).SelectModeCommand}"
+                                        CommandParameter="{Binding}">
+                                    <Grid ColumnDefinitions="40,*">
+                                        <TextBlock Grid.Column="0"
+                                                   Text="{Binding Converter={StaticResource EndgameModeIconConverter}}"
+                                                   FontSize="24"
+                                                   Foreground="{Binding Converter={StaticResource EndgameModeColorConverter}}"
+                                                   VerticalAlignment="Center"/>
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding Converter={StaticResource EndgameModeNameConverter}}"
+                                                       FontWeight="Bold"
+                                                       FontSize="14"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+
+                <!-- High Score Display (for Endless Mode) -->
+                <Border Grid.Row="2"
+                        Background="#1C1C1C"
+                        Padding="10"
+                        CornerRadius="6"
+                        Margin="0,10,0,0"
+                        IsVisible="{Binding IsEndlessMode}">
+                    <StackPanel>
+                        <TextBlock Text="Personal Best"
+                                   FontSize="11"
+                                   Foreground="#888888"/>
+                        <TextBlock FontSize="18" FontWeight="Bold">
+                            <Run Text="Wave " Foreground="#888888"/>
+                            <Run Text="{Binding EndlessModeHighScore}" Foreground="#4A90E2"/>
+                        </TextBlock>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Border>
+
+        <!-- Right Panel: Mode Configuration -->
+        <ScrollViewer Grid.Column="1">
+            <StackPanel Spacing="10">
+                <!-- Mode Title & Description -->
+                <Border Background="#2C2C2C"
+                        Padding="20"
+                        CornerRadius="8">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" Spacing="12">
+                            <TextBlock Text="{Binding SelectedMode, Converter={StaticResource EndgameModeIconConverter}}"
+                                       FontSize="32"
+                                       Foreground="{Binding SelectedMode, Converter={StaticResource EndgameModeColorConverter}}"
+                                       VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding SelectedMode, Converter={StaticResource EndgameModeNameConverter}}"
+                                       FontSize="28"
+                                       FontWeight="Bold"
+                                       Foreground="White"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <TextBlock Text="{Binding ModeDescription}"
+                                   TextWrapping="Wrap"
+                                   Foreground="#CCCCCC"
+                                   Margin="0,12,0,0"
+                                   LineHeight="22"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- NG+ Tier Selector -->
+                <Border Background="#2C2C2C"
+                        Padding="20"
+                        CornerRadius="8"
+                        IsVisible="{Binding IsNGPlusMode}">
+                    <StackPanel Spacing="15">
+                        <TextBlock Text="Select Tier"
+                                   FontSize="16"
+                                   FontWeight="Bold"
+                                   Foreground="#FFD700"/>
+
+                        <Border Background="#1C1C1C"
+                                Padding="20"
+                                CornerRadius="8">
+                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                <Button Grid.Column="0"
+                                        Classes="TierButton"
+                                        Content="◀"
+                                        Command="{Binding DecrementTierCommand}"
+                                        IsEnabled="{Binding CanDecrementTier}"/>
+
+                                <StackPanel Grid.Column="1"
+                                            VerticalAlignment="Center"
+                                            HorizontalAlignment="Center">
+                                    <TextBlock Text="{Binding SelectedNGPlusTier, Converter={StaticResource NGPlusTierDisplayConverter}}"
+                                               FontSize="48"
+                                               FontWeight="Bold"
+                                               Foreground="#FFD700"
+                                               HorizontalAlignment="Center"/>
+                                    <TextBlock HorizontalAlignment="Center"
+                                               Foreground="#888888"
+                                               FontSize="12"
+                                               Margin="0,8,0,0">
+                                        <Run Text="Max Unlocked: NG+"/>
+                                        <Run Text="{Binding MaxUnlockedNGPlusTier}"/>
+                                    </TextBlock>
+                                </StackPanel>
+
+                                <Button Grid.Column="2"
+                                        Classes="TierButton"
+                                        Content="▶"
+                                        Command="{Binding IncrementTierCommand}"
+                                        IsEnabled="{Binding CanIncrementTier}"/>
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+                </Border>
+
+                <!-- Challenge Sector Selection -->
+                <Border Background="#2C2C2C"
+                        Padding="20"
+                        CornerRadius="8"
+                        IsVisible="{Binding IsChallengeSectorMode}">
+                    <StackPanel Spacing="15">
+                        <TextBlock Text="Select Challenge Sector"
+                                   FontSize="16"
+                                   FontWeight="Bold"
+                                   Foreground="#DC143C"/>
+
+                        <ItemsControl ItemsSource="{Binding ChallengeSectors}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="vm:ChallengeSectorViewModel">
+                                    <Button Margin="0,5"
+                                            Padding="0"
+                                            Background="Transparent"
+                                            HorizontalContentAlignment="Stretch"
+                                            Command="{Binding $parent[UserControl].((vm:EndgameModeViewModel)DataContext).SelectModeCommand}"
+                                            CommandParameter="{Binding}">
+                                        <Border Background="{Binding BackgroundColor, Converter={StaticResource StringToBrushConverter}}"
+                                                BorderBrush="{Binding BorderColor, Converter={StaticResource StringToBrushConverter}}"
+                                                BorderThickness="2"
+                                                Padding="15"
+                                                CornerRadius="6">
+                                            <Grid ColumnDefinitions="*,Auto">
+                                                <StackPanel Grid.Column="0">
+                                                    <StackPanel Orientation="Horizontal" Spacing="10">
+                                                        <TextBlock Text="{Binding Name}"
+                                                                   FontWeight="Bold"
+                                                                   FontSize="14"
+                                                                   Foreground="White"/>
+                                                        <Border Background="{Binding DifficultyColor, Converter={StaticResource StringToBrushConverter}}"
+                                                                Padding="8,2"
+                                                                CornerRadius="3">
+                                                            <TextBlock Text="{Binding DifficultyTier}"
+                                                                       FontSize="10"
+                                                                       Foreground="White"/>
+                                                        </Border>
+                                                    </StackPanel>
+                                                    <TextBlock Text="{Binding Description}"
+                                                               FontSize="11"
+                                                               Foreground="#AAAAAA"
+                                                               TextWrapping="Wrap"
+                                                               Margin="0,6,0,0"/>
+                                                    <StackPanel Orientation="Horizontal" Spacing="15" Margin="0,8,0,0">
+                                                        <TextBlock FontSize="10" Foreground="#888888">
+                                                            <Run Text="{Binding RoomCount}"/>
+                                                            <Run Text=" rooms"/>
+                                                        </TextBlock>
+                                                        <TextBlock FontSize="10" Foreground="#888888">
+                                                            <Run Text="Requires: NG+"/>
+                                                            <Run Text="{Binding RequiredNGPlusTier}"/>
+                                                        </TextBlock>
+                                                        <TextBlock Text="{Binding CompletionStatus}"
+                                                                   FontSize="10"
+                                                                   Foreground="{Binding IsCompleted, Converter={StaticResource ModifierColorConverter}}"/>
+                                                    </StackPanel>
+                                                </StackPanel>
+                                                <StackPanel Grid.Column="1"
+                                                            VerticalAlignment="Center"
+                                                            IsVisible="{Binding UniqueRewardName, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                                                    <TextBlock Text="Reward"
+                                                               FontSize="9"
+                                                               Foreground="#888888"
+                                                               HorizontalAlignment="Right"/>
+                                                    <TextBlock Text="{Binding UniqueRewardName}"
+                                                               FontSize="11"
+                                                               FontWeight="Bold"
+                                                               Foreground="#FFD700"
+                                                               HorizontalAlignment="Right"/>
+                                                </StackPanel>
+                                            </Grid>
+                                        </Border>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+
+                <!-- Boss Gauntlet Selection -->
+                <Border Background="#2C2C2C"
+                        Padding="20"
+                        CornerRadius="8"
+                        IsVisible="{Binding IsBossGauntletMode}">
+                    <StackPanel Spacing="15">
+                        <TextBlock Text="Select Gauntlet"
+                                   FontSize="16"
+                                   FontWeight="Bold"
+                                   Foreground="#9400D3"/>
+
+                        <ItemsControl ItemsSource="{Binding GauntletSequences}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="vm:GauntletSequenceViewModel">
+                                    <Button Margin="0,5"
+                                            Padding="0"
+                                            Background="Transparent"
+                                            HorizontalContentAlignment="Stretch"
+                                            Command="{Binding $parent[UserControl].((vm:EndgameModeViewModel)DataContext).SelectModeCommand}"
+                                            CommandParameter="{Binding}">
+                                        <Border Background="#1C1C1C"
+                                                BorderBrush="#3C3C3C"
+                                                BorderThickness="2"
+                                                Padding="15"
+                                                CornerRadius="6">
+                                            <Grid ColumnDefinitions="*,Auto">
+                                                <StackPanel Grid.Column="0">
+                                                    <StackPanel Orientation="Horizontal" Spacing="10">
+                                                        <TextBlock Text="{Binding SequenceName}"
+                                                                   FontWeight="Bold"
+                                                                   FontSize="14"
+                                                                   Foreground="White"/>
+                                                        <Border Background="{Binding DifficultyColor, Converter={StaticResource StringToBrushConverter}}"
+                                                                Padding="8,2"
+                                                                CornerRadius="3">
+                                                            <TextBlock Text="{Binding DifficultyTier}"
+                                                                       FontSize="10"
+                                                                       Foreground="White"/>
+                                                        </Border>
+                                                    </StackPanel>
+                                                    <TextBlock Text="{Binding Description}"
+                                                               FontSize="11"
+                                                               Foreground="#AAAAAA"
+                                                               TextWrapping="Wrap"
+                                                               Margin="0,6,0,0"/>
+                                                    <StackPanel Orientation="Horizontal" Spacing="15" Margin="0,8,0,0">
+                                                        <TextBlock FontSize="10" Foreground="#888888">
+                                                            <Run Text="{Binding BossCount}"/>
+                                                            <Run Text=" bosses"/>
+                                                        </TextBlock>
+                                                        <TextBlock Text="{Binding ResourceLimits}"
+                                                                   FontSize="10"
+                                                                   Foreground="#DC143C"/>
+                                                        <TextBlock FontSize="10" Foreground="#888888">
+                                                            <Run Text="Requires: NG+"/>
+                                                            <Run Text="{Binding RequiredNGPlusTier}"/>
+                                                        </TextBlock>
+                                                    </StackPanel>
+                                                </StackPanel>
+                                                <StackPanel Grid.Column="1"
+                                                            VerticalAlignment="Center"
+                                                            IsVisible="{Binding TitleReward, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                                                    <TextBlock Text="Title Reward"
+                                                               FontSize="9"
+                                                               Foreground="#888888"
+                                                               HorizontalAlignment="Right"/>
+                                                    <TextBlock Text="{Binding TitleReward}"
+                                                               FontSize="11"
+                                                               FontWeight="Bold"
+                                                               Foreground="#9400D3"
+                                                               HorizontalAlignment="Right"/>
+                                                </StackPanel>
+                                            </Grid>
+                                        </Border>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+
+                <!-- Endless Mode Info -->
+                <Border Background="#2C2C2C"
+                        Padding="20"
+                        CornerRadius="8"
+                        IsVisible="{Binding IsEndlessMode}">
+                    <StackPanel Spacing="15">
+                        <TextBlock Text="Endless Mode"
+                                   FontSize="16"
+                                   FontWeight="Bold"
+                                   Foreground="#4A90E2"/>
+
+                        <Border Background="#1C1C1C"
+                                Padding="15"
+                                CornerRadius="6">
+                            <Grid ColumnDefinitions="*,*,*">
+                                <StackPanel Grid.Column="0" HorizontalAlignment="Center">
+                                    <TextBlock Text="Wave Scaling"
+                                               FontSize="10"
+                                               Foreground="#888888"
+                                               HorizontalAlignment="Center"/>
+                                    <TextBlock Text="+5%/wave"
+                                               FontSize="16"
+                                               FontWeight="Bold"
+                                               Foreground="#DC143C"
+                                               HorizontalAlignment="Center"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" HorizontalAlignment="Center">
+                                    <TextBlock Text="Elite Waves"
+                                               FontSize="10"
+                                               Foreground="#888888"
+                                               HorizontalAlignment="Center"/>
+                                    <TextBlock Text="Every 5th"
+                                               FontSize="16"
+                                               FontWeight="Bold"
+                                               Foreground="#FFA500"
+                                               HorizontalAlignment="Center"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="2" HorizontalAlignment="Center">
+                                    <TextBlock Text="Boss Waves"
+                                               FontSize="10"
+                                               Foreground="#888888"
+                                               HorizontalAlignment="Center"/>
+                                    <TextBlock Text="Every 10th"
+                                               FontSize="16"
+                                               FontWeight="Bold"
+                                               Foreground="#9400D3"
+                                               HorizontalAlignment="Center"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <TextBlock Text="Survive as long as you can. Your score is based on the highest wave reached."
+                                   TextWrapping="Wrap"
+                                   Foreground="#888888"
+                                   FontSize="12"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Difficulty Modifiers -->
+                <Border Background="#2C2C2C"
+                        Padding="20"
+                        CornerRadius="8"
+                        IsVisible="{Binding ActiveModifiers.Count}">
+                    <StackPanel Spacing="12">
+                        <TextBlock Text="Difficulty Modifiers"
+                                   FontSize="16"
+                                   FontWeight="Bold"
+                                   Foreground="#DC143C"/>
+
+                        <ItemsControl ItemsSource="{Binding ActiveModifiers}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="vm:DifficultyModifierViewModel">
+                                    <Border Background="#1C1C1C"
+                                            Padding="12"
+                                            Margin="0,4"
+                                            CornerRadius="6">
+                                        <Grid ColumnDefinitions="Auto,*,Auto">
+                                            <TextBlock Grid.Column="0"
+                                                       Text="{Binding CategoryIcon}"
+                                                       FontSize="18"
+                                                       Foreground="#888888"
+                                                       VerticalAlignment="Center"
+                                                       Margin="0,0,12,0"/>
+                                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding Name}"
+                                                           FontWeight="Bold"
+                                                           FontSize="13"
+                                                           Foreground="White"/>
+                                                <TextBlock Text="{Binding Description}"
+                                                           FontSize="11"
+                                                           Foreground="#AAAAAA"/>
+                                            </StackPanel>
+                                            <TextBlock Grid.Column="2"
+                                                       Text="{Binding DisplayValue}"
+                                                       FontSize="18"
+                                                       FontWeight="Bold"
+                                                       Foreground="{Binding ValueColor, Converter={StaticResource StringToBrushConverter}}"
+                                                       VerticalAlignment="Center"/>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+
+                <!-- Reward Multipliers -->
+                <Border Background="#2C2C2C"
+                        Padding="20"
+                        CornerRadius="8"
+                        IsVisible="{Binding RewardMultipliers.Count}">
+                    <StackPanel Spacing="12">
+                        <TextBlock Text="Reward Multipliers"
+                                   FontSize="16"
+                                   FontWeight="Bold"
+                                   Foreground="#228B22"/>
+
+                        <ItemsControl ItemsSource="{Binding RewardMultipliers}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="vm:RewardMultiplierViewModel">
+                                    <Border Background="#1C1C1C"
+                                            Padding="12"
+                                            Margin="0,4"
+                                            CornerRadius="6">
+                                        <Grid ColumnDefinitions="*,Auto">
+                                            <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding Type}"
+                                                           FontWeight="Bold"
+                                                           FontSize="13"
+                                                           Foreground="White"/>
+                                                <TextBlock Text="{Binding Description}"
+                                                           FontSize="11"
+                                                           Foreground="#AAAAAA"
+                                                           IsVisible="{Binding Description, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                                            </StackPanel>
+                                            <TextBlock Grid.Column="1"
+                                                       Text="{Binding DisplayText}"
+                                                       FontSize="18"
+                                                       FontWeight="Bold"
+                                                       Foreground="{Binding RewardColor, Converter={StaticResource StringToBrushConverter}}"
+                                                       VerticalAlignment="Center"/>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+
+                <!-- Start Button -->
+                <Button Classes="StartButton"
+                        Content="Begin Challenge"
+                        Command="{Binding StartModeCommand}"
+                        IsEnabled="{Binding CanStartMode}"
+                        Margin="0,10,0,20"/>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

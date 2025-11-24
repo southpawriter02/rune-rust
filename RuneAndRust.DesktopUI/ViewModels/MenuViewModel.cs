@@ -14,6 +14,7 @@ public class MenuViewModel : ViewModelBase
     private readonly INavigationService? _navigationService;
     private readonly ISpriteService? _spriteService;
     private readonly IMetaProgressionService? _metaProgressionService;
+    private readonly IEndgameService? _endgameService;
     /// <summary>
     /// Command to start a new game.
     /// </summary>
@@ -45,6 +46,11 @@ public class MenuViewModel : ViewModelBase
     public ICommand SpriteDemoCommand { get; }
 
     /// <summary>
+    /// Command to access endgame modes.
+    /// </summary>
+    public ICommand EndgameCommand { get; }
+
+    /// <summary>
     /// Command to exit the application.
     /// </summary>
     public ICommand ExitCommand { get; }
@@ -57,7 +63,7 @@ public class MenuViewModel : ViewModelBase
     /// <summary>
     /// Gets the application version.
     /// </summary>
-    public string Version => "v0.43.2 - Sprite System & Asset Pipeline";
+    public string Version => "v0.43.16 - Endgame Mode Selection";
 
     public MenuViewModel()
     {
@@ -69,6 +75,7 @@ public class MenuViewModel : ViewModelBase
         SettingsCommand = ReactiveCommand.Create(OnSettings);
         AchievementsCommand = ReactiveCommand.Create(OnAchievements);
         SpriteDemoCommand = ReactiveCommand.Create(OnSpriteDemo);
+        EndgameCommand = ReactiveCommand.Create(OnEndgame);
         ExitCommand = ReactiveCommand.Create(OnExit);
     }
 
@@ -78,11 +85,13 @@ public class MenuViewModel : ViewModelBase
     public MenuViewModel(
         INavigationService navigationService,
         ISpriteService spriteService,
-        IMetaProgressionService metaProgressionService) : this()
+        IMetaProgressionService metaProgressionService,
+        IEndgameService endgameService) : this()
     {
         _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
         _spriteService = spriteService ?? throw new ArgumentNullException(nameof(spriteService));
         _metaProgressionService = metaProgressionService ?? throw new ArgumentNullException(nameof(metaProgressionService));
+        _endgameService = endgameService ?? throw new ArgumentNullException(nameof(endgameService));
     }
 
     private void OnNewGame()
@@ -136,6 +145,21 @@ public class MenuViewModel : ViewModelBase
         else
         {
             Console.WriteLine("[MENU] Sprite Demo selected (navigation not available)");
+        }
+    }
+
+    private void OnEndgame()
+    {
+        if (_navigationService != null && _endgameService != null)
+        {
+            // Navigate to endgame mode selection (v0.43.16)
+            var endgameModeViewModel = new EndgameModeViewModel(_endgameService, _navigationService);
+            _navigationService.NavigateTo(endgameModeViewModel);
+            Console.WriteLine("[MENU] Navigated to Endgame Modes");
+        }
+        else
+        {
+            Console.WriteLine("[MENU] Endgame selected (navigation not available)");
         }
     }
 
