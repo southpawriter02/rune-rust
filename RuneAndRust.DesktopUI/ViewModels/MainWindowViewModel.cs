@@ -61,6 +61,11 @@ public class MainWindowViewModel : ViewModelBase
     public ICommand NavigateToSpriteDemoCommand { get; }
 
     /// <summary>
+    /// Command to navigate to specialization tree.
+    /// </summary>
+    public ICommand NavigateToSpecializationTreeCommand { get; }
+
+    /// <summary>
     /// Command to navigate back.
     /// </summary>
     public ICommand NavigateBackCommand { get; }
@@ -101,6 +106,9 @@ public class MainWindowViewModel : ViewModelBase
         NavigateToSpriteDemoCommand = ReactiveCommand.Create(() =>
             _navigationService.NavigateTo<SpriteDemoViewModel>());
 
+        NavigateToSpecializationTreeCommand = ReactiveCommand.Create(() =>
+            _navigationService.NavigateTo<SpecializationTreeViewModel>());
+
         NavigateBackCommand = ReactiveCommand.Create(
             () => _navigationService.NavigateBack(),
             this.WhenAnyValue(x => x._navigationService.CanNavigateBack));
@@ -134,6 +142,9 @@ public class MainWindowViewModel : ViewModelBase
 
         _navigationService.RegisterViewModelFactory(() =>
             serviceProvider.GetRequiredService<SpriteDemoViewModel>());
+
+        _navigationService.RegisterViewModelFactory(() =>
+            serviceProvider.GetRequiredService<SpecializationTreeViewModel>());
     }
 
     /// <summary>
@@ -165,6 +176,11 @@ public class MainWindowViewModel : ViewModelBase
             Avalonia.Input.Key.I,
             () => NavigateToInventoryCommand.Execute(null),
             "Inventory");
+
+        _keyboardShortcutService.RegisterShortcut(
+            Avalonia.Input.Key.T,
+            () => NavigateToSpecializationTreeCommand.Execute(null),
+            "Specialization Tree");
 
         _keyboardShortcutService.RegisterShortcut(
             Avalonia.Input.Key.Back,

@@ -29,5 +29,8 @@
         <DataTemplate DataType="vm:DungeonExplorationViewModel">
             <views:DungeonExplorationView />
         </DataTemplate>
+        <DataTemplate DataType="vm:SpecializationTreeViewModel">
+            <views:SpecializationTreeView />
+        </DataTemplate>
     </Application.DataTemplates>
 </Application>
