@@ -67,4 +67,44 @@ public interface IAIConfigurationRepository
     /// Called during migration/initialization.
     /// </summary>
     Task SeedDefaultArchetypeConfigurationsAsync();
+
+    // v0.42.3: Boss Configuration Methods
+
+    /// <summary>
+    /// Gets the boss configuration for a specific boss type.
+    /// Results are cached to avoid repeated database queries.
+    /// </summary>
+    /// <param name="bossTypeId">The boss type ID.</param>
+    /// <returns>The boss configuration, or null if not found.</returns>
+    Task<BossConfiguration?> GetBossConfigurationAsync(int bossTypeId);
+
+    /// <summary>
+    /// Gets the phase transition configuration for a boss.
+    /// </summary>
+    /// <param name="bossTypeId">The boss type ID.</param>
+    /// <param name="toPhase">The phase transitioning to.</param>
+    /// <returns>The phase transition configuration, or null if not found.</returns>
+    Task<BossPhaseTransition?> GetBossPhaseTransitionAsync(int bossTypeId, BossPhase toPhase);
+
+    /// <summary>
+    /// Gets the ability rotation for a boss phase.
+    /// </summary>
+    /// <param name="bossTypeId">The boss type ID.</param>
+    /// <param name="phase">The phase to get rotation for.</param>
+    /// <returns>The ability rotation, or null if not found.</returns>
+    Task<AbilityRotation?> GetAbilityRotationAsync(int bossTypeId, BossPhase phase);
+
+    /// <summary>
+    /// Gets the add management configuration for a boss phase.
+    /// </summary>
+    /// <param name="bossTypeId">The boss type ID.</param>
+    /// <param name="phase">The phase to get configuration for.</param>
+    /// <returns>The add management configuration, or null if not found.</returns>
+    Task<AddManagementConfig?> GetAddManagementConfigAsync(int bossTypeId, BossPhase phase);
+
+    /// <summary>
+    /// Seeds default boss configurations into the database.
+    /// Called during migration/initialization.
+    /// </summary>
+    Task SeedDefaultBossConfigurationsAsync();
 }

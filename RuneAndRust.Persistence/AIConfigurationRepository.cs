@@ -446,4 +446,362 @@ public class AIConfigurationRepository : RuneAndRust.Engine.AI.IAIConfigurationR
             UsesCoordination = false
         };
     }
+
+    // v0.42.3: Boss Configuration Methods
+
+    private Dictionary<int, BossConfiguration>? _bossConfigCache;
+    private Dictionary<string, BossPhaseTransition>? _phaseTransitionCache;
+    private Dictionary<string, AbilityRotation>? _abilityRotationCache;
+    private Dictionary<string, AddManagementConfig>? _addManagementCache;
+
+    /// <inheritdoc/>
+    public async Task<BossConfiguration?> GetBossConfigurationAsync(int bossTypeId)
+    {
+        if (_bossConfigCache != null && _bossConfigCache.TryGetValue(bossTypeId, out var cached))
+        {
+            return cached;
+        }
+
+        try
+        {
+            using var connection = new SqliteConnection(_connectionString);
+            await connection.OpenAsync();
+
+            // Ensure table exists
+            EnsureBossTablesExist(connection);
+
+            var command = connection.CreateCommand();
+            command.CommandText = "SELECT * FROM BossConfiguration WHERE BossTypeId = $id";
+            command.Parameters.AddWithValue("$id", bossTypeId);
+
+            using var reader = await command.ExecuteReaderAsync();
+
+            if (await reader.ReadAsync())
+            {
+                var config = new BossConfiguration
+                {
+                    BossTypeId = reader.GetInt32(0),
+                    BossName = reader.GetString(1),
+                    HasPhases = reader.GetInt32(2) == 1,
+                    PhaseCount = reader.GetInt32(3),
+                    UsesAdds = reader.GetInt32(4) == 1,
+                    UsesAdaptiveDifficulty = reader.GetInt32(5) == 1,
+                    BaseAggressionLevel = reader.GetInt32(6),
+                    CreatedAt = reader.GetDateTime(7)
+                };
+
+                // Cache it
+                _bossConfigCache ??= new Dictionary<int, BossConfiguration>();
+                _bossConfigCache[bossTypeId] = config;
+
+                return config;
+            }
+
+            return null;
+        }
+        catch (Exception ex)
+        {
+            _log.Error(ex, "Failed to load boss configuration for type {BossTypeId}", bossTypeId);
+            throw;
+        }
+    }
+
+    /// <inheritdoc/>
+    public async Task<BossPhaseTransition?> GetBossPhaseTransitionAsync(int bossTypeId, BossPhase toPhase)
+    {
+        var cacheKey = $"{bossTypeId}_{toPhase}";
+
+        if (_phaseTransitionCache != null && _phaseTransitionCache.TryGetValue(cacheKey, out var cached))
+        {
+            return cached;
+        }
+
+        try
+        {
+            using var connection = new SqliteConnection(_connectionString);
+            await connection.OpenAsync();
+
+            EnsureBossTablesExist(connection);
+
+            var command = connection.CreateCommand();
+            command.CommandText = @"
+                SELECT * FROM BossPhaseTransition
+                WHERE BossTypeId = $id AND ToPhase = $phase
+            ";
+            command.Parameters.AddWithValue("$id", bossTypeId);
+            command.Parameters.AddWithValue("$phase", (int)toPhase);
+
+            using var reader = await command.ExecuteReaderAsync();
+
+            if (await reader.ReadAsync())
+            {
+                var transition = new BossPhaseTransition
+                {
+                    BossTypeId = reader.GetInt32(0),
+                    ToPhase = (BossPhase)reader.GetInt32(1),
+                    HPThreshold = (decimal)reader.GetDouble(2),
+                    DialogueLine = reader.IsDBNull(3) ? null : reader.GetString(3),
+                    TransitionAbilityId = reader.IsDBNull(4) ? null : reader.GetInt32(4),
+                    // PhaseBonuses stored as JSON - for now, return null
+                    PhaseBonuses = null
+                };
+
+                // Cache it
+                _phaseTransitionCache ??= new Dictionary<string, BossPhaseTransition>();
+                _phaseTransitionCache[cacheKey] = transition;
+
+                return transition;
+            }
+
+            return null;
+        }
+        catch (Exception ex)
+        {
+            _log.Error(ex, "Failed to load phase transition for boss {BossTypeId} phase {Phase}", bossTypeId, toPhase);
+            throw;
+        }
+    }
+
+    /// <inheritdoc/>
+    public async Task<AbilityRotation?> GetAbilityRotationAsync(int bossTypeId, BossPhase phase)
+    {
+        var cacheKey = $"{bossTypeId}_{phase}";
+
+        if (_abilityRotationCache != null && _abilityRotationCache.TryGetValue(cacheKey, out var cached))
+        {
+            return cached;
+        }
+
+        try
+        {
+            using var connection = new SqliteConnection(_connectionString);
+            await connection.OpenAsync();
+
+            EnsureBossTablesExist(connection);
+
+            // Load rotation steps
+            var command = connection.CreateCommand();
+            command.CommandText = @"
+                SELECT * FROM AbilityRotationStep
+                WHERE BossTypeId = $id AND Phase = $phase
+                ORDER BY StepOrder
+            ";
+            command.Parameters.AddWithValue("$id", bossTypeId);
+            command.Parameters.AddWithValue("$phase", (int)phase);
+
+            using var reader = await command.ExecuteReaderAsync();
+
+            var steps = new List<RotationStep>();
+
+            while (await reader.ReadAsync())
+            {
+                var step = new RotationStep
+                {
+                    StepOrder = reader.GetInt32(2),
+                    AbilityId = reader.GetInt32(3),
+                    FallbackAbilityId = reader.IsDBNull(4) ? null : reader.GetInt32(4),
+                    Priority = reader.GetInt32(5)
+                };
+
+                steps.Add(step);
+            }
+
+            if (steps.Count == 0)
+            {
+                return null;
+            }
+
+            var rotation = new AbilityRotation
+            {
+                BossTypeId = bossTypeId,
+                Phase = phase,
+                Steps = steps
+            };
+
+            // Cache it
+            _abilityRotationCache ??= new Dictionary<string, AbilityRotation>();
+            _abilityRotationCache[cacheKey] = rotation;
+
+            return rotation;
+        }
+        catch (Exception ex)
+        {
+            _log.Error(ex, "Failed to load ability rotation for boss {BossTypeId} phase {Phase}", bossTypeId, phase);
+            throw;
+        }
+    }
+
+    /// <inheritdoc/>
+    public async Task<AddManagementConfig?> GetAddManagementConfigAsync(int bossTypeId, BossPhase phase)
+    {
+        var cacheKey = $"{bossTypeId}_{phase}";
+
+        if (_addManagementCache != null && _addManagementCache.TryGetValue(cacheKey, out var cached))
+        {
+            return cached;
+        }
+
+        try
+        {
+            using var connection = new SqliteConnection(_connectionString);
+            await connection.OpenAsync();
+
+            EnsureBossTablesExist(connection);
+
+            var command = connection.CreateCommand();
+            command.CommandText = @"
+                SELECT * FROM AddManagementConfig
+                WHERE BossTypeId = $id AND Phase = $phase
+            ";
+            command.Parameters.AddWithValue("$id", bossTypeId);
+            command.Parameters.AddWithValue("$phase", (int)phase);
+
+            using var reader = await command.ExecuteReaderAsync();
+
+            if (await reader.ReadAsync())
+            {
+                var config = new AddManagementConfig
+                {
+                    BossTypeId = reader.GetInt32(0),
+                    Phase = (BossPhase)reader.GetInt32(1),
+                    AddType = (AddType)reader.GetInt32(2),
+                    AddCount = reader.GetInt32(3),
+                    MaxAddsActive = reader.GetInt32(4),
+                    SummonCooldownSeconds = (decimal)reader.GetDouble(5),
+                    AddHealthMultiplier = (decimal)reader.GetDouble(6),
+                    AddDamageMultiplier = (decimal)reader.GetDouble(7),
+                    // SummonTriggers stored as JSON - for now, return null
+                    SummonTriggers = null
+                };
+
+                // Cache it
+                _addManagementCache ??= new Dictionary<string, AddManagementConfig>();
+                _addManagementCache[cacheKey] = config;
+
+                return config;
+            }
+
+            return null;
+        }
+        catch (Exception ex)
+        {
+            _log.Error(ex, "Failed to load add management config for boss {BossTypeId} phase {Phase}", bossTypeId, phase);
+            throw;
+        }
+    }
+
+    /// <inheritdoc/>
+    public async Task SeedDefaultBossConfigurationsAsync()
+    {
+        using var connection = new SqliteConnection(_connectionString);
+        await connection.OpenAsync();
+
+        EnsureBossTablesExist(connection);
+        SeedDefaultBossConfigurations(connection);
+    }
+
+    private void EnsureBossTablesExist(SqliteConnection connection)
+    {
+        // Create BossConfiguration table
+        var createBossConfig = connection.CreateCommand();
+        createBossConfig.CommandText = @"
+            CREATE TABLE IF NOT EXISTS BossConfiguration (
+                BossTypeId INTEGER PRIMARY KEY,
+                BossName TEXT NOT NULL,
+                HasPhases INTEGER NOT NULL DEFAULT 1,
+                PhaseCount INTEGER NOT NULL DEFAULT 3,
+                UsesAdds INTEGER NOT NULL DEFAULT 1,
+                UsesAdaptiveDifficulty INTEGER NOT NULL DEFAULT 1,
+                BaseAggressionLevel INTEGER NOT NULL DEFAULT 4,
+                CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        ";
+        createBossConfig.ExecuteNonQuery();
+
+        // Create BossPhaseTransition table
+        var createPhaseTransition = connection.CreateCommand();
+        createPhaseTransition.CommandText = @"
+            CREATE TABLE IF NOT EXISTS BossPhaseTransition (
+                BossTypeId INTEGER NOT NULL,
+                ToPhase INTEGER NOT NULL,
+                HPThreshold REAL NOT NULL,
+                DialogueLine TEXT,
+                TransitionAbilityId INTEGER,
+                PhaseBonusesJSON TEXT,
+                PRIMARY KEY (BossTypeId, ToPhase)
+            )
+        ";
+        createPhaseTransition.ExecuteNonQuery();
+
+        // Create AbilityRotationStep table
+        var createRotation = connection.CreateCommand();
+        createRotation.CommandText = @"
+            CREATE TABLE IF NOT EXISTS AbilityRotationStep (
+                BossTypeId INTEGER NOT NULL,
+                Phase INTEGER NOT NULL,
+                StepOrder INTEGER NOT NULL,
+                AbilityId INTEGER NOT NULL,
+                FallbackAbilityId INTEGER,
+                Priority INTEGER NOT NULL DEFAULT 1,
+                PRIMARY KEY (BossTypeId, Phase, StepOrder)
+            )
+        ";
+        createRotation.ExecuteNonQuery();
+
+        // Create AddManagementConfig table
+        var createAddMgmt = connection.CreateCommand();
+        createAddMgmt.CommandText = @"
+            CREATE TABLE IF NOT EXISTS AddManagementConfig (
+                BossTypeId INTEGER NOT NULL,
+                Phase INTEGER NOT NULL,
+                AddType INTEGER NOT NULL,
+                AddCount INTEGER NOT NULL,
+                MaxAddsActive INTEGER NOT NULL,
+                SummonCooldownSeconds REAL NOT NULL,
+                AddHealthMultiplier REAL NOT NULL DEFAULT 1.0,
+                AddDamageMultiplier REAL NOT NULL DEFAULT 1.0,
+                SummonTriggersJSON TEXT,
+                PRIMARY KEY (BossTypeId, Phase)
+            )
+        ";
+        createAddMgmt.ExecuteNonQuery();
+
+        _log.Debug("Boss configuration tables ensured");
+    }
+
+    private void SeedDefaultBossConfigurations(SqliteConnection connection)
+    {
+        // Check if already seeded
+        var checkCommand = connection.CreateCommand();
+        checkCommand.CommandText = "SELECT COUNT(*) FROM BossConfiguration";
+        var count = Convert.ToInt32(checkCommand.ExecuteScalar());
+
+        if (count > 0)
+        {
+            _log.Debug("Boss configurations already seeded, skipping");
+            return;
+        }
+
+        _log.Information("Seeding default boss configurations");
+
+        // Seed example boss configuration
+        var seedBoss = connection.CreateCommand();
+        seedBoss.CommandText = @"
+            INSERT INTO BossConfiguration
+                (BossTypeId, BossName, HasPhases, PhaseCount, UsesAdds, UsesAdaptiveDifficulty, BaseAggressionLevel)
+            VALUES
+                (1001, 'Tutorial Boss', 1, 3, 1, 0, 3),
+                (1002, 'Elite Warrior', 1, 3, 1, 1, 4),
+                (1003, 'Dark Sorcerer', 1, 3, 1, 1, 5)
+        ";
+        seedBoss.ExecuteNonQuery();
+
+        _log.Information("Successfully seeded boss configurations");
+
+        // Invalidate caches
+        _bossConfigCache = null;
+        _phaseTransitionCache = null;
+        _abilityRotationCache = null;
+        _addManagementCache = null;
+    }
 }
