@@ -151,6 +151,9 @@ public class SaveRepository
             // v0.35.1: Create Territory Control & Dynamic World tables
             CreateTerritoryControlTables(connection);
 
+            // v0.41: Create Meta-Progression System tables
+            CreateMetaProgressionTables(connection);
+
             _log.Information("Database initialized successfully");
         }
         catch (Exception ex)
@@ -158,6 +161,27 @@ public class SaveRepository
             _log.Error(ex, "Failed to initialize database");
             throw;
         }
+    }
+
+    /// <summary>
+    /// v0.41: Create meta-progression system tables
+    /// Initializes all repositories and seeds initial data
+    /// </summary>
+    private void CreateMetaProgressionTables(SqliteConnection connection)
+    {
+        _log.Debug("Creating meta-progression system tables");
+
+        // Initialize all v0.41 repositories (creates tables)
+        var accountProgressionRepo = new AccountProgressionRepository(_connectionString);
+        var achievementRepo = new AchievementRepository(_connectionString);
+        var cosmeticRepo = new CosmeticRepository(_connectionString);
+        var alternativeStartRepo = new AlternativeStartRepository(_connectionString);
+
+        // Seed initial meta-progression content
+        var seeder = new MetaProgressionSeeder(_connectionString);
+        seeder.SeedAll();
+
+        _log.Information("Meta-progression system tables created and seeded");
     }
 
     /// <summary>
