@@ -61,7 +61,11 @@ public enum EnemyAction
     OmegaProtocol       // Omega Sentinel Phase 3: ultimate attack
 }
 
-public class EnemyAI
+/// <summary>
+/// Enemy AI decision-making system
+/// v0.42.1: Enhanced with tactical AI services for intelligent target selection and threat assessment
+/// </summary>
+public partial class EnemyAI
 {
     private readonly Random _random;
     private readonly DiceService _diceService;
