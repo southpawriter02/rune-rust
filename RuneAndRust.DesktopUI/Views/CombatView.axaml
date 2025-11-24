@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:RuneAndRust.DesktopUI.ViewModels"
+             xmlns:controls="using:RuneAndRust.DesktopUI.Controls"
              x:Class="RuneAndRust.DesktopUI.Views.CombatView"
              x:DataType="vm:CombatViewModel">
 
@@ -8,19 +9,78 @@
         <vm:CombatViewModel/>
     </Design.DataContext>
 
-    <Grid>
-        <StackPanel VerticalAlignment="Center"
-                    HorizontalAlignment="Center"
-                    Spacing="20">
-            <TextBlock Text="{Binding Title}"
-                       FontSize="48"
-                       FontWeight="Bold"
-                       HorizontalAlignment="Center"/>
-            <TextBlock Text="{Binding PlaceholderMessage}"
-                       FontSize="18"
-                       Opacity="0.7"
-                       HorizontalAlignment="Center"/>
-        </StackPanel>
+    <Grid RowDefinitions="Auto,*,Auto" Margin="20">
+        <!-- Title -->
+        <TextBlock Grid.Row="0"
+                   Text="{Binding Title}"
+                   FontSize="32"
+                   FontWeight="Bold"
+                   HorizontalAlignment="Center"
+                   Margin="0,0,0,20"/>
+
+        <!-- Combat Grid -->
+        <Border Grid.Row="1"
+                Background="#1a1a1a"
+                BorderBrush="#333333"
+                BorderThickness="2"
+                CornerRadius="8"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Padding="20">
+            <controls:CombatGridControl x:Name="CombatGridControl"
+                Columns="{Binding Columns}"
+                CellSize="{Binding CellSize}"
+                SelectedPosition="{Binding SelectedPosition}"
+                HoveredPosition="{Binding HoveredPosition}"
+                HighlightedPositions="{Binding HighlightedPositions}"
+                UnitSprites="{Binding UnitSprites}"/>
+        </Border>
+
+        <!-- Status Bar -->
+        <Border Grid.Row="2"
+                Background="#2a2a2a"
+                BorderBrush="#444444"
+                BorderThickness="1"
+                CornerRadius="4"
+                Padding="15"
+                Margin="0,20,0,0">
+            <Grid ColumnDefinitions="*,Auto">
+                <!-- Status Message -->
+                <TextBlock Grid.Column="0"
+                           Text="{Binding StatusMessage}"
+                           FontSize="16"
+                           VerticalAlignment="Center"
+                           Foreground="#cccccc"/>
+
+                <!-- Combat Info Panel -->
+                <StackPanel Grid.Column="1"
+                            Orientation="Horizontal"
+                            Spacing="20">
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Grid Info"
+                                   FontSize="12"
+                                   Foreground="#888888"/>
+                        <TextBlock FontSize="14"
+                                   Foreground="#cccccc">
+                            <Run Text="Columns: "/>
+                            <Run Text="{Binding Columns}"/>
+                            <Run Text=" | Cell Size: "/>
+                            <Run Text="{Binding CellSize}"/>
+                            <Run Text="px"/>
+                        </TextBlock>
+                    </StackPanel>
+
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Controls"
+                                   FontSize="12"
+                                   Foreground="#888888"/>
+                        <TextBlock Text="Click: Select | Hover: Preview | ESC: Back"
+                                   FontSize="14"
+                                   Foreground="#cccccc"/>
+                    </StackPanel>
+                </StackPanel>
+            </Grid>
+        </Border>
     </Grid>
 
 </UserControl>

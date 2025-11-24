@@ -44,7 +44,7 @@ public partial class App : Application
             .WriteTo.Console()
             .CreateLogger();
 
-        Log.Information("Rune & Rust Desktop UI v0.43.2 starting...");
+        Log.Information("Rune & Rust Desktop UI v0.43.4 starting...");
 
         try
         {
@@ -87,10 +87,11 @@ public partial class App : Application
         // Logging
         services.AddSingleton<ILogger>(Log.Logger);
 
-        // UI Services (v0.43.1)
+        // UI Services (v0.43.1, v0.43.3)
         services.AddSingleton<INavigationService, NavigationService>();
         services.AddSingleton<IConfigurationService, ConfigurationService>();
         services.AddSingleton<IDialogService, DialogService>();
+        services.AddSingleton<IKeyboardShortcutService, KeyboardShortcutService>();
 
         // Sprite Services (v0.43.2)
         services.AddSingleton<ISpriteService, SpriteService>();
@@ -99,10 +100,14 @@ public partial class App : Application
         services.AddTransient<MainWindowViewModel>();
         services.AddTransient<MenuViewModel>();
         services.AddTransient<SpriteDemoViewModel>();
+        services.AddTransient<CombatViewModel>();
+        services.AddTransient<CharacterSheetViewModel>();
+        services.AddTransient<InventoryViewModel>();
+        services.AddTransient<DungeonExplorationViewModel>();
 
         // Note: Engine services (CombatEngine, DungeonGenerator, etc.) will be registered
         // in later specs when they are actually used by the UI.
-        // For v0.43.1, we're establishing the foundation only.
+        // For v0.43.1-v0.43.4, we're establishing the foundation.
 
         Log.Debug("Registered {ServiceCount} service types", services.Count);
     }
