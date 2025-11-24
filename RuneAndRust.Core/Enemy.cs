@@ -104,6 +104,9 @@ public class Enemy
     public int TilesMovedThisTurn { get; set; } = 0; // Number of tiles moved this turn
     public bool HasMovedThisTurn { get; set; } = false; // Whether movement occurred this turn
 
+    // v0.42.1: Tactical AI System
+    public AI.AIArchetype AIArchetype { get; set; } = AI.AIArchetype.Tactical; // AI behavior pattern
+
     // v0.24.2: Advanced Status Effect System
     public List<StatusEffect> StatusEffects { get; set; } = new(); // Modern status effect tracking
 
