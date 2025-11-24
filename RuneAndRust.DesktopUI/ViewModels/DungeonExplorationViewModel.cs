@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Input;
 
 namespace RuneAndRust.DesktopUI.ViewModels;
@@ -91,6 +92,12 @@ public class DungeonExplorationViewModel : ViewModelBase
     private PlayerCharacter? _character;
     private MinimapViewModel _minimap = new();
     private bool _isMinimapVisible = true;
+
+    // v0.43.14: Room Interactions & Search
+    private bool _isSearching = false;
+    private SearchResultViewModel? _searchResult = null;
+    private bool _isRestDialogVisible = false;
+    private RestConfirmationViewModel? _restConfirmation = null;
 
     #region Properties
 
@@ -235,6 +242,60 @@ public class DungeonExplorationViewModel : ViewModelBase
 
     #endregion
 
+    #region v0.43.14: Room Interactions & Search Properties
+
+    /// <summary>
+    /// Whether a search is currently in progress.
+    /// </summary>
+    public bool IsSearching
+    {
+        get => _isSearching;
+        set
+        {
+            this.RaiseAndSetIfChanged(ref _isSearching, value);
+            this.RaisePropertyChanged(nameof(CanSearch));
+        }
+    }
+
+    /// <summary>
+    /// The current search result (null if no search has been performed).
+    /// </summary>
+    public SearchResultViewModel? SearchResult
+    {
+        get => _searchResult;
+        set => this.RaiseAndSetIfChanged(ref _searchResult, value);
+    }
+
+    /// <summary>
+    /// Whether a search result overlay is visible.
+    /// </summary>
+    public bool IsSearchResultVisible => SearchResult != null;
+
+    /// <summary>
+    /// Whether the player can search (room not already searched, not currently searching).
+    /// </summary>
+    public bool CanSearch => CurrentRoom != null && !IsSearched && !IsSearching;
+
+    /// <summary>
+    /// Whether the rest confirmation dialog is visible.
+    /// </summary>
+    public bool IsRestDialogVisible
+    {
+        get => _isRestDialogVisible;
+        set => this.RaiseAndSetIfChanged(ref _isRestDialogVisible, value);
+    }
+
+    /// <summary>
+    /// The rest confirmation view model.
+    /// </summary>
+    public RestConfirmationViewModel? RestConfirmation
+    {
+        get => _restConfirmation;
+        set => this.RaiseAndSetIfChanged(ref _restConfirmation, value);
+    }
+
+    #endregion
+
     #region Commands
 
     /// <summary>
@@ -277,19 +338,53 @@ public class DungeonExplorationViewModel : ViewModelBase
     /// </summary>
     public ICommand ToggleMinimapCommand { get; }
 
+    // v0.43.14: Room Interactions Commands
+
+    /// <summary>
+    /// Command to collect loot from search results.
+    /// </summary>
+    public ICommand CollectLootCommand { get; }
+
+    /// <summary>
+    /// Command to close search results overlay.
+    /// </summary>
+    public ICommand CloseSearchResultCommand { get; }
+
+    /// <summary>
+    /// Command to show rest confirmation dialog.
+    /// </summary>
+    public ICommand ShowRestDialogCommand { get; }
+
+    /// <summary>
+    /// Command to confirm rest.
+    /// </summary>
+    public ICommand ConfirmRestCommand { get; }
+
+    /// <summary>
+    /// Command to cancel rest dialog.
+    /// </summary>
+    public ICommand CancelRestCommand { get; }
+
     #endregion
 
     public DungeonExplorationViewModel()
     {
         // Initialize commands
         MoveCommand = ReactiveCommand.Create<ExitViewModel>(Move);
-        SearchRoomCommand = ReactiveCommand.Create(SearchRoom);
-        RestCommand = ReactiveCommand.Create(Rest);
+        SearchRoomCommand = ReactiveCommand.CreateFromTask(SearchRoomAsync);
+        RestCommand = ReactiveCommand.Create(ShowRestDialog);
         ViewCharacterCommand = ReactiveCommand.Create(ViewCharacter);
         ViewInventoryCommand = ReactiveCommand.Create(ViewInventory);
         InteractCommand = ReactiveCommand.Create<RoomFeatureViewModel>(Interact);
         EngageCommand = ReactiveCommand.Create(EngageEnemies);
         ToggleMinimapCommand = ReactiveCommand.Create(ToggleMinimap);
+
+        // v0.43.14: Room Interactions Commands
+        CollectLootCommand = ReactiveCommand.Create(CollectLoot);
+        CloseSearchResultCommand = ReactiveCommand.Create(CloseSearchResult);
+        ShowRestDialogCommand = ReactiveCommand.Create(ShowRestDialog);
+        ConfirmRestCommand = ReactiveCommand.Create(ConfirmRest);
+        CancelRestCommand = ReactiveCommand.Create(CancelRest);
 
         // Load demo dungeon
         LoadDemoDungeon();
@@ -709,42 +804,190 @@ public class DungeonExplorationViewModel : ViewModelBase
     }
 
     /// <summary>
-    /// Searches the current room.
+    /// Searches the current room asynchronously with visual feedback.
     /// </summary>
-    private void SearchRoom()
+    private async Task SearchRoomAsync()
     {
-        if (CurrentRoom == null) return;
+        if (CurrentRoom == null || !CanSearch) return;
 
-        if (IsSearched)
-        {
-            StatusMessage = "You've already thoroughly searched this area.";
-            return;
-        }
+        IsSearching = true;
+        StatusMessage = "Searching the area...";
+
+        // Simulate search delay for visual feedback
+        await Task.Delay(800);
 
         IsSearched = true;
 
-        // Simulate search results
+        // Generate search results
         var rng = new Random();
-        if (rng.NextDouble() < 0.3) // 30% chance to find something
+        var roll = rng.NextDouble();
+
+        if (roll < 0.35) // 35% chance to find loot
         {
-            StatusMessage = "Your search reveals a hidden compartment containing salvage!";
-            // In full implementation, would add items to inventory
+            var lootItems = GenerateRandomLoot(rng);
+            var secrets = GenerateEnvironmentalSecrets(rng);
+
+            SearchResult = SearchResultViewModel.WithLoot(lootItems, secrets);
+            StatusMessage = "Your search reveals something!";
         }
-        else if (rng.NextDouble() < 0.15) // 15% chance to trigger encounter
+        else if (roll < 0.50) // 15% chance to trigger encounter
         {
-            StatusMessage = "Your searching disturbs something in the shadows...";
-            // In full implementation, would trigger combat
+            SearchResult = SearchResultViewModel.WithEncounter(
+                "Your searching disturbs something lurking in the shadows...",
+                null);
+            StatusMessage = "Something stirs in the darkness!";
         }
-        else
+        else if (roll < 0.70) // 20% chance to find secrets only
         {
+            var secrets = GenerateEnvironmentalSecrets(rng);
+            if (secrets.Any())
+            {
+                SearchResult = SearchResultViewModel.WithSecrets(secrets);
+                StatusMessage = "You discover something interesting...";
+            }
+            else
+            {
+                SearchResult = SearchResultViewModel.Empty();
+                StatusMessage = "Your search reveals nothing of interest.";
+            }
+        }
+        else // 30% chance to find nothing
+        {
+            SearchResult = SearchResultViewModel.Empty();
             StatusMessage = "Your search reveals nothing of interest.";
         }
+
+        IsSearching = false;
+        this.RaisePropertyChanged(nameof(IsSearchResultVisible));
+        this.RaisePropertyChanged(nameof(CanSearch));
     }
 
     /// <summary>
-    /// Rests in the current room.
+    /// Generates random loot items for search results.
     /// </summary>
-    private void Rest()
+    private List<LootItemViewModel> GenerateRandomLoot(Random rng)
+    {
+        var items = new List<LootItemViewModel>();
+        var numItems = rng.Next(1, 4); // 1-3 items
+
+        for (int i = 0; i < numItems; i++)
+        {
+            var itemType = rng.Next(100);
+            if (itemType < 40) // 40% materials
+            {
+                var materials = new[] { "Scrap Metal", "Corroded Wire", "Crystalline Shard", "Machine Oil", "Rusted Gears" };
+                items.Add(LootItemViewModel.ForMaterial(
+                    materials[rng.Next(materials.Length)],
+                    "Salvageable materials useful for crafting.",
+                    rng.Next(1, 4)));
+            }
+            else if (itemType < 60) // 20% currency
+            {
+                var currencyType = rng.Next(2) == 0 ? "Scrap" : "Aether Shards";
+                items.Add(LootItemViewModel.ForCurrency(currencyType, rng.Next(5, 25)));
+            }
+            else // 40% equipment
+            {
+                var equipment = new Equipment
+                {
+                    Name = GenerateRandomItemName(rng),
+                    Type = (EquipmentType)rng.Next(3),
+                    Quality = (QualityTier)rng.Next(3),
+                    Description = "A piece of salvaged equipment.",
+                    DamageDice = rng.Next(1, 3),
+                    DamageDieSize = 6,
+                    DefenseBonus = rng.Next(1, 5)
+                };
+                items.Add(LootItemViewModel.FromEquipment(equipment));
+            }
+        }
+
+        return items;
+    }
+
+    /// <summary>
+    /// Generates a random item name.
+    /// </summary>
+    private string GenerateRandomItemName(Random rng)
+    {
+        var prefixes = new[] { "Corroded", "Salvaged", "Ancient", "Damaged", "Modified" };
+        var items = new[] { "Blade", "Shield", "Gauntlet", "Helm", "Ring" };
+        return $"{prefixes[rng.Next(prefixes.Length)]} {items[rng.Next(items.Length)]}";
+    }
+
+    /// <summary>
+    /// Generates environmental secrets/discoveries.
+    /// </summary>
+    private List<string> GenerateEnvironmentalSecrets(Random rng)
+    {
+        var secrets = new List<string>();
+        var allSecrets = new[]
+        {
+            "Faded runes on the wall seem to depict an ancient ritual.",
+            "You find scratch marks suggesting something large passed through here.",
+            "A hidden compartment contains old documents, mostly illegible.",
+            "The temperature here is noticeably different than nearby areas.",
+            "You notice strange stains on the floor that seem to shimmer faintly.",
+            "An old terminal flickers with corrupted data logs.",
+            "The walls bear evidence of a past battle.",
+            "You discover a hidden maintenance passage (now collapsed)."
+        };
+
+        if (rng.NextDouble() < 0.6) // 60% chance to find at least one secret
+        {
+            var numSecrets = rng.Next(1, 3);
+            var shuffled = allSecrets.OrderBy(_ => rng.Next()).Take(numSecrets);
+            secrets.AddRange(shuffled);
+        }
+
+        return secrets;
+    }
+
+    /// <summary>
+    /// Collects loot from search results.
+    /// </summary>
+    private void CollectLoot()
+    {
+        if (SearchResult == null || !SearchResult.FoundLoot || Character == null) return;
+
+        // Add items to character inventory (simplified for demo)
+        foreach (var item in SearchResult.LootItems)
+        {
+            if (item.Equipment != null)
+            {
+                Character.Inventory.Add(item.Equipment);
+            }
+        }
+
+        SearchResult.IsCollected = true;
+        StatusMessage = $"Collected {SearchResult.LootItems.Count} item(s).";
+
+        // Auto-close after collection
+        CloseSearchResult();
+    }
+
+    /// <summary>
+    /// Closes the search result overlay.
+    /// </summary>
+    private void CloseSearchResult()
+    {
+        // If encounter was triggered, navigate to combat
+        if (SearchResult?.TriggeredEncounter == true)
+        {
+            SearchResult = null;
+            this.RaisePropertyChanged(nameof(IsSearchResultVisible));
+            _navigationService?.NavigateTo<CombatViewModel>();
+            return;
+        }
+
+        SearchResult = null;
+        this.RaisePropertyChanged(nameof(IsSearchResultVisible));
+    }
+
+    /// <summary>
+    /// Shows the rest confirmation dialog.
+    /// </summary>
+    private void ShowRestDialog()
     {
         if (CurrentRoom == null || Character == null) return;
 
@@ -756,10 +999,34 @@ public class DungeonExplorationViewModel : ViewModelBase
 
         if (CurrentRoom.IsSanctuary)
         {
+            RestConfirmation = RestConfirmationViewModel.ForSanctuary(
+                Character.HP, Character.MaxHP,
+                Character.Stamina, Character.MaxStamina);
+        }
+        else
+        {
+            RestConfirmation = RestConfirmationViewModel.ForRegularRest(
+                Character.HP, Character.MaxHP,
+                Character.Stamina, Character.MaxStamina,
+                Character.PsychicStress);
+        }
+
+        IsRestDialogVisible = true;
+    }
+
+    /// <summary>
+    /// Confirms and executes rest.
+    /// </summary>
+    private void ConfirmRest()
+    {
+        if (CurrentRoom == null || Character == null || RestConfirmation == null) return;
+
+        if (RestConfirmation.IsSanctuary)
+        {
             // Sanctuary rest - full recovery, no stress
             Character.HP = Character.MaxHP;
             Character.Stamina = Character.MaxStamina;
-            StatusMessage = "You rest in the sanctuary. HP and Stamina fully restored.";
+            StatusMessage = "You rest peacefully in the sanctuary. Fully restored.";
         }
         else
         {
@@ -767,12 +1034,23 @@ public class DungeonExplorationViewModel : ViewModelBase
             Character.HP = Math.Min(Character.MaxHP, Character.HP + Character.MaxHP / 4);
             Character.Stamina = Math.Min(Character.MaxStamina, Character.Stamina + Character.MaxStamina / 2);
             Character.PsychicStress = Math.Min(100, Character.PsychicStress + 5);
-            StatusMessage = "You rest uneasily. HP/Stamina partially restored, but stress increases.";
+            StatusMessage = "You rest uneasily. Partially restored, but stress increases.";
         }
 
         this.RaisePropertyChanged(nameof(HPDisplay));
         this.RaisePropertyChanged(nameof(StaminaDisplay));
         this.RaisePropertyChanged(nameof(StressDisplay));
+
+        CancelRest(); // Close dialog
+    }
+
+    /// <summary>
+    /// Cancels the rest dialog.
+    /// </summary>
+    private void CancelRest()
+    {
+        IsRestDialogVisible = false;
+        RestConfirmation = null;
     }
 
     /// <summary>

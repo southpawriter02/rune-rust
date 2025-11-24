@@ -2,12 +2,18 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:RuneAndRust.DesktopUI.ViewModels"
              xmlns:controls="using:RuneAndRust.DesktopUI.Controls"
+             xmlns:converters="using:RuneAndRust.DesktopUI.Converters"
              x:Class="RuneAndRust.DesktopUI.Views.DungeonExplorationView"
              x:DataType="vm:DungeonExplorationViewModel">
 
     <Design.DataContext>
         <vm:DungeonExplorationViewModel/>
     </Design.DataContext>
+
+    <UserControl.Resources>
+        <converters:NotNullToBoolConverter x:Key="NotNullConverter"/>
+        <converters:CountToBoolConverter x:Key="CountToBoolConverter"/>
+    </UserControl.Resources>
 
     <UserControl.Styles>
         <!-- Exit button style -->
@@ -33,10 +39,26 @@
             <Setter Property="Padding" Value="10"/>
             <Setter Property="Margin" Value="0,4"/>
         </Style>
+        <!-- Overlay dialog styles -->
+        <Style Selector="Border.DialogOverlay">
+            <Setter Property="Background" Value="#E0000000"/>
+        </Style>
+        <Style Selector="Border.DialogBox">
+            <Setter Property="Background" Value="#2C2C2C"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="Padding" Value="20"/>
+            <Setter Property="MaxWidth" Value="500"/>
+        </Style>
+        <Style Selector="Button.DialogButton">
+            <Setter Property="MinWidth" Value="100"/>
+            <Setter Property="Padding" Value="15,8"/>
+        </Style>
     </UserControl.Styles>
 
-    <Grid ColumnDefinitions="*,280,Auto" Margin="15">
-        <!-- Main Room Display -->
+    <Panel>
+        <!-- Main Content Grid -->
+        <Grid ColumnDefinitions="*,280,Auto" Margin="15">
+            <!-- Main Room Display -->
         <Border Grid.Column="0"
                 Background="#2C2C2C"
                 Padding="20"
@@ -490,5 +512,301 @@
                 </Border>
             </Grid>
         </Border>
-    </Grid>
+        </Grid>
+
+        <!-- ==================== SEARCH RESULT OVERLAY ==================== -->
+        <Border Classes="DialogOverlay"
+                IsVisible="{Binding SearchResult, Converter={StaticResource NotNullConverter}}">
+            <Border Classes="DialogBox"
+                    BorderBrush="{Binding SearchResult.TitleColor}"
+                    BorderThickness="3"
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Center">
+                <StackPanel Spacing="15" MinWidth="400">
+                    <!-- Title -->
+                    <TextBlock Text="{Binding SearchResult.ResultTitle}"
+                               FontSize="24"
+                               FontWeight="Bold"
+                               Foreground="{Binding SearchResult.TitleColor}"
+                               HorizontalAlignment="Center"/>
+
+                    <!-- Found Loot Section -->
+                    <StackPanel IsVisible="{Binding SearchResult.FoundLoot}" Spacing="10">
+                        <TextBlock Text="Found Items:"
+                                   FontSize="16"
+                                   FontWeight="Bold"
+                                   Foreground="White"/>
+
+                        <ItemsControl ItemsSource="{Binding SearchResult.LootItems}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="vm:LootItemViewModel">
+                                    <Border Background="#1C1C1C"
+                                            Padding="10"
+                                            Margin="0,4"
+                                            CornerRadius="5"
+                                            BorderBrush="{Binding QualityColor}"
+                                            BorderThickness="1">
+                                        <Grid ColumnDefinitions="40,*">
+                                            <!-- Item Icon -->
+                                            <Border Grid.Column="0"
+                                                    Width="36"
+                                                    Height="36"
+                                                    Background="#2C2C2C"
+                                                    CornerRadius="4"
+                                                    BorderBrush="{Binding QualityColor}"
+                                                    BorderThickness="1">
+                                                <TextBlock Text="{Binding Icon}"
+                                                           FontSize="18"
+                                                           FontWeight="Bold"
+                                                           Foreground="{Binding QualityColor}"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center"/>
+                                            </Border>
+
+                                            <!-- Item Info -->
+                                            <StackPanel Grid.Column="1" Margin="10,0,0,0">
+                                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                                    <TextBlock Text="{Binding Name}"
+                                                               FontWeight="Bold"
+                                                               Foreground="White"/>
+                                                    <TextBlock Text="{Binding QualityName}"
+                                                               FontSize="10"
+                                                               Foreground="{Binding QualityColor}"
+                                                               VerticalAlignment="Center"/>
+                                                </StackPanel>
+                                                <TextBlock Text="{Binding Description}"
+                                                           FontSize="11"
+                                                           Foreground="#AAAAAA"
+                                                           TextWrapping="Wrap"/>
+                                                <TextBlock Text="{Binding TypeDisplay}"
+                                                           FontSize="10"
+                                                           Foreground="#666666"
+                                                           FontStyle="Italic"/>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+
+                    <!-- Discovered Secrets Section -->
+                    <StackPanel IsVisible="{Binding SearchResult.DiscoveredSecrets.Count, Converter={StaticResource CountToBoolConverter}}"
+                                Spacing="5">
+                        <TextBlock Text="Discovered:"
+                                   FontSize="16"
+                                   FontWeight="Bold"
+                                   Foreground="#9400D3"/>
+
+                        <ItemsControl ItemsSource="{Binding SearchResult.DiscoveredSecrets}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Background="#1A1A2E"
+                                            Padding="10"
+                                            Margin="0,2"
+                                            CornerRadius="4">
+                                        <TextBlock Text="{Binding}"
+                                                   Foreground="#CCCCCC"
+                                                   FontStyle="Italic"
+                                                   TextWrapping="Wrap"/>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+
+                    <!-- Encounter Warning -->
+                    <Border IsVisible="{Binding SearchResult.TriggeredEncounter}"
+                            Background="#8B0000"
+                            Padding="12"
+                            CornerRadius="6">
+                        <StackPanel>
+                            <TextBlock Text="COMBAT ENCOUNTER!"
+                                       FontSize="18"
+                                       FontWeight="Bold"
+                                       Foreground="White"
+                                       HorizontalAlignment="Center"/>
+                            <TextBlock Text="{Binding SearchResult.EncounterDescription}"
+                                       FontSize="12"
+                                       Foreground="White"
+                                       TextWrapping="Wrap"
+                                       Margin="0,8,0,0"
+                                       HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Nothing Found Message -->
+                    <TextBlock Text="You search thoroughly but find nothing of interest."
+                               Foreground="#888888"
+                               FontStyle="Italic"
+                               HorizontalAlignment="Center"
+                               TextWrapping="Wrap"
+                               IsVisible="{Binding SearchResult.NothingFound}"/>
+
+                    <!-- Action Buttons -->
+                    <StackPanel Orientation="Horizontal"
+                                HorizontalAlignment="Center"
+                                Spacing="10"
+                                Margin="0,10,0,0">
+                        <!-- Collect Loot Button -->
+                        <Button Classes="DialogButton"
+                                Content="Collect Loot"
+                                Command="{Binding CollectLootCommand}"
+                                IsVisible="{Binding SearchResult.FoundLoot}"
+                                Background="#4CAF50"/>
+
+                        <!-- Close/Continue Button -->
+                        <Button Classes="DialogButton"
+                                Command="{Binding CloseSearchResultCommand}">
+                            <Button.Content>
+                                <TextBlock>
+                                    <TextBlock.Text>
+                                        <MultiBinding StringFormat="{}{0}">
+                                            <Binding Path="SearchResult.TriggeredEncounter"
+                                                     Converter="{x:Static BoolConverters.Not}"
+                                                     FallbackValue="Close"/>
+                                        </MultiBinding>
+                                    </TextBlock.Text>
+                                </TextBlock>
+                            </Button.Content>
+                        </Button>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </Border>
+
+        <!-- ==================== REST CONFIRMATION DIALOG ==================== -->
+        <Border Classes="DialogOverlay"
+                IsVisible="{Binding IsRestDialogVisible}">
+            <Border Classes="DialogBox"
+                    BorderBrush="{Binding RestConfirmation.TitleColor}"
+                    BorderThickness="2"
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Center">
+                <StackPanel Spacing="15" MinWidth="380">
+                    <!-- Title -->
+                    <TextBlock Text="{Binding RestConfirmation.Title}"
+                               FontSize="22"
+                               FontWeight="Bold"
+                               Foreground="{Binding RestConfirmation.TitleColor}"/>
+
+                    <TextBlock Text="Rest to recover HP and Stamina?"
+                               TextWrapping="Wrap"
+                               Foreground="#CCCCCC"/>
+
+                    <!-- Sanctuary Indicator -->
+                    <Border Background="#2E4A2E"
+                            Padding="10"
+                            CornerRadius="5"
+                            IsVisible="{Binding RestConfirmation.IsSanctuary}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="+"
+                                       FontWeight="Bold"
+                                       FontSize="16"
+                                       Foreground="#4CAF50"/>
+                            <TextBlock Text="This is a sanctuary - safe to rest here!"
+                                       Foreground="#4CAF50"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Warnings (Non-Sanctuary) -->
+                    <Border Background="#3D2B1F"
+                            Padding="10"
+                            CornerRadius="5"
+                            IsVisible="{Binding !RestConfirmation.IsSanctuary}">
+                        <StackPanel Spacing="5">
+                            <TextBlock Text="Warnings:"
+                                       FontWeight="Bold"
+                                       Foreground="#FF9800"/>
+                            <ItemsControl ItemsSource="{Binding RestConfirmation.Warnings}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal" Spacing="5">
+                                            <TextBlock Text="!"
+                                                       Foreground="#FF9800"
+                                                       FontWeight="Bold"/>
+                                            <TextBlock Text="{Binding}"
+                                                       Foreground="#CCCCCC"
+                                                       FontSize="12"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Recovery Info -->
+                    <Border Background="#1C1C1C"
+                            Padding="12"
+                            CornerRadius="5">
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="Recovery:"
+                                       FontWeight="Bold"
+                                       Foreground="#4A90E2"/>
+
+                            <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto">
+                                <TextBlock Grid.Row="0" Grid.Column="0"
+                                           Text="HP:"
+                                           Foreground="#888888"
+                                           Margin="0,0,10,4"/>
+                                <TextBlock Grid.Row="0" Grid.Column="1"
+                                           Text="{Binding RestConfirmation.HPRecovery}"
+                                           Foreground="#4CAF50"
+                                           FontWeight="SemiBold"/>
+
+                                <TextBlock Grid.Row="1" Grid.Column="0"
+                                           Text="Stamina:"
+                                           Foreground="#888888"
+                                           Margin="0,0,10,0"/>
+                                <TextBlock Grid.Row="1" Grid.Column="1"
+                                           Text="{Binding RestConfirmation.StaminaRecovery}"
+                                           Foreground="#4A90E2"
+                                           FontWeight="SemiBold"/>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Action Buttons -->
+                    <StackPanel Orientation="Horizontal"
+                                HorizontalAlignment="Center"
+                                Spacing="10"
+                                Margin="0,5,0,0">
+                        <Button Classes="DialogButton"
+                                Content="Rest"
+                                Command="{Binding ConfirmRestCommand}"
+                                Background="#4CAF50"/>
+                        <Button Classes="DialogButton"
+                                Content="Cancel"
+                                Command="{Binding CancelRestCommand}"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </Border>
+
+        <!-- ==================== SEARCHING INDICATOR ==================== -->
+        <Border Classes="DialogOverlay"
+                IsVisible="{Binding IsSearching}">
+            <Border Background="#2C2C2C"
+                    CornerRadius="10"
+                    Padding="30"
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Center">
+                <StackPanel Spacing="15" HorizontalAlignment="Center">
+                    <TextBlock Text="Searching..."
+                               FontSize="18"
+                               FontWeight="Bold"
+                               Foreground="White"
+                               HorizontalAlignment="Center"/>
+                    <ProgressBar IsIndeterminate="True"
+                                 Width="200"
+                                 Height="6"/>
+                    <TextBlock Text="Examining the area carefully..."
+                               FontSize="12"
+                               Foreground="#888888"
+                               HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Border>
+        </Border>
+    </Panel>
 </UserControl>
