@@ -93,7 +93,7 @@ public class FormationService
         _log.Information("Formation applied: Formation={Formation}, Bonuses={BonusCount}",
             formation, bonuses.Count);
 
-        return FormationResult.Success(formation, bonuses);
+        return FormationResult.CreateSuccess(formation, bonuses);
     }
 
     /// <summary>
@@ -464,7 +464,7 @@ public class FormationService
         _log.Information("Position swap successful: Actor1={Actor1Name}, Actor2={Actor2Name}, StaminaCost={Cost}",
             name1, name2, staminaCost * 2);
 
-        return SwapResult.Success(staminaCost * 2);
+        return SwapResult.CreateSuccess(staminaCost * 2);
     }
 
     /// <summary>
@@ -578,7 +578,7 @@ public class FormationResult
     public FormationType Formation { get; set; }
     public List<FormationBonus> Bonuses { get; set; } = new();
 
-    public static FormationResult Success(FormationType formation, List<FormationBonus> bonuses)
+    public static FormationResult CreateSuccess(FormationType formation, List<FormationBonus> bonuses)
     {
         return new FormationResult
         {
@@ -610,7 +610,7 @@ public class SwapResult
     public string Message { get; set; } = string.Empty;
     public int StaminaCost { get; set; }
 
-    public static SwapResult Success(int staminaCost)
+    public static SwapResult CreateSuccess(int staminaCost)
     {
         return new SwapResult
         {

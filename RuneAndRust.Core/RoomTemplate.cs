@@ -1,18 +1,6 @@
-namespace RuneAndRust.Core;
+using RuneAndRust.Core.Descriptors;
 
-/// <summary>
-/// Represents a room archetype for procedural generation (v0.10)
-/// Defines the category/role of a room in the dungeon graph
-/// </summary>
-public enum RoomArchetype
-{
-    EntryHall,      // Starting rooms for sectors
-    Corridor,       // Connector passages
-    Chamber,        // Large exploration spaces
-    Junction,       // Branching points (3+ connections)
-    BossArena,      // Final combat rooms
-    SecretRoom      // Hidden optional rooms
-}
+namespace RuneAndRust.Core;
 
 /// <summary>
 /// Represents the relative size of a room (v0.10)

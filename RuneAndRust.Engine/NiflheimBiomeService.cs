@@ -49,7 +49,7 @@ public class NiflheimBiomeService
 
         var report = new NiflheimPreparednessReport
         {
-            Characters = new List<CharacterPreparedness>()
+            Characters = new List<NiflheimCharacterPreparedness>()
         };
 
         foreach (var character in party)
@@ -57,7 +57,7 @@ public class NiflheimBiomeService
             // Note: GetIceResistancePercent() is a placeholder until full resistance system
             int iceResistance = 0; // TODO: Implement actual resistance lookup
 
-            var charPrep = new CharacterPreparedness
+            var charPrep = new NiflheimCharacterPreparedness
             {
                 CharacterName = character.Name,
                 IceResistancePercent = iceResistance,
@@ -344,12 +344,12 @@ public class NiflheimBiomeService
     /// Apply Ice damage to enemy and check for [Brittle] application.
     /// [Brittle] = Vulnerable to Physical damage (+50%).
     /// </summary>
-    public BrittlenessResult ApplyIceDamageToEnemy(Enemy enemy, int iceDamage, string sourceName)
+    public NiflheimBrittlenessResult ApplyIceDamageToEnemy(Enemy enemy, int iceDamage, string sourceName)
     {
         _log.Information("Applying {Damage} Ice damage to {Enemy} from {Source}",
             iceDamage, enemy.Name, sourceName);
 
-        var result = new BrittlenessResult
+        var result = new NiflheimBrittlenessResult
         {
             EnemyName = enemy.Name,
             IceDamageDealt = iceDamage
@@ -392,12 +392,12 @@ public class NiflheimBiomeService
     /// Apply Physical damage to [Brittle] enemy.
     /// Physical damage is amplified by +50% if enemy has [Brittle].
     /// </summary>
-    public PhysicalDamageResult ApplyPhysicalDamageToEnemy(Enemy enemy, int baseDamage, string sourceName)
+    public NiflheimPhysicalDamageResult ApplyPhysicalDamageToEnemy(Enemy enemy, int baseDamage, string sourceName)
     {
         _log.Information("Applying {Damage} Physical damage to {Enemy} from {Source}",
             baseDamage, enemy.Name, sourceName);
 
-        var result = new PhysicalDamageResult
+        var result = new NiflheimPhysicalDamageResult
         {
             EnemyName = enemy.Name,
             BaseDamage = baseDamage
@@ -482,12 +482,12 @@ public class NiflheimBiomeService
 
 public class NiflheimPreparednessReport
 {
-    public List<CharacterPreparedness> Characters { get; set; } = new();
+    public List<NiflheimCharacterPreparedness> Characters { get; set; } = new();
     public double AverageIceResistance { get; set; }
     public bool PartyIsAdequatelyPrepared { get; set; }
 }
 
-public class CharacterPreparedness
+public class NiflheimCharacterPreparedness
 {
     public string CharacterName { get; set; } = string.Empty;
     public int IceResistancePercent { get; set; }
@@ -519,7 +519,7 @@ public class SlipperyTerrainResult
     public string Message { get; set; } = string.Empty;
 }
 
-public class BrittlenessResult
+public class NiflheimBrittlenessResult
 {
     public string EnemyName { get; set; } = string.Empty;
     public int IceDamageDealt { get; set; }
@@ -529,7 +529,7 @@ public class BrittlenessResult
     public string Message { get; set; } = string.Empty;
 }
 
-public class PhysicalDamageResult
+public class NiflheimPhysicalDamageResult
 {
     public string EnemyName { get; set; } = string.Empty;
     public int BaseDamage { get; set; }

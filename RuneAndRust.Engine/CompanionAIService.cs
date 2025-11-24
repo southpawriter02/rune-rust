@@ -661,34 +661,4 @@ public class CompanionAIService
     }
 }
 
-/// <summary>
-/// Enum for attack types used in cover calculations
-/// </summary>
-public enum AttackType
-{
-    Melee,
-    Ranged,
-    Psychic
-}
 
-/// <summary>
-/// Enum for cover types
-/// </summary>
-public enum CoverType
-{
-    None,
-    Physical,
-    Metaphysical,
-    Both
-}
-
-/// <summary>
-/// Cover bonus calculation result
-/// </summary>
-public class CoverBonus
-{
-    public int DefenseBonus { get; set; }
-    public int ResolveBonus { get; set; }
-
-    public static CoverBonus None() => new CoverBonus();
-}

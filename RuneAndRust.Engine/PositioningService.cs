@@ -128,7 +128,7 @@ public class PositioningService
         _log.Information("Movement successful: Combatant={CombatantName}, NewPos={NewPos}, StaminaCost={Cost}",
             combatantName, targetPosition, staminaCost);
 
-        return MovementResult.Success($"Moved to {targetPosition}", staminaCost);
+        return MovementResult.CreateSuccess($"Moved to {targetPosition}", staminaCost);
     }
 
     /// <summary>
@@ -430,7 +430,7 @@ public class MovementResult
         StaminaCost = staminaCost;
     }
 
-    public static MovementResult Success(string message, int staminaCost)
+    public static MovementResult CreateSuccess(string message, int staminaCost)
     {
         return new MovementResult(true, message, staminaCost);
     }

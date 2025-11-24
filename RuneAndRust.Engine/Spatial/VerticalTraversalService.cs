@@ -99,7 +99,7 @@ public class VerticalTraversalService : IVerticalTraversalService
         if (connection.Type == VerticalConnectionType.Stairs)
         {
             _logger.Debug("Stairs traversal automatic success");
-            return TraversalResult.Success(
+            return TraversalResult.CreateSuccess(
                 connection.GetSuccessDescription(direction),
                 connection.LevelsSpanned);
         }
@@ -110,7 +110,7 @@ public class VerticalTraversalService : IVerticalTraversalService
             if (connection.IsPowered == true)
             {
                 _logger.Debug("Powered elevator traversal automatic success");
-                return TraversalResult.Success(
+                return TraversalResult.CreateSuccess(
                     "The elevator groans and shudders as it carries you " + direction + ".",
                     connection.LevelsSpanned);
             }
@@ -138,7 +138,7 @@ public class VerticalTraversalService : IVerticalTraversalService
                     checkResult.TotalRoll,
                     connection.TraversalDC);
 
-                return TraversalResult.Success(
+                return TraversalResult.CreateSuccess(
                     connection.GetSuccessDescription(direction),
                     connection.LevelsSpanned);
             }
@@ -200,7 +200,7 @@ public class VerticalTraversalService : IVerticalTraversalService
                 character.Name,
                 connection.ConnectionId);
 
-            return TraversalResult.Success(
+            return TraversalResult.CreateSuccess(
                 $"After {connection.ClearanceTimeMinutes ?? 10} minutes of effort, you clear the debris. The passage is now open.",
                 0);
         }
@@ -374,7 +374,7 @@ public class TraversalResult
     public int Damage { get; set; } = 0;
     public int LevelsTraversed { get; set; } = 0;
 
-    public static TraversalResult Success(string message, int levelsTraversed = 1)
+    public static TraversalResult CreateSuccess(string message, int levelsTraversed = 1)
     {
         return new TraversalResult
         {

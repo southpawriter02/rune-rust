@@ -160,7 +160,7 @@ public class CoordinatedMovementService
         _log.Information("Coordinated movement successful: Direction={Direction}, PartySize={Size}, TotalStaminaCost={Cost}",
             direction, party.Count, totalStaminaCost);
 
-        return CoordinatedResult.Success(direction, totalStaminaCost);
+        return CoordinatedResult.CreateSuccess(direction, totalStaminaCost);
     }
 
     /// <summary>
@@ -333,7 +333,7 @@ public class CoordinatedResult
     public Direction Direction { get; set; }
     public int TotalStaminaCost { get; set; }
 
-    public static CoordinatedResult Success(Direction direction, int totalStaminaCost)
+    public static CoordinatedResult CreateSuccess(Direction direction, int totalStaminaCost)
     {
         return new CoordinatedResult
         {

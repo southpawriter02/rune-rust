@@ -96,7 +96,7 @@ public class CompanionCommands
         _log.Information("Command queued: {CompanionName} will use {AbilityName} on {Target}",
             companion.DisplayName, abilityName, targetEnemy?.Name ?? "self");
 
-        return CommandResult.Success($"{companion.DisplayName} will use {abilityName} on {targetEnemy?.Name ?? "self"}");
+        return CommandResult.CreateSuccess($"{companion.DisplayName} will use {abilityName} on {targetEnemy?.Name ?? "self"}");
     }
 
     // ============================================
@@ -151,7 +151,7 @@ public class CompanionCommands
         _log.Information("Stance changed: {CompanionName} is now {Stance}",
             companion.DisplayName, newStance);
 
-        return CommandResult.Success($"{companion.DisplayName} is now {newStance.ToUpper()}");
+        return CommandResult.CreateSuccess($"{companion.DisplayName} is now {newStance.ToUpper()}");
     }
 
     // ============================================
@@ -193,7 +193,7 @@ public class CommandResult
     public bool Success { get; set; }
     public string Message { get; set; } = string.Empty;
 
-    public static CommandResult Success(string message)
+    public static CommandResult CreateSuccess(string message)
     {
         return new CommandResult { Success = true, Message = message };
     }

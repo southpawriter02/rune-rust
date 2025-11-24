@@ -27,7 +27,7 @@ public class CommandResult
     public string Message { get; set; } = string.Empty;
     public bool ShouldRedrawRoom { get; set; } = false; // For commands that change room state
 
-    public static CommandResult Success(string message, bool redrawRoom = false)
+    public static CommandResult CreateSuccess(string message, bool redrawRoom = false)
     {
         return new CommandResult
         {
