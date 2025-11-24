@@ -105,6 +105,10 @@
 .read Data/v0.40.2_challenge_sectors_schema.sql
 .read Data/v0.40.2_challenge_sectors_data.sql
 
+-- v0.40.3: Boss Gauntlet Mode
+.read Data/v0.40.3_boss_gauntlet_schema.sql
+.read Data/v0.40.3_boss_gauntlet_data.sql
+
 -- ==============================================================================
 -- Verification Queries
 -- ==============================================================================
