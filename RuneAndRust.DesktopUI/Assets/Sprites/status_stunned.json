@@ -1,0 +1,24 @@
+{
+  "Name": "status_stunned",
+  "PixelData": [
+    "                ",
+    "                ",
+    "   Y        Y   ",
+    "    Y      Y    ",
+    "     Y    Y     ",
+    "      YYYY      ",
+    "      YYYY      ",
+    "     YYYYYY     ",
+    "     YYYYYY     ",
+    "      YYYY      ",
+    "      YYYY      ",
+    "     Y    Y     ",
+    "    Y      Y    ",
+    "   Y        Y   ",
+    "                ",
+    "                "
+  ],
+  "Palette": {
+    "Y": "#FFD700"
+  }
+}

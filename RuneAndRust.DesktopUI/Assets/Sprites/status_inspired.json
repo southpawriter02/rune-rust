@@ -1,0 +1,24 @@
+{
+  "Name": "status_inspired",
+  "PixelData": [
+    "                ",
+    "       G        ",
+    "      GGG       ",
+    "     GGGGG      ",
+    "    GGGGGGG     ",
+    "   GGGGGGGGG    ",
+    "    GGGGGGG     ",
+    "     GGGGG      ",
+    "      GGG       ",
+    "    GGGGGGG     ",
+    "   GGGGGGGGG    ",
+    "  GGGGGGGGGGG   ",
+    "   GGGGGGGGG    ",
+    "    GGGGGGG     ",
+    "                ",
+    "                "
+  ],
+  "Palette": {
+    "G": "#32CD32"
+  }
+}

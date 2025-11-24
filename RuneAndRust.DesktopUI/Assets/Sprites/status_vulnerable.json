@@ -1,0 +1,24 @@
+{
+  "Name": "status_vulnerable",
+  "PixelData": [
+    "                ",
+    "     OOOO       ",
+    "    OOOOOO      ",
+    "   OOOOOOOO     ",
+    "   OO    OO     ",
+    "   OO    OO     ",
+    "   OOOOOOOO     ",
+    "    OOOOOO      ",
+    "   OOOOOOOO     ",
+    "   OO    OO     ",
+    "   OO    OO     ",
+    "   OOOOOOOO     ",
+    "    OOOOOO      ",
+    "     OOOO       ",
+    "                ",
+    "                "
+  ],
+  "Palette": {
+    "O": "#FFA500"
+  }
+}

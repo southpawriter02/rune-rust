@@ -39,6 +39,8 @@
                     HoveredPosition="{Binding HoveredPosition}"
                     HighlightedPositions="{Binding HighlightedPositions}"
                     UnitSprites="{Binding UnitSprites}"
+                    UnitData="{Binding UnitData}"
+                    StatusEffectIconService="{Binding StatusEffectIconService}"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"/>
 

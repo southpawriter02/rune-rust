@@ -4,9 +4,11 @@ using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Skia;
 using RuneAndRust.Core;
+using RuneAndRust.DesktopUI.Services;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace RuneAndRust.DesktopUI.Controls;
 
@@ -34,6 +36,12 @@ public class CombatGridControl : Control
 
     public static readonly StyledProperty<Dictionary<GridPosition, SKBitmap>?> UnitSpritesProperty =
         AvaloniaProperty.Register<CombatGridControl, Dictionary<GridPosition, SKBitmap>?>(nameof(UnitSprites));
+
+    public static readonly StyledProperty<Dictionary<GridPosition, Combatant>?> UnitDataProperty =
+        AvaloniaProperty.Register<CombatGridControl, Dictionary<GridPosition, Combatant>?>(nameof(UnitData));
+
+    public static readonly StyledProperty<IStatusEffectIconService?> StatusEffectIconServiceProperty =
+        AvaloniaProperty.Register<CombatGridControl, IStatusEffectIconService?>(nameof(StatusEffectIconService));
 
     // Properties
     public int Columns
@@ -72,6 +80,18 @@ public class CombatGridControl : Control
         set => SetValue(UnitSpritesProperty, value);
     }
 
+    public Dictionary<GridPosition, Combatant>? UnitData
+    {
+        get => GetValue(UnitDataProperty);
+        set => SetValue(UnitDataProperty, value);
+    }
+
+    public IStatusEffectIconService? StatusEffectIconService
+    {
+        get => GetValue(StatusEffectIconServiceProperty);
+        set => SetValue(StatusEffectIconServiceProperty, value);
+    }
+
     // Events
     public event EventHandler<GridPosition>? CellClicked;
     public event EventHandler<GridPosition>? CellHovered;
@@ -89,7 +109,9 @@ public class CombatGridControl : Control
             SelectedPositionProperty,
             HoveredPositionProperty,
             HighlightedPositionsProperty,
-            UnitSpritesProperty);
+            UnitSpritesProperty,
+            UnitDataProperty,
+            StatusEffectIconServiceProperty);
 
         AffectsMeasure<CombatGridControl>(
             ColumnsProperty,
@@ -266,6 +288,182 @@ public class CombatGridControl : Control
             var y = cellRect.Top + (cellRect.Height - spriteHeight) / 2;
 
             canvas.DrawBitmap(sprite, x, y);
+
+            // Draw HP bar and status effects if unit data is available
+            if (UnitData != null && UnitData.TryGetValue(pos, out var unit))
+            {
+                DrawHPBar(canvas, cellRect, unit);
+                DrawStatusEffects(canvas, cellRect, unit);
+            }
+        }
+    }
+
+    private void DrawHPBar(SKCanvas canvas, SKRect cellRect, Combatant unit)
+    {
+        const float hpBarHeight = 6.0f;
+        const float hpBarWidth = 48.0f;
+        const float hpBarYOffset = 8.0f; // Above the unit sprite
+
+        // Calculate HP bar position (centered horizontally, above sprite)
+        var barX = cellRect.Left + (cellRect.Width - hpBarWidth) / 2;
+        var barY = cellRect.Top + hpBarYOffset;
+
+        // HP percentage
+        var hpPercent = unit.Character.CurrentHP / (float)unit.Character.MaxHP;
+        var fillWidth = hpBarWidth * hpPercent;
+
+        // Background (black border)
+        using var borderPaint = new SKPaint
+        {
+            Style = SKPaintStyle.Stroke,
+            Color = SKColors.Black,
+            StrokeWidth = 1.0f,
+            IsAntialias = true
+        };
+        canvas.DrawRect(barX, barY, hpBarWidth, hpBarHeight, borderPaint);
+
+        // HP bar fill color based on percentage
+        var fillColor = hpPercent switch
+        {
+            > 0.6f => new SKColor(50, 205, 50),   // Green (healthy)
+            > 0.3f => new SKColor(255, 165, 0),   // Orange (wounded)
+            _ => new SKColor(220, 20, 60)         // Crimson (critical)
+        };
+
+        // Fill
+        using var fillPaint = new SKPaint
+        {
+            Style = SKPaintStyle.Fill,
+            Color = fillColor,
+            IsAntialias = true
+        };
+        canvas.DrawRect(barX, barY, fillWidth, hpBarHeight, fillPaint);
+
+        // HP text (small numbers)
+        using var textPaint = new SKPaint
+        {
+            Color = SKColors.White,
+            TextSize = 9.0f,
+            IsAntialias = true,
+            Typeface = SKTypeface.FromFamilyName("Arial", SKFontStyle.Bold),
+            TextAlign = SKTextAlign.Center
+        };
+
+        var hpText = $"{unit.Character.CurrentHP}/{unit.Character.MaxHP}";
+        var textX = barX + hpBarWidth / 2;
+        var textY = barY + hpBarHeight + 10.0f; // Below the bar
+
+        // Text shadow for readability
+        using var shadowPaint = new SKPaint
+        {
+            Color = SKColors.Black,
+            TextSize = 9.0f,
+            IsAntialias = true,
+            Typeface = SKTypeface.FromFamilyName("Arial", SKFontStyle.Bold),
+            TextAlign = SKTextAlign.Center
+        };
+        canvas.DrawText(hpText, textX + 1, textY + 1, shadowPaint);
+        canvas.DrawText(hpText, textX, textY, textPaint);
+    }
+
+    private void DrawStatusEffects(SKCanvas canvas, SKRect cellRect, Combatant unit)
+    {
+        if (StatusEffectIconService == null || unit.ActiveEffects == null || unit.ActiveEffects.Count == 0)
+            return;
+
+        const int iconSize = 16;
+        const int iconSpacing = 2;
+        const int maxVisibleIcons = 6;
+
+        // Position icons in bottom-left corner of cell
+        var startX = cellRect.Left + 4;
+        var startY = cellRect.Bottom - iconSize - 4;
+
+        var visibleEffects = unit.ActiveEffects.Take(maxVisibleIcons).ToList();
+        var hasMoreEffects = unit.ActiveEffects.Count > maxVisibleIcons;
+
+        for (int i = 0; i < visibleEffects.Count; i++)
+        {
+            var effect = visibleEffects[i];
+            var icon = StatusEffectIconService.GetStatusEffectIcon(effect.EffectType);
+
+            if (icon != null)
+            {
+                var iconX = startX + i * (iconSize + iconSpacing);
+                var iconY = startY;
+
+                // Draw icon
+                var destRect = new SKRect(iconX, iconY, iconX + iconSize, iconY + iconSize);
+                canvas.DrawBitmap(icon, destRect);
+
+                // Draw duration number overlay
+                if (effect.DurationRemaining > 0)
+                {
+                    using var durationPaint = new SKPaint
+                    {
+                        Color = SKColors.White,
+                        TextSize = 10.0f,
+                        IsAntialias = true,
+                        Typeface = SKTypeface.FromFamilyName("Arial", SKFontStyle.Bold),
+                        TextAlign = SKTextAlign.Center
+                    };
+
+                    // Black shadow for readability
+                    using var shadowPaint = new SKPaint
+                    {
+                        Color = SKColors.Black,
+                        TextSize = 10.0f,
+                        IsAntialias = true,
+                        Typeface = SKTypeface.FromFamilyName("Arial", SKFontStyle.Bold),
+                        TextAlign = SKTextAlign.Center
+                    };
+
+                    var durationText = effect.DurationRemaining.ToString();
+                    var textX = iconX + iconSize / 2.0f;
+                    var textY = iconY + iconSize - 2.0f;
+
+                    canvas.DrawText(durationText, textX + 0.5f, textY + 0.5f, shadowPaint);
+                    canvas.DrawText(durationText, textX, textY, durationPaint);
+                }
+
+                // Draw category color border
+                var categoryColor = StatusEffectIconService.GetCategoryColor(effect.Category);
+                using var borderPaint = new SKPaint
+                {
+                    Style = SKPaintStyle.Stroke,
+                    Color = categoryColor,
+                    StrokeWidth = 1.5f,
+                    IsAntialias = true
+                };
+                canvas.DrawRect(destRect, borderPaint);
+            }
+        }
+
+        // Draw "+" indicator if more effects exist
+        if (hasMoreEffects)
+        {
+            var moreIconX = startX + maxVisibleIcons * (iconSize + iconSpacing);
+            var moreIconY = startY;
+
+            // Background circle
+            using var circlePaint = new SKPaint
+            {
+                Style = SKPaintStyle.Fill,
+                Color = new SKColor(64, 64, 64, 200),
+                IsAntialias = true
+            };
+            canvas.DrawCircle(moreIconX + iconSize / 2.0f, moreIconY + iconSize / 2.0f, iconSize / 2.0f, circlePaint);
+
+            // "+" text
+            using var plusPaint = new SKPaint
+            {
+                Color = SKColors.White,
+                TextSize = 12.0f,
+                IsAntialias = true,
+                Typeface = SKTypeface.FromFamilyName("Arial", SKFontStyle.Bold),
+                TextAlign = SKTextAlign.Center
+            };
+            canvas.DrawText("+", moreIconX + iconSize / 2.0f, moreIconY + iconSize / 2.0f + 4.0f, plusPaint);
         }
     }
 

@@ -26,6 +26,7 @@ public class CombatViewModel : ViewModelBase
     private readonly IDialogService _dialogService;
     private readonly CombatEngine _combatEngine;
     private readonly EnemyAI _enemyAI;
+    private readonly IStatusEffectIconService _statusEffectIconService;
 
     private CombatState? _combatState;
     private int _columns = 3;
@@ -34,6 +35,7 @@ public class CombatViewModel : ViewModelBase
     private GridPosition? _hoveredPosition;
     private HashSet<GridPosition> _highlightedPositions = new();
     private Dictionary<GridPosition, SKBitmap> _unitSprites = new();
+    private Dictionary<GridPosition, Combatant> _unitData = new();
     private string _statusMessage = "Combat will begin once initialized...";
     private TargetingMode _targetingMode = TargetingMode.None;
     private string? _selectedAbilityName;
@@ -108,6 +110,21 @@ public class CombatViewModel : ViewModelBase
     }
 
     /// <summary>
+    /// Gets the dictionary of unit data (Combatant objects) at grid positions.
+    /// Includes HP, status effects, and other combat-relevant data.
+    /// </summary>
+    public Dictionary<GridPosition, Combatant> UnitData
+    {
+        get => _unitData;
+        private set => this.RaiseAndSetIfChanged(ref _unitData, value);
+    }
+
+    /// <summary>
+    /// Gets the status effect icon service.
+    /// </summary>
+    public IStatusEffectIconService StatusEffectIconService => _statusEffectIconService;
+
+    /// <summary>
     /// Gets the current status message.
     /// </summary>
     public string StatusMessage
@@ -180,12 +197,14 @@ public class CombatViewModel : ViewModelBase
         ISpriteService spriteService,
         IDialogService dialogService,
         CombatEngine combatEngine,
-        EnemyAI enemyAI)
+        EnemyAI enemyAI,
+        IStatusEffectIconService statusEffectIconService)
     {
         _spriteService = spriteService ?? throw new ArgumentNullException(nameof(spriteService));
         _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
         _combatEngine = combatEngine ?? throw new ArgumentNullException(nameof(combatEngine));
         _enemyAI = enemyAI ?? throw new ArgumentNullException(nameof(enemyAI));
+        _statusEffectIconService = statusEffectIconService ?? throw new ArgumentNullException(nameof(statusEffectIconService));
 
         // Observable for whether it's player's turn
         var canExecutePlayerAction = this.WhenAnyValue(x => x.IsPlayerTurn);
@@ -562,8 +581,9 @@ public class CombatViewModel : ViewModelBase
         // Update columns from grid
         Columns = _combatState.Grid.Columns;
 
-        // Rebuild unit sprites from grid
+        // Rebuild unit sprites and data from grid
         _unitSprites.Clear();
+        _unitData.Clear();
 
         // Add player
         if (_combatState.Player.CurrentPosition != null)
@@ -572,6 +592,7 @@ public class CombatViewModel : ViewModelBase
             if (sprite != null)
             {
                 _unitSprites[_combatState.Player.CurrentPosition.Value] = sprite;
+                _unitData[_combatState.Player.CurrentPosition.Value] = _combatState.Player;
             }
         }
 
@@ -583,10 +604,12 @@ public class CombatViewModel : ViewModelBase
             if (sprite != null)
             {
                 _unitSprites[enemy.CurrentPosition!.Value] = sprite;
+                _unitData[enemy.CurrentPosition!.Value] = enemy;
             }
         }
 
         this.RaisePropertyChanged(nameof(UnitSprites));
+        this.RaisePropertyChanged(nameof(UnitData));
     }
 
     private string GetEnemySpriteNameFrom(Enemy enemy)
