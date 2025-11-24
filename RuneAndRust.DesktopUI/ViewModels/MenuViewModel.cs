@@ -1,3 +1,4 @@
+using RuneAndRust.DesktopUI.Services;
 using System;
 using System.Windows.Input;
 using ReactiveUI;
@@ -10,6 +11,8 @@ namespace RuneAndRust.DesktopUI.ViewModels;
 /// </summary>
 public class MenuViewModel : ViewModelBase
 {
+    private readonly INavigationService? _navigationService;
+    private readonly ISpriteService? _spriteService;
     /// <summary>
     /// Command to start a new game.
     /// </summary>
@@ -36,6 +39,11 @@ public class MenuViewModel : ViewModelBase
     public ICommand AchievementsCommand { get; }
 
     /// <summary>
+    /// Command to view sprite demo.
+    /// </summary>
+    public ICommand SpriteDemoCommand { get; }
+
+    /// <summary>
     /// Command to exit the application.
     /// </summary>
     public ICommand ExitCommand { get; }
@@ -48,7 +56,7 @@ public class MenuViewModel : ViewModelBase
     /// <summary>
     /// Gets the application version.
     /// </summary>
-    public string Version => "v0.43.1 - Desktop UI Foundation";
+    public string Version => "v0.43.2 - Sprite System & Asset Pipeline";
 
     public MenuViewModel()
     {
@@ -59,7 +67,17 @@ public class MenuViewModel : ViewModelBase
         LoadGameCommand = ReactiveCommand.Create(OnLoadGame);
         SettingsCommand = ReactiveCommand.Create(OnSettings);
         AchievementsCommand = ReactiveCommand.Create(OnAchievements);
+        SpriteDemoCommand = ReactiveCommand.Create(OnSpriteDemo);
         ExitCommand = ReactiveCommand.Create(OnExit);
+    }
+
+    /// <summary>
+    /// Initializes a new instance with navigation support.
+    /// </summary>
+    public MenuViewModel(INavigationService navigationService, ISpriteService spriteService) : this()
+    {
+        _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
+        _spriteService = spriteService ?? throw new ArgumentNullException(nameof(spriteService));
     }
 
     private void OnNewGame()
@@ -90,6 +108,21 @@ public class MenuViewModel : ViewModelBase
     {
         // Placeholder - will show achievements in v0.43.15
         Console.WriteLine("[MENU] Achievements selected");
+    }
+
+    private void OnSpriteDemo()
+    {
+        if (_navigationService != null && _spriteService != null)
+        {
+            // Navigate to sprite demo
+            var spriteDemoViewModel = new SpriteDemoViewModel(_spriteService);
+            _navigationService.NavigateTo(spriteDemoViewModel);
+            Console.WriteLine("[MENU] Navigated to Sprite Demo");
+        }
+        else
+        {
+            Console.WriteLine("[MENU] Sprite Demo selected (navigation not available)");
+        }
     }
 
     private void OnExit()

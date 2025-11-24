@@ -14,5 +14,8 @@
         <DataTemplate DataType="vm:MenuViewModel">
             <views:MenuView />
         </DataTemplate>
+        <DataTemplate DataType="vm:SpriteDemoViewModel">
+            <views:SpriteDemoView />
+        </DataTemplate>
     </Application.DataTemplates>
 </Application>

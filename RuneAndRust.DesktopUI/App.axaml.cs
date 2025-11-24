@@ -7,6 +7,8 @@ using RuneAndRust.DesktopUI.ViewModels;
 using RuneAndRust.DesktopUI.Views;
 using Serilog;
 using System;
+using System.IO;
+using System.Linq;
 
 namespace RuneAndRust.DesktopUI;
 
@@ -42,7 +44,7 @@ public partial class App : Application
             .WriteTo.Console()
             .CreateLogger();
 
-        Log.Information("Rune & Rust Desktop UI v0.43.1 starting...");
+        Log.Information("Rune & Rust Desktop UI v0.43.2 starting...");
 
         try
         {
@@ -52,6 +54,9 @@ public partial class App : Application
             Services = services.BuildServiceProvider();
 
             Log.Information("Service container configured successfully");
+
+            // Load sprites
+            LoadSprites(Services);
 
             // Create and show main window
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
@@ -82,19 +87,38 @@ public partial class App : Application
         // Logging
         services.AddSingleton<ILogger>(Log.Logger);
 
-        // UI Services (new in v0.43.1)
+        // UI Services (v0.43.1)
         services.AddSingleton<INavigationService, NavigationService>();
         services.AddSingleton<IConfigurationService, ConfigurationService>();
         services.AddSingleton<IDialogService, DialogService>();
 
+        // Sprite Services (v0.43.2)
+        services.AddSingleton<ISpriteService, SpriteService>();
+
         // ViewModels
         services.AddTransient<MainWindowViewModel>();
         services.AddTransient<MenuViewModel>();
+        services.AddTransient<SpriteDemoViewModel>();
 
         // Note: Engine services (CombatEngine, DungeonGenerator, etc.) will be registered
         // in later specs when they are actually used by the UI.
         // For v0.43.1, we're establishing the foundation only.
 
         Log.Debug("Registered {ServiceCount} service types", services.Count);
+    }
+
+    /// <summary>
+    /// Loads sprites from the Assets/Sprites directory.
+    /// </summary>
+    private void LoadSprites(IServiceProvider services)
+    {
+        var spriteService = services.GetRequiredService<ISpriteService>();
+        var spritePath = Path.Combine(AppContext.BaseDirectory, "Assets", "Sprites");
+
+        Log.Information("Loading sprites from {Path}", spritePath);
+        spriteService.LoadSpritesFromDirectory(spritePath);
+
+        var spriteCount = spriteService.GetAvailableSprites().Count();
+        Log.Information("Loaded {Count} sprites", spriteCount);
     }
 }
