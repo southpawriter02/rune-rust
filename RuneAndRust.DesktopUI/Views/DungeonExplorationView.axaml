@@ -8,19 +8,333 @@
         <vm:DungeonExplorationViewModel/>
     </Design.DataContext>
 
-    <Grid>
-        <StackPanel VerticalAlignment="Center"
-                    HorizontalAlignment="Center"
-                    Spacing="20">
-            <TextBlock Text="{Binding Title}"
-                       FontSize="48"
-                       FontWeight="Bold"
-                       HorizontalAlignment="Center"/>
-            <TextBlock Text="{Binding PlaceholderMessage}"
-                       FontSize="18"
-                       Opacity="0.7"
-                       HorizontalAlignment="Center"/>
-        </StackPanel>
-    </Grid>
+    <UserControl.Styles>
+        <!-- Exit button style -->
+        <Style Selector="Button.ExitButton">
+            <Setter Property="Margin" Value="0,4"/>
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+        </Style>
 
+        <!-- Action button style -->
+        <Style Selector="Button.ActionButton">
+            <Setter Property="Height" Value="45"/>
+            <Setter Property="Margin" Value="0,4"/>
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        </Style>
+
+        <!-- Feature card style -->
+        <Style Selector="Border.FeatureCard">
+            <Setter Property="Background" Value="#1C1C1C"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Padding" Value="10"/>
+            <Setter Property="Margin" Value="0,4"/>
+        </Style>
+    </UserControl.Styles>
+
+    <Grid ColumnDefinitions="*,280" Margin="15">
+        <!-- Main Room Display -->
+        <Border Grid.Column="0"
+                Background="#2C2C2C"
+                Padding="20"
+                Margin="0,0,10,0"
+                CornerRadius="8">
+            <Grid RowDefinitions="Auto,*,Auto">
+                <!-- Room Header -->
+                <StackPanel Grid.Row="0" Margin="0,0,0,15">
+                    <!-- Biome & Layer -->
+                    <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,0,0,5">
+                        <Border Background="{Binding BiomeColor}"
+                                CornerRadius="4"
+                                Padding="8,3">
+                            <TextBlock Text="{Binding BiomeName}"
+                                       FontSize="11"
+                                       FontWeight="Bold"
+                                       Foreground="White"/>
+                        </Border>
+                        <TextBlock Text="{Binding LayerDisplay}"
+                                   FontSize="11"
+                                   Foreground="#888888"
+                                   VerticalAlignment="Center"/>
+                    </StackPanel>
+
+                    <!-- Room Name -->
+                    <TextBlock Text="{Binding RoomName}"
+                               FontSize="26"
+                               FontWeight="Bold"
+                               Foreground="White"/>
+
+                    <!-- Hazard Warning -->
+                    <Border Background="#8B0000"
+                            CornerRadius="4"
+                            Padding="10,5"
+                            Margin="0,8,0,0"
+                            IsVisible="{Binding HazardWarning, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="!" FontWeight="Bold" Foreground="#FF6B6B"/>
+                            <TextBlock Text="{Binding HazardWarning}"
+                                       Foreground="#FF6B6B"
+                                       TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <!-- Room Content -->
+                <ScrollViewer Grid.Row="1">
+                    <StackPanel Spacing="15">
+                        <!-- Room Description -->
+                        <TextBlock Text="{Binding RoomDescription}"
+                                   FontSize="14"
+                                   TextWrapping="Wrap"
+                                   Foreground="#DDDDDD"
+                                   LineHeight="22"/>
+
+                        <!-- Room Features -->
+                        <Border Background="#1C1C1C"
+                                Padding="12"
+                                CornerRadius="6"
+                                IsVisible="{Binding RoomFeatures.Count}">
+                            <StackPanel>
+                                <TextBlock Text="Features"
+                                           FontWeight="Bold"
+                                           Foreground="#4A90E2"
+                                           FontSize="13"
+                                           Margin="0,0,0,8"/>
+
+                                <ItemsControl ItemsSource="{Binding RoomFeatures}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate DataType="vm:RoomFeatureViewModel">
+                                            <Border Classes="FeatureCard">
+                                                <Grid ColumnDefinitions="Auto,*,Auto">
+                                                    <!-- Icon -->
+                                                    <Border Grid.Column="0"
+                                                            Width="28"
+                                                            Height="28"
+                                                            CornerRadius="4"
+                                                            Background="#3C3C3C"
+                                                            Margin="0,0,10,0">
+                                                        <TextBlock Text="{Binding Icon}"
+                                                                   HorizontalAlignment="Center"
+                                                                   VerticalAlignment="Center"
+                                                                   FontWeight="Bold"/>
+                                                    </Border>
+
+                                                    <!-- Text -->
+                                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                        <TextBlock Text="{Binding Name}"
+                                                                   FontWeight="SemiBold"
+                                                                   FontSize="12"/>
+                                                        <TextBlock Text="{Binding Description}"
+                                                                   FontSize="11"
+                                                                   Foreground="#AAAAAA"
+                                                                   TextWrapping="Wrap"/>
+                                                    </StackPanel>
+
+                                                    <!-- Interact button -->
+                                                    <Button Grid.Column="2"
+                                                            Content="Interact"
+                                                            Command="{Binding $parent[UserControl].((vm:DungeonExplorationViewModel)DataContext).InteractCommand}"
+                                                            CommandParameter="{Binding}"
+                                                            IsVisible="{Binding IsInteractable}"
+                                                            Padding="8,4"
+                                                            VerticalAlignment="Center"/>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Available Exits -->
+                        <Border Background="#1C1C1C"
+                                Padding="12"
+                                CornerRadius="6">
+                            <StackPanel>
+                                <TextBlock Text="Exits"
+                                           FontWeight="Bold"
+                                           Foreground="#4A90E2"
+                                           FontSize="13"
+                                           Margin="0,0,0,8"/>
+
+                                <ItemsControl ItemsSource="{Binding AvailableExits}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate DataType="vm:ExitViewModel">
+                                            <Button Classes="ExitButton"
+                                                    Command="{Binding $parent[UserControl].((vm:DungeonExplorationViewModel)DataContext).MoveCommand}"
+                                                    CommandParameter="{Binding}">
+                                                <StackPanel Orientation="Horizontal" Spacing="10">
+                                                    <TextBlock Text="{Binding DisplayName}"
+                                                               FontWeight="SemiBold"
+                                                               VerticalAlignment="Center"/>
+                                                    <TextBlock Text="{Binding TraversalRequirements}"
+                                                               FontSize="10"
+                                                               Foreground="#888888"
+                                                               VerticalAlignment="Center"
+                                                               IsVisible="{Binding IsVertical}"/>
+                                                </StackPanel>
+                                            </Button>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+
+                                <TextBlock Text="No exits available"
+                                           FontStyle="Italic"
+                                           Foreground="#666666"
+                                           IsVisible="{Binding !AvailableExits.Count}"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+
+                <!-- Status Bar -->
+                <Border Grid.Row="2"
+                        Background="#1C1C1C"
+                        CornerRadius="4"
+                        Padding="12,8"
+                        Margin="0,10,0,0"
+                        IsVisible="{Binding StatusMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                    <TextBlock Text="{Binding StatusMessage}"
+                               FontSize="12"
+                               Foreground="#4CAF50"
+                               TextWrapping="Wrap"/>
+                </Border>
+            </Grid>
+        </Border>
+
+        <!-- Actions Sidebar -->
+        <Border Grid.Column="1"
+                Background="#2C2C2C"
+                Padding="15"
+                CornerRadius="8">
+            <StackPanel Spacing="8">
+                <!-- Character Stats -->
+                <TextBlock Text="Status"
+                           FontSize="14"
+                           FontWeight="Bold"
+                           Foreground="White"
+                           Margin="0,0,0,5"/>
+
+                <Border Background="#1C1C1C" CornerRadius="4" Padding="10">
+                    <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="Auto,*">
+                        <!-- HP -->
+                        <TextBlock Grid.Row="0" Grid.Column="0"
+                                   Text="HP:"
+                                   Foreground="#888888"
+                                   Margin="0,0,10,4"/>
+                        <TextBlock Grid.Row="0" Grid.Column="1"
+                                   Text="{Binding HPDisplay}"
+                                   Foreground="#4CAF50"
+                                   FontWeight="Bold"/>
+
+                        <!-- Stamina -->
+                        <TextBlock Grid.Row="1" Grid.Column="0"
+                                   Text="Stamina:"
+                                   Foreground="#888888"
+                                   Margin="0,0,10,4"/>
+                        <TextBlock Grid.Row="1" Grid.Column="1"
+                                   Text="{Binding StaminaDisplay}"
+                                   Foreground="#4A90E2"
+                                   FontWeight="Bold"/>
+
+                        <!-- Stress -->
+                        <TextBlock Grid.Row="2" Grid.Column="0"
+                                   Text="Stress:"
+                                   Foreground="#888888"
+                                   Margin="0,0,10,0"/>
+                        <TextBlock Grid.Row="2" Grid.Column="1"
+                                   Text="{Binding StressDisplay}"
+                                   Foreground="#FF6B6B"
+                                   FontWeight="Bold"/>
+                    </Grid>
+                </Border>
+
+                <Separator Background="#3C3C3C" Margin="0,8"/>
+
+                <!-- Actions -->
+                <TextBlock Text="Actions"
+                           FontSize="14"
+                           FontWeight="Bold"
+                           Foreground="White"
+                           Margin="0,0,0,5"/>
+
+                <!-- Search Room -->
+                <Button Classes="ActionButton"
+                        Command="{Binding SearchRoomCommand}"
+                        IsEnabled="{Binding !IsSearched}">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="Search Room" FontWeight="SemiBold"/>
+                        <TextBlock Text="(S)" Foreground="#888888" FontSize="10" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+
+                <!-- Rest -->
+                <Button Classes="ActionButton"
+                        Command="{Binding RestCommand}">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="Rest" FontWeight="SemiBold"/>
+                        <TextBlock Text="(R)" Foreground="#888888" FontSize="10" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+
+                <!-- Engage (if enemies present) -->
+                <Button Classes="ActionButton"
+                        Command="{Binding EngageCommand}"
+                        IsVisible="{Binding HasEnemies}"
+                        Background="#8B0000">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="Engage Enemies" FontWeight="SemiBold" Foreground="White"/>
+                        <TextBlock Text="!" Foreground="#FF6B6B" FontWeight="Bold"/>
+                    </StackPanel>
+                </Button>
+
+                <Separator Background="#3C3C3C" Margin="0,8"/>
+
+                <!-- Quick Access -->
+                <TextBlock Text="Quick Access"
+                           FontSize="14"
+                           FontWeight="Bold"
+                           Foreground="White"
+                           Margin="0,0,0,5"/>
+
+                <!-- Character Sheet -->
+                <Button Classes="ActionButton"
+                        Command="{Binding ViewCharacterCommand}">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="Character" FontWeight="SemiBold"/>
+                        <TextBlock Text="(C)" Foreground="#888888" FontSize="10" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+
+                <!-- Inventory -->
+                <Button Classes="ActionButton"
+                        Command="{Binding ViewInventoryCommand}">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="Inventory" FontWeight="SemiBold"/>
+                        <TextBlock Text="(I)" Foreground="#888888" FontSize="10" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+
+                <!-- Sanctuary indicator -->
+                <Border Background="#2E4A2E"
+                        CornerRadius="4"
+                        Padding="10"
+                        Margin="0,10,0,0"
+                        IsVisible="{Binding IsSanctuary}">
+                    <StackPanel>
+                        <TextBlock Text="Sanctuary"
+                                   FontWeight="Bold"
+                                   Foreground="#4CAF50"
+                                   HorizontalAlignment="Center"/>
+                        <TextBlock Text="Safe to rest here"
+                                   FontSize="10"
+                                   Foreground="#88CC88"
+                                   HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </Border>
+    </Grid>
 </UserControl>
