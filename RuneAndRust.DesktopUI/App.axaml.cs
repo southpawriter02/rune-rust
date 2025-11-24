@@ -45,7 +45,7 @@ public partial class App : Application
             .WriteTo.Console()
             .CreateLogger();
 
-        Log.Information("Rune & Rust Desktop UI v0.43.8 starting...");
+        Log.Information("Rune & Rust Desktop UI v0.43.12 starting...");
 
         try
         {
@@ -121,6 +121,7 @@ public partial class App : Application
         services.AddTransient<CharacterSheetViewModel>();
         services.AddTransient<InventoryViewModel>();
         services.AddTransient<DungeonExplorationViewModel>();
+        services.AddTransient<SpecializationTreeViewModel>();
 
         // Note: Additional engine services will be registered as needed in future specs.
 
