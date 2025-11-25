@@ -1,6 +1,5 @@
 using Microsoft.Data.Sqlite;
-// TODO: Fix circular dependency - CraftingRepository should not use Engine.Crafting types
-// using RuneAndRust.Engine.Crafting;
+using RuneAndRust.Core.Crafting;
 using Serilog;
 using System.Text.Json;
 
