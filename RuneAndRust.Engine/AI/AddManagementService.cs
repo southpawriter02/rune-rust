@@ -247,12 +247,12 @@ public class AddManagementService : IAddManagementService
         // TODO: Cross-reference with actual enemy list in battlefield state
         // For now, return empty list (placeholder)
         var livingAdds = state.Enemies
-            .Where(e => summonedAddIds.Contains(e.Id) && e.CurrentHP > 0)
+            .Where(e => summonedAddIds.Contains(e.EnemyID) && e.CurrentHP > 0)
             .ToList();
 
         _logger.LogDebug(
             "Boss {BossId} has {Count} living adds",
-            boss.Id,
+            boss.EnemyID,
             livingAdds.Count);
 
         return livingAdds;

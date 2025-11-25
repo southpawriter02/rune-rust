@@ -183,7 +183,7 @@ public class RealityTearService
     {
         // Find all valid warp destinations
         var validTiles = grid.Tiles.Values
-            .Where(t => t.IsPassable && !t.IsOccupied)
+            .Where(t => t.IsPassable() && !t.IsOccupied)
             .Where(t =>
             {
                 var distance = CalculateManhattanDistance(

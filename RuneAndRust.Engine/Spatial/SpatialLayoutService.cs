@@ -1,7 +1,7 @@
 using RuneAndRust.Core;
 using RuneAndRust.Core.Spatial;
 using Serilog;
-using Direction = RuneAndRust.Core.Direction;
+using CoreDirection = RuneAndRust.Core.Direction;
 
 namespace RuneAndRust.Engine.Spatial;
 
@@ -79,7 +79,7 @@ public class SpatialLayoutService : ISpatialLayoutService
                 // Calculate new position based on direction and vertical probability
                 var newPosition = CalculateNewPosition(
                     currentPosition,
-                    edge.FromDirection ?? Direction.North,
+                    edge.FromDirection ?? CoreDirection.North,
                     currentNode,
                     edge.To,
                     rng);
@@ -113,7 +113,7 @@ public class SpatialLayoutService : ISpatialLayoutService
     /// </summary>
     private RoomPosition CalculateNewPosition(
         RoomPosition current,
-        Direction direction,
+        CoreDirection direction,
         DungeonNode fromNode,
         DungeonNode toNode,
         Random rng)
@@ -121,10 +121,10 @@ public class SpatialLayoutService : ISpatialLayoutService
         // Step 1: Calculate horizontal movement based on direction
         var newPosition = direction switch
         {
-            Direction.North => new RoomPosition(current.X, current.Y + 1, current.Z),
-            Direction.South => new RoomPosition(current.X, current.Y - 1, current.Z),
-            Direction.East => new RoomPosition(current.X + 1, current.Y, current.Z),
-            Direction.West => new RoomPosition(current.X - 1, current.Y, current.Z),
+            CoreDirection.North => new RoomPosition(current.X, current.Y + 1, current.Z),
+            CoreDirection.South => new RoomPosition(current.X, current.Y - 1, current.Z),
+            CoreDirection.East => new RoomPosition(current.X + 1, current.Y, current.Z),
+            CoreDirection.West => new RoomPosition(current.X - 1, current.Y, current.Z),
             _ => current
         };
 

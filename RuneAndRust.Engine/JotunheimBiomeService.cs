@@ -2,7 +2,7 @@ using RuneAndRust.Core;
 using RuneAndRust.Core.AI;
 using RuneAndRust.Persistence;
 using Serilog;
-using Direction = RuneAndRust.Core.Direction;
+using CoreDirection = RuneAndRust.Core.Direction;
 
 namespace RuneAndRust.Engine;
 
@@ -251,7 +251,7 @@ public class JotunheimBiomeService
     private void ProcessSteamVentEruption(BattlefieldTile vent, BattlefieldState battlefield)
     {
         // Get vent facing direction (from special_rules or default)
-        var direction = GetVentDirection(vent) ?? Direction.North;
+        var direction = GetVentDirection(vent) ?? CoreDirection.North;
 
         var affectedTiles = battlefield.Grid.GetConeArea(vent.Position, direction, STEAM_VENT_CONE_LENGTH);
         var affectedCombatants = affectedTiles
@@ -295,11 +295,11 @@ public class JotunheimBiomeService
         }
     }
 
-    private Direction? GetVentDirection(BattlefieldTile vent)
+    private CoreDirection? GetVentDirection(BattlefieldTile vent)
     {
         // TODO: Parse from special_rules JSON if needed
         // For now, default to North
-        return Direction.North;
+        return CoreDirection.North;
     }
 
     #endregion
@@ -522,15 +522,15 @@ public class JotunheimBiomeService
                 continue;
             }
 
-            // Get belt direction (from special_rules or default) - convert GridDirection to Direction
+            // Get belt direction (from special_rules or default) - convert GridDirection to CoreDirection
             var gridDirection = _assemblyLineBelts.GetValueOrDefault(belt.Position, GridDirection.East);
             var direction = gridDirection switch
             {
-                GridDirection.North => Direction.North,
-                GridDirection.South => Direction.South,
-                GridDirection.East => Direction.East,
-                GridDirection.West => Direction.West,
-                _ => Direction.East
+                GridDirection.North => CoreDirection.North,
+                GridDirection.South => CoreDirection.South,
+                GridDirection.East => CoreDirection.East,
+                GridDirection.West => CoreDirection.West,
+                _ => CoreDirection.East
             };
 
             foreach (var combatant in combatants)

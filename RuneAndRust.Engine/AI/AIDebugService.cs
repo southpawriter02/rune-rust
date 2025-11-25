@@ -169,7 +169,7 @@ public class AIDebugService : IAIDebugService
         var log = new DecisionLog
         {
             Timestamp = DateTime.UtcNow,
-            EnemyId = enemy.Id,
+            EnemyId = enemy.EnemyID,
             EnemyName = enemy.Name,
             Archetype = enemy.AIArchetype,
             TargetName = targetName,
