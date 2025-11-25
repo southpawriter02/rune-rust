@@ -187,7 +187,7 @@ public class RealityTearService
             .Where(t =>
             {
                 var distance = CalculateManhattanDistance(
-                    originTile.Column, originTile.Row, t.Position.Column, t.Position.Row);
+                    originTile.Column, (int)originTile.Row, t.Position.Column, (int)t.Position.Row);
                 return distance >= WARP_DISTANCE_MIN && distance <= WARP_DISTANCE_MAX;
             })
             .ToList();
