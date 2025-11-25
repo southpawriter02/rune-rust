@@ -1,21 +1,26 @@
 using ReactiveUI;
 using RuneAndRust.Core;
+using RuneAndRust.DesktopUI.Controllers;
 using RuneAndRust.DesktopUI.Services;
 using RuneAndRust.Engine;
+using Serilog;
 using System;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using System.Windows.Input;
 
 namespace RuneAndRust.DesktopUI.ViewModels;
 
 /// <summary>
-/// View model for character creation screen.
+/// v0.44.1: View model for character creation screen.
 /// Allows players to choose name, class, and start a new game.
+/// Integrates with GameStateController for proper game state management.
 /// </summary>
 public class CharacterCreationViewModel : ViewModelBase
 {
     private readonly INavigationService _navigationService;
-    private readonly ISaveGameService? _saveGameService;
+    private readonly GameStateController? _gameStateController;
+    private readonly ILogger? _logger;
     private string _characterName = "Survivor";
     private CharacterClass _selectedClass = CharacterClass.Warrior;
     private string _classDescription = string.Empty;
@@ -96,26 +101,45 @@ public class CharacterCreationViewModel : ViewModelBase
     {
         _navigationService = null!;
 
-        BackCommand = ReactiveCommand.Create(() => { });
-        StartGameCommand = ReactiveCommand.Create(() => { });
-        SelectClassCommand = ReactiveCommand.Create<CharacterClass>(_ => { });
+        BackCommand = ReactiveCommand.CreateFromTask(OnBackAsync);
+        StartGameCommand = ReactiveCommand.CreateFromTask(OnStartGameAsync);
+        SelectClassCommand = ReactiveCommand.Create<CharacterClass>(OnSelectClass);
 
         LoadAvailableClasses();
         UpdateClassDescription();
     }
 
     /// <summary>
-    /// Creates a new instance with dependency injection.
+    /// Creates a new instance with GameStateController (v0.44.1+).
+    /// </summary>
+    public CharacterCreationViewModel(
+        INavigationService navigationService,
+        GameStateController gameStateController,
+        ILogger logger)
+    {
+        _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
+        _gameStateController = gameStateController ?? throw new ArgumentNullException(nameof(gameStateController));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+
+        BackCommand = ReactiveCommand.CreateFromTask(OnBackAsync);
+        StartGameCommand = ReactiveCommand.CreateFromTask(OnStartGameAsync);
+        SelectClassCommand = ReactiveCommand.Create<CharacterClass>(OnSelectClass);
+
+        LoadAvailableClasses();
+        UpdateClassDescription();
+    }
+
+    /// <summary>
+    /// Legacy constructor without GameStateController (backwards compatibility).
     /// </summary>
     public CharacterCreationViewModel(
         INavigationService navigationService,
         ISaveGameService? saveGameService = null)
     {
         _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
-        _saveGameService = saveGameService;
 
-        BackCommand = ReactiveCommand.Create(OnBack);
-        StartGameCommand = ReactiveCommand.Create(OnStartGame);
+        BackCommand = ReactiveCommand.CreateFromTask(OnBackAsync);
+        StartGameCommand = ReactiveCommand.CreateFromTask(OnStartGameAsync);
         SelectClassCommand = ReactiveCommand.Create<CharacterClass>(OnSelectClass);
 
         LoadAvailableClasses();
@@ -193,29 +217,53 @@ public class CharacterCreationViewModel : ViewModelBase
         ClassDescription = CharacterFactory.GetClassDescription(SelectedClass);
     }
 
-    private void OnBack()
+    private async Task OnBackAsync()
     {
+        _logger?.Information("Character creation cancelled, returning to menu");
+
+        // If we have a game state controller, reset the game state
+        if (_gameStateController != null && _gameStateController.HasActiveGame)
+        {
+            await _gameStateController.UpdatePhaseAsync(GamePhase.MainMenu, "Character creation cancelled");
+            _gameStateController.Reset();
+        }
+
         _navigationService.NavigateBack();
     }
 
-    private void OnStartGame()
+    private async Task OnStartGameAsync()
     {
         if (!CanStartGame) return;
 
-        // Create the character
+        // Create the character using CharacterFactory
         var character = CharacterFactory.CreateCharacter(SelectedClass, CharacterName);
 
-        Console.WriteLine($"[CHARACTER CREATION] Created character: {character.Name} ({character.Class})");
-        Console.WriteLine($"[CHARACTER CREATION] Stats - HP: {character.HP}, Stamina: {character.Stamina}");
-        Console.WriteLine($"[CHARACTER CREATION] Abilities: {character.Abilities.Count}");
+        _logger?.Information("Created character: {Name} ({Class}) - HP: {HP}, Stamina: {Stamina}, Abilities: {AbilityCount}",
+            character.Name, character.Class, character.HP, character.Stamina, character.Abilities.Count);
 
-        // TODO: In a full implementation, this would:
-        // 1. Store the character in a game state service
-        // 2. Navigate to the dungeon exploration view
-        // For now, we'll just go back to the menu with a success message
+        if (_gameStateController != null && _gameStateController.HasActiveGame)
+        {
+            // Set the player in game state
+            _gameStateController.SetPlayer(character);
 
-        // Navigate back to menu (placeholder until game view is implemented)
-        _navigationService.NavigateBack();
+            _logger?.Information("Character set in GameState, SessionId: {SessionId}",
+                _gameStateController.CurrentGameState.SessionId);
+
+            // TODO (v0.44.3): Generate dungeon and transition to exploration
+            // For now, show a message that dungeon generation isn't implemented yet
+            _logger?.Warning("Dungeon generation not yet implemented (v0.44.3). " +
+                "Character created successfully. Returning to menu.");
+
+            // Navigate back to menu for now (until v0.44.3 implements dungeon generation)
+            _gameStateController.Reset();
+            _navigationService.NavigateTo<MenuViewModel>();
+        }
+        else
+        {
+            // Legacy path without GameStateController
+            _logger?.Information("Character created (legacy path). Returning to menu.");
+            _navigationService.NavigateBack();
+        }
     }
 
     private void OnSelectClass(CharacterClass characterClass)

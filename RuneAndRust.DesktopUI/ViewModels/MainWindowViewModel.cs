@@ -206,6 +206,10 @@ public class MainWindowViewModel : ViewModelBase
 
         _navigationService.RegisterViewModelFactory(() =>
             serviceProvider.GetRequiredService<BossCombatViewModel>());
+
+        // v0.44.1: Character Creation
+        _navigationService.RegisterViewModelFactory(() =>
+            serviceProvider.GetRequiredService<CharacterCreationViewModel>());
     }
 
     /// <summary>
