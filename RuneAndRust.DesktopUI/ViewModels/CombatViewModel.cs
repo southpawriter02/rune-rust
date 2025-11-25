@@ -86,7 +86,7 @@ public class CombatViewModel : ViewModelBase
         set
         {
             this.RaiseAndSetIfChanged(ref _selectedPosition, value);
-            UpdateHighlightedPositions();
+            // Note: Highlighting is done via specific targeting methods
             UpdateStatusMessage();
         }
     }
@@ -416,7 +416,7 @@ public class CombatViewModel : ViewModelBase
         }
 
         // For v0.43.5, show simple dialog (full ability UI in v0.43.6)
-        var abilityNames = abilities.Select(a => $"{a.Name} (Cost: {a.Cost} {a.ResourceType})").ToList();
+        var abilityNames = abilities.Select(a => $"{a.Name} (Stamina: {a.StaminaCost}, AP: {a.APCost})").ToList();
         // TODO: Use proper ability selection dialog
         // For now, just use first ability as demo
         if (abilities.Count > 0)
@@ -664,7 +664,9 @@ public class CombatViewModel : ViewModelBase
                 var playerHpBefore = _combatState.Player.HP;
                 var logCountBefore = _combatState.CombatLog.Count;
 
-                _enemyAI.ExecuteTurn(_combatState, currentEnemy);
+                // Determine and execute enemy action
+                var action = _enemyAI.DetermineAction(currentEnemy);
+                _enemyAI.ExecuteAction(currentEnemy, action, _combatState.Player, _combatState);
 
                 // Trigger enemy attack animation if player took damage
                 var playerHpAfter = _combatState.Player.HP;
@@ -749,20 +751,21 @@ public class CombatViewModel : ViewModelBase
         _unitSprites.Clear();
         _unitData.Clear();
 
-        // Find player position from grid (scan occupied positions)
-        GridPosition? playerPosition = null;
-        for (int row = 0; row < _combatState.Grid.Rows; row++)
+        // Get player position from CombatState or find from occupied tiles
+        GridPosition? playerPosition = _combatState.Player.Position;
+
+        // If player has no position set, find from grid's occupied tiles
+        if (!playerPosition.HasValue && _combatState.Grid.Tiles != null)
         {
-            for (int col = 0; col < _combatState.Grid.Columns; col++)
+            foreach (var kvp in _combatState.Grid.Tiles)
             {
-                var tile = _combatState.Grid.GetTile(row, col);
-                if (tile != null && tile.OccupiedBy != null && tile.OccupiedBy.IsPlayer)
+                var tile = kvp.Value;
+                if (tile.IsOccupied && tile.OccupantId == _combatState.Player.Name)
                 {
-                    playerPosition = new GridPosition(tile.Zone, tile.Row, col);
+                    playerPosition = tile.Position;
                     break;
                 }
             }
-            if (playerPosition.HasValue) break;
         }
 
         // Add player
@@ -888,9 +891,9 @@ public class CombatViewModel : ViewModelBase
         if (_combatState == null) return;
 
         _highlightedPositions.Clear();
-        foreach (var enemy in _combatState.Enemies.Where(e => e.IsAlive && e.CurrentPosition != null))
+        foreach (var enemy in _combatState.Enemies.Where(e => e.IsAlive && e.Position != null))
         {
-            _highlightedPositions.Add(enemy.CurrentPosition!.Value);
+            _highlightedPositions.Add(enemy.Position!.Value);
         }
 
         this.RaisePropertyChanged(nameof(HighlightedPositions));
@@ -945,8 +948,8 @@ public class CombatViewModel : ViewModelBase
 
         return _combatState.Enemies.FirstOrDefault(e =>
             e.IsAlive &&
-            e.CurrentPosition.HasValue &&
-            e.CurrentPosition.Value == position);
+            e.Position.HasValue &&
+            e.Position.Value == position);
     }
 
     #endregion
@@ -957,23 +960,25 @@ public class CombatViewModel : ViewModelBase
     {
         // Create demo combat scenario using real CombatEngine
         var diceService = new DiceService();
-        var player = new PlayerCharacter
+        var player = new PlayerCharacter("Hero")
         {
-            Name = "Hero",
-            Level = 3,
             HP = 45,
             MaxHP = 50,
-            Might = 4,
-            Finesse = 3,
-            Resolve = 3,
-            Wits = 2
+            Attributes = new Attributes
+            {
+                Might = 4,
+                Finesse = 3,
+                Will = 3,
+                Wits = 2,
+                Sturdiness = 3
+            }
         };
 
         var enemies = new List<Enemy>
         {
-            new Enemy { Name = "Goblin Scout", HP = 12, MaxHP = 12, Armor = 1, Might = 2, Finesse = 3 },
-            new Enemy { Name = "Goblin Warrior", HP = 15, MaxHP = 15, Armor = 2, Might = 3, Finesse = 2 },
-            new Enemy { Name = "Goblin Shaman", HP = 10, MaxHP = 10, Armor = 0, Might = 1, Finesse = 2, Wits = 4 }
+            new Enemy { Name = "Goblin Scout", HP = 12, MaxHP = 12, Soak = 1, Attributes = new Attributes { Might = 2, Finesse = 3, Wits = 2, Will = 1, Sturdiness = 1 } },
+            new Enemy { Name = "Goblin Warrior", HP = 15, MaxHP = 15, Soak = 2, Attributes = new Attributes { Might = 3, Finesse = 2, Wits = 1, Will = 2, Sturdiness = 2 } },
+            new Enemy { Name = "Goblin Shaman", HP = 10, MaxHP = 10, Soak = 0, Attributes = new Attributes { Might = 1, Finesse = 2, Wits = 4, Will = 3, Sturdiness = 1 } }
         };
 
         var demoCombatState = _combatEngine.InitializeCombat(player, enemies, canFlee: true);

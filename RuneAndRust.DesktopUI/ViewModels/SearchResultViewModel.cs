@@ -115,7 +115,6 @@ public class LootItemViewModel : ViewModelBase
             EquipmentType.Weapon => "W",
             EquipmentType.Armor => "A",
             EquipmentType.Accessory => "R",
-            EquipmentType.Material => "#",
             _ => "*"
         };
     }

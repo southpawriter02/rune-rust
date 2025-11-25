@@ -212,7 +212,7 @@
                                 <!-- Accuracy -->
                                 <StackPanel Grid.Row="0" Grid.Column="1">
                                     <TextBlock Text="Accuracy" Classes="StatLabel"/>
-                                    <TextBlock Text="{Binding Accuracy, StringFormat='+{0}'}" Classes="StatValue"/>
+                                    <TextBlock Text="{Binding Accuracy, StringFormat=+\{0\}}" Classes="StatValue"/>
                                 </StackPanel>
 
                                 <!-- Evasion -->
@@ -224,19 +224,19 @@
                                 <!-- Attack Power -->
                                 <StackPanel Grid.Row="1" Grid.Column="0">
                                     <TextBlock Text="Attack Power" Classes="StatLabel"/>
-                                    <TextBlock Text="{Binding AttackPower, StringFormat='{0}d6'}" Classes="StatValue"/>
+                                    <TextBlock Text="{Binding AttackPower, StringFormat=\{0\}d6}" Classes="StatValue"/>
                                 </StackPanel>
 
                                 <!-- Critical Chance -->
                                 <StackPanel Grid.Row="1" Grid.Column="1">
                                     <TextBlock Text="Crit Chance" Classes="StatLabel"/>
-                                    <TextBlock Text="{Binding CritChance, StringFormat='{0}%'}" Classes="StatValue"/>
+                                    <TextBlock Text="{Binding CritChance, StringFormat=\{0\}%}" Classes="StatValue"/>
                                 </StackPanel>
 
                                 <!-- Initiative -->
                                 <StackPanel Grid.Row="1" Grid.Column="2">
                                     <TextBlock Text="Initiative" Classes="StatLabel"/>
-                                    <TextBlock Text="{Binding Initiative, StringFormat='+{0}'}" Classes="StatValue"/>
+                                    <TextBlock Text="{Binding Initiative, StringFormat=+\{0\}}" Classes="StatValue"/>
                                 </StackPanel>
 
                                 <!-- Physical Defense -->

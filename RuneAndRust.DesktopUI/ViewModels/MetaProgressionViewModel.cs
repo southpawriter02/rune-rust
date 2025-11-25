@@ -258,7 +258,7 @@ public class MetaProgressionViewModel : ViewModelBase
 
     private void OnBack()
     {
-        _navigationService.GoBack();
+        _navigationService.NavigateBack();
     }
 
     private void LoadDesignTimeData()

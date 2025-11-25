@@ -246,10 +246,10 @@ public class BossCombatViewModel : ViewModelBase
         CurrentPhase = newPhase;
         UpdatePhaseSegments();
 
-        // Play phase transition animation
-        if (_animationService != null)
+        // Play phase transition animation (using status effect animation as placeholder)
+        if (_animationService != null && CurrentBoss?.Position != null)
         {
-            await _animationService.PlayPhaseTransitionAsync(newPhase);
+            await _animationService.PlayStatusEffectAnimationAsync("PhaseTransition", CurrentBoss.Position.Value);
         }
 
         IsTransitioning = false;

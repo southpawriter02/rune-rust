@@ -375,7 +375,7 @@ public class EndgameModeViewModel : ViewModelBase
 
     private void OnBack()
     {
-        _navigationService.GoBack();
+        _navigationService.NavigateBack();
     }
 
     private void OnIncrementTier()
@@ -442,7 +442,7 @@ public class EndgameModeViewModel : ViewModelBase
         {
             Name = "Iron Gauntlet",
             Description = "Face endless waves of armored foes.",
-            DifficultyTier = "Hard"
+            TotalDifficultyMultiplier = 2.2f // Results in "Hard" difficulty tier
         }));
     }
 }

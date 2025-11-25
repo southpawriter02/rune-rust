@@ -107,8 +107,8 @@ public class SaveGameService : ISaveGameService
                     SaveName = saveName,
                     CharacterName = player.Name,
                     CharacterClass = player.Class.ToString(),
-                    Legend = player.Legend,
-                    CurrentFloor = worldState.CurrentMilestone,
+                    Legend = 1, // Player level tracking not yet implemented
+                    CurrentFloor = worldState.DungeonsCompleted,
                     SaveDate = DateTime.Now,
                     IsAutoSave = false,
                     IsQuickSave = false
@@ -148,8 +148,8 @@ public class SaveGameService : ISaveGameService
                 _currentPlayer = player;
                 _currentWorldState = worldState;
 
-                _log.Information("Game loaded successfully from '{FileName}': {CharacterName} Legend {Legend}",
-                    fileName, player.Name, player.Legend);
+                _log.Information("Game loaded successfully from '{FileName}': {CharacterName}",
+                    fileName, player.Name);
                 return true;
             }
             catch (Exception ex)
@@ -200,12 +200,12 @@ public class SaveGameService : ISaveGameService
                 var worldState = _currentWorldState ?? CreatePlaceholderWorldState();
 
                 // Update player name for quick save identification
-                player = new PlayerCharacter(quickSaveName, player.Class)
+                player = new PlayerCharacter(quickSaveName)
                 {
-                    Legend = player.Legend,
-                    CurrentHP = player.CurrentHP,
+                    Class = player.Class,
+                    HP = player.HP,
                     MaxHP = player.MaxHP,
-                    CurrentStamina = player.CurrentStamina,
+                    Stamina = player.Stamina,
                     MaxStamina = player.MaxStamina
                 };
 
@@ -268,12 +268,12 @@ public class SaveGameService : ISaveGameService
                 var worldState = _currentWorldState ?? CreatePlaceholderWorldState();
 
                 // Update player name for auto-save identification
-                player = new PlayerCharacter(autoSaveName, player.Class)
+                player = new PlayerCharacter(autoSaveName)
                 {
-                    Legend = player.Legend,
-                    CurrentHP = player.CurrentHP,
+                    Class = player.Class,
+                    HP = player.HP,
                     MaxHP = player.MaxHP,
-                    CurrentStamina = player.CurrentStamina,
+                    Stamina = player.Stamina,
                     MaxStamina = player.MaxStamina
                 };
 
@@ -424,12 +424,12 @@ public class SaveGameService : ISaveGameService
     /// </summary>
     private static PlayerCharacter CreatePlaceholderPlayer(string name)
     {
-        return new PlayerCharacter(name, CharacterClass.Shieldmaiden)
+        return new PlayerCharacter(name)
         {
-            Legend = 1,
-            CurrentHP = 25,
+            Class = CharacterClass.Warrior,
+            HP = 25,
             MaxHP = 25,
-            CurrentStamina = 10,
+            Stamina = 10,
             MaxStamina = 10
         };
     }
@@ -442,7 +442,7 @@ public class SaveGameService : ISaveGameService
         return new WorldState
         {
             CurrentRoomId = 1,
-            CurrentMilestone = 1
+            DungeonsCompleted = 0
         };
     }
 }
