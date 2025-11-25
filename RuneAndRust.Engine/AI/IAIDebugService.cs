@@ -1,6 +1,7 @@
 using RuneAndRust.Core;
 using RuneAndRust.Core.AI;
 using System;
+using CoreEnemyAction = RuneAndRust.Core.AI.EnemyAction;
 
 namespace RuneAndRust.Engine.AI;
 
@@ -32,7 +33,7 @@ public interface IAIDebugService
     /// <param name="enemy">The enemy making the decision.</param>
     /// <param name="action">The action decided.</param>
     /// <param name="context">Decision context.</param>
-    void LogDecision(Enemy enemy, EnemyAction action, DecisionContext context);
+    void LogDecision(Enemy enemy, CoreEnemyAction action, DecisionContext context);
 
     /// <summary>
     /// Generates a comprehensive decision report for a combat encounter.

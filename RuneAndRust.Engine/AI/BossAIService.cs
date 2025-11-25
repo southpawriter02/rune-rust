@@ -1,6 +1,8 @@
 using Microsoft.Extensions.Logging;
 using RuneAndRust.Core;
 using RuneAndRust.Core.AI;
+using System.Collections.Generic;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace RuneAndRust.Engine.AI;
@@ -74,7 +76,7 @@ public class BossAIService : IBossAIService
             newPhase);
 
         // Get phase transition configuration
-        var transitionConfig = await GetPhaseTransitionConfigAsync(boss.EnemyID, newPhase);
+        var transitionConfig = await GetPhaseTransitionConfigAsync((int)boss.Type, newPhase);
 
         if (transitionConfig == null)
         {
@@ -86,39 +88,50 @@ public class BossAIService : IBossAIService
         }
 
         // Display dialogue if configured
-        if (!string.IsNullOrEmpty(transitionConfig.DialogueLine))
+        if (!string.IsNullOrEmpty(transitionConfig.TransitionDialogue))
         {
             _logger.LogInformation(
                 "Boss dialogue: {Dialogue}",
-                transitionConfig.DialogueLine);
+                transitionConfig.TransitionDialogue);
 
             // TODO: In future, integrate with dialogue/UI system
             // For now, just log it
         }
 
         // Apply phase bonuses (stat multipliers)
-        if (transitionConfig.PhaseBonuses != null)
+        if (!string.IsNullOrEmpty(transitionConfig.PhaseBonuses))
         {
-            if (transitionConfig.PhaseBonuses.ContainsKey("AttackMultiplier"))
+            try
             {
-                var multiplier = transitionConfig.PhaseBonuses["AttackMultiplier"];
-                boss.BaseDamageDice = (int)(boss.BaseDamageDice * multiplier);
-                _logger.LogDebug("Boss attack increased by {Multiplier}x", multiplier);
-            }
+                var phaseBonuses = JsonSerializer.Deserialize<Dictionary<string, decimal>>(transitionConfig.PhaseBonuses);
 
-            if (transitionConfig.PhaseBonuses.ContainsKey("DefenseMultiplier"))
-            {
-                var multiplier = transitionConfig.PhaseBonuses["DefenseMultiplier"];
-                boss.Defense = (int)(boss.Defense * multiplier);
-                _logger.LogDebug("Boss defense increased by {Multiplier}x", multiplier);
-            }
+                if (phaseBonuses != null)
+                {
+                    if (phaseBonuses.ContainsKey("AttackMultiplier"))
+                    {
+                        var multiplier = phaseBonuses["AttackMultiplier"];
+                        boss.BaseDamageDice = (int)(boss.BaseDamageDice * multiplier);
+                        _logger.LogDebug("Boss attack increased by {Multiplier}x", multiplier);
+                    }
 
-            if (transitionConfig.PhaseBonuses.ContainsKey("SpeedMultiplier"))
+                    if (phaseBonuses.ContainsKey("DefenseMultiplier"))
+                    {
+                        var multiplier = phaseBonuses["DefenseMultiplier"];
+                        boss.Defense = (int)(boss.Defense * multiplier);
+                        _logger.LogDebug("Boss defense increased by {Multiplier}x", multiplier);
+                    }
+
+                    if (phaseBonuses.ContainsKey("SpeedMultiplier"))
+                    {
+                        var multiplier = phaseBonuses["SpeedMultiplier"];
+                        boss.Speed = (int)(boss.Speed * multiplier);
+                        _logger.LogDebug("Boss speed bonus: {Multiplier}x", multiplier);
+                    }
+                }
+            }
+            catch (JsonException ex)
             {
-                var multiplier = transitionConfig.PhaseBonuses["SpeedMultiplier"];
-                // Assuming Speed property exists or will be added
-                // boss.Speed = (int)(boss.Speed * multiplier);
-                _logger.LogDebug("Boss speed bonus: {Multiplier}x", multiplier);
+                _logger.LogWarning(ex, "Failed to deserialize PhaseBonuses JSON for boss type {BossTypeId}", boss.EnemyTypeId);
             }
         }
 

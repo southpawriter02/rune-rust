@@ -1,5 +1,6 @@
 using RuneAndRust.Core;
 using Serilog;
+using DestructionResult = RuneAndRust.Core.DestructionResult;
 
 namespace RuneAndRust.Engine;
 

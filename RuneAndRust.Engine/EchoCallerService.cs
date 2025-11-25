@@ -67,8 +67,6 @@ public class EchoCallerService
     /// </summary>
     public bool InitializeEchoChains(int characterId)
     {
-        using var operation = _log.BeginScope("InitializeEchoChains for character {CharacterId}", characterId);
-
         try
         {
             using var connection = new SqliteConnection(_connectionString);
@@ -112,9 +110,6 @@ public class EchoCallerService
         Enemy target,
         int rank = 1)
     {
-        using var operation = _log.BeginScope("CastScreamOfSilence: CasterID={CasterId}, TargetID={TargetId}, Rank={Rank}",
-            caster.CharacterID, target.EnemyID, rank);
-
         try
         {
             // Calculate damage based on rank
@@ -194,9 +189,6 @@ public class EchoCallerService
         Enemy target,
         int rank = 1)
     {
-        using var operation = _log.BeginScope("CastPhantomMenace: CasterID={CasterId}, TargetID={TargetId}, Rank={Rank}",
-            caster.CharacterID, target.EnemyID, rank);
-
         try
         {
             // Calculate duration based on rank
@@ -263,9 +255,6 @@ public class EchoCallerService
         string pushDirection,
         int rank = 1)
     {
-        using var operation = _log.BeginScope("CastRealityFracture: CasterID={CasterId}, TargetID={TargetId}, Rank={Rank}",
-            caster.CharacterID, target.EnemyID, rank);
-
         try
         {
             // Calculate effects based on rank
@@ -333,9 +322,6 @@ public class EchoCallerService
     /// </summary>
     public void UpdateEchoCascadeRank(int characterId, int rank)
     {
-        using var operation = _log.BeginScope("UpdateEchoCascadeRank: CharacterId={CharacterId}, Rank={Rank}",
-            characterId, rank);
-
         try
         {
             var (range, damageMultiplier, maxTargets) = rank switch
@@ -391,9 +377,6 @@ public class EchoCallerService
         int newY,
         int rank = 1)
     {
-        using var operation = _log.BeginScope("CastEchoDisplacement: CasterID={CasterId}, TargetID={TargetId}, Rank={Rank}",
-            caster.CharacterID, target.EnemyID, rank);
-
         try
         {
             // Calculate effects based on rank
@@ -482,9 +465,6 @@ public class EchoCallerService
         List<Enemy> allEnemies,
         int rank = 1)
     {
-        using var operation = _log.BeginScope("CastSilenceMadeWeapon: CasterID={CasterId}, Rank={Rank}",
-            caster.CharacterID, rank);
-
         try
         {
             // Check uses per combat
@@ -775,8 +755,6 @@ public class EchoCallerService
     /// </summary>
     public void ResetCombatState(int characterId)
     {
-        using var operation = _log.BeginScope("ResetCombatState for character {CharacterId}", characterId);
-
         try
         {
             using var connection = new SqliteConnection(_connectionString);

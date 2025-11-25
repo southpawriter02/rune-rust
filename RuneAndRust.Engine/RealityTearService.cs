@@ -77,7 +77,7 @@ public class RealityTearService
         };
 
         // Apply Energy damage
-        var damageRoll = _diceService.RollDice(DAMAGE_DICE);
+        var damageRoll = _diceService.RollDice(2, 8); // 2d8
         var actualDamage = ApplyEnergyDamage(character, damageRoll);
 
         result.EnergyDamage = actualDamage;
@@ -135,7 +135,7 @@ public class RealityTearService
         };
 
         // Apply Energy damage
-        var damageRoll = _diceService.RollDice(DAMAGE_DICE);
+        var damageRoll = _diceService.RollDice(2, 8); // 2d8
         enemy.HP = Math.Max(0, enemy.HP - damageRoll);
 
         result.EnergyDamage = damageRoll;
@@ -182,7 +182,7 @@ public class RealityTearService
         BattlefieldGrid grid)
     {
         // Find all valid warp destinations
-        var validTiles = grid.Tiles
+        var validTiles = grid.Tiles.Values
             .Where(t => t.IsPassable && !t.IsOccupied)
             .Where(t =>
             {
@@ -256,7 +256,7 @@ public class RealityTearService
         int damage)
     {
         var distance = CalculateManhattanDistance(
-            oldPos.Column, oldPos.Row, newPos.Column, newPos.Row);
+            oldPos.Column, (int)oldPos.Row, newPos.Column, (int)newPos.Row);
 
         return $"🌀 Reality Tear!\n" +
                $"   {characterName} steps into a spacetime rupture\n" +
@@ -276,8 +276,7 @@ public class RealityTearService
     public bool IsRealityTear(BattlefieldTile tile)
     {
         // Check if tile has Reality Tear environmental feature
-        // TODO: Implement when environmental feature system is complete
-        return tile.Type == TileType.Hazard && tile.HazardType == "Reality Tear";
+        return tile.HasEnvironmentalFeature("Reality Tear");
     }
 
     /// <summary>

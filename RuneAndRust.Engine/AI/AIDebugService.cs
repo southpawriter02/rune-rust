@@ -6,6 +6,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
+using CoreEnemyAction = RuneAndRust.Core.AI.EnemyAction;
 
 namespace RuneAndRust.Engine.AI;
 
@@ -47,7 +48,7 @@ public class AIDebugService : IAIDebugService
     }
 
     /// <inheritdoc/>
-    public void LogDecision(Enemy enemy, EnemyAction action, DecisionContext context)
+    public void LogDecision(Enemy enemy, CoreEnemyAction action, DecisionContext context)
     {
         if (!_debugMode)
         {
@@ -156,7 +157,7 @@ public class AIDebugService : IAIDebugService
     /// <summary>
     /// Stores a decision log for later report generation.
     /// </summary>
-    private void StoreDecisionLog(Guid encounterId, Enemy enemy, EnemyAction action, DecisionContext context)
+    private void StoreDecisionLog(Guid encounterId, Enemy enemy, CoreEnemyAction action, DecisionContext context)
     {
         var targetName = action.Target switch
         {

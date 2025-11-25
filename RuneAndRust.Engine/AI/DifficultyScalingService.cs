@@ -4,6 +4,7 @@ using RuneAndRust.Core.AI;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using CoreEnemyAction = RuneAndRust.Core.AI.EnemyAction;
 
 namespace RuneAndRust.Engine.AI;
 
@@ -118,8 +119,8 @@ public class DifficultyScalingService : IDifficultyScalingService
     }
 
     /// <inheritdoc/>
-    public async Task<EnemyAction> ApplyIntelligenceScalingAsync(
-        EnemyAction action,
+    public async Task<CoreEnemyAction> ApplyIntelligenceScalingAsync(
+        CoreEnemyAction action,
         int intelligenceLevel,
         BattlefieldState state)
     {
@@ -173,8 +174,8 @@ public class DifficultyScalingService : IDifficultyScalingService
         return _random.NextDouble() < errorChance;
     }
 
-    private async Task<EnemyAction> MakeSuboptimalDecisionAsync(
-        EnemyAction action,
+    private async Task<CoreEnemyAction> MakeSuboptimalDecisionAsync(
+        CoreEnemyAction action,
         BattlefieldState state)
     {
         // Types of mistakes:
@@ -218,7 +219,7 @@ public class DifficultyScalingService : IDifficultyScalingService
         return await Task.FromResult(action);
     }
 
-    private async Task ApplyAdvancedTacticsAsync(EnemyAction action, BattlefieldState state)
+    private async Task ApplyAdvancedTacticsAsync(CoreEnemyAction action, BattlefieldState state)
     {
         // Advanced tactics for intelligence 4+:
 
@@ -245,7 +246,7 @@ public class DifficultyScalingService : IDifficultyScalingService
         await Task.CompletedTask;
     }
 
-    private async Task ExploitPlayerWeaknessesAsync(EnemyAction action, BattlefieldState state)
+    private async Task ExploitPlayerWeaknessesAsync(CoreEnemyAction action, BattlefieldState state)
     {
         // Max intelligence: identify and exploit weaknesses
 

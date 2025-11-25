@@ -406,12 +406,10 @@ public class MuspelheimBiomeService
     /// </summary>
     public MuspelheimSector GenerateMuspelheimSector(int sectorDepth, int? seed = null)
     {
-        using (_log.BeginScope("Generating Muspelheim sector at depth {Depth}", sectorDepth))
-        {
-            var random = seed.HasValue ? new Random(seed.Value) : new Random();
+        var random = seed.HasValue ? new Random(seed.Value) : new Random();
 
-            _log.Information("Starting Muspelheim sector generation: Depth={Depth}, Seed={Seed}",
-                sectorDepth, seed ?? -1);
+        _log.Information("Starting Muspelheim sector generation: Depth={Depth}, Seed={Seed}",
+            sectorDepth, seed ?? -1);
 
             // Load room templates from database
             var templates = _dataRepository.GetRoomTemplates();
@@ -464,12 +462,11 @@ public class MuspelheimBiomeService
             int totalEnemies = rooms.Sum(r => r.Enemies.Count);
             int totalResources = rooms.Sum(r => r.ResourceNodes.Count);
 
-            _log.Information(
-                "Muspelheim sector generation complete: {RoomCount} rooms, {HazardCount} hazards, {EnemyCount} enemies, {ResourceCount} resources",
-                sector.Rooms.Count, totalHazards, totalEnemies, totalResources);
+        _log.Information(
+            "Muspelheim sector generation complete: {RoomCount} rooms, {HazardCount} hazards, {EnemyCount} enemies, {ResourceCount} resources",
+            sector.Rooms.Count, totalHazards, totalEnemies, totalResources);
 
-            return sector;
-        }
+        return sector;
     }
 
     /// <summary>
@@ -763,10 +760,9 @@ public class MuspelheimBiomeService
             _ => 4 // Default to medium
         };
 
-        var grid = new BattlefieldGrid
+        var grid = new BattlefieldGrid(columns)
         {
             GridId = Guid.NewGuid().ToString(),
-            Columns = columns,
             Tiles = new Dictionary<GridPosition, BattlefieldTile>()
         };
 
@@ -882,11 +878,11 @@ public class MuspelheimBiomeService
                         GridPosition = $"{tile.Position.Zone}_{tile.Position.Row}_Column_{tile.Position.Column}",
                         ObjectType = EnvironmentalObjectType.Hazard,
                         Name = hazard.FeatureName,
-                        Description = hazard.FeatureDescription,
+                        Description = hazard.Description ?? hazard.FeatureName,
                         IsHazard = true,
                         DamageFormula = $"{hazard.DamagePerTurn}d10 {hazard.DamageType}",
                         DamageType = hazard.DamageType,
-                        StatusEffect = hazard.StatusEffectsJson,
+                        StatusEffect = hazard.SpecialRules ?? string.Empty,
                         IsDestructible = hazard.IsDestructible,
                         BlocksMovement = hazard.BlocksMovement,
                         BlocksLineOfSight = hazard.BlocksLineOfSight,
@@ -971,7 +967,7 @@ public class MuspelheimBiomeService
             {
                 enemy.Position = spawnTile.Position;
                 spawnTile.IsOccupied = true;
-                spawnTile.OccupantId = enemy.EnemyId.ToString();
+                spawnTile.OccupantId = enemy.EnemyID.ToString();
 
                 _log.Debug("Positioned {EnemyName} at {Position}",
                     enemy.Name, spawnTile.Position);
@@ -1015,7 +1011,7 @@ public class MuspelheimBiomeService
         {
             boss.Position = spawnTile.Position;
             spawnTile.IsOccupied = true;
-            spawnTile.OccupantId = boss.EnemyId.ToString();
+            spawnTile.OccupantId = boss.EnemyID.ToString();
 
             _log.Information("Positioned boss {BossName} at {Position} in {RoomName}",
                 boss.Name, spawnTile.Position, room.Name);

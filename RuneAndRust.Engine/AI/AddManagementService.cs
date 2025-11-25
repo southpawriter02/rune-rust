@@ -33,7 +33,7 @@ public class AddManagementService : IAddManagementService
     /// </summary>
     public async Task ManageAddsAsync(Enemy boss, BattlefieldState state)
     {
-        var bossConfig = await _configRepository.GetBossConfigurationAsync(boss.EnemyTypeId);
+        var bossConfig = await _configRepository.GetBossConfigurationAsync((int)boss.Type);
 
         if (bossConfig == null || !bossConfig.UsesAdds)
         {
@@ -50,7 +50,7 @@ public class AddManagementService : IAddManagementService
                           BossPhase.Phase3;
 
         // Get add management configuration for current phase
-        var addConfig = await GetAddManagementConfigAsync(boss.EnemyTypeId, currentPhase);
+        var addConfig = await GetAddManagementConfigAsync((int)boss.Type, currentPhase);
 
         if (addConfig == null)
         {
@@ -89,7 +89,7 @@ public class AddManagementService : IAddManagementService
         }
 
         // Check turn interval cooldown (if configured)
-        if (config.SummonEveryNTurns.HasValue && _lastSummonTimes.ContainsKey(boss.Id))
+        if (config.SummonEveryNTurns.HasValue && _lastSummonTimes.ContainsKey(boss.EnemyID))
         {
             // TODO: Track actual turn count instead of time
             // For now, we'll skip the cooldown check as we don't have turn tracking
@@ -162,9 +162,9 @@ public class AddManagementService : IAddManagementService
         // TODO: Integrate with actual enemy spawning system
         // For now, just log and track
 
-        if (!_summonedAdds.ContainsKey(boss.Id))
+        if (!_summonedAdds.ContainsKey(boss.EnemyID))
         {
-            _summonedAdds[boss.Id] = new List<int>();
+            _summonedAdds[boss.EnemyID] = new List<int>();
         }
 
         int addIndex = 0;
@@ -173,9 +173,9 @@ public class AddManagementService : IAddManagementService
             for (int i = 0; i < addType.Count; i++)
             {
                 // Create add (placeholder)
-                var addId = GenerateAddId(boss.Id, addIndex);
+                var addId = GenerateAddId(boss.EnemyID, addIndex);
 
-                _summonedAdds[boss.Id].Add(addId);
+                _summonedAdds[boss.EnemyID].Add(addId);
 
                 _logger.LogDebug(
                     "Summoned add {AddId} (type: {TypeName}, typeId: {TypeId}) with HP multiplier {HPMult} and damage multiplier {DmgMult}",
@@ -190,7 +190,7 @@ public class AddManagementService : IAddManagementService
         }
 
         // Update last summon time
-        _lastSummonTimes[boss.Id] = DateTime.UtcNow;
+        _lastSummonTimes[boss.EnemyID] = DateTime.UtcNow;
 
         await Task.CompletedTask;
     }
@@ -237,12 +237,12 @@ public class AddManagementService : IAddManagementService
     /// </summary>
     public List<Enemy> GetLivingAdds(Enemy boss, BattlefieldState state)
     {
-        if (!_summonedAdds.ContainsKey(boss.Id))
+        if (!_summonedAdds.ContainsKey(boss.EnemyID))
         {
             return new List<Enemy>();
         }
 
-        var summonedAddIds = _summonedAdds[boss.Id];
+        var summonedAddIds = _summonedAdds[boss.EnemyID];
 
         // TODO: Cross-reference with actual enemy list in battlefield state
         // For now, return empty list (placeholder)

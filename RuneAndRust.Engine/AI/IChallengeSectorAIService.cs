@@ -2,6 +2,7 @@ using RuneAndRust.Core;
 using RuneAndRust.Core.AI;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using CoreEnemyAction = RuneAndRust.Core.AI.EnemyAction;
 
 namespace RuneAndRust.Engine.AI;
 
@@ -20,27 +21,27 @@ public interface IChallengeSectorAIService
     /// <param name="state">Current battlefield state.</param>
     Task AdaptToSectorModifiersAsync(
         Enemy enemy,
-        EnemyAction action,
+        CoreEnemyAction action,
         List<ChallengeSectorModifier> modifiers,
         BattlefieldState state);
 
     /// <summary>
     /// Prioritizes burst damage for sectors where attrition isn't viable.
     /// </summary>
-    Task PrioritizeBurstDamageAsync(Enemy enemy, EnemyAction action, BattlefieldState state);
+    Task PrioritizeBurstDamageAsync(Enemy enemy, CoreEnemyAction action, BattlefieldState state);
 
     /// <summary>
     /// Prioritizes defensive abilities for high-risk sectors.
     /// </summary>
-    Task PrioritizeDefenseAsync(Enemy enemy, EnemyAction action, BattlefieldState state);
+    Task PrioritizeDefenseAsync(Enemy enemy, CoreEnemyAction action, BattlefieldState state);
 
     /// <summary>
     /// Conserves resources for long fights.
     /// </summary>
-    Task ConserveResourcesAsync(Enemy enemy, EnemyAction action, BattlefieldState state);
+    Task ConserveResourcesAsync(Enemy enemy, CoreEnemyAction action, BattlefieldState state);
 
     /// <summary>
     /// Increases aggression when players are handicapped.
     /// </summary>
-    Task IncreaseAggressionAsync(Enemy enemy, EnemyAction action, decimal modifier);
+    Task IncreaseAggressionAsync(Enemy enemy, CoreEnemyAction action, decimal modifier);
 }

@@ -80,8 +80,6 @@ public class EinbuiService
         int rank = 1,
         int masterImproviserRank = 0)
     {
-        using var operation = _log.BeginScope("CraftBasicConcoction");
-
         try
         {
             _log.Information(
@@ -166,8 +164,6 @@ public class EinbuiService
     /// </summary>
     public (bool success, string effect, string message) UseHeldItem(int characterId, string itemName)
     {
-        using var operation = _log.BeginScope("UseHeldItem");
-
         try
         {
             _log.Information("Using held item: CharacterID={CharacterId}, ItemName={ItemName}", characterId, itemName);
@@ -213,8 +209,6 @@ public class EinbuiService
         int rank = 1,
         int masterImproviserRank = 0)
     {
-        using var operation = _log.BeginScope("PlaceImprovisedTrap");
-
         try
         {
             _log.Information(
@@ -292,8 +286,6 @@ public class EinbuiService
         int rank = 1,
         DiceService? diceService = null)
     {
-        using var operation = _log.BeginScope("ExecuteResourcefulEye");
-
         try
         {
             _log.Information(
@@ -369,8 +361,6 @@ public class EinbuiService
         int roomId,
         int rank = 1)
     {
-        using var operation = _log.BeginScope("DesignateBlightHaven");
-
         try
         {
             _log.Information(
@@ -422,8 +412,6 @@ public class EinbuiService
     /// </summary>
     public void ResetBlightHavenForNewExpedition(int characterId)
     {
-        using var operation = _log.BeginScope("ResetBlightHavenForNewExpedition");
-
         try
         {
             using var connection = new SqliteConnection(_connectionString);

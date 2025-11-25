@@ -34,18 +34,15 @@ public class MomentumService
     /// </summary>
     public void GenerateMomentum(PlayerCharacter character, int amount, string source)
     {
-        using (_log.BeginScope("GenerateMomentum"))
-        {
-            int currentMomentum = character.Momentum;
-            int newMomentum = Math.Clamp(currentMomentum + amount, 0, MAX_MOMENTUM);
-            int actualGained = newMomentum - currentMomentum;
+        int currentMomentum = character.Momentum;
+        int newMomentum = Math.Clamp(currentMomentum + amount, 0, MAX_MOMENTUM);
+        int actualGained = newMomentum - currentMomentum;
 
-            character.Momentum = newMomentum;
+        character.Momentum = newMomentum;
 
-            _log.Information(
-                "Momentum Generated: Character={CharacterName}, Source={Source}, Amount={Amount}, Actual={Actual}, Total={Total}",
-                character.Name, source, amount, actualGained, newMomentum);
-        }
+        _log.Information(
+            "Momentum Generated: Character={CharacterName}, Source={Source}, Amount={Amount}, Actual={Actual}, Total={Total}",
+            character.Name, source, amount, actualGained, newMomentum);
     }
 
     /// <summary>

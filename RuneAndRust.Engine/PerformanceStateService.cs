@@ -32,8 +32,6 @@ public class PerformanceStateService
     /// <returns>True if performance started successfully</returns>
     public bool StartPerformance(int characterId, int abilityId, int rank, int willScore, int enduringPerformanceRank = 0)
     {
-        using var operation = _log.BeginScope("StartPerformance");
-
         try
         {
             // Check if already performing
@@ -109,8 +107,6 @@ public class PerformanceStateService
     /// <returns>True if performance was interrupted</returns>
     public bool InterruptPerformance(int characterId, string reason)
     {
-        using var operation = _log.BeginScope("InterruptPerformance");
-
         try
         {
             if (!IsPerforming(characterId))
