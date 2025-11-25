@@ -85,7 +85,7 @@ public class MainMenuController
             _logger.Information("Loading most recent save: {SaveName} ({CharacterName})",
                 mostRecentSave.SaveName, mostRecentSave.CharacterName);
 
-            // Load the game
+            // Load the game data
             var success = await _saveGameService.LoadGameAsync(mostRecentSave.FileName);
 
             if (!success)
@@ -94,8 +94,46 @@ public class MainMenuController
                 return;
             }
 
-            // For now, navigate to exploration view
-            // In full implementation, would navigate based on saved phase
+            // v0.44.1: Retrieve loaded data and initialize GameState
+            var loadedPlayer = _saveGameService.GetLoadedPlayer();
+            var loadedWorldState = _saveGameService.GetLoadedWorldState();
+
+            if (loadedPlayer == null)
+            {
+                _logger.Error("Failed to retrieve loaded player data");
+                return;
+            }
+
+            // Create GameState from loaded data
+            var runNumber = await GetNextRunNumberAsync();
+            var gameState = new GameState
+            {
+                SessionId = Guid.NewGuid(),
+                SessionStarted = DateTime.UtcNow,
+                CurrentPhase = GamePhase.DungeonExploration, // Resume to exploration
+                Player = loadedPlayer,
+                PlayTime = mostRecentSave.PlayTime,
+                RunNumber = runNumber,
+                AutoSaveEnabled = true,
+                // Create placeholder dungeon/room - DungeonExplorationViewModel will regenerate if needed
+                CurrentDungeon = new DungeonGraph(),
+                CurrentRoom = new Room
+                {
+                    RoomId = loadedWorldState?.CurrentRoomId.ToString() ?? "1",
+                    Name = "Dungeon Chamber",
+                    Description = "You find yourself in a familiar chamber of the ruins.",
+                    IsStartRoom = false,
+                    HasBeenCleared = true
+                }
+            };
+
+            _logger.Information("Created GameState for loaded game: SessionId={SessionId}, Player={PlayerName}",
+                gameState.SessionId, loadedPlayer.Name);
+
+            // Initialize GameStateController with loaded state
+            _gameStateController.LoadGame(gameState);
+
+            // Navigate to exploration view
             _navigationService.NavigateTo<DungeonExplorationViewModel>();
 
             _logger.Information("Continue game loaded successfully");

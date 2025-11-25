@@ -1,3 +1,4 @@
+using RuneAndRust.Core;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -143,6 +144,18 @@ public interface ISaveGameService
     /// Gets whether auto-save is currently enabled.
     /// </summary>
     bool AutoSaveEnabled { get; set; }
+
+    /// <summary>
+    /// v0.44.1: Gets the currently loaded player character after a successful load.
+    /// Returns null if no game has been loaded.
+    /// </summary>
+    PlayerCharacter? GetLoadedPlayer();
+
+    /// <summary>
+    /// v0.44.1: Gets the currently loaded world state after a successful load.
+    /// Returns null if no game has been loaded.
+    /// </summary>
+    WorldState? GetLoadedWorldState();
 
     /// <summary>
     /// Event raised when auto-save starts.
