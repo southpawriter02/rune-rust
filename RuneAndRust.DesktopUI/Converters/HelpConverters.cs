@@ -6,9 +6,9 @@ using System.Globalization;
 namespace RuneAndRust.DesktopUI.Converters;
 
 /// <summary>
-/// v0.43.20: Converts category to display color.
+/// v0.43.20: Converts help category to display color.
 /// </summary>
-public class CategoryColorConverter : IValueConverter
+public class HelpCategoryColorConverter : IValueConverter
 {
     public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
@@ -67,21 +67,6 @@ public class CategoryIconConverter : IValueConverter
     }
 }
 
-/// <summary>
-/// v0.43.20: Converts null to false for visibility binding.
-/// </summary>
-public class NotNullToBoolConverter : IValueConverter
-{
-    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
-    {
-        return value != null;
-    }
-
-    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
-    {
-        throw new NotImplementedException();
-    }
-}
 
 /// <summary>
 /// v0.43.20: Inverts a boolean for visibility binding.

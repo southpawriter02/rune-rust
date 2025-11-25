@@ -627,7 +627,7 @@ public static class UIHelper
 
         var coverTable = new Table()
             .Border(TableBorder.Rounded)
-            .BorderColor(Color.Cyan);
+            .BorderColor(Color.Cyan1);
 
         coverTable.AddColumn("[bold cyan]Battlefield Cover[/]");
 

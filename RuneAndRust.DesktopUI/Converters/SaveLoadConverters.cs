@@ -273,29 +273,6 @@ public class BossStatusConverter : IValueConverter
     }
 }
 
-/// <summary>
-/// v0.43.19: Inverts boolean value.
-/// </summary>
-public class InverseBoolConverter : IValueConverter
-{
-    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
-    {
-        if (value is bool b)
-        {
-            return !b;
-        }
-        return true;
-    }
-
-    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
-    {
-        if (value is bool b)
-        {
-            return !b;
-        }
-        return false;
-    }
-}
 
 /// <summary>
 /// v0.43.19: Converts string to visibility (visible if not empty).
