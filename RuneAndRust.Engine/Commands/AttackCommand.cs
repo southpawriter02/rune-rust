@@ -33,7 +33,7 @@ public class AttackCommand : ICommand
             if (state.CurrentPhase != GamePhase.Combat || state.Combat == null)
             {
                 _log.Debug("Attack failed: Not in combat");
-                return CommandResult.Failure("You are not in combat. Use 'look' to assess your surroundings.");
+                return CommandResult.CreateFailure("You are not in combat. Use 'look' to assess your surroundings.");
             }
 
             var combat = state.Combat;
@@ -42,21 +42,21 @@ public class AttackCommand : ICommand
             if (!combat.IsActive)
             {
                 _log.Debug("Attack failed: Combat is not active");
-                return CommandResult.Failure("Combat has ended.");
+                return CommandResult.CreateFailure("Combat has ended.");
             }
 
             // Validation 3: Must have target argument
             if (args.Length == 0)
             {
                 _log.Debug("Attack failed: No target specified");
-                return CommandResult.Failure(GetAvailableTargetsMessage(combat));
+                return CommandResult.CreateFailure(GetAvailableTargetsMessage(combat));
             }
 
             // Validation 4: Player must have a turn
             if (!IsPlayerTurn(combat))
             {
                 _log.Debug("Attack failed: Not player's turn");
-                return CommandResult.Failure("Wait for your turn!");
+                return CommandResult.CreateFailure("Wait for your turn!");
             }
 
             // Parse target
@@ -66,14 +66,14 @@ public class AttackCommand : ICommand
             if (target == null)
             {
                 _log.Debug("Attack failed: Target not found: {Target}", targetName);
-                return CommandResult.Failure($"Cannot find enemy '{targetName}'. {GetAvailableTargetsMessage(combat)}");
+                return CommandResult.CreateFailure($"Cannot find enemy '{targetName}'. {GetAvailableTargetsMessage(combat)}");
             }
 
             // Validation 5: Target must be alive
             if (target.CurrentHP <= 0)
             {
                 _log.Debug("Attack failed: Target already defeated: {Target}", target.Name);
-                return CommandResult.Failure($"{target.Name} has already been defeated.");
+                return CommandResult.CreateFailure($"{target.Name} has already been defeated.");
             }
 
             // Clear combat log for this action
@@ -94,7 +94,7 @@ public class AttackCommand : ICommand
                 state.Player.Name,
                 target.Name);
 
-            return CommandResult.Success(result.ToString());
+            return CommandResult.CreateSuccess(result.ToString());
         }
         catch (Exception ex)
         {
@@ -102,7 +102,7 @@ public class AttackCommand : ICommand
                 "Attack command failed: CharacterID={CharacterID}, Error={ErrorType}",
                 state.Player?.CharacterID ?? 0,
                 ex.GetType().Name);
-            return CommandResult.Failure($"An error occurred during the attack: {ex.Message}");
+            return CommandResult.CreateFailure($"An error occurred during the attack: {ex.Message}");
         }
     }
 

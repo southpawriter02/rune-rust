@@ -19,7 +19,7 @@ public class SkillsCommand : ICommand
         if (state.Player == null)
         {
             _log.Warning("Skills command failed: Player is null");
-            return CommandResult.Failure("Player not found.");
+            return CommandResult.CreateFailure("Player not found.");
         }
 
         _log.Information(
@@ -110,7 +110,7 @@ public class SkillsCommand : ICommand
             "Skills displayed: AbilityCount={AbilityCount}",
             abilities.Count);
 
-        return CommandResult.Success(output.ToString());
+        return CommandResult.CreateSuccess(output.ToString());
     }
 
     /// <summary>

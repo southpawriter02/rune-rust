@@ -19,7 +19,7 @@ public class GoCommand : ICommand
         {
             _log.Debug("Go command called with no direction");
             var availableExits = GetAvailableExitsMessage(state.CurrentRoom);
-            return CommandResult.Failure($"Go where? {availableExits}");
+            return CommandResult.CreateFailure($"Go where? {availableExits}");
         }
 
         var direction = args[0].ToLower();
@@ -36,7 +36,7 @@ public class GoCommand : ICommand
             if (state.CurrentPhase == GamePhase.Combat)
             {
                 _log.Debug("Movement blocked: Player is in combat");
-                return CommandResult.Failure("You cannot leave during combat. Use 'flee' to escape.");
+                return CommandResult.CreateFailure("You cannot leave during combat. Use 'flee' to escape.");
             }
 
             // Validation 2: Exit must exist
@@ -44,7 +44,7 @@ public class GoCommand : ICommand
             {
                 _log.Debug("Invalid direction: {Direction}", direction);
                 var availableExits = GetAvailableExitsMessage(state.CurrentRoom);
-                return CommandResult.Failure($"There is no exit to the {direction}. {availableExits}");
+                return CommandResult.CreateFailure($"There is no exit to the {direction}. {availableExits}");
             }
 
             // TODO: Validation 3: Exit must not be locked (implement in future)
@@ -71,12 +71,12 @@ public class GoCommand : ICommand
             var lookCommand = new LookCommand();
             var roomDescription = lookCommand.Execute(state, Array.Empty<string>());
 
-            return CommandResult.Success(roomDescription.Message, redrawRoom: true);
+            return CommandResult.CreateSuccess(roomDescription.Message, redrawRoom: true);
         }
         catch (InvalidOperationException ex)
         {
             _log.Warning(ex, "Movement failed: {Message}", ex.Message);
-            return CommandResult.Failure(ex.Message);
+            return CommandResult.CreateFailure(ex.Message);
         }
         catch (Exception ex)
         {
@@ -84,7 +84,7 @@ public class GoCommand : ICommand
                 "Go command failed: CharacterID={CharacterID}, Error={ErrorType}",
                 state.Player?.CharacterID ?? 0,
                 ex.GetType().Name);
-            return CommandResult.Failure("An error occurred while moving.");
+            return CommandResult.CreateFailure("An error occurred while moving.");
         }
     }
 

@@ -26,7 +26,7 @@ public class AbilityCommand : ICommand
         if (args.Length == 0)
         {
             _log.Debug("Ability command called with no ability name");
-            return CommandResult.Failure("Specify an ability to use. Type 'skills' to see your abilities.");
+            return CommandResult.CreateFailure("Specify an ability to use. Type 'skills' to see your abilities.");
         }
 
         var abilityName = args[0];
@@ -43,7 +43,7 @@ public class AbilityCommand : ICommand
             if (state.CurrentPhase != GamePhase.Combat || state.Combat == null)
             {
                 _log.Debug("Ability failed: Not in combat");
-                return CommandResult.Failure("You can only use combat abilities during combat.");
+                return CommandResult.CreateFailure("You can only use combat abilities during combat.");
             }
 
             var combat = state.Combat;
@@ -53,14 +53,14 @@ public class AbilityCommand : ICommand
             if (!combat.IsActive)
             {
                 _log.Debug("Ability failed: Combat is not active");
-                return CommandResult.Failure("Combat has ended.");
+                return CommandResult.CreateFailure("Combat has ended.");
             }
 
             // Validation 3: Player must have a turn
             if (!IsPlayerTurn(combat))
             {
                 _log.Debug("Ability failed: Not player's turn");
-                return CommandResult.Failure("Wait for your turn!");
+                return CommandResult.CreateFailure("Wait for your turn!");
             }
 
             // Find ability in player's ability list
@@ -70,7 +70,7 @@ public class AbilityCommand : ICommand
             {
                 _log.Debug("Ability not found: {Ability}", abilityName);
                 var availableAbilities = string.Join(", ", player.Abilities.Select(a => a.Name));
-                return CommandResult.Failure($"You don't know the ability '{abilityName}'. Your abilities: {availableAbilities}");
+                return CommandResult.CreateFailure($"You don't know the ability '{abilityName}'. Your abilities: {availableAbilities}");
             }
 
             // Parse target if provided
@@ -83,13 +83,13 @@ public class AbilityCommand : ICommand
                 if (target == null)
                 {
                     _log.Debug("Ability target not found: {Target}", targetName);
-                    return CommandResult.Failure($"Cannot find target '{targetName}'.");
+                    return CommandResult.CreateFailure($"Cannot find target '{targetName}'.");
                 }
 
                 if (target.CurrentHP <= 0)
                 {
                     _log.Debug("Ability target already defeated: {Target}", target.Name);
-                    return CommandResult.Failure($"{target.Name} has already been defeated.");
+                    return CommandResult.CreateFailure($"{target.Name} has already been defeated.");
                 }
             }
 
@@ -118,7 +118,7 @@ public class AbilityCommand : ICommand
                 target?.Name ?? "none",
                 success);
 
-            return CommandResult.Success(result.ToString());
+            return CommandResult.CreateSuccess(result.ToString());
         }
         catch (Exception ex)
         {
@@ -127,7 +127,7 @@ public class AbilityCommand : ICommand
                 state.Player?.CharacterID ?? 0,
                 abilityName,
                 ex.GetType().Name);
-            return CommandResult.Failure($"An error occurred while using the ability: {ex.Message}");
+            return CommandResult.CreateFailure($"An error occurred while using the ability: {ex.Message}");
         }
     }
 

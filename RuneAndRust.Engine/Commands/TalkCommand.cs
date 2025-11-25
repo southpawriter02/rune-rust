@@ -29,13 +29,13 @@ public class TalkCommand : ICommand
         if (state.Player == null)
         {
             _log.Warning("Talk command failed: Player is null");
-            return CommandResult.Failure("Player not found.");
+            return CommandResult.CreateFailure("Player not found.");
         }
 
         if (state.CurrentRoom == null)
         {
             _log.Warning("Talk command failed: CurrentRoom is null");
-            return CommandResult.Failure("You are not in a room.");
+            return CommandResult.CreateFailure("You are not in a room.");
         }
 
         // Check if arguments provided
@@ -45,10 +45,10 @@ public class TalkCommand : ICommand
             if (state.CurrentRoom.NPCs.Any())
             {
                 var npcNames = string.Join(", ", state.CurrentRoom.NPCs.Select(npc => npc.Name));
-                return CommandResult.Failure($"Talk to whom? Available NPCs: {npcNames}");
+                return CommandResult.CreateFailure($"Talk to whom? Available NPCs: {npcNames}");
             }
 
-            return CommandResult.Failure("There is no one here to talk to.");
+            return CommandResult.CreateFailure("There is no one here to talk to.");
         }
 
         // Parse NPC name (skip "to" if present)
@@ -83,10 +83,10 @@ public class TalkCommand : ICommand
             if (state.CurrentRoom.NPCs.Any())
             {
                 var npcNames = string.Join(", ", state.CurrentRoom.NPCs.Select(n => n.Name));
-                return CommandResult.Failure($"'{npcName}' is not here. Available NPCs: {npcNames}");
+                return CommandResult.CreateFailure($"'{npcName}' is not here. Available NPCs: {npcNames}");
             }
 
-            return CommandResult.Failure($"'{npcName}' is not here.");
+            return CommandResult.CreateFailure($"'{npcName}' is not here.");
         }
 
         // Check if NPC is hostile
@@ -96,7 +96,7 @@ public class TalkCommand : ICommand
                 "Talk failed: NPC is hostile: NPC={NPCName}",
                 npc.Name);
 
-            return CommandResult.Failure($"{npc.Name} is hostile and will not talk to you!");
+            return CommandResult.CreateFailure($"{npc.Name} is hostile and will not talk to you!");
         }
 
         // Mark NPC as met
@@ -168,6 +168,6 @@ public class TalkCommand : ICommand
             npc.Name,
             !string.IsNullOrEmpty(npc.RootDialogueId));
 
-        return CommandResult.Success(output.ToString());
+        return CommandResult.CreateSuccess(output.ToString());
     }
 }

@@ -18,7 +18,7 @@ public class SagaCommand : ICommand
         if (state.Player == null)
         {
             _log.Warning("Saga command failed: Player is null");
-            return CommandResult.Failure("Player not found.");
+            return CommandResult.CreateFailure("Player not found.");
         }
 
         _log.Information(
@@ -94,7 +94,7 @@ public class SagaCommand : ICommand
             state.Player.ProgressionPoints,
             state.Player.CurrentLegend);
 
-        return CommandResult.Success(output.ToString());
+        return CommandResult.CreateSuccess(output.ToString());
     }
 
     /// <summary>

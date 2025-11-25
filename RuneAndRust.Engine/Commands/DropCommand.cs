@@ -24,20 +24,20 @@ public class DropCommand : ICommand
         if (state.Player == null)
         {
             _log.Warning("Drop command failed: Player is null");
-            return CommandResult.Failure("Player not found.");
+            return CommandResult.CreateFailure("Player not found.");
         }
 
         if (state.CurrentRoom == null)
         {
             _log.Warning("Drop command failed: CurrentRoom is null");
-            return CommandResult.Failure("You are not in a room.");
+            return CommandResult.CreateFailure("You are not in a room.");
         }
 
         // Check for arguments
         if (args.Length == 0)
         {
             _log.Debug("Drop command: No item specified");
-            return CommandResult.Failure("Drop what? (Usage: drop [item name])");
+            return CommandResult.CreateFailure("Drop what? (Usage: drop [item name])");
         }
 
         // Join all arguments to handle multi-word item names
@@ -63,11 +63,11 @@ public class DropCommand : ICommand
             if (state.Player.Inventory.Any())
             {
                 var inventoryItems = string.Join(", ", state.Player.Inventory.Select(i => i.Name));
-                return CommandResult.Failure(
+                return CommandResult.CreateFailure(
                     $"You don't have a '{itemName}' in your inventory.\nYou have: {inventoryItems}");
             }
 
-            return CommandResult.Failure("Your inventory is empty.");
+            return CommandResult.CreateFailure("Your inventory is empty.");
         }
 
         // Drop the item using EquipmentService
@@ -80,7 +80,7 @@ public class DropCommand : ICommand
                 item.Name,
                 state.Player.CharacterID);
 
-            return CommandResult.Failure($"Failed to drop the {item.Name}.");
+            return CommandResult.CreateFailure($"Failed to drop the {item.Name}.");
         }
 
         _log.Information(
@@ -88,6 +88,6 @@ public class DropCommand : ICommand
             item.Name,
             state.Player.Inventory.Count);
 
-        return CommandResult.Success($"You drop the {item.Name}.");
+        return CommandResult.CreateSuccess($"You drop the {item.Name}.");
     }
 }

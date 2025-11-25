@@ -18,7 +18,7 @@ public class InventoryCommand : ICommand
         if (state.Player == null)
         {
             _log.Warning("Inventory command failed: Player is null");
-            return CommandResult.Failure("Player not found.");
+            return CommandResult.CreateFailure("Player not found.");
         }
 
         _log.Information(
@@ -47,7 +47,7 @@ public class InventoryCommand : ICommand
             output.AppendLine("╚════════════════════════════════════════╝");
 
             _log.Information("Inventory displayed: Empty inventory");
-            return CommandResult.Success(output.ToString());
+            return CommandResult.CreateSuccess(output.ToString());
         }
 
         // Group inventory items by type
@@ -141,7 +141,7 @@ public class InventoryCommand : ICommand
             state.Player.Consumables.Count,
             state.Player.CraftingComponents.Count);
 
-        return CommandResult.Success(output.ToString());
+        return CommandResult.CreateSuccess(output.ToString());
     }
 
     /// <summary>

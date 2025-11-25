@@ -24,7 +24,7 @@ public class EquipmentCommand : ICommand
         if (state.Player == null)
         {
             _log.Warning("Equipment command failed: Player is null");
-            return CommandResult.Failure("Player not found.");
+            return CommandResult.CreateFailure("Player not found.");
         }
 
         _log.Information(
@@ -90,7 +90,7 @@ public class EquipmentCommand : ICommand
             state.Player.EquippedWeapon?.Name ?? "None",
             state.Player.EquippedArmor?.Name ?? "None");
 
-        return CommandResult.Success(output.ToString());
+        return CommandResult.CreateSuccess(output.ToString());
     }
 
     /// <summary>
