@@ -18,6 +18,9 @@ public abstract class AmbientCondition
     public int DefenseModifier { get; set; } = 0;
     public int MovementModifier { get; set; } = 0; // % of normal movement
     public int StressPerTurn { get; set; } = 0;
+
+    // State
+    public bool IsActive { get; set; } = true;
 }
 
 /// <summary>

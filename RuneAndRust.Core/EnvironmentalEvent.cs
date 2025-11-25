@@ -105,10 +105,19 @@ public class HazardResult
     public List<int> AffectedCharacters { get; set; } = new();
     public string? StatusEffectApplied { get; set; }
     public string Description { get; set; } = string.Empty;
+    public string HazardName { get; set; } = string.Empty;
 
-    // Legacy compatibility
-    public int DamageDealt => TotalDamage;
-    public string LogMessage => Description;
+    // Legacy compatibility - make settable for backward compatibility
+    public int DamageDealt
+    {
+        get => TotalDamage;
+        set => TotalDamage = value;
+    }
+    public string LogMessage
+    {
+        get => Description;
+        set => Description = value;
+    }
 }
 
 /// <summary>

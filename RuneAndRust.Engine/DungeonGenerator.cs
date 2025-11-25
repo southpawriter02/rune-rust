@@ -762,8 +762,8 @@ public class DungeonGenerator
         foreach (var room in dungeon.Rooms.Values)
         {
             var hasContent = room.Enemies.Any() || room.Hazards.Any() || room.Loot.Any();
-            var isBreatherRoom = room.Archetype == RoomArchetype.EntryHall ||
-                                room.Archetype == RoomArchetype.SecretRoom;
+            var isBreatherRoom = room.Archetype == PopulationRoomArchetype.EntryHall ||
+                                room.Archetype == PopulationRoomArchetype.SecretRoom;
 
             if (!hasContent && !isBreatherRoom && room.IsBossRoom == false)
             {
@@ -805,7 +805,7 @@ public class DungeonGenerator
     private void GenerateMainPath(DungeonGraph graph, int targetRoomCount)
     {
         // Create start node (Entry Hall)
-        var startTemplate = SelectTemplateByArchetype(RoomArchetype.EntryHall);
+        var startTemplate = SelectTemplateByArchetype(Core.RoomArchetype.EntryHall);
         var startNode = CreateNode(startTemplate, NodeType.Start, "Start Room");
         graph.AddNode(startNode);
 
@@ -825,7 +825,7 @@ public class DungeonGenerator
         }
 
         // Create boss node
-        var bossTemplate = SelectTemplateByArchetype(RoomArchetype.BossArena);
+        var bossTemplate = SelectTemplateByArchetype(Core.RoomArchetype.BossArena);
         var bossNode = CreateNode(bossTemplate, NodeType.Boss, "Boss Room");
         graph.AddNode(bossNode);
         graph.AddEdge(currentNode, bossNode);
@@ -943,7 +943,7 @@ public class DungeonGenerator
             var parentNode = eligibleParents[_rng.Next(eligibleParents.Count)];
 
             // Create secret room
-            var template = SelectTemplateByArchetype(RoomArchetype.SecretRoom);
+            var template = SelectTemplateByArchetype(Core.RoomArchetype.SecretRoom);
             var secretNode = CreateNode(template, NodeType.Secret, $"Secret Room {i + 1}");
             graph.AddNode(secretNode);
 
@@ -974,7 +974,7 @@ public class DungeonGenerator
         foreach (var archetype in validArchetypes)
         {
             // Skip BossArena (only used explicitly for final room)
-            if (archetype == RoomArchetype.BossArena)
+            if (archetype == Core.RoomArchetype.BossArena)
                 continue;
 
             var templates = _templateLibrary.GetTemplatesByArchetype(archetype);
@@ -991,7 +991,7 @@ public class DungeonGenerator
         if (availableTemplates.Count == 0)
         {
             _log.Warning("No valid templates found, falling back to Corridor");
-            availableTemplates.AddRange(_templateLibrary.GetTemplatesByArchetype(RoomArchetype.Corridor));
+            availableTemplates.AddRange(_templateLibrary.GetTemplatesByArchetype(Core.RoomArchetype.Corridor));
         }
 
         if (availableTemplates.Count == 0)

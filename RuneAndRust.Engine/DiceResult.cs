@@ -7,6 +7,9 @@ public class DiceResult
     public int Successes { get; set; }
     public int TotalValue { get; set; }
 
+    // Alias for TotalValue for backward compatibility
+    public int Total => TotalValue;
+
     public DiceResult() { }
 
     public DiceResult(int diceRolled, List<int> rolls, int successes)

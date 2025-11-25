@@ -2,6 +2,9 @@ using RuneAndRust.Core;
 using RuneAndRust.Core.Population;
 using Serilog;
 
+// Resolve ambiguous RoomArchetype reference
+using PopulationRoomArchetype = RuneAndRust.Core.Population.RoomArchetype;
+
 namespace RuneAndRust.Engine;
 
 /// <summary>
@@ -38,17 +41,17 @@ public class DensityClassificationService
         // Step 1: Fixed classifications based on room archetype
         foreach (var room in rooms)
         {
-            if (room.Archetype == RoomArchetype.BossArena || room.IsBossRoom)
+            if (room.Archetype == PopulationRoomArchetype.BossArena || room.IsBossRoom)
             {
                 classifications[room] = RoomDensity.Boss;
                 _log.Debug("Room {RoomId} classified as Boss (archetype)", room.RoomId);
             }
-            else if (room.Archetype == RoomArchetype.EntryHall || room.IsStartRoom)
+            else if (room.Archetype == PopulationRoomArchetype.EntryHall || room.IsStartRoom)
             {
                 classifications[room] = RoomDensity.Light; // Safe start
                 _log.Debug("Room {RoomId} classified as Light (entry hall)", room.RoomId);
             }
-            else if (room.Archetype == RoomArchetype.SecretRoom ||
+            else if (room.Archetype == PopulationRoomArchetype.SecretRoom ||
                      room.GeneratedNodeType == NodeType.Secret)
             {
                 classifications[room] = RoomDensity.Empty; // Reward exploration

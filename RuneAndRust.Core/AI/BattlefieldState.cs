@@ -49,4 +49,15 @@ public class BattlefieldState
     /// Unique identifier for the game session.
     /// </summary>
     public Guid SessionId { get; set; }
+
+    // Backward compatibility aliases
+    /// <summary>
+    /// Alias for PlayerCharacters for backward compatibility
+    /// </summary>
+    public List<PlayerCharacter> PlayerParty => PlayerCharacters;
+
+    /// <summary>
+    /// Combat log for the encounter
+    /// </summary>
+    public List<string> CombatLog { get; set; } = new();
 }

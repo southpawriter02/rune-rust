@@ -246,4 +246,21 @@ public class PlayerCharacter
         }
         return multiplier;
     }
+
+    // Convenience aliases for backward compatibility
+    public int CurrentHP { get => HP; set => HP = value; }
+    public int CurrentAetherPool { get => AP; set => AP = value; }
+    public int MaxAetherPool { get => MaxAP; set => MaxAP = value; }
+    public int BaseAetherPool => (Attributes.Will * 10) + 50;
+    public int CharacterId => CharacterID;
+    public int Id => CharacterID;
+    public int Level => CurrentMilestone;
+    public int Defense => DefenseBonus;
+    public int Attack => EquippedWeapon?.DamageDice ?? BaseDamage;
+    public Equipment? EquippedShield { get; set; }
+    public int MIGHT => Attributes.Might;
+    public int FINESSE => Attributes.Finesse;
+    public int WILL => Attributes.Will;
+    public int WITS => Attributes.Wits;
+    public int STURDINESS => Attributes.Sturdiness;
 }

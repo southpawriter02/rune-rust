@@ -35,6 +35,10 @@ public abstract class DynamicHazard
     public bool HasBeenInvestigated { get; set; } = false;
     public int InvestigationDC { get; set; } = 3;
     public string? DisableHint { get; set; } = null;
+
+    // Additional backward compatibility properties
+    public bool IsHidden { get; set; } = false;
+    public bool HasBeenDiscovered { get; set; } = false;
 }
 
 /// <summary>
