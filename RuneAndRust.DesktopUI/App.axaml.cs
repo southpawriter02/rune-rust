@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Microsoft.Extensions.DependencyInjection;
+using RuneAndRust.DesktopUI.Controllers;
 using RuneAndRust.DesktopUI.Services;
 using RuneAndRust.DesktopUI.ViewModels;
 using RuneAndRust.DesktopUI.Views;
@@ -45,7 +46,7 @@ public partial class App : Application
             .WriteTo.Console()
             .CreateLogger();
 
-        Log.Information("Rune & Rust Desktop UI v0.43.21 starting...");
+        Log.Information("Rune & Rust Desktop UI v0.44.2 starting...");
 
         try
         {
@@ -120,7 +121,12 @@ public partial class App : Application
         // Tooltip & Help Services (v0.43.20)
         services.AddSingleton<ITooltipService, TooltipService>();
 
-        // Engine Services (v0.43.5)
+        // Controllers (v0.44.1, v0.44.2)
+        services.AddSingleton<GameStateController>();
+        services.AddSingleton<MainMenuController>();
+        services.AddSingleton<CharacterCreationController>();
+
+        // Engine Services (v0.43.5, v0.44.2)
         services.AddSingleton<DiceService>();
         services.AddSingleton<SagaService>();
         services.AddSingleton<LootService>();
@@ -130,8 +136,9 @@ public partial class App : Application
         services.AddSingleton<AdvancedStatusEffectService>();
         services.AddSingleton<CombatEngine>();
         services.AddSingleton<EnemyAI>();
+        services.AddSingleton<TemplateLibrary>(); // v0.44.2: For dungeon generation
 
-        // ViewModels (v0.43.1 - v0.43.21)
+        // ViewModels (v0.43.1 - v0.44.1)
         services.AddTransient<MainWindowViewModel>();
         services.AddTransient<MenuViewModel>();
         services.AddTransient<SpriteDemoViewModel>();
@@ -147,8 +154,9 @@ public partial class App : Application
         services.AddTransient<SettingsViewModel>();
         services.AddTransient<SaveLoadViewModel>();
         services.AddTransient<HelpViewModel>();
+        services.AddTransient<CharacterCreationViewModel>();
 
-        // v0.43.21: All ViewModels registered for complete UI integration
+        // v0.44.1: Controllers and ViewModels for game flow integration
 
         Log.Debug("Registered {ServiceCount} service types", services.Count);
     }

@@ -1,16 +1,19 @@
+using RuneAndRust.DesktopUI.Controllers;
 using RuneAndRust.DesktopUI.Services;
 using System;
 using System.Windows.Input;
 using ReactiveUI;
+using Serilog;
 
 namespace RuneAndRust.DesktopUI.ViewModels;
 
 /// <summary>
-/// v0.43.21: View model for the main menu screen.
-/// Allows starting a new game, loading saved games, and accessing settings.
+/// v0.44.1: View model for the main menu screen.
+/// Delegates game flow operations to MainMenuController.
 /// </summary>
 public class MenuViewModel : ViewModelBase
 {
+    private readonly MainMenuController? _controller;
     private readonly INavigationService? _navigationService;
     private readonly ISpriteService? _spriteService;
     private readonly IMetaProgressionService? _metaProgressionService;
@@ -19,6 +22,8 @@ public class MenuViewModel : ViewModelBase
     private readonly IAudioService? _audioService;
     private readonly ISaveGameService? _saveGameService;
     private readonly IDialogService? _dialogService;
+    private readonly ILogger? _logger;
+
     /// <summary>
     /// Command to start a new game.
     /// </summary>
@@ -67,29 +72,57 @@ public class MenuViewModel : ViewModelBase
     /// <summary>
     /// Gets the application version.
     /// </summary>
-    public string Version => "v0.43.21 - UI Testing & Optimization";
+    public string Version => "v0.44.1 - Game Flow Integration";
 
     /// <summary>
     /// Whether there is a saved game to continue.
     /// </summary>
-    public bool HasSavedGame => _saveGameService?.GetMostRecentSave() != null;
+    public bool HasSavedGame => _controller?.HasSavedGame() ?? _saveGameService?.GetMostRecentSave() != null;
 
+    /// <summary>
+    /// Design-time constructor.
+    /// </summary>
     public MenuViewModel()
     {
-        // Placeholder commands for v0.43.1
-        // Full implementation will be added in later specs
-        NewGameCommand = ReactiveCommand.Create(OnNewGame);
-        ContinueGameCommand = ReactiveCommand.Create(OnContinueGame);
+        NewGameCommand = ReactiveCommand.CreateFromTask(OnNewGameAsync);
+        ContinueGameCommand = ReactiveCommand.CreateFromTask(OnContinueGameAsync);
         LoadGameCommand = ReactiveCommand.Create(OnLoadGame);
         SettingsCommand = ReactiveCommand.Create(OnSettings);
         AchievementsCommand = ReactiveCommand.Create(OnAchievements);
         SpriteDemoCommand = ReactiveCommand.Create(OnSpriteDemo);
         EndgameCommand = ReactiveCommand.Create(OnEndgame);
-        ExitCommand = ReactiveCommand.Create(OnExit);
+        ExitCommand = ReactiveCommand.CreateFromTask(OnExitAsync);
     }
 
     /// <summary>
-    /// Initializes a new instance with navigation support.
+    /// Initializes with MainMenuController (preferred constructor for v0.44.1+).
+    /// </summary>
+    public MenuViewModel(
+        MainMenuController controller,
+        INavigationService navigationService,
+        ISpriteService spriteService,
+        IMetaProgressionService metaProgressionService,
+        IEndgameService endgameService,
+        IConfigurationService configurationService,
+        IAudioService audioService,
+        ISaveGameService saveGameService,
+        IDialogService dialogService,
+        ILogger logger) : this()
+    {
+        _controller = controller ?? throw new ArgumentNullException(nameof(controller));
+        _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
+        _spriteService = spriteService ?? throw new ArgumentNullException(nameof(spriteService));
+        _metaProgressionService = metaProgressionService ?? throw new ArgumentNullException(nameof(metaProgressionService));
+        _endgameService = endgameService ?? throw new ArgumentNullException(nameof(endgameService));
+        _configurationService = configurationService ?? throw new ArgumentNullException(nameof(configurationService));
+        _audioService = audioService ?? throw new ArgumentNullException(nameof(audioService));
+        _saveGameService = saveGameService ?? throw new ArgumentNullException(nameof(saveGameService));
+        _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    }
+
+    /// <summary>
+    /// Legacy constructor without controller (for backwards compatibility).
     /// </summary>
     public MenuViewModel(
         INavigationService navigationService,
@@ -111,121 +144,119 @@ public class MenuViewModel : ViewModelBase
         _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
     }
 
-    private void OnNewGame()
+    private async Task OnNewGameAsync()
     {
-        // Placeholder - will navigate to character creation in later specs
-        Console.WriteLine("[MENU] New Game selected");
+        if (_controller != null)
+        {
+            // Use controller (v0.44.1+)
+            await _controller.OnNewGameAsync();
+        }
+        else if (_navigationService != null && _saveGameService != null)
+        {
+            // Fallback to legacy behavior
+            var characterCreationViewModel = new CharacterCreationViewModel(_navigationService, _saveGameService);
+            _navigationService.NavigateTo(characterCreationViewModel);
+            _logger?.Information("[MENU] Navigated to Character Creation (legacy path)");
+        }
     }
 
-    private async void OnContinueGame()
+    private async Task OnContinueGameAsync()
     {
-        if (_saveGameService != null && _navigationService != null)
+        if (_controller != null)
         {
+            // Use controller (v0.44.1+)
+            await _controller.OnContinueGameAsync();
+        }
+        else if (_saveGameService != null && _navigationService != null)
+        {
+            // Fallback to legacy behavior
             var mostRecent = _saveGameService.GetMostRecentSave();
             if (mostRecent != null)
             {
-                Console.WriteLine($"[MENU] Loading most recent save: {mostRecent.SaveName}");
+                _logger?.Information("Loading most recent save: {SaveName}", mostRecent.SaveName);
                 var success = await _saveGameService.LoadGameAsync(mostRecent.FileName);
                 if (success)
                 {
-                    // In full implementation, navigate to game view
-                    Console.WriteLine("[MENU] Continue game loaded successfully");
-                }
-                else
-                {
-                    Console.WriteLine("[MENU] Failed to load continue game");
+                    _logger?.Information("Continue game loaded successfully");
                 }
             }
-            else
-            {
-                Console.WriteLine("[MENU] No saved games to continue");
-            }
-        }
-        else
-        {
-            Console.WriteLine("[MENU] Continue Game selected (services not available)");
         }
     }
 
     private void OnLoadGame()
     {
-        if (_navigationService != null && _saveGameService != null && _dialogService != null)
+        if (_controller != null)
         {
-            // Navigate to save/load view (v0.43.19)
+            _controller.OnLoadGame();
+        }
+        else if (_navigationService != null && _saveGameService != null && _dialogService != null)
+        {
             var saveLoadViewModel = new SaveLoadViewModel(_saveGameService, _dialogService, _navigationService);
             _navigationService.NavigateTo(saveLoadViewModel);
-            Console.WriteLine("[MENU] Navigated to Save/Load");
-        }
-        else
-        {
-            Console.WriteLine("[MENU] Load Game selected (navigation not available)");
         }
     }
 
     private void OnSettings()
     {
-        if (_navigationService != null && _configurationService != null && _audioService != null)
+        if (_controller != null)
         {
-            // Navigate to settings view (v0.43.18)
+            _controller.OnSettings();
+        }
+        else if (_navigationService != null && _configurationService != null && _audioService != null)
+        {
             var settingsViewModel = new SettingsViewModel(_configurationService, _audioService, _navigationService);
             _navigationService.NavigateTo(settingsViewModel);
-            Console.WriteLine("[MENU] Navigated to Settings");
-        }
-        else
-        {
-            Console.WriteLine("[MENU] Settings selected (navigation not available)");
         }
     }
 
     private void OnAchievements()
     {
-        if (_navigationService != null && _metaProgressionService != null)
+        if (_controller != null)
         {
-            // Navigate to meta-progression view (v0.43.15)
+            _controller.OnAchievements();
+        }
+        else if (_navigationService != null && _metaProgressionService != null)
+        {
             var metaProgressionViewModel = new MetaProgressionViewModel(_metaProgressionService, _navigationService);
             _navigationService.NavigateTo(metaProgressionViewModel);
-            Console.WriteLine("[MENU] Navigated to Meta-Progression & Achievements");
-        }
-        else
-        {
-            Console.WriteLine("[MENU] Achievements selected (navigation not available)");
         }
     }
 
     private void OnSpriteDemo()
     {
-        if (_navigationService != null && _spriteService != null)
+        if (_controller != null)
         {
-            // Navigate to sprite demo
-            var spriteDemoViewModel = new SpriteDemoViewModel(_spriteService);
-            _navigationService.NavigateTo(spriteDemoViewModel);
-            Console.WriteLine("[MENU] Navigated to Sprite Demo");
+            _controller.OnSpriteDemo();
         }
-        else
+        else if (_navigationService != null && _spriteService != null)
         {
-            Console.WriteLine("[MENU] Sprite Demo selected (navigation not available)");
+            var spriteDemoViewModel = new SpriteDemoViewModel(_spriteService, _navigationService);
+            _navigationService.NavigateTo(spriteDemoViewModel);
         }
     }
 
     private void OnEndgame()
     {
-        if (_navigationService != null && _endgameService != null)
+        if (_controller != null)
         {
-            // Navigate to endgame mode selection (v0.43.16)
+            _controller.OnEndgame();
+        }
+        else if (_navigationService != null && _endgameService != null)
+        {
             var endgameModeViewModel = new EndgameModeViewModel(_endgameService, _navigationService);
             _navigationService.NavigateTo(endgameModeViewModel);
-            Console.WriteLine("[MENU] Navigated to Endgame Modes");
-        }
-        else
-        {
-            Console.WriteLine("[MENU] Endgame selected (navigation not available)");
         }
     }
 
-    private void OnExit()
+    private async Task OnExitAsync()
     {
-        // Placeholder - will exit application
-        Console.WriteLine("[MENU] Exit selected");
-        Environment.Exit(0);
+        if (_controller != null)
+        {
+            await _controller.OnQuitAsync();
+        }
+        else
+        {
+            Environment.Exit(0);
+        }
     }
 }

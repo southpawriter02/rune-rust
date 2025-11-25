@@ -1,0 +1,331 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:RuneAndRust.DesktopUI.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="1280" d:DesignHeight="720"
+             x:Class="RuneAndRust.DesktopUI.Views.CharacterCreationView"
+             x:DataType="vm:CharacterCreationViewModel">
+
+    <Design.DataContext>
+        <vm:CharacterCreationViewModel/>
+    </Design.DataContext>
+
+    <Grid RowDefinitions="Auto,*,Auto" Background="#1A1A1A">
+
+        <!-- Header with Step Indicator -->
+        <Border Grid.Row="0" Background="#2C2C2C" Padding="20,15">
+            <Grid RowDefinitions="Auto,Auto">
+                <!-- Title Row -->
+                <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto">
+                    <Button Grid.Column="0"
+                            Content="Back"
+                            Command="{Binding BackCommand}"
+                            Width="80"
+                            HorizontalContentAlignment="Center"/>
+                    <TextBlock Grid.Column="1"
+                               Text="{Binding StepTitle}"
+                               FontSize="24"
+                               FontWeight="Bold"
+                               Foreground="White"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"/>
+                    <Button Grid.Column="2"
+                            Content="Cancel"
+                            Command="{Binding CancelCommand}"
+                            Width="80"
+                            HorizontalContentAlignment="Center"/>
+                </Grid>
+
+                <!-- Step Progress Indicator -->
+                <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,15,0,0" Spacing="10">
+                    <Border Background="{Binding CurrentStep, Converter={x:Static vm:StepToColorConverter.Instance}, ConverterParameter=Lineage}"
+                            CornerRadius="15" Padding="12,6">
+                        <TextBlock Text="1. Lineage" Foreground="White" FontSize="12"/>
+                    </Border>
+                    <TextBlock Text="→" Foreground="#666" VerticalAlignment="Center"/>
+                    <Border Background="{Binding CurrentStep, Converter={x:Static vm:StepToColorConverter.Instance}, ConverterParameter=Background}"
+                            CornerRadius="15" Padding="12,6">
+                        <TextBlock Text="2. Background" Foreground="White" FontSize="12"/>
+                    </Border>
+                    <TextBlock Text="→" Foreground="#666" VerticalAlignment="Center"/>
+                    <Border Background="{Binding CurrentStep, Converter={x:Static vm:StepToColorConverter.Instance}, ConverterParameter=Attributes}"
+                            CornerRadius="15" Padding="12,6">
+                        <TextBlock Text="3. Attributes" Foreground="White" FontSize="12"/>
+                    </Border>
+                    <TextBlock Text="→" Foreground="#666" VerticalAlignment="Center"/>
+                    <Border Background="{Binding CurrentStep, Converter={x:Static vm:StepToColorConverter.Instance}, ConverterParameter=Archetype}"
+                            CornerRadius="15" Padding="12,6">
+                        <TextBlock Text="4. Archetype" Foreground="White" FontSize="12"/>
+                    </Border>
+                    <TextBlock Text="→" Foreground="#666" VerticalAlignment="Center"/>
+                    <Border Background="{Binding CurrentStep, Converter={x:Static vm:StepToColorConverter.Instance}, ConverterParameter=Specialization}"
+                            CornerRadius="15" Padding="12,6">
+                        <TextBlock Text="5. Specialization" Foreground="White" FontSize="12"/>
+                    </Border>
+                    <TextBlock Text="→" Foreground="#666" VerticalAlignment="Center"/>
+                    <Border Background="{Binding CurrentStep, Converter={x:Static vm:StepToColorConverter.Instance}, ConverterParameter=Summary}"
+                            CornerRadius="15" Padding="12,6">
+                        <TextBlock Text="6. Confirm" Foreground="White" FontSize="12"/>
+                    </Border>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Main Content - Step Panels -->
+        <ScrollViewer Grid.Row="1" Padding="20">
+            <Grid MaxWidth="900" HorizontalAlignment="Center">
+
+                <!-- Step 1: Lineage Selection -->
+                <StackPanel IsVisible="{Binding CurrentStep, Converter={x:Static vm:StepVisibilityConverter.Instance}, ConverterParameter=Lineage}"
+                            Spacing="15">
+                    <TextBlock Text="Choose Your Lineage"
+                               FontSize="22" FontWeight="Bold" Foreground="#4A90E2"
+                               HorizontalAlignment="Center" Margin="0,0,0,10"/>
+                    <TextBlock Text="Your lineage determines your inherited traits and bloodline abilities."
+                               FontSize="14" Foreground="#AAAAAA" TextWrapping="Wrap"
+                               HorizontalAlignment="Center" Margin="0,0,0,20"/>
+
+                    <ItemsControl ItemsSource="{Binding AvailableLineages}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Button Margin="0,5" Padding="20" HorizontalAlignment="Stretch"
+                                        HorizontalContentAlignment="Stretch"
+                                        Command="{Binding $parent[ItemsControl].((vm:CharacterCreationViewModel)DataContext).SelectLineageCommand}"
+                                        CommandParameter="{Binding Lineage}">
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding Name}" FontSize="18" FontWeight="Bold" Foreground="White"/>
+                                        <TextBlock Text="{Binding Description}" FontSize="13" Foreground="#AAAAAA" TextWrapping="Wrap" Margin="0,5,0,0"/>
+                                    </StackPanel>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+
+                <!-- Step 2: Background Selection -->
+                <StackPanel IsVisible="{Binding CurrentStep, Converter={x:Static vm:StepVisibilityConverter.Instance}, ConverterParameter=Background}"
+                            Spacing="15">
+                    <TextBlock Text="Choose Your Background"
+                               FontSize="22" FontWeight="Bold" Foreground="#4A90E2"
+                               HorizontalAlignment="Center" Margin="0,0,0,10"/>
+                    <TextBlock Text="Your background represents your profession before the world ended."
+                               FontSize="14" Foreground="#AAAAAA" TextWrapping="Wrap"
+                               HorizontalAlignment="Center" Margin="0,0,0,20"/>
+
+                    <ItemsControl ItemsSource="{Binding AvailableBackgrounds}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Button Margin="0,5" Padding="20" HorizontalAlignment="Stretch"
+                                        HorizontalContentAlignment="Stretch"
+                                        Command="{Binding $parent[ItemsControl].((vm:CharacterCreationViewModel)DataContext).SelectBackgroundCommand}"
+                                        CommandParameter="{Binding Background}">
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <StackPanel Grid.Column="0">
+                                            <TextBlock Text="{Binding Name}" FontSize="18" FontWeight="Bold" Foreground="White"/>
+                                            <TextBlock Text="{Binding Description}" FontSize="13" Foreground="#AAAAAA" TextWrapping="Wrap" Margin="0,5,0,0"/>
+                                        </StackPanel>
+                                        <Border Grid.Column="1" Background="{Binding AttributeColor}" CornerRadius="4" Padding="8,4" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding PrimaryAttribute}" FontSize="11" FontWeight="Bold" Foreground="White"/>
+                                        </Border>
+                                    </Grid>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+
+                <!-- Step 3: Attribute Allocation -->
+                <StackPanel IsVisible="{Binding CurrentStep, Converter={x:Static vm:StepVisibilityConverter.Instance}, ConverterParameter=Attributes}"
+                            Spacing="15">
+                    <TextBlock Text="Allocate Your Attributes"
+                               FontSize="22" FontWeight="Bold" Foreground="#4A90E2"
+                               HorizontalAlignment="Center" Margin="0,0,0,10"/>
+
+                    <!-- Mode Toggle -->
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="15" Margin="0,0,0,20">
+                        <RadioButton Content="Simple (Recommended)" IsChecked="{Binding !UseAdvancedMode}"
+                                     Command="{Binding ToggleAdvancedModeCommand}" CommandParameter="{x:False}"/>
+                        <RadioButton Content="Advanced (Custom)" IsChecked="{Binding UseAdvancedMode}"
+                                     Command="{Binding ToggleAdvancedModeCommand}" CommandParameter="{x:True}"/>
+                    </StackPanel>
+
+                    <!-- Simple Mode Info -->
+                    <Border Background="#2C2C2C" Padding="20" CornerRadius="8"
+                            IsVisible="{Binding !UseAdvancedMode}">
+                        <StackPanel Spacing="10">
+                            <TextBlock Text="Recommended Build" FontSize="16" FontWeight="Bold" Foreground="#4CAF50"/>
+                            <TextBlock Text="Attributes will be automatically allocated based on your chosen archetype in the next step. This is recommended for new players."
+                                       FontSize="13" Foreground="#AAAAAA" TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Advanced Mode Allocation -->
+                    <Border Background="#2C2C2C" Padding="20" CornerRadius="8"
+                            IsVisible="{Binding UseAdvancedMode}">
+                        <StackPanel Spacing="15">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Text="Custom Attribute Allocation" FontSize="16" FontWeight="Bold" Foreground="#FFD700"/>
+                                <TextBlock Grid.Column="1" Foreground="#4A90E2" FontWeight="Bold">
+                                    <Run Text="Points Remaining: "/>
+                                    <Run Text="{Binding RemainingAttributePoints}"/>
+                                </TextBlock>
+                            </Grid>
+                            <TextBlock Text="Cost: 1 point per level (5→8), 2 points per level (9→10)"
+                                       FontSize="12" Foreground="#888888"/>
+
+                            <!-- Attribute Sliders -->
+                            <Grid ColumnDefinitions="120,*,50" RowDefinitions="Auto,Auto,Auto,Auto,Auto" Margin="0,10,0,0">
+                                <!-- MIGHT -->
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="MIGHT" Foreground="#DC143C" FontWeight="Bold" VerticalAlignment="Center"/>
+                                <Slider Grid.Row="0" Grid.Column="1" Minimum="3" Maximum="10" Value="{Binding AttributeMight}" TickFrequency="1" IsSnapToTickEnabled="True"/>
+                                <TextBlock Grid.Row="0" Grid.Column="2" Text="{Binding AttributeMight}" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+
+                                <!-- FINESSE -->
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="FINESSE" Foreground="#4CAF50" FontWeight="Bold" VerticalAlignment="Center" Margin="0,10,0,0"/>
+                                <Slider Grid.Row="1" Grid.Column="1" Minimum="3" Maximum="10" Value="{Binding AttributeFinesse}" TickFrequency="1" IsSnapToTickEnabled="True" Margin="0,10,0,0"/>
+                                <TextBlock Grid.Row="1" Grid.Column="2" Text="{Binding AttributeFinesse}" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,10,0,0"/>
+
+                                <!-- WITS -->
+                                <TextBlock Grid.Row="2" Grid.Column="0" Text="WITS" Foreground="#4A90E2" FontWeight="Bold" VerticalAlignment="Center" Margin="0,10,0,0"/>
+                                <Slider Grid.Row="2" Grid.Column="1" Minimum="3" Maximum="10" Value="{Binding AttributeWits}" TickFrequency="1" IsSnapToTickEnabled="True" Margin="0,10,0,0"/>
+                                <TextBlock Grid.Row="2" Grid.Column="2" Text="{Binding AttributeWits}" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,10,0,0"/>
+
+                                <!-- WILL -->
+                                <TextBlock Grid.Row="3" Grid.Column="0" Text="WILL" Foreground="#9400D3" FontWeight="Bold" VerticalAlignment="Center" Margin="0,10,0,0"/>
+                                <Slider Grid.Row="3" Grid.Column="1" Minimum="3" Maximum="10" Value="{Binding AttributeWill}" TickFrequency="1" IsSnapToTickEnabled="True" Margin="0,10,0,0"/>
+                                <TextBlock Grid.Row="3" Grid.Column="2" Text="{Binding AttributeWill}" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,10,0,0"/>
+
+                                <!-- STURDINESS -->
+                                <TextBlock Grid.Row="4" Grid.Column="0" Text="STURDINESS" Foreground="#FFA500" FontWeight="Bold" VerticalAlignment="Center" Margin="0,10,0,0"/>
+                                <Slider Grid.Row="4" Grid.Column="1" Minimum="3" Maximum="10" Value="{Binding AttributeSturdiness}" TickFrequency="1" IsSnapToTickEnabled="True" Margin="0,10,0,0"/>
+                                <TextBlock Grid.Row="4" Grid.Column="2" Text="{Binding AttributeSturdiness}" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,10,0,0"/>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <Button Content="Confirm Attributes" Command="{Binding ConfirmAttributesCommand}"
+                            HorizontalAlignment="Center" Padding="30,12" FontSize="16" Background="#4A90E2"/>
+                </StackPanel>
+
+                <!-- Step 4: Archetype Selection -->
+                <StackPanel IsVisible="{Binding CurrentStep, Converter={x:Static vm:StepVisibilityConverter.Instance}, ConverterParameter=Archetype}"
+                            Spacing="15">
+                    <TextBlock Text="Choose Your Archetype"
+                               FontSize="22" FontWeight="Bold" Foreground="#4A90E2"
+                               HorizontalAlignment="Center" Margin="0,0,0,10"/>
+                    <TextBlock Text="Your archetype defines your combat style and resource system."
+                               FontSize="14" Foreground="#AAAAAA" TextWrapping="Wrap"
+                               HorizontalAlignment="Center" Margin="0,0,0,20"/>
+
+                    <ItemsControl ItemsSource="{Binding AvailableArchetypes}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Button Margin="0,5" Padding="20" HorizontalAlignment="Stretch"
+                                        HorizontalContentAlignment="Stretch"
+                                        Command="{Binding $parent[ItemsControl].((vm:CharacterCreationViewModel)DataContext).SelectArchetypeCommand}"
+                                        CommandParameter="{Binding}">
+                                    <TextBlock Text="{Binding}" FontSize="18" FontWeight="Bold" Foreground="White"/>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+
+                <!-- Step 5: Specialization Selection -->
+                <StackPanel IsVisible="{Binding CurrentStep, Converter={x:Static vm:StepVisibilityConverter.Instance}, ConverterParameter=Specialization}"
+                            Spacing="15">
+                    <TextBlock Text="Choose Your Specialization"
+                               FontSize="22" FontWeight="Bold" Foreground="#4A90E2"
+                               HorizontalAlignment="Center" Margin="0,0,0,10"/>
+                    <TextBlock FontSize="14" Foreground="#AAAAAA" TextWrapping="Wrap"
+                               HorizontalAlignment="Center" Margin="0,0,0,20">
+                        <Run Text="Specializations for "/>
+                        <Run Text="{Binding SelectedArchetype}" FontWeight="Bold" Foreground="#FFD700"/>
+                    </TextBlock>
+
+                    <ItemsControl ItemsSource="{Binding AvailableSpecializations}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Button Margin="0,5" Padding="20" HorizontalAlignment="Stretch"
+                                        HorizontalContentAlignment="Stretch"
+                                        Command="{Binding $parent[ItemsControl].((vm:CharacterCreationViewModel)DataContext).SelectSpecializationCommand}"
+                                        CommandParameter="{Binding Specialization}">
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding Name}" FontSize="18" FontWeight="Bold" Foreground="White"/>
+                                        <TextBlock Text="{Binding Description}" FontSize="13" Foreground="#AAAAAA" TextWrapping="Wrap" Margin="0,5,0,0"/>
+                                    </StackPanel>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+
+                <!-- Step 6: Summary and Confirmation -->
+                <StackPanel IsVisible="{Binding CurrentStep, Converter={x:Static vm:StepVisibilityConverter.Instance}, ConverterParameter=Summary}"
+                            Spacing="15">
+                    <TextBlock Text="Confirm Your Survivor"
+                               FontSize="22" FontWeight="Bold" Foreground="#4A90E2"
+                               HorizontalAlignment="Center" Margin="0,0,0,10"/>
+
+                    <!-- Character Name Input -->
+                    <Border Background="#2C2C2C" Padding="20" CornerRadius="8">
+                        <StackPanel Spacing="10">
+                            <TextBlock Text="Survivor Name" FontSize="16" FontWeight="Bold" Foreground="#FFD700"/>
+                            <TextBox Text="{Binding CharacterName}" FontSize="18" Watermark="Enter your name..." MaxLength="20"/>
+                            <TextBlock Text="ASCII characters only, max 20 characters" FontSize="11" Foreground="#666666"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Summary Panel -->
+                    <Border Background="#2C2C2C" Padding="20" CornerRadius="8">
+                        <StackPanel Spacing="12">
+                            <TextBlock Text="Character Summary" FontSize="16" FontWeight="Bold" Foreground="#4CAF50"/>
+
+                            <Grid ColumnDefinitions="120,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Lineage:" Foreground="#888888"/>
+                                <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding SummaryLineage}" Foreground="White" FontWeight="Bold"/>
+
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Background:" Foreground="#888888" Margin="0,5,0,0"/>
+                                <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SummaryBackground}" Foreground="White" FontWeight="Bold" Margin="0,5,0,0"/>
+
+                                <TextBlock Grid.Row="2" Grid.Column="0" Text="Archetype:" Foreground="#888888" Margin="0,5,0,0"/>
+                                <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding SummaryArchetype}" Foreground="White" FontWeight="Bold" Margin="0,5,0,0"/>
+
+                                <TextBlock Grid.Row="3" Grid.Column="0" Text="Specialization:" Foreground="#888888" Margin="0,5,0,0"/>
+                                <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding SummarySpecialization}" Foreground="White" FontWeight="Bold" Margin="0,5,0,0"/>
+
+                                <TextBlock Grid.Row="4" Grid.Column="0" Text="Attributes:" Foreground="#888888" Margin="0,5,0,0"/>
+                                <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding SummaryAttributes}" Foreground="White" FontSize="12" Margin="0,5,0,0"/>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Saga System Info -->
+                    <Border Background="#1A1A1A" Padding="15" CornerRadius="4">
+                        <StackPanel Spacing="5">
+                            <TextBlock Text="Starting Saga Status" FontSize="14" FontWeight="Bold" Foreground="#9400D3"/>
+                            <TextBlock Text="Legend: 0 | Progression Points: 0 | Milestone: 0" FontSize="12" Foreground="#AAAAAA"/>
+                            <TextBlock Text="Your saga begins now. Earn Legend through combat and exploration." FontSize="11" Foreground="#666666"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Button Content="Begin Your Saga" Command="{Binding ConfirmCharacterCommand}"
+                            IsEnabled="{Binding CanConfirm}"
+                            HorizontalAlignment="Center" Padding="40,15" FontSize="18" FontWeight="Bold"
+                            Background="#4A90E2" Margin="0,10,0,0"/>
+                </StackPanel>
+
+            </Grid>
+        </ScrollViewer>
+
+        <!-- Footer -->
+        <Border Grid.Row="2" Background="#2C2C2C" Padding="15,10">
+            <TextBlock Text="Choose wisely - your choices shape your survivor's destiny in the ruins of Aethelgard."
+                       Foreground="#666666" FontSize="12"
+                       HorizontalAlignment="Center"/>
+        </Border>
+
+    </Grid>
+
+</UserControl>

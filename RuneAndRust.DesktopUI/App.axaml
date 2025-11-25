@@ -50,5 +50,8 @@
         <DataTemplate DataType="vm:HelpViewModel">
             <views:HelpView />
         </DataTemplate>
+        <DataTemplate DataType="vm:CharacterCreationViewModel">
+            <views:CharacterCreationView />
+        </DataTemplate>
     </Application.DataTemplates>
 </Application>

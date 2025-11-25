@@ -263,4 +263,47 @@ public class PlayerCharacter
     public int WILL => Attributes.Will;
     public int WITS => Attributes.Wits;
     public int STURDINESS => Attributes.Sturdiness;
+
+    /// <summary>
+    /// v0.44.1: Creates a deep copy of this character for snapshots.
+    /// </summary>
+    public PlayerCharacter Clone()
+    {
+        return new PlayerCharacter
+        {
+            CharacterID = CharacterID,
+            Name = Name,
+            Class = Class,
+            Specialization = Specialization,
+            Attributes = new Attributes
+            {
+                Might = Attributes.Might,
+                Finesse = Attributes.Finesse,
+                Wits = Attributes.Wits,
+                Will = Attributes.Will,
+                Sturdiness = Attributes.Sturdiness
+            },
+            Archetype = Archetype,
+            ActiveStance = ActiveStance,
+            CurrentMilestone = CurrentMilestone,
+            CurrentLegend = CurrentLegend,
+            LegendToNextMilestone = LegendToNextMilestone,
+            ProgressionPoints = ProgressionPoints,
+            HP = HP,
+            MaxHP = MaxHP,
+            Stamina = Stamina,
+            MaxStamina = MaxStamina,
+            AP = AP,
+            MaxAP = MaxAP,
+            Currency = Currency,
+            PsychicStress = PsychicStress,
+            Corruption = Corruption,
+            // Note: Deep cloning collections would require more complex logic
+            // For snapshot purposes, shallow copy is sufficient
+            Abilities = new List<Ability>(Abilities),
+            Inventory = new List<Equipment>(Inventory),
+            EquippedWeapon = EquippedWeapon,
+            EquippedArmor = EquippedArmor
+        };
+    }
 }

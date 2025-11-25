@@ -325,6 +325,12 @@ public class SaveGameService : ISaveGameService
         _currentWorldState = worldState;
     }
 
+    /// <inheritdoc/>
+    public PlayerCharacter? GetLoadedPlayer() => _currentPlayer;
+
+    /// <inheritdoc/>
+    public WorldState? GetLoadedWorldState() => _currentWorldState;
+
     /// <summary>
     /// Gets the data directory for save files.
     /// </summary>
