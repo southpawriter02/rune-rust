@@ -218,7 +218,14 @@ public class EnvironmentalCombatService
             // Process chain reactions
             foreach (var chainReaction in result.ChainReactions)
             {
-                RecordEvent(chainReaction);
+                RecordEvent(new EnvironmentalEvent
+                {
+                    EventType = EnvironmentalEventType.ChainReaction,
+                    ObjectId = chainReaction.ObjectId,
+                    DamageDealt = chainReaction.DamageDealt,
+                    Targets = chainReaction.SecondaryTargets,
+                    Description = chainReaction.Message
+                });
             }
         }
 
