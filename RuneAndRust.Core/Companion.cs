@@ -108,4 +108,15 @@ public class Companion
     /// Overrides AI selection if set
     /// </summary>
     public CompanionAction? QueuedAction { get; set; } = null;
+
+    // Backward compatibility aliases
+    public int BaseFinesse => BaseAttributes.Finesse;
+    public int BaseMight => BaseAttributes.Might;
+    public int BaseSturdiness => BaseAttributes.Sturdiness;
+    public int BaseWits => BaseAttributes.Wits;
+    public int BaseWill => BaseAttributes.Will;
+    public int BaseDefense => Defense;
+    public int BaseSoak => Soak;
+    public int CurrentAetherPool { get => CurrentAether; set => CurrentAether = value; }
+    public int MaxAetherPool { get => MaxAether; set => MaxAether = value; }
 }

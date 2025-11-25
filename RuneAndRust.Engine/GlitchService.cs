@@ -26,7 +26,7 @@ public class GlitchService
     public GlitchResult ResolveGlitchedTileEntry(object combatant, BattlefieldTile tile, BattlefieldGrid grid)
     {
         if (tile.GlitchType == null)
-            return GlitchResult.Success();
+            return GlitchResult.Successful();
 
         var (combatantName, combatantId) = combatant switch
         {
@@ -50,7 +50,7 @@ public class GlitchService
                 return ResolveLoopingCorridor(combatant, tile, grid);
 
             default:
-                return GlitchResult.Success();
+                return GlitchResult.Successful();
         }
     }
 

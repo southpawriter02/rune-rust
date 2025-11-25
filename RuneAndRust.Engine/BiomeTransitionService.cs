@@ -3,6 +3,9 @@ using RuneAndRust.Core.Population;
 using RuneAndRust.Persistence;
 using Serilog;
 
+// Resolve ambiguous RoomArchetype reference
+using PopulationRoomArchetype = RuneAndRust.Core.Population.RoomArchetype;
+
 namespace RuneAndRust.Engine;
 
 /// <summary>
@@ -130,7 +133,7 @@ public class BiomeTransitionService
             PrimaryBiome = fromBiome.BiomeId,
             SecondaryBiome = toBiome.BiomeId,
             BiomeBlendRatio = toWeight,  // 0.0 = all fromBiome, 1.0 = all toBiome
-            Archetype = RoomArchetype.Chamber,  // Transitions are typically chambers
+            Archetype = PopulationRoomArchetype.Chamber,  // Transitions are typically chambers
             IsProcedurallyGenerated = true,
             GeneratedNodeType = NodeType.Main
         };

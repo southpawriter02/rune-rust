@@ -116,11 +116,11 @@ public class RoomDescriptorService
 
             // Get function variant (for chambers)
             RoomFunctionVariant? function = null;
-            if (archetype == RoomArchetype.Chamber ||
-                archetype == RoomArchetype.PowerStation ||
-                archetype == RoomArchetype.Laboratory ||
-                archetype == RoomArchetype.ForgeCharnber ||
-                archetype == RoomArchetype.CryoVault)
+            if (archetype == DescriptorRoomArchetype.Chamber ||
+                archetype == DescriptorRoomArchetype.PowerStation ||
+                archetype == DescriptorRoomArchetype.Laboratory ||
+                archetype == DescriptorRoomArchetype.ForgeCharnber ||
+                archetype == DescriptorRoomArchetype.CryoVault)
             {
                 function = _repository.GetRandomFunctionVariant(
                     baseTemplate.Archetype,

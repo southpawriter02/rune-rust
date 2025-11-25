@@ -104,4 +104,74 @@ public class DiceService
 
         return total;
     }
+
+    /// <summary>
+    /// Alias for Roll(numDice, dieSize) - rolls multiple dice of specified size
+    /// </summary>
+    public int RollDice(int numDice, int dieSize)
+    {
+        return Roll(numDice, dieSize);
+    }
+
+    /// <summary>
+    /// Rolls a d8
+    /// </summary>
+    public int RollD8()
+    {
+        return _random.Next(1, 9);
+    }
+
+    /// <summary>
+    /// Rolls a d10
+    /// </summary>
+    public int RollD10()
+    {
+        return _random.Next(1, 11);
+    }
+
+    /// <summary>
+    /// Rolls a d100 (percentile)
+    /// </summary>
+    public int RollD100()
+    {
+        return _random.Next(1, 101);
+    }
+
+    /// <summary>
+    /// Returns a random percentage (0-100)
+    /// </summary>
+    public int RollPercentage()
+    {
+        return _random.Next(0, 101);
+    }
+
+    /// <summary>
+    /// Rolls a random value between min and max (inclusive)
+    /// </summary>
+    public int RollBetween(int min, int max)
+    {
+        if (min > max)
+        {
+            (min, max) = (max, min);
+        }
+        return _random.Next(min, max + 1);
+    }
+
+    /// <summary>
+    /// Performs a skill check: rolls d6s equal to attribute value, counts successes (5-6)
+    /// Returns true if successes >= targetNumber
+    /// </summary>
+    public bool SkillCheck(int attributeValue, int targetNumber)
+    {
+        var result = Roll(attributeValue);
+        return result.Successes >= targetNumber;
+    }
+
+    /// <summary>
+    /// Rolls damage with variable die size (e.g., 2d8, 3d6)
+    /// </summary>
+    public int RollDamage(int diceCount, int dieSize)
+    {
+        return Roll(diceCount, dieSize);
+    }
 }

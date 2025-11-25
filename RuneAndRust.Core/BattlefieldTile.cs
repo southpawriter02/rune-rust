@@ -24,6 +24,20 @@ public class BattlefieldTile
     // v0.22: Environmental objects on this tile
     public List<int> EnvironmentalObjectIds { get; set; } = new List<int>(); // IDs of environmental objects at this position
 
+    // Backward compatibility properties
+    public int CoverValue => Cover switch
+    {
+        CoverType.None => 0,
+        CoverType.Physical => 1,
+        CoverType.Metaphysical => 2,
+        CoverType.Both => 3,
+        _ => 0
+    };
+    public List<object> Occupants { get; set; } = new();
+    public List<Population.DynamicHazard> DynamicHazards { get; set; } = new();
+    public List<Population.StaticTerrain> StaticTerrain { get; set; } = new();
+    public HazardType HazardType { get; set; } = HazardType.None;
+
     public BattlefieldTile(GridPosition position)
     {
         Position = position;
@@ -110,7 +124,9 @@ public enum TileType
 {
     Normal,         // Standard ground tile
     HighGround,     // Elevated position (+2 Accuracy, +2 Defense)
-    Glitched        // Corrupted tile with hazards
+    Glitched,       // Corrupted tile with hazards
+    Impassable,     // Cannot be traversed
+    Hazard          // Contains environmental hazard
 }
 
 /// <summary>

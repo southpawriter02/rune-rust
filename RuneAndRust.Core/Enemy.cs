@@ -112,6 +112,33 @@ public class Enemy
 
     public bool IsAlive => HP > 0;
 
+    // Convenience aliases for backward compatibility
+    public int CurrentHP { get => HP; set => HP = value; }
+    public string EnemyTypeId => Type.ToString();
+    public string EnemyId => Id;
+    public int CurrentPhase { get => Phase; set => Phase = value; }
+    public int Defense { get => DefenseBonus; set => DefenseBonus = value; }
+    public int Attack => BaseDamageDice * 3; // Approximation
+    public int Tier => (int)ThreatLevel;
+    public string FlavorText => BehaviorNote ?? string.Empty;
+    public int WILL => Attributes.Will;
+    public int Level { get; set; } = 1;
+    public bool IsFlying { get; set; } = false;
+    public bool IsHidden { get; set; } = false;
+    public bool IsStealth { get; set; } = false;
+    public bool IsEnraged { get; set; } = false;
+    public int StaggeredTurnsRemaining { get; set; } = 0;
+    public string BossEncounterId { get; set; } = string.Empty;
+    public float VulnerabilityDamageMultiplier { get; set; } = 1.0f;
+    public int Armor { get => Soak; set => Soak = value; }
+    public int Speed { get; set; } = 3;
+    public int Evasion { get; set; } = 0;
+    public int Stamina { get; set; } = 100;
+    public int MaxStamina { get; set; } = 100;
+    public string Faction { get; set; } = string.Empty;
+    public List<Ability> Abilities { get; set; } = new();
+    public string LootTableId { get; set; } = string.Empty;
+
     public int GetAttributeValue(string attributeName)
     {
         return attributeName.ToLower() switch
@@ -119,6 +146,8 @@ public class Enemy
             "might" => Attributes.Might,
             "finesse" => Attributes.Finesse,
             "sturdiness" => Attributes.Sturdiness,
+            "will" => Attributes.Will,
+            "wits" => Attributes.Wits,
             _ => 0
         };
     }

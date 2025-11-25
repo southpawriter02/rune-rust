@@ -175,4 +175,14 @@ public class Room
     {
         EnvironmentalProperties[propertyName] = value;
     }
+
+    // Convenience aliases for backward compatibility
+    public string BiomeName => PrimaryBiome;
+    public string Biome => PrimaryBiome;
+    public int DifficultyLevel { get; set; } = 1;
+    public bool HasSecretExit { get; set; } = false;
+    public bool SecretExitRevealed { get; set; } = false;
+    public List<string> Tags { get; set; } = new();
+    public List<Population.HazardSpawn> Hazards { get; set; } = new();
+    public List<Population.LootNode> Loot => LootNodes;
 }

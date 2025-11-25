@@ -154,4 +154,13 @@ public class Equipment
 
         return string.Join(", ", descriptions);
     }
+
+    // Backward compatibility aliases
+    public string Slot => Type.ToString();
+    public int Tier => (int)Quality;
+    public int DamageDieSize { get; set; } = 6; // d6 by default
+    public bool IsTwoHanded { get; set; } = false;
+    public string HandRequirement => IsTwoHanded ? "TwoHanded" : "OneHanded";
+    public string Category => WeaponCategory?.ToString() ?? ArmorCategory?.ToString() ?? "Unknown";
+    public int Damage => DamageDice;
 }

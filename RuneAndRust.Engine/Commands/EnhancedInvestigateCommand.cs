@@ -6,6 +6,9 @@ using RuneAndRust.Core.Population;
 using Serilog;
 using System.Text;
 
+// Resolve ambiguous InteractionType reference
+using DescriptorInteractionType = RuneAndRust.Core.Descriptors.InteractionType;
+
 namespace RuneAndRust.Engine.Commands;
 
 /// <summary>
@@ -142,11 +145,11 @@ public class EnhancedInvestigateCommand : ICommand
         // For other objects, provide interaction hint
         var hint = obj.InteractionType switch
         {
-            InteractionType.Pull => $"Use 'pull {obj.Name.ToLower()}' to activate it.",
-            InteractionType.Open => $"Use 'open {obj.Name.ToLower()}' to interact with it.",
-            InteractionType.Search => $"Use 'search {obj.Name.ToLower()}' to look for items.",
-            InteractionType.Read => $"Use 'read {obj.Name.ToLower()}' to view its contents.",
-            InteractionType.Hack => $"Use 'hack {obj.Name.ToLower()}' to interface with it.",
+            DescriptorInteractionType.Pull => $"Use 'pull {obj.Name.ToLower()}' to activate it.",
+            DescriptorInteractionType.Open => $"Use 'open {obj.Name.ToLower()}' to interact with it.",
+            DescriptorInteractionType.Search => $"Use 'search {obj.Name.ToLower()}' to look for items.",
+            DescriptorInteractionType.Read => $"Use 'read {obj.Name.ToLower()}' to view its contents.",
+            DescriptorInteractionType.Hack => $"Use 'hack {obj.Name.ToLower()}' to interface with it.",
             _ => "You may be able to interact with this object."
         };
 
