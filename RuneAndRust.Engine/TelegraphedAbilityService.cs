@@ -331,7 +331,7 @@ public class TelegraphedAbilityService
 
         try
         {
-            var statusEffects = JsonSerializer.Deserialize<List<StatusEffectDefinition>>(statusEffectsJson);
+            var statusEffects = JsonSerializer.Deserialize<List<TelegraphedStatusEffectData>>(statusEffectsJson);
             if (statusEffects == null) return logMessage;
 
             foreach (var effect in statusEffects)
@@ -419,9 +419,10 @@ public class TelegraphedAbilityService
 // ═══════════════════════════════════════════════════════════
 
 /// <summary>
-/// Status effect definition for JSON deserialization
+/// Status effect data for telegraphed ability JSON deserialization
+/// (Renamed to avoid conflict with RuneAndRust.Core.StatusEffectDefinition)
 /// </summary>
-public class StatusEffectDefinition
+public class TelegraphedStatusEffectData
 {
     public string StatusName { get; set; } = string.Empty;
     public int Duration { get; set; }

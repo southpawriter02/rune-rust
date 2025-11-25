@@ -453,14 +453,5 @@ public class DestructionService
     }
 }
 
-/// <summary>
-/// v0.13: Result of a destruction attempt
-/// </summary>
-public class DestructionResult
-{
-    public bool Success { get; set; }
-    public bool WasDestroyed { get; set; }
-    public string Message { get; set; } = string.Empty;
-    public bool SpawnRubble { get; set; }
-    public bool CausedSecondaryEffect { get; set; }
-}
+// Note: DestructionResult is now defined in RuneAndRust.Core.EnvironmentalEvent.cs
+// Use the Core version which includes all properties for both v0.13 and v0.22.1 compatibility

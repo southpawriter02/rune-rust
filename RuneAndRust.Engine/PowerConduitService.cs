@@ -253,7 +253,7 @@ public class PowerConduitService
     /// </summary>
     public string GetConduitDamageDice(GridTile conduitTile)
     {
-        return IsConduitFlooded(conduitTile) ? FLOODED_DAMAGE : BASE_DAMAGE;
+        return IsConduitFlooded(conduitTile.GetBattlefieldTile()) ? FLOODED_DAMAGE : BASE_DAMAGE;
     }
 
     /// <summary>
@@ -261,7 +261,7 @@ public class PowerConduitService
     /// </summary>
     public int GetConduitRadius(GridTile conduitTile)
     {
-        return IsConduitFlooded(conduitTile) ? FLOODED_RADIUS : 1;
+        return IsConduitFlooded(conduitTile.GetBattlefieldTile()) ? FLOODED_RADIUS : 1;
     }
 
     #endregion

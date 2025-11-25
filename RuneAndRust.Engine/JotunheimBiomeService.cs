@@ -566,9 +566,8 @@ public class JotunheimBiomeService
 
                         if (combatantWrapper != null)
                         {
-                            // Create GridTile wrapper for destTile
-                            var gridTile = new GridTile(destTile);
-                            _powerConduitService.ProcessForcedMovementIntoConduit(combatantWrapper, gridTile, battlefield);
+                            // Pass the BattlefieldTile directly to ProcessForcedMovementIntoConduit
+                            _powerConduitService.ProcessForcedMovementIntoConduit(combatantWrapper, destTile, battlefield);
                         }
                     }
                 }

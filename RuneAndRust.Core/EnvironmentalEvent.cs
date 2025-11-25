@@ -90,8 +90,16 @@ public class DestructionResult
     public List<DestructionResult> ChainReactions { get; set; } = new(); // Cascading effects
     public string Message { get; set; } = string.Empty;
 
+    // Properties for terrain/hazard destruction (v0.13 compatibility)
+    public bool SpawnRubble { get; set; }
+    public bool CausedSecondaryEffect { get; set; }
+
     // Legacy compatibility
-    public bool WasDestroyed => ObjectDestroyed;
+    public bool WasDestroyed
+    {
+        get => ObjectDestroyed;
+        set => ObjectDestroyed = value;
+    }
     public string LogMessage => Message;
 }
 
