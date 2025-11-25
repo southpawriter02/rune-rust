@@ -88,6 +88,11 @@ public class MainWindowViewModel : ViewModelBase
     public ICommand QuickLoadCommand { get; }
 
     /// <summary>
+    /// Command to navigate to help view (F1).
+    /// </summary>
+    public ICommand NavigateToHelpCommand { get; }
+
+    /// <summary>
     /// Initializes a new instance of MainWindowViewModel.
     /// </summary>
     public MainWindowViewModel(
@@ -139,6 +144,9 @@ public class MainWindowViewModel : ViewModelBase
 
         QuickLoadCommand = ReactiveCommand.CreateFromTask(QuickLoadAsync);
 
+        NavigateToHelpCommand = ReactiveCommand.Create(() =>
+            _navigationService.NavigateTo<HelpViewModel>());
+
         // Register keyboard shortcuts
         RegisterKeyboardShortcuts();
 
@@ -187,6 +195,10 @@ public class MainWindowViewModel : ViewModelBase
         // v0.43.19: Save/Load
         _navigationService.RegisterViewModelFactory(() =>
             serviceProvider.GetRequiredService<SaveLoadViewModel>());
+
+        // v0.43.20: Help
+        _navigationService.RegisterViewModelFactory(() =>
+            serviceProvider.GetRequiredService<HelpViewModel>());
     }
 
     /// <summary>
@@ -201,8 +213,8 @@ public class MainWindowViewModel : ViewModelBase
 
         _keyboardShortcutService.RegisterShortcut(
             Avalonia.Input.Key.F1,
-            () => NavigateToCombatCommand.Execute(null),
-            "Combat View");
+            () => NavigateToHelpCommand.Execute(null),
+            "Help");
 
         _keyboardShortcutService.RegisterShortcut(
             Avalonia.Input.Key.M,

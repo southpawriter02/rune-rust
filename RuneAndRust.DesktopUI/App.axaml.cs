@@ -45,7 +45,7 @@ public partial class App : Application
             .WriteTo.Console()
             .CreateLogger();
 
-        Log.Information("Rune & Rust Desktop UI v0.43.19 starting...");
+        Log.Information("Rune & Rust Desktop UI v0.43.20 starting...");
 
         try
         {
@@ -117,6 +117,9 @@ public partial class App : Application
         // Save/Load Services (v0.43.19)
         services.AddSingleton<ISaveGameService, SaveGameService>();
 
+        // Tooltip & Help Services (v0.43.20)
+        services.AddSingleton<ITooltipService, TooltipService>();
+
         // Engine Services (v0.43.5)
         services.AddSingleton<DiceService>();
         services.AddSingleton<SagaService>();
@@ -141,6 +144,7 @@ public partial class App : Application
         services.AddTransient<EndgameModeViewModel>();
         services.AddTransient<SettingsViewModel>();
         services.AddTransient<SaveLoadViewModel>();
+        services.AddTransient<HelpViewModel>();
 
         // Note: Additional engine services will be registered as needed in future specs.
 

@@ -1,0 +1,270 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:RuneAndRust.DesktopUI.ViewModels"
+             xmlns:conv="using:RuneAndRust.DesktopUI.Converters"
+             x:Class="RuneAndRust.DesktopUI.Views.HelpView"
+             x:DataType="vm:HelpViewModel">
+
+    <Design.DataContext>
+        <vm:HelpViewModel/>
+    </Design.DataContext>
+
+    <UserControl.Resources>
+        <conv:SelectedBackgroundConverter x:Key="SelectedBackgroundConverter"/>
+        <conv:SelectedBorderConverter x:Key="SelectedBorderConverter"/>
+        <conv:StringNotEmptyConverter x:Key="StringNotEmptyConverter"/>
+    </UserControl.Resources>
+
+    <Grid RowDefinitions="Auto,*" Background="#1A1A1A">
+        <!-- Header -->
+        <Border Grid.Row="0" Background="#2C2C2C" Padding="20,15">
+            <Grid ColumnDefinitions="Auto,*,Auto">
+                <Button Grid.Column="0"
+                        Content="Back"
+                        Command="{Binding BackCommand}"
+                        Width="80"
+                        HorizontalContentAlignment="Center"/>
+                <StackPanel Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <TextBlock Text="Help &amp; Documentation"
+                               FontSize="28"
+                               FontWeight="Bold"
+                               Foreground="White"
+                               HorizontalAlignment="Center"/>
+                    <TextBlock Text="Press F1 anytime to open help"
+                               FontSize="12"
+                               Foreground="#888888"
+                               HorizontalAlignment="Center"/>
+                </StackPanel>
+                <TextBlock Grid.Column="2"
+                           Text="{Binding TopicCount, StringFormat='{}{0} topics'}"
+                           Foreground="#888888"
+                           VerticalAlignment="Center"/>
+            </Grid>
+        </Border>
+
+        <!-- Main Content -->
+        <Grid Grid.Row="1" ColumnDefinitions="350,*" Margin="20">
+            <!-- Topics List Panel -->
+            <Border Grid.Column="0"
+                    Background="#2C2C2C"
+                    Padding="15"
+                    Margin="0,0,15,0"
+                    CornerRadius="8">
+                <Grid RowDefinitions="Auto,Auto,*">
+                    <!-- Search Box -->
+                    <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,15">
+                        <TextBox Grid.Column="0"
+                                 Text="{Binding SearchQuery}"
+                                 Watermark="Search help topics..."
+                                 Height="38"
+                                 FontSize="14"/>
+                        <Button Grid.Column="1"
+                                Content="Clear"
+                                Command="{Binding ClearSearchCommand}"
+                                Margin="8,0,0,0"
+                                Padding="12,8"/>
+                    </Grid>
+
+                    <!-- Category Filter -->
+                    <Grid Grid.Row="1" Margin="0,0,0,15">
+                        <ComboBox ItemsSource="{Binding Categories}"
+                                  SelectedItem="{Binding SelectedCategory}"
+                                  HorizontalAlignment="Stretch"/>
+                    </Grid>
+
+                    <!-- Topics List -->
+                    <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+                        <ItemsControl ItemsSource="{Binding HelpTopics}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="vm:HelpTopicViewModel">
+                                    <Border Background="{Binding IsSelected, Converter={StaticResource SelectedBackgroundConverter}}"
+                                            BorderBrush="{Binding IsSelected, Converter={StaticResource SelectedBorderConverter}}"
+                                            BorderThickness="2"
+                                            Padding="12"
+                                            Margin="0,0,0,6"
+                                            CornerRadius="6"
+                                            Cursor="Hand"
+                                            PointerPressed="OnTopicPressed">
+                                        <Grid ColumnDefinitions="Auto,*,Auto">
+                                            <!-- Icon -->
+                                            <Border Grid.Column="0"
+                                                    Background="#3C3C3C"
+                                                    CornerRadius="4"
+                                                    Padding="8"
+                                                    Margin="0,0,12,0"
+                                                    VerticalAlignment="Center"
+                                                    IsVisible="{Binding HasIcon}">
+                                                <TextBlock Text="{Binding Icon}"
+                                                           FontSize="18"
+                                                           HorizontalAlignment="Center"/>
+                                            </Border>
+
+                                            <!-- Title and Category -->
+                                            <StackPanel Grid.Column="1" Spacing="2">
+                                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                                    <TextBlock Text="{Binding Title}"
+                                                               FontWeight="SemiBold"
+                                                               FontSize="14"
+                                                               Foreground="White"/>
+                                                    <Border Background="#4A90E2"
+                                                            CornerRadius="3"
+                                                            Padding="6,2"
+                                                            IsVisible="{Binding IsNew}">
+                                                        <TextBlock Text="NEW"
+                                                                   FontSize="9"
+                                                                   Foreground="White"
+                                                                   FontWeight="Bold"/>
+                                                    </Border>
+                                                </StackPanel>
+                                                <TextBlock Text="{Binding Category}"
+                                                           FontSize="11"
+                                                           Foreground="#888888"/>
+                                            </StackPanel>
+
+                                            <!-- Shortcut Badge -->
+                                            <Border Grid.Column="2"
+                                                    Background="#3C3C3C"
+                                                    CornerRadius="4"
+                                                    Padding="8,4"
+                                                    VerticalAlignment="Center"
+                                                    IsVisible="{Binding HasShortcut}">
+                                                <TextBlock Text="{Binding Shortcut}"
+                                                           FontSize="11"
+                                                           Foreground="#4A90E2"
+                                                           FontWeight="SemiBold"/>
+                                            </Border>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Grid>
+            </Border>
+
+            <!-- Help Content Panel -->
+            <Border Grid.Column="1"
+                    Background="#2C2C2C"
+                    Padding="30"
+                    CornerRadius="8">
+                <!-- No Selection State -->
+                <StackPanel IsVisible="{Binding !HasSelectedTopic}"
+                            VerticalAlignment="Center"
+                            HorizontalAlignment="Center"
+                            Spacing="15">
+                    <TextBlock Text="?"
+                               FontSize="64"
+                               Foreground="#3C3C3C"
+                               HorizontalAlignment="Center"/>
+                    <TextBlock Text="Select a topic from the list"
+                               FontSize="18"
+                               Foreground="#666666"
+                               HorizontalAlignment="Center"/>
+                    <TextBlock Text="or search for help"
+                               FontSize="14"
+                               Foreground="#555555"
+                               HorizontalAlignment="Center"/>
+                </StackPanel>
+
+                <!-- Selected Topic Content -->
+                <ScrollViewer IsVisible="{Binding HasSelectedTopic}">
+                    <StackPanel Spacing="20">
+                        <!-- Title Row -->
+                        <Grid ColumnDefinitions="Auto,*,Auto">
+                            <!-- Icon -->
+                            <Border Grid.Column="0"
+                                    Background="#3C3C3C"
+                                    CornerRadius="8"
+                                    Padding="15"
+                                    Margin="0,0,20,0"
+                                    VerticalAlignment="Top"
+                                    IsVisible="{Binding SelectedTopic.HasIcon}">
+                                <TextBlock Text="{Binding SelectedTopic.Icon}"
+                                           FontSize="32"
+                                           HorizontalAlignment="Center"/>
+                            </Border>
+
+                            <!-- Title and Category -->
+                            <StackPanel Grid.Column="1" Spacing="4">
+                                <TextBlock Text="{Binding SelectedTopic.Title}"
+                                           FontSize="28"
+                                           FontWeight="Bold"
+                                           Foreground="#FFD700"/>
+                                <TextBlock Text="{Binding SelectedTopic.Category}"
+                                           FontSize="14"
+                                           Foreground="#4A90E2"/>
+                            </StackPanel>
+
+                            <!-- Shortcut -->
+                            <Border Grid.Column="2"
+                                    Background="#1C1C1C"
+                                    CornerRadius="6"
+                                    Padding="15,10"
+                                    VerticalAlignment="Top"
+                                    IsVisible="{Binding SelectedTopic.HasShortcut}">
+                                <StackPanel Spacing="4">
+                                    <TextBlock Text="Shortcut"
+                                               FontSize="10"
+                                               Foreground="#888888"
+                                               HorizontalAlignment="Center"/>
+                                    <TextBlock Text="{Binding SelectedTopic.Shortcut}"
+                                               FontSize="18"
+                                               FontWeight="Bold"
+                                               Foreground="#4A90E2"
+                                               HorizontalAlignment="Center"/>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+
+                        <!-- Description -->
+                        <Border Background="#1C1C1C"
+                                Padding="20"
+                                CornerRadius="6">
+                            <TextBlock Text="{Binding SelectedTopic.Description}"
+                                       FontSize="16"
+                                       Foreground="White"
+                                       TextWrapping="Wrap"
+                                       LineHeight="24"/>
+                        </Border>
+
+                        <!-- Detailed Help -->
+                        <Border Background="#1C1C1C"
+                                Padding="20"
+                                CornerRadius="6"
+                                IsVisible="{Binding SelectedTopic.HasDetailedHelp}">
+                            <StackPanel Spacing="12">
+                                <TextBlock Text="Details"
+                                           FontSize="18"
+                                           FontWeight="Bold"
+                                           Foreground="#4A90E2"/>
+                                <TextBlock Text="{Binding SelectedTopic.DetailedHelp}"
+                                           FontSize="14"
+                                           Foreground="#CCCCCC"
+                                           TextWrapping="Wrap"
+                                           LineHeight="22"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Tips Section -->
+                        <Border Background="#2A3A2A"
+                                Padding="20"
+                                CornerRadius="6"
+                                Margin="0,10,0,0">
+                            <StackPanel Spacing="8">
+                                <TextBlock Text="Tip"
+                                           FontSize="14"
+                                           FontWeight="Bold"
+                                           Foreground="#4CAF50"/>
+                                <TextBlock Text="Press F1 anytime during gameplay to open contextual help for your current view."
+                                           FontSize="13"
+                                           Foreground="#AACCAA"
+                                           TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+    </Grid>
+
+</UserControl>

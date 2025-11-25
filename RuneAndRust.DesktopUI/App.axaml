@@ -47,5 +47,8 @@
         <DataTemplate DataType="vm:SaveLoadViewModel">
             <views:SaveLoadView />
         </DataTemplate>
+        <DataTemplate DataType="vm:HelpViewModel">
+            <views:HelpView />
+        </DataTemplate>
     </Application.DataTemplates>
 </Application>
