@@ -63,7 +63,7 @@ public class MetaProgressionSeeder
                 RequiredPoints = 50,
                 UnlockRewards = new[] { "veterans_start" },
                 CosmeticRewards = new[] { "title_survivor", "title_wanderer", "portrait_survivor", "portrait_veteran", "ui_theme_muspelheim" },
-                AlternativeStart = "veterans_return"
+                AlternativeStart = (string?)"veterans_return"
             },
             new
             {
@@ -83,7 +83,7 @@ public class MetaProgressionSeeder
                 RequiredPoints = 300,
                 UnlockRewards = new string[] { },
                 CosmeticRewards = new[] { "ui_theme_niflheim", "title_challenger", "title_sector_master", "title_puzzle_solver", "ability_vfx_frost_shards", "ability_vfx_smoke" },
-                AlternativeStart = "challenge_seeker"
+                AlternativeStart = (string?)"challenge_seeker"
             },
             new
             {
@@ -113,7 +113,7 @@ public class MetaProgressionSeeder
                 RequiredPoints = 1000,
                 UnlockRewards = new[] { "advanced_spec_unlock" },
                 CosmeticRewards = new[] { "ui_theme_alfheim", "title_master", "title_transcendent", "portrait_master", "ability_vfx_pack_1" },
-                AlternativeStart = "advanced_explorer"
+                AlternativeStart = (string?)"advanced_explorer"
             },
             new
             {
@@ -143,7 +143,7 @@ public class MetaProgressionSeeder
                 RequiredPoints = 3000,
                 UnlockRewards = new[] { "fast_travel_unlock" },
                 CosmeticRewards = new[] { "title_transcendent", "title_ascendant", "title_godslayer", "portrait_transcendent", "ui_theme_transcendent", "ability_vfx_legendary_pack", "frame_transcendent", "emblem_transcendent", "combat_log_style_legendary" },
-                AlternativeStart = "ironborn"
+                AlternativeStart = (string?)"ironborn"
             }
         };
 

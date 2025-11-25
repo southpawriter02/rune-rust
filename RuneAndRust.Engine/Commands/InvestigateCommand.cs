@@ -30,7 +30,7 @@ public class InvestigateCommand : ICommand
         if (args.Length == 0)
         {
             _log.Debug("Investigate command called with no target");
-            return CommandResult.Failure("Investigate what? Specify a target (e.g., 'investigate corpse').");
+            return CommandResult.CreateFailure("Investigate what? Specify a target (e.g., 'investigate corpse').");
         }
 
         var target = string.Join(" ", args).ToLower().Trim('[', ']');
@@ -46,7 +46,7 @@ public class InvestigateCommand : ICommand
             var room = state.CurrentRoom;
             if (room == null)
             {
-                return CommandResult.Failure("You are nowhere. This should not happen.");
+                return CommandResult.CreateFailure("You are nowhere. This should not happen.");
             }
 
             // Find investigatable target in room
@@ -60,7 +60,7 @@ public class InvestigateCommand : ICommand
                 "Investigate command failed: CharacterID={CharacterID}, Error={ErrorType}",
                 state.Player?.CharacterID ?? 0,
                 ex.GetType().Name);
-            return CommandResult.Failure("An error occurred while investigating.");
+            return CommandResult.CreateFailure("An error occurred while investigating.");
         }
     }
 
@@ -98,7 +98,7 @@ public class InvestigateCommand : ICommand
 
         // Not found or not investigatable
         _log.Debug("Investigate target not found or not investigatable: {Target}", target);
-        return CommandResult.Failure($"You cannot investigate '{target}' here.");
+        return CommandResult.CreateFailure($"You cannot investigate '{target}' here.");
     }
 
     /// <summary>
@@ -109,7 +109,7 @@ public class InvestigateCommand : ICommand
         // Check if already investigated
         if (terrain.HasBeenInvestigated)
         {
-            return CommandResult.Failure($"You have already thoroughly investigated the {terrain.TerrainName}.");
+            return CommandResult.CreateFailure($"You have already thoroughly investigated the {terrain.TerrainName}.");
         }
 
         // Perform WITS check
@@ -176,7 +176,7 @@ public class InvestigateCommand : ICommand
             sb.AppendLine(terrain.InvestigationFailureText ?? $"You find nothing of interest in the {terrain.TerrainName}.");
         }
 
-        return CommandResult.Success(sb.ToString(), redrawRoom: success);
+        return CommandResult.CreateSuccess(sb.ToString(), redrawRoom: success);
     }
 
     /// <summary>
@@ -187,7 +187,7 @@ public class InvestigateCommand : ICommand
         // If already looted, no point investigating
         if (lootNode.HasBeenLooted)
         {
-            return CommandResult.Failure($"The {lootNode.NodeType} has already been thoroughly searched.");
+            return CommandResult.CreateFailure($"The {lootNode.NodeType} has already been thoroughly searched.");
         }
 
         // For basic loot nodes, suggest using 'search' instead
@@ -196,7 +196,7 @@ public class InvestigateCommand : ICommand
 
         if (!hasHiddenContent)
         {
-            return CommandResult.Failure($"Use 'search {lootNode.NodeType}' to look for items.");
+            return CommandResult.CreateFailure($"Use 'search {lootNode.NodeType}' to look for items.");
         }
 
         // Perform WITS check for hidden compartment/content
@@ -243,7 +243,7 @@ public class InvestigateCommand : ICommand
             sb.AppendLine($"You don't find anything hidden in the {lootNode.NodeType}.");
         }
 
-        return CommandResult.Success(sb.ToString(), redrawRoom: success);
+        return CommandResult.CreateSuccess(sb.ToString(), redrawRoom: success);
     }
 
     /// <summary>
@@ -253,19 +253,19 @@ public class InvestigateCommand : ICommand
     {
         if (!hazard.IsActive)
         {
-            return CommandResult.Failure($"The {hazard.HazardName} is already disabled.");
+            return CommandResult.CreateFailure($"The {hazard.HazardName} is already disabled.");
         }
 
         // Check if hazard can be disabled
         if (!hazard.CanBeDisabled)
         {
-            return CommandResult.Failure($"The {hazard.HazardName} cannot be disabled through investigation.");
+            return CommandResult.CreateFailure($"The {hazard.HazardName} cannot be disabled through investigation.");
         }
 
         // If already investigated, provide hint
         if (hazard.HasBeenInvestigated)
         {
-            return CommandResult.Success($"You recall: {hazard.DisableHint ?? "There must be a way to disable this."}");
+            return CommandResult.CreateSuccess($"You recall: {hazard.DisableHint ?? "There must be a way to disable this."}");
         }
 
         // Perform WITS check
@@ -298,6 +298,6 @@ public class InvestigateCommand : ICommand
             sb.AppendLine($"You cannot discern how the {hazard.HazardName} functions.");
         }
 
-        return CommandResult.Success(sb.ToString());
+        return CommandResult.CreateSuccess(sb.ToString());
     }
 }

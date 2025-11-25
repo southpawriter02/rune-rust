@@ -33,7 +33,7 @@ public class FleeCommand : ICommand
             if (state.CurrentPhase != GamePhase.Combat || state.Combat == null)
             {
                 _log.Debug("Flee failed: Not in combat");
-                return CommandResult.Failure("You are not in combat.");
+                return CommandResult.CreateFailure("You are not in combat.");
             }
 
             var combat = state.Combat;
@@ -42,21 +42,21 @@ public class FleeCommand : ICommand
             if (!combat.IsActive)
             {
                 _log.Debug("Flee failed: Combat is not active");
-                return CommandResult.Failure("Combat has already ended.");
+                return CommandResult.CreateFailure("Combat has already ended.");
             }
 
             // Validation 3: Can flee from this combat
             if (!combat.CanFlee)
             {
                 _log.Debug("Flee failed: Cannot flee from this combat");
-                return CommandResult.Failure("You cannot flee from this encounter!");
+                return CommandResult.CreateFailure("You cannot flee from this encounter!");
             }
 
             // Validation 4: Player must have a turn
             if (!IsPlayerTurn(combat))
             {
                 _log.Debug("Flee failed: Not player's turn");
-                return CommandResult.Failure("Wait for your turn!");
+                return CommandResult.CreateFailure("Wait for your turn!");
             }
 
             // Clear combat log for this action
@@ -99,7 +99,7 @@ public class FleeCommand : ICommand
                 result.AppendLine("You remain in combat!");
             }
 
-            return CommandResult.Success(result.ToString(), redrawRoom: success);
+            return CommandResult.CreateSuccess(result.ToString(), redrawRoom: success);
         }
         catch (Exception ex)
         {
@@ -107,7 +107,7 @@ public class FleeCommand : ICommand
                 "Flee command failed: CharacterID={CharacterID}, Error={ErrorType}",
                 state.Player?.CharacterID ?? 0,
                 ex.GetType().Name);
-            return CommandResult.Failure($"An error occurred while attempting to flee: {ex.Message}");
+            return CommandResult.CreateFailure($"An error occurred while attempting to flee: {ex.Message}");
         }
     }
 

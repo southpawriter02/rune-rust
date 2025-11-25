@@ -18,14 +18,14 @@ public class UseCommand : ICommand
         if (state.Player == null)
         {
             _log.Warning("Use command failed: Player is null");
-            return CommandResult.Failure("Player not found.");
+            return CommandResult.CreateFailure("Player not found.");
         }
 
         // Check for arguments
         if (args.Length == 0)
         {
             _log.Debug("Use command: No item specified");
-            return CommandResult.Failure("Use what? (Usage: use [item name])");
+            return CommandResult.CreateFailure("Use what? (Usage: use [item name])");
         }
 
         // Parse arguments - check for "use X on Y" pattern
@@ -46,7 +46,7 @@ public class UseCommand : ICommand
                 targetName);
 
             // Environmental interaction not yet fully implemented
-            return CommandResult.Failure(
+            return CommandResult.CreateFailure(
                 "Environmental interactions are not yet implemented. " +
                 "You can use consumables like potions and medicines.");
         }
@@ -71,7 +71,7 @@ public class UseCommand : ICommand
     {
         if (state.Player == null)
         {
-            return CommandResult.Failure("Player not found.");
+            return CommandResult.CreateFailure("Player not found.");
         }
 
         // Find the consumable
@@ -94,11 +94,11 @@ public class UseCommand : ICommand
                     .ToList();
 
                 var availableConsumables = string.Join(", ", consumableGroups);
-                return CommandResult.Failure(
+                return CommandResult.CreateFailure(
                     $"You don't have a '{itemName}' consumable.\nYou have: {availableConsumables}");
             }
 
-            return CommandResult.Failure($"You don't have any consumables.");
+            return CommandResult.CreateFailure($"You don't have any consumables.");
         }
 
         // Apply consumable effects
@@ -207,6 +207,6 @@ public class UseCommand : ICommand
             consumable.Name,
             state.Player.Consumables.Count);
 
-        return CommandResult.Success(output.ToString());
+        return CommandResult.CreateSuccess(output.ToString());
     }
 }

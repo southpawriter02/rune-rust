@@ -48,7 +48,7 @@ public class EnhancedInvestigateCommand : ICommand
             var room = state.CurrentRoom;
             if (room == null)
             {
-                return CommandResult.Failure("You are nowhere. This should not happen.");
+                return CommandResult.CreateFailure("You are nowhere. This should not happen.");
             }
 
             // Step 1: Try v0.38.3 Interactive Objects first (highest priority)
@@ -70,7 +70,7 @@ public class EnhancedInvestigateCommand : ICommand
 
             // Not found
             _log.Debug("Investigate target not found: {Target}", target);
-            return CommandResult.Failure($"You cannot investigate '{target}' here.");
+            return CommandResult.CreateFailure($"You cannot investigate '{target}' here.");
         }
         catch (Exception ex)
         {
@@ -78,7 +78,7 @@ public class EnhancedInvestigateCommand : ICommand
                 "Investigate command failed: CharacterID={CharacterID}, Error={ErrorType}",
                 state.Player?.CharacterID ?? 0,
                 ex.GetType().Name);
-            return CommandResult.Failure("An error occurred while investigating.");
+            return CommandResult.CreateFailure("An error occurred while investigating.");
         }
     }
 
@@ -95,7 +95,7 @@ public class EnhancedInvestigateCommand : ICommand
     {
         if (_objectService == null)
         {
-            return CommandResult.Failure("Object interaction service not available.");
+            return CommandResult.CreateFailure("Object interaction service not available.");
         }
 
         _log.Information(
@@ -136,7 +136,7 @@ public class EnhancedInvestigateCommand : ICommand
                 }
             }
 
-            return CommandResult.Success(sb.ToString(), redrawRoom: true);
+            return CommandResult.CreateSuccess(sb.ToString(), redrawRoom: true);
         }
 
         // For other objects, provide interaction hint
@@ -152,14 +152,14 @@ public class EnhancedInvestigateCommand : ICommand
 
         sb.AppendLine($"Hint: {hint}");
 
-        return CommandResult.Success(sb.ToString());
+        return CommandResult.CreateSuccess(sb.ToString());
     }
 
     private CommandResult ListInvestigatableTargets(Room? room)
     {
         if (room == null)
         {
-            return CommandResult.Failure("You are nowhere.");
+            return CommandResult.CreateFailure("You are nowhere.");
         }
 
         var sb = new StringBuilder();
@@ -196,10 +196,10 @@ public class EnhancedInvestigateCommand : ICommand
 
         if (count == 0)
         {
-            return CommandResult.Failure("There is nothing here worth investigating.");
+            return CommandResult.CreateFailure("There is nothing here worth investigating.");
         }
 
-        return CommandResult.Success(sb.ToString());
+        return CommandResult.CreateSuccess(sb.ToString());
     }
 
     #endregion
@@ -242,7 +242,7 @@ public class EnhancedInvestigateCommand : ICommand
     {
         if (terrain.HasBeenInvestigated)
         {
-            return CommandResult.Failure($"You have already thoroughly investigated the {terrain.TerrainName}.");
+            return CommandResult.CreateFailure($"You have already thoroughly investigated the {terrain.TerrainName}.");
         }
 
         var dc = terrain.InvestigationDC > 0 ? terrain.InvestigationDC : 2;
@@ -272,21 +272,21 @@ public class EnhancedInvestigateCommand : ICommand
             sb.AppendLine(terrain.InvestigationFailureText ?? $"You find nothing of interest in the {terrain.TerrainName}.");
         }
 
-        return CommandResult.Success(sb.ToString(), redrawRoom: success);
+        return CommandResult.CreateSuccess(sb.ToString(), redrawRoom: success);
     }
 
     private CommandResult InvestigateLootNode(GameState state, PopulationLootNode lootNode)
     {
         if (lootNode.HasBeenLooted)
         {
-            return CommandResult.Failure($"The {lootNode.NodeType} has already been thoroughly searched.");
+            return CommandResult.CreateFailure($"The {lootNode.NodeType} has already been thoroughly searched.");
         }
 
         var hasHiddenContent = lootNode.RequiresInvestigation;
 
         if (!hasHiddenContent)
         {
-            return CommandResult.Failure($"Use 'search {lootNode.NodeType}' to look for items.");
+            return CommandResult.CreateFailure($"Use 'search {lootNode.NodeType}' to look for items.");
         }
 
         var dc = lootNode.InvestigationDC > 0 ? lootNode.InvestigationDC : 2;
@@ -317,24 +317,24 @@ public class EnhancedInvestigateCommand : ICommand
             sb.AppendLine($"You don't find anything hidden in the {lootNode.NodeType}.");
         }
 
-        return CommandResult.Success(sb.ToString(), redrawRoom: success);
+        return CommandResult.CreateSuccess(sb.ToString(), redrawRoom: success);
     }
 
     private CommandResult InvestigateHazard(GameState state, PopulationDynamicHazard hazard)
     {
         if (!hazard.IsActive)
         {
-            return CommandResult.Failure($"The {hazard.HazardName} is already disabled.");
+            return CommandResult.CreateFailure($"The {hazard.HazardName} is already disabled.");
         }
 
         if (!hazard.CanBeDisabled)
         {
-            return CommandResult.Failure($"The {hazard.HazardName} cannot be disabled through investigation.");
+            return CommandResult.CreateFailure($"The {hazard.HazardName} cannot be disabled through investigation.");
         }
 
         if (hazard.HasBeenInvestigated)
         {
-            return CommandResult.Success($"You recall: {hazard.DisableHint ?? "There must be a way to disable this."}");
+            return CommandResult.CreateSuccess($"You recall: {hazard.DisableHint ?? "There must be a way to disable this."}");
         }
 
         var dc = hazard.InvestigationDC > 0 ? hazard.InvestigationDC : 3;
@@ -365,7 +365,7 @@ public class EnhancedInvestigateCommand : ICommand
             sb.AppendLine($"You cannot discern how the {hazard.HazardName} functions.");
         }
 
-        return CommandResult.Success(sb.ToString());
+        return CommandResult.CreateSuccess(sb.ToString());
     }
 
     #endregion

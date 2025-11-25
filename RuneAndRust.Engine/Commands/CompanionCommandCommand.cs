@@ -24,27 +24,27 @@ public class CompanionCommandCommand : ICommand
         if (state.Player == null)
         {
             _log.Warning("Companion command failed: Player is null");
-            return CommandResult.Failure("Player not found.");
+            return CommandResult.CreateFailure("Player not found.");
         }
 
         // Must be in combat to command companions
         if (state.CurrentPhase != GamePhase.Combat)
         {
             _log.Debug("Companion command failed: Not in combat");
-            return CommandResult.Failure("You can only command companions during combat. Use 'stance' to change companion behavior outside combat.");
+            return CommandResult.CreateFailure("You can only command companions during combat. Use 'stance' to change companion behavior outside combat.");
         }
 
         if (state.Combat == null)
         {
             _log.Warning("Companion command failed: Combat state is null");
-            return CommandResult.Failure("Combat state not found.");
+            return CommandResult.CreateFailure("Combat state not found.");
         }
 
         // Parse arguments: command [companion_name] [action] [target]
         if (args.Length < 2)
         {
             _log.Debug("Companion command failed: Insufficient arguments");
-            return CommandResult.Failure("Usage: command [companion] [action] [target]");
+            return CommandResult.CreateFailure("Usage: command [companion] [action] [target]");
         }
 
         string companionName = args[0];
@@ -67,7 +67,7 @@ public class CompanionCommandCommand : ICommand
                 "Companion command failed: Companion not found: {CompanionName}",
                 companionName);
 
-            return CommandResult.Failure($"'{companionName}' is not in your active party.");
+            return CommandResult.CreateFailure($"'{companionName}' is not in your active party.");
         }
 
         // Check if companion is incapacitated
@@ -77,7 +77,7 @@ public class CompanionCommandCommand : ICommand
                 "Companion command failed: Companion incapacitated: {CompanionName}",
                 companion.DisplayName);
 
-            return CommandResult.Failure($"{companion.DisplayName} is incapacitated (System Crash) and cannot act.");
+            return CommandResult.CreateFailure($"{companion.DisplayName} is incapacitated (System Crash) and cannot act.");
         }
 
         // Find target enemy if specified
@@ -93,7 +93,7 @@ public class CompanionCommandCommand : ICommand
                     targetName);
 
                 var enemyNames = string.Join(", ", state.Combat.Enemies.Select(e => e.Name));
-                return CommandResult.Failure($"Target '{targetName}' not found. Available targets: {enemyNames}");
+                return CommandResult.CreateFailure($"Target '{targetName}' not found. Available targets: {enemyNames}");
             }
         }
 
@@ -111,7 +111,7 @@ public class CompanionCommandCommand : ICommand
                 "Companion command failed: Invalid action: {Action}",
                 action);
 
-            return CommandResult.Failure($"'{action}' is not a valid ability or action for {companion.DisplayName}.");
+            return CommandResult.CreateFailure($"'{action}' is not a valid ability or action for {companion.DisplayName}.");
         }
 
         // Queue the action for execution during companion's turn
@@ -132,7 +132,7 @@ public class CompanionCommandCommand : ICommand
             output.AppendLine($"Target: {targetName}");
         }
 
-        return CommandResult.Success(output.ToString());
+        return CommandResult.CreateSuccess(output.ToString());
     }
 
     /// <summary>

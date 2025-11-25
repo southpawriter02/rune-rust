@@ -21,7 +21,7 @@ public partial class EnemyAI
     private readonly ITargetSelectionService? _targetSelectionService;
     private readonly ISituationalAnalysisService? _situationalAnalysisService;
     private readonly IBehaviorPatternService? _behaviorPatternService;
-    private readonly ILogger<EnemyAI>? _aiLogger;
+    // Note: _aiLogger is defined in EnemyAI.Integration.cs partial class
 
     // Track current combat session for logging
     private Guid _currentSessionId = Guid.NewGuid();

@@ -40,7 +40,7 @@ public class LookCommand : ICommand
                 _log.Debug(
                     "Look command completed: Success=True, OutputLength={Length}",
                     description.Length);
-                return CommandResult.Success(description);
+                return CommandResult.CreateSuccess(description);
             }
 
             // "look at [target]" - examine specific object
@@ -52,7 +52,7 @@ public class LookCommand : ICommand
                 target,
                 !examination.Contains("don't see"));
 
-            return CommandResult.Success(examination);
+            return CommandResult.CreateSuccess(examination);
         }
         catch (Exception ex)
         {
@@ -60,7 +60,7 @@ public class LookCommand : ICommand
                 "Look command failed: CharacterID={CharacterID}, Error={ErrorType}",
                 state.Player?.CharacterID ?? 0,
                 ex.GetType().Name);
-            return CommandResult.Failure("An error occurred while looking around.");
+            return CommandResult.CreateFailure("An error occurred while looking around.");
         }
     }
 

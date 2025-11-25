@@ -18,7 +18,7 @@ public class RestCommand : ICommand
         if (state.Player == null)
         {
             _log.Warning("Rest command failed: Player is null");
-            return CommandResult.Failure("Player not found.");
+            return CommandResult.CreateFailure("Player not found.");
         }
 
         _log.Information(
@@ -33,7 +33,7 @@ public class RestCommand : ICommand
                 "Rest failed: Character in combat: CharacterId={CharacterId}",
                 state.Player.CharacterID);
 
-            return CommandResult.Failure("You cannot rest during combat. Defeat or flee from enemies first.");
+            return CommandResult.CreateFailure("You cannot rest during combat. Defeat or flee from enemies first.");
         }
 
         // Store values before rest
@@ -123,6 +123,6 @@ public class RestCommand : ICommand
             staminaBefore,
             state.Player.Stamina);
 
-        return CommandResult.Success(output.ToString());
+        return CommandResult.CreateSuccess(output.ToString());
     }
 }

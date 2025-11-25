@@ -92,20 +92,20 @@ public class CommandDispatcher
         if (parsedCommand == null)
         {
             _log.Warning("Null ParsedCommand received");
-            return CommandResult.Failure("Invalid command.");
+            return CommandResult.CreateFailure("Invalid command.");
         }
 
         if (parsedCommand.Type == CommandType.Unknown)
         {
             _log.Debug("Unknown command type: {RawInput}", parsedCommand.RawInput);
-            return CommandResult.Failure($"Unknown command: '{parsedCommand.RawInput}'. Type 'help' for available commands.");
+            return CommandResult.CreateFailure($"Unknown command: '{parsedCommand.RawInput}'. Type 'help' for available commands.");
         }
 
         // Check if command is registered
         if (!_commandRegistry.ContainsKey(parsedCommand.Type))
         {
             _log.Warning("Command not registered in dispatcher: {CommandType}", parsedCommand.Type);
-            return CommandResult.Failure($"Command '{parsedCommand.Type}' is not yet implemented.");
+            return CommandResult.CreateFailure($"Command '{parsedCommand.Type}' is not yet implemented.");
         }
 
         try
@@ -137,7 +137,7 @@ public class CommandDispatcher
                 parsedCommand.Type,
                 ex.Message);
 
-            return CommandResult.Failure($"An error occurred while executing the command: {ex.Message}");
+            return CommandResult.CreateFailure($"An error occurred while executing the command: {ex.Message}");
         }
     }
 

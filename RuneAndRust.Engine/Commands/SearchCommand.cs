@@ -29,7 +29,7 @@ public class SearchCommand : ICommand
         if (args.Length == 0)
         {
             _log.Debug("Search command called with no target");
-            return CommandResult.Failure("Search what? Specify a container (e.g., 'search chest').");
+            return CommandResult.CreateFailure("Search what? Specify a container (e.g., 'search chest').");
         }
 
         var target = string.Join(" ", args).ToLower().Trim('[', ']');
@@ -45,7 +45,7 @@ public class SearchCommand : ICommand
             var room = state.CurrentRoom;
             if (room == null)
             {
-                return CommandResult.Failure("You are nowhere. This should not happen.");
+                return CommandResult.CreateFailure("You are nowhere. This should not happen.");
             }
 
             // Find and search container
@@ -59,7 +59,7 @@ public class SearchCommand : ICommand
                 "Search command failed: CharacterID={CharacterID}, Error={ErrorType}",
                 state.Player?.CharacterID ?? 0,
                 ex.GetType().Name);
-            return CommandResult.Failure("An error occurred while searching.");
+            return CommandResult.CreateFailure("An error occurred while searching.");
         }
     }
 
@@ -89,7 +89,7 @@ public class SearchCommand : ICommand
 
         // Not found or not searchable
         _log.Debug("Search target not found or not searchable: {Target}", target);
-        return CommandResult.Failure($"You cannot search '{target}' here.");
+        return CommandResult.CreateFailure($"You cannot search '{target}' here.");
     }
 
     /// <summary>
@@ -100,7 +100,7 @@ public class SearchCommand : ICommand
         // Check if already looted
         if (lootNode.HasBeenLooted)
         {
-            return CommandResult.Failure($"The {lootNode.NodeType} has already been searched and is empty.");
+            return CommandResult.CreateFailure($"The {lootNode.NodeType} has already been searched and is empty.");
         }
 
         // Check if hidden content requires investigation first
@@ -143,7 +143,7 @@ public class SearchCommand : ICommand
                 lootNode.NodeType,
                 state.CurrentRoom?.RoomId ?? "unknown");
 
-            return CommandResult.Success(sb.ToString());
+            return CommandResult.CreateSuccess(sb.ToString());
         }
 
         // Add items to player inventory
@@ -197,7 +197,7 @@ public class SearchCommand : ICommand
         sb.AppendLine();
         sb.AppendLine("Items have been added to your inventory/resources.");
 
-        return CommandResult.Success(sb.ToString(), redrawRoom: true);
+        return CommandResult.CreateSuccess(sb.ToString(), redrawRoom: true);
     }
 
     /// <summary>
@@ -207,12 +207,12 @@ public class SearchCommand : ICommand
     {
         if (!terrain.IsSearchable)
         {
-            return CommandResult.Failure($"The {terrain.TerrainName} cannot be searched.");
+            return CommandResult.CreateFailure($"The {terrain.TerrainName} cannot be searched.");
         }
 
         if (terrain.HasBeenSearched)
         {
-            return CommandResult.Failure($"You have already searched the {terrain.TerrainName}.");
+            return CommandResult.CreateFailure($"You have already searched the {terrain.TerrainName}.");
         }
 
         var sb = new StringBuilder();
@@ -247,7 +247,7 @@ public class SearchCommand : ICommand
             terrain.HasBeenSearched = true;
         }
 
-        return CommandResult.Success(sb.ToString());
+        return CommandResult.CreateSuccess(sb.ToString());
     }
 }
 

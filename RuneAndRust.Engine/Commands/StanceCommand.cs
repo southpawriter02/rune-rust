@@ -33,7 +33,7 @@ public class StanceCommand : ICommand
             if (args.Length == 0)
             {
                 _log.Debug("Stance failed: No stance specified");
-                return CommandResult.Failure("Specify a stance: aggressive, defensive, calculated, or evasive.");
+                return CommandResult.CreateFailure("Specify a stance: aggressive, defensive, calculated, or evasive.");
             }
 
             var stanceName = args[0].ToLower();
@@ -52,7 +52,7 @@ public class StanceCommand : ICommand
             if (!stanceType.HasValue)
             {
                 _log.Debug("Stance failed: Invalid stance name: {Stance}", stanceName);
-                return CommandResult.Failure($"Unknown stance '{stanceName}'. Valid stances: aggressive, defensive, calculated, evasive.");
+                return CommandResult.CreateFailure($"Unknown stance '{stanceName}'. Valid stances: aggressive, defensive, calculated, evasive.");
             }
 
             // Capture combat state for logging (if in combat)
@@ -68,7 +68,7 @@ public class StanceCommand : ICommand
             {
                 // StanceService will have added error message to combat log or we can provide our own
                 var currentStance = _stanceService.GetStanceName(player.ActiveStance?.Type ?? StanceType.Calculated);
-                return CommandResult.Failure($"Failed to change stance. You are already in {currentStance} stance or have no shifts remaining.");
+                return CommandResult.CreateFailure($"Failed to change stance. You are already in {currentStance} stance or have no shifts remaining.");
             }
 
             // Build output
@@ -97,7 +97,7 @@ public class StanceCommand : ICommand
                 player.Name,
                 stanceType.Value);
 
-            return CommandResult.Success(result.ToString());
+            return CommandResult.CreateSuccess(result.ToString());
         }
         catch (Exception ex)
         {
@@ -105,7 +105,7 @@ public class StanceCommand : ICommand
                 "Stance command failed: CharacterID={CharacterID}, Error={ErrorType}",
                 state.Player?.CharacterID ?? 0,
                 ex.GetType().Name);
-            return CommandResult.Failure($"An error occurred while changing stance: {ex.Message}");
+            return CommandResult.CreateFailure($"An error occurred while changing stance: {ex.Message}");
         }
     }
 }

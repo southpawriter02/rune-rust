@@ -43,7 +43,7 @@ public class CompanionCommands
 
         if (tokens.Length < 3)
         {
-            return CommandResult.Failure("Usage: command [companion_name] [ability] [target]");
+            return CommandResult.CreateFailure("Usage: command [companion_name] [ability] [target]");
         }
 
         // Extract companion name (token 1)
@@ -52,7 +52,7 @@ public class CompanionCommands
 
         if (companion == null)
         {
-            return CommandResult.Failure($"Companion not found in party: {companionName}");
+            return CommandResult.CreateFailure($"Companion not found in party: {companionName}");
         }
 
         // Extract ability name (token 2)
@@ -71,7 +71,7 @@ public class CompanionCommands
                 var targetCompanion = _companionService.GetCompanionByName(characterId, targetName);
                 if (targetCompanion == null)
                 {
-                    return CommandResult.Failure($"Target not found: {targetName}");
+                    return CommandResult.CreateFailure($"Target not found: {targetName}");
                 }
                 // Support abilities on companions handled separately
                 _log.Debug("Support ability targeting companion: {TargetName}", targetName);
@@ -88,7 +88,7 @@ public class CompanionCommands
 
         if (action.ActionType == "Wait" && action.Reason.Contains("Unknown"))
         {
-            return CommandResult.Failure($"Ability not found or cannot be used: {abilityName}");
+            return CommandResult.CreateFailure($"Ability not found or cannot be used: {abilityName}");
         }
 
         // Store action for execution during companion's turn
@@ -97,7 +97,7 @@ public class CompanionCommands
         _log.Information("Command queued: {CompanionName} will use {AbilityName} on {Target}",
             companion.DisplayName, abilityName, targetEnemy?.Name ?? "self");
 
-        return CommandResult.Success($"{companion.DisplayName} will use {abilityName} on {targetEnemy?.Name ?? "self"}");
+        return CommandResult.CreateSuccess($"{companion.DisplayName} will use {abilityName} on {targetEnemy?.Name ?? "self"}");
     }
 
     // ============================================
@@ -120,7 +120,7 @@ public class CompanionCommands
 
         if (tokens.Length < 3)
         {
-            return CommandResult.Failure("Usage: stance [companion_name] [aggressive|defensive|passive]");
+            return CommandResult.CreateFailure("Usage: stance [companion_name] [aggressive|defensive|passive]");
         }
 
         // Extract companion name (token 1)
@@ -129,7 +129,7 @@ public class CompanionCommands
 
         if (companion == null)
         {
-            return CommandResult.Failure($"Companion not found in party: {companionName}");
+            return CommandResult.CreateFailure($"Companion not found in party: {companionName}");
         }
 
         // Extract new stance (token 2)
@@ -138,7 +138,7 @@ public class CompanionCommands
 
         if (!validStances.Contains(newStance))
         {
-            return CommandResult.Failure($"Invalid stance. Must be: aggressive, defensive, or passive");
+            return CommandResult.CreateFailure($"Invalid stance. Must be: aggressive, defensive, or passive");
         }
 
         // Change stance via CompanionService
@@ -146,13 +146,13 @@ public class CompanionCommands
 
         if (!success)
         {
-            return CommandResult.Failure($"Failed to change stance for {companion.DisplayName}");
+            return CommandResult.CreateFailure($"Failed to change stance for {companion.DisplayName}");
         }
 
         _log.Information("Stance changed: {CompanionName} is now {Stance}",
             companion.DisplayName, newStance);
 
-        return CommandResult.Success($"{companion.DisplayName} is now {newStance.ToUpper()}");
+        return CommandResult.CreateSuccess($"{companion.DisplayName} is now {newStance.ToUpper()}");
     }
 
     // ============================================

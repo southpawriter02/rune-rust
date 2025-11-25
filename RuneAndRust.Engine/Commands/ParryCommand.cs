@@ -32,7 +32,7 @@ public class ParryCommand : ICommand
             if (state.CurrentPhase != GamePhase.Combat || state.Combat == null)
             {
                 _log.Debug("Parry failed: Not in combat");
-                return CommandResult.Failure("You can only parry during combat.");
+                return CommandResult.CreateFailure("You can only parry during combat.");
             }
 
             var combat = state.Combat;
@@ -41,14 +41,14 @@ public class ParryCommand : ICommand
             if (!combat.IsActive)
             {
                 _log.Debug("Parry failed: Combat is not active");
-                return CommandResult.Failure("Combat has ended.");
+                return CommandResult.CreateFailure("Combat has ended.");
             }
 
             // Validation 3: Player must have a turn
             if (!IsPlayerTurn(combat))
             {
                 _log.Debug("Parry failed: Not player's turn");
-                return CommandResult.Failure("Wait for your turn!");
+                return CommandResult.CreateFailure("Wait for your turn!");
             }
 
             // Clear combat log for this action
@@ -66,7 +66,7 @@ public class ParryCommand : ICommand
 
             _log.Information("Parry prepared: Player={Player}", state.Player.Name);
 
-            return CommandResult.Success(result.ToString());
+            return CommandResult.CreateSuccess(result.ToString());
         }
         catch (Exception ex)
         {
@@ -74,7 +74,7 @@ public class ParryCommand : ICommand
                 "Parry command failed: CharacterID={CharacterID}, Error={ErrorType}",
                 state.Player?.CharacterID ?? 0,
                 ex.GetType().Name);
-            return CommandResult.Failure($"An error occurred while preparing parry: {ex.Message}");
+            return CommandResult.CreateFailure($"An error occurred while preparing parry: {ex.Message}");
         }
     }
 

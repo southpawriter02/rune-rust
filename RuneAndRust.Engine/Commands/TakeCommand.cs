@@ -25,20 +25,20 @@ public class TakeCommand : ICommand
         if (state.Player == null)
         {
             _log.Warning("Take command failed: Player is null");
-            return CommandResult.Failure("Player not found.");
+            return CommandResult.CreateFailure("Player not found.");
         }
 
         if (state.CurrentRoom == null)
         {
             _log.Warning("Take command failed: CurrentRoom is null");
-            return CommandResult.Failure("You are not in a room.");
+            return CommandResult.CreateFailure("You are not in a room.");
         }
 
         // Check for arguments
         if (args.Length == 0)
         {
             _log.Debug("Take command: No item specified");
-            return CommandResult.Failure("Take what? (Usage: take [item name])");
+            return CommandResult.CreateFailure("Take what? (Usage: take [item name])");
         }
 
         // Join all arguments to handle multi-word item names
@@ -59,7 +59,7 @@ public class TakeCommand : ICommand
                 state.Player.Inventory.Count,
                 state.Player.MaxInventorySize);
 
-            return CommandResult.Failure(
+            return CommandResult.CreateFailure(
                 $"Your inventory is full ({state.Player.Inventory.Count}/{state.Player.MaxInventorySize}). " +
                 "Drop something first or you'll be encumbered.");
         }
@@ -78,11 +78,11 @@ public class TakeCommand : ICommand
             if (state.CurrentRoom.ItemsOnGround.Any())
             {
                 var availableItems = string.Join(", ", state.CurrentRoom.ItemsOnGround.Select(i => i.Name));
-                return CommandResult.Failure(
+                return CommandResult.CreateFailure(
                     $"There is no '{itemName}' here.\nAvailable items: {availableItems}");
             }
 
-            return CommandResult.Failure($"There is no '{itemName}' here.");
+            return CommandResult.CreateFailure($"There is no '{itemName}' here.");
         }
 
         // Pick up the item using EquipmentService
@@ -95,7 +95,7 @@ public class TakeCommand : ICommand
                 item.Name,
                 state.Player.CharacterID);
 
-            return CommandResult.Failure($"Failed to pick up the {item.Name}.");
+            return CommandResult.CreateFailure($"Failed to pick up the {item.Name}.");
         }
 
         _log.Information(
@@ -103,6 +103,6 @@ public class TakeCommand : ICommand
             item.Name,
             state.Player.Inventory.Count);
 
-        return CommandResult.Success($"You take the {item.Name}.");
+        return CommandResult.CreateSuccess($"You take the {item.Name}.");
     }
 }

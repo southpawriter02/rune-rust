@@ -32,7 +32,7 @@ public class ObjectInteractionCommand : ICommand
     {
         if (args.Length == 0)
         {
-            return CommandResult.Failure($"{_commandName.CapitalizeFirst()} what? Specify a target.");
+            return CommandResult.CreateFailure($"{_commandName.CapitalizeFirst()} what? Specify a target.");
         }
 
         var target = string.Join(" ", args).ToLower().Trim('[', ']');
@@ -49,21 +49,21 @@ public class ObjectInteractionCommand : ICommand
             var room = state.CurrentRoom;
             if (room == null)
             {
-                return CommandResult.Failure("You are nowhere. This should not happen.");
+                return CommandResult.CreateFailure("You are nowhere. This should not happen.");
             }
 
             // Find object
             var obj = FindInteractiveObject(room, target);
             if (obj == null)
             {
-                return CommandResult.Failure($"You don't see '{target}' here.");
+                return CommandResult.CreateFailure($"You don't see '{target}' here.");
             }
 
             // Check if interaction type matches
             if (obj.InteractionType != _interactionType)
             {
                 var correctCommand = GetCorrectCommand(obj.InteractionType);
-                return CommandResult.Failure(
+                return CommandResult.CreateFailure(
                     $"You cannot {_commandName} the {obj.Name}. Try '{correctCommand} {target}' instead.");
             }
 
@@ -79,7 +79,7 @@ public class ObjectInteractionCommand : ICommand
                 _commandName,
                 state.Player?.CharacterID ?? 0,
                 ex.GetType().Name);
-            return CommandResult.Failure($"An error occurred while attempting to {_commandName} the target.");
+            return CommandResult.CreateFailure($"An error occurred while attempting to {_commandName} the target.");
         }
     }
 
@@ -156,8 +156,8 @@ public class ObjectInteractionCommand : ICommand
             result.Consequence?.Type == ConsequenceType.Spawn);
 
         return result.Success
-            ? CommandResult.Success(sb.ToString(), redrawRoom: redrawRoom)
-            : CommandResult.Failure(sb.ToString());
+            ? CommandResult.CreateSuccess(sb.ToString(), redrawRoom: redrawRoom)
+            : CommandResult.CreateFailure(sb.ToString());
     }
 
     private string GetCorrectCommand(DescriptorInteractionType interactionType)

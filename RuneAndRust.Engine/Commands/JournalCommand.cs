@@ -19,7 +19,7 @@ public class JournalCommand : ICommand
         if (state.Player == null)
         {
             _log.Warning("Journal command failed: Player is null");
-            return CommandResult.Failure("Player not found.");
+            return CommandResult.CreateFailure("Player not found.");
         }
 
         _log.Information(
@@ -107,6 +107,6 @@ public class JournalCommand : ICommand
             activeQuests.Count,
             completedCount);
 
-        return CommandResult.Success(output.ToString());
+        return CommandResult.CreateSuccess(output.ToString());
     }
 }
