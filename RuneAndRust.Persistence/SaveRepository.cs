@@ -534,10 +534,14 @@ public class SaveRepository
                 feature_name TEXT NOT NULL,
                 feature_type TEXT CHECK(feature_type IN ('Hazard', 'Terrain', 'Ambient')),
                 feature_description TEXT,
-                damage_dice INTEGER DEFAULT 0,
+                damage_per_turn INTEGER DEFAULT 0,
                 damage_type TEXT,
-                status_effects_json TEXT,
-                spawn_weight INTEGER DEFAULT 100,
+                tile_coverage_percent REAL DEFAULT 0,
+                is_destructible INTEGER DEFAULT 0,
+                blocks_movement INTEGER DEFAULT 0,
+                blocks_line_of_sight INTEGER DEFAULT 0,
+                hazard_density_category TEXT,
+                special_rules TEXT,
                 created_at TEXT DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (biome_id) REFERENCES Biomes(biome_id) ON DELETE CASCADE
             )
