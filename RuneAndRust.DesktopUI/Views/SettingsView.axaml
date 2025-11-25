@@ -1,0 +1,446 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:RuneAndRust.DesktopUI.ViewModels"
+             x:Class="RuneAndRust.DesktopUI.Views.SettingsView"
+             x:DataType="vm:SettingsViewModel">
+
+    <Design.DataContext>
+        <vm:SettingsViewModel/>
+    </Design.DataContext>
+
+    <Grid RowDefinitions="Auto,*,Auto" Background="#1A1A1A">
+        <!-- Header -->
+        <Border Grid.Row="0" Background="#2C2C2C" Padding="20,15">
+            <Grid ColumnDefinitions="Auto,*,Auto">
+                <Button Grid.Column="0"
+                        Content="Back"
+                        Command="{Binding BackCommand}"
+                        Width="80"
+                        HorizontalContentAlignment="Center"/>
+                <TextBlock Grid.Column="1"
+                           Text="Settings"
+                           FontSize="28"
+                           FontWeight="Bold"
+                           Foreground="White"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"/>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="10">
+                    <TextBlock Text="*"
+                               Foreground="#FF6B6B"
+                               FontSize="20"
+                               IsVisible="{Binding HasUnsavedChanges}"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Settings Content -->
+        <ScrollViewer Grid.Row="1" Padding="20">
+            <StackPanel Spacing="20" MaxWidth="900" HorizontalAlignment="Center">
+
+                <!-- Graphics Settings -->
+                <Border Background="#2C2C2C" Padding="20" CornerRadius="8">
+                    <StackPanel Spacing="15">
+                        <TextBlock Text="Graphics"
+                                   FontSize="22"
+                                   FontWeight="Bold"
+                                   Foreground="#4A90E2"/>
+
+                        <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="15" ColumnSpacing="30">
+                            <!-- Left Column -->
+                            <StackPanel Grid.Row="0" Grid.Column="0" Spacing="5">
+                                <CheckBox Content="Fullscreen"
+                                          IsChecked="{Binding IsFullscreen}"
+                                          Foreground="White"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Row="1" Grid.Column="0" Spacing="5">
+                                <CheckBox Content="V-Sync"
+                                          IsChecked="{Binding VsyncEnabled}"
+                                          Foreground="White"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Row="2" Grid.Column="0" Spacing="5">
+                                <CheckBox Content="Particle Effects"
+                                          IsChecked="{Binding ParticleEffects}"
+                                          Foreground="White"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Row="3" Grid.Column="0" Spacing="5">
+                                <CheckBox Content="Screen Shake"
+                                          IsChecked="{Binding ScreenShake}"
+                                          Foreground="White"/>
+                            </StackPanel>
+
+                            <!-- Right Column -->
+                            <StackPanel Grid.Row="0" Grid.Column="1" Spacing="5">
+                                <TextBlock Text="Resolution" Foreground="#CCCCCC"/>
+                                <ComboBox ItemsSource="{Binding AvailableResolutions}"
+                                          SelectedIndex="{Binding SelectedResolutionIndex}"
+                                          Width="200"
+                                          HorizontalAlignment="Left"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Row="1" Grid.Column="1" Spacing="5">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Grid.Column="0" Text="Target FPS" Foreground="#CCCCCC"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding TargetFPS}" Foreground="#4A90E2"/>
+                                </Grid>
+                                <Slider Value="{Binding TargetFPS}"
+                                        Minimum="30"
+                                        Maximum="240"
+                                        TickFrequency="30"
+                                        IsSnapToTickEnabled="True"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Row="2" Grid.Column="1" Grid.RowSpan="2" Spacing="5">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Grid.Column="0" Text="Quality" Foreground="#CCCCCC"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding QualityLevelText}" Foreground="#4A90E2"/>
+                                </Grid>
+                                <Slider Value="{Binding QualityLevel}"
+                                        Minimum="0"
+                                        Maximum="2"
+                                        TickFrequency="1"
+                                        IsSnapToTickEnabled="True"/>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- Audio Settings -->
+                <Border Background="#2C2C2C" Padding="20" CornerRadius="8">
+                    <StackPanel Spacing="15">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBlock Grid.Column="0"
+                                       Text="Audio"
+                                       FontSize="22"
+                                       FontWeight="Bold"
+                                       Foreground="#4A90E2"/>
+                            <CheckBox Grid.Column="1"
+                                      Content="Mute All"
+                                      IsChecked="{Binding IsMuted}"
+                                      Foreground="#FF6B6B"/>
+                        </Grid>
+
+                        <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto" RowSpacing="15" ColumnSpacing="30">
+                            <!-- Master Volume -->
+                            <StackPanel Grid.Row="0" Grid.Column="0" Spacing="5">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Grid.Column="0" Text="Master Volume" Foreground="#CCCCCC"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding MasterVolume, StringFormat='{}{0:P0}'}" Foreground="#4A90E2"/>
+                                </Grid>
+                                <Slider Value="{Binding MasterVolume}"
+                                        Minimum="0"
+                                        Maximum="1"
+                                        TickFrequency="0.1"/>
+                            </StackPanel>
+
+                            <!-- Music Volume -->
+                            <StackPanel Grid.Row="0" Grid.Column="1" Spacing="5">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Grid.Column="0" Text="Music Volume" Foreground="#CCCCCC"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding MusicVolume, StringFormat='{}{0:P0}'}" Foreground="#4A90E2"/>
+                                </Grid>
+                                <Slider Value="{Binding MusicVolume}"
+                                        Minimum="0"
+                                        Maximum="1"
+                                        TickFrequency="0.1"/>
+                            </StackPanel>
+
+                            <!-- SFX Volume -->
+                            <StackPanel Grid.Row="1" Grid.Column="0" Spacing="5">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Grid.Column="0" Text="SFX Volume" Foreground="#CCCCCC"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding SFXVolume, StringFormat='{}{0:P0}'}" Foreground="#4A90E2"/>
+                                </Grid>
+                                <Slider Value="{Binding SFXVolume}"
+                                        Minimum="0"
+                                        Maximum="1"
+                                        TickFrequency="0.1"/>
+                            </StackPanel>
+
+                            <!-- UI Volume -->
+                            <StackPanel Grid.Row="1" Grid.Column="1" Spacing="5">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Grid.Column="0" Text="UI Volume" Foreground="#CCCCCC"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding UIVolume, StringFormat='{}{0:P0}'}" Foreground="#4A90E2"/>
+                                </Grid>
+                                <Slider Value="{Binding UIVolume}"
+                                        Minimum="0"
+                                        Maximum="1"
+                                        TickFrequency="0.1"/>
+                            </StackPanel>
+
+                            <!-- Ambient Volume -->
+                            <StackPanel Grid.Row="2" Grid.Column="0" Spacing="5">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Grid.Column="0" Text="Ambient Volume" Foreground="#CCCCCC"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding AmbientVolume, StringFormat='{}{0:P0}'}" Foreground="#4A90E2"/>
+                                </Grid>
+                                <Slider Value="{Binding AmbientVolume}"
+                                        Minimum="0"
+                                        Maximum="1"
+                                        TickFrequency="0.1"/>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- Gameplay Settings -->
+                <Border Background="#2C2C2C" Padding="20" CornerRadius="8">
+                    <StackPanel Spacing="15">
+                        <TextBlock Text="Gameplay"
+                                   FontSize="22"
+                                   FontWeight="Bold"
+                                   Foreground="#4A90E2"/>
+
+                        <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto" RowSpacing="15" ColumnSpacing="30">
+                            <!-- Left Column -->
+                            <StackPanel Grid.Row="0" Grid.Column="0" Spacing="5">
+                                <CheckBox Content="Auto-Save Enabled"
+                                          IsChecked="{Binding AutoSaveEnabled}"
+                                          Foreground="White"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Row="1" Grid.Column="0" Spacing="5" IsEnabled="{Binding AutoSaveEnabled}">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Grid.Column="0" Text="Auto-Save Interval (minutes)" Foreground="#CCCCCC"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding AutoSaveInterval}" Foreground="#4A90E2"/>
+                                </Grid>
+                                <Slider Value="{Binding AutoSaveInterval}"
+                                        Minimum="1"
+                                        Maximum="30"
+                                        TickFrequency="1"
+                                        IsSnapToTickEnabled="True"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Row="2" Grid.Column="0" Spacing="5">
+                                <CheckBox Content="Show Damage Numbers"
+                                          IsChecked="{Binding ShowDamageNumbers}"
+                                          Foreground="White"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Row="3" Grid.Column="0" Spacing="5">
+                                <CheckBox Content="Show Hit Confirmation"
+                                          IsChecked="{Binding ShowHitConfirmation}"
+                                          Foreground="White"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Row="4" Grid.Column="0" Spacing="5">
+                                <CheckBox Content="Pause on Focus Lost"
+                                          IsChecked="{Binding PauseOnFocusLost}"
+                                          Foreground="White"/>
+                            </StackPanel>
+
+                            <!-- Right Column -->
+                            <StackPanel Grid.Row="0" Grid.Column="1" Spacing="5">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Grid.Column="0" Text="Combat Speed" Foreground="#CCCCCC"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding CombatSpeedText}" Foreground="#4A90E2"/>
+                                </Grid>
+                                <Slider Value="{Binding CombatSpeed}"
+                                        Minimum="0.5"
+                                        Maximum="2"
+                                        TickFrequency="0.25"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Row="1" Grid.Column="1" Spacing="5">
+                                <CheckBox Content="Allow Animation Skip"
+                                          IsChecked="{Binding AllowAnimationSkip}"
+                                          Foreground="White"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Row="2" Grid.Column="1" Spacing="5">
+                                <CheckBox Content="Show Tutorial Hints"
+                                          IsChecked="{Binding ShowTutorialHints}"
+                                          Foreground="White"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Row="3" Grid.Column="1" Spacing="5">
+                                <CheckBox Content="Show Grid Coordinates"
+                                          IsChecked="{Binding ShowGridCoordinates}"
+                                          Foreground="White"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Row="4" Grid.Column="1" Spacing="5">
+                                <CheckBox Content="Confirm End Turn"
+                                          IsChecked="{Binding ConfirmEndTurn}"
+                                          Foreground="White"/>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- Accessibility Settings -->
+                <Border Background="#2C2C2C" Padding="20" CornerRadius="8">
+                    <StackPanel Spacing="15">
+                        <TextBlock Text="Accessibility"
+                                   FontSize="22"
+                                   FontWeight="Bold"
+                                   Foreground="#4A90E2"/>
+
+                        <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto" RowSpacing="15" ColumnSpacing="30">
+                            <!-- UI Scale -->
+                            <StackPanel Grid.Row="0" Grid.Column="0" Spacing="5">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Grid.Column="0" Text="UI Scale" Foreground="#CCCCCC"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding UIScale, StringFormat='{}{0:P0}'}" Foreground="#4A90E2"/>
+                                </Grid>
+                                <Slider Value="{Binding UIScale}"
+                                        Minimum="0.8"
+                                        Maximum="1.5"
+                                        TickFrequency="0.1"/>
+                            </StackPanel>
+
+                            <!-- Font Scale -->
+                            <StackPanel Grid.Row="0" Grid.Column="1" Spacing="5">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Grid.Column="0" Text="Font Scale" Foreground="#CCCCCC"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding FontScale, StringFormat='{}{0:P0}'}" Foreground="#4A90E2"/>
+                                </Grid>
+                                <Slider Value="{Binding FontScale}"
+                                        Minimum="0.8"
+                                        Maximum="1.5"
+                                        TickFrequency="0.1"/>
+                            </StackPanel>
+
+                            <!-- Colorblind Mode -->
+                            <StackPanel Grid.Row="1" Grid.Column="0" Spacing="5">
+                                <CheckBox Content="Colorblind Mode"
+                                          IsChecked="{Binding ColorblindMode}"
+                                          Foreground="White"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Row="1" Grid.Column="1" Spacing="5" IsEnabled="{Binding ColorblindMode}">
+                                <TextBlock Text="Colorblind Type" Foreground="#CCCCCC"/>
+                                <ComboBox ItemsSource="{Binding ColorblindTypes}"
+                                          SelectedIndex="{Binding ColorblindTypeIndex}"
+                                          Width="220"
+                                          HorizontalAlignment="Left"/>
+                            </StackPanel>
+
+                            <!-- Visual Options -->
+                            <StackPanel Grid.Row="2" Grid.Column="0" Spacing="5">
+                                <CheckBox Content="Reduced Motion"
+                                          IsChecked="{Binding ReducedMotion}"
+                                          Foreground="White"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Row="2" Grid.Column="1" Spacing="5">
+                                <CheckBox Content="High Contrast"
+                                          IsChecked="{Binding HighContrast}"
+                                          Foreground="White"/>
+                            </StackPanel>
+
+                            <!-- Audio Accessibility -->
+                            <StackPanel Grid.Row="3" Grid.Column="0" Spacing="5">
+                                <CheckBox Content="Show Subtitles"
+                                          IsChecked="{Binding ShowSubtitles}"
+                                          Foreground="White"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Row="3" Grid.Column="1" Spacing="5">
+                                <CheckBox Content="Visual Audio Cues"
+                                          IsChecked="{Binding VisualAudioCues}"
+                                          Foreground="White"/>
+                            </StackPanel>
+
+                            <!-- Screen Reader -->
+                            <StackPanel Grid.Row="4" Grid.Column="0" Spacing="5">
+                                <CheckBox Content="Screen Reader Support"
+                                          IsChecked="{Binding ScreenReaderSupport}"
+                                          Foreground="White"/>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- Controls Settings -->
+                <Border Background="#2C2C2C" Padding="20" CornerRadius="8">
+                    <StackPanel Spacing="15">
+                        <TextBlock Text="Controls"
+                                   FontSize="22"
+                                   FontWeight="Bold"
+                                   Foreground="#4A90E2"/>
+
+                        <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto" RowSpacing="15" ColumnSpacing="30">
+                            <!-- Mouse Sensitivity -->
+                            <StackPanel Grid.Row="0" Grid.Column="0" Spacing="5">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Grid.Column="0" Text="Mouse Sensitivity" Foreground="#CCCCCC"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding MouseSensitivity, StringFormat='{}{0:F1}x'}" Foreground="#4A90E2"/>
+                                </Grid>
+                                <Slider Value="{Binding MouseSensitivity}"
+                                        Minimum="0.1"
+                                        Maximum="3"
+                                        TickFrequency="0.1"/>
+                            </StackPanel>
+
+                            <!-- Keyboard Hints -->
+                            <StackPanel Grid.Row="0" Grid.Column="1" Spacing="5">
+                                <CheckBox Content="Show Keyboard Hints"
+                                          IsChecked="{Binding ShowKeyboardHints}"
+                                          Foreground="White"/>
+                            </StackPanel>
+
+                            <!-- Scroll Options -->
+                            <StackPanel Grid.Row="1" Grid.Column="0" Spacing="5">
+                                <CheckBox Content="Invert Scroll Direction"
+                                          IsChecked="{Binding InvertScroll}"
+                                          Foreground="White"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Row="1" Grid.Column="1" Spacing="5">
+                                <CheckBox Content="Edge Scrolling"
+                                          IsChecked="{Binding EdgeScrolling}"
+                                          Foreground="White"/>
+                            </StackPanel>
+
+                            <!-- Double Click -->
+                            <StackPanel Grid.Row="2" Grid.Column="0" Spacing="5">
+                                <CheckBox Content="Double-Click to Confirm"
+                                          IsChecked="{Binding DoubleClickConfirm}"
+                                          Foreground="White"/>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Footer Buttons -->
+        <Border Grid.Row="2" Background="#2C2C2C" Padding="20,15">
+            <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto">
+                <Button Grid.Column="0"
+                        Content="Reset to Defaults"
+                        Command="{Binding ResetToDefaultsCommand}"
+                        Width="150"
+                        HorizontalContentAlignment="Center"/>
+
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="10">
+                    <TextBlock Text="Unsaved changes"
+                               Foreground="#FF6B6B"
+                               VerticalAlignment="Center"
+                               IsVisible="{Binding HasUnsavedChanges}"/>
+                </StackPanel>
+
+                <Button Grid.Column="3"
+                        Content="Save"
+                        Command="{Binding SaveSettingsCommand}"
+                        Width="100"
+                        Margin="10,0"
+                        HorizontalContentAlignment="Center"
+                        Background="#4A90E2"/>
+
+                <Button Grid.Column="4"
+                        Content="Cancel"
+                        Command="{Binding CancelCommand}"
+                        Width="100"
+                        HorizontalContentAlignment="Center"/>
+            </Grid>
+        </Border>
+    </Grid>
+
+</UserControl>

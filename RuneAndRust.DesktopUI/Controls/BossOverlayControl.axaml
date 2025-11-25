@@ -1,0 +1,344 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:RuneAndRust.DesktopUI.ViewModels"
+             xmlns:conv="using:RuneAndRust.DesktopUI.Converters"
+             mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
+             x:Class="RuneAndRust.DesktopUI.Controls.BossOverlayControl"
+             x:DataType="vm:BossCombatViewModel"
+             IsVisible="{Binding IsBossFight}">
+
+    <Design.DataContext>
+        <vm:BossCombatViewModel/>
+    </Design.DataContext>
+
+    <UserControl.Resources>
+        <conv:PhaseSegmentColorConverter x:Key="PhaseSegmentColorConverter"/>
+        <conv:CurrentPhaseBorderConverter x:Key="CurrentPhaseBorderConverter"/>
+        <conv:CurrentPhaseBorderThicknessConverter x:Key="CurrentPhaseBorderThicknessConverter"/>
+        <conv:DangerLevelColorConverter x:Key="DangerLevelColorConverter"/>
+        <conv:GreaterThanZeroConverter x:Key="GreaterThanZeroConverter"/>
+        <conv:EnrageWarningVisibilityConverter x:Key="EnrageWarningVisibilityConverter"/>
+        <conv:EnrageProgressColorConverter x:Key="EnrageProgressColorConverter"/>
+        <conv:BossHealthColorConverter x:Key="BossHealthColorConverter"/>
+        <conv:VulnerableGlowConverter x:Key="VulnerableGlowConverter"/>
+        <conv:PhaseRomanNumeralConverter x:Key="PhaseRomanNumeralConverter"/>
+        <conv:StringToBrushConverter x:Key="StringToBrushConverter"/>
+        <conv:InterruptibleTextConverter x:Key="InterruptibleTextConverter"/>
+        <conv:InterruptibleColorConverter x:Key="InterruptibleColorConverter"/>
+    </UserControl.Resources>
+
+    <UserControl.Styles>
+        <!-- Warning panel animation -->
+        <Style Selector="Border.WarningPanel">
+            <Setter Property="Opacity" Value="0.95"/>
+        </Style>
+        <Style Selector="Border.WarningPanel:pointerover">
+            <Setter Property="Opacity" Value="1"/>
+        </Style>
+    </UserControl.Styles>
+
+    <Grid>
+        <!-- Boss Name & Title (Top Center) -->
+        <Border Background="#E0000000"
+                Height="80"
+                VerticalAlignment="Top"
+                HorizontalAlignment="Center"
+                MinWidth="400"
+                Padding="30,10"
+                CornerRadius="0,0,15,15">
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                <TextBlock Text="{Binding BossName}"
+                           FontSize="32"
+                           FontWeight="Bold"
+                           Foreground="#DC143C"
+                           HorizontalAlignment="Center"
+                           TextAlignment="Center"/>
+                <TextBlock Text="{Binding BossTitle}"
+                           FontSize="14"
+                           Foreground="#FFD700"
+                           FontStyle="Italic"
+                           HorizontalAlignment="Center"
+                           TextAlignment="Center"
+                           Margin="0,2,0,0"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Phase Indicator (Top Right) -->
+        <Border Background="#E0000000"
+                Width="280"
+                Height="70"
+                VerticalAlignment="Top"
+                HorizontalAlignment="Right"
+                Margin="0,90,20,0"
+                Padding="15"
+                CornerRadius="10">
+            <StackPanel>
+                <TextBlock Text="BOSS PHASE"
+                           Foreground="#888888"
+                           FontSize="11"
+                           FontWeight="Bold"
+                           HorizontalAlignment="Center"
+                           Margin="0,0,0,8"/>
+                <ItemsControl ItemsSource="{Binding PhaseSegments}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal"
+                                        HorizontalAlignment="Center"
+                                        Spacing="8"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate DataType="vm:PhaseHealthSegmentViewModel">
+                            <Border Width="60"
+                                    Height="35"
+                                    Background="{Binding BackgroundColor, Converter={StaticResource StringToBrushConverter}}"
+                                    BorderBrush="{Binding BorderColor, Converter={StaticResource StringToBrushConverter}}"
+                                    BorderThickness="{Binding BorderThickness}"
+                                    CornerRadius="6">
+                                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                    <TextBlock Text="{Binding PhaseNumber, Converter={StaticResource PhaseRomanNumeralConverter}}"
+                                               Foreground="White"
+                                               FontWeight="Bold"
+                                               FontSize="16"
+                                               HorizontalAlignment="Center"/>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </Border>
+
+        <!-- Enrage Timer (Top Left) -->
+        <Border Background="#E08B0000"
+                Width="250"
+                Height="60"
+                VerticalAlignment="Top"
+                HorizontalAlignment="Left"
+                Margin="20,90,0,0"
+                Padding="12"
+                CornerRadius="10"
+                IsVisible="{Binding EnrageProgress, Converter={StaticResource EnrageWarningVisibilityConverter}}">
+            <StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8">
+                    <TextBlock Text="\u26A0"
+                               Foreground="#FFD700"
+                               FontSize="14"/>
+                    <TextBlock Text="ENRAGE WARNING"
+                               Foreground="White"
+                               FontWeight="Bold"
+                               FontSize="12"/>
+                    <TextBlock Text="\u26A0"
+                               Foreground="#FFD700"
+                               FontSize="14"/>
+                </StackPanel>
+                <ProgressBar Value="{Binding EnrageProgress}"
+                             Maximum="1.0"
+                             Height="12"
+                             Foreground="{Binding EnrageProgress, Converter={StaticResource EnrageProgressColorConverter}}"
+                             Background="#2C2C2C"
+                             Margin="0,8,0,0"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Vulnerable State Indicator -->
+        <Border Background="#E0006400"
+                Width="200"
+                Height="50"
+                VerticalAlignment="Top"
+                HorizontalAlignment="Left"
+                Margin="20,160,0,0"
+                Padding="10"
+                CornerRadius="10"
+                IsVisible="{Binding IsVulnerable}">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8">
+                <TextBlock Text="\u2728"
+                           FontSize="18"/>
+                <StackPanel>
+                    <TextBlock Text="VULNERABLE!"
+                               Foreground="White"
+                               FontWeight="Bold"
+                               FontSize="14"/>
+                    <TextBlock Foreground="#AAFFAA" FontSize="10">
+                        <Run Text="{Binding VulnerableTurnsRemaining}"/>
+                        <Run Text=" turns remaining"/>
+                    </TextBlock>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+        <!-- Mechanic Warnings (Center) -->
+        <ItemsControl ItemsSource="{Binding ActiveWarnings}"
+                      VerticalAlignment="Center"
+                      HorizontalAlignment="Center"
+                      Margin="0,0,0,50">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate DataType="vm:BossMechanicWarningViewModel">
+                    <Border Classes="WarningPanel"
+                            Background="{Binding WarningColor, Converter={StaticResource StringToBrushConverter}}"
+                            BorderBrush="White"
+                            BorderThickness="3"
+                            Padding="25,15"
+                            Margin="0,10"
+                            CornerRadius="12"
+                            MinWidth="450"
+                            MaxWidth="550">
+                        <Grid RowDefinitions="Auto,Auto,Auto,Auto">
+                            <!-- Icon and Name -->
+                            <StackPanel Grid.Row="0"
+                                        Orientation="Horizontal"
+                                        HorizontalAlignment="Center"
+                                        Spacing="12">
+                                <TextBlock Text="{Binding Icon}"
+                                           FontSize="28"
+                                           Foreground="White"/>
+                                <TextBlock Text="{Binding MechanicName}"
+                                           FontSize="26"
+                                           FontWeight="Bold"
+                                           Foreground="White"/>
+                                <TextBlock Text="{Binding Icon}"
+                                           FontSize="28"
+                                           Foreground="White"/>
+                            </StackPanel>
+
+                            <!-- Description -->
+                            <TextBlock Grid.Row="1"
+                                       Text="{Binding Description}"
+                                       FontSize="14"
+                                       Foreground="White"
+                                       TextWrapping="Wrap"
+                                       TextAlignment="Center"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,10,0,0"/>
+
+                            <!-- Turns Remaining -->
+                            <Border Grid.Row="2"
+                                    Background="#40000000"
+                                    Padding="15,6"
+                                    CornerRadius="6"
+                                    HorizontalAlignment="Center"
+                                    Margin="0,12,0,0">
+                                <TextBlock Text="{Binding TurnsDisplay}"
+                                           FontSize="18"
+                                           FontWeight="Bold"
+                                           Foreground="White"
+                                           HorizontalAlignment="Center"/>
+                            </Border>
+
+                            <!-- Interrupt Hint -->
+                            <TextBlock Grid.Row="3"
+                                       Text="{Binding CanBeInterrupted, Converter={StaticResource InterruptibleTextConverter}}"
+                                       Foreground="{Binding CanBeInterrupted, Converter={StaticResource InterruptibleColorConverter}}"
+                                       FontSize="11"
+                                       FontStyle="Italic"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,8,0,0"/>
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <!-- Boss Health Bar (Below Title) -->
+        <Border Background="#E0000000"
+                Height="50"
+                VerticalAlignment="Top"
+                HorizontalAlignment="Center"
+                Margin="0,85,0,0"
+                MinWidth="500"
+                MaxWidth="700"
+                Padding="8"
+                CornerRadius="8">
+            <Grid RowDefinitions="Auto,*">
+                <!-- HP Text -->
+                <StackPanel Grid.Row="0"
+                            Orientation="Horizontal"
+                            HorizontalAlignment="Center"
+                            Margin="0,0,0,4">
+                    <TextBlock Text="{Binding CurrentHP}"
+                               FontSize="14"
+                               FontWeight="Bold"
+                               Foreground="#DC143C"/>
+                    <TextBlock Text=" / "
+                               FontSize="14"
+                               Foreground="#888888"/>
+                    <TextBlock Text="{Binding MaxHP}"
+                               FontSize="14"
+                               Foreground="#888888"/>
+                </StackPanel>
+
+                <!-- Segmented Health Bar -->
+                <Grid Grid.Row="1">
+                    <!-- Phase Segment Backgrounds -->
+                    <ItemsControl ItemsSource="{Binding PhaseSegments}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <UniformGrid Columns="{Binding TotalPhases}"
+                                             Rows="1"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="vm:PhaseHealthSegmentViewModel">
+                                <Border Background="#2C2C2C"
+                                        Margin="2,0"
+                                        CornerRadius="4">
+                                    <Border.BorderBrush>
+                                        <SolidColorBrush Color="{Binding IsCurrentPhase, Converter={StaticResource CurrentPhaseBorderConverter}}"/>
+                                    </Border.BorderBrush>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <!-- Actual Health Bar Overlay -->
+                    <Border Background="Transparent"
+                            Margin="2,0"
+                            CornerRadius="4"
+                            ClipToBounds="True">
+                        <Grid>
+                            <ProgressBar Value="{Binding HPPercentage}"
+                                         Maximum="1.0"
+                                         Height="20"
+                                         Foreground="{Binding HPPercentage, Converter={StaticResource BossHealthColorConverter}}"
+                                         Background="Transparent"/>
+                            <!-- Vulnerable Glow Overlay -->
+                            <Border Background="{Binding IsVulnerable, Converter={StaticResource VulnerableGlowConverter}}"
+                                    Opacity="0.3"
+                                    IsVisible="{Binding IsVulnerable}"/>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </Grid>
+        </Border>
+
+        <!-- Phase Transition Overlay -->
+        <Border Background="#CC000000"
+                IsVisible="{Binding IsTransitioning}"
+                ZIndex="100">
+            <StackPanel VerticalAlignment="Center"
+                        HorizontalAlignment="Center">
+                <TextBlock Text="PHASE TRANSITION"
+                           FontSize="36"
+                           FontWeight="Bold"
+                           Foreground="#FFD700"
+                           HorizontalAlignment="Center"/>
+                <TextBlock FontSize="48"
+                           FontWeight="Bold"
+                           Foreground="#DC143C"
+                           HorizontalAlignment="Center"
+                           Margin="0,20,0,0">
+                    <Run Text="PHASE "/>
+                    <Run Text="{Binding CurrentPhase, Converter={StaticResource PhaseRomanNumeralConverter}}"/>
+                </TextBlock>
+                <TextBlock Text="The boss grows stronger..."
+                           FontSize="16"
+                           Foreground="#AAAAAA"
+                           FontStyle="Italic"
+                           HorizontalAlignment="Center"
+                           Margin="0,15,0,0"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>

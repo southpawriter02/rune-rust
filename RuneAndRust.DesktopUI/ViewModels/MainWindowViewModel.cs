@@ -145,6 +145,18 @@ public class MainWindowViewModel : ViewModelBase
 
         _navigationService.RegisterViewModelFactory(() =>
             serviceProvider.GetRequiredService<SpecializationTreeViewModel>());
+
+        // v0.43.15: Meta-Progression
+        _navigationService.RegisterViewModelFactory(() =>
+            serviceProvider.GetRequiredService<MetaProgressionViewModel>());
+
+        // v0.43.16: Endgame Mode Selection
+        _navigationService.RegisterViewModelFactory(() =>
+            serviceProvider.GetRequiredService<EndgameModeViewModel>());
+
+        // v0.43.18: Settings
+        _navigationService.RegisterViewModelFactory(() =>
+            serviceProvider.GetRequiredService<SettingsViewModel>());
     }
 
     /// <summary>

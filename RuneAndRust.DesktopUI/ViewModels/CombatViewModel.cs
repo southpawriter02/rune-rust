@@ -29,8 +29,10 @@ public class CombatViewModel : ViewModelBase
     private readonly IStatusEffectIconService _statusEffectIconService;
     private readonly IHazardVisualizationService _hazardVisualizationService;
     private readonly IAnimationService _animationService;
+    private readonly IBossDisplayService? _bossDisplayService;
 
     private CombatState? _combatState;
+    private BossCombatViewModel? _bossCombatViewModel;
     private int _columns = 3;
     private double _cellSize = 80.0;
     private GridPosition? _selectedPosition;
@@ -152,6 +154,20 @@ public class CombatViewModel : ViewModelBase
     public IAnimationService AnimationService => _animationService;
 
     /// <summary>
+    /// v0.43.17: Gets the boss combat view model for boss-specific UI.
+    /// </summary>
+    public BossCombatViewModel? BossCombatViewModel
+    {
+        get => _bossCombatViewModel;
+        private set => this.RaiseAndSetIfChanged(ref _bossCombatViewModel, value);
+    }
+
+    /// <summary>
+    /// v0.43.17: Gets whether this is a boss fight.
+    /// </summary>
+    public bool IsBossFight => BossCombatViewModel?.IsBossFight ?? false;
+
+    /// <summary>
     /// Gets the current status message.
     /// </summary>
     public string StatusMessage
@@ -227,7 +243,8 @@ public class CombatViewModel : ViewModelBase
         EnemyAI enemyAI,
         IStatusEffectIconService statusEffectIconService,
         IHazardVisualizationService hazardVisualizationService,
-        IAnimationService animationService)
+        IAnimationService animationService,
+        IBossDisplayService? bossDisplayService = null)
     {
         _spriteService = spriteService ?? throw new ArgumentNullException(nameof(spriteService));
         _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
@@ -236,6 +253,13 @@ public class CombatViewModel : ViewModelBase
         _statusEffectIconService = statusEffectIconService ?? throw new ArgumentNullException(nameof(statusEffectIconService));
         _hazardVisualizationService = hazardVisualizationService ?? throw new ArgumentNullException(nameof(hazardVisualizationService));
         _animationService = animationService ?? throw new ArgumentNullException(nameof(animationService));
+        _bossDisplayService = bossDisplayService;
+
+        // v0.43.17: Initialize boss combat view model if service available
+        if (_bossDisplayService != null)
+        {
+            BossCombatViewModel = new BossCombatViewModel(_bossDisplayService, _animationService);
+        }
 
         // Observable for whether it's player's turn
         var canExecutePlayerAction = this.WhenAnyValue(x => x.IsPlayerTurn);
@@ -272,10 +296,62 @@ public class CombatViewModel : ViewModelBase
         SyncCombatLog();
         UpdateStatusMessage();
 
-        this.RaisePropertyChanged(nameof(IsPlayerTurn));
+        // v0.43.17: Check for boss enemies and initialize boss UI
+        CheckForBossEncounter(combatState);
 
-        _log.Information("Combat state loaded, IsActive={IsActive}, IsPlayerTurn={IsPlayerTurn}",
-            combatState.IsActive, IsPlayerTurn);
+        this.RaisePropertyChanged(nameof(IsPlayerTurn));
+        this.RaisePropertyChanged(nameof(IsBossFight));
+
+        _log.Information("Combat state loaded, IsActive={IsActive}, IsPlayerTurn={IsPlayerTurn}, IsBossFight={IsBossFight}",
+            combatState.IsActive, IsPlayerTurn, IsBossFight);
+    }
+
+    /// <summary>
+    /// v0.43.17: Checks for boss enemies and initializes boss combat UI.
+    /// </summary>
+    private void CheckForBossEncounter(CombatState combatState)
+    {
+        if (BossCombatViewModel == null) return;
+
+        var boss = combatState.Enemies.FirstOrDefault(e => e.IsBoss);
+        if (boss != null)
+        {
+            _log.Information("Boss encounter detected: {BossName}", boss.Name);
+            BossCombatViewModel.InitializeBossFight(boss);
+        }
+        else
+        {
+            BossCombatViewModel.ClearBossFight();
+        }
+    }
+
+    /// <summary>
+    /// v0.43.17: Adds a mechanic warning for a telegraphed boss ability.
+    /// </summary>
+    public void AddBossMechanicWarning(string abilityName, string description, int turnsRemaining, DangerLevel dangerLevel, bool canInterrupt)
+    {
+        BossCombatViewModel?.AddMechanicWarning(abilityName, description, turnsRemaining, dangerLevel, canInterrupt);
+    }
+
+    /// <summary>
+    /// v0.43.17: Updates boss state after an action (HP change, phase transition, etc.).
+    /// </summary>
+    public void UpdateBossState()
+    {
+        if (BossCombatViewModel?.CurrentBoss != null)
+        {
+            BossCombatViewModel.UpdateBossHP();
+            BossCombatViewModel.UpdateWarningTurns();
+            this.RaisePropertyChanged(nameof(IsBossFight));
+        }
+    }
+
+    /// <summary>
+    /// v0.43.17: Called at the end of a turn to update boss enrage timer.
+    /// </summary>
+    public void OnBossTurnEnd()
+    {
+        BossCombatViewModel?.OnTurnEnd();
     }
 
     private void OnCellClicked(GridPosition position)
