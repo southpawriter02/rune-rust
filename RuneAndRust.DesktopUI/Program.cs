@@ -1,4 +1,5 @@
 using Avalonia;
+using Avalonia.ReactiveUI;
 using System;
 
 namespace RuneAndRust.DesktopUI;
@@ -16,6 +17,7 @@ class Program
     public static AppBuilder BuildAvaloniaApp()
         => AppBuilder.Configure<App>()
             .UsePlatformDetect()
+            .UseReactiveUI()
             .WithInterFont()
             .LogToTrace();
 }
