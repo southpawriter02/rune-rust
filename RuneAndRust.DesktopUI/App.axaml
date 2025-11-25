@@ -38,5 +38,11 @@
         <DataTemplate DataType="vm:MetaProgressionViewModel">
             <views:MetaProgressionView />
         </DataTemplate>
+        <DataTemplate DataType="vm:EndgameModeViewModel">
+            <views:EndgameModeView />
+        </DataTemplate>
+        <DataTemplate DataType="vm:SettingsViewModel">
+            <views:SettingsView />
+        </DataTemplate>
     </Application.DataTemplates>
 </Application>
