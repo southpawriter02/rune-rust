@@ -141,7 +141,7 @@
                         <StackPanel Spacing="15">
                             <TextBlock Text="Core Attributes" Classes="SectionHeader"/>
 
-                            <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto" RowSpacing="15" ColumnSpacing="15">
+                            <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto">
 
                                 <!-- MIGHT -->
                                 <Border Grid.Row="0" Grid.Column="0"
@@ -201,7 +201,7 @@
                         <StackPanel Spacing="10">
                             <TextBlock Text="Combat Statistics" Classes="SectionHeader"/>
 
-                            <Grid ColumnDefinitions="*,*,*" RowDefinitions="Auto,Auto,Auto" RowSpacing="12" ColumnSpacing="10">
+                            <Grid ColumnDefinitions="*,*,*" RowDefinitions="Auto,Auto,Auto">
 
                                 <!-- Speed -->
                                 <StackPanel Grid.Row="0" Grid.Column="0">
@@ -259,7 +259,7 @@
                         <StackPanel Spacing="10">
                             <TextBlock Text="Equipment" Classes="SectionHeader"/>
 
-                            <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="8" ColumnSpacing="15">
+                            <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto">
                                 <TextBlock Grid.Row="0" Grid.Column="0" Text="Weapon:" Classes="StatLabel"/>
                                 <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding EquippedWeaponName}"
                                            Classes="StatValue" FontSize="14"/>
