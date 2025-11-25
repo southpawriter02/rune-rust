@@ -1,5 +1,6 @@
 using Microsoft.Data.Sqlite;
 using RuneAndRust.Core.AI;
+using RuneAndRust.Core.AI.Interfaces;
 using Serilog;
 
 namespace RuneAndRust.Persistence;
@@ -8,7 +9,7 @@ namespace RuneAndRust.Persistence;
 /// Repository for AI configuration data (threat weights, archetype assignments, etc.).
 /// v0.42.1: Tactical Decision-Making & Target Selection
 /// </summary>
-public class AIConfigurationRepository : RuneAndRust.Engine.AI.IAIConfigurationRepository
+public class AIConfigurationRepository : IAIConfigurationRepository
 {
     private static readonly ILogger _log = Log.ForContext<AIConfigurationRepository>();
     private readonly string _connectionString;
