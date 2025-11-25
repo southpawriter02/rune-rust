@@ -68,7 +68,7 @@ public abstract class ViewModelBase : ReactiveObject, IActivatableViewModel, IDi
     /// <summary>
     /// Disposes of the view model.
     /// </summary>
-    public void Dispose()
+    public virtual void Dispose()
     {
         Dispose(true);
         GC.SuppressFinalize(this);
