@@ -13,7 +13,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\RuneAndRust.Core\RuneAndRust.Core.csproj" />
-    <ProjectReference Include="..\RuneAndRust.Engine\RuneAndRust.Engine.csproj" />
   </ItemGroup>
 
 </Project>

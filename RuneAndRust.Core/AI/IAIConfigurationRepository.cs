@@ -1,8 +1,7 @@
-using RuneAndRust.Core.AI;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace RuneAndRust.Engine.AI;
+namespace RuneAndRust.Core.AI;
 
 /// <summary>
 /// Repository for AI configuration data (threat weights, archetype assignments, etc.).
