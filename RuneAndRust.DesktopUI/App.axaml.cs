@@ -46,7 +46,7 @@ public partial class App : Application
             .WriteTo.Console()
             .CreateLogger();
 
-        Log.Information("Rune & Rust Desktop UI v0.44.2 starting...");
+        Log.Information("Rune & Rust Desktop UI v0.44.5 starting...");
 
         try
         {
@@ -56,6 +56,9 @@ public partial class App : Application
             Services = services.BuildServiceProvider();
 
             Log.Information("Service container configured successfully");
+
+            // v0.44.5: Initialize controller cross-references
+            InitializeControllers(Services);
 
             // Load sprites
             LoadSprites(Services);
@@ -121,10 +124,18 @@ public partial class App : Application
         // Tooltip & Help Services (v0.43.20)
         services.AddSingleton<ITooltipService, TooltipService>();
 
-        // Controllers (v0.44.1, v0.44.2)
+        // Controllers (v0.44.1, v0.44.2, v0.44.3, v0.44.4, v0.44.5)
         services.AddSingleton<GameStateController>();
         services.AddSingleton<MainMenuController>();
         services.AddSingleton<CharacterCreationController>();
+        services.AddSingleton<ExplorationController>();
+        services.AddSingleton<CombatController>();
+        services.AddSingleton<LootController>();          // v0.44.5: Post-combat loot collection
+        services.AddSingleton<ProgressionController>();   // v0.44.5: Milestone/level-up flow
+
+        // Exploration Services (v0.44.3)
+        services.AddSingleton<IEncounterService, EncounterService>();
+        services.AddSingleton<IRoomFeatureService, RoomFeatureService>();
 
         // Engine Services (v0.43.5, v0.44.2)
         services.AddSingleton<DiceService>();
@@ -174,5 +185,20 @@ public partial class App : Application
 
         var spriteCount = spriteService.GetAvailableSprites().Count();
         Log.Information("Loaded {Count} sprites", spriteCount);
+    }
+
+    /// <summary>
+    /// v0.44.5: Initializes controller cross-references for reward workflows.
+    /// </summary>
+    private void InitializeControllers(IServiceProvider services)
+    {
+        var combatController = services.GetRequiredService<CombatController>();
+        var lootController = services.GetRequiredService<LootController>();
+        var progressionController = services.GetRequiredService<ProgressionController>();
+
+        // Wire up CombatController with reward controllers
+        combatController.SetRewardControllers(lootController, progressionController);
+
+        Log.Debug("Controllers initialized with cross-references");
     }
 }

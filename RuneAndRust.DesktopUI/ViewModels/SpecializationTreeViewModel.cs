@@ -1,10 +1,12 @@
 using ReactiveUI;
 using RuneAndRust.Core;
+using RuneAndRust.DesktopUI.Controllers;
 using RuneAndRust.Engine;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Input;
 
 namespace RuneAndRust.DesktopUI.ViewModels;
@@ -292,14 +294,18 @@ public class AbilityNodeViewModel : ViewModelBase
 /// <summary>
 /// ViewModel for the Specialization Tree view.
 /// Displays ability tree organized by tiers, handles PP spending for unlocks and rank ups.
+/// v0.44.5: Integrates with ProgressionController for milestone/level-up workflow.
 /// </summary>
 public class SpecializationTreeViewModel : ViewModelBase
 {
+    private readonly GameStateController? _gameStateController;
+    private readonly ProgressionController? _progressionController;
     private PlayerCharacter? _character;
     private SpecializationData? _specializationData;
     private AbilityNodeViewModel? _selectedNode;
     private int _ppSpentInTree;
     private string _statusMessage = string.Empty;
+    private bool _isInProgressionMode;
 
     /// <summary>
     /// Foundation tier abilities (Tier 1).
@@ -391,6 +397,29 @@ public class SpecializationTreeViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _statusMessage, value);
     }
 
+    #region v0.44.5: Progression Mode Properties
+
+    /// <summary>
+    /// Whether the view is in progression (level-up) mode.
+    /// </summary>
+    public bool IsInProgressionMode
+    {
+        get => _isInProgressionMode;
+        private set => this.RaiseAndSetIfChanged(ref _isInProgressionMode, value);
+    }
+
+    /// <summary>
+    /// Gets the progression summary text.
+    /// </summary>
+    public string ProgressionSummary => _progressionController?.GetProgressionSummary() ?? string.Empty;
+
+    /// <summary>
+    /// Gets whether we can complete progression (always true for now).
+    /// </summary>
+    public bool CanCompleteProgression => IsInProgressionMode;
+
+    #endregion
+
     /// <summary>
     /// Command to unlock an ability.
     /// </summary>
@@ -406,14 +435,86 @@ public class SpecializationTreeViewModel : ViewModelBase
     /// </summary>
     public ICommand SelectNodeCommand { get; }
 
-    public SpecializationTreeViewModel()
+    /// <summary>
+    /// v0.44.5: Command to complete progression and return to exploration.
+    /// </summary>
+    public ICommand CompleteProgressionCommand { get; }
+
+    /// <summary>
+    /// v0.44.5: Command to skip progression (save points for later).
+    /// </summary>
+    public ICommand SkipProgressionCommand { get; }
+
+    /// <summary>
+    /// v0.44.5: Constructor with optional controller dependencies for game integration.
+    /// </summary>
+    public SpecializationTreeViewModel(
+        GameStateController? gameStateController = null,
+        ProgressionController? progressionController = null)
     {
+        _gameStateController = gameStateController;
+        _progressionController = progressionController;
+
         UnlockAbilityCommand = ReactiveCommand.Create<AbilityNodeViewModel>(UnlockAbility);
         RankUpAbilityCommand = ReactiveCommand.Create<AbilityNodeViewModel>(RankUpAbility);
         SelectNodeCommand = ReactiveCommand.Create<AbilityNodeViewModel>(node => SelectedNode = node);
 
-        // Load demo data
-        LoadDemoCharacter();
+        // v0.44.5: Progression mode commands
+        CompleteProgressionCommand = ReactiveCommand.CreateFromTask(CompleteProgressionAsync);
+        SkipProgressionCommand = ReactiveCommand.CreateFromTask(SkipProgressionAsync);
+
+        // Load character from game state or use demo
+        if (_gameStateController?.HasActiveGame == true)
+        {
+            Character = _gameStateController.CurrentGameState.Player;
+            CheckProgressionMode();
+            LoadAbilityTree();
+        }
+        else
+        {
+            // Load demo data
+            LoadDemoCharacter();
+        }
+    }
+
+    /// <summary>
+    /// v0.44.5: Checks if we're in progression mode.
+    /// </summary>
+    private void CheckProgressionMode()
+    {
+        if (_gameStateController?.CurrentGameState.CurrentPhase == GamePhase.CharacterProgression)
+        {
+            IsInProgressionMode = true;
+            StatusMessage = "Milestone reached! Spend your Progression Points.";
+        }
+        else
+        {
+            IsInProgressionMode = false;
+        }
+    }
+
+    /// <summary>
+    /// v0.44.5: Completes progression and returns to exploration.
+    /// </summary>
+    private async Task CompleteProgressionAsync()
+    {
+        if (_progressionController != null)
+        {
+            await _progressionController.CompleteProgressionAsync();
+        }
+        IsInProgressionMode = false;
+    }
+
+    /// <summary>
+    /// v0.44.5: Skips progression (saves points for later).
+    /// </summary>
+    private async Task SkipProgressionAsync()
+    {
+        if (_progressionController != null)
+        {
+            await _progressionController.SkipProgressionAsync();
+        }
+        IsInProgressionMode = false;
     }
 
     /// <summary>

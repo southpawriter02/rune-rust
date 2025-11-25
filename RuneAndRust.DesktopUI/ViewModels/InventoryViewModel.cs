@@ -1,9 +1,11 @@
 using ReactiveUI;
 using RuneAndRust.Core;
+using RuneAndRust.DesktopUI.Controllers;
 using RuneAndRust.Engine;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Input;
 
 namespace RuneAndRust.DesktopUI.ViewModels;
@@ -11,15 +13,19 @@ namespace RuneAndRust.DesktopUI.ViewModels;
 /// <summary>
 /// View model for the inventory and equipment management view.
 /// Implements v0.43.10: Inventory & Equipment UI.
+/// v0.44.5: Integrates with LootController for post-combat loot collection.
 /// </summary>
 public class InventoryViewModel : ViewModelBase
 {
     private readonly EquipmentService _equipmentService;
+    private readonly GameStateController? _gameStateController;
+    private readonly LootController? _lootController;
     private PlayerCharacter? _character;
     private InventoryItemViewModel? _selectedItem;
     private InventoryItemViewModel? _hoveredItem;
     private EquipmentComparison? _currentComparison;
     private string _statusMessage = string.Empty;
+    private bool _isInLootCollectionMode;
 
     /// <summary>
     /// Gets the view title.
@@ -113,6 +119,34 @@ public class InventoryViewModel : ViewModelBase
     /// </summary>
     public bool IsInventoryFull => EquipmentItems.Count >= (Character?.MaxInventorySize ?? 5);
 
+    #region v0.44.5: Loot Collection Properties
+
+    /// <summary>
+    /// Gets whether the view is in loot collection mode.
+    /// </summary>
+    public bool IsInLootCollectionMode
+    {
+        get => _isInLootCollectionMode;
+        private set => this.RaiseAndSetIfChanged(ref _isInLootCollectionMode, value);
+    }
+
+    /// <summary>
+    /// Gets the pending loot items from combat.
+    /// </summary>
+    public ObservableCollection<EquipmentItemViewModel> PendingLootItems { get; } = new();
+
+    /// <summary>
+    /// Gets the loot summary text.
+    /// </summary>
+    public string LootSummary => _lootController?.GetLootSummary() ?? string.Empty;
+
+    /// <summary>
+    /// Gets whether there are pending loot items.
+    /// </summary>
+    public bool HasPendingLoot => _lootController?.PendingLoot.Count > 0;
+
+    #endregion
+
     #region Commands
 
     /// <summary>
@@ -150,14 +184,35 @@ public class InventoryViewModel : ViewModelBase
     /// </summary>
     public ICommand SortByNameCommand { get; }
 
+    /// <summary>
+    /// v0.44.5: Command to collect a loot item.
+    /// </summary>
+    public ICommand CollectLootItemCommand { get; }
+
+    /// <summary>
+    /// v0.44.5: Command to collect all loot items.
+    /// </summary>
+    public ICommand CollectAllLootCommand { get; }
+
+    /// <summary>
+    /// v0.44.5: Command to complete loot collection.
+    /// </summary>
+    public ICommand CompleteLootCollectionCommand { get; }
+
     #endregion
 
     /// <summary>
     /// Initializes a new instance of InventoryViewModel.
+    /// v0.44.5: Now accepts optional GameStateController and LootController for game integration.
     /// </summary>
-    public InventoryViewModel(EquipmentService equipmentService)
+    public InventoryViewModel(
+        EquipmentService equipmentService,
+        GameStateController? gameStateController = null,
+        LootController? lootController = null)
     {
         _equipmentService = equipmentService ?? throw new ArgumentNullException(nameof(equipmentService));
+        _gameStateController = gameStateController;
+        _lootController = lootController;
 
         // Initialize commands
         EquipItemCommand = ReactiveCommand.Create<EquipmentItemViewModel>(EquipItem);
@@ -168,11 +223,104 @@ public class InventoryViewModel : ViewModelBase
         SortByQualityCommand = ReactiveCommand.Create(() => SortInventory(SortMode.Quality));
         SortByNameCommand = ReactiveCommand.Create(() => SortInventory(SortMode.Name));
 
+        // v0.44.5: Loot collection commands
+        CollectLootItemCommand = ReactiveCommand.Create<EquipmentItemViewModel>(CollectLootItem);
+        CollectAllLootCommand = ReactiveCommand.Create(CollectAllLoot);
+        CompleteLootCollectionCommand = ReactiveCommand.CreateFromTask(CompleteLootCollectionAsync);
+
         // Initialize equipment slots
         InitializeEquipmentSlots();
 
-        // Load demo character for testing
-        Character = CreateDemoCharacter();
+        // Load character from game state or use demo
+        if (_gameStateController?.HasActiveGame == true)
+        {
+            Character = _gameStateController.CurrentGameState.Player;
+            CheckLootCollectionMode();
+        }
+        else
+        {
+            // Load demo character for testing
+            Character = CreateDemoCharacter();
+        }
+    }
+
+    /// <summary>
+    /// v0.44.5: Checks if we're in loot collection mode and loads pending loot.
+    /// </summary>
+    private void CheckLootCollectionMode()
+    {
+        if (_gameStateController?.CurrentGameState.CurrentPhase == GamePhase.LootCollection && _lootController != null)
+        {
+            IsInLootCollectionMode = true;
+            RefreshPendingLoot();
+        }
+        else
+        {
+            IsInLootCollectionMode = false;
+        }
+    }
+
+    /// <summary>
+    /// v0.44.5: Refreshes the pending loot list from LootController.
+    /// </summary>
+    private void RefreshPendingLoot()
+    {
+        PendingLootItems.Clear();
+
+        if (_lootController?.PendingLoot != null)
+        {
+            foreach (var item in _lootController.PendingLoot)
+            {
+                PendingLootItems.Add(new EquipmentItemViewModel(item, _equipmentService));
+            }
+        }
+
+        this.RaisePropertyChanged(nameof(LootSummary));
+        this.RaisePropertyChanged(nameof(HasPendingLoot));
+    }
+
+    /// <summary>
+    /// v0.44.5: Collects a single loot item.
+    /// </summary>
+    private void CollectLootItem(EquipmentItemViewModel? itemVM)
+    {
+        if (itemVM?.Equipment == null || _lootController == null) return;
+
+        if (_lootController.CollectItem(itemVM.Equipment))
+        {
+            StatusMessage = $"Collected {itemVM.Name}";
+            RefreshPendingLoot();
+            RefreshInventory();
+        }
+        else
+        {
+            StatusMessage = "Inventory full - cannot collect";
+        }
+    }
+
+    /// <summary>
+    /// v0.44.5: Collects all pending loot items.
+    /// </summary>
+    private void CollectAllLoot()
+    {
+        if (_lootController == null) return;
+
+        int collected = _lootController.CollectAllItems();
+        StatusMessage = $"Collected {collected} items";
+
+        RefreshPendingLoot();
+        RefreshInventory();
+    }
+
+    /// <summary>
+    /// v0.44.5: Completes loot collection and proceeds.
+    /// </summary>
+    private async Task CompleteLootCollectionAsync()
+    {
+        if (_lootController == null) return;
+
+        await _lootController.CompleteLootCollectionAsync();
+        IsInLootCollectionMode = false;
     }
 
     /// <summary>
