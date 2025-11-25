@@ -2492,7 +2492,7 @@ public class SaveRepository
             @"INSERT OR IGNORE INTO Sectors (sector_id, world_id, sector_name, sector_description, biome_id, z_level)
               VALUES (1, 1, 'Midgard', 'The Trunk level - main operational zones and habitable sectors. Neutral ground where Rust-Clans establish their trade networks.', NULL, 'Trunk')",
             @"INSERT OR IGNORE INTO Sectors (sector_id, world_id, sector_name, sector_description, biome_id, z_level)
-              VALUES (2, 1, 'Muspelheim', 'Volcanic geothermal sectors with extreme temperatures. Iron-Banes patrol heavily to contain Runic Blight spreading from corrupted forges.', 3, 'Roots')",
+              VALUES (2, 1, 'Muspelheim', 'Volcanic geothermal sectors with extreme temperatures. Iron-Banes patrol heavily to contain Runic Blight spreading from corrupted forges.', 4, 'Roots')",
             @"INSERT OR IGNORE INTO Sectors (sector_id, world_id, sector_name, sector_description, biome_id, z_level)
               VALUES (3, 1, 'Niflheim', 'Cryo-facilities frozen in catastrophic failure. Data repositories make this contested ground between Jötun-Readers and Rust-Clans.', 5, 'Roots')",
             @"INSERT OR IGNORE INTO Sectors (sector_id, world_id, sector_name, sector_description, biome_id, z_level)
