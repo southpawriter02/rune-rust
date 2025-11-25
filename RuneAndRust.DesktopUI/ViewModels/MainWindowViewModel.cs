@@ -199,6 +199,13 @@ public class MainWindowViewModel : ViewModelBase
         // v0.43.20: Help
         _navigationService.RegisterViewModelFactory(() =>
             serviceProvider.GetRequiredService<HelpViewModel>());
+
+        // v0.43.21: Additional ViewModels for complete integration
+        _navigationService.RegisterViewModelFactory(() =>
+            serviceProvider.GetRequiredService<MinimapViewModel>());
+
+        _navigationService.RegisterViewModelFactory(() =>
+            serviceProvider.GetRequiredService<BossCombatViewModel>());
     }
 
     /// <summary>

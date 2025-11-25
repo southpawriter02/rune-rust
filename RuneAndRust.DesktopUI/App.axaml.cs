@@ -131,14 +131,16 @@ public partial class App : Application
         services.AddSingleton<CombatEngine>();
         services.AddSingleton<EnemyAI>();
 
-        // ViewModels
+        // ViewModels (v0.43.1 - v0.43.21)
         services.AddTransient<MainWindowViewModel>();
         services.AddTransient<MenuViewModel>();
         services.AddTransient<SpriteDemoViewModel>();
         services.AddTransient<CombatViewModel>();
+        services.AddTransient<BossCombatViewModel>();
         services.AddTransient<CharacterSheetViewModel>();
         services.AddTransient<InventoryViewModel>();
         services.AddTransient<DungeonExplorationViewModel>();
+        services.AddTransient<MinimapViewModel>();
         services.AddTransient<SpecializationTreeViewModel>();
         services.AddTransient<MetaProgressionViewModel>();
         services.AddTransient<EndgameModeViewModel>();
@@ -146,7 +148,7 @@ public partial class App : Application
         services.AddTransient<SaveLoadViewModel>();
         services.AddTransient<HelpViewModel>();
 
-        // Note: Additional engine services will be registered as needed in future specs.
+        // v0.43.21: All ViewModels registered for complete UI integration
 
         Log.Debug("Registered {ServiceCount} service types", services.Count);
     }
