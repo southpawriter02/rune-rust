@@ -93,7 +93,7 @@ public class FormationService
         _log.Information("Formation applied: Formation={Formation}, Bonuses={BonusCount}",
             formation, bonuses.Count);
 
-        return FormationResult.Success(formation, bonuses);
+        return FormationResult.Successful(formation, bonuses);
     }
 
     /// <summary>
@@ -464,7 +464,7 @@ public class FormationService
         _log.Information("Position swap successful: Actor1={Actor1Name}, Actor2={Actor2Name}, StaminaCost={Cost}",
             name1, name2, staminaCost * 2);
 
-        return SwapResult.Success(staminaCost * 2);
+        return SwapResult.Successful(staminaCost * 2);
     }
 
     /// <summary>

@@ -420,8 +420,8 @@ public class GorgeMawAsceticService
                     TargetID = target.EnemyID,
                     EffectType = "Vulnerable",
                     DurationRemaining = 1,
-                    Magnitude = 25, // +25% damage taken
-                    Category = StatusEffectCategory.ControlDebuff
+                    Metadata = "{\"damageIncrease\": 25}", // +25% damage taken
+                    Category = StatusEffectCategory.StatModification
                 };
                 target.StatusEffects.Add(vulnerableEffect);
                 if (!statusApplied.Contains("Vulnerable"))

@@ -80,7 +80,7 @@ public class EinbuiService
         int rank = 1,
         int masterImproviserRank = 0)
     {
-        using var operation = _log.BeginOperation("CraftBasicConcoction");
+        using var operation = _log.BeginScope("CraftBasicConcoction");
 
         try
         {
@@ -166,7 +166,7 @@ public class EinbuiService
     /// </summary>
     public (bool success, string effect, string message) UseHeldItem(int characterId, string itemName)
     {
-        using var operation = _log.BeginOperation("UseHeldItem");
+        using var operation = _log.BeginScope("UseHeldItem");
 
         try
         {
@@ -213,7 +213,7 @@ public class EinbuiService
         int rank = 1,
         int masterImproviserRank = 0)
     {
-        using var operation = _log.BeginOperation("PlaceImprovisedTrap");
+        using var operation = _log.BeginScope("PlaceImprovisedTrap");
 
         try
         {
@@ -292,7 +292,7 @@ public class EinbuiService
         int rank = 1,
         DiceService? diceService = null)
     {
-        using var operation = _log.BeginOperation("ExecuteResourcefulEye");
+        using var operation = _log.BeginScope("ExecuteResourcefulEye");
 
         try
         {
@@ -369,7 +369,7 @@ public class EinbuiService
         int roomId,
         int rank = 1)
     {
-        using var operation = _log.BeginOperation("DesignateBlightHaven");
+        using var operation = _log.BeginScope("DesignateBlightHaven");
 
         try
         {
@@ -422,7 +422,7 @@ public class EinbuiService
     /// </summary>
     public void ResetBlightHavenForNewExpedition(int characterId)
     {
-        using var operation = _log.BeginOperation("ResetBlightHavenForNewExpedition");
+        using var operation = _log.BeginScope("ResetBlightHavenForNewExpedition");
 
         try
         {

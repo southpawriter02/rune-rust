@@ -113,9 +113,8 @@ public class SagaCommand : ICommand
         // Add archetype if available
         if (player.Archetype != null)
         {
-            string archetypeName = player.Archetype.Name;
-            int archetypeTier = player.Archetype.Tier;
-            return $"SPECIALIZATIONS: {archetypeName} (Tier {archetypeTier})";
+            string archetypeName = player.Archetype.ArchetypeType.ToString();
+            return $"SPECIALIZATIONS: {archetypeName}";
         }
 
         return $"SPECIALIZATIONS: {specName}";

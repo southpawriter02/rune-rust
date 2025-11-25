@@ -62,7 +62,7 @@ public class TrapService
         _log.Information("Trap placed successfully: TrapId={TrapId}, Position={Position}, Duration={Duration}",
             trap.TrapId, targetPosition, trap.TurnsRemaining);
 
-        return TrapPlacementResult.Success($"{trap.TrapName} placed at {targetPosition}");
+        return TrapPlacementResult.Successful($"{trap.TrapName} placed at {targetPosition}");
     }
 
     /// <summary>

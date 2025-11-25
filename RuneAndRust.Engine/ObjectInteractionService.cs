@@ -66,7 +66,7 @@ public class ObjectInteractionService : IObjectInteractionService
     {
         try
         {
-            var baseTemplate = _repository.GetBaseTemplate(baseTemplateName);
+            var baseTemplate = _repository.GetBaseTemplateByName(baseTemplateName);
             if (baseTemplate == null)
             {
                 _logger.Error(
@@ -78,7 +78,7 @@ public class ObjectInteractionService : IObjectInteractionService
             ThematicModifier? modifier = null;
             if (!string.IsNullOrEmpty(modifierName))
             {
-                modifier = _repository.GetModifier(modifierName);
+                modifier = _repository.GetModifierByName(modifierName);
                 if (modifier == null)
                 {
                     _logger.Warning(

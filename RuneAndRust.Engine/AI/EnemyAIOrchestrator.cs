@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using RuneAndRust.Core;
 using RuneAndRust.Core.AI;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 
@@ -67,7 +68,7 @@ public class EnemyAIOrchestrator
     /// <param name="isBoss">Whether this is a boss enemy.</param>
     /// <param name="challengeModifiers">Active Challenge Sector modifiers (if any).</param>
     /// <returns>The decided enemy action.</returns>
-    public async Task<EnemyAction> DecideActionAsync(
+    public async Task<Core.AI.EnemyAction> DecideActionAsync(
         Enemy enemy,
         BattlefieldState state,
         bool isBoss = false,
@@ -78,7 +79,7 @@ public class EnemyAIOrchestrator
             async () => await DecideActionInternalAsync(enemy, state, isBoss, challengeModifiers));
     }
 
-    private async Task<EnemyAction> DecideActionInternalAsync(
+    private async Task<Core.AI.EnemyAction> DecideActionInternalAsync(
         Enemy enemy,
         BattlefieldState state,
         bool isBoss,
@@ -98,7 +99,7 @@ public class EnemyAIOrchestrator
             Reasoning = $"{enemy.AIArchetype} AI decision"
         };
 
-        EnemyAction action;
+        Core.AI.EnemyAction action;
 
         // Boss AI path
         if (isBoss)
@@ -139,7 +140,7 @@ public class EnemyAIOrchestrator
     /// <summary>
     /// Decides action for boss enemies (uses boss AI systems).
     /// </summary>
-    private async Task<EnemyAction> DecideBossActionAsync(
+    private async Task<Core.AI.EnemyAction> DecideBossActionAsync(
         Enemy boss,
         BattlefieldState state,
         DecisionContext context)
@@ -147,7 +148,7 @@ public class EnemyAIOrchestrator
         _logger.LogDebug("Processing boss AI for {BossId}", boss.Id);
 
         // Get boss configuration
-        var bossConfig = await _bossService.GetBossConfigurationAsync(boss.EnemyTypeId);
+        var bossConfig = await _bossService.GetBossConfigurationAsync((int)boss.Type);
 
         if (bossConfig == null)
         {
@@ -176,7 +177,7 @@ public class EnemyAIOrchestrator
         }
 
         // Get ability rotation for current phase
-        var rotation = await _rotationService.GetPhaseRotationAsync(boss.EnemyTypeId, currentPhase);
+        var rotation = await _rotationService.GetPhaseRotationAsync((int)boss.Type, currentPhase);
 
         // Select target using threat assessment
         var target = await SelectTargetAsync(boss, state, context);
@@ -192,8 +193,12 @@ public class EnemyAIOrchestrator
         else
         {
             // Fallback to ability prioritization
-            var abilityScore = await _abilityService.PrioritizeAbilityAsync(boss, state);
-            abilityId = abilityScore?.AbilityId ?? 0;
+            if (target != null)
+            {
+                var selectedAbility = await _abilityService.SelectOptimalAbilityAsync(boss, target, state);
+                // TODO: Extract ability ID from selectedAbility once ability system is integrated
+                abilityId = 0; // Placeholder: basic attack
+            }
         }
 
         // Apply adaptive difficulty if enabled
@@ -213,7 +218,7 @@ public class EnemyAIOrchestrator
             }
         }
 
-        return new EnemyAction
+        return new Core.AI.EnemyAction
         {
             Actor = boss,
             Target = target,
@@ -227,7 +232,7 @@ public class EnemyAIOrchestrator
     /// <summary>
     /// Decides action for normal (non-boss) enemies.
     /// </summary>
-    private async Task<EnemyAction> DecideNormalEnemyActionAsync(
+    private async Task<Core.AI.EnemyAction> DecideNormalEnemyActionAsync(
         Enemy enemy,
         BattlefieldState state,
         DecisionContext context)
@@ -235,22 +240,22 @@ public class EnemyAIOrchestrator
         _logger.LogDebug("Processing normal AI for {EnemyId}", enemy.Id);
 
         // Analyze situation
-        var situation = await _situationalService.AnalyzeSituationAsync(state);
+        var situation = _situationalService.AnalyzeSituation(enemy, state);
         context.Reasoning += $" | Tactical advantage: {situation.TacticalAdvantage}";
 
         // Assess threats and select target
         var target = await SelectTargetAsync(enemy, state, context);
 
         // Prioritize abilities
-        var abilityScore = await _abilityService.PrioritizeAbilityAsync(enemy, state);
-        var abilityId = abilityScore?.AbilityId ?? 0;
-
-        if (abilityScore != null)
+        var abilityId = 0;
+        if (target != null)
         {
-            context.Reasoning += $" | Ability score: {abilityScore.TotalScore:F1}";
+            var selectedAbility = await _abilityService.SelectOptimalAbilityAsync(enemy, target, state);
+            // TODO: Extract ability ID from selectedAbility once ability system is integrated
+            abilityId = 0; // Placeholder: basic attack
         }
 
-        return new EnemyAction
+        return new Core.AI.EnemyAction
         {
             Actor = enemy,
             Target = target,
@@ -291,7 +296,7 @@ public class EnemyAIOrchestrator
         context.ThreatAssessments = assessments;
 
         // Select target using archetype-specific logic
-        var selectedTarget = await _targetService.SelectTargetAsync(enemy, state);
+        var selectedTarget = await _targetService.SelectTargetAsync(enemy, potentialTargets.Cast<object>().ToList(), state);
 
         if (selectedTarget != null)
         {

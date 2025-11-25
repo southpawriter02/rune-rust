@@ -77,16 +77,16 @@ public class PowerConduitService
             return;
         }
 
-        _log.Debug("Standard conduit at ({X}, {Y}) affecting {Count} adjacent combatants",
-            conduitTile.Position.X, conduitTile.Position.Y, adjacentCombatants.Count);
+        _log.Debug("Standard conduit at ({Column}, {Row}) affecting {Count} adjacent combatants",
+            conduitTile.Position.Column, conduitTile.Position.Row, adjacentCombatants.Count);
 
         foreach (var combatant in adjacentCombatants)
         {
             var damage = _diceService.RollDice(BASE_DAMAGE);
             combatant.TakeDamage(damage, DamageType.Energy);
 
-            _log.Information("{Combatant} takes {Damage} Energy damage from Live Power Conduit at ({X}, {Y})",
-                combatant.Name, damage, conduitTile.Position.X, conduitTile.Position.Y);
+            _log.Information("{Combatant} takes {Damage} Energy damage from Live Power Conduit at ({Column}, {Row})",
+                combatant.Name, damage, conduitTile.Position.Column, conduitTile.Position.Row);
 
             // Apply message to combat log
             battlefield.CombatLog.Add(
@@ -107,8 +107,8 @@ public class PowerConduitService
             return;
         }
 
-        _log.Warning("FLOODED conduit at ({X}, {Y}) AMPLIFIED - affecting {Count} combatants in {Radius}-tile radius",
-            conduitTile.Position.X, conduitTile.Position.Y, affectedCombatants.Count, FLOODED_RADIUS);
+        _log.Warning("FLOODED conduit at ({Column}, {Row}) AMPLIFIED - affecting {Count} combatants in {Radius}-tile radius",
+            conduitTile.Position.Column, conduitTile.Position.Row, affectedCombatants.Count, FLOODED_RADIUS);
 
         foreach (var combatant in affectedCombatants)
         {
@@ -172,8 +172,8 @@ public class PowerConduitService
         var currentHP = _environmentalObjectService.GetObjectHP(conduitTile.Position) ?? CONDUIT_HP;
         var newHP = currentHP - damageDealt;
 
-        _log.Debug("Power conduit at ({X}, {Y}) takes {Damage} damage ({Current} HP -> {New} HP)",
-            conduitTile.Position.X, conduitTile.Position.Y, damageDealt, currentHP, newHP);
+        _log.Debug("Power conduit at ({Column}, {Row}) takes {Damage} damage ({Current} HP -> {New} HP)",
+            conduitTile.Position.Column, conduitTile.Position.Row, damageDealt, currentHP, newHP);
 
         if (newHP <= 0)
         {
@@ -181,8 +181,8 @@ public class PowerConduitService
             conduitTile.RemoveEnvironmentalFeature("Live Power Conduit");
             _environmentalObjectService.RemoveObject(conduitTile.Position);
 
-            _log.Information("Power conduit at ({X}, {Y}) DESTROYED",
-                conduitTile.Position.X, conduitTile.Position.Y);
+            _log.Information("Power conduit at ({Column}, {Row}) DESTROYED",
+                conduitTile.Position.Column, conduitTile.Position.Row);
 
             battlefield.CombatLog.Add(
                 $"The [Live Power Conduit] sparks violently and goes dark - destroyed!");
@@ -215,8 +215,8 @@ public class PowerConduitService
 
         if (isFlooded)
         {
-            _log.Warning("DANGEROUS COMBO: Live Power Conduit in flooded terrain at ({X}, {Y}) - amplified damage active",
-                conduitTile.Position.X, conduitTile.Position.Y);
+            _log.Warning("DANGEROUS COMBO: Live Power Conduit in flooded terrain at ({Column}, {Row}) - amplified damage active",
+                conduitTile.Position.Column, conduitTile.Position.Row);
         }
 
         return isFlooded;
@@ -235,8 +235,8 @@ public class PowerConduitService
 
         conduitTile.AddTerrain("Flooded (Coolant)");
 
-        _log.Warning("⚡ Power conduit at ({X}, {Y}) now FLOODED - AMPLIFICATION ACTIVE (1d8 → 2d10, radius 1 → 2)",
-            conduitTile.Position.X, conduitTile.Position.Y);
+        _log.Warning("⚡ Power conduit at ({Column}, {Row}) now FLOODED - AMPLIFICATION ACTIVE (1d8 → 2d10, radius 1 → 2)",
+            conduitTile.Position.Column, conduitTile.Position.Row);
 
         battlefield.CombatLog.Add(
             "⚡ WARNING: Coolant floods the power conduit area - electrical discharge AMPLIFIED!");

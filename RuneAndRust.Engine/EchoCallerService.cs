@@ -67,7 +67,7 @@ public class EchoCallerService
     /// </summary>
     public bool InitializeEchoChains(int characterId)
     {
-        using var operation = _log.BeginOperation("InitializeEchoChains for character {CharacterId}", characterId);
+        using var operation = _log.BeginScope("InitializeEchoChains for character {CharacterId}", characterId);
 
         try
         {
@@ -112,7 +112,7 @@ public class EchoCallerService
         Enemy target,
         int rank = 1)
     {
-        using var operation = _log.BeginOperation("CastScreamOfSilence: CasterID={CasterId}, TargetID={TargetId}, Rank={Rank}",
+        using var operation = _log.BeginScope("CastScreamOfSilence: CasterID={CasterId}, TargetID={TargetId}, Rank={Rank}",
             caster.CharacterID, target.EnemyID, rank);
 
         try
@@ -194,7 +194,7 @@ public class EchoCallerService
         Enemy target,
         int rank = 1)
     {
-        using var operation = _log.BeginOperation("CastPhantomMenace: CasterID={CasterId}, TargetID={TargetId}, Rank={Rank}",
+        using var operation = _log.BeginScope("CastPhantomMenace: CasterID={CasterId}, TargetID={TargetId}, Rank={Rank}",
             caster.CharacterID, target.EnemyID, rank);
 
         try
@@ -263,7 +263,7 @@ public class EchoCallerService
         string pushDirection,
         int rank = 1)
     {
-        using var operation = _log.BeginOperation("CastRealityFracture: CasterID={CasterId}, TargetID={TargetId}, Rank={Rank}",
+        using var operation = _log.BeginScope("CastRealityFracture: CasterID={CasterId}, TargetID={TargetId}, Rank={Rank}",
             caster.CharacterID, target.EnemyID, rank);
 
         try
@@ -333,7 +333,7 @@ public class EchoCallerService
     /// </summary>
     public void UpdateEchoCascadeRank(int characterId, int rank)
     {
-        using var operation = _log.BeginOperation("UpdateEchoCascadeRank: CharacterId={CharacterId}, Rank={Rank}",
+        using var operation = _log.BeginScope("UpdateEchoCascadeRank: CharacterId={CharacterId}, Rank={Rank}",
             characterId, rank);
 
         try
@@ -391,7 +391,7 @@ public class EchoCallerService
         int newY,
         int rank = 1)
     {
-        using var operation = _log.BeginOperation("CastEchoDisplacement: CasterID={CasterId}, TargetID={TargetId}, Rank={Rank}",
+        using var operation = _log.BeginScope("CastEchoDisplacement: CasterID={CasterId}, TargetID={TargetId}, Rank={Rank}",
             caster.CharacterID, target.EnemyID, rank);
 
         try
@@ -482,7 +482,7 @@ public class EchoCallerService
         List<Enemy> allEnemies,
         int rank = 1)
     {
-        using var operation = _log.BeginOperation("CastSilenceMadeWeapon: CasterID={CasterId}, Rank={Rank}",
+        using var operation = _log.BeginScope("CastSilenceMadeWeapon: CasterID={CasterId}, Rank={Rank}",
             caster.CharacterID, rank);
 
         try
@@ -537,8 +537,9 @@ public class EchoCallerService
                 affectedEnemies.Add(enemy.EnemyID);
 
                 // WILL check for Fear
-                var checkResult = _diceService.SkillCheck(enemy.WILL ?? 2, dc);
-                if (!checkResult.Success)
+                var willValue = enemy.WILL > 0 ? enemy.WILL : 2;
+                var checkPassed = _diceService.SkillCheck(willValue, dc);
+                if (!checkPassed)
                 {
                     ApplyStatusEffect(enemy.EnemyID, "Feared", 2);
                     results.Add($"{enemy.Name}: {damage} damage, Feared");
@@ -774,7 +775,7 @@ public class EchoCallerService
     /// </summary>
     public void ResetCombatState(int characterId)
     {
-        using var operation = _log.BeginOperation("ResetCombatState for character {CharacterId}", characterId);
+        using var operation = _log.BeginScope("ResetCombatState for character {CharacterId}", characterId);
 
         try
         {

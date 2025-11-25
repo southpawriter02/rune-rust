@@ -28,7 +28,9 @@ public class CompanionService
     public CompanionService(string connectionString, CompanionTerritoryReactions? territoryReactions = null)
     {
         _connectionString = connectionString;
-        _aiService = new CompanionAIService();
+        var coverService = new CoverService();
+        var flankingService = new FlankingService();
+        _aiService = new CompanionAIService(coverService, flankingService, Log.ForContext<CompanionAIService>());
         _recruitmentService = new RecruitmentService(connectionString);
         _progressionService = new CompanionProgressionService(connectionString);
         _territoryReactions = territoryReactions; // v0.35
@@ -119,7 +121,7 @@ public class CompanionService
                     _log.Warning("Move action has no target position or grid");
                     return false;
                 }
-                return ExecuteMove(companion, action.TargetPosition, grid);
+                return ExecuteMove(companion, action.TargetPosition.Value, grid);
 
             case "wait":
                 _log.Debug("Companion waiting: {CompanionName}", companion.DisplayName);
@@ -370,14 +372,17 @@ public class CompanionService
                 DisplayName = reader.GetString(2),
                 Archetype = reader.GetString(3),
                 CombatRole = reader.GetString(4),
-                BaseMight = reader.GetInt32(5),
-                BaseFinesse = reader.GetInt32(6),
-                BaseSturdiness = reader.GetInt32(7),
-                BaseWits = reader.GetInt32(8),
-                BaseWill = reader.GetInt32(9),
+                BaseAttributes = new Attributes
+                {
+                    Might = reader.GetInt32(5),
+                    Finesse = reader.GetInt32(6),
+                    Sturdiness = reader.GetInt32(7),
+                    Wits = reader.GetInt32(8),
+                    Will = reader.GetInt32(9)
+                },
                 MaxHitPoints = reader.GetInt32(10), // Base stats - will be scaled
-                BaseDefense = reader.GetInt32(11),
-                BaseSoak = reader.GetInt32(12),
+                Defense = reader.GetInt32(11),
+                Soak = reader.GetInt32(12),
                 ResourceType = reader.GetString(13),
                 MaxStamina = reader.GetString(13) == "Stamina" ? reader.GetInt32(14) : 0,
                 MaxAetherPool = reader.GetString(13) == "Aether Pool" ? reader.GetInt32(14) : 0,
@@ -648,16 +653,16 @@ public class CompanionService
     private void ApplyScaledStats(Companion companion, CompanionScaledStats scaledStats)
     {
         // Apply scaled attributes
-        companion.BaseMight = scaledStats.Might;
-        companion.BaseFinesse = scaledStats.Finesse;
-        companion.BaseSturdiness = scaledStats.Sturdiness;
-        companion.BaseWits = scaledStats.Wits;
-        companion.BaseWill = scaledStats.Will;
+        companion.BaseAttributes.Might = scaledStats.Might;
+        companion.BaseAttributes.Finesse = scaledStats.Finesse;
+        companion.BaseAttributes.Sturdiness = scaledStats.Sturdiness;
+        companion.BaseAttributes.Wits = scaledStats.Wits;
+        companion.BaseAttributes.Will = scaledStats.Will;
 
         // Apply scaled resources
         companion.MaxHitPoints = scaledStats.MaxHP;
-        companion.BaseDefense = scaledStats.Defense;
-        companion.BaseSoak = scaledStats.Soak;
+        companion.Defense = scaledStats.Defense;
+        companion.Soak = scaledStats.Soak;
 
         if (companion.ResourceType == "Stamina")
         {

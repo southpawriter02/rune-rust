@@ -59,8 +59,8 @@ public class SituationalAnalysisService : ISituationalAnalysisService
         {
             context.IsFlanked = IsFlanked(actor, state.Grid, state.PlayerCharacters);
             context.HasHighGround = HasHighGround(actor, state.Grid, state.PlayerCharacters);
-            context.IsInCover = _coverService != null && actor.Position.HasValue &&
-                _coverService.GetCoverLevel(state.Grid, actor.Position.Value) != CoverLevel.None;
+            context.IsInCover = actor.Position.HasValue &&
+                state.Grid.GetTile(actor.Position.Value)?.Cover != CoverType.None;
             context.IsIsolated = IsIsolated(actor, state.Grid, state.Enemies);
         }
 

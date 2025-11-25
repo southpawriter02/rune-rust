@@ -1,3 +1,4 @@
+using RuneAndRust.Core;
 using RuneAndRust.Core.BossGauntlet;
 using RuneAndRust.Core.ChallengeSectors;
 using RuneAndRust.Core.EndlessMode;
@@ -23,14 +24,17 @@ public class EndgameContentOrchestrator
     private readonly ChallengeSectorService _sectorService;
     private readonly BossGauntletService _gauntletService;
     private readonly EndlessModeService _endlessService;
+    private readonly CarryoverService _carryoverService;
 
     public EndgameContentOrchestrator(
         NewGamePlusRepository ngPlusRepo,
         ChallengeSectorRepository sectorRepo,
         BossGauntletRepository gauntletRepo,
-        EndlessModeRepository endlessRepo)
+        EndlessModeRepository endlessRepo,
+        CarryoverService carryoverService)
     {
-        _ngPlusService = new NewGamePlusService(ngPlusRepo);
+        _carryoverService = carryoverService;
+        _ngPlusService = new NewGamePlusService(ngPlusRepo, carryoverService);
         _sectorService = new ChallengeSectorService(sectorRepo);
         _gauntletService = new BossGauntletService(gauntletRepo);
         _endlessService = new EndlessModeService(endlessRepo);
@@ -51,7 +55,7 @@ public class EndgameContentOrchestrator
         var ngPlusTier = _ngPlusService.GetCurrentNGPlusTier(characterId);
 
         // Get available content from each system
-        var sectors = _sectorService.GetAvailableSeasons(characterId, ngPlusTier);
+        var sectors = _sectorService.GetAvailableSectors(characterId, ngPlusTier);
         var gauntlets = _gauntletService.GetAvailableSequences(characterId, ngPlusTier);
         var activeSeason = _endlessService.GetActiveSeason();
 
@@ -136,15 +140,29 @@ public class EndgameContentOrchestrator
             throw new InvalidOperationException($"Cannot advance from NG+{currentTier}");
         }
 
+        // Cast characterState to PlayerCharacter
+        var character = characterState as PlayerCharacter;
+        if (character == null)
+        {
+            throw new ArgumentException("characterState must be a PlayerCharacter", nameof(characterState));
+        }
+
         // Get content available before advancement
-        var beforeSectors = _sectorService.GetAvailableSeasons(characterId, currentTier);
+        var beforeSectors = _sectorService.GetAvailableSectors(characterId, currentTier);
         var beforeGauntlets = _gauntletService.GetAvailableSequences(characterId, currentTier);
 
+        // Create carryover snapshot before initializing
+        var carryover = _carryoverService.CreateSnapshot(character, targetTier);
+
         // Initialize next NG+ tier
-        var carryover = _ngPlusService.InitializeNewGamePlus(characterId, targetTier, characterState);
+        var success = _ngPlusService.InitializeNewGamePlus(character, targetTier);
+        if (!success)
+        {
+            throw new InvalidOperationException($"Failed to initialize NG+{targetTier}");
+        }
 
         // Get newly unlocked content
-        var afterSectors = _sectorService.GetAvailableSeasons(characterId, targetTier);
+        var afterSectors = _sectorService.GetAvailableSectors(characterId, targetTier);
         var afterGauntlets = _gauntletService.GetAvailableSequences(characterId, targetTier);
 
         var newSectors = afterSectors.Where(s => !beforeSectors.Any(b => b.SectorId == s.SectorId)).ToList();
@@ -197,7 +215,7 @@ public class EndgameContentOrchestrator
         if (sectorProgress.CompletionPercentage < 0.5f && ngPlusTier == 0)
         {
             // More sectors to complete at base difficulty
-            var availableSectors = _sectorService.GetAvailableSeasons(characterId, ngPlusTier);
+            var availableSectors = _sectorService.GetAvailableSectors(characterId, ngPlusTier);
             var incompleteSectors = availableSectors
                 .Where(s => !_sectorService.HasCompleted(characterId, s.SectorId))
                 .OrderBy(s => s.TotalDifficultyMultiplier)
@@ -342,8 +360,8 @@ public class NGPlusAdvancementResult
     public string SummaryDisplay => $@"
 === NG+{NewTier} Unlocked ===
 Carried Over:
-  Gold: {Carryover.CarriedGold:N0}
-  Items: {Carryover.ItemCount}
+  Scrap: {Carryover.Scrap:N0}
+  Items: {Carryover.EquippedItems.Count + Carryover.InventoryItems.Count}
   Skills: Preserved
 
 Newly Unlocked:

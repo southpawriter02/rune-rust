@@ -58,7 +58,7 @@ public class AlfheimBiomeService
         // Apply Aether Pool amplification to Mystics
         foreach (var character in party)
         {
-            if (character.Archetype == "Mystic")
+            if (character.Class == CharacterClass.Mystic)
             {
                 _runicInstabilityService.ApplyAetherPoolAmplification(character);
             }
@@ -80,7 +80,7 @@ public class AlfheimBiomeService
 
         foreach (var character in party)
         {
-            if (character.Archetype == "Mystic")
+            if (character.Class == CharacterClass.Mystic)
             {
                 _runicInstabilityService.RemoveAetherPoolAmplification(character);
             }
@@ -359,7 +359,7 @@ public class AlfheimBiomeService
         // Calculate party strength
         int avgLevel = (int)party.Average(c => c.Level);
         double avgWill = party.Average(c => c.Attributes.Will);
-        int mysticCount = party.Count(c => c.Archetype == "Mystic");
+        int mysticCount = party.Count(c => c.Class == CharacterClass.Mystic);
 
         // Base difficulty on level
         int difficulty = avgLevel switch
@@ -416,7 +416,7 @@ public class AlfheimBiomeService
             {
                 CharacterName = character.Name,
                 Will = character.Attributes.Will,
-                IsMystic = character.Archetype == "Mystic",
+                IsMystic = character.Class == CharacterClass.Mystic,
                 RecommendedWill = 14 // High WILL recommended for extreme stress
             };
 
@@ -442,7 +442,7 @@ public class AlfheimBiomeService
             }
 
             // Special warning for Mystics about Wild Magic Surges
-            if (character.Archetype == "Mystic")
+            if (character.Class == CharacterClass.Mystic)
             {
                 charPrep.MysticWarning = "As a Mystic, all abilities have 25% chance to trigger Wild Magic Surge. " +
                                         "Surges modify abilities randomly (±50% damage/range/targets/duration) and generate +5 Stress each. " +

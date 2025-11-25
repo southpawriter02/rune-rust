@@ -512,7 +512,7 @@ public class CompanionAIService
             .OrderBy(pos => DistanceTo(pos, playerPos.Value))
             .ToList();
 
-        return safePositions.FirstOrDefault() ?? currentPos;
+        return safePositions.Any() ? safePositions.First() : currentPos;
     }
 
     private PlayerCharacter? FindThreatenedAlly(
@@ -632,7 +632,7 @@ public class CompanionAIService
     private bool IsHazard(GridPosition position, BattlefieldGrid grid)
     {
         var tile = grid.GetTile(position);
-        return tile?.DynamicHazards?.Any() == true || tile?.StaticTerrain?.IsHazardous == true;
+        return tile?.DynamicHazards?.Any() == true || tile?.HazardType != HazardType.None;
     }
 
     private List<GridPosition> GetValidMovementPositions(GridPosition currentPos, int movementRange)

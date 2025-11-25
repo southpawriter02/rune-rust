@@ -33,7 +33,7 @@ public class DifficultyScalingService : IDifficultyScalingService
     public void SetNGPlusTier(int tier)
     {
         _ngPlusTier = Math.Max(0, tier);
-        _logger.Debug("NG+ tier set to {Tier}", _ngPlusTier);
+        _logger.LogDebug("NG+ tier set to {Tier}", _ngPlusTier);
     }
 
     /// <summary>
@@ -42,7 +42,7 @@ public class DifficultyScalingService : IDifficultyScalingService
     public void SetEndlessWave(int? wave)
     {
         _endlessWave = wave;
-        _logger.Debug("Endless wave set to {Wave}", wave);
+        _logger.LogDebug("Endless wave set to {Wave}", wave);
     }
 
     /// <summary>
@@ -51,7 +51,7 @@ public class DifficultyScalingService : IDifficultyScalingService
     public void SetBossGauntletNumber(int? bossNumber)
     {
         _bossGauntletNumber = bossNumber;
-        _logger.Debug("Boss Gauntlet number set to {Number}", bossNumber);
+        _logger.LogDebug("Boss Gauntlet number set to {Number}", bossNumber);
     }
 
     /// <summary>
@@ -60,7 +60,7 @@ public class DifficultyScalingService : IDifficultyScalingService
     public void SetIsChallengeSector(bool isChallengeSector)
     {
         _isChallengeSector = isChallengeSector;
-        _logger.Debug("Challenge Sector status set to {Status}", isChallengeSector);
+        _logger.LogDebug("Challenge Sector status set to {Status}", isChallengeSector);
     }
 
     /// <inheritdoc/>
@@ -70,7 +70,7 @@ public class DifficultyScalingService : IDifficultyScalingService
         if (_endlessWave.HasValue)
         {
             var level = CalculateEndlessIntelligence(_endlessWave.Value);
-            _logger.Debug("Endless Mode wave {Wave} -> Intelligence {Level}", _endlessWave.Value, level);
+            _logger.LogDebug("Endless Mode wave {Wave} -> Intelligence {Level}", _endlessWave.Value, level);
             return await Task.FromResult(level);
         }
 
@@ -78,7 +78,7 @@ public class DifficultyScalingService : IDifficultyScalingService
         if (_bossGauntletNumber.HasValue)
         {
             var level = CalculateBossGauntletIntelligence(_bossGauntletNumber.Value);
-            _logger.Debug("Boss Gauntlet #{Number} -> Intelligence {Level}", _bossGauntletNumber.Value, level);
+            _logger.LogDebug("Boss Gauntlet #{Number} -> Intelligence {Level}", _bossGauntletNumber.Value, level);
             return await Task.FromResult(level);
         }
 
@@ -87,13 +87,13 @@ public class DifficultyScalingService : IDifficultyScalingService
         {
             var baseTier = Math.Min(_ngPlusTier, 5);
             var level = Math.Min(baseTier + 1, 5);  // Challenge Sectors = +1 intelligence
-            _logger.Debug("Challenge Sector (NG+{Tier}) -> Intelligence {Level}", _ngPlusTier, level);
+            _logger.LogDebug("Challenge Sector (NG+{Tier}) -> Intelligence {Level}", _ngPlusTier, level);
             return await Task.FromResult(level);
         }
 
         // Standard NG+ scaling
         var ngLevel = Math.Min(_ngPlusTier, 5);
-        _logger.Debug("NG+{Tier} -> Intelligence {Level}", _ngPlusTier, ngLevel);
+        _logger.LogDebug("NG+{Tier} -> Intelligence {Level}", _ngPlusTier, ngLevel);
         return await Task.FromResult(ngLevel);
     }
 
@@ -128,7 +128,7 @@ public class DifficultyScalingService : IDifficultyScalingService
         {
             var errorChance = CalculateErrorChance(intelligenceLevel);
 
-            _logger.Debug(
+            _logger.LogDebug(
                 "AI {EnemyId} making tactical error (intelligence={Level}, errorChance={Chance:P0})",
                 action.Actor.Id, intelligenceLevel, errorChance);
 
@@ -194,7 +194,7 @@ public class DifficultyScalingService : IDifficultyScalingService
                     action.Context ??= new DecisionContext();
                     action.Context.IsIntentionalError = true;
                     action.Context.ErrorType = "WrongTarget";
-                    _logger.Debug("AI mistake: Wrong target selected");
+                    _logger.LogDebug("AI mistake: Wrong target selected");
                 }
                 break;
 
@@ -203,7 +203,7 @@ public class DifficultyScalingService : IDifficultyScalingService
                 action.Context ??= new DecisionContext();
                 action.Context.IsIntentionalError = true;
                 action.Context.ErrorType = "BasicAttackInsteadOfAbility";
-                _logger.Debug("AI mistake: Used basic attack instead of better ability");
+                _logger.LogDebug("AI mistake: Used basic attack instead of better ability");
                 break;
 
             case 3:  // Poor positioning
@@ -211,7 +211,7 @@ public class DifficultyScalingService : IDifficultyScalingService
                 action.Context ??= new DecisionContext();
                 action.Context.IsIntentionalError = true;
                 action.Context.ErrorType = "FailedToReposition";
-                _logger.Debug("AI mistake: Failed to reposition");
+                _logger.LogDebug("AI mistake: Failed to reposition");
                 break;
         }
 
@@ -231,7 +231,7 @@ public class DifficultyScalingService : IDifficultyScalingService
         if (weakestPlayer != null)
         {
             action.Target = weakestPlayer;
-            _logger.Debug("Advanced tactic: Focus fire on weakest player {PlayerId}", weakestPlayer.Id);
+            _logger.LogDebug("Advanced tactic: Focus fire on weakest player {PlayerId}", weakestPlayer.Id);
         }
 
         // 2. Save powerful abilities for optimal moment
@@ -239,7 +239,7 @@ public class DifficultyScalingService : IDifficultyScalingService
         {
             // TODO: Check if this is a powerful ability
             // For now, just log advanced tactic usage
-            _logger.Debug("Advanced tactic: Intelligent ability usage");
+            _logger.LogDebug("Advanced tactic: Intelligent ability usage");
         }
 
         await Task.CompletedTask;
@@ -263,7 +263,7 @@ public class DifficultyScalingService : IDifficultyScalingService
             if (hpPercent < 0.4f)
             {
                 action.Target = weakestPlayer;
-                _logger.Debug(
+                _logger.LogDebug(
                     "Max intelligence: Exploiting weak player {PlayerId} at {HP:P0} HP",
                     weakestPlayer.Id, hpPercent);
 

@@ -160,7 +160,7 @@ public class CoordinatedMovementService
         _log.Information("Coordinated movement successful: Direction={Direction}, PartySize={Size}, TotalStaminaCost={Cost}",
             direction, party.Count, totalStaminaCost);
 
-        return CoordinatedResult.Success(direction, totalStaminaCost);
+        return CoordinatedResult.Successful(direction, totalStaminaCost);
     }
 
     /// <summary>

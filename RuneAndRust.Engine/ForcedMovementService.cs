@@ -79,7 +79,7 @@ public class ForcedMovementService
         MovementDirection direction,
         string abilityName)
     {
-        using (_log.BeginTimedOperation("Attempt Forced Movement"))
+        using (_log.BeginScope("Attempt Forced Movement"))
         {
             _log.Information(
                 "Forced Movement Attempt: Target={TargetName}, Direction={Direction}, Ability={Ability}, Corruption={Corruption}",

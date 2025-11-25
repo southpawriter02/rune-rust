@@ -3,6 +3,7 @@ using RuneAndRust.Core.Descriptors;
 using RuneAndRust.Persistence;
 using Serilog;
 using System.Text.Json;
+using DescriptorResourceNode = RuneAndRust.Core.Descriptors.ResourceNode;
 
 namespace RuneAndRust.Engine;
 
@@ -30,7 +31,7 @@ public class ResourceNodeService
     /// <param name="biomeName">Biome name (e.g., "Muspelheim", "The_Roots")</param>
     /// <param name="roomSize">Room size ("Small", "Medium", "Large")</param>
     /// <returns>List of generated resource nodes</returns>
-    public List<ResourceNode> GenerateResourceNodes(int roomId, string biomeName, string roomSize)
+    public List<DescriptorResourceNode> GenerateResourceNodes(int roomId, string biomeName, string roomSize)
     {
         _log.Debug("Generating resource nodes for Room {RoomId}, Biome: {Biome}, Size: {Size}",
             roomId, biomeName, roomSize);
@@ -48,7 +49,7 @@ public class ResourceNodeService
         // Determine number of nodes based on room size
         var nodeCount = profile.GetSpawnDensity(roomSize);
 
-        var nodes = new List<ResourceNode>();
+        var nodes = new List<DescriptorResourceNode>();
 
         for (int i = 0; i < nodeCount; i++)
         {
@@ -68,7 +69,7 @@ public class ResourceNodeService
     /// <summary>
     /// Generates a single resource node for a room
     /// </summary>
-    private ResourceNode? GenerateNode(int roomId, string biomeName, BiomeResourceProfile profile)
+    private DescriptorResourceNode? GenerateNode(int roomId, string biomeName, BiomeResourceProfile profile)
     {
         // Roll for rarity tier (70% common, 25% uncommon, 5% rare)
         var rarityRoll = _random.NextDouble();
@@ -180,7 +181,7 @@ public class ResourceNodeService
     /// <summary>
     /// Instantiates a resource node from template and parameters
     /// </summary>
-    private ResourceNode InstantiateNode(
+    private DescriptorResourceNode InstantiateNode(
         DescriptorBaseTemplate baseTemplate,
         ThematicModifier? modifier,
         string resourceType,
@@ -197,7 +198,7 @@ public class ResourceNodeService
         var description = BuildNodeDescription(baseTemplate.DescriptionTemplate, modifier, resourceType);
 
         // Create resource node
-        var node = new ResourceNode
+        var node = new DescriptorResourceNode
         {
             RoomId = roomId,
             Name = name,
@@ -272,9 +273,9 @@ public class ResourceNodeService
         return capitalize ? article.Substring(0, 1).ToUpper() + article.Substring(1) : article;
     }
 
-    private string? GetModifierForBiome(string biome)
+    private ThematicModifier? GetModifierForBiome(string biome)
     {
-        return biome switch
+        var modifierName = biome switch
         {
             "Muspelheim" => "Scorched",
             "Niflheim" => "Frozen",
@@ -283,6 +284,11 @@ public class ResourceNodeService
             "Jotunheim" => "Monolithic",
             _ => null
         };
+
+        if (modifierName == null)
+            return null;
+
+        return _repository.GetModifierByName(modifierName);
     }
 
     private ResourceNodeType ParseNodeType(string archetype)
@@ -362,7 +368,7 @@ public class ResourceNodeService
         return false;
     }
 
-    private List<ResourceNode> GenerateGenericResourceNodes(int roomId, string roomSize)
+    private List<DescriptorResourceNode> GenerateGenericResourceNodes(int roomId, string roomSize)
     {
         // Fallback generic generation
         var nodeCount = roomSize?.ToLower() switch
@@ -373,12 +379,12 @@ public class ResourceNodeService
             _ => 1
         };
 
-        var nodes = new List<ResourceNode>();
+        var nodes = new List<DescriptorResourceNode>();
 
         for (int i = 0; i < nodeCount; i++)
         {
             // Create simple generic node
-            nodes.Add(new ResourceNode
+            nodes.Add(new DescriptorResourceNode
             {
                 RoomId = roomId,
                 Name = "Iron Ore Vein",

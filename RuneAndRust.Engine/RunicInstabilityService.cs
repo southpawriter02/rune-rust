@@ -58,7 +58,7 @@ public class RunicInstabilityService
         }
 
         // Only affects Mystic characters
-        if (caster.Archetype != "Mystic")
+        if (caster.Class != CharacterClass.Mystic)
         {
             return null;
         }
@@ -163,7 +163,7 @@ public class RunicInstabilityService
     /// </summary>
     public void ApplyAetherPoolAmplification(PlayerCharacter character)
     {
-        if (character.Archetype != "Mystic")
+        if (character.Class != CharacterClass.Mystic)
         {
             _log.Debug("Aether Pool amplification skipped: {Character} is not a Mystic",
                 character.Name);
@@ -188,7 +188,7 @@ public class RunicInstabilityService
     /// </summary>
     public void RemoveAetherPoolAmplification(PlayerCharacter character)
     {
-        if (character.Archetype != "Mystic")
+        if (character.Class != CharacterClass.Mystic)
         {
             return;
         }

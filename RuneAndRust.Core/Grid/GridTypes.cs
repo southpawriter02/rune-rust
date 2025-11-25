@@ -26,6 +26,7 @@ public class GridTile
     private readonly BattlefieldTile _tile;
     private readonly List<string> _terrainFeatures = new();
     private readonly List<string> _environmentalFeatures = new();
+    private readonly Dictionary<string, object> _metadata = new();
 
     public GridPosition Position => _tile.Position;
     public int X => Position.Column;
@@ -99,6 +100,37 @@ public class GridTile
     /// Get the underlying BattlefieldTile.
     /// </summary>
     public BattlefieldTile GetBattlefieldTile() => _tile;
+
+    /// <summary>
+    /// Set metadata value for this tile.
+    /// </summary>
+    public void SetMetadata<T>(string key, T value)
+    {
+        if (value != null)
+        {
+            _metadata[key] = value;
+        }
+    }
+
+    /// <summary>
+    /// Get metadata value for this tile.
+    /// </summary>
+    public T? GetMetadata<T>(string key)
+    {
+        if (_metadata.TryGetValue(key, out var value) && value is T typedValue)
+        {
+            return typedValue;
+        }
+        return default;
+    }
+
+    /// <summary>
+    /// Check if this tile has metadata with the given key.
+    /// </summary>
+    public bool HasMetadata(string key)
+    {
+        return _metadata.ContainsKey(key);
+    }
 }
 
 /// <summary>

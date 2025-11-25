@@ -34,9 +34,11 @@ public class MyrkgengrService
 
     public MyrkgengrService(string connectionString)
     {
-        _statusService = new AdvancedStatusEffectService(connectionString);
         _diceService = new DiceService();
-        _resolveService = new ResolveCheckService();
+        var repository = new StatusEffectRepository();
+        var traumaService = new TraumaEconomyService();
+        _statusService = new AdvancedStatusEffectService(repository, traumaService, _diceService);
+        _resolveService = new ResolveCheckService(_diceService);
         _log.Debug("MyrkgengrService initialized");
     }
 
@@ -113,17 +115,11 @@ public class MyrkgengrService
             if (success)
             {
                 // Apply Hidden status effect
-                var hiddenEffect = new StatusEffect
-                {
-                    TargetID = shadowWalker.CharacterID,
-                    EffectType = "Hidden",
-                    DurationRemaining = -1, // Lasts until broken
-                    Category = StatusEffectCategory.Buff,
-                    CanStack = false,
-                    Metadata = "{ \"Source\": \"Enter the Void\" }"
-                };
-
-                _statusService.ApplyStatusEffect(shadowWalker, hiddenEffect);
+                _statusService.ApplyEffect(
+                    targetId: shadowWalker.CharacterID,
+                    effectType: "Hidden",
+                    stacks: 1,
+                    duration: -1); // Lasts until broken
 
                 _log.Information("Enter the Void success: Roll={Roll}, DC={DC}",
                     stealthRoll, dc);
@@ -215,7 +211,7 @@ public class MyrkgengrService
             int psychicStressInflicted = 0;
 
             // Check if this is first Shadow Strike (Terror from the Void)
-            bool isFirstStrike = !attacker.CombatFlags.GetValueOrDefault("TerrorFromVoidUsed", false);
+            bool isFirstStrike = !(bool)(attacker.CombatFlags.GetValueOrDefault("TerrorFromVoidUsed", false) ?? false);
             if (isFirstStrike && terrorFromVoidRank > 0)
             {
                 // Apply Psychic Stress

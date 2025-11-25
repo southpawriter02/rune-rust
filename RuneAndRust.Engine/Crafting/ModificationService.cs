@@ -114,7 +114,7 @@ public class ModificationService
             _log.Information("Applied {InscriptionName} to equipment {EquipmentId} (mod {ModificationId})",
                 inscription.InscriptionName, equipmentInventoryId, modificationId);
 
-            return ModificationResult.Success(
+            return ModificationResult.Successful(
                 modificationId,
                 inscription.InscriptionName,
                 inscription.IsTemporary ? inscription.UsesIfTemporary : null);

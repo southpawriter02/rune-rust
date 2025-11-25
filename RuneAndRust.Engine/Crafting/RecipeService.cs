@@ -138,7 +138,7 @@ public class RecipeService
             _log.Information("Character {CharacterId} purchased recipe {RecipeName} for {Cost} credits",
                 characterId, recipe.RecipeName, cost);
 
-            return PurchaseResult.Success(recipe.RecipeName, cost);
+            return PurchaseResult.Successful(recipe.RecipeName, cost);
         }
         catch (Exception ex)
         {

@@ -78,7 +78,7 @@ public class AdvancedMovementService
         int dc = 10 + (distance * 2);
         var checkResult = _diceService.Roll(finesse);
 
-        if (!checkResult.Successes >= dc)
+        if (checkResult.Successes < dc)
         {
             // Fall short - land on intervening tile
             var midpointTile = CalculateMidpoint(currentPosition.Value, target, grid);
@@ -117,7 +117,7 @@ public class AdvancedMovementService
         _log.Information("Leap successful: Combatant={CombatantName}, NewPosition={Position}, Distance={Distance}, Roll={Successes}/{DC}",
             combatantName, target, distance, checkResult.Successes, dc);
 
-        return AdvancedMovementResult.Success(
+        return AdvancedMovementResult.Successful(
             $"You leap gracefully across the battlefield! (Rolled {checkResult.Successes} successes vs DC {dc})",
             20
         );
@@ -199,7 +199,7 @@ public class AdvancedMovementService
         _log.Information("Dash successful: Combatant={CombatantName}, NewPosition={Position}, Distance={Distance}, RemainingKE={KE}",
             combatantName, target, distance, _keService.GetCurrentKE(combatant));
 
-        return AdvancedMovementResult.Success(
+        return AdvancedMovementResult.Successful(
             "You dash across the battlefield in a blur of motion! (+10 KE from momentum)",
             10,
             25
@@ -262,7 +262,7 @@ public class AdvancedMovementService
         _log.Information("Blink successful: Combatant={CombatantName}, NewPosition={Position}, Distance={Distance}, RemainingAP={AP}",
             combatantName, target, distance, GetCurrentAP(combatant));
 
-        return AdvancedMovementResult.Success(
+        return AdvancedMovementResult.Successful(
             "You phase through reality and reappear elsewhere!",
             0,
             0,
@@ -344,7 +344,7 @@ public class AdvancedMovementService
         _log.Information("Climb successful: Combatant={CombatantName}, NewElevation={Elevation}, Roll={Successes}/{DC}",
             combatantName, target.Elevation, checkResult.Successes, dc);
 
-        return AdvancedMovementResult.Success(
+        return AdvancedMovementResult.Successful(
             $"You climb to higher ground! (+2 Accuracy ranged, +2 Defense) (Rolled {checkResult.Successes} successes vs DC {dc})",
             15
         );
@@ -439,7 +439,7 @@ public class AdvancedMovementService
         _log.Information("Safe Step successful: Combatant={CombatantName}, NewPosition={Position}",
             combatantName, target);
 
-        return AdvancedMovementResult.Success(
+        return AdvancedMovementResult.Successful(
             "You carefully navigate the hazardous terrain.",
             15
         );

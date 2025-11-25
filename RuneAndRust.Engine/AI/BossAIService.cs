@@ -74,7 +74,7 @@ public class BossAIService : IBossAIService
             newPhase);
 
         // Get phase transition configuration
-        var transitionConfig = await GetPhaseTransitionConfigAsync(boss.EnemyTypeId, newPhase);
+        var transitionConfig = await GetPhaseTransitionConfigAsync(boss.EnemyID, newPhase);
 
         if (transitionConfig == null)
         {
@@ -102,7 +102,7 @@ public class BossAIService : IBossAIService
             if (transitionConfig.PhaseBonuses.ContainsKey("AttackMultiplier"))
             {
                 var multiplier = transitionConfig.PhaseBonuses["AttackMultiplier"];
-                boss.Attack = (int)(boss.Attack * multiplier);
+                boss.BaseDamageDice = (int)(boss.BaseDamageDice * multiplier);
                 _logger.LogDebug("Boss attack increased by {Multiplier}x", multiplier);
             }
 

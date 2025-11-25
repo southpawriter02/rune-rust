@@ -373,13 +373,13 @@ public class SkaldService
         if (einherjarData != null)
         {
             // Apply Psychic Stress to all affected allies
-            foreach (var allyId in einherjarData.AffectedAllies)
+            foreach (var allyId in einherjarData.Value.AffectedAllies)
             {
                 // Note: This would need access to the ally PlayerCharacter objects
                 // For now, we just log the stress cost that should be applied
                 _log.Information(
                     "Einherjar Stress cost to be applied: AllyID={AllyId}, Stress={Stress}",
-                    allyId, einherjarData.StressCost);
+                    allyId, einherjarData.Value.StressCost);
             }
 
             ClearEinherjarData(characterId);

@@ -1,5 +1,6 @@
 using RuneAndRust.Core;
 using Serilog;
+using DestructionResult = RuneAndRust.Core.DestructionResult;
 
 namespace RuneAndRust.Engine;
 
@@ -194,7 +195,7 @@ public class EnvironmentalObjectService
             MaxDurability = durability,
             SoakValue = 0,
             IsHazard = true,
-            HazardTrigger = HazardTrigger.OnDestroy,
+            HazardTrigger = Core.HazardTrigger.Manual,
             DamageFormula = damageFormula,
             DamageType = ParseDamageType(damageFormula),
             StatusEffect = statusEffect,
@@ -225,7 +226,7 @@ public class EnvironmentalObjectService
             Icon = "⚠️",
             IsDestructible = false, // Triggered by abilities, not direct damage
             IsHazard = true,
-            HazardTrigger = HazardTrigger.OnExplosive, // Custom trigger
+            HazardTrigger = Core.HazardTrigger.OnLoudAction, // Triggered by explosive/loud actions
             DamageFormula = "25 Physical",
             DamageType = "Physical",
             StatusEffect = "[Stunned]",
@@ -261,7 +262,7 @@ public class EnvironmentalObjectService
             MaxDurability = 20,
             SoakValue = 5,
             IsHazard = true,
-            HazardTrigger = HazardTrigger.OnDestroy,
+            HazardTrigger = Core.HazardTrigger.Manual,
             DamageFormula = "15 Fire",
             DamageType = "Fire",
             StatusEffect = "[Obscuring Terrain]",
@@ -287,7 +288,7 @@ public class EnvironmentalObjectService
         string name,
         string damageFormula,
         string damageType,
-        HazardTrigger trigger = HazardTrigger.Automatic)
+        Core.HazardTrigger trigger = Core.HazardTrigger.Automatic)
     {
         var hazard = new EnvironmentalObject
         {
@@ -371,6 +372,14 @@ public class EnvironmentalObjectService
     }
 
     /// <summary>
+    /// Applies damage to an environmental object (simplified version for backward compatibility)
+    /// </summary>
+    public DestructionResult DamageObject(int objectId, int damage)
+    {
+        return ApplyDamageToObject(objectId, damage, "Physical", attackerId: 0, combatInstanceId: 0);
+    }
+
+    /// <summary>
     /// Destroys an environmental object (v0.22.1 enhanced with full effects)
     /// </summary>
     public DestructionResult DestroyObject(
@@ -404,7 +413,7 @@ public class EnvironmentalObjectService
         };
 
         // Handle destruction effects
-        if (obj.IsHazard && obj.HazardTrigger == HazardTrigger.OnDestroy)
+        if (obj.IsHazard && obj.HazardTrigger == Core.HazardTrigger.Manual)
         {
             // Trigger explosion/hazard effect
             var hazardResult = TriggerDestructionHazard(obj, combatInstanceId);
@@ -1018,17 +1027,4 @@ public class EnvironmentalObjectService
     }
 
     #endregion
-}
-
-/// <summary>
-/// Hazard trigger conditions
-/// </summary>
-public enum HazardTrigger
-{
-    Manual,         // Manually triggered by player
-    Automatic,      // Triggers automatically (e.g., stepping on tile)
-    OnDestroy,      // Triggers when object is destroyed
-    OnDamageReceived, // Triggers when object takes damage
-    OnEnter,        // Triggers when character enters tile
-    OnExplosive     // Triggers on explosive/concussive ability hit (custom for ceilings)
 }

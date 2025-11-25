@@ -58,7 +58,7 @@ public class EnvironmentalFeatureService : IEnvironmentalFeatureService
     {
         try
         {
-            var baseTemplate = _repository.GetBaseTemplate(baseTemplateName);
+            var baseTemplate = _repository.GetBaseTemplateByName(baseTemplateName);
             if (baseTemplate == null)
             {
                 _logger.Error(
@@ -70,7 +70,7 @@ public class EnvironmentalFeatureService : IEnvironmentalFeatureService
             ThematicModifier? modifier = null;
             if (!string.IsNullOrEmpty(modifierName))
             {
-                modifier = _repository.GetModifier(modifierName);
+                modifier = _repository.GetModifierByName(modifierName);
                 if (modifier == null)
                 {
                     _logger.Warning(
@@ -152,7 +152,7 @@ public class EnvironmentalFeatureService : IEnvironmentalFeatureService
     {
         try
         {
-            var baseTemplate = _repository.GetBaseTemplate(baseTemplateName);
+            var baseTemplate = _repository.GetBaseTemplateByName(baseTemplateName);
             if (baseTemplate == null)
             {
                 _logger.Error(
@@ -164,7 +164,7 @@ public class EnvironmentalFeatureService : IEnvironmentalFeatureService
             ThematicModifier? modifier = null;
             if (!string.IsNullOrEmpty(modifierName))
             {
-                modifier = _repository.GetModifier(modifierName);
+                modifier = _repository.GetModifierByName(modifierName);
                 if (modifier == null)
                 {
                     _logger.Warning(

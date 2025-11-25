@@ -210,9 +210,9 @@ public class SeidkonaService
         else
         {
             // Perform WITS check
-            var checkResult = _diceService.SkillCheck(character.WITS, finalDC);
-            success = checkResult.Success;
-            margin = checkResult.Margin;
+            var checkResult = _diceService.Roll(character.WITS);
+            success = checkResult.Successes >= finalDC;
+            margin = checkResult.Successes - finalDC;
 
             _log.Information("Forlorn Communion WITS check: CharacterID={CharacterId}, DC={DC}, Successes={Successes}, Success={Success}",
                 character.CharacterID, finalDC, checkResult.Successes, success);

@@ -356,14 +356,16 @@ public partial class CombatEngine
 
         // Roll weapon damage based on successes
         int damage = 0;
+        bool isCriticalHit = false;
+        int totalDamageDice = weaponDice;
+
         if (netSuccesses > 0)
         {
             // v0.20.1: Check for critical hit (base 5% + flanking bonus)
             float critChance = 0.05f + flankingBonus.CriticalHitBonus;
-            bool isCriticalHit = new Random().NextDouble() < critChance;
+            isCriticalHit = new Random().NextDouble() < critChance;
 
             // v0.7: Apply [Inspired] damage bonus (+3 damage dice)
-            int totalDamageDice = weaponDice;
             if (player.InspiredTurnsRemaining > 0)
             {
                 totalDamageDice += 3;
@@ -484,7 +486,7 @@ public partial class CombatEngine
             // v0.20.2: Damage cover if target was behind cover
             if (combatState.Grid != null && coverBonus.DefenseBonus > 0 && target.Position != null)
             {
-                var targetTile = combatState.Grid.GetTile(target.Position);
+                var targetTile = combatState.Grid.GetTile(target.Position.Value);
                 if (targetTile != null)
                 {
                     var coverMessage = _coverService.DamageCover(targetTile, damage);
@@ -566,7 +568,7 @@ public partial class CombatEngine
             var defenseText = _flavorTextService.GenerateDefensiveActionText(
                 "Block",
                 outcomeType,
-                weaponType: player.EquippedShield?.Type ?? player.EquippedWeapon?.Type,
+                weaponType: player.EquippedShield?.Type.ToString() ?? player.EquippedWeapon?.Type.ToString(),
                 attackIntensity: null,
                 environmentContext: null,
                 variables: new Dictionary<string, string>
@@ -2404,8 +2406,8 @@ public partial class CombatEngine
                 var stressRelief = _stanceService.CheckStanceMasteryStressRelief(combatState.Player);
                 if (stressRelief < 0)
                 {
-                    var traumaService = new TraumaEconomyService();
-                    traumaService.AddStress(combatState.Player, stressRelief, source: "Stance Mastery");
+                    var traumaEconomyService = new TraumaEconomyService();
+                    traumaEconomyService.AddStress(combatState.Player, stressRelief, source: "Stance Mastery");
                     combatState.AddLogEntry($"[Aggressive Stance Mastery] Confidence builds! {stressRelief} Psychic Stress (Current: {combatState.Player.PsychicStress}/100)");
                 }
             }
@@ -2597,13 +2599,13 @@ public partial class CombatEngine
         if (player.FactionReputations?.Reputations != null && player.FactionReputations.Reputations.Count > 0)
         {
             var topFaction = player.FactionReputations.Reputations
-                .OrderByDescending(r => r.ReputationValue)
+                .OrderByDescending(r => r.Value)
                 .FirstOrDefault();
 
-            if (topFaction != null)
+            if (topFaction.Key != default(FactionType))
             {
                 // Convert FactionType to faction name string
-                return topFaction.Faction switch
+                return topFaction.Key switch
                 {
                     FactionType.MidgardCombine => "IronBanes",
                     FactionType.RustClans => "RustClans",
@@ -2633,13 +2635,13 @@ public partial class CombatEngine
         {
             "weapon" when weapon.Name.Contains("Bow") => WeaponType.Bow,
             "weapon" when weapon.Name.Contains("Crossbow") => WeaponType.Crossbow,
-            "weapon" when weapon.Name.Contains("Sword") && weapon.HandRequirement == 2 => WeaponType.SwordTwoHanded,
+            "weapon" when weapon.Name.Contains("Sword") && weapon.IsTwoHanded => WeaponType.SwordTwoHanded,
             "weapon" when weapon.Name.Contains("Sword") => WeaponType.SwordOneHanded,
-            "weapon" when weapon.Name.Contains("Axe") && weapon.HandRequirement == 2 => WeaponType.AxeTwoHanded,
+            "weapon" when weapon.Name.Contains("Axe") && weapon.IsTwoHanded => WeaponType.AxeTwoHanded,
             "weapon" when weapon.Name.Contains("Axe") => WeaponType.AxeOneHanded,
-            "weapon" when weapon.Name.Contains("Hammer") && weapon.HandRequirement == 2 => WeaponType.HammerTwoHanded,
+            "weapon" when weapon.Name.Contains("Hammer") && weapon.IsTwoHanded => WeaponType.HammerTwoHanded,
             "weapon" when weapon.Name.Contains("Hammer") || weapon.Name.Contains("Mace") => WeaponType.HammerOneHanded,
-            "weapon" when weapon.HandRequirement == 2 => WeaponType.SwordTwoHanded,
+            "weapon" when weapon.IsTwoHanded => WeaponType.SwordTwoHanded,
             "weapon" => WeaponType.SwordOneHanded,
             _ => WeaponType.Unarmed
         };
@@ -2808,7 +2810,7 @@ public partial class CombatEngine
         // Generate fumble flavor text
         if (_flavorTextService != null)
         {
-            var equipmentType = player.EquippedWeapon?.Type;
+            var equipmentType = player.EquippedWeapon?.Type.ToString();
             var fumbleText = _flavorTextService.GenerateFumbleText(
                 "AttackFumble",
                 fumbleType,

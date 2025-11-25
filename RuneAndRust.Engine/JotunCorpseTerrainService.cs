@@ -66,7 +66,7 @@ public class JotunCorpseTerrainService
         MarkCorpseTiles(grid);
 
         _log.Information("Jötun corpse terrain generated successfully: Type={Type}, Tiles={Count}",
-            corpseType, grid.Tiles.Count(t => t.HasTerrain("Jotun Corpse Terrain")));
+            corpseType, CountCorpseTiles(grid));
     }
 
     /// <summary>
@@ -105,8 +105,8 @@ public class JotunCorpseTerrainService
         {
             for (int y = 0; y < 6 && (startY + y) < grid.Height - 1; y++)
             {
-                var tile = grid.GetTile(new GridPosition(startX + x, startY + y));
-                if (tile != null && !tile.IsBlocked)
+                var tile = grid.GetTile(startX + x, startY + y);
+                if (tile != null && tile.GetBattlefieldTile().IsPassable())
                 {
                     tile.AddTerrain("Jotun Corpse Terrain");
                     tile.SetMetadata("CorpseFeature", "Hull");
@@ -143,8 +143,8 @@ public class JotunCorpseTerrainService
                 var yPos = midY + dy;
                 if (yPos >= 1 && yPos < grid.Height - 1)
                 {
-                    var tile = grid.GetTile(new GridPosition(x, yPos));
-                    if (tile != null && !tile.IsBlocked)
+                    var tile = grid.GetTile(x, yPos);
+                    if (tile != null && tile.GetBattlefieldTile().IsPassable())
                     {
                         tile.AddTerrain("Jotun Corpse Terrain");
                         tile.SetMetadata("CorpseFeature", "Limb");
@@ -185,8 +185,8 @@ public class JotunCorpseTerrainService
 
                 if (xPos >= 1 && xPos < grid.Width - 1 && yPos >= 1 && yPos < grid.Height - 1)
                 {
-                    var tile = grid.GetTile(new GridPosition(xPos, yPos));
-                    if (tile != null && !tile.IsBlocked)
+                    var tile = grid.GetTile(xPos, yPos);
+                    if (tile != null && tile.GetBattlefieldTile().IsPassable())
                     {
                         tile.AddTerrain("Jotun Corpse Terrain");
                         tile.SetMetadata("CorpseFeature", "Interior");
@@ -212,19 +212,25 @@ public class JotunCorpseTerrainService
     /// </summary>
     private void MarkCorpseTiles(GridState grid)
     {
-        var corpseTiles = grid.Tiles
-            .Where(t => t.HasTerrain("Jotun Corpse Terrain"))
-            .ToList();
+        int markedCount = 0;
 
-        foreach (var tile in corpseTiles)
+        for (int x = 0; x < grid.Width; x++)
         {
-            tile.SetMetadata("AppliesProximityStress", true);
-            tile.SetMetadata("StressPerTurn", PROXIMITY_STRESS_PER_TURN);
-            tile.SetMetadata("StressSource", "Jötun proximity - corrupted logic core broadcast");
+            for (int y = 0; y < grid.Height; y++)
+            {
+                var tile = grid.Tiles[x, y];
+                if (tile.HasTerrain("Jotun Corpse Terrain"))
+                {
+                    tile.SetMetadata("AppliesProximityStress", true);
+                    tile.SetMetadata("StressPerTurn", PROXIMITY_STRESS_PER_TURN);
+                    tile.SetMetadata("StressSource", "Jötun proximity - corrupted logic core broadcast");
+                    markedCount++;
+                }
+            }
         }
 
         _log.Information("Marked {Count} tiles as Jötun corpse terrain (applies +{Stress} Psychic Stress/turn)",
-            corpseTiles.Count, PROXIMITY_STRESS_PER_TURN);
+            markedCount, PROXIMITY_STRESS_PER_TURN);
     }
 
     /// <summary>
@@ -241,7 +247,7 @@ public class JotunCorpseTerrainService
         var stressAmount = tile.GetMetadata<int>("StressPerTurn");
         var stressSource = tile.GetMetadata<string>("StressSource") ?? "Jötun proximity";
 
-        _traumaEconomyService.ApplyStress(character, stressAmount, stressSource);
+        _traumaEconomyService.AddStress(character, stressAmount, stressSource);
 
         _log.Debug("{Character} on Jötun corpse terrain - applied +{Stress} Psychic Stress",
             character.Name, stressAmount);
@@ -250,6 +256,25 @@ public class JotunCorpseTerrainService
     #endregion
 
     #region Utility
+
+    /// <summary>
+    /// Count tiles with Jötun corpse terrain in grid.
+    /// </summary>
+    private int CountCorpseTiles(GridState grid)
+    {
+        int count = 0;
+        for (int x = 0; x < grid.Width; x++)
+        {
+            for (int y = 0; y < grid.Height; y++)
+            {
+                if (grid.Tiles[x, y].HasTerrain("Jotun Corpse Terrain"))
+                {
+                    count++;
+                }
+            }
+        }
+        return count;
+    }
 
     /// <summary>
     /// Get corpse terrain type at tile (Hull Section, Limb Bridge, Interior Cavity).
@@ -298,7 +323,7 @@ public class JotunCorpseTerrainService
     /// </summary>
     public int GetCorpseTerrainCount(GridState grid)
     {
-        return grid.Tiles.Count(t => t.HasTerrain("Jotun Corpse Terrain"));
+        return CountCorpseTiles(grid);
     }
 
     /// <summary>
@@ -306,20 +331,41 @@ public class JotunCorpseTerrainService
     /// </summary>
     public JotunCorpseTerrainReport GenerateTerrainReport(GridState grid)
     {
-        var corpseTiles = grid.Tiles
-            .Where(t => t.HasTerrain("Jotun Corpse Terrain"))
-            .ToList();
+        int totalCorpseTiles = 0;
+        int hullSectionTiles = 0;
+        int limbBridgeTiles = 0;
+        int interiorCavityTiles = 0;
+        int totalElevation = 0;
+
+        for (int x = 0; x < grid.Width; x++)
+        {
+            for (int y = 0; y < grid.Height; y++)
+            {
+                var tile = grid.Tiles[x, y];
+                if (tile.HasTerrain("Jotun Corpse Terrain"))
+                {
+                    totalCorpseTiles++;
+                    totalElevation += tile.GetMetadata<int>("Elevation");
+
+                    var corpseFeature = tile.GetMetadata<string>("CorpseFeature");
+                    if (corpseFeature == "Hull")
+                        hullSectionTiles++;
+                    else if (corpseFeature == "Limb")
+                        limbBridgeTiles++;
+                    else if (corpseFeature == "Interior")
+                        interiorCavityTiles++;
+                }
+            }
+        }
 
         var report = new JotunCorpseTerrainReport
         {
-            TotalCorpseTiles = corpseTiles.Count,
-            HullSectionTiles = corpseTiles.Count(t => t.GetMetadata<string>("CorpseFeature") == "Hull"),
-            LimbBridgeTiles = corpseTiles.Count(t => t.GetMetadata<string>("CorpseFeature") == "Limb"),
-            InteriorCavityTiles = corpseTiles.Count(t => t.GetMetadata<string>("CorpseFeature") == "Interior"),
-            AverageElevation = corpseTiles.Any()
-                ? corpseTiles.Average(t => t.GetMetadata<int>("Elevation"))
-                : 0,
-            HasCorpseTerrain = corpseTiles.Any()
+            TotalCorpseTiles = totalCorpseTiles,
+            HullSectionTiles = hullSectionTiles,
+            LimbBridgeTiles = limbBridgeTiles,
+            InteriorCavityTiles = interiorCavityTiles,
+            AverageElevation = totalCorpseTiles > 0 ? (double)totalElevation / totalCorpseTiles : 0,
+            HasCorpseTerrain = totalCorpseTiles > 0
         };
 
         _log.Debug("Corpse terrain report: {Report}", report);

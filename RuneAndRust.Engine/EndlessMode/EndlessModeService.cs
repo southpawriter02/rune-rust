@@ -418,8 +418,8 @@ public class EndlessModeService
             TotalWaves = waves.Count,
             BossWavesCompleted = waves.Count(w => w.IsBossWave && w.IsComplete),
             AverageWaveTime = waves.Any(w => w.WaveTimeSeconds.HasValue)
-                ? waves.Where(w => w.WaveTimeSeconds.HasValue).Average(w => w.WaveTimeSeconds!.Value)
-                : 0,
+                ? (float)waves.Where(w => w.WaveTimeSeconds.HasValue).Average(w => w.WaveTimeSeconds!.Value)
+                : 0f,
             FastestWave = waves.Where(w => w.WaveTimeSeconds.HasValue).MinBy(w => w.WaveTimeSeconds!.Value),
             SlowestWave = waves.Where(w => w.WaveTimeSeconds.HasValue).MaxBy(w => w.WaveTimeSeconds!.Value)
         };

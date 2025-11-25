@@ -111,8 +111,10 @@ public class AdvancedStatusEffectService
             // Check for critical stack stress (Trauma Economy integration)
             if (newStackCount >= definition.MaxStacks)
             {
-                _traumaService.AddStress(targetId, 10, $"Critical {effectType} stacks reached");
+                // Note: Stress tracking requires PlayerCharacter object, handled at higher level
+                // _traumaService.AddStress(playerCharacter, 10, $"Critical {effectType} stacks reached");
                 result.Message += " [CRITICAL STACKS - System Failure Imminent!]";
+                _log.Warning("Critical stacks reached for {EffectType} on target {TargetId}", effectType, targetId);
             }
         }
         else if (existingEffect != null && !definition.CanStack)
@@ -155,24 +157,25 @@ public class AdvancedStatusEffectService
                     effectType, targetId, stacks, duration ?? definition.DefaultDuration);
 
                 // Apply stress for new debuff (Trauma Economy integration)
+                // Note: Stress tracking requires PlayerCharacter object, handled at higher level
                 if (definition.Category == StatusEffectCategory.ControlDebuff ||
                     definition.Category == StatusEffectCategory.DamageOverTime)
                 {
                     var debuffCount = GetDebuffCount(targetId);
                     if (debuffCount > 1)
                     {
-                        // +2 stress per debuff beyond first
-                        _traumaService.AddStress(targetId, 2, $"Multiple debuffs ({debuffCount} active)");
+                        // +2 stress per debuff beyond first (tracked externally)
+                        _log.Debug("Multiple debuffs active ({DebuffCount}) for target {TargetId}", debuffCount, targetId);
                     }
 
-                    // Special stress for control effects
+                    // Special stress for control effects (tracked externally)
                     if (effectType == "Stunned")
                     {
-                        _traumaService.AddStress(targetId, 8, "Stunned - Loss of Control");
+                        _log.Information("Stunned effect applied to target {TargetId} - potential stress trigger", targetId);
                     }
                     else if (effectType == "Rooted" || effectType == "Feared")
                     {
-                        _traumaService.AddStress(targetId, 5, $"{effectType} - Limited Control");
+                        _log.Information("{EffectType} effect applied to target {TargetId} - potential stress trigger", effectType, targetId);
                     }
                 }
             }

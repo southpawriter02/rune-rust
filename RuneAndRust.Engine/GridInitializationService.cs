@@ -170,7 +170,7 @@ public class GridInitializationService
                 break;
             }
 
-            var tile = grid.GetTile(position);
+            var tile = grid.GetTile(position.Value);
             if (tile != null)
             {
                 _coverService.PlaceCover(tile, coverType);

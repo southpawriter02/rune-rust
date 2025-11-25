@@ -66,8 +66,8 @@ public class CarryoverService
             // Pre-reset snapshots (for debugging/verification)
             QuestStateSnapshot = JsonSerializer.Serialize(new
             {
-                ActiveQuests = character.ActiveQuests.Select(q => q.QuestId).ToList(),
-                CompletedQuests = character.CompletedQuests.Select(q => q.QuestId).ToList()
+                ActiveQuests = character.ActiveQuests.Select(q => q.Id).ToList(),
+                CompletedQuests = character.CompletedQuests.Select(q => q.Id).ToList()
             }),
             WorldStateSnapshot = JsonSerializer.Serialize(new
             {
@@ -188,11 +188,11 @@ public class CarryoverService
         {
             foreach (var item in snapshot.EquippedItems)
             {
-                if (item.Slot == EquipmentSlot.Weapon)
+                if (item.Type == EquipmentType.Weapon)
                 {
                     character.EquippedWeapon = item;
                 }
-                else if (item.Slot == EquipmentSlot.Armor)
+                else if (item.Type == EquipmentType.Armor)
                 {
                     character.EquippedArmor = item;
                 }

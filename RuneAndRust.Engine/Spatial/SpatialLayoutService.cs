@@ -1,6 +1,7 @@
 using RuneAndRust.Core;
 using RuneAndRust.Core.Spatial;
 using Serilog;
+using Direction = RuneAndRust.Core.Direction;
 
 namespace RuneAndRust.Engine.Spatial;
 

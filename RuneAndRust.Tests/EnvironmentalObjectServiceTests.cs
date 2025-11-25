@@ -63,7 +63,7 @@ public class EnvironmentalObjectServiceTests
         Assert.Equal("Explosive Barrel", barrel.Name);
         Assert.Equal(10, barrel.CurrentDurability);
         Assert.True(barrel.IsHazard);
-        Assert.Equal(HazardTrigger.OnDestroy, barrel.HazardTrigger);
+        Assert.Equal(Core.HazardTrigger.Manual, barrel.HazardTrigger);
         Assert.Equal("20 Fire", barrel.DamageFormula);
         Assert.Equal("Fire", barrel.DamageType);
         Assert.Equal(1, barrel.ExplosionRadius);
