@@ -203,14 +203,14 @@ public class SlipperyTerrainService
     /// Process forced movement on slippery terrain.
     /// Amplifies distance and may cause additional effects.
     /// </summary>
-    public ForcedMovementResult ProcessForcedMovement(
+    public SlipperyForcedMovementResult ProcessForcedMovement(
         PlayerCharacter character,
         int baseDistance,
         string sourceName)
     {
         int amplifiedDistance = AmplifyForcedMovement(baseDistance);
 
-        var result = new ForcedMovementResult
+        var result = new SlipperyForcedMovementResult
         {
             CharacterName = character.Name,
             SourceName = sourceName,
@@ -298,7 +298,7 @@ public class SlipperyTerrainMovementResult
     public string Message { get; set; } = string.Empty;
 }
 
-public class ForcedMovementResult
+public class SlipperyForcedMovementResult
 {
     public string CharacterName { get; set; } = string.Empty;
     public string SourceName { get; set; } = string.Empty;

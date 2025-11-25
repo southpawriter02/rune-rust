@@ -229,7 +229,7 @@ public class AbilityExecutionResult
         ResourceCost = resourceCost;
     }
 
-    public static AbilityExecutionResult Success(string message, int resourceCost)
+    public static AbilityExecutionResult Successful(string message, int resourceCost)
     {
         return new AbilityExecutionResult(true, message, resourceCost);
     }

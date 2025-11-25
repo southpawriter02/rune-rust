@@ -1,7 +1,11 @@
 using RuneAndRust.Core;
 using RuneAndRust.Core.Descriptors;
+using RuneAndRust.Core.Population;
 using RuneAndRust.Persistence;
 using Serilog;
+using Population = RuneAndRust.Core.Population;
+using Descriptors = RuneAndRust.Core.Descriptors;
+using DescriptorDynamicHazard = RuneAndRust.Core.Descriptors.DynamicHazard;
 
 namespace RuneAndRust.Engine;
 
@@ -253,7 +257,7 @@ public class RoomPopulationService
         }
     }
 
-    private DynamicHazard? GenerateRandomDynamicHazard(string biome, Population.RoomArchetype archetype)
+    private DescriptorDynamicHazard? GenerateRandomDynamicHazard(string biome, Population.RoomArchetype archetype)
     {
         // Get modifier for biome
         var modifier = GetModifierForBiome(biome);

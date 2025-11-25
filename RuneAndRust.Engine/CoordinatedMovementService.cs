@@ -333,7 +333,7 @@ public class CoordinatedResult
     public Direction Direction { get; set; }
     public int TotalStaminaCost { get; set; }
 
-    public static CoordinatedResult Success(Direction direction, int totalStaminaCost)
+    public static CoordinatedResult Successful(Direction direction, int totalStaminaCost)
     {
         return new CoordinatedResult
         {

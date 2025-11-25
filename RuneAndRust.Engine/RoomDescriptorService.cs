@@ -2,6 +2,7 @@ using RuneAndRust.Core;
 using RuneAndRust.Core.Descriptors;
 using RuneAndRust.Persistence;
 using Serilog;
+using DescriptorRoomArchetype = RuneAndRust.Core.Descriptors.RoomArchetype;
 
 namespace RuneAndRust.Engine;
 
@@ -31,7 +32,7 @@ public class RoomDescriptorService
     /// <summary>
     /// Generates a room name from archetype and biome
     /// </summary>
-    public string GenerateRoomName(RoomArchetype archetype, string biome)
+    public string GenerateRoomName(DescriptorRoomArchetype archetype, string biome)
     {
         _log.Debug("Generating room name: {Archetype} in {Biome}", archetype, biome);
 
@@ -58,9 +59,9 @@ public class RoomDescriptorService
 
             // Get function variant (for chambers)
             RoomFunctionVariant? function = null;
-            if (archetype == RoomArchetype.Chamber ||
-                archetype == RoomArchetype.PowerStation ||
-                archetype == RoomArchetype.Laboratory)
+            if (archetype == DescriptorRoomArchetype.Chamber ||
+                archetype == DescriptorRoomArchetype.PowerStation ||
+                archetype == DescriptorRoomArchetype.Laboratory)
             {
                 function = _repository.GetRandomFunctionVariant(
                     baseTemplate.Archetype,
@@ -88,7 +89,7 @@ public class RoomDescriptorService
     /// <summary>
     /// Generates a complete room description from archetype and biome
     /// </summary>
-    public string GenerateRoomDescription(RoomArchetype archetype, string biome, Room? room = null)
+    public string GenerateRoomDescription(DescriptorRoomArchetype archetype, string biome, Room? room = null)
     {
         _log.Debug("Generating room description: {Archetype} in {Biome}", archetype, biome);
 

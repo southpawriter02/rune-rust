@@ -430,7 +430,7 @@ public class MovementResult
         StaminaCost = staminaCost;
     }
 
-    public static MovementResult Success(string message, int staminaCost)
+    public static MovementResult Successful(string message, int staminaCost)
     {
         return new MovementResult(true, message, staminaCost);
     }

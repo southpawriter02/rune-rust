@@ -26,7 +26,7 @@ public class ModificationResult
     /// <summary>
     /// Create a success result
     /// </summary>
-    public static ModificationResult Success(
+    public static ModificationResult Successful(
         int modificationId,
         string name,
         int? remainingUses)
