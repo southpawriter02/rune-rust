@@ -532,7 +532,7 @@ public class SaveRepository
                 feature_id INTEGER PRIMARY KEY AUTOINCREMENT,
                 biome_id INTEGER NOT NULL,
                 feature_name TEXT NOT NULL,
-                feature_type TEXT CHECK(feature_type IN ('Hazard', 'Terrain', 'Ambient')),
+                feature_type TEXT CHECK(feature_type IN ('Hazard', 'Terrain', 'Ambient', 'Obstacle', 'Dynamic', 'Explosive', 'Vision')),
                 feature_description TEXT,
                 damage_per_turn INTEGER DEFAULT 0,
                 damage_type TEXT,
@@ -547,6 +547,33 @@ public class SaveRepository
             )
         ";
         createEnvFeaturesTable.ExecuteNonQuery();
+
+        // Migration: Add missing columns to existing Biome_EnvironmentalFeatures tables
+        var envFeaturesAlterCommands = new[]
+        {
+            "ALTER TABLE Biome_EnvironmentalFeatures ADD COLUMN damage_per_turn INTEGER DEFAULT 0",
+            "ALTER TABLE Biome_EnvironmentalFeatures ADD COLUMN damage_type TEXT",
+            "ALTER TABLE Biome_EnvironmentalFeatures ADD COLUMN tile_coverage_percent REAL DEFAULT 0",
+            "ALTER TABLE Biome_EnvironmentalFeatures ADD COLUMN is_destructible INTEGER DEFAULT 0",
+            "ALTER TABLE Biome_EnvironmentalFeatures ADD COLUMN blocks_movement INTEGER DEFAULT 0",
+            "ALTER TABLE Biome_EnvironmentalFeatures ADD COLUMN blocks_line_of_sight INTEGER DEFAULT 0",
+            "ALTER TABLE Biome_EnvironmentalFeatures ADD COLUMN hazard_density_category TEXT",
+            "ALTER TABLE Biome_EnvironmentalFeatures ADD COLUMN special_rules TEXT"
+        };
+
+        foreach (var alterSql in envFeaturesAlterCommands)
+        {
+            try
+            {
+                var alterCommand = connection.CreateCommand();
+                alterCommand.CommandText = alterSql;
+                alterCommand.ExecuteNonQuery();
+            }
+            catch (SqliteException)
+            {
+                // Column already exists, ignore
+            }
+        }
 
         // Table: Biome_EnemySpawns (structure only, content in v0.29.3)
         var createEnemySpawnsTable = connection.CreateCommand();
