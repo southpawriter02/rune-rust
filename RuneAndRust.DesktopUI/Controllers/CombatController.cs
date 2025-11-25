@@ -7,13 +7,16 @@ using Serilog;
 namespace RuneAndRust.DesktopUI.Controllers;
 
 /// <summary>
-/// v0.44.4: Combat Loop Controller
+/// v0.44.5: Combat Loop Controller
 /// Orchestrates combat encounters from initiation to resolution.
 /// Coordinates turn management, action execution, and phase transitions.
 ///
 /// Architecture Note: CombatViewModel handles the real-time combat UI and turn loop.
 /// This controller manages the higher-level flow: initialization, phase transitions,
 /// rewards, and integration with the exploration loop.
+///
+/// v0.44.5: Integrates with LootController and ProgressionController for
+/// post-combat reward workflows.
 /// </summary>
 public class CombatController
 {
@@ -24,6 +27,8 @@ public class CombatController
     private readonly EnemyAI _enemyAI;
     private readonly SagaService _sagaService;
     private readonly LootService _lootService;
+    private LootController? _lootController;
+    private ProgressionController? _progressionController;
     private CombatViewModel? _viewModel;
     private bool _isProcessingCombat = false;
 
@@ -68,6 +73,32 @@ public class CombatController
     {
         _viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
         _logger.Debug("CombatController initialized with ViewModel");
+    }
+
+    /// <summary>
+    /// v0.44.5: Sets the loot and progression controllers for reward workflows.
+    /// Should be called during application startup.
+    /// </summary>
+    public void SetRewardControllers(LootController lootController, ProgressionController progressionController)
+    {
+        _lootController = lootController;
+        _progressionController = progressionController;
+
+        // Wire up events
+        if (_lootController != null)
+        {
+            _lootController.MilestoneReached += OnMilestoneReached;
+        }
+
+        _logger.Debug("Reward controllers configured for CombatController");
+    }
+
+    private async void OnMilestoneReached(object? sender, EventArgs e)
+    {
+        if (_progressionController != null)
+        {
+            await _progressionController.InitializeMilestoneProgressionAsync();
+        }
     }
 
     /// <summary>
@@ -197,6 +228,7 @@ public class CombatController
 
     /// <summary>
     /// Handles victory in combat. Called by ViewModel when all enemies are defeated.
+    /// v0.44.5: Integrates with LootController for post-combat rewards.
     /// </summary>
     public async Task OnCombatVictoryAsync()
     {
@@ -213,23 +245,20 @@ public class CombatController
             return;
         }
 
-        // Calculate and award Legend (XP)
+        // Calculate Legend (XP) reward - don't award yet, let LootController handle it
         var legendAwarded = CalculateLegendReward(combatState);
-        if (gameState.Player != null)
-        {
-            _sagaService.AwardLegend(gameState.Player, legendAwarded, "Combat Victory");
-            _logger.Information("Awarded {Legend} Legend to survivor", legendAwarded);
-
-            // Check for milestone/level up
-            if (_sagaService.CheckMilestone(gameState.Player))
-            {
-                _logger.Information("Survivor reached a new milestone!");
-            }
-        }
+        _logger.Information("Calculated {Legend} Legend for victory", legendAwarded);
 
         // Generate loot
         var loot = GenerateCombatLoot(combatState);
         _logger.Information("Generated {ItemCount} loot items", loot.Count);
+
+        // Calculate currency from enemies
+        int currency = 0;
+        foreach (var enemy in combatState.Enemies)
+        {
+            currency += _lootService.GenerateCurrencyDrop(enemy);
+        }
 
         // Mark room as cleared
         var room = gameState.CurrentRoom;
@@ -246,9 +275,20 @@ public class CombatController
         // Transition to loot collection phase
         await _gameStateController.UpdatePhaseAsync(GamePhase.LootCollection, "Combat victory - collecting loot");
 
-        // Raise events
+        // Raise legacy events for any listeners
         CombatEnded?.Invoke(this, new CombatEndedEventArgs(true, false));
         LootReady?.Invoke(this, new LootCollectionEventArgs(loot, legendAwarded));
+
+        // v0.44.5: Use LootController if available for the full reward workflow
+        if (_lootController != null)
+        {
+            await _lootController.InitializeLootCollectionAsync(loot, legendAwarded, currency);
+        }
+        else
+        {
+            // Fallback: just navigate to inventory
+            _navigationService.NavigateTo<InventoryViewModel>();
+        }
     }
 
     /// <summary>
