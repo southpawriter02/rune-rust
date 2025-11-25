@@ -653,3 +653,71 @@ public class CharacterClassInfo : ReactiveObject
 }
 
 #endregion
+
+#region Converters
+
+/// <summary>
+/// Converter for step visibility - shows panel only when current step matches.
+/// </summary>
+public class StepVisibilityConverter : Avalonia.Data.Converters.IValueConverter
+{
+    public static readonly StepVisibilityConverter Instance = new();
+
+    public object? Convert(object? value, Type targetType, object? parameter, System.Globalization.CultureInfo culture)
+    {
+        if (value is CharacterCreationStep currentStep && parameter is string stepName)
+        {
+            if (Enum.TryParse<CharacterCreationStep>(stepName, true, out var targetStep))
+            {
+                return currentStep == targetStep;
+            }
+        }
+        return false;
+    }
+
+    public object? ConvertBack(object? value, Type targetType, object? parameter, System.Globalization.CultureInfo culture)
+    {
+        throw new NotImplementedException();
+    }
+}
+
+/// <summary>
+/// Converter for step indicator colors - highlights current/completed steps.
+/// </summary>
+public class StepToColorConverter : Avalonia.Data.Converters.IValueConverter
+{
+    public static readonly StepToColorConverter Instance = new();
+
+    public object? Convert(object? value, Type targetType, object? parameter, System.Globalization.CultureInfo culture)
+    {
+        if (value is CharacterCreationStep currentStep && parameter is string stepName)
+        {
+            if (Enum.TryParse<CharacterCreationStep>(stepName, true, out var targetStep))
+            {
+                if (currentStep == targetStep)
+                {
+                    // Current step - bright blue
+                    return Avalonia.Media.Brush.Parse("#4A90E2");
+                }
+                else if ((int)currentStep > (int)targetStep)
+                {
+                    // Completed step - green
+                    return Avalonia.Media.Brush.Parse("#4CAF50");
+                }
+                else
+                {
+                    // Future step - dark gray
+                    return Avalonia.Media.Brush.Parse("#444444");
+                }
+            }
+        }
+        return Avalonia.Media.Brush.Parse("#444444");
+    }
+
+    public object? ConvertBack(object? value, Type targetType, object? parameter, System.Globalization.CultureInfo culture)
+    {
+        throw new NotImplementedException();
+    }
+}
+
+#endregion

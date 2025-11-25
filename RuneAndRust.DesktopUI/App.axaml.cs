@@ -126,7 +126,7 @@ public partial class App : Application
         services.AddSingleton<MainMenuController>();
         services.AddSingleton<CharacterCreationController>();
 
-        // Engine Services (v0.43.5)
+        // Engine Services (v0.43.5, v0.44.2)
         services.AddSingleton<DiceService>();
         services.AddSingleton<SagaService>();
         services.AddSingleton<LootService>();
@@ -136,6 +136,7 @@ public partial class App : Application
         services.AddSingleton<AdvancedStatusEffectService>();
         services.AddSingleton<CombatEngine>();
         services.AddSingleton<EnemyAI>();
+        services.AddSingleton<TemplateLibrary>(); // v0.44.2: For dungeon generation
 
         // ViewModels (v0.43.1 - v0.44.1)
         services.AddTransient<MainWindowViewModel>();
