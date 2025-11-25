@@ -45,7 +45,7 @@ public partial class App : Application
             .WriteTo.Console()
             .CreateLogger();
 
-        Log.Information("Rune & Rust Desktop UI v0.43.16 starting...");
+        Log.Information("Rune & Rust Desktop UI v0.43.17 starting...");
 
         try
         {
@@ -107,6 +107,9 @@ public partial class App : Application
 
         // Endgame Services (v0.43.16)
         services.AddSingleton<IEndgameService, EndgameService>();
+
+        // Boss Display Services (v0.43.17)
+        services.AddSingleton<IBossDisplayService, BossDisplayService>();
 
         // Engine Services (v0.43.5)
         services.AddSingleton<DiceService>();
