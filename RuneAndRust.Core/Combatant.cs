@@ -53,7 +53,7 @@ public class Combatant
     {
         PlayerCharacter pc => pc.HP,
         Enemy e => e.HP,
-        Companion c => c.HP,
+        Companion c => c.CurrentHitPoints,
         _ => 0
     };
 
@@ -64,7 +64,7 @@ public class Combatant
     {
         PlayerCharacter pc => pc.MaxHP,
         Enemy e => e.MaxHP,
-        Companion c => c.MaxHP,
+        Companion c => c.MaxHitPoints,
         _ => 0
     };
 
@@ -80,7 +80,7 @@ public class Combatant
     {
         PlayerCharacter pc => pc.Name,
         Enemy e => e.Name,
-        Companion c => c.Name,
+        Companion c => c.DisplayName,
         _ => "Unknown"
     };
 

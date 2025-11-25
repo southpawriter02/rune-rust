@@ -99,7 +99,7 @@ public class EndlessRun
         : null;
 
     /// <summary>Run duration in minutes</summary>
-    public float? DurationMinutes => Duration?.TotalMinutes;
+    public float? DurationMinutes => (float?)Duration?.TotalMinutes;
 
     /// <summary>Is this run complete?</summary>
     public bool IsComplete => !IsActive && EndTime.HasValue;
