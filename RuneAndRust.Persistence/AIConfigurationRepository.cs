@@ -597,7 +597,7 @@ public class AIConfigurationRepository : IAIConfigurationRepository
                     BossTypeId = reader.GetInt32(0),
                     ToPhase = (BossPhase)reader.GetInt32(1),
                     HPThreshold = (decimal)reader.GetDouble(2),
-                    DialogueLine = reader.IsDBNull(3) ? null : reader.GetString(3),
+                    TransitionDialogue = reader.IsDBNull(3) ? null : reader.GetString(3),
                     TransitionAbilityId = reader.IsDBNull(4) ? null : reader.GetInt32(4),
                     // PhaseBonuses stored as JSON - for now, return null
                     PhaseBonuses = null
@@ -654,10 +654,9 @@ public class AIConfigurationRepository : IAIConfigurationRepository
             {
                 var step = new RotationStep
                 {
-                    StepOrder = reader.GetInt32(2),
+                    StepNumber = reader.GetInt32(2),
                     AbilityId = reader.GetInt32(3),
-                    FallbackAbilityId = reader.IsDBNull(4) ? null : reader.GetInt32(4),
-                    Priority = reader.GetInt32(5)
+                    FallbackAbilityId = reader.IsDBNull(4) ? null : reader.GetInt32(4)
                 };
 
                 steps.Add(step);
@@ -717,18 +716,26 @@ public class AIConfigurationRepository : IAIConfigurationRepository
 
             if (await reader.ReadAsync())
             {
+                // Map database fields to model properties
+                var addTypeId = reader.GetInt32(2);
+                var addCount = reader.GetInt32(3);
+
                 var config = new AddManagementConfig
                 {
                     BossTypeId = reader.GetInt32(0),
                     Phase = (BossPhase)reader.GetInt32(1),
-                    AddType = (AddType)reader.GetInt32(2),
-                    AddCount = reader.GetInt32(3),
-                    MaxAddsActive = reader.GetInt32(4),
-                    SummonCooldownSeconds = (decimal)reader.GetDouble(5),
-                    AddHealthMultiplier = (decimal)reader.GetDouble(6),
+                    // Create AddTypes list from database AddType and AddCount
+                    AddTypes = new List<AddType>
+                    {
+                        new AddType { EnemyTypeId = addTypeId, Count = addCount }
+                    },
+                    MaxSimultaneousAdds = reader.GetInt32(4),
+                    // Convert cooldown seconds to turns (approximate)
+                    SummonEveryNTurns = (int)Math.Round(reader.GetDouble(5)),
+                    AddHPMultiplier = (decimal)reader.GetDouble(6),
                     AddDamageMultiplier = (decimal)reader.GetDouble(7),
-                    // SummonTriggers stored as JSON - for now, return null
-                    SummonTriggers = null
+                    // SummonAtHPThresholds stored as JSON - for now, return empty list
+                    SummonAtHPThresholds = new List<decimal>()
                 };
 
                 // Cache it

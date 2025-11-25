@@ -50,7 +50,9 @@ public class EndlessModeRepository
 
         cmd.ExecuteNonQuery();
 
-        var runId = (int)conn.LastInsertRowId;
+        var getIdCmd = conn.CreateCommand();
+        getIdCmd.CommandText = "SELECT last_insert_rowid()";
+        var runId = Convert.ToInt32(getIdCmd.ExecuteScalar());
         _log.Information("Created endless run {RunId} for character {CharacterId} with seed {Seed}",
             runId, run.CharacterId, run.Seed);
 
@@ -200,7 +202,9 @@ public class EndlessModeRepository
 
         cmd.ExecuteNonQuery();
 
-        var waveId = (int)conn.LastInsertRowId;
+        var getIdCmd = conn.CreateCommand();
+        getIdCmd.CommandText = "SELECT last_insert_rowid()";
+        var waveId = Convert.ToInt32(getIdCmd.ExecuteScalar());
         _log.Debug("Created wave {WaveId}: Run {RunId}, Wave {WaveNumber}",
             waveId, wave.RunId, wave.WaveNumber);
 

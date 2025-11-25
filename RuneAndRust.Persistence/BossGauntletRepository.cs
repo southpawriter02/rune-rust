@@ -147,7 +147,9 @@ public class BossGauntletRepository
 
         cmd.ExecuteNonQuery();
 
-        var runId = (int)conn.LastInsertRowId;
+        var getIdCmd = conn.CreateCommand();
+        getIdCmd.CommandText = "SELECT last_insert_rowid()";
+        var runId = Convert.ToInt32(getIdCmd.ExecuteScalar());
         _log.Information("Started gauntlet run {RunId} for character {CharacterId} on sequence {SequenceId}",
             runId, characterId, sequenceId);
 
@@ -306,7 +308,9 @@ public class BossGauntletRepository
 
         cmd.ExecuteNonQuery();
 
-        var encounterId = (int)conn.LastInsertRowId;
+        var getIdCmd = conn.CreateCommand();
+        getIdCmd.CommandText = "SELECT last_insert_rowid()";
+        var encounterId = Convert.ToInt32(getIdCmd.ExecuteScalar());
         _log.Debug("Logged encounter {EncounterId} for run {RunId}: Boss={BossId}, Result={Result}",
             encounterId, encounter.RunId, encounter.BossId, encounter.Result);
 
