@@ -66,7 +66,7 @@ public class EndlessWave
         : null;
 
     /// <summary>Wave duration in minutes</summary>
-    public float? DurationMinutes => Duration?.TotalMinutes;
+    public float? DurationMinutes => (float?)Duration?.TotalMinutes;
 
     /// <summary>Did player kill all enemies?</summary>
     public bool AllEnemiesKilled => EnemiesKilled >= EnemyCount;
