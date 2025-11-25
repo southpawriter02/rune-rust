@@ -17,6 +17,7 @@ namespace RuneAndRust.DesktopUI.Controllers;
 ///
 /// v0.44.5: Integrates with LootController and ProgressionController for
 /// post-combat reward workflows.
+/// v0.44.6: Integrates with DeathController for player death handling.
 /// </summary>
 public class CombatController
 {
@@ -29,8 +30,10 @@ public class CombatController
     private readonly LootService _lootService;
     private LootController? _lootController;
     private ProgressionController? _progressionController;
+    private DeathController? _deathController;
     private CombatViewModel? _viewModel;
     private bool _isProcessingCombat = false;
+    private string? _lastDamageSource = null; // v0.44.6: Track last enemy that dealt damage
 
     /// <summary>
     /// Event raised when combat ends (victory or defeat).
@@ -77,12 +80,14 @@ public class CombatController
 
     /// <summary>
     /// v0.44.5: Sets the loot and progression controllers for reward workflows.
+    /// v0.44.6: Also accepts DeathController for death handling.
     /// Should be called during application startup.
     /// </summary>
-    public void SetRewardControllers(LootController lootController, ProgressionController progressionController)
+    public void SetRewardControllers(LootController lootController, ProgressionController progressionController, DeathController? deathController = null)
     {
         _lootController = lootController;
         _progressionController = progressionController;
+        _deathController = deathController;
 
         // Wire up events
         if (_lootController != null)
@@ -90,7 +95,17 @@ public class CombatController
             _lootController.MilestoneReached += OnMilestoneReached;
         }
 
-        _logger.Debug("Reward controllers configured for CombatController");
+        _logger.Debug("Reward controllers configured for CombatController (DeathController: {HasDeath})",
+            deathController != null);
+    }
+
+    /// <summary>
+    /// v0.44.6: Sets the death controller separately (for backwards compatibility).
+    /// </summary>
+    public void SetDeathController(DeathController deathController)
+    {
+        _deathController = deathController;
+        _logger.Debug("DeathController configured for CombatController");
     }
 
     private async void OnMilestoneReached(object? sender, EventArgs e)
@@ -211,11 +226,18 @@ public class CombatController
 
     /// <summary>
     /// Called by ViewModel when an enemy's turn is processed.
+    /// v0.44.6: Also tracks damage source for death cause reporting.
     /// </summary>
     public void OnEnemyTurnProcessed(string enemyName, string actionType, int damageDealt)
     {
         _logger.Debug("Enemy turn: {Enemy} used {Action}, dealt {Damage} damage",
             enemyName, actionType, damageDealt);
+
+        // v0.44.6: Track damage source for death cause
+        if (damageDealt > 0)
+        {
+            _lastDamageSource = enemyName;
+        }
 
         // Check for player danger state
         var player = _gameStateController.CurrentGameState.Player;
@@ -293,6 +315,7 @@ public class CombatController
 
     /// <summary>
     /// Handles player defeat in combat. Called by ViewModel when player HP reaches 0.
+    /// v0.44.6: Integrates with DeathController for full death handling workflow.
     /// </summary>
     public async Task OnCombatDefeatAsync()
     {
@@ -300,14 +323,37 @@ public class CombatController
 
         _logger.Warning("Combat defeat - Survivor has fallen!");
 
+        var gameState = _gameStateController.CurrentGameState;
+        var player = gameState.Player;
+
         // End combat state
         _gameStateController.EndCombat();
         _isProcessingCombat = false;
 
-        // Transition to death phase
-        await _gameStateController.UpdatePhaseAsync(GamePhase.Death, "Survivor has fallen in combat");
-
         CombatEnded?.Invoke(this, new CombatEndedEventArgs(false, false));
+
+        // v0.44.6: Use DeathController for death handling if available
+        if (_deathController != null && player != null)
+        {
+            string causeOfDeath = _lastDamageSource != null
+                ? $"Slain by {_lastDamageSource}"
+                : "Slain in combat";
+
+            await _deathController.HandlePlayerDeathAsync(player, causeOfDeath);
+        }
+        else
+        {
+            // Fallback: just transition to death phase
+            await _gameStateController.UpdatePhaseAsync(GamePhase.Death, "Survivor has fallen in combat");
+        }
+    }
+
+    /// <summary>
+    /// v0.44.6: Records the last enemy that dealt damage for death cause tracking.
+    /// </summary>
+    public void RecordDamageSource(string enemyName)
+    {
+        _lastDamageSource = enemyName;
     }
 
     /// <summary>

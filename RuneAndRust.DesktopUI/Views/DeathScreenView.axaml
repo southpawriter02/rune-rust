@@ -1,0 +1,169 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:RuneAndRust.DesktopUI.ViewModels"
+             xmlns:converters="using:RuneAndRust.DesktopUI.Converters"
+             mc:Ignorable="d" d:DesignWidth="1280" d:DesignHeight="720"
+             x:Class="RuneAndRust.DesktopUI.Views.DeathScreenView"
+             x:DataType="vm:DeathScreenViewModel"
+             Background="#1a0000">
+
+    <Design.DataContext>
+        <vm:DeathScreenViewModel/>
+    </Design.DataContext>
+
+    <!-- Death screen layout -->
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled"
+                  VerticalScrollBarVisibility="Auto">
+        <StackPanel HorizontalAlignment="Center"
+                    VerticalAlignment="Top"
+                    Margin="40"
+                    Spacing="20"
+                    MaxWidth="800">
+
+            <!-- Death Header -->
+            <TextBlock Text="{Binding Title}"
+                       FontSize="48"
+                       FontWeight="Bold"
+                       Foreground="#cc0000"
+                       HorizontalAlignment="Center"/>
+
+            <TextBlock Text="{Binding CauseOfDeath}"
+                       FontSize="20"
+                       Foreground="#ff6666"
+                       HorizontalAlignment="Center"
+                       TextWrapping="Wrap"
+                       TextAlignment="Center"/>
+
+            <!-- Survivor Info -->
+            <Border Background="#200000"
+                    BorderBrush="#440000"
+                    BorderThickness="1"
+                    CornerRadius="4"
+                    Padding="20"
+                    Margin="0,10">
+                <StackPanel Spacing="5">
+                    <TextBlock Text="{Binding SurvivorName}"
+                               FontSize="28"
+                               FontWeight="Bold"
+                               Foreground="White"
+                               HorizontalAlignment="Center"/>
+                    <TextBlock Text="{Binding SurvivorDetails}"
+                               FontSize="16"
+                               Foreground="#aaaaaa"
+                               HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Hall of Legends Banner -->
+            <Border Background="#332200"
+                    BorderBrush="#665500"
+                    BorderThickness="2"
+                    CornerRadius="4"
+                    Padding="15"
+                    IsVisible="{Binding LegendToHallOfLegends, Converter={x:Static converters:IntGreaterThanConverter.Instance}, ConverterParameter=0}">
+                <TextBlock Text="{Binding HallOfLegendsMessage}"
+                           FontSize="18"
+                           FontWeight="Bold"
+                           Foreground="#ffcc00"
+                           HorizontalAlignment="Center"/>
+            </Border>
+
+            <!-- Statistics Sections -->
+            <Border Background="#000000"
+                    BorderBrush="#333333"
+                    BorderThickness="2"
+                    CornerRadius="4"
+                    Padding="25">
+                <StackPanel Spacing="25">
+
+                    <!-- Progression Stats -->
+                    <StackPanel Spacing="10">
+                        <TextBlock Text="PROGRESSION"
+                                   FontSize="18"
+                                   FontWeight="Bold"
+                                   Foreground="#ffcc00"/>
+                        <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto" Margin="10,0">
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Final Milestone:" Foreground="#aaaaaa"/>
+                            <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding FinalLevel}" Foreground="White" Margin="10,0,0,0" HorizontalAlignment="Right"/>
+
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Total Legend Earned:" Foreground="#aaaaaa"/>
+                            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding TotalLegendEarned}" Foreground="White" Margin="10,0,0,0" HorizontalAlignment="Right"/>
+
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Legend to Hall of Legends:" Foreground="#aaaaaa"/>
+                            <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding LegendToHallOfLegends}" Foreground="#ffcc00" FontWeight="Bold" Margin="10,0,0,0" HorizontalAlignment="Right"/>
+
+                            <TextBlock Grid.Row="3" Grid.Column="0" Text="Progression Points Spent:" Foreground="#aaaaaa"/>
+                            <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding ProgressionPointsSpent}" Foreground="White" Margin="10,0,0,0" HorizontalAlignment="Right"/>
+                        </Grid>
+                    </StackPanel>
+
+                    <!-- Trauma Stats -->
+                    <StackPanel Spacing="10">
+                        <TextBlock Text="TRAUMA"
+                                   FontSize="18"
+                                   FontWeight="Bold"
+                                   Foreground="#cc6600"/>
+                        <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto" Margin="10,0">
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Final Psychic Stress:" Foreground="#aaaaaa"/>
+                            <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding FinalPsychicStress}" Foreground="#ff6666" Margin="10,0,0,0" HorizontalAlignment="Right"/>
+
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Final Runic Blight Corruption:" Foreground="#aaaaaa"/>
+                            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding FinalCorruption}" Foreground="#cc00cc" Margin="10,0,0,0" HorizontalAlignment="Right"/>
+
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Permanent Traumas:" Foreground="#aaaaaa"/>
+                            <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding TraumaCount}" Foreground="White" Margin="10,0,0,0" HorizontalAlignment="Right"/>
+                        </Grid>
+                    </StackPanel>
+
+                    <!-- Combat Stats -->
+                    <StackPanel Spacing="10">
+                        <TextBlock Text="COMBAT"
+                                   FontSize="18"
+                                   FontWeight="Bold"
+                                   Foreground="#cc0000"/>
+                        <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto" Margin="10,0">
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Undying Slain:" Foreground="#aaaaaa"/>
+                            <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding TotalKills}" Foreground="White" Margin="10,0,0,0" HorizontalAlignment="Right"/>
+                        </Grid>
+                    </StackPanel>
+
+                    <!-- Exploration Stats -->
+                    <StackPanel Spacing="10">
+                        <TextBlock Text="EXPLORATION"
+                                   FontSize="18"
+                                   FontWeight="Bold"
+                                   Foreground="#0066cc"/>
+                        <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto" Margin="10,0">
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Rooms Explored:" Foreground="#aaaaaa"/>
+                            <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding RoomsExplored}" Foreground="White" Margin="10,0,0,0" HorizontalAlignment="Right"/>
+
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Dvergr Cogs Collected:" Foreground="#aaaaaa"/>
+                            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding FinalCurrency}" Foreground="White" Margin="10,0,0,0" HorizontalAlignment="Right"/>
+                        </Grid>
+                    </StackPanel>
+
+                    <!-- Playtime -->
+                    <Grid ColumnDefinitions="Auto,*" Margin="10,10,10,0">
+                        <TextBlock Grid.Column="0" Text="Playtime:" Foreground="#aaaaaa" FontSize="14"/>
+                        <TextBlock Grid.Column="1" Text="{Binding FormattedPlaytime}" Foreground="White" FontSize="14" Margin="10,0,0,0" HorizontalAlignment="Right"/>
+                    </Grid>
+
+                </StackPanel>
+            </Border>
+
+            <!-- Return to Main Menu Button -->
+            <Button Content="Return to Main Menu"
+                    Command="{Binding ReturnToMenuCommand}"
+                    FontSize="20"
+                    Padding="40,15"
+                    HorizontalAlignment="Center"
+                    Background="#660000"
+                    Foreground="White"
+                    Margin="0,20"/>
+
+        </StackPanel>
+    </ScrollViewer>
+
+</UserControl>

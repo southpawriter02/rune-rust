@@ -32,6 +32,36 @@ public interface IMetaProgressionService
     /// Gets all account unlocks with their status.
     /// </summary>
     List<AccountUnlock> GetAccountUnlocks();
+
+    // v0.44.6: Hall of Legends (Death Handling) Methods
+
+    /// <summary>
+    /// Adds Legend to the Hall of Legends (meta-progression currency).
+    /// Called when a survivor dies with accumulated Legend.
+    /// </summary>
+    /// <param name="legendAmount">Amount of Legend to add (10% of run total).</param>
+    Task AddLegendToHallOfLegendsAsync(int legendAmount);
+
+    /// <summary>
+    /// Records a death for statistics tracking.
+    /// </summary>
+    /// <param name="characterClass">The class of the deceased character.</param>
+    /// <param name="specialization">The specialization of the deceased character.</param>
+    /// <param name="finalLevel">The milestone level at death.</param>
+    /// <param name="finalCorruption">Final Runic Blight Corruption value.</param>
+    /// <param name="finalPsychicStress">Final Psychic Stress value.</param>
+    Task RecordDeathAsync(string characterClass, string specialization, int finalLevel, int finalCorruption, int finalPsychicStress);
+
+    /// <summary>
+    /// Checks for and processes any meta-progression unlocks.
+    /// Called after death to see if new content was unlocked.
+    /// </summary>
+    Task CheckForUnlocksAsync();
+
+    /// <summary>
+    /// Gets the current Hall of Legends balance.
+    /// </summary>
+    int GetHallOfLegendsBalance();
 }
 
 /// <summary>
