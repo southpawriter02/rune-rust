@@ -1,6 +1,6 @@
 using RuneAndRust.Core;
 using Serilog;
-using Direction = RuneAndRust.Core.Direction;
+using CoreDirection = RuneAndRust.Core.Direction;
 
 namespace RuneAndRust.Engine;
 
@@ -22,10 +22,10 @@ public class DirectionAssigner
             graph.NodeCount, graph.EdgeCount);
 
         // Track used directions for each node
-        var usedDirections = new Dictionary<DungeonNode, HashSet<Direction>>();
+        var usedDirections = new Dictionary<DungeonNode, HashSet<CoreDirection>>();
         foreach (var node in graph.GetNodes())
         {
-            usedDirections[node] = new HashSet<Direction>();
+            usedDirections[node] = new HashSet<CoreDirection>();
         }
 
         // Process edges in BFS order from start node for more logical layouts
@@ -83,7 +83,7 @@ public class DirectionAssigner
     /// <summary>
     /// Assigns a direction to a single edge
     /// </summary>
-    private void AssignDirectionToEdge(DungeonEdge edge, Dictionary<DungeonNode, HashSet<Direction>> usedDirections)
+    private void AssignDirectionToEdge(DungeonEdge edge, Dictionary<DungeonNode, HashSet<CoreDirection>> usedDirections)
     {
         // Get available directions from the From node
         var availableDirections = DirectionExtensions.GetAllDirections()
@@ -108,7 +108,7 @@ public class DirectionAssigner
             var validPair = availableDirections.FirstOrDefault(d =>
                 !usedDirections[edge.To].Contains(d.GetOpposite()));
 
-            if (validPair != default(Direction))
+            if (validPair != default(CoreDirection))
             {
                 direction = validPair;
                 oppositeDirection = direction.GetOpposite();
@@ -194,10 +194,10 @@ public class DirectionAssigner
             ["TotalEdges"] = graph.EdgeCount,
             ["AssignedEdges"] = graph.GetEdges().Count(e => e.HasDirections()),
             ["UnassignedEdges"] = graph.GetEdges().Count(e => !e.HasDirections()),
-            ["NorthEdges"] = graph.GetEdges().Count(e => e.FromDirection == Direction.North),
-            ["SouthEdges"] = graph.GetEdges().Count(e => e.FromDirection == Direction.South),
-            ["EastEdges"] = graph.GetEdges().Count(e => e.FromDirection == Direction.East),
-            ["WestEdges"] = graph.GetEdges().Count(e => e.FromDirection == Direction.West)
+            ["NorthEdges"] = graph.GetEdges().Count(e => e.FromDirection == CoreDirection.North),
+            ["SouthEdges"] = graph.GetEdges().Count(e => e.FromDirection == CoreDirection.South),
+            ["EastEdges"] = graph.GetEdges().Count(e => e.FromDirection == CoreDirection.East),
+            ["WestEdges"] = graph.GetEdges().Count(e => e.FromDirection == CoreDirection.West)
         };
 
         return stats;

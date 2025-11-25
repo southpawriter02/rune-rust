@@ -68,7 +68,7 @@ public class PowerConduitService
     /// <summary>
     /// Process standard power conduit (1d8 Energy damage, adjacent only).
     /// </summary>
-    private void ProcessStandardConduit(GridTile conduitTile, BattlefieldState battlefield)
+    private void ProcessStandardConduit(BattlefieldTile conduitTile, BattlefieldState battlefield)
     {
         var adjacentCombatants = battlefield.Grid.GetAdjacentCombatants(conduitTile.Position);
 
@@ -98,7 +98,7 @@ public class PowerConduitService
     /// Process flooded power conduit (2d10 Energy damage, 2-tile radius).
     /// AMPLIFIED: Conductive coolant fluid spreads electrical discharge.
     /// </summary>
-    private void ProcessFloodedConduit(GridTile conduitTile, BattlefieldState battlefield)
+    private void ProcessFloodedConduit(BattlefieldTile conduitTile, BattlefieldState battlefield)
     {
         var affectedCombatants = battlefield.Grid.GetCombatantsInRadius(conduitTile.Position, FLOODED_RADIUS);
 
@@ -134,7 +134,7 @@ public class PowerConduitService
     /// Apply double damage when a character is forced into a power conduit.
     /// Called by ForcedMovementService when destination has [Live Power Conduit].
     /// </summary>
-    public void ProcessForcedMovementIntoConduit(Combatant target, GridTile destinationTile, BattlefieldState battlefield)
+    public void ProcessForcedMovementIntoConduit(Combatant target, BattlefieldTile destinationTile, BattlefieldState battlefield)
     {
         if (!destinationTile.HasEnvironmentalFeature("Live Power Conduit"))
         {
@@ -162,7 +162,7 @@ public class PowerConduitService
     /// Attempt to destroy a power conduit (15 HP).
     /// Returns true if destroyed.
     /// </summary>
-    public bool AttemptDestroyConduit(GridTile conduitTile, int damageDealt, BattlefieldState battlefield)
+    public bool AttemptDestroyConduit(BattlefieldTile conduitTile, int damageDealt, BattlefieldState battlefield)
     {
         if (!conduitTile.HasEnvironmentalFeature("Live Power Conduit"))
         {
@@ -211,7 +211,7 @@ public class PowerConduitService
     /// Check if a power conduit is in flooded terrain.
     /// Logs warning for dangerous combo.
     /// </summary>
-    public bool IsConduitFlooded(GridTile conduitTile)
+    public bool IsConduitFlooded(BattlefieldTile conduitTile)
     {
         var isFlooded = conduitTile.HasTerrain("Flooded (Coolant)") || conduitTile.HasTerrain("Flooded");
 
@@ -228,7 +228,7 @@ public class PowerConduitService
     /// Apply flooded terrain to a tile containing a power conduit.
     /// Triggers amplification effect.
     /// </summary>
-    public void ApplyFloodingToConduit(GridTile conduitTile, BattlefieldState battlefield)
+    public void ApplyFloodingToConduit(BattlefieldTile conduitTile, BattlefieldState battlefield)
     {
         if (!conduitTile.HasEnvironmentalFeature("Live Power Conduit"))
         {
