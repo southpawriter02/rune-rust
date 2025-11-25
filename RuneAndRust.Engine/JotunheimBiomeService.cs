@@ -2,6 +2,7 @@ using RuneAndRust.Core;
 using RuneAndRust.Core.AI;
 using RuneAndRust.Persistence;
 using Serilog;
+using Direction = RuneAndRust.Core.Direction;
 
 namespace RuneAndRust.Engine;
 
@@ -250,7 +251,7 @@ public class JotunheimBiomeService
     private void ProcessSteamVentEruption(BattlefieldTile vent, BattlefieldState battlefield)
     {
         // Get vent facing direction (from special_rules or default)
-        var direction = GetVentDirection(vent);
+        var direction = GetVentDirection(vent) ?? Direction.North;
 
         var affectedTiles = battlefield.Grid.GetConeArea(vent.Position, direction, STEAM_VENT_CONE_LENGTH);
         var affectedCombatants = affectedTiles
@@ -278,10 +279,10 @@ public class JotunheimBiomeService
             var knockbackDestination = battlefield.Grid.GetPositionInDirection(
                 combatantPos, knockbackDirection, STEAM_VENT_KNOCKBACK);
 
-            if (knockbackDestination != null && battlefield.Grid.IsValidPosition(knockbackDestination) &&
-                !battlefield.Grid.IsBlocked(knockbackDestination))
+            if (knockbackDestination.HasValue && battlefield.Grid.IsValidPosition(knockbackDestination.Value) &&
+                !battlefield.Grid.IsBlocked(knockbackDestination.Value))
             {
-                combatant.SetPosition(knockbackDestination);
+                combatant.SetPosition(knockbackDestination.Value);
                 _log.Debug("{Combatant} knocked back {Distance} tiles by steam eruption",
                     combatant.GetName(), STEAM_VENT_KNOCKBACK);
 
@@ -294,7 +295,7 @@ public class JotunheimBiomeService
         }
     }
 
-    private Direction GetVentDirection(BattlefieldTile vent)
+    private Direction? GetVentDirection(BattlefieldTile vent)
     {
         // TODO: Parse from special_rules JSON if needed
         // For now, default to North
@@ -538,19 +539,19 @@ public class JotunheimBiomeService
                 var combatantPos = combatant.GetPosition() ?? belt.Position;
                 var destination = battlefield.Grid.GetPositionInDirection(combatantPos, direction, 2);
 
-                if (destination != null && battlefield.Grid.IsValidPosition(destination))
+                if (destination.HasValue && battlefield.Grid.IsValidPosition(destination.Value))
                 {
                     var oldPosition = combatantPos;
-                    combatant.SetPosition(destination);
+                    combatant.SetPosition(destination.Value);
 
                     _log.Information("Assembly line moves {Combatant} from ({Column1},{Row1}) to ({Column2},{Row2})",
-                        combatant.GetName(), oldPosition.Column, oldPosition.Row, destination.Column, destination.Row);
+                        combatant.GetName(), oldPosition.Column, (int)oldPosition.Row, destination.Value.Column, (int)destination.Value.Row);
 
                     battlefield.CombatLog.Add(
                         $"{combatant.GetName()} is carried {2} tiles by the active conveyor belt");
 
                     // Check if moved into hazard
-                    var destTile = battlefield.Grid.GetTile(destination);
+                    var destTile = battlefield.Grid.GetTile(destination.Value);
                     if (destTile != null && destTile.HasEnvironmentalFeature("Live Power Conduit"))
                     {
                         // Wrap combatant in Combatant wrapper if needed

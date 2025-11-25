@@ -3,6 +3,7 @@ using RuneAndRust.Core;
 using RuneAndRust.Core.AI;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using CoreEnemyAction = RuneAndRust.Core.AI.EnemyAction;
 
 namespace RuneAndRust.Engine.AI;
 
@@ -22,7 +23,7 @@ public class ChallengeSectorAIService : IChallengeSectorAIService
     /// <inheritdoc/>
     public async Task AdaptToSectorModifiersAsync(
         Enemy enemy,
-        EnemyAction action,
+        CoreEnemyAction action,
         List<ChallengeSectorModifier> modifiers,
         BattlefieldState state)
     {
@@ -73,7 +74,7 @@ public class ChallengeSectorAIService : IChallengeSectorAIService
     /// <inheritdoc/>
     public async Task PrioritizeBurstDamageAsync(
         Enemy enemy,
-        EnemyAction action,
+        CoreEnemyAction action,
         BattlefieldState state)
     {
         _logger.LogDebug(
@@ -91,7 +92,7 @@ public class ChallengeSectorAIService : IChallengeSectorAIService
     /// <inheritdoc/>
     public async Task PrioritizeDefenseAsync(
         Enemy enemy,
-        EnemyAction action,
+        CoreEnemyAction action,
         BattlefieldState state)
     {
         _logger.LogDebug(
@@ -109,7 +110,7 @@ public class ChallengeSectorAIService : IChallengeSectorAIService
     /// <inheritdoc/>
     public async Task ConserveResourcesAsync(
         Enemy enemy,
-        EnemyAction action,
+        CoreEnemyAction action,
         BattlefieldState state)
     {
         _logger.LogDebug(
@@ -126,7 +127,7 @@ public class ChallengeSectorAIService : IChallengeSectorAIService
     /// <inheritdoc/>
     public async Task IncreaseAggressionAsync(
         Enemy enemy,
-        EnemyAction action,
+        CoreEnemyAction action,
         decimal modifier)
     {
         action.AggressionModifier += modifier;

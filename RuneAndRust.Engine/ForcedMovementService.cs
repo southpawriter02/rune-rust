@@ -79,11 +79,9 @@ public class ForcedMovementService
         MovementDirection direction,
         string abilityName)
     {
-        using (_log.BeginScope("Attempt Forced Movement"))
-        {
-            _log.Information(
-                "Forced Movement Attempt: Target={TargetName}, Direction={Direction}, Ability={Ability}, Corruption={Corruption}",
-                target.Name, direction, abilityName, target.Corruption);
+        _log.Information(
+            "Forced Movement Attempt: Target={TargetName}, Direction={Direction}, Ability={Ability}, Corruption={Corruption}",
+            target.Name, direction, abilityName, target.Corruption);
 
             // TODO v0.26+: Check size restrictions (Large/Huge enemies immune)
             // For now, all enemies can be moved
@@ -123,12 +121,11 @@ public class ForcedMovementService
 
             target.Position = newPosition;
 
-            _log.Information(
-                "Forced Movement Success: Target={TargetName}, OldRow={OldRow}, NewRow={NewRow}, CorruptionBonus={Bonus}",
-                target.Name, currentRow, newRow, corruptionBonus);
+        _log.Information(
+            "Forced Movement Success: Target={TargetName}, OldRow={OldRow}, NewRow={NewRow}, CorruptionBonus={Bonus}",
+            target.Name, currentRow, newRow, corruptionBonus);
 
-            return ForcedMovementResult.Successful(newRow, corruptionBonus);
-        }
+        return ForcedMovementResult.Successful(newRow, corruptionBonus);
     }
 
     /// <summary>

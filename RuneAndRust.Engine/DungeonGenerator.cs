@@ -647,9 +647,13 @@ public class DungeonGenerator
             }
 
             // Create simplified enemy spawn
-            room.Enemies.Add(new Core.Population.EnemySpawn
+            room.Enemies.Add(new Enemy
             {
-                EnemyId = selected.AssociatedDataId ?? selected.ElementName
+                EnemyID = int.Parse((selected.AssociatedDataId ?? "0")),
+                Name = selected.ElementName,
+                Level = 1,
+                HP = 50,
+                MaxHP = 50
             });
 
             budget -= selected.SpawnCost;
@@ -719,9 +723,13 @@ public class DungeonGenerator
     {
         for (int i = 0; i < allocation.AllocatedEnemies; i++)
         {
-            room.Enemies.Add(new Core.Population.EnemySpawn
+            room.Enemies.Add(new Enemy
             {
-                EnemyId = $"placeholder_enemy_{biome.BiomeId}_{i}"
+                EnemyID = i,
+                Name = $"placeholder_enemy_{biome.BiomeId}_{i}",
+                Level = 1,
+                HP = 50,
+                MaxHP = 50
             });
         }
 

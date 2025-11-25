@@ -241,7 +241,7 @@ public class EnemyAIOrchestrator
 
         // Analyze situation
         var situation = _situationalService.AnalyzeSituation(enemy, state);
-        context.Reasoning += $" | Tactical advantage: {situation.TacticalAdvantage}";
+        context.Reasoning += $" | Tactical advantage: {situation.Advantage}";
 
         // Assess threats and select target
         var target = await SelectTargetAsync(enemy, state, context);

@@ -160,7 +160,7 @@ public class AdaptiveDifficultyService : IAdaptiveDifficultyService
     /// </summary>
     public async Task<bool> IsAdaptiveDifficultyEnabledAsync(Enemy boss)
     {
-        var bossConfig = await _configRepository.GetBossConfigurationAsync(boss.EnemyTypeId);
+        var bossConfig = await _configRepository.GetBossConfigurationAsync((int)boss.Type);
 
         if (bossConfig == null)
         {

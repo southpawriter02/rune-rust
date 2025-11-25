@@ -2,6 +2,7 @@ using RuneAndRust.Core;
 using RuneAndRust.Persistence;
 using Serilog;
 using System.Text.RegularExpressions;
+using StatusEffectDefinition = RuneAndRust.Core.StatusEffectDefinition;
 
 namespace RuneAndRust.Engine;
 

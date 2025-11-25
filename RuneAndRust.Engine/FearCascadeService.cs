@@ -62,9 +62,6 @@ public class FearCascadeService
         int radius,
         int rank)
     {
-        using var operation = _log.BeginOperation("TriggerFearCascade: CasterID={CasterId}, TargetID={TargetId}, Radius={Radius}, Rank={Rank}",
-            casterId, targetId, radius, rank);
-
         try
         {
             // Get enemies within radius

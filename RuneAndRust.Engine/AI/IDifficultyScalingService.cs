@@ -1,6 +1,7 @@
 using RuneAndRust.Core;
 using RuneAndRust.Core.AI;
 using System.Threading.Tasks;
+using CoreEnemyAction = RuneAndRust.Core.AI.EnemyAction;
 
 namespace RuneAndRust.Engine.AI;
 
@@ -24,8 +25,8 @@ public interface IDifficultyScalingService
     /// <param name="intelligenceLevel">Intelligence level (0-5).</param>
     /// <param name="state">Current battlefield state.</param>
     /// <returns>Modified action with intelligence-appropriate decisions.</returns>
-    Task<EnemyAction> ApplyIntelligenceScalingAsync(
-        EnemyAction action,
+    Task<CoreEnemyAction> ApplyIntelligenceScalingAsync(
+        CoreEnemyAction action,
         int intelligenceLevel,
         BattlefieldState state);
 

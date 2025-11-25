@@ -51,12 +51,12 @@ public class AbilityRotationService : IAbilityRotationService
         }
 
         // Get current rotation index for this boss
-        if (!_rotationIndices.ContainsKey(boss.Id))
+        if (!_rotationIndices.ContainsKey(boss.EnemyID))
         {
-            _rotationIndices[boss.Id] = 0;
+            _rotationIndices[boss.EnemyID] = 0;
         }
 
-        var currentIndex = _rotationIndices[boss.Id];
+        var currentIndex = _rotationIndices[boss.EnemyID];
         var step = rotation.Steps[currentIndex];
 
         // Check if ability is available
@@ -82,12 +82,12 @@ public class AbilityRotationService : IAbilityRotationService
             }
 
             // Skip to next step if no fallback
-            AdvanceRotation(boss.Id, rotation.Steps.Count);
+            AdvanceRotation(boss.EnemyID, rotation.Steps.Count);
             return await SelectNextAbilityInRotationAsync(boss, rotation, state);
         }
 
         // Advance rotation for next turn
-        AdvanceRotation(boss.Id, rotation.Steps.Count);
+        AdvanceRotation(boss.EnemyID, rotation.Steps.Count);
 
         return await CreateAbilityAction(boss, step.AbilityId, step.Priority);
     }
@@ -123,7 +123,7 @@ public class AbilityRotationService : IAbilityRotationService
             "Resetting rotation for boss {BossId}",
             boss.Id);
 
-        _rotationIndices[boss.Id] = 0;
+        _rotationIndices[boss.EnemyID] = 0;
     }
 
     /// <summary>
