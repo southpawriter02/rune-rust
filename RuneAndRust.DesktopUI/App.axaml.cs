@@ -147,6 +147,7 @@ public partial class App : Application
         services.AddTransient<SettingsViewModel>();
         services.AddTransient<SaveLoadViewModel>();
         services.AddTransient<HelpViewModel>();
+        services.AddTransient<CharacterCreationViewModel>();
 
         // v0.43.21: All ViewModels registered for complete UI integration
 

@@ -113,8 +113,17 @@ public class MenuViewModel : ViewModelBase
 
     private void OnNewGame()
     {
-        // Placeholder - will navigate to character creation in later specs
-        Console.WriteLine("[MENU] New Game selected");
+        if (_navigationService != null && _saveGameService != null)
+        {
+            // Navigate to character creation
+            var characterCreationViewModel = new CharacterCreationViewModel(_navigationService, _saveGameService);
+            _navigationService.NavigateTo(characterCreationViewModel);
+            Console.WriteLine("[MENU] Navigated to Character Creation");
+        }
+        else
+        {
+            Console.WriteLine("[MENU] New Game selected (navigation not available)");
+        }
     }
 
     private async void OnContinueGame()
@@ -197,7 +206,7 @@ public class MenuViewModel : ViewModelBase
         if (_navigationService != null && _spriteService != null)
         {
             // Navigate to sprite demo
-            var spriteDemoViewModel = new SpriteDemoViewModel(_spriteService);
+            var spriteDemoViewModel = new SpriteDemoViewModel(_spriteService, _navigationService);
             _navigationService.NavigateTo(spriteDemoViewModel);
             Console.WriteLine("[MENU] Navigated to Sprite Demo");
         }

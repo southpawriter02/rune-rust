@@ -4,6 +4,7 @@ using SkiaSharp;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Windows.Input;
 
 namespace RuneAndRust.DesktopUI.ViewModels;
 
@@ -14,6 +15,7 @@ namespace RuneAndRust.DesktopUI.ViewModels;
 public class SpriteDemoViewModel : ViewModelBase
 {
     private readonly ISpriteService _spriteService;
+    private readonly INavigationService? _navigationService;
     private int _scale = 3;
     private string? _selectedSprite;
 
@@ -55,12 +57,33 @@ public class SpriteDemoViewModel : ViewModelBase
     public string Description => $"Displaying {AvailableSprites.Count} sprites at {Scale}x scale";
 
     /// <summary>
+    /// Command to return to main menu.
+    /// </summary>
+    public ICommand BackCommand { get; }
+
+    /// <summary>
+    /// Creates a new instance for design-time support.
+    /// </summary>
+    public SpriteDemoViewModel()
+    {
+        _spriteService = null!;
+        BackCommand = ReactiveCommand.Create(() => { });
+    }
+
+    /// <summary>
     /// Initializes a new instance of SpriteDemoViewModel.
     /// </summary>
-    public SpriteDemoViewModel(ISpriteService spriteService)
+    public SpriteDemoViewModel(ISpriteService spriteService, INavigationService? navigationService = null)
     {
         _spriteService = spriteService ?? throw new ArgumentNullException(nameof(spriteService));
+        _navigationService = navigationService;
+        BackCommand = ReactiveCommand.Create(OnBack);
         LoadSprites();
+    }
+
+    private void OnBack()
+    {
+        _navigationService?.NavigateBack();
     }
 
     /// <summary>

@@ -43,6 +43,7 @@
 
             <Button Content="Continue Game"
                     Command="{Binding ContinueGameCommand}"
+                    IsEnabled="{Binding HasSavedGame}"
                     Width="300"
                     Height="50"
                     FontSize="18"/>
