@@ -56,6 +56,11 @@ public class RotationStep
     public int? FallbackAbilityId { get; set; }
 
     /// <summary>
+    /// Priority for this rotation step (higher = more important).
+    /// </summary>
+    public int Priority { get; set; } = 1;
+
+    /// <summary>
     /// Designer notes for this step.
     /// </summary>
     public string? Notes { get; set; }

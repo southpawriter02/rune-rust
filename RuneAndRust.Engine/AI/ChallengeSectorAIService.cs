@@ -28,7 +28,7 @@ public class ChallengeSectorAIService : IChallengeSectorAIService
     {
         foreach (var modifier in modifiers)
         {
-            _logger.Debug(
+            _logger.LogDebug(
                 "Applying sector modifier {Modifier} for enemy {EnemyId}",
                 modifier.Type, enemy.Id);
 
@@ -42,7 +42,7 @@ public class ChallengeSectorAIService : IChallengeSectorAIService
                 case SectorModifierType.DoubleSpeed:
                     // AI uses abilities more aggressively (shorter fight)
                     await IncreaseAggressionAsync(enemy, action, 0.3m);
-                    _logger.Debug("Sector adaptation: Increased aggression for DoubleSpeed");
+                    _logger.LogDebug("Sector adaptation: Increased aggression for DoubleSpeed");
                     break;
 
                 case SectorModifierType.OneHP:
@@ -53,7 +53,7 @@ public class ChallengeSectorAIService : IChallengeSectorAIService
                 case SectorModifierType.NoAbilities:
                     // Player has no abilities, AI can play more recklessly
                     await IncreaseAggressionAsync(enemy, action, 0.5m);
-                    _logger.Debug("Sector adaptation: Increased aggression for NoAbilities");
+                    _logger.LogDebug("Sector adaptation: Increased aggression for NoAbilities");
                     break;
 
                 case SectorModifierType.HalfDamage:
@@ -64,7 +64,7 @@ public class ChallengeSectorAIService : IChallengeSectorAIService
                 case SectorModifierType.Permadeath:
                     // Player is cautious, AI can be aggressive
                     await IncreaseAggressionAsync(enemy, action, 0.4m);
-                    _logger.Debug("Sector adaptation: Increased aggression for Permadeath");
+                    _logger.LogDebug("Sector adaptation: Increased aggression for Permadeath");
                     break;
             }
         }
@@ -76,7 +76,7 @@ public class ChallengeSectorAIService : IChallengeSectorAIService
         EnemyAction action,
         BattlefieldState state)
     {
-        _logger.Debug(
+        _logger.LogDebug(
             "Enemy {EnemyId} prioritizing burst damage (No Healing sector)",
             enemy.Id);
 
@@ -94,7 +94,7 @@ public class ChallengeSectorAIService : IChallengeSectorAIService
         EnemyAction action,
         BattlefieldState state)
     {
-        _logger.Debug(
+        _logger.LogDebug(
             "Enemy {EnemyId} prioritizing defense (dangerous sector)",
             enemy.Id);
 
@@ -112,7 +112,7 @@ public class ChallengeSectorAIService : IChallengeSectorAIService
         EnemyAction action,
         BattlefieldState state)
     {
-        _logger.Debug(
+        _logger.LogDebug(
             "Enemy {EnemyId} conserving resources (long fight expected)",
             enemy.Id);
 
@@ -131,7 +131,7 @@ public class ChallengeSectorAIService : IChallengeSectorAIService
     {
         action.AggressionModifier += modifier;
 
-        _logger.Debug(
+        _logger.LogDebug(
             "Enemy {EnemyId} aggression increased by {Modifier} (new total: {Total})",
             enemy.Id, modifier, action.AggressionModifier);
 

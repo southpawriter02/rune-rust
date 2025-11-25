@@ -78,51 +78,60 @@ public class AddManagementService : IAddManagementService
     {
         // Check max adds limit
         var livingAdds = GetLivingAdds(boss, state);
-        if (livingAdds.Count >= config.MaxAddsActive)
+        if (livingAdds.Count >= config.MaxSimultaneousAdds)
         {
             _logger.LogDebug(
                 "Boss {BossId} already at max adds ({Count}/{Max})",
                 boss.Id,
                 livingAdds.Count,
-                config.MaxAddsActive);
+                config.MaxSimultaneousAdds);
             return false;
         }
 
-        // Check cooldown
-        if (_lastSummonTimes.ContainsKey(boss.Id))
+        // Check turn interval cooldown (if configured)
+        if (config.SummonEveryNTurns.HasValue && _lastSummonTimes.ContainsKey(boss.Id))
         {
-            var timeSinceLastSummon = DateTime.UtcNow - _lastSummonTimes[boss.Id];
-            if (timeSinceLastSummon.TotalSeconds < config.SummonCooldownSeconds)
+            // TODO: Track actual turn count instead of time
+            // For now, we'll skip the cooldown check as we don't have turn tracking
+            _logger.LogDebug(
+                "Boss {BossId} summon every {N} turns (turn tracking not yet implemented)",
+                boss.Id,
+                config.SummonEveryNTurns.Value);
+        }
+
+        // Check HP threshold triggers
+        if (config.SummonAtHPThresholds != null && config.SummonAtHPThresholds.Any())
+        {
+            var hpPercent = (decimal)boss.CurrentHP / boss.MaxHP * 100m;
+
+            // Check if any threshold is met
+            bool thresholdMet = false;
+            foreach (var threshold in config.SummonAtHPThresholds)
+            {
+                if (hpPercent <= threshold)
+                {
+                    thresholdMet = true;
+                    break;
+                }
+            }
+
+            if (!thresholdMet)
             {
                 _logger.LogDebug(
-                    "Boss {BossId} summon on cooldown ({Remaining}s remaining)",
+                    "Boss {BossId} HP at {HP}%, no summon threshold met",
                     boss.Id,
-                    config.SummonCooldownSeconds - timeSinceLastSummon.TotalSeconds);
+                    hpPercent);
                 return false;
             }
         }
 
-        // Check summon triggers
-        if (config.SummonTriggers != null)
+        // Check if we should resummon if all adds died
+        if (config.ResummonIfAllAddsDie && livingAdds.Count == 0)
         {
-            // HP threshold trigger
-            if (config.SummonTriggers.ContainsKey("HPThreshold"))
-            {
-                var hpPercent = (float)boss.CurrentHP / boss.MaxHP * 100f;
-                var threshold = config.SummonTriggers["HPThreshold"];
-                if (hpPercent > threshold)
-                {
-                    return false;
-                }
-            }
-
-            // Turn interval trigger
-            if (config.SummonTriggers.ContainsKey("TurnInterval"))
-            {
-                var interval = (int)config.SummonTriggers["TurnInterval"];
-                // TODO: Track turn count
-                // For now, always trigger if HP threshold met
-            }
+            _logger.LogDebug(
+                "Boss {BossId} resummon triggered (all adds dead)",
+                boss.Id);
+            return true;
         }
 
         return true;
@@ -133,11 +142,22 @@ public class AddManagementService : IAddManagementService
     /// </summary>
     public async Task SummonAddsAsync(Enemy boss, AddManagementConfig config, BattlefieldState state)
     {
+        var totalAdds = config.AddTypes.Sum(a => a.Count);
+
         _logger.LogInformation(
-            "Boss {BossId} summoning {Count} adds of type {AddType}",
+            "Boss {BossId} summoning {Count} adds ({Types})",
             boss.Id,
-            config.AddCount,
-            config.AddType);
+            totalAdds,
+            string.Join(", ", config.AddTypes.Select(a => $"{a.Count}x {a.EnemyTypeName}")));
+
+        // Display summon dialogue if configured
+        if (!string.IsNullOrEmpty(config.SummonDialogue))
+        {
+            _logger.LogInformation(
+                "Boss {BossId}: {Dialogue}",
+                boss.Id,
+                config.SummonDialogue);
+        }
 
         // TODO: Integrate with actual enemy spawning system
         // For now, just log and track
@@ -147,18 +167,26 @@ public class AddManagementService : IAddManagementService
             _summonedAdds[boss.Id] = new List<int>();
         }
 
-        for (int i = 0; i < config.AddCount; i++)
+        int addIndex = 0;
+        foreach (var addType in config.AddTypes)
         {
-            // Create add (placeholder)
-            var addId = GenerateAddId(boss.Id, i);
+            for (int i = 0; i < addType.Count; i++)
+            {
+                // Create add (placeholder)
+                var addId = GenerateAddId(boss.Id, addIndex);
 
-            _summonedAdds[boss.Id].Add(addId);
+                _summonedAdds[boss.Id].Add(addId);
 
-            _logger.LogDebug(
-                "Summoned add {AddId} with HP multiplier {HPMult} and damage multiplier {DmgMult}",
-                addId,
-                config.AddHealthMultiplier,
-                config.AddDamageMultiplier);
+                _logger.LogDebug(
+                    "Summoned add {AddId} (type: {TypeName}, typeId: {TypeId}) with HP multiplier {HPMult} and damage multiplier {DmgMult}",
+                    addId,
+                    addType.EnemyTypeName,
+                    addType.EnemyTypeId,
+                    config.AddHPMultiplier,
+                    config.AddDamageMultiplier);
+
+                addIndex++;
+            }
         }
 
         // Update last summon time

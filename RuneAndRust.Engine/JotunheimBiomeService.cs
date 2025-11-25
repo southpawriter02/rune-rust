@@ -6,6 +6,144 @@ using Serilog;
 namespace RuneAndRust.Engine;
 
 /// <summary>
+/// Damage types for combat
+/// </summary>
+public enum DamageType
+{
+    Physical,
+    Fire,
+    Poison,
+    Energy,
+    Psychic,
+    Ice,
+    Lightning
+}
+
+/// <summary>
+/// Extension methods for BattlefieldTile to support environmental features and terrain
+/// </summary>
+public static class BattlefieldTileExtensions
+{
+    private static readonly Dictionary<GridPosition, List<string>> _environmentalFeatures = new();
+    private static readonly Dictionary<GridPosition, List<string>> _terrainFeatures = new();
+
+    public static bool HasEnvironmentalFeature(this BattlefieldTile tile, string featureName)
+    {
+        if (_environmentalFeatures.TryGetValue(tile.Position, out var features))
+        {
+            return features.Contains(featureName);
+        }
+        return false;
+    }
+
+    public static bool HasTerrain(this BattlefieldTile tile, string terrainName)
+    {
+        if (_terrainFeatures.TryGetValue(tile.Position, out var features))
+        {
+            return features.Contains(terrainName);
+        }
+        return false;
+    }
+
+    public static void AddEnvironmentalFeature(this BattlefieldTile tile, string featureName)
+    {
+        if (!_environmentalFeatures.ContainsKey(tile.Position))
+        {
+            _environmentalFeatures[tile.Position] = new List<string>();
+        }
+        if (!_environmentalFeatures[tile.Position].Contains(featureName))
+        {
+            _environmentalFeatures[tile.Position].Add(featureName);
+        }
+    }
+
+    public static void RemoveEnvironmentalFeature(this BattlefieldTile tile, string featureName)
+    {
+        if (_environmentalFeatures.TryGetValue(tile.Position, out var features))
+        {
+            features.Remove(featureName);
+        }
+    }
+
+    public static void AddTerrain(this BattlefieldTile tile, string terrainName)
+    {
+        if (!_terrainFeatures.ContainsKey(tile.Position))
+        {
+            _terrainFeatures[tile.Position] = new List<string>();
+        }
+        if (!_terrainFeatures[tile.Position].Contains(terrainName))
+        {
+            _terrainFeatures[tile.Position].Add(terrainName);
+        }
+    }
+
+    public static void RemoveTerrain(this BattlefieldTile tile, string terrainName)
+    {
+        if (_terrainFeatures.TryGetValue(tile.Position, out var features))
+        {
+            features.Remove(terrainName);
+        }
+    }
+}
+
+/// <summary>
+/// Extension methods for combat damage handling
+/// </summary>
+public static class CombatExtensions
+{
+    public static void TakeDamage(this object combatant, int damage, DamageType damageType)
+    {
+        switch (combatant)
+        {
+            case PlayerCharacter pc:
+                pc.HP = Math.Max(0, pc.HP - damage);
+                break;
+            case Enemy e:
+                e.HP = Math.Max(0, e.HP - damage);
+                break;
+            case Companion c:
+                c.CurrentHitPoints = Math.Max(0, c.CurrentHitPoints - damage);
+                break;
+        }
+    }
+
+    public static string GetName(this object combatant)
+    {
+        return combatant switch
+        {
+            PlayerCharacter pc => pc.Name,
+            Enemy e => e.Name,
+            Companion c => c.DisplayName,
+            _ => "Unknown"
+        };
+    }
+
+    public static GridPosition? GetPosition(this object combatant)
+    {
+        return combatant switch
+        {
+            PlayerCharacter pc => null, // Position stored externally
+            Enemy e => e.Position,
+            Companion c => c.Position,
+            _ => null
+        };
+    }
+
+    public static void SetPosition(this object combatant, GridPosition? position)
+    {
+        switch (combatant)
+        {
+            case Enemy e:
+                e.Position = position;
+                break;
+            case Companion c:
+                c.Position = position;
+                break;
+        }
+    }
+}
+
+/// <summary>
 /// v0.32.2: Orchestration service for Jötunheim biome.
 /// Coordinates industrial hazards, environmental terrain, and Jötun corpse mechanics.
 /// NO AMBIENT CONDITION - threats are physical and technological.
@@ -77,7 +215,7 @@ public class JotunheimBiomeService
     /// </summary>
     private void ProcessSteamVents(BattlefieldState battlefield, int currentTurn)
     {
-        var steamVents = battlefield.Grid.Tiles
+        var steamVents = battlefield.Grid.Tiles.Values
             .Where(t => t.HasEnvironmentalFeature("High-Pressure Steam Vent"))
             .ToList();
 
@@ -93,11 +231,11 @@ public class JotunheimBiomeService
             // Warning on turn before eruption
             if (turnsSinceEruption == STEAM_VENT_CYCLE - 1)
             {
-                _log.Information("⚠️ Steam vent at ({X}, {Y}) HISSING - will erupt next turn",
-                    vent.Position.X, vent.Position.Y);
+                _log.Information("⚠️ Steam vent at ({Column}, {Row}) HISSING - will erupt next turn",
+                    vent.Position.Column, vent.Position.Row);
 
                 battlefield.CombatLog.Add(
-                    $"⚠️ The steam vent at ({vent.Position.X}, {vent.Position.Y}) hisses loudly - pressure is building!");
+                    $"⚠️ The steam vent at ({vent.Position.Column}, {vent.Position.Row}) hisses loudly - pressure is building!");
             }
 
             // Eruption on cycle completion
@@ -109,7 +247,7 @@ public class JotunheimBiomeService
         }
     }
 
-    private void ProcessSteamVentEruption(GridTile vent, BattlefieldState battlefield)
+    private void ProcessSteamVentEruption(BattlefieldTile vent, BattlefieldState battlefield)
     {
         // Get vent facing direction (from special_rules or default)
         var direction = GetVentDirection(vent);
@@ -119,47 +257,48 @@ public class JotunheimBiomeService
             .SelectMany(t => battlefield.Grid.GetCombatantsAtPosition(t))
             .ToList();
 
-        _log.Warning("💨 Steam vent at ({X}, {Y}) ERUPTS - {Count} combatants affected",
-            vent.Position.X, vent.Position.Y, affectedCombatants.Count);
+        _log.Warning("💨 Steam vent at ({Column}, {Row}) ERUPTS - {Count} combatants affected",
+            vent.Position.Column, vent.Position.Row, affectedCombatants.Count);
 
         battlefield.CombatLog.Add(
-            $"💨 Superheated steam ERUPTS from the vent at ({vent.Position.X}, {vent.Position.Y})!");
+            $"💨 Superheated steam ERUPTS from the vent at ({vent.Position.Column}, {vent.Position.Row})!");
 
         foreach (var combatant in affectedCombatants)
         {
-            // Fire damage
-            var damage = _diceService.RollDice(STEAM_VENT_DAMAGE);
+            // Fire damage (2d6)
+            var damage = _diceService.RollDice(2, 6);
             combatant.TakeDamage(damage, DamageType.Fire);
 
             _log.Information("{Combatant} takes {Damage} Fire damage from steam vent eruption",
-                combatant.Name, damage);
+                combatant.GetName(), damage);
 
             // Knockback
-            var knockbackDirection = battlefield.Grid.GetDirectionFrom(vent.Position, combatant.Position);
+            var combatantPos = combatant.GetPosition() ?? vent.Position;
+            var knockbackDirection = battlefield.Grid.GetDirectionFrom(vent.Position, combatantPos);
             var knockbackDestination = battlefield.Grid.GetPositionInDirection(
-                combatant.Position, knockbackDirection, STEAM_VENT_KNOCKBACK);
+                combatantPos, knockbackDirection, STEAM_VENT_KNOCKBACK);
 
-            if (battlefield.Grid.IsValidPosition(knockbackDestination) &&
+            if (knockbackDestination != null && battlefield.Grid.IsValidPosition(knockbackDestination) &&
                 !battlefield.Grid.IsBlocked(knockbackDestination))
             {
-                combatant.Position = knockbackDestination;
+                combatant.SetPosition(knockbackDestination);
                 _log.Debug("{Combatant} knocked back {Distance} tiles by steam eruption",
-                    combatant.Name, STEAM_VENT_KNOCKBACK);
+                    combatant.GetName(), STEAM_VENT_KNOCKBACK);
 
                 battlefield.CombatLog.Add(
-                    $"{combatant.Name} is knocked back by explosive force!");
+                    $"{combatant.GetName()} is knocked back by explosive force!");
             }
 
             battlefield.CombatLog.Add(
-                $"{combatant.Name} takes {damage} Fire damage from superheated steam!");
+                $"{combatant.GetName()} takes {damage} Fire damage from superheated steam!");
         }
     }
 
-    private GridDirection GetVentDirection(GridTile vent)
+    private Direction GetVentDirection(BattlefieldTile vent)
     {
         // TODO: Parse from special_rules JSON if needed
         // For now, default to North
-        return GridDirection.North;
+        return Direction.North;
     }
 
     #endregion
@@ -184,8 +323,9 @@ public class JotunheimBiomeService
 
         // Find unstable ceilings within 2 tiles of impact
         var nearbyCeilings = battlefield.Grid.GetTilesInRadius(impactPosition, 2)
-            .Where(t => t.HasEnvironmentalFeature("Unstable Ceiling/Wall"))
-            .Where(t => !_collapsedCeilings.Contains(t.Position)) // Not already collapsed
+            .Select(pos => battlefield.Grid.GetTile(pos))
+            .Where(t => t != null && t.HasEnvironmentalFeature("Unstable Ceiling/Wall"))
+            .Where(t => !_collapsedCeilings.Contains(t!.Position)) // Not already collapsed
             .ToList();
 
         if (!nearbyCeilings.Any())
@@ -194,25 +334,25 @@ public class JotunheimBiomeService
         }
 
         // Trigger first nearby unstable ceiling
-        var ceiling = nearbyCeilings.First();
+        var ceiling = nearbyCeilings.First()!;
         ProcessCeilingCollapse(ceiling, battlefield);
 
         return true;
     }
 
-    private void ProcessCeilingCollapse(GridTile ceiling, BattlefieldState battlefield)
+    private void ProcessCeilingCollapse(BattlefieldTile ceiling, BattlefieldState battlefield)
     {
-        _log.Warning("🧱 Unstable ceiling at ({X}, {Y}) COLLAPSES - heavy impact triggered structural failure",
-            ceiling.Position.X, ceiling.Position.Y);
+        _log.Warning("🧱 Unstable ceiling at ({Column}, {Row}) COLLAPSES - heavy impact triggered structural failure",
+            ceiling.Position.Column, ceiling.Position.Row);
 
         // Mark as collapsed (one-time only)
         _collapsedCeilings.Add(ceiling.Position);
         ceiling.RemoveEnvironmentalFeature("Unstable Ceiling/Wall");
 
         // Calculate 2x2 collapse area
-        var affectedTiles = battlefield.Grid.GetAreaAround(ceiling.Position, COLLAPSE_AREA_SIZE);
-        var affectedCombatants = affectedTiles
-            .SelectMany(t => battlefield.Grid.GetCombatantsAtPosition(t))
+        var affectedPositions = battlefield.Grid.GetAreaAround(ceiling.Position, COLLAPSE_AREA_SIZE);
+        var affectedCombatants = affectedPositions
+            .SelectMany(pos => battlefield.Grid.GetCombatantsAtPosition(pos))
             .ToList();
 
         battlefield.CombatLog.Add(
@@ -220,21 +360,25 @@ public class JotunheimBiomeService
 
         foreach (var combatant in affectedCombatants)
         {
-            var damage = _diceService.RollDice(COLLAPSE_DAMAGE);
+            var damage = _diceService.RollDice(3, 8); // 3d8
             combatant.TakeDamage(damage, DamageType.Physical);
 
             _log.Information("{Combatant} takes {Damage} Physical damage from ceiling collapse",
-                combatant.Name, damage);
+                combatant.GetName(), damage);
 
             battlefield.CombatLog.Add(
-                $"{combatant.Name} is struck by falling debris - {damage} Physical damage!");
+                $"{combatant.GetName()} is struck by falling debris - {damage} Physical damage!");
         }
 
         // Create [Debris Pile] terrain in affected area
-        foreach (var tile in affectedTiles)
+        foreach (var pos in affectedPositions)
         {
-            tile.AddTerrain("Debris Pile");
-            _log.Debug("Created [Debris Pile] at ({X}, {Y})", tile.Position.X, tile.Position.Y);
+            var tile = battlefield.Grid.GetTile(pos);
+            if (tile != null)
+            {
+                tile.AddTerrain("Debris Pile");
+                _log.Debug("Created [Debris Pile] at ({Column}, {Row})", pos.Column, pos.Row);
+            }
         }
 
         battlefield.CombatLog.Add(
@@ -251,7 +395,7 @@ public class JotunheimBiomeService
     /// </summary>
     private void ProcessJotunProximityStress(BattlefieldState battlefield)
     {
-        var jotunCorpseTiles = battlefield.Grid.Tiles
+        var jotunCorpseTiles = battlefield.Grid.Tiles.Values
             .Where(t => t.HasTerrain("Jotun Corpse Terrain"))
             .ToList();
 
@@ -268,7 +412,7 @@ public class JotunheimBiomeService
             {
                 if (combatant is PlayerCharacter character)
                 {
-                    _traumaEconomyService.ApplyStress(character, 2,
+                    _traumaEconomyService.AddStress(character, 2,
                         "Jötun proximity - corrupted logic core broadcast");
 
                     _log.Debug("{Character} on Jötun corpse terrain - applied +2 Psychic Stress",
@@ -294,7 +438,7 @@ public class JotunheimBiomeService
     /// </summary>
     private void ProcessFloodedTerrain(BattlefieldState battlefield)
     {
-        var floodedTiles = battlefield.Grid.Tiles
+        var floodedTiles = battlefield.Grid.Tiles.Values
             .Where(t => t.HasTerrain("Flooded (Coolant)") || t.HasTerrain("Flooded"))
             .ToList();
 
@@ -307,12 +451,12 @@ public class JotunheimBiomeService
                 combatant.TakeDamage(1, DamageType.Poison);
 
                 _log.Debug("{Combatant} ends turn in flooded coolant - 1 Poison damage",
-                    combatant.Name);
+                    combatant.GetName());
 
                 if (battlefield.CurrentTurn % 2 == 0) // Every other turn to reduce spam
                 {
                     battlefield.CombatLog.Add(
-                        $"{combatant.Name} wades through toxic coolant (1 Poison damage)");
+                        $"{combatant.GetName()} wades through toxic coolant (1 Poison damage)");
                 }
             }
         }
@@ -328,26 +472,26 @@ public class JotunheimBiomeService
     /// </summary>
     private void ProcessToxicHaze(BattlefieldState battlefield)
     {
-        var hazeTiles = battlefield.Grid.Tiles
+        var hazeTiles = battlefield.Grid.Tiles.Values
             .Where(t => t.HasEnvironmentalFeature("Toxic Haze"))
             .ToList();
 
         foreach (var tile in hazeTiles)
         {
             // Get 4x4 zone
-            var hazoneZone = battlefield.Grid.GetAreaAround(tile.Position, 4);
-            var affectedCombatants = hazoneZone
-                .SelectMany(t => battlefield.Grid.GetCombatantsAtPosition(t))
+            var hazeZone = battlefield.Grid.GetAreaAround(tile.Position, 4);
+            var affectedCombatants = hazeZone
+                .SelectMany(pos => battlefield.Grid.GetCombatantsAtPosition(pos))
                 .Distinct()
                 .ToList();
 
             foreach (var combatant in affectedCombatants)
             {
-                var damage = _diceService.RollDice("1d4");
+                var damage = _diceService.RollDice(1, 4); // 1d4
                 combatant.TakeDamage(damage, DamageType.Poison);
 
                 _log.Debug("{Combatant} in toxic haze - {Damage} Poison damage",
-                    combatant.Name, damage);
+                    combatant.GetName(), damage);
             }
         }
     }
@@ -364,7 +508,7 @@ public class JotunheimBiomeService
     /// </summary>
     public void ProcessAssemblyLines(BattlefieldState battlefield)
     {
-        var beltTiles = battlefield.Grid.Tiles
+        var beltTiles = battlefield.Grid.Tiles.Values
             .Where(t => t.HasEnvironmentalFeature("Assembly Line (Active)"))
             .ToList();
 
@@ -377,30 +521,54 @@ public class JotunheimBiomeService
                 continue;
             }
 
-            // Get belt direction (from special_rules or default)
-            var direction = _assemblyLineBelts.GetValueOrDefault(belt.Position, GridDirection.East);
+            // Get belt direction (from special_rules or default) - convert GridDirection to Direction
+            var gridDirection = _assemblyLineBelts.GetValueOrDefault(belt.Position, GridDirection.East);
+            var direction = gridDirection switch
+            {
+                GridDirection.North => Direction.North,
+                GridDirection.South => Direction.South,
+                GridDirection.East => Direction.East,
+                GridDirection.West => Direction.West,
+                _ => Direction.East
+            };
 
             foreach (var combatant in combatants)
             {
                 // Move 2 tiles in belt direction
-                var destination = battlefield.Grid.GetPositionInDirection(combatant.Position, direction, 2);
+                var combatantPos = combatant.GetPosition() ?? belt.Position;
+                var destination = battlefield.Grid.GetPositionInDirection(combatantPos, direction, 2);
 
-                if (battlefield.Grid.IsValidPosition(destination))
+                if (destination != null && battlefield.Grid.IsValidPosition(destination))
                 {
-                    var oldPosition = combatant.Position;
-                    combatant.Position = destination;
+                    var oldPosition = combatantPos;
+                    combatant.SetPosition(destination);
 
-                    _log.Information("Assembly line moves {Combatant} from ({X1},{Y1}) to ({X2},{Y2})",
-                        combatant.Name, oldPosition.X, oldPosition.Y, destination.X, destination.Y);
+                    _log.Information("Assembly line moves {Combatant} from ({Column1},{Row1}) to ({Column2},{Row2})",
+                        combatant.GetName(), oldPosition.Column, oldPosition.Row, destination.Column, destination.Row);
 
                     battlefield.CombatLog.Add(
-                        $"{combatant.Name} is carried {2} tiles by the active conveyor belt");
+                        $"{combatant.GetName()} is carried {2} tiles by the active conveyor belt");
 
                     // Check if moved into hazard
                     var destTile = battlefield.Grid.GetTile(destination);
-                    if (destTile.HasEnvironmentalFeature("Live Power Conduit"))
+                    if (destTile != null && destTile.HasEnvironmentalFeature("Live Power Conduit"))
                     {
-                        _powerConduitService.ProcessForcedMovementIntoConduit(combatant, destTile, battlefield);
+                        // Wrap combatant in Combatant wrapper if needed
+                        var combatantWrapper = combatant switch
+                        {
+                            Combatant c => c,
+                            PlayerCharacter pc => new Combatant(pc),
+                            Enemy e => new Combatant(e),
+                            Companion comp => new Combatant(comp),
+                            _ => null
+                        };
+
+                        if (combatantWrapper != null)
+                        {
+                            // Create GridTile wrapper for destTile
+                            var gridTile = new GridTile(destTile);
+                            _powerConduitService.ProcessForcedMovementIntoConduit(combatantWrapper, gridTile, battlefield);
+                        }
                     }
                 }
             }

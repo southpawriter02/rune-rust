@@ -77,10 +77,10 @@ public class FlankingService
     private List<object> GetThreateningEnemies(object target, BattlefieldGrid grid)
     {
         var threats = new List<object>();
-        var (_, _, _, isPlayerTarget) = target switch
+        var isPlayerTarget = target switch
         {
-            PlayerCharacter _ => (null, null, null, true),
-            Enemy _ => (null, null, null, false),
+            PlayerCharacter _ => true,
+            Enemy _ => false,
             _ => throw new ArgumentException("Invalid target type")
         };
 

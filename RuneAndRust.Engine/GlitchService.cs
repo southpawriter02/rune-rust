@@ -78,7 +78,7 @@ public class GlitchService
             _log.Information("Flickering platform traversed: Combatant={CombatantId}, Roll={Successes}/{DC}",
                 GetCombatantId(combatant), result.Successes, dc);
 
-            return GlitchResult.Success("You deftly time your step through the flickering platform.");
+            return GlitchResult.Successful("You deftly time your step through the flickering platform.");
         }
         else
         {
@@ -119,7 +119,7 @@ public class GlitchService
             _log.Information("Inverted gravity resisted: Combatant={CombatantId}, Roll={Successes}/{DC}",
                 GetCombatantId(combatant), result.Successes, dc);
 
-            return GlitchResult.Success("You maintain your equilibrium despite the gravitational anomaly.");
+            return GlitchResult.Successful("You maintain your equilibrium despite the gravitational anomaly.");
         }
         else
         {
@@ -158,7 +158,7 @@ public class GlitchService
             _log.Information("Looping corridor navigated: Combatant={CombatantId}, Roll={Successes}/{DC}",
                 GetCombatantId(combatant), result.Successes, dc);
 
-            return GlitchResult.Success("You recognize the spatial recursion and navigate correctly.");
+            return GlitchResult.Successful("You recognize the spatial recursion and navigate correctly.");
         }
         else
         {
@@ -168,7 +168,7 @@ public class GlitchService
             if (randomTile == null)
             {
                 // Fallback if no valid tile found
-                return GlitchResult.Success("The looping corridor distorts space, but you emerge at your intended destination.");
+                return GlitchResult.Successful("The looping corridor distorts space, but you emerge at your intended destination.");
             }
 
             _log.Warning("Looping corridor teleported: Combatant={CombatantId}, From={FromPos}, To={ToPos}, Roll={Successes}/{DC}",

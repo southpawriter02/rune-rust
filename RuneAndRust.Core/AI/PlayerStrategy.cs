@@ -43,6 +43,30 @@ public class PlayerStrategy
     public bool IsBurningBoss { get; set; }
 
     /// <summary>
+    /// True if players are using burst damage on the boss.
+    /// Counter: Use defensive cooldowns.
+    /// </summary>
+    public bool IsBurstingBoss { get; set; }
+
+    /// <summary>
+    /// True if players are swapping tanks (multiple tank strategy).
+    /// Counter: Use tank-specific debuffs.
+    /// </summary>
+    public bool IsSwappingTanks { get; set; }
+
+    /// <summary>
+    /// True if players are using crowd control abilities frequently.
+    /// Counter: Use CC immunity or reflection.
+    /// </summary>
+    public bool IsControlSpamming { get; set; }
+
+    /// <summary>
+    /// True if players are focusing on single targets.
+    /// Counter: Use AoE abilities.
+    /// </summary>
+    public bool IsSingleTargetFocus { get; set; }
+
+    /// <summary>
     /// Number of turns analyzed to determine strategy.
     /// </summary>
     public int TurnsAnalyzed { get; set; }

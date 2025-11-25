@@ -67,8 +67,8 @@ public class RealityTearService
         BattlefieldGrid grid)
     {
         _log.Information(
-            "{Character} entered Reality Tear at ({X}, {Y})",
-            character.Name, tearPosition.X, tearPosition.Y);
+            "{Character} entered Reality Tear at ({Column}, {Row})",
+            character.Name, tearPosition.Column, tearPosition.Row);
 
         var result = new RealityTearResult
         {
@@ -107,10 +107,10 @@ public class RealityTearService
         result.Message = BuildTearMessage(character.Name, tearPosition, newPosition, actualDamage);
 
         _log.Information(
-            "Reality Tear: {Character} warped from ({OldX}, {OldY}) to ({NewX}, {NewY}), " +
+            "Reality Tear: {Character} warped from ({OldColumn}, {OldRow}) to ({NewColumn}, {NewRow}), " +
             "took {Damage} Energy damage, gained +{Corruption} Corruption (total: {TotalCorruption})",
-            character.Name, tearPosition.X, tearPosition.Y,
-            newPosition.X, newPosition.Y, actualDamage, CORRUPTION_PER_TEAR, character.Corruption);
+            character.Name, tearPosition.Column, tearPosition.Row,
+            newPosition.Column, newPosition.Row, actualDamage, CORRUPTION_PER_TEAR, character.Corruption);
 
         return result;
     }
@@ -125,8 +125,8 @@ public class RealityTearService
         BattlefieldGrid grid)
     {
         _log.Information(
-            "{Enemy} entered Reality Tear at ({X}, {Y})",
-            enemy.Name, tearPosition.X, tearPosition.Y);
+            "{Enemy} entered Reality Tear at ({Column}, {Row})",
+            enemy.Name, tearPosition.Column, tearPosition.Row);
 
         var result = new RealityTearResult
         {
@@ -161,10 +161,10 @@ public class RealityTearService
         result.Message = BuildTearMessage(enemy.Name, tearPosition, newPosition, damageRoll);
 
         _log.Information(
-            "Reality Tear: {Enemy} warped from ({OldX}, {OldY}) to ({NewX}, {NewY}), " +
+            "Reality Tear: {Enemy} warped from ({OldColumn}, {OldRow}) to ({NewColumn}, {NewRow}), " +
             "took {Damage} Energy damage",
-            enemy.Name, tearPosition.X, tearPosition.Y,
-            newPosition.X, newPosition.Y, damageRoll);
+            enemy.Name, tearPosition.Column, tearPosition.Row,
+            newPosition.Column, newPosition.Row, damageRoll);
 
         return result;
     }
@@ -187,7 +187,7 @@ public class RealityTearService
             .Where(t =>
             {
                 var distance = CalculateManhattanDistance(
-                    originTile.X, originTile.Y, t.Position.X, t.Position.Y);
+                    originTile.Column, originTile.Row, t.Position.Column, t.Position.Row);
                 return distance >= WARP_DISTANCE_MIN && distance <= WARP_DISTANCE_MAX;
             })
             .ToList();
@@ -203,8 +203,8 @@ public class RealityTearService
         var chosenIndex = _diceService.Roll(0, validTiles.Count - 1);
         var chosenTile = validTiles[chosenIndex];
 
-        _log.Debug("Selected warp destination: ({X}, {Y}) from {Count} valid options",
-            chosenTile.Position.X, chosenTile.Position.Y, validTiles.Count);
+        _log.Debug("Selected warp destination: ({Column}, {Row}) from {Count} valid options",
+            chosenTile.Position.Column, chosenTile.Position.Row, validTiles.Count);
 
         return chosenTile.Position;
     }
@@ -256,7 +256,7 @@ public class RealityTearService
         int damage)
     {
         var distance = CalculateManhattanDistance(
-            oldPos.X, oldPos.Y, newPos.X, newPos.Y);
+            oldPos.Column, oldPos.Row, newPos.Column, newPos.Row);
 
         return $"🌀 Reality Tear!\n" +
                $"   {characterName} steps into a spacetime rupture\n" +

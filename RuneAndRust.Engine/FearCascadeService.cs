@@ -172,15 +172,16 @@ public class FearCascadeService
     /// </summary>
     private ResolveCheckResult PerformWILLResolveCheck(Enemy enemy, int dc)
     {
-        int willScore = enemy.WILL ?? 2; // Default to 2 if not set
-        var checkResult = _diceService.SkillCheck(willScore, dc);
+        int willScore = enemy.WILL > 0 ? enemy.WILL : 2; // Default to 2 if not set
+        var rollResult = _diceService.Roll(willScore);
+        bool success = rollResult.Successes >= dc;
 
         return new ResolveCheckResult
         {
-            Success = checkResult.Success,
-            Successes = checkResult.Successes,
+            Success = success,
+            Successes = rollResult.Successes,
             DC = dc,
-            Message = checkResult.Success
+            Message = success
                 ? $"{enemy.Name} resisted Fear (WILL check DC {dc})"
                 : $"{enemy.Name} failed WILL check (DC {dc}), became Feared"
         };

@@ -99,7 +99,7 @@ public class VerticalTraversalService : IVerticalTraversalService
         if (connection.Type == VerticalConnectionType.Stairs)
         {
             _logger.Debug("Stairs traversal automatic success");
-            return TraversalResult.Success(
+            return TraversalResult.Successful(
                 connection.GetSuccessDescription(direction),
                 connection.LevelsSpanned);
         }
@@ -110,7 +110,7 @@ public class VerticalTraversalService : IVerticalTraversalService
             if (connection.IsPowered == true)
             {
                 _logger.Debug("Powered elevator traversal automatic success");
-                return TraversalResult.Success(
+                return TraversalResult.Successful(
                     "The elevator groans and shudders as it carries you " + direction + ".",
                     connection.LevelsSpanned);
             }
@@ -138,7 +138,7 @@ public class VerticalTraversalService : IVerticalTraversalService
                     checkResult.TotalRoll,
                     connection.TraversalDC);
 
-                return TraversalResult.Success(
+                return TraversalResult.Successful(
                     connection.GetSuccessDescription(direction),
                     connection.LevelsSpanned);
             }
@@ -200,7 +200,7 @@ public class VerticalTraversalService : IVerticalTraversalService
                 character.Name,
                 connection.ConnectionId);
 
-            return TraversalResult.Success(
+            return TraversalResult.Successful(
                 $"After {connection.ClearanceTimeMinutes ?? 10} minutes of effort, you clear the debris. The passage is now open.",
                 0);
         }
@@ -290,7 +290,7 @@ public class VerticalTraversalService : IVerticalTraversalService
     {
         // Roll d20 + MIGHT attribute
         var d20Roll = _diceRoller?.Roll(1, 20) ?? RollD20();
-        var mightBonus = character.Attributes.MIGHT;
+        var mightBonus = character.Attributes["MIGHT"];
         var totalRoll = d20Roll + mightBonus;
 
         var success = totalRoll >= dc;

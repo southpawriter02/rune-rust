@@ -34,7 +34,7 @@ public class MomentumService
     /// </summary>
     public void GenerateMomentum(PlayerCharacter character, int amount, string source)
     {
-        using (_log.BeginTimedOperation("GenerateMomentum"))
+        using (_log.BeginScope("GenerateMomentum"))
         {
             int currentMomentum = character.Momentum;
             int newMomentum = Math.Clamp(currentMomentum + amount, 0, MAX_MOMENTUM);

@@ -73,10 +73,10 @@ public class JournalCommand : ICommand
                 }
 
                 // Show progress for objectives with counters
-                var objectiveWithProgress = quest.Objectives.FirstOrDefault(o => o.TargetCount > 1);
+                var objectiveWithProgress = quest.Objectives.FirstOrDefault(o => o.Required > 1);
                 if (objectiveWithProgress != null)
                 {
-                    string progressLine = $" Progress: {objectiveWithProgress.CurrentCount}/{objectiveWithProgress.TargetCount}";
+                    string progressLine = $" Progress: {objectiveWithProgress.Current}/{objectiveWithProgress.Required}";
                     output.AppendLine($"║ {progressLine.PadRight(38)} ║");
                 }
 

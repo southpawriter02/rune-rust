@@ -56,6 +56,14 @@ public class NewGamePlusService
     }
 
     /// <summary>
+    /// Get the current NG+ tier for a character
+    /// </summary>
+    public int GetCurrentNGPlusTier(int characterId)
+    {
+        return _repository.GetCurrentNGPlusTier(characterId);
+    }
+
+    /// <summary>
     /// Check if a character can access a specific NG+ tier
     /// </summary>
     public bool CanAccessTier(int characterId, int tier)
@@ -324,11 +332,19 @@ public class NewGamePlusService
 }
 
 /// <summary>
+/// Interface for log operations that can be marked as complete
+/// </summary>
+internal interface ILogOperation : IDisposable
+{
+    void Complete();
+}
+
+/// <summary>
 /// Extension methods for Serilog operation tracking
 /// </summary>
 internal static class LoggerExtensions
 {
-    public static IDisposable BeginOperation(this ILogger logger, string messageTemplate, params object[] args)
+    public static ILogOperation BeginOperation(this ILogger logger, string messageTemplate, params object[] args)
     {
         var operationId = Guid.NewGuid();
         logger.Debug("BEGIN: " + messageTemplate + " | OperationId={OperationId}", args.Concat(new object[] { operationId }).ToArray());
@@ -336,7 +352,7 @@ internal static class LoggerExtensions
         return new LogOperation(logger, messageTemplate, args, operationId);
     }
 
-    private class LogOperation : IDisposable
+    private class LogOperation : ILogOperation
     {
         private readonly ILogger _logger;
         private readonly string _messageTemplate;

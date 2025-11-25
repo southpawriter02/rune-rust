@@ -123,8 +123,8 @@ public class BiomeBlendingService
         var toDetails = GetDescriptorList(toBiome, "Details");
 
         // Select details based on weights
-        var selectedFromDetails = WeightedSelectMultiple(fromDetails, fromWeight, rng, maxItems: 2);
-        var selectedToDetails = WeightedSelectMultiple(toDetails, toWeight, rng, maxItems: 2);
+        var selectedFromDetails = WeightedSelectMultiple(fromDetails, fromWeight, rng, count: 2);
+        var selectedToDetails = WeightedSelectMultiple(toDetails, toWeight, rng, count: 2);
 
         // Build description with dominant biome first
         if (fromWeight > toWeight)

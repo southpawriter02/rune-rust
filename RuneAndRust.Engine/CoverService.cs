@@ -34,7 +34,7 @@ public class CoverService
             return CoverBonus.None();
         }
 
-        var targetTile = grid.GetTile(targetPosition);
+        var targetTile = grid.GetTile(targetPosition.Value);
         if (targetTile == null)
         {
             return CoverBonus.None();
@@ -99,7 +99,7 @@ public class CoverService
         }
 
         // Cover only works against ranged attacks from opposing zone
-        if (attackerPosition.Zone == targetPosition.Zone)
+        if (attackerPosition.Value.Zone == targetPosition.Value.Zone)
         {
             return false;  // Same zone, no cover
         }

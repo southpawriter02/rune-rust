@@ -406,7 +406,7 @@ public class MuspelheimBiomeService
     /// </summary>
     public MuspelheimSector GenerateMuspelheimSector(int sectorDepth, int? seed = null)
     {
-        using (_log.BeginTimedOperation("Generating Muspelheim sector at depth {Depth}", sectorDepth))
+        using (_log.BeginScope("Generating Muspelheim sector at depth {Depth}", sectorDepth))
         {
             var random = seed.HasValue ? new Random(seed.Value) : new Random();
 
@@ -891,7 +891,7 @@ public class MuspelheimBiomeService
                         BlocksMovement = hazard.BlocksMovement,
                         BlocksLineOfSight = hazard.BlocksLineOfSight,
                         State = EnvironmentalObjectState.Active,
-                        HazardTrigger = HazardTrigger.OnEnter
+                        HazardTrigger = Core.HazardTrigger.OnMovement
                     };
 
                     // Create the environmental object in the service

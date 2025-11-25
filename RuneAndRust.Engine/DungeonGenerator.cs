@@ -318,7 +318,7 @@ public class DungeonGenerator
 
         _log.Information(
             "Sector generation started: Seed={Seed}, Biome={Biome}, AdditionalBiomes={Additional}, Difficulty={Difficulty}, TargetRooms={Rooms}",
-            seed, biome?.BiomeId ?? "none", additionalBiomes?.Count ?? 0, biome?.DifficultyTier ?? DifficultyTier.Normal, targetRoomCount);
+            seed, biome?.BiomeId ?? "none", additionalBiomes?.Count ?? 0, DifficultyTier.Normal, targetRoomCount);
 
         try
         {
@@ -416,7 +416,7 @@ public class DungeonGenerator
 
                 var globalBudget = _contentDensityService.CalculateGlobalBudget(
                     dungeon.TotalRoomCount,
-                    biome.DifficultyTier,
+                    DifficultyTier.Normal,
                     biome.BiomeId);
 
                 var roomsList = dungeon.Rooms.Values.ToList();
@@ -512,7 +512,7 @@ public class DungeonGenerator
                 transitionCount, primaryBiome.BiomeId, secondaryBiome.BiomeId);
 
             // Apply blending to rooms in the middle section
-            var roomsList = dungeon.Rooms.Values.OrderBy(r => r.Position?.X ?? 0).ToList();
+            var roomsList = dungeon.Rooms.Values.OrderBy(r => ((Core.Spatial.RoomPosition?)r.Position)?.X ?? 0).ToList();
             var startIndex = roomsList.Count / 2 - transitionCount / 2;
             var endIndex = startIndex + transitionCount;
 
@@ -649,8 +649,7 @@ public class DungeonGenerator
             // Create simplified enemy spawn
             room.Enemies.Add(new Core.Population.EnemySpawn
             {
-                EnemyId = selected.AssociatedDataId ?? selected.ElementName,
-                SpawnWeight = selected.Weight
+                EnemyId = selected.AssociatedDataId ?? selected.ElementName
             });
 
             budget -= selected.SpawnCost;
@@ -679,8 +678,7 @@ public class DungeonGenerator
 
             room.Hazards.Add(new Core.Population.HazardSpawn
             {
-                HazardId = selected.AssociatedDataId ?? selected.ElementName,
-                SpawnWeight = selected.Weight
+                HazardId = selected.AssociatedDataId ?? selected.ElementName
             });
 
             // Remove to avoid duplicates
@@ -705,10 +703,10 @@ public class DungeonGenerator
             var selected = biome.Elements.WeightedRandomSelection(availableLoot, rng);
             if (selected == null) break;
 
-            room.Loot.Add(new Core.Population.LootNode
+            room.Loot.Add(new Core.Population.ResourceVein
             {
-                LootNodeId = selected.AssociatedDataId ?? selected.ElementName,
-                LootTier = LootTier.Common // Could be enhanced based on element data
+                Id = selected.AssociatedDataId ?? selected.ElementName,
+                Quality = LootQuality.Common // Could be enhanced based on element data
             });
         }
     }
@@ -723,8 +721,7 @@ public class DungeonGenerator
         {
             room.Enemies.Add(new Core.Population.EnemySpawn
             {
-                EnemyId = $"placeholder_enemy_{biome.BiomeId}_{i}",
-                SpawnWeight = 1.0f
+                EnemyId = $"placeholder_enemy_{biome.BiomeId}_{i}"
             });
         }
 
@@ -732,17 +729,16 @@ public class DungeonGenerator
         {
             room.Hazards.Add(new Core.Population.HazardSpawn
             {
-                HazardId = $"placeholder_hazard_{biome.BiomeId}_{i}",
-                SpawnWeight = 1.0f
+                HazardId = $"placeholder_hazard_{biome.BiomeId}_{i}"
             });
         }
 
         for (int i = 0; i < allocation.AllocatedLoot; i++)
         {
-            room.Loot.Add(new Core.Population.LootNode
+            room.Loot.Add(new Core.Population.ResourceVein
             {
-                LootNodeId = $"placeholder_loot_{biome.BiomeId}_{i}",
-                LootTier = LootTier.Common
+                Id = $"placeholder_loot_{biome.BiomeId}_{i}",
+                Quality = LootQuality.Common
             });
         }
     }

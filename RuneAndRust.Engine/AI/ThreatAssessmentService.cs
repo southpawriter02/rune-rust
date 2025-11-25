@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using RuneAndRust.Core;
 using RuneAndRust.Core.AI;
+using RuneAndRust.Engine;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -166,10 +167,12 @@ public class ThreatAssessmentService : IThreatAssessmentService
             score -= 5f;
 
         // Targets in cover are lower priority (-3 per cover level)
-        if (_coverService != null)
+        var tile = grid.GetTile(targetPos.Value);
+        if (tile != null && tile.Cover != CoverType.None)
         {
-            var coverLevel = _coverService.GetCoverLevel(grid, targetPos.Value);
-            score -= (int)coverLevel * 3f;
+            // Convert CoverType to numeric level: Physical=1, Metaphysical=1, Both=2
+            int coverLevel = tile.Cover == CoverType.Both ? 2 : 1;
+            score -= coverLevel * 3f;
         }
 
         // Isolated targets are higher priority (+8)

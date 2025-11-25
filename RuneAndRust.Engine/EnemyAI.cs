@@ -830,7 +830,7 @@ public partial class EnemyAI
                 var parryText = _flavorTextService.GenerateDefensiveActionText(
                     "Parry",
                     outcomeType,
-                    weaponType: player.EquippedWeapon?.Type,
+                    weaponType: player.EquippedWeapon?.Type.ToString(),
                     attackIntensity: attackIntensity,
                     environmentContext: null,
                     variables: new Dictionary<string, string>

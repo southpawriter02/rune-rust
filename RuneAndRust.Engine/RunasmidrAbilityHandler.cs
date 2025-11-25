@@ -82,7 +82,7 @@ public class RunasmidrAbilityHandler
             _log.Information("Hagalaz Trap placed: Position={Position}, StaminaCost={Cost}",
                 targetPosition, STAMINA_COST);
 
-            return AbilityExecutionResult.Success("Hagalaz Trap placed successfully", STAMINA_COST);
+            return AbilityExecutionResult.Successful("Hagalaz Trap placed successfully", STAMINA_COST);
         }
 
         return AbilityExecutionResult.Failure(result.Message);
@@ -129,7 +129,7 @@ public class RunasmidrAbilityHandler
             _log.Information("Rune of Disruption placed: Position={Position}, StaminaCost={Cost}",
                 targetPosition, STAMINA_COST);
 
-            return AbilityExecutionResult.Success("Rune of Disruption placed successfully", STAMINA_COST);
+            return AbilityExecutionResult.Successful("Rune of Disruption placed successfully", STAMINA_COST);
         }
 
         return AbilityExecutionResult.Failure(result.Message);
@@ -176,7 +176,7 @@ public class RunasmidrAbilityHandler
             _log.Information("Rune of Isolation placed: Position={Position}, StaminaCost={Cost}",
                 targetPosition, STAMINA_COST);
 
-            return AbilityExecutionResult.Success("Rune of Isolation placed successfully", STAMINA_COST);
+            return AbilityExecutionResult.Successful("Rune of Isolation placed successfully", STAMINA_COST);
         }
 
         return AbilityExecutionResult.Failure(result.Message);

@@ -122,8 +122,12 @@ public class EinbuiCraftingHandler
             // Get or create virtual field station
             var fieldStation = GetOrCreateFieldStation();
 
+            // TODO: Add CharacterRepository dependency to properly load PlayerCharacter
+            // For now, create a minimal placeholder character object
+            var character = new RuneAndRust.Core.PlayerCharacter { CharacterID = characterId };
+
             // Use virtual field station for crafting
-            var result = _craftingService.CraftItem(characterId, recipeId, fieldStation.StationId);
+            var result = _craftingService.CraftItem(character, recipeId, fieldStation.StationId);
 
             if (result.Success)
             {

@@ -128,7 +128,7 @@ public class PositioningService
         _log.Information("Movement successful: Combatant={CombatantName}, NewPos={NewPos}, StaminaCost={Cost}",
             combatantName, targetPosition, staminaCost);
 
-        return MovementResult.Success($"Moved to {targetPosition}", staminaCost);
+        return MovementResult.Successful($"Moved to {targetPosition}", staminaCost);
     }
 
     /// <summary>

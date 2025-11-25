@@ -37,7 +37,12 @@ public class StrandhoggService
     {
         _momentumService = new MomentumService();
         _diceService = new DiceService();
-        _statusEffectService = new AdvancedStatusEffectService(connectionString);
+
+        // Initialize dependencies for AdvancedStatusEffectService
+        var repository = new Persistence.StatusEffectRepository(connectionString);
+        var traumaService = new TraumaEconomyService();
+        _statusEffectService = new AdvancedStatusEffectService(repository, traumaService, _diceService);
+
         _log.Debug("StrandhoggService initialized");
     }
 
@@ -193,7 +198,7 @@ public class StrandhoggService
                 TargetID = target.EnemyID,
                 EffectType = "Disoriented",
                 DurationRemaining = disorientedDuration,
-                Category = StatusEffectCategory.Debuff
+                Category = StatusEffectCategory.ControlDebuff
             };
             target.StatusEffects.Add(disorientedEffect);
 
