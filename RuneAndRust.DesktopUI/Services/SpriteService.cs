@@ -1,8 +1,10 @@
 using RuneAndRust.DesktopUI.Models;
+using RuneAndRust.DesktopUI.Styles;
 using Serilog;
 using SkiaSharp;
 using System;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -10,13 +12,56 @@ using System.Text.Json;
 namespace RuneAndRust.DesktopUI.Services;
 
 /// <summary>
-/// Implementation of sprite service with caching and JSON loading.
+/// v0.43.21: Implementation of sprite service with caching, memory optimization, and JSON loading.
+/// Includes cache size limits with LRU eviction for performance optimization.
 /// </summary>
 public class SpriteService : ISpriteService
 {
     private readonly ILogger _logger;
     private readonly ConcurrentDictionary<string, PixelSprite> _sprites = new();
-    private readonly ConcurrentDictionary<string, SKBitmap> _bitmapCache = new();
+    private readonly ConcurrentDictionary<string, CachedBitmap> _bitmapCache = new();
+    private readonly object _cacheLock = new();
+    private long _currentCacheSize;
+
+    /// <summary>
+    /// Maximum cache size in bytes (100 MB default from UIConstants).
+    /// </summary>
+    public long MaxCacheSize { get; set; } = UIConstants.MaxCacheSizeBytes;
+
+    /// <summary>
+    /// Current cache size in bytes.
+    /// </summary>
+    public long CurrentCacheSize => _currentCacheSize;
+
+    /// <summary>
+    /// Number of cached bitmaps.
+    /// </summary>
+    public int CachedBitmapCount => _bitmapCache.Count;
+
+    /// <summary>
+    /// Internal wrapper for cached bitmaps with metadata.
+    /// </summary>
+    private class CachedBitmap
+    {
+        public SKBitmap Bitmap { get; }
+        public long ByteCount { get; }
+        public DateTime LastAccessed { get; set; }
+        public int AccessCount { get; set; }
+
+        public CachedBitmap(SKBitmap bitmap)
+        {
+            Bitmap = bitmap;
+            ByteCount = bitmap.ByteCount;
+            LastAccessed = DateTime.UtcNow;
+            AccessCount = 1;
+        }
+
+        public void Touch()
+        {
+            LastAccessed = DateTime.UtcNow;
+            AccessCount++;
+        }
+    }
 
     public SpriteService(ILogger logger)
     {
@@ -26,6 +71,7 @@ public class SpriteService : ISpriteService
     /// <inheritdoc/>
     public void LoadSpritesFromDirectory(string directoryPath)
     {
+        var sw = Stopwatch.StartNew();
         _logger.Information("Loading sprites from directory: {Directory}", directoryPath);
 
         if (!Directory.Exists(directoryPath))
@@ -38,10 +84,14 @@ public class SpriteService : ISpriteService
 
             // Now load the sample sprites we just created
             LoadSpritesFromDirectoryInternal(directoryPath);
+            sw.Stop();
+            _logger.Information("Sprite loading completed in {ElapsedMs}ms", sw.ElapsedMilliseconds);
             return;
         }
 
         LoadSpritesFromDirectoryInternal(directoryPath);
+        sw.Stop();
+        _logger.Information("Sprite loading completed in {ElapsedMs}ms", sw.ElapsedMilliseconds);
     }
 
     private void LoadSpritesFromDirectoryInternal(string directoryPath)
@@ -107,7 +157,8 @@ public class SpriteService : ISpriteService
         var cacheKey = $"{spriteName}_{scale}";
         if (_bitmapCache.TryGetValue(cacheKey, out var cachedBitmap))
         {
-            return cachedBitmap;
+            cachedBitmap.Touch();
+            return cachedBitmap.Bitmap;
         }
 
         // Sprite not in cache, need to render
@@ -120,15 +171,78 @@ public class SpriteService : ISpriteService
         // Render and cache
         try
         {
+            var sw = Stopwatch.StartNew();
             var bitmap = sprite.ToBitmap(scale);
-            _bitmapCache[cacheKey] = bitmap;
-            _logger.Debug("Rendered and cached sprite: {SpriteName} at scale {Scale}", spriteName, scale);
+            sw.Stop();
+
+            // Log performance warning if render took too long
+            if (sw.ElapsedMilliseconds > UIConstants.TargetFrameTimeMs)
+            {
+                _logger.Warning("Sprite render took {ElapsedMs}ms (target: {TargetMs}ms) for {SpriteName}",
+                    sw.ElapsedMilliseconds, UIConstants.TargetFrameTimeMs, spriteName);
+            }
+
+            // Add to cache with eviction if needed
+            AddToCache(cacheKey, bitmap);
+
+            _logger.Debug("Rendered and cached sprite: {SpriteName} at scale {Scale} in {ElapsedMs}ms",
+                spriteName, scale, sw.ElapsedMilliseconds);
             return bitmap;
         }
         catch (Exception ex)
         {
             _logger.Error(ex, "Failed to render sprite: {SpriteName}", spriteName);
             return null;
+        }
+    }
+
+    /// <summary>
+    /// Adds a bitmap to the cache, evicting old entries if necessary.
+    /// </summary>
+    private void AddToCache(string cacheKey, SKBitmap bitmap)
+    {
+        var cached = new CachedBitmap(bitmap);
+
+        lock (_cacheLock)
+        {
+            // Evict old entries if cache is full
+            while (_currentCacheSize + cached.ByteCount > MaxCacheSize && _bitmapCache.Count > 0)
+            {
+                EvictOldestCacheEntry();
+            }
+
+            // Add new entry
+            if (_bitmapCache.TryAdd(cacheKey, cached))
+            {
+                _currentCacheSize += cached.ByteCount;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Evicts the oldest (LRU) cache entry.
+    /// </summary>
+    private void EvictOldestCacheEntry()
+    {
+        // Find the oldest entry (LRU)
+        string? oldestKey = null;
+        DateTime oldestTime = DateTime.MaxValue;
+
+        foreach (var kvp in _bitmapCache)
+        {
+            if (kvp.Value.LastAccessed < oldestTime)
+            {
+                oldestTime = kvp.Value.LastAccessed;
+                oldestKey = kvp.Key;
+            }
+        }
+
+        if (oldestKey != null && _bitmapCache.TryRemove(oldestKey, out var evicted))
+        {
+            _currentCacheSize -= evicted.ByteCount;
+            evicted.Bitmap.Dispose();
+            _logger.Debug("Evicted cache entry: {CacheKey} (last accessed: {LastAccessed})",
+                oldestKey, oldestTime);
         }
     }
 
@@ -147,14 +261,43 @@ public class SpriteService : ISpriteService
     /// <inheritdoc/>
     public void ClearCache()
     {
-        _logger.Information("Clearing sprite bitmap cache ({Count} cached bitmaps)", _bitmapCache.Count);
-
-        foreach (var bitmap in _bitmapCache.Values)
+        lock (_cacheLock)
         {
-            bitmap.Dispose();
-        }
+            _logger.Information("Clearing sprite bitmap cache ({Count} cached bitmaps, {SizeMB:F2} MB)",
+                _bitmapCache.Count, _currentCacheSize / (1024.0 * 1024.0));
 
-        _bitmapCache.Clear();
+            foreach (var cached in _bitmapCache.Values)
+            {
+                cached.Bitmap.Dispose();
+            }
+
+            _bitmapCache.Clear();
+            _currentCacheSize = 0;
+        }
+    }
+
+    /// <summary>
+    /// v0.43.21: Gets cache statistics for performance monitoring.
+    /// </summary>
+    public CacheStatistics GetCacheStatistics()
+    {
+        lock (_cacheLock)
+        {
+            var totalAccesses = _bitmapCache.Values.Sum(c => c.AccessCount);
+            var avgAccesses = _bitmapCache.Count > 0
+                ? _bitmapCache.Values.Average(c => c.AccessCount)
+                : 0;
+
+            return new CacheStatistics
+            {
+                CachedItemCount = _bitmapCache.Count,
+                CurrentSizeBytes = _currentCacheSize,
+                MaxSizeBytes = MaxCacheSize,
+                TotalAccesses = totalAccesses,
+                AverageAccessesPerItem = avgAccesses,
+                UtilizationPercent = MaxCacheSize > 0 ? (double)_currentCacheSize / MaxCacheSize * 100 : 0
+            };
+        }
     }
 
     /// <summary>
@@ -337,4 +480,50 @@ public class SpriteService : ISpriteService
         });
         File.WriteAllText(filePath, json);
     }
+}
+
+/// <summary>
+/// v0.43.21: Cache statistics for performance monitoring.
+/// </summary>
+public class CacheStatistics
+{
+    /// <summary>
+    /// Number of items in cache.
+    /// </summary>
+    public int CachedItemCount { get; set; }
+
+    /// <summary>
+    /// Current cache size in bytes.
+    /// </summary>
+    public long CurrentSizeBytes { get; set; }
+
+    /// <summary>
+    /// Maximum cache size in bytes.
+    /// </summary>
+    public long MaxSizeBytes { get; set; }
+
+    /// <summary>
+    /// Total number of cache accesses.
+    /// </summary>
+    public int TotalAccesses { get; set; }
+
+    /// <summary>
+    /// Average number of accesses per item.
+    /// </summary>
+    public double AverageAccessesPerItem { get; set; }
+
+    /// <summary>
+    /// Cache utilization percentage.
+    /// </summary>
+    public double UtilizationPercent { get; set; }
+
+    /// <summary>
+    /// Current cache size in MB.
+    /// </summary>
+    public double CurrentSizeMB => CurrentSizeBytes / (1024.0 * 1024.0);
+
+    /// <summary>
+    /// Maximum cache size in MB.
+    /// </summary>
+    public double MaxSizeMB => MaxSizeBytes / (1024.0 * 1024.0);
 }

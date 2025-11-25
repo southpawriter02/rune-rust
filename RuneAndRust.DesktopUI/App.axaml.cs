@@ -45,7 +45,7 @@ public partial class App : Application
             .WriteTo.Console()
             .CreateLogger();
 
-        Log.Information("Rune & Rust Desktop UI v0.43.18 starting...");
+        Log.Information("Rune & Rust Desktop UI v0.43.21 starting...");
 
         try
         {
@@ -114,6 +114,12 @@ public partial class App : Application
         // Audio Services (v0.43.18)
         services.AddSingleton<IAudioService, AudioService>();
 
+        // Save/Load Services (v0.43.19)
+        services.AddSingleton<ISaveGameService, SaveGameService>();
+
+        // Tooltip & Help Services (v0.43.20)
+        services.AddSingleton<ITooltipService, TooltipService>();
+
         // Engine Services (v0.43.5)
         services.AddSingleton<DiceService>();
         services.AddSingleton<SagaService>();
@@ -125,20 +131,24 @@ public partial class App : Application
         services.AddSingleton<CombatEngine>();
         services.AddSingleton<EnemyAI>();
 
-        // ViewModels
+        // ViewModels (v0.43.1 - v0.43.21)
         services.AddTransient<MainWindowViewModel>();
         services.AddTransient<MenuViewModel>();
         services.AddTransient<SpriteDemoViewModel>();
         services.AddTransient<CombatViewModel>();
+        services.AddTransient<BossCombatViewModel>();
         services.AddTransient<CharacterSheetViewModel>();
         services.AddTransient<InventoryViewModel>();
         services.AddTransient<DungeonExplorationViewModel>();
+        services.AddTransient<MinimapViewModel>();
         services.AddTransient<SpecializationTreeViewModel>();
         services.AddTransient<MetaProgressionViewModel>();
         services.AddTransient<EndgameModeViewModel>();
         services.AddTransient<SettingsViewModel>();
+        services.AddTransient<SaveLoadViewModel>();
+        services.AddTransient<HelpViewModel>();
 
-        // Note: Additional engine services will be registered as needed in future specs.
+        // v0.43.21: All ViewModels registered for complete UI integration
 
         Log.Debug("Registered {ServiceCount} service types", services.Count);
     }

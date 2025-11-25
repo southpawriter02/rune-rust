@@ -6,7 +6,7 @@ using ReactiveUI;
 namespace RuneAndRust.DesktopUI.ViewModels;
 
 /// <summary>
-/// v0.43.18: View model for the main menu screen.
+/// v0.43.21: View model for the main menu screen.
 /// Allows starting a new game, loading saved games, and accessing settings.
 /// </summary>
 public class MenuViewModel : ViewModelBase
@@ -17,6 +17,8 @@ public class MenuViewModel : ViewModelBase
     private readonly IEndgameService? _endgameService;
     private readonly IConfigurationService? _configurationService;
     private readonly IAudioService? _audioService;
+    private readonly ISaveGameService? _saveGameService;
+    private readonly IDialogService? _dialogService;
     /// <summary>
     /// Command to start a new game.
     /// </summary>
@@ -65,7 +67,12 @@ public class MenuViewModel : ViewModelBase
     /// <summary>
     /// Gets the application version.
     /// </summary>
-    public string Version => "v0.43.18 - Settings & Configuration";
+    public string Version => "v0.43.21 - UI Testing & Optimization";
+
+    /// <summary>
+    /// Whether there is a saved game to continue.
+    /// </summary>
+    public bool HasSavedGame => _saveGameService?.GetMostRecentSave() != null;
 
     public MenuViewModel()
     {
@@ -90,7 +97,9 @@ public class MenuViewModel : ViewModelBase
         IMetaProgressionService metaProgressionService,
         IEndgameService endgameService,
         IConfigurationService configurationService,
-        IAudioService audioService) : this()
+        IAudioService audioService,
+        ISaveGameService saveGameService,
+        IDialogService dialogService) : this()
     {
         _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
         _spriteService = spriteService ?? throw new ArgumentNullException(nameof(spriteService));
@@ -98,6 +107,8 @@ public class MenuViewModel : ViewModelBase
         _endgameService = endgameService ?? throw new ArgumentNullException(nameof(endgameService));
         _configurationService = configurationService ?? throw new ArgumentNullException(nameof(configurationService));
         _audioService = audioService ?? throw new ArgumentNullException(nameof(audioService));
+        _saveGameService = saveGameService ?? throw new ArgumentNullException(nameof(saveGameService));
+        _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
     }
 
     private void OnNewGame()
@@ -106,16 +117,49 @@ public class MenuViewModel : ViewModelBase
         Console.WriteLine("[MENU] New Game selected");
     }
 
-    private void OnContinueGame()
+    private async void OnContinueGame()
     {
-        // Placeholder - will load most recent save in later specs
-        Console.WriteLine("[MENU] Continue Game selected");
+        if (_saveGameService != null && _navigationService != null)
+        {
+            var mostRecent = _saveGameService.GetMostRecentSave();
+            if (mostRecent != null)
+            {
+                Console.WriteLine($"[MENU] Loading most recent save: {mostRecent.SaveName}");
+                var success = await _saveGameService.LoadGameAsync(mostRecent.FileName);
+                if (success)
+                {
+                    // In full implementation, navigate to game view
+                    Console.WriteLine("[MENU] Continue game loaded successfully");
+                }
+                else
+                {
+                    Console.WriteLine("[MENU] Failed to load continue game");
+                }
+            }
+            else
+            {
+                Console.WriteLine("[MENU] No saved games to continue");
+            }
+        }
+        else
+        {
+            Console.WriteLine("[MENU] Continue Game selected (services not available)");
+        }
     }
 
     private void OnLoadGame()
     {
-        // Placeholder - will show save browser in v0.43.19
-        Console.WriteLine("[MENU] Load Game selected");
+        if (_navigationService != null && _saveGameService != null && _dialogService != null)
+        {
+            // Navigate to save/load view (v0.43.19)
+            var saveLoadViewModel = new SaveLoadViewModel(_saveGameService, _dialogService, _navigationService);
+            _navigationService.NavigateTo(saveLoadViewModel);
+            Console.WriteLine("[MENU] Navigated to Save/Load");
+        }
+        else
+        {
+            Console.WriteLine("[MENU] Load Game selected (navigation not available)");
+        }
     }
 
     private void OnSettings()
