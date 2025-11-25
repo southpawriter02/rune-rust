@@ -488,7 +488,7 @@ public class DungeonExplorationViewModel : ViewModelBase
             HasEnvironmentalHazard = true,
             IsHazardActive = true,
             HazardDescription = "Sparking conduits threaten to discharge electricity.",
-            HazardType = HazardType.Electrical
+            HazardType = HazardType.ElectricalHazard
         };
 
         // Room 3: Storage Chamber (1, 0, 0) - East of Entry (also connected west to room_02)
@@ -507,7 +507,7 @@ public class DungeonExplorationViewModel : ViewModelBase
             },
             ItemsOnGround = new List<Equipment>
             {
-                new Equipment { Name = "Scrap Metal", EquipmentType = EquipmentType.Material }
+                new Equipment { Name = "Scrap Metal", Type = EquipmentType.Accessory }
             }
         };
 
@@ -551,9 +551,9 @@ public class DungeonExplorationViewModel : ViewModelBase
             },
             Enemies = new List<Enemy>
             {
-                new Enemy { Type = EnemyType.RustHorror, CurrentHP = 80, MaxHP = 80 }
+                new Enemy { Type = EnemyType.RuinWarden, HP = 80, MaxHP = 80, Name = "Rust Horror" }
             },
-            PsychicResonance = PsychicResonanceLevel.High
+            PsychicResonance = PsychicResonanceLevel.Heavy
         };
 
         // Room 6: Lower Level (0, 2, -1) - Below Junction (Vertical connection target)
@@ -746,7 +746,7 @@ public class DungeonExplorationViewModel : ViewModelBase
                 Icon = "~",
                 Name = "Psychic Resonance",
                 Description = $"{CurrentRoom.PsychicResonance} Aetheric presence detected",
-                FeatureType = CurrentRoom.PsychicResonance >= PsychicResonanceLevel.High ? "Hazard" : "Info"
+                FeatureType = CurrentRoom.PsychicResonance >= PsychicResonanceLevel.Heavy ? "Hazard" : "Info"
             });
         }
 
@@ -1184,10 +1184,13 @@ public class DungeonExplorationViewModel : ViewModelBase
         return type switch
         {
             HazardType.Fire => "Fire Hazard",
-            HazardType.Electrical => "Electrical Hazard",
-            HazardType.Toxic => "Toxic Hazard",
-            HazardType.Psychic => "Psychic Hazard",
-            HazardType.Physical => "Physical Hazard",
+            HazardType.ElectricalHazard => "Electrical Hazard",
+            HazardType.ToxicFumes => "Toxic Hazard",
+            HazardType.ToxicSludge => "Toxic Hazard",
+            HazardType.Radiation => "Radiation Hazard",
+            HazardType.Ice => "Ice Hazard",
+            HazardType.Darkness => "Darkness Hazard",
+            HazardType.UnstableFlooring => "Unstable Ground",
             _ => "Environmental Hazard"
         };
     }

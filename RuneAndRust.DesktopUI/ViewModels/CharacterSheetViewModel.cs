@@ -51,7 +51,7 @@ public class CharacterSheetViewModel : ViewModelBase
     /// <summary>
     /// Gets the character's archetype name if set.
     /// </summary>
-    public string ArchetypeName => Character?.Archetype?.Name ?? "None";
+    public string ArchetypeName => Character?.Archetype?.ArchetypeType.ToString() ?? "None";
 
     #endregion
 

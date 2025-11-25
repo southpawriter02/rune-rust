@@ -2,6 +2,8 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;
+using Avalonia.Platform;
+using Avalonia.Rendering.SceneGraph;
 using Avalonia.Skia;
 using RuneAndRust.Core;
 using RuneAndRust.DesktopUI.Services;
@@ -188,27 +190,55 @@ public class CombatGridControl : Control
     {
         base.Render(context);
 
-        if (context.PlatformImpl.GetFeature<ISkiaSharpApiLeaseFeature>() is { } skia)
+        // Use custom draw operation for SkiaSharp rendering
+        var bounds = new Rect(0, 0, Bounds.Width, Bounds.Height);
+        context.Custom(new CombatGridDrawOperation(this, bounds));
+    }
+
+    // Custom draw operation for SkiaSharp rendering
+    private class CombatGridDrawOperation : ICustomDrawOperation
+    {
+        private readonly CombatGridControl _control;
+        private readonly Rect _bounds;
+
+        public CombatGridDrawOperation(CombatGridControl control, Rect bounds)
         {
-            using var lease = skia.Lease();
+            _control = control;
+            _bounds = bounds;
+        }
+
+        public Rect Bounds => _bounds;
+
+        public void Dispose() { }
+
+        public bool Equals(ICustomDrawOperation? other) => false;
+
+        public bool HitTest(Point p) => _bounds.Contains(p);
+
+        public void Render(ImmediateDrawingContext context)
+        {
+            var leaseFeature = context.TryGetFeature<ISkiaSharpApiLeaseFeature>();
+            if (leaseFeature == null) return;
+
+            using var lease = leaseFeature.Lease();
             var canvas = lease.SkCanvas;
 
             canvas.Clear(SKColors.Transparent);
 
             // Render grid elements (layered from back to front)
-            RenderGridBackground(canvas);
-            RenderTileTypes(canvas);           // v0.43.7: Elevation tints, terrain types
-            RenderCover(canvas);                // v0.43.7: Cover indicators
-            RenderHazards(canvas);              // v0.43.7: Environmental hazards
-            RenderGridLines(canvas);
-            RenderCenterLine(canvas);
-            RenderCellHighlights(canvas);
-            RenderUnitSprites(canvas);
-            RenderActiveAnimations(canvas);     // v0.43.8: Combat animations
+            _control.RenderGridBackground(canvas);
+            _control.RenderTileTypes(canvas);           // v0.43.7: Elevation tints, terrain types
+            _control.RenderCover(canvas);                // v0.43.7: Cover indicators
+            _control.RenderHazards(canvas);              // v0.43.7: Environmental hazards
+            _control.RenderGridLines(canvas);
+            _control.RenderCenterLine(canvas);
+            _control.RenderCellHighlights(canvas);
+            _control.RenderUnitSprites(canvas);
+            _control.RenderActiveAnimations(canvas);     // v0.43.8: Combat animations
 
             // Increment animation time for animated hazards
-            _animationTime += 0.05f;
-            if (_animationTime > Math.PI * 2) _animationTime = 0f;
+            _control._animationTime += 0.05f;
+            if (_control._animationTime > Math.PI * 2) _control._animationTime = 0f;
         }
     }
 
@@ -534,7 +564,7 @@ public class CombatGridControl : Control
         var barY = cellRect.Top + hpBarYOffset;
 
         // HP percentage
-        var hpPercent = unit.Character.CurrentHP / (float)unit.Character.MaxHP;
+        var hpPercent = unit.CurrentHP / (float)unit.MaxHP;
         var fillWidth = hpBarWidth * hpPercent;
 
         // Background (black border)
@@ -574,7 +604,7 @@ public class CombatGridControl : Control
             TextAlign = SKTextAlign.Center
         };
 
-        var hpText = $"{unit.Character.CurrentHP}/{unit.Character.MaxHP}";
+        var hpText = $"{unit.CurrentHP}/{unit.MaxHP}";
         var textX = barX + hpBarWidth / 2;
         var textY = barY + hpBarHeight + 10.0f; // Below the bar
 

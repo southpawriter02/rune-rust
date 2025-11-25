@@ -863,7 +863,7 @@ public class SettingsViewModel : ViewModelBase
             Console.WriteLine("[SETTINGS] Warning: Unsaved changes will be lost");
         }
 
-        _navigationService?.GoBack();
+        _navigationService?.NavigateBack();
     }
 
     /// <summary>
