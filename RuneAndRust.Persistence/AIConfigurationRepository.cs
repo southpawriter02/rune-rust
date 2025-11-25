@@ -1,6 +1,7 @@
 using Microsoft.Data.Sqlite;
 using RuneAndRust.Core.AI;
 using Serilog;
+using RuneAndRust.Core.AI.Interfaces;
 
 namespace RuneAndRust.Persistence;
 
