@@ -1,5 +1,6 @@
 using ReactiveUI;
 using RuneAndRust.Core;
+using RuneAndRust.DesktopUI.Controllers;
 using RuneAndRust.DesktopUI.Services;
 using RuneAndRust.Engine;
 using SkiaSharp;
@@ -30,6 +31,7 @@ public class CombatViewModel : ViewModelBase
     private readonly IHazardVisualizationService _hazardVisualizationService;
     private readonly IAnimationService _animationService;
     private readonly IBossDisplayService? _bossDisplayService;
+    private readonly CombatController? _combatController;
 
     private CombatState? _combatState;
     private BossCombatViewModel? _bossCombatViewModel;
@@ -244,7 +246,8 @@ public class CombatViewModel : ViewModelBase
         IStatusEffectIconService statusEffectIconService,
         IHazardVisualizationService hazardVisualizationService,
         IAnimationService animationService,
-        IBossDisplayService? bossDisplayService = null)
+        IBossDisplayService? bossDisplayService = null,
+        CombatController? combatController = null)
     {
         _spriteService = spriteService ?? throw new ArgumentNullException(nameof(spriteService));
         _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
@@ -254,12 +257,16 @@ public class CombatViewModel : ViewModelBase
         _hazardVisualizationService = hazardVisualizationService ?? throw new ArgumentNullException(nameof(hazardVisualizationService));
         _animationService = animationService ?? throw new ArgumentNullException(nameof(animationService));
         _bossDisplayService = bossDisplayService;
+        _combatController = combatController;
 
         // v0.43.17: Initialize boss combat view model if service available
         if (_bossDisplayService != null)
         {
             BossCombatViewModel = new BossCombatViewModel(_bossDisplayService, _animationService);
         }
+
+        // v0.44.4: Initialize controller with this ViewModel
+        _combatController?.Initialize(this);
 
         // Observable for whether it's player's turn
         var canExecutePlayerAction = this.WhenAnyValue(x => x.IsPlayerTurn);
@@ -476,17 +483,26 @@ public class CombatViewModel : ViewModelBase
 
         if (confirm)
         {
-            bool fled = _combatEngine.PlayerFlee(_combatState);
-            if (fled)
+            // v0.44.4: Delegate to CombatController for proper flee handling
+            if (_combatController != null)
             {
-                AddToCombatLog("You successfully fled from combat!");
-                _combatState.IsActive = false;
-                await _dialogService.ShowMessageAsync("Fled", "You have fled from combat.");
+                await _combatController.OnFleeAttemptAsync();
             }
             else
             {
-                AddToCombatLog("Failed to flee!");
-                CompletePlayerTurn();
+                // Fallback for demo mode without controller
+                bool fled = _combatEngine.PlayerFlee(_combatState);
+                if (fled)
+                {
+                    AddToCombatLog("You successfully fled from combat!");
+                    _combatState.IsActive = false;
+                    await _dialogService.ShowMessageAsync("Fled", "You have fled from combat.");
+                }
+                else
+                {
+                    AddToCombatLog("Failed to flee!");
+                    CompletePlayerTurn();
+                }
             }
         }
     }
@@ -723,18 +739,38 @@ public class CombatViewModel : ViewModelBase
         _log.Information("Combat ended");
 
         bool playerVictory = _combatState.Enemies.All(e => !e.IsAlive);
+        bool playerDefeat = _combatState.Player.HP <= 0;
 
-        Task.Run(async () =>
+        // v0.44.4: Delegate to CombatController for proper phase transitions
+        if (_combatController != null)
         {
-            if (playerVictory)
+            Task.Run(async () =>
             {
-                await _dialogService.ShowMessageAsync("Victory!", "You have defeated all enemies!");
-            }
-            else
+                if (playerVictory)
+                {
+                    await _combatController.OnCombatVictoryAsync();
+                }
+                else if (playerDefeat)
+                {
+                    await _combatController.OnCombatDefeatAsync();
+                }
+            });
+        }
+        else
+        {
+            // Fallback for demo mode without controller
+            Task.Run(async () =>
             {
-                await _dialogService.ShowMessageAsync("Defeat", "You have been defeated...");
-            }
-        });
+                if (playerVictory)
+                {
+                    await _dialogService.ShowMessageAsync("Victory!", "You have defeated all enemies!");
+                }
+                else
+                {
+                    await _dialogService.ShowMessageAsync("Defeat", "You have been defeated...");
+                }
+            });
+        }
     }
 
     #endregion
@@ -852,7 +888,10 @@ public class CombatViewModel : ViewModelBase
         }
     }
 
-    private void AddToCombatLog(string message)
+    /// <summary>
+    /// Adds a message to the combat log.
+    /// </summary>
+    public void AddToCombatLog(string message)
     {
         _combatState?.AddLogEntry(message);
         CombatLog.Insert(0, message);
