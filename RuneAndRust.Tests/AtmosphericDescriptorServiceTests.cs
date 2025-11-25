@@ -159,7 +159,7 @@ public class AtmosphericDescriptorServiceTests : IDisposable
     }
 
     [Fact]
-    public void GenerateAtmosphere_WithMuspelheim_ContainsFire Themes()
+    public void GenerateAtmosphere_WithMuspelheim_ContainsFireThemes()
     {
         // Act
         var result = _service.GenerateAtmosphere("Muspelheim", AtmosphericIntensity.Moderate);
