@@ -6,7 +6,7 @@ using ReactiveUI;
 namespace RuneAndRust.DesktopUI.ViewModels;
 
 /// <summary>
-/// v0.43.20: View model for the main menu screen.
+/// v0.43.21: View model for the main menu screen.
 /// Allows starting a new game, loading saved games, and accessing settings.
 /// </summary>
 public class MenuViewModel : ViewModelBase
@@ -67,7 +67,7 @@ public class MenuViewModel : ViewModelBase
     /// <summary>
     /// Gets the application version.
     /// </summary>
-    public string Version => "v0.43.20 - Tooltips & Help System";
+    public string Version => "v0.43.21 - UI Testing & Optimization";
 
     /// <summary>
     /// Whether there is a saved game to continue.

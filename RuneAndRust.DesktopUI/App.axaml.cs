@@ -45,7 +45,7 @@ public partial class App : Application
             .WriteTo.Console()
             .CreateLogger();
 
-        Log.Information("Rune & Rust Desktop UI v0.43.20 starting...");
+        Log.Information("Rune & Rust Desktop UI v0.43.21 starting...");
 
         try
         {
