@@ -46,7 +46,7 @@
                                    FontWeight="Bold"
                                    Foreground="#4A90E2"/>
 
-                        <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="15" ColumnSpacing="30">
+                        <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto,Auto">
                             <!-- Left Column -->
                             <StackPanel Grid.Row="0" Grid.Column="0" Spacing="5">
                                 <CheckBox Content="Fullscreen"
@@ -123,7 +123,7 @@
                                       Foreground="#FF6B6B"/>
                         </Grid>
 
-                        <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto" RowSpacing="15" ColumnSpacing="30">
+                        <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto">
                             <!-- Master Volume -->
                             <StackPanel Grid.Row="0" Grid.Column="0" Spacing="5">
                                 <Grid ColumnDefinitions="*,Auto">
@@ -195,7 +195,7 @@
                                    FontWeight="Bold"
                                    Foreground="#4A90E2"/>
 
-                        <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto" RowSpacing="15" ColumnSpacing="30">
+                        <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
                             <!-- Left Column -->
                             <StackPanel Grid.Row="0" Grid.Column="0" Spacing="5">
                                 <CheckBox Content="Auto-Save Enabled"
@@ -280,7 +280,7 @@
                                    FontWeight="Bold"
                                    Foreground="#4A90E2"/>
 
-                        <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto" RowSpacing="15" ColumnSpacing="30">
+                        <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
                             <!-- UI Scale -->
                             <StackPanel Grid.Row="0" Grid.Column="0" Spacing="5">
                                 <Grid ColumnDefinitions="*,Auto">
@@ -364,7 +364,7 @@
                                    FontWeight="Bold"
                                    Foreground="#4A90E2"/>
 
-                        <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto" RowSpacing="15" ColumnSpacing="30">
+                        <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto">
                             <!-- Mouse Sensitivity -->
                             <StackPanel Grid.Row="0" Grid.Column="0" Spacing="5">
                                 <Grid ColumnDefinitions="*,Auto">

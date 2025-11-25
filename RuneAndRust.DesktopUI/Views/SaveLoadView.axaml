@@ -265,7 +265,7 @@
                                    FontWeight="SemiBold"
                                    Foreground="#CCCCCC"/>
 
-                        <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                        <Grid ColumnDefinitions="*,*">
                             <Button Grid.Column="0"
                                     Content="F5 Quick Save"
                                     Command="{Binding QuickSaveCommand}"
@@ -278,7 +278,8 @@
                                     Height="38"
                                     HorizontalContentAlignment="Center"
                                     FontSize="12"
-                                    IsEnabled="{Binding HasQuickSave}"/>
+                                    IsEnabled="{Binding HasQuickSave}"
+                                    Margin="10,0,0,0"/>
                         </Grid>
 
                         <TextBlock Text="Quick save/load available anytime during gameplay"
