@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
 using RuneAndRust.DesktopUI.Services;
 using System;
+using System.Threading.Tasks;
 using System.Windows.Input;
 
 namespace RuneAndRust.DesktopUI.ViewModels;
@@ -14,6 +15,7 @@ public class MainWindowViewModel : ViewModelBase
 {
     private readonly INavigationService _navigationService;
     private readonly IKeyboardShortcutService _keyboardShortcutService;
+    private readonly ISaveGameService _saveGameService;
     private ViewModelBase? _currentView;
 
     /// <summary>
@@ -71,15 +73,32 @@ public class MainWindowViewModel : ViewModelBase
     public ICommand NavigateBackCommand { get; }
 
     /// <summary>
+    /// Command to navigate to save/load view.
+    /// </summary>
+    public ICommand NavigateToSaveLoadCommand { get; }
+
+    /// <summary>
+    /// Command to perform quick save (F5).
+    /// </summary>
+    public ICommand QuickSaveCommand { get; }
+
+    /// <summary>
+    /// Command to perform quick load (F9).
+    /// </summary>
+    public ICommand QuickLoadCommand { get; }
+
+    /// <summary>
     /// Initializes a new instance of MainWindowViewModel.
     /// </summary>
     public MainWindowViewModel(
         INavigationService navigationService,
         IKeyboardShortcutService keyboardShortcutService,
+        ISaveGameService saveGameService,
         IServiceProvider serviceProvider)
     {
         _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
         _keyboardShortcutService = keyboardShortcutService ?? throw new ArgumentNullException(nameof(keyboardShortcutService));
+        _saveGameService = saveGameService ?? throw new ArgumentNullException(nameof(saveGameService));
 
         // Subscribe to navigation changes
         _navigationService.CurrentViewChanged += OnCurrentViewChanged;
@@ -112,6 +131,13 @@ public class MainWindowViewModel : ViewModelBase
         NavigateBackCommand = ReactiveCommand.Create(
             () => _navigationService.NavigateBack(),
             this.WhenAnyValue(x => x._navigationService.CanNavigateBack));
+
+        NavigateToSaveLoadCommand = ReactiveCommand.Create(() =>
+            _navigationService.NavigateTo<SaveLoadViewModel>());
+
+        QuickSaveCommand = ReactiveCommand.CreateFromTask(QuickSaveAsync);
+
+        QuickLoadCommand = ReactiveCommand.CreateFromTask(QuickLoadAsync);
 
         // Register keyboard shortcuts
         RegisterKeyboardShortcuts();
@@ -157,6 +183,10 @@ public class MainWindowViewModel : ViewModelBase
         // v0.43.18: Settings
         _navigationService.RegisterViewModelFactory(() =>
             serviceProvider.GetRequiredService<SettingsViewModel>());
+
+        // v0.43.19: Save/Load
+        _navigationService.RegisterViewModelFactory(() =>
+            serviceProvider.GetRequiredService<SaveLoadViewModel>());
     }
 
     /// <summary>
@@ -198,6 +228,22 @@ public class MainWindowViewModel : ViewModelBase
             Avalonia.Input.Key.Back,
             () => NavigateBackCommand.Execute(null),
             "Navigate Back");
+
+        // v0.43.19: Quick Save/Load shortcuts
+        _keyboardShortcutService.RegisterShortcut(
+            Avalonia.Input.Key.F5,
+            () => QuickSaveCommand.Execute(null),
+            "Quick Save");
+
+        _keyboardShortcutService.RegisterShortcut(
+            Avalonia.Input.Key.F9,
+            () => QuickLoadCommand.Execute(null),
+            "Quick Load");
+
+        _keyboardShortcutService.RegisterShortcut(
+            Avalonia.Input.Key.L,
+            () => NavigateToSaveLoadCommand.Execute(null),
+            "Save/Load Menu");
     }
 
     /// <summary>
@@ -211,6 +257,45 @@ public class MainWindowViewModel : ViewModelBase
     private void OnCurrentViewChanged(object? sender, ViewModelBase view)
     {
         CurrentView = view;
+    }
+
+    /// <summary>
+    /// Performs a quick save operation.
+    /// </summary>
+    private async Task QuickSaveAsync()
+    {
+        try
+        {
+            await _saveGameService.QuickSaveAsync();
+            Console.WriteLine("[MAINWINDOW] Quick save completed");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[MAINWINDOW] Quick save failed: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Performs a quick load operation.
+    /// </summary>
+    private async Task QuickLoadAsync()
+    {
+        try
+        {
+            var success = await _saveGameService.QuickLoadAsync();
+            if (success)
+            {
+                Console.WriteLine("[MAINWINDOW] Quick load completed");
+            }
+            else
+            {
+                Console.WriteLine("[MAINWINDOW] Quick load failed - no quick save found");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[MAINWINDOW] Quick load failed: {ex.Message}");
+        }
     }
 
     protected override void Dispose(bool disposing)

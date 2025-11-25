@@ -44,5 +44,8 @@
         <DataTemplate DataType="vm:SettingsViewModel">
             <views:SettingsView />
         </DataTemplate>
+        <DataTemplate DataType="vm:SaveLoadViewModel">
+            <views:SaveLoadView />
+        </DataTemplate>
     </Application.DataTemplates>
 </Application>
