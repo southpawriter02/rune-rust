@@ -200,8 +200,9 @@ public class SaveGameService : ISaveGameService
                 var worldState = _currentWorldState ?? CreatePlaceholderWorldState();
 
                 // Update player name for quick save identification
-                player = new PlayerCharacter(quickSaveName)
+                player = new PlayerCharacter
                 {
+                    Name = quickSaveName,
                     Class = player.Class,
                     HP = player.HP,
                     MaxHP = player.MaxHP,
@@ -268,8 +269,9 @@ public class SaveGameService : ISaveGameService
                 var worldState = _currentWorldState ?? CreatePlaceholderWorldState();
 
                 // Update player name for auto-save identification
-                player = new PlayerCharacter(autoSaveName)
+                player = new PlayerCharacter
                 {
+                    Name = autoSaveName,
                     Class = player.Class,
                     HP = player.HP,
                     MaxHP = player.MaxHP,
@@ -424,8 +426,9 @@ public class SaveGameService : ISaveGameService
     /// </summary>
     private static PlayerCharacter CreatePlaceholderPlayer(string name)
     {
-        return new PlayerCharacter(name)
+        return new PlayerCharacter
         {
+            Name = name,
             Class = CharacterClass.Warrior,
             HP = 25,
             MaxHP = 25,

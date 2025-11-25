@@ -535,8 +535,9 @@ public class CombatViewModel : ViewModelBase
             var targetHpBefore = target.HP;
             var logCountBefore = _combatState.CombatLog.Count;
 
-            var attackResult = _combatEngine.PlayerAttack(_combatState, target);
+            _combatEngine.PlayerAttack(_combatState, target);
             var damage = targetHpBefore - target.HP;
+            var attackHit = damage > 0;
 
             // Check combat log for critical hit
             var recentLog = _combatState.CombatLog.Skip(logCountBefore).ToList();
@@ -548,7 +549,7 @@ public class CombatViewModel : ViewModelBase
                 await _animationService.PlayAttackAnimationAsync(
                     attackerPos,
                     position,
-                    attackResult,
+                    attackHit,
                     Math.Max(0, damage),
                     wasCritical);
             });
@@ -960,8 +961,9 @@ public class CombatViewModel : ViewModelBase
     {
         // Create demo combat scenario using real CombatEngine
         var diceService = new DiceService();
-        var player = new PlayerCharacter("Hero")
+        var player = new PlayerCharacter
         {
+            Name = "Hero",
             HP = 45,
             MaxHP = 50,
             Attributes = new Attributes
