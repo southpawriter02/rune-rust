@@ -3,6 +3,7 @@ using RuneAndRust.Core.Population;
 using RuneAndRust.Engine.Spatial;
 using Serilog;
 using System.Diagnostics;
+using PopulationRoomArchetype = RuneAndRust.Core.Population.RoomArchetype;
 
 namespace RuneAndRust.Engine;
 
@@ -1005,7 +1006,7 @@ public class DungeonGenerator
     /// <summary>
     /// Selects a template by archetype (for start/boss rooms)
     /// </summary>
-    private RoomTemplate SelectTemplateByArchetype(RoomArchetype archetype)
+    private RoomTemplate SelectTemplateByArchetype(Core.RoomArchetype archetype)
     {
         var template = _templateLibrary.GetRandomTemplate(_rng, archetype);
 

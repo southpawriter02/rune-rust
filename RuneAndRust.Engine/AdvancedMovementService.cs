@@ -634,7 +634,7 @@ public class AdvancedMovementResult
     public int KECost { get; set; }
     public int APCost { get; set; }
 
-    public static AdvancedMovementResult Success(string message, int staminaCost = 0, int keCost = 0, int apCost = 0)
+    public static AdvancedMovementResult Successful(string message, int staminaCost = 0, int keCost = 0, int apCost = 0)
     {
         return new AdvancedMovementResult
         {

@@ -295,7 +295,7 @@ public class GlitchResult
     public bool MovementFailed { get; set; }
     public GridPosition? TeleportTo { get; set; }
 
-    public static GlitchResult Success(string? message = null)
+    public static GlitchResult Successful(string? message = null)
     {
         return new GlitchResult
         {

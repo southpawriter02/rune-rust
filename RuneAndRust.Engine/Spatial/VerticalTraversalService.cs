@@ -374,7 +374,7 @@ public class TraversalResult
     public int Damage { get; set; } = 0;
     public int LevelsTraversed { get; set; } = 0;
 
-    public static TraversalResult Success(string message, int levelsTraversed = 1)
+    public static TraversalResult Successful(string message, int levelsTraversed = 1)
     {
         return new TraversalResult
         {

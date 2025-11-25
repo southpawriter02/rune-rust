@@ -46,7 +46,7 @@ public class MuspelheimBiomeService
 
         var report = new MuspelheimPreparednessReport
         {
-            Characters = new List<CharacterPreparedness>()
+            Characters = new List<MuspelheimCharacterPreparedness>()
         };
 
         foreach (var character in party)
@@ -54,7 +54,7 @@ public class MuspelheimBiomeService
             // Note: GetFireResistancePercent() is a placeholder until full resistance system
             int fireResistance = 0; // TODO: Implement actual resistance lookup
 
-            var charPrep = new CharacterPreparedness
+            var charPrep = new MuspelheimCharacterPreparedness
             {
                 CharacterName = character.Name,
                 FireResistancePercent = fireResistance,
@@ -286,12 +286,12 @@ public class MuspelheimBiomeService
     /// <summary>
     /// Apply Ice damage to enemy and check for [Brittle] application.
     /// </summary>
-    public BrittlenessResult ApplyIceDamageToEnemy(Enemy enemy, int iceDamage, string sourceName)
+    public MuspelheimBrittlenessResult ApplyIceDamageToEnemy(Enemy enemy, int iceDamage, string sourceName)
     {
         _log.Information("Applying {Damage} Ice damage to {Enemy} from {Source}",
             iceDamage, enemy.Name, sourceName);
 
-        var result = new BrittlenessResult
+        var result = new MuspelheimBrittlenessResult
         {
             EnemyName = enemy.Name,
             IceDamageDealt = iceDamage
@@ -332,12 +332,12 @@ public class MuspelheimBiomeService
     /// <summary>
     /// Apply Physical damage to enemy, with [Brittle] bonus if applicable.
     /// </summary>
-    public PhysicalDamageResult ApplyPhysicalDamageToEnemy(Enemy enemy, int physicalDamage, string sourceName)
+    public MuspelheimPhysicalDamageResult ApplyPhysicalDamageToEnemy(Enemy enemy, int physicalDamage, string sourceName)
     {
         _log.Information("Applying {Damage} Physical damage to {Enemy} from {Source}",
             physicalDamage, enemy.Name, sourceName);
 
-        var result = new PhysicalDamageResult
+        var result = new MuspelheimPhysicalDamageResult
         {
             EnemyName = enemy.Name,
             BaseDamage = physicalDamage
@@ -1161,12 +1161,12 @@ public class MuspelheimBiomeService
 
 public class MuspelheimPreparednessReport
 {
-    public List<CharacterPreparedness> Characters { get; set; } = new();
+    public List<MuspelheimCharacterPreparedness> Characters { get; set; } = new();
     public double AverageFireResistance { get; set; }
     public bool PartyIsAdequatelyPrepared { get; set; }
 }
 
-public class CharacterPreparedness
+public class MuspelheimCharacterPreparedness
 {
     public string CharacterName { get; set; } = string.Empty;
     public int FireResistancePercent { get; set; }
@@ -1189,7 +1189,7 @@ public class HeatDamageResult
     public string Message { get; set; } = string.Empty;
 }
 
-public class BrittlenessResult
+public class MuspelheimBrittlenessResult
 {
     public string EnemyName { get; set; } = string.Empty;
     public int IceDamageDealt { get; set; }
@@ -1198,7 +1198,7 @@ public class BrittlenessResult
     public string Message { get; set; } = string.Empty;
 }
 
-public class PhysicalDamageResult
+public class MuspelheimPhysicalDamageResult
 {
     public string EnemyName { get; set; } = string.Empty;
     public int BaseDamage { get; set; }

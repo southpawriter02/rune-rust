@@ -1,4 +1,5 @@
 using RuneAndRust.Core;
+using RuneAndRust.Engine.Commands;
 using Serilog;
 
 namespace RuneAndRust.Engine;
@@ -182,24 +183,5 @@ public class CompanionCommands
         // Partial match on Id
         return enemies.FirstOrDefault(e =>
             e.Id.Contains(name, StringComparison.OrdinalIgnoreCase));
-    }
-}
-
-/// <summary>
-/// Command execution result
-/// </summary>
-public class CommandResult
-{
-    public bool Success { get; set; }
-    public string Message { get; set; } = string.Empty;
-
-    public static CommandResult Success(string message)
-    {
-        return new CommandResult { Success = true, Message = message };
-    }
-
-    public static CommandResult Failure(string message)
-    {
-        return new CommandResult { Success = false, Message = message };
     }
 }

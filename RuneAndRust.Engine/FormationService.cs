@@ -578,7 +578,7 @@ public class FormationResult
     public FormationType Formation { get; set; }
     public List<FormationBonus> Bonuses { get; set; } = new();
 
-    public static FormationResult Success(FormationType formation, List<FormationBonus> bonuses)
+    public static FormationResult Successful(FormationType formation, List<FormationBonus> bonuses)
     {
         return new FormationResult
         {
@@ -610,7 +610,7 @@ public class SwapResult
     public string Message { get; set; } = string.Empty;
     public int StaminaCost { get; set; }
 
-    public static SwapResult Success(int staminaCost)
+    public static SwapResult Successful(int staminaCost)
     {
         return new SwapResult
         {

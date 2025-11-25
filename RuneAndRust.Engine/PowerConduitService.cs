@@ -1,4 +1,5 @@
 using RuneAndRust.Core;
+using RuneAndRust.Core.AI;
 using Serilog;
 
 namespace RuneAndRust.Engine;

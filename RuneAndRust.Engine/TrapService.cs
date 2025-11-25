@@ -419,7 +419,7 @@ public class TrapPlacementResult
         Message = message;
     }
 
-    public static TrapPlacementResult Success(string message)
+    public static TrapPlacementResult Successful(string message)
     {
         return new TrapPlacementResult(true, message);
     }

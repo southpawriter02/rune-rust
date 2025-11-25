@@ -19,7 +19,7 @@ public class PurchaseResult
         };
     }
 
-    public static PurchaseResult Success(string recipeName, int cost)
+    public static PurchaseResult Successful(string recipeName, int cost)
     {
         return new PurchaseResult
         {

@@ -2,8 +2,8 @@ using RuneAndRust.Core;
 using RuneAndRust.Core.Descriptors;
 using Serilog;
 using System.Text;
-using CoreInteractionType = RuneAndRust.Core.InteractionType;
-using CoreInteractionResult = RuneAndRust.Core.InteractionResult;
+using DescriptorInteractionType = RuneAndRust.Core.Descriptors.InteractionType;
+using DescriptorInteractionResult = RuneAndRust.Core.Descriptors.InteractionResult;
 
 namespace RuneAndRust.Engine.Commands;
 
@@ -15,12 +15,12 @@ public class ObjectInteractionCommand : ICommand
 {
     private static readonly ILogger _log = Log.ForContext<ObjectInteractionCommand>();
     private readonly ObjectInteractionService _objectService;
-    private readonly InteractionType _interactionType;
+    private readonly DescriptorInteractionType _interactionType;
     private readonly string _commandName;
 
     public ObjectInteractionCommand(
         ObjectInteractionService objectService,
-        InteractionType interactionType,
+        DescriptorInteractionType interactionType,
         string commandName)
     {
         _objectService = objectService ?? throw new ArgumentNullException(nameof(objectService));
@@ -93,7 +93,7 @@ public class ObjectInteractionCommand : ICommand
             (obj.BaseTemplateName != null && obj.BaseTemplateName.Contains(target, StringComparison.OrdinalIgnoreCase)));
     }
 
-    private CommandResult FormatInteractionResult(InteractionResult result, InteractiveObject obj)
+    private CommandResult FormatInteractionResult(DescriptorInteractionResult result, InteractiveObject obj)
     {
         var sb = new StringBuilder();
 
@@ -160,16 +160,16 @@ public class ObjectInteractionCommand : ICommand
             : CommandResult.Failure(sb.ToString());
     }
 
-    private string GetCorrectCommand(InteractionType interactionType)
+    private string GetCorrectCommand(DescriptorInteractionType interactionType)
     {
         return interactionType switch
         {
-            InteractionType.Pull => "pull",
-            InteractionType.Open => "open",
-            InteractionType.Search => "search",
-            InteractionType.Read => "read",
-            InteractionType.Hack => "hack",
-            InteractionType.Examine => "investigate",
+            DescriptorInteractionType.Pull => "pull",
+            DescriptorInteractionType.Open => "open",
+            DescriptorInteractionType.Search => "search",
+            DescriptorInteractionType.Read => "read",
+            DescriptorInteractionType.Hack => "hack",
+            DescriptorInteractionType.Examine => "investigate",
             _ => "interact"
         };
     }
