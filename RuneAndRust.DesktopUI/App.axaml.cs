@@ -46,7 +46,7 @@ public partial class App : Application
             .WriteTo.Console()
             .CreateLogger();
 
-        Log.Information("Rune & Rust Desktop UI v0.44.2 starting...");
+        Log.Information("Rune & Rust Desktop UI v0.44.3 starting...");
 
         try
         {
@@ -121,10 +121,16 @@ public partial class App : Application
         // Tooltip & Help Services (v0.43.20)
         services.AddSingleton<ITooltipService, TooltipService>();
 
-        // Controllers (v0.44.1, v0.44.2)
+        // Controllers (v0.44.1, v0.44.2, v0.44.3)
         services.AddSingleton<GameStateController>();
         services.AddSingleton<MainMenuController>();
         services.AddSingleton<CharacterCreationController>();
+        services.AddSingleton<ExplorationController>();
+        services.AddSingleton<CombatController>();
+
+        // Exploration Services (v0.44.3)
+        services.AddSingleton<IEncounterService, EncounterService>();
+        services.AddSingleton<IRoomFeatureService, RoomFeatureService>();
 
         // Engine Services (v0.43.5, v0.44.2)
         services.AddSingleton<DiceService>();

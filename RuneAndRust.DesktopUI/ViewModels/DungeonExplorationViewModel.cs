@@ -2,6 +2,7 @@ using ReactiveUI;
 using RuneAndRust.Core;
 using RuneAndRust.Core.Spatial;
 using RuneAndRust.DesktopUI.Services;
+using RuneAndRust.Engine;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -420,6 +421,133 @@ public class DungeonExplorationViewModel : ViewModelBase
     public void LoadDungeon(Dungeon dungeon)
     {
         LoadDungeon(dungeon, dungeon.StartRoomId);
+    }
+
+    /// <summary>
+    /// v0.44.3: Loads the current room (for controller-driven updates).
+    /// </summary>
+    public void LoadRoom(Room room)
+    {
+        CurrentRoom = room;
+        if (CurrentDungeon != null)
+        {
+            Minimap.UpdateCurrentRoom(room);
+        }
+    }
+
+    /// <summary>
+    /// v0.44.3: Sets the player character reference.
+    /// </summary>
+    public void SetCharacter(PlayerCharacter player)
+    {
+        Character = player;
+        this.RaisePropertyChanged(nameof(HPDisplay));
+        this.RaisePropertyChanged(nameof(StaminaDisplay));
+        this.RaisePropertyChanged(nameof(StressDisplay));
+    }
+
+    /// <summary>
+    /// v0.44.3: Shows a status message to the player.
+    /// Called by ExplorationController for feedback.
+    /// </summary>
+    public void ShowMessage(string message)
+    {
+        StatusMessage = message;
+    }
+
+    /// <summary>
+    /// v0.44.3: Updates the minimap display.
+    /// </summary>
+    public void UpdateMinimap()
+    {
+        if (CurrentRoom != null)
+        {
+            Minimap.UpdateCurrentRoom(CurrentRoom);
+        }
+    }
+
+    /// <summary>
+    /// v0.44.3: Shows the search result overlay.
+    /// </summary>
+    public void ShowSearchResult(Engine.SearchResult searchResult)
+    {
+        // Convert engine search result to view model
+        var lootItems = searchResult.Items.Select(e => LootItemViewModel.FromEquipment(e)).ToList();
+
+        if (searchResult.ScrapFound > 0)
+        {
+            lootItems.Add(LootItemViewModel.ForCurrency("Scrap", searchResult.ScrapFound));
+        }
+
+        if (searchResult.TriggeredEncounter)
+        {
+            SearchResult = SearchResultViewModel.WithEncounter(searchResult.Message, null);
+        }
+        else if (searchResult.FoundItems || lootItems.Any())
+        {
+            SearchResult = SearchResultViewModel.WithLoot(lootItems, searchResult.Secrets);
+        }
+        else if (searchResult.Secrets.Any())
+        {
+            SearchResult = SearchResultViewModel.WithSecrets(searchResult.Secrets);
+        }
+        else
+        {
+            SearchResult = SearchResultViewModel.Empty();
+        }
+
+        this.RaisePropertyChanged(nameof(IsSearchResultVisible));
+    }
+
+    /// <summary>
+    /// v0.44.3: Shows the rest confirmation dialog asynchronously.
+    /// </summary>
+    public Task<bool> ShowRestConfirmationAsync()
+    {
+        var tcs = new TaskCompletionSource<bool>();
+
+        if (CurrentRoom == null || Character == null)
+        {
+            tcs.SetResult(false);
+            return tcs.Task;
+        }
+
+        // Set up rest confirmation
+        if (CurrentRoom.IsSanctuary)
+        {
+            RestConfirmation = RestConfirmationViewModel.ForSanctuary(
+                Character.HP, Character.MaxHP,
+                Character.Stamina, Character.MaxStamina);
+        }
+        else
+        {
+            RestConfirmation = RestConfirmationViewModel.ForRegularRest(
+                Character.HP, Character.MaxHP,
+                Character.Stamina, Character.MaxStamina,
+                Character.PsychicStress);
+        }
+
+        IsRestDialogVisible = true;
+
+        // For now, return true (in real implementation, would await user confirmation)
+        // The actual confirmation is handled by ConfirmRest/CancelRest commands
+        tcs.SetResult(true);
+        return tcs.Task;
+    }
+
+    /// <summary>
+    /// v0.44.3: Shows the rest result feedback.
+    /// </summary>
+    public void ShowRestResult(Engine.RestResult restResult)
+    {
+        StatusMessage = restResult.Message;
+        IsRestDialogVisible = false;
+        RestConfirmation = null;
+
+        // Update stats display
+        this.RaisePropertyChanged(nameof(HPDisplay));
+        this.RaisePropertyChanged(nameof(StaminaDisplay));
+        this.RaisePropertyChanged(nameof(StressDisplay));
     }
 
     #endregion
