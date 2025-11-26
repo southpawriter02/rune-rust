@@ -64,6 +64,13 @@ public class CharacterCreationViewModel : ViewModelBase
     private int _attributeWill = 5;
     private int _attributeSturdiness = 5;
 
+    // Base attribute values (adjusted by lineage/background)
+    private int _baseMight = 5;
+    private int _baseFinesse = 5;
+    private int _baseWits = 5;
+    private int _baseWill = 5;
+    private int _baseSturdiness = 5;
+
     // Summary properties
     private string _summaryLineage = string.Empty;
     private string _summaryBackground = string.Empty;
@@ -249,10 +256,69 @@ public class CharacterCreationViewModel : ViewModelBase
 
     #endregion
 
+    #region Base Attribute Properties (Adjusted by Lineage/Background)
+
+    /// <summary>Base Might value adjusted by lineage/background.</summary>
+    public int BaseMight
+    {
+        get => _baseMight;
+        set
+        {
+            if (this.RaiseAndSetIfChanged(ref _baseMight, value) != value) return;
+            NotifyAttributeCostChanges();
+        }
+    }
+
+    /// <summary>Base Finesse value adjusted by lineage/background.</summary>
+    public int BaseFinesse
+    {
+        get => _baseFinesse;
+        set
+        {
+            if (this.RaiseAndSetIfChanged(ref _baseFinesse, value) != value) return;
+            NotifyAttributeCostChanges();
+        }
+    }
+
+    /// <summary>Base Wits value adjusted by lineage/background.</summary>
+    public int BaseWits
+    {
+        get => _baseWits;
+        set
+        {
+            if (this.RaiseAndSetIfChanged(ref _baseWits, value) != value) return;
+            NotifyAttributeCostChanges();
+        }
+    }
+
+    /// <summary>Base Will value adjusted by lineage/background.</summary>
+    public int BaseWill
+    {
+        get => _baseWill;
+        set
+        {
+            if (this.RaiseAndSetIfChanged(ref _baseWill, value) != value) return;
+            NotifyAttributeCostChanges();
+        }
+    }
+
+    /// <summary>Base Sturdiness value adjusted by lineage/background.</summary>
+    public int BaseSturdiness
+    {
+        get => _baseSturdiness;
+        set
+        {
+            if (this.RaiseAndSetIfChanged(ref _baseSturdiness, value) != value) return;
+            NotifyAttributeCostChanges();
+        }
+    }
+
+    #endregion
+
     #region Attribute Cost Properties
 
-    // Constants for cost calculations (mirror controller values)
-    private const int BaseAttributeValue = 5;
+    // Constants for cost calculations
+    private const int DefaultBaseAttributeValue = 5;
     private const int MaxAttributeValue = 10;
     private const int MinAttributeValue = 3;
 
@@ -266,10 +332,10 @@ public class CharacterCreationViewModel : ViewModelBase
     }
 
     /// <summary>Gets points refunded by decreasing attribute by 1 (0 if at min or at/below base).</summary>
-    private int GetDecreaseCost(int currentValue)
+    private int GetDecreaseCost(int currentValue, int baseValue)
     {
         if (currentValue <= MinAttributeValue) return 0; // Can't go lower than min
-        if (currentValue <= BaseAttributeValue) return 0; // Below base = no refund
+        if (currentValue <= baseValue) return 0; // At or below base = no refund
         // Refund is the cost paid to reach current level from previous
         return currentValue <= 8 ? 1 : 2;
     }
@@ -281,12 +347,12 @@ public class CharacterCreationViewModel : ViewModelBase
     public int WillIncreaseCost => GetIncreaseCost(AttributeWill);
     public int SturdinessIncreaseCost => GetIncreaseCost(AttributeSturdiness);
 
-    // Points refunded by decreasing each attribute by 1
-    public int MightDecreaseCost => GetDecreaseCost(AttributeMight);
-    public int FinesseDecreaseCost => GetDecreaseCost(AttributeFinesse);
-    public int WitsDecreaseCost => GetDecreaseCost(AttributeWits);
-    public int WillDecreaseCost => GetDecreaseCost(AttributeWill);
-    public int SturdinessDecreaseCost => GetDecreaseCost(AttributeSturdiness);
+    // Points refunded by decreasing each attribute by 1 (uses per-attribute base)
+    public int MightDecreaseCost => GetDecreaseCost(AttributeMight, BaseMight);
+    public int FinesseDecreaseCost => GetDecreaseCost(AttributeFinesse, BaseFinesse);
+    public int WitsDecreaseCost => GetDecreaseCost(AttributeWits, BaseWits);
+    public int WillDecreaseCost => GetDecreaseCost(AttributeWill, BaseWill);
+    public int SturdinessDecreaseCost => GetDecreaseCost(AttributeSturdiness, BaseSturdiness);
 
     // Can increase/decrease checks
     public bool CanIncreaseMight => AttributeMight < MaxAttributeValue && MightIncreaseCost > 0;
@@ -609,26 +675,27 @@ public class CharacterCreationViewModel : ViewModelBase
 
     /// <summary>
     /// Recalculates remaining attribute points based on current attribute values.
+    /// Uses per-attribute base values influenced by lineage/background.
     /// Used for design-time/fallback when controller is not available.
     /// </summary>
     private void RecalculateRemainingPoints()
     {
-        int CalculateCost(int value)
+        int CalculateCost(int baseValue, int currentValue)
         {
-            if (value <= BaseAttributeValue) return 0;
+            if (currentValue <= baseValue) return 0;
             int cost = 0;
-            for (int v = BaseAttributeValue + 1; v <= value; v++)
+            for (int v = baseValue + 1; v <= currentValue; v++)
             {
                 cost += (v <= 8) ? 1 : 2;
             }
             return cost;
         }
 
-        int totalUsed = CalculateCost(AttributeMight)
-                      + CalculateCost(AttributeFinesse)
-                      + CalculateCost(AttributeWits)
-                      + CalculateCost(AttributeWill)
-                      + CalculateCost(AttributeSturdiness);
+        int totalUsed = CalculateCost(BaseMight, AttributeMight)
+                      + CalculateCost(BaseFinesse, AttributeFinesse)
+                      + CalculateCost(BaseWits, AttributeWits)
+                      + CalculateCost(BaseWill, AttributeWill)
+                      + CalculateCost(BaseSturdiness, AttributeSturdiness);
 
         RemainingAttributePoints = 15 - totalUsed;
     }
