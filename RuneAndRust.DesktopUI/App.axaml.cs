@@ -157,6 +157,18 @@ public partial class App : Application
         services.AddSingleton<EnemyAI>();
         services.AddSingleton<TemplateLibrary>(); // v0.44.2: For dungeon generation
 
+        // v0.38 Descriptor Library Services - Flavor Text Integration
+        services.AddSingleton<DescriptorRepository>();
+        services.AddSingleton<DescriptorService>();
+        services.AddSingleton<RoomDescriptorService>();
+        services.AddSingleton<ExaminationFlavorTextService>();
+        services.AddSingleton<CombatFlavorTextService>();
+        services.AddSingleton<AtmosphericDescriptorService>();
+        services.AddSingleton<NPCFlavorTextService>();
+        services.AddSingleton<GaldrFlavorTextService>();
+        services.AddSingleton<StatusEffectFlavorTextService>();
+        services.AddSingleton<SkillUsageFlavorTextService>();
+
         // ViewModels (v0.43.1 - v0.44.6)
         services.AddTransient<MainWindowViewModel>();
         services.AddTransient<MenuViewModel>();

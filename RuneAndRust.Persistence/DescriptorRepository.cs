@@ -1,6 +1,7 @@
 using Microsoft.Data.Sqlite;
 using RuneAndRust.Core.Descriptors;
 using Serilog;
+using System.IO;
 
 namespace RuneAndRust.Persistence;
 
@@ -14,10 +15,16 @@ public partial class DescriptorRepository
     private static readonly ILogger _log = Log.ForContext<DescriptorRepository>();
     private readonly string _connectionString;
 
-    public DescriptorRepository(string connectionString)
+    /// <summary>
+    /// Initializes a new DescriptorRepository with automatic database path resolution.
+    /// Uses the runeandrust.db file in the specified directory or current directory.
+    /// </summary>
+    /// <param name="dataDirectory">Optional data directory. Defaults to current directory.</param>
+    public DescriptorRepository(string? dataDirectory = null)
     {
-        _connectionString = connectionString;
-        _log.Debug("DescriptorRepository initialized");
+        var dbPath = Path.Combine(dataDirectory ?? Environment.CurrentDirectory, "runeandrust.db");
+        _connectionString = $"Data Source={dbPath}";
+        _log.Debug("DescriptorRepository initialized with database path: {DbPath}", dbPath);
     }
 
     #region Base Templates

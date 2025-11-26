@@ -114,6 +114,26 @@
                                    Foreground="#DDDDDD"
                                    LineHeight="22"/>
 
+                        <!-- v0.38: Atmospheric Description (sensory details) -->
+                        <Border Background="#1A1A2E"
+                                Padding="12"
+                                CornerRadius="6"
+                                IsVisible="{Binding HasAtmosphere}">
+                            <StackPanel>
+                                <TextBlock Text="Atmosphere"
+                                           FontWeight="Bold"
+                                           Foreground="#9370DB"
+                                           FontSize="12"
+                                           Margin="0,0,0,5"/>
+                                <TextBlock Text="{Binding AtmosphereText}"
+                                           FontSize="12"
+                                           FontStyle="Italic"
+                                           TextWrapping="Wrap"
+                                           Foreground="#B8B8D0"
+                                           LineHeight="18"/>
+                            </StackPanel>
+                        </Border>
+
                         <!-- Room Features -->
                         <Border Background="#1C1C1C"
                                 Padding="12"
@@ -283,12 +303,30 @@
                            Foreground="White"
                            Margin="0,0,0,5"/>
 
+                <!-- Look / Examine -->
+                <Button Classes="ActionButton"
+                        Command="{Binding LookCommand}">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="Look" FontWeight="SemiBold"/>
+                        <TextBlock Text="(L)" Foreground="#888888" FontSize="10" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+
+                <!-- Investigate -->
+                <Button Classes="ActionButton"
+                        Command="{Binding InvestigateCommand}">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="Investigate" FontWeight="SemiBold"/>
+                        <TextBlock Text="(X)" Foreground="#888888" FontSize="10" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+
                 <!-- Search Room -->
                 <Button Classes="ActionButton"
                         Command="{Binding SearchRoomCommand}"
                         IsEnabled="{Binding !IsSearched}">
                     <StackPanel Orientation="Horizontal" Spacing="8">
-                        <TextBlock Text="Search Room" FontWeight="SemiBold"/>
+                        <TextBlock Text="Search" FontWeight="SemiBold"/>
                         <TextBlock Text="(S)" Foreground="#888888" FontSize="10" VerticalAlignment="Center"/>
                     </StackPanel>
                 </Button>

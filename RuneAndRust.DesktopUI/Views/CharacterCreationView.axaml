@@ -38,6 +38,8 @@
                 </Grid>
 
                 <!-- Step Progress Indicator -->
+                <!-- Step Progress Indicator: Lineage → Background → Attributes → Archetype → Confirm -->
+                <!-- Note: Specializations are unlocked via PP during gameplay, not during character creation -->
                 <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,15,0,0" Spacing="10">
                     <Border Background="{Binding CurrentStep, Converter={x:Static vm:StepToColorConverter.Instance}, ConverterParameter=Lineage}"
                             CornerRadius="15" Padding="12,6">
@@ -59,14 +61,9 @@
                         <TextBlock Text="4. Archetype" Foreground="White" FontSize="12"/>
                     </Border>
                     <TextBlock Text="→" Foreground="#666" VerticalAlignment="Center"/>
-                    <Border Background="{Binding CurrentStep, Converter={x:Static vm:StepToColorConverter.Instance}, ConverterParameter=Specialization}"
-                            CornerRadius="15" Padding="12,6">
-                        <TextBlock Text="5. Specialization" Foreground="White" FontSize="12"/>
-                    </Border>
-                    <TextBlock Text="→" Foreground="#666" VerticalAlignment="Center"/>
                     <Border Background="{Binding CurrentStep, Converter={x:Static vm:StepToColorConverter.Instance}, ConverterParameter=Summary}"
                             CornerRadius="15" Padding="12,6">
-                        <TextBlock Text="6. Confirm" Foreground="White" FontSize="12"/>
+                        <TextBlock Text="5. Confirm" Foreground="White" FontSize="12"/>
                     </Border>
                 </StackPanel>
             </Grid>
@@ -303,36 +300,9 @@
                     </ItemsControl>
                 </StackPanel>
 
-                <!-- Step 5: Specialization Selection -->
-                <StackPanel IsVisible="{Binding CurrentStep, Converter={x:Static vm:StepVisibilityConverter.Instance}, ConverterParameter=Specialization}"
-                            Spacing="15">
-                    <TextBlock Text="Choose Your Specialization"
-                               FontSize="22" FontWeight="Bold" Foreground="#4A90E2"
-                               HorizontalAlignment="Center" Margin="0,0,0,10"/>
-                    <TextBlock FontSize="14" Foreground="#AAAAAA" TextWrapping="Wrap"
-                               HorizontalAlignment="Center" Margin="0,0,0,20">
-                        <Run Text="Specializations for "/>
-                        <Run Text="{Binding SelectedArchetype}" FontWeight="Bold" Foreground="#FFD700"/>
-                    </TextBlock>
+                <!-- Note: Specialization step removed - specializations are unlocked via PP during gameplay -->
 
-                    <ItemsControl ItemsSource="{Binding AvailableSpecializations}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <Button Margin="0,5" Padding="20" HorizontalAlignment="Stretch"
-                                        HorizontalContentAlignment="Stretch"
-                                        Command="{Binding $parent[ItemsControl].((vm:CharacterCreationViewModel)DataContext).SelectSpecializationCommand}"
-                                        CommandParameter="{Binding Specialization}">
-                                    <StackPanel>
-                                        <TextBlock Text="{Binding Name}" FontSize="18" FontWeight="Bold" Foreground="White"/>
-                                        <TextBlock Text="{Binding Description}" FontSize="13" Foreground="#AAAAAA" TextWrapping="Wrap" Margin="0,5,0,0"/>
-                                    </StackPanel>
-                                </Button>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </StackPanel>
-
-                <!-- Step 6: Summary and Confirmation -->
+                <!-- Step 5: Summary and Confirmation -->
                 <StackPanel IsVisible="{Binding CurrentStep, Converter={x:Static vm:StepVisibilityConverter.Instance}, ConverterParameter=Summary}"
                             Spacing="15">
                     <TextBlock Text="Confirm Your Survivor"
@@ -353,7 +323,7 @@
                         <StackPanel Spacing="12">
                             <TextBlock Text="Character Summary" FontSize="16" FontWeight="Bold" Foreground="#4CAF50"/>
 
-                            <Grid ColumnDefinitions="120,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
+                            <Grid ColumnDefinitions="120,*" RowDefinitions="Auto,Auto,Auto,Auto">
                                 <TextBlock Grid.Row="0" Grid.Column="0" Text="Lineage:" Foreground="#888888"/>
                                 <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding SummaryLineage}" Foreground="White" FontWeight="Bold"/>
 
@@ -363,11 +333,9 @@
                                 <TextBlock Grid.Row="2" Grid.Column="0" Text="Archetype:" Foreground="#888888" Margin="0,5,0,0"/>
                                 <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding SummaryArchetype}" Foreground="White" FontWeight="Bold" Margin="0,5,0,0"/>
 
-                                <TextBlock Grid.Row="3" Grid.Column="0" Text="Specialization:" Foreground="#888888" Margin="0,5,0,0"/>
-                                <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding SummarySpecialization}" Foreground="White" FontWeight="Bold" Margin="0,5,0,0"/>
-
-                                <TextBlock Grid.Row="4" Grid.Column="0" Text="Attributes:" Foreground="#888888" Margin="0,5,0,0"/>
-                                <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding SummaryAttributes}" Foreground="White" FontSize="12" Margin="0,5,0,0"/>
+                                <!-- Note: Specializations unlocked via PP during gameplay -->
+                                <TextBlock Grid.Row="3" Grid.Column="0" Text="Attributes:" Foreground="#888888" Margin="0,5,0,0"/>
+                                <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding SummaryAttributes}" Foreground="White" FontSize="12" Margin="0,5,0,0"/>
                             </Grid>
                         </StackPanel>
                     </Border>
