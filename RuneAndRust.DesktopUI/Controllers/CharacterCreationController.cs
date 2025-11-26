@@ -7,9 +7,10 @@ using Serilog;
 namespace RuneAndRust.DesktopUI.Controllers;
 
 /// <summary>
-/// v0.44.2: Controller for character creation workflow.
-/// Orchestrates the canonical v2.0 character creation sequence:
-/// Lineage → Background → Attributes → Archetype → Specialization → Summary
+/// v0.44.8: Controller for character creation workflow.
+/// Orchestrates the character creation sequence:
+/// Lineage → Background → Attributes → Archetype → Summary
+/// (Specializations are unlocked via Progression Points during gameplay)
 /// </summary>
 public class CharacterCreationController
 {
@@ -286,7 +287,8 @@ public class CharacterCreationController
     }
 
     /// <summary>
-    /// Step 4: Handles archetype selection and proceeds to Specialization.
+    /// Step 4: Handles archetype selection and proceeds to Summary.
+    /// Specializations are unlocked later via Progression Points (PP).
     /// In simple mode, also applies recommended attribute build.
     /// </summary>
     public async Task OnArchetypeSelectedAsync(string archetypeId)
@@ -298,7 +300,7 @@ public class CharacterCreationController
         }
 
         _selectedArchetype = archetype;
-        _selectedSpecialization = Specialization.None; // Reset specialization
+        _selectedSpecialization = Specialization.None; // Specialization unlocked via PP during gameplay
 
         // Apply recommended build if in simple mode
         if (!_useAdvancedMode)
@@ -311,8 +313,8 @@ public class CharacterCreationController
         if (_viewModel != null)
         {
             _viewModel.SelectedArchetype = archetype;
-            _viewModel.CurrentStep = CharacterCreationStep.Specialization;
-            LoadAvailableSpecializations();
+            // Skip Specialization step - players unlock specializations via PP during gameplay
+            ShowSummary();
         }
 
         await Task.CompletedTask;
@@ -378,7 +380,8 @@ public class CharacterCreationController
     }
 
     /// <summary>
-    /// Step 6: Shows the character summary for final review.
+    /// Step 5: Shows the character summary for final review.
+    /// (Specialization step is skipped - unlocked via PP during gameplay)
     /// </summary>
     public void ShowSummary()
     {
@@ -390,7 +393,8 @@ public class CharacterCreationController
         _viewModel.SummaryLineage = _selectedLineage.GetDisplayName();
         _viewModel.SummaryBackground = _selectedBackground.GetDisplayName();
         _viewModel.SummaryArchetype = _selectedArchetype.ToString();
-        _viewModel.SummarySpecialization = _selectedSpecialization.ToString();
+        // Specialization is unlocked via PP during gameplay, not during character creation
+        _viewModel.SummarySpecialization = "None (unlocked via PP)";
         _viewModel.SummaryAttributes = FormatAttributeSummary();
 
         _logger.Information("[CHAR_CREATE] Showing character summary");
