@@ -144,6 +144,7 @@ public partial class App : Application
         services.AddSingleton<SagaService>();
         services.AddSingleton<LootService>();
         services.AddSingleton<EquipmentService>();
+        services.AddSingleton<TraumaEconomyService>();  // Required by HazardService
         services.AddSingleton<HazardService>();
         services.AddSingleton<CurrencyService>();
         services.AddSingleton<AdvancedStatusEffectService>();
