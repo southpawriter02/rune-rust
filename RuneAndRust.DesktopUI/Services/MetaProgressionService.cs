@@ -414,6 +414,39 @@ public class MetaProgressionService : IMetaProgressionService
     }
 
     #endregion
+
+    #region v0.44.7: Victory Handling Methods
+
+    // v0.44.7: In-memory tracking for victories
+    private int _totalVictories = 0;
+    private readonly List<VictoryRecord> _victoryRecords = new();
+
+    /// <inheritdoc/>
+    public async Task RecordVictoryAsync(string characterClass, string specialization, int finalLevel, int ngPlusTier, string? challengeSectorName)
+    {
+        _totalVictories++;
+
+        var victoryRecord = new VictoryRecord
+        {
+            CharacterClass = characterClass,
+            Specialization = specialization,
+            FinalLevel = finalLevel,
+            NGPlusTier = ngPlusTier,
+            ChallengeSectorName = challengeSectorName,
+            VictoryTimestamp = DateTime.UtcNow
+        };
+
+        _victoryRecords.Add(victoryRecord);
+
+        _logger.Information(
+            "Victory recorded: {Class}/{Spec} at level {Level}, NG+{Tier}, Sector={Sector}. Total victories: {Total}",
+            characterClass, specialization, finalLevel, ngPlusTier, challengeSectorName ?? "None", _totalVictories);
+
+        // TODO: Persist to database in future versions
+        await Task.CompletedTask;
+    }
+
+    #endregion
 }
 
 /// <summary>
@@ -427,4 +460,17 @@ internal class DeathRecord
     public int FinalCorruption { get; set; }
     public int FinalPsychicStress { get; set; }
     public DateTime DeathTimestamp { get; set; }
+}
+
+/// <summary>
+/// v0.44.7: Internal record of a victory for statistics tracking.
+/// </summary>
+internal class VictoryRecord
+{
+    public string CharacterClass { get; set; } = string.Empty;
+    public string Specialization { get; set; } = string.Empty;
+    public int FinalLevel { get; set; }
+    public int NGPlusTier { get; set; }
+    public string? ChallengeSectorName { get; set; }
+    public DateTime VictoryTimestamp { get; set; }
 }

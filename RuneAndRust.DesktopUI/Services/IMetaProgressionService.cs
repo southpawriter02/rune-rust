@@ -62,6 +62,19 @@ public interface IMetaProgressionService
     /// Gets the current Hall of Legends balance.
     /// </summary>
     int GetHallOfLegendsBalance();
+
+    // v0.44.7: Victory Handling Methods
+
+    /// <summary>
+    /// Records a victory for statistics tracking.
+    /// Called when a survivor completes the dungeon.
+    /// </summary>
+    /// <param name="characterClass">The class of the victorious character.</param>
+    /// <param name="specialization">The specialization of the character.</param>
+    /// <param name="finalLevel">The milestone level at victory.</param>
+    /// <param name="ngPlusTier">The NG+ tier completed (0 for first playthrough).</param>
+    /// <param name="challengeSectorName">The challenge sector name (null if not a challenge run).</param>
+    Task RecordVictoryAsync(string characterClass, string specialization, int finalLevel, int ngPlusTier, string? challengeSectorName);
 }
 
 /// <summary>
