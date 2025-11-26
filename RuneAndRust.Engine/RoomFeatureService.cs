@@ -257,7 +257,7 @@ public class RoomFeatureService : IRoomFeatureService
     private Equipment GenerateRandomItem(Room room)
     {
         var itemTypes = new[] { EquipmentType.Weapon, EquipmentType.Armor, EquipmentType.Accessory };
-        var qualities = new[] { QualityTier.Common, QualityTier.Common, QualityTier.Uncommon }; // Weighted toward common
+        var qualities = new[] { QualityTier.Scavenged, QualityTier.Scavenged, QualityTier.ClanForged }; // Weighted toward basic items
 
         var type = itemTypes[_random.Next(itemTypes.Length)];
         var quality = qualities[_random.Next(qualities.Length)];
@@ -294,11 +294,11 @@ public class RoomFeatureService : IRoomFeatureService
     {
         var qualityDesc = quality switch
         {
-            QualityTier.Common => "A piece of salvaged equipment in acceptable condition.",
-            QualityTier.Uncommon => "A well-preserved piece of pre-collapse technology.",
-            QualityTier.Rare => "A remarkable find, still functional after centuries.",
-            QualityTier.Epic => "An exceptional artifact of forgotten craftsmanship.",
-            QualityTier.Legendary => "A legendary relic of immense power.",
+            QualityTier.JuryRigged => "Scrap held together with hope and wire. It works... mostly.",
+            QualityTier.Scavenged => "A piece of salvaged equipment in acceptable condition.",
+            QualityTier.ClanForged => "A well-crafted piece, forged by survivor communities.",
+            QualityTier.Optimized => "Pre-Glitch tech, carefully maintained and still functional.",
+            QualityTier.MythForged => "A legendary artifact of immense power, touched by ancient craft.",
             _ => "A piece of equipment."
         };
 

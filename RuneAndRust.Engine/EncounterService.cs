@@ -231,7 +231,7 @@ public class EncounterService : IEncounterService
             Name = name,
             HP = baseHP + hpVariance,
             MaxHP = baseHP + hpVariance,
-            Attack = 5 + playerLevel,
+            BaseDamageDice = Math.Max(1, (5 + playerLevel) / 3), // Attack is computed as BaseDamageDice * 3
             Defense = 2 + (playerLevel / 2),
             Level = playerLevel
         };
