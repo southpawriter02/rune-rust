@@ -1,5 +1,6 @@
 using RuneAndRust.Core;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Serilog;
 
 namespace RuneAndRust.Engine;
@@ -41,12 +42,19 @@ public class TemplateLibrary
         int loadedCount = 0;
         int invalidCount = 0;
 
+        // Configure JSON options to handle string enum values in template files
+        var jsonOptions = new JsonSerializerOptions
+        {
+            Converters = { new JsonStringEnumConverter() },
+            PropertyNameCaseInsensitive = true
+        };
+
         foreach (var file in templateFiles)
         {
             try
             {
                 var json = File.ReadAllText(file);
-                var template = JsonSerializer.Deserialize<RoomTemplate>(json);
+                var template = JsonSerializer.Deserialize<RoomTemplate>(json, jsonOptions);
 
                 if (template != null && !string.IsNullOrEmpty(template.TemplateId))
                 {
