@@ -14,9 +14,9 @@ using System.Windows.Input;
 namespace RuneAndRust.DesktopUI.ViewModels;
 
 /// <summary>
-/// v0.44.8: Character creation workflow steps.
+/// Character creation workflow steps.
 /// Follows the sequence: Lineage → Background → Attributes → Archetype → Summary
-/// (Specialization step is skipped - unlocked via PP during gameplay)
+/// Note: Specializations are unlocked via Progression Points (PP) during gameplay, not during character creation.
 /// </summary>
 public enum CharacterCreationStep
 {
@@ -28,15 +28,16 @@ public enum CharacterCreationStep
     Attributes,
     /// <summary>Step 4: Select archetype (class)</summary>
     Archetype,
-    /// <summary>Step 5: Select specialization</summary>
+    /// <summary>Legacy step (unused): Specializations are now unlocked via PP during gameplay</summary>
     Specialization,
-    /// <summary>Step 6: Review and confirm</summary>
+    /// <summary>Step 5: Review and confirm character</summary>
     Summary
 }
 
 /// <summary>
-/// v0.44.2: View model for character creation screen.
-/// Supports the complete 6-step character creation workflow.
+/// View model for character creation screen.
+/// Supports the 5-step character creation workflow: Lineage → Background → Attributes → Archetype → Summary.
+/// Note: Specializations are unlocked via PP during gameplay.
 /// Integrates with CharacterCreationController for game state management.
 /// </summary>
 public class CharacterCreationViewModel : ViewModelBase
@@ -101,7 +102,7 @@ public class CharacterCreationViewModel : ViewModelBase
 
     /// <summary>
     /// Display title for the current step.
-    /// Specialization step is skipped - unlocked via PP during gameplay.
+    /// Note: Specializations are unlocked via PP during gameplay, not during character creation.
     /// </summary>
     public string StepTitle => CurrentStep switch
     {
@@ -109,7 +110,6 @@ public class CharacterCreationViewModel : ViewModelBase
         CharacterCreationStep.Background => "Step 2: Choose Your Background",
         CharacterCreationStep.Attributes => "Step 3: Allocate Attributes",
         CharacterCreationStep.Archetype => "Step 4: Choose Your Archetype",
-        CharacterCreationStep.Specialization => "Specialization (Unlocked via PP)",
         CharacterCreationStep.Summary => "Step 5: Confirm Your Survivor",
         _ => "Create Your Survivor"
     };
