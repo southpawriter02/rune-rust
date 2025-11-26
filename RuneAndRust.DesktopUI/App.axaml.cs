@@ -7,6 +7,7 @@ using RuneAndRust.DesktopUI.Services;
 using RuneAndRust.DesktopUI.ViewModels;
 using RuneAndRust.DesktopUI.Views;
 using RuneAndRust.Engine;
+using RuneAndRust.Persistence;
 using Serilog;
 using System;
 using System.IO;
@@ -147,6 +148,7 @@ public partial class App : Application
         services.AddSingleton<TraumaEconomyService>();  // Required by HazardService
         services.AddSingleton<HazardService>();
         services.AddSingleton<CurrencyService>();
+        services.AddSingleton<StatusEffectRepository>();  // Required by AdvancedStatusEffectService
         services.AddSingleton<AdvancedStatusEffectService>();
         services.AddSingleton<CombatEngine>();
         services.AddSingleton<EnemyAI>();
