@@ -72,7 +72,7 @@ public class VictoryController
     /// Checks if the dungeon has been completed.
     /// Victory condition: Boss room cleared.
     /// </summary>
-    private bool CheckDungeonCompletion(GameState gameState)
+    private bool CheckDungeonCompletion(Core.GameState gameState)
     {
         var dungeon = gameState.CurrentDungeon as Dungeon;
         if (dungeon == null) return false;
@@ -154,7 +154,7 @@ public class VictoryController
     /// <summary>
     /// Calculates comprehensive victory statistics.
     /// </summary>
-    private VictoryStatistics CalculateVictoryStatistics(GameState gameState)
+    private VictoryStatistics CalculateVictoryStatistics(Core.GameState gameState)
     {
         var player = gameState.Player!;
         var dungeon = gameState.CurrentDungeon as Dungeon;
