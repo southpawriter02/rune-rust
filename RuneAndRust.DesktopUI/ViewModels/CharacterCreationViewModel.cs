@@ -355,29 +355,6 @@ public class CharacterCreationViewModel : ViewModelBase
         _controller.Initialize(this);
     }
 
-    /// <summary>
-    /// v0.44.1 constructor with GameStateController (backwards compatible).
-    /// </summary>
-    public CharacterCreationViewModel(
-        INavigationService navigationService,
-        GameStateController gameStateController,
-        ILogger logger) : this()
-    {
-        _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
-        _gameStateController = gameStateController ?? throw new ArgumentNullException(nameof(gameStateController));
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-    }
-
-    /// <summary>
-    /// Legacy constructor without controller (backwards compatibility).
-    /// </summary>
-    public CharacterCreationViewModel(
-        INavigationService navigationService,
-        ISaveGameService? saveGameService = null) : this()
-    {
-        _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
-    }
-
     #endregion
 
     #region Command Handlers
