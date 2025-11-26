@@ -342,7 +342,7 @@ public class CombatController
         _isProcessingCombat = false;
 
         // Transition to loot collection phase
-        await _gameStateController.UpdatePhaseAsync(GamePhase.LootCollection, "Combat victory - collecting loot");
+        await _gameStateController.UpdatePhaseAsync(Core.GamePhase.LootCollection, "Combat victory - collecting loot");
 
         // Raise legacy events for any listeners
         CombatEnded?.Invoke(this, new CombatEndedEventArgs(true, false));
@@ -391,7 +391,7 @@ public class CombatController
         else
         {
             // Fallback: just transition to death phase
-            await _gameStateController.UpdatePhaseAsync(GamePhase.Death, "Survivor has fallen in combat");
+            await _gameStateController.UpdatePhaseAsync(Core.GamePhase.Death, "Survivor has fallen in combat");
         }
     }
 
@@ -438,7 +438,7 @@ public class CombatController
             _isProcessingCombat = false;
 
             // Transition back to exploration
-            await _gameStateController.UpdatePhaseAsync(GamePhase.DungeonExploration, "Fled combat");
+            await _gameStateController.UpdatePhaseAsync(Core.GamePhase.DungeonExploration, "Fled combat");
 
             PlayerFled?.Invoke(this, EventArgs.Empty);
             CombatEnded?.Invoke(this, new CombatEndedEventArgs(false, true));
@@ -464,7 +464,7 @@ public class CombatController
     {
         if (!_gameStateController.HasActiveGame) return;
 
-        await _gameStateController.UpdatePhaseAsync(GamePhase.DungeonExploration, "Returning to exploration");
+        await _gameStateController.UpdatePhaseAsync(Core.GamePhase.DungeonExploration, "Returning to exploration");
         _navigationService.NavigateTo<DungeonExplorationViewModel>();
 
         _logger.Information("Returned to exploration after combat");
@@ -516,11 +516,11 @@ public class CombatController
         // Base value from threat level
         int baseValue = enemy.ThreatLevel switch
         {
-            Core.Population.ThreatLevel.Trivial => 10,
+            Core.Population.ThreatLevel.Minimal => 10,
             Core.Population.ThreatLevel.Low => 25,
             Core.Population.ThreatLevel.Medium => 50,
             Core.Population.ThreatLevel.High => 100,
-            Core.Population.ThreatLevel.Lethal => 200,
+            Core.Population.ThreatLevel.Boss => 200,
             _ => 25
         };
 
@@ -590,7 +590,7 @@ public class CombatController
                 {
                     Name = $"Salvaged {enemy.Type} Part",
                     Type = EquipmentType.Accessory,
-                    Quality = QualityTier.Common,
+                    Quality = QualityTier.Scavenged,
                     Description = "A component salvaged from a fallen foe."
                 };
                 loot.Add(item);
@@ -603,7 +603,7 @@ public class CombatController
                 {
                     Name = $"{enemy.Name}'s Trophy",
                     Type = EquipmentType.Accessory,
-                    Quality = QualityTier.Rare,
+                    Quality = QualityTier.ClanForged,
                     Description = $"A trophy taken from the fallen {enemy.Name}."
                 };
                 loot.Add(bossLoot);

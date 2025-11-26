@@ -102,7 +102,7 @@ public class RoomFeatureService : IRoomFeatureService
     }
 
     /// <inheritdoc/>
-    public async Task<RestResult> PerformFieldRestAsync(GameState gameState)
+    public async Task<RestResult> PerformFieldRestAsync(Core.GameState gameState)
     {
         if (gameState.Player == null || gameState.CurrentRoom == null)
         {

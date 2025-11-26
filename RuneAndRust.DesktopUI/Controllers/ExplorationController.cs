@@ -306,7 +306,7 @@ public class ExplorationController
         if (!_gameStateController.HasActiveGame) return;
 
         var reason = wasVictory ? "Combat victory" : "Fled combat";
-        await _gameStateController.UpdatePhaseAsync(GamePhase.DungeonExploration, reason);
+        await _gameStateController.UpdatePhaseAsync(Core.GamePhase.DungeonExploration, reason);
 
         if (wasVictory)
         {
@@ -350,7 +350,7 @@ public class ExplorationController
             if (gameState.Player.HP <= 0)
             {
                 _logger.Warning("Survivor killed by puzzle trap!");
-                await _gameStateController.UpdatePhaseAsync(GamePhase.Death, "Killed by puzzle trap");
+                await _gameStateController.UpdatePhaseAsync(Core.GamePhase.Death, "Killed by puzzle trap");
             }
         }
 
@@ -459,7 +459,7 @@ public class ExplorationController
         };
 
         _gameStateController.StartCombat(combatState);
-        await _gameStateController.UpdatePhaseAsync(GamePhase.Combat, "Combat initiated");
+        await _gameStateController.UpdatePhaseAsync(Core.GamePhase.Combat, "Combat initiated");
 
         // Raise event for UI handling
         CombatInitiated?.Invoke(this, new CombatInitiationEventArgs(combatState));

@@ -242,7 +242,7 @@ public class LootController
         else
         {
             // Return to exploration
-            await _gameStateController.UpdatePhaseAsync(GamePhase.DungeonExploration, "Loot collected");
+            await _gameStateController.UpdatePhaseAsync(Core.GamePhase.DungeonExploration, "Loot collected");
             _navigationService.NavigateTo<DungeonExplorationViewModel>();
         }
 

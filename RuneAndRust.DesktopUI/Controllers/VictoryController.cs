@@ -74,23 +74,32 @@ public class VictoryController
     /// </summary>
     private bool CheckDungeonCompletion(Core.GameState gameState)
     {
-        var dungeon = gameState.CurrentDungeon as Dungeon;
-        if (dungeon == null) return false;
-
-        // Check if boss room exists and has been cleared
-        var bossRoom = dungeon.GetBossRoom();
-        if (bossRoom == null)
+        // Check if current room is the boss room and has been cleared
+        var currentRoom = gameState.CurrentRoom;
+        if (currentRoom == null)
         {
-            _logger.Warning("No boss room found in dungeon {DungeonId}", dungeon.DungeonId);
+            _logger.Warning("No current room in game state");
             return false;
         }
 
-        bool bossDefeated = bossRoom.HasBeenCleared && bossRoom.Enemies.Count == 0;
+        // The boss room is marked with IsBossRoom flag
+        if (!currentRoom.IsBossRoom)
+        {
+            // Not in boss room - check if boss room was already cleared
+            var dungeonGraph = gameState.CurrentDungeon;
+            if (dungeonGraph?.BossNode == null)
+            {
+                _logger.Warning("No boss node found in dungeon graph");
+            }
+            return false; // Not in boss room, victory not detected here
+        }
+
+        bool bossDefeated = currentRoom.HasBeenCleared && currentRoom.Enemies.Count == 0;
 
         if (bossDefeated)
         {
             _logger.Information("Victory condition met: Boss room {RoomId} cleared",
-                bossRoom.RoomId);
+                currentRoom.RoomId);
         }
 
         return bossDefeated;
@@ -119,7 +128,7 @@ public class VictoryController
         try
         {
             // Transition to Victory state
-            await _gameStateController.UpdatePhaseAsync(GamePhase.Victory, "Sector completed - Victory!");
+            await _gameStateController.UpdatePhaseAsync(Core.GamePhase.Victory, "Sector completed - Victory!");
 
             // Calculate victory statistics
             var victoryStats = CalculateVictoryStatistics(gameState);
@@ -157,7 +166,13 @@ public class VictoryController
     private VictoryStatistics CalculateVictoryStatistics(Core.GameState gameState)
     {
         var player = gameState.Player!;
-        var dungeon = gameState.CurrentDungeon as Dungeon;
+        var dungeonGraph = gameState.CurrentDungeon;
+
+        // Calculate exploration stats from DungeonGraph
+        int totalRooms = dungeonGraph?.NodeCount ?? 0;
+        int secretRooms = dungeonGraph?.GetNodesByType(NodeType.Secret).Count ?? 0;
+        // Estimate rooms explored based on player's milestone (rooms cleared ~ rooms explored)
+        int roomsExplored = player.RoomsExploredSinceRest + (player.CurrentMilestone * 5);
 
         var stats = new VictoryStatistics
         {
@@ -181,9 +196,9 @@ public class VictoryController
             TotalKills = EstimateKills(player),
 
             // Exploration
-            RoomsExplored = dungeon?.Rooms.Count(r => r.Value.HasBeenCleared) ?? 0,
-            TotalRooms = dungeon?.TotalRoomCount ?? 0,
-            SecretsFound = dungeon?.GetSecretRooms().Count(r => r.HasBeenCleared) ?? 0,
+            RoomsExplored = Math.Min(roomsExplored, totalRooms),
+            TotalRooms = totalRooms,
+            SecretsFound = Math.Min(secretRooms, player.CurrentMilestone), // Estimate based on progress
 
             // Economy
             FinalCurrency = player.Currency,
@@ -307,7 +322,7 @@ public class VictoryController
     {
         _logger.Information("Transitioning to endgame menu");
 
-        await _gameStateController.UpdatePhaseAsync(GamePhase.EndgameMenu, "Victory acknowledged");
+        await _gameStateController.UpdatePhaseAsync(Core.GamePhase.EndgameMenu, "Victory acknowledged");
 
         // Navigate to endgame mode selection
         _navigationService.NavigateTo<EndgameModeViewModel>();
@@ -359,7 +374,7 @@ public class VictoryController
             return null;
 
         var gameState = _gameStateController.CurrentGameState;
-        if (gameState.CurrentPhase != GamePhase.Victory)
+        if (gameState.CurrentPhase != Core.GamePhase.Victory)
             return null;
 
         return CalculateVictoryStatistics(gameState);

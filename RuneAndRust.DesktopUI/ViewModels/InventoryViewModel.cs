@@ -249,7 +249,7 @@ public class InventoryViewModel : ViewModelBase
     /// </summary>
     private void CheckLootCollectionMode()
     {
-        if (_gameStateController?.CurrentGameState.CurrentPhase == GamePhase.LootCollection && _lootController != null)
+        if (_gameStateController?.CurrentGameState.CurrentPhase == Core.GamePhase.LootCollection && _lootController != null)
         {
             IsInLootCollectionMode = true;
             RefreshPendingLoot();

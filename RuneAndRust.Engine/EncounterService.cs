@@ -25,7 +25,7 @@ public class EncounterService : IEncounterService
     }
 
     /// <inheritdoc/>
-    public Task<RandomEncounterResult> RollForRandomEncounterAsync(GameState gameState)
+    public Task<RandomEncounterResult> RollForRandomEncounterAsync(Core.GameState gameState)
     {
         if (gameState.Player == null || gameState.CurrentRoom == null)
         {

@@ -482,7 +482,7 @@ public class SpecializationTreeViewModel : ViewModelBase
     /// </summary>
     private void CheckProgressionMode()
     {
-        if (_gameStateController?.CurrentGameState.CurrentPhase == GamePhase.CharacterProgression)
+        if (_gameStateController?.CurrentGameState.CurrentPhase == Core.GamePhase.CharacterProgression)
         {
             IsInProgressionMode = true;
             StatusMessage = "Milestone reached! Spend your Progression Points.";

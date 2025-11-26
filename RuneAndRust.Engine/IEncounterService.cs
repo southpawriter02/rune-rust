@@ -50,7 +50,7 @@ public interface IEncounterService
     /// </summary>
     /// <param name="gameState">Current game state including player and location.</param>
     /// <returns>Encounter result indicating if an encounter occurred.</returns>
-    Task<RandomEncounterResult> RollForRandomEncounterAsync(GameState gameState);
+    Task<RandomEncounterResult> RollForRandomEncounterAsync(Core.GameState gameState);
 
     /// <summary>
     /// Generates an encounter appropriate for the given room.
