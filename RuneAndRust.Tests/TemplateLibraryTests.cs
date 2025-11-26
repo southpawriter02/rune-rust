@@ -3,6 +3,7 @@ using RuneAndRust.Core;
 using RuneAndRust.Engine;
 using System.IO;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace RuneAndRust.Tests;
 
@@ -398,7 +399,8 @@ public class TemplateLibraryTests
 
         var json = JsonSerializer.Serialize(template, new JsonSerializerOptions
         {
-            WriteIndented = true
+            WriteIndented = true,
+            Converters = { new JsonStringEnumConverter() }
         });
 
         File.WriteAllText(fullPath, json);
