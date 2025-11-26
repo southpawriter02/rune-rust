@@ -310,6 +310,16 @@ public class DungeonExplorationViewModel : ViewModelBase
     public ICommand SearchRoomCommand { get; }
 
     /// <summary>
+    /// Command to look at/examine the current room (detailed perception).
+    /// </summary>
+    public ICommand LookCommand { get; }
+
+    /// <summary>
+    /// Command to investigate objects in the room (WITS-based skill check).
+    /// </summary>
+    public ICommand InvestigateCommand { get; }
+
+    /// <summary>
     /// Command to rest in the current room.
     /// </summary>
     public ICommand RestCommand { get; }
@@ -373,6 +383,8 @@ public class DungeonExplorationViewModel : ViewModelBase
         // Initialize commands
         MoveCommand = ReactiveCommand.Create<ExitViewModel>(Move);
         SearchRoomCommand = ReactiveCommand.CreateFromTask(SearchRoomAsync);
+        LookCommand = ReactiveCommand.CreateFromTask(LookRoomAsync);
+        InvestigateCommand = ReactiveCommand.CreateFromTask(InvestigateRoomAsync);
         RestCommand = ReactiveCommand.Create(ShowRestDialog);
         ViewCharacterCommand = ReactiveCommand.Create(ViewCharacter);
         ViewInventoryCommand = ReactiveCommand.Create(ViewInventory);
@@ -988,6 +1000,178 @@ public class DungeonExplorationViewModel : ViewModelBase
         IsSearching = false;
         this.RaisePropertyChanged(nameof(IsSearchResultVisible));
         this.RaisePropertyChanged(nameof(CanSearch));
+    }
+
+    /// <summary>
+    /// Examines the current room in detail, showing all visible entities,
+    /// exits, hazards, and running passive perception checks.
+    /// </summary>
+    private async Task LookRoomAsync()
+    {
+        if (CurrentRoom == null) return;
+
+        StatusMessage = "You examine your surroundings carefully...";
+        await Task.Delay(300);
+
+        // Build detailed room description
+        var details = new List<string>();
+
+        // Room atmosphere
+        details.Add($"[{BiomeName}] - {CurrentRoom.Name}");
+        details.Add(CurrentRoom.Description);
+
+        // Entities present
+        if (CurrentRoom.Enemies?.Any() == true)
+        {
+            var enemyList = string.Join(", ", CurrentRoom.Enemies.Select(e => e.Name));
+            details.Add($"Hostiles: {enemyList}");
+        }
+
+        if (CurrentRoom.NPCs?.Any() == true)
+        {
+            var npcList = string.Join(", ", CurrentRoom.NPCs.Select(n => n.Name));
+            details.Add($"Present: {npcList}");
+        }
+
+        if (CurrentRoom.ItemsOnGround?.Any() == true)
+        {
+            var itemList = string.Join(", ", CurrentRoom.ItemsOnGround.Select(i => i.Name));
+            details.Add($"Items: {itemList}");
+        }
+
+        // Hazards and conditions
+        if (CurrentRoom.DynamicHazards?.Any() == true)
+        {
+            var hazards = string.Join(", ", CurrentRoom.DynamicHazards.Select(h => h.Name));
+            details.Add($"Hazards: {hazards}");
+        }
+
+        if (CurrentRoom.AmbientConditions?.Any() == true)
+        {
+            var conditions = string.Join(", ", CurrentRoom.AmbientConditions.Select(c => c.Name));
+            details.Add($"Conditions: {conditions}");
+        }
+
+        // Passive perception check for hidden elements
+        int wits = Character?.Attributes?.Wits ?? 5;
+        var rng = new Random();
+        int perceptionRoll = rng.Next(1, 21) + (wits - 5); // d20 + WITS modifier
+
+        if (perceptionRoll >= 12 && CurrentRoom.DynamicHazards?.Any(h => h.IsHidden && !h.HasBeenDiscovered) == true)
+        {
+            details.Add("*You notice subtle signs of danger - a trap may be nearby.*");
+        }
+
+        if (perceptionRoll >= 15 && CurrentRoom.HasSecretExit && !CurrentRoom.SecretExitRevealed)
+        {
+            details.Add("*Something about the walls here seems... off. There may be a hidden passage.*");
+        }
+
+        // Available exits
+        var exitList = new List<string>();
+        if (CurrentRoom.Exits != null)
+        {
+            foreach (var exit in CurrentRoom.Exits)
+            {
+                exitList.Add(exit.Key.ToString());
+            }
+        }
+        if (exitList.Any())
+        {
+            details.Add($"Exits: {string.Join(", ", exitList)}");
+        }
+
+        // Update room features to refresh the display
+        UpdateRoomDisplay();
+
+        StatusMessage = string.Join(" | ", details.Take(3)) + (details.Count > 3 ? "..." : "");
+    }
+
+    /// <summary>
+    /// Investigates objects in the room using a WITS-based skill check
+    /// to reveal hidden details, mechanisms, and lore.
+    /// </summary>
+    private async Task InvestigateRoomAsync()
+    {
+        if (CurrentRoom == null) return;
+
+        StatusMessage = "You investigate the area more closely...";
+        await Task.Delay(500);
+
+        // Get WITS for skill check
+        int wits = Character?.Attributes?.Wits ?? 5;
+        var rng = new Random();
+        int investigationRoll = rng.Next(1, 21) + (wits - 5); // d20 + WITS modifier
+
+        var findings = new List<string>();
+
+        // Check for investigatable objects
+        bool foundSomething = false;
+
+        // Check static terrain
+        if (CurrentRoom.StaticTerrain?.Any(t => t.IsInteractive && !t.HasBeenInvestigated) == true)
+        {
+            var terrain = CurrentRoom.StaticTerrain.First(t => t.IsInteractive && !t.HasBeenInvestigated);
+            if (investigationRoll >= 10)
+            {
+                findings.Add($"Examining the {terrain.Name}: {terrain.FlavorText}");
+                terrain.HasBeenInvestigated = true;
+                foundSomething = true;
+            }
+        }
+
+        // Check loot nodes with hidden content
+        if (CurrentRoom.LootNodes?.Any(l => l.RequiresInvestigation && !l.HiddenContentRevealed) == true)
+        {
+            var lootNode = CurrentRoom.LootNodes.First(l => l.RequiresInvestigation && !l.HiddenContentRevealed);
+            if (investigationRoll >= 12)
+            {
+                findings.Add($"You discover a hidden compartment in the {lootNode.Type}!");
+                lootNode.HiddenContentRevealed = true;
+                foundSomething = true;
+            }
+        }
+
+        // Check hazards to learn disable mechanisms
+        if (CurrentRoom.DynamicHazards?.Any(h => !h.HasBeenDiscovered) == true)
+        {
+            var hazard = CurrentRoom.DynamicHazards.First(h => !h.HasBeenDiscovered);
+            if (investigationRoll >= 14)
+            {
+                findings.Add($"You identify a {hazard.Name} and understand how to avoid it.");
+                hazard.HasBeenDiscovered = true;
+                foundSomething = true;
+            }
+        }
+
+        // Lore/expert level findings at high rolls
+        if (investigationRoll >= 18)
+        {
+            var loreFragments = new[]
+            {
+                "Ancient Dvergr runes on the wall speak of a great forge that once burned here.",
+                "The architecture suggests this was a place of importance to the old ones.",
+                "Faded markings indicate this area was once sealed - whatever was kept here has long escaped.",
+                "You find traces of an old battle - rust and bone fragments suggest a desperate last stand."
+            };
+            findings.Add($"[Lore] {loreFragments[rng.Next(loreFragments.Length)]}");
+            foundSomething = true;
+        }
+
+        // Report findings
+        if (foundSomething)
+        {
+            StatusMessage = $"[WITS check: {investigationRoll}] " + string.Join(" ", findings);
+            UpdateRoomDisplay();
+        }
+        else if (investigationRoll < 10)
+        {
+            StatusMessage = $"[WITS check: {investigationRoll}] Your investigation reveals nothing new. Try again?";
+        }
+        else
+        {
+            StatusMessage = $"[WITS check: {investigationRoll}] The area has been thoroughly examined. Nothing more to find.";
+        }
     }
 
     /// <summary>
