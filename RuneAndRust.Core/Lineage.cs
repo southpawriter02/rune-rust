@@ -68,4 +68,55 @@ public static class LineageExtensions
                             "You have heightened FINESSE and enhanced senses during exploration.",
         _ => "Select a lineage to view its description."
     };
+
+    /// <summary>
+    /// Gets the attribute modifiers for a lineage.
+    /// Returns a dictionary mapping attribute names to their modifiers (+1 or -1).
+    /// Each lineage grants +1 to one attribute and -1 to another for balance.
+    /// </summary>
+    public static Dictionary<string, int> GetAttributeModifiers(this Lineage lineage) => lineage switch
+    {
+        // Clan-Born: Strong community work builds physical strength, less scholarly
+        Lineage.ClanBorn => new Dictionary<string, int>
+        {
+            { "MIGHT", 1 },
+            { "WITS", -1 }
+        },
+        // Rune-Marked: Magical affinity strengthens will, but weakens physical form
+        Lineage.RuneMarked => new Dictionary<string, int>
+        {
+            { "WILL", 1 },
+            { "STURDINESS", -1 }
+        },
+        // Iron-Blooded: Mechanical integration enhances durability, reduces agility
+        Lineage.IronBlooded => new Dictionary<string, int>
+        {
+            { "STURDINESS", 1 },
+            { "FINESSE", -1 }
+        },
+        // Vargr-Kin: Wolf-blood grants agility, primal nature weakens mental discipline
+        Lineage.VargrKin => new Dictionary<string, int>
+        {
+            { "FINESSE", 1 },
+            { "WILL", -1 }
+        },
+        _ => new Dictionary<string, int>()
+    };
+
+    /// <summary>
+    /// Gets a short summary of the attribute modifiers for display.
+    /// </summary>
+    public static string GetAttributeModifierSummary(this Lineage lineage)
+    {
+        var mods = lineage.GetAttributeModifiers();
+        if (mods.Count == 0) return "";
+
+        var parts = new List<string>();
+        foreach (var kvp in mods)
+        {
+            string sign = kvp.Value > 0 ? "+" : "";
+            parts.Add($"{sign}{kvp.Value} {kvp.Key}");
+        }
+        return string.Join(", ", parts);
+    }
 }

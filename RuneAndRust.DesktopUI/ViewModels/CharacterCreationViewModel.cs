@@ -64,6 +64,13 @@ public class CharacterCreationViewModel : ViewModelBase
     private int _attributeWill = 5;
     private int _attributeSturdiness = 5;
 
+    // Base attribute values (adjusted by lineage/background)
+    private int _baseMight = 5;
+    private int _baseFinesse = 5;
+    private int _baseWits = 5;
+    private int _baseWill = 5;
+    private int _baseSturdiness = 5;
+
     // Summary properties
     private string _summaryLineage = string.Empty;
     private string _summaryBackground = string.Empty;
@@ -120,7 +127,12 @@ public class CharacterCreationViewModel : ViewModelBase
     public int RemainingAttributePoints
     {
         get => _remainingAttributePoints;
-        set => this.RaiseAndSetIfChanged(ref _remainingAttributePoints, value);
+        set
+        {
+            if (this.RaiseAndSetIfChanged(ref _remainingAttributePoints, value) != value) return;
+            // When points change, all increase costs may become available/unavailable
+            NotifyAttributeCostChanges();
+        }
     }
 
     /// <summary>
@@ -195,31 +207,193 @@ public class CharacterCreationViewModel : ViewModelBase
     public int AttributeMight
     {
         get => _attributeMight;
-        set => this.RaiseAndSetIfChanged(ref _attributeMight, value);
+        set
+        {
+            if (this.RaiseAndSetIfChanged(ref _attributeMight, value) != value) return;
+            NotifyAttributeCostChanges();
+        }
     }
 
     public int AttributeFinesse
     {
         get => _attributeFinesse;
-        set => this.RaiseAndSetIfChanged(ref _attributeFinesse, value);
+        set
+        {
+            if (this.RaiseAndSetIfChanged(ref _attributeFinesse, value) != value) return;
+            NotifyAttributeCostChanges();
+        }
     }
 
     public int AttributeWits
     {
         get => _attributeWits;
-        set => this.RaiseAndSetIfChanged(ref _attributeWits, value);
+        set
+        {
+            if (this.RaiseAndSetIfChanged(ref _attributeWits, value) != value) return;
+            NotifyAttributeCostChanges();
+        }
     }
 
     public int AttributeWill
     {
         get => _attributeWill;
-        set => this.RaiseAndSetIfChanged(ref _attributeWill, value);
+        set
+        {
+            if (this.RaiseAndSetIfChanged(ref _attributeWill, value) != value) return;
+            NotifyAttributeCostChanges();
+        }
     }
 
     public int AttributeSturdiness
     {
         get => _attributeSturdiness;
-        set => this.RaiseAndSetIfChanged(ref _attributeSturdiness, value);
+        set
+        {
+            if (this.RaiseAndSetIfChanged(ref _attributeSturdiness, value) != value) return;
+            NotifyAttributeCostChanges();
+        }
+    }
+
+    #endregion
+
+    #region Base Attribute Properties (Adjusted by Lineage/Background)
+
+    /// <summary>Base Might value adjusted by lineage/background.</summary>
+    public int BaseMight
+    {
+        get => _baseMight;
+        set
+        {
+            if (this.RaiseAndSetIfChanged(ref _baseMight, value) != value) return;
+            NotifyAttributeCostChanges();
+        }
+    }
+
+    /// <summary>Base Finesse value adjusted by lineage/background.</summary>
+    public int BaseFinesse
+    {
+        get => _baseFinesse;
+        set
+        {
+            if (this.RaiseAndSetIfChanged(ref _baseFinesse, value) != value) return;
+            NotifyAttributeCostChanges();
+        }
+    }
+
+    /// <summary>Base Wits value adjusted by lineage/background.</summary>
+    public int BaseWits
+    {
+        get => _baseWits;
+        set
+        {
+            if (this.RaiseAndSetIfChanged(ref _baseWits, value) != value) return;
+            NotifyAttributeCostChanges();
+        }
+    }
+
+    /// <summary>Base Will value adjusted by lineage/background.</summary>
+    public int BaseWill
+    {
+        get => _baseWill;
+        set
+        {
+            if (this.RaiseAndSetIfChanged(ref _baseWill, value) != value) return;
+            NotifyAttributeCostChanges();
+        }
+    }
+
+    /// <summary>Base Sturdiness value adjusted by lineage/background.</summary>
+    public int BaseSturdiness
+    {
+        get => _baseSturdiness;
+        set
+        {
+            if (this.RaiseAndSetIfChanged(ref _baseSturdiness, value) != value) return;
+            NotifyAttributeCostChanges();
+        }
+    }
+
+    #endregion
+
+    #region Attribute Cost Properties
+
+    // Constants for cost calculations
+    private const int DefaultBaseAttributeValue = 5;
+    private const int MaxAttributeValue = 10;
+    private const int MinAttributeValue = 3;
+
+    /// <summary>Gets cost to increase attribute by 1 (0 if at max or not enough points).</summary>
+    private int GetIncreaseCost(int currentValue)
+    {
+        if (currentValue >= MaxAttributeValue) return 0;
+        int nextValue = currentValue + 1;
+        int cost = nextValue <= 8 ? 1 : 2;
+        return cost <= RemainingAttributePoints ? cost : 0;
+    }
+
+    /// <summary>Gets points refunded by decreasing attribute by 1 (0 if at min or at/below base).</summary>
+    private int GetDecreaseCost(int currentValue, int baseValue)
+    {
+        if (currentValue <= MinAttributeValue) return 0; // Can't go lower than min
+        if (currentValue <= baseValue) return 0; // At or below base = no refund
+        // Refund is the cost paid to reach current level from previous
+        return currentValue <= 8 ? 1 : 2;
+    }
+
+    // Cost to increase each attribute by 1
+    public int MightIncreaseCost => GetIncreaseCost(AttributeMight);
+    public int FinesseIncreaseCost => GetIncreaseCost(AttributeFinesse);
+    public int WitsIncreaseCost => GetIncreaseCost(AttributeWits);
+    public int WillIncreaseCost => GetIncreaseCost(AttributeWill);
+    public int SturdinessIncreaseCost => GetIncreaseCost(AttributeSturdiness);
+
+    // Points refunded by decreasing each attribute by 1 (uses per-attribute base)
+    public int MightDecreaseCost => GetDecreaseCost(AttributeMight, BaseMight);
+    public int FinesseDecreaseCost => GetDecreaseCost(AttributeFinesse, BaseFinesse);
+    public int WitsDecreaseCost => GetDecreaseCost(AttributeWits, BaseWits);
+    public int WillDecreaseCost => GetDecreaseCost(AttributeWill, BaseWill);
+    public int SturdinessDecreaseCost => GetDecreaseCost(AttributeSturdiness, BaseSturdiness);
+
+    // Can increase/decrease checks
+    public bool CanIncreaseMight => AttributeMight < MaxAttributeValue && MightIncreaseCost > 0;
+    public bool CanDecreaseMight => AttributeMight > MinAttributeValue;
+    public bool CanIncreaseFinesse => AttributeFinesse < MaxAttributeValue && FinesseIncreaseCost > 0;
+    public bool CanDecreaseFinesse => AttributeFinesse > MinAttributeValue;
+    public bool CanIncreaseWits => AttributeWits < MaxAttributeValue && WitsIncreaseCost > 0;
+    public bool CanDecreaseWits => AttributeWits > MinAttributeValue;
+    public bool CanIncreaseWill => AttributeWill < MaxAttributeValue && WillIncreaseCost > 0;
+    public bool CanDecreaseWill => AttributeWill > MinAttributeValue;
+    public bool CanIncreaseSturdiness => AttributeSturdiness < MaxAttributeValue && SturdinessIncreaseCost > 0;
+    public bool CanDecreaseSturdiness => AttributeSturdiness > MinAttributeValue;
+
+    /// <summary>Notifies all cost-related properties when any attribute changes.</summary>
+    private void NotifyAttributeCostChanges()
+    {
+        // Notify all cost and can-change properties
+        this.RaisePropertyChanged(nameof(MightIncreaseCost));
+        this.RaisePropertyChanged(nameof(MightDecreaseCost));
+        this.RaisePropertyChanged(nameof(CanIncreaseMight));
+        this.RaisePropertyChanged(nameof(CanDecreaseMight));
+
+        this.RaisePropertyChanged(nameof(FinesseIncreaseCost));
+        this.RaisePropertyChanged(nameof(FinesseDecreaseCost));
+        this.RaisePropertyChanged(nameof(CanIncreaseFinesse));
+        this.RaisePropertyChanged(nameof(CanDecreaseFinesse));
+
+        this.RaisePropertyChanged(nameof(WitsIncreaseCost));
+        this.RaisePropertyChanged(nameof(WitsDecreaseCost));
+        this.RaisePropertyChanged(nameof(CanIncreaseWits));
+        this.RaisePropertyChanged(nameof(CanDecreaseWits));
+
+        this.RaisePropertyChanged(nameof(WillIncreaseCost));
+        this.RaisePropertyChanged(nameof(WillDecreaseCost));
+        this.RaisePropertyChanged(nameof(CanIncreaseWill));
+        this.RaisePropertyChanged(nameof(CanDecreaseWill));
+
+        this.RaisePropertyChanged(nameof(SturdinessIncreaseCost));
+        this.RaisePropertyChanged(nameof(SturdinessDecreaseCost));
+        this.RaisePropertyChanged(nameof(CanIncreaseSturdiness));
+        this.RaisePropertyChanged(nameof(CanDecreaseSturdiness));
     }
 
     #endregion
@@ -298,6 +472,18 @@ public class CharacterCreationViewModel : ViewModelBase
     /// <summary>Command to adjust an attribute value.</summary>
     public ICommand AdjustAttributeCommand { get; }
 
+    /// <summary>Commands to increase individual attributes.</summary>
+    public ICommand IncreaseMightCommand { get; }
+    public ICommand DecreaseMightCommand { get; }
+    public ICommand IncreaseFinesseCommand { get; }
+    public ICommand DecreaseFinesseCommand { get; }
+    public ICommand IncreaseWitsCommand { get; }
+    public ICommand DecreaseWitsCommand { get; }
+    public ICommand IncreaseWillCommand { get; }
+    public ICommand DecreaseWillCommand { get; }
+    public ICommand IncreaseSturdinessCommand { get; }
+    public ICommand DecreaseSturdinessCommand { get; }
+
     /// <summary>Command to confirm attributes and proceed.</summary>
     public ICommand ConfirmAttributesCommand { get; }
 
@@ -327,6 +513,19 @@ public class CharacterCreationViewModel : ViewModelBase
         SelectBackgroundCommand = ReactiveCommand.CreateFromTask<Background>(OnSelectBackgroundAsync);
         ToggleAdvancedModeCommand = ReactiveCommand.Create<bool>(OnToggleAdvancedMode);
         AdjustAttributeCommand = ReactiveCommand.Create<(string, int)>(OnAdjustAttribute);
+
+        // Individual attribute adjustment commands
+        IncreaseMightCommand = ReactiveCommand.Create(() => OnAdjustAttribute(("MIGHT", 1)));
+        DecreaseMightCommand = ReactiveCommand.Create(() => OnAdjustAttribute(("MIGHT", -1)));
+        IncreaseFinesseCommand = ReactiveCommand.Create(() => OnAdjustAttribute(("FINESSE", 1)));
+        DecreaseFinesseCommand = ReactiveCommand.Create(() => OnAdjustAttribute(("FINESSE", -1)));
+        IncreaseWitsCommand = ReactiveCommand.Create(() => OnAdjustAttribute(("WITS", 1)));
+        DecreaseWitsCommand = ReactiveCommand.Create(() => OnAdjustAttribute(("WITS", -1)));
+        IncreaseWillCommand = ReactiveCommand.Create(() => OnAdjustAttribute(("WILL", 1)));
+        DecreaseWillCommand = ReactiveCommand.Create(() => OnAdjustAttribute(("WILL", -1)));
+        IncreaseSturdinessCommand = ReactiveCommand.Create(() => OnAdjustAttribute(("STURDINESS", 1)));
+        DecreaseSturdinessCommand = ReactiveCommand.Create(() => OnAdjustAttribute(("STURDINESS", -1)));
+
         ConfirmAttributesCommand = ReactiveCommand.CreateFromTask(OnConfirmAttributesAsync);
         SelectArchetypeCommand = ReactiveCommand.CreateFromTask<CharacterClass>(OnSelectArchetypeAsync);
         SelectSpecializationCommand = ReactiveCommand.CreateFromTask<Specialization>(OnSelectSpecializationAsync);
@@ -426,20 +625,79 @@ public class CharacterCreationViewModel : ViewModelBase
 
     private void OnAdjustAttribute((string attributeName, int delta) args)
     {
-        if (_controller != null && UseAdvancedMode)
-        {
-            int currentValue = args.attributeName.ToUpperInvariant() switch
-            {
-                "MIGHT" => AttributeMight,
-                "FINESSE" => AttributeFinesse,
-                "WITS" => AttributeWits,
-                "WILL" => AttributeWill,
-                "STURDINESS" => AttributeSturdiness,
-                _ => 5
-            };
+        if (!UseAdvancedMode) return;
 
-            _controller.OnAttributeChanged(args.attributeName, currentValue + args.delta);
+        int currentValue = args.attributeName.ToUpperInvariant() switch
+        {
+            "MIGHT" => AttributeMight,
+            "FINESSE" => AttributeFinesse,
+            "WITS" => AttributeWits,
+            "WILL" => AttributeWill,
+            "STURDINESS" => AttributeSturdiness,
+            _ => 5
+        };
+
+        int targetValue = currentValue + args.delta;
+
+        // Enforce min/max bounds
+        if (targetValue < MinAttributeValue || targetValue > MaxAttributeValue)
+        {
+            return;
         }
+
+        // Check if we can afford the increase
+        if (args.delta > 0)
+        {
+            int cost = targetValue <= 8 ? 1 : 2;
+            if (cost > RemainingAttributePoints) return;
+        }
+
+        if (_controller != null)
+        {
+            _controller.OnAttributeChanged(args.attributeName, targetValue);
+        }
+        else
+        {
+            // Design-time/fallback: Update attribute directly
+            switch (args.attributeName.ToUpperInvariant())
+            {
+                case "MIGHT": AttributeMight = targetValue; break;
+                case "FINESSE": AttributeFinesse = targetValue; break;
+                case "WITS": AttributeWits = targetValue; break;
+                case "WILL": AttributeWill = targetValue; break;
+                case "STURDINESS": AttributeSturdiness = targetValue; break;
+            }
+
+            // Recalculate remaining points (design-time)
+            RecalculateRemainingPoints();
+        }
+    }
+
+    /// <summary>
+    /// Recalculates remaining attribute points based on current attribute values.
+    /// Uses per-attribute base values influenced by lineage/background.
+    /// Used for design-time/fallback when controller is not available.
+    /// </summary>
+    private void RecalculateRemainingPoints()
+    {
+        int CalculateCost(int baseValue, int currentValue)
+        {
+            if (currentValue <= baseValue) return 0;
+            int cost = 0;
+            for (int v = baseValue + 1; v <= currentValue; v++)
+            {
+                cost += (v <= 8) ? 1 : 2;
+            }
+            return cost;
+        }
+
+        int totalUsed = CalculateCost(BaseMight, AttributeMight)
+                      + CalculateCost(BaseFinesse, AttributeFinesse)
+                      + CalculateCost(BaseWits, AttributeWits)
+                      + CalculateCost(BaseWill, AttributeWill)
+                      + CalculateCost(BaseSturdiness, AttributeSturdiness);
+
+        RemainingAttributePoints = 15 - totalUsed;
     }
 
     private async Task OnConfirmAttributesAsync()
@@ -652,6 +910,50 @@ public class StepVisibilityConverter : Avalonia.Data.Converters.IValueConverter
             }
         }
         return false;
+    }
+
+    public object? ConvertBack(object? value, Type targetType, object? parameter, System.Globalization.CultureInfo culture)
+    {
+        throw new NotImplementedException();
+    }
+}
+
+/// <summary>
+/// Converter for bool to green/gray color (for refund/decrease indicators).
+/// </summary>
+public class BoolToGreenGrayConverter : Avalonia.Data.Converters.IValueConverter
+{
+    public static readonly BoolToGreenGrayConverter Instance = new();
+
+    public object? Convert(object? value, Type targetType, object? parameter, System.Globalization.CultureInfo culture)
+    {
+        if (value is bool canDecrease && canDecrease)
+        {
+            return Avalonia.Media.Brush.Parse("#4CAF50"); // Green - points will be refunded
+        }
+        return Avalonia.Media.Brush.Parse("#555555"); // Gray - at minimum
+    }
+
+    public object? ConvertBack(object? value, Type targetType, object? parameter, System.Globalization.CultureInfo culture)
+    {
+        throw new NotImplementedException();
+    }
+}
+
+/// <summary>
+/// Converter for bool to red/gray color (for cost/increase indicators).
+/// </summary>
+public class BoolToRedGrayConverter : Avalonia.Data.Converters.IValueConverter
+{
+    public static readonly BoolToRedGrayConverter Instance = new();
+
+    public object? Convert(object? value, Type targetType, object? parameter, System.Globalization.CultureInfo culture)
+    {
+        if (value is bool canIncrease && canIncrease)
+        {
+            return Avalonia.Media.Brush.Parse("#FF6B6B"); // Red - will cost points
+        }
+        return Avalonia.Media.Brush.Parse("#555555"); // Gray - at max or no points
     }
 
     public object? ConvertBack(object? value, Type targetType, object? parameter, System.Globalization.CultureInfo culture)

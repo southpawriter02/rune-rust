@@ -174,33 +174,104 @@
                             <TextBlock Text="Cost: 1 point per level (5→8), 2 points per level (9→10)"
                                        FontSize="12" Foreground="#888888"/>
 
-                            <!-- Attribute Sliders -->
-                            <Grid ColumnDefinitions="120,*,50" RowDefinitions="Auto,Auto,Auto,Auto,Auto" Margin="0,10,0,0">
+                            <!-- Attribute Controls with +/- Buttons -->
+                            <Grid ColumnDefinitions="110,40,45,40,50,40,45" RowDefinitions="Auto,Auto,Auto,Auto,Auto" Margin="0,10,0,0">
+                                <!-- Columns: [Name] [Base] [+refund] [-btn] [value] [+btn] [-cost] -->
+
                                 <!-- MIGHT -->
                                 <TextBlock Grid.Row="0" Grid.Column="0" Text="MIGHT" Foreground="#DC143C" FontWeight="Bold" VerticalAlignment="Center"/>
-                                <Slider Grid.Row="0" Grid.Column="1" Minimum="3" Maximum="10" Value="{Binding AttributeMight}" TickFrequency="1" IsSnapToTickEnabled="True"/>
-                                <TextBlock Grid.Row="0" Grid.Column="2" Text="{Binding AttributeMight}" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding BaseMight, StringFormat='({0})'}"
+                                           Foreground="#666666" FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Center"
+                                           ToolTip.Tip="Base value from Lineage &amp; Background"/>
+                                <TextBlock Grid.Row="0" Grid.Column="2" Text="{Binding MightDecreaseCost, StringFormat='+{0}'}"
+                                           Foreground="{Binding CanDecreaseMight, Converter={x:Static vm:BoolToGreenGrayConverter.Instance}}"
+                                           VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,5,0"/>
+                                <Button Grid.Row="0" Grid.Column="3" Content="-" Width="35" Height="30" HorizontalContentAlignment="Center"
+                                        Command="{Binding DecreaseMightCommand}" IsEnabled="{Binding CanDecreaseMight}"/>
+                                <TextBlock Grid.Row="0" Grid.Column="4" Text="{Binding AttributeMight}" Foreground="White" FontWeight="Bold" FontSize="16"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                <Button Grid.Row="0" Grid.Column="5" Content="+" Width="35" Height="30" HorizontalContentAlignment="Center"
+                                        Command="{Binding IncreaseMightCommand}" IsEnabled="{Binding CanIncreaseMight}"/>
+                                <TextBlock Grid.Row="0" Grid.Column="6" Text="{Binding MightIncreaseCost, StringFormat='-{0}'}"
+                                           Foreground="{Binding CanIncreaseMight, Converter={x:Static vm:BoolToRedGrayConverter.Instance}}"
+                                           VerticalAlignment="Center" Margin="5,0,0,0"/>
 
                                 <!-- FINESSE -->
-                                <TextBlock Grid.Row="1" Grid.Column="0" Text="FINESSE" Foreground="#4CAF50" FontWeight="Bold" VerticalAlignment="Center" Margin="0,10,0,0"/>
-                                <Slider Grid.Row="1" Grid.Column="1" Minimum="3" Maximum="10" Value="{Binding AttributeFinesse}" TickFrequency="1" IsSnapToTickEnabled="True" Margin="0,10,0,0"/>
-                                <TextBlock Grid.Row="1" Grid.Column="2" Text="{Binding AttributeFinesse}" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,10,0,0"/>
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="FINESSE" Foreground="#4CAF50" FontWeight="Bold" VerticalAlignment="Center" Margin="0,8,0,0"/>
+                                <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding BaseFinesse, StringFormat='({0})'}"
+                                           Foreground="#666666" FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,8,0,0"
+                                           ToolTip.Tip="Base value from Lineage &amp; Background"/>
+                                <TextBlock Grid.Row="1" Grid.Column="2" Text="{Binding FinesseDecreaseCost, StringFormat='+{0}'}"
+                                           Foreground="{Binding CanDecreaseFinesse, Converter={x:Static vm:BoolToGreenGrayConverter.Instance}}"
+                                           VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,8,5,0"/>
+                                <Button Grid.Row="1" Grid.Column="3" Content="-" Width="35" Height="30" HorizontalContentAlignment="Center" Margin="0,8,0,0"
+                                        Command="{Binding DecreaseFinesseCommand}" IsEnabled="{Binding CanDecreaseFinesse}"/>
+                                <TextBlock Grid.Row="1" Grid.Column="4" Text="{Binding AttributeFinesse}" Foreground="White" FontWeight="Bold" FontSize="16"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,8,0,0"/>
+                                <Button Grid.Row="1" Grid.Column="5" Content="+" Width="35" Height="30" HorizontalContentAlignment="Center" Margin="0,8,0,0"
+                                        Command="{Binding IncreaseFinesseCommand}" IsEnabled="{Binding CanIncreaseFinesse}"/>
+                                <TextBlock Grid.Row="1" Grid.Column="6" Text="{Binding FinesseIncreaseCost, StringFormat='-{0}'}"
+                                           Foreground="{Binding CanIncreaseFinesse, Converter={x:Static vm:BoolToRedGrayConverter.Instance}}"
+                                           VerticalAlignment="Center" Margin="5,8,0,0"/>
 
                                 <!-- WITS -->
-                                <TextBlock Grid.Row="2" Grid.Column="0" Text="WITS" Foreground="#4A90E2" FontWeight="Bold" VerticalAlignment="Center" Margin="0,10,0,0"/>
-                                <Slider Grid.Row="2" Grid.Column="1" Minimum="3" Maximum="10" Value="{Binding AttributeWits}" TickFrequency="1" IsSnapToTickEnabled="True" Margin="0,10,0,0"/>
-                                <TextBlock Grid.Row="2" Grid.Column="2" Text="{Binding AttributeWits}" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,10,0,0"/>
+                                <TextBlock Grid.Row="2" Grid.Column="0" Text="WITS" Foreground="#4A90E2" FontWeight="Bold" VerticalAlignment="Center" Margin="0,8,0,0"/>
+                                <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding BaseWits, StringFormat='({0})'}"
+                                           Foreground="#666666" FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,8,0,0"
+                                           ToolTip.Tip="Base value from Lineage &amp; Background"/>
+                                <TextBlock Grid.Row="2" Grid.Column="2" Text="{Binding WitsDecreaseCost, StringFormat='+{0}'}"
+                                           Foreground="{Binding CanDecreaseWits, Converter={x:Static vm:BoolToGreenGrayConverter.Instance}}"
+                                           VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,8,5,0"/>
+                                <Button Grid.Row="2" Grid.Column="3" Content="-" Width="35" Height="30" HorizontalContentAlignment="Center" Margin="0,8,0,0"
+                                        Command="{Binding DecreaseWitsCommand}" IsEnabled="{Binding CanDecreaseWits}"/>
+                                <TextBlock Grid.Row="2" Grid.Column="4" Text="{Binding AttributeWits}" Foreground="White" FontWeight="Bold" FontSize="16"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,8,0,0"/>
+                                <Button Grid.Row="2" Grid.Column="5" Content="+" Width="35" Height="30" HorizontalContentAlignment="Center" Margin="0,8,0,0"
+                                        Command="{Binding IncreaseWitsCommand}" IsEnabled="{Binding CanIncreaseWits}"/>
+                                <TextBlock Grid.Row="2" Grid.Column="6" Text="{Binding WitsIncreaseCost, StringFormat='-{0}'}"
+                                           Foreground="{Binding CanIncreaseWits, Converter={x:Static vm:BoolToRedGrayConverter.Instance}}"
+                                           VerticalAlignment="Center" Margin="5,8,0,0"/>
 
                                 <!-- WILL -->
-                                <TextBlock Grid.Row="3" Grid.Column="0" Text="WILL" Foreground="#9400D3" FontWeight="Bold" VerticalAlignment="Center" Margin="0,10,0,0"/>
-                                <Slider Grid.Row="3" Grid.Column="1" Minimum="3" Maximum="10" Value="{Binding AttributeWill}" TickFrequency="1" IsSnapToTickEnabled="True" Margin="0,10,0,0"/>
-                                <TextBlock Grid.Row="3" Grid.Column="2" Text="{Binding AttributeWill}" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,10,0,0"/>
+                                <TextBlock Grid.Row="3" Grid.Column="0" Text="WILL" Foreground="#9400D3" FontWeight="Bold" VerticalAlignment="Center" Margin="0,8,0,0"/>
+                                <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding BaseWill, StringFormat='({0})'}"
+                                           Foreground="#666666" FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,8,0,0"
+                                           ToolTip.Tip="Base value from Lineage &amp; Background"/>
+                                <TextBlock Grid.Row="3" Grid.Column="2" Text="{Binding WillDecreaseCost, StringFormat='+{0}'}"
+                                           Foreground="{Binding CanDecreaseWill, Converter={x:Static vm:BoolToGreenGrayConverter.Instance}}"
+                                           VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,8,5,0"/>
+                                <Button Grid.Row="3" Grid.Column="3" Content="-" Width="35" Height="30" HorizontalContentAlignment="Center" Margin="0,8,0,0"
+                                        Command="{Binding DecreaseWillCommand}" IsEnabled="{Binding CanDecreaseWill}"/>
+                                <TextBlock Grid.Row="3" Grid.Column="4" Text="{Binding AttributeWill}" Foreground="White" FontWeight="Bold" FontSize="16"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,8,0,0"/>
+                                <Button Grid.Row="3" Grid.Column="5" Content="+" Width="35" Height="30" HorizontalContentAlignment="Center" Margin="0,8,0,0"
+                                        Command="{Binding IncreaseWillCommand}" IsEnabled="{Binding CanIncreaseWill}"/>
+                                <TextBlock Grid.Row="3" Grid.Column="6" Text="{Binding WillIncreaseCost, StringFormat='-{0}'}"
+                                           Foreground="{Binding CanIncreaseWill, Converter={x:Static vm:BoolToRedGrayConverter.Instance}}"
+                                           VerticalAlignment="Center" Margin="5,8,0,0"/>
 
                                 <!-- STURDINESS -->
-                                <TextBlock Grid.Row="4" Grid.Column="0" Text="STURDINESS" Foreground="#FFA500" FontWeight="Bold" VerticalAlignment="Center" Margin="0,10,0,0"/>
-                                <Slider Grid.Row="4" Grid.Column="1" Minimum="3" Maximum="10" Value="{Binding AttributeSturdiness}" TickFrequency="1" IsSnapToTickEnabled="True" Margin="0,10,0,0"/>
-                                <TextBlock Grid.Row="4" Grid.Column="2" Text="{Binding AttributeSturdiness}" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,10,0,0"/>
+                                <TextBlock Grid.Row="4" Grid.Column="0" Text="STURDINESS" Foreground="#FFA500" FontWeight="Bold" VerticalAlignment="Center" Margin="0,8,0,0"/>
+                                <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding BaseSturdiness, StringFormat='({0})'}"
+                                           Foreground="#666666" FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,8,0,0"
+                                           ToolTip.Tip="Base value from Lineage &amp; Background"/>
+                                <TextBlock Grid.Row="4" Grid.Column="2" Text="{Binding SturdinessDecreaseCost, StringFormat='+{0}'}"
+                                           Foreground="{Binding CanDecreaseSturdiness, Converter={x:Static vm:BoolToGreenGrayConverter.Instance}}"
+                                           VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,8,5,0"/>
+                                <Button Grid.Row="4" Grid.Column="3" Content="-" Width="35" Height="30" HorizontalContentAlignment="Center" Margin="0,8,0,0"
+                                        Command="{Binding DecreaseSturdinessCommand}" IsEnabled="{Binding CanDecreaseSturdiness}"/>
+                                <TextBlock Grid.Row="4" Grid.Column="4" Text="{Binding AttributeSturdiness}" Foreground="White" FontWeight="Bold" FontSize="16"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,8,0,0"/>
+                                <Button Grid.Row="4" Grid.Column="5" Content="+" Width="35" Height="30" HorizontalContentAlignment="Center" Margin="0,8,0,0"
+                                        Command="{Binding IncreaseSturdinessCommand}" IsEnabled="{Binding CanIncreaseSturdiness}"/>
+                                <TextBlock Grid.Row="4" Grid.Column="6" Text="{Binding SturdinessIncreaseCost, StringFormat='-{0}'}"
+                                           Foreground="{Binding CanIncreaseSturdiness, Converter={x:Static vm:BoolToRedGrayConverter.Instance}}"
+                                           VerticalAlignment="Center" Margin="5,8,0,0"/>
                             </Grid>
+
+                            <!-- Min/Max Info -->
+                            <TextBlock Text="Base values (shown in parentheses) are influenced by your Lineage and Background"
+                                       FontSize="11" Foreground="#666666" Margin="0,10,0,0" TextWrapping="Wrap"/>
                         </StackPanel>
                     </Border>
 

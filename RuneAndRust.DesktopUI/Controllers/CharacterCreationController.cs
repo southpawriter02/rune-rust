@@ -37,6 +37,13 @@ public class CharacterCreationController
     private const int MaxAttributeValue = 10;
     private const int MinAttributeValue = 3;
 
+    // Adjusted base values per attribute (modified by lineage and background)
+    private int _baseMight = BaseAttributeValue;
+    private int _baseFinesse = BaseAttributeValue;
+    private int _baseWits = BaseAttributeValue;
+    private int _baseWill = BaseAttributeValue;
+    private int _baseSturdiness = BaseAttributeValue;
+
     public CharacterCreationController(
         ILogger logger,
         GameStateController gameStateController,
@@ -86,6 +93,21 @@ public class CharacterCreationController
             return TotalAttributePoints - used;
         }
     }
+
+    /// <summary>Gets the adjusted base value for Might (influenced by lineage/background).</summary>
+    public int BaseMight => _baseMight;
+
+    /// <summary>Gets the adjusted base value for Finesse (influenced by lineage/background).</summary>
+    public int BaseFinesse => _baseFinesse;
+
+    /// <summary>Gets the adjusted base value for Wits (influenced by lineage/background).</summary>
+    public int BaseWits => _baseWits;
+
+    /// <summary>Gets the adjusted base value for Will (influenced by lineage/background).</summary>
+    public int BaseWill => _baseWill;
+
+    /// <summary>Gets the adjusted base value for Sturdiness (influenced by lineage/background).</summary>
+    public int BaseSturdiness => _baseSturdiness;
 
     #endregion
 
@@ -667,23 +689,96 @@ public class CharacterCreationController
 
     private void ResetAttributesToBase()
     {
+        // Use adjusted base values influenced by lineage and background
         _customAttributes = new Attributes(
-            might: BaseAttributeValue,
-            finesse: BaseAttributeValue,
-            wits: BaseAttributeValue,
-            will: BaseAttributeValue,
-            sturdiness: BaseAttributeValue
+            might: _baseMight,
+            finesse: _baseFinesse,
+            wits: _baseWits,
+            will: _baseWill,
+            sturdiness: _baseSturdiness
         );
+    }
+
+    /// <summary>
+    /// Calculates adjusted base values for each attribute based on selected lineage and background.
+    /// Lineage provides +1/-1 modifiers, Background provides +1 to its primary attribute.
+    /// </summary>
+    private void CalculateAdjustedBaseValues()
+    {
+        // Start with standard base values
+        _baseMight = BaseAttributeValue;
+        _baseFinesse = BaseAttributeValue;
+        _baseWits = BaseAttributeValue;
+        _baseWill = BaseAttributeValue;
+        _baseSturdiness = BaseAttributeValue;
+
+        // Apply lineage modifiers
+        if (_selectedLineage != Lineage.None)
+        {
+            var lineageMods = _selectedLineage.GetAttributeModifiers();
+            foreach (var mod in lineageMods)
+            {
+                ApplyModifier(mod.Key, mod.Value);
+            }
+        }
+
+        // Apply background bonus (+1 to primary attribute)
+        if (_selectedBackground != Background.None)
+        {
+            string primaryAttr = _selectedBackground.GetPrimaryAttributeBonus();
+            if (!string.IsNullOrEmpty(primaryAttr))
+            {
+                ApplyModifier(primaryAttr, 1);
+            }
+        }
+
+        // Clamp all values to valid range
+        _baseMight = Math.Clamp(_baseMight, MinAttributeValue, MaxAttributeValue);
+        _baseFinesse = Math.Clamp(_baseFinesse, MinAttributeValue, MaxAttributeValue);
+        _baseWits = Math.Clamp(_baseWits, MinAttributeValue, MaxAttributeValue);
+        _baseWill = Math.Clamp(_baseWill, MinAttributeValue, MaxAttributeValue);
+        _baseSturdiness = Math.Clamp(_baseSturdiness, MinAttributeValue, MaxAttributeValue);
+
+        _logger.Debug("[CHAR_CREATE] Adjusted bases: MIGHT={Might}, FINESSE={Finesse}, WITS={Wits}, WILL={Will}, STURDINESS={Sturdiness}",
+            _baseMight, _baseFinesse, _baseWits, _baseWill, _baseSturdiness);
+    }
+
+    /// <summary>Applies a modifier to the specified attribute's base value.</summary>
+    private void ApplyModifier(string attributeName, int modifier)
+    {
+        switch (attributeName.ToUpperInvariant())
+        {
+            case "MIGHT": _baseMight += modifier; break;
+            case "FINESSE": _baseFinesse += modifier; break;
+            case "WITS": _baseWits += modifier; break;
+            case "WILL": _baseWill += modifier; break;
+            case "STURDINESS": _baseSturdiness += modifier; break;
+        }
+    }
+
+    /// <summary>Gets the adjusted base value for a specific attribute.</summary>
+    public int GetAdjustedBase(string attributeName)
+    {
+        return attributeName.ToUpperInvariant() switch
+        {
+            "MIGHT" => _baseMight,
+            "FINESSE" => _baseFinesse,
+            "WITS" => _baseWits,
+            "WILL" => _baseWill,
+            "STURDINESS" => _baseSturdiness,
+            _ => BaseAttributeValue
+        };
     }
 
     private int CalculateTotalPointsUsed()
     {
         int cost = 0;
-        cost += CalculateAttributeCost(BaseAttributeValue, _customAttributes.Might);
-        cost += CalculateAttributeCost(BaseAttributeValue, _customAttributes.Finesse);
-        cost += CalculateAttributeCost(BaseAttributeValue, _customAttributes.Wits);
-        cost += CalculateAttributeCost(BaseAttributeValue, _customAttributes.Will);
-        cost += CalculateAttributeCost(BaseAttributeValue, _customAttributes.Sturdiness);
+        // Use adjusted bases for each attribute
+        cost += CalculateAttributeCost(_baseMight, _customAttributes.Might);
+        cost += CalculateAttributeCost(_baseFinesse, _customAttributes.Finesse);
+        cost += CalculateAttributeCost(_baseWits, _customAttributes.Wits);
+        cost += CalculateAttributeCost(_baseWill, _customAttributes.Will);
+        cost += CalculateAttributeCost(_baseSturdiness, _customAttributes.Sturdiness);
         return cost;
     }
 
@@ -773,9 +868,21 @@ public class CharacterCreationController
 
     private void InitializeAttributeAllocation()
     {
+        // Calculate adjusted base values based on lineage and background
+        CalculateAdjustedBaseValues();
+
+        // Reset attributes to the adjusted bases
         ResetAttributesToBase();
+
         if (_viewModel != null)
         {
+            // Update ViewModel with adjusted bases
+            _viewModel.BaseMight = _baseMight;
+            _viewModel.BaseFinesse = _baseFinesse;
+            _viewModel.BaseWits = _baseWits;
+            _viewModel.BaseWill = _baseWill;
+            _viewModel.BaseSturdiness = _baseSturdiness;
+
             _viewModel.RemainingAttributePoints = TotalAttributePoints;
             UpdateViewModelAttributes();
         }
