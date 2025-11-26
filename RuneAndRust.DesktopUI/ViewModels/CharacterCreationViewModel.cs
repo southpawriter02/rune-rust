@@ -323,13 +323,13 @@ public class CharacterCreationViewModel : ViewModelBase
     public CharacterCreationViewModel()
     {
         BackCommand = ReactiveCommand.CreateFromTask(OnBackAsync);
-        SelectLineageCommand = ReactiveCommand.CreateFromTask<string>(OnSelectLineageAsync);
-        SelectBackgroundCommand = ReactiveCommand.CreateFromTask<string>(OnSelectBackgroundAsync);
+        SelectLineageCommand = ReactiveCommand.CreateFromTask<Lineage>(OnSelectLineageAsync);
+        SelectBackgroundCommand = ReactiveCommand.CreateFromTask<Background>(OnSelectBackgroundAsync);
         ToggleAdvancedModeCommand = ReactiveCommand.Create<bool>(OnToggleAdvancedMode);
         AdjustAttributeCommand = ReactiveCommand.Create<(string, int)>(OnAdjustAttribute);
         ConfirmAttributesCommand = ReactiveCommand.CreateFromTask(OnConfirmAttributesAsync);
-        SelectArchetypeCommand = ReactiveCommand.CreateFromTask<string>(OnSelectArchetypeAsync);
-        SelectSpecializationCommand = ReactiveCommand.CreateFromTask<string>(OnSelectSpecializationAsync);
+        SelectArchetypeCommand = ReactiveCommand.CreateFromTask<CharacterClass>(OnSelectArchetypeAsync);
+        SelectSpecializationCommand = ReactiveCommand.CreateFromTask<Specialization>(OnSelectSpecializationAsync);
         ConfirmCharacterCommand = ReactiveCommand.CreateFromTask(OnConfirmCharacterAsync);
         CancelCommand = ReactiveCommand.CreateFromTask(OnCancelAsync);
 
@@ -386,28 +386,28 @@ public class CharacterCreationViewModel : ViewModelBase
         }
     }
 
-    private async Task OnSelectLineageAsync(string lineageId)
+    private async Task OnSelectLineageAsync(Lineage lineage)
     {
         if (_controller != null)
         {
-            await _controller.OnLineageSelectedAsync(lineageId);
+            await _controller.OnLineageSelectedAsync(lineage.ToString());
         }
-        else if (Enum.TryParse<Lineage>(lineageId, true, out var lineage))
+        else
         {
             SelectedLineage = lineage;
             CurrentStep = CharacterCreationStep.Background;
         }
     }
 
-    private async Task OnSelectBackgroundAsync(string backgroundId)
+    private async Task OnSelectBackgroundAsync(Background background)
     {
         if (_controller != null)
         {
-            await _controller.OnBackgroundSelectedAsync(backgroundId);
+            await _controller.OnBackgroundSelectedAsync(background.ToString());
         }
-        else if (Enum.TryParse<Background>(backgroundId, true, out var bg))
+        else
         {
-            SelectedBackground = bg;
+            SelectedBackground = background;
             CurrentStep = CharacterCreationStep.Attributes;
         }
     }
@@ -454,28 +454,28 @@ public class CharacterCreationViewModel : ViewModelBase
         }
     }
 
-    private async Task OnSelectArchetypeAsync(string archetypeId)
+    private async Task OnSelectArchetypeAsync(CharacterClass archetype)
     {
         if (_controller != null)
         {
-            await _controller.OnArchetypeSelectedAsync(archetypeId);
+            await _controller.OnArchetypeSelectedAsync(archetype.ToString());
         }
-        else if (Enum.TryParse<CharacterClass>(archetypeId, true, out var archetype))
+        else
         {
             SelectedArchetype = archetype;
             CurrentStep = CharacterCreationStep.Specialization;
         }
     }
 
-    private async Task OnSelectSpecializationAsync(string specializationId)
+    private async Task OnSelectSpecializationAsync(Specialization specialization)
     {
         if (_controller != null)
         {
-            await _controller.OnSpecializationSelectedAsync(specializationId);
+            await _controller.OnSpecializationSelectedAsync(specialization.ToString());
         }
-        else if (Enum.TryParse<Specialization>(specializationId, true, out var spec))
+        else
         {
-            SelectedSpecialization = spec;
+            SelectedSpecialization = specialization;
             CurrentStep = CharacterCreationStep.Summary;
         }
     }
