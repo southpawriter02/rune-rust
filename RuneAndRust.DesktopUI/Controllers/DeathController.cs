@@ -59,7 +59,7 @@ public class DeathController
         try
         {
             // Transition to Death state
-            await _gameStateController.UpdatePhaseAsync(GamePhase.Death, $"Survivor death: {causeOfDeath}");
+            await _gameStateController.UpdatePhaseAsync(Core.GamePhase.Death, $"Survivor death: {causeOfDeath}");
 
             // Calculate run statistics
             var runStats = CalculateRunStatistics(deadSurvivor, causeOfDeath);

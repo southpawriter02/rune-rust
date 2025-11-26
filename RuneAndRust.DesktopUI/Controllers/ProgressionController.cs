@@ -116,7 +116,7 @@ public class ProgressionController
             player.CurrentMilestone, player.ProgressionPoints, player.MaxHP, player.MaxStamina);
 
         // Transition to progression phase
-        await _gameStateController.UpdatePhaseAsync(GamePhase.CharacterProgression, "Milestone reached");
+        await _gameStateController.UpdatePhaseAsync(Core.GamePhase.CharacterProgression, "Milestone reached");
 
         // Navigate to character sheet/specialization view for point allocation
         _navigationService.NavigateTo<SpecializationTreeViewModel>();
@@ -254,8 +254,7 @@ public class ProgressionController
             CharacterClass.Mystic => new List<Specialization>
             {
                 Specialization.VardWarden,
-                Specialization.RustWitch,
-                Specialization.Skald
+                Specialization.RustWitch
             },
             _ => new List<Specialization>()
         };
@@ -284,7 +283,7 @@ public class ProgressionController
         }
 
         // Transition back to exploration
-        await _gameStateController.UpdatePhaseAsync(GamePhase.DungeonExploration, "Progression complete");
+        await _gameStateController.UpdatePhaseAsync(Core.GamePhase.DungeonExploration, "Progression complete");
         _navigationService.NavigateTo<DungeonExplorationViewModel>();
 
         ProgressionComplete?.Invoke(this, EventArgs.Empty);

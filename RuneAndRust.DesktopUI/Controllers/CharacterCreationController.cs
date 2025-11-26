@@ -485,7 +485,7 @@ public class CharacterCreationController
             }
 
             // Transition to exploration
-            await _gameStateController.UpdatePhaseAsync(GamePhase.DungeonExploration, "Survivor creation complete");
+            await _gameStateController.UpdatePhaseAsync(Core.GamePhase.DungeonExploration, "Survivor creation complete");
 
             // Navigate to exploration view
             _navigationService.NavigateTo<DungeonExplorationViewModel>();

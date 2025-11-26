@@ -146,7 +146,7 @@ public interface IRoomFeatureService
     /// </summary>
     /// <param name="gameState">Current game state for context.</param>
     /// <returns>Rest result including recovery and potential interruptions.</returns>
-    Task<RestResult> PerformFieldRestAsync(GameState gameState);
+    Task<RestResult> PerformFieldRestAsync(Core.GameState gameState);
 
     /// <summary>
     /// Attempts to solve a puzzle in the room.
