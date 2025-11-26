@@ -1,3 +1,4 @@
+using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
 using RuneAndRust.Core;
 using RuneAndRust.DesktopUI.Controllers;
@@ -338,6 +339,7 @@ public class CharacterCreationViewModel : ViewModelBase
     /// <summary>
     /// v0.44.2: Primary constructor with CharacterCreationController.
     /// </summary>
+    [ActivatorUtilitiesConstructor]
     public CharacterCreationViewModel(
         INavigationService navigationService,
         CharacterCreationController controller,
