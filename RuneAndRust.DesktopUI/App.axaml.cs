@@ -47,7 +47,7 @@ public partial class App : Application
             .WriteTo.Console()
             .CreateLogger();
 
-        Log.Information("Rune & Rust Desktop UI v0.44.7 starting...");
+        Log.Information("Rune & Rust Desktop UI v0.44.8 starting...");
 
         try
         {
@@ -60,6 +60,9 @@ public partial class App : Application
 
             // v0.44.5: Initialize controller cross-references
             InitializeControllers(Services);
+
+            // Load room templates for dungeon generation
+            LoadTemplates(Services);
 
             // Load sprites
             LoadSprites(Services);
@@ -192,6 +195,19 @@ public partial class App : Application
 
         var spriteCount = spriteService.GetAvailableSprites().Count();
         Log.Information("Loaded {Count} sprites", spriteCount);
+    }
+
+    /// <summary>
+    /// Loads room templates for dungeon generation.
+    /// </summary>
+    private void LoadTemplates(IServiceProvider services)
+    {
+        var templateLibrary = services.GetRequiredService<TemplateLibrary>();
+
+        Log.Information("Loading room templates...");
+        templateLibrary.LoadTemplates();
+
+        Log.Information("Room templates loaded successfully");
     }
 
     /// <summary>

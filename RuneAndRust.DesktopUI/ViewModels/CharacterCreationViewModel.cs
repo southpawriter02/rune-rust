@@ -14,8 +14,9 @@ using System.Windows.Input;
 namespace RuneAndRust.DesktopUI.ViewModels;
 
 /// <summary>
-/// v0.44.2: Character creation workflow steps.
-/// Follows the canonical v2.0 sequence: Lineage → Background → Attributes → Archetype → Specialization → Summary
+/// v0.44.8: Character creation workflow steps.
+/// Follows the sequence: Lineage → Background → Attributes → Archetype → Summary
+/// (Specialization step is skipped - unlocked via PP during gameplay)
 /// </summary>
 public enum CharacterCreationStep
 {
@@ -100,6 +101,7 @@ public class CharacterCreationViewModel : ViewModelBase
 
     /// <summary>
     /// Display title for the current step.
+    /// Specialization step is skipped - unlocked via PP during gameplay.
     /// </summary>
     public string StepTitle => CurrentStep switch
     {
@@ -107,8 +109,8 @@ public class CharacterCreationViewModel : ViewModelBase
         CharacterCreationStep.Background => "Step 2: Choose Your Background",
         CharacterCreationStep.Attributes => "Step 3: Allocate Attributes",
         CharacterCreationStep.Archetype => "Step 4: Choose Your Archetype",
-        CharacterCreationStep.Specialization => "Step 5: Choose Your Specialization",
-        CharacterCreationStep.Summary => "Step 6: Confirm Your Survivor",
+        CharacterCreationStep.Specialization => "Specialization (Unlocked via PP)",
+        CharacterCreationStep.Summary => "Step 5: Confirm Your Survivor",
         _ => "Create Your Survivor"
     };
 
@@ -572,14 +574,14 @@ public class CharacterCreationViewModel : ViewModelBase
         }
         else
         {
-            // Go to previous step
+            // Go to previous step (Specialization step is skipped - unlocked via PP)
             CurrentStep = CurrentStep switch
             {
                 CharacterCreationStep.Background => CharacterCreationStep.Lineage,
                 CharacterCreationStep.Attributes => CharacterCreationStep.Background,
                 CharacterCreationStep.Archetype => CharacterCreationStep.Attributes,
                 CharacterCreationStep.Specialization => CharacterCreationStep.Archetype,
-                CharacterCreationStep.Summary => CharacterCreationStep.Specialization,
+                CharacterCreationStep.Summary => CharacterCreationStep.Archetype, // Skip Specialization
                 _ => CurrentStep
             };
         }
