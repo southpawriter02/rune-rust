@@ -46,7 +46,7 @@ public partial class App : Application
             .WriteTo.Console()
             .CreateLogger();
 
-        Log.Information("Rune & Rust Desktop UI v0.44.5 starting...");
+        Log.Information("Rune & Rust Desktop UI v0.44.7 starting...");
 
         try
         {
@@ -124,7 +124,7 @@ public partial class App : Application
         // Tooltip & Help Services (v0.43.20)
         services.AddSingleton<ITooltipService, TooltipService>();
 
-        // Controllers (v0.44.1, v0.44.2, v0.44.3, v0.44.4, v0.44.5)
+        // Controllers (v0.44.1, v0.44.2, v0.44.3, v0.44.4, v0.44.5, v0.44.6)
         services.AddSingleton<GameStateController>();
         services.AddSingleton<MainMenuController>();
         services.AddSingleton<CharacterCreationController>();
@@ -132,6 +132,8 @@ public partial class App : Application
         services.AddSingleton<CombatController>();
         services.AddSingleton<LootController>();          // v0.44.5: Post-combat loot collection
         services.AddSingleton<ProgressionController>();   // v0.44.5: Milestone/level-up flow
+        services.AddSingleton<DeathController>();         // v0.44.6: Death handling and game over
+        services.AddSingleton<VictoryController>();       // v0.44.7: Victory and endgame transition
 
         // Exploration Services (v0.44.3)
         services.AddSingleton<IEncounterService, EncounterService>();
@@ -149,7 +151,7 @@ public partial class App : Application
         services.AddSingleton<EnemyAI>();
         services.AddSingleton<TemplateLibrary>(); // v0.44.2: For dungeon generation
 
-        // ViewModels (v0.43.1 - v0.44.1)
+        // ViewModels (v0.43.1 - v0.44.6)
         services.AddTransient<MainWindowViewModel>();
         services.AddTransient<MenuViewModel>();
         services.AddTransient<SpriteDemoViewModel>();
@@ -166,6 +168,8 @@ public partial class App : Application
         services.AddTransient<SaveLoadViewModel>();
         services.AddTransient<HelpViewModel>();
         services.AddTransient<CharacterCreationViewModel>();
+        services.AddTransient<DeathScreenViewModel>();    // v0.44.6: Death screen
+        services.AddTransient<VictoryScreenViewModel>(); // v0.44.7: Victory screen
 
         // v0.44.1: Controllers and ViewModels for game flow integration
 
@@ -189,16 +193,20 @@ public partial class App : Application
 
     /// <summary>
     /// v0.44.5: Initializes controller cross-references for reward workflows.
+    /// v0.44.6: Added DeathController wiring.
+    /// v0.44.7: Added VictoryController wiring.
     /// </summary>
     private void InitializeControllers(IServiceProvider services)
     {
         var combatController = services.GetRequiredService<CombatController>();
         var lootController = services.GetRequiredService<LootController>();
         var progressionController = services.GetRequiredService<ProgressionController>();
+        var deathController = services.GetRequiredService<DeathController>();
+        var victoryController = services.GetRequiredService<VictoryController>();
 
-        // Wire up CombatController with reward controllers
-        combatController.SetRewardControllers(lootController, progressionController);
+        // Wire up CombatController with reward, death, and victory controllers
+        combatController.SetRewardControllers(lootController, progressionController, deathController, victoryController);
 
-        Log.Debug("Controllers initialized with cross-references");
+        Log.Debug("Controllers initialized with cross-references (v0.44.7)");
     }
 }

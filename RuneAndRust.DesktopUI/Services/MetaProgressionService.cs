@@ -5,12 +5,18 @@ namespace RuneAndRust.DesktopUI.Services;
 
 /// <summary>
 /// v0.43.15: Service implementation for accessing meta-progression data.
+/// v0.44.6: Added Hall of Legends methods for death handling.
 /// Currently provides sample data for UI demonstration.
 /// Will be updated to use persistence layer in future integration.
 /// </summary>
 public class MetaProgressionService : IMetaProgressionService
 {
     private readonly ILogger _logger;
+
+    // v0.44.6: In-memory tracking (will be persisted in future versions)
+    private int _hallOfLegendsBalance = 0;
+    private int _totalDeaths = 0;
+    private readonly List<DeathRecord> _deathRecords = new();
 
     public MetaProgressionService()
     {
@@ -340,4 +346,131 @@ public class MetaProgressionService : IMetaProgressionService
     }
 
     #endregion
+
+    #region v0.44.6: Hall of Legends Methods
+
+    /// <inheritdoc/>
+    public async Task AddLegendToHallOfLegendsAsync(int legendAmount)
+    {
+        if (legendAmount <= 0)
+        {
+            _logger.Debug("No Legend to add to Hall of Legends");
+            return;
+        }
+
+        _hallOfLegendsBalance += legendAmount;
+        _logger.Information("Added {Amount} Legend to Hall of Legends. New balance: {Balance}",
+            legendAmount, _hallOfLegendsBalance);
+
+        // TODO: Persist to database in future versions
+        await Task.CompletedTask;
+    }
+
+    /// <inheritdoc/>
+    public async Task RecordDeathAsync(string characterClass, string specialization, int finalLevel, int finalCorruption, int finalPsychicStress)
+    {
+        _totalDeaths++;
+
+        var deathRecord = new DeathRecord
+        {
+            CharacterClass = characterClass,
+            Specialization = specialization,
+            FinalLevel = finalLevel,
+            FinalCorruption = finalCorruption,
+            FinalPsychicStress = finalPsychicStress,
+            DeathTimestamp = DateTime.UtcNow
+        };
+
+        _deathRecords.Add(deathRecord);
+
+        _logger.Information(
+            "Death recorded: {Class}/{Spec} at level {Level}, Corruption={Corruption}, Stress={Stress}. Total deaths: {Total}",
+            characterClass, specialization, finalLevel, finalCorruption, finalPsychicStress, _totalDeaths);
+
+        // TODO: Persist to database in future versions
+        await Task.CompletedTask;
+    }
+
+    /// <inheritdoc/>
+    public async Task CheckForUnlocksAsync()
+    {
+        _logger.Debug("Checking for meta-progression unlocks...");
+
+        // TODO: Implement actual unlock checking based on accumulated stats
+        // For now, this is a stub that will be expanded in future versions
+
+        // Example unlock conditions:
+        // - "veteran_start" unlock at 5 deaths
+        // - "legend_boost_5" unlock at 500 Hall of Legends
+        // - "extra_loadout" unlock at 10 completed campaigns
+
+        await Task.CompletedTask;
+    }
+
+    /// <inheritdoc/>
+    public int GetHallOfLegendsBalance()
+    {
+        return _hallOfLegendsBalance;
+    }
+
+    #endregion
+
+    #region v0.44.7: Victory Handling Methods
+
+    // v0.44.7: In-memory tracking for victories
+    private int _totalVictories = 0;
+    private readonly List<VictoryRecord> _victoryRecords = new();
+
+    /// <inheritdoc/>
+    public async Task RecordVictoryAsync(string characterClass, string specialization, int finalLevel, int ngPlusTier, string? challengeSectorName)
+    {
+        _totalVictories++;
+
+        var victoryRecord = new VictoryRecord
+        {
+            CharacterClass = characterClass,
+            Specialization = specialization,
+            FinalLevel = finalLevel,
+            NGPlusTier = ngPlusTier,
+            ChallengeSectorName = challengeSectorName,
+            VictoryTimestamp = DateTime.UtcNow
+        };
+
+        _victoryRecords.Add(victoryRecord);
+
+        _logger.Information(
+            "Victory recorded: {Class}/{Spec} at level {Level}, NG+{Tier}, Sector={Sector}. Total victories: {Total}",
+            characterClass, specialization, finalLevel, ngPlusTier, challengeSectorName ?? "None", _totalVictories);
+
+        // TODO: Persist to database in future versions
+        await Task.CompletedTask;
+    }
+
+    #endregion
+}
+
+/// <summary>
+/// v0.44.6: Internal record of a death for statistics tracking.
+/// </summary>
+internal class DeathRecord
+{
+    public string CharacterClass { get; set; } = string.Empty;
+    public string Specialization { get; set; } = string.Empty;
+    public int FinalLevel { get; set; }
+    public int FinalCorruption { get; set; }
+    public int FinalPsychicStress { get; set; }
+    public DateTime DeathTimestamp { get; set; }
+}
+
+/// <summary>
+/// v0.44.7: Internal record of a victory for statistics tracking.
+/// </summary>
+internal class VictoryRecord
+{
+    public string CharacterClass { get; set; } = string.Empty;
+    public string Specialization { get; set; } = string.Empty;
+    public int FinalLevel { get; set; }
+    public int NGPlusTier { get; set; }
+    public string? ChallengeSectorName { get; set; }
+    public DateTime VictoryTimestamp { get; set; }
 }

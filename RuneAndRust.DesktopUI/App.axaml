@@ -53,5 +53,13 @@
         <DataTemplate DataType="vm:CharacterCreationViewModel">
             <views:CharacterCreationView />
         </DataTemplate>
+        <!-- v0.44.6: Death screen -->
+        <DataTemplate DataType="vm:DeathScreenViewModel">
+            <views:DeathScreenView />
+        </DataTemplate>
+        <!-- v0.44.7: Victory screen -->
+        <DataTemplate DataType="vm:VictoryScreenViewModel">
+            <views:VictoryScreenView />
+        </DataTemplate>
     </Application.DataTemplates>
 </Application>
