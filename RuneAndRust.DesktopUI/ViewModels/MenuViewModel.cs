@@ -151,11 +151,10 @@ public class MenuViewModel : ViewModelBase
             // Use controller (v0.44.1+)
             await _controller.OnNewGameAsync();
         }
-        else if (_navigationService != null && _saveGameService != null)
+        else if (_navigationService != null)
         {
-            // Fallback to legacy behavior
-            var characterCreationViewModel = new CharacterCreationViewModel(_navigationService, _saveGameService);
-            _navigationService.NavigateTo(characterCreationViewModel);
+            // Fallback to legacy behavior - use factory-based navigation
+            _navigationService.NavigateTo<CharacterCreationViewModel>();
             _logger?.Information("[MENU] Navigated to Character Creation (legacy path)");
         }
     }
