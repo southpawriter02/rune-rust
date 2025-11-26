@@ -19,6 +19,7 @@ namespace RuneAndRust.DesktopUI.ViewModels;
 /// View model for the combat view.
 /// Manages combat state, actions, targeting, and turn flow.
 /// Integrates with CombatEngine from v0.1 for action execution.
+/// v0.38: Enhanced with CombatFlavorTextService for rich narrative combat.
 /// </summary>
 public class CombatViewModel : ViewModelBase
 {
@@ -32,6 +33,9 @@ public class CombatViewModel : ViewModelBase
     private readonly IAnimationService _animationService;
     private readonly IBossDisplayService? _bossDisplayService;
     private readonly CombatController? _combatController;
+
+    // v0.38: Combat flavor text service for rich narrative
+    private readonly CombatFlavorTextService? _combatFlavorService;
 
     private CombatState? _combatState;
     private BossCombatViewModel? _bossCombatViewModel;
@@ -247,7 +251,8 @@ public class CombatViewModel : ViewModelBase
         IHazardVisualizationService hazardVisualizationService,
         IAnimationService animationService,
         IBossDisplayService? bossDisplayService = null,
-        CombatController? combatController = null)
+        CombatController? combatController = null,
+        CombatFlavorTextService? combatFlavorService = null)
     {
         _spriteService = spriteService ?? throw new ArgumentNullException(nameof(spriteService));
         _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
@@ -258,6 +263,7 @@ public class CombatViewModel : ViewModelBase
         _animationService = animationService ?? throw new ArgumentNullException(nameof(animationService));
         _bossDisplayService = bossDisplayService;
         _combatController = combatController;
+        _combatFlavorService = combatFlavorService;
 
         // v0.43.17: Initialize boss combat view model if service available
         if (_bossDisplayService != null)
@@ -899,6 +905,43 @@ public class CombatViewModel : ViewModelBase
         {
             CombatLog.RemoveAt(CombatLog.Count - 1);
         }
+    }
+
+    /// <summary>
+    /// v0.38: Adds a flavored combat message using CombatFlavorTextService when available.
+    /// </summary>
+    public void AddFlavoredCombatLog(string baseMessage, string weaponType = "Melee", string outcome = "SolidHit", bool isPlayer = true, string? enemyArchetype = null)
+    {
+        string flavoredMessage = baseMessage;
+
+        if (_combatFlavorService != null)
+        {
+            try
+            {
+                if (isPlayer)
+                {
+                    var flavorText = _combatFlavorService.GeneratePlayerAttackText(weaponType, outcome);
+                    if (!string.IsNullOrEmpty(flavorText))
+                    {
+                        flavoredMessage = $"{flavorText} {baseMessage}";
+                    }
+                }
+                else if (!string.IsNullOrEmpty(enemyArchetype))
+                {
+                    var flavorText = _combatFlavorService.GenerateEnemyAttackText(enemyArchetype, outcome);
+                    if (!string.IsNullOrEmpty(flavorText))
+                    {
+                        flavoredMessage = $"{flavorText} {baseMessage}";
+                    }
+                }
+            }
+            catch
+            {
+                // Fall back to base message if flavor generation fails
+            }
+        }
+
+        AddToCombatLog(flavoredMessage);
     }
 
     private void UpdateStatusMessage()

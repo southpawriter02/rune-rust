@@ -114,6 +114,26 @@
                                    Foreground="#DDDDDD"
                                    LineHeight="22"/>
 
+                        <!-- v0.38: Atmospheric Description (sensory details) -->
+                        <Border Background="#1A1A2E"
+                                Padding="12"
+                                CornerRadius="6"
+                                IsVisible="{Binding HasAtmosphere}">
+                            <StackPanel>
+                                <TextBlock Text="Atmosphere"
+                                           FontWeight="Bold"
+                                           Foreground="#9370DB"
+                                           FontSize="12"
+                                           Margin="0,0,0,5"/>
+                                <TextBlock Text="{Binding AtmosphereText}"
+                                           FontSize="12"
+                                           FontStyle="Italic"
+                                           TextWrapping="Wrap"
+                                           Foreground="#B8B8D0"
+                                           LineHeight="18"/>
+                            </StackPanel>
+                        </Border>
+
                         <!-- Room Features -->
                         <Border Background="#1C1C1C"
                                 Padding="12"

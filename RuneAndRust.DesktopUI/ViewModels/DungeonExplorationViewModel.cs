@@ -82,6 +82,7 @@ public class RoomFeatureViewModel : ViewModelBase
 /// <summary>
 /// View model for the dungeon exploration view.
 /// Displays room information, available exits, and exploration actions.
+/// v0.38 Integration: Uses descriptor services for rich narrative content.
 /// </summary>
 public class DungeonExplorationViewModel : ViewModelBase
 {
@@ -99,6 +100,16 @@ public class DungeonExplorationViewModel : ViewModelBase
     private SearchResultViewModel? _searchResult = null;
     private bool _isRestDialogVisible = false;
     private RestConfirmationViewModel? _restConfirmation = null;
+
+    // v0.38: Descriptor Services for Flavor Text
+    private readonly RoomDescriptorService? _roomDescriptorService;
+    private readonly ExaminationFlavorTextService? _examinationService;
+    private readonly AtmosphericDescriptorService? _atmosphericService;
+    private readonly SkillUsageFlavorTextService? _skillUsageService;
+
+    // v0.38: Enhanced narrative text
+    private string _narrativeText = string.Empty;
+    private string _atmosphereText = string.Empty;
 
     #region Properties
 
@@ -130,9 +141,25 @@ public class DungeonExplorationViewModel : ViewModelBase
     public string RoomName => CurrentRoom?.Name ?? "Unknown Location";
 
     /// <summary>
-    /// Room description text.
+    /// Room description text. Uses RoomDescriptorService when available for rich narrative.
     /// </summary>
-    public string RoomDescription => CurrentRoom?.Description ?? "You are in an unknown location.";
+    public string RoomDescription => _narrativeText != string.Empty
+        ? _narrativeText
+        : (CurrentRoom?.Description ?? "You are in an unknown location.");
+
+    /// <summary>
+    /// v0.38: Atmospheric description for the room (lighting, sounds, smells, etc.)
+    /// </summary>
+    public string AtmosphereText
+    {
+        get => _atmosphereText;
+        private set => this.RaiseAndSetIfChanged(ref _atmosphereText, value);
+    }
+
+    /// <summary>
+    /// v0.38: Whether there is atmospheric description to display.
+    /// </summary>
+    public bool HasAtmosphere => !string.IsNullOrEmpty(_atmosphereText);
 
     /// <summary>
     /// Biome name for display.
@@ -406,6 +433,22 @@ public class DungeonExplorationViewModel : ViewModelBase
     public DungeonExplorationViewModel(INavigationService navigationService) : this()
     {
         _navigationService = navigationService;
+    }
+
+    /// <summary>
+    /// v0.38: Constructor with descriptor services for rich narrative content.
+    /// </summary>
+    public DungeonExplorationViewModel(
+        INavigationService navigationService,
+        RoomDescriptorService? roomDescriptorService,
+        ExaminationFlavorTextService? examinationService,
+        AtmosphericDescriptorService? atmosphericService,
+        SkillUsageFlavorTextService? skillUsageService) : this(navigationService)
+    {
+        _roomDescriptorService = roomDescriptorService;
+        _examinationService = examinationService;
+        _atmosphericService = atmosphericService;
+        _skillUsageService = skillUsageService;
     }
 
     #region Public Methods
@@ -1005,6 +1048,7 @@ public class DungeonExplorationViewModel : ViewModelBase
     /// <summary>
     /// Examines the current room in detail, showing all visible entities,
     /// exits, hazards, and running passive perception checks.
+    /// v0.38: Enhanced with descriptor services for rich narrative content.
     /// </summary>
     private async Task LookRoomAsync()
     {
@@ -1013,12 +1057,51 @@ public class DungeonExplorationViewModel : ViewModelBase
         StatusMessage = "You examine your surroundings carefully...";
         await Task.Delay(300);
 
-        // Build detailed room description
         var details = new List<string>();
+        int wits = Character?.Attributes?.Wits ?? 5;
+        var rng = new Random();
 
-        // Room atmosphere
+        // v0.38: Generate rich room description using RoomDescriptorService
+        if (_roomDescriptorService != null)
+        {
+            try
+            {
+                var roomArchetype = CurrentRoom.Archetype ?? "Chamber";
+                var biome = CurrentRoom.PrimaryBiome ?? "The_Roots";
+                var generatedDescription = _roomDescriptorService.GenerateRoomDescription(roomArchetype, biome);
+                if (!string.IsNullOrEmpty(generatedDescription))
+                {
+                    _narrativeText = generatedDescription;
+                    this.RaisePropertyChanged(nameof(RoomDescription));
+                }
+            }
+            catch
+            {
+                // Fall back to basic description if service fails
+            }
+        }
+
+        // v0.38: Generate atmospheric description
+        if (_atmosphericService != null)
+        {
+            try
+            {
+                var biome = CurrentRoom.PrimaryBiome ?? "The_Roots";
+                var atmosphere = _atmosphericService.GenerateAtmosphere(biome);
+                if (!string.IsNullOrEmpty(atmosphere))
+                {
+                    AtmosphereText = atmosphere;
+                    this.RaisePropertyChanged(nameof(HasAtmosphere));
+                }
+            }
+            catch
+            {
+                // Atmospheric generation failed, continue without
+            }
+        }
+
+        // Room header
         details.Add($"[{BiomeName}] - {CurrentRoom.Name}");
-        details.Add(CurrentRoom.Description);
 
         // Entities present
         if (CurrentRoom.Enemies?.Any() == true)
@@ -1053,18 +1136,67 @@ public class DungeonExplorationViewModel : ViewModelBase
         }
 
         // Passive perception check for hidden elements
-        int wits = Character?.Attributes?.Wits ?? 5;
-        var rng = new Random();
-        int perceptionRoll = rng.Next(1, 21) + (wits - 5); // d20 + WITS modifier
+        int perceptionRoll = rng.Next(1, 21) + (wits - 5);
 
-        if (perceptionRoll >= 12 && CurrentRoom.DynamicHazards?.Any(h => h.IsHidden && !h.HasBeenDiscovered) == true)
+        // v0.38: Use ExaminationFlavorTextService for perception checks
+        if (_examinationService != null)
         {
-            details.Add("*You notice subtle signs of danger - a trap may be nearby.*");
+            try
+            {
+                if (perceptionRoll >= 12 && CurrentRoom.DynamicHazards?.Any(h => h.IsHidden && !h.HasBeenDiscovered) == true)
+                {
+                    var perceptionText = _examinationService.GeneratePerceptionCheckText(
+                        "HiddenTrap", perceptionRoll, CurrentRoom.PrimaryBiome ?? "The_Roots");
+                    if (!string.IsNullOrEmpty(perceptionText))
+                    {
+                        details.Add($"*{perceptionText}*");
+                    }
+                    else
+                    {
+                        details.Add("*You notice subtle signs of danger - a trap may be nearby.*");
+                    }
+                }
+
+                if (perceptionRoll >= 15 && CurrentRoom.HasSecretExit && !CurrentRoom.SecretExitRevealed)
+                {
+                    var perceptionText = _examinationService.GeneratePerceptionCheckText(
+                        "SecretDoor", perceptionRoll, CurrentRoom.PrimaryBiome ?? "The_Roots");
+                    if (!string.IsNullOrEmpty(perceptionText))
+                    {
+                        details.Add($"*{perceptionText}*");
+                    }
+                    else
+                    {
+                        details.Add("*Something about the walls here seems... off. There may be a hidden passage.*");
+                    }
+                }
+            }
+            catch
+            {
+                // Fall back to hardcoded perception text
+                if (perceptionRoll >= 12 && CurrentRoom.DynamicHazards?.Any(h => h.IsHidden && !h.HasBeenDiscovered) == true)
+                {
+                    details.Add("*You notice subtle signs of danger - a trap may be nearby.*");
+                }
+
+                if (perceptionRoll >= 15 && CurrentRoom.HasSecretExit && !CurrentRoom.SecretExitRevealed)
+                {
+                    details.Add("*Something about the walls here seems... off. There may be a hidden passage.*");
+                }
+            }
         }
-
-        if (perceptionRoll >= 15 && CurrentRoom.HasSecretExit && !CurrentRoom.SecretExitRevealed)
+        else
         {
-            details.Add("*Something about the walls here seems... off. There may be a hidden passage.*");
+            // No service available, use fallback
+            if (perceptionRoll >= 12 && CurrentRoom.DynamicHazards?.Any(h => h.IsHidden && !h.HasBeenDiscovered) == true)
+            {
+                details.Add("*You notice subtle signs of danger - a trap may be nearby.*");
+            }
+
+            if (perceptionRoll >= 15 && CurrentRoom.HasSecretExit && !CurrentRoom.SecretExitRevealed)
+            {
+                details.Add("*Something about the walls here seems... off. There may be a hidden passage.*");
+            }
         }
 
         // Available exits
@@ -1090,6 +1222,7 @@ public class DungeonExplorationViewModel : ViewModelBase
     /// <summary>
     /// Investigates objects in the room using a WITS-based skill check
     /// to reveal hidden details, mechanisms, and lore.
+    /// v0.38: Enhanced with ExaminationFlavorTextService for rich narrative.
     /// </summary>
     private async Task InvestigateRoomAsync()
     {
@@ -1104,9 +1237,13 @@ public class DungeonExplorationViewModel : ViewModelBase
         int investigationRoll = rng.Next(1, 21) + (wits - 5); // d20 + WITS modifier
 
         var findings = new List<string>();
-
-        // Check for investigatable objects
         bool foundSomething = false;
+        var biome = CurrentRoom.PrimaryBiome ?? "The_Roots";
+
+        // Determine detail level based on roll (v0.38 tiered system)
+        string detailLevel = investigationRoll >= 18 ? "Expert"
+            : investigationRoll >= 12 ? "Detailed"
+            : "Cursory";
 
         // Check static terrain
         if (CurrentRoom.StaticTerrain?.Any(t => t.IsInteractive && !t.HasBeenInvestigated) == true)
@@ -1114,7 +1251,31 @@ public class DungeonExplorationViewModel : ViewModelBase
             var terrain = CurrentRoom.StaticTerrain.First(t => t.IsInteractive && !t.HasBeenInvestigated);
             if (investigationRoll >= 10)
             {
-                findings.Add($"Examining the {terrain.Name}: {terrain.FlavorText}");
+                // v0.38: Use ExaminationFlavorTextService if available
+                if (_examinationService != null)
+                {
+                    try
+                    {
+                        var examText = _examinationService.GenerateExaminationText(
+                            terrain.Name, detailLevel, biome);
+                        if (!string.IsNullOrEmpty(examText))
+                        {
+                            findings.Add(examText);
+                        }
+                        else
+                        {
+                            findings.Add($"Examining the {terrain.Name}: {terrain.FlavorText}");
+                        }
+                    }
+                    catch
+                    {
+                        findings.Add($"Examining the {terrain.Name}: {terrain.FlavorText}");
+                    }
+                }
+                else
+                {
+                    findings.Add($"Examining the {terrain.Name}: {terrain.FlavorText}");
+                }
                 terrain.HasBeenInvestigated = true;
                 foundSomething = true;
             }
@@ -1147,14 +1308,33 @@ public class DungeonExplorationViewModel : ViewModelBase
         // Lore/expert level findings at high rolls
         if (investigationRoll >= 18)
         {
-            var loreFragments = new[]
+            // v0.38: Use ExaminationFlavorTextService for lore fragments
+            string loreText = null!;
+            if (_examinationService != null)
             {
-                "Ancient Dvergr runes on the wall speak of a great forge that once burned here.",
-                "The architecture suggests this was a place of importance to the old ones.",
-                "Faded markings indicate this area was once sealed - whatever was kept here has long escaped.",
-                "You find traces of an old battle - rust and bone fragments suggest a desperate last stand."
-            };
-            findings.Add($"[Lore] {loreFragments[rng.Next(loreFragments.Length)]}");
+                try
+                {
+                    loreText = _examinationService.GetLoreFragment(biome);
+                }
+                catch
+                {
+                    // Fall back to hardcoded lore
+                }
+            }
+
+            if (string.IsNullOrEmpty(loreText))
+            {
+                var loreFragments = new[]
+                {
+                    "Ancient Dvergr runes on the wall speak of a great forge that once burned here.",
+                    "The architecture suggests this was a place of importance to the old ones.",
+                    "Faded markings indicate this area was once sealed - whatever was kept here has long escaped.",
+                    "You find traces of an old battle - rust and bone fragments suggest a desperate last stand."
+                };
+                loreText = loreFragments[rng.Next(loreFragments.Length)];
+            }
+
+            findings.Add($"[Lore] {loreText}");
             foundSomething = true;
         }
 
