@@ -33,9 +33,6 @@ public class CharacterFactory
             case CharacterClass.Warrior:
                 InitializeWarrior(character);
                 break;
-            case CharacterClass.Scavenger:
-                InitializeScavenger(character);
-                break;
             case CharacterClass.Mystic:
                 InitializeMystic(character);
                 break;
@@ -125,98 +122,6 @@ public class CharacterFactory
         // Recalculate stats to apply Warrior's Vigor bonus
         var equipService = new EquipmentService();
         equipService.RecalculatePlayerStats(character);
-    }
-
-    private static void InitializeScavenger(PlayerCharacter character)
-    {
-        // Stats
-        character.Attributes = new Attributes(
-            might: 3,
-            finesse: 3,
-            wits: 3,
-            will: 2,
-            sturdiness: 3
-        );
-
-        // Resources (base values before equipment)
-        character.MaxHP = 40;
-        character.HP = 40;
-        character.MaxStamina = 40;
-        character.Stamina = 40;
-        character.AP = 10;
-
-        // Legacy weapon (v0.1/v0.2 compatibility)
-        character.WeaponName = "Makeshift Spear";
-        character.WeaponAttribute = "finesse";
-        character.BaseDamage = 1;
-
-        // Starting equipment (v0.3)
-        var startingWeapon = EquipmentDatabase.GetByName("Makeshift Spear");
-        var startingArmor = EquipmentDatabase.GetByName("Tattered Leathers");
-
-        if (startingWeapon != null)
-        {
-            character.EquippedWeapon = startingWeapon;
-        }
-
-        if (startingArmor != null)
-        {
-            var equipmentService = new EquipmentService();
-            character.EquippedArmor = startingArmor;
-            equipmentService.RecalculatePlayerStats(character);
-        }
-
-        // Abilities (4 total: 2 starting, unlock 3rd at Level 3, 4th at Level 5)
-        character.Abilities = new List<Ability>
-        {
-            // Level 1 - Starting ability
-            new Ability
-            {
-                Name = "Exploit Weakness",
-                Description = "Analyze your enemy's defenses, granting +2 bonus dice to your next attack",
-                StaminaCost = 5,
-                Type = AbilityType.Utility,
-                AttributeUsed = "wits",
-                BonusDice = 0,
-                SuccessThreshold = 2,
-                NextAttackBonusDice = 2
-            },
-            // Level 1 - Starting ability
-            new Ability
-            {
-                Name = "Quick Dodge",
-                Description = "Use your agility to completely avoid the next incoming attack",
-                StaminaCost = 10,
-                Type = AbilityType.Defense,
-                AttributeUsed = "finesse",
-                BonusDice = 1,
-                SuccessThreshold = 2,
-                NegateNextAttack = true
-            },
-            // Level 3 - Unlocked ability
-            new Ability
-            {
-                Name = "Precision Strike",
-                Description = "A precise attack using FINESSE and WITS that causes bleeding (1d6 damage for 2 turns)",
-                StaminaCost = 8,
-                Type = AbilityType.Attack,
-                AttributeUsed = "finesse",
-                BonusDice = 0,
-                SuccessThreshold = 3,
-                DamageDice = 1
-            },
-            // Level 5 - Unlocked ability
-            new Ability
-            {
-                Name = "Survivalist",
-                Description = "Use survival skills to restore 2d6 HP during combat (costs your turn)",
-                StaminaCost = 20,
-                Type = AbilityType.Utility,
-                AttributeUsed = "sturdiness",
-                BonusDice = 0,
-                SuccessThreshold = 2
-            }
-        };
     }
 
     private static void InitializeMystic(PlayerCharacter character)
@@ -418,13 +323,6 @@ public class CharacterFactory
                 "HP: 50 | Stamina: 30\n" +
                 "Weapon: Scavenged Axe (MIGHT-based)\n" +
                 "Abilities: Power Strike, Shield Wall",
-
-            CharacterClass.Scavenger =>
-                "A balanced survivor with tactical options. The Scavenger uses cunning and agility to exploit enemy weaknesses.\n" +
-                "Starting Stats: MIGHT 3, FINESSE 3, WITS 3, WILL 2, STURDINESS 3\n" +
-                "HP: 40 | Stamina: 40\n" +
-                "Weapon: Makeshift Spear (FINESSE-based)\n" +
-                "Abilities: Exploit Weakness, Quick Dodge",
 
             CharacterClass.Mystic =>
                 "A wielder of corrupted aetheric energy. Low HP but powerful abilities make the Mystic a high-risk, high-reward choice.\n" +

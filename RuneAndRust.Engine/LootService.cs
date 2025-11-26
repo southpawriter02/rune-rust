@@ -287,8 +287,9 @@ public class LootService
         return characterClass switch
         {
             CharacterClass.Warrior => EquipmentDatabase.GetByName("Scavenged Axe"),
-            CharacterClass.Scavenger => EquipmentDatabase.GetByName("Scavenged Spear"),
             CharacterClass.Mystic => EquipmentDatabase.GetByName("Scavenged Staff"),
+            CharacterClass.Adept => EquipmentDatabase.GetByName("Scavenged Staff"),
+            CharacterClass.Skirmisher => EquipmentDatabase.GetByName("Scavenged Spear"),
             _ => null
         };
     }

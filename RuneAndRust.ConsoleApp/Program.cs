@@ -630,18 +630,18 @@ class Program
                 .AddChoices(new[]
                 {
                     "Warrior - High HP, Melee Focus",
-                    "Scavenger - Balanced, Tactical",
                     "Mystic - Low HP, Ability Focus",
-                    "Adept - WITS-based, Specialist (v0.7)" // NEW: v0.7 archetype
+                    "Adept - WITS-based, Specialist",
+                    "Skirmisher - Agility and Precision"
                 })
         );
 
         CharacterClass selectedClass = classChoice switch
         {
             "Warrior - High HP, Melee Focus" => CharacterClass.Warrior,
-            "Scavenger - Balanced, Tactical" => CharacterClass.Scavenger,
             "Mystic - Low HP, Ability Focus" => CharacterClass.Mystic,
-            "Adept - WITS-based, Specialist (v0.7)" => CharacterClass.Adept, // NEW: v0.7
+            "Adept - WITS-based, Specialist" => CharacterClass.Adept,
+            "Skirmisher - Agility and Precision" => CharacterClass.Skirmisher,
             _ => CharacterClass.Warrior
         };
 
