@@ -69,16 +69,22 @@ public static class EquipmentDatabase
                             e.WeaponCategory == Core.WeaponCategory.Greatsword) &&
                            e.Quality == quality)
                 .ToList(),
-            CharacterClass.Scavenger => AllEquipment
-                .Where(e => e.Type == EquipmentType.Weapon &&
-                           (e.WeaponCategory == Core.WeaponCategory.Spear ||
-                            e.WeaponCategory == Core.WeaponCategory.Dagger) &&
-                           e.Quality == quality)
-                .ToList(),
             CharacterClass.Mystic => AllEquipment
                 .Where(e => e.Type == EquipmentType.Weapon &&
                            (e.WeaponCategory == Core.WeaponCategory.Staff ||
                             e.WeaponCategory == Core.WeaponCategory.Focus) &&
+                           e.Quality == quality)
+                .ToList(),
+            CharacterClass.Adept => AllEquipment
+                .Where(e => e.Type == EquipmentType.Weapon &&
+                           (e.WeaponCategory == Core.WeaponCategory.Staff ||
+                            e.WeaponCategory == Core.WeaponCategory.Dagger) &&
+                           e.Quality == quality)
+                .ToList(),
+            CharacterClass.Skirmisher => AllEquipment
+                .Where(e => e.Type == EquipmentType.Weapon &&
+                           (e.WeaponCategory == Core.WeaponCategory.Spear ||
+                            e.WeaponCategory == Core.WeaponCategory.Dagger) &&
                            e.Quality == quality)
                 .ToList(),
             _ => new List<Equipment>()

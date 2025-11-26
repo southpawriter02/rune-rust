@@ -269,7 +269,6 @@ public class EquipmentService
         int baseHP = player.Class switch
         {
             CharacterClass.Warrior => 50,
-            CharacterClass.Scavenger => 40,
             CharacterClass.Mystic => 30,
             CharacterClass.Adept => 35,
             CharacterClass.Skirmisher => 40,

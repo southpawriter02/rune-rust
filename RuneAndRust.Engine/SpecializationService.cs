@@ -47,14 +47,13 @@ public class SpecializationService
 
         try
         {
-            // Map CharacterClass to ArchetypeID (1=Warrior, 2=Adept, 3=Scavenger, 4=Skirmisher, 5=Mystic)
+            // Map CharacterClass to ArchetypeID (1=Warrior, 2=Adept, 3=Skirmisher, 4=Mystic)
             int archetypeId = character.Class switch
             {
                 CharacterClass.Warrior => 1,
                 CharacterClass.Adept => 2,
-                CharacterClass.Scavenger => 3,
-                CharacterClass.Skirmisher => 4, // v0.24.1: Skirmisher archetype
-                CharacterClass.Mystic => 5,
+                CharacterClass.Skirmisher => 3,
+                CharacterClass.Mystic => 4,
                 _ => 0
             };
 
@@ -232,9 +231,8 @@ public class SpecializationService
         {
             CharacterClass.Warrior => 1,
             CharacterClass.Adept => 2,
-            CharacterClass.Scavenger => 3,
-            CharacterClass.Skirmisher => 4,
-            CharacterClass.Mystic => 5,
+            CharacterClass.Skirmisher => 3,
+            CharacterClass.Mystic => 4,
             _ => 0
         };
 

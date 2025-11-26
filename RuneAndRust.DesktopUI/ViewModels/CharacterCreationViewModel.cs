@@ -354,17 +354,17 @@ public class CharacterCreationViewModel : ViewModelBase
     public int WillDecreaseCost => GetDecreaseCost(AttributeWill, BaseWill);
     public int SturdinessDecreaseCost => GetDecreaseCost(AttributeSturdiness, BaseSturdiness);
 
-    // Can increase/decrease checks
+    // Can increase/decrease checks (can't go below base value)
     public bool CanIncreaseMight => AttributeMight < MaxAttributeValue && MightIncreaseCost > 0;
-    public bool CanDecreaseMight => AttributeMight > MinAttributeValue;
+    public bool CanDecreaseMight => AttributeMight > BaseMight;
     public bool CanIncreaseFinesse => AttributeFinesse < MaxAttributeValue && FinesseIncreaseCost > 0;
-    public bool CanDecreaseFinesse => AttributeFinesse > MinAttributeValue;
+    public bool CanDecreaseFinesse => AttributeFinesse > BaseFinesse;
     public bool CanIncreaseWits => AttributeWits < MaxAttributeValue && WitsIncreaseCost > 0;
-    public bool CanDecreaseWits => AttributeWits > MinAttributeValue;
+    public bool CanDecreaseWits => AttributeWits > BaseWits;
     public bool CanIncreaseWill => AttributeWill < MaxAttributeValue && WillIncreaseCost > 0;
-    public bool CanDecreaseWill => AttributeWill > MinAttributeValue;
+    public bool CanDecreaseWill => AttributeWill > BaseWill;
     public bool CanIncreaseSturdiness => AttributeSturdiness < MaxAttributeValue && SturdinessIncreaseCost > 0;
-    public bool CanDecreaseSturdiness => AttributeSturdiness > MinAttributeValue;
+    public bool CanDecreaseSturdiness => AttributeSturdiness > BaseSturdiness;
 
     /// <summary>Notifies all cost-related properties when any attribute changes.</summary>
     private void NotifyAttributeCostChanges()
@@ -637,10 +637,21 @@ public class CharacterCreationViewModel : ViewModelBase
             _ => 5
         };
 
+        // Get the base value for this attribute (can't go below base)
+        int baseValue = args.attributeName.ToUpperInvariant() switch
+        {
+            "MIGHT" => BaseMight,
+            "FINESSE" => BaseFinesse,
+            "WITS" => BaseWits,
+            "WILL" => BaseWill,
+            "STURDINESS" => BaseSturdiness,
+            _ => DefaultBaseAttributeValue
+        };
+
         int targetValue = currentValue + args.delta;
 
-        // Enforce min/max bounds
-        if (targetValue < MinAttributeValue || targetValue > MaxAttributeValue)
+        // Enforce base/max bounds (can't go below base value)
+        if (targetValue < baseValue || targetValue > MaxAttributeValue)
         {
             return;
         }

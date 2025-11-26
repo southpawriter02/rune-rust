@@ -328,8 +328,6 @@ public class CharacterCreationController
         {
             // Warrior: MIGHT/STURDINESS focused
             CharacterClass.Warrior => new Attributes(might: 8, finesse: 5, wits: 5, will: 5, sturdiness: 8),
-            // Scavenger: Balanced with FINESSE focus
-            CharacterClass.Scavenger => new Attributes(might: 6, finesse: 8, wits: 7, will: 5, sturdiness: 6),
             // Mystic: WILL/WITS focused
             CharacterClass.Mystic => new Attributes(might: 5, finesse: 5, wits: 7, will: 8, sturdiness: 5),
             // Adept: WITS focused, balanced support
@@ -894,7 +892,6 @@ public class CharacterCreationController
 
         _viewModel.AvailableArchetypes.Clear();
         _viewModel.AvailableArchetypes.Add(CharacterClass.Warrior);
-        _viewModel.AvailableArchetypes.Add(CharacterClass.Scavenger);
         _viewModel.AvailableArchetypes.Add(CharacterClass.Mystic);
         _viewModel.AvailableArchetypes.Add(CharacterClass.Adept);
         _viewModel.AvailableArchetypes.Add(CharacterClass.Skirmisher);

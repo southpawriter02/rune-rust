@@ -245,12 +245,6 @@ public class ProgressionController
                 Specialization.IronBane,
                 Specialization.AtgeirWielder
             },
-            CharacterClass.Scavenger => new List<Specialization>
-            {
-                Specialization.BoneSetter,
-                Specialization.ScrapTinker,
-                Specialization.JotunReader
-            },
             CharacterClass.Mystic => new List<Specialization>
             {
                 Specialization.VardWarden,
