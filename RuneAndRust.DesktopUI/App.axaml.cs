@@ -204,10 +204,15 @@ public partial class App : Application
     {
         var templateLibrary = services.GetRequiredService<TemplateLibrary>();
 
-        Log.Information("Loading room templates...");
-        templateLibrary.LoadTemplates();
+        // Use absolute path based on app directory (same pattern as LoadSprites)
+        var templatePath = Path.Combine(AppContext.BaseDirectory, "Data", "RoomTemplates");
 
-        Log.Information("Room templates loaded successfully");
+        Log.Information("Loading room templates from {Path}", templatePath);
+        templateLibrary.LoadTemplates(templatePath);
+
+        var stats = templateLibrary.GetTemplateStatistics();
+        Log.Information("Room templates loaded: {Total} total ({EntryHalls} entry halls, {Corridors} corridors, {Chambers} chambers, {BossArenas} boss arenas)",
+            stats["Total"], stats["EntryHalls"], stats["Corridors"], stats["Chambers"], stats["BossArenas"]);
     }
 
     /// <summary>

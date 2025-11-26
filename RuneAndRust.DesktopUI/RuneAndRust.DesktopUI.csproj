@@ -14,6 +14,14 @@
     <AvaloniaResource Include="Assets\**" />
   </ItemGroup>
 
+  <!-- Copy Data folder (room templates, etc.) to output directory -->
+  <ItemGroup>
+    <None Include="..\Data\**\*.*">
+      <Link>Data\%(RecursiveDir)%(FileName)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="11.0.0" />
     <PackageReference Include="Avalonia.Desktop" Version="11.0.0" />

@@ -21,19 +21,21 @@ public class TemplateLibrary
     /// <summary>
     /// Loads all room template definitions from JSON files
     /// </summary>
-    public void LoadTemplates()
+    /// <param name="dataPath">Optional path to load templates from. If not provided, uses the default path.</param>
+    public void LoadTemplates(string? dataPath = null)
     {
-        _log.Debug("Loading room templates from: {DataPath}", _templateDataPath);
+        var pathToUse = dataPath ?? _templateDataPath;
+        _log.Debug("Loading room templates from: {DataPath}", pathToUse);
 
-        if (!Directory.Exists(_templateDataPath))
+        if (!Directory.Exists(pathToUse))
         {
-            _log.Warning("Template data path not found: {DataPath}", _templateDataPath);
-            Console.WriteLine($"Warning: Template data path not found: {_templateDataPath}");
+            _log.Warning("Template data path not found: {DataPath}", pathToUse);
+            Console.WriteLine($"Warning: Template data path not found: {pathToUse}");
             return;
         }
 
         // Load templates from all subdirectories
-        var templateFiles = Directory.GetFiles(_templateDataPath, "*.json", SearchOption.AllDirectories);
+        var templateFiles = Directory.GetFiles(pathToUse, "*.json", SearchOption.AllDirectories);
         _log.Debug("Found {FileCount} template files to load", templateFiles.Length);
 
         int loadedCount = 0;
