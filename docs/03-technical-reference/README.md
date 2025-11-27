@@ -335,7 +335,9 @@ Each technical doc links to:
 ## Progress Tracking
 
 **Documentation Status:**
-- Database: 0 / 2 documents complete
+- Database: 2 / 2 documents complete
+  - ✅ [Database Schema](./database-schema.md)
+  - ✅ [Data Access Patterns](./data-access-patterns.md)
 - Services: 8 / 10 documents complete
   - ✅ [CombatEngine](./services/combat-engine.md)
   - ✅ [DungeonGenerator](./services/dungeon-generator.md)
@@ -352,7 +354,7 @@ Each technical doc links to:
 - Integration: 0 / 3 documents complete
 - Performance: 0 / 2 documents complete
 
-**Overall Progress:** 55% (11/21 documents)
+**Overall Progress:** 62% (13/21 documents)
 
 ---
 
