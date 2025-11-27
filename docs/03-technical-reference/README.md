@@ -183,26 +183,15 @@ How data moves through the system.
 
 ### 🔗 Integration Patterns
 
-#### [System Integration Map](./system-integration-map.md)
-How systems depend on each other.
-
-**Integration Points:**
-- Combat ↔ Progression (XP rewards)
-- Combat ↔ Trauma Economy (Stress/Corruption)
-- Combat ↔ Equipment (stat bonuses)
-- Procedural Generation ↔ Quest System (anchor placement)
-- World State ↔ Save/Load (persistence)
-
----
-
 #### [Event System](./event-system.md)
-Event-driven communication between systems.
+Comprehensive event system documentation.
 
-**Events:**
-- `OnEnemyDefeated` - Triggers XP gain, loot drops, quest progress
-- `OnLevelUp` - Triggers PP gain, stat increases
-- `OnBreakingPoint` - Triggers trauma application
-- `OnRoomEnter` - Triggers autosave, state restoration
+**Contents:**
+- World Events - Territory events stored in database (WorldEventService)
+- Environmental Events - Combat environmental interactions (EnvironmentalEvent)
+- Controller Events - C# events for UI/state communication
+- Event types, lifecycle, and resolution patterns
+- Result types (DestructionResult, HazardResult, etc.)
 
 ---
 
@@ -210,10 +199,26 @@ Event-driven communication between systems.
 Exception handling patterns.
 
 **Contents:**
-- Exception types
-- Error recovery strategies
-- Logging patterns
-- Validation approach
+- Constructor validation (ArgumentNullException guards)
+- Service-level exception handling with structured logging
+- Validation exceptions (InvalidOperationException, ArgumentException)
+- Null-safe patterns and early returns
+- Result types for expected failures
+- File I/O error handling
+- Logging level guidelines
+
+---
+
+#### [Controller Integration](./controller-integration.md)
+Controller-layer integration architecture.
+
+**Contents:**
+- GameStateController (master state management)
+- Phase transition validation and state machine
+- Inter-controller event communication
+- Controller wiring and initialization patterns
+- State validation and auto-save integration
+- Combat/Loot/Progression/Death/Victory workflows
 
 ---
 
@@ -354,12 +359,15 @@ Each technical doc links to:
   - ✅ [Data Flow](./data-flow.md)
   - ✅ [System Integration Map](./system-integration-map.md)
   - ✅ [Class Hierarchies & Design Patterns](./class-hierarchies.md)
-- Integration: 0 / 3 documents complete
+- Integration: 3 / 3 documents complete
+  - ✅ [Event System](./event-system.md)
+  - ✅ [Error Handling](./error-handling.md)
+  - ✅ [Controller Integration](./controller-integration.md)
 - Performance: 2 / 2 documents complete
   - ✅ [Performance Benchmarks](./performance-benchmarks.md)
   - ✅ [Optimization Strategies](./optimization-strategies.md)
 
-**Overall Progress:** 86% (18/21 documents)
+**Overall Progress:** 100% (21/21 documents)
 
 ---
 
