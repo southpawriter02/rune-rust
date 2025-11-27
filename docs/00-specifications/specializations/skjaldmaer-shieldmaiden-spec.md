@@ -93,37 +93,39 @@ This document serves as a template for documenting other specializations.
 
 **Ranks are unlocked through TREE PROGRESSION, not PP spending.**
 
-| Rank | Unlock Requirement | Applies To |
-|------|-------------------|------------|
-| **Rank 1** | Ability is unlocked (PP spent to learn ability) | All abilities |
-| **Rank 2** | 2 Tier 2 abilities are unlocked | Tier 1 abilities only |
-| **Rank 3** | Capstone ability is trained | Tier 1 abilities only |
+| Tier | Starting Rank | Progresses To | Rank 3 Trigger |
+|------|---------------|---------------|----------------|
+| **Tier 1** | Rank 1 (when learned) | Rank 2 (when 2 Tier 2 trained) | Capstone trained |
+| **Tier 2** | Rank 2 (when learned) | Rank 3 (when Capstone trained) | Capstone trained |
+| **Tier 3** | No ranks | N/A | N/A |
+| **Capstone** | No ranks | N/A | N/A |
 
 **Important Notes**:
-- Tier 2, Tier 3, and Capstone abilities do **NOT** have ranks (they are single-rank abilities)
-- Only Tier 1 abilities progress through Ranks 1→2→3
+- **Tier 1 abilities** start at Rank 1, progress to Rank 2 when 2 Tier 2 abilities are trained, and reach Rank 3 when Capstone is trained
+- **Tier 2 abilities** start at Rank 2 (reflecting their higher tier), and progress to Rank 3 when Capstone is trained
+- **Tier 3 and Capstone abilities** do NOT have ranks - they are powerful single-effect abilities
 - Rank progression is **automatic** when requirements are met (no additional PP cost)
-- This creates a natural power curve tied to specialization investment
+- This creates a natural power curve: Capstone training is a major power spike for ALL trained abilities
 
 ### 2.2 Ability Structure by Tier
 
-| Tier | Abilities | PP Cost to Unlock | Has Ranks? | Rank Unlock Trigger |
-|------|-----------|-------------------|------------|---------------------|
-| **Tier 1** | 3 | 3 PP each | Yes (1-3) | Rank 2: 2× Tier 2 unlocked; Rank 3: Capstone trained |
-| **Tier 2** | 3 | 4 PP each | No (Rank 1 only) | N/A |
-| **Tier 3** | 2 | 5 PP each | No (Rank 1 only) | N/A |
-| **Capstone** | 1 | 6 PP | No (Rank 1 only) | N/A |
+| Tier | Abilities | PP Cost to Unlock | Starting Rank | Max Rank | Rank Progression |
+|------|-----------|-------------------|---------------|----------|------------------|
+| **Tier 1** | 3 | 3 PP each | 1 | 3 | 1→2 (2× Tier 2), 2→3 (Capstone) |
+| **Tier 2** | 3 | 4 PP each | 2 | 3 | 2→3 (Capstone) |
+| **Tier 3** | 2 | 5 PP each | N/A | N/A | No ranks |
+| **Capstone** | 1 | 6 PP | N/A | N/A | No ranks |
 
 ### 2.3 Total PP Investment
 
-| Milestone | PP Spent | Abilities Unlocked | Tier 1 Rank |
-|-----------|----------|-------------------|-------------|
-| Unlock Specialization | 10 PP | 0 | - |
-| All Tier 1 | 10 + 9 = 19 PP | 3 Tier 1 | Rank 1 |
-| 2 Tier 2 | 19 + 8 = 27 PP | 3 Tier 1 + 2 Tier 2 | **Rank 2** |
-| All Tier 2 | 27 + 4 = 31 PP | 3 Tier 1 + 3 Tier 2 | Rank 2 |
-| All Tier 3 | 31 + 10 = 41 PP | 3 Tier 1 + 3 Tier 2 + 2 Tier 3 | Rank 2 |
-| Capstone | 41 + 6 = 47 PP | All 9 abilities | **Rank 3** |
+| Milestone | PP Spent | Abilities Unlocked | Tier 1 Rank | Tier 2 Rank |
+|-----------|----------|-------------------|-------------|-------------|
+| Unlock Specialization | 10 PP | 0 | - | - |
+| All Tier 1 | 10 + 9 = 19 PP | 3 Tier 1 | Rank 1 | - |
+| 2 Tier 2 | 19 + 8 = 27 PP | 3 Tier 1 + 2 Tier 2 | **Rank 2** | Rank 2 |
+| All Tier 2 | 27 + 4 = 31 PP | 3 Tier 1 + 3 Tier 2 | Rank 2 | Rank 2 |
+| All Tier 3 | 31 + 10 = 41 PP | 3 Tier 1 + 3 Tier 2 + 2 Tier 3 | Rank 2 | Rank 2 |
+| Capstone | 41 + 6 = 47 PP | All 9 abilities | **Rank 3** | **Rank 3** |
 
 ---
 
@@ -184,15 +186,15 @@ This document serves as a template for documenting other specializations.
 
 | ID | Ability Name | Tier | Type | Ranks | Resource Cost | Key Effect |
 |----|--------------|------|------|-------|---------------|------------|
-| 26019 | Sanctified Resolve | 1 | Passive | 1-3 | None | +dice vs Fear/Stress |
-| 26020 | Shield Bash | 1 | Active | 1-3 | 40 Stamina | Damage + Stagger |
-| 26021 | Oath of the Protector | 1 | Active | 1-3 | 35 Stamina | +Soak, +Stress resist |
-| 26022 | Guardian's Taunt | 2 | Active | 1 | 30 Stamina + Stress | Taunt enemies |
-| 26023 | Shield Wall | 2 | Active | 1 | 45 Stamina | AoE defensive buff |
-| 26024 | Interposing Shield | 2 | Reaction | 1 | 25 Stamina | Redirect critical hit |
-| 26025 | Implacable Defense | 3 | Active | 1 | 40 Stamina | Debuff immunity |
-| 26026 | Aegis of the Clan | 3 | Passive | 1 | None | Auto-protect stressed allies |
-| 26027 | Bastion of Sanity | 4 | Passive+Reaction | 1 | 40 Stress + 1 Corruption | Absorb ally Trauma |
+| 26019 | Sanctified Resolve | 1 | Passive | 1→2→3 | None | +dice vs Fear/Stress |
+| 26020 | Shield Bash | 1 | Active | 1→2→3 | 40 Stamina | Damage + Stagger |
+| 26021 | Oath of the Protector | 1 | Active | 1→2→3 | 35 Stamina | +Soak, +Stress resist |
+| 26022 | Guardian's Taunt | 2 | Active | 2→3 | 30 Stamina + Stress | Taunt enemies |
+| 26023 | Shield Wall | 2 | Active | 2→3 | 45 Stamina | AoE defensive buff |
+| 26024 | Interposing Shield | 2 | Reaction | 2→3 | 25 Stamina | Redirect critical hit |
+| 26025 | Implacable Defense | 3 | Active | — | 40 Stamina | Debuff immunity |
+| 26026 | Aegis of the Clan | 3 | Passive | — | None | Auto-protect stressed allies |
+| 26027 | Bastion of Sanity | 4 | Passive+Reaction | — | 40 Stress + 1 Corruption | Absorb ally Trauma |
 
 ---
 
@@ -518,9 +520,9 @@ Target.RemoveFirstMentalDebuff() // [Fear], [Disoriented], or [Charmed]
 
 ---
 
-## 5. Tier 2 Abilities (Single Rank)
+## 5. Tier 2 Abilities (Rank 2→3 Progression)
 
-These abilities have only 1 rank and do not progress.
+These abilities start at **Rank 2** when trained (reflecting their higher tier) and progress to **Rank 3** when the Capstone is trained.
 
 ---
 
@@ -534,14 +536,18 @@ These abilities have only 1 rank and do not progress.
 | **Tier** | 2 (Advanced) |
 | **PP Cost to Unlock** | 4 PP |
 | **Prerequisite** | 8 PP invested in Skjaldmaer tree |
-| **Ranks** | 1 (single rank) |
-| **Resource Cost** | 30 Stamina + 5 Psychic Stress |
+| **Ranks** | 2→3 (starts at Rank 2, Rank 3 with Capstone) |
+| **Resource Cost** | 30 Stamina + Variable Psychic Stress |
 | **Status Effects** | [Taunted] |
 
 #### Description
 Projection of coherent will draws even maddened creatures to attack. The Skjaldmaer's presence becomes a beacon of stability that enemies cannot ignore—but maintaining this projection takes a toll on her own psyche.
 
-#### Mechanical Effect
+#### Rank Details
+
+##### Rank 2 (Starting Rank - When ability is learned)
+
+**Mechanical Effect**:
 - All enemies in Front Row gain [Taunted] for 2 rounds
 - [Taunted] enemies must target the Skjaldmaer with their attacks if able
 - **Psychic Stress Cost**: Skjaldmaer gains 5 Psychic Stress
@@ -553,22 +559,48 @@ For each Enemy in FrontRow:
 Skjaldmaer.PsychicStress += 5
 ```
 
-#### GUI Display
+**GUI Display**:
 - Ability button: Taunting pose with psychic waves
-- Tooltip: "Guardian's Taunt: Taunt all Front Row enemies for 2 rounds. Cost: 30 Stamina, 5 Psychic Stress"
-- **WARNING**: If Stress cost would exceed threshold, show: "WARNING: Will enter High Stress!"
-- No target selection needed (AoE)
+- Tooltip: "Guardian's Taunt (Rank 2): Taunt all Front Row enemies for 2 rounds. Cost: 30 Stamina, 5 Psychic Stress"
+- Color: Silver border
 - Shows number of enemies affected: "Will taunt 3 enemies"
 
-#### Combat Log Examples
+**Combat Log Examples**:
 - "Guardian's Taunt draws 3 enemies! (Skjaldmaer gains 5 Psychic Stress)"
 - "Guardian's Taunt: [Enemy1], [Enemy2], [Enemy3] are now Taunted for 2 rounds"
-- "[Enemy Name] must attack [Skjaldmaer] (Taunted)"
+
+---
+
+##### Rank 3 (Unlocked: When Capstone is trained)
+
+**Mechanical Effect**:
+- **ALL enemies** (Front AND Back Row) gain [Taunted] for 2 rounds
+- [Taunted] enemies must target the Skjaldmaer with their attacks if able
+- **Reduced Psychic Stress Cost**: Skjaldmaer gains only 3 Psychic Stress
+
+**Formulas**:
+```
+For each Enemy in AllEnemies:  // Now includes Back Row!
+    Enemy.AddStatusEffect("Taunted", Duration: 2, TauntSource: Skjaldmaer)
+Skjaldmaer.PsychicStress += 3  // Reduced from 5
+```
+
+**GUI Display**:
+- Ability button: Taunting pose with expanded psychic waves
+- Tooltip: "Guardian's Taunt (Rank 3): Taunt ALL enemies for 2 rounds. Cost: 30 Stamina, 3 Psychic Stress"
+- Color: Gold border
+- Shows: "Will taunt ALL 5 enemies"
+- **Rank-up notification**: "Guardian's Taunt has reached Rank 3! Now taunts ALL enemies with reduced Stress cost!"
+
+**Combat Log Examples**:
+- "Guardian's Taunt (Rank 3) draws ALL 5 enemies! (Skjaldmaer gains 3 Psychic Stress)"
+- "Guardian's Taunt: [Enemy1], [Enemy2], [Enemy3], [Enemy4], [Enemy5] are now Taunted for 2 rounds"
 
 #### Implementation Status
 - [x] Service method: `SkjaldmaerService.ExecuteGuardiansTaunt(caster, frontRow, backRow, rank)`
 - [x] Data seeded in `SkjaldmaerSeeder.SeedSkjaldmaerTier2()`
 - [ ] GUI: Ability button showing dual costs
+- [ ] GUI: Rank-specific display (Silver→Gold)
 - [ ] GUI: Stress threshold warning
 - [ ] Combat: Apply [Taunted] status
 - [ ] Status Effect: [Taunted] definition - forces targeting
@@ -585,14 +617,18 @@ Skjaldmaer.PsychicStress += 5
 | **Tier** | 2 (Advanced) |
 | **PP Cost to Unlock** | 4 PP |
 | **Prerequisite** | 8 PP invested in Skjaldmaer tree |
-| **Ranks** | 1 (single rank) |
+| **Ranks** | 2→3 (starts at Rank 2, Rank 3 with Capstone) |
 | **Resource Cost** | 45 Stamina |
 | **Status Effects** | [Fortified] |
 
 #### Description
 Plant feet creating bastion of physical and metaphysical stability. The Skjaldmaer becomes an immovable anchor, extending this stability to nearby allies.
 
-#### Mechanical Effect
+#### Rank Details
+
+##### Rank 2 (Starting Rank - When ability is learned)
+
+**Mechanical Effect**:
 - Self and all adjacent Front Row allies gain:
   - +3 Soak for 2 turns
   - Immunity to Push/Pull/Knockback effects for 2 turns
@@ -608,20 +644,53 @@ For each Target in AffectedTargets:
     Target.StressResistanceDice += 1 (for 2 turns)
 ```
 
-#### GUI Display
+**GUI Display**:
 - Ability button: Interlocked shields
-- Tooltip: "Shield Wall: Self + adjacent allies gain +3 Soak, immunity to forced movement, +1 Stress resistance die for 2 turns. Cost: 45 Stamina"
+- Tooltip: "Shield Wall (Rank 2): Self + adjacent allies gain +3 Soak, immunity to forced movement, +1 Stress resistance die for 2 turns. Cost: 45 Stamina"
+- Color: Silver border
 - Preview: Highlight affected allies before confirmation
-- Buff icon: Interlocked shields on each affected character
 
-#### Combat Log Examples
+**Combat Log Examples**:
 - "Shield Wall protects [Skjaldmaer], [Ally1], [Ally2] (+3 Soak, Fortified for 2 turns)"
 - "[Enemy] attempts to push [Ally1] - blocked by Fortified!"
+
+---
+
+##### Rank 3 (Unlocked: When Capstone is trained)
+
+**Mechanical Effect**:
+- Self and all adjacent Front Row allies gain:
+  - +4 Soak for 3 turns (increased)
+  - Immunity to Push/Pull/Knockback effects for 3 turns
+  - +2 bonus dice to Psychic Stress resistance for 3 turns (increased)
+- Affected characters gain [Fortified] status
+- **NEW**: Also grants immunity to [Stun] for duration
+
+**Formulas**:
+```
+AffectedTargets = [Self] + GetAdjacentFrontRowAllies(Self)
+For each Target in AffectedTargets:
+    Target.Soak += 4 (for 3 turns)  // Increased from +3
+    Target.AddStatusEffect("Fortified", Duration: 3)  // Increased from 2
+    Target.StressResistanceDice += 2 (for 3 turns)  // Increased from +1
+    Target.AddImmunity("Stun", Duration: 3)  // NEW
+```
+
+**GUI Display**:
+- Ability button: Interlocked shields with radiant glow
+- Tooltip: "Shield Wall (Rank 3): Self + adjacent allies gain +4 Soak, immunity to forced movement AND Stun, +2 Stress resistance dice for 3 turns. Cost: 45 Stamina"
+- Color: Gold border
+- **Rank-up notification**: "Shield Wall has reached Rank 3! Increased protection, longer duration, and Stun immunity!"
+
+**Combat Log Examples**:
+- "Shield Wall (Rank 3) protects [Skjaldmaer], [Ally1], [Ally2] (+4 Soak, Fortified, Stun Immune for 3 turns)"
+- "[Enemy] attempts to Stun [Ally1] - blocked by Shield Wall!"
 
 #### Implementation Status
 - [ ] Service method: NOT YET IMPLEMENTED (needs ExecuteShieldWall)
 - [x] Data seeded in `SkjaldmaerSeeder.SeedSkjaldmaerTier2()`
 - [ ] GUI: Ability button with AoE preview
+- [ ] GUI: Rank-specific display (Silver→Gold)
 - [ ] Combat: Apply buff to multiple targets
 - [ ] Status Effect: [Fortified] definition
 
@@ -637,7 +706,7 @@ For each Target in AffectedTargets:
 | **Tier** | 2 (Advanced) |
 | **PP Cost to Unlock** | 4 PP |
 | **Prerequisite** | 8 PP invested in Skjaldmaer tree |
-| **Ranks** | 1 (single rank) |
+| **Ranks** | 2→3 (starts at Rank 2, Rank 3 with Capstone) |
 | **Resource Cost** | 25 Stamina |
 | **Trigger** | Adjacent ally is hit by a Critical Hit |
 | **Limit** | Once per round |
@@ -645,7 +714,11 @@ For each Target in AffectedTargets:
 #### Description
 React to incoming Critical Hit on adjacent ally, redirecting to self. The Skjaldmaer interposes her shield at the last moment, taking the brunt of the blow.
 
-#### Mechanical Effect
+#### Rank Details
+
+##### Rank 2 (Starting Rank - When ability is learned)
+
+**Mechanical Effect**:
 - **Trigger**: When an adjacent ally would take damage from a Critical Hit
 - **Effect**: Redirect the attack to the Skjaldmaer
 - **Damage Reduction**: Skjaldmaer takes 50% of the original damage
@@ -661,44 +734,99 @@ If Triggered:
     Skjaldmaer.Stamina -= 25
 ```
 
-#### GUI Display - REACTION PROMPT REQUIRED
-When trigger condition is met, display reaction prompt:
+**GUI Display**:
+- Reaction prompt with Silver border
+- Tooltip: "Interposing Shield (Rank 2): Intercept critical hit, take 50% damage. Cost: 25 Stamina"
 
+**Reaction Prompt**:
 ```
 ┌─────────────────────────────────────────────┐
-│         INTERPOSING SHIELD                  │
+│     INTERPOSING SHIELD (Rank 2)             │
 ├─────────────────────────────────────────────┤
 │ [Ally Name] is about to take a CRITICAL HIT │
 │ for [X] damage!                             │
 │                                             │
 │ Intercept?                                  │
-│ • You will take: [X/2] damage               │
+│ • You will take: [X × 50%] = [Y] damage     │
 │ • Cost: 25 Stamina                          │
 │                                             │
-│ [Current Stamina: Y/Max]                    │
+│ [Current Stamina: Z/Max]                    │
 │                                             │
 │    [INTERCEPT]        [DECLINE]             │
 └─────────────────────────────────────────────┘
 ```
 
-- If Stamina < 25: INTERCEPT button is disabled, show "Insufficient Stamina"
-- Timer: 5 seconds to decide (auto-decline if no response)
-
-#### Combat Log Examples
+**Combat Log Examples**:
 - "REACTION: Interposing Shield! [Skjaldmaer] intercepts critical hit meant for [Ally]!"
-- "[Skjaldmaer] takes 15 damage (reduced from 30)"
+- "[Skjaldmaer] takes 15 damage (50% of 30)"
+- "[Ally] is protected from critical hit!"
+
+---
+
+##### Rank 3 (Unlocked: When Capstone is trained)
+
+**Mechanical Effect**:
+- **Trigger**: When an adjacent ally would take damage from a Critical Hit
+- **Effect**: Redirect the attack to the Skjaldmaer
+- **Damage Reduction**: Skjaldmaer takes only 35% of the original damage (improved)
+- **Original Target**: Takes 0 damage
+- **NEW**: Reflect 15% of original damage back to attacker
+
+**Formulas**:
+```
+Trigger: Ally.IsAdjacent(Skjaldmaer) AND IncomingAttack.IsCritical
+If Triggered:
+    OriginalDamage = IncomingAttack.Damage
+    Skjaldmaer.HP -= Floor(OriginalDamage * 0.35)  // Reduced from 50%
+    Ally.HP -= 0
+    Attacker.HP -= Floor(OriginalDamage * 0.15)  // NEW: Reflect damage
+    Skjaldmaer.Stamina -= 25
+```
+
+**GUI Display**:
+- Reaction prompt with Gold border
+- Tooltip: "Interposing Shield (Rank 3): Intercept critical hit, take only 35% damage, reflect 15% to attacker. Cost: 25 Stamina"
+- **Rank-up notification**: "Interposing Shield has reached Rank 3! Reduced damage taken and now reflects damage!"
+
+**Reaction Prompt**:
+```
+┌─────────────────────────────────────────────┐
+│     INTERPOSING SHIELD (Rank 3)             │
+├─────────────────────────────────────────────┤
+│ [Ally Name] is about to take a CRITICAL HIT │
+│ for [X] damage!                             │
+│                                             │
+│ Intercept?                                  │
+│ • You will take: [X × 35%] = [Y] damage     │
+│ • Attacker takes: [X × 15%] = [Z] reflected │
+│ • Cost: 25 Stamina                          │
+│                                             │
+│ [Current Stamina: W/Max]                    │
+│                                             │
+│    [INTERCEPT]        [DECLINE]             │
+└─────────────────────────────────────────────┘
+```
+
+**Combat Log Examples**:
+- "REACTION: Interposing Shield (Rank 3)! [Skjaldmaer] intercepts critical hit meant for [Ally]!"
+- "[Skjaldmaer] takes 11 damage (35% of 30)"
+- "[Enemy] takes 5 reflected damage!"
 - "[Ally] is protected from critical hit!"
 
 #### Implementation Status
 - [ ] Service method: NOT YET IMPLEMENTED (needs ExecuteInterposingShield)
 - [x] Data seeded in `SkjaldmaerSeeder.SeedSkjaldmaerTier2()`
 - [ ] **GUI: Reaction prompt system (CRITICAL GAP)**
+- [ ] GUI: Rank-specific prompt display (Silver→Gold)
 - [ ] Combat: Detect critical hit trigger
 - [ ] Combat: Reaction timing framework
+- [ ] Combat: Reflect damage logic (Rank 3)
 
 ---
 
-## 6. Tier 3 Abilities (Single Rank)
+## 6. Tier 3 Abilities (No Ranks)
+
+Tier 3 abilities are powerful effects that do **not** have rank progression. They function at full power when unlocked.
 
 ---
 
@@ -712,7 +840,7 @@ When trigger condition is met, display reaction prompt:
 | **Tier** | 3 (Mastery) |
 | **PP Cost to Unlock** | 5 PP |
 | **Prerequisite** | 16 PP invested in Skjaldmaer tree |
-| **Ranks** | 1 (single rank) |
+| **Ranks** | None (full power when unlocked) |
 | **Resource Cost** | 40 Stamina |
 
 #### Description
@@ -768,7 +896,7 @@ For each AdjacentAlly:
 | **Tier** | 3 (Mastery) |
 | **PP Cost to Unlock** | 5 PP |
 | **Prerequisite** | 16 PP invested in Skjaldmaer tree |
-| **Ranks** | 1 (single rank) |
+| **Ranks** | None (full power when unlocked) |
 | **Resource Cost** | None (automatic) |
 | **Trigger** | Ally's Psychic Stress reaches 66%+ |
 | **Limit** | Once per ally per combat |
@@ -813,7 +941,9 @@ If Triggered:
 
 ---
 
-## 7. Capstone Ability (Single Rank)
+## 7. Capstone Ability (No Ranks)
+
+The Capstone is a unique, powerful ability that does **not** have rank progression. When trained, it also upgrades all Tier 1 and Tier 2 abilities to Rank 3.
 
 ---
 
@@ -827,10 +957,11 @@ If Triggered:
 | **Tier** | 4 (Capstone) |
 | **PP Cost to Unlock** | 6 PP |
 | **Prerequisite** | 24 PP invested in tree + both Tier 3 abilities |
-| **Ranks** | 1 (single rank) |
+| **Ranks** | None (full power when unlocked) |
 | **Resource Cost** | Reaction: 40 Psychic Stress + 1 Corruption |
 | **Trigger** | Ally would gain permanent Trauma |
 | **Limit** | Reaction: Once per combat |
+| **Special** | Training this ability upgrades all Tier 1 & Tier 2 abilities to Rank 3 |
 
 #### Description
 Become living Runic Anchor—a kernel of stable reality. The ultimate expression of the Skjaldmaer's protective nature: she can absorb the psychic wounds that would permanently scar her allies, taking the madness into herself.
@@ -1065,23 +1196,56 @@ public class RankUnlockRequirements
 ```csharp
 public int GetAbilityRank(PlayerCharacter character, AbilityData ability)
 {
-    if (ability.TierLevel > 1)
-        return 1;  // Tier 2+ abilities don't have ranks
-
     var specProgress = GetSpecializationProgress(character, ability.SpecializationID);
 
-    // Count Tier 2 abilities unlocked
-    int tier2Count = specProgress.UnlockedAbilities.Count(a => a.TierLevel == 2);
-
-    // Check if Capstone is trained
+    // Check if Capstone is trained (affects Tier 1 and Tier 2)
     bool hasCapstone = specProgress.UnlockedAbilities.Any(a => a.TierLevel == 4);
 
-    if (hasCapstone)
-        return 3;
-    else if (tier2Count >= 2)
-        return 2;
-    else
-        return 1;
+    // Count Tier 2 abilities unlocked (affects Tier 1)
+    int tier2Count = specProgress.UnlockedAbilities.Count(a => a.TierLevel == 2);
+
+    switch (ability.TierLevel)
+    {
+        case 1:  // Tier 1: Ranks 1→2→3
+            if (hasCapstone)
+                return 3;
+            else if (tier2Count >= 2)
+                return 2;
+            else
+                return 1;
+
+        case 2:  // Tier 2: Ranks 2→3 (starts at Rank 2)
+            if (hasCapstone)
+                return 3;
+            else
+                return 2;
+
+        case 3:  // Tier 3: No ranks
+        case 4:  // Capstone: No ranks
+        default:
+            return 0;  // 0 indicates "no rank system"
+    }
+}
+
+/// <summary>
+/// Check if an ability uses the rank system
+/// </summary>
+public bool AbilityHasRanks(AbilityData ability)
+{
+    return ability.TierLevel == 1 || ability.TierLevel == 2;
+}
+
+/// <summary>
+/// Get the starting rank for an ability when it's unlocked
+/// </summary>
+public int GetStartingRank(AbilityData ability)
+{
+    return ability.TierLevel switch
+    {
+        1 => 1,  // Tier 1 starts at Rank 1
+        2 => 2,  // Tier 2 starts at Rank 2
+        _ => 0   // Tier 3+ have no ranks
+    };
 }
 ```
 
@@ -1168,10 +1332,12 @@ When a rank unlocks (e.g., training second Tier 2 ability):
 ### 12.1 Rank Progression Tests
 
 ```csharp
+// === TIER 1 RANK TESTS ===
+
 [Test]
 public void Tier1Abilities_StartAtRank1_WhenUnlocked()
 {
-    // When: Unlock Shield Bash
+    // When: Unlock Shield Bash (Tier 1)
     // Then: Shield Bash is Rank 1
 }
 
@@ -1179,8 +1345,9 @@ public void Tier1Abilities_StartAtRank1_WhenUnlocked()
 public void Tier1Abilities_ProgressToRank2_When2Tier2AbilitiesUnlocked()
 {
     // Given: Shield Bash unlocked at Rank 1
-    // When: Unlock Guardian's Taunt and Shield Wall (2 Tier 2)
+    // When: Unlock Guardian's Taunt and Shield Wall (2 Tier 2 abilities)
     // Then: Shield Bash is now Rank 2
+    // And: All other Tier 1 abilities are also Rank 2
 }
 
 [Test]
@@ -1189,13 +1356,51 @@ public void Tier1Abilities_ProgressToRank3_WhenCapstoneUnlocked()
     // Given: Shield Bash at Rank 2
     // When: Unlock Bastion of Sanity (Capstone)
     // Then: Shield Bash is now Rank 3
+    // And: All Tier 1 abilities are Rank 3
+}
+
+// === TIER 2 RANK TESTS ===
+
+[Test]
+public void Tier2Abilities_StartAtRank2_WhenUnlocked()
+{
+    // When: Unlock Guardian's Taunt (Tier 2)
+    // Then: Guardian's Taunt is Rank 2 (NOT Rank 1)
 }
 
 [Test]
-public void Tier2Abilities_DoNotHaveRanks()
+public void Tier2Abilities_ProgressToRank3_WhenCapstoneUnlocked()
 {
-    // When: Unlock Guardian's Taunt
-    // Then: Guardian's Taunt is always Rank 1, no progression
+    // Given: Guardian's Taunt at Rank 2
+    // When: Unlock Bastion of Sanity (Capstone)
+    // Then: Guardian's Taunt is now Rank 3
+    // And: All Tier 2 abilities are Rank 3
+}
+
+// === TIER 3 & CAPSTONE TESTS ===
+
+[Test]
+public void Tier3Abilities_HaveNoRanks()
+{
+    // When: Unlock Implacable Defense (Tier 3)
+    // Then: GetAbilityRank returns 0 (no rank system)
+    // And: AbilityHasRanks returns false
+}
+
+[Test]
+public void Capstone_HasNoRanks()
+{
+    // When: Unlock Bastion of Sanity (Capstone)
+    // Then: GetAbilityRank returns 0 (no rank system)
+    // And: AbilityHasRanks returns false
+}
+
+[Test]
+public void Capstone_UpgradesAllTier1AndTier2ToRank3()
+{
+    // Given: 3 Tier 1 abilities at Rank 2, 3 Tier 2 abilities at Rank 2
+    // When: Unlock Bastion of Sanity (Capstone)
+    // Then: All 6 abilities are now Rank 3
 }
 ```
 
