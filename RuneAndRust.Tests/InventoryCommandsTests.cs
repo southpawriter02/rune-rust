@@ -156,7 +156,7 @@ public class InventoryCommandsTests
         Assert.IsTrue(result.Message.Contains("Scavenged Plate"));
         Assert.IsTrue(result.Message.Contains("Healing Poultice"));
         Assert.IsTrue(result.Message.Contains("(x2)")); // Two potions grouped
-        Assert.IsTrue(result.Message.Contains("IronOre"));
+        Assert.IsTrue(result.Message.Contains("ScrapMetal"));
     }
 
     [TestMethod]
@@ -346,6 +346,7 @@ public class InventoryCommandsTests
     {
         // Arrange
         var state = CreateTestGameState();
+        state.Player.Inventory.Add(CreateWeapon("Existing Item")); // Add item so inventory is not empty
         var command = new DropCommand(_equipmentService);
 
         // Act
