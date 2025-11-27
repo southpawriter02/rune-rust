@@ -1,7 +1,11 @@
 # Documentation Gap Analysis
 
 > **Generated**: 2025-11-27
+> **Last Updated**: 2025-11-27
 > **Purpose**: Identify undocumented systems and prioritize documentation efforts
+
+### Recent Updates
+- **2025-11-27**: Added 6 specialization specs (SkarHordeAspirant, IronBane, AtgeirWielder, ScrapTinker, Einbui, Seidkona) - all 19 implemented specializations now documented
 
 ---
 
@@ -9,7 +13,7 @@
 
 | Metric | Value |
 |--------|-------|
-| **Total Documentation Files** | 122 markdown files |
+| **Total Documentation Files** | 128 markdown files |
 | **Service Classes in Engine** | 121 active services |
 | **Documented Services** | ~10 services |
 | **Documentation Coverage** | ~8% of services |
@@ -330,7 +334,7 @@
 - `/docs/00-specifications/combat/` - 7 combat spec files
 - `/docs/00-specifications/progression/` - 3 progression spec files
 - `/docs/00-specifications/economy/` - 2 economy spec files
-- `/docs/00-specifications/specializations/` - 13 specialization specs
+- `/docs/00-specifications/specializations/` - 19 specialization specs (all implemented specializations now documented)
 - `/docs/03-technical-reference/services/` - 10 service docs
 
 ### Partial Documentation
