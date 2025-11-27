@@ -183,26 +183,15 @@ How data moves through the system.
 
 ### 🔗 Integration Patterns
 
-#### [System Integration Map](./system-integration-map.md)
-How systems depend on each other.
-
-**Integration Points:**
-- Combat ↔ Progression (XP rewards)
-- Combat ↔ Trauma Economy (Stress/Corruption)
-- Combat ↔ Equipment (stat bonuses)
-- Procedural Generation ↔ Quest System (anchor placement)
-- World State ↔ Save/Load (persistence)
-
----
-
 #### [Event System](./event-system.md)
-Event-driven communication between systems.
+Comprehensive event system documentation.
 
-**Events:**
-- `OnEnemyDefeated` - Triggers XP gain, loot drops, quest progress
-- `OnLevelUp` - Triggers PP gain, stat increases
-- `OnBreakingPoint` - Triggers trauma application
-- `OnRoomEnter` - Triggers autosave, state restoration
+**Contents:**
+- World Events - Territory events stored in database (WorldEventService)
+- Environmental Events - Combat environmental interactions (EnvironmentalEvent)
+- Controller Events - C# events for UI/state communication
+- Event types, lifecycle, and resolution patterns
+- Result types (DestructionResult, HazardResult, etc.)
 
 ---
 
@@ -210,10 +199,26 @@ Event-driven communication between systems.
 Exception handling patterns.
 
 **Contents:**
-- Exception types
-- Error recovery strategies
-- Logging patterns
-- Validation approach
+- Constructor validation (ArgumentNullException guards)
+- Service-level exception handling with structured logging
+- Validation exceptions (InvalidOperationException, ArgumentException)
+- Null-safe patterns and early returns
+- Result types for expected failures
+- File I/O error handling
+- Logging level guidelines
+
+---
+
+#### [Controller Integration](./controller-integration.md)
+Controller-layer integration architecture.
+
+**Contents:**
+- GameStateController (master state management)
+- Phase transition validation and state machine
+- Inter-controller event communication
+- Controller wiring and initialization patterns
+- State validation and auto-save integration
+- Combat/Loot/Progression/Death/Victory workflows
 
 ---
 
@@ -335,15 +340,36 @@ Each technical doc links to:
 ## Progress Tracking
 
 **Documentation Status:**
-- Database: 0 / 2 documents complete
-- Services: 0 / 6 documents complete
-- Architecture: 0 / 4 documents complete
-- Integration: 0 / 3 documents complete
-- Performance: 0 / 2 documents complete
+- Database: 2 / 2 documents complete
+  - ✅ [Database Schema](./database-schema.md)
+  - ✅ [Data Access Patterns](./data-access-patterns.md)
+- Services: 10 / 10 documents complete
+  - ✅ [CombatEngine](./services/combat-engine.md)
+  - ✅ [DungeonGenerator](./services/dungeon-generator.md)
+  - ✅ [CoherentGlitchRuleEngine](./services/coherent-glitch-rule-engine.md)
+  - ✅ [PopulationPipeline](./services/population-pipeline.md)
+  - ✅ [DiceService](./services/dice-service.md)
+  - ✅ [TraumaEconomyService](./services/trauma-economy-service.md)
+  - ✅ [EnemyAI](./services/enemy-ai.md)
+  - ✅ [BiomeLibrary](./services/biome-library.md)
+  - ✅ [QuestService](./services/quest-service.md)
+  - ✅ [EquipmentService](./services/equipment-service.md)
+- Architecture: 4 / 4 documents complete
+  - ✅ [Service Architecture](./service-architecture.md)
+  - ✅ [Data Flow](./data-flow.md)
+  - ✅ [System Integration Map](./system-integration-map.md)
+  - ✅ [Class Hierarchies & Design Patterns](./class-hierarchies.md)
+- Integration: 3 / 3 documents complete
+  - ✅ [Event System](./event-system.md)
+  - ✅ [Error Handling](./error-handling.md)
+  - ✅ [Controller Integration](./controller-integration.md)
+- Performance: 2 / 2 documents complete
+  - ✅ [Performance Benchmarks](./performance-benchmarks.md)
+  - ✅ [Optimization Strategies](./optimization-strategies.md)
 
-**Overall Progress:** 0%
+**Overall Progress:** 100% (21/21 documents)
 
 ---
 
-**Last Updated:** 2025-11-12
-**Documentation Version:** v0.17
+**Last Updated:** 2025-11-27
+**Documentation Version:** v0.20
