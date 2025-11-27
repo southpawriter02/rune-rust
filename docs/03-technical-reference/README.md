@@ -355,9 +355,11 @@ Each technical doc links to:
   - ✅ [System Integration Map](./system-integration-map.md)
   - ✅ [Class Hierarchies & Design Patterns](./class-hierarchies.md)
 - Integration: 0 / 3 documents complete
-- Performance: 0 / 2 documents complete
+- Performance: 2 / 2 documents complete
+  - ✅ [Performance Benchmarks](./performance-benchmarks.md)
+  - ✅ [Optimization Strategies](./optimization-strategies.md)
 
-**Overall Progress:** 76% (16/21 documents)
+**Overall Progress:** 86% (18/21 documents)
 
 ---
 
