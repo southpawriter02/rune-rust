@@ -106,7 +106,7 @@ Through Spirit Bargains you channel unpredictable bonus effects. Through Forlorn
             AbilityType = "Active",
             ActionType = "Standard Action",
             TargetType = "Single Ally",
-            ResourceCost = new AbilityResourceCost { Aether = 25 },
+            ResourceCost = new AbilityResourceCost { Stress = 5 }, // Replaced Aether with Stress as placeholder
             AttributeUsed = "will",
             BonusDice = 0,
             SuccessThreshold = 0,
@@ -135,7 +135,7 @@ Through Spirit Bargains you channel unpredictable bonus effects. Through Forlorn
             AbilityType = "Active",
             ActionType = "Standard Action",
             TargetType = "Single Enemy",
-            ResourceCost = new AbilityResourceCost { Aether = 30 },
+            ResourceCost = new AbilityResourceCost { Stress = 6 }, // Replaced Aether with Stress
             AttributeUsed = "will",
             BonusDice = 0,
             SuccessThreshold = 0,
@@ -171,7 +171,7 @@ Through Spirit Bargains you channel unpredictable bonus effects. Through Forlorn
             AbilityType = "Active",
             ActionType = "Standard Action",
             TargetType = "Forlorn Entity or Psychic Resonance Zone",
-            ResourceCost = new AbilityResourceCost { Aether = 20 },
+            ResourceCost = new AbilityResourceCost { Stress = 4 }, // Replaced Aether with Stress
             AttributeUsed = "wits",
             BonusDice = 0,
             SuccessThreshold = 12,
@@ -200,7 +200,7 @@ Through Spirit Bargains you channel unpredictable bonus effects. Through Forlorn
             AbilityType = "Active",
             ActionType = "Standard Action",
             TargetType = "Self",
-            ResourceCost = new AbilityResourceCost { Aether = 30 },
+            ResourceCost = new AbilityResourceCost { Stress = 6 }, // Replaced Aether with Stress
             AttributeUsed = "will",
             BonusDice = 0,
             SuccessThreshold = 0,
@@ -261,7 +261,7 @@ Through Spirit Bargains you channel unpredictable bonus effects. Through Forlorn
             AbilityType = "Active",
             ActionType = "Standard Action",
             TargetType = "Row (All Allies)",
-            ResourceCost = new AbilityResourceCost { Aether = 35 },
+            ResourceCost = new AbilityResourceCost { Stress = 7 }, // Replaced Aether with Stress
             AttributeUsed = "will",
             BonusDice = 1,
             SuccessThreshold = 0,
@@ -290,7 +290,7 @@ Through Spirit Bargains you channel unpredictable bonus effects. Through Forlorn
             AbilityType = "Active",
             ActionType = "Standard Action",
             TargetType = "Self (+ Optional Ally at Rank 3)",
-            ResourceCost = new AbilityResourceCost { Aether = 40 },
+            ResourceCost = new AbilityResourceCost { Stress = 8 }, // Replaced Aether with Stress
             AttributeUsed = "will",
             BonusDice = 0,
             SuccessThreshold = 0,
@@ -326,7 +326,7 @@ Through Spirit Bargains you channel unpredictable bonus effects. Through Forlorn
             AbilityType = "Active",
             ActionType = "Standard Action",
             TargetType = "Self",
-            ResourceCost = new AbilityResourceCost { Aether = 50 },
+            ResourceCost = new AbilityResourceCost { Stress = 10 }, // Replaced Aether with Stress
             AttributeUsed = "will",
             BonusDice = 0,
             SuccessThreshold = 0,

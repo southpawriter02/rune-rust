@@ -47,7 +47,6 @@ public class SpatialLayoutIntegrationTests
         var entryTemplate = new RoomTemplate
         {
             TemplateId = "entry_hall",
-            Name = "Entry Hall",
             MaxConnectionPoints = 4,
             NameTemplates = new List<string> { "Entry Hall" },
             DescriptionTemplates = new List<string> { "A starting chamber" },
@@ -58,7 +57,6 @@ public class SpatialLayoutIntegrationTests
         var corridorTemplate = new RoomTemplate
         {
             TemplateId = "corridor",
-            Name = "Corridor",
             MaxConnectionPoints = 4,
             NameTemplates = new List<string> { "Corridor" },
             DescriptionTemplates = new List<string> { "A passageway" },
@@ -69,7 +67,6 @@ public class SpatialLayoutIntegrationTests
         var bossTemplate = new RoomTemplate
         {
             TemplateId = "boss_arena",
-            Name = "Boss Arena",
             MaxConnectionPoints = 2,
             NameTemplates = new List<string> { "Boss Arena" },
             DescriptionTemplates = new List<string> { "A final chamber" },
@@ -106,7 +103,7 @@ public class SpatialLayoutIntegrationTests
             dungeonId: 1,
             seed: seed,
             targetRoomCount: targetRoomCount,
-            biome: biome);
+            biome: new BiomeDefinition { BiomeId = biome });
 
         // Assert
         Assert.IsNotNull(dungeon);
@@ -135,7 +132,7 @@ public class SpatialLayoutIntegrationTests
             dungeonId: 2,
             seed: seed,
             targetRoomCount: targetRoomCount,
-            biome: biome);
+            biome: new BiomeDefinition { BiomeId = biome });
 
         // Assert
         Assert.IsNotNull(dungeon);
@@ -164,7 +161,7 @@ public class SpatialLayoutIntegrationTests
                 dungeonId: seed,
                 seed: seed,
                 targetRoomCount: 5,
-                biome: "the_roots");
+                biome: new BiomeDefinition { BiomeId = "the_roots" });
 
             // Assert
             var startRoom = dungeon.GetStartRoom();
@@ -186,7 +183,7 @@ public class SpatialLayoutIntegrationTests
             dungeonId: 3,
             seed: seed,
             targetRoomCount: targetRoomCount,
-            biome: "the_roots");
+            biome: new BiomeDefinition { BiomeId = "the_roots" });
 
         var graph = CreateGraphFromDungeon(dungeon);
         var startRoomId = dungeon.StartRoomId;
@@ -217,7 +214,7 @@ public class SpatialLayoutIntegrationTests
             dungeonId: 4,
             seed: seed,
             targetRoomCount: targetRoomCount,
-            biome: "the_roots");
+            biome: new BiomeDefinition { BiomeId = "the_roots" });
 
         // Assert - check for overlaps
         var occupiedPositions = new HashSet<RoomPosition>();
@@ -241,7 +238,7 @@ public class SpatialLayoutIntegrationTests
             dungeonId: 5,
             seed: seed,
             targetRoomCount: targetRoomCount,
-            biome: "the_roots");
+            biome: new BiomeDefinition { BiomeId = "the_roots" });
 
         // Assert - check all rooms within -3 to +3
         foreach (var kvp in dungeon.RoomPositions)
@@ -268,7 +265,7 @@ public class SpatialLayoutIntegrationTests
             dungeonId: 6,
             seed: seed,
             targetRoomCount: targetRoomCount,
-            biome: "the_roots");
+            biome: new BiomeDefinition { BiomeId = "the_roots" });
 
         // Assert - validate all vertical connections
         foreach (var connection in dungeon.VerticalConnections)
@@ -305,7 +302,7 @@ public class SpatialLayoutIntegrationTests
             dungeonId: 7,
             seed: seed,
             targetRoomCount: targetRoomCount,
-            biome: "the_roots");
+            biome: new BiomeDefinition { BiomeId = "the_roots" });
 
         stopwatch.Stop();
 
@@ -337,7 +334,7 @@ public class SpatialLayoutIntegrationTests
                 dungeonId: 100 + i,
                 seed: 1000 + i,
                 targetRoomCount: 8,
-                biome: "the_roots");
+                biome: new BiomeDefinition { BiomeId = "the_roots" });
 
             var bossRoom = dungeon.GetBossRoom();
             if (bossRoom != null)
@@ -376,7 +373,7 @@ public class SpatialLayoutIntegrationTests
             dungeonId: 8,
             seed: seed,
             targetRoomCount: targetRoomCount,
-            biome: "the_roots");
+            biome: new BiomeDefinition { BiomeId = "the_roots" });
 
         // Assert - count unique Z levels used
         var uniqueLayers = dungeon.RoomPositions.Values
@@ -404,13 +401,13 @@ public class SpatialLayoutIntegrationTests
             dungeonId: 9,
             seed: seed,
             targetRoomCount: 8,
-            biome: "the_roots");
+            biome: new BiomeDefinition { BiomeId = "the_roots" });
 
         var dungeon2 = _generator.GenerateComplete(
             dungeonId: 10,
             seed: seed,
             targetRoomCount: 8,
-            biome: "the_roots");
+            biome: new BiomeDefinition { BiomeId = "the_roots" });
 
         // Assert - room counts should match
         Assert.AreEqual(dungeon1.TotalRoomCount, dungeon2.TotalRoomCount);
@@ -483,15 +480,15 @@ public class SpatialLayoutIntegrationTests
         return graph;
     }
 
-    private Direction ParseDirection(string directionString)
+    private RuneAndRust.Core.Direction ParseDirection(string directionString)
     {
         return directionString.ToLower() switch
         {
-            "north" => Direction.North,
-            "south" => Direction.South,
-            "east" => Direction.East,
-            "west" => Direction.West,
-            _ => Direction.North
+            "north" => RuneAndRust.Core.Direction.North,
+            "south" => RuneAndRust.Core.Direction.South,
+            "east" => RuneAndRust.Core.Direction.East,
+            "west" => RuneAndRust.Core.Direction.West,
+            _ => RuneAndRust.Core.Direction.North
         };
     }
 
@@ -500,7 +497,6 @@ public class SpatialLayoutIntegrationTests
         return new RoomTemplate
         {
             TemplateId = "fallback",
-            Name = "Fallback",
             MaxConnectionPoints = 4,
             NameTemplates = new List<string> { "Room" },
             DescriptionTemplates = new List<string> { "A room" },

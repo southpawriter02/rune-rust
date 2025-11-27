@@ -31,7 +31,7 @@ public class TerritoryServiceTests
 
         // Initialize database schema (includes v0.35.1 territory tables and v0.33.1 faction tables)
         _saveRepository = new SaveRepository(_testDbDirectory);
-        _connectionString = $"Data Source={Path.Combine(_testDbDirectory, \"runeandrust.db\")}";
+        _connectionString = $"Data Source={Path.Combine(_testDbDirectory, "runeandrust.db")}";
 
         // Initialize services
         _controlService = new TerritoryControlService(_connectionString);

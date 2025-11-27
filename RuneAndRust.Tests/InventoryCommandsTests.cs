@@ -2,6 +2,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using RuneAndRust.Core;
 using RuneAndRust.Engine;
 using RuneAndRust.Engine.Commands;
+using GameState = RuneAndRust.Engine.GameState;
+using GamePhase = RuneAndRust.Engine.GamePhase;
 
 namespace RuneAndRust.Tests;
 
@@ -141,7 +143,7 @@ public class InventoryCommandsTests
         state.Player.Inventory.Add(CreateArmor("Scavenged Plate", 6, 10));
         state.Player.Consumables.Add(CreateConsumable("Healing Poultice", 20));
         state.Player.Consumables.Add(CreateConsumable("Healing Poultice", 20));
-        state.Player.CraftingComponents[ComponentType.IronOre] = 5;
+        state.Player.CraftingComponents[ComponentType.ScrapMetal] = 5;
 
         var command = new InventoryCommand();
 

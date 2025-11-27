@@ -222,7 +222,7 @@ Your entire value lies in exploration, survival, and logistics. You provide zero
             AttributeUsed = "sturdiness",
             BonusDice = 1,
             SuccessThreshold = 0,
-            StatusEffectsResisted = new List<string> { "Poisoned", "Disease" },
+            // StatusEffectsResisted = new List<string> { "Poisoned", "Disease" }, // Property removed from AbilityData
             MaxRank = 3,
             CostToRank2 = 20,
             CostToRank3 = 0,

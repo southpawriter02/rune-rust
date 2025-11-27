@@ -278,7 +278,7 @@ public class SeidkonaSpecializationTests
         // Arrange
         var caster = CreateTestMystic();
         var target = CreateTestMystic();
-        target.CurrentHP = 10; // Damaged
+        target.HP = 10; // Damaged
         target.MaxHP = 50;
 
         // Act
@@ -286,7 +286,7 @@ public class SeidkonaSpecializationTests
 
         // Assert
         Assert.That(result.healingAmount, Is.GreaterThan(0), "Should restore HP");
-        Assert.That(target.CurrentHP, Is.GreaterThan(10), "Target HP should increase");
+        Assert.That(target.HP, Is.GreaterThan(10), "Target HP should increase");
     }
 
     [Test]
@@ -307,7 +307,7 @@ public class SeidkonaSpecializationTests
     {
         // Arrange
         var caster = CreateTestMystic();
-        caster.CurrentHP = 10;
+        caster.HP = 10;
         caster.MaxHP = 50;
 
         // Act
@@ -484,38 +484,41 @@ public class SeidkonaSpecializationTests
 
     private PlayerCharacter CreateTestMystic()
     {
-        return new PlayerCharacter
+        var player = new PlayerCharacter
         {
             CharacterID = Random.Shared.Next(1000, 9999),
             Name = "Test Seidkona",
             Class = CharacterClass.Mystic,
-            CurrentHP = 40,
+            HP = 40,
             MaxHP = 40,
-            CurrentAP = 100,
-            MaxAP = 100,
-            MIGHT = 2,
-            FINESSE = 3,
-            WITS = 4,
-            WILL = 5,
-            STURDINESS = 3,
+            // CurrentAP = 100, // Not in PlayerCharacter
+            // MaxAP = 100, // Not in PlayerCharacter
+            // Attributes = new Attributes(2, 3, 4, 5, 3), // MIGHT, FINESSE, WITS, WILL, STURDINESS // Removed because it's read-only maybe? No, I need to set it.
             CurrentLegend = 5,
             PsychicStress = 0,
             Corruption = 0
         };
+        player.Attributes.Might = 2;
+        player.Attributes.Finesse = 3;
+        player.Attributes.Wits = 4;
+        player.Attributes.Will = 5;
+        player.Attributes.Sturdiness = 3;
+        return player;
     }
 
     private Enemy CreateTestEnemy()
     {
-        return new Enemy
+        var enemy = new Enemy
         {
-            EnemyID = Random.Shared.Next(1000, 9999),
+            Id = Random.Shared.Next(1000, 9999).ToString(),
             Name = "Test Enemy",
-            CurrentHP = 50,
-            MaxHP = 50,
-            MIGHT = 3,
-            FINESSE = 2,
-            STURDINESS = 3
+            HP = 50,
+            MaxHP = 50
         };
+        enemy.Attributes.Might = 3;
+        enemy.Attributes.Finesse = 2;
+        enemy.Attributes.Sturdiness = 3;
+        return enemy;
     }
 
     #endregion

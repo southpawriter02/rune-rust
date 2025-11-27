@@ -1,4 +1,4 @@
-using Microsoft.Extensions.Logging.Nullogger;
+using Microsoft.Extensions.Logging.Abstractions;
 using NUnit.Framework;
 using RuneAndRust.Core;
 using RuneAndRust.Core.AI;

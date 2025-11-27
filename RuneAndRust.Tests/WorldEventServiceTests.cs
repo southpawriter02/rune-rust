@@ -28,7 +28,7 @@ public class WorldEventServiceTests
 
         // Initialize database schema (includes v0.35.1 territory tables)
         _saveRepository = new SaveRepository(_testDbDirectory);
-        _connectionString = $"Data Source={Path.Combine(_testDbDirectory, \"runeandrust.db\")}";
+        _connectionString = $"Data Source={Path.Combine(_testDbDirectory, "runeandrust.db")}";
 
         _territoryService = new TerritoryControlService(_connectionString);
         _eventService = new WorldEventService(_connectionString, _territoryService);

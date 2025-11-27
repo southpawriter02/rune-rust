@@ -10,6 +10,10 @@ using RuneAndRust.Persistence;
 using Serilog;
 using Serilog.Events;
 
+// Disambiguate GameState
+using GameState = RuneAndRust.Engine.GameState;
+using GamePhase = RuneAndRust.Engine.GamePhase;
+
 namespace RuneAndRust.ConsoleApp;
 
 class Program

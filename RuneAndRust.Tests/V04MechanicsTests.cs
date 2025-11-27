@@ -1,6 +1,8 @@
 using RuneAndRust.Core;
 using RuneAndRust.Engine;
 using Xunit;
+using GameState = RuneAndRust.Engine.GameState;
+using GamePhase = RuneAndRust.Engine.GamePhase;
 
 namespace RuneAndRust.Tests;
 
@@ -63,7 +65,7 @@ public class V04MechanicsTests
     {
         // Arrange
         var world = new GameWorld();
-        var player = CharacterFactory.CreateCharacter(CharacterClass.Scavenger, "Test");
+        var player = CharacterFactory.CreateCharacter(CharacterClass.Skirmisher, "Test");
 
         // Act
         world.AddSecretRoomLoot(player);
@@ -79,7 +81,7 @@ public class V04MechanicsTests
 
     [Theory]
     [InlineData(CharacterClass.Warrior)]
-    [InlineData(CharacterClass.Scavenger)]
+    [InlineData(CharacterClass.Skirmisher)]
     [InlineData(CharacterClass.Mystic)]
     public void V04_LootPlacement_ShouldBeClassAppropriate(CharacterClass characterClass)
     {
@@ -101,7 +103,7 @@ public class V04MechanicsTests
         var expectedCategory = characterClass switch
         {
             CharacterClass.Warrior => new[] { WeaponCategory.Axe, WeaponCategory.Greatsword },
-            CharacterClass.Scavenger => new[] { WeaponCategory.Spear, WeaponCategory.Dagger },
+            CharacterClass.Skirmisher => new[] { WeaponCategory.Spear, WeaponCategory.Dagger },
             CharacterClass.Mystic => new[] { WeaponCategory.Staff, WeaponCategory.Focus },
             _ => throw new ArgumentException("Unknown class")
         };

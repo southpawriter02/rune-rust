@@ -4,6 +4,8 @@ using RuneAndRust.Core.Quests;
 using RuneAndRust.Engine;
 using RuneAndRust.Engine.Commands;
 using Moq;
+using GameState = RuneAndRust.Engine.GameState;
+using GamePhase = RuneAndRust.Engine.GamePhase;
 
 namespace RuneAndRust.Tests;
 
@@ -81,9 +83,8 @@ public class SystemCommandsTests
                 new QuestObjective
                 {
                     Description = "Complete test objective",
-                    IsComplete = false,
-                    CurrentCount = 0,
-                    TargetCount = 1
+                    Current = 0,
+                    Required = 1
                 }
             }
         };
@@ -102,7 +103,7 @@ public class SystemCommandsTests
             InitialGreeting = "Hello, traveler.",
             IsHostile = isHostile,
             HasBeenMet = false,
-            Faction = FactionType.Neutral
+            Faction = FactionType.Independents
         };
     }
 
