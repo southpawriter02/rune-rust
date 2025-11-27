@@ -1,7 +1,7 @@
 # Skjaldmaer (Shieldmaiden) Specialization - Complete Specification
 
 > **Specification ID**: SPEC-SPECIALIZATION-SKJALDMAER
-> **Version**: 1.0
+> **Version**: 2.0
 > **Last Updated**: 2025-11-27
 > **Status**: Draft - Implementation Review
 
@@ -12,11 +12,11 @@
 ### Purpose
 This document provides the complete specification for the Skjaldmaer (Shieldmaiden) specialization, including:
 - Design philosophy and mechanical identity
-- All 9 abilities with full specifications
+- All 9 abilities with **exact formulas per rank**
+- **Rank unlock requirements** (tree-progression based, NOT PP-based)
+- **GUI display specifications per rank**
 - Current implementation status
-- GUI integration requirements
 - Combat system integration points
-- Testing requirements
 
 This document serves as a template for documenting other specializations.
 
@@ -24,10 +24,16 @@ This document serves as a template for documenting other specializations.
 | Component | File Path | Status |
 |-----------|-----------|--------|
 | Service Implementation | `RuneAndRust.Engine/SkjaldmaerService.cs` | Implemented |
-| Data Seeding | `RuneAndRust.Persistence/SkjaldmaerSeeder.cs` | Implemented |
+| Data Seeding | `RuneAndRust.Persistence/SkjaldmaerSeeder.cs` | **NEEDS UPDATE** (rank costs incorrect) |
 | Tests | `RuneAndRust.Tests/SkjaldmaerSpecializationTests.cs` | Implemented |
 | Specialization Tree UI | `RuneAndRust.DesktopUI/Views/SpecializationTreeView.axaml` | Generic (not Skjaldmaer-specific) |
 | Combat UI | `RuneAndRust.DesktopUI/Views/CombatView.axaml` | No specialization integration |
+
+### Change Log
+| Version | Date | Changes |
+|---------|------|---------|
+| 1.0 | 2025-11-27 | Initial specification |
+| 2.0 | 2025-11-27 | Corrected rank unlock system (tree-based, not PP-based), added detailed per-rank specifications |
 
 ---
 
@@ -71,1035 +77,1150 @@ This document serves as a template for documenting other specializations.
 3. **WILL-Based Tanking**: Taunt system draws aggro with WILL-based projection of coherence
 4. **Ultimate Sacrifice**: Capstone ability allows absorbing permanent Trauma to save allies
 
-**Design Pillars**:
-- Physical and mental protection are equally important
-- Tank role extends beyond damage absorption to sanity preservation
-- Resource management creates meaningful decisions (Stamina vs Psychic Stress costs)
-- Progression rewards investment with increasingly powerful party-wide effects
-
 ### 1.4 Specialization Description (Full Text)
 
-> The bastion of coherence--a living firewall against both physical trauma and mental breakdown. In a world where reality glitches, the Skjaldmaer shields not just bodies but sanity itself. Her shield is a grounding rod against the psychic scream of the Great Silence. Her power comes from indomitable WILL channeled into protection, transforming the tank role from 'meat shield' to 'reality anchor.'
+> The bastion of coherence—a living firewall against both physical trauma and mental breakdown. In a world where reality glitches, the Skjaldmaer shields not just bodies but sanity itself. Her shield is a grounding rod against the psychic scream of the Great Silence. Her power comes from indomitable WILL channeled into protection, transforming the tank role from 'meat shield' to 'reality anchor.'
 >
 > This specialization provides dual protection: shields both HP and Psychic Stress simultaneously. As the Trauma Economy anchor, she actively mitigates party Psychic Stress through abilities and auras. Her taunt system draws aggro with WILL-based projection of coherence. Unparalleled damage reduction and HP pool make her the ultimate soak master.
 >
-> The ultimate expression is Bastion of Sanity--absorb Trauma to save an ally from permanent mental scarring.
+> The ultimate expression is Bastion of Sanity—absorb Trauma to save an ally from permanent mental scarring.
 
 ---
 
-## 2. Ability Tree Structure
+## 2. Rank Progression System
 
-### 2.1 Tree Overview
+### 2.1 CRITICAL: Rank Unlock Rules
 
-| Tier | Name | Abilities | PP Cost Each | PP Required in Tree | Total PP for Tier |
-|------|------|-----------|--------------|---------------------|-------------------|
-| 1 | Foundation | 3 | 3 PP | 0 PP | 9 PP |
-| 2 | Advanced | 3 | 4 PP | 8 PP | 12 PP |
-| 3 | Mastery | 2 | 5 PP | 16 PP | 10 PP |
-| 4 | Capstone | 1 | 6 PP | 24 PP + both Tier 3 | 6 PP |
-| **Total** | | **9** | | | **37 PP** |
+**Ranks are unlocked through TREE PROGRESSION, not PP spending.**
 
-### 2.2 Ability Summary Table
+| Rank | Unlock Requirement | Applies To |
+|------|-------------------|------------|
+| **Rank 1** | Ability is unlocked (PP spent to learn ability) | All abilities |
+| **Rank 2** | 2 Tier 2 abilities are unlocked | Tier 1 abilities only |
+| **Rank 3** | Capstone ability is trained | Tier 1 abilities only |
 
-| ID | Ability Name | Tier | Type | Action | Target | Resource Cost | Key Effect |
-|----|--------------|------|------|--------|--------|---------------|------------|
-| 26019 | Sanctified Resolve | 1 | Passive | Free | Self | None | +dice vs Fear/Stress |
-| 26020 | Shield Bash | 1 | Active | Standard | Single Enemy | 40 Stamina | Damage + Stagger |
-| 26021 | Oath of the Protector | 1 | Active | Standard | Single Ally | 35 Stamina | +Soak, +Stress resist |
-| 26022 | Guardian's Taunt | 2 | Active | Standard | AoE Enemies | 30 Stamina + Stress | Taunt enemies |
-| 26023 | Shield Wall | 2 | Active | Standard | Self + Allies | 45 Stamina | AoE defensive buff |
-| 26024 | Interposing Shield | 2 | Reaction | Reaction | Adjacent Ally | 25 Stamina | Redirect critical hit |
-| 26025 | Implacable Defense | 3 | Active | Standard | Self | 40 Stamina | Debuff immunity |
-| 26026 | Aegis of the Clan | 3 | Passive | Free | Allies | None | Auto-protect stressed allies |
-| 26027 | Bastion of Sanity | 4 | Passive+Reaction | Passive/Reaction | Aura/Ally | 40 Stress + 1 Corruption | Absorb ally Trauma |
+**Important Notes**:
+- Tier 2, Tier 3, and Capstone abilities do **NOT** have ranks (they are single-rank abilities)
+- Only Tier 1 abilities progress through Ranks 1→2→3
+- Rank progression is **automatic** when requirements are met (no additional PP cost)
+- This creates a natural power curve tied to specialization investment
+
+### 2.2 Ability Structure by Tier
+
+| Tier | Abilities | PP Cost to Unlock | Has Ranks? | Rank Unlock Trigger |
+|------|-----------|-------------------|------------|---------------------|
+| **Tier 1** | 3 | 3 PP each | Yes (1-3) | Rank 2: 2× Tier 2 unlocked; Rank 3: Capstone trained |
+| **Tier 2** | 3 | 4 PP each | No (Rank 1 only) | N/A |
+| **Tier 3** | 2 | 5 PP each | No (Rank 1 only) | N/A |
+| **Capstone** | 1 | 6 PP | No (Rank 1 only) | N/A |
+
+### 2.3 Total PP Investment
+
+| Milestone | PP Spent | Abilities Unlocked | Tier 1 Rank |
+|-----------|----------|-------------------|-------------|
+| Unlock Specialization | 10 PP | 0 | - |
+| All Tier 1 | 10 + 9 = 19 PP | 3 Tier 1 | Rank 1 |
+| 2 Tier 2 | 19 + 8 = 27 PP | 3 Tier 1 + 2 Tier 2 | **Rank 2** |
+| All Tier 2 | 27 + 4 = 31 PP | 3 Tier 1 + 3 Tier 2 | Rank 2 |
+| All Tier 3 | 31 + 10 = 41 PP | 3 Tier 1 + 3 Tier 2 + 2 Tier 3 | Rank 2 |
+| Capstone | 41 + 6 = 47 PP | All 9 abilities | **Rank 3** |
 
 ---
 
-## 3. Detailed Ability Specifications
+## 3. Ability Tree Overview
 
-### 3.1 Tier 1: Foundational Resolve
+### 3.1 Visual Tree Structure
+
+```
+                    TIER 1: FOUNDATION (3 PP each, Ranks 1-3)
+    ┌─────────────────────┼─────────────────────┐
+    │                     │                     │
+[Sanctified      [Shield Bash]        [Oath of the
+ Resolve]                              Protector]
+ (Passive)         (Active)             (Active)
+    │                     │                     │
+    └─────────────────────┴─────────────────────┘
+                          │
+                          ▼
+              ════════════════════════
+              RANK 2 UNLOCKS HERE
+              (when 2 Tier 2 trained)
+              ════════════════════════
+                          │
+                          ▼
+                TIER 2: ADVANCED (4 PP each)
+    ┌─────────────────────┼─────────────────────┐
+    │                     │                     │
+[Guardian's        [Shield Wall]      [Interposing
+ Taunt]                                 Shield]
+ (Active)           (Active)           (Reaction)
+    │                     │                     │
+    └─────────────────────┴─────────────────────┘
+                          │
+                          ▼
+                TIER 3: MASTERY (5 PP each)
+          ┌───────────────┴───────────────┐
+          │                               │
+    [Implacable              [Aegis of the
+     Defense]                    Clan]
+     (Active)                  (Passive)
+          │                               │
+          └───────────────┬───────────────┘
+                          │
+                          ▼
+              ════════════════════════
+              RANK 3 UNLOCKS HERE
+              (when Capstone trained)
+              ════════════════════════
+                          │
+                          ▼
+              TIER 4: CAPSTONE (6 PP)
+                          │
+                [Bastion of Sanity]
+                (Passive + Reaction)
+```
+
+### 3.2 Ability Summary Table
+
+| ID | Ability Name | Tier | Type | Ranks | Resource Cost | Key Effect |
+|----|--------------|------|------|-------|---------------|------------|
+| 26019 | Sanctified Resolve | 1 | Passive | 1-3 | None | +dice vs Fear/Stress |
+| 26020 | Shield Bash | 1 | Active | 1-3 | 40 Stamina | Damage + Stagger |
+| 26021 | Oath of the Protector | 1 | Active | 1-3 | 35 Stamina | +Soak, +Stress resist |
+| 26022 | Guardian's Taunt | 2 | Active | 1 | 30 Stamina + Stress | Taunt enemies |
+| 26023 | Shield Wall | 2 | Active | 1 | 45 Stamina | AoE defensive buff |
+| 26024 | Interposing Shield | 2 | Reaction | 1 | 25 Stamina | Redirect critical hit |
+| 26025 | Implacable Defense | 3 | Active | 1 | 40 Stamina | Debuff immunity |
+| 26026 | Aegis of the Clan | 3 | Passive | 1 | None | Auto-protect stressed allies |
+| 26027 | Bastion of Sanity | 4 | Passive+Reaction | 1 | 40 Stress + 1 Corruption | Absorb ally Trauma |
 
 ---
 
-#### 3.1.1 Sanctified Resolve (ID: 26019)
+## 4. Tier 1 Abilities (Detailed Rank Specifications)
 
-**Type**: Passive | **Action**: Free Action | **Target**: Self
+These abilities have 3 ranks. Rank progression is automatic based on tree investment.
 
-**Description**: Mental fortitude training grants resistance to Fear and Psychic Stress.
+---
 
-**Mechanical Summary**: Bonus dice vs [Fear] and Psychic Stress resistance checks
+### 4.1 Sanctified Resolve (ID: 26019)
 
-**Resource Cost**: None
+**Type**: Passive | **Action**: Free Action (always active) | **Target**: Self
 
-**Attribute Used**: WILL
+#### Overview
+| Property | Value |
+|----------|-------|
+| **Tier** | 1 (Foundation) |
+| **PP Cost to Unlock** | 3 PP |
+| **Ranks** | 3 |
+| **Resource Cost** | None (passive) |
+| **Attribute Used** | WILL (for Resolve Checks) |
 
-**Rank Progression**:
+#### Description
+Mental fortitude training grants resistance to Fear and Psychic Stress. The Skjaldmaer's mind is a fortress, unyielding against the horrors that shatter lesser warriors.
 
-| Rank | PP Cost | Effect |
-|------|---------|--------|
-| 1 | 3 PP | +1 die to WILL Resolve Checks vs [Fear] and Psychic Stress |
-| 2 | +20 PP | +2 dice to WILL Resolve Checks vs [Fear] and Psychic Stress |
-| 3 | +0 PP | +3 dice + reduce ambient Psychic Stress gain by 10% |
+#### Rank Details
 
-**Implementation Status**:
-- [x] Service method: `SkjaldmaerService.GetSanctifiedResolveBonus(rank)`
-- [x] Service method: `SkjaldmaerService.GetSanctifiedResolveStressReduction(rank)`
+##### Rank 1 (Unlocked: When ability is learned)
+
+**Mechanical Effect**:
+- +1 bonus die to all WILL Resolve Checks vs [Fear] effects
+- +1 bonus die to all WILL Resolve Checks vs Psychic Stress
+
+**Formula**:
+```
+ResolveCheckDicePool = WILL + 1
+```
+
+**GUI Display**:
+- Passive icon: Single shield with mind symbol
+- Tooltip: "Sanctified Resolve (Rank 1): +1 die vs Fear and Psychic Stress checks"
+- Color: Bronze border
+
+**Combat Log Examples**:
+- "Sanctified Resolve grants +1 die to Fear resistance"
+- "Rolling WILL (3) + Sanctified Resolve (1) = 4 dice vs [Fear]"
+
+---
+
+##### Rank 2 (Unlocked: When 2 Tier 2 abilities are trained)
+
+**Mechanical Effect**:
+- +2 bonus dice to all WILL Resolve Checks vs [Fear] effects
+- +2 bonus dice to all WILL Resolve Checks vs Psychic Stress
+
+**Formula**:
+```
+ResolveCheckDicePool = WILL + 2
+```
+
+**GUI Display**:
+- Passive icon: Double shield with mind symbol
+- Tooltip: "Sanctified Resolve (Rank 2): +2 dice vs Fear and Psychic Stress checks"
+- Color: Silver border
+- **Rank-up notification**: "Sanctified Resolve has reached Rank 2!"
+
+**Combat Log Examples**:
+- "Sanctified Resolve (Rank 2) grants +2 dice to Fear resistance"
+- "Rolling WILL (3) + Sanctified Resolve (2) = 5 dice vs [Fear]"
+
+---
+
+##### Rank 3 (Unlocked: When Capstone is trained)
+
+**Mechanical Effect**:
+- +3 bonus dice to all WILL Resolve Checks vs [Fear] effects
+- +3 bonus dice to all WILL Resolve Checks vs Psychic Stress
+- **NEW**: Reduce all ambient Psychic Stress gain by 10%
+
+**Formulas**:
+```
+ResolveCheckDicePool = WILL + 3
+
+AmbientStressGain = BaseAmbientStress * 0.90
+```
+
+**GUI Display**:
+- Passive icon: Triple shield with glowing mind symbol
+- Tooltip: "Sanctified Resolve (Rank 3): +3 dice vs Fear and Psychic Stress checks. Ambient Stress reduced by 10%."
+- Color: Gold border
+- Additional indicator: Small "-10% Stress" badge
+- **Rank-up notification**: "Sanctified Resolve has reached Rank 3! You now resist ambient Psychic Stress."
+
+**Combat Log Examples**:
+- "Sanctified Resolve (Rank 3) grants +3 dice to Fear resistance"
+- "Ambient Stress reduced by 10% (Sanctified Resolve)"
+
+#### Implementation Status
+- [x] Service method: `SkjaldmaerService.GetSanctifiedResolveBonus(rank)` - Returns 1/2/3
+- [x] Service method: `SkjaldmaerService.GetSanctifiedResolveStressReduction(rank)` - Returns 0/0/0.10
 - [x] Data seeded in `SkjaldmaerSeeder.SeedSkjaldmaerTier1()`
-- [ ] GUI: Passive indicator in combat UI
+- [ ] **FIX NEEDED**: Seeder has `CostToRank2 = 20` - should be removed/ignored
+- [ ] GUI: Passive indicator with rank-specific icon
+- [ ] GUI: Rank border color (Bronze/Silver/Gold)
 - [ ] Combat: Integration with WILL Resolve Check system
-- [ ] Combat: Ambient Stress reduction modifier application
-
-**GUI Requirements**:
-- Show passive buff icon when active (in character status area)
-- Display bonus dice in roll tooltips during relevant checks
-- Rank 3: Show ambient stress reduction indicator
-
-**Combat Integration**:
-```
-When character makes WILL Resolve Check vs [Fear] or Psychic Stress:
-  bonusDice = SkjaldmaerService.GetSanctifiedResolveBonus(ability.CurrentRank)
-  rollPool += bonusDice
-
-When calculating ambient Psychic Stress gain:
-  reduction = SkjaldmaerService.GetSanctifiedResolveStressReduction(ability.CurrentRank)
-  ambientStress *= (1.0 - reduction)
-```
+- [ ] Combat: Ambient Stress reduction modifier (Rank 3)
 
 ---
 
-#### 3.1.2 Shield Bash (ID: 26020)
+### 4.2 Shield Bash (ID: 26020)
 
 **Type**: Active | **Action**: Standard Action | **Target**: Single Enemy (Melee)
 
-**Description**: Slam shield into foe--a brutal statement of physical truth.
+#### Overview
+| Property | Value |
+|----------|-------|
+| **Tier** | 1 (Foundation) |
+| **PP Cost to Unlock** | 3 PP |
+| **Ranks** | 3 |
+| **Resource Cost** | 40 Stamina |
+| **Attribute Used** | MIGHT (damage bonus) |
+| **Damage Type** | Physical |
+| **Status Effects** | [Staggered] |
 
-**Mechanical Summary**: Physical melee attack with [Staggered] chance
+#### Description
+Slam shield into foe—a brutal statement of physical truth. The impact can stagger even the most stalwart opponents, and masters of this technique can send enemies reeling backward.
 
-**Resource Cost**: 40 Stamina
+#### Rank Details
 
-**Attribute Used**: MIGHT
+##### Rank 1 (Unlocked: When ability is learned)
 
-**Damage Type**: Physical
+**Mechanical Effect**:
+- Damage: 1d8 + MIGHT (Physical)
+- Stagger Chance: 50%
+- If Stagger succeeds: Target gains [Staggered] for 1 turn
 
-**Status Effects**: [Staggered]
+**Formulas**:
+```
+Damage = Roll(1d8) + MIGHT
+StaggerCheck = Roll(1d100) <= 50
+```
 
-**Rank Progression**:
+**GUI Display**:
+- Ability button: Shield icon with impact mark
+- Tooltip: "Shield Bash (Rank 1): 1d8+MIGHT damage, 50% Stagger chance. Cost: 40 Stamina"
+- Damage preview: "Est. Damage: 5-12" (assuming MIGHT 4)
+- Color: Bronze border
 
-| Rank | PP Cost | Damage | Stagger Chance | Special |
-|------|---------|--------|----------------|---------|
-| 1 | 3 PP | 1d8 + MIGHT | 50% | - |
-| 2 | +20 PP | 2d8 + MIGHT | 65% | - |
-| 3 | +0 PP | 3d8 + MIGHT | 75% | Push to Back Row on Stagger |
+**Combat Log Examples**:
+- "Shield Bash deals 9 damage! (1d8[5] + MIGHT[4])"
+- "Shield Bash deals 7 damage! Target is Staggered!"
+- "Shield Bash deals 6 damage. Stagger failed (rolled 67, needed ≤50)"
 
-**Implementation Status**:
+---
+
+##### Rank 2 (Unlocked: When 2 Tier 2 abilities are trained)
+
+**Mechanical Effect**:
+- Damage: 2d8 + MIGHT (Physical)
+- Stagger Chance: 65%
+- If Stagger succeeds: Target gains [Staggered] for 1 turn
+
+**Formulas**:
+```
+Damage = Roll(2d8) + MIGHT
+StaggerCheck = Roll(1d100) <= 65
+```
+
+**GUI Display**:
+- Ability button: Shield icon with double impact marks
+- Tooltip: "Shield Bash (Rank 2): 2d8+MIGHT damage, 65% Stagger chance. Cost: 40 Stamina"
+- Damage preview: "Est. Damage: 6-20" (assuming MIGHT 4)
+- Color: Silver border
+- **Rank-up notification**: "Shield Bash has reached Rank 2! Damage and Stagger chance increased."
+
+**Combat Log Examples**:
+- "Shield Bash (Rank 2) deals 14 damage! (2d8[6,4] + MIGHT[4])"
+- "Shield Bash (Rank 2) deals 11 damage! Target is Staggered!"
+
+---
+
+##### Rank 3 (Unlocked: When Capstone is trained)
+
+**Mechanical Effect**:
+- Damage: 3d8 + MIGHT (Physical)
+- Stagger Chance: 75%
+- If Stagger succeeds: Target gains [Staggered] for 1 turn
+- **NEW**: If Stagger succeeds AND target is in Front Row, push target to Back Row
+
+**Formulas**:
+```
+Damage = Roll(3d8) + MIGHT
+StaggerCheck = Roll(1d100) <= 75
+If (StaggerCheck AND Target.Row == Front):
+    Target.Row = Back
+```
+
+**GUI Display**:
+- Ability button: Shield icon with triple impact marks and arrow
+- Tooltip: "Shield Bash (Rank 3): 3d8+MIGHT damage, 75% Stagger chance. Staggered enemies pushed to Back Row. Cost: 40 Stamina"
+- Damage preview: "Est. Damage: 7-28" (assuming MIGHT 4)
+- Color: Gold border
+- **Rank-up notification**: "Shield Bash has reached Rank 3! Now pushes Staggered enemies to Back Row!"
+
+**Combat Log Examples**:
+- "Shield Bash (Rank 3) deals 19 damage! (3d8[5,6,4] + MIGHT[4])"
+- "Shield Bash (Rank 3) deals 22 damage! Target is Staggered and pushed to Back Row!"
+
+#### Implementation Status
 - [x] Service method: `SkjaldmaerService.ExecuteShieldBash(caster, target, rank)`
 - [x] Data seeded in `SkjaldmaerSeeder.SeedSkjaldmaerTier1()`
-- [ ] GUI: Ability button in combat action panel
+- [ ] **FIX NEEDED**: Seeder has `CostToRank2 = 20` - should be removed/ignored
+- [ ] GUI: Ability button with rank-specific icon
+- [ ] GUI: Rank border color (Bronze/Silver/Gold)
 - [ ] GUI: Target selection for single enemy
 - [ ] Combat: Integration with CombatEngine.PlayerUseAbility()
 - [ ] Status Effect: [Staggered] definition and icon
 
-**GUI Requirements**:
-- Ability appears in combat ability list when unlocked
-- Shows Stamina cost (40) before use
-- Target selection highlights valid melee targets
-- Combat log shows damage dealt and Stagger result
-- Rank 3: Show "Pushed to Back Row" in combat log
-
-**Combat Integration**:
-```csharp
-// In CombatEngine or ability execution flow:
-if (ability.Name == "Shield Bash" && character.HasSpecialization(26003))
-{
-    var service = new SkjaldmaerService(connectionString);
-    var (damage, staggered, pushed, message) = service.ExecuteShieldBash(
-        caster, target, ability.CurrentRank);
-
-    target.HP -= damage;
-    if (staggered) target.AddStatusEffect("Staggered", duration: 1);
-    if (pushed) target.Position = MoveToBackRow(target.Position);
-
-    combatState.AddLogEntry(message);
-}
-```
-
-**Status Effect Definition Needed**:
-```csharp
-new StatusEffectDefinition {
-    Name = "Staggered",
-    Description = "Off-balance and vulnerable. -1 to Defense, cannot take Reactions.",
-    Duration = 1,
-    Icon = "staggered.png",
-    MechanicalEffects = new[] { "-1 Defense", "No Reactions" }
-}
-```
-
 ---
 
-#### 3.1.3 Oath of the Protector (ID: 26021)
+### 4.3 Oath of the Protector (ID: 26021)
 
 **Type**: Active | **Action**: Standard Action | **Target**: Single Ally
 
-**Description**: Extend protective aura to single ally, shielding flesh and mind.
+#### Overview
+| Property | Value |
+|----------|-------|
+| **Tier** | 1 (Foundation) |
+| **PP Cost to Unlock** | 3 PP |
+| **Ranks** | 3 |
+| **Resource Cost** | 35 Stamina |
+| **Buff Applied** | [Oath of the Protector] |
 
-**Mechanical Summary**: Single target ally buff: +Soak and +Psychic Stress resistance
+#### Description
+Extend protective aura to single ally, shielding flesh and mind. The Skjaldmaer speaks words of ancient power, binding her fate to her ward's survival.
 
-**Resource Cost**: 35 Stamina
+#### Rank Details
 
-**Rank Progression**:
+##### Rank 1 (Unlocked: When ability is learned)
 
-| Rank | PP Cost | Soak Bonus | Stress Dice | Duration | Special |
-|------|---------|------------|-------------|----------|---------|
-| 1 | 3 PP | +2 Soak | +1 die | 2 turns | - |
-| 2 | +20 PP | +3 Soak | +2 dice | 2 turns | - |
-| 3 | +0 PP | +4 Soak | +2 dice | 3 turns | Cleanse 1 mental debuff |
+**Mechanical Effect**:
+- Target ally gains +2 Soak for 2 turns
+- Target ally gains +1 bonus die to Psychic Stress resistance for 2 turns
 
-**Implementation Status**:
+**Formulas**:
+```
+Target.Soak += 2 (for 2 turns)
+Target.StressResistanceDice += 1 (for 2 turns)
+```
+
+**GUI Display**:
+- Ability button: Shield with protective glow
+- Tooltip: "Oath of the Protector (Rank 1): Grant ally +2 Soak, +1 Stress resistance die for 2 turns. Cost: 35 Stamina"
+- Target must be ally (highlight allies on activation)
+- Color: Bronze border
+- Buff icon on target: Small shield (bronze)
+- Buff tooltip: "Oath of the Protector: +2 Soak, +1 Stress die (2 turns remaining)"
+
+**Combat Log Examples**:
+- "Oath of the Protector shields [Ally Name] (+2 Soak, +1 Stress resistance for 2 turns)"
+- "[Ally Name]'s Oath of the Protector fades (0 turns remaining)"
+
+---
+
+##### Rank 2 (Unlocked: When 2 Tier 2 abilities are trained)
+
+**Mechanical Effect**:
+- Target ally gains +3 Soak for 2 turns
+- Target ally gains +2 bonus dice to Psychic Stress resistance for 2 turns
+
+**Formulas**:
+```
+Target.Soak += 3 (for 2 turns)
+Target.StressResistanceDice += 2 (for 2 turns)
+```
+
+**GUI Display**:
+- Ability button: Shield with stronger protective glow
+- Tooltip: "Oath of the Protector (Rank 2): Grant ally +3 Soak, +2 Stress resistance dice for 2 turns. Cost: 35 Stamina"
+- Color: Silver border
+- Buff icon on target: Shield (silver)
+- **Rank-up notification**: "Oath of the Protector has reached Rank 2! Protection increased."
+
+**Combat Log Examples**:
+- "Oath of the Protector (Rank 2) shields [Ally Name] (+3 Soak, +2 Stress resistance for 2 turns)"
+
+---
+
+##### Rank 3 (Unlocked: When Capstone is trained)
+
+**Mechanical Effect**:
+- Target ally gains +4 Soak for 3 turns
+- Target ally gains +2 bonus dice to Psychic Stress resistance for 3 turns
+- **NEW**: Immediately cleanse 1 mental debuff from target (priority: [Fear] > [Disoriented] > [Charmed])
+
+**Formulas**:
+```
+Target.Soak += 4 (for 3 turns)
+Target.StressResistanceDice += 2 (for 3 turns)
+Target.RemoveFirstMentalDebuff() // [Fear], [Disoriented], or [Charmed]
+```
+
+**GUI Display**:
+- Ability button: Shield with radiant protective glow and cleanse sparkle
+- Tooltip: "Oath of the Protector (Rank 3): Grant ally +4 Soak, +2 Stress resistance dice for 3 turns. Cleanses 1 mental debuff. Cost: 35 Stamina"
+- Color: Gold border
+- Buff icon on target: Radiant shield (gold)
+- **Rank-up notification**: "Oath of the Protector has reached Rank 3! Now cleanses mental debuffs!"
+
+**Combat Log Examples**:
+- "Oath of the Protector (Rank 3) shields [Ally Name] (+4 Soak, +2 Stress resistance for 3 turns)"
+- "Oath of the Protector (Rank 3) cleanses [Fear] from [Ally Name]!"
+
+#### Implementation Status
 - [x] Service method: `SkjaldmaerService.ExecuteOathOfProtector(caster, target, rank)`
 - [x] Data seeded in `SkjaldmaerSeeder.SeedSkjaldmaerTier1()`
-- [ ] GUI: Ability button with ally targeting
-- [ ] GUI: Target selection highlights allies
-- [ ] Combat: Apply buff to target character
-- [ ] Combat: Track buff duration
+- [ ] **FIX NEEDED**: Seeder has `CostToRank2 = 20` - should be removed/ignored
+- [ ] GUI: Ability button with rank-specific icon
+- [ ] GUI: Ally targeting mode
+- [ ] GUI: Buff icon on target with duration
+- [ ] Combat: Apply buff with duration tracking
+- [ ] Combat: Mental debuff cleanse logic (Rank 3)
 
-**GUI Requirements**:
-- Ability appears in combat ability list when unlocked
-- Target selection mode for allies only
-- Show buff icon on protected ally
-- Display remaining duration on buff icon
-- Rank 3: Show "Cleansed [Effect]" in combat log
+---
 
-**Combat Integration**:
-```csharp
-if (ability.Name == "Oath of the Protector" && character.HasSpecialization(26003))
-{
-    var service = new SkjaldmaerService(connectionString);
-    var (soakBonus, stressDice, duration, cleansed, message) =
-        service.ExecuteOathOfProtector(caster, targetAlly, ability.CurrentRank);
+## 5. Tier 2 Abilities (Single Rank)
 
-    targetAlly.AddBuff(new Buff {
-        Name = "Oath of the Protector",
-        SoakBonus = soakBonus,
-        StressResistanceDice = stressDice,
-        RemainingDuration = duration,
-        Source = caster.Name
-    });
+These abilities have only 1 rank and do not progress.
 
-    combatState.AddLogEntry(message);
-}
+---
+
+### 5.1 Guardian's Taunt (ID: 26022)
+
+**Type**: Active | **Action**: Standard Action | **Target**: AoE (Front Row or All Enemies)
+
+#### Overview
+| Property | Value |
+|----------|-------|
+| **Tier** | 2 (Advanced) |
+| **PP Cost to Unlock** | 4 PP |
+| **Prerequisite** | 8 PP invested in Skjaldmaer tree |
+| **Ranks** | 1 (single rank) |
+| **Resource Cost** | 30 Stamina + 5 Psychic Stress |
+| **Status Effects** | [Taunted] |
+
+#### Description
+Projection of coherent will draws even maddened creatures to attack. The Skjaldmaer's presence becomes a beacon of stability that enemies cannot ignore—but maintaining this projection takes a toll on her own psyche.
+
+#### Mechanical Effect
+- All enemies in Front Row gain [Taunted] for 2 rounds
+- [Taunted] enemies must target the Skjaldmaer with their attacks if able
+- **Psychic Stress Cost**: Skjaldmaer gains 5 Psychic Stress
+
+**Formulas**:
+```
+For each Enemy in FrontRow:
+    Enemy.AddStatusEffect("Taunted", Duration: 2, TauntSource: Skjaldmaer)
+Skjaldmaer.PsychicStress += 5
 ```
 
----
+#### GUI Display
+- Ability button: Taunting pose with psychic waves
+- Tooltip: "Guardian's Taunt: Taunt all Front Row enemies for 2 rounds. Cost: 30 Stamina, 5 Psychic Stress"
+- **WARNING**: If Stress cost would exceed threshold, show: "WARNING: Will enter High Stress!"
+- No target selection needed (AoE)
+- Shows number of enemies affected: "Will taunt 3 enemies"
 
-### 3.2 Tier 2: Advanced Guardianship
+#### Combat Log Examples
+- "Guardian's Taunt draws 3 enemies! (Skjaldmaer gains 5 Psychic Stress)"
+- "Guardian's Taunt: [Enemy1], [Enemy2], [Enemy3] are now Taunted for 2 rounds"
+- "[Enemy Name] must attack [Skjaldmaer] (Taunted)"
 
----
-
-#### 3.2.1 Guardian's Taunt (ID: 26022)
-
-**Type**: Active | **Action**: Standard Action | **Target**: AoE Front Row / All Enemies
-
-**Description**: Projection of coherent will draws even maddened creatures to attack.
-
-**Mechanical Summary**: Taunt enemies to attack caster; costs Psychic Stress
-
-**Resource Cost**: 30 Stamina + Variable Psychic Stress (see ranks)
-
-**Prerequisites**: 8 PP invested in Skjaldmaer tree
-
-**Status Effects Applied**: [Taunted]
-
-**Rank Progression**:
-
-| Rank | PP Cost | Targets | Duration | Stress Cost | Special |
-|------|---------|---------|----------|-------------|---------|
-| 1 | 4 PP | Front Row enemies | 2 rounds | 5 Stress | - |
-| 2 | +20 PP | Front Row enemies | 2 rounds | 3 Stress | Reduced cost |
-| 3 | +0 PP | ALL enemies | 2 rounds | 5 Stress | Affects back row |
-
-**Implementation Status**:
+#### Implementation Status
 - [x] Service method: `SkjaldmaerService.ExecuteGuardiansTaunt(caster, frontRow, backRow, rank)`
 - [x] Data seeded in `SkjaldmaerSeeder.SeedSkjaldmaerTier2()`
-- [ ] GUI: Ability button (no target selection - AoE)
-- [ ] GUI: Show Psychic Stress cost in ability tooltip
-- [ ] Combat: Apply [Taunted] status to affected enemies
-- [ ] Status Effect: [Taunted] definition and icon
-
-**GUI Requirements**:
-- Show both Stamina AND Psychic Stress cost
-- Display number of enemies that will be taunted
-- Warning if Stress cost would trigger Breaking Point
-- Combat log shows all affected enemies
-
-**Combat Integration**:
-```csharp
-if (ability.Name == "Guardian's Taunt" && character.HasSpecialization(26003))
-{
-    var service = new SkjaldmaerService(connectionString);
-    var frontRow = combatState.Enemies.Where(e => e.Position?.Row == Row.Front).ToList();
-    var backRow = combatState.Enemies.Where(e => e.Position?.Row == Row.Back).ToList();
-
-    var (taunted, stressCost, duration, message) =
-        service.ExecuteGuardiansTaunt(caster, frontRow, backRow, ability.CurrentRank);
-
-    // Apply Taunted status to affected enemies
-    var targetEnemies = ability.CurrentRank >= 3 ?
-        frontRow.Concat(backRow) : frontRow;
-
-    foreach (var enemy in targetEnemies)
-    {
-        enemy.AddStatusEffect(new StatusEffect {
-            Name = "Taunted",
-            TauntTarget = caster,
-            RemainingDuration = duration
-        });
-    }
-
-    combatState.AddLogEntry(message);
-}
-```
-
-**Status Effect Definition Needed**:
-```csharp
-new StatusEffectDefinition {
-    Name = "Taunted",
-    Description = "Must target the taunting character with attacks if possible.",
-    Duration = 2,
-    Icon = "taunted.png",
-    MechanicalEffects = new[] { "Must attack taunt source" },
-    TauntSource = characterId
-}
-```
+- [ ] GUI: Ability button showing dual costs
+- [ ] GUI: Stress threshold warning
+- [ ] Combat: Apply [Taunted] status
+- [ ] Status Effect: [Taunted] definition - forces targeting
 
 ---
 
-#### 3.2.2 Shield Wall (ID: 26023)
+### 5.2 Shield Wall (ID: 26023)
 
 **Type**: Active | **Action**: Standard Action | **Target**: Self + Adjacent Front Row Allies
 
-**Description**: Plant feet creating bastion of physical and metaphysical stability.
+#### Overview
+| Property | Value |
+|----------|-------|
+| **Tier** | 2 (Advanced) |
+| **PP Cost to Unlock** | 4 PP |
+| **Prerequisite** | 8 PP invested in Skjaldmaer tree |
+| **Ranks** | 1 (single rank) |
+| **Resource Cost** | 45 Stamina |
+| **Status Effects** | [Fortified] |
 
-**Mechanical Summary**: AoE defensive buff: +Soak, immune to Push/Pull, +Stress resistance
+#### Description
+Plant feet creating bastion of physical and metaphysical stability. The Skjaldmaer becomes an immovable anchor, extending this stability to nearby allies.
 
-**Resource Cost**: 45 Stamina
+#### Mechanical Effect
+- Self and all adjacent Front Row allies gain:
+  - +3 Soak for 2 turns
+  - Immunity to Push/Pull/Knockback effects for 2 turns
+  - +1 bonus die to Psychic Stress resistance for 2 turns
+- Affected characters gain [Fortified] status
 
-**Prerequisites**: 8 PP invested in Skjaldmaer tree
-
-**Status Effects Applied**: [Fortified]
-
-**Rank Progression**:
-
-| Rank | PP Cost | Soak Bonus | Stress Dice | Duration | Special |
-|------|---------|------------|-------------|----------|---------|
-| 1 | 4 PP | +3 Soak | +1 die | 2 turns | Immune to Push/Pull |
-| 2 | +20 PP | +4 Soak | +2 dice | 2 turns | Immune to Push/Pull |
-| 3 | +0 PP | +5 Soak | +2 dice | 3 turns | [Fortified] status |
-
-**Implementation Status**:
-- [x] Data seeded in `SkjaldmaerSeeder.SeedSkjaldmaerTier2()`
-- [ ] Service method: Not yet implemented (needs ExecuteShieldWall)
-- [ ] GUI: Ability button (auto-target self + adjacent allies)
-- [ ] Combat: Apply buff to multiple targets
-- [ ] Status Effect: [Fortified] definition and icon
-
-**GUI Requirements**:
-- Preview affected allies before confirmation
-- Show area of effect on combat grid
-- Buff icons on all affected characters
-- Duration tracking per character
-
-**Status Effect Definition Needed**:
-```csharp
-new StatusEffectDefinition {
-    Name = "Fortified",
-    Description = "Heavily defended position. Cannot be moved by forced movement.",
-    Duration = 2,
-    Icon = "fortified.png",
-    MechanicalEffects = new[] { "Immune to Push", "Immune to Pull", "Immune to Knockback" }
-}
+**Formulas**:
 ```
+AffectedTargets = [Self] + GetAdjacentFrontRowAllies(Self)
+For each Target in AffectedTargets:
+    Target.Soak += 3 (for 2 turns)
+    Target.AddStatusEffect("Fortified", Duration: 2)
+    Target.StressResistanceDice += 1 (for 2 turns)
+```
+
+#### GUI Display
+- Ability button: Interlocked shields
+- Tooltip: "Shield Wall: Self + adjacent allies gain +3 Soak, immunity to forced movement, +1 Stress resistance die for 2 turns. Cost: 45 Stamina"
+- Preview: Highlight affected allies before confirmation
+- Buff icon: Interlocked shields on each affected character
+
+#### Combat Log Examples
+- "Shield Wall protects [Skjaldmaer], [Ally1], [Ally2] (+3 Soak, Fortified for 2 turns)"
+- "[Enemy] attempts to push [Ally1] - blocked by Fortified!"
+
+#### Implementation Status
+- [ ] Service method: NOT YET IMPLEMENTED (needs ExecuteShieldWall)
+- [x] Data seeded in `SkjaldmaerSeeder.SeedSkjaldmaerTier2()`
+- [ ] GUI: Ability button with AoE preview
+- [ ] Combat: Apply buff to multiple targets
+- [ ] Status Effect: [Fortified] definition
 
 ---
 
-#### 3.2.3 Interposing Shield (ID: 26024)
+### 5.3 Interposing Shield (ID: 26024)
 
 **Type**: Reaction | **Action**: Reaction | **Target**: Adjacent Ally
 
-**Description**: React to incoming Critical Hit on adjacent ally, redirecting to self.
+#### Overview
+| Property | Value |
+|----------|-------|
+| **Tier** | 2 (Advanced) |
+| **PP Cost to Unlock** | 4 PP |
+| **Prerequisite** | 8 PP invested in Skjaldmaer tree |
+| **Ranks** | 1 (single rank) |
+| **Resource Cost** | 25 Stamina |
+| **Trigger** | Adjacent ally is hit by a Critical Hit |
+| **Limit** | Once per round |
 
-**Mechanical Summary**: Reaction: Redirect Critical Hit to self with damage reduction
+#### Description
+React to incoming Critical Hit on adjacent ally, redirecting to self. The Skjaldmaer interposes her shield at the last moment, taking the brunt of the blow.
 
-**Resource Cost**: 25 Stamina
+#### Mechanical Effect
+- **Trigger**: When an adjacent ally would take damage from a Critical Hit
+- **Effect**: Redirect the attack to the Skjaldmaer
+- **Damage Reduction**: Skjaldmaer takes 50% of the original damage
+- **Original Target**: Takes 0 damage
 
-**Prerequisites**: 8 PP invested in Skjaldmaer tree
-
-**Trigger Condition**: Adjacent ally is hit by a Critical Hit
-
-**Rank Progression**:
-
-| Rank | PP Cost | Damage Taken | Special |
-|------|---------|--------------|---------|
-| 1 | 4 PP | 50% of original damage | Once per round |
-| 2 | +20 PP | 40% of original damage | Once per round |
-| 3 | +0 PP | 30% of original damage | Reflect 10% back to attacker |
-
-**Implementation Status**:
-- [x] Data seeded in `SkjaldmaerSeeder.SeedSkjaldmaerTier2()`
-- [ ] Service method: Not yet implemented (needs ExecuteInterposingShield)
-- [ ] GUI: **Reaction prompt system needed**
-- [ ] Combat: Detect critical hit on adjacent ally
-- [ ] Combat: Prompt player for reaction decision
-
-**GUI Requirements** (CRITICAL GAP):
-- **Reaction Prompt Dialog**: When trigger condition met:
-  - Show dialog: "Interposing Shield: [Ally] is about to take [X] critical damage. Intercept?"
-  - Show: Cost (25 Stamina), damage you would take (X * reduction%)
-  - Options: [Intercept] [Decline]
-  - Auto-decline if insufficient Stamina
-- Combat log shows interception and damage transfer
-
-**Combat Integration**:
-```csharp
-// In damage resolution, BEFORE applying critical hit damage:
-if (attack.IsCriticalHit && defender.IsAlly)
-{
-    var skjaldmaer = combatState.GetAdjacentCharacterWithAbility(defender, "Interposing Shield");
-    if (skjaldmaer != null && skjaldmaer.Stamina >= 25)
-    {
-        // PROMPT PLAYER for reaction decision
-        var decision = await combatUI.ShowReactionPrompt(new ReactionPrompt {
-            AbilityName = "Interposing Shield",
-            Trigger = $"{defender.Name} is about to take {attack.Damage} critical damage",
-            Cost = "25 Stamina",
-            Effect = $"Take {CalculateReducedDamage(attack.Damage, rank)}% damage instead"
-        });
-
-        if (decision == ReactionDecision.Accept)
-        {
-            var reducedDamage = CalculateReducedDamage(attack.Damage, ability.CurrentRank);
-            skjaldmaer.HP -= reducedDamage;
-            skjaldmaer.Stamina -= 25;
-
-            if (ability.CurrentRank >= 3)
-            {
-                var reflectedDamage = (int)(attack.Damage * 0.10);
-                attacker.HP -= reflectedDamage;
-            }
-
-            // Original target takes NO damage
-            return; // Skip normal damage application
-        }
-    }
-}
+**Formulas**:
+```
+Trigger: Ally.IsAdjacent(Skjaldmaer) AND IncomingAttack.IsCritical
+If Triggered:
+    OriginalDamage = IncomingAttack.Damage
+    Skjaldmaer.HP -= Floor(OriginalDamage * 0.50)
+    Ally.HP -= 0
+    Skjaldmaer.Stamina -= 25
 ```
 
+#### GUI Display - REACTION PROMPT REQUIRED
+When trigger condition is met, display reaction prompt:
+
+```
+┌─────────────────────────────────────────────┐
+│         INTERPOSING SHIELD                  │
+├─────────────────────────────────────────────┤
+│ [Ally Name] is about to take a CRITICAL HIT │
+│ for [X] damage!                             │
+│                                             │
+│ Intercept?                                  │
+│ • You will take: [X/2] damage               │
+│ • Cost: 25 Stamina                          │
+│                                             │
+│ [Current Stamina: Y/Max]                    │
+│                                             │
+│    [INTERCEPT]        [DECLINE]             │
+└─────────────────────────────────────────────┘
+```
+
+- If Stamina < 25: INTERCEPT button is disabled, show "Insufficient Stamina"
+- Timer: 5 seconds to decide (auto-decline if no response)
+
+#### Combat Log Examples
+- "REACTION: Interposing Shield! [Skjaldmaer] intercepts critical hit meant for [Ally]!"
+- "[Skjaldmaer] takes 15 damage (reduced from 30)"
+- "[Ally] is protected from critical hit!"
+
+#### Implementation Status
+- [ ] Service method: NOT YET IMPLEMENTED (needs ExecuteInterposingShield)
+- [x] Data seeded in `SkjaldmaerSeeder.SeedSkjaldmaerTier2()`
+- [ ] **GUI: Reaction prompt system (CRITICAL GAP)**
+- [ ] Combat: Detect critical hit trigger
+- [ ] Combat: Reaction timing framework
+
 ---
 
-### 3.3 Tier 3: Mastery of the Bulwark
+## 6. Tier 3 Abilities (Single Rank)
 
 ---
 
-#### 3.3.1 Implacable Defense (ID: 26025)
+### 6.1 Implacable Defense (ID: 26025)
 
 **Type**: Active | **Action**: Standard Action | **Target**: Self
 
-**Description**: Achieve state of perfect focus--immovable against physical and mental assault.
+#### Overview
+| Property | Value |
+|----------|-------|
+| **Tier** | 3 (Mastery) |
+| **PP Cost to Unlock** | 5 PP |
+| **Prerequisite** | 16 PP invested in Skjaldmaer tree |
+| **Ranks** | 1 (single rank) |
+| **Resource Cost** | 40 Stamina |
 
-**Mechanical Summary**: Self-buff: Immune to major debuffs and +Soak
+#### Description
+Achieve state of perfect focus—immovable against physical and mental assault. For a brief time, the Skjaldmaer becomes an unshakeable pillar.
 
-**Resource Cost**: 40 Stamina
+#### Mechanical Effect
+- For 3 turns, Skjaldmaer is IMMUNE to:
+  - [Stun]
+  - [Staggered]
+  - [Knocked Down]
+  - [Fear]
+  - [Disoriented]
+- Additionally: +2 Soak for 3 turns
+- Aura effect: Adjacent allies are immune to [Fear] for 3 turns
 
-**Prerequisites**: 16 PP invested in Skjaldmaer tree
+**Formulas**:
+```
+Skjaldmaer.AddImmunity(["Stun", "Staggered", "Knocked Down", "Fear", "Disoriented"], Duration: 3)
+Skjaldmaer.Soak += 2 (for 3 turns)
 
-**Rank Progression**:
+For each AdjacentAlly:
+    AdjacentAlly.AddImmunity(["Fear"], Duration: 3)
+```
 
-| Rank | PP Cost | Duration | Immunities | Soak | Special |
-|------|---------|----------|------------|------|---------|
-| 1 | 5 PP | 3 turns | [Stun], [Staggered], [Knocked Down], [Fear], [Disoriented] | +0 | - |
-| 2 | +20 PP | 3 turns | Same | +2 | - |
-| 3 | +0 PP | 3 turns | Same | +3 | Aura: adjacent allies immune to [Fear] |
+#### GUI Display
+- Ability button: Stalwart stance with immunity aura
+- Tooltip: "Implacable Defense: Become immune to Stun, Stagger, Knockdown, Fear, Disoriented for 3 turns. +2 Soak. Adjacent allies immune to Fear. Cost: 40 Stamina"
+- Self-buff icon: Glowing shield with crossed-out debuff icons
+- Aura indicator on adjacent allies: Small shield icon
 
-**Implementation Status**:
+#### Combat Log Examples
+- "Implacable Defense activated! [Skjaldmaer] is immune to control effects for 3 turns"
+- "[Enemy] attempts to Stun [Skjaldmaer] - IMMUNE!"
+- "[Ally] is protected from Fear by Implacable Defense aura"
+
+#### Implementation Status
+- [ ] Service method: NOT YET IMPLEMENTED
 - [x] Data seeded in `SkjaldmaerSeeder.SeedSkjaldmaerTier3()`
-- [ ] Service method: Not yet implemented
 - [ ] GUI: Self-targeting ability button
-- [ ] Combat: Apply immunity buff
-- [ ] Combat: Rank 3 aura effect on adjacent allies
-
-**GUI Requirements**:
-- Show immunity buff icon with duration
-- Rank 3: Show aura indicator on adjacent allies
-- Tooltip lists all immunities
+- [ ] GUI: Immunity buff display
+- [ ] GUI: Aura indicator on allies
+- [ ] Combat: Immunity system integration
 
 ---
 
-#### 3.3.2 Aegis of the Clan (ID: 26026)
+### 6.2 Aegis of the Clan (ID: 26026)
 
-**Type**: Passive | **Action**: Free Action | **Target**: Allies in Crisis
+**Type**: Passive | **Action**: Free (Automatic) | **Target**: Allies in Crisis
 
-**Description**: Automatic protection triggers when ally enters mental crisis.
+#### Overview
+| Property | Value |
+|----------|-------|
+| **Tier** | 3 (Mastery) |
+| **PP Cost to Unlock** | 5 PP |
+| **Prerequisite** | 16 PP invested in Skjaldmaer tree |
+| **Ranks** | 1 (single rank) |
+| **Resource Cost** | None (automatic) |
+| **Trigger** | Ally's Psychic Stress reaches 66%+ |
+| **Limit** | Once per ally per combat |
 
-**Mechanical Summary**: Passive: Auto-apply Oath of Protector when ally Stress hits 66%+
+#### Description
+Automatic protection triggers when ally enters mental crisis. The Skjaldmaer's bond with her clanmates runs deep—she senses their distress and responds instinctively.
 
-**Resource Cost**: None (automatic)
+#### Mechanical Effect
+- **Trigger**: When any ally's Psychic Stress reaches or exceeds 66% of maximum (66/100)
+- **Effect**: Automatically apply Oath of the Protector to that ally for 2 turns
+- **Bonus**: Immediately reduce that ally's Psychic Stress by 10
+- **Limit**: Can only trigger once per ally per combat
 
-**Prerequisites**: 16 PP invested in Skjaldmaer tree
+**Formulas**:
+```
+Trigger: Ally.PsychicStress >= 66 AND NOT AegisUsedOn(Ally)
 
-**Trigger Condition**: Any ally's Psychic Stress crosses 66% threshold
+If Triggered:
+    ApplyOathOfProtector(Ally, Duration: 2)  // +3 Soak, +2 Stress dice
+    Ally.PsychicStress -= 10
+    MarkAegisUsedOn(Ally)
+```
 
-**Rank Progression**:
+#### GUI Display
+- Passive icon: Vigilant eye over shield
+- When triggered: Flash notification "Aegis of the Clan protects [Ally]!"
+- Buff icon appears on protected ally
+- Ally's Stress bar shows -10 reduction animation
 
-| Rank | PP Cost | Duration | Limit | Special |
-|------|---------|----------|-------|---------|
-| 1 | 5 PP | 1 turn | Once per ally per combat | Auto-applies Oath |
-| 2 | +20 PP | 2 turns | Once per ally per combat | - |
-| 3 | +0 PP | 2 turns | Once per ally per combat | Also reduce Stress by 10 |
+#### Combat Log Examples
+- "AEGIS OF THE CLAN: [Ally] enters mental crisis (66% Stress)!"
+- "Aegis of the Clan automatically shields [Ally] (+3 Soak, +2 Stress resistance for 2 turns)"
+- "[Ally]'s Psychic Stress reduced by 10 (Aegis of the Clan)"
 
-**Implementation Status**:
+#### Implementation Status
+- [ ] Service method: NOT YET IMPLEMENTED
 - [x] Data seeded in `SkjaldmaerSeeder.SeedSkjaldmaerTier3()`
-- [ ] Service method: Not yet implemented
-- [ ] Combat: Monitor ally Psychic Stress changes
-- [ ] Combat: Automatic trigger when threshold crossed
-- [ ] GUI: Notification when ability triggers
+- [ ] Combat: Stress threshold monitoring
+- [ ] Combat: Automatic trigger system
+- [ ] GUI: Trigger notification
+- [ ] GUI: Stress reduction animation
 
-**Combat Integration**:
-```csharp
-// In TraumaEconomyService.AddStress() or wherever stress is modified:
-public void OnAllyStressChanged(PlayerCharacter ally, int previousStress, int newStress)
-{
-    // Check if crossed 66% threshold
-    int maxStress = ally.MaxPsychicStress; // Usually 100
-    int threshold = (int)(maxStress * 0.66);
+---
 
-    if (previousStress < threshold && newStress >= threshold)
-    {
-        // Find Skjaldmaer with Aegis of the Clan
-        var skjaldmaer = party.FindCharacterWithAbility("Aegis of the Clan");
-        if (skjaldmaer != null && !HasUsedAegisOnAlly(skjaldmaer, ally))
-        {
-            // Auto-trigger Oath of the Protector
-            var rank = GetAbilityRank(skjaldmaer, "Aegis of the Clan");
-            ApplyOathOfProtectorBuff(ally, rank);
+## 7. Capstone Ability (Single Rank)
 
-            if (rank >= 3)
-            {
-                ally.PsychicStress = Math.Max(0, ally.PsychicStress - 10);
-            }
+---
 
-            MarkAegisUsedOnAlly(skjaldmaer, ally);
-            combatLog.Add($"Aegis of the Clan triggers! {ally.Name} receives Oath protection.");
-        }
-    }
-}
+### 7.1 Bastion of Sanity (ID: 26027)
+
+**Type**: Passive + Reaction | **Action**: Passive / Reaction | **Target**: Aura (All Allies) / Single Ally in Crisis
+
+#### Overview
+| Property | Value |
+|----------|-------|
+| **Tier** | 4 (Capstone) |
+| **PP Cost to Unlock** | 6 PP |
+| **Prerequisite** | 24 PP invested in tree + both Tier 3 abilities |
+| **Ranks** | 1 (single rank) |
+| **Resource Cost** | Reaction: 40 Psychic Stress + 1 Corruption |
+| **Trigger** | Ally would gain permanent Trauma |
+| **Limit** | Reaction: Once per combat |
+
+#### Description
+Become living Runic Anchor—a kernel of stable reality. The ultimate expression of the Skjaldmaer's protective nature: she can absorb the psychic wounds that would permanently scar her allies, taking the madness into herself.
+
+#### Component 1: Passive Aura (Always Active While in Front Row)
+
+**Mechanical Effect**:
+- While Skjaldmaer is in Front Row position:
+  - All allies in the same row gain +1 WILL
+  - All allies in the same row reduce ambient Psychic Stress gain by 10%
+
+**Formulas**:
+```
+If Skjaldmaer.Position.Row == Front:
+    For each Ally in FrontRow:
+        Ally.WILL += 1 (temporary)
+        Ally.AmbientStressModifier *= 0.90
 ```
 
----
+**GUI Display**:
+- Aura indicator: Golden glow emanating from Skjaldmaer
+- Buff icon on affected allies: Mind shield with +1
+- Tooltip on ally buff: "Bastion Aura: +1 WILL, -10% Ambient Stress (from [Skjaldmaer])"
 
-### 3.4 Tier 4: Capstone
+#### Component 2: Reaction (Once Per Combat)
 
----
+**Trigger**: An ally would gain permanent Trauma from reaching Breaking Point
 
-#### 3.4.1 Bastion of Sanity (ID: 26027)
+**Mechanical Effect**:
+- Skjaldmaer absorbs the Trauma instead of the ally
+- **Cost to Skjaldmaer**:
+  - Gain 40 Psychic Stress
+  - Gain 1 Corruption
+- **Result for Ally**: Avoids gaining the Trauma entirely
 
-**Type**: Passive + Reaction | **Action**: Passive / Reaction | **Target**: Aura (All Allies) / Ally in Crisis
+**Formulas**:
+```
+Trigger: Ally.WouldGainTrauma(TraumaType)
 
-**Description**: Become living Runic Anchor--a kernel of stable reality.
+If Player accepts:
+    Ally.CancelTrauma()
+    Skjaldmaer.PsychicStress += 40
+    Skjaldmaer.Corruption += 1
+    MarkBastionUsedThisCombat()
+```
 
-**Mechanical Summary**: Passive aura + Reaction: Absorb ally's permanent Trauma
+#### GUI Display - REACTION PROMPT (CRITICAL)
 
-**Resource Cost**: Reaction component costs 40 Psychic Stress + 1 Corruption
+When ally would gain Trauma, display prompt:
 
-**Prerequisites**:
-- 24 PP invested in Skjaldmaer tree
-- Must have both Tier 3 abilities (Implacable Defense + Aegis of the Clan)
+```
+┌─────────────────────────────────────────────────────┐
+│              BASTION OF SANITY                      │
+├─────────────────────────────────────────────────────┤
+│ [Ally Name] is about to gain permanent Trauma:      │
+│                                                     │
+│   ╔═══════════════════════════════════════════╗     │
+│   ║  [TRAUMA NAME]                            ║     │
+│   ║  [Trauma description/effect]              ║     │
+│   ╚═══════════════════════════════════════════╝     │
+│                                                     │
+│ Absorb this Trauma to save [Ally]?                  │
+│                                                     │
+│ ┌─────────────────────────────────────────────┐     │
+│ │ COST TO YOU:                                │     │
+│ │   • +40 Psychic Stress                      │     │
+│ │   • +1 Corruption (PERMANENT)               │     │
+│ │                                             │     │
+│ │ Your current Stress: [X]/100                │     │
+│ │ Your current Corruption: [Y]                │     │
+│ └─────────────────────────────────────────────┘     │
+│                                                     │
+│ ⚠️ This can only be used ONCE per combat            │
+│                                                     │
+│    [ABSORB TRAUMA]        [LET IT PASS]             │
+└─────────────────────────────────────────────────────┘
+```
 
-**Cooldown**: Once per combat (reaction component)
+- Show warning if absorbing would push Skjaldmaer to Breaking Point
+- Timer: 10 seconds to decide (default: Let It Pass)
 
-**Components**:
+#### Combat Log Examples
+- "BASTION OF SANITY AURA: [Ally1], [Ally2] gain +1 WILL, -10% Stress gain"
+- "[Ally] reaches Breaking Point! Would gain Trauma: [Shattered Confidence]"
+- "BASTION OF SANITY TRIGGERED! [Skjaldmaer] absorbs [Ally]'s Trauma!"
+- "[Skjaldmaer] gains 40 Psychic Stress and 1 Corruption"
+- "[Ally] is saved from permanent Trauma!"
 
-**PASSIVE AURA** (always active while in Front Row):
-- All allies in same row gain +1 WILL
-- All allies in same row gain -10% ambient Psychic Stress gain
-
-**REACTION** (once per combat):
-- **Trigger**: Ally would gain permanent Trauma from Breaking Point
-- **Effect**: Skjaldmaer absorbs the Trauma
-- **Cost to Skjaldmaer**: 40 Psychic Stress + 1 Corruption
-- **Result**: Ally avoids Trauma entirely
-
-**Implementation Status**:
+#### Implementation Status
 - [x] Service method: `SkjaldmaerService.TriggerBastionOfSanity(skjaldmaer, ally, trauma, alreadyUsed)`
-- [x] Service method: `SkjaldmaerService.GetBastionOfSanityAura()`
+- [x] Service method: `SkjaldmaerService.GetBastionOfSanityAura()` - Returns (1, 0.10)
 - [x] Data seeded in `SkjaldmaerSeeder.SeedSkjaldmaerCapstone()`
-- [ ] GUI: **Reaction prompt for Trauma absorption**
-- [ ] GUI: Aura indicator on affected allies
-- [ ] Combat: Detect Breaking Point in TraumaEconomyService
-- [ ] Combat: Prompt for Trauma absorption decision
+- [ ] **GUI: Reaction prompt for Trauma absorption (CRITICAL GAP)**
+- [ ] GUI: Aura indicator on Skjaldmaer and affected allies
+- [ ] Combat: Breaking Point detection in TraumaEconomyService
+- [ ] Combat: Reaction timing framework
 
-**GUI Requirements** (CRITICAL GAP):
+---
 
-**Passive Aura Display**:
-- Show aura icon on Skjaldmaer when in Front Row
-- Show buff icon on allies affected by aura
-- Tooltip: "+1 WILL, -10% Psychic Stress gain"
+## 8. Status Effect Definitions
 
-**Reaction Prompt** (when ally would gain Trauma):
-```
-+------------------------------------------+
-| BASTION OF SANITY                        |
-+------------------------------------------+
-| [Ally Name] is about to gain permanent   |
-| Trauma: [Trauma Name]                    |
-|                                          |
-| Absorb this Trauma?                      |
-|                                          |
-| COST TO YOU:                             |
-|   - 40 Psychic Stress                    |
-|   - 1 Corruption                         |
-|                                          |
-| [Absorb Trauma]    [Let Trauma Pass]     |
-+------------------------------------------+
-```
+These status effects must be defined for Skjaldmaer abilities to function:
 
-**Combat Integration**:
+### 8.1 [Staggered]
+
+| Property | Value |
+|----------|-------|
+| **Applied By** | Shield Bash |
+| **Duration** | 1 turn |
+| **Icon** | Dizzy stars over head |
+| **Color** | Yellow |
+
+**Effects**:
+- -1 to Defense rolls
+- Cannot take Reaction abilities
+- Movement costs +1 additional movement point
+
+**GUI Display**:
+- Icon appears in target's status bar
+- Tooltip: "Staggered: -1 Defense, cannot React, movement slowed"
+
+---
+
+### 8.2 [Taunted]
+
+| Property | Value |
+|----------|-------|
+| **Applied By** | Guardian's Taunt |
+| **Duration** | 2 turns |
+| **Icon** | Angry red arrow pointing at taunter |
+| **Color** | Red |
+| **Data** | TauntSourceId (who applied the taunt) |
+
+**Effects**:
+- Must target the taunt source with attacks if able
+- Cannot voluntarily move away from taunt source
+- If taunt source is not valid target (dead, out of range), taunt breaks
+
+**GUI Display**:
+- Icon on taunted enemy shows arrow pointing to Skjaldmaer
+- Enemy targeting UI highlights only Skjaldmaer when taunted
+- Tooltip: "Taunted: Must attack [Skjaldmaer]"
+
+---
+
+### 8.3 [Fortified]
+
+| Property | Value |
+|----------|-------|
+| **Applied By** | Shield Wall |
+| **Duration** | 2 turns |
+| **Icon** | Planted feet with ground crack |
+| **Color** | Brown/Stone |
+
+**Effects**:
+- Immune to Push effects
+- Immune to Pull effects
+- Immune to Knockback effects
+- Immune to Knockdown effects
+
+**GUI Display**:
+- Icon shows rooted stance
+- When enemy attempts forced movement: "IMMUNE (Fortified)"
+- Tooltip: "Fortified: Cannot be forcibly moved"
+
+---
+
+### 8.4 [Oath of the Protector]
+
+| Property | Value |
+|----------|-------|
+| **Applied By** | Oath of the Protector, Aegis of the Clan |
+| **Duration** | 2-3 turns (varies by source) |
+| **Icon** | Shield with protective glow |
+| **Color** | Blue |
+| **Data** | SoakBonus, StressResistanceDice, SourceCharacter |
+
+**Effects**:
+- +2/+3/+4 Soak (varies by rank)
+- +1/+2 bonus dice to Psychic Stress resistance (varies by rank)
+
+**GUI Display**:
+- Icon shows shield with number indicating Soak bonus
+- Tooltip: "Oath of the Protector: +[X] Soak, +[Y] Stress dice ([Z] turns)"
+- Shows source: "From: [Skjaldmaer]"
+
+---
+
+## 9. Data Model Corrections Required
+
+### 9.1 SkjaldmaerSeeder.cs Updates
+
+The current seeder has incorrect rank cost values. These need to be corrected:
+
+**REMOVE or SET TO 0**:
 ```csharp
-// In TraumaEconomyService.OnBreakingPoint():
-public async Task<Trauma?> OnBreakingPoint(PlayerCharacter character)
-{
-    var trauma = DetermineTrauma(character);
+// INCORRECT - Current seeder has:
+CostToRank2 = 20,  // WRONG - ranks are not purchased
+CostToRank3 = 0,
 
-    // Check for Bastion of Sanity intervention
-    var skjaldmaer = party.FindCharacterWithAbility("Bastion of Sanity");
-    if (skjaldmaer != null &&
-        skjaldmaer.IsInFrontRow() &&
-        !HasUsedBastionThisCombat(skjaldmaer))
-    {
-        // PROMPT PLAYER
-        var decision = await combatUI.ShowReactionPrompt(new ReactionPrompt {
-            AbilityName = "Bastion of Sanity",
-            Title = "Absorb Ally's Trauma?",
-            Trigger = $"{character.Name} is about to gain permanent Trauma: {trauma.Name}",
-            Cost = "40 Psychic Stress, 1 Corruption",
-            Effect = $"{character.Name} avoids Trauma entirely"
-        });
-
-        if (decision == ReactionDecision.Accept)
-        {
-            var service = new SkjaldmaerService(connectionString);
-            var (triggered, stress, corruption, message) =
-                service.TriggerBastionOfSanity(skjaldmaer, character, trauma, false);
-
-            MarkBastionUsedThisCombat(skjaldmaer);
-            combatLog.Add(message);
-
-            return null; // No trauma for original character
-        }
-    }
-
-    // Normal trauma application
-    character.Traumas.Add(trauma);
-    return trauma;
-}
+// CORRECT - Should be:
+CostToRank2 = 0,   // Rank 2 unlocks automatically (2 Tier 2 abilities)
+CostToRank3 = 0,   // Rank 3 unlocks automatically (Capstone trained)
 ```
 
----
+### 9.2 AbilityData.cs Updates
 
-## 4. Implementation Gap Analysis
-
-### 4.1 Backend Implementation Status
-
-| Component | Status | Notes |
-|-----------|--------|-------|
-| `SkjaldmaerService.cs` | :white_check_mark: Implemented | 4 ability methods + 3 passive getters |
-| `SkjaldmaerSeeder.cs` | :white_check_mark: Implemented | All 9 abilities seeded |
-| `SkjaldmaerSpecializationTests.cs` | :white_check_mark: Implemented | 473 lines of tests |
-| CombatEngine integration | :x: Missing | Service methods never called |
-| Status effect definitions | :x: Missing | [Taunted], [Fortified] not defined |
-
-### 4.2 GUI Integration Status
-
-| Component | Status | Priority | Notes |
-|-----------|--------|----------|-------|
-| Ability list in combat | :x: Missing | HIGH | No way to select Skjaldmaer abilities |
-| Target selection for allies | :x: Missing | HIGH | Oath of Protector needs ally targeting |
-| Stamina display in combat | :x: Missing | CRITICAL | Can't see resource availability |
-| Psychic Stress display | :x: Missing | CRITICAL | Guardian's Taunt costs Stress |
-| Reaction prompt system | :x: Missing | HIGH | Interposing Shield, Bastion of Sanity |
-| Passive ability indicators | :x: Missing | MEDIUM | Sanctified Resolve, Aegis, Auras |
-| Status effect icons | :x: Missing | MEDIUM | [Taunted], [Fortified], [Staggered] |
-| Buff duration tracking | :x: Missing | MEDIUM | Show remaining turns on buffs |
-
-### 4.3 Combat System Integration Status
-
-| Integration Point | Status | Notes |
-|-------------------|--------|-------|
-| Ability execution routing | :x: Missing | CombatEngine doesn't call SkjaldmaerService |
-| Status effect system | Partial | Some effects exist, Skjaldmaer-specific missing |
-| Reaction system | :x: Missing | No framework for reaction prompts |
-| Aura effect system | :x: Missing | Passive auras not tracked |
-| Breaking Point interception | :x: Missing | Bastion of Sanity trigger |
-| Stress threshold monitoring | :x: Missing | Aegis of the Clan trigger |
-
----
-
-## 5. GUI Integration Requirements
-
-### 5.1 Combat View Enhancements Needed
-
-#### 5.1.1 Resource Display Panel
-
-Add to `CombatView.axaml` - Player resource bars:
-
-```xml
-<!-- Player Resources Panel -->
-<Border Grid.Row="0" Grid.Column="1" ...>
-    <StackPanel>
-        <!-- HP Bar (existing) -->
-        <TextBlock Text="HP"/>
-        <ProgressBar Value="{Binding PlayerHP}" Maximum="{Binding PlayerMaxHP}"/>
-
-        <!-- Stamina Bar (NEEDED) -->
-        <TextBlock Text="Stamina"/>
-        <ProgressBar Value="{Binding PlayerStamina}" Maximum="{Binding PlayerMaxStamina}"
-                     Foreground="Green"/>
-
-        <!-- Psychic Stress Bar (NEEDED) -->
-        <TextBlock Text="Psychic Stress"/>
-        <ProgressBar Value="{Binding PlayerPsychicStress}" Maximum="100"
-                     Foreground="Purple"/>
-        <TextBlock Text="{Binding PsychicStressThreshold}" FontSize="10"/>
-    </StackPanel>
-</Border>
-```
-
-#### 5.1.2 Ability Selection Dialog
-
-New component needed: `AbilitySelectionDialog.axaml`
-
-```xml
-<Window Title="Select Ability">
-    <ItemsControl ItemsSource="{Binding AvailableAbilities}">
-        <ItemsControl.ItemTemplate>
-            <DataTemplate>
-                <Button Command="{Binding SelectAbilityCommand}"
-                        CommandParameter="{Binding}">
-                    <StackPanel>
-                        <TextBlock Text="{Binding Name}" FontWeight="Bold"/>
-                        <TextBlock Text="{Binding ResourceCostText}" FontSize="10"/>
-                        <TextBlock Text="{Binding MechanicalSummary}" FontSize="10"/>
-                    </StackPanel>
-                </Button>
-            </DataTemplate>
-        </ItemsControl.ItemTemplate>
-    </ItemsControl>
-</Window>
-```
-
-#### 5.1.3 Reaction Prompt Dialog
-
-New component needed: `ReactionPromptDialog.axaml`
-
-```xml
-<Window Title="{Binding AbilityName}">
-    <StackPanel Margin="20">
-        <TextBlock Text="{Binding TriggerDescription}" TextWrapping="Wrap"/>
-        <Border Background="#2a2a2a" Padding="10" Margin="0,10">
-            <StackPanel>
-                <TextBlock Text="Cost:" FontWeight="Bold"/>
-                <TextBlock Text="{Binding CostDescription}"/>
-            </StackPanel>
-        </Border>
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-            <Button Content="Accept" Command="{Binding AcceptCommand}"/>
-            <Button Content="Decline" Command="{Binding DeclineCommand}"/>
-        </StackPanel>
-    </StackPanel>
-</Window>
-```
-
-### 5.2 CombatViewModel Enhancements
-
-Add to `CombatViewModel.cs`:
+Add fields to support tree-based rank progression:
 
 ```csharp
-// Resource properties (NEEDED)
-public int PlayerStamina => _combatState?.Player.Stamina ?? 0;
-public int PlayerMaxStamina => _combatState?.Player.MaxStamina ?? 100;
-public int PlayerPsychicStress => _combatState?.Player.PsychicStress ?? 0;
-public string PsychicStressThreshold => PlayerPsychicStress switch
+public class AbilityData
 {
-    < 33 => "Low",
-    < 66 => "Moderate",
-    < 100 => "HIGH - Breaking Point risk!",
-    _ => "BREAKING POINT"
-};
+    // Existing fields...
 
-// Ability selection (NEEDED)
-public ObservableCollection<AbilityViewModel> AvailableAbilities { get; } = new();
+    // NEW: Rank unlock requirements (replaces CostToRank2/CostToRank3)
+    public RankUnlockRequirements RankRequirements { get; set; } = new();
+}
 
-// Reaction system (NEEDED)
-public async Task<ReactionDecision> ShowReactionPromptAsync(ReactionPrompt prompt)
+public class RankUnlockRequirements
 {
-    var dialog = new ReactionPromptDialog { DataContext = prompt };
-    return await dialog.ShowDialog<ReactionDecision>(mainWindow);
+    // Rank 1: Always available when ability is learned
+    // Rank 2 requirement:
+    public int Rank2RequiredTier2Abilities { get; set; } = 2;  // Default: 2 Tier 2 abilities
+
+    // Rank 3 requirement:
+    public bool Rank3RequiresCapstone { get; set; } = true;  // Default: Capstone must be trained
 }
 ```
 
-### 5.3 Status Effect Icon Mappings
-
-Add to `StatusEffectIconService.cs`:
+### 9.3 Character Ability Rank Calculation
 
 ```csharp
-private static readonly Dictionary<string, string> SkjaldmaerStatusIcons = new()
+public int GetAbilityRank(PlayerCharacter character, AbilityData ability)
 {
-    ["Taunted"] = "Icons/StatusEffects/taunted.png",
-    ["Fortified"] = "Icons/StatusEffects/fortified.png",
-    ["Staggered"] = "Icons/StatusEffects/staggered.png",
-    ["Oath of the Protector"] = "Icons/StatusEffects/oath_protection.png",
-    ["Implacable Defense"] = "Icons/StatusEffects/implacable.png",
-    ["Bastion Aura"] = "Icons/StatusEffects/bastion_aura.png"
-};
+    if (ability.TierLevel > 1)
+        return 1;  // Tier 2+ abilities don't have ranks
+
+    var specProgress = GetSpecializationProgress(character, ability.SpecializationID);
+
+    // Count Tier 2 abilities unlocked
+    int tier2Count = specProgress.UnlockedAbilities.Count(a => a.TierLevel == 2);
+
+    // Check if Capstone is trained
+    bool hasCapstone = specProgress.UnlockedAbilities.Any(a => a.TierLevel == 4);
+
+    if (hasCapstone)
+        return 3;
+    else if (tier2Count >= 2)
+        return 2;
+    else
+        return 1;
+}
 ```
 
 ---
 
-## 6. Combat System Integration Requirements
+## 10. GUI Rank Display Requirements
 
-### 6.1 CombatEngine Integration
+### 10.1 Ability Card Rank Indicators
 
-Modify `CombatEngine.cs` to route Skjaldmaer abilities:
+Each ability card should show current rank with visual distinction:
+
+| Rank | Border Color | Icon Enhancement | Badge |
+|------|--------------|------------------|-------|
+| 1 | Bronze (#CD7F32) | Base icon | "I" |
+| 2 | Silver (#C0C0C0) | Enhanced glow | "II" |
+| 3 | Gold (#FFD700) | Radiant glow + particles | "III" |
+
+### 10.2 Rank Progression Indicators
+
+In the Specialization Tree View, show rank unlock progress:
+
+```
+┌─────────────────────────────────────┐
+│ Shield Bash                    [I]  │ ← Current rank badge
+│ ─────────────────────────────────── │
+│ Rank 2 unlocks: ██░░ 1/2 Tier 2     │ ← Progress to next rank
+│ Rank 3 unlocks: ░░░░ Capstone       │
+└─────────────────────────────────────┘
+```
+
+### 10.3 Rank-Up Notifications
+
+When a rank unlocks (e.g., training second Tier 2 ability):
+
+```
+┌─────────────────────────────────────────┐
+│ ⭐ ABILITIES RANKED UP! ⭐              │
+├─────────────────────────────────────────┤
+│ The following abilities reached Rank 2: │
+│                                         │
+│ • Sanctified Resolve                    │
+│   +1 → +2 dice vs Fear/Stress           │
+│                                         │
+│ • Shield Bash                           │
+│   1d8 → 2d8 damage, 50% → 65% Stagger   │
+│                                         │
+│ • Oath of the Protector                 │
+│   +2 → +3 Soak, +1 → +2 Stress dice     │
+│                                         │
+│              [AWESOME!]                 │
+└─────────────────────────────────────────┘
+```
+
+---
+
+## 11. Implementation Priority
+
+### Phase 1: Critical (Foundation)
+1. **Fix SkjaldmaerSeeder.cs** - Remove/correct CostToRank2 values
+2. **Implement rank calculation logic** based on tree progression
+3. **Add Stamina/Psychic Stress display** to CombatView
+4. **Define status effects** ([Staggered], [Taunted], [Fortified])
+
+### Phase 2: Combat Integration
+5. **Route Skjaldmaer abilities** through CombatEngine
+6. **Implement ability execution** for all 9 abilities
+7. **Create ability selection dialog** in combat
+
+### Phase 3: Reaction System
+8. **Build reaction prompt framework**
+9. **Implement Interposing Shield** trigger and prompt
+10. **Implement Bastion of Sanity** trigger and prompt
+
+### Phase 4: Polish
+11. **Add rank-specific icons** (Bronze/Silver/Gold)
+12. **Implement rank-up notifications**
+13. **Add passive ability indicators**
+14. **Implement aura visual effects**
+
+---
+
+## 12. Testing Requirements
+
+### 12.1 Rank Progression Tests
 
 ```csharp
-public bool PlayerUseAbility(CombatState state, Ability ability, Enemy? target)
+[Test]
+public void Tier1Abilities_StartAtRank1_WhenUnlocked()
 {
-    // Check if this is a Skjaldmaer ability
-    if (IsSkjaldmaerAbility(ability))
-    {
-        return ExecuteSkjaldmaerAbility(state, ability, target);
-    }
-
-    // ... existing ability handling
+    // When: Unlock Shield Bash
+    // Then: Shield Bash is Rank 1
 }
 
-private bool ExecuteSkjaldmaerAbility(CombatState state, Ability ability, object? target)
+[Test]
+public void Tier1Abilities_ProgressToRank2_When2Tier2AbilitiesUnlocked()
 {
-    var service = new SkjaldmaerService(_connectionString);
-    var character = state.Player;
-    var rank = ability.CurrentRank;
+    // Given: Shield Bash unlocked at Rank 1
+    // When: Unlock Guardian's Taunt and Shield Wall (2 Tier 2)
+    // Then: Shield Bash is now Rank 2
+}
 
-    switch (ability.Name)
-    {
-        case "Shield Bash":
-            if (target is Enemy enemy)
-            {
-                var result = service.ExecuteShieldBash(character, enemy, rank);
-                // Apply damage and status effects
-                return true;
-            }
-            break;
+[Test]
+public void Tier1Abilities_ProgressToRank3_WhenCapstoneUnlocked()
+{
+    // Given: Shield Bash at Rank 2
+    // When: Unlock Bastion of Sanity (Capstone)
+    // Then: Shield Bash is now Rank 3
+}
 
-        case "Oath of the Protector":
-            if (target is PlayerCharacter ally)
-            {
-                var result = service.ExecuteOathOfProtector(character, ally, rank);
-                // Apply buff
-                return true;
-            }
-            break;
-
-        case "Guardian's Taunt":
-            // AoE - no specific target
-            var frontRow = state.Enemies.Where(e => e.Position?.Row == Row.Front).ToList();
-            var backRow = state.Enemies.Where(e => e.Position?.Row == Row.Back).ToList();
-            var result = service.ExecuteGuardiansTaunt(character, frontRow, backRow, rank);
-            // Apply Taunted status
-            return true;
-
-        // ... other abilities
-    }
-
-    return false;
+[Test]
+public void Tier2Abilities_DoNotHaveRanks()
+{
+    // When: Unlock Guardian's Taunt
+    // Then: Guardian's Taunt is always Rank 1, no progression
 }
 ```
 
-### 6.2 Reaction System Framework
-
-New service needed: `ReactionService.cs`
+### 12.2 Ability Effect Tests Per Rank
 
 ```csharp
-public class ReactionService
+[Test]
+public void ShieldBash_Rank1_Deals1d8PlusMightDamage()
 {
-    private readonly ICombatUI _combatUI;
-
-    public async Task<bool> CheckAndPromptReactions(
-        CombatState state,
-        ReactionTrigger trigger,
-        object triggerContext)
-    {
-        // Find characters with reactions that match this trigger
-        var reactors = FindCharactersWithReaction(state, trigger);
-
-        foreach (var reactor in reactors)
-        {
-            if (CanUseReaction(reactor, trigger))
-            {
-                var prompt = BuildReactionPrompt(reactor, trigger, triggerContext);
-                var decision = await _combatUI.ShowReactionPromptAsync(prompt);
-
-                if (decision == ReactionDecision.Accept)
-                {
-                    ExecuteReaction(reactor, trigger, triggerContext);
-                    return true; // Reaction used
-                }
-            }
-        }
-
-        return false; // No reaction used
-    }
+    // Expected: 1d8 + 4 (MIGHT) = 5-12 damage
 }
 
-public enum ReactionTrigger
+[Test]
+public void ShieldBash_Rank2_Deals2d8PlusMightDamage()
 {
-    CriticalHitOnAlly,      // Interposing Shield
-    AllyWouldGainTrauma,    // Bastion of Sanity
-    AllyStressThreshold,    // Aegis of the Clan (passive, no prompt)
-    // ... future triggers
+    // Expected: 2d8 + 4 (MIGHT) = 6-20 damage
+}
+
+[Test]
+public void ShieldBash_Rank3_PushesOnStagger()
+{
+    // When: Shield Bash at Rank 3 staggers enemy in Front Row
+    // Then: Enemy is moved to Back Row
 }
 ```
-
----
-
-## 7. Specialization Tree Integration
-
-### 7.1 Loading Skjaldmaer Abilities
-
-Modify `SpecializationTreeViewModel.cs` to load from database instead of demo data:
-
-```csharp
-public void LoadSpecializationAbilities(int specializationId)
-{
-    var abilities = _abilityRepository.GetAbilitiesForSpecialization(specializationId);
-
-    FoundationTier.Clear();
-    CoreTier.Clear();
-    AdvancedTier.Clear();
-    MasteryTier.Clear();
-
-    foreach (var ability in abilities)
-    {
-        var node = new AbilityNodeViewModel(ability, Character,
-            isUnlocked: CharacterHasAbility(ability.AbilityID),
-            currentRank: GetAbilityRank(ability.AbilityID));
-
-        switch (ability.TierLevel)
-        {
-            case 1: FoundationTier.Add(node); break;
-            case 2: CoreTier.Add(node); break;
-            case 3: AdvancedTier.Add(node); break;
-            case 4: MasteryTier.Add(node); break;
-        }
-    }
-}
-```
-
-### 7.2 Unlocking and Ranking Abilities
-
-The current implementation in `SpecializationTreeViewModel.UnlockAbility()` needs to:
-1. Persist the unlock to database via `AbilityRepository`
-2. Add the ability to character's combat ability list
-3. Integrate with `SkjaldmaerService` for ability-specific initialization
-
----
-
-## 8. Testing Requirements
-
-### 8.1 Existing Tests (SkjaldmaerSpecializationTests.cs)
-
-| Test Category | Count | Status |
-|---------------|-------|--------|
-| Seeding Tests | 3 | :white_check_mark: Pass |
-| Ability Structure Tests | 4 | :white_check_mark: Pass |
-| Ability Execution Tests | 6 | :white_check_mark: Pass |
-| Guardian's Taunt Tests | 4 | :white_check_mark: Pass |
-| Capstone Tests | 3 | :white_check_mark: Pass |
-| Passive Ability Tests | 3 | :white_check_mark: Pass |
-
-### 8.2 Additional Tests Needed
-
-| Test Category | Tests Needed |
-|---------------|--------------|
-| GUI Integration | Ability selection dialog shows Skjaldmaer abilities |
-| GUI Integration | Resource bars display correctly |
-| GUI Integration | Reaction prompts appear at correct triggers |
-| Combat Integration | Shield Bash applies Staggered status |
-| Combat Integration | Guardian's Taunt applies Taunted status |
-| Combat Integration | Bastion of Sanity intercepts Trauma |
-| Combat Integration | Auras apply buffs to correct targets |
-| Status Effects | [Taunted] forces targeting |
-| Status Effects | [Fortified] prevents forced movement |
-
----
-
-## 9. Implementation Priority
-
-### Phase 1: Critical (Combat Usability)
-1. Add Stamina/Psychic Stress display to CombatView
-2. Implement ability selection dialog in combat
-3. Route Skjaldmaer abilities through CombatEngine
-4. Define missing status effects ([Taunted], [Fortified], [Staggered])
-
-### Phase 2: High (Core Functionality)
-5. Implement reaction prompt system
-6. Add Interposing Shield reaction handling
-7. Add Bastion of Sanity reaction handling
-8. Implement ally targeting for Oath of Protector
-
-### Phase 3: Medium (Polish)
-9. Add passive ability indicators
-10. Implement aura visual effects
-11. Add buff duration tracking display
-12. Load Skjaldmaer abilities from database in SpecializationTreeView
-
-### Phase 4: Low (Enhancement)
-13. Combat log flavor text for Skjaldmaer abilities
-14. Sound effects for ability usage
-15. Animation polish for Shield Bash, Shield Wall
-
----
-
-## 10. Appendix: Status Effect Definitions
-
-### [Staggered]
-- **Description**: Off-balance and vulnerable
-- **Duration**: 1 turn
-- **Effects**: -1 Defense, Cannot take Reactions
-- **Applied by**: Shield Bash
-
-### [Taunted]
-- **Description**: Compelled to attack the taunting character
-- **Duration**: 2 turns
-- **Effects**: Must target taunt source with attacks if possible
-- **Applied by**: Guardian's Taunt
-- **Data**: TauntSourceId (character who applied taunt)
-
-### [Fortified]
-- **Description**: Heavily defended position
-- **Duration**: 2-3 turns
-- **Effects**: Immune to Push, Pull, Knockback
-- **Applied by**: Shield Wall (Rank 3)
-
-### [Oath of the Protector]
-- **Description**: Protected by the Skjaldmaer's oath
-- **Duration**: 2-3 turns
-- **Effects**: +2-4 Soak, +1-2 dice vs Psychic Stress
-- **Applied by**: Oath of the Protector, Aegis of the Clan
-- **Data**: SoakBonus, StressResistanceDice
-
-### [Bastion Aura]
-- **Description**: Within the Skjaldmaer's protective presence
-- **Duration**: While Skjaldmaer in Front Row with Bastion of Sanity
-- **Effects**: +1 WILL, -10% ambient Psychic Stress gain
-- **Applied by**: Bastion of Sanity (passive component)
 
 ---
 
