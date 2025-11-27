@@ -336,14 +336,18 @@ Each technical doc links to:
 
 **Documentation Status:**
 - Database: 0 / 2 documents complete
-- Services: 0 / 6 documents complete
+- Services: 4 / 6 documents complete
+  - ✅ [CombatEngine](./services/combat-engine.md)
+  - ✅ [DungeonGenerator](./services/dungeon-generator.md)
+  - ✅ [CoherentGlitchRuleEngine](./services/coherent-glitch-rule-engine.md)
+  - ✅ [PopulationPipeline](./services/population-pipeline.md)
 - Architecture: 0 / 4 documents complete
 - Integration: 0 / 3 documents complete
 - Performance: 0 / 2 documents complete
 
-**Overall Progress:** 0%
+**Overall Progress:** 24% (4/17 documents)
 
 ---
 
-**Last Updated:** 2025-11-12
-**Documentation Version:** v0.17
+**Last Updated:** 2025-11-27
+**Documentation Version:** v0.18
