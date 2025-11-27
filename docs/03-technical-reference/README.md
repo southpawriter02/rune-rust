@@ -338,7 +338,7 @@ Each technical doc links to:
 - Database: 2 / 2 documents complete
   - ✅ [Database Schema](./database-schema.md)
   - ✅ [Data Access Patterns](./data-access-patterns.md)
-- Services: 8 / 10 documents complete
+- Services: 10 / 10 documents complete
   - ✅ [CombatEngine](./services/combat-engine.md)
   - ✅ [DungeonGenerator](./services/dungeon-generator.md)
   - ✅ [CoherentGlitchRuleEngine](./services/coherent-glitch-rule-engine.md)
@@ -347,6 +347,8 @@ Each technical doc links to:
   - ✅ [TraumaEconomyService](./services/trauma-economy-service.md)
   - ✅ [EnemyAI](./services/enemy-ai.md)
   - ✅ [BiomeLibrary](./services/biome-library.md)
+  - ✅ [QuestService](./services/quest-service.md)
+  - ✅ [EquipmentService](./services/equipment-service.md)
 - Architecture: 4 / 4 documents complete
   - ✅ [Service Architecture](./service-architecture.md)
   - ✅ [Data Flow](./data-flow.md)
@@ -355,7 +357,7 @@ Each technical doc links to:
 - Integration: 0 / 3 documents complete
 - Performance: 0 / 2 documents complete
 
-**Overall Progress:** 67% (14/21 documents)
+**Overall Progress:** 76% (16/21 documents)
 
 ---
 
