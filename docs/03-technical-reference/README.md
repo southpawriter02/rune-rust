@@ -336,18 +336,22 @@ Each technical doc links to:
 
 **Documentation Status:**
 - Database: 0 / 2 documents complete
-- Services: 4 / 6 documents complete
+- Services: 8 / 10 documents complete
   - ✅ [CombatEngine](./services/combat-engine.md)
   - ✅ [DungeonGenerator](./services/dungeon-generator.md)
   - ✅ [CoherentGlitchRuleEngine](./services/coherent-glitch-rule-engine.md)
   - ✅ [PopulationPipeline](./services/population-pipeline.md)
+  - ✅ [DiceService](./services/dice-service.md)
+  - ✅ [TraumaEconomyService](./services/trauma-economy-service.md)
+  - ✅ [EnemyAI](./services/enemy-ai.md)
+  - ✅ [BiomeLibrary](./services/biome-library.md)
 - Architecture: 0 / 4 documents complete
 - Integration: 0 / 3 documents complete
 - Performance: 0 / 2 documents complete
 
-**Overall Progress:** 24% (4/17 documents)
+**Overall Progress:** 42% (8/21 documents)
 
 ---
 
 **Last Updated:** 2025-11-27
-**Documentation Version:** v0.18
+**Documentation Version:** v0.19
