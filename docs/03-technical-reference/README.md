@@ -345,13 +345,16 @@ Each technical doc links to:
   - ✅ [TraumaEconomyService](./services/trauma-economy-service.md)
   - ✅ [EnemyAI](./services/enemy-ai.md)
   - ✅ [BiomeLibrary](./services/biome-library.md)
-- Architecture: 0 / 4 documents complete
+- Architecture: 3 / 4 documents complete
+  - ✅ [Service Architecture](./service-architecture.md)
+  - ✅ [Data Flow](./data-flow.md)
+  - ✅ [System Integration Map](./system-integration-map.md)
 - Integration: 0 / 3 documents complete
 - Performance: 0 / 2 documents complete
 
-**Overall Progress:** 42% (8/21 documents)
+**Overall Progress:** 55% (11/21 documents)
 
 ---
 
 **Last Updated:** 2025-11-27
-**Documentation Version:** v0.19
+**Documentation Version:** v0.20
