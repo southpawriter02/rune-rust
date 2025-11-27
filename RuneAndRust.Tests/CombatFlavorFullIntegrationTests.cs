@@ -99,25 +99,25 @@ public class CombatFlavorFullIntegrationTests : IDisposable
             VALUES
             ('PlayerMeleeAttack', 'SwordOneHanded', 'SolidHit',
              'Your {Weapon} bites into the {Enemy}''s {Target_Location} with a satisfying crunch.',
-             '[\"OneHanded\", \"SolidHit\"]'),
+             '[""OneHanded"", ""SolidHit""]'),
             ('PlayerMeleeAttack', 'SwordOneHanded', 'CriticalHit',
              'You find a critical weakness—your {Weapon} plunges into the {Enemy}''s {Vital_Location} with devastating precision!',
-             '[\"OneHanded\", \"Critical\"]'),
+             '[""OneHanded"", ""Critical""]'),
             ('PlayerMeleeAttack', 'SwordOneHanded', 'Miss',
              'You swing your {Weapon} at the {Enemy}, but it sidesteps effortlessly.',
-             '[\"OneHanded\", \"Miss\"]');
+             '[""OneHanded"", ""Miss""]');
 
             INSERT INTO Combat_Action_Descriptors (category, enemy_archetype, outcome_type, descriptor_text, tags)
             VALUES
             ('EnemyAttack', 'Servitor', NULL,
              'The Servitor''s articulated limb swings at you with mechanical precision.',
-             '[\"Servitor\", \"Attack\"]'),
+             '[""Servitor"", ""Attack""]'),
             ('EnemyDefense', 'Servitor', 'SolidHit',
              'The Servitor''s chassis dents under your blow, circuits sparking.',
-             '[\"Servitor\", \"Reaction\"]'),
+             '[""Servitor"", ""Reaction""]'),
             ('EnemyDefense', 'Servitor', 'CriticalHit',
              'The Servitor collapses, its corrupted runes dimming to darkness.',
-             '[\"Servitor\", \"Death\"]');
+             '[""Servitor"", ""Death""]');
 
             INSERT INTO Enemy_Voice_Profiles (enemy_archetype, voice_description, setting_context, attack_descriptors, reaction_damage, reaction_death, special_attacks)
             VALUES ('Servitor', 'Mechanical, emotionless', 'Corrupted machines', '[4]', '[5]', '[6]', '[]');

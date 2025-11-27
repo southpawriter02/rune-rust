@@ -4,6 +4,7 @@ using RuneAndRust.Engine;
 using RuneAndRust.Engine.Commands;
 using System.Collections.Generic;
 using System.Linq;
+using GameState = RuneAndRust.Engine.GameState;
 
 namespace RuneAndRust.Tests;
 

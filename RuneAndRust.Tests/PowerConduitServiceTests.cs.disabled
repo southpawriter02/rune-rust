@@ -1,5 +1,6 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using RuneAndRust.Core;
+using RuneAndRust.Core.AI;
 using RuneAndRust.Engine;
 
 namespace RuneAndRust.Tests;

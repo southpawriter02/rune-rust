@@ -3,6 +3,7 @@ using RuneAndRust.Core;
 using RuneAndRust.Engine;
 using RuneAndRust.Persistence;
 using Microsoft.Data.Sqlite;
+using RuneAndRust.Core.Quests;
 
 namespace RuneAndRust.Tests;
 
@@ -202,10 +203,10 @@ public class SkaldSpecializationTests
     {
         // Arrange
         var skald = CreateTestAdept();
-        skald.WILL = 5;
+        // skald.WILL = 5; // Removed
 
         // Act
-        bool started = _performanceService.StartPerformance(skald.CharacterID, 27002, 1, skald.WILL, 0);
+        bool started = _performanceService.StartPerformance(skald.CharacterID, 27002, 1, skald.Attributes.Will, 0);
 
         // Assert
         Assert.That(started, Is.True, "Performance should start successfully");
@@ -217,11 +218,11 @@ public class SkaldSpecializationTests
     {
         // Arrange
         var skald = CreateTestAdept();
-        skald.WILL = 5;
-        _performanceService.StartPerformance(skald.CharacterID, 27002, 1, skald.WILL, 0);
+        // skald.WILL = 5; // Removed
+        _performanceService.StartPerformance(skald.CharacterID, 27002, 1, skald.Attributes.Will, 0);
 
         // Act
-        bool secondStart = _performanceService.StartPerformance(skald.CharacterID, 27003, 1, skald.WILL, 0);
+        bool secondStart = _performanceService.StartPerformance(skald.CharacterID, 27003, 1, skald.Attributes.Will, 0);
 
         // Assert
         Assert.That(secondStart, Is.False, "Cannot start second performance while already performing");
@@ -232,8 +233,8 @@ public class SkaldSpecializationTests
     {
         // Arrange
         var skald = CreateTestAdept();
-        skald.WILL = 5;
-        _performanceService.StartPerformance(skald.CharacterID, 27002, 1, skald.WILL, 0);
+        // skald.WILL = 5; // Removed
+        _performanceService.StartPerformance(skald.CharacterID, 27002, 1, skald.Attributes.Will, 0);
 
         // Act
         bool interrupted = _performanceService.InterruptPerformance(skald.CharacterID, "[Stunned]");
@@ -248,10 +249,10 @@ public class SkaldSpecializationTests
     {
         // Arrange
         var skald = CreateTestAdept();
-        skald.WILL = 5;
+        // skald.WILL = 5; // Removed
 
         // Act
-        _performanceService.StartPerformance(skald.CharacterID, 27002, 1, skald.WILL, 0);
+        _performanceService.StartPerformance(skald.CharacterID, 27002, 1, skald.Attributes.Will, 0);
         var performance = _performanceService.GetCurrentPerformance(skald.CharacterID);
 
         // Assert
@@ -264,11 +265,11 @@ public class SkaldSpecializationTests
     {
         // Arrange
         var skald = CreateTestAdept();
-        skald.WILL = 5;
+        // skald.WILL = 5; // Removed
         int enduringRank = 2; // +3 rounds
 
         // Act
-        _performanceService.StartPerformance(skald.CharacterID, 27002, 1, skald.WILL, enduringRank);
+        _performanceService.StartPerformance(skald.CharacterID, 27002, 1, skald.Attributes.Will, enduringRank);
         var performance = _performanceService.GetCurrentPerformance(skald.CharacterID);
 
         // Assert
@@ -285,7 +286,7 @@ public class SkaldSpecializationTests
     {
         // Arrange
         var skald = CreateTestAdept();
-        skald.WILL = 5;
+        // skald.WILL = 5; // Removed
         var allies = new List<PlayerCharacter>
         {
             CreateTestAdept(),
@@ -308,7 +309,7 @@ public class SkaldSpecializationTests
     {
         // Arrange
         var skald = CreateTestAdept();
-        skald.WILL = 5;
+        // skald.WILL = 5; // Removed
         var enemies = new List<Enemy>
         {
             CreateTestEnemy(),
@@ -333,7 +334,7 @@ public class SkaldSpecializationTests
     {
         // Arrange
         var skald = CreateTestAdept();
-        skald.WILL = 5;
+        // skald.WILL = 5; // Removed
         var ally = CreateTestAdept();
         ally.Stamina = 50;
         ally.MaxStamina = 100;
@@ -352,7 +353,7 @@ public class SkaldSpecializationTests
     {
         // Arrange
         var skald = CreateTestAdept();
-        skald.WILL = 5;
+        // skald.WILL = 5; // Removed
         var ally = CreateTestAdept();
 
         // Act - Test Rank 3
@@ -402,7 +403,7 @@ public class SkaldSpecializationTests
     {
         // Arrange
         var skald = CreateTestAdept();
-        skald.WILL = 5;
+        // skald.WILL = 5; // Removed
         var frontRowAllies = new List<PlayerCharacter>
         {
             CreateTestAdept(),
@@ -443,7 +444,7 @@ public class SkaldSpecializationTests
     {
         // Arrange
         var skald = CreateTestAdept();
-        skald.WILL = 5;
+        // skald.WILL = 5; // Removed
         var allies = new List<PlayerCharacter>
         {
             CreateTestAdept(),
@@ -466,7 +467,7 @@ public class SkaldSpecializationTests
     {
         // Arrange
         var skald = CreateTestAdept();
-        skald.WILL = 5;
+        // skald.WILL = 5; // Removed
         var allies = new List<PlayerCharacter> { CreateTestAdept() };
 
         // Act
@@ -488,7 +489,7 @@ public class SkaldSpecializationTests
     {
         // Arrange
         var skald = CreateTestAdept();
-        skald.WILL = 5;
+        // skald.WILL = 5; // Removed
         var allies = new List<PlayerCharacter> { CreateTestAdept() };
 
         // Act - Test Rank 3
@@ -508,7 +509,7 @@ public class SkaldSpecializationTests
 
     private PlayerCharacter CreateTestAdept()
     {
-        return new PlayerCharacter
+        var player = new PlayerCharacter
         {
             CharacterID = new Random().Next(1000, 9999),
             Name = "Test Skald",
@@ -517,36 +518,32 @@ public class SkaldSpecializationTests
             ProgressionPoints = 50,
             HP = 80,
             MaxHP = 80,
-            CurrentHP = 80,
             Stamina = 120,
             MaxStamina = 120,
             PsychicStress = 0,
             Corruption = 0,
-            Attributes = new Attributes
-            {
-                Might = 2,
-                Finesse = 2,
-                Wits = 4,
-                Will = 5,
-                Sturdiness = 2
-            },
             Abilities = new List<Ability>(),
             StatusEffects = new List<StatusEffect>(),
             CompletedQuests = new List<Quest>()
         };
+
+        player.Attributes.Might = 2;
+        player.Attributes.Finesse = 2;
+        player.Attributes.Wits = 4;
+        player.Attributes.Will = 5;
+        player.Attributes.Sturdiness = 2;
+
+        return player;
     }
 
     private Enemy CreateTestEnemy()
     {
         return new Enemy
         {
-            EnemyID = new Random().Next(1000, 9999),
+            Id = new Random().Next(1000, 9999).ToString(),
             Name = "Test Enemy",
             HP = 50,
             MaxHP = 50,
-            IsFlying = false,
-            IsHidden = false,
-            IsStealth = false,
             StatusEffects = new List<StatusEffect>()
         };
     }

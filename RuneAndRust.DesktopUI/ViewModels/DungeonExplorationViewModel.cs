@@ -143,7 +143,7 @@ public class DungeonExplorationViewModel : ViewModelBase
     /// <summary>
     /// Room description text. Uses RoomDescriptorService when available for rich narrative.
     /// </summary>
-    public string RoomDescription => _narrativeText != string.Empty
+    public string RoomDescription => !string.IsNullOrEmpty(_narrativeText)
         ? _narrativeText
         : (CurrentRoom?.Description ?? "You are in an unknown location.");
 
@@ -1066,13 +1066,16 @@ public class DungeonExplorationViewModel : ViewModelBase
         {
             try
             {
-                var roomArchetype = CurrentRoom.Archetype ?? "Chamber";
                 var biome = CurrentRoom.PrimaryBiome ?? "The_Roots";
-                var generatedDescription = _roomDescriptorService.GenerateRoomDescription(roomArchetype, biome);
-                if (!string.IsNullOrEmpty(generatedDescription))
+                var roomArchetypeStr = CurrentRoom.Archetype.ToString();
+                if (Enum.TryParse<RuneAndRust.Core.Descriptors.RoomArchetype>(roomArchetypeStr, true, out var roomArchetype))
                 {
-                    _narrativeText = generatedDescription;
-                    this.RaisePropertyChanged(nameof(RoomDescription));
+                    var generatedDescription = _roomDescriptorService.GenerateRoomDescription(roomArchetype, biome);
+                    if (!string.IsNullOrEmpty(generatedDescription))
+                    {
+                        _narrativeText = generatedDescription;
+                        this.RaisePropertyChanged(nameof(RoomDescription));
+                    }
                 }
             }
             catch
@@ -1125,13 +1128,13 @@ public class DungeonExplorationViewModel : ViewModelBase
         // Hazards and conditions
         if (CurrentRoom.DynamicHazards?.Any() == true)
         {
-            var hazards = string.Join(", ", CurrentRoom.DynamicHazards.Select(h => h.Name));
+            var hazards = string.Join(", ", CurrentRoom.DynamicHazards.Select(h => h.HazardName));
             details.Add($"Hazards: {hazards}");
         }
 
         if (CurrentRoom.AmbientConditions?.Any() == true)
         {
-            var conditions = string.Join(", ", CurrentRoom.AmbientConditions.Select(c => c.Name));
+            var conditions = string.Join(", ", CurrentRoom.AmbientConditions.Select(c => c.ConditionName));
             details.Add($"Conditions: {conditions}");
         }
 
@@ -1256,8 +1259,10 @@ public class DungeonExplorationViewModel : ViewModelBase
                 {
                     try
                     {
+                        // GenerateExaminationText(objectCategory, objectType, witsCheck, objectState, biomeName)
                         var examText = _examinationService.GenerateExaminationText(
-                            terrain.Name, detailLevel, biome);
+                            "Terrain", terrain.Name, investigationRoll, null, biome);
+
                         if (!string.IsNullOrEmpty(examText))
                         {
                             findings.Add(examText);
@@ -1287,7 +1292,7 @@ public class DungeonExplorationViewModel : ViewModelBase
             var lootNode = CurrentRoom.LootNodes.First(l => l.RequiresInvestigation && !l.HiddenContentRevealed);
             if (investigationRoll >= 12)
             {
-                findings.Add($"You discover a hidden compartment in the {lootNode.Type}!");
+                findings.Add($"You discover a hidden compartment in the {lootNode.NodeType}!");
                 lootNode.HiddenContentRevealed = true;
                 foundSomething = true;
             }
@@ -1299,7 +1304,7 @@ public class DungeonExplorationViewModel : ViewModelBase
             var hazard = CurrentRoom.DynamicHazards.First(h => !h.HasBeenDiscovered);
             if (investigationRoll >= 14)
             {
-                findings.Add($"You identify a {hazard.Name} and understand how to avoid it.");
+                findings.Add($"You identify a {hazard.HazardName} and understand how to avoid it.");
                 hazard.HasBeenDiscovered = true;
                 foundSomething = true;
             }
@@ -1314,7 +1319,8 @@ public class DungeonExplorationViewModel : ViewModelBase
             {
                 try
                 {
-                    loreText = _examinationService.GetLoreFragment(biome);
+                    var fragment = _examinationService.GetLoreFragment(biome);
+                    loreText = fragment?.LoreText;
                 }
                 catch
                 {

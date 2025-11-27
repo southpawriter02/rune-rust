@@ -146,7 +146,7 @@ public class V04CombatSimulationTests
         // Act
         for (int i = 0; i < iterations; i++)
         {
-            var player = CharacterFactory.CreateCharacter(CharacterClass.Scavenger, "TestScavenger");
+            var player = CharacterFactory.CreateCharacter(CharacterClass.Skirmisher, "TestScavenger");
             player.MaxHP = 35;
             player.HP = 35;
 
@@ -273,7 +273,7 @@ public class V04CombatSimulationTests
         // Act
         for (int i = 0; i < iterations; i++)
         {
-            var player = CharacterFactory.CreateCharacter(CharacterClass.Scavenger, "TestScavenger");
+            var player = CharacterFactory.CreateCharacter(CharacterClass.Skirmisher, "TestScavenger");
             player.MaxHP = 30;
             player.HP = 30;
 

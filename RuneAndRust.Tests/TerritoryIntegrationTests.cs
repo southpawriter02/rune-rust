@@ -34,7 +34,7 @@ public class TerritoryIntegrationTests
 
         // Initialize database schema
         _saveRepository = new SaveRepository(_testDbDirectory);
-        _connectionString = $"Data Source={Path.Combine(_testDbDirectory, \"runeandrust.db\")}";
+        _connectionString = $"Data Source={Path.Combine(_testDbDirectory, "runeandrust.db")}";
 
         // Initialize services
         _controlService = new TerritoryControlService(_connectionString);

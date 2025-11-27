@@ -1,5 +1,6 @@
 using ReactiveUI;
 using RuneAndRust.Core;
+using RuneAndRust.Core.CombatFlavor;
 using RuneAndRust.DesktopUI.Controllers;
 using RuneAndRust.DesktopUI.Services;
 using RuneAndRust.Engine;
@@ -918,9 +919,26 @@ public class CombatViewModel : ViewModelBase
         {
             try
             {
+                // Parse outcome string to enum
+                if (!Enum.TryParse<CombatOutcome>(outcome, true, out var outcomeEnum))
+                {
+                    outcomeEnum = CombatOutcome.SolidHit;
+                }
+
                 if (isPlayer)
                 {
-                    var flavorText = _combatFlavorService.GeneratePlayerAttackText(weaponType, outcome);
+                    // Parse weapon type string to enum
+                    if (!Enum.TryParse<WeaponType>(weaponType, true, out var weaponTypeEnum))
+                    {
+                        weaponTypeEnum = WeaponType.SwordOneHanded; // Default fallback
+                    }
+
+                    var flavorText = _combatFlavorService.GeneratePlayerAttackText(
+                        weaponTypeEnum,
+                        weaponType, // Use raw string as name for now
+                        "Target", // Generic enemy name as we don't have it here
+                        outcomeEnum);
+
                     if (!string.IsNullOrEmpty(flavorText))
                     {
                         flavoredMessage = $"{flavorText} {baseMessage}";
@@ -928,10 +946,13 @@ public class CombatViewModel : ViewModelBase
                 }
                 else if (!string.IsNullOrEmpty(enemyArchetype))
                 {
-                    var flavorText = _combatFlavorService.GenerateEnemyAttackText(enemyArchetype, outcome);
-                    if (!string.IsNullOrEmpty(flavorText))
+                    if (Enum.TryParse<RuneAndRust.Core.CombatFlavor.EnemyArchetype>(enemyArchetype, true, out var archetypeEnum))
                     {
-                        flavoredMessage = $"{flavorText} {baseMessage}";
+                        var flavorText = _combatFlavorService.GenerateEnemyAttackText(archetypeEnum, "Enemy");
+                        if (!string.IsNullOrEmpty(flavorText))
+                        {
+                            flavoredMessage = $"{flavorText} {baseMessage}";
+                        }
                     }
                 }
             }
