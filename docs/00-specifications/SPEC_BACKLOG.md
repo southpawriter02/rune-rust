@@ -2,8 +2,8 @@
 
 **Purpose**: Central tracking document for all specifications (existing, in-progress, and planned)
 
-**Last Updated**: 2025-11-22
-**Total Specs**: 12 completed, 0 in progress, 28 planned, 40 total
+**Last Updated**: 2025-11-27
+**Total Specs**: 13 completed, 0 in progress, 27 planned, 40 total
 
 ---
 
@@ -15,10 +15,10 @@
 | Progression | 3 | 0 | 4 | 7 | 43% |
 | Economy | 2 | 0 | 4 | 6 | 33% |
 | World | 0 | 0 | 8 | 8 | 0% |
-| Narrative | 0 | 0 | 6 | 6 | 0% |
+| Narrative | 1 | 0 | 5 | 6 | 17% |
 | Faction | 0 | 0 | 3 | 3 | 0% |
 | AI | 0 | 0 | 2 | 2 | 0% |
-| **TOTAL** | **12** | **0** | **28** | **40** | **30%** |
+| **TOTAL** | **13** | **0** | **27** | **40** | **33%** |
 
 ---
 
@@ -591,27 +591,41 @@
 
 ---
 
-### 📋 SPEC-NARRATIVE-002: Dialogue & NPC Interaction System
-**Status**: Planned
-**Priority**: Low
+### ✅ SPEC-NARRATIVE-002: Dialogue System
+**Status**: Completed
+**File**: `specifications/DIALOGUE_SYSTEM_SPECIFICATION.md`
+**Lines**: ~1950
+**Completed**: 2025-11-27
+**Priority**: High (upgraded from Low - critical GUI gap)
 **Domain**: Narrative
-**Layer 1 Docs**: 🔗 None
+**Layer 1 Docs**: 🔗 `RuneAndRust.Engine/DialogueService.cs`, `Data/Dialogues/*.json`
 
-**Proposed Scope**:
-- Dialogue tree structure
-- Branching conversation mechanics
-- Skill check integration (WILL, FINESSE, CORPUS checks in dialogue)
-- NPC personality and response variation
-- Consequence tracking (reputation, quest triggers)
-- Setting compliance (Layer 2 Diagnostic Voice for NPCs)
+**Scope**:
+- Dialogue tree structure (DialogueNode, DialogueOption, DialogueOutcome)
+- Branching conversation mechanics with skill-gated options
+- Hard skill check system (attribute and specialization-based)
+- 8 OutcomeTypes (Information, QuestGiven, QuestComplete, ReputationChange, ItemReceived, ItemLost, InitiateCombat, EndConversation)
+- NPC disposition system (-100 to +100 with 5 tiers)
+- Topic history tracking and first-meeting flags
+- GUI requirements (pending implementation)
+- 12 functional requirements (FR-001 through FR-012)
+- Complete data format specification with JSON examples
+- Integration points with Faction, Quest, Combat, and Merchant systems
 
 **Dependencies**:
-- SPEC-NARRATIVE-004 (Faction System) - Not yet drafted
-- SETTING_COMPLIANCE.md - Voice & Tone standards
+- SPEC-PROGRESSION-001 (Character Progression) - Completed (for skill checks)
+- SPEC-FACTION-001 (Faction Reputation) - Planned (for reputation outcomes)
 
-**Why Needed**: Dialogue system is aspirational feature for future development.
+**Why Complete**: Dialogue system identified as critical GUI gap (0% coverage) in GUI_GAP_ANALYSIS.md. Core v0.8 implementation exists with DialogueService (313 lines), 8 NPC dialogue files (50+ nodes), and full skill check filtering. GUI implementation pending.
 
-**Implementation Exists**: No
+**Implementation Exists**: Yes
+- `RuneAndRust.Core/Dialogue/DialogueNode.cs`
+- `RuneAndRust.Core/Dialogue/DialogueOption.cs`
+- `RuneAndRust.Core/Dialogue/DialogueOutcome.cs`
+- `RuneAndRust.Core/Dialogue/SkillCheckRequirement.cs`
+- `RuneAndRust.Engine/DialogueService.cs`
+- `RuneAndRust.Engine/Commands/TalkCommand.cs`
+- `Data/Dialogues/*.json` (8 files)
 
 ---
 
@@ -1438,6 +1452,6 @@ When you identify a new system that needs a specification, add an entry using th
 
 ---
 
-**Last Updated**: 2025-11-21
+**Last Updated**: 2025-11-27
 **Maintained By**: Specification governance framework
 **Update Frequency**: Update this document whenever specifications are completed or new systems are identified
