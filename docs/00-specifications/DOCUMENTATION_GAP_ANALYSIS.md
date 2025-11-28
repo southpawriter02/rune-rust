@@ -1,10 +1,11 @@
 # Documentation Gap Analysis
 
 > **Generated**: 2025-11-27
-> **Last Updated**: 2025-11-28 (GUI + Companion specs added)
+> **Last Updated**: 2025-11-28 (GUI + Companion + Faction specs added)
 > **Purpose**: Track documentation coverage and identify remaining gaps
 
 ### Recent Updates
+- **2025-11-28**: Added Faction & Territory specification (SPEC-SYSTEM-011) - Moderate Gap resolved
 - **2025-11-28**: Added Companion System specification (SPEC-SYSTEM-010) - Moderate Gap resolved
 - **2025-11-28**: Added GUI Implementation specification (SPEC-SYSTEM-009) - Major Gap resolved
 - **2025-11-28**: Comprehensive update reflecting all completed documentation work
@@ -40,7 +41,7 @@
 |----------|--------|-------|--------|
 | Critical Gaps | 6 unresolved | 0 unresolved | ✅ Complete |
 | Major Gaps | 4 unresolved | 0 unresolved | ✅ 100% Complete |
-| Moderate Gaps | 5 categories | 4 categories | ⚠️ 20% Complete |
+| Moderate Gaps | 5 categories | 3 categories | ⚠️ 40% Complete |
 | Specializations | 13/19 | 19/19 | ✅ Complete |
 
 ---
@@ -251,7 +252,7 @@ All critical documentation gaps have been addressed with comprehensive Layer 0 s
 | System | Count | Status |
 |--------|-------|--------|
 | **Companion System** | 4 services | ✅ `systems/companion-system-spec.md` |
-| **Faction & Territory** | 5 services | ⚠️ Pending |
+| **Faction & Territory** | 10 services | ✅ `systems/faction-territory-spec.md` |
 | **NPC & Dialogue** | 3 services | ⚠️ Pending |
 | **Environmental Hazards** | 9 services | ⚠️ Pending |
 | **Specialization Implementation** | 11 services | ✅ Specs exist in `/specializations/` |
@@ -268,12 +269,16 @@ All critical documentation gaps have been addressed with comprehensive Layer 0 s
 - ✅ Direct command system
 - ✅ GUI planning elements (6 planned UI components)
 
-#### Faction & Territory
-- `FactionService.cs` - Faction reputation system
-- `FactionWarService.cs` - Territory warfare
-- `ReputationService.cs` - Reputation tracking
-- `TerritoryService.cs` - Territory control
-- `MerchantService.cs` - Merchant interactions
+#### Faction & Territory ✅
+**NOW Documented in `systems/faction-territory-spec.md`:**
+- ✅ 5 factions with unique philosophies and relationships
+- ✅ Reputation system with 6 tiers (-100 to +100)
+- ✅ Territory control across 10 sectors
+- ✅ Faction war mechanics with victory/defeat resolution
+- ✅ World events (9 types) with player influence
+- ✅ Merchant price modifiers by reputation
+- ✅ 25 faction quests, 18 faction rewards
+- ✅ GUI planning elements (6 planned UI components)
 
 #### NPC & Dialogue
 - `NPCService.cs` - NPC interactions
@@ -332,7 +337,7 @@ Note: All 19 specializations now have Layer 0 specs in `/docs/00-specifications/
 
 10. ✅ **GUI Implementation** - `systems/gui-implementation-spec.md`
 11. ✅ **Companion System** - `systems/companion-system-spec.md`
-12. ⚠️ **Faction & Territory** - World systems (specs exist partially)
+12. ✅ **Faction & Territory** - `systems/faction-territory-spec.md`
 
 ---
 
@@ -347,17 +352,16 @@ Note: All 19 specializations now have Layer 0 specs in `/docs/00-specifications/
 | **Phase 3: Important** | Encounter, Status Effects, Room Generation | 3 specs | ✅ Complete |
 | **Specializations** | All 19 implemented specializations | 19 specs | ✅ Complete |
 
-**Total Specifications Created**: 30 Layer 0 specifications
+**Total Specifications Created**: 31 Layer 0 specifications
 
 ### Remaining Work
 
 | System | Priority | Estimated Effort | Notes |
 |--------|----------|------------------|-------|
-| Faction & Territory | Low | 5 hours | Reputation, warfare, merchants |
 | NPC & Dialogue | Low | 3 hours | Dialogue trees, transactions |
 | Environmental Hazards | Low | 4 hours | Hazards, traps, cover |
 
-**Remaining Estimated Effort**: ~12 hours
+**Remaining Estimated Effort**: ~7 hours
 
 ---
 
@@ -368,7 +372,7 @@ Note: All 19 specializations now have Layer 0 specs in `/docs/00-specifications/
 - `/docs/00-specifications/progression/` - 3 progression spec files
 - `/docs/00-specifications/economy/` - 2 economy spec files
 - `/docs/00-specifications/specializations/` - 19 specialization specs (all implemented specializations now documented)
-- `/docs/00-specifications/systems/` - 11 system specs (GUI, Companion, etc.)
+- `/docs/00-specifications/systems/` - 12 system specs (GUI, Companion, Faction, etc.)
 - `/docs/03-technical-reference/services/` - 10 service docs
 
 ### Partial Documentation (Enhanced by New Specs)
@@ -395,8 +399,9 @@ Note: All 19 specializations now have Layer 0 specs in `/docs/00-specifications/
 | Procedural Room Generation | SPEC-SYSTEM-008 | ~450 | Templates, biomes, secrets |
 | **GUI Implementation** | **SPEC-SYSTEM-009** | **~850** | **MVVM, 26 services, 20 ViewModels, navigation** |
 | **Companion System** | **SPEC-SYSTEM-010** | **~950** | **6 companions, AI behavior, recruitment, GUI planning** |
+| **Faction & Territory** | **SPEC-SYSTEM-011** | **~1100** | **5 factions, reputation, territory, wars, GUI planning** |
 
-**Total New Documentation**: ~6,150 lines across 11 comprehensive specifications
+**Total New Documentation**: ~7,250 lines across 12 comprehensive specifications
 
 ---
 
