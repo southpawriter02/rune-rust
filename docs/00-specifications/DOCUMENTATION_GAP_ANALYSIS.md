@@ -1,10 +1,11 @@
 # Documentation Gap Analysis
 
 > **Generated**: 2025-11-27
-> **Last Updated**: 2025-11-27
-> **Purpose**: Identify undocumented systems and prioritize documentation efforts
+> **Last Updated**: 2025-11-28
+> **Purpose**: Track documentation coverage and identify remaining gaps
 
 ### Recent Updates
+- **2025-11-28**: Comprehensive update reflecting all completed documentation work
 - **2025-11-27**: Created 9 comprehensive system specifications addressing critical gaps:
   - `systems/save-load-system-spec.md` (SPEC-SYSTEM-001) ✅
   - `systems/inventory-equipment-spec.md` (SPEC-SYSTEM-002) ✅
@@ -23,17 +24,28 @@
 
 | Metric | Value |
 |--------|-------|
-| **Total Documentation Files** | 128 markdown files |
+| **Total Documentation Files** | 137+ markdown files |
 | **Service Classes in Engine** | 121 active services |
-| **Documented Services** | ~10 services |
-| **Documentation Coverage** | ~8% of services |
+| **Documented Services** | ~50+ services |
+| **Documentation Coverage** | ~41% of services |
+| **Critical Systems Documented** | 9/9 (100%) |
+| **Specializations Documented** | 19/19 (100%) |
 | **Code Files** | 493 total (221 Core, 272 Engine) |
+
+### Documentation Progress Summary
+
+| Category | Before | After | Status |
+|----------|--------|-------|--------|
+| Critical Gaps | 6 unresolved | 0 unresolved | ✅ Complete |
+| Major Gaps | 4 unresolved | 1 unresolved | ✅ 75% Complete |
+| Moderate Gaps | 5 categories | 5 categories | ⚠️ Pending |
+| Specializations | 13/19 | 19/19 | ✅ Complete |
 
 ---
 
-## Critical Gaps - STATUS UPDATE
+## Critical Gaps - ✅ ALL RESOLVED
 
-All critical gaps have been addressed with comprehensive specifications:
+All critical documentation gaps have been addressed with comprehensive Layer 0 specifications:
 
 | System | Code Exists | Documentation | Status |
 |--------|-------------|---------------|--------|
@@ -44,9 +56,9 @@ All critical gaps have been addressed with comprehensive specifications:
 | **Enemy AI Behavior** | 11 AI services in `/AI/` folder | `systems/enemy-ai-behavior-spec.md` | ✅ RESOLVED |
 | **Loot Generation (ROG)** | `LootService.cs`, `BossLootService.cs` | `systems/loot-generation-spec.md` | ✅ RESOLVED |
 
-### Critical Gap Details
+### Critical Gap Details - Documentation Complete
 
-#### 1. Save/Load System
+#### 1. Save/Load System ✅
 **Code Location:**
 - `RuneAndRust.Persistence/SaveRepository.cs` (134KB)
 - `RuneAndRust.Persistence/SaveData.cs`
@@ -54,29 +66,30 @@ All critical gaps have been addressed with comprehensive specifications:
 - `RuneAndRust.DesktopUI/Services/ISaveGameService.cs`
 - `RuneAndRust.DesktopUI/ViewModels/SaveLoadViewModel.cs`
 
-**What's NOT documented:**
-- Save file format and structure
-- Data serialization strategy (JSON vs binary)
-- Save slot management and versioning
-- Auto-save mechanics and frequency
-- Load/recovery procedures
-- Corruption handling and backup strategy
+**NOW Documented in `systems/save-load-system-spec.md`:**
+- ✅ SQLite schema with 50+ columns and JSON serialization for complex objects
+- ✅ Save slot management with 3 auto-save slots and unlimited manual slots
+- ✅ Schema migration strategy with version tracking
+- ✅ Auto-save mechanics (combat completion, room transitions, milestone events)
+- ✅ Load/recovery procedures with corruption detection
+- ✅ Backup strategy and rollback support
 
-#### 2. Inventory & Equipment Management
+#### 2. Inventory & Equipment Management ✅
 **Code Location:**
 - `RuneAndRust.Engine/EquipmentService.cs`
 - `RuneAndRust.Engine/EquipmentDatabase.cs` (60+ equipment definitions)
 - `RuneAndRust.DesktopUI/Services/SaveGameService.cs`
 - `RuneAndRust.Persistence/SaveRepository.cs`
 
-**What's NOT documented:**
-- Inventory system mechanics (capacity, management, sorting)
-- Equipment slot system and incompatibilities
-- Item quality tiers and modifiers
-- Equipment stat bonuses and scaling
-- Inventory data flow (pickup, drop, equip/unequip)
+**NOW Documented in `systems/inventory-equipment-spec.md`:**
+- ✅ Inventory capacity (100 base + 25 per Resilience) and weight system
+- ✅ 6 equipment slots: Head, Torso, Hands, Feet, Weapon, Accessory
+- ✅ Quality tier system: Jury-Rigged → Scavenged → Clan-Forged → Optimized → Myth-Forged
+- ✅ Stat bonus formulas and scaling per quality tier
+- ✅ Complete equip/unequip/swap data flow
+- ✅ Modification slots (1-3 based on quality)
 
-#### 3. Vertical Movement / Z-Axis Mechanics
+#### 3. Vertical Movement / Z-Axis Mechanics ✅
 **Code Location:**
 - `RuneAndRust.Engine/AdvancedMovementService.cs`
 - `RuneAndRust.Engine/CoordinatedMovementService.cs`
@@ -86,15 +99,15 @@ All critical gaps have been addressed with comprehensive specifications:
 - `RuneAndRust.Core/Spatial/` - Spatial data models
 - `RuneAndRust.Core/Grid/` - Grid system
 
-**What's NOT documented:**
-- 3D battlefield coordinate system (X, Y, Z)
-- Z-axis movement costs and mechanics
-- Elevation effects on combat (high ground advantage)
-- Vertical terrain features (stairs, platforms, gaps)
-- Multi-layer dungeon room rendering
-- Climbing and descent mechanics
+**NOW Documented in `systems/vertical-movement-spec.md`:**
+- ✅ 7 vertical layers: DeepRoots (-3) through Canopy (+3) with 100m per layer
+- ✅ Connection types: Stairs (1 AP), Ladder (2 AP), Shaft (skill check), Elevator (3 AP)
+- ✅ Elevation combat modifiers: +1 attack, +2 ranged damage per layer advantage
+- ✅ Fall damage formula: (Layers × 5) damage, Athletics DC 12 to halve
+- ✅ Multi-layer room rendering and Z-coordinate system
+- ✅ Skill check mechanics for hazardous traversal
 
-#### 4. Crafting System
+#### 4. Crafting System ✅
 **Code Location:**
 - `RuneAndRust.Engine/Crafting/AdvancedCraftingService.cs`
 - `RuneAndRust.Engine/Crafting/ModificationService.cs`
@@ -102,14 +115,15 @@ All critical gaps have been addressed with comprehensive specifications:
 - `RuneAndRust.Engine/FieldMedicineCraftingService.cs`
 - `RuneAndRust.Persistence/CraftingRepository.cs`
 
-**What's NOT documented:**
-- Crafting mechanics (recipes, stations, resources)
-- Quality calculation and crafting success rates
-- Component types and material requirements
-- Equipment modification system (enchanting, upgrading)
-- Recipe discovery and unlocking
+**NOW Documented in `systems/crafting-system-spec.md`:**
+- ✅ 17 component types across 4 rarity tiers
+- ✅ Recipe discovery through NPC, exploration, and experimentation
+- ✅ Quality calculation: d20 + WITS + SkillBonus + ComponentBonus vs DC
+- ✅ Critical success/failure mechanics
+- ✅ Runic inscription system with 3 modification slots max
+- ✅ Recipe registry with unlock tracking
 
-#### 5. Enemy/Mob AI Behavior
+#### 5. Enemy/Mob AI Behavior ✅
 **Code Location:**
 - `RuneAndRust.Engine/AI/EnemyAIOrchestrator.cs`
 - `RuneAndRust.Engine/AI/AbilityPrioritizationService.cs`
@@ -122,35 +136,32 @@ All critical gaps have been addressed with comprehensive specifications:
 - `RuneAndRust.Engine/AI/ChallengeSectorAIService.cs`
 - `RuneAndRust.Engine/AI/BossAIService.cs`
 
-**What's NOT documented:**
-- AI decision-making algorithm (evaluation order)
-- Ability prioritization weights and calculations
-- Target selection criteria and priorities
-- Threat assessment formulas
-- Adaptive difficulty scaling
-- Boss-specific AI behaviors
-- Behavior pattern execution
+**NOW Documented in `systems/enemy-ai-behavior-spec.md`:**
+- ✅ 5-step AI decision loop: Evaluate → Prioritize → Select → Execute → Adapt
+- ✅ Ability prioritization formula: (Damage×0.4) + (Utility×0.3) + (Efficiency×0.2) + (Situation×0.1)
+- ✅ Threat assessment with weighting: Damage (0.4), Debuffs (0.3), Support (0.2), Proximity (0.1)
+- ✅ 4 AI archetypes: Aggressive, Defensive, Support, Opportunistic
+- ✅ 5 intelligence levels (1-5) affecting ability weighting
+- ✅ Boss phase transitions and special behaviors
 
-#### 6. Random Object Generation (Loot System)
+#### 6. Random Object Generation (Loot System) ✅
 **Code Location:**
 - `RuneAndRust.Engine/LootService.cs`
 - `RuneAndRust.Engine/LootSpawner.cs`
 - `RuneAndRust.Engine/BossLootService.cs`
 - `RuneAndRust.Persistence/BossLootSeeder.cs`
 
-**What's NOT documented:**
-- ROG algorithm and random selection process
-- Loot rarity tiers and drop rates
-- Enemy-based loot generation logic
-- Boss loot tables and special drops
-- Loot quality modifiers
-- Currency drop mechanics
+**NOW Documented in `systems/loot-generation-spec.md`:**
+- ✅ Quality distribution by enemy tier (Standard, Elite, Boss, Legendary)
+- ✅ Drop chance formulas with Luck attribute integration
+- ✅ Currency (Cogs) drop calculation: Base × (1 + Milestone×0.2) × LuckMod
+- ✅ Boss-specific loot tables with guaranteed legendary drops
+- ✅ Modifier pools and selection algorithms
+- ✅ Container loot generation
 
 ---
 
-## Major Gaps - STATUS UPDATE
-
-Most major gaps have been addressed:
+## Major Gaps - ✅ 75% RESOLVED
 
 | System | Services | Status |
 |--------|----------|--------|
@@ -161,7 +172,7 @@ Most major gaps have been addressed:
 
 ### Major Gap Details
 
-#### Encounter Generation
+#### Encounter Generation ✅
 **Code Location:**
 - `RuneAndRust.Engine/EncounterService.cs`
 - `RuneAndRust.Engine/BossEncounterService.cs`
@@ -169,29 +180,29 @@ Most major gaps have been addressed:
 - `RuneAndRust.Engine/RoomPopulationService.cs`
 - `RuneAndRust.Engine/BudgetDistributionService.cs`
 
-**Missing Documentation:**
-- Encounter composition algorithm
-- Difficulty scaling based on player level
-- Enemy group formations
-- Boss phase mechanics and transitions
-- Faction-based encounter variations
-- Encounter reward scaling
+**NOW Documented in `systems/encounter-generation-spec.md`:**
+- ✅ Budget calculation: BaseBudget + (Milestone × BudgetPerMilestone) + RoomModifier
+- ✅ Enemy cost system: Fodder (1), Standard (2), Elite (4), Support (3)
+- ✅ Composition rules: Max 6 enemies, frontline required, support needs frontline
+- ✅ Faction templates: Draugr (swarm), Jotun (heavy), Corrupted (mixed)
+- ✅ Boss phase mechanics: Phase 1 (100-70%), Phase 2 (70-30%), Phase 3 (30-0%)
+- ✅ Difficulty scaling table by milestone
 
-#### Advanced Status Effects
+#### Advanced Status Effects ✅
 **Code Location:**
 - `RuneAndRust.Engine/AdvancedStatusEffectService.cs`
 - `RuneAndRust.Engine/StatusEffectFlavorTextService.cs`
 - `RuneAndRust.Persistence/StatusEffectRepository.cs`
 
-**Missing Documentation:**
-- Status effect stacking rules
-- Duration mechanics (permanent vs temporary)
-- Stack limit enforcement
-- Effect removal logic and conditions
-- Conditional status effects
-- Immunity and resistance mechanics
+**NOW Documented in `systems/advanced-status-effects-spec.md`:**
+- ✅ 5 effect categories: DoT, Buff, Debuff, Control, Conditional
+- ✅ Stacking rules by effect type with max stack limits
+- ✅ Duration types: Per-Turn, Per-Round, Permanent, Conditional
+- ✅ Immunity blocks entirely, Resistance reduces duration 50%
+- ✅ Effect synergies (Burning + Oil = 2× damage)
+- ✅ Counter effects (Burning vs Frozen = both removed)
 
-#### Procedural Room Generation
+#### Procedural Room Generation ✅
 **Code Location:**
 - `RuneAndRust.Engine/DungeonGenerator.cs`
 - `RuneAndRust.Engine/DungeonService.cs`
@@ -201,16 +212,15 @@ Most major gaps have been addressed:
 - `RuneAndRust.Engine/EnvironmentalObjectService.cs`
 - `RuneAndRust.Engine/ObjectInteractionService.cs`
 
-**Missing Documentation:**
-- Room template system and customization
-- Procedural room layout generation
-- Hazard placement algorithms
-- Environmental puzzle generation
-- Secret room discovery mechanics
-- Room connectivity and navigation rules
-- Biome-specific generation variations
+**NOW Documented in `systems/procedural-room-generation-spec.md`:**
+- ✅ Seed-based generation for reproducibility
+- ✅ Room template types: Combat (40%), Puzzle (15%), Rest (10%), Loot (15%), Boss, Secret
+- ✅ Biome-specific hazards (Muspelheim = fire, Niflheim = ice)
+- ✅ Secret room discovery via WITS check (DC 15)
+- ✅ Connectivity validation via BFS
+- ✅ Dungeon size scaling by milestone (6-7 rooms at M0, 13-15 at M3+)
 
-#### GUI Implementation
+#### GUI Implementation ⚠️ STILL PENDING
 **Code Location:**
 - `RuneAndRust.DesktopUI/Controllers/` - 10+ UI controllers
 - `RuneAndRust.DesktopUI/Services/` - 23 UI services
@@ -218,7 +228,7 @@ Most major gaps have been addressed:
 - `RuneAndRust.DesktopUI/Views/` - XAML UI definitions
 - `RuneAndRust.DesktopUI/Converters/` - Data converters
 
-**Missing Documentation:**
+**Still Missing Documentation:**
 - MVVM architecture and data binding
 - View-ViewModel communication patterns
 - State management across screens
@@ -238,7 +248,7 @@ Most major gaps have been addressed:
 | **Faction & Territory** | 5 services | FactionWarService, TerritoryService |
 | **NPC & Dialogue** | 3 services | DialogueService, NPCService |
 | **Environmental Hazards** | 9 services | HazardService, TrapService, CoverService |
-| **Specialization Implementation** | 11 services | Per-specialization mechanics |
+| **Specialization Implementation** | 11 services | Per-specialization mechanics (specs exist) |
 
 ### Moderate Gap Service Listing
 
@@ -273,6 +283,7 @@ Most major gaps have been addressed:
 - `WeatherEffectService.cs` - Weather effects
 
 #### Specialization Implementation Services
+Note: All 19 specializations now have Layer 0 specs in `/docs/00-specifications/specializations/`
 - `BerserkrService.cs`
 - `EchoCallerService.cs`
 - `MyrkgengrService.cs`
@@ -315,30 +326,30 @@ Most major gaps have been addressed:
 
 ---
 
-## Documentation Roadmap
+## Documentation Roadmap - UPDATED
 
-### Phase 1: Critical Systems (Est. 18 hours)
-| System | Effort | Output Files |
-|--------|--------|--------------|
-| Save/Load | 6 hours | `save-load-system.md`, `save-load-spec.md` |
-| Inventory & Equipment | 7 hours | `inventory-management.md`, `equipment-system.md` |
-| Vertical Movement | 5 hours | `vertical-movement-mechanics.md`, `spatial-system.md` |
+### Completed Work ✅
 
-### Phase 2: Core Gameplay (Est. 19 hours)
-| System | Effort | Output Files |
-|--------|--------|--------------|
-| Crafting | 6 hours | `crafting-system.md`, `crafting-spec.md` |
-| Enemy AI | 8 hours | `ai-behavior-system.md`, `ai-behavior-spec.md` |
-| Loot Generation | 5 hours | `loot-generation.md`, `loot-system.md` |
+| Phase | Systems | Specs Created | Status |
+|-------|---------|---------------|--------|
+| **Phase 1: Critical** | Save/Load, Inventory, Vertical Movement | 3 specs | ✅ Complete |
+| **Phase 2: Core Gameplay** | Crafting, Enemy AI, Loot Generation | 3 specs | ✅ Complete |
+| **Phase 3: Important** | Encounter, Status Effects, Room Generation | 3 specs | ✅ Complete |
+| **Specializations** | All 19 implemented specializations | 19 specs | ✅ Complete |
 
-### Phase 3: Complete Coverage (Est. 15 hours)
-| System | Effort | Output Files |
-|--------|--------|--------------|
-| Encounter Generation | 5 hours | `encounter-generation.md` |
-| Status Effects | 4 hours | `status-effects-advanced.md` |
-| Room Generation | 6 hours | `room-generation.md` |
+**Total Specifications Created**: 28 Layer 0 specifications
 
-**Total Estimated Effort**: 52 hours (~7-8 weeks at 8 hours/week)
+### Remaining Work
+
+| System | Priority | Estimated Effort | Notes |
+|--------|----------|------------------|-------|
+| GUI Implementation | Medium | 8 hours | MVVM, View-ViewModel, UI patterns |
+| Companion System | Low | 4 hours | AI, recruitment, progression |
+| Faction & Territory | Low | 5 hours | Reputation, warfare, merchants |
+| NPC & Dialogue | Low | 3 hours | Dialogue trees, transactions |
+| Environmental Hazards | Low | 4 hours | Hazards, traps, cover |
+
+**Remaining Estimated Effort**: ~24 hours
 
 ---
 
@@ -349,12 +360,33 @@ Most major gaps have been addressed:
 - `/docs/00-specifications/progression/` - 3 progression spec files
 - `/docs/00-specifications/economy/` - 2 economy spec files
 - `/docs/00-specifications/specializations/` - 19 specialization specs (all implemented specializations now documented)
+- `/docs/00-specifications/systems/` - 9 system specs (NEW)
 - `/docs/03-technical-reference/services/` - 10 service docs
 
-### Partial Documentation
-- `/docs/01-systems/status-effects.md` - Lists effects, lacks advanced mechanics
-- `/docs/03-technical-reference/services/enemy-ai.md` - Basic AI, lacks decision algorithms
-- `/docs/00-specifications/economy/loot-equipment-spec.md` - Spec only, no implementation
+### Partial Documentation (Enhanced by New Specs)
+- `/docs/01-systems/status-effects.md` - Now supplemented by `systems/advanced-status-effects-spec.md`
+- `/docs/03-technical-reference/services/enemy-ai.md` - Now supplemented by `systems/enemy-ai-behavior-spec.md`
+- `/docs/00-specifications/economy/loot-equipment-spec.md` - Now supplemented by `systems/loot-generation-spec.md`
+
+---
+
+## Summary of Accomplishments
+
+### Documentation Created (2025-11-27)
+
+| Specification | ID | Lines | Key Coverage |
+|--------------|-----|-------|--------------|
+| Save/Load System | SPEC-SYSTEM-001 | ~600 | SQLite schema, migrations, auto-save |
+| Inventory & Equipment | SPEC-SYSTEM-002 | ~500 | Slots, quality tiers, stat bonuses |
+| Vertical Movement | SPEC-SYSTEM-003 | ~450 | 7 layers, connection types, fall damage |
+| Crafting System | SPEC-SYSTEM-004 | ~550 | 17 components, recipes, modifications |
+| Enemy AI Behavior | SPEC-SYSTEM-005 | ~650 | 5-step loop, archetypes, intelligence |
+| Loot Generation | SPEC-ECONOMY-001 | ~400 | Quality distribution, boss loot, currency |
+| Encounter Generation | SPEC-SYSTEM-007 | ~350 | Budget system, factions, boss phases |
+| Advanced Status Effects | SPEC-COMBAT-003 | ~400 | Stacking, duration, immunity |
+| Procedural Room Generation | SPEC-SYSTEM-008 | ~450 | Templates, biomes, secrets |
+
+**Total New Documentation**: ~4,350 lines across 9 comprehensive specifications
 
 ---
 
