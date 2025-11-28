@@ -1,10 +1,15 @@
 # Documentation Gap Analysis
 
 > **Generated**: 2025-11-27
-> **Last Updated**: 2025-11-28
+> **Last Updated**: 2025-11-28 (All Moderate Gaps resolved)
 > **Purpose**: Track documentation coverage and identify remaining gaps
 
 ### Recent Updates
+- **2025-11-28**: Added Environmental Hazards specification (SPEC-SYSTEM-013) - Final Moderate Gap resolved
+- **2025-11-28**: Added NPC & Dialogue specification (SPEC-SYSTEM-012) - Moderate Gap resolved
+- **2025-11-28**: Added Faction & Territory specification (SPEC-SYSTEM-011) - Moderate Gap resolved
+- **2025-11-28**: Added Companion System specification (SPEC-SYSTEM-010) - Moderate Gap resolved
+- **2025-11-28**: Added GUI Implementation specification (SPEC-SYSTEM-009) - Major Gap resolved
 - **2025-11-28**: Comprehensive update reflecting all completed documentation work
 - **2025-11-27**: Created 9 comprehensive system specifications addressing critical gaps:
   - `systems/save-load-system-spec.md` (SPEC-SYSTEM-001) ✅
@@ -37,8 +42,8 @@
 | Category | Before | After | Status |
 |----------|--------|-------|--------|
 | Critical Gaps | 6 unresolved | 0 unresolved | ✅ Complete |
-| Major Gaps | 4 unresolved | 1 unresolved | ✅ 75% Complete |
-| Moderate Gaps | 5 categories | 5 categories | ⚠️ Pending |
+| Major Gaps | 4 unresolved | 0 unresolved | ✅ Complete |
+| Moderate Gaps | 5 categories | 0 categories | ✅ Complete |
 | Specializations | 13/19 | 19/19 | ✅ Complete |
 
 ---
@@ -161,14 +166,14 @@ All critical documentation gaps have been addressed with comprehensive Layer 0 s
 
 ---
 
-## Major Gaps - ✅ 75% RESOLVED
+## Major Gaps - ✅ ALL RESOLVED
 
 | System | Services | Status |
 |--------|----------|--------|
 | **Encounter Generation** | 4 services | ✅ `systems/encounter-generation-spec.md` |
 | **Advanced Status Effects** | 3 services | ✅ `systems/advanced-status-effects-spec.md` |
 | **Procedural Room Generation** | 5 services | ✅ `systems/procedural-room-generation-spec.md` |
-| **GUI Implementation** | 23 UI services | ⚠️ Still needs documentation |
+| **GUI Implementation** | 26 UI services | ✅ `systems/gui-implementation-spec.md` |
 
 ### Major Gap Details
 
@@ -220,67 +225,84 @@ All critical documentation gaps have been addressed with comprehensive Layer 0 s
 - ✅ Connectivity validation via BFS
 - ✅ Dungeon size scaling by milestone (6-7 rooms at M0, 13-15 at M3+)
 
-#### GUI Implementation ⚠️ STILL PENDING
+#### GUI Implementation ✅
 **Code Location:**
-- `RuneAndRust.DesktopUI/Controllers/` - 10+ UI controllers
-- `RuneAndRust.DesktopUI/Services/` - 23 UI services
-- `RuneAndRust.DesktopUI/ViewModels/` - UI viewmodels
-- `RuneAndRust.DesktopUI/Views/` - XAML UI definitions
-- `RuneAndRust.DesktopUI/Converters/` - Data converters
+- `RuneAndRust.DesktopUI/Controllers/` - 9 UI controllers
+- `RuneAndRust.DesktopUI/Services/` - 26 UI services (13 interfaces + 13 implementations)
+- `RuneAndRust.DesktopUI/ViewModels/` - 20 ViewModels
+- `RuneAndRust.DesktopUI/Views/` - 17 XAML UI definitions
+- `RuneAndRust.DesktopUI/Converters/` - 8 data converters
+- `RuneAndRust.DesktopUI/Controls/` - 3 custom controls
 
-**Still Missing Documentation:**
-- MVVM architecture and data binding
-- View-ViewModel communication patterns
-- State management across screens
-- Combat grid rendering system
-- Inventory UI management
-- Equipment panel layout and interactions
-- Character sheet display structure
-- Navigation between screens
+**NOW Documented in `systems/gui-implementation-spec.md`:**
+- ✅ MVVM architecture with ReactiveUI pattern
+- ✅ View-ViewModel communication patterns (commands, observables)
+- ✅ State management via ViewModelBase lifecycle
+- ✅ Combat grid rendering system (CombatGridControl)
+- ✅ Navigation system with back-stack support
+- ✅ Complete service registry (26 services documented)
+- ✅ Complete ViewModel registry (20 ViewModels documented)
+- ✅ Complete Controller registry (9 controllers documented)
+- ✅ Data binding patterns and converters
+- ✅ Accessibility features and keyboard shortcuts
+- ✅ Theming system (UIConstants, UIColors)
 
 ---
 
-## Moderate Gaps (Lower Priority)
+## Moderate Gaps - ✅ ALL RESOLVED
 
-| System | Count | Examples |
-|--------|-------|----------|
-| **Companion System** | 4 services | CompanionAIService, RecruitmentService |
-| **Faction & Territory** | 5 services | FactionWarService, TerritoryService |
-| **NPC & Dialogue** | 3 services | DialogueService, NPCService |
-| **Environmental Hazards** | 9 services | HazardService, TrapService, CoverService |
-| **Specialization Implementation** | 11 services | Per-specialization mechanics (specs exist) |
+| System | Count | Status |
+|--------|-------|--------|
+| **Companion System** | 4 services | ✅ `systems/companion-system-spec.md` |
+| **Faction & Territory** | 10 services | ✅ `systems/faction-territory-spec.md` |
+| **NPC & Dialogue** | 6 services | ✅ `systems/npc-dialogue-spec.md` |
+| **Environmental Hazards** | 12 services | ✅ `systems/environmental-hazards-spec.md` |
+| **Specialization Implementation** | 11 services | ✅ Specs exist in `/specializations/` |
 
 ### Moderate Gap Service Listing
 
-#### Companion System
-- `CompanionService.cs` - Companion AI and management
-- `CompanionAIService.cs` - Companion tactical AI
-- `RecruitmentService.cs` - Companion recruitment
-- `CompanionProgressionService.cs` - Companion leveling
+#### Companion System ✅
+**NOW Documented in `systems/companion-system-spec.md`:**
+- ✅ 6 recruitable companions with unique abilities
+- ✅ AI-driven combat with 3 stance modes
+- ✅ Recruitment system with faction gating
+- ✅ Progression system (leveling, Legend/XP)
+- ✅ System Crash mechanics
+- ✅ Direct command system
+- ✅ GUI planning elements (6 planned UI components)
 
-#### Faction & Territory
-- `FactionService.cs` - Faction reputation system
-- `FactionWarService.cs` - Territory warfare
-- `ReputationService.cs` - Reputation tracking
-- `TerritoryService.cs` - Territory control
-- `MerchantService.cs` - Merchant interactions
+#### Faction & Territory ✅
+**NOW Documented in `systems/faction-territory-spec.md`:**
+- ✅ 5 factions with unique philosophies and relationships
+- ✅ Reputation system with 6 tiers (-100 to +100)
+- ✅ Territory control across 10 sectors
+- ✅ Faction war mechanics with victory/defeat resolution
+- ✅ World events (9 types) with player influence
+- ✅ Merchant price modifiers by reputation
+- ✅ 25 faction quests, 18 faction rewards
+- ✅ GUI planning elements (6 planned UI components)
 
-#### NPC & Dialogue
-- `NPCService.cs` - NPC interactions
-- `DialogueService.cs` - Dialogue tree evaluation
-- `PricingService.cs` - Dynamic pricing
-- `TransactionService.cs` - Buy/sell logic
+#### NPC & Dialogue ✅
+**NOW Documented in `systems/npc-dialogue-spec.md`:**
+- ✅ 6 core services (NPCService, DialogueService, NPCFlavorTextService, PricingService, TransactionService, MerchantService)
+- ✅ 11 NPCs and 3 merchants with unique inventories
+- ✅ 8 dialogue trees with skill-check gated options
+- ✅ 8 dialogue outcome types (GiveItem, TakeItem, UnlockQuest, etc.)
+- ✅ 102+ NPC flavor text descriptors
+- ✅ Dynamic pricing with faction reputation modifiers
+- ✅ GUI planning elements (4 planned UI components)
 
-#### Environmental Hazards
-- `HazardService.cs` - Hazard mechanics
-- `HazardSpawner.cs` - Hazard placement
-- `HazardDatabase.cs` - 8+ hazard types
-- `EnvironmentalStressService.cs` - Environmental stress
-- `EnvironmentalCombatService.cs` - Environmental interactions
-- `DestructionService.cs` - Destructible terrain
-- `TrapService.cs` - Trap mechanics
-- `CoverService.cs` - Cover mechanics
-- `WeatherEffectService.cs` - Weather effects
+#### Environmental Hazards ✅
+**NOW Documented in `systems/environmental-hazards-spec.md`:**
+- ✅ 12 core services (HazardService, HazardDatabase, HazardSpawner, etc.)
+- ✅ 20+ dynamic hazard types with triggers and damage formulas
+- ✅ Cover system with quality tiers (Light/Heavy/Total)
+- ✅ Trap system with 4 effect types and 3 trigger modes
+- ✅ 10 weather types with intensity scaling
+- ✅ 8 ambient condition types with resolve DCs
+- ✅ Destructible terrain with HP values and aftermath effects
+- ✅ Environmental manipulation (push/pull, collapses, chain reactions)
+- ✅ GUI planning elements (4 planned UI components)
 
 #### Specialization Implementation Services
 Note: All 19 specializations now have Layer 0 specs in `/docs/00-specifications/specializations/`
@@ -318,11 +340,11 @@ Note: All 19 specializations now have Layer 0 specs in `/docs/00-specifications/
 8. ✅ **Advanced Status Effects** - `systems/advanced-status-effects-spec.md`
 9. ✅ **Procedural Room Generation** - `systems/procedural-room-generation-spec.md`
 
-### Tier 4: Complementary (System Coverage) - REMAINING WORK
+### Tier 4: Complementary (System Coverage) - MOSTLY COMPLETE
 
-10. ⚠️ **GUI Implementation** - Developer onboarding (still needs documentation)
-11. ⚠️ **Companion System** - Party gameplay (specs exist partially)
-12. ⚠️ **Faction & Territory** - World systems (specs exist partially)
+10. ✅ **GUI Implementation** - `systems/gui-implementation-spec.md`
+11. ✅ **Companion System** - `systems/companion-system-spec.md`
+12. ✅ **Faction & Territory** - `systems/faction-territory-spec.md`
 
 ---
 
@@ -337,19 +359,13 @@ Note: All 19 specializations now have Layer 0 specs in `/docs/00-specifications/
 | **Phase 3: Important** | Encounter, Status Effects, Room Generation | 3 specs | ✅ Complete |
 | **Specializations** | All 19 implemented specializations | 19 specs | ✅ Complete |
 
-**Total Specifications Created**: 28 Layer 0 specifications
+**Total Specifications Created**: 31 Layer 0 specifications
 
 ### Remaining Work
 
-| System | Priority | Estimated Effort | Notes |
-|--------|----------|------------------|-------|
-| GUI Implementation | Medium | 8 hours | MVVM, View-ViewModel, UI patterns |
-| Companion System | Low | 4 hours | AI, recruitment, progression |
-| Faction & Territory | Low | 5 hours | Reputation, warfare, merchants |
-| NPC & Dialogue | Low | 3 hours | Dialogue trees, transactions |
-| Environmental Hazards | Low | 4 hours | Hazards, traps, cover |
+**All documentation gaps have been resolved!**
 
-**Remaining Estimated Effort**: ~24 hours
+No remaining systems require documentation.
 
 ---
 
@@ -360,7 +376,7 @@ Note: All 19 specializations now have Layer 0 specs in `/docs/00-specifications/
 - `/docs/00-specifications/progression/` - 3 progression spec files
 - `/docs/00-specifications/economy/` - 2 economy spec files
 - `/docs/00-specifications/specializations/` - 19 specialization specs (all implemented specializations now documented)
-- `/docs/00-specifications/systems/` - 9 system specs (NEW)
+- `/docs/00-specifications/systems/` - 14 system specs (GUI, Companion, Faction, NPC, Environmental, etc.)
 - `/docs/03-technical-reference/services/` - 10 service docs
 
 ### Partial Documentation (Enhanced by New Specs)
@@ -372,7 +388,7 @@ Note: All 19 specializations now have Layer 0 specs in `/docs/00-specifications/
 
 ## Summary of Accomplishments
 
-### Documentation Created (2025-11-27)
+### Documentation Created (2025-11-27 - 2025-11-28)
 
 | Specification | ID | Lines | Key Coverage |
 |--------------|-----|-------|--------------|
@@ -385,8 +401,13 @@ Note: All 19 specializations now have Layer 0 specs in `/docs/00-specifications/
 | Encounter Generation | SPEC-SYSTEM-007 | ~350 | Budget system, factions, boss phases |
 | Advanced Status Effects | SPEC-COMBAT-003 | ~400 | Stacking, duration, immunity |
 | Procedural Room Generation | SPEC-SYSTEM-008 | ~450 | Templates, biomes, secrets |
+| **GUI Implementation** | **SPEC-SYSTEM-009** | **~850** | **MVVM, 26 services, 20 ViewModels, navigation** |
+| **Companion System** | **SPEC-SYSTEM-010** | **~950** | **6 companions, AI behavior, recruitment, GUI planning** |
+| **Faction & Territory** | **SPEC-SYSTEM-011** | **~1100** | **5 factions, reputation, territory, wars, GUI planning** |
+| **NPC & Dialogue** | **SPEC-SYSTEM-012** | **~900** | **11 NPCs, 3 merchants, 8 dialogue trees, GUI planning** |
+| **Environmental Hazards** | **SPEC-SYSTEM-013** | **~950** | **12 services, 20+ hazard types, cover, traps, weather, GUI planning** |
 
-**Total New Documentation**: ~4,350 lines across 9 comprehensive specifications
+**Total New Documentation**: ~9,100 lines across 14 comprehensive specifications
 
 ---
 
