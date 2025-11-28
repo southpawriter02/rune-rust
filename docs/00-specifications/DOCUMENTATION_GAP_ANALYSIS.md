@@ -1,10 +1,11 @@
 # Documentation Gap Analysis
 
 > **Generated**: 2025-11-27
-> **Last Updated**: 2025-11-28 (GUI spec added)
+> **Last Updated**: 2025-11-28 (GUI + Companion specs added)
 > **Purpose**: Track documentation coverage and identify remaining gaps
 
 ### Recent Updates
+- **2025-11-28**: Added Companion System specification (SPEC-SYSTEM-010) - Moderate Gap resolved
 - **2025-11-28**: Added GUI Implementation specification (SPEC-SYSTEM-009) - Major Gap resolved
 - **2025-11-28**: Comprehensive update reflecting all completed documentation work
 - **2025-11-27**: Created 9 comprehensive system specifications addressing critical gaps:
@@ -39,7 +40,7 @@
 |----------|--------|-------|--------|
 | Critical Gaps | 6 unresolved | 0 unresolved | ✅ Complete |
 | Major Gaps | 4 unresolved | 0 unresolved | ✅ 100% Complete |
-| Moderate Gaps | 5 categories | 5 categories | ⚠️ Pending |
+| Moderate Gaps | 5 categories | 4 categories | ⚠️ 20% Complete |
 | Specializations | 13/19 | 19/19 | ✅ Complete |
 
 ---
@@ -247,21 +248,25 @@ All critical documentation gaps have been addressed with comprehensive Layer 0 s
 
 ## Moderate Gaps (Lower Priority)
 
-| System | Count | Examples |
-|--------|-------|----------|
-| **Companion System** | 4 services | CompanionAIService, RecruitmentService |
-| **Faction & Territory** | 5 services | FactionWarService, TerritoryService |
-| **NPC & Dialogue** | 3 services | DialogueService, NPCService |
-| **Environmental Hazards** | 9 services | HazardService, TrapService, CoverService |
-| **Specialization Implementation** | 11 services | Per-specialization mechanics (specs exist) |
+| System | Count | Status |
+|--------|-------|--------|
+| **Companion System** | 4 services | ✅ `systems/companion-system-spec.md` |
+| **Faction & Territory** | 5 services | ⚠️ Pending |
+| **NPC & Dialogue** | 3 services | ⚠️ Pending |
+| **Environmental Hazards** | 9 services | ⚠️ Pending |
+| **Specialization Implementation** | 11 services | ✅ Specs exist in `/specializations/` |
 
 ### Moderate Gap Service Listing
 
-#### Companion System
-- `CompanionService.cs` - Companion AI and management
-- `CompanionAIService.cs` - Companion tactical AI
-- `RecruitmentService.cs` - Companion recruitment
-- `CompanionProgressionService.cs` - Companion leveling
+#### Companion System ✅
+**NOW Documented in `systems/companion-system-spec.md`:**
+- ✅ 6 recruitable companions with unique abilities
+- ✅ AI-driven combat with 3 stance modes
+- ✅ Recruitment system with faction gating
+- ✅ Progression system (leveling, Legend/XP)
+- ✅ System Crash mechanics
+- ✅ Direct command system
+- ✅ GUI planning elements (6 planned UI components)
 
 #### Faction & Territory
 - `FactionService.cs` - Faction reputation system
@@ -326,7 +331,7 @@ Note: All 19 specializations now have Layer 0 specs in `/docs/00-specifications/
 ### Tier 4: Complementary (System Coverage) - MOSTLY COMPLETE
 
 10. ✅ **GUI Implementation** - `systems/gui-implementation-spec.md`
-11. ⚠️ **Companion System** - Party gameplay (specs exist partially)
+11. ✅ **Companion System** - `systems/companion-system-spec.md`
 12. ⚠️ **Faction & Territory** - World systems (specs exist partially)
 
 ---
@@ -342,18 +347,17 @@ Note: All 19 specializations now have Layer 0 specs in `/docs/00-specifications/
 | **Phase 3: Important** | Encounter, Status Effects, Room Generation | 3 specs | ✅ Complete |
 | **Specializations** | All 19 implemented specializations | 19 specs | ✅ Complete |
 
-**Total Specifications Created**: 29 Layer 0 specifications
+**Total Specifications Created**: 30 Layer 0 specifications
 
 ### Remaining Work
 
 | System | Priority | Estimated Effort | Notes |
 |--------|----------|------------------|-------|
-| Companion System | Low | 4 hours | AI, recruitment, progression |
 | Faction & Territory | Low | 5 hours | Reputation, warfare, merchants |
 | NPC & Dialogue | Low | 3 hours | Dialogue trees, transactions |
 | Environmental Hazards | Low | 4 hours | Hazards, traps, cover |
 
-**Remaining Estimated Effort**: ~16 hours
+**Remaining Estimated Effort**: ~12 hours
 
 ---
 
@@ -364,7 +368,7 @@ Note: All 19 specializations now have Layer 0 specs in `/docs/00-specifications/
 - `/docs/00-specifications/progression/` - 3 progression spec files
 - `/docs/00-specifications/economy/` - 2 economy spec files
 - `/docs/00-specifications/specializations/` - 19 specialization specs (all implemented specializations now documented)
-- `/docs/00-specifications/systems/` - 10 system specs (including GUI)
+- `/docs/00-specifications/systems/` - 11 system specs (GUI, Companion, etc.)
 - `/docs/03-technical-reference/services/` - 10 service docs
 
 ### Partial Documentation (Enhanced by New Specs)
@@ -390,8 +394,9 @@ Note: All 19 specializations now have Layer 0 specs in `/docs/00-specifications/
 | Advanced Status Effects | SPEC-COMBAT-003 | ~400 | Stacking, duration, immunity |
 | Procedural Room Generation | SPEC-SYSTEM-008 | ~450 | Templates, biomes, secrets |
 | **GUI Implementation** | **SPEC-SYSTEM-009** | **~850** | **MVVM, 26 services, 20 ViewModels, navigation** |
+| **Companion System** | **SPEC-SYSTEM-010** | **~950** | **6 companions, AI behavior, recruitment, GUI planning** |
 
-**Total New Documentation**: ~5,200 lines across 10 comprehensive specifications
+**Total New Documentation**: ~6,150 lines across 11 comprehensive specifications
 
 ---
 
