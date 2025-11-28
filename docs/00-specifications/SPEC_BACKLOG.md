@@ -3,7 +3,7 @@
 **Purpose**: Central tracking document for all specifications (existing, in-progress, and planned)
 
 **Last Updated**: 2025-11-27
-**Total Specs**: 13 completed, 0 in progress, 27 planned, 40 total
+**Total Specs**: 23 completed, 0 in progress, 27 planned, 50 total
 
 ---
 
@@ -11,14 +11,15 @@
 
 | Domain | Completed | In Progress | Planned | Total | Coverage |
 |--------|-----------|-------------|---------|-------|----------|
-| Combat | 7 | 0 | 5 | 12 | 58% |
+| Combat | 8 | 0 | 4 | 12 | 67% |
 | Progression | 3 | 0 | 4 | 7 | 43% |
-| Economy | 2 | 0 | 4 | 6 | 33% |
-| World | 0 | 0 | 8 | 8 | 0% |
+| Economy | 3 | 0 | 3 | 6 | 50% |
+| World | 1 | 0 | 7 | 8 | 13% |
 | Narrative | 1 | 0 | 5 | 6 | 17% |
 | Faction | 0 | 0 | 3 | 3 | 0% |
-| AI | 0 | 0 | 2 | 2 | 0% |
-| **TOTAL** | **13** | **0** | **27** | **40** | **33%** |
+| AI | 1 | 0 | 1 | 2 | 50% |
+| Systems | 6 | 0 | 0 | 6 | 100% |
+| **TOTAL** | **23** | **0** | **27** | **50** | **46%** |
 
 ---
 
@@ -1341,28 +1342,98 @@ The following specifications have been identified based on existing implementati
 
 ---
 
-### AI Domain (New, 2 specs)
+### SYSTEMS Domain (New, 6 specs - ALL COMPLETED)
 
-### 📋 SPEC-AI-001: Enemy AI System
-**Status**: Planned
-**Priority**: Medium
+### ✅ SPEC-SYSTEM-001: Save/Load System
+**Status**: Completed
+**File**: `systems/save-load-system-spec.md`
+**Completed**: 2025-11-27
+**Priority**: Critical
+**Domain**: Systems
+
+**Scope**: Save/load mechanics, data persistence, schema migrations, JSON serialization
+
+**Implementation Exists**: Yes (`SaveRepository.cs`, `SaveData.cs`, `SaveGameService.cs`)
+
+---
+
+### ✅ SPEC-SYSTEM-002: Inventory & Equipment System
+**Status**: Completed
+**File**: `systems/inventory-equipment-spec.md`
+**Completed**: 2025-11-27
+**Priority**: Critical
+**Domain**: Systems
+
+**Scope**: Inventory capacity, equipment slots, quality tiers, stat bonuses, equip/unequip
+
+**Implementation Exists**: Yes (`EquipmentService.cs`, `Equipment.cs`)
+
+---
+
+### ✅ SPEC-SYSTEM-003: Vertical Movement (Z-Axis) System
+**Status**: Completed
+**File**: `systems/vertical-movement-spec.md`
+**Completed**: 2025-11-27
+**Priority**: Critical
+**Domain**: Systems
+
+**Scope**: 7 vertical layers, connection types, traversal mechanics, fall damage
+
+**Implementation Exists**: Yes (`VerticalTraversalService.cs`, `VerticalLayer.cs`, `VerticalConnection.cs`)
+
+---
+
+### ✅ SPEC-SYSTEM-004: Crafting System
+**Status**: Completed
+**File**: `systems/crafting-system-spec.md`
+**Completed**: 2025-11-27
+**Priority**: High
+**Domain**: Systems
+
+**Scope**: Recipe system, crafting stations, components, skill checks, quality calculation, modifications
+
+**Implementation Exists**: Yes (`AdvancedCraftingService.cs`, `ModificationService.cs`)
+
+---
+
+### ✅ SPEC-SYSTEM-007: Encounter Generation System
+**Status**: Completed
+**File**: `systems/encounter-generation-spec.md`
+**Completed**: 2025-11-27
+**Priority**: High
+**Domain**: Systems
+
+**Scope**: Encounter budget, enemy composition, difficulty scaling, boss phases
+
+**Implementation Exists**: Yes (`EncounterService.cs`, `BudgetDistributionService.cs`)
+
+---
+
+### ✅ SPEC-SYSTEM-008: Procedural Room Generation System
+**Status**: Completed
+**File**: `systems/procedural-room-generation-spec.md`
+**Completed**: 2025-11-27
+**Priority**: High
+**Domain**: Systems
+
+**Scope**: Room templates, layout generation, hazard placement, biome theming, secret rooms
+
+**Implementation Exists**: Yes (`DungeonGenerator.cs`, `RoomPopulationService.cs`)
+
+---
+
+### AI Domain (2 specs - 1 COMPLETED)
+
+### ✅ SPEC-SYSTEM-005: Enemy AI Behavior System
+**Status**: Completed
+**File**: `systems/enemy-ai-behavior-spec.md`
+**Completed**: 2025-11-27
+**Priority**: High
 **Domain**: AI
-**Layer 1 Docs**: None
 
-**Proposed Scope**:
-- Enemy AI behavior types (aggressive, defensive, tactical, fleeing)
-- Targeting priority (lowest HP, highest threat, closest, support)
-- Ability usage decision-making
-- Boss AI vs. standard enemy AI
-- AI difficulty scaling
-- Special ability triggers and conditions
+**Scope**: AI archetypes, threat assessment, target selection, ability prioritization, boss AI, adaptive difficulty
 
-**Dependencies**:
-- SPEC-COMBAT-001 (Combat Resolution) - Completed
-
-**Why Needed**: EnemyAI service exists but design philosophy for AI behavior and decision-making not documented.
-
-**Implementation Exists**: Yes (`RuneAndRust.Engine/EnemyAI.cs`, `EnemyFactory.cs`)
+**Implementation Exists**: Yes (`EnemyAIOrchestrator.cs`, `ThreatAssessmentService.cs`, `TargetSelectionService.cs`)
 
 ---
 
