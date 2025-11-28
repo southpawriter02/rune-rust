@@ -1,10 +1,11 @@
 # Documentation Gap Analysis
 
 > **Generated**: 2025-11-27
-> **Last Updated**: 2025-11-28 (GUI + Companion + Faction + NPC specs added)
+> **Last Updated**: 2025-11-28 (All Moderate Gaps resolved)
 > **Purpose**: Track documentation coverage and identify remaining gaps
 
 ### Recent Updates
+- **2025-11-28**: Added Environmental Hazards specification (SPEC-SYSTEM-013) - Final Moderate Gap resolved
 - **2025-11-28**: Added NPC & Dialogue specification (SPEC-SYSTEM-012) - Moderate Gap resolved
 - **2025-11-28**: Added Faction & Territory specification (SPEC-SYSTEM-011) - Moderate Gap resolved
 - **2025-11-28**: Added Companion System specification (SPEC-SYSTEM-010) - Moderate Gap resolved
@@ -41,8 +42,8 @@
 | Category | Before | After | Status |
 |----------|--------|-------|--------|
 | Critical Gaps | 6 unresolved | 0 unresolved | ✅ Complete |
-| Major Gaps | 4 unresolved | 0 unresolved | ✅ 100% Complete |
-| Moderate Gaps | 5 categories | 1 category | ⚠️ 80% Complete |
+| Major Gaps | 4 unresolved | 0 unresolved | ✅ Complete |
+| Moderate Gaps | 5 categories | 0 categories | ✅ Complete |
 | Specializations | 13/19 | 19/19 | ✅ Complete |
 
 ---
@@ -248,14 +249,14 @@ All critical documentation gaps have been addressed with comprehensive Layer 0 s
 
 ---
 
-## Moderate Gaps (Lower Priority)
+## Moderate Gaps - ✅ ALL RESOLVED
 
 | System | Count | Status |
 |--------|-------|--------|
 | **Companion System** | 4 services | ✅ `systems/companion-system-spec.md` |
 | **Faction & Territory** | 10 services | ✅ `systems/faction-territory-spec.md` |
 | **NPC & Dialogue** | 6 services | ✅ `systems/npc-dialogue-spec.md` |
-| **Environmental Hazards** | 9 services | ⚠️ Pending |
+| **Environmental Hazards** | 12 services | ✅ `systems/environmental-hazards-spec.md` |
 | **Specialization Implementation** | 11 services | ✅ Specs exist in `/specializations/` |
 
 ### Moderate Gap Service Listing
@@ -291,16 +292,17 @@ All critical documentation gaps have been addressed with comprehensive Layer 0 s
 - ✅ Dynamic pricing with faction reputation modifiers
 - ✅ GUI planning elements (4 planned UI components)
 
-#### Environmental Hazards
-- `HazardService.cs` - Hazard mechanics
-- `HazardSpawner.cs` - Hazard placement
-- `HazardDatabase.cs` - 8+ hazard types
-- `EnvironmentalStressService.cs` - Environmental stress
-- `EnvironmentalCombatService.cs` - Environmental interactions
-- `DestructionService.cs` - Destructible terrain
-- `TrapService.cs` - Trap mechanics
-- `CoverService.cs` - Cover mechanics
-- `WeatherEffectService.cs` - Weather effects
+#### Environmental Hazards ✅
+**NOW Documented in `systems/environmental-hazards-spec.md`:**
+- ✅ 12 core services (HazardService, HazardDatabase, HazardSpawner, etc.)
+- ✅ 20+ dynamic hazard types with triggers and damage formulas
+- ✅ Cover system with quality tiers (Light/Heavy/Total)
+- ✅ Trap system with 4 effect types and 3 trigger modes
+- ✅ 10 weather types with intensity scaling
+- ✅ 8 ambient condition types with resolve DCs
+- ✅ Destructible terrain with HP values and aftermath effects
+- ✅ Environmental manipulation (push/pull, collapses, chain reactions)
+- ✅ GUI planning elements (4 planned UI components)
 
 #### Specialization Implementation Services
 Note: All 19 specializations now have Layer 0 specs in `/docs/00-specifications/specializations/`
@@ -361,11 +363,9 @@ Note: All 19 specializations now have Layer 0 specs in `/docs/00-specifications/
 
 ### Remaining Work
 
-| System | Priority | Estimated Effort | Notes |
-|--------|----------|------------------|-------|
-| Environmental Hazards | Low | 4 hours | Hazards, traps, cover |
+**All documentation gaps have been resolved!**
 
-**Remaining Estimated Effort**: ~4 hours
+No remaining systems require documentation.
 
 ---
 
@@ -376,7 +376,7 @@ Note: All 19 specializations now have Layer 0 specs in `/docs/00-specifications/
 - `/docs/00-specifications/progression/` - 3 progression spec files
 - `/docs/00-specifications/economy/` - 2 economy spec files
 - `/docs/00-specifications/specializations/` - 19 specialization specs (all implemented specializations now documented)
-- `/docs/00-specifications/systems/` - 13 system specs (GUI, Companion, Faction, NPC, etc.)
+- `/docs/00-specifications/systems/` - 14 system specs (GUI, Companion, Faction, NPC, Environmental, etc.)
 - `/docs/03-technical-reference/services/` - 10 service docs
 
 ### Partial Documentation (Enhanced by New Specs)
@@ -405,8 +405,9 @@ Note: All 19 specializations now have Layer 0 specs in `/docs/00-specifications/
 | **Companion System** | **SPEC-SYSTEM-010** | **~950** | **6 companions, AI behavior, recruitment, GUI planning** |
 | **Faction & Territory** | **SPEC-SYSTEM-011** | **~1100** | **5 factions, reputation, territory, wars, GUI planning** |
 | **NPC & Dialogue** | **SPEC-SYSTEM-012** | **~900** | **11 NPCs, 3 merchants, 8 dialogue trees, GUI planning** |
+| **Environmental Hazards** | **SPEC-SYSTEM-013** | **~950** | **12 services, 20+ hazard types, cover, traps, weather, GUI planning** |
 
-**Total New Documentation**: ~8,150 lines across 13 comprehensive specifications
+**Total New Documentation**: ~9,100 lines across 14 comprehensive specifications
 
 ---
 
