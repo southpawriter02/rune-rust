@@ -31,7 +31,7 @@ public class DataSeeder
 
         SeedBoneSetterSpecialization();
         SeedJotunReaderSpecialization();
-        SeedSkaldSpecialization();
+        // Skald is seeded via SkaldSeeder (v0.27.1) below
         SeedSkarHordeAspirantSpecialization();
         SeedIronBaneSpecialization();
         SeedAtgeirWielderSpecialization();
@@ -141,7 +141,7 @@ public class DataSeeder
             Description = "You are an expert at preparing medical supplies. Your kit is always ready, your hands always steady.",
             MechanicalSummary = "Bonus to Field Medicine crafting checks, start with free poultices, craft Masterwork items",
             TierLevel = 1,
-            PPCost = 3, // v0.19.4: Updated to 3 PP
+            PPCost = 0, // v0.19.4: Updated to 0 PP (Free with Spec)
             Prerequisites = new AbilityPrerequisites { RequiredPPInTree = 0 },
             AbilityType = "Passive",
             ActionType = "Free Action",
@@ -163,7 +163,7 @@ public class DataSeeder
             Description = "You quickly dress the wound, applying poultice with practiced efficiency. The healing begins.",
             MechanicalSummary = "Heal HP using poultice, cleanse debuffs at higher ranks",
             TierLevel = 1,
-            PPCost = 3,
+            PPCost = 0,
             Prerequisites = new AbilityPrerequisites { RequiredPPInTree = 0 },
             AbilityType = "Active",
             ActionType = "Standard Action",
@@ -189,7 +189,7 @@ public class DataSeeder
             Description = "With speed and precision, you stop the life-threatening blood loss. They'll live.",
             MechanicalSummary = "Remove [Bleeding], grant temporary Soak, immunity to bleeding at higher ranks",
             TierLevel = 1,
-            PPCost = 3,
+            PPCost = 0,
             Prerequisites = new AbilityPrerequisites { RequiredPPInTree = 0 },
             AbilityType = "Active",
             ActionType = "Standard Action",
@@ -262,7 +262,7 @@ public class DataSeeder
             CostToRank2 = 20,
             CostToRank3 = 0,
             IsActive = true,
-            Notes = "Rank 1: Remove one [Poisoned] or [Disease] effect. Consumes one [Common Antidote]. Rank 2 (20 PP): Remove [Poisoned], [Disease], and [Weakened]. Target gains +2 STURDINESS for 2 turns. Rank 3: Remove all poison/disease effects. Target immune to [Poisoned] for rest of combat"
+            Notes = "Rank 1: Remove one [Poisoned] or [Disease] effect. Consumes one [Common Antidote]. Rank 2 (20 PP): Remove [Poisoned] and [Disease]. Target gains +2 STURDINESS for 2 turns. Rank 3: Remove all poison/disease effects. Target immune to [Poisoned] for rest of combat"
         });
 
         // Triage (Passive)
@@ -308,14 +308,14 @@ public class DataSeeder
             AttributeUsed = "",
             BonusDice = 0,
             SuccessThreshold = 0, // Auto-success, consumes draught
-            StatusEffectsRemoved = new List<string> { "Feared", "Panicked" },
+            StatusEffectsRemoved = new List<string> { "Feared" },
             CooldownTurns = 3,
             CooldownType = "Per Combat",
             MaxRank = 3,
             CostToRank2 = 20,
             CostToRank3 = 0,
             IsActive = true,
-            Notes = "Rank 1: Remove 15 Psychic Stress from target. Consumes [Stabilizing Draught]. Rank 2 (20 PP): Remove 25 Stress. Also remove [Feared] or [Panicked] status effects. Rank 3: Remove 40 Stress. Remove all mental status effects. Grant [Focused] (+1 WILL, 3 turns)"
+            Notes = "Rank 1: Remove 15 Psychic Stress from target. Consumes [Stabilizing Draught]. Rank 2 (20 PP): Remove 25 Stress. Also remove [Feared] status effects. Rank 3: Remove 40 Stress. Remove all mental status effects. Grant [Focused] (+1 WILL, 3 turns)"
         });
 
         // Defensive Focus (Passive)
@@ -337,7 +337,7 @@ public class DataSeeder
             CostToRank2 = 20,
             CostToRank3 = 0,
             IsActive = true,
-            Notes = "Rank 1: After using any healing ability, gain +2 Defense until end of turn. Rank 2 (20 PP): +3 Defense. Also gain +1 Soak while adjacent ally is below 50% HP (protective instinct). Rank 3: +4 Defense. You have advantage on saves vs [Fear] and [Stun] while healing allies"
+            Notes = "Rank 1: After using any healing ability, gain +2 Defense until end of turn. Rank 2 (20 PP): +3 Defense. Also gain +1 Soak while adjacent ally is below 50% HP (protective instinct). Rank 3: +4 Defense. You have advantage on saves vs [Feared] and [Stunned] while healing allies"
         });
     }
 
@@ -362,7 +362,7 @@ public class DataSeeder
             BonusDice = 0,
             SuccessThreshold = 0, // Auto-success, consumes Miracle Tincture
             HealingDice = 8,
-            StatusEffectsRemoved = new List<string> { "Bleeding", "Poisoned", "Disease", "Vulnerable", "Weakened", "Stunned" },
+            StatusEffectsRemoved = new List<string> { "Bleeding", "Poisoned", "Disease", "Vulnerable", "Stunned" },
             CooldownType = "Per Expedition",
             MaxRank = 3,
             CostToRank2 = 20,
@@ -424,7 +424,7 @@ public class DataSeeder
             Description = "Your mind is a finely honed instrument, constantly processing layers of forgotten history.",
             MechanicalSummary = "+2d10 bonus to WITS-based Investigate and System Bypass checks, increases to +4d10 at higher ranks",
             TierLevel = 1,
-            PPCost = 3, // v0.19.7: Updated from 0 to 3
+            PPCost = 0, // v0.19.7: Updated to 0 (Free with Spec)
             Prerequisites = new AbilityPrerequisites { RequiredPPInTree = 0 },
             AbilityType = "Passive",
             ActionType = "Free Action",
@@ -449,7 +449,7 @@ public class DataSeeder
             Description = "Clinical observation reveals structural flaws. You document weakness like a pathologist identifies cause of death.",
             MechanicalSummary = "WITS check to reveal enemy Resistances/Vulnerabilities, costs Psychic Stress",
             TierLevel = 1,
-            PPCost = 3, // v0.19.7: Updated from 0 to 3
+            PPCost = 0, // v0.19.7: Updated to 0 (Free with Spec)
             Prerequisites = new AbilityPrerequisites { RequiredPPInTree = 0 },
             AbilityType = "Active",
             ActionType = "Standard Action",
@@ -474,7 +474,7 @@ public class DataSeeder
             Description = "You read the grammar of reality's operating system. You understand error messages in a dead language.",
             MechanicalSummary = "Translate Elder Futhark inscriptions, bypass puzzle gates, extrapolate missing text at higher ranks",
             TierLevel = 1,
-            PPCost = 3, // v0.19.7: Updated from 0 to 3
+            PPCost = 0, // v0.19.7: Updated to 0 (Free with Spec)
             Prerequisites = new AbilityPrerequisites { RequiredPPInTree = 0 },
             AbilityType = "Passive",
             ActionType = "Free Action",
@@ -622,7 +622,7 @@ public class DataSeeder
             CostToRank2 = 20,
             CostToRank3 = 0,
             IsActive = true,
-            Notes = "Rank 1: Opposed WITS vs WILL check. Success = [Disoriented] for 2 rounds. Weaponize forbidden lore as psychological attack. Rank 2 (20 PP): (Same as Rank 1). Rank 3: Stamina 30. Success = [Disoriented] 3 rounds + 5-7 Psychic Stress to target. Critical = also [Shaken] 2 rounds + 10-12 Stress. Target must pass WILL check or become [Fixated] on Jötun-Reader 1 round. Boss/Elite: May trigger narrative consequences (flee, parley, identity crisis)."
+            Notes = "Rank 1: Opposed WITS vs WILL check. Success = [Disoriented] for 2 rounds. Weaponize forbidden lore as psychological attack. Rank 2 (20 PP): (Same as Rank 1). Rank 3: Stamina 30. Success = [Disoriented] 3 rounds + 5-7 Psychic Stress to target. Critical = also [Feared] 2 rounds + 10-12 Stress. Target must pass WILL check or become [Disoriented] on Jötun-Reader 1 round. Boss/Elite: May trigger narrative consequences (flee, parley, identity crisis)."
         });
     }
 
@@ -659,255 +659,6 @@ public class DataSeeder
 
     #endregion
 
-    #region Skald (ID: 3)
-
-    private void SeedSkaldSpecialization()
-    {
-        _log.Information("Seeding Skald specialization");
-
-        var skald = new SpecializationData
-        {
-            SpecializationID = 3,
-            Name = "Skald",
-            ArchetypeID = 2, // Adept
-            PathType = "Coherent",
-            MechanicalRole = "Buffer/Debuffer",
-            PrimaryAttribute = "WILL",
-            SecondaryAttribute = "WITS",
-            Description = "Warrior-poet who wields structured narrative as weapon. Maintains performances for battlefield control.",
-            Tagline = "Provide party-wide buffs/debuffs through sustained performances",
-            UnlockRequirements = new UnlockRequirements { MinLegend = 0, MaxCorruption = 100 },
-            ResourceSystem = "Stamina",
-            TraumaRisk = "Low",
-            IconEmoji = "🎵",
-            PPCostToUnlock = 3,
-            IsActive = true
-        };
-
-        _specializationRepo.Insert(skald);
-
-        SeedSkaldTier1();
-        SeedSkaldTier2();
-        SeedSkaldTier3();
-        SeedSkaldCapstone();
-
-        _log.Information("Skald seeding complete: 9 abilities");
-    }
-
-    private void SeedSkaldTier1()
-    {
-        // Oral Tradition I
-        _abilityRepo.Insert(new AbilityData
-        {
-            AbilityID = 301,
-            SpecializationID = 3,
-            Name = "Oral Tradition I",
-            Description = "[PASSIVE] +1d to Rhetoric and lore checks. Your words carry weight.",
-            TierLevel = 1,
-            PPCost = 0,
-            Prerequisites = new AbilityPrerequisites { RequiredPPInTree = 0 },
-            AbilityType = "Passive",
-            ActionType = "Free Action",
-            TargetType = "Self",
-            ResourceCost = new AbilityResourceCost(),
-            MechanicalSummary = "+1d to Rhetoric and lore",
-            MaxRank = 1,
-            IsActive = true
-        });
-
-        // Saga of Courage
-        _abilityRepo.Insert(new AbilityData
-        {
-            AbilityID = 302,
-            SpecializationID = 3,
-            Name = "Saga of Courage",
-            Description = "[PERFORMANCE] All allies immune to [Feared] and gain +1d to WILL Resolve checks. Duration: WILL score rounds. Cannot take other actions while performing.",
-            TierLevel = 1,
-            PPCost = 0,
-            Prerequisites = new AbilityPrerequisites { RequiredPPInTree = 0 },
-            AbilityType = "Active",
-            ActionType = "Performance",
-            TargetType = "All Allies",
-            ResourceCost = new AbilityResourceCost { Stamina = 40 },
-            AttributeUsed = "will",
-            BonusDice = 2,
-            SuccessThreshold = 2,
-            MechanicalSummary = "Allies immune to [Feared], +1d WILL checks",
-            MaxRank = 3,
-            CostToRank2 = 5,
-            IsActive = true
-        });
-
-        // Dirge of Defeat
-        _abilityRepo.Insert(new AbilityData
-        {
-            AbilityID = 303,
-            SpecializationID = 3,
-            Name = "Dirge of Defeat",
-            Description = "[PERFORMANCE] All enemies suffer -2 Accuracy penalty. Duration: WILL score rounds. Cannot take other actions while performing.",
-            TierLevel = 1,
-            PPCost = 0,
-            Prerequisites = new AbilityPrerequisites { RequiredPPInTree = 0 },
-            AbilityType = "Active",
-            ActionType = "Performance",
-            TargetType = "All Enemies",
-            ResourceCost = new AbilityResourceCost { Stamina = 40 },
-            AttributeUsed = "will",
-            BonusDice = 2,
-            SuccessThreshold = 2,
-            MechanicalSummary = "Enemies get -2 Accuracy",
-            MaxRank = 3,
-            CostToRank2 = 5,
-            IsActive = true
-        });
-    }
-
-    private void SeedSkaldTier2()
-    {
-        // Rousing Verse
-        _abilityRepo.Insert(new AbilityData
-        {
-            AbilityID = 304,
-            SpecializationID = 3,
-            Name = "Rousing Verse",
-            Description = "Restore 2d6 Stamina to target ally with a brief, energizing verse. Not a performance - immediate effect.",
-            TierLevel = 2,
-            PPCost = 4,
-            Prerequisites = new AbilityPrerequisites { RequiredPPInTree = 8 },
-            AbilityType = "Active",
-            ActionType = "Standard Action",
-            TargetType = "Single Ally",
-            ResourceCost = new AbilityResourceCost { Stamina = 20 },
-            AttributeUsed = "will",
-            BonusDice = 2,
-            SuccessThreshold = 2,
-            MechanicalSummary = "Restore 2d6 Stamina to ally",
-            HealingDice = 2,
-            MaxRank = 3,
-            CostToRank2 = 5,
-            IsActive = true
-        });
-
-        // Song of Silence
-        _abilityRepo.Insert(new AbilityData
-        {
-            AbilityID = 305,
-            SpecializationID = 3,
-            Name = "Song of Silence",
-            Description = "Apply [Silenced] status to enemy caster/channeler. Interrupted performances end immediately. WILL vs enemy WILL.",
-            TierLevel = 2,
-            PPCost = 4,
-            Prerequisites = new AbilityPrerequisites { RequiredPPInTree = 8 },
-            AbilityType = "Active",
-            ActionType = "Standard Action",
-            TargetType = "Single Enemy",
-            ResourceCost = new AbilityResourceCost { Stamina = 35 },
-            AttributeUsed = "will",
-            BonusDice = 2,
-            SuccessThreshold = 3,
-            MechanicalSummary = "Apply [Silenced] - prevents casting/performances",
-            StatusEffectsApplied = new List<string> { "Silenced" },
-            MaxRank = 3,
-            CostToRank2 = 5,
-            IsActive = true
-        });
-
-        // Enduring Performance
-        _abilityRepo.Insert(new AbilityData
-        {
-            AbilityID = 306,
-            SpecializationID = 3,
-            Name = "Enduring Performance",
-            Description = "[PASSIVE] All your [PERFORMANCE] abilities last +2 additional rounds. Longer sagas, deeper impact.",
-            TierLevel = 2,
-            PPCost = 4,
-            Prerequisites = new AbilityPrerequisites { RequiredPPInTree = 8 },
-            AbilityType = "Passive",
-            ActionType = "Free Action",
-            TargetType = "Self",
-            ResourceCost = new AbilityResourceCost(),
-            MechanicalSummary = "Performances last +2 rounds",
-            MaxRank = 1,
-            IsActive = true
-        });
-    }
-
-    private void SeedSkaldTier3()
-    {
-        // Lay of the Iron Wall
-        _abilityRepo.Insert(new AbilityData
-        {
-            AbilityID = 307,
-            SpecializationID = 3,
-            Name = "Lay of the Iron Wall",
-            Description = "[PERFORMANCE] Front row allies gain +2 Soak (damage reduction). Duration: WILL score rounds. Shield-song of ancient defenders.",
-            TierLevel = 3,
-            PPCost = 5,
-            Prerequisites = new AbilityPrerequisites { RequiredPPInTree = 16 },
-            AbilityType = "Active",
-            ActionType = "Performance",
-            TargetType = "Front Row Allies",
-            ResourceCost = new AbilityResourceCost { Stamina = 50 },
-            AttributeUsed = "will",
-            BonusDice = 2,
-            SuccessThreshold = 2,
-            MechanicalSummary = "Front row gets +2 Soak",
-            MaxRank = 3,
-            CostToRank2 = 5,
-            IsActive = true
-        });
-
-        // Heart of the Clan
-        _abilityRepo.Insert(new AbilityData
-        {
-            AbilityID = 308,
-            SpecializationID = 3,
-            Name = "Heart of the Clan",
-            Description = "[PASSIVE] Allies in the same row as you gain +1d to defensive Resolve checks (vs fear, stun, etc.). Your presence bolsters their will.",
-            TierLevel = 3,
-            PPCost = 5,
-            Prerequisites = new AbilityPrerequisites { RequiredPPInTree = 16 },
-            AbilityType = "Passive",
-            ActionType = "Free Action",
-            TargetType = "Self",
-            ResourceCost = new AbilityResourceCost(),
-            MechanicalSummary = "Allies in your row get +1d to defensive Resolve",
-            MaxRank = 1,
-            IsActive = true
-        });
-    }
-
-    private void SeedSkaldCapstone()
-    {
-        // Saga of the Einherjar
-        _abilityRepo.Insert(new AbilityData
-        {
-            AbilityID = 309,
-            SpecializationID = 3,
-            Name = "Saga of the Einherjar",
-            Description = "⭐ CAPSTONE: [PERFORMANCE] All allies gain [Inspired] (+3 damage dice) and 2d6 temporary HP. Duration: WILL score rounds. When performance ends, you suffer 10 Psychic Stress from the effort.",
-            TierLevel = 4,
-            PPCost = 6,
-            Prerequisites = new AbilityPrerequisites { RequiredPPInTree = 24, RequiredAbilityIDs = new List<int> { 307, 308 } },
-            AbilityType = "Active",
-            ActionType = "Performance",
-            TargetType = "All Allies",
-            ResourceCost = new AbilityResourceCost { Stamina = 70 },
-            AttributeUsed = "will",
-            BonusDice = 3,
-            SuccessThreshold = 2,
-            MechanicalSummary = "Allies get [Inspired] +3d damage + 2d6 temp HP, 10 Stress on end",
-            StatusEffectsApplied = new List<string> { "Inspired" },
-            HealingDice = 2,
-            MaxRank = 3,
-            CostToRank2 = 5,
-            CooldownType = "Per Combat",
-            IsActive = true,
-            Notes = "Costs 10 Stress when performance ends"
-        });
-    }
-
-    #endregion
 
     #region SkarHordeAspirant (ID: 10)
 
@@ -1356,7 +1107,7 @@ public class DataSeeder
             CooldownTurns = 3,
             CooldownType = "Per Combat",
             IsActive = true,
-            Notes = "Rank 1: 3d10 Fire damage. WILL save DC 15 or [Stunned] 2 turns. Only affects Mechanical/Undying. Requires 30 Fervor. Rank 2 (20 PP): 4d10 damage, DC 17. Failed save also gives -3 to all actions for rest of combat. Rank 3: 5d10 damage, 3 turn Stun. Failed save adds [System Malfunction] (30% skip turn each round)"
+            Notes = "Rank 1: 3d10 Fire damage. WILL save DC 15 or [Stunned] 2 turns. Only affects Mechanical/Undying. Requires 30 Fervor. Rank 2 (20 PP): 4d10 damage, DC 17. Failed save also gives -3 to all actions for rest of combat. Rank 3: 5d10 damage, 3 turn Stun. Failed save adds [Slowed] (30% AP penalty)"
         });
 
         // Tier 2 - Ability 5: Critical Strike (Active)
@@ -1561,7 +1312,7 @@ public class DataSeeder
             Description = "Your formal training instills deep physical and mental discipline, allowing you to remain focused amid chaos.",
             MechanicalSummary = "Increased Stamina regeneration and resistance to disorientation effects",
             TierLevel = 1,
-            PPCost = 3,
+            PPCost = 0,
             MaxRank = 3,
             CostToRank2 = 20,
             CostToRank3 = 0,
@@ -1585,7 +1336,7 @@ public class DataSeeder
             Description = "A precise, powerful thrust designed to exploit your weapon's length. Strike from tactical safety.",
             MechanicalSummary = "MIGHT-based Physical attack with [Reach] - can attack front row from back row",
             TierLevel = 1,
-            PPCost = 3,
+            PPCost = 0,
             MaxRank = 3,
             CostToRank2 = 20,
             CostToRank3 = 0,
@@ -1613,7 +1364,7 @@ public class DataSeeder
             Description = "You plant your feet, becoming an anchor of stability. This line will not be broken.",
             MechanicalSummary = "Defensive stance providing massive Soak and immunity to forced movement; cannot move while active",
             TierLevel = 1,
-            PPCost = 3,
+            PPCost = 0,
             MaxRank = 3,
             CostToRank2 = 20,
             CostToRank3 = 0,
@@ -1684,7 +1435,7 @@ public class DataSeeder
             CooldownTurns = 5,
             CooldownType = "Standard",
             IsActive = true,
-            Notes = "Rank 1: 3d6 Physical to all front row. STURDINESS opposed check to [Push] all targets to back row. Rank 2 (20 PP): 4d6 damage. +1 bonus to Push check. Successfully pushed enemies take +1d6 bonus damage. Rank 3: 5d6 damage. +2 bonus to Push check. Enemies pushed into back row are [Off-Balance] (-2 to hit, 1 turn)."
+            Notes = "Rank 1: 3d6 Physical to all front row. STURDINESS opposed check to [Push] all targets to back row. Rank 2 (20 PP): 4d6 damage. +1 bonus to Push check. Successfully pushed enemies take +1d6 bonus damage. Rank 3: 5d6 damage. +2 bonus to Push check. Enemies pushed into back row are [Disoriented] (-2 to hit, 1 turn)."
         });
 
         // Tier 2 - Ability 6: Guarding Presence (Passive)
@@ -1735,7 +1486,7 @@ public class DataSeeder
             CooldownTurns = 999,
             CooldownType = "Once Per Combat",
             IsActive = true,
-            Notes = "Rank 1: Enter defensive stance (1 turn). If hit by melee: +10 Soak, Immune [Knocked Down], attacker takes 4d8 Physical damage. Rank 2 (20 PP): Counter-damage increases to 5d8. Attacker must make WILL save DC 15 or be [Stunned] for 1 turn. Rank 3: Counter-damage 6d8. Stun save DC 18. If attacker is Mechanical/Undying, automatically Stunned."
+            Notes = "Rank 1: Enter defensive stance (1 turn). If hit by melee: +10 Soak, Immune to forced movement ([Push]/[Pull]), attacker takes 4d8 Physical damage. Rank 2 (20 PP): Counter-damage increases to 5d8. Attacker must make WILL save DC 15 or be [Stunned] for 1 turn. Rank 3: Counter-damage 6d8. Stun save DC 18. If attacker is Mechanical/Undying, automatically Stunned."
         });
 
         // Tier 3 - Ability 8: Unstoppable Phalanx (Active)
@@ -1763,7 +1514,7 @@ public class DataSeeder
             CooldownTurns = 4,
             CooldownType = "Standard",
             IsActive = true,
-            Notes = "Rank 1: 6d10 Physical to primary target. If hit: 4d10 Physical to enemy directly behind. Rank 2 (20 PP): 7d10 to primary, 5d10 to secondary. Both targets [Off-Balance] for 1 turn. Rank 3: 8d10 to primary, 6d10 to secondary. If primary dies: bonus damage to secondary doubled."
+            Notes = "Rank 1: 6d10 Physical to primary target. If hit: 4d10 Physical to enemy directly behind. Rank 2 (20 PP): 7d10 to primary, 5d10 to secondary. Both targets [Disoriented] for 1 turn. Rank 3: 8d10 to primary, 6d10 to secondary. If primary dies: bonus damage to secondary doubled."
         });
     }
 
@@ -1849,7 +1600,7 @@ public class DataSeeder
             Description = "You see value where others see junk. Every bolt, every wire, every corroded gear—repurposable.",
             MechanicalSummary = "Bonus to scavenging Scrap Materials; find more from enemies and containers",
             TierLevel = 1,
-            PPCost = 3,
+            PPCost = 0,
             MaxRank = 3,
             CostToRank2 = 20,
             CostToRank3 = 0,
@@ -1871,9 +1622,9 @@ public class DataSeeder
             SpecializationID = 14,
             Name = "Deploy Flash Bomb",
             Description = "You lob the improvised device. Flash! Their optics overload, their eyes burn.",
-            MechanicalSummary = "AoE attack applying [Blinded] status to all enemies in 3x3 area",
+            MechanicalSummary = "AoE attack applying [Disoriented] status to all enemies in 3x3 area",
             TierLevel = 1,
-            PPCost = 3,
+            PPCost = 0,
             MaxRank = 3,
             CostToRank2 = 20,
             CostToRank3 = 0,
@@ -1888,7 +1639,7 @@ public class DataSeeder
             CooldownTurns = 2,
             CooldownType = "Standard",
             IsActive = true,
-            Notes = "Rank 1: Throw Flash Bomb. All enemies in area make WILL save DC 13 or become [Blinded] for 2 turns. Consumes 1 Flash Bomb. Rank 2 (20 PP): DC increases to 15. Blinded enemies also take -2 Defense. Costs 25 Stamina. Rank 3: DC 17. Blinded duration 3 turns. [Masterwork Flash Bomb]: also deals 2d6 damage."
+            Notes = "Rank 1: Throw Flash Bomb. All enemies in area make WILL save DC 13 or become [Disoriented] (blinded) for 2 turns. Consumes 1 Flash Bomb. Rank 2 (20 PP): DC increases to 15. Disoriented enemies also take -2 Defense. Costs 25 Stamina. Rank 3: DC 17. Disoriented duration 3 turns. [Masterwork Flash Bomb]: also deals 2d6 damage."
         });
 
         // Tier 1 - Ability 3: Salvage Expertise (Passive)
@@ -1900,7 +1651,7 @@ public class DataSeeder
             Description = "Your understanding of pre-Glitch engineering is encyclopedic. Your work is precise, efficient, masterful.",
             MechanicalSummary = "Crafting bonuses and chance to create superior-quality gadgets",
             TierLevel = 1,
-            PPCost = 3,
+            PPCost = 0,
             MaxRank = 3,
             CostToRank2 = 20,
             CostToRank3 = 0,
