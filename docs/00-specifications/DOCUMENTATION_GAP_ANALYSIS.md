@@ -1,10 +1,11 @@
 # Documentation Gap Analysis
 
 > **Generated**: 2025-11-27
-> **Last Updated**: 2025-11-28 (GUI + Companion + Faction specs added)
+> **Last Updated**: 2025-11-28 (GUI + Companion + Faction + NPC specs added)
 > **Purpose**: Track documentation coverage and identify remaining gaps
 
 ### Recent Updates
+- **2025-11-28**: Added NPC & Dialogue specification (SPEC-SYSTEM-012) - Moderate Gap resolved
 - **2025-11-28**: Added Faction & Territory specification (SPEC-SYSTEM-011) - Moderate Gap resolved
 - **2025-11-28**: Added Companion System specification (SPEC-SYSTEM-010) - Moderate Gap resolved
 - **2025-11-28**: Added GUI Implementation specification (SPEC-SYSTEM-009) - Major Gap resolved
@@ -41,7 +42,7 @@
 |----------|--------|-------|--------|
 | Critical Gaps | 6 unresolved | 0 unresolved | ✅ Complete |
 | Major Gaps | 4 unresolved | 0 unresolved | ✅ 100% Complete |
-| Moderate Gaps | 5 categories | 3 categories | ⚠️ 40% Complete |
+| Moderate Gaps | 5 categories | 1 category | ⚠️ 80% Complete |
 | Specializations | 13/19 | 19/19 | ✅ Complete |
 
 ---
@@ -253,7 +254,7 @@ All critical documentation gaps have been addressed with comprehensive Layer 0 s
 |--------|-------|--------|
 | **Companion System** | 4 services | ✅ `systems/companion-system-spec.md` |
 | **Faction & Territory** | 10 services | ✅ `systems/faction-territory-spec.md` |
-| **NPC & Dialogue** | 3 services | ⚠️ Pending |
+| **NPC & Dialogue** | 6 services | ✅ `systems/npc-dialogue-spec.md` |
 | **Environmental Hazards** | 9 services | ⚠️ Pending |
 | **Specialization Implementation** | 11 services | ✅ Specs exist in `/specializations/` |
 
@@ -280,11 +281,15 @@ All critical documentation gaps have been addressed with comprehensive Layer 0 s
 - ✅ 25 faction quests, 18 faction rewards
 - ✅ GUI planning elements (6 planned UI components)
 
-#### NPC & Dialogue
-- `NPCService.cs` - NPC interactions
-- `DialogueService.cs` - Dialogue tree evaluation
-- `PricingService.cs` - Dynamic pricing
-- `TransactionService.cs` - Buy/sell logic
+#### NPC & Dialogue ✅
+**NOW Documented in `systems/npc-dialogue-spec.md`:**
+- ✅ 6 core services (NPCService, DialogueService, NPCFlavorTextService, PricingService, TransactionService, MerchantService)
+- ✅ 11 NPCs and 3 merchants with unique inventories
+- ✅ 8 dialogue trees with skill-check gated options
+- ✅ 8 dialogue outcome types (GiveItem, TakeItem, UnlockQuest, etc.)
+- ✅ 102+ NPC flavor text descriptors
+- ✅ Dynamic pricing with faction reputation modifiers
+- ✅ GUI planning elements (4 planned UI components)
 
 #### Environmental Hazards
 - `HazardService.cs` - Hazard mechanics
@@ -358,10 +363,9 @@ Note: All 19 specializations now have Layer 0 specs in `/docs/00-specifications/
 
 | System | Priority | Estimated Effort | Notes |
 |--------|----------|------------------|-------|
-| NPC & Dialogue | Low | 3 hours | Dialogue trees, transactions |
 | Environmental Hazards | Low | 4 hours | Hazards, traps, cover |
 
-**Remaining Estimated Effort**: ~7 hours
+**Remaining Estimated Effort**: ~4 hours
 
 ---
 
@@ -372,7 +376,7 @@ Note: All 19 specializations now have Layer 0 specs in `/docs/00-specifications/
 - `/docs/00-specifications/progression/` - 3 progression spec files
 - `/docs/00-specifications/economy/` - 2 economy spec files
 - `/docs/00-specifications/specializations/` - 19 specialization specs (all implemented specializations now documented)
-- `/docs/00-specifications/systems/` - 12 system specs (GUI, Companion, Faction, etc.)
+- `/docs/00-specifications/systems/` - 13 system specs (GUI, Companion, Faction, NPC, etc.)
 - `/docs/03-technical-reference/services/` - 10 service docs
 
 ### Partial Documentation (Enhanced by New Specs)
@@ -400,8 +404,9 @@ Note: All 19 specializations now have Layer 0 specs in `/docs/00-specifications/
 | **GUI Implementation** | **SPEC-SYSTEM-009** | **~850** | **MVVM, 26 services, 20 ViewModels, navigation** |
 | **Companion System** | **SPEC-SYSTEM-010** | **~950** | **6 companions, AI behavior, recruitment, GUI planning** |
 | **Faction & Territory** | **SPEC-SYSTEM-011** | **~1100** | **5 factions, reputation, territory, wars, GUI planning** |
+| **NPC & Dialogue** | **SPEC-SYSTEM-012** | **~900** | **11 NPCs, 3 merchants, 8 dialogue trees, GUI planning** |
 
-**Total New Documentation**: ~7,250 lines across 12 comprehensive specifications
+**Total New Documentation**: ~8,150 lines across 13 comprehensive specifications
 
 ---
 
