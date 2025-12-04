@@ -126,7 +126,7 @@ This specification is successful if:
 
 ## Trait Categories
 
-Traits are organized into **8 thematic categories** reflecting Aethelgard's world-building:
+Traits are organized into **12 thematic categories** reflecting Aethelgard's world-building:
 
 ### Category 1: Temporal Traits
 
@@ -280,6 +280,108 @@ Traits are organized into **8 thematic categories** reflecting Aethelgard's worl
 
 ---
 
+### Category 9: Resistance Traits
+
+**Theme**: Damage type resistances, elemental affinities, vulnerability exploitation
+**Lore Origin**: Creatures adapted to specific environments, materials, or energy types develop corresponding resistances
+**Visual Motif**: Elemental auras, material composition indicators, damage type icons
+
+| Trait | Effect | Balance Value | Lore Justification |
+|-------|--------|---------------|-------------------|
+| **FireResistant** | Takes 50% damage from Fire; immune to Burning status | 50% Fire resist | Heat-adapted physiology or fire-resistant materials |
+| **ColdResistant** | Takes 50% damage from Cold; immune to Frozen/Slowed from cold | 50% Cold resist | Cryo-adapted systems or antifreeze biology |
+| **LightningResistant** | Takes 50% damage from Lightning; immune to Stunned from electrical | 50% Lightning resist | Grounded chassis or insulated biology |
+| **PsychicResistant** | Takes 50% damage from Psychic; +2 to WILL saves vs mental effects | 50% Psychic resist | Fragmented consciousness or shielded mind |
+| **PhysicalResistant** | Takes 75% damage from Physical attacks (slashing, piercing, bludgeoning) | 25% Physical resist | Dense material composition or hardened hide |
+| **AcidResistant** | Takes 50% damage from Acid/Corrosion; immune to Corroded status | 50% Acid resist | Inert surface material or neutralizing secretions |
+| **FireVulnerable** | Takes 150% damage from Fire; Burning lasts +1 turn | 150% Fire weakness | Flammable composition or heat-sensitive systems |
+| **ColdVulnerable** | Takes 150% damage from Cold; Frozen/Slowed lasts +1 turn | 150% Cold weakness | Requires warmth to function |
+| **LightningVulnerable** | Takes 150% damage from Lightning; auto-Stunned for 1 turn on Lightning hit | 150% Lightning weakness | Conductive materials or sensitive electronics |
+| **HolyVulnerable** | Takes 200% damage from Holy/Radiant sources | 200% Holy weakness | Corrupted or undead nature |
+| **ElementalAbsorption** | Choose element: damage of that type heals instead of hurting | Full absorption | Elemental affinity or energy converter |
+| **AlloyedForm** | Immune to Corroded; +2 Soak vs Physical; vulnerable to Lightning (150%) | Mixed | Refined metal construction |
+| **OrganicBane** | +50% damage against organic (non-Mechanical) targets | +50% vs organic | Anti-biological weaponry |
+| **MechanicalBane** | +50% damage against Mechanical targets; attacks disable SelfRepair for 1 turn | +50% vs mechanical | EMP-enhanced or disruption attacks |
+
+---
+
+### Category 10: Strategy/AI Behavior Traits
+
+**Theme**: Tactical decision-making patterns, target prioritization, self-preservation instincts
+**Lore Origin**: Programming remnants, predatory instincts, learned survival behaviors
+**Visual Motif**: Targeting indicators, behavior state icons, tactical overlays
+
+| Trait | Effect | Balance Value | Lore Justification |
+|-------|--------|---------------|-------------------|
+| **Cowardly** | Flees combat (attempts to leave grid) when HP drops below 25% | Flee at 25% HP | Self-preservation overrides combat directives |
+| **Skittish** | After taking damage, 40% chance to move away from attacker instead of acting | 40% flee on hit | Easily startled; prey instincts |
+| **HealerHunter** | Prioritizes targeting characters with healing abilities; +2 Accuracy vs healers | +2 vs healers | Programmed to eliminate support threats |
+| **ThreatFocused** | Always attacks the character who dealt most damage to it last round | Aggro mechanic | Vengeful targeting protocols |
+| **WeaknessSensor** | Prioritizes targets below 50% HP; +1 Accuracy vs wounded targets | +1 vs wounded | Opportunistic predator |
+| **ProtectorInstinct** | Moves to intercept attacks against allied creatures; can bodyblock | Bodyguard AI | Defensive programming or pack loyalty |
+| **Opportunist** | Prioritizes targets affected by status effects; +2 damage vs debuffed targets | +2 vs debuffed | Exploits vulnerability |
+| **CasterKiller** | Prioritizes targets with high WILL/WITS; interrupts abilities on hit (25% chance) | 25% interrupt | Anti-magic programming |
+| **Berserker** | Never retreats; +1 damage per 10% HP lost (max +10 at 0% HP) | Scaling damage | Rage-fueled aggression |
+| **PackLeader** | Allied creatures within 3 tiles gain +1 Accuracy; this creature acts last in initiative | +1 ally Accuracy | Tactical coordination |
+| **Ambusher** | Will not engage until player moves adjacent OR player HP drops below 75% | Delayed engagement | Patient predator |
+| **Territorial** | Will not leave starting zone; +3 Accuracy and +3 Defense while in starting zone | +3/+3 in zone | Area defender |
+| **HitAndFade** | After attacking, attempts to move to maximum range; won't pursue fleeing targets | Kiting AI | Ranged harasser tactics |
+| **Swarmer** | Attempts to surround isolated targets; +2 Accuracy when 2+ allies adjacent to target | +2 flanking bonus | Coordinated encirclement |
+| **SelfDestructive** | At <10% HP, uses Explosive trait (if present) voluntarily; otherwise charges nearest enemy | Suicide attack | Desperation protocol |
+| **Cautious** | Won't attack if it would provoke attack of opportunity; prefers ranged options | Risk-averse | Self-preservation priority |
+
+---
+
+### Category 11: Sensory Traits
+
+**Theme**: Perception abilities, detection methods, sensory limitations
+**Lore Origin**: Specialized sensors, biological adaptations, damaged perception systems
+**Visual Motif**: Sensor arrays, eye states, detection range indicators
+
+| Trait | Effect | Balance Value | Lore Justification |
+|-------|--------|---------------|-------------------|
+| **Blind** | Cannot target specific enemies; attacks random target in range; immune to visual effects | Random targeting | Non-functional optical systems |
+| **Blindsense** | Unaffected by darkness, invisibility, or visual concealment within 3 tiles | 3-tile detection | Echolocation or tremorsense |
+| **SoundSensitive** | +2 Accuracy in normal conditions; Stunned for 1 turn by loud sounds (explosions, PsychicScream) | +2 Acc / Stun weakness | Hyperactive audio sensors |
+| **SoundBlind** | Immune to sound-based attacks; cannot detect Stealthed enemies; -2 to Initiative | Deafness trade-off | Non-functional audio systems |
+| **Tremorsense** | Detects all ground-based creatures within 4 tiles regardless of stealth; cannot detect Flying | Ground detection | Vibration sensors |
+| **ThermalVision** | +2 Accuracy vs warm-blooded (organic) targets; -2 Accuracy vs Mechanical/cold targets | Conditional Accuracy | Heat-based targeting |
+| **MotionDetection** | +3 Accuracy vs targets that moved last turn; -2 Accuracy vs stationary targets | Movement-based | Motion-tracking sensors |
+| **Darkvision** | Unaffected by darkness penalties; can see in magical darkness | Darkness immunity | Enhanced optical sensors |
+| **LightSensitive** | -2 Accuracy in bright light; Blinded (1 turn) by flash effects; +2 Accuracy in darkness | Light weakness | Adapted to low-light environments |
+| **PsychicSense** | Detects all creatures within 5 tiles regardless of stealth/invisibility; ignores cover for targeting | Full awareness | Psychic perception |
+| **Eyeless** | Immune to Blind status and gaze attacks; relies on other senses (specify: sound, smell, tremor) | Blind immunity | No optical dependency |
+| **ScatterSense** | Can detect and target all enemies within 2 tiles simultaneously; AoE attacks don't require aiming | Multi-target awareness | 360-degree sensors |
+
+---
+
+### Category 12: Combat Condition Traits
+
+**Theme**: Environmental adaptations, condition immunities, situational modifiers
+**Lore Origin**: Specialized design, environmental adaptation, unique physiology
+**Visual Motif**: Condition icons, environmental indicators, adaptation markers
+
+| Trait | Effect | Balance Value | Lore Justification |
+|-------|--------|---------------|-------------------|
+| **Amphibious** | No penalties in water; can move through water tiles freely; +2 Defense in water | Water adaptation | Aquatic capability |
+| **HeatAdapted** | No damage from hot terrain (lava proximity, burning ground); +2 Accuracy in hot environments | Heat immunity | Thermal regulation systems |
+| **ColdAdapted** | No damage from cold terrain (freezing areas); immune to Slowed from cold; +2 Accuracy in cold | Cold immunity | Cryo-tolerance |
+| **ToxinImmune** | Immune to Poison, Corroded, and environmental toxin damage | Full toxin immunity | Sealed systems or resistant biology |
+| **RadiationImmune** | Immune to radiation damage and Irradiated status | Radiation immunity | Shielded or radiation-adapted |
+| **VacuumSurvival** | Can function in zero-atmosphere; immune to suffocation/pressure effects | Vacuum capable | Sealed systems |
+| **GravityAdapted** | Immune to knockback, pull, and gravity-based effects; +2 Defense vs falling | Gravity resistance | Magnetic locks or dense mass |
+| **Buoyant** | Cannot enter water (floats on surface); +2 Defense vs ground-based attacks; -2 vs aerial | Surface-bound | Low density composition |
+| **Grounded** | Immune to Lightning damage reflection; cannot be lifted/thrown; +2 Soak vs Lightning | Electrical grounding | Conductive grounding system |
+| **Ethereal** | 50% chance to ignore terrain effects; can pass through thin walls; -2 vs holy/psychic damage | Partial phasing | Semi-corporeal existence |
+| **SunlightWeakness** | In bright/natural light: -2 to all attributes; in darkness: +2 to all attributes | Light vulnerability | Evolved for darkness |
+| **MoonlightStrength** | During night/under moonlight: +2 Accuracy, +2 damage; during day: -1 Accuracy | Time-based power | Lunar attunement |
+| **StormBorn** | During storms/electrical hazards: +3 Accuracy, regenerate 5 HP/turn; calm weather: normal | Weather-dependent | Storm energy absorption |
+| **BloodScent** | +2 Accuracy against Bleeding targets; can detect Bleeding creatures through walls within 5 tiles | Blood tracking | Olfactory hunting |
+| **CorruptionSustained** | Heals 2 HP per point of Corruption on the battlefield; weakens (-2 all stats) in pure areas | Corruption-fed | Feeds on Blight energy |
+| **HallowedBane** | Takes 2 damage per turn in consecrated/holy areas; +2 damage in corrupted areas | Holy vulnerability | Anti-divine nature |
+
+---
+
 ## Trait Interactions
 
 ### Synergistic Combinations
@@ -294,6 +396,16 @@ Some trait combinations create emergent behaviors:
 | Flight + Hit-and-Run | Untouchable harasser | Blight-Hawk |
 | SplitOnDeath + Explosive | Chain reaction on death | Volatile Swarm |
 | Networked + PackTactics | Devastating coordinated attacks | Servitor Legion |
+| Blind + Tremorsense + SoundSensitive | Hunts by vibration/sound; exploitable weakness | Echo-Stalker |
+| Cowardly + Explosive | Runs away then detonates at range | Fleeing Bomb-Drone |
+| HealerHunter + Swiftness + ArmorPiercing | Rushes past frontline to assassinate support | Support-Killer Unit |
+| FireResistant + HeatAdapted + StormBorn | Thrives in Muspelheim's volcanic environments | Magma Sentinel |
+| Blind + PsychicSense + MindSpike | Cannot be hidden from; ignores physical defenses | Void Seer |
+| BloodScent + WeaknessSensor + Executioner | Hunts wounded prey with lethal efficiency | Scent-Hunter |
+| LightSensitive + Darkvision + SunlightWeakness | Nocturnal predator, weak in daylight | Night-Stalker |
+| ThreatFocused + Berserker + Enrage | Becomes more dangerous as fight continues | Vengeance Construct |
+| ProtectorInstinct + ShieldGenerator + Anchored | Immovable guardian that protects allies | Bastion Unit |
+| MotionDetection + Cautious + HitAndFade | Sniper that punishes movement | Motion-Tracker Turret |
 
 ### Conflicting Combinations (Avoid)
 
@@ -579,7 +691,73 @@ public enum CreatureTrait
     Resurrection = 804,
     SymbioticLink = 805,
     Berserk = 806,
-    PackTactics = 807
+    PackTactics = 807,
+
+    // Resistance Traits (900-999)
+    FireResistant = 900,
+    ColdResistant = 901,
+    LightningResistant = 902,
+    PsychicResistant = 903,
+    PhysicalResistant = 904,
+    AcidResistant = 905,
+    FireVulnerable = 906,
+    ColdVulnerable = 907,
+    LightningVulnerable = 908,
+    HolyVulnerable = 909,
+    ElementalAbsorption = 910,
+    AlloyedForm = 911,
+    OrganicBane = 912,
+    MechanicalBane = 913,
+
+    // Strategy/AI Behavior Traits (1000-1099)
+    Cowardly = 1000,
+    Skittish = 1001,
+    HealerHunter = 1002,
+    ThreatFocused = 1003,
+    WeaknessSensor = 1004,
+    ProtectorInstinct = 1005,
+    Opportunist = 1006,
+    CasterKiller = 1007,
+    BerserkerAI = 1008,  // Note: Different from Berserk (806) which is HP-triggered
+    PackLeader = 1009,
+    AmbusherAI = 1010,   // Note: Different from Ambush (505) which is stealth-based
+    TerritorialAI = 1011, // Note: Different from Territorial (507) which is stat-based
+    HitAndFade = 1012,
+    Swarmer = 1013,
+    SelfDestructive = 1014,
+    Cautious = 1015,
+
+    // Sensory Traits (1100-1199)
+    Blind = 1100,
+    Blindsense = 1101,
+    SoundSensitive = 1102,
+    SoundBlind = 1103,
+    Tremorsense = 1104,
+    ThermalVision = 1105,
+    MotionDetection = 1106,
+    Darkvision = 1107,
+    LightSensitive = 1108,
+    PsychicSense = 1109,
+    Eyeless = 1110,
+    ScatterSense = 1111,
+
+    // Combat Condition Traits (1200-1299)
+    Amphibious = 1200,
+    HeatAdapted = 1201,
+    ColdAdapted = 1202,
+    ToxinImmune = 1203,
+    RadiationImmune = 1204,
+    VacuumSurvival = 1205,
+    GravityAdapted = 1206,
+    Buoyant = 1207,
+    Grounded = 1208,
+    Ethereal = 1209,
+    SunlightWeakness = 1210,
+    MoonlightStrength = 1211,
+    StormBorn = 1212,
+    BloodScent = 1213,
+    CorruptionSustained = 1214,
+    HallowedBane = 1215
 }
 ```
 
@@ -785,22 +963,81 @@ New creatures require:
 
 ### By Tactical Role
 
-**Anti-Positioning**: TemporalPhase, Phasing, Flight, Burrowing, RandomBlink
+**Anti-Positioning**: TemporalPhase, Phasing, Flight, Burrowing, RandomBlink, Ethereal
 **Stress Applicators**: ChronoDistortion, ForlornAura, Whispers, FearAura, DataFragment
-**Damage Mitigation**: ArmoredPlating, Regeneration, DamageThreshold, ShieldGenerator, FadingForm
-**Damage Amplification**: Brutal, Relentless, Executioner, Enrage, Overcharge
-**Status Immunity**: IronHeart, Unstoppable, VoidTouched
-**Sustain**: SelfRepair, ThoughtLeech, Vampiric, Reforming
+**Damage Mitigation**: ArmoredPlating, Regeneration, DamageThreshold, ShieldGenerator, FadingForm, PhysicalResistant
+**Damage Amplification**: Brutal, Relentless, Executioner, Enrage, Overcharge, OrganicBane, MechanicalBane
+**Status Immunity**: IronHeart, Unstoppable, VoidTouched, ToxinImmune, RadiationImmune
+**Sustain**: SelfRepair, ThoughtLeech, Vampiric, Reforming, ElementalAbsorption, CorruptionSustained
 **Spawning**: SplitOnDeath, MirrorImage, Resurrection
+**Target Priority**: HealerHunter, ThreatFocused, WeaknessSensor, CasterKiller, Opportunist
+**Self-Preservation**: Cowardly, Skittish, Cautious, HitAndFade
+**Detection/Sensing**: Blindsense, Tremorsense, ThermalVision, PsychicSense, BloodScent, MotionDetection
+**Environmental**: HeatAdapted, ColdAdapted, Amphibious, StormBorn, SunlightWeakness
 
 ### By Counter-Play
 
-**Requires Burst Damage**: Regeneration, ThoughtLeech, Reforming, TimeLoop
+**Requires Burst Damage**: Regeneration, ThoughtLeech, Reforming, TimeLoop, CorruptionSustained
 **Requires Status Effects**: Unstoppable (can't be CC'd), IronHeart (needs alternatives)
 **Requires High WILL**: ForlornAura, ChronoDistortion, Whispers, FearAura
-**Requires Positioning**: Territorial, Anchored, Networked
-**Requires AoE**: RandomBlink, MirrorImage, SplitOnDeath
-**Requires Armor-Piercing**: ArmoredPlating, AdaptiveArmor
+**Requires Positioning**: Territorial, Anchored, Networked, TerritorialAI
+**Requires AoE**: RandomBlink, MirrorImage, SplitOnDeath, ScatterSense
+**Requires Armor-Piercing**: ArmoredPlating, AdaptiveArmor, PhysicalResistant, AlloyedForm
+**Requires Specific Damage Type**: FireResistant (use non-Fire), ColdResistant (use non-Cold), etc.
+**Exploit Sensory Weakness**: SoundSensitive (use loud abilities), LightSensitive (use flash), Blind (stay still)
+**Exploit Environmental**: SunlightWeakness (fight in daylight), HallowedBane (use holy ground)
+**Kite/Distance**: Cowardly (let them flee), HitAndFade (close gap), Territorial (leave their zone)
+
+### By Damage Type Interaction
+
+**Fire**:
+- Resistant: FireResistant, HeatAdapted
+- Vulnerable: FireVulnerable, ColdAdapted (thematically)
+- Absorbs: ElementalAbsorption (Fire)
+
+**Cold**:
+- Resistant: ColdResistant, ColdAdapted
+- Vulnerable: ColdVulnerable, HeatAdapted (thematically)
+- Absorbs: ElementalAbsorption (Cold)
+
+**Lightning**:
+- Resistant: LightningResistant, Grounded
+- Vulnerable: LightningVulnerable, AlloyedForm
+- Absorbs: ElementalAbsorption (Lightning), StormBorn
+
+**Psychic**:
+- Resistant: PsychicResistant, IronHeart (50%)
+- Vulnerable: Ethereal (-2 vs psychic)
+- Absorbs: VoidTouched (immune)
+
+**Physical**:
+- Resistant: PhysicalResistant, ArmoredPlating, AlloyedForm
+- Vulnerable: Ethereal (vs holy)
+- Mitigates: Soak, DamageThreshold
+
+**Holy/Radiant**:
+- Vulnerable: HolyVulnerable, HallowedBane, Ethereal
+- Resistant: (none by default - holy is meant to be effective vs corrupted)
+
+### By AI Behavior Pattern
+
+**Aggressive (Attack-Focused)**:
+- BerserkerAI, ThreatFocused, Swarmer, SelfDestructive
+
+**Defensive (Protection-Focused)**:
+- ProtectorInstinct, Cautious, TerritorialAI, Anchored
+
+**Opportunistic (Exploit Weakness)**:
+- WeaknessSensor, Opportunist, Executioner, BloodScent
+
+**Assassination (Priority Targeting)**:
+- HealerHunter, CasterKiller, PredatorInstinct
+
+**Evasive (Avoid Damage)**:
+- Cowardly, Skittish, HitAndFade, Cautious
+
+**Ambush (Wait and Strike)**:
+- AmbusherAI, Ambush, MotionDetection
 
 ---
 
