@@ -99,5 +99,5 @@ To add support for new descriptor tables:
 ## Related Documentation
 
 - `docs/dynamic-room-engine-descriptor-overview.md` - How descriptors work
-- `docs/v0.38_descriptor_framework_integration.md` - Framework guide
+- `docs/archive/version-notes/v0.38_descriptor_framework_integration.md` - Framework guide
 - `docs/templates/flavor-text/README.md` - Flavor text templates
