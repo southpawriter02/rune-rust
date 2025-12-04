@@ -1,4 +1,5 @@
 using RuneAndRust.Core.Population;
+using RuneAndRust.Core.Traits;
 
 namespace RuneAndRust.Core;
 
@@ -110,6 +111,23 @@ public class Enemy
     // v0.24.2: Advanced Status Effect System
     public List<StatusEffect> StatusEffects { get; set; } = new(); // Modern status effect tracking
 
+    // v0.45: Creature Traits System (SPEC-COMBAT-015)
+    /// <summary>
+    /// Collection of creature traits that modify this enemy's behavior and mechanics.
+    /// Traits are processed by CreatureTraitService during combat.
+    /// </summary>
+    public List<TraitConfiguration> Traits { get; set; } = new();
+
+    /// <summary>
+    /// Temporary HP from traits like ShieldGenerator. Does not regenerate.
+    /// </summary>
+    public int TemporaryHP { get; set; } = 0;
+
+    /// <summary>
+    /// Tracks which damage types this enemy has adapted to (for AdaptiveArmor trait).
+    /// </summary>
+    public HashSet<string> AdaptedDamageTypes { get; set; } = new();
+
     public bool IsAlive => HP > 0;
 
     // Convenience aliases for backward compatibility
@@ -150,5 +168,100 @@ public class Enemy
             "wits" => Attributes.Wits,
             _ => 0
         };
+    }
+
+    // ========================================
+    // Creature Traits Helper Methods (v0.45)
+    // ========================================
+
+    /// <summary>
+    /// Quick lookup for trait presence.
+    /// </summary>
+    public bool HasTrait(CreatureTrait trait)
+    {
+        return Traits.Any(t => t.Trait == trait);
+    }
+
+    /// <summary>
+    /// Get configuration for a specific trait, or null if not present.
+    /// </summary>
+    public TraitConfiguration? GetTraitConfig(CreatureTrait trait)
+    {
+        return Traits.FirstOrDefault(t => t.Trait == trait);
+    }
+
+    /// <summary>
+    /// Adds a trait with default configuration.
+    /// </summary>
+    public void AddTrait(CreatureTrait trait)
+    {
+        if (!HasTrait(trait))
+        {
+            Traits.Add(TraitDefaults.GetDefault(trait));
+        }
+    }
+
+    /// <summary>
+    /// Adds a trait with custom configuration.
+    /// </summary>
+    public void AddTrait(TraitConfiguration config)
+    {
+        if (!HasTrait(config.Trait))
+        {
+            Traits.Add(config);
+        }
+    }
+
+    /// <summary>
+    /// Removes a trait if present.
+    /// </summary>
+    public bool RemoveTrait(CreatureTrait trait)
+    {
+        var config = GetTraitConfig(trait);
+        if (config != null)
+        {
+            return Traits.Remove(config);
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// Gets all traits in a specific category.
+    /// </summary>
+    public IEnumerable<TraitConfiguration> GetTraitsInCategory(TraitCategory category)
+    {
+        return Traits.Where(t => t.Category == category);
+    }
+
+    /// <summary>
+    /// Calculates total trait point cost for balance validation.
+    /// </summary>
+    public int GetTotalTraitPoints()
+    {
+        return TraitDefaults.CalculateTotalPoints(Traits);
+    }
+
+    /// <summary>
+    /// Resets per-combat trait state (call at combat start).
+    /// </summary>
+    public void ResetTraitCombatState()
+    {
+        foreach (var trait in Traits)
+        {
+            trait.ResetCombatState();
+        }
+        TemporaryHP = 0;
+        AdaptedDamageTypes.Clear();
+    }
+
+    /// <summary>
+    /// Calculates adjusted Legend value including trait complexity bonus.
+    /// Formula: Base_Legend × (1 + (Total_Trait_Points × 0.03))
+    /// </summary>
+    public int GetAdjustedLegendValue()
+    {
+        var totalPoints = GetTotalTraitPoints();
+        var adjustment = 1 + (totalPoints * 0.03);
+        return (int)Math.Round(BaseLegendValue * adjustment);
     }
 }
