@@ -127,6 +127,25 @@ Balance analysis materials for tuning:
 - **Build Viability** - Specialization effectiveness matrix
 - **Difficulty Curves** - Enemy scaling, room difficulty
 
+### 📚 [Guides](./guides/)
+Practical guides for development and gameplay:
+
+- **[Integration Guides](./guides/integration/)** - Version-specific integration instructions
+- **[Feature Guides](./guides/features/)** - Guides for specific game features (companions, boss combat, specializations)
+- **[Testing Guides](./guides/testing/)** - Playtesting procedures and checklists
+
+### 📝 [Changelogs](./changelogs/)
+Version history and release notes:
+
+- Version-specific changelogs (v0.10 - v0.20+)
+- Feature additions, bug fixes, and breaking changes
+
+### 🗃️ [Archive](./archive/)
+Historical documentation and version-specific notes:
+
+- **[Version Notes](./archive/version-notes/)** - Implementation summaries for past versions
+- **[Implementation Notes](./archive/implementation-notes/)** - Development notes and decisions
+
 ### 📋 [Templates](./templates/)
 Reusable documentation templates:
 
@@ -136,15 +155,11 @@ Reusable documentation templates:
 - Equipment Entry Template
 - Test Specification Template
 
-### ⚡ [Quick Reference](./quick-reference/)
-At-a-glance reference materials:
+### 🖥️ [Avalonia](./avalonia/)
+Avalonia UI implementation documentation:
 
-- Combat Resolution Flowchart
-- Damage Calculation Cheat Sheet
-- Ability Cost Reference Table
-- Enemy Weakness Matrix
-- Equipment Comparison Tables
-- Formula Quick Reference
+- Phase implementation guides
+- UI specifications and patterns
 
 ---
 
@@ -243,7 +258,7 @@ When adding or updating documentation:
 
 ---
 
-**v0.17: Document before you balance — establish ground truth for all systems.**
+**Document before you balance — establish ground truth for all systems.**
 
-*Generated: 2025-11-12*
-*Status: 🚧 In Progress*
+*Last reorganized: 2025-12-04*
+*Status: Consolidated documentation structure*
