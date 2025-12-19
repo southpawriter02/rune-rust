@@ -97,13 +97,46 @@ public class StatCalculationService : IStatCalculationService
     {
         _logger.LogInformation("Recalculating derived stats for character {CharacterName}", character.Name);
 
-        character.MaxHP = CalculateMaxHP(character.Sturdiness);
-        character.CurrentHP = character.MaxHP;
+        // Use effective attributes (base + equipment bonuses)
+        var effectiveSturdiness = character.GetEffectiveAttribute(CharacterAttribute.Sturdiness);
+        var effectiveFinesse = character.GetEffectiveAttribute(CharacterAttribute.Finesse);
+        var effectiveWits = character.GetEffectiveAttribute(CharacterAttribute.Wits);
 
-        character.MaxStamina = CalculateMaxStamina(character.Finesse, character.Sturdiness);
-        character.CurrentStamina = character.MaxStamina;
+        _logger.LogDebug("Effective attributes - Sturdiness: {Sturdiness}, Finesse: {Finesse}, Wits: {Wits}",
+            effectiveSturdiness, effectiveFinesse, effectiveWits);
 
-        character.ActionPoints = CalculateActionPoints(character.Wits);
+        var previousMaxHP = character.MaxHP;
+        var previousMaxStamina = character.MaxStamina;
+
+        character.MaxHP = CalculateMaxHP(effectiveSturdiness);
+        character.MaxStamina = CalculateMaxStamina(effectiveFinesse, effectiveSturdiness);
+        character.ActionPoints = CalculateActionPoints(effectiveWits);
+
+        // Adjust current HP/Stamina proportionally if max changed (preserve ratio)
+        // Or initialize to max if this is the first calculation
+        if (previousMaxHP == 0)
+        {
+            // First time initialization - set current to max
+            character.CurrentHP = character.MaxHP;
+        }
+        else if (character.MaxHP != previousMaxHP)
+        {
+            // Preserve ratio when max changes
+            var hpRatio = (double)character.CurrentHP / previousMaxHP;
+            character.CurrentHP = Math.Max(1, (int)(character.MaxHP * hpRatio));
+        }
+
+        if (previousMaxStamina == 0)
+        {
+            // First time initialization - set current to max
+            character.CurrentStamina = character.MaxStamina;
+        }
+        else if (character.MaxStamina != previousMaxStamina)
+        {
+            // Preserve ratio when max changes
+            var staminaRatio = (double)character.CurrentStamina / previousMaxStamina;
+            character.CurrentStamina = Math.Max(0, (int)(character.MaxStamina * staminaRatio));
+        }
 
         _logger.LogInformation(
             "Derived stats calculated - MaxHP: {MaxHP}, MaxStamina: {MaxStamina}, ActionPoints: {ActionPoints}",

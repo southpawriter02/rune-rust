@@ -584,6 +584,162 @@ public class CommandParserTests
 
     #endregion
 
+    #region Inventory Command Tests
+
+    [Theory]
+    [InlineData("inventory")]
+    [InlineData("i")]
+    [InlineData("pack")]
+    public void ParseAndExecute_Exploration_InventoryCommands_ReturnsRequiresInventory(string command)
+    {
+        // Arrange
+        _state.Phase = GamePhase.Exploration;
+
+        // Act
+        var result = _sut.ParseAndExecute(command, _state);
+
+        // Assert
+        result.RequiresInventory.Should().BeTrue();
+    }
+
+    [Theory]
+    [InlineData("equipment")]
+    [InlineData("gear")]
+    [InlineData("equipped")]
+    public void ParseAndExecute_Exploration_EquipmentCommands_ReturnsRequiresEquipment(string command)
+    {
+        // Arrange
+        _state.Phase = GamePhase.Exploration;
+
+        // Act
+        var result = _sut.ParseAndExecute(command, _state);
+
+        // Assert
+        result.RequiresEquipment.Should().BeTrue();
+    }
+
+    [Theory]
+    [InlineData("equip Iron Sword", "iron sword")]
+    [InlineData("bind Iron Sword", "iron sword")]
+    [InlineData("equip health potion", "health potion")]
+    public void ParseAndExecute_Exploration_EquipCommand_ReturnsEquipWithTarget(string command, string expectedTarget)
+    {
+        // Arrange
+        _state.Phase = GamePhase.Exploration;
+
+        // Act
+        var result = _sut.ParseAndExecute(command, _state);
+
+        // Assert
+        result.RequiresEquip.Should().BeTrue();
+        result.EquipTarget.Should().Be(expectedTarget);
+    }
+
+    [Theory]
+    [InlineData("unequip mainhand", "mainhand")]
+    [InlineData("unbind Iron Sword", "iron sword")]
+    [InlineData("remove helmet", "helmet")]
+    public void ParseAndExecute_Exploration_UnequipCommand_ReturnsUnequipWithTarget(string command, string expectedTarget)
+    {
+        // Arrange
+        _state.Phase = GamePhase.Exploration;
+
+        // Act
+        var result = _sut.ParseAndExecute(command, _state);
+
+        // Assert
+        result.RequiresUnequip.Should().BeTrue();
+        result.UnequipTarget.Should().Be(expectedTarget);
+    }
+
+    [Theory]
+    [InlineData("drop Iron Sword", "iron sword")]
+    [InlineData("discard junk", "junk")]
+    public void ParseAndExecute_Exploration_DropCommand_ReturnsDropWithTarget(string command, string expectedTarget)
+    {
+        // Arrange
+        _state.Phase = GamePhase.Exploration;
+
+        // Act
+        var result = _sut.ParseAndExecute(command, _state);
+
+        // Assert
+        result.RequiresDrop.Should().BeTrue();
+        result.DropTarget.Should().Be(expectedTarget);
+    }
+
+    [Fact]
+    public void ParseAndExecute_Exploration_EquipWithoutTarget_DisplaysError()
+    {
+        // Arrange
+        _state.Phase = GamePhase.Exploration;
+
+        // Act - "equip" alone (no space/target) goes to default handler
+        var result = _sut.ParseAndExecute("equip", _state);
+
+        // Assert - treated as unknown command since no target
+        result.RequiresEquip.Should().BeFalse();
+        _mockInputHandler.Verify(x => x.DisplayError(It.Is<string>(s => s.Contains("Unknown command"))), Times.Once);
+    }
+
+    [Fact]
+    public void ParseAndExecute_Exploration_UnequipWithoutTarget_DisplaysError()
+    {
+        // Arrange
+        _state.Phase = GamePhase.Exploration;
+
+        // Act - "unequip" alone (no space/target) goes to default handler
+        var result = _sut.ParseAndExecute("unequip", _state);
+
+        // Assert - treated as unknown command since no target
+        result.RequiresUnequip.Should().BeFalse();
+        _mockInputHandler.Verify(x => x.DisplayError(It.Is<string>(s => s.Contains("Unknown command"))), Times.Once);
+    }
+
+    [Fact]
+    public void ParseAndExecute_Exploration_DropWithoutTarget_DisplaysError()
+    {
+        // Arrange
+        _state.Phase = GamePhase.Exploration;
+
+        // Act - "drop" alone (no space/target) goes to default handler
+        var result = _sut.ParseAndExecute("drop", _state);
+
+        // Assert - treated as unknown command since no target
+        result.RequiresDrop.Should().BeFalse();
+        _mockInputHandler.Verify(x => x.DisplayError(It.Is<string>(s => s.Contains("Unknown command"))), Times.Once);
+    }
+
+    [Fact]
+    public void ParseAndExecute_Exploration_Objects_ReturnsRequiresListObjects()
+    {
+        // Arrange
+        _state.Phase = GamePhase.Exploration;
+
+        // Act
+        var result = _sut.ParseAndExecute("objects", _state);
+
+        // Assert
+        result.RequiresListObjects.Should().BeTrue();
+        result.RequiresInventory.Should().BeFalse(); // Should be separate from inventory
+    }
+
+    [Fact]
+    public void ParseAndExecute_Exploration_Help_IncludesInventoryCommands()
+    {
+        // Arrange
+        _state.Phase = GamePhase.Exploration;
+
+        // Act
+        _sut.ParseAndExecute("help", _state);
+
+        // Assert
+        _mockInputHandler.Verify(x => x.DisplayMessage(It.Is<string>(s => s.Contains("Inventory"))), Times.Once);
+        _mockInputHandler.Verify(x => x.DisplayMessage(It.Is<string>(s => s.Contains("equip"))), Times.AtLeastOnce);
+    }
+
+    #endregion
+
     #region Helper Methods
 
     private void VerifyLogLevel(LogLevel level)

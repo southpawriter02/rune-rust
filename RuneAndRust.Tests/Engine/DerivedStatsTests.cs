@@ -209,7 +209,7 @@ public class DerivedStatsTests
     }
 
     [Fact]
-    public void RecalculateDerivedStats_SetsCurrentToMax()
+    public void RecalculateDerivedStats_PreservesCurrentWhenMaxUnchanged()
     {
         // Arrange
         var character = new Character
@@ -220,13 +220,14 @@ public class DerivedStatsTests
             CurrentHP = 50, // Below max
             CurrentStamina = 30 // Below max
         };
+        // Default MaxHP is 100, and with Sturdiness 5: 50 + 50 = 100 (unchanged)
 
         // Act
         _service.RecalculateDerivedStats(character);
 
-        // Assert
-        character.CurrentHP.Should().Be(character.MaxHP);
-        character.CurrentStamina.Should().Be(character.MaxStamina);
+        // Assert - Current values preserved when max doesn't change
+        character.CurrentHP.Should().Be(50);
+        character.CurrentStamina.Should().Be(30);
     }
 
     #endregion

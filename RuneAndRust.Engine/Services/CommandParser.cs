@@ -71,6 +71,46 @@ public class ParseResult
     public bool RequiresListObjects { get; set; }
 
     /// <summary>
+    /// Gets or sets whether the inventory display was requested.
+    /// </summary>
+    public bool RequiresInventory { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether the equipment display was requested.
+    /// </summary>
+    public bool RequiresEquipment { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether an equip command was issued.
+    /// </summary>
+    public bool RequiresEquip { get; set; }
+
+    /// <summary>
+    /// Gets or sets the target of the equip command.
+    /// </summary>
+    public string? EquipTarget { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether an unequip command was issued.
+    /// </summary>
+    public bool RequiresUnequip { get; set; }
+
+    /// <summary>
+    /// Gets or sets the target of the unequip command (item name or slot).
+    /// </summary>
+    public string? UnequipTarget { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether a drop command was issued.
+    /// </summary>
+    public bool RequiresDrop { get; set; }
+
+    /// <summary>
+    /// Gets or sets the target of the drop command.
+    /// </summary>
+    public string? DropTarget { get; set; }
+
+    /// <summary>
     /// Gets a default result with no async requirements.
     /// </summary>
     public static ParseResult None => new();
@@ -276,6 +316,66 @@ public class CommandParser
             }
         }
 
+        // Check for equip command with target
+        if (command.StartsWith("equip ") || command.StartsWith("bind "))
+        {
+            var target = ExtractTarget(command, new[] { "equip ", "bind " });
+            if (!string.IsNullOrWhiteSpace(target))
+            {
+                _logger.LogDebug("Equip command for target: {Target}", target);
+                return new ParseResult
+                {
+                    RequiresEquip = true,
+                    EquipTarget = target
+                };
+            }
+            else
+            {
+                _inputHandler.DisplayError("Equip what? Specify an item.");
+                return ParseResult.None;
+            }
+        }
+
+        // Check for unequip command with target
+        if (command.StartsWith("unequip ") || command.StartsWith("unbind ") || command.StartsWith("remove "))
+        {
+            var target = ExtractTarget(command, new[] { "unequip ", "unbind ", "remove " });
+            if (!string.IsNullOrWhiteSpace(target))
+            {
+                _logger.LogDebug("Unequip command for target: {Target}", target);
+                return new ParseResult
+                {
+                    RequiresUnequip = true,
+                    UnequipTarget = target
+                };
+            }
+            else
+            {
+                _inputHandler.DisplayError("Unequip what? Specify an item or slot.");
+                return ParseResult.None;
+            }
+        }
+
+        // Check for drop command with target
+        if (command.StartsWith("drop ") || command.StartsWith("discard "))
+        {
+            var target = ExtractTarget(command, new[] { "drop ", "discard " });
+            if (!string.IsNullOrWhiteSpace(target))
+            {
+                _logger.LogDebug("Drop command for target: {Target}", target);
+                return new ParseResult
+                {
+                    RequiresDrop = true,
+                    DropTarget = target
+                };
+            }
+            else
+            {
+                _inputHandler.DisplayError("Drop what? Specify an item.");
+                return ParseResult.None;
+            }
+        }
+
         switch (command)
         {
             case "quit":
@@ -331,9 +431,20 @@ public class CommandParser
 
             case "objects":
             case "items":
-            case "inventory":
                 _logger.LogDebug("List objects command executed.");
                 return new ParseResult { RequiresListObjects = true };
+
+            case "inventory":
+            case "i":
+            case "pack":
+                _logger.LogDebug("Inventory display command executed.");
+                return new ParseResult { RequiresInventory = true };
+
+            case "equipment":
+            case "gear":
+            case "equipped":
+                _logger.LogDebug("Equipment display command executed.");
+                return new ParseResult { RequiresEquipment = true };
 
             default:
                 _inputHandler.DisplayError($"Unknown command: '{command}'. Type 'help' for available commands.");
@@ -444,6 +555,13 @@ public class CommandParser
         _inputHandler.DisplayMessage("  open <target>    - Open a container");
         _inputHandler.DisplayMessage("  close <target>   - Close a container");
         _inputHandler.DisplayMessage("  objects          - List visible objects in the room");
+        _inputHandler.DisplayMessage("");
+        _inputHandler.DisplayMessage("Inventory:");
+        _inputHandler.DisplayMessage("  inventory, i     - Display your inventory and burden");
+        _inputHandler.DisplayMessage("  equipment, gear  - Display equipped items");
+        _inputHandler.DisplayMessage("  equip <item>     - Equip an item from inventory");
+        _inputHandler.DisplayMessage("  unequip <slot>   - Unequip item from slot (e.g., mainhand)");
+        _inputHandler.DisplayMessage("  drop <item>      - Drop an item from inventory");
         _inputHandler.DisplayMessage("");
         _inputHandler.DisplayMessage("Actions:");
         _inputHandler.DisplayMessage("  look, l          - Examine your surroundings");
