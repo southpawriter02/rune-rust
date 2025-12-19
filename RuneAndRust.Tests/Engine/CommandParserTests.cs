@@ -237,17 +237,16 @@ public class CommandParserTests
     [Theory]
     [InlineData("look")]
     [InlineData("l")]
-    public void ParseAndExecute_Exploration_LookCommands_ShouldIncrementTurn(string command)
+    public void ParseAndExecute_Exploration_LookCommands_ReturnsRequiresLook(string command)
     {
         // Arrange
         _state.Phase = GamePhase.Exploration;
-        _state.TurnCount = 0;
 
         // Act
-        _sut.ParseAndExecute(command, _state);
+        var result = _sut.ParseAndExecute(command, _state);
 
         // Assert
-        _state.TurnCount.Should().Be(1);
+        result.RequiresLook.Should().BeTrue();
     }
 
     [Theory]
@@ -434,6 +433,138 @@ public class CommandParserTests
 
         // Assert
         _state.Phase.Should().Be(GamePhase.Exploration);
+    }
+
+    #endregion
+
+    #region Movement Command Tests
+
+    [Theory]
+    [InlineData("north", Direction.North)]
+    [InlineData("n", Direction.North)]
+    [InlineData("south", Direction.South)]
+    [InlineData("s", Direction.South)]
+    [InlineData("east", Direction.East)]
+    [InlineData("e", Direction.East)]
+    [InlineData("west", Direction.West)]
+    [InlineData("w", Direction.West)]
+    [InlineData("up", Direction.Up)]
+    [InlineData("u", Direction.Up)]
+    [InlineData("down", Direction.Down)]
+    [InlineData("d", Direction.Down)]
+    public void ParseAndExecute_Exploration_DirectionAliases_ReturnsNavigationResult(string command, Direction expectedDirection)
+    {
+        // Arrange
+        _state.Phase = GamePhase.Exploration;
+
+        // Act
+        var result = _sut.ParseAndExecute(command, _state);
+
+        // Assert
+        result.RequiresNavigation.Should().BeTrue();
+        result.NavigationDirection.Should().Be(expectedDirection);
+    }
+
+    [Theory]
+    [InlineData("go north", Direction.North)]
+    [InlineData("go south", Direction.South)]
+    [InlineData("go east", Direction.East)]
+    [InlineData("go west", Direction.West)]
+    [InlineData("go up", Direction.Up)]
+    [InlineData("go down", Direction.Down)]
+    public void ParseAndExecute_Exploration_GoCommand_ReturnsNavigationResult(string command, Direction expectedDirection)
+    {
+        // Arrange
+        _state.Phase = GamePhase.Exploration;
+
+        // Act
+        var result = _sut.ParseAndExecute(command, _state);
+
+        // Assert
+        result.RequiresNavigation.Should().BeTrue();
+        result.NavigationDirection.Should().Be(expectedDirection);
+    }
+
+    [Fact]
+    public void ParseAndExecute_Exploration_GoInvalidDirection_DisplaysError()
+    {
+        // Arrange
+        _state.Phase = GamePhase.Exploration;
+
+        // Act
+        var result = _sut.ParseAndExecute("go sideways", _state);
+
+        // Assert
+        result.RequiresNavigation.Should().BeFalse();
+        _mockInputHandler.Verify(x => x.DisplayError(It.Is<string>(s => s.Contains("Unknown direction"))), Times.Once);
+    }
+
+    [Fact]
+    public void ParseAndExecute_Exploration_Exits_ReturnsRequiresLook()
+    {
+        // Arrange
+        _state.Phase = GamePhase.Exploration;
+
+        // Act
+        var result = _sut.ParseAndExecute("exits", _state);
+
+        // Assert
+        result.RequiresLook.Should().BeTrue();
+    }
+
+    [Fact]
+    public void ParseAndExecute_Exploration_Menu_ClearsCurrentRoomId()
+    {
+        // Arrange
+        _state.Phase = GamePhase.Exploration;
+        _state.CurrentRoomId = Guid.NewGuid();
+
+        // Act
+        _sut.ParseAndExecute("menu", _state);
+
+        // Assert
+        _state.CurrentRoomId.Should().BeNull();
+    }
+
+    [Fact]
+    public void ParseAndExecute_MainMenu_Start_ReturnsRequiresLook()
+    {
+        // Arrange
+        _state.Phase = GamePhase.MainMenu;
+
+        // Act
+        var result = _sut.ParseAndExecute("start", _state);
+
+        // Assert
+        result.RequiresLook.Should().BeTrue();
+    }
+
+    [Fact]
+    public void ParseAndExecute_Combat_Flee_ReturnsRequiresLook()
+    {
+        // Arrange
+        _state.Phase = GamePhase.Combat;
+
+        // Act
+        var result = _sut.ParseAndExecute("flee", _state);
+
+        // Assert
+        result.RequiresLook.Should().BeTrue();
+    }
+
+    [Fact]
+    public void ParseAndExecute_EmptyInput_ReturnsNone()
+    {
+        // Arrange
+        _state.Phase = GamePhase.Exploration;
+
+        // Act
+        var result = _sut.ParseAndExecute("", _state);
+
+        // Assert
+        result.RequiresNavigation.Should().BeFalse();
+        result.RequiresLook.Should().BeFalse();
+        result.NavigationDirection.Should().BeNull();
     }
 
     #endregion

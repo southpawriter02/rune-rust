@@ -63,6 +63,16 @@ public class GameStateTests
         state.PendingAction.Should().Be(PendingGameAction.None);
     }
 
+    [Fact]
+    public void GameState_DefaultCurrentRoomId_ShouldBeNull()
+    {
+        // Arrange & Act
+        var state = new GameState();
+
+        // Assert
+        state.CurrentRoomId.Should().BeNull();
+    }
+
     #endregion
 
     #region Property Setter Tests
@@ -150,6 +160,33 @@ public class GameStateTests
         state.PendingAction.Should().Be(action);
     }
 
+    [Fact]
+    public void GameState_CurrentRoomId_CanBeSet()
+    {
+        // Arrange
+        var state = new GameState();
+        var roomId = Guid.NewGuid();
+
+        // Act
+        state.CurrentRoomId = roomId;
+
+        // Assert
+        state.CurrentRoomId.Should().Be(roomId);
+    }
+
+    [Fact]
+    public void GameState_CurrentRoomId_CanBeSetToNull()
+    {
+        // Arrange
+        var state = new GameState { CurrentRoomId = Guid.NewGuid() };
+
+        // Act
+        state.CurrentRoomId = null;
+
+        // Assert
+        state.CurrentRoomId.Should().BeNull();
+    }
+
     #endregion
 
     #region Reset Tests
@@ -220,6 +257,19 @@ public class GameStateTests
     }
 
     [Fact]
+    public void Reset_ShouldSetCurrentRoomIdToNull()
+    {
+        // Arrange
+        var state = new GameState { CurrentRoomId = Guid.NewGuid() };
+
+        // Act
+        state.Reset();
+
+        // Assert
+        state.CurrentRoomId.Should().BeNull();
+    }
+
+    [Fact]
     public void Reset_ShouldResetAllProperties()
     {
         // Arrange
@@ -229,7 +279,8 @@ public class GameStateTests
             CurrentCharacter = new Character("Hero"),
             TurnCount = 50,
             IsSessionActive = true,
-            PendingAction = PendingGameAction.Save
+            PendingAction = PendingGameAction.Save,
+            CurrentRoomId = Guid.NewGuid()
         };
 
         // Act
@@ -241,6 +292,7 @@ public class GameStateTests
         state.TurnCount.Should().Be(0);
         state.IsSessionActive.Should().BeFalse();
         state.PendingAction.Should().Be(PendingGameAction.None);
+        state.CurrentRoomId.Should().BeNull();
     }
 
     #endregion

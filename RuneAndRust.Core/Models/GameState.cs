@@ -39,6 +39,12 @@ public class GameState
     public PendingGameAction PendingAction { get; set; } = PendingGameAction.None;
 
     /// <summary>
+    /// Gets or sets the ID of the room the player is currently in.
+    /// Null when no game session is active.
+    /// </summary>
+    public Guid? CurrentRoomId { get; set; }
+
+    /// <summary>
     /// Resets the game state to initial values for a new session.
     /// </summary>
     public void Reset()
@@ -48,5 +54,6 @@ public class GameState
         TurnCount = 0;
         IsSessionActive = false;
         PendingAction = PendingGameAction.None;
+        CurrentRoomId = null;
     }
 }
