@@ -24,8 +24,8 @@ public class CommandParserTests
     {
         _mockLogger = new Mock<ILogger<CommandParser>>();
         _mockInputHandler = new Mock<IInputHandler>();
-        _sut = new CommandParser(_mockLogger.Object, _mockInputHandler.Object);
         _state = new GameState();
+        _sut = new CommandParser(_mockLogger.Object, _mockInputHandler.Object, _state);
     }
 
     #region Constructor Tests
@@ -34,7 +34,7 @@ public class CommandParserTests
     public void Constructor_WithValidDependencies_ShouldNotThrow()
     {
         // Arrange & Act
-        var action = () => new CommandParser(_mockLogger.Object, _mockInputHandler.Object);
+        var action = () => new CommandParser(_mockLogger.Object, _mockInputHandler.Object, _state);
 
         // Assert
         action.Should().NotThrow();
@@ -51,7 +51,7 @@ public class CommandParserTests
         var initialPhase = _state.Phase;
 
         // Act
-        _sut.ParseAndExecute("", _state);
+        _sut.ParseAndExecuteAsync("", _state).GetAwaiter().GetResult();
 
         // Assert
         _state.Phase.Should().Be(initialPhase);
@@ -64,7 +64,7 @@ public class CommandParserTests
         var initialPhase = _state.Phase;
 
         // Act
-        _sut.ParseAndExecute("   ", _state);
+        _sut.ParseAndExecuteAsync("   ", _state).GetAwaiter().GetResult();
 
         // Assert
         _state.Phase.Should().Be(initialPhase);
@@ -77,7 +77,7 @@ public class CommandParserTests
         var initialPhase = _state.Phase;
 
         // Act
-        _sut.ParseAndExecute(null!, _state);
+        _sut.ParseAndExecuteAsync(null!, _state).GetAwaiter().GetResult();
 
         // Assert
         _state.Phase.Should().Be(initialPhase);
@@ -98,7 +98,7 @@ public class CommandParserTests
         _state.Phase = GamePhase.MainMenu;
 
         // Act
-        _sut.ParseAndExecute(command, _state);
+        _sut.ParseAndExecuteAsync(command, _state).GetAwaiter().GetResult();
 
         // Assert
         _state.Phase.Should().Be(GamePhase.Exploration);
@@ -114,7 +114,7 @@ public class CommandParserTests
         _state.Phase = GamePhase.MainMenu;
 
         // Act
-        var result = _sut.ParseAndExecute(command, _state);
+        var result = _sut.ParseAndExecuteAsync(command, _state).GetAwaiter().GetResult();
 
         // Assert
         result.RequiresCharacterCreation.Should().BeTrue();
@@ -132,7 +132,7 @@ public class CommandParserTests
         _state.Phase = GamePhase.MainMenu;
 
         // Act
-        _sut.ParseAndExecute(command, _state);
+        _sut.ParseAndExecuteAsync(command, _state).GetAwaiter().GetResult();
 
         // Assert
         _state.Phase.Should().Be(GamePhase.Quit);
@@ -147,7 +147,7 @@ public class CommandParserTests
         _state.Phase = GamePhase.MainMenu;
 
         // Act
-        _sut.ParseAndExecute(command, _state);
+        _sut.ParseAndExecuteAsync(command, _state).GetAwaiter().GetResult();
 
         // Assert
         _mockInputHandler.Verify(x => x.DisplayMessage(It.Is<string>(s => s.Contains("MAIN MENU"))), Times.Once);
@@ -161,7 +161,7 @@ public class CommandParserTests
         _state.Phase = GamePhase.MainMenu;
 
         // Act
-        _sut.ParseAndExecute("unknown", _state);
+        _sut.ParseAndExecuteAsync("unknown", _state).GetAwaiter().GetResult();
 
         // Assert
         _mockInputHandler.Verify(x => x.DisplayError(It.Is<string>(s => s.Contains("Unknown command"))), Times.Once);
@@ -176,7 +176,7 @@ public class CommandParserTests
         _state.TurnCount = 100;
 
         // Act
-        _sut.ParseAndExecute("start", _state);
+        _sut.ParseAndExecuteAsync("start", _state).GetAwaiter().GetResult();
 
         // Assert
         _state.TurnCount.Should().Be(0);
@@ -190,7 +190,7 @@ public class CommandParserTests
         _state.PendingAction = PendingGameAction.None;
 
         // Act
-        _sut.ParseAndExecute("load", _state);
+        _sut.ParseAndExecuteAsync("load", _state).GetAwaiter().GetResult();
 
         // Assert
         _state.PendingAction.Should().Be(PendingGameAction.Load);
@@ -211,7 +211,7 @@ public class CommandParserTests
         _state.Phase = GamePhase.Exploration;
 
         // Act
-        _sut.ParseAndExecute(command, _state);
+        _sut.ParseAndExecuteAsync(command, _state).GetAwaiter().GetResult();
 
         // Assert
         _state.Phase.Should().Be(GamePhase.Quit);
@@ -227,7 +227,7 @@ public class CommandParserTests
         _state.IsSessionActive = true;
 
         // Act
-        _sut.ParseAndExecute(command, _state);
+        _sut.ParseAndExecuteAsync(command, _state).GetAwaiter().GetResult();
 
         // Assert
         _state.Phase.Should().Be(GamePhase.MainMenu);
@@ -243,7 +243,7 @@ public class CommandParserTests
         _state.Phase = GamePhase.Exploration;
 
         // Act
-        _sut.ParseAndExecute(command, _state);
+        _sut.ParseAndExecuteAsync(command, _state).GetAwaiter().GetResult();
 
         // Assert
         _mockInputHandler.Verify(x => x.DisplayMessage(It.Is<string>(s => s.Contains("EXPLORATION"))), Times.Once);
@@ -258,7 +258,7 @@ public class CommandParserTests
         _state.Phase = GamePhase.Exploration;
 
         // Act
-        var result = _sut.ParseAndExecute(command, _state);
+        var result = _sut.ParseAndExecuteAsync(command, _state).GetAwaiter().GetResult();
 
         // Assert
         result.RequiresLook.Should().BeTrue();
@@ -274,7 +274,7 @@ public class CommandParserTests
         _state.TurnCount = 5;
 
         // Act
-        _sut.ParseAndExecute(command, _state);
+        _sut.ParseAndExecuteAsync(command, _state).GetAwaiter().GetResult();
 
         // Assert
         _mockInputHandler.Verify(x => x.DisplayMessage(It.Is<string>(s => s.Contains("STATUS"))), Times.Once);
@@ -287,7 +287,7 @@ public class CommandParserTests
         _state.Phase = GamePhase.Exploration;
 
         // Act
-        _sut.ParseAndExecute("dance", _state);
+        _sut.ParseAndExecuteAsync("dance", _state).GetAwaiter().GetResult();
 
         // Assert
         _mockInputHandler.Verify(x => x.DisplayError(It.Is<string>(s => s.Contains("Unknown command"))), Times.Once);
@@ -301,7 +301,7 @@ public class CommandParserTests
         _state.PendingAction = PendingGameAction.None;
 
         // Act
-        _sut.ParseAndExecute("save", _state);
+        _sut.ParseAndExecuteAsync("save", _state).GetAwaiter().GetResult();
 
         // Assert
         _state.PendingAction.Should().Be(PendingGameAction.Save);
@@ -316,7 +316,7 @@ public class CommandParserTests
         _state.PendingAction = PendingGameAction.None;
 
         // Act
-        _sut.ParseAndExecute("load", _state);
+        _sut.ParseAndExecuteAsync("load", _state).GetAwaiter().GetResult();
 
         // Assert
         _state.PendingAction.Should().Be(PendingGameAction.Load);
@@ -337,7 +337,7 @@ public class CommandParserTests
         _state.Phase = GamePhase.Combat;
 
         // Act
-        _sut.ParseAndExecute(command, _state);
+        _sut.ParseAndExecuteAsync(command, _state).GetAwaiter().GetResult();
 
         // Assert
         _state.Phase.Should().Be(GamePhase.Quit);
@@ -352,7 +352,7 @@ public class CommandParserTests
         _state.Phase = GamePhase.Combat;
 
         // Act
-        _sut.ParseAndExecute(command, _state);
+        _sut.ParseAndExecuteAsync(command, _state).GetAwaiter().GetResult();
 
         // Assert
         _state.Phase.Should().Be(GamePhase.Exploration);
@@ -367,7 +367,7 @@ public class CommandParserTests
         _state.Phase = GamePhase.Combat;
 
         // Act
-        _sut.ParseAndExecute(command, _state);
+        _sut.ParseAndExecuteAsync(command, _state).GetAwaiter().GetResult();
 
         // Assert
         _mockInputHandler.Verify(x => x.DisplayMessage(It.Is<string>(s => s.Contains("COMBAT"))), Times.Once);
@@ -380,7 +380,7 @@ public class CommandParserTests
         _state.Phase = GamePhase.Combat;
 
         // Act
-        _sut.ParseAndExecute("attack", _state);
+        _sut.ParseAndExecuteAsync("attack", _state).GetAwaiter().GetResult();
 
         // Assert
         _mockInputHandler.Verify(x => x.DisplayError(It.Is<string>(s => s.Contains("Unknown"))), Times.Once);
@@ -397,7 +397,7 @@ public class CommandParserTests
         _state.Phase = GamePhase.MainMenu;
 
         // Act
-        _sut.ParseAndExecute("help", _state);
+        _sut.ParseAndExecuteAsync("help", _state).GetAwaiter().GetResult();
 
         // Assert
         VerifyLogLevel(LogLevel.Debug);
@@ -410,7 +410,7 @@ public class CommandParserTests
         _state.Phase = GamePhase.MainMenu;
 
         // Act
-        _sut.ParseAndExecute("start", _state);
+        _sut.ParseAndExecuteAsync("start", _state).GetAwaiter().GetResult();
 
         // Assert
         VerifyLogLevel(LogLevel.Information);
@@ -423,7 +423,7 @@ public class CommandParserTests
         _state.Phase = GamePhase.MainMenu;
 
         // Act
-        _sut.ParseAndExecute("quit", _state);
+        _sut.ParseAndExecuteAsync("quit", _state).GetAwaiter().GetResult();
 
         // Assert
         VerifyLogLevel(LogLevel.Information);
@@ -444,7 +444,7 @@ public class CommandParserTests
         _state.Phase = GamePhase.MainMenu;
 
         // Act
-        _sut.ParseAndExecute(input, _state);
+        _sut.ParseAndExecuteAsync(input, _state).GetAwaiter().GetResult();
 
         // Assert
         _state.Phase.Should().Be(GamePhase.Exploration);
@@ -473,7 +473,7 @@ public class CommandParserTests
         _state.Phase = GamePhase.Exploration;
 
         // Act
-        var result = _sut.ParseAndExecute(command, _state);
+        var result = _sut.ParseAndExecuteAsync(command, _state).GetAwaiter().GetResult();
 
         // Assert
         result.RequiresNavigation.Should().BeTrue();
@@ -493,7 +493,7 @@ public class CommandParserTests
         _state.Phase = GamePhase.Exploration;
 
         // Act
-        var result = _sut.ParseAndExecute(command, _state);
+        var result = _sut.ParseAndExecuteAsync(command, _state).GetAwaiter().GetResult();
 
         // Assert
         result.RequiresNavigation.Should().BeTrue();
@@ -507,7 +507,7 @@ public class CommandParserTests
         _state.Phase = GamePhase.Exploration;
 
         // Act
-        var result = _sut.ParseAndExecute("go sideways", _state);
+        var result = _sut.ParseAndExecuteAsync("go sideways", _state).GetAwaiter().GetResult();
 
         // Assert
         result.RequiresNavigation.Should().BeFalse();
@@ -521,7 +521,7 @@ public class CommandParserTests
         _state.Phase = GamePhase.Exploration;
 
         // Act
-        var result = _sut.ParseAndExecute("exits", _state);
+        var result = _sut.ParseAndExecuteAsync("exits", _state).GetAwaiter().GetResult();
 
         // Assert
         result.RequiresLook.Should().BeTrue();
@@ -535,7 +535,7 @@ public class CommandParserTests
         _state.CurrentRoomId = Guid.NewGuid();
 
         // Act
-        _sut.ParseAndExecute("menu", _state);
+        _sut.ParseAndExecuteAsync("menu", _state).GetAwaiter().GetResult();
 
         // Assert
         _state.CurrentRoomId.Should().BeNull();
@@ -548,7 +548,7 @@ public class CommandParserTests
         _state.Phase = GamePhase.MainMenu;
 
         // Act
-        var result = _sut.ParseAndExecute("start", _state);
+        var result = _sut.ParseAndExecuteAsync("start", _state).GetAwaiter().GetResult();
 
         // Assert
         result.RequiresLook.Should().BeTrue();
@@ -561,7 +561,7 @@ public class CommandParserTests
         _state.Phase = GamePhase.Combat;
 
         // Act
-        var result = _sut.ParseAndExecute("flee", _state);
+        var result = _sut.ParseAndExecuteAsync("flee", _state).GetAwaiter().GetResult();
 
         // Assert
         result.RequiresLook.Should().BeTrue();
@@ -574,7 +574,7 @@ public class CommandParserTests
         _state.Phase = GamePhase.Exploration;
 
         // Act
-        var result = _sut.ParseAndExecute("", _state);
+        var result = _sut.ParseAndExecuteAsync("", _state).GetAwaiter().GetResult();
 
         // Assert
         result.RequiresNavigation.Should().BeFalse();
@@ -596,7 +596,7 @@ public class CommandParserTests
         _state.Phase = GamePhase.Exploration;
 
         // Act
-        var result = _sut.ParseAndExecute(command, _state);
+        var result = _sut.ParseAndExecuteAsync(command, _state).GetAwaiter().GetResult();
 
         // Assert
         result.RequiresInventory.Should().BeTrue();
@@ -612,7 +612,7 @@ public class CommandParserTests
         _state.Phase = GamePhase.Exploration;
 
         // Act
-        var result = _sut.ParseAndExecute(command, _state);
+        var result = _sut.ParseAndExecuteAsync(command, _state).GetAwaiter().GetResult();
 
         // Assert
         result.RequiresEquipment.Should().BeTrue();
@@ -628,7 +628,7 @@ public class CommandParserTests
         _state.Phase = GamePhase.Exploration;
 
         // Act
-        var result = _sut.ParseAndExecute(command, _state);
+        var result = _sut.ParseAndExecuteAsync(command, _state).GetAwaiter().GetResult();
 
         // Assert
         result.RequiresEquip.Should().BeTrue();
@@ -645,7 +645,7 @@ public class CommandParserTests
         _state.Phase = GamePhase.Exploration;
 
         // Act
-        var result = _sut.ParseAndExecute(command, _state);
+        var result = _sut.ParseAndExecuteAsync(command, _state).GetAwaiter().GetResult();
 
         // Assert
         result.RequiresUnequip.Should().BeTrue();
@@ -661,7 +661,7 @@ public class CommandParserTests
         _state.Phase = GamePhase.Exploration;
 
         // Act
-        var result = _sut.ParseAndExecute(command, _state);
+        var result = _sut.ParseAndExecuteAsync(command, _state).GetAwaiter().GetResult();
 
         // Assert
         result.RequiresDrop.Should().BeTrue();
@@ -675,7 +675,7 @@ public class CommandParserTests
         _state.Phase = GamePhase.Exploration;
 
         // Act - "equip" alone (no space/target) goes to default handler
-        var result = _sut.ParseAndExecute("equip", _state);
+        var result = _sut.ParseAndExecuteAsync("equip", _state).GetAwaiter().GetResult();
 
         // Assert - treated as unknown command since no target
         result.RequiresEquip.Should().BeFalse();
@@ -689,7 +689,7 @@ public class CommandParserTests
         _state.Phase = GamePhase.Exploration;
 
         // Act - "unequip" alone (no space/target) goes to default handler
-        var result = _sut.ParseAndExecute("unequip", _state);
+        var result = _sut.ParseAndExecuteAsync("unequip", _state).GetAwaiter().GetResult();
 
         // Assert - treated as unknown command since no target
         result.RequiresUnequip.Should().BeFalse();
@@ -703,7 +703,7 @@ public class CommandParserTests
         _state.Phase = GamePhase.Exploration;
 
         // Act - "drop" alone (no space/target) goes to default handler
-        var result = _sut.ParseAndExecute("drop", _state);
+        var result = _sut.ParseAndExecuteAsync("drop", _state).GetAwaiter().GetResult();
 
         // Assert - treated as unknown command since no target
         result.RequiresDrop.Should().BeFalse();
@@ -717,7 +717,7 @@ public class CommandParserTests
         _state.Phase = GamePhase.Exploration;
 
         // Act
-        var result = _sut.ParseAndExecute("objects", _state);
+        var result = _sut.ParseAndExecuteAsync("objects", _state).GetAwaiter().GetResult();
 
         // Assert
         result.RequiresListObjects.Should().BeTrue();
@@ -731,7 +731,7 @@ public class CommandParserTests
         _state.Phase = GamePhase.Exploration;
 
         // Act
-        _sut.ParseAndExecute("help", _state);
+        _sut.ParseAndExecuteAsync("help", _state).GetAwaiter().GetResult();
 
         // Assert
         _mockInputHandler.Verify(x => x.DisplayMessage(It.Is<string>(s => s.Contains("Inventory"))), Times.Once);

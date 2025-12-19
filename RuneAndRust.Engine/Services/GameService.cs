@@ -36,7 +36,7 @@ public class GameService : IGameService
     }
 
     /// <inheritdoc/>
-    public void Start()
+    public async Task StartAsync()
     {
         _logger.LogInformation("Game Loop Initialized.");
         _inputHandler.DisplayMessage("Welcome to Rune & Rust!");
@@ -52,7 +52,7 @@ public class GameService : IGameService
             string input = _inputHandler.GetInput(prompt);
 
             // 3. Process the input through the command parser
-            _parser.ParseAndExecute(input, _state);
+            await _parser.ParseAndExecuteAsync(input, _state);
         }
 
         _logger.LogInformation("Game Loop Ended. Shutting down.");

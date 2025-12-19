@@ -7,7 +7,9 @@ namespace RuneAndRust.Core.Interfaces;
 public interface IGameService
 {
     /// <summary>
-    /// Starts the game engine.
+    /// Starts the game engine asynchronously.
+    /// Runs the main game loop until the user quits.
     /// </summary>
-    void Start();
+    /// <returns>A task representing the game execution.</returns>
+    Task StartAsync();
 }

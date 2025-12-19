@@ -27,7 +27,7 @@ public class GameLoopTests
         _mockParserLogger = new Mock<ILogger<CommandParser>>();
         _mockInputHandler = new Mock<IInputHandler>();
         _state = new GameState();
-        _parser = new CommandParser(_mockParserLogger.Object, _mockInputHandler.Object);
+        _parser = new CommandParser(_mockParserLogger.Object, _mockInputHandler.Object, _state);
     }
 
     #region Basic Loop Tests
@@ -40,7 +40,7 @@ public class GameLoopTests
         var service = new GameService(_mockGameLogger.Object, _mockInputHandler.Object, _parser, _state);
 
         // Act
-        service.Start();
+        service.StartAsync().GetAwaiter().GetResult();
 
         // Assert
         _state.Phase.Should().Be(GamePhase.Quit);
@@ -57,7 +57,7 @@ public class GameLoopTests
         var service = new GameService(_mockGameLogger.Object, _mockInputHandler.Object, _parser, _state);
 
         // Act
-        service.Start();
+        service.StartAsync().GetAwaiter().GetResult();
 
         // Assert
         _mockInputHandler.Verify(x => x.GetInput(It.IsAny<string>()), Times.Exactly(2));
@@ -76,7 +76,7 @@ public class GameLoopTests
         var service = new GameService(_mockGameLogger.Object, _mockInputHandler.Object, _parser, _state);
 
         // Act
-        service.Start();
+        service.StartAsync().GetAwaiter().GetResult();
 
         // Assert
         _mockInputHandler.Verify(x => x.GetInput(It.IsAny<string>()), Times.Exactly(4));
@@ -99,7 +99,7 @@ public class GameLoopTests
         var service = new GameService(_mockGameLogger.Object, _mockInputHandler.Object, _parser, _state);
 
         // Act
-        service.Start();
+        service.StartAsync().GetAwaiter().GetResult();
 
         // Assert
         _state.Phase.Should().Be(GamePhase.Quit);
@@ -116,7 +116,7 @@ public class GameLoopTests
         var service = new GameService(_mockGameLogger.Object, _mockInputHandler.Object, _parser, _state);
 
         // Act
-        service.Start();
+        service.StartAsync().GetAwaiter().GetResult();
 
         // Note: We can't easily check intermediate state without more complex mocking
         // The session was active after "start" but inactive by time we quit from Exploration
@@ -137,7 +137,7 @@ public class GameLoopTests
         var service = new GameService(_mockGameLogger.Object, _mockInputHandler.Object, _parser, _state);
 
         // Act
-        service.Start();
+        service.StartAsync().GetAwaiter().GetResult();
 
         // Assert
         _mockInputHandler.Verify(x => x.GetInput(It.IsAny<string>()), Times.Exactly(3));
@@ -155,7 +155,7 @@ public class GameLoopTests
         var service = new GameService(_mockGameLogger.Object, _mockInputHandler.Object, _parser, _state);
 
         // Act
-        service.Start();
+        service.StartAsync().GetAwaiter().GetResult();
 
         // Assert
         _mockInputHandler.Verify(x => x.GetInput(It.IsAny<string>()), Times.Exactly(3));
@@ -176,7 +176,7 @@ public class GameLoopTests
         var service = new GameService(_mockGameLogger.Object, _mockInputHandler.Object, _parser, _state);
 
         // Act
-        service.Start();
+        service.StartAsync().GetAwaiter().GetResult();
 
         // Assert - Should process help, then quit
         _mockInputHandler.Verify(x => x.GetInput(It.IsAny<string>()), Times.Exactly(2));
@@ -194,7 +194,7 @@ public class GameLoopTests
         var service = new GameService(_mockGameLogger.Object, _mockInputHandler.Object, _parser, _state);
 
         // Act
-        service.Start();
+        service.StartAsync().GetAwaiter().GetResult();
 
         // Assert
         _mockInputHandler.Verify(x => x.DisplayMessage(It.Is<string>(s => s.Contains("EXPLORATION"))), Times.Once);
@@ -218,7 +218,7 @@ public class GameLoopTests
         var service = new GameService(_mockGameLogger.Object, _mockInputHandler.Object, _parser, _state);
 
         // Act
-        service.Start();
+        service.StartAsync().GetAwaiter().GetResult();
 
         // Assert
         _state.TurnCount.Should().Be(3);
@@ -238,7 +238,7 @@ public class GameLoopTests
         var service = new GameService(_mockGameLogger.Object, _mockInputHandler.Object, _parser, _state);
 
         // Act
-        service.Start();
+        service.StartAsync().GetAwaiter().GetResult();
 
         // Assert
         _state.TurnCount.Should().Be(0); // Reset after second "start"
@@ -256,7 +256,7 @@ public class GameLoopTests
         var service = new GameService(_mockGameLogger.Object, _mockInputHandler.Object, _parser, _state);
 
         // Act
-        service.Start();
+        service.StartAsync().GetAwaiter().GetResult();
 
         // Assert
         _mockInputHandler.Verify(x => x.GetInput(It.Is<string>(s => s.Contains("[MENU]"))), Times.Once);
@@ -272,7 +272,7 @@ public class GameLoopTests
         var service = new GameService(_mockGameLogger.Object, _mockInputHandler.Object, _parser, _state);
 
         // Act
-        service.Start();
+        service.StartAsync().GetAwaiter().GetResult();
 
         // Assert
         _mockInputHandler.Verify(x => x.GetInput(It.Is<string>(s => s.Contains("[EXPLORE]"))), Times.Once);

@@ -154,16 +154,26 @@ public class CommandParser
 {
     private readonly ILogger<CommandParser> _logger;
     private readonly IInputHandler _inputHandler;
+    private readonly IJournalService? _journalService;
+    private readonly GameState _gameState;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CommandParser"/> class.
     /// </summary>
     /// <param name="logger">The logger for traceability.</param>
     /// <param name="inputHandler">The input handler for displaying messages.</param>
-    public CommandParser(ILogger<CommandParser> logger, IInputHandler inputHandler)
+    /// <param name="gameState">The game state for journal queries.</param>
+    /// <param name="journalService">The optional journal service for codex display.</param>
+    public CommandParser(
+        ILogger<CommandParser> logger,
+        IInputHandler inputHandler,
+        GameState gameState,
+        IJournalService? journalService = null)
     {
         _logger = logger;
         _inputHandler = inputHandler;
+        _gameState = gameState;
+        _journalService = journalService;
     }
 
     /// <summary>
@@ -172,7 +182,7 @@ public class CommandParser
     /// <param name="input">The raw user input string.</param>
     /// <param name="state">The current game state to potentially modify.</param>
     /// <returns>A ParseResult indicating any async operations needed.</returns>
-    public ParseResult ParseAndExecute(string input, GameState state)
+    public async Task<ParseResult> ParseAndExecuteAsync(string input, GameState state)
     {
         if (string.IsNullOrWhiteSpace(input))
         {
@@ -190,7 +200,7 @@ public class CommandParser
                 result = HandleMainMenu(command, state);
                 break;
             case GamePhase.Exploration:
-                result = HandleExploration(command, state);
+                result = await HandleExplorationAsync(command, state);
                 break;
             case GamePhase.Combat:
                 result = HandleCombat(command, state);
@@ -253,7 +263,7 @@ public class CommandParser
     /// <summary>
     /// Handles commands in the Exploration phase.
     /// </summary>
-    private ParseResult HandleExploration(string command, GameState state)
+    private async Task<ParseResult> HandleExplorationAsync(string command, GameState state)
     {
         // Check for direction aliases first
         var direction = ParseDirection(command);
@@ -465,6 +475,31 @@ public class CommandParser
             }
         }
 
+        // Check for codex command with target
+        if (command.StartsWith("codex "))
+        {
+            var entryName = command.Substring(6).Trim();
+            if (!string.IsNullOrWhiteSpace(entryName))
+            {
+                if (_journalService != null && _gameState.CurrentCharacter != null)
+                {
+                    _logger.LogDebug("Handling codex command for entry '{EntryTitle}'", entryName);
+                    var codexOutput = await _journalService.FormatEntryDetailAsync(_gameState.CurrentCharacter.Id, entryName);
+                    _inputHandler.DisplayMessage(codexOutput);
+                }
+                else
+                {
+                    _inputHandler.DisplayMessage("You must have an active character to view the codex.");
+                }
+                return ParseResult.None;
+            }
+            else
+            {
+                _inputHandler.DisplayMessage("[grey]Usage: codex <entry name>[/]");
+                return ParseResult.None;
+            }
+        }
+
         switch (command)
         {
             case "quit":
@@ -534,6 +569,37 @@ public class CommandParser
             case "equipped":
                 _logger.LogDebug("Equipment display command executed.");
                 return new ParseResult { RequiresEquipment = true };
+
+            case "journal":
+            case "j":
+                if (_journalService != null && _gameState.CurrentCharacter != null)
+                {
+                    _logger.LogDebug("Handling journal command for Character {CharacterId}", _gameState.CurrentCharacter.Id);
+                    var journalOutput = await _journalService.FormatJournalListAsync(_gameState.CurrentCharacter.Id);
+                    _inputHandler.DisplayMessage(journalOutput);
+                }
+                else
+                {
+                    _inputHandler.DisplayMessage("You must have an active character to view the journal.");
+                }
+                return ParseResult.None;
+
+            case "fragments":
+                if (_journalService != null && _gameState.CurrentCharacter != null)
+                {
+                    _logger.LogDebug("Handling fragments command for Character {CharacterId}", _gameState.CurrentCharacter.Id);
+                    var fragmentsOutput = await _journalService.FormatUnassignedCapturesAsync(_gameState.CurrentCharacter.Id);
+                    _inputHandler.DisplayMessage(fragmentsOutput);
+                }
+                else
+                {
+                    _inputHandler.DisplayMessage("You must have an active character to view fragments.");
+                }
+                return ParseResult.None;
+
+            case "codex":
+                _inputHandler.DisplayMessage("[grey]Usage: codex <entry name>[/]");
+                return ParseResult.None;
 
             default:
                 _inputHandler.DisplayError($"Unknown command: '{command}'. Type 'help' for available commands.");
@@ -657,6 +723,11 @@ public class CommandParser
         _inputHandler.DisplayMessage("  take <item>      - Take an item from a container");
         _inputHandler.DisplayMessage("  get <item>       - Take an item from a container");
         _inputHandler.DisplayMessage("  use <item>       - Use a consumable item");
+        _inputHandler.DisplayMessage("");
+        _inputHandler.DisplayMessage("Journal:");
+        _inputHandler.DisplayMessage("  journal, j       - Open the Scavenger's Journal");
+        _inputHandler.DisplayMessage("  codex <name>     - View a specific journal entry");
+        _inputHandler.DisplayMessage("  fragments        - View unassigned knowledge fragments");
         _inputHandler.DisplayMessage("");
         _inputHandler.DisplayMessage("Actions:");
         _inputHandler.DisplayMessage("  look, l          - Examine your surroundings");

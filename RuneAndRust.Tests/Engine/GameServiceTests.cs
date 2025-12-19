@@ -27,7 +27,7 @@ public class GameServiceTests
         _mockParserLogger = new Mock<ILogger<CommandParser>>();
         _mockInputHandler = new Mock<IInputHandler>();
         _state = new GameState();
-        _parser = new CommandParser(_mockParserLogger.Object, _mockInputHandler.Object);
+        _parser = new CommandParser(_mockParserLogger.Object, _mockInputHandler.Object, _state);
     }
 
     [Fact]
@@ -38,7 +38,7 @@ public class GameServiceTests
         var sut = new GameService(_mockGameLogger.Object, _mockInputHandler.Object, _parser, _state);
 
         // Act
-        sut.Start();
+        sut.StartAsync().GetAwaiter().GetResult();
 
         // Assert
         _mockGameLogger.Verify(
@@ -59,7 +59,7 @@ public class GameServiceTests
         var sut = new GameService(_mockGameLogger.Object, _mockInputHandler.Object, _parser, _state);
 
         // Act
-        sut.Start();
+        sut.StartAsync().GetAwaiter().GetResult();
 
         // Assert
         _mockGameLogger.Verify(
@@ -94,7 +94,7 @@ public class GameServiceTests
         var sut = new GameService(_mockGameLogger.Object, _mockInputHandler.Object, _parser, _state);
 
         // Act
-        sut.Start();
+        sut.StartAsync().GetAwaiter().GetResult();
 
         // Assert
         _mockInputHandler.Verify(
@@ -110,7 +110,7 @@ public class GameServiceTests
         var sut = new GameService(_mockGameLogger.Object, _mockInputHandler.Object, _parser, _state);
 
         // Act
-        sut.Start();
+        sut.StartAsync().GetAwaiter().GetResult();
 
         // Assert
         _mockInputHandler.Verify(

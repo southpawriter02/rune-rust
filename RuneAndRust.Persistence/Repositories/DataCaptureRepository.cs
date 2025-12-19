@@ -104,4 +104,21 @@ public class DataCaptureRepository : GenericRepository<DataCapture>, IDataCaptur
 
         _captureLogger.LogDebug("Successfully added {Count} DataCaptures to context", captureList.Count);
     }
+
+    /// <inheritdoc/>
+    public async Task<IEnumerable<Guid>> GetDiscoveredEntryIdsAsync(Guid characterId)
+    {
+        _captureLogger.LogDebug("Fetching discovered entry IDs for Character {CharacterId}", characterId);
+
+        var entryIds = await _dbSet
+            .Where(d => d.CharacterId == characterId && d.CodexEntryId != null)
+            .Select(d => d.CodexEntryId!.Value)
+            .Distinct()
+            .ToListAsync();
+
+        _captureLogger.LogDebug("Found {Count} discovered entries for Character {CharacterId}",
+            entryIds.Count, characterId);
+
+        return entryIds;
+    }
 }

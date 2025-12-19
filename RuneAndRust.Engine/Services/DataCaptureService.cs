@@ -277,6 +277,35 @@ public class DataCaptureService : IDataCaptureService
         return unlockedThresholds;
     }
 
+    /// <inheritdoc/>
+    public async Task<IEnumerable<(CodexEntry Entry, int CompletionPercent)>> GetDiscoveredEntriesAsync(Guid characterId)
+    {
+        _logger.LogDebug("Fetching discovered entries for Character {CharacterId}", characterId);
+
+        var entryIds = await _captureRepository.GetDiscoveredEntryIdsAsync(characterId);
+        var results = new List<(CodexEntry, int)>();
+
+        foreach (var entryId in entryIds)
+        {
+            _logger.LogTrace("Processing discovered entry {EntryId}", entryId);
+
+            var entry = await _codexRepository.GetByIdAsync(entryId);
+            if (entry != null)
+            {
+                var pct = await GetCompletionPercentageAsync(entryId, characterId);
+                results.Add((entry, pct));
+                _logger.LogTrace("Added entry {EntryTitle} with {Pct}% completion", entry.Title, pct);
+            }
+            else
+            {
+                _logger.LogWarning("Discovered entry {EntryId} not found in CodexRepository", entryId);
+            }
+        }
+
+        _logger.LogDebug("Retrieved {Count} discovered entries for Character {CharacterId}", results.Count, characterId);
+        return results;
+    }
+
     #region Private Methods
 
     /// <summary>

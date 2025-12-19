@@ -69,6 +69,9 @@ class Program
                     services.AddScoped<IDataCaptureService, DataCaptureService>();
                     services.AddScoped<ObjectSpawner>();
 
+                    // Register Journal Services
+                    services.AddScoped<IJournalService, JournalService>();
+
                     // Register Character Creation Services
                     services.AddScoped<CharacterFactory>();
                     services.AddScoped<CharacterCreationController>();
@@ -77,12 +80,12 @@ class Program
                 .Build();
 
             // 3. UI Handover
-            AnsiConsole.MarkupLine("[green]Rune & Rust v0.1.1 Booting...[/]");
+            AnsiConsole.MarkupLine("[green]Rune & Rust v0.1.3c Booting...[/]");
             AnsiConsole.WriteLine();
 
             // Resolve the entry point from DI
             var game = host.Services.GetRequiredService<IGameService>();
-            game.Start();
+            game.StartAsync().GetAwaiter().GetResult();
         }
         catch (Exception ex)
         {

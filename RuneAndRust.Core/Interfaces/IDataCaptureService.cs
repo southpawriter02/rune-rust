@@ -52,4 +52,13 @@ public interface IDataCaptureService
     /// <param name="characterId">The character whose unlocks to retrieve.</param>
     /// <returns>Collection of unlocked threshold tags (e.g., "WEAKNESS_REVEALED").</returns>
     Task<IEnumerable<string>> GetUnlockedThresholdsAsync(Guid entryId, Guid characterId);
+
+    /// <summary>
+    /// Gets all Codex entries that a character has discovered at least one fragment for,
+    /// along with their completion percentages.
+    /// Used to populate the Scavenger's Journal list view.
+    /// </summary>
+    /// <param name="characterId">The character whose discoveries to retrieve.</param>
+    /// <returns>Collection of discovered entries with their completion percentages.</returns>
+    Task<IEnumerable<(CodexEntry Entry, int CompletionPercent)>> GetDiscoveredEntriesAsync(Guid characterId);
 }

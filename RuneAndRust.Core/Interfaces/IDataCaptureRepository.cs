@@ -48,4 +48,12 @@ public interface IDataCaptureRepository : IRepository<DataCapture>
     /// </summary>
     /// <param name="captures">The captures to add.</param>
     Task AddRangeAsync(IEnumerable<DataCapture> captures);
+
+    /// <summary>
+    /// Gets the unique Codex Entry IDs that a character has discovered at least one fragment for.
+    /// Used to populate the Scavenger's Journal list view.
+    /// </summary>
+    /// <param name="characterId">The character ID to filter by.</param>
+    /// <returns>A collection of distinct Codex Entry IDs with at least one fragment.</returns>
+    Task<IEnumerable<Guid>> GetDiscoveredEntryIdsAsync(Guid characterId);
 }
