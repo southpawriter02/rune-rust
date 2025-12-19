@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using RuneAndRust.Core.Entities;
 using RuneAndRust.Core.Enums;
 using RuneAndRust.Core.Interfaces;
 using RuneAndRust.Core.Models;
@@ -155,6 +156,7 @@ public class CommandParser
     private readonly ILogger<CommandParser> _logger;
     private readonly IInputHandler _inputHandler;
     private readonly IJournalService? _journalService;
+    private readonly ICombatService? _combatService;
     private readonly GameState _gameState;
 
     /// <summary>
@@ -164,16 +166,19 @@ public class CommandParser
     /// <param name="inputHandler">The input handler for displaying messages.</param>
     /// <param name="gameState">The game state for journal queries.</param>
     /// <param name="journalService">The optional journal service for codex display.</param>
+    /// <param name="combatService">The optional combat service for debug combat initiation.</param>
     public CommandParser(
         ILogger<CommandParser> logger,
         IInputHandler inputHandler,
         GameState gameState,
-        IJournalService? journalService = null)
+        IJournalService? journalService = null,
+        ICombatService? combatService = null)
     {
         _logger = logger;
         _inputHandler = inputHandler;
         _gameState = gameState;
         _journalService = journalService;
+        _combatService = combatService;
     }
 
     /// <summary>
@@ -601,6 +606,25 @@ public class CommandParser
                 _inputHandler.DisplayMessage("[grey]Usage: codex <entry name>[/]");
                 return ParseResult.None;
 
+            case "debug-combat":
+                if (_combatService != null && _gameState.CurrentCharacter != null)
+                {
+                    _logger.LogDebug("DEBUG: Initiating test combat encounter");
+                    var dummyEnemy = new Enemy
+                    {
+                        Name = "Training Dummy",
+                        MaxHp = 30,
+                        CurrentHp = 30
+                    };
+                    _combatService.StartCombat(new List<Enemy> { dummyEnemy });
+                    _inputHandler.DisplayMessage("[yellow]DEBUG: Combat initiated with Training Dummy.[/]");
+                }
+                else
+                {
+                    _inputHandler.DisplayMessage("[red]Cannot start combat: No active character or combat service unavailable.[/]");
+                }
+                return ParseResult.None;
+
             default:
                 _inputHandler.DisplayError($"Unknown command: '{command}'. Type 'help' for available commands.");
                 _logger.LogDebug("Unknown Exploration command: {Command}", command);
@@ -738,6 +762,9 @@ public class CommandParser
         _inputHandler.DisplayMessage("  menu, mainmenu   - Return to main menu");
         _inputHandler.DisplayMessage("  help, ?          - Show this help");
         _inputHandler.DisplayMessage("  quit, exit, q    - Exit the game");
+        _inputHandler.DisplayMessage("");
+        _inputHandler.DisplayMessage("Debug:");
+        _inputHandler.DisplayMessage("  debug-combat     - Start a test combat encounter");
     }
 
     /// <summary>

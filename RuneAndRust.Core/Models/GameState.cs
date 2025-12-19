@@ -46,6 +46,13 @@ public class GameState
     public Guid? CurrentRoomId { get; set; }
 
     /// <summary>
+    /// Gets or sets the current combat state.
+    /// Null when not in combat.
+    /// </summary>
+    [JsonIgnore]
+    public CombatState? CombatState { get; set; }
+
+    /// <summary>
     /// Resets the game state to initial values for a new session.
     /// </summary>
     public void Reset()
@@ -56,5 +63,6 @@ public class GameState
         IsSessionActive = false;
         PendingAction = PendingGameAction.None;
         CurrentRoomId = null;
+        CombatState = null;
     }
 }

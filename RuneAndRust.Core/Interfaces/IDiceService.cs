@@ -21,4 +21,12 @@ public interface IDiceService
     /// <param name="context">Optional context describing what the roll is for (used in logging).</param>
     /// <returns>A <see cref="DiceResult"/> containing the successes, botches, and individual rolls.</returns>
     DiceResult Roll(int poolSize, string context = "Unspecified");
+
+    /// <summary>
+    /// Rolls a single die and returns the raw value.
+    /// </summary>
+    /// <param name="sides">The number of sides on the die (e.g., 10 for d10).</param>
+    /// <param name="context">Optional context describing what the roll is for (used in logging).</param>
+    /// <returns>The raw die value (1 to sides, inclusive).</returns>
+    int RollSingle(int sides, string context = "Unspecified");
 }

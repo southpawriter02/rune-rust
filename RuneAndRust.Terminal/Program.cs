@@ -72,6 +72,10 @@ class Program
                     // Register Journal Services
                     services.AddScoped<IJournalService, JournalService>();
 
+                    // Register Combat Services
+                    services.AddSingleton<IInitiativeService, InitiativeService>();
+                    services.AddSingleton<ICombatService, CombatService>();
+
                     // Register Character Creation Services
                     services.AddScoped<CharacterFactory>();
                     services.AddScoped<CharacterCreationController>();
@@ -80,7 +84,7 @@ class Program
                 .Build();
 
             // 3. UI Handover
-            AnsiConsole.MarkupLine("[green]Rune & Rust v0.1.3c Booting...[/]");
+            AnsiConsole.MarkupLine("[green]Rune & Rust v0.2.0a Booting...[/]");
             AnsiConsole.WriteLine();
 
             // Resolve the entry point from DI

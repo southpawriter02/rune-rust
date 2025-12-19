@@ -61,9 +61,9 @@ public class JournalServiceTests
         // Arrange
         var entries = new List<(CodexEntry Entry, int CompletionPercent)>
         {
-            (CreateCodexEntry("Rusted Servitor", CodexCategory.Bestiary), 50),
-            (CreateCodexEntry("Combat Basics", CodexCategory.FieldGuide), 100),
-            (CreateCodexEntry("Iron-Husk", CodexCategory.Bestiary), 25)
+            (CreateCodexEntry("Rusted Servitor", EntryCategory.Bestiary), 50),
+            (CreateCodexEntry("Combat Basics", EntryCategory.FieldGuide), 100),
+            (CreateCodexEntry("Iron-Husk", EntryCategory.Bestiary), 25)
         };
 
         _mockCaptureService
@@ -86,7 +86,7 @@ public class JournalServiceTests
         // Arrange
         var entries = new List<(CodexEntry Entry, int CompletionPercent)>
         {
-            (CreateCodexEntry("Test Entry", CodexCategory.Bestiary), 75)
+            (CreateCodexEntry("Test Entry", EntryCategory.Bestiary), 75)
         };
 
         _mockCaptureService
@@ -106,7 +106,7 @@ public class JournalServiceTests
         // Arrange
         var entries = new List<(CodexEntry Entry, int CompletionPercent)>
         {
-            (CreateCodexEntry("Complete Entry", CodexCategory.FieldGuide), 100)
+            (CreateCodexEntry("Complete Entry", EntryCategory.FieldGuide), 100)
         };
 
         _mockCaptureService
@@ -127,7 +127,7 @@ public class JournalServiceTests
         // Arrange
         var entries = new List<(CodexEntry Entry, int CompletionPercent)>
         {
-            (CreateCodexEntry("Incomplete Entry", CodexCategory.FieldGuide), 50)
+            (CreateCodexEntry("Incomplete Entry", EntryCategory.FieldGuide), 50)
         };
 
         _mockCaptureService
@@ -147,7 +147,7 @@ public class JournalServiceTests
         // Arrange
         var entries = new List<(CodexEntry Entry, int CompletionPercent)>
         {
-            (CreateCodexEntry("Test", CodexCategory.FieldGuide), 50)
+            (CreateCodexEntry("Test", EntryCategory.FieldGuide), 50)
         };
 
         _mockCaptureService
@@ -186,7 +186,7 @@ public class JournalServiceTests
     public async Task FormatEntryDetailAsync_IncompleteEntry_RedactsText()
     {
         // Arrange
-        var entry = CreateCodexEntry("Test Entry", CodexCategory.Bestiary);
+        var entry = CreateCodexEntry("Test Entry", EntryCategory.Bestiary);
         entry.FullText = "This is the full description of the test entry.";
 
         _mockCodexRepository
@@ -211,7 +211,7 @@ public class JournalServiceTests
     public async Task FormatEntryDetailAsync_CompleteEntry_ShowsFullText()
     {
         // Arrange
-        var entry = CreateCodexEntry("Complete Entry", CodexCategory.FieldGuide);
+        var entry = CreateCodexEntry("Complete Entry", EntryCategory.FieldGuide);
         entry.FullText = "This is the complete text without any redaction.";
 
         _mockCodexRepository
@@ -236,7 +236,7 @@ public class JournalServiceTests
     public async Task FormatEntryDetailAsync_ShowsUnlockedThresholds()
     {
         // Arrange
-        var entry = CreateCodexEntry("Entry With Tags", CodexCategory.Bestiary);
+        var entry = CreateCodexEntry("Entry With Tags", EntryCategory.Bestiary);
 
         _mockCodexRepository
             .Setup(x => x.GetByTitleAsync("Entry With Tags"))
@@ -262,7 +262,7 @@ public class JournalServiceTests
     public async Task FormatEntryDetailAsync_ShowsCategoryAndTitle()
     {
         // Arrange
-        var entry = CreateCodexEntry("Iron-Husk", CodexCategory.Bestiary);
+        var entry = CreateCodexEntry("Iron-Husk", EntryCategory.Bestiary);
 
         _mockCodexRepository
             .Setup(x => x.GetByTitleAsync("Iron-Husk"))
@@ -368,7 +368,7 @@ public class JournalServiceTests
 
     #region Helper Methods
 
-    private static CodexEntry CreateCodexEntry(string title, CodexCategory category)
+    private static CodexEntry CreateCodexEntry(string title, EntryCategory category)
     {
         return new CodexEntry
         {
@@ -376,8 +376,8 @@ public class JournalServiceTests
             Title = title,
             Category = category,
             FullText = $"Full text for {title}",
-            Thresholds = new List<ThresholdDefinition>(),
-            Rarity = DataRarity.Common
+            TotalFragments = 10,
+            UnlockThresholds = new Dictionary<int, string>()
         };
     }
 

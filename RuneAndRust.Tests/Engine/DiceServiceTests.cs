@@ -380,6 +380,81 @@ public class DiceServiceTests
 
     #endregion
 
+    #region RollSingle Tests
+
+    [Fact]
+    public void RollSingle_ReturnsValueInRange()
+    {
+        // Act & Assert - Run multiple times to verify range
+        for (int i = 0; i < 100; i++)
+        {
+            var result = _sut.RollSingle(10, "RangeTest");
+            result.Should().BeInRange(1, 10);
+        }
+    }
+
+    [Fact]
+    public void RollSingle_WithDifferentSides_ReturnsValueInRange()
+    {
+        // Arrange & Act
+        var d6Results = Enumerable.Range(0, 50).Select(_ => _sut.RollSingle(6)).ToList();
+        var d20Results = Enumerable.Range(0, 50).Select(_ => _sut.RollSingle(20)).ToList();
+
+        // Assert
+        d6Results.Should().AllSatisfy(r => r.Should().BeInRange(1, 6));
+        d20Results.Should().AllSatisfy(r => r.Should().BeInRange(1, 20));
+    }
+
+    [Fact]
+    public void RollSingle_WithZeroSides_ClampsToOne()
+    {
+        // Act
+        var result = _sut.RollSingle(0, "ZeroSidesTest");
+
+        // Assert
+        result.Should().Be(1);
+        VerifyLogLevel(LogLevel.Warning);
+    }
+
+    [Fact]
+    public void RollSingle_WithNegativeSides_ClampsToOne()
+    {
+        // Act
+        var result = _sut.RollSingle(-5, "NegativeSidesTest");
+
+        // Assert
+        result.Should().Be(1);
+        VerifyLogLevel(LogLevel.Warning);
+    }
+
+    [Fact]
+    public void RollSingle_LogsContext()
+    {
+        // Act
+        _sut.RollSingle(10, "InitiativeRoll");
+
+        // Assert
+        VerifyLogMessageContains("InitiativeRoll");
+    }
+
+    [Fact]
+    public void RollSingle_Distribution_ShouldBeReasonablyRandom()
+    {
+        // Roll many d10s and verify distribution
+        var allRolls = Enumerable.Range(0, 1000).Select(_ => _sut.RollSingle(10)).ToList();
+
+        // Each value 1-10 should appear roughly 100 times
+        var groups = allRolls.GroupBy(r => r).ToDictionary(g => g.Key, g => g.Count());
+
+        foreach (var value in Enumerable.Range(1, 10))
+        {
+            groups.Should().ContainKey(value, $"value {value} should appear in 1000 rolls");
+            groups[value].Should().BeGreaterThan(50, $"value {value} should appear at least 50 times in 1000 rolls");
+        }
+    }
+
+    #endregion
+
     #region Statistical Distribution Tests
 
     [Fact]

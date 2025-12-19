@@ -70,6 +70,21 @@ public class DiceService : IDiceService
         return new DiceResult(successes, botches, rolls.AsReadOnly());
     }
 
+    /// <inheritdoc/>
+    public int RollSingle(int sides, string context = "Unspecified")
+    {
+        if (sides < 1)
+        {
+            _logger.LogWarning("Invalid die sides {Sides} for {Context}. Clamping to minimum of 1.", sides, context);
+            sides = 1;
+        }
+
+        _logger.LogTrace("Rolling 1d{Sides} for {Context}", sides, context);
+        var result = Random.Shared.Next(1, sides + 1);
+        _logger.LogDebug("Rolled {Result} on 1d{Sides} ({Context})", result, sides, context);
+        return result;
+    }
+
     /// <summary>
     /// Validates the pool size and returns a valid value (minimum 1).
     /// </summary>
