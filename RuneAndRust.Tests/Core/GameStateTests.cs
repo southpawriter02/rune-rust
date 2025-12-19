@@ -2,6 +2,7 @@ using FluentAssertions;
 using RuneAndRust.Core.Enums;
 using RuneAndRust.Core.Models;
 using Xunit;
+using EntityCharacter = RuneAndRust.Core.Entities.Character;
 
 namespace RuneAndRust.Tests.Core;
 
@@ -95,7 +96,7 @@ public class GameStateTests
     {
         // Arrange
         var state = new GameState();
-        var character = new Character("Test Hero");
+        var character = new EntityCharacter { Name = "Test Hero" };
 
         // Act
         state.CurrentCharacter = character;
@@ -208,7 +209,7 @@ public class GameStateTests
     public void Reset_ShouldSetCurrentCharacterToNull()
     {
         // Arrange
-        var state = new GameState { CurrentCharacter = new Character("Hero") };
+        var state = new GameState { CurrentCharacter = new EntityCharacter { Name = "Hero" } };
 
         // Act
         state.Reset();
@@ -276,7 +277,7 @@ public class GameStateTests
         var state = new GameState
         {
             Phase = GamePhase.Combat,
-            CurrentCharacter = new Character("Hero"),
+            CurrentCharacter = new EntityCharacter { Name = "Hero" },
             TurnCount = 50,
             IsSessionActive = true,
             PendingAction = PendingGameAction.Save,
@@ -357,15 +358,14 @@ public class GameStateTests
     {
         // Arrange
         var state = new GameState();
-        var character = new Character("Test Hero");
-        character.SetAttribute(RuneAndRust.Core.Enums.Attribute.Might, 8);
+        var character = new EntityCharacter { Name = "Test Hero", Might = 8 };
 
         // Act
         state.CurrentCharacter = character;
 
         // Assert
         state.CurrentCharacter!.Name.Should().Be("Test Hero");
-        state.CurrentCharacter.GetAttribute(RuneAndRust.Core.Enums.Attribute.Might).Should().Be(8);
+        state.CurrentCharacter.Might.Should().Be(8);
     }
 
     [Fact]
@@ -373,8 +373,8 @@ public class GameStateTests
     {
         // Arrange
         var state = new GameState();
-        var character1 = new Character("Hero One");
-        var character2 = new Character("Hero Two");
+        var character1 = new EntityCharacter { Name = "Hero One" };
+        var character2 = new EntityCharacter { Name = "Hero Two" };
 
         // Act
         state.CurrentCharacter = character1;

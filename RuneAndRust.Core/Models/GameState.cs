@@ -19,7 +19,7 @@ public class GameState
     /// Gets or sets the current player character.
     /// Will be populated when a game session starts.
     /// </summary>
-    public Character? CurrentCharacter { get; set; }
+    public Entities.Character? CurrentCharacter { get; set; }
 
     /// <summary>
     /// Gets or sets the current turn count within a session.

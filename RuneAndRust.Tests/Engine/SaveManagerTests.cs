@@ -7,7 +7,7 @@ using RuneAndRust.Core.Interfaces;
 using RuneAndRust.Core.Models;
 using RuneAndRust.Engine.Services;
 using Xunit;
-using ModelCharacter = RuneAndRust.Core.Models.Character;
+using EntityCharacter = RuneAndRust.Core.Entities.Character;
 
 namespace RuneAndRust.Tests.Engine;
 
@@ -38,7 +38,7 @@ public class SaveManagerTests
             Phase = GamePhase.Exploration,
             TurnCount = 10,
             IsSessionActive = true,
-            CurrentCharacter = new ModelCharacter("TestHero")
+            CurrentCharacter = new EntityCharacter { Name = "TestHero" }
         };
 
         _mockRepo.Setup(r => r.GetBySlotAsync(1)).ReturnsAsync((SaveGame?)null);
@@ -68,7 +68,7 @@ public class SaveManagerTests
         };
         var gameState = new GameState
         {
-            CurrentCharacter = new ModelCharacter("NewChar")
+            CurrentCharacter = new EntityCharacter { Name = "NewChar" }
         };
 
         _mockRepo.Setup(r => r.GetBySlotAsync(1)).ReturnsAsync(existingSave);

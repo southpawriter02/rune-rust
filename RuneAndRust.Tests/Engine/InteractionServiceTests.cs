@@ -8,7 +8,7 @@ using RuneAndRust.Core.Models;
 using RuneAndRust.Engine.Services;
 using Xunit;
 using CharacterAttribute = RuneAndRust.Core.Enums.Attribute;
-using ModelCharacter = RuneAndRust.Core.Models.Character;
+using EntityCharacter = RuneAndRust.Core.Entities.Character;
 
 namespace RuneAndRust.Tests.Engine;
 
@@ -20,6 +20,8 @@ public class InteractionServiceTests
 {
     private readonly Mock<ILogger<InteractionService>> _mockLogger;
     private readonly Mock<IInteractableObjectRepository> _mockRepository;
+    private readonly Mock<IRoomRepository> _mockRoomRepository;
+    private readonly Mock<ILootService> _mockLootService;
     private readonly Mock<IDiceService> _mockDiceService;
     private readonly GameState _gameState;
     private readonly InteractionService _sut;
@@ -31,6 +33,8 @@ public class InteractionServiceTests
     {
         _mockLogger = new Mock<ILogger<InteractionService>>();
         _mockRepository = new Mock<IInteractableObjectRepository>();
+        _mockRoomRepository = new Mock<IRoomRepository>();
+        _mockLootService = new Mock<ILootService>();
         _mockDiceService = new Mock<IDiceService>();
         _gameState = new GameState
         {
@@ -40,6 +44,8 @@ public class InteractionServiceTests
         _sut = new InteractionService(
             _mockLogger.Object,
             _mockRepository.Object,
+            _mockRoomRepository.Object,
+            _mockLootService.Object,
             _mockDiceService.Object,
             _gameState);
     }
@@ -565,10 +571,13 @@ public class InteractionServiceTests
 
     #region Helper Methods
 
-    private static ModelCharacter CreateTestCharacter(int wits = 5)
+    private static EntityCharacter CreateTestCharacter(int wits = 5)
     {
-        var character = new ModelCharacter("Test Hero");
-        character.SetAttribute(CharacterAttribute.Wits, wits);
+        var character = new EntityCharacter
+        {
+            Name = "Test Hero",
+            Wits = wits
+        };
         return character;
     }
 

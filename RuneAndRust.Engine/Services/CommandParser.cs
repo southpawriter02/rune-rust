@@ -111,6 +111,36 @@ public class ParseResult
     public string? DropTarget { get; set; }
 
     /// <summary>
+    /// Gets or sets whether a take/get command was issued.
+    /// </summary>
+    public bool RequiresTake { get; set; }
+
+    /// <summary>
+    /// Gets or sets the target of the take command.
+    /// </summary>
+    public string? TakeTarget { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether a loot command was issued (search container for loot).
+    /// </summary>
+    public bool RequiresLoot { get; set; }
+
+    /// <summary>
+    /// Gets or sets the target container for the loot command.
+    /// </summary>
+    public string? LootTarget { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether a use command was issued.
+    /// </summary>
+    public bool RequiresUse { get; set; }
+
+    /// <summary>
+    /// Gets or sets the target of the use command.
+    /// </summary>
+    public string? UseTarget { get; set; }
+
+    /// <summary>
     /// Gets a default result with no async requirements.
     /// </summary>
     public static ParseResult None => new();
@@ -376,6 +406,65 @@ public class CommandParser
             }
         }
 
+        // Check for take/get command with target
+        if (command.StartsWith("take ") || command.StartsWith("get ") || command.StartsWith("grab "))
+        {
+            var target = ExtractTarget(command, new[] { "take ", "get ", "grab " });
+            if (!string.IsNullOrWhiteSpace(target))
+            {
+                state.TurnCount++;
+                _logger.LogDebug("Take command for target: {Target}", target);
+                return new ParseResult
+                {
+                    RequiresTake = true,
+                    TakeTarget = target
+                };
+            }
+            else
+            {
+                _inputHandler.DisplayError("Take what? Specify an item.");
+                return ParseResult.None;
+            }
+        }
+
+        // Check for loot command with target
+        if (command.StartsWith("loot ") || command.StartsWith("search "))
+        {
+            var target = ExtractTarget(command, new[] { "loot ", "search " });
+            if (!string.IsNullOrWhiteSpace(target))
+            {
+                state.TurnCount++;
+                _logger.LogDebug("Loot command for target: {Target}", target);
+                return new ParseResult
+                {
+                    RequiresLoot = true,
+                    LootTarget = target
+                };
+            }
+            // If no target for search, fall through to room search
+        }
+
+        // Check for use command with target
+        if (command.StartsWith("use ") || command.StartsWith("consume ") || command.StartsWith("apply "))
+        {
+            var target = ExtractTarget(command, new[] { "use ", "consume ", "apply " });
+            if (!string.IsNullOrWhiteSpace(target))
+            {
+                state.TurnCount++;
+                _logger.LogDebug("Use command for target: {Target}", target);
+                return new ParseResult
+                {
+                    RequiresUse = true,
+                    UseTarget = target
+                };
+            }
+            else
+            {
+                _inputHandler.DisplayError("Use what? Specify an item.");
+                return ParseResult.None;
+            }
+        }
+
         switch (command)
         {
             case "quit":
@@ -562,6 +651,12 @@ public class CommandParser
         _inputHandler.DisplayMessage("  equip <item>     - Equip an item from inventory");
         _inputHandler.DisplayMessage("  unequip <slot>   - Unequip item from slot (e.g., mainhand)");
         _inputHandler.DisplayMessage("  drop <item>      - Drop an item from inventory");
+        _inputHandler.DisplayMessage("");
+        _inputHandler.DisplayMessage("Loot:");
+        _inputHandler.DisplayMessage("  loot <container> - Search an open container for items");
+        _inputHandler.DisplayMessage("  take <item>      - Take an item from a container");
+        _inputHandler.DisplayMessage("  get <item>       - Take an item from a container");
+        _inputHandler.DisplayMessage("  use <item>       - Use a consumable item");
         _inputHandler.DisplayMessage("");
         _inputHandler.DisplayMessage("Actions:");
         _inputHandler.DisplayMessage("  look, l          - Examine your surroundings");

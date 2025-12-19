@@ -1,11 +1,12 @@
 using RuneAndRust.Core.Entities;
+using RuneAndRust.Core.Enums;
 using RuneAndRust.Core.Models;
 
 namespace RuneAndRust.Core.Interfaces;
 
 /// <summary>
 /// Defines the contract for player-object interaction operations.
-/// Handles examine, open, close, and search commands.
+/// Handles examine, open, close, search, and loot commands.
 /// </summary>
 public interface IInteractionService
 {
@@ -49,4 +50,25 @@ public interface IInteractionService
     /// </summary>
     /// <returns>A narrative list of objects, or a message if the room is empty.</returns>
     Task<string> ListObjectsAsync();
+
+    /// <summary>
+    /// Searches an open container for loot.
+    /// Generates loot based on biome, danger level, and container tier.
+    /// </summary>
+    /// <param name="targetName">The name of the container to search.</param>
+    /// <returns>A loot result containing any found items.</returns>
+    Task<LootResult> SearchContainerAsync(string targetName);
+
+    /// <summary>
+    /// Attempts to take an item from the current room or container.
+    /// </summary>
+    /// <param name="itemName">The name of the item to take.</param>
+    /// <returns>A narrative description of the result.</returns>
+    Task<string> TakeItemAsync(string itemName);
+
+    /// <summary>
+    /// Gets all items available in the current room or open containers.
+    /// </summary>
+    /// <returns>A collection of available items.</returns>
+    Task<IEnumerable<Item>> GetAvailableItemsAsync();
 }

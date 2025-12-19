@@ -9,14 +9,23 @@ namespace RuneAndRust.Engine.Services;
 
 /// <summary>
 /// Implements player-object interaction logic using WITS-based dice checks.
-/// Handles examine, open, close, and search commands during exploration.
+/// Handles examine, open, close, search, and loot commands during exploration.
 /// </summary>
 public class InteractionService : IInteractionService
 {
     private readonly ILogger<InteractionService> _logger;
     private readonly IInteractableObjectRepository _objectRepository;
+    private readonly IRoomRepository _roomRepository;
+    private readonly ILootService _lootService;
+    private readonly IInventoryService? _inventoryService;
     private readonly IDiceService _diceService;
     private readonly GameState _gameState;
+
+    /// <summary>
+    /// Tracks items generated but not yet taken.
+    /// Key is container ID, value is list of available items.
+    /// </summary>
+    private readonly Dictionary<Guid, List<Item>> _containerLoot = new();
 
     /// <summary>
     /// Net successes required for detailed tier (1+).
@@ -33,18 +42,27 @@ public class InteractionService : IInteractionService
     /// </summary>
     /// <param name="logger">The logger for traceability.</param>
     /// <param name="objectRepository">The repository for interactable objects.</param>
+    /// <param name="roomRepository">The repository for rooms.</param>
+    /// <param name="lootService">The loot generation service.</param>
     /// <param name="diceService">The dice rolling service.</param>
     /// <param name="gameState">The current game state.</param>
+    /// <param name="inventoryService">The optional inventory service for taking items.</param>
     public InteractionService(
         ILogger<InteractionService> logger,
         IInteractableObjectRepository objectRepository,
+        IRoomRepository roomRepository,
+        ILootService lootService,
         IDiceService diceService,
-        GameState gameState)
+        GameState gameState,
+        IInventoryService? inventoryService = null)
     {
         _logger = logger;
         _objectRepository = objectRepository;
+        _roomRepository = roomRepository;
+        _lootService = lootService;
         _diceService = diceService;
         _gameState = gameState;
+        _inventoryService = inventoryService;
     }
 
     /// <inheritdoc/>
@@ -321,6 +339,158 @@ public class InteractionService : IInteractionService
         var lastItem = names.Last();
         var otherItems = string.Join(", ", names.Take(names.Count - 1));
         return $"You notice: {otherItems}, and {lastItem}.";
+    }
+
+    /// <inheritdoc/>
+    public async Task<LootResult> SearchContainerAsync(string targetName)
+    {
+        _logger.LogInformation("Searching container '{TargetName}' for loot", targetName);
+
+        var validationResult = ValidateGameState("SearchContainer");
+        if (validationResult != null)
+        {
+            return LootResult.Failure(validationResult);
+        }
+
+        // Find the container
+        var container = await _objectRepository.GetByNameInRoomAsync(
+            _gameState.CurrentRoomId!.Value,
+            targetName);
+
+        if (container == null)
+        {
+            _logger.LogDebug("Container '{TargetName}' not found", targetName);
+            return LootResult.Failure($"You don't see anything called '{targetName}' here.");
+        }
+
+        if (!container.IsContainer)
+        {
+            _logger.LogDebug("Object '{ObjectName}' is not a container", container.Name);
+            return LootResult.Failure($"The {container.Name} cannot be searched for loot.");
+        }
+
+        if (!container.IsOpen)
+        {
+            _logger.LogDebug("Container '{ContainerName}' is closed", container.Name);
+            return LootResult.Failure($"The {container.Name} is closed. Open it first.");
+        }
+
+        if (container.HasBeenSearched)
+        {
+            // Return any remaining items in the container
+            if (_containerLoot.TryGetValue(container.Id, out var remainingItems) && remainingItems.Count > 0)
+            {
+                var itemList = string.Join(", ", remainingItems.Select(i => i.Name));
+                return LootResult.Found(
+                    $"The {container.Name} still contains: {itemList}.",
+                    remainingItems.AsReadOnly());
+            }
+
+            return LootResult.Empty($"You've already searched the {container.Name}. Nothing else remains.");
+        }
+
+        // Get room for context
+        var room = await _roomRepository.GetByIdAsync(_gameState.CurrentRoomId!.Value);
+        var biome = room?.BiomeType ?? BiomeType.Ruin;
+        var danger = room?.DangerLevel ?? DangerLevel.Safe;
+
+        // Get WITS bonus for quality rolls
+        var witsBonus = _gameState.CurrentCharacter!.GetAttribute(CharacterAttribute.Wits) / 2;
+
+        var context = new LootGenerationContext(biome, danger, container.LootTier, witsBonus);
+        var lootResult = await _lootService.SearchContainerAsync(container, context);
+
+        // Store generated items for taking
+        if (lootResult.Success && lootResult.Items.Count > 0)
+        {
+            _containerLoot[container.Id] = lootResult.Items.ToList();
+        }
+
+        // Persist the container's searched state
+        await _objectRepository.UpdateAsync(container);
+        await _objectRepository.SaveChangesAsync();
+
+        _logger.LogInformation("Container '{ContainerName}' searched, found {ItemCount} items",
+            container.Name, lootResult.Items.Count);
+
+        return lootResult;
+    }
+
+    /// <inheritdoc/>
+    public async Task<string> TakeItemAsync(string itemName)
+    {
+        _logger.LogInformation("Attempting to take item '{ItemName}'", itemName);
+
+        var validationResult = ValidateGameState("Take");
+        if (validationResult != null) return validationResult;
+
+        // Search through all open containers in the room for the item
+        var containers = await _objectRepository.GetByRoomIdAsync(_gameState.CurrentRoomId!.Value);
+        var openContainers = containers.Where(c => c.IsContainer && c.IsOpen).ToList();
+
+        foreach (var container in openContainers)
+        {
+            if (_containerLoot.TryGetValue(container.Id, out var items))
+            {
+                var item = items.FirstOrDefault(i =>
+                    i.Name.Equals(itemName, StringComparison.OrdinalIgnoreCase));
+
+                if (item != null)
+                {
+                    // Remove from container loot
+                    items.Remove(item);
+
+                    // Add to player inventory if service available
+                    if (_inventoryService != null && _gameState.CurrentCharacter != null)
+                    {
+                        var addResult = await _inventoryService.AddItemAsync(
+                            _gameState.CurrentCharacter, item);
+
+                        if (!addResult.Success)
+                        {
+                            // Put the item back if we couldn't add it
+                            items.Add(item);
+                            _logger.LogDebug("Could not add item to inventory: {Message}", addResult.Message);
+                            return addResult.Message;
+                        }
+                    }
+
+                    _logger.LogInformation("Player took item '{ItemName}' from '{ContainerName}'",
+                        item.Name, container.Name);
+
+                    return $"You take the {item.Name} from the {container.Name}.";
+                }
+            }
+        }
+
+        _logger.LogDebug("Item '{ItemName}' not found in any open container", itemName);
+        return $"You don't see any '{itemName}' to take.";
+    }
+
+    /// <inheritdoc/>
+    public async Task<IEnumerable<Item>> GetAvailableItemsAsync()
+    {
+        _logger.LogDebug("Getting available items in current room");
+
+        if (_gameState.CurrentRoomId == null)
+        {
+            return Enumerable.Empty<Item>();
+        }
+
+        var allItems = new List<Item>();
+
+        // Get items from all open containers
+        var containers = await _objectRepository.GetByRoomIdAsync(_gameState.CurrentRoomId.Value);
+        foreach (var container in containers.Where(c => c.IsContainer && c.IsOpen))
+        {
+            if (_containerLoot.TryGetValue(container.Id, out var items))
+            {
+                allItems.AddRange(items);
+            }
+        }
+
+        _logger.LogDebug("Found {Count} available items", allItems.Count);
+        return allItems;
     }
 
     /// <summary>

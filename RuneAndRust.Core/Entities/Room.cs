@@ -40,4 +40,14 @@ public class Room
     /// Indicates if this room is the starting location for new games.
     /// </summary>
     public bool IsStartingRoom { get; set; } = false;
+
+    /// <summary>
+    /// Gets or sets the biome type affecting atmosphere and loot tables.
+    /// </summary>
+    public BiomeType BiomeType { get; set; } = BiomeType.Ruin;
+
+    /// <summary>
+    /// Gets or sets the danger level affecting encounter and loot quality.
+    /// </summary>
+    public DangerLevel DangerLevel { get; set; } = DangerLevel.Safe;
 }
