@@ -31,6 +31,46 @@ public class ParseResult
     public bool RequiresCharacterCreation { get; set; }
 
     /// <summary>
+    /// Gets or sets whether an examine command was issued.
+    /// </summary>
+    public bool RequiresExamine { get; set; }
+
+    /// <summary>
+    /// Gets or sets the target of the examine command.
+    /// </summary>
+    public string? ExamineTarget { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether an open command was issued.
+    /// </summary>
+    public bool RequiresOpen { get; set; }
+
+    /// <summary>
+    /// Gets or sets the target of the open command.
+    /// </summary>
+    public string? OpenTarget { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether a close command was issued.
+    /// </summary>
+    public bool RequiresClose { get; set; }
+
+    /// <summary>
+    /// Gets or sets the target of the close command.
+    /// </summary>
+    public string? CloseTarget { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether a search command was issued.
+    /// </summary>
+    public bool RequiresSearch { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether a list objects command was issued.
+    /// </summary>
+    public bool RequiresListObjects { get; set; }
+
+    /// <summary>
     /// Gets a default result with no async requirements.
     /// </summary>
     public static ParseResult None => new();
@@ -178,6 +218,64 @@ public class CommandParser
             }
         }
 
+        // Check for examine command with target
+        if (command.StartsWith("examine ") || command.StartsWith("x ") || command.StartsWith("look "))
+        {
+            var target = ExtractTarget(command, new[] { "examine ", "x ", "look " });
+            if (!string.IsNullOrWhiteSpace(target))
+            {
+                state.TurnCount++;
+                _logger.LogDebug("Examine command for target: {Target}", target);
+                return new ParseResult
+                {
+                    RequiresExamine = true,
+                    ExamineTarget = target
+                };
+            }
+        }
+
+        // Check for open command with target
+        if (command.StartsWith("open "))
+        {
+            var target = command.Substring(5).Trim();
+            if (!string.IsNullOrWhiteSpace(target))
+            {
+                state.TurnCount++;
+                _logger.LogDebug("Open command for target: {Target}", target);
+                return new ParseResult
+                {
+                    RequiresOpen = true,
+                    OpenTarget = target
+                };
+            }
+            else
+            {
+                _inputHandler.DisplayError("Open what? Specify a target.");
+                return ParseResult.None;
+            }
+        }
+
+        // Check for close command with target
+        if (command.StartsWith("close "))
+        {
+            var target = command.Substring(6).Trim();
+            if (!string.IsNullOrWhiteSpace(target))
+            {
+                state.TurnCount++;
+                _logger.LogDebug("Close command for target: {Target}", target);
+                return new ParseResult
+                {
+                    RequiresClose = true,
+                    CloseTarget = target
+                };
+            }
+            else
+            {
+                _inputHandler.DisplayError("Close what? Specify a target.");
+                return ParseResult.None;
+            }
+        }
+
         switch (command)
         {
             case "quit":
@@ -226,6 +324,17 @@ public class CommandParser
                 _logger.LogInformation("Load command received.");
                 return ParseResult.None;
 
+            case "search":
+                state.TurnCount++;
+                _logger.LogDebug("Search command executed.");
+                return new ParseResult { RequiresSearch = true };
+
+            case "objects":
+            case "items":
+            case "inventory":
+                _logger.LogDebug("List objects command executed.");
+                return new ParseResult { RequiresListObjects = true };
+
             default:
                 _inputHandler.DisplayError($"Unknown command: '{command}'. Type 'help' for available commands.");
                 _logger.LogDebug("Unknown Exploration command: {Command}", command);
@@ -250,6 +359,24 @@ public class CommandParser
             "down" or "d" => Direction.Down,
             _ => null
         };
+    }
+
+    /// <summary>
+    /// Extracts the target from a command that starts with one of the given prefixes.
+    /// </summary>
+    /// <param name="command">The full command string.</param>
+    /// <param name="prefixes">The possible command prefixes.</param>
+    /// <returns>The target string, or null if not found.</returns>
+    private static string? ExtractTarget(string command, string[] prefixes)
+    {
+        foreach (var prefix in prefixes)
+        {
+            if (command.StartsWith(prefix))
+            {
+                return command.Substring(prefix.Length).Trim();
+            }
+        }
+        return null;
     }
 
     /// <summary>
@@ -308,6 +435,15 @@ public class CommandParser
         _inputHandler.DisplayMessage("  n, s, e, w       - Move north, south, east, or west");
         _inputHandler.DisplayMessage("  u, d             - Move up or down");
         _inputHandler.DisplayMessage("  go <direction>   - Move in a direction");
+        _inputHandler.DisplayMessage("");
+        _inputHandler.DisplayMessage("Interaction:");
+        _inputHandler.DisplayMessage("  examine <target> - Examine an object (uses WITS)");
+        _inputHandler.DisplayMessage("  x <target>       - Shorthand for examine");
+        _inputHandler.DisplayMessage("  look <target>    - Examine an object");
+        _inputHandler.DisplayMessage("  search           - Search the room for objects (uses WITS)");
+        _inputHandler.DisplayMessage("  open <target>    - Open a container");
+        _inputHandler.DisplayMessage("  close <target>   - Close a container");
+        _inputHandler.DisplayMessage("  objects          - List visible objects in the room");
         _inputHandler.DisplayMessage("");
         _inputHandler.DisplayMessage("Actions:");
         _inputHandler.DisplayMessage("  look, l          - Examine your surroundings");

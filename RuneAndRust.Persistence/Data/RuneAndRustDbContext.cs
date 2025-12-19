@@ -37,6 +37,11 @@ public class RuneAndRustDbContext : DbContext
     public DbSet<Character> Characters { get; set; } = null!;
 
     /// <summary>
+    /// Gets or sets the InteractableObjects table.
+    /// </summary>
+    public DbSet<InteractableObject> InteractableObjects { get; set; } = null!;
+
+    /// <summary>
     /// Configures the entity mappings and relationships.
     /// </summary>
     /// <param name="modelBuilder">The model builder instance.</param>
@@ -149,6 +154,51 @@ public class RuneAndRustDbContext : DbContext
             // Timestamps
             entity.Property(c => c.CreatedAt).IsRequired();
             entity.Property(c => c.LastModified).IsRequired();
+        });
+
+        modelBuilder.Entity<InteractableObject>(entity =>
+        {
+            entity.ToTable("InteractableObjects");
+
+            entity.HasKey(o => o.Id);
+
+            // Index on RoomId for efficient room-based queries
+            entity.HasIndex(o => o.RoomId);
+
+            entity.Property(o => o.RoomId)
+                .IsRequired();
+
+            entity.Property(o => o.Name)
+                .HasMaxLength(100)
+                .IsRequired();
+
+            entity.Property(o => o.ObjectType)
+                .IsRequired();
+
+            // Description tiers
+            entity.Property(o => o.Description)
+                .HasMaxLength(500)
+                .IsRequired();
+
+            entity.Property(o => o.DetailedDescription)
+                .HasMaxLength(1000);
+
+            entity.Property(o => o.ExpertDescription)
+                .HasMaxLength(1000);
+
+            // Container properties
+            entity.Property(o => o.IsContainer).IsRequired();
+            entity.Property(o => o.IsOpen).IsRequired();
+            entity.Property(o => o.IsLocked).IsRequired();
+            entity.Property(o => o.LockDifficulty).IsRequired();
+
+            // Examination state
+            entity.Property(o => o.HasBeenExamined).IsRequired();
+            entity.Property(o => o.HighestExaminationTier).IsRequired();
+
+            // Timestamps
+            entity.Property(o => o.CreatedAt).IsRequired();
+            entity.Property(o => o.LastModified).IsRequired();
         });
     }
 }

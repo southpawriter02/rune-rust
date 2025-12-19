@@ -42,6 +42,7 @@ class Program
                     services.AddScoped<ISaveGameRepository, SaveGameRepository>();
                     services.AddScoped<IRoomRepository, RoomRepository>();
                     services.AddScoped<ICharacterRepository, CharacterRepository>();
+                    services.AddScoped<IInteractableObjectRepository, InteractableObjectRepository>();
 
                     // Register Core State (Singleton to persist across game loop)
                     services.AddSingleton<GameState>();
@@ -60,6 +61,11 @@ class Program
                     services.AddScoped<DungeonGenerator>();
                     services.AddScoped<INavigationService, NavigationService>();
 
+                    // Register Interaction Services
+                    services.AddScoped<IDescriptorEngine, DescriptorEngine>();
+                    services.AddScoped<IInteractionService, InteractionService>();
+                    services.AddScoped<ObjectSpawner>();
+
                     // Register Character Creation Services
                     services.AddScoped<CharacterFactory>();
                     services.AddScoped<CharacterCreationController>();
@@ -68,7 +74,7 @@ class Program
                 .Build();
 
             // 3. UI Handover
-            AnsiConsole.MarkupLine("[green]Rune & Rust v0.1.0 Booting...[/]");
+            AnsiConsole.MarkupLine("[green]Rune & Rust v0.1.1 Booting...[/]");
             AnsiConsole.WriteLine();
 
             // Resolve the entry point from DI
