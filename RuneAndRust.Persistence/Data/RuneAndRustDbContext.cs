@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using RuneAndRust.Core.Entities;
 using RuneAndRust.Core.Enums;
 using RuneAndRust.Core.ValueObjects;
+using CharacterAttribute = RuneAndRust.Core.Enums.Attribute;
 
 namespace RuneAndRust.Persistence.Data;
 
@@ -40,6 +41,21 @@ public class RuneAndRustDbContext : DbContext
     /// Gets or sets the InteractableObjects table.
     /// </summary>
     public DbSet<InteractableObject> InteractableObjects { get; set; } = null!;
+
+    /// <summary>
+    /// Gets or sets the Items table (TPH - includes Equipment).
+    /// </summary>
+    public DbSet<Item> Items { get; set; } = null!;
+
+    /// <summary>
+    /// Gets or sets the Equipment table view (subset of Items via TPH).
+    /// </summary>
+    public DbSet<Equipment> Equipment { get; set; } = null!;
+
+    /// <summary>
+    /// Gets or sets the InventoryItems join table.
+    /// </summary>
+    public DbSet<InventoryItem> InventoryItems { get; set; } = null!;
 
     /// <summary>
     /// Configures the entity mappings and relationships.
@@ -154,6 +170,21 @@ public class RuneAndRustDbContext : DbContext
             // Timestamps
             entity.Property(c => c.CreatedAt).IsRequired();
             entity.Property(c => c.LastModified).IsRequired();
+
+            // Equipment bonuses stored as JSON
+            entity.Property(c => c.EquipmentBonuses)
+                .HasColumnType("jsonb")
+                .HasConversion(
+                    v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
+                    v => JsonSerializer.Deserialize<Dictionary<CharacterAttribute, int>>(v, (JsonSerializerOptions?)null) ?? new Dictionary<CharacterAttribute, int>()
+                )
+                .IsRequired();
+
+            // Inventory navigation property
+            entity.HasMany(c => c.Inventory)
+                .WithOne(i => i.Character)
+                .HasForeignKey(i => i.CharacterId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<InteractableObject>(entity =>
@@ -196,9 +227,112 @@ public class RuneAndRustDbContext : DbContext
             entity.Property(o => o.HasBeenExamined).IsRequired();
             entity.Property(o => o.HighestExaminationTier).IsRequired();
 
+            // Loot properties
+            entity.Property(o => o.HasBeenSearched).IsRequired();
+            entity.Property(o => o.LootTier);
+
             // Timestamps
             entity.Property(o => o.CreatedAt).IsRequired();
             entity.Property(o => o.LastModified).IsRequired();
+        });
+
+        // TPH (Table-per-Hierarchy) configuration for Item/Equipment
+        modelBuilder.Entity<Item>(entity =>
+        {
+            entity.ToTable("Items");
+
+            entity.HasKey(i => i.Id);
+
+            // TPH discriminator column
+            entity.HasDiscriminator<string>("ItemDiscriminator")
+                .HasValue<Item>("Item")
+                .HasValue<Equipment>("Equipment");
+
+            entity.Property(i => i.Name)
+                .HasMaxLength(100)
+                .IsRequired();
+
+            entity.Property(i => i.ItemType)
+                .IsRequired();
+
+            entity.Property(i => i.Description)
+                .HasMaxLength(500)
+                .IsRequired();
+
+            entity.Property(i => i.DetailedDescription)
+                .HasMaxLength(1000);
+
+            entity.Property(i => i.Weight).IsRequired();
+            entity.Property(i => i.Value).IsRequired();
+            entity.Property(i => i.Quality).IsRequired();
+            entity.Property(i => i.IsStackable).IsRequired();
+            entity.Property(i => i.MaxStackSize).IsRequired();
+
+            entity.Property(i => i.CreatedAt).IsRequired();
+            entity.Property(i => i.LastModified).IsRequired();
+
+            // Indexes
+            entity.HasIndex(i => i.Name);
+            entity.HasIndex(i => i.Quality);
+            entity.HasIndex(i => i.ItemType);
+        });
+
+        modelBuilder.Entity<Equipment>(entity =>
+        {
+            // Inherits from Item via TPH
+
+            entity.Property(e => e.Slot).IsRequired();
+            entity.Property(e => e.SoakBonus).IsRequired();
+            entity.Property(e => e.DamageDie).IsRequired();
+
+            // Store dictionaries as JSON
+            entity.Property(e => e.AttributeBonuses)
+                .HasColumnType("jsonb")
+                .HasConversion(
+                    v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
+                    v => JsonSerializer.Deserialize<Dictionary<CharacterAttribute, int>>(v, (JsonSerializerOptions?)null) ?? new Dictionary<CharacterAttribute, int>()
+                )
+                .IsRequired();
+
+            entity.Property(e => e.Requirements)
+                .HasColumnType("jsonb")
+                .HasConversion(
+                    v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
+                    v => JsonSerializer.Deserialize<Dictionary<CharacterAttribute, int>>(v, (JsonSerializerOptions?)null) ?? new Dictionary<CharacterAttribute, int>()
+                )
+                .IsRequired();
+
+            entity.HasIndex(e => e.Slot);
+        });
+
+        modelBuilder.Entity<InventoryItem>(entity =>
+        {
+            entity.ToTable("InventoryItems");
+
+            // Composite primary key
+            entity.HasKey(ii => new { ii.CharacterId, ii.ItemId });
+
+            entity.Property(ii => ii.Quantity).IsRequired();
+            entity.Property(ii => ii.SlotPosition).IsRequired();
+            entity.Property(ii => ii.IsEquipped).IsRequired();
+
+            entity.Property(ii => ii.AddedAt).IsRequired();
+            entity.Property(ii => ii.LastModified).IsRequired();
+
+            // Relationships
+            entity.HasOne(ii => ii.Character)
+                .WithMany(c => c.Inventory)
+                .HasForeignKey(ii => ii.CharacterId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(ii => ii.Item)
+                .WithMany()
+                .HasForeignKey(ii => ii.ItemId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Indexes
+            entity.HasIndex(ii => ii.CharacterId);
+            entity.HasIndex(ii => ii.IsEquipped);
         });
     }
 }

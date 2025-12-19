@@ -99,6 +99,24 @@ public class Character
     /// </summary>
     public DateTime LastModified { get; set; } = DateTime.UtcNow;
 
+    #region Inventory
+
+    /// <summary>
+    /// Gets or sets the collection of inventory items owned by this character.
+    /// Navigation property for EF Core.
+    /// </summary>
+    public ICollection<InventoryItem> Inventory { get; set; } = new List<InventoryItem>();
+
+    /// <summary>
+    /// Gets or sets the equipment bonuses currently applied from equipped items.
+    /// Key is the attribute type, value is the total bonus.
+    /// </summary>
+    public Dictionary<CharacterAttribute, int> EquipmentBonuses { get; set; } = new();
+
+    #endregion
+
+    #region Attribute Methods
+
     /// <summary>
     /// Gets the attribute value for the specified attribute type.
     /// </summary>
@@ -145,4 +163,18 @@ public class Character
                 throw new ArgumentOutOfRangeException(nameof(attribute), attribute, "Unknown attribute type");
         }
     }
+
+    /// <summary>
+    /// Gets the effective attribute value including equipment bonuses.
+    /// </summary>
+    /// <param name="attribute">The attribute to retrieve.</param>
+    /// <returns>The base attribute value plus any equipment bonuses.</returns>
+    public int GetEffectiveAttribute(CharacterAttribute attribute)
+    {
+        var baseValue = GetAttribute(attribute);
+        var bonus = EquipmentBonuses.TryGetValue(attribute, out var equipBonus) ? equipBonus : 0;
+        return baseValue + bonus;
+    }
+
+    #endregion
 }

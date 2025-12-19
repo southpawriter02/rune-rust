@@ -97,6 +97,22 @@ public class InteractableObject
 
     #endregion
 
+    #region Loot Properties
+
+    /// <summary>
+    /// Gets or sets whether this container/corpse has been searched for loot.
+    /// Once searched, loot is generated and placed in the container.
+    /// </summary>
+    public bool HasBeenSearched { get; set; } = false;
+
+    /// <summary>
+    /// Gets or sets the quality tier for loot generation.
+    /// Higher tiers yield better quality items. Null means no loot.
+    /// </summary>
+    public QualityTier? LootTier { get; set; }
+
+    #endregion
+
     #region Metadata
 
     /// <summary>
