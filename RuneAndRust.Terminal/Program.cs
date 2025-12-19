@@ -1,0 +1,96 @@
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using RuneAndRust.Core.Entities;
+using RuneAndRust.Core.Interfaces;
+using RuneAndRust.Core.Models;
+using RuneAndRust.Engine.Factories;
+using RuneAndRust.Engine.Services;
+using RuneAndRust.Persistence.Data;
+using RuneAndRust.Persistence.Repositories;
+using RuneAndRust.Terminal.Services;
+using Serilog;
+using Spectre.Console;
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        // 1. Configure Serilog
+        Log.Logger = new LoggerConfiguration()
+            .MinimumLevel.Debug()
+            .WriteTo.Console()
+            .WriteTo.File("logs/runeandrust.log", rollingInterval: RollingInterval.Day)
+            .CreateLogger();
+
+        try
+        {
+            // Database connection string - use environment variable in production
+            var connectionString = Environment.GetEnvironmentVariable("RUNEANDRUST_CONNECTION_STRING")
+                ?? "Host=localhost;Database=RuneAndRust;Username=postgres;Password=password";
+
+            // 2. Build Host
+            var host = Host.CreateDefaultBuilder(args)
+                .ConfigureServices((context, services) =>
+                {
+                    // Register Database Context
+                    services.AddDbContext<RuneAndRustDbContext>(options =>
+                        options.UseNpgsql(connectionString));
+
+                    // Register Repositories
+                    services.AddScoped(typeof(IRepository<>), typeof(GenericRepository<>));
+                    services.AddScoped<ISaveGameRepository, SaveGameRepository>();
+                    services.AddScoped<IRoomRepository, RoomRepository>();
+                    services.AddScoped<ICharacterRepository, CharacterRepository>();
+                    services.AddScoped<IInteractableObjectRepository, InteractableObjectRepository>();
+                    services.AddScoped<ICodexEntryRepository, CodexEntryRepository>();
+                    services.AddScoped<IDataCaptureRepository, DataCaptureRepository>();
+
+                    // Register Core State (Singleton to persist across game loop)
+                    services.AddSingleton<GameState>();
+
+                    // Register Input/Output Handler
+                    services.AddSingleton<IInputHandler, TerminalInputHandler>();
+
+                    // Register Engine Services
+                    services.AddSingleton<CommandParser>();
+                    services.AddSingleton<IGameService, GameService>();
+                    services.AddSingleton<IDiceService, DiceService>();
+                    services.AddSingleton<IStatCalculationService, StatCalculationService>();
+                    services.AddScoped<SaveManager>();
+
+                    // Register Spatial Services
+                    services.AddScoped<DungeonGenerator>();
+                    services.AddScoped<INavigationService, NavigationService>();
+
+                    // Register Interaction Services
+                    services.AddScoped<IDescriptorEngine, DescriptorEngine>();
+                    services.AddScoped<IInteractionService, InteractionService>();
+                    services.AddScoped<IDataCaptureService, DataCaptureService>();
+                    services.AddScoped<ObjectSpawner>();
+
+                    // Register Character Creation Services
+                    services.AddScoped<CharacterFactory>();
+                    services.AddScoped<CharacterCreationController>();
+                })
+                .UseSerilog() // Wire Serilog into ILogger
+                .Build();
+
+            // 3. UI Handover
+            AnsiConsole.MarkupLine("[green]Rune & Rust v0.1.1 Booting...[/]");
+            AnsiConsole.WriteLine();
+
+            // Resolve the entry point from DI
+            var game = host.Services.GetRequiredService<IGameService>();
+            game.Start();
+        }
+        catch (Exception ex)
+        {
+            Log.Fatal(ex, "System Crash");
+        }
+        finally
+        {
+            Log.CloseAndFlush();
+        }
+    }
+}
