@@ -1,6 +1,9 @@
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
+using RuneAndRust.Core.Enums;
+using RuneAndRust.Core.Interfaces;
+using RuneAndRust.Core.Models;
 using RuneAndRust.Engine.Services;
 using Xunit;
 
@@ -8,43 +11,110 @@ namespace RuneAndRust.Tests.Engine;
 
 /// <summary>
 /// Tests for the GameService class.
-/// Demonstrates the testing pattern for services with ILogger injection.
+/// Demonstrates the testing pattern for services with dependency injection.
 /// </summary>
 public class GameServiceTests
 {
-    private readonly Mock<ILogger<GameService>> _mockLogger;
-    private readonly GameService _sut; // System Under Test
+    private readonly Mock<ILogger<GameService>> _mockGameLogger;
+    private readonly Mock<ILogger<CommandParser>> _mockParserLogger;
+    private readonly Mock<IInputHandler> _mockInputHandler;
+    private readonly GameState _state;
+    private readonly CommandParser _parser;
 
     public GameServiceTests()
     {
-        _mockLogger = new Mock<ILogger<GameService>>();
-        _sut = new GameService(_mockLogger.Object);
+        _mockGameLogger = new Mock<ILogger<GameService>>();
+        _mockParserLogger = new Mock<ILogger<CommandParser>>();
+        _mockInputHandler = new Mock<IInputHandler>();
+        _state = new GameState();
+        _parser = new CommandParser(_mockParserLogger.Object, _mockInputHandler.Object);
     }
 
     [Fact]
-    public void Start_ShouldLogInitializationMessage()
+    public void Start_ShouldLogGameLoopInitializedMessage()
     {
+        // Arrange - Input "quit" immediately to exit the loop
+        _mockInputHandler.Setup(x => x.GetInput(It.IsAny<string>())).Returns("quit");
+        var sut = new GameService(_mockGameLogger.Object, _mockInputHandler.Object, _parser, _state);
+
         // Act
-        _sut.Start();
+        sut.Start();
 
         // Assert
-        _mockLogger.Verify(
+        _mockGameLogger.Verify(
             x => x.Log(
                 LogLevel.Information,
                 It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Rune & Rust Engine Initialized")),
+                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Game Loop Initialized")),
                 null,
                 It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
             Times.Once);
     }
 
     [Fact]
-    public void Constructor_WithValidLogger_ShouldNotThrow()
+    public void Start_ShouldLogGameLoopEndedMessage()
+    {
+        // Arrange - Input "quit" immediately to exit the loop
+        _mockInputHandler.Setup(x => x.GetInput(It.IsAny<string>())).Returns("quit");
+        var sut = new GameService(_mockGameLogger.Object, _mockInputHandler.Object, _parser, _state);
+
+        // Act
+        sut.Start();
+
+        // Assert
+        _mockGameLogger.Verify(
+            x => x.Log(
+                LogLevel.Information,
+                It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Game Loop Ended")),
+                null,
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public void Constructor_WithValidDependencies_ShouldNotThrow()
     {
         // Arrange & Act
-        var action = () => new GameService(_mockLogger.Object);
+        var action = () => new GameService(
+            _mockGameLogger.Object,
+            _mockInputHandler.Object,
+            _parser,
+            _state);
 
         // Assert
         action.Should().NotThrow();
+    }
+
+    [Fact]
+    public void Start_ShouldDisplayWelcomeMessage()
+    {
+        // Arrange
+        _mockInputHandler.Setup(x => x.GetInput(It.IsAny<string>())).Returns("quit");
+        var sut = new GameService(_mockGameLogger.Object, _mockInputHandler.Object, _parser, _state);
+
+        // Act
+        sut.Start();
+
+        // Assert
+        _mockInputHandler.Verify(
+            x => x.DisplayMessage(It.Is<string>(s => s.Contains("Welcome to Rune & Rust"))),
+            Times.Once);
+    }
+
+    [Fact]
+    public void Start_ShouldDisplayFarewellMessage()
+    {
+        // Arrange
+        _mockInputHandler.Setup(x => x.GetInput(It.IsAny<string>())).Returns("quit");
+        var sut = new GameService(_mockGameLogger.Object, _mockInputHandler.Object, _parser, _state);
+
+        // Act
+        sut.Start();
+
+        // Assert
+        _mockInputHandler.Verify(
+            x => x.DisplayMessage(It.Is<string>(s => s.Contains("Farewell"))),
+            Times.Once);
     }
 }

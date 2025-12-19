@@ -1,7 +1,13 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using RuneAndRust.Core.Entities;
 using RuneAndRust.Core.Interfaces;
+using RuneAndRust.Core.Models;
 using RuneAndRust.Engine.Services;
+using RuneAndRust.Persistence.Data;
+using RuneAndRust.Persistence.Repositories;
+using RuneAndRust.Terminal.Services;
 using Serilog;
 using Spectre.Console;
 
@@ -18,20 +24,41 @@ class Program
 
         try
         {
+            // Database connection string - use environment variable in production
+            var connectionString = Environment.GetEnvironmentVariable("RUNEANDRUST_CONNECTION_STRING")
+                ?? "Host=localhost;Database=RuneAndRust;Username=postgres;Password=password";
+
             // 2. Build Host
             var host = Host.CreateDefaultBuilder(args)
                 .ConfigureServices((context, services) =>
                 {
-                    // Register Engine Services
-                    services.AddSingleton<IGameService, GameService>();
+                    // Register Database Context
+                    services.AddDbContext<RuneAndRustDbContext>(options =>
+                        options.UseNpgsql(connectionString));
 
-                    // Future: Register Persistence Services here
+                    // Register Repositories
+                    services.AddScoped(typeof(IRepository<>), typeof(GenericRepository<>));
+                    services.AddScoped<ISaveGameRepository, SaveGameRepository>();
+
+                    // Register Core State (Singleton to persist across game loop)
+                    services.AddSingleton<GameState>();
+
+                    // Register Input/Output Handler
+                    services.AddSingleton<IInputHandler, TerminalInputHandler>();
+
+                    // Register Engine Services
+                    services.AddSingleton<CommandParser>();
+                    services.AddSingleton<IGameService, GameService>();
+                    services.AddSingleton<IDiceService, DiceService>();
+                    services.AddSingleton<IStatCalculationService, StatCalculationService>();
+                    services.AddScoped<SaveManager>();
                 })
                 .UseSerilog() // Wire Serilog into ILogger
                 .Build();
 
             // 3. UI Handover
-            AnsiConsole.MarkupLine("[green]Rune & Rust v0.0.1 Booting...[/]");
+            AnsiConsole.MarkupLine("[green]Rune & Rust v0.0.4 Booting...[/]");
+            AnsiConsole.WriteLine();
 
             // Resolve the entry point from DI
             var game = host.Services.GetRequiredService<IGameService>();
