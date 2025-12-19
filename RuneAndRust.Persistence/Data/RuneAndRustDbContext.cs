@@ -58,6 +58,16 @@ public class RuneAndRustDbContext : DbContext
     public DbSet<InventoryItem> InventoryItems { get; set; } = null!;
 
     /// <summary>
+    /// Gets or sets the CodexEntries table (Scavenger's Journal lore entries).
+    /// </summary>
+    public DbSet<CodexEntry> CodexEntries { get; set; } = null!;
+
+    /// <summary>
+    /// Gets or sets the DataCaptures table (player-discovered lore fragments).
+    /// </summary>
+    public DbSet<DataCapture> DataCaptures { get; set; } = null!;
+
+    /// <summary>
     /// Configures the entity mappings and relationships.
     /// </summary>
     /// <param name="modelBuilder">The model builder instance.</param>
@@ -333,6 +343,96 @@ public class RuneAndRustDbContext : DbContext
             // Indexes
             entity.HasIndex(ii => ii.CharacterId);
             entity.HasIndex(ii => ii.IsEquipped);
+        });
+
+        modelBuilder.Entity<CodexEntry>(entity =>
+        {
+            entity.ToTable("CodexEntries");
+
+            entity.HasKey(e => e.Id);
+
+            entity.HasIndex(e => e.Title)
+                .IsUnique();
+
+            entity.Property(e => e.Title)
+                .HasMaxLength(100)
+                .IsRequired();
+
+            entity.Property(e => e.Category)
+                .IsRequired();
+
+            entity.Property(e => e.FullText)
+                .HasMaxLength(5000)
+                .IsRequired();
+
+            entity.Property(e => e.TotalFragments)
+                .IsRequired();
+
+            // Store UnlockThresholds dictionary as JSONB
+            entity.Property(e => e.UnlockThresholds)
+                .HasColumnType("jsonb")
+                .HasConversion(
+                    v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
+                    v => JsonSerializer.Deserialize<Dictionary<int, string>>(v, (JsonSerializerOptions?)null) ?? new Dictionary<int, string>()
+                )
+                .IsRequired();
+
+            // Timestamps
+            entity.Property(e => e.CreatedAt).IsRequired();
+            entity.Property(e => e.LastModified).IsRequired();
+
+            // One-to-many relationship with DataCaptures
+            entity.HasMany(e => e.Fragments)
+                .WithOne(d => d.CodexEntry)
+                .HasForeignKey(d => d.CodexEntryId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            // Index for category-based queries
+            entity.HasIndex(e => e.Category);
+        });
+
+        modelBuilder.Entity<DataCapture>(entity =>
+        {
+            entity.ToTable("DataCaptures");
+
+            entity.HasKey(d => d.Id);
+
+            // Index on CharacterId for fast journal lookup
+            entity.HasIndex(d => d.CharacterId);
+
+            // Index on CodexEntryId for fragment aggregation
+            entity.HasIndex(d => d.CodexEntryId);
+
+            entity.Property(d => d.CharacterId)
+                .IsRequired();
+
+            entity.Property(d => d.CodexEntryId);
+
+            entity.Property(d => d.Type)
+                .IsRequired();
+
+            entity.Property(d => d.FragmentContent)
+                .HasMaxLength(2000)
+                .IsRequired();
+
+            entity.Property(d => d.Source)
+                .HasMaxLength(200)
+                .IsRequired();
+
+            entity.Property(d => d.Quality)
+                .IsRequired();
+
+            entity.Property(d => d.IsAnalyzed)
+                .IsRequired();
+
+            entity.Property(d => d.DiscoveredAt)
+                .IsRequired();
+
+            // Relationship to CodexEntry (many-to-one, optional)
+            entity.HasOne(d => d.CodexEntry)
+                .WithMany(e => e.Fragments)
+                .HasForeignKey(d => d.CodexEntryId)
+                .OnDelete(DeleteBehavior.SetNull);
         });
     }
 }

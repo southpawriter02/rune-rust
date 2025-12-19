@@ -43,6 +43,8 @@ class Program
                     services.AddScoped<IRoomRepository, RoomRepository>();
                     services.AddScoped<ICharacterRepository, CharacterRepository>();
                     services.AddScoped<IInteractableObjectRepository, InteractableObjectRepository>();
+                    services.AddScoped<ICodexEntryRepository, CodexEntryRepository>();
+                    services.AddScoped<IDataCaptureRepository, DataCaptureRepository>();
 
                     // Register Core State (Singleton to persist across game loop)
                     services.AddSingleton<GameState>();
@@ -64,6 +66,7 @@ class Program
                     // Register Interaction Services
                     services.AddScoped<IDescriptorEngine, DescriptorEngine>();
                     services.AddScoped<IInteractionService, InteractionService>();
+                    services.AddScoped<IDataCaptureService, DataCaptureService>();
                     services.AddScoped<ObjectSpawner>();
 
                     // Register Character Creation Services

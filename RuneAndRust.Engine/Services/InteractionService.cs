@@ -18,6 +18,7 @@ public class InteractionService : IInteractionService
     private readonly IRoomRepository _roomRepository;
     private readonly ILootService _lootService;
     private readonly IInventoryService? _inventoryService;
+    private readonly IDataCaptureService? _captureService;
     private readonly IDiceService _diceService;
     private readonly GameState _gameState;
 
@@ -47,6 +48,7 @@ public class InteractionService : IInteractionService
     /// <param name="diceService">The dice rolling service.</param>
     /// <param name="gameState">The current game state.</param>
     /// <param name="inventoryService">The optional inventory service for taking items.</param>
+    /// <param name="captureService">The optional data capture service for lore discovery.</param>
     public InteractionService(
         ILogger<InteractionService> logger,
         IInteractableObjectRepository objectRepository,
@@ -54,7 +56,8 @@ public class InteractionService : IInteractionService
         ILootService lootService,
         IDiceService diceService,
         GameState gameState,
-        IInventoryService? inventoryService = null)
+        IInventoryService? inventoryService = null,
+        IDataCaptureService? captureService = null)
     {
         _logger = logger;
         _objectRepository = objectRepository;
@@ -63,6 +66,7 @@ public class InteractionService : IInteractionService
         _diceService = diceService;
         _gameState = gameState;
         _inventoryService = inventoryService;
+        _captureService = captureService;
     }
 
     /// <inheritdoc/>
@@ -124,6 +128,23 @@ public class InteractionService : IInteractionService
 
         // Build the combined description
         string description = BuildDescription(interactableObject, tierRevealed);
+
+        // Attempt capture generation on expert tier examination
+        if (tierRevealed >= ExpertTierThreshold && _captureService != null && _gameState.CurrentCharacter != null)
+        {
+            var witsBonus = _gameState.CurrentCharacter.GetAttribute(CharacterAttribute.Wits) / 2;
+            var captureResult = await _captureService.TryGenerateFromExaminationAsync(
+                _gameState.CurrentCharacter.Id,
+                interactableObject,
+                tierRevealed,
+                witsBonus);
+
+            if (captureResult.Success)
+            {
+                description += $"\n\n[Data Captured: {captureResult.Capture!.Type}]";
+                _logger.LogInformation("Generated capture during examination: {Message}", captureResult.Message);
+            }
+        }
 
         var result = new ExaminationResult(
             Success: tierRevealed > 0,
@@ -412,6 +433,20 @@ public class InteractionService : IInteractionService
 
         _logger.LogInformation("Container '{ContainerName}' searched, found {ItemCount} items",
             container.Name, lootResult.Items.Count);
+
+        // Attempt capture generation during container search
+        if (_captureService != null && _gameState.CurrentCharacter != null)
+        {
+            var captureResult = await _captureService.TryGenerateFromSearchAsync(
+                _gameState.CurrentCharacter.Id,
+                container,
+                witsBonus);
+
+            if (captureResult.Success)
+            {
+                _logger.LogInformation("Generated capture during search: {Message}", captureResult.Message);
+            }
+        }
 
         return lootResult;
     }
