@@ -32,6 +32,11 @@ public class RuneAndRustDbContext : DbContext
     public DbSet<Room> Rooms { get; set; } = null!;
 
     /// <summary>
+    /// Gets or sets the Characters table.
+    /// </summary>
+    public DbSet<Character> Characters { get; set; } = null!;
+
+    /// <summary>
     /// Configures the entity mappings and relationships.
     /// </summary>
     /// <param name="modelBuilder">The model builder instance.</param>
@@ -102,6 +107,48 @@ public class RuneAndRustDbContext : DbContext
                     v => JsonSerializer.Deserialize<Dictionary<Direction, Guid>>(v, (JsonSerializerOptions?)null) ?? new Dictionary<Direction, Guid>()
                 )
                 .IsRequired();
+        });
+
+        modelBuilder.Entity<Character>(entity =>
+        {
+            entity.ToTable("Characters");
+
+            entity.HasKey(c => c.Id);
+
+            entity.HasIndex(c => c.Name)
+                .IsUnique();
+
+            entity.Property(c => c.Name)
+                .HasMaxLength(100)
+                .IsRequired();
+
+            entity.Property(c => c.Lineage)
+                .IsRequired();
+
+            entity.Property(c => c.Archetype)
+                .IsRequired();
+
+            // Core attributes
+            entity.Property(c => c.Sturdiness).IsRequired();
+            entity.Property(c => c.Might).IsRequired();
+            entity.Property(c => c.Wits).IsRequired();
+            entity.Property(c => c.Will).IsRequired();
+            entity.Property(c => c.Finesse).IsRequired();
+
+            // Derived stats
+            entity.Property(c => c.MaxHP).IsRequired();
+            entity.Property(c => c.CurrentHP).IsRequired();
+            entity.Property(c => c.MaxStamina).IsRequired();
+            entity.Property(c => c.CurrentStamina).IsRequired();
+            entity.Property(c => c.ActionPoints).IsRequired();
+
+            // Progression
+            entity.Property(c => c.ExperiencePoints).IsRequired();
+            entity.Property(c => c.Level).IsRequired();
+
+            // Timestamps
+            entity.Property(c => c.CreatedAt).IsRequired();
+            entity.Property(c => c.LastModified).IsRequired();
         });
     }
 }

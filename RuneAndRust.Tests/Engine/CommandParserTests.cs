@@ -91,7 +91,6 @@ public class CommandParserTests
     [InlineData("start")]
     [InlineData("START")]
     [InlineData("Start")]
-    [InlineData("new")]
     [InlineData("play")]
     public void ParseAndExecute_MainMenu_StartCommands_ShouldTransitionToExploration(string command)
     {
@@ -104,6 +103,22 @@ public class CommandParserTests
         // Assert
         _state.Phase.Should().Be(GamePhase.Exploration);
         _state.IsSessionActive.Should().BeTrue();
+    }
+
+    [Theory]
+    [InlineData("new")]
+    [InlineData("create")]
+    public void ParseAndExecute_MainMenu_NewCommand_ShouldRequireCharacterCreation(string command)
+    {
+        // Arrange
+        _state.Phase = GamePhase.MainMenu;
+
+        // Act
+        var result = _sut.ParseAndExecute(command, _state);
+
+        // Assert
+        result.RequiresCharacterCreation.Should().BeTrue();
+        _state.Phase.Should().Be(GamePhase.MainMenu); // Should not change phase yet
     }
 
     [Theory]

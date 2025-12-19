@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using RuneAndRust.Core.Entities;
 using RuneAndRust.Core.Enums;
 
 namespace RuneAndRust.Core.Models;

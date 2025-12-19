@@ -26,6 +26,11 @@ public class ParseResult
     public bool RequiresLook { get; set; }
 
     /// <summary>
+    /// Gets or sets whether character creation should be triggered.
+    /// </summary>
+    public bool RequiresCharacterCreation { get; set; }
+
+    /// <summary>
     /// Gets a default result with no async requirements.
     /// </summary>
     public static ParseResult None => new();
@@ -96,8 +101,12 @@ public class CommandParser
     {
         switch (command)
         {
-            case "start":
             case "new":
+            case "create":
+                _logger.LogInformation("Character creation requested from MainMenu.");
+                return new ParseResult { RequiresCharacterCreation = true };
+
+            case "start":
             case "play":
                 state.Phase = GamePhase.Exploration;
                 state.IsSessionActive = true;
@@ -282,7 +291,8 @@ public class CommandParser
     private void DisplayMainMenuHelp()
     {
         _inputHandler.DisplayMessage("=== MAIN MENU ===");
-        _inputHandler.DisplayMessage("  start, new, play - Start a new game");
+        _inputHandler.DisplayMessage("  new, create      - Create a new character");
+        _inputHandler.DisplayMessage("  start, play      - Start the game");
         _inputHandler.DisplayMessage("  load             - Load a saved game");
         _inputHandler.DisplayMessage("  help, ?          - Show this help");
         _inputHandler.DisplayMessage("  quit, exit, q    - Exit the game");

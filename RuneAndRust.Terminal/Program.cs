@@ -4,6 +4,7 @@ using Microsoft.Extensions.Hosting;
 using RuneAndRust.Core.Entities;
 using RuneAndRust.Core.Interfaces;
 using RuneAndRust.Core.Models;
+using RuneAndRust.Engine.Factories;
 using RuneAndRust.Engine.Services;
 using RuneAndRust.Persistence.Data;
 using RuneAndRust.Persistence.Repositories;
@@ -40,6 +41,7 @@ class Program
                     services.AddScoped(typeof(IRepository<>), typeof(GenericRepository<>));
                     services.AddScoped<ISaveGameRepository, SaveGameRepository>();
                     services.AddScoped<IRoomRepository, RoomRepository>();
+                    services.AddScoped<ICharacterRepository, CharacterRepository>();
 
                     // Register Core State (Singleton to persist across game loop)
                     services.AddSingleton<GameState>();
@@ -57,12 +59,16 @@ class Program
                     // Register Spatial Services
                     services.AddScoped<DungeonGenerator>();
                     services.AddScoped<INavigationService, NavigationService>();
+
+                    // Register Character Creation Services
+                    services.AddScoped<CharacterFactory>();
+                    services.AddScoped<CharacterCreationController>();
                 })
                 .UseSerilog() // Wire Serilog into ILogger
                 .Build();
 
             // 3. UI Handover
-            AnsiConsole.MarkupLine("[green]Rune & Rust v0.0.5 Booting...[/]");
+            AnsiConsole.MarkupLine("[green]Rune & Rust v0.1.0 Booting...[/]");
             AnsiConsole.WriteLine();
 
             // Resolve the entry point from DI
