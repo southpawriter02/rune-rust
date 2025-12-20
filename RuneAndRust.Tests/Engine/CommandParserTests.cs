@@ -17,6 +17,7 @@ public class CommandParserTests
 {
     private readonly Mock<ILogger<CommandParser>> _mockLogger;
     private readonly Mock<IInputHandler> _mockInputHandler;
+    private readonly Mock<ICombatService> _mockCombatService;
     private readonly CommandParser _sut;
     private readonly GameState _state;
 
@@ -24,8 +25,22 @@ public class CommandParserTests
     {
         _mockLogger = new Mock<ILogger<CommandParser>>();
         _mockInputHandler = new Mock<IInputHandler>();
+        _mockCombatService = new Mock<ICombatService>();
         _state = new GameState();
-        _sut = new CommandParser(_mockLogger.Object, _mockInputHandler.Object, _state);
+
+        // Setup mock combat service to properly end combat
+        _mockCombatService.Setup(c => c.EndCombat())
+            .Callback(() => {
+                _state.Phase = GamePhase.Exploration;
+                _state.CombatState = null;
+            });
+
+        _sut = new CommandParser(
+            _mockLogger.Object,
+            _mockInputHandler.Object,
+            _state,
+            journalService: null,
+            combatService: _mockCombatService.Object);
     }
 
     #region Constructor Tests

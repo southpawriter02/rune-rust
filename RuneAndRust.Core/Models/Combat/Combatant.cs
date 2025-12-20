@@ -109,7 +109,7 @@ public class Combatant
         EnemySource = e,
         CurrentHp = e.CurrentHp,
         MaxHp = e.MaxHp,
-        CurrentStamina = 0,
-        MaxStamina = 0
+        CurrentStamina = e.CurrentStamina,
+        MaxStamina = e.MaxStamina
     };
 }

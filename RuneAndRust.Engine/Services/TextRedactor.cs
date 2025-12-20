@@ -52,8 +52,9 @@ public class TextRedactor
         {
             // Stable pseudo-random based on word index
             // Formula ensures same word is always visible/hidden at same completion level
-            // Multiplier 7 and offset 13 are primes to reduce patterns
-            bool visible = ((i * 7 + 13) % 100) < completionPct;
+            // Multiplier 37 spreads values across 0-99 range more evenly
+            // Modulo 97 (prime) then scale to 0-99 for better distribution
+            bool visible = ((i * 37 + 13) % 97 * 100 / 97) < completionPct;
 
             if (visible)
             {

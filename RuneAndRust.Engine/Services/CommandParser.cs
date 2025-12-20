@@ -670,10 +670,29 @@ public class CommandParser
     }
 
     /// <summary>
-    /// Handles commands in the Combat phase (placeholder for v0.0.3).
+    /// Handles commands in the Combat phase.
     /// </summary>
     private ParseResult HandleCombat(string command, GameState state)
     {
+        // Check for attack commands first (they have arguments)
+        var attackTarget = ExtractTarget(command, new[] { "attack ", "hit ", "strike " });
+        if (attackTarget != null)
+        {
+            return ExecuteCombatAttack(attackTarget, AttackType.Standard);
+        }
+
+        var lightTarget = ExtractTarget(command, new[] { "light ", "quick ", "fast " });
+        if (lightTarget != null)
+        {
+            return ExecuteCombatAttack(lightTarget, AttackType.Light);
+        }
+
+        var heavyTarget = ExtractTarget(command, new[] { "heavy ", "power ", "strong " });
+        if (heavyTarget != null)
+        {
+            return ExecuteCombatAttack(heavyTarget, AttackType.Heavy);
+        }
+
         switch (command)
         {
             case "quit":
@@ -685,10 +704,23 @@ public class CommandParser
 
             case "flee":
             case "run":
-                state.Phase = GamePhase.Exploration;
+                _combatService?.EndCombat();
                 _logger.LogInformation("Player fled combat. Returning to Exploration.");
                 _inputHandler.DisplayMessage("You flee from the encounter!");
                 return new ParseResult { RequiresLook = true };
+
+            case "status":
+            case "stats":
+                DisplayCombatStatus();
+                return ParseResult.None;
+
+            case "end":
+            case "pass":
+            case "wait":
+                _combatService?.NextTurn();
+                _inputHandler.DisplayMessage("You end your turn.");
+                DisplayCombatTurnInfo();
+                return ParseResult.None;
 
             case "help":
             case "?":
@@ -699,6 +731,76 @@ public class CommandParser
                 _inputHandler.DisplayError($"Unknown combat command: '{command}'. Type 'help' for available commands.");
                 _logger.LogDebug("Unknown Combat command: {Command}", command);
                 return ParseResult.None;
+        }
+    }
+
+    /// <summary>
+    /// Executes a combat attack and displays the result.
+    /// </summary>
+    private ParseResult ExecuteCombatAttack(string targetName, AttackType attackType)
+    {
+        if (_combatService == null)
+        {
+            _inputHandler.DisplayError("Combat system not available.");
+            return ParseResult.None;
+        }
+
+        var result = _combatService.ExecutePlayerAttack(targetName, attackType);
+        _inputHandler.DisplayMessage(result);
+
+        // Check if combat ended (victory)
+        if (_gameState.CombatState == null || _combatService.CheckVictoryCondition())
+        {
+            _combatService.EndCombat();
+            _inputHandler.DisplayMessage("");
+            _inputHandler.DisplayMessage("Combat has ended. Returning to exploration.");
+            return new ParseResult { RequiresLook = true };
+        }
+
+        // Advance to next turn after attack
+        _combatService.NextTurn();
+        DisplayCombatTurnInfo();
+
+        return ParseResult.None;
+    }
+
+    /// <summary>
+    /// Displays the current combat status.
+    /// </summary>
+    private void DisplayCombatStatus()
+    {
+        if (_combatService == null)
+        {
+            _inputHandler.DisplayError("Combat system not available.");
+            return;
+        }
+
+        var status = _combatService.GetCombatStatus();
+        _inputHandler.DisplayMessage(status);
+    }
+
+    /// <summary>
+    /// Displays information about whose turn it is.
+    /// </summary>
+    private void DisplayCombatTurnInfo()
+    {
+        var combatState = _gameState.CombatState;
+        if (combatState?.ActiveCombatant == null) return;
+
+        var active = combatState.ActiveCombatant;
+        if (active.IsPlayer)
+        {
+            _inputHandler.DisplayMessage($"");
+            _inputHandler.DisplayMessage($">> Your turn. (Stamina: {active.CurrentStamina}/{active.MaxStamina})");
+        }
+        else
+        {
+            // For now, enemies just pass (AI will be added in v0.2.1)
+            _inputHandler.DisplayMessage($"");
+            _inputHandler.DisplayMessage($"{active.Name} prepares to act...");
+            // TODO: Implement enemy AI in v0.2.1
+            _combatService?.NextTurn();
+            DisplayCombatTurnInfo(); // Recursively advance until player's turn
         }
     }
 
@@ -773,6 +875,17 @@ public class CommandParser
     private void DisplayCombatHelp()
     {
         _inputHandler.DisplayMessage("=== COMBAT ===");
+        _inputHandler.DisplayMessage("Attacks:");
+        _inputHandler.DisplayMessage("  attack <target>  - Standard attack (25 stamina, d6 damage)");
+        _inputHandler.DisplayMessage("  hit <target>     - Same as attack");
+        _inputHandler.DisplayMessage("  light <target>   - Quick attack (15 stamina, d4 damage, +1 hit)");
+        _inputHandler.DisplayMessage("  quick <target>   - Same as light");
+        _inputHandler.DisplayMessage("  heavy <target>   - Power attack (40 stamina, d8 damage, -1 hit)");
+        _inputHandler.DisplayMessage("  power <target>   - Same as heavy");
+        _inputHandler.DisplayMessage("");
+        _inputHandler.DisplayMessage("Actions:");
+        _inputHandler.DisplayMessage("  status           - View HP/Stamina for all combatants");
+        _inputHandler.DisplayMessage("  end, pass        - End your turn without attacking");
         _inputHandler.DisplayMessage("  flee, run        - Attempt to flee combat");
         _inputHandler.DisplayMessage("  help, ?          - Show this help");
         _inputHandler.DisplayMessage("  quit, exit, q    - Exit the game");

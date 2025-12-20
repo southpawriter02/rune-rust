@@ -74,6 +74,7 @@ class Program
 
                     // Register Combat Services
                     services.AddSingleton<IInitiativeService, InitiativeService>();
+                    services.AddSingleton<IAttackResolutionService, AttackResolutionService>();
                     services.AddSingleton<ICombatService, CombatService>();
 
                     // Register Character Creation Services

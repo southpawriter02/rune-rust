@@ -41,6 +41,17 @@ public class Enemy
     public int CurrentHp { get; set; } = 50;
 
     /// <summary>
+    /// Maximum stamina points for this enemy.
+    /// Calculated as: 20 + (Finesse * 3) + (Sturdiness * 2)
+    /// </summary>
+    public int MaxStamina { get; set; } = 35;
+
+    /// <summary>
+    /// Current stamina points. Cannot exceed MaxStamina.
+    /// </summary>
+    public int CurrentStamina { get; set; } = 35;
+
+    /// <summary>
     /// Gets the attribute value for the specified attribute type.
     /// </summary>
     /// <param name="attr">The attribute to retrieve.</param>
