@@ -76,6 +76,9 @@ class Program
                     services.AddSingleton<IInitiativeService, InitiativeService>();
                     services.AddSingleton<IStatusEffectService, StatusEffectService>();
                     services.AddSingleton<IAttackResolutionService, AttackResolutionService>();
+                    services.AddSingleton<IEnemyAIService, EnemyAIService>();
+                    services.AddSingleton<ICreatureTraitService, CreatureTraitService>();
+                    services.AddSingleton<IResourceService, ResourceService>();
                     services.AddScoped<ILootService, LootService>();
                     services.AddSingleton<ICombatService, CombatService>();
                     services.AddSingleton<ICombatScreenRenderer, CombatScreenRenderer>();
@@ -84,6 +87,9 @@ class Program
                     // Register Character Creation Services
                     services.AddScoped<CharacterFactory>();
                     services.AddScoped<CharacterCreationController>();
+
+                    // Register Enemy Factory
+                    services.AddScoped<IEnemyFactory, EnemyFactory>();
                 })
                 .UseSerilog() // Wire Serilog into ILogger
                 .Build();

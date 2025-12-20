@@ -1,3 +1,4 @@
+using RuneAndRust.Core.Enums;
 using CharacterAttribute = RuneAndRust.Core.Enums.Attribute;
 
 namespace RuneAndRust.Core.Entities;
@@ -73,6 +74,39 @@ public class Enemy
     /// Display name for the enemy's weapon.
     /// </summary>
     public string WeaponName { get; set; } = "Claws";
+
+    #endregion
+
+    #region Template and AI Properties
+
+    /// <summary>
+    /// The template ID this enemy was created from.
+    /// Null for legacy enemies or those created without a template.
+    /// </summary>
+    public string? TemplateId { get; set; }
+
+    /// <summary>
+    /// Combat archetype for AI behavior selection in v0.2.2b.
+    /// Determines attack priority, target selection, and ability usage.
+    /// </summary>
+    public EnemyArchetype Archetype { get; set; } = EnemyArchetype.DPS;
+
+    /// <summary>
+    /// Tags for status effect interactions and special handling.
+    /// Examples: "Mechanical" = Bleed immune, "Undying" = Poison immune.
+    /// </summary>
+    public List<string> Tags { get; set; } = new();
+
+    /// <summary>
+    /// Active creature traits for Elite/Champion enemies.
+    /// Populated by CreatureTraitService during enemy creation.
+    /// </summary>
+    public List<CreatureTraitType> ActiveTraits { get; set; } = new();
+
+    /// <summary>
+    /// Whether this enemy has any active traits (Elite or higher).
+    /// </summary>
+    public bool IsElite => ActiveTraits.Count > 0;
 
     #endregion
 

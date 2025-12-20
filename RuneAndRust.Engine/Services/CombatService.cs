@@ -19,6 +19,9 @@ public class CombatService : ICombatService
     private readonly IAttackResolutionService _attackResolution;
     private readonly ILootService _lootService;
     private readonly IStatusEffectService _statusEffects;
+    private readonly IEnemyAIService _aiService;
+    private readonly ICreatureTraitService _traitService;
+    private readonly IResourceService _resourceService;
     private readonly ILogger<CombatService> _logger;
 
     /// <summary>
@@ -32,6 +35,11 @@ public class CombatService : ICombatService
     private const int MaxLogHistory = 10;
 
     /// <summary>
+    /// Delay in milliseconds before enemy actions for UX pacing.
+    /// </summary>
+    private const int EnemyActionDelayMs = 750;
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="CombatService"/> class.
     /// </summary>
     /// <param name="gameState">The shared game state singleton.</param>
@@ -39,6 +47,9 @@ public class CombatService : ICombatService
     /// <param name="attackResolution">The attack resolution service for combat mechanics.</param>
     /// <param name="lootService">The loot service for generating combat rewards.</param>
     /// <param name="statusEffects">The status effect service for managing combat conditions.</param>
+    /// <param name="aiService">The enemy AI service for turn decisions.</param>
+    /// <param name="traitService">The creature trait service for Elite enemy effects.</param>
+    /// <param name="resourceService">The resource service for stamina/aether management.</param>
     /// <param name="logger">The logger for traceability.</param>
     public CombatService(
         GameState gameState,
@@ -46,6 +57,9 @@ public class CombatService : ICombatService
         IAttackResolutionService attackResolution,
         ILootService lootService,
         IStatusEffectService statusEffects,
+        IEnemyAIService aiService,
+        ICreatureTraitService traitService,
+        IResourceService resourceService,
         ILogger<CombatService> logger)
     {
         _gameState = gameState;
@@ -53,6 +67,9 @@ public class CombatService : ICombatService
         _attackResolution = attackResolution;
         _lootService = lootService;
         _statusEffects = statusEffects;
+        _aiService = aiService;
+        _traitService = traitService;
+        _resourceService = resourceService;
         _logger = logger;
     }
 
@@ -147,6 +164,27 @@ public class CombatService : ICombatService
                     NextTurn();
                     return;
                 }
+            }
+
+            // Process trait regeneration at turn start (v0.2.2c)
+            var regenHeal = _traitService.ProcessTraitTurnStart(active);
+            if (regenHeal > 0)
+            {
+                LogCombatEvent($"[green]{active.Name}[/] regenerates [green]{regenHeal}[/] HP!");
+            }
+
+            // Process stamina regeneration at turn start (v0.2.3a)
+            var staminaRegen = _resourceService.RegenerateStamina(active);
+            if (staminaRegen > 0)
+            {
+                LogCombatEvent($"[cyan]{active.Name}[/] recovers [cyan]{staminaRegen}[/] stamina.");
+            }
+
+            // Reset defending stance at start of turn
+            if (active.IsDefending)
+            {
+                active.IsDefending = false;
+                _logger.LogDebug("{Name} is no longer defending", active.Name);
             }
 
             // Check if combatant is stunned and cannot act
@@ -281,6 +319,21 @@ public class CombatService : ICombatService
                 "{Target} took {Damage} damage. HP: {Current}/{Max}",
                 target.Name, result.FinalDamage, target.CurrentHp, target.MaxHp);
 
+            // Process thorns damage (v0.2.2c)
+            var thornsDamage = _traitService.ProcessTraitOnDamageReceived(target, attacker, result.FinalDamage);
+            if (thornsDamage > 0)
+            {
+                attacker.CurrentHp -= thornsDamage;
+                LogCombatEvent($"[orange1]{target.Name}[/]'s thorns deal [red]{thornsDamage}[/] damage to you!");
+
+                // Sync player HP
+                if (attacker.CharacterSource != null)
+                {
+                    attacker.CharacterSource.CurrentHP = attacker.CurrentHp;
+                    _logger.LogDebug("Synced thorns damage to player source. HP: {Current}", attacker.CharacterSource.CurrentHP);
+                }
+            }
+
             // Check for death
             if (target.CurrentHp <= 0)
             {
@@ -322,6 +375,21 @@ public class CombatService : ICombatService
     {
         var state = _gameState.CombatState;
         if (state == null) return;
+
+        // Process on-death traits BEFORE removal (v0.2.2c Explosive)
+        var explosionDamage = _traitService.ProcessTraitOnDeath(combatant, state.TurnOrder);
+        foreach (var (target, damage) in explosionDamage)
+        {
+            target.CurrentHp -= damage;
+            LogCombatEvent($"[orange1]{combatant.Name}[/] EXPLODES! [cyan]{target.Name}[/] takes [red]{damage}[/] damage!");
+
+            // Sync player HP if affected
+            if (target.CharacterSource != null)
+            {
+                target.CharacterSource.CurrentHP = target.CurrentHp;
+                _logger.LogDebug("Synced explosion damage to player source. HP: {Current}", target.CharacterSource.CurrentHP);
+            }
+        }
 
         var index = state.TurnOrder.IndexOf(combatant);
         if (index < 0) return;
@@ -550,6 +618,174 @@ public class CombatService : ICombatService
             <= 75 => "[yellow]Wounded[/]",
             _ => "[green]Healthy[/]"
         };
+    }
+
+    #endregion
+
+    #region Enemy AI Methods
+
+    /// <inheritdoc/>
+    public async Task ProcessEnemyTurnAsync(Combatant enemy)
+    {
+        _logger.LogDebug("Processing enemy turn for {Name}", enemy.Name);
+
+        // UX pacing delay
+        await Task.Delay(EnemyActionDelayMs);
+
+        // Reset defending state from previous turn
+        enemy.IsDefending = false;
+
+        // Get AI decision
+        var action = _aiService.DetermineAction(enemy, _gameState.CombatState!);
+
+        _logger.LogInformation(
+            "[AI] {Name} decided: {ActionType}. Target: {Target}",
+            enemy.Name, action.Type, action.TargetId?.ToString() ?? "None");
+
+        // Execute the action
+        switch (action.Type)
+        {
+            case ActionType.Attack when action.TargetId.HasValue && action.AttackType.HasValue:
+                var target = _gameState.CombatState!.TurnOrder.FirstOrDefault(c => c.Id == action.TargetId);
+                if (target != null)
+                {
+                    var result = ExecuteEnemyAttack(enemy, target, action.AttackType.Value);
+                    LogCombatEvent(result);
+                }
+                break;
+
+            case ActionType.Defend:
+                ProcessDefend(enemy);
+                LogCombatEvent($"[yellow]{enemy.Name}[/] {action.FlavorText ?? "takes a defensive stance."}");
+                break;
+
+            case ActionType.Flee:
+                ProcessFlee(enemy);
+                LogCombatEvent($"[grey]{enemy.Name}[/] {action.FlavorText ?? "flees the battle!"}");
+                break;
+
+            case ActionType.Pass:
+            default:
+                LogCombatEvent($"[grey]{enemy.Name}[/] {action.FlavorText ?? "hesitates."}");
+                break;
+        }
+
+        // Process turn end
+        _statusEffects.ProcessTurnEnd(enemy);
+
+        // Check for player death
+        if (!CheckPlayerAlive())
+        {
+            _logger.LogWarning("Player has been defeated!");
+            return;
+        }
+
+        // Check for victory (enemy fled might have been the last one)
+        if (CheckVictoryCondition())
+        {
+            _logger.LogInformation("Combat Victory! All enemies defeated or fled.");
+            return;
+        }
+
+        // Advance to next turn
+        NextTurn();
+    }
+
+    /// <inheritdoc/>
+    public string ExecuteEnemyAttack(Combatant attacker, Combatant target, AttackType attackType)
+    {
+        // Deduct stamina
+        var staminaCost = _attackResolution.GetStaminaCost(attackType);
+        attacker.CurrentStamina -= staminaCost;
+
+        _logger.LogDebug(
+            "{Attacker} spent {Cost} stamina. Remaining: {Current}/{Max}",
+            attacker.Name, staminaCost, attacker.CurrentStamina, attacker.MaxStamina);
+
+        // Resolve attack
+        var result = _attackResolution.ResolveMeleeAttack(attacker, target, attackType);
+
+        _logger.LogInformation(
+            "{Attacker} attacks {Target} ({AttackType}): {Outcome}",
+            attacker.Name, target.Name, attackType, result.Outcome);
+
+        // Apply damage
+        if (result.IsHit)
+        {
+            target.CurrentHp -= result.FinalDamage;
+
+            _logger.LogDebug(
+                "{Target} took {Damage} damage. HP: {Current}/{Max}",
+                target.Name, result.FinalDamage, target.CurrentHp, target.MaxHp);
+
+            // Process vampiric healing (v0.2.2c)
+            var vampiricHeal = _traitService.ProcessTraitOnDamageDealt(attacker, result.FinalDamage);
+            if (vampiricHeal > 0)
+            {
+                LogCombatEvent($"[purple]{attacker.Name}[/] drains [green]{vampiricHeal}[/] HP!");
+            }
+
+            // Sync damage back to source Character
+            if (target.CharacterSource != null)
+            {
+                target.CharacterSource.CurrentHP = target.CurrentHp;
+            }
+
+            // Build narrative message
+            return BuildEnemyHitMessage(attacker, result, target);
+        }
+
+        return BuildEnemyMissMessage(attacker, result, target);
+    }
+
+    /// <inheritdoc/>
+    public void ProcessDefend(Combatant combatant)
+    {
+        combatant.IsDefending = true;
+        _logger.LogDebug("{Name} is defending (IsDefending = true)", combatant.Name);
+    }
+
+    /// <inheritdoc/>
+    public void ProcessFlee(Combatant combatant)
+    {
+        _logger.LogInformation("{Name} fled from combat", combatant.Name);
+        RemoveDefeatedCombatant(combatant);
+    }
+
+    /// <summary>
+    /// Checks if the player is still alive.
+    /// </summary>
+    /// <returns>True if player exists and has HP > 0, false otherwise.</returns>
+    private bool CheckPlayerAlive()
+    {
+        var player = _gameState.CombatState?.TurnOrder.FirstOrDefault(c => c.IsPlayer);
+        return player != null && player.CurrentHp > 0;
+    }
+
+    /// <summary>
+    /// Builds a Spectre-markup formatted message for enemy hit.
+    /// </summary>
+    private static string BuildEnemyHitMessage(Combatant attacker, AttackResult result, Combatant target)
+    {
+        var outcomeMarkup = result.Outcome switch
+        {
+            AttackOutcome.Glancing => "[grey]grazes[/]",
+            AttackOutcome.Solid => "[white]strikes[/]",
+            AttackOutcome.Critical => "[bold red]CRITICALLY HITS[/]",
+            _ => "[white]hits[/]"
+        };
+
+        return $"[red]{attacker.Name}[/] {outcomeMarkup} [cyan]{target.Name}[/] for [red]{result.FinalDamage}[/] damage!";
+    }
+
+    /// <summary>
+    /// Builds a Spectre-markup formatted message for enemy miss.
+    /// </summary>
+    private static string BuildEnemyMissMessage(Combatant attacker, AttackResult result, Combatant target)
+    {
+        return result.Outcome == AttackOutcome.Fumble
+            ? $"[red]{attacker.Name}[/] fumbles their attack!"
+            : $"[red]{attacker.Name}[/] misses [cyan]{target.Name}[/]!";
     }
 
     #endregion

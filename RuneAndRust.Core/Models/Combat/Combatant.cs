@@ -54,10 +54,46 @@ public class Combatant
     public int MaxStamina { get; set; }
 
     /// <summary>
+    /// Current Aether Points (magical energy pool) during combat.
+    /// Copied from source at combat start. Does NOT regenerate.
+    /// </summary>
+    public int CurrentAp { get; set; }
+
+    /// <summary>
+    /// Maximum Aether Points for this combatant.
+    /// Non-zero for Mystic archetype characters.
+    /// </summary>
+    public int MaxAp { get; set; }
+
+    /// <summary>
     /// Active status effects on this combatant during combat.
     /// Combat-volatile: cleared when combat ends.
     /// </summary>
     public List<ActiveStatusEffect> StatusEffects { get; set; } = new();
+
+    /// <summary>
+    /// Combat archetype for AI behavior selection (enemies only).
+    /// Used by enemy AI in v0.2.2b to determine attack patterns.
+    /// </summary>
+    public EnemyArchetype Archetype { get; set; } = EnemyArchetype.DPS;
+
+    /// <summary>
+    /// Tags for status effect interactions and special handling.
+    /// Copied from source entity. Examples: "Mechanical", "Undying", "Beast".
+    /// </summary>
+    public List<string> Tags { get; set; } = new();
+
+    /// <summary>
+    /// Active creature traits copied from source enemy.
+    /// Used for runtime trait trigger checks in CombatService.
+    /// </summary>
+    public List<CreatureTraitType> ActiveTraits { get; set; } = new();
+
+    /// <summary>
+    /// Whether this combatant is currently defending (temporary soak bonus).
+    /// Reset at the start of their next turn.
+    /// </summary>
+    public bool IsDefending { get; set; } = false;
 
     #endregion
 
@@ -141,6 +177,9 @@ public class Combatant
             MaxHp = c.MaxHP,
             CurrentStamina = c.CurrentStamina,
             MaxStamina = c.MaxStamina,
+            // Aether Pool (v0.2.3a)
+            CurrentAp = c.CurrentAp,
+            MaxAp = c.MaxAp,
             // Equipment snapshot
             WeaponDamageDie = weapon?.DamageDie ?? 4,
             WeaponAccuracyBonus = 0, // Future: derive from weapon attributes
@@ -168,6 +207,11 @@ public class Combatant
         WeaponDamageDie = e.WeaponDamageDie,
         WeaponAccuracyBonus = e.WeaponAccuracyBonus,
         ArmorSoak = e.ArmorSoak,
-        WeaponName = e.WeaponName
+        WeaponName = e.WeaponName,
+        // Template/AI properties (v0.2.2a)
+        Archetype = e.Archetype,
+        Tags = new List<string>(e.Tags),
+        // Trait properties (v0.2.2c)
+        ActiveTraits = new List<CreatureTraitType>(e.ActiveTraits)
     };
 }

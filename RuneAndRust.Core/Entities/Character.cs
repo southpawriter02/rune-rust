@@ -80,6 +80,18 @@ public class Character
     public int ActionPoints { get; set; } = 3;
 
     /// <summary>
+    /// Maximum Aether Points (magical energy pool for Mystic archetype).
+    /// Derived: 10 + (Will * 5) for Mystics, 0 for non-Mystics.
+    /// </summary>
+    public int MaxAp { get; set; } = 0;
+
+    /// <summary>
+    /// Current Aether Points. Does NOT regenerate during combat.
+    /// Mystics can Overcast (spend HP at 2:1 ratio) when depleted.
+    /// </summary>
+    public int CurrentAp { get; set; } = 0;
+
+    /// <summary>
     /// Experience points accumulated by the character.
     /// </summary>
     public int ExperiencePoints { get; set; } = 0;

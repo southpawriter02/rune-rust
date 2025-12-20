@@ -22,6 +22,9 @@ public class CombatServiceTests
     private readonly Mock<IAttackResolutionService> _mockAttackResolution;
     private readonly Mock<ILootService> _mockLootService;
     private readonly Mock<IStatusEffectService> _mockStatusEffects;
+    private readonly Mock<IEnemyAIService> _mockAIService;
+    private readonly Mock<ICreatureTraitService> _mockTraitService;
+    private readonly Mock<IResourceService> _mockResourceService;
     private readonly Mock<ILogger<CombatService>> _mockLogger;
     private readonly GameState _gameState;
     private readonly CombatService _sut;
@@ -32,6 +35,9 @@ public class CombatServiceTests
         _mockAttackResolution = new Mock<IAttackResolutionService>();
         _mockLootService = new Mock<ILootService>();
         _mockStatusEffects = new Mock<IStatusEffectService>();
+        _mockAIService = new Mock<IEnemyAIService>();
+        _mockTraitService = new Mock<ICreatureTraitService>();
+        _mockResourceService = new Mock<IResourceService>();
         _mockLogger = new Mock<ILogger<CombatService>>();
         _gameState = new GameState();
         _sut = new CombatService(
@@ -40,6 +46,9 @@ public class CombatServiceTests
             _mockAttackResolution.Object,
             _mockLootService.Object,
             _mockStatusEffects.Object,
+            _mockAIService.Object,
+            _mockTraitService.Object,
+            _mockResourceService.Object,
             _mockLogger.Object);
 
         // Default setup for loot service
@@ -59,6 +68,16 @@ public class CombatServiceTests
         // Default setup for status effects: no DoT, can act, no effects
         _mockStatusEffects.Setup(s => s.ProcessTurnStart(It.IsAny<Combatant>())).Returns(0);
         _mockStatusEffects.Setup(s => s.CanAct(It.IsAny<Combatant>())).Returns(true);
+
+        // Default setup for trait service: no traits, no effects
+        _mockTraitService.Setup(t => t.ProcessTraitTurnStart(It.IsAny<Combatant>())).Returns(0);
+        _mockTraitService.Setup(t => t.ProcessTraitOnDeath(It.IsAny<Combatant>(), It.IsAny<IEnumerable<Combatant>>()))
+            .Returns(new List<(Combatant, int)>());
+        _mockTraitService.Setup(t => t.ProcessTraitOnDamageDealt(It.IsAny<Combatant>(), It.IsAny<int>())).Returns(0);
+        _mockTraitService.Setup(t => t.ProcessTraitOnDamageReceived(It.IsAny<Combatant>(), It.IsAny<Combatant>(), It.IsAny<int>())).Returns(0);
+
+        // Default setup for resource service: no stamina regeneration
+        _mockResourceService.Setup(r => r.RegenerateStamina(It.IsAny<Combatant>())).Returns(0);
     }
 
     #region StartCombat Tests

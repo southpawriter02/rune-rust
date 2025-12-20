@@ -72,4 +72,34 @@ public interface ICombatService
     /// </summary>
     /// <param name="message">The formatted message to add (may include Spectre markup).</param>
     void LogCombatEvent(string message);
+
+    /// <summary>
+    /// Executes an enemy's attack against a target.
+    /// Called by the combat loop after AI determines action.
+    /// </summary>
+    /// <param name="attacker">The attacking enemy combatant.</param>
+    /// <param name="target">The target combatant (player).</param>
+    /// <param name="attackType">The type of attack to perform.</param>
+    /// <returns>A narrative message describing the attack result.</returns>
+    string ExecuteEnemyAttack(Combatant attacker, Combatant target, AttackType attackType);
+
+    /// <summary>
+    /// Processes a defend action, granting temporary soak bonus.
+    /// </summary>
+    /// <param name="combatant">The defending combatant.</param>
+    void ProcessDefend(Combatant combatant);
+
+    /// <summary>
+    /// Processes a flee action, removing the combatant from combat.
+    /// </summary>
+    /// <param name="combatant">The fleeing combatant.</param>
+    void ProcessFlee(Combatant combatant);
+
+    /// <summary>
+    /// Processes an enemy's turn using AI to determine and execute their action.
+    /// Called automatically when it becomes an enemy combatant's turn.
+    /// </summary>
+    /// <param name="enemy">The enemy combatant whose turn it is.</param>
+    /// <returns>A task that completes when the enemy turn is processed.</returns>
+    Task ProcessEnemyTurnAsync(Combatant enemy);
 }
