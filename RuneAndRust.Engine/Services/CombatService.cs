@@ -22,6 +22,7 @@ public class CombatService : ICombatService
     private readonly IEnemyAIService _aiService;
     private readonly ICreatureTraitService _traitService;
     private readonly IResourceService _resourceService;
+    private readonly IAbilityService _abilityService;
     private readonly ILogger<CombatService> _logger;
 
     /// <summary>
@@ -50,6 +51,7 @@ public class CombatService : ICombatService
     /// <param name="aiService">The enemy AI service for turn decisions.</param>
     /// <param name="traitService">The creature trait service for Elite enemy effects.</param>
     /// <param name="resourceService">The resource service for stamina/aether management.</param>
+    /// <param name="abilityService">The ability service for cooldown and ability management.</param>
     /// <param name="logger">The logger for traceability.</param>
     public CombatService(
         GameState gameState,
@@ -60,6 +62,7 @@ public class CombatService : ICombatService
         IEnemyAIService aiService,
         ICreatureTraitService traitService,
         IResourceService resourceService,
+        IAbilityService abilityService,
         ILogger<CombatService> logger)
     {
         _gameState = gameState;
@@ -70,6 +73,7 @@ public class CombatService : ICombatService
         _aiService = aiService;
         _traitService = traitService;
         _resourceService = resourceService;
+        _abilityService = abilityService;
         _logger = logger;
     }
 
@@ -179,6 +183,9 @@ public class CombatService : ICombatService
             {
                 LogCombatEvent($"[cyan]{active.Name}[/] recovers [cyan]{staminaRegen}[/] stamina.");
             }
+
+            // Process ability cooldowns at turn start (v0.2.3b)
+            _abilityService.ProcessCooldowns(active);
 
             // Reset defending stance at start of turn
             if (active.IsDefending)

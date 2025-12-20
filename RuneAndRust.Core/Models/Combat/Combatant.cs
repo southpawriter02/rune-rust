@@ -95,6 +95,12 @@ public class Combatant
     /// </summary>
     public bool IsDefending { get; set; } = false;
 
+    /// <summary>
+    /// Ability cooldowns tracked per-ability. Key = AbilityId, Value = turns remaining.
+    /// Combat-volatile: cleared when combat ends.
+    /// </summary>
+    public Dictionary<Guid, int> Cooldowns { get; set; } = new();
+
     #endregion
 
     #region Equipment Snapshot

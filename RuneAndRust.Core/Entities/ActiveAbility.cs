@@ -1,0 +1,55 @@
+namespace RuneAndRust.Core.Entities;
+
+/// <summary>
+/// Represents an active ability that a combatant can use during combat.
+/// Abilities define their costs, cooldowns, and effects through an EffectScript system.
+/// </summary>
+public class ActiveAbility
+{
+    /// <summary>
+    /// Unique identifier for this ability.
+    /// </summary>
+    public Guid Id { get; set; } = Guid.NewGuid();
+
+    /// <summary>
+    /// Display name for the ability (e.g., "Power Strike", "Flame Bolt").
+    /// </summary>
+    public string Name { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Flavor text description shown in UI (AAM-VOICE compliant).
+    /// </summary>
+    public string Description { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Stamina cost to use this ability. 0 for free abilities.
+    /// </summary>
+    public int StaminaCost { get; set; }
+
+    /// <summary>
+    /// Aether cost to use this ability. Only usable by Mystic archetype.
+    /// 0 for non-magical abilities.
+    /// </summary>
+    public int AetherCost { get; set; }
+
+    /// <summary>
+    /// Number of turns before the ability can be used again.
+    /// 0 for abilities with no cooldown.
+    /// </summary>
+    public int CooldownTurns { get; set; }
+
+    /// <summary>
+    /// Range of the ability. 0 = Self, 1 = Melee, >1 = Ranged.
+    /// </summary>
+    public int Range { get; set; } = 1;
+
+    /// <summary>
+    /// Semicolon-separated effect commands that define ability behavior.
+    /// Format: "COMMAND:Param1:Param2;COMMAND:Param1:Param2"
+    /// Supported commands (v0.2.3b):
+    /// - DAMAGE:Type:Dice (e.g., "DAMAGE:Physical:2d6")
+    /// - HEAL:Amount (e.g., "HEAL:15")
+    /// - STATUS:Type:Duration:Stacks (e.g., "STATUS:Bleeding:3:2")
+    /// </summary>
+    public string EffectScript { get; set; } = string.Empty;
+}

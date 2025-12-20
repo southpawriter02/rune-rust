@@ -25,6 +25,7 @@ public class CombatServiceTests
     private readonly Mock<IEnemyAIService> _mockAIService;
     private readonly Mock<ICreatureTraitService> _mockTraitService;
     private readonly Mock<IResourceService> _mockResourceService;
+    private readonly Mock<IAbilityService> _mockAbilityService;
     private readonly Mock<ILogger<CombatService>> _mockLogger;
     private readonly GameState _gameState;
     private readonly CombatService _sut;
@@ -38,6 +39,7 @@ public class CombatServiceTests
         _mockAIService = new Mock<IEnemyAIService>();
         _mockTraitService = new Mock<ICreatureTraitService>();
         _mockResourceService = new Mock<IResourceService>();
+        _mockAbilityService = new Mock<IAbilityService>();
         _mockLogger = new Mock<ILogger<CombatService>>();
         _gameState = new GameState();
         _sut = new CombatService(
@@ -49,6 +51,7 @@ public class CombatServiceTests
             _mockAIService.Object,
             _mockTraitService.Object,
             _mockResourceService.Object,
+            _mockAbilityService.Object,
             _mockLogger.Object);
 
         // Default setup for loot service

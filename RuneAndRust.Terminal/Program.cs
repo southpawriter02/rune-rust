@@ -79,6 +79,7 @@ class Program
                     services.AddSingleton<IEnemyAIService, EnemyAIService>();
                     services.AddSingleton<ICreatureTraitService, CreatureTraitService>();
                     services.AddSingleton<IResourceService, ResourceService>();
+                    services.AddSingleton<IAbilityService, AbilityService>();
                     services.AddScoped<ILootService, LootService>();
                     services.AddSingleton<ICombatService, CombatService>();
                     services.AddSingleton<ICombatScreenRenderer, CombatScreenRenderer>();
