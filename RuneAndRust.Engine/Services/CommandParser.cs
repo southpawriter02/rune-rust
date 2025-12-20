@@ -142,6 +142,16 @@ public class ParseResult
     public string? UseTarget { get; set; }
 
     /// <summary>
+    /// Gets or sets whether a craft command was issued.
+    /// </summary>
+    public bool RequiresCraft { get; set; }
+
+    /// <summary>
+    /// Gets or sets the target recipe for the craft command.
+    /// </summary>
+    public string? CraftTarget { get; set; }
+
+    /// <summary>
     /// Gets a default result with no async requirements.
     /// </summary>
     public static ParseResult None => new();
@@ -480,6 +490,27 @@ public class CommandParser
             else
             {
                 _inputHandler.DisplayError("Use what? Specify an item.");
+                return ParseResult.None;
+            }
+        }
+
+        // Check for craft command with target
+        if (command.StartsWith("craft ") || command.StartsWith("make ") || command.StartsWith("create "))
+        {
+            var target = ExtractTarget(command, new[] { "craft ", "make ", "create " });
+            if (!string.IsNullOrWhiteSpace(target))
+            {
+                state.TurnCount++;
+                _logger.LogDebug("Craft command for target: {Target}", target);
+                return new ParseResult
+                {
+                    RequiresCraft = true,
+                    CraftTarget = target
+                };
+            }
+            else
+            {
+                _inputHandler.DisplayError("Craft what? Specify a recipe name or ID.");
                 return ParseResult.None;
             }
         }
@@ -995,6 +1026,10 @@ public class CommandParser
         _inputHandler.DisplayMessage("  take <item>      - Take an item from a container");
         _inputHandler.DisplayMessage("  get <item>       - Take an item from a container");
         _inputHandler.DisplayMessage("  use <item>       - Use a consumable item");
+        _inputHandler.DisplayMessage("");
+        _inputHandler.DisplayMessage("Crafting:");
+        _inputHandler.DisplayMessage("  craft <recipe>   - Craft an item using a recipe (uses WITS)");
+        _inputHandler.DisplayMessage("  make <recipe>    - Same as craft");
         _inputHandler.DisplayMessage("");
         _inputHandler.DisplayMessage("Journal:");
         _inputHandler.DisplayMessage("  journal, j       - Open the Scavenger's Journal");

@@ -46,6 +46,7 @@ class Program
                     services.AddScoped<ICodexEntryRepository, CodexEntryRepository>();
                     services.AddScoped<IDataCaptureRepository, DataCaptureRepository>();
                     services.AddScoped<IActiveAbilityRepository, ActiveAbilityRepository>();
+                    services.AddScoped<IItemRepository, ItemRepository>();
 
                     // Register Core State (Singleton to persist across game loop)
                     services.AddSingleton<GameState>();
@@ -93,6 +94,12 @@ class Program
 
                     // Register Enemy Factory
                     services.AddScoped<IEnemyFactory, EnemyFactory>();
+
+                    // Register Inventory Services
+                    services.AddScoped<IInventoryService, InventoryService>();
+
+                    // Register Crafting Services (v0.3.1a)
+                    services.AddScoped<ICraftingService, CraftingService>();
                 })
                 .UseSerilog() // Wire Serilog into ILogger
                 .Build();
@@ -105,7 +112,7 @@ class Program
             }
 
             // 4. UI Handover
-            AnsiConsole.MarkupLine("[green]Rune & Rust v0.3.0a Booting...[/]");
+            AnsiConsole.MarkupLine("[green]Rune & Rust v0.3.1a Booting...[/]");
             AnsiConsole.WriteLine();
 
             // Resolve the entry point from DI
