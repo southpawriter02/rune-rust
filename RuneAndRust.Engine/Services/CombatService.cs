@@ -18,6 +18,7 @@ public class CombatService : ICombatService
     private readonly IInitiativeService _initiative;
     private readonly IAttackResolutionService _attackResolution;
     private readonly ILootService _lootService;
+    private readonly IStatusEffectService _statusEffects;
     private readonly ILogger<CombatService> _logger;
 
     /// <summary>
@@ -37,18 +38,21 @@ public class CombatService : ICombatService
     /// <param name="initiative">The initiative service for turn order calculations.</param>
     /// <param name="attackResolution">The attack resolution service for combat mechanics.</param>
     /// <param name="lootService">The loot service for generating combat rewards.</param>
+    /// <param name="statusEffects">The status effect service for managing combat conditions.</param>
     /// <param name="logger">The logger for traceability.</param>
     public CombatService(
         GameState gameState,
         IInitiativeService initiative,
         IAttackResolutionService attackResolution,
         ILootService lootService,
+        IStatusEffectService statusEffects,
         ILogger<CombatService> logger)
     {
         _gameState = gameState;
         _initiative = initiative;
         _attackResolution = attackResolution;
         _lootService = lootService;
+        _statusEffects = statusEffects;
         _logger = logger;
     }
 
@@ -115,9 +119,53 @@ public class CombatService : ICombatService
             _logger.LogInformation("Round {Round} begins", state.RoundNumber);
         }
 
+        var active = state.ActiveCombatant;
+        if (active != null)
+        {
+            // Process turn start: apply DoT damage from status effects
+            var dotDamage = _statusEffects.ProcessTurnStart(active);
+            if (dotDamage > 0)
+            {
+                active.CurrentHp -= dotDamage;
+                LogCombatEvent($"[yellow]{active.Name}[/] takes [red]{dotDamage}[/] damage from status effects!");
+
+                // Check for death from DoT
+                if (active.CurrentHp <= 0)
+                {
+                    LogCombatEvent($"[red]{active.Name}[/] has fallen to their wounds!");
+                    _logger.LogWarning("{Name} killed by DoT damage", active.Name);
+                    RemoveDefeatedCombatant(active);
+
+                    // Check victory and potentially advance to next turn
+                    if (CheckVictoryCondition())
+                    {
+                        _logger.LogInformation("Combat Victory! All enemies defeated by DoT.");
+                        return;
+                    }
+
+                    // Recursively advance to next combatant
+                    NextTurn();
+                    return;
+                }
+            }
+
+            // Check if combatant is stunned and cannot act
+            if (!_statusEffects.CanAct(active))
+            {
+                LogCombatEvent($"[yellow]{active.Name}[/] is [purple]stunned[/] and loses their turn!");
+
+                // Process turn end to decrement durations before skipping
+                _statusEffects.ProcessTurnEnd(active);
+
+                // Recursively advance to next combatant
+                NextTurn();
+                return;
+            }
+        }
+
         _logger.LogInformation("Turn: {Name} ({Type})",
-            state.ActiveCombatant?.Name ?? "None",
-            state.ActiveCombatant?.IsPlayer == true ? "Player" : "Enemy");
+            active?.Name ?? "None",
+            active?.IsPlayer == true ? "Player" : "Enemy");
     }
 
     /// <inheritdoc/>
@@ -243,20 +291,26 @@ public class CombatService : ICombatService
                 if (CheckVictoryCondition())
                 {
                     _logger.LogInformation("Combat Victory! All enemies defeated.");
+                    _statusEffects.ProcessTurnEnd(attacker);
                     var victoryMsg = BuildVictoryMessage(result, target);
                     LogCombatEvent(BuildLogMessage(result, target, isVictory: true));
                     return victoryMsg;
                 }
 
+                _statusEffects.ProcessTurnEnd(attacker);
                 var deathMsg = BuildDeathMessage(result, target);
                 LogCombatEvent(BuildLogMessage(result, target, isDeath: true));
                 return deathMsg;
             }
 
+            _statusEffects.ProcessTurnEnd(attacker);
             var hitMsg = BuildHitMessage(result, target);
             LogCombatEvent(BuildLogMessage(result, target));
             return hitMsg;
         }
+
+        // Process turn end for the attacker (decrement status effect durations)
+        _statusEffects.ProcessTurnEnd(attacker);
 
         var missMsg = BuildMissMessage(result, target);
         LogCombatEvent(BuildMissLogMessage(result, target));
@@ -453,13 +507,26 @@ public class CombatService : ICombatService
             ? $"{combatant.CurrentHp}/{combatant.MaxHp}"
             : GetNarrativeHealth(combatant);
 
+        // Generate status effect display with icons
+        var effectIcons = string.Join(" ", combatant.StatusEffects.Select(e => e.Type switch
+        {
+            StatusEffectType.Bleeding => $"[red]BLD×{e.Stacks}[/]",
+            StatusEffectType.Poisoned => $"[green]PSN×{e.Stacks}[/]",
+            StatusEffectType.Stunned => "[purple]STUN[/]",
+            StatusEffectType.Vulnerable => "[orange1]VULN[/]",
+            StatusEffectType.Fortified => $"[blue]FRT×{e.Stacks}[/]",
+            StatusEffectType.Hasted => "[cyan]HAST[/]",
+            StatusEffectType.Inspired => "[yellow]INSP[/]",
+            _ => ""
+        }));
+
         return new CombatantView(
             combatant.Id,
             combatant.Name,
             combatant.IsPlayer,
             combatant.Id == activeCombatant?.Id,
             healthStatus,
-            "[ ]", // Placeholder for status effects
+            string.IsNullOrWhiteSpace(effectIcons) ? "[ ]" : effectIcons,
             combatant.Initiative.ToString()
         );
     }

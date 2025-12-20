@@ -71,7 +71,7 @@ public class CombatScreenRenderer : ICombatScreenRenderer
     }
 
     /// <summary>
-    /// Renders the turn order as a table.
+    /// Renders the turn order as a table with status effects.
     /// </summary>
     private static void RenderTurnOrder(List<CombatantView> turnOrder)
     {
@@ -83,6 +83,7 @@ public class CombatScreenRenderer : ICombatScreenRenderer
         table.AddColumn(new TableColumn("[grey]Init[/]").Centered().Width(6));
         table.AddColumn(new TableColumn("[grey]Name[/]").Width(20));
         table.AddColumn(new TableColumn("[grey]Condition[/]").Width(12));
+        table.AddColumn(new TableColumn("[grey]Status[/]").Width(18));
 
         foreach (var combatant in turnOrder)
         {
@@ -95,10 +96,14 @@ public class CombatScreenRenderer : ICombatScreenRenderer
                 ? $"[green]{combatant.HealthStatus}[/]"
                 : combatant.HealthStatus;
 
+            // StatusEffects already contain Spectre markup from MapToView
+            var statusDisplay = combatant.StatusEffects;
+
             table.AddRow(
                 $"[grey]{combatant.InitiativeDisplay}[/]",
                 nameMarkup,
-                healthDisplay
+                healthDisplay,
+                statusDisplay
             );
         }
 

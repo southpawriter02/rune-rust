@@ -25,6 +25,7 @@
     <ProjectReference Include="..\RuneAndRust.Core\RuneAndRust.Core.csproj" />
     <ProjectReference Include="..\RuneAndRust.Engine\RuneAndRust.Engine.csproj" />
     <ProjectReference Include="..\RuneAndRust.Persistence\RuneAndRust.Persistence.csproj" />
+    <ProjectReference Include="..\RuneAndRust.Terminal\RuneAndRust.Terminal.csproj" />
   </ItemGroup>
 
 </Project>

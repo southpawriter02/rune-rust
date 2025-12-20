@@ -74,9 +74,12 @@ class Program
 
                     // Register Combat Services
                     services.AddSingleton<IInitiativeService, InitiativeService>();
+                    services.AddSingleton<IStatusEffectService, StatusEffectService>();
                     services.AddSingleton<IAttackResolutionService, AttackResolutionService>();
+                    services.AddScoped<ILootService, LootService>();
                     services.AddSingleton<ICombatService, CombatService>();
                     services.AddSingleton<ICombatScreenRenderer, CombatScreenRenderer>();
+                    services.AddSingleton<IVictoryScreenRenderer, VictoryScreenRenderer>();
 
                     // Register Character Creation Services
                     services.AddScoped<CharacterFactory>();

@@ -21,6 +21,7 @@ public class CombatServiceTests
     private readonly Mock<IInitiativeService> _mockInitiative;
     private readonly Mock<IAttackResolutionService> _mockAttackResolution;
     private readonly Mock<ILootService> _mockLootService;
+    private readonly Mock<IStatusEffectService> _mockStatusEffects;
     private readonly Mock<ILogger<CombatService>> _mockLogger;
     private readonly GameState _gameState;
     private readonly CombatService _sut;
@@ -30,6 +31,7 @@ public class CombatServiceTests
         _mockInitiative = new Mock<IInitiativeService>();
         _mockAttackResolution = new Mock<IAttackResolutionService>();
         _mockLootService = new Mock<ILootService>();
+        _mockStatusEffects = new Mock<IStatusEffectService>();
         _mockLogger = new Mock<ILogger<CombatService>>();
         _gameState = new GameState();
         _sut = new CombatService(
@@ -37,6 +39,7 @@ public class CombatServiceTests
             _mockInitiative.Object,
             _mockAttackResolution.Object,
             _mockLootService.Object,
+            _mockStatusEffects.Object,
             _mockLogger.Object);
 
         // Default setup for loot service
@@ -52,6 +55,10 @@ public class CombatServiceTests
             .Returns(25);
         _mockAttackResolution.Setup(a => a.CanAffordAttack(It.IsAny<Combatant>(), It.IsAny<AttackType>()))
             .Returns(true);
+
+        // Default setup for status effects: no DoT, can act, no effects
+        _mockStatusEffects.Setup(s => s.ProcessTurnStart(It.IsAny<Combatant>())).Returns(0);
+        _mockStatusEffects.Setup(s => s.CanAct(It.IsAny<Combatant>())).Returns(true);
     }
 
     #region StartCombat Tests

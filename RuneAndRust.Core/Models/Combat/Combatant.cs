@@ -53,6 +53,12 @@ public class Combatant
     /// </summary>
     public int MaxStamina { get; set; }
 
+    /// <summary>
+    /// Active status effects on this combatant during combat.
+    /// Combat-volatile: cleared when combat ends.
+    /// </summary>
+    public List<ActiveStatusEffect> StatusEffects { get; set; } = new();
+
     #endregion
 
     #region Equipment Snapshot

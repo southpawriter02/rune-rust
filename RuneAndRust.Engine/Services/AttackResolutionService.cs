@@ -13,6 +13,7 @@ namespace RuneAndRust.Engine.Services;
 public class AttackResolutionService : IAttackResolutionService
 {
     private readonly IDiceService _dice;
+    private readonly IStatusEffectService _statusEffects;
     private readonly ILogger<AttackResolutionService> _logger;
 
     /// <summary>
@@ -50,10 +51,15 @@ public class AttackResolutionService : IAttackResolutionService
     /// Initializes a new instance of the <see cref="AttackResolutionService"/> class.
     /// </summary>
     /// <param name="dice">The dice service for rolling.</param>
+    /// <param name="statusEffects">The status effect service for modifier calculations.</param>
     /// <param name="logger">The logger for traceability.</param>
-    public AttackResolutionService(IDiceService dice, ILogger<AttackResolutionService> logger)
+    public AttackResolutionService(
+        IDiceService dice,
+        IStatusEffectService statusEffects,
+        ILogger<AttackResolutionService> logger)
     {
         _dice = dice;
+        _statusEffects = statusEffects;
         _logger = logger;
     }
 
@@ -116,22 +122,42 @@ public class AttackResolutionService : IAttackResolutionService
             // Apply outcome modifiers (glancing halves, critical doubles)
             rawDamage = ApplyDamageModifier(rawDamage, outcome);
 
-            // Calculate soak from defender's armor
-            var soak = defender.ArmorSoak;
+            // Apply damage multiplier from status effects (e.g., Vulnerable)
+            var damageMultiplier = _statusEffects.GetDamageMultiplier(defender);
+            var modifiedDamage = (int)(rawDamage * damageMultiplier);
+
+            if (damageMultiplier > 1.0f)
+            {
+                _logger.LogDebug(
+                    "Damage amplified by status effect: {Raw} × {Multiplier} = {Modified}",
+                    rawDamage, damageMultiplier, modifiedDamage);
+            }
+
+            // Calculate soak from defender's armor + status effects (e.g., Fortified)
+            var baseSoak = defender.ArmorSoak;
+            var soakModifier = _statusEffects.GetSoakModifier(defender);
+            var totalSoak = baseSoak + soakModifier;
+
+            if (soakModifier != 0)
+            {
+                _logger.LogDebug(
+                    "Soak modified by status effect: Base {Base} + Modifier {Mod} = {Total}",
+                    baseSoak, soakModifier, totalSoak);
+            }
 
             // Final damage (minimum 1 on hit)
-            finalDamage = Math.Max(1, rawDamage - soak);
+            finalDamage = Math.Max(1, modifiedDamage - totalSoak);
 
-            if (rawDamage - soak < 1)
+            if (modifiedDamage - totalSoak < 1)
             {
                 _logger.LogDebug(
                     "Minimum damage enforced: {Calculated} -> 1",
-                    rawDamage - soak);
+                    modifiedDamage - totalSoak);
             }
 
             _logger.LogDebug(
                 "Damage reduced by soak: {Raw} - {Soak} = {Final}",
-                rawDamage, soak, finalDamage);
+                modifiedDamage, totalSoak, finalDamage);
         }
 
         _logger.LogInformation(

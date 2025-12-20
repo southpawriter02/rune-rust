@@ -157,6 +157,7 @@ public class CommandParser
     private readonly IInputHandler _inputHandler;
     private readonly IJournalService? _journalService;
     private readonly ICombatService? _combatService;
+    private readonly IVictoryScreenRenderer? _victoryRenderer;
     private readonly GameState _gameState;
 
     /// <summary>
@@ -167,18 +168,21 @@ public class CommandParser
     /// <param name="gameState">The game state for journal queries.</param>
     /// <param name="journalService">The optional journal service for codex display.</param>
     /// <param name="combatService">The optional combat service for debug combat initiation.</param>
+    /// <param name="victoryRenderer">The optional victory screen renderer for combat rewards.</param>
     public CommandParser(
         ILogger<CommandParser> logger,
         IInputHandler inputHandler,
         GameState gameState,
         IJournalService? journalService = null,
-        ICombatService? combatService = null)
+        ICombatService? combatService = null,
+        IVictoryScreenRenderer? victoryRenderer = null)
     {
         _logger = logger;
         _inputHandler = inputHandler;
         _gameState = gameState;
         _journalService = journalService;
         _combatService = combatService;
+        _victoryRenderer = victoryRenderer;
     }
 
     /// <summary>
@@ -751,9 +755,19 @@ public class CommandParser
         // Check if combat ended (victory)
         if (_gameState.CombatState == null || _combatService.CheckVictoryCondition())
         {
-            _combatService.EndCombat();
-            _inputHandler.DisplayMessage("");
-            _inputHandler.DisplayMessage("Combat has ended. Returning to exploration.");
+            var combatResult = _combatService.EndCombat();
+
+            // Display victory screen with loot/XP if victory and renderer available
+            if (combatResult != null && combatResult.Victory && _victoryRenderer != null)
+            {
+                _victoryRenderer.Render(combatResult);
+            }
+            else
+            {
+                _inputHandler.DisplayMessage("");
+                _inputHandler.DisplayMessage("Combat has ended. Returning to exploration.");
+            }
+
             return new ParseResult { RequiresLook = true };
         }
 

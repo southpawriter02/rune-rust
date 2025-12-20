@@ -19,14 +19,21 @@ namespace RuneAndRust.Tests.Engine;
 public class AttackResolutionServiceTests
 {
     private readonly Mock<IDiceService> _mockDice;
+    private readonly Mock<IStatusEffectService> _mockStatusEffects;
     private readonly Mock<ILogger<AttackResolutionService>> _mockLogger;
     private readonly AttackResolutionService _sut;
 
     public AttackResolutionServiceTests()
     {
         _mockDice = new Mock<IDiceService>();
+        _mockStatusEffects = new Mock<IStatusEffectService>();
         _mockLogger = new Mock<ILogger<AttackResolutionService>>();
-        _sut = new AttackResolutionService(_mockDice.Object, _mockLogger.Object);
+
+        // Default status effect behavior: no modifiers
+        _mockStatusEffects.Setup(s => s.GetDamageMultiplier(It.IsAny<Combatant>())).Returns(1.0f);
+        _mockStatusEffects.Setup(s => s.GetSoakModifier(It.IsAny<Combatant>())).Returns(0);
+
+        _sut = new AttackResolutionService(_mockDice.Object, _mockStatusEffects.Object, _mockLogger.Object);
     }
 
     #region Helper Methods
