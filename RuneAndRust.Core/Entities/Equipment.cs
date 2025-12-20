@@ -24,6 +24,28 @@ public class Equipment : Item
 
     #endregion
 
+    #region Durability Properties
+
+    /// <summary>
+    /// Gets or sets the maximum durability of this equipment.
+    /// Equipment cannot be repaired beyond this value.
+    /// </summary>
+    public int MaxDurability { get; set; } = 100;
+
+    /// <summary>
+    /// Gets or sets the current durability of this equipment.
+    /// Equipment becomes broken when this reaches 0.
+    /// </summary>
+    public int CurrentDurability { get; set; } = 100;
+
+    /// <summary>
+    /// Gets whether this equipment is broken and unusable.
+    /// Broken equipment provides no bonuses and cannot be used in combat.
+    /// </summary>
+    public bool IsBroken => CurrentDurability <= 0;
+
+    #endregion
+
     #region Combat Properties
 
     /// <summary>

@@ -152,6 +152,26 @@ public class ParseResult
     public string? CraftTarget { get; set; }
 
     /// <summary>
+    /// Gets or sets whether a repair command was issued.
+    /// </summary>
+    public bool RequiresRepair { get; set; }
+
+    /// <summary>
+    /// Gets or sets the target item for the repair command.
+    /// </summary>
+    public string? RepairTarget { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether a salvage command was issued.
+    /// </summary>
+    public bool RequiresSalvage { get; set; }
+
+    /// <summary>
+    /// Gets or sets the target item for the salvage command.
+    /// </summary>
+    public string? SalvageTarget { get; set; }
+
+    /// <summary>
     /// Gets a default result with no async requirements.
     /// </summary>
     public static ParseResult None => new();
@@ -511,6 +531,48 @@ public class CommandParser
             else
             {
                 _inputHandler.DisplayError("Craft what? Specify a recipe name or ID.");
+                return ParseResult.None;
+            }
+        }
+
+        // Check for repair command with target
+        if (command.StartsWith("repair ") || command.StartsWith("fix ") || command.StartsWith("mend "))
+        {
+            var target = ExtractTarget(command, new[] { "repair ", "fix ", "mend " });
+            if (!string.IsNullOrWhiteSpace(target))
+            {
+                state.TurnCount++;
+                _logger.LogDebug("Repair command for target: {Target}", target);
+                return new ParseResult
+                {
+                    RequiresRepair = true,
+                    RepairTarget = target
+                };
+            }
+            else
+            {
+                _inputHandler.DisplayError("Repair what? Specify an equipment item.");
+                return ParseResult.None;
+            }
+        }
+
+        // Check for salvage command with target
+        if (command.StartsWith("salvage ") || command.StartsWith("scrap ") || command.StartsWith("dismantle "))
+        {
+            var target = ExtractTarget(command, new[] { "salvage ", "scrap ", "dismantle " });
+            if (!string.IsNullOrWhiteSpace(target))
+            {
+                state.TurnCount++;
+                _logger.LogDebug("Salvage command for target: {Target}", target);
+                return new ParseResult
+                {
+                    RequiresSalvage = true,
+                    SalvageTarget = target
+                };
+            }
+            else
+            {
+                _inputHandler.DisplayError("Salvage what? Specify an equipment item.");
                 return ParseResult.None;
             }
         }
@@ -1030,6 +1092,12 @@ public class CommandParser
         _inputHandler.DisplayMessage("Crafting:");
         _inputHandler.DisplayMessage("  craft <recipe>   - Craft an item using a recipe (uses WITS)");
         _inputHandler.DisplayMessage("  make <recipe>    - Same as craft");
+        _inputHandler.DisplayMessage("");
+        _inputHandler.DisplayMessage("Bodging:");
+        _inputHandler.DisplayMessage("  repair <item>    - Repair damaged equipment using Scrap (uses WITS)");
+        _inputHandler.DisplayMessage("  fix <item>       - Same as repair");
+        _inputHandler.DisplayMessage("  salvage <item>   - Destroy equipment to extract Scrap");
+        _inputHandler.DisplayMessage("  scrap <item>     - Same as salvage");
         _inputHandler.DisplayMessage("");
         _inputHandler.DisplayMessage("Journal:");
         _inputHandler.DisplayMessage("  journal, j       - Open the Scavenger's Journal");
