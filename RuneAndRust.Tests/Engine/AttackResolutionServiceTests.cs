@@ -31,7 +31,14 @@ public class AttackResolutionServiceTests
 
     #region Helper Methods
 
-    private static Combatant CreatePlayerCombatant(int might = 5, int finesse = 5, int sturdiness = 5, int stamina = 60)
+    private static Combatant CreatePlayerCombatant(
+        int might = 5,
+        int finesse = 5,
+        int sturdiness = 5,
+        int stamina = 60,
+        int weaponDamageDie = 6,
+        int armorSoak = 0,
+        string weaponName = "Sword")
     {
         var character = new CharacterEntity
         {
@@ -42,10 +49,23 @@ public class AttackResolutionServiceTests
             CurrentStamina = stamina,
             MaxStamina = stamina
         };
-        return Combatant.FromCharacter(character);
+        var combatant = Combatant.FromCharacter(character);
+        // Override equipment stats for testing (FromCharacter defaults to unarmed d4)
+        combatant.WeaponDamageDie = weaponDamageDie;
+        combatant.ArmorSoak = armorSoak;
+        combatant.WeaponName = weaponName;
+        return combatant;
     }
 
-    private static Combatant CreateEnemyCombatant(int might = 5, int finesse = 3, int sturdiness = 5, int hp = 50, int stamina = 35)
+    private static Combatant CreateEnemyCombatant(
+        int might = 5,
+        int finesse = 3,
+        int sturdiness = 5,
+        int hp = 50,
+        int stamina = 35,
+        int weaponDamageDie = 4,
+        int armorSoak = 0,
+        string weaponName = "Claws")
     {
         var enemy = new Enemy
         {
@@ -61,7 +81,10 @@ public class AttackResolutionServiceTests
             MaxHp = hp,
             CurrentHp = hp,
             MaxStamina = stamina,
-            CurrentStamina = stamina
+            CurrentStamina = stamina,
+            WeaponDamageDie = weaponDamageDie,
+            ArmorSoak = armorSoak,
+            WeaponName = weaponName
         };
         return Combatant.FromEnemy(enemy);
     }
@@ -256,9 +279,9 @@ public class AttackResolutionServiceTests
     [Fact]
     public void ResolveMeleeAttack_GlancingBlow_HalvesDamage()
     {
-        // Arrange
-        var attacker = CreatePlayerCombatant(might: 5);
-        var defender = CreateEnemyCombatant(finesse: 3, sturdiness: 0); // Defense 13, Threshold 2
+        // Arrange - player with d6 sword vs enemy with no armor
+        var attacker = CreatePlayerCombatant(might: 5, weaponDamageDie: 6);
+        var defender = CreateEnemyCombatant(finesse: 3, armorSoak: 0); // Defense 13, Threshold 2
 
         // Mock: Roll 4 successes (net = 4 - 2 = 2, Glancing)
         _mockDice.Setup(d => d.Roll(It.IsAny<int>(), It.IsAny<string>()))
@@ -273,16 +296,16 @@ public class AttackResolutionServiceTests
         // Assert
         result.IsHit.Should().BeTrue();
         result.Outcome.Should().Be(AttackOutcome.Glancing);
-        // Raw = 5 (Might) + 4 (d6) = 9, halved = 4, no soak = 4
-        result.FinalDamage.Should().Be(4);
+        // Raw = Might(5) + Weapon(4) + StandardBonus(2) = 11, halved = 5, no soak = 5
+        result.FinalDamage.Should().Be(5);
     }
 
     [Fact]
     public void ResolveMeleeAttack_SolidHit_FullDamage()
     {
-        // Arrange
-        var attacker = CreatePlayerCombatant(might: 5);
-        var defender = CreateEnemyCombatant(finesse: 3, sturdiness: 2); // Defense 13, Threshold 2
+        // Arrange - player with d6 sword vs enemy with 2 armor soak
+        var attacker = CreatePlayerCombatant(might: 5, weaponDamageDie: 6);
+        var defender = CreateEnemyCombatant(finesse: 3, armorSoak: 2); // Defense 13, Threshold 2
 
         // Mock: Roll 5 successes (net = 5 - 2 = 3, Solid)
         _mockDice.Setup(d => d.Roll(It.IsAny<int>(), It.IsAny<string>()))
@@ -297,16 +320,16 @@ public class AttackResolutionServiceTests
         // Assert
         result.IsHit.Should().BeTrue();
         result.Outcome.Should().Be(AttackOutcome.Solid);
-        // Raw = 5 + 4 = 9, Soak = 2, Final = 7
-        result.FinalDamage.Should().Be(7);
+        // Raw = Might(5) + Weapon(4) + StandardBonus(2) = 11, Soak = 2, Final = 9
+        result.FinalDamage.Should().Be(9);
     }
 
     [Fact]
     public void ResolveMeleeAttack_CriticalHit_DoublesDamage()
     {
-        // Arrange
-        var attacker = CreatePlayerCombatant(might: 5);
-        var defender = CreateEnemyCombatant(finesse: 3, sturdiness: 2); // Defense 13, Threshold 2
+        // Arrange - player with d6 sword vs enemy with 2 armor soak
+        var attacker = CreatePlayerCombatant(might: 5, weaponDamageDie: 6);
+        var defender = CreateEnemyCombatant(finesse: 3, armorSoak: 2); // Defense 13, Threshold 2
 
         // Mock: Roll 8 successes (net = 8 - 2 = 6, Critical)
         _mockDice.Setup(d => d.Roll(It.IsAny<int>(), It.IsAny<string>()))
@@ -321,8 +344,8 @@ public class AttackResolutionServiceTests
         // Assert
         result.IsHit.Should().BeTrue();
         result.Outcome.Should().Be(AttackOutcome.Critical);
-        // Raw = 5 + 4 = 9, Doubled = 18, Soak = 2, Final = 16
-        result.FinalDamage.Should().Be(16);
+        // Raw = Might(5) + Weapon(4) + StandardBonus(2) = 11, Doubled = 22, Soak = 2, Final = 20
+        result.FinalDamage.Should().Be(20);
     }
 
     #endregion
@@ -330,17 +353,17 @@ public class AttackResolutionServiceTests
     #region ResolveMeleeAttack - Attack Type Modifiers
 
     [Fact]
-    public void ResolveMeleeAttack_LightAttack_UsesD4AndBonusToHit()
+    public void ResolveMeleeAttack_LightAttack_NoDamageBonus()
     {
-        // Arrange
-        var attacker = CreatePlayerCombatant(might: 5);
-        var defender = CreateEnemyCombatant(finesse: 3, sturdiness: 0);
+        // Arrange - player with d6 sword, light attack has no damage bonus but +1 to hit
+        var attacker = CreatePlayerCombatant(might: 5, weaponDamageDie: 6);
+        var defender = CreateEnemyCombatant(finesse: 3, armorSoak: 0);
 
         // Mock: Roll 5 successes
         _mockDice.Setup(d => d.Roll(It.IsAny<int>(), It.IsAny<string>()))
             .Returns(new DiceResult(5, 0, new[] { 8, 9, 10, 8, 9, 10 }));
-        // Weapon damage: 3 (d4)
-        _mockDice.Setup(d => d.RollSingle(4, It.IsAny<string>()))
+        // Weapon damage: 3 (d6)
+        _mockDice.Setup(d => d.RollSingle(6, It.IsAny<string>()))
             .Returns(3);
 
         // Act
@@ -348,43 +371,47 @@ public class AttackResolutionServiceTests
 
         // Assert
         result.IsHit.Should().BeTrue();
-        // Verify d4 was used
-        _mockDice.Verify(d => d.RollSingle(4, It.IsAny<string>()), Times.Once);
-        // Verify pool was Might + 1 = 6
+        // Verify combatant's weapon die (d6) was used
+        _mockDice.Verify(d => d.RollSingle(6, It.IsAny<string>()), Times.Once);
+        // Verify pool was Might + 1 = 6 (light attack bonus to hit)
         _mockDice.Verify(d => d.Roll(6, It.IsAny<string>()), Times.Once);
+        // Raw = Might(5) + Weapon(3) + LightBonus(0) = 8, no soak, Final = 8
+        result.FinalDamage.Should().Be(8);
     }
 
     [Fact]
-    public void ResolveMeleeAttack_HeavyAttack_UsesD8AndPenaltyToHit()
+    public void ResolveMeleeAttack_HeavyAttack_AddsDamageBonus()
     {
-        // Arrange
-        var attacker = CreatePlayerCombatant(might: 5);
-        var defender = CreateEnemyCombatant(finesse: 3, sturdiness: 0);
+        // Arrange - player with d6 sword, heavy attack adds +4 damage but -1 to hit
+        var attacker = CreatePlayerCombatant(might: 5, weaponDamageDie: 6);
+        var defender = CreateEnemyCombatant(finesse: 3, armorSoak: 0);
 
         // Mock: Roll 5 successes
         _mockDice.Setup(d => d.Roll(It.IsAny<int>(), It.IsAny<string>()))
             .Returns(new DiceResult(5, 0, new[] { 8, 9, 10, 8 }));
-        // Weapon damage: 6 (d8)
-        _mockDice.Setup(d => d.RollSingle(8, It.IsAny<string>()))
-            .Returns(6);
+        // Weapon damage: 4 (d6)
+        _mockDice.Setup(d => d.RollSingle(6, It.IsAny<string>()))
+            .Returns(4);
 
         // Act
         var result = _sut.ResolveMeleeAttack(attacker, defender, AttackType.Heavy);
 
         // Assert
         result.IsHit.Should().BeTrue();
-        // Verify d8 was used
-        _mockDice.Verify(d => d.RollSingle(8, It.IsAny<string>()), Times.Once);
-        // Verify pool was Might - 1 = 4
+        // Verify combatant's weapon die (d6) was used
+        _mockDice.Verify(d => d.RollSingle(6, It.IsAny<string>()), Times.Once);
+        // Verify pool was Might - 1 = 4 (heavy attack penalty to hit)
         _mockDice.Verify(d => d.Roll(4, It.IsAny<string>()), Times.Once);
+        // Raw = Might(5) + Weapon(4) + HeavyBonus(4) = 13, no soak, Final = 13
+        result.FinalDamage.Should().Be(13);
     }
 
     [Fact]
-    public void ResolveMeleeAttack_StandardAttack_UsesD6AndNoModifier()
+    public void ResolveMeleeAttack_StandardAttack_UsesWeaponDieAndDamageBonus()
     {
-        // Arrange
-        var attacker = CreatePlayerCombatant(might: 5);
-        var defender = CreateEnemyCombatant(finesse: 3, sturdiness: 0);
+        // Arrange - player with d6 sword, standard attack adds +2 damage
+        var attacker = CreatePlayerCombatant(might: 5, weaponDamageDie: 6);
+        var defender = CreateEnemyCombatant(finesse: 3, armorSoak: 0);
 
         // Mock: Roll 5 successes
         _mockDice.Setup(d => d.Roll(It.IsAny<int>(), It.IsAny<string>()))
@@ -398,10 +425,12 @@ public class AttackResolutionServiceTests
 
         // Assert
         result.IsHit.Should().BeTrue();
-        // Verify d6 was used
+        // Verify combatant's weapon die (d6) was used
         _mockDice.Verify(d => d.RollSingle(6, It.IsAny<string>()), Times.Once);
-        // Verify pool was exactly Might = 5
+        // Verify pool was exactly Might = 5 (no modifier for standard)
         _mockDice.Verify(d => d.Roll(5, It.IsAny<string>()), Times.Once);
+        // Raw = Might(5) + Weapon(4) + StandardBonus(2) = 11, no soak, Final = 11
+        result.FinalDamage.Should().Be(11);
     }
 
     #endregion
@@ -411,9 +440,9 @@ public class AttackResolutionServiceTests
     [Fact]
     public void ResolveMeleeAttack_MinimumOneDamage_WhenHit()
     {
-        // Arrange
-        var attacker = CreatePlayerCombatant(might: 1);
-        var defender = CreateEnemyCombatant(finesse: 1, sturdiness: 10); // High soak
+        // Arrange - low might vs high armor soak
+        var attacker = CreatePlayerCombatant(might: 1, weaponDamageDie: 6);
+        var defender = CreateEnemyCombatant(finesse: 1, armorSoak: 20); // High armor soak
 
         // Mock: Roll 4 successes (net = 4 - 2 = 2, Glancing)
         _mockDice.Setup(d => d.Roll(It.IsAny<int>(), It.IsAny<string>()))
@@ -432,11 +461,11 @@ public class AttackResolutionServiceTests
     }
 
     [Fact]
-    public void ResolveMeleeAttack_SoakReducesDamage()
+    public void ResolveMeleeAttack_ArmorSoakReducesDamage()
     {
-        // Arrange
-        var attacker = CreatePlayerCombatant(might: 5);
-        var defender = CreateEnemyCombatant(finesse: 1, sturdiness: 5);
+        // Arrange - player with d6 sword vs enemy with 5 armor soak
+        var attacker = CreatePlayerCombatant(might: 5, weaponDamageDie: 6);
+        var defender = CreateEnemyCombatant(finesse: 1, armorSoak: 5);
 
         // Mock: Roll 5 successes (net = 5 - 2 = 3, Solid)
         _mockDice.Setup(d => d.Roll(It.IsAny<int>(), It.IsAny<string>()))
@@ -450,9 +479,9 @@ public class AttackResolutionServiceTests
 
         // Assert
         result.IsHit.Should().BeTrue();
-        // Raw = 5 + 4 = 9, Soak = 5, Final = 4
-        result.RawDamage.Should().Be(9);
-        result.FinalDamage.Should().Be(4);
+        // Raw = Might(5) + Weapon(4) + StandardBonus(2) = 11, Soak = 5, Final = 6
+        result.RawDamage.Should().Be(11);
+        result.FinalDamage.Should().Be(6);
     }
 
     #endregion
@@ -463,13 +492,13 @@ public class AttackResolutionServiceTests
     public void ResolveMeleeAttack_LowMightWithHeavyPenalty_MinimumOneDie()
     {
         // Arrange - Might 1 with Heavy penalty (-1) should still roll at least 1 die
-        var attacker = CreatePlayerCombatant(might: 1);
-        var defender = CreateEnemyCombatant(finesse: 1, sturdiness: 0);
+        var attacker = CreatePlayerCombatant(might: 1, weaponDamageDie: 6);
+        var defender = CreateEnemyCombatant(finesse: 1, armorSoak: 0);
 
         // Mock: Roll 3 successes
         _mockDice.Setup(d => d.Roll(It.IsAny<int>(), It.IsAny<string>()))
             .Returns(new DiceResult(3, 0, new[] { 8 }));
-        _mockDice.Setup(d => d.RollSingle(8, It.IsAny<string>()))
+        _mockDice.Setup(d => d.RollSingle(6, It.IsAny<string>()))
             .Returns(4);
 
         // Act
@@ -478,6 +507,71 @@ public class AttackResolutionServiceTests
         // Assert
         // Should have rolled at least 1 die even with penalty bringing pool to 0
         _mockDice.Verify(d => d.Roll(1, It.IsAny<string>()), Times.Once);
+    }
+
+    #endregion
+
+    #region Equipment Integration Tests
+
+    [Fact]
+    public void ResolveMeleeAttack_UsesAttackerWeaponDamageDie()
+    {
+        // Arrange - attacker with d8 weapon
+        var attacker = CreatePlayerCombatant(might: 5, weaponDamageDie: 8, weaponName: "Greataxe");
+        var defender = CreateEnemyCombatant(finesse: 3, armorSoak: 0);
+
+        _mockDice.Setup(d => d.Roll(It.IsAny<int>(), It.IsAny<string>()))
+            .Returns(new DiceResult(5, 0, new[] { 8, 9, 10, 8, 9 }));
+        _mockDice.Setup(d => d.RollSingle(8, It.IsAny<string>()))
+            .Returns(6);
+
+        // Act
+        _sut.ResolveMeleeAttack(attacker, defender, AttackType.Standard);
+
+        // Assert - verify d8 was rolled, not d6
+        _mockDice.Verify(d => d.RollSingle(8, It.IsAny<string>()), Times.Once);
+    }
+
+    [Fact]
+    public void ResolveMeleeAttack_AppliesDefenderArmorSoak()
+    {
+        // Arrange - defender with 10 armor soak
+        var attacker = CreatePlayerCombatant(might: 5, weaponDamageDie: 6);
+        var defender = CreateEnemyCombatant(finesse: 3, armorSoak: 10);
+
+        _mockDice.Setup(d => d.Roll(It.IsAny<int>(), It.IsAny<string>()))
+            .Returns(new DiceResult(5, 0, new[] { 8, 9, 10, 8, 9 }));
+        _mockDice.Setup(d => d.RollSingle(6, It.IsAny<string>()))
+            .Returns(4);
+
+        // Act
+        var result = _sut.ResolveMeleeAttack(attacker, defender, AttackType.Standard);
+
+        // Assert
+        result.IsHit.Should().BeTrue();
+        // Raw = Might(5) + Weapon(4) + StandardBonus(2) = 11, Soak = 10, Final = 1 (minimum)
+        result.FinalDamage.Should().Be(1);
+    }
+
+    [Fact]
+    public void ResolveMeleeAttack_SoakCannotReduceBelowOne()
+    {
+        // Arrange - massive armor soak vs weak attack
+        var attacker = CreatePlayerCombatant(might: 1, weaponDamageDie: 4);
+        var defender = CreateEnemyCombatant(finesse: 1, armorSoak: 100);
+
+        _mockDice.Setup(d => d.Roll(It.IsAny<int>(), It.IsAny<string>()))
+            .Returns(new DiceResult(5, 0, new[] { 8, 9, 10, 8, 9 }));
+        _mockDice.Setup(d => d.RollSingle(4, It.IsAny<string>()))
+            .Returns(1);
+
+        // Act
+        var result = _sut.ResolveMeleeAttack(attacker, defender, AttackType.Light);
+
+        // Assert
+        result.IsHit.Should().BeTrue();
+        // Even with 100 soak, minimum damage is 1
+        result.FinalDamage.Should().Be(1);
     }
 
     #endregion

@@ -26,13 +26,14 @@ public class AttackResolutionService : IAttackResolutionService
     };
 
     /// <summary>
-    /// Weapon die sizes for each attack type.
+    /// Damage bonuses for each attack type (added to weapon damage).
+    /// Light attacks are faster but deal less damage, heavy attacks are slower but deal more.
     /// </summary>
-    private static readonly Dictionary<AttackType, int> WeaponDice = new()
+    private static readonly Dictionary<AttackType, int> DamageBonuses = new()
     {
-        { AttackType.Light, 4 },    // d4
-        { AttackType.Standard, 6 }, // d6
-        { AttackType.Heavy, 8 }     // d8
+        { AttackType.Light, 0 },    // No bonus
+        { AttackType.Standard, 2 }, // +2 damage
+        { AttackType.Heavy, 4 }     // +4 damage
     };
 
     /// <summary>
@@ -100,26 +101,36 @@ public class AttackResolutionService : IAttackResolutionService
 
         if (isHit)
         {
-            // Raw damage = Might + Weapon Die
-            var weaponDie = WeaponDice[attackType];
-            var weaponDamage = _dice.RollSingle(weaponDie, $"{attacker.Name} Weapon Damage");
-            rawDamage = attacker.GetAttribute(CharacterAttribute.Might) + weaponDamage;
+            // Roll weapon damage using attacker's equipped weapon die
+            var weaponDamage = _dice.RollSingle(attacker.WeaponDamageDie, $"{attacker.Name} Weapon ({attacker.WeaponName})");
+
+            // Raw damage = Might + Weapon Roll + Attack Type Bonus
+            var damageBonus = DamageBonuses[attackType];
+            rawDamage = attacker.GetAttribute(CharacterAttribute.Might) + weaponDamage + damageBonus;
 
             _logger.LogDebug(
-                "Raw damage: Might {Might} + d{Die} ({Roll}) = {Raw}",
-                attacker.GetAttribute(CharacterAttribute.Might), weaponDie, weaponDamage, rawDamage);
+                "Raw damage: Might {Might} + {WeaponName} d{Die} ({Roll}) + Bonus {Bonus} = {Raw}",
+                attacker.GetAttribute(CharacterAttribute.Might), attacker.WeaponName,
+                attacker.WeaponDamageDie, weaponDamage, damageBonus, rawDamage);
 
-            // Apply outcome modifiers
+            // Apply outcome modifiers (glancing halves, critical doubles)
             rawDamage = ApplyDamageModifier(rawDamage, outcome);
 
-            // Calculate soak (Sturdiness + future armor)
-            var soak = defender.GetAttribute(CharacterAttribute.Sturdiness);
+            // Calculate soak from defender's armor
+            var soak = defender.ArmorSoak;
 
             // Final damage (minimum 1 on hit)
             finalDamage = Math.Max(1, rawDamage - soak);
 
+            if (rawDamage - soak < 1)
+            {
+                _logger.LogDebug(
+                    "Minimum damage enforced: {Calculated} -> 1",
+                    rawDamage - soak);
+            }
+
             _logger.LogDebug(
-                "Damage calc: Raw {Raw} - Soak {Soak} = Final {Final}",
+                "Damage reduced by soak: {Raw} - {Soak} = {Final}",
                 rawDamage, soak, finalDamage);
         }
 

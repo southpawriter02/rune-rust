@@ -51,6 +51,31 @@ public class Enemy
     /// </summary>
     public int CurrentStamina { get; set; } = 35;
 
+    #region Equipment Stats (Snapshot for Combat)
+
+    /// <summary>
+    /// The damage die size for this enemy's weapon (e.g., 6 for d6).
+    /// Used by AttackResolutionService during combat.
+    /// </summary>
+    public int WeaponDamageDie { get; set; } = 4;
+
+    /// <summary>
+    /// Accuracy bonus from the enemy's weapon.
+    /// </summary>
+    public int WeaponAccuracyBonus { get; set; } = 0;
+
+    /// <summary>
+    /// Total armor soak value for damage reduction.
+    /// </summary>
+    public int ArmorSoak { get; set; } = 0;
+
+    /// <summary>
+    /// Display name for the enemy's weapon.
+    /// </summary>
+    public string WeaponName { get; set; } = "Claws";
+
+    #endregion
+
     /// <summary>
     /// Gets the attribute value for the specified attribute type.
     /// </summary>

@@ -1,4 +1,5 @@
 using RuneAndRust.Core.Entities;
+using RuneAndRust.Core.Enums;
 using CharacterAttribute = RuneAndRust.Core.Enums.Attribute;
 using CharacterEntity = RuneAndRust.Core.Entities.Character;
 
@@ -54,6 +55,31 @@ public class Combatant
 
     #endregion
 
+    #region Equipment Snapshot
+
+    /// <summary>
+    /// The damage die size for the combatant's weapon (e.g., 6 for d6).
+    /// Defaults to 4 (unarmed d4) if no weapon is equipped.
+    /// </summary>
+    public int WeaponDamageDie { get; set; } = 4;
+
+    /// <summary>
+    /// Accuracy bonus from the combatant's weapon.
+    /// </summary>
+    public int WeaponAccuracyBonus { get; set; } = 0;
+
+    /// <summary>
+    /// Total armor soak value from all equipped armor pieces.
+    /// </summary>
+    public int ArmorSoak { get; set; } = 0;
+
+    /// <summary>
+    /// Display name for the combatant's weapon.
+    /// </summary>
+    public string WeaponName { get; set; } = "Fists";
+
+    #endregion
+
     #region Source References
 
     /// <summary>
@@ -83,25 +109,46 @@ public class Combatant
 
     /// <summary>
     /// Creates a Combatant from a Character entity.
+    /// Snapshots equipment stats at combat start to avoid DB access during combat.
     /// </summary>
     /// <param name="c">The source Character.</param>
-    /// <returns>A new Combatant wrapping the Character.</returns>
-    public static Combatant FromCharacter(CharacterEntity c) => new()
+    /// <returns>A new Combatant wrapping the Character with equipment stats cached.</returns>
+    public static Combatant FromCharacter(CharacterEntity c)
     {
-        Name = c.Name,
-        IsPlayer = true,
-        CharacterSource = c,
-        CurrentHp = c.CurrentHP,
-        MaxHp = c.MaxHP,
-        CurrentStamina = c.CurrentStamina,
-        MaxStamina = c.MaxStamina
-    };
+        // Find equipped weapon (MainHand slot)
+        var weapon = c.Inventory?
+            .Where(i => i.IsEquipped && i.Item is Equipment eq && eq.Slot == EquipmentSlot.MainHand)
+            .Select(i => i.Item as Equipment)
+            .FirstOrDefault();
+
+        // Calculate total soak from all equipped armor pieces
+        var totalSoak = c.Inventory?
+            .Where(i => i.IsEquipped && i.Item is Equipment)
+            .Sum(i => ((Equipment)i.Item!).SoakBonus) ?? 0;
+
+        return new Combatant
+        {
+            Name = c.Name,
+            IsPlayer = true,
+            CharacterSource = c,
+            CurrentHp = c.CurrentHP,
+            MaxHp = c.MaxHP,
+            CurrentStamina = c.CurrentStamina,
+            MaxStamina = c.MaxStamina,
+            // Equipment snapshot
+            WeaponDamageDie = weapon?.DamageDie ?? 4,
+            WeaponAccuracyBonus = 0, // Future: derive from weapon attributes
+            ArmorSoak = totalSoak,
+            WeaponName = weapon?.Name ?? "Fists"
+        };
+    }
 
     /// <summary>
     /// Creates a Combatant from an Enemy entity.
+    /// Copies enemy equipment stats for use during combat.
     /// </summary>
     /// <param name="e">The source Enemy.</param>
-    /// <returns>A new Combatant wrapping the Enemy.</returns>
+    /// <returns>A new Combatant wrapping the Enemy with equipment stats.</returns>
     public static Combatant FromEnemy(Enemy e) => new()
     {
         Name = e.Name,
@@ -110,6 +157,11 @@ public class Combatant
         CurrentHp = e.CurrentHp,
         MaxHp = e.MaxHp,
         CurrentStamina = e.CurrentStamina,
-        MaxStamina = e.MaxStamina
+        MaxStamina = e.MaxStamina,
+        // Enemy equipment stats
+        WeaponDamageDie = e.WeaponDamageDie,
+        WeaponAccuracyBonus = e.WeaponAccuracyBonus,
+        ArmorSoak = e.ArmorSoak,
+        WeaponName = e.WeaponName
     };
 }

@@ -76,6 +76,7 @@ class Program
                     services.AddSingleton<IInitiativeService, InitiativeService>();
                     services.AddSingleton<IAttackResolutionService, AttackResolutionService>();
                     services.AddSingleton<ICombatService, CombatService>();
+                    services.AddSingleton<ICombatScreenRenderer, CombatScreenRenderer>();
 
                     // Register Character Creation Services
                     services.AddScoped<CharacterFactory>();
@@ -85,7 +86,7 @@ class Program
                 .Build();
 
             // 3. UI Handover
-            AnsiConsole.MarkupLine("[green]Rune & Rust v0.2.0a Booting...[/]");
+            AnsiConsole.MarkupLine("[green]Rune & Rust v0.2.0c Booting...[/]");
             AnsiConsole.WriteLine();
 
             // Resolve the entry point from DI

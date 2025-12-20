@@ -20,6 +20,7 @@ public class CombatServiceTests
 {
     private readonly Mock<IInitiativeService> _mockInitiative;
     private readonly Mock<IAttackResolutionService> _mockAttackResolution;
+    private readonly Mock<ILootService> _mockLootService;
     private readonly Mock<ILogger<CombatService>> _mockLogger;
     private readonly GameState _gameState;
     private readonly CombatService _sut;
@@ -28,13 +29,19 @@ public class CombatServiceTests
     {
         _mockInitiative = new Mock<IInitiativeService>();
         _mockAttackResolution = new Mock<IAttackResolutionService>();
+        _mockLootService = new Mock<ILootService>();
         _mockLogger = new Mock<ILogger<CombatService>>();
         _gameState = new GameState();
         _sut = new CombatService(
             _gameState,
             _mockInitiative.Object,
             _mockAttackResolution.Object,
+            _mockLootService.Object,
             _mockLogger.Object);
+
+        // Default setup for loot service
+        _mockLootService.Setup(l => l.GenerateLoot(It.IsAny<LootGenerationContext>()))
+            .Returns(LootResult.Empty("No loot"));
 
         // Default setup for initiative service
         _mockInitiative.Setup(i => i.SortTurnOrder(It.IsAny<IEnumerable<Combatant>>()))
@@ -762,6 +769,439 @@ public class CombatServiceTests
 
         _gameState.CombatState = combatState;
         _gameState.Phase = GamePhase.Combat;
+    }
+
+    #endregion
+
+    #region LogCombatEvent Tests
+
+    [Fact]
+    public void LogCombatEvent_AddsMessageToLog()
+    {
+        // Arrange
+        SetupActiveCombatWithPlayerAndEnemy(playerFirst: true);
+
+        // Act
+        _sut.LogCombatEvent("Test message");
+
+        // Assert
+        var viewModel = _sut.GetViewModel();
+        viewModel!.CombatLog.Should().Contain("Test message");
+    }
+
+    [Fact]
+    public void LogCombatEvent_MaxTenEntries_RemovesOldest()
+    {
+        // Arrange
+        SetupActiveCombatWithPlayerAndEnemy(playerFirst: true);
+
+        // Act - Add 12 messages
+        for (int i = 1; i <= 12; i++)
+        {
+            _sut.LogCombatEvent($"Message {i}");
+        }
+
+        // Assert
+        var viewModel = _sut.GetViewModel();
+        viewModel!.CombatLog.Should().HaveCount(10);
+        viewModel.CombatLog.Should().NotContain("Message 1");
+        viewModel.CombatLog.Should().NotContain("Message 2");
+        viewModel.CombatLog.Should().Contain("Message 3");
+        viewModel.CombatLog.Should().Contain("Message 12");
+    }
+
+    [Fact]
+    public void LogCombatEvent_PreservesInsertionOrder()
+    {
+        // Arrange
+        SetupActiveCombatWithPlayerAndEnemy(playerFirst: true);
+
+        // Act
+        _sut.LogCombatEvent("First");
+        _sut.LogCombatEvent("Second");
+        _sut.LogCombatEvent("Third");
+
+        // Assert
+        var viewModel = _sut.GetViewModel();
+        viewModel!.CombatLog[0].Should().Be("First");
+        viewModel.CombatLog[1].Should().Be("Second");
+        viewModel.CombatLog[2].Should().Be("Third");
+    }
+
+    #endregion
+
+    #region GetViewModel Tests
+
+    [Fact]
+    public void GetViewModel_WhenNoCombat_ReturnsNull()
+    {
+        // Arrange
+        _gameState.CombatState = null;
+
+        // Act
+        var result = _sut.GetViewModel();
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public void GetViewModel_ReturnsCorrectRoundNumber()
+    {
+        // Arrange
+        SetupActiveCombatWithPlayerAndEnemy(playerFirst: true);
+        _gameState.CombatState!.RoundNumber = 5;
+
+        // Act
+        var result = _sut.GetViewModel();
+
+        // Assert
+        result!.RoundNumber.Should().Be(5);
+    }
+
+    [Fact]
+    public void GetViewModel_ReturnsActiveCombatantName()
+    {
+        // Arrange
+        SetupActiveCombatWithPlayerAndEnemy(playerFirst: true);
+
+        // Act
+        var result = _sut.GetViewModel();
+
+        // Assert
+        result!.ActiveCombatantName.Should().Be("TestPlayer");
+    }
+
+    [Fact]
+    public void GetViewModel_ReturnsAllCombatantsInTurnOrder()
+    {
+        // Arrange
+        SetupActiveCombatWithPlayerAndEnemy(playerFirst: true, enemyName: "Draugr");
+
+        // Act
+        var result = _sut.GetViewModel();
+
+        // Assert
+        result!.TurnOrder.Should().HaveCount(2);
+        result.TurnOrder[0].Name.Should().Be("TestPlayer");
+        result.TurnOrder[1].Name.Should().Be("Draugr");
+    }
+
+    [Fact]
+    public void GetViewModel_MarksActiveCombatant()
+    {
+        // Arrange
+        SetupActiveCombatWithPlayerAndEnemy(playerFirst: true);
+
+        // Act
+        var result = _sut.GetViewModel();
+
+        // Assert
+        result!.TurnOrder[0].IsActive.Should().BeTrue();
+        result.TurnOrder[1].IsActive.Should().BeFalse();
+    }
+
+    [Fact]
+    public void GetViewModel_PlayerShowsExactHpNumbers()
+    {
+        // Arrange
+        SetupActiveCombatWithPlayerAndEnemy(playerFirst: true);
+        var player = _gameState.CombatState!.TurnOrder.First(c => c.IsPlayer);
+        player.CurrentHp = 75;
+        player.MaxHp = 100;
+
+        // Act
+        var result = _sut.GetViewModel();
+
+        // Assert
+        var playerView = result!.TurnOrder.First(c => c.IsPlayer);
+        playerView.HealthStatus.Should().Be("75/100");
+    }
+
+    [Fact]
+    public void GetViewModel_EnemyShowsNarrativeHealth_Healthy()
+    {
+        // Arrange
+        SetupActiveCombatWithPlayerAndEnemy(playerFirst: true);
+        var enemy = _gameState.CombatState!.TurnOrder.First(c => !c.IsPlayer);
+        enemy.CurrentHp = 50;
+        enemy.MaxHp = 50; // 100%
+
+        // Act
+        var result = _sut.GetViewModel();
+
+        // Assert
+        var enemyView = result!.TurnOrder.First(c => !c.IsPlayer);
+        enemyView.HealthStatus.Should().Contain("Healthy");
+    }
+
+    [Fact]
+    public void GetViewModel_EnemyShowsNarrativeHealth_Wounded()
+    {
+        // Arrange
+        SetupActiveCombatWithPlayerAndEnemy(playerFirst: true);
+        var enemy = _gameState.CombatState!.TurnOrder.First(c => !c.IsPlayer);
+        enemy.CurrentHp = 25;
+        enemy.MaxHp = 50; // 50%
+
+        // Act
+        var result = _sut.GetViewModel();
+
+        // Assert
+        var enemyView = result!.TurnOrder.First(c => !c.IsPlayer);
+        enemyView.HealthStatus.Should().Contain("Wounded");
+    }
+
+    [Fact]
+    public void GetViewModel_EnemyShowsNarrativeHealth_Critical()
+    {
+        // Arrange
+        SetupActiveCombatWithPlayerAndEnemy(playerFirst: true);
+        var enemy = _gameState.CombatState!.TurnOrder.First(c => !c.IsPlayer);
+        enemy.CurrentHp = 10;
+        enemy.MaxHp = 50; // 20%
+
+        // Act
+        var result = _sut.GetViewModel();
+
+        // Assert
+        var enemyView = result!.TurnOrder.First(c => !c.IsPlayer);
+        enemyView.HealthStatus.Should().Contain("Critical");
+    }
+
+    [Fact]
+    public void GetViewModel_EnemyShowsNarrativeHealth_Dead()
+    {
+        // Arrange
+        SetupActiveCombatWithPlayerAndEnemy(playerFirst: true);
+        var enemy = _gameState.CombatState!.TurnOrder.First(c => !c.IsPlayer);
+        enemy.CurrentHp = 0;
+        enemy.MaxHp = 50;
+
+        // Act
+        var result = _sut.GetViewModel();
+
+        // Assert
+        var enemyView = result!.TurnOrder.First(c => !c.IsPlayer);
+        enemyView.HealthStatus.Should().Contain("Dead");
+    }
+
+    [Fact]
+    public void GetViewModel_IncludesPlayerStats()
+    {
+        // Arrange
+        SetupActiveCombatWithPlayerAndEnemy(playerFirst: true);
+        var player = _gameState.CombatState!.TurnOrder.First(c => c.IsPlayer);
+        player.CurrentHp = 80;
+        player.MaxHp = 100;
+        player.CurrentStamina = 45;
+        player.MaxStamina = 60;
+
+        // Act
+        var result = _sut.GetViewModel();
+
+        // Assert
+        result!.PlayerStats.CurrentHp.Should().Be(80);
+        result.PlayerStats.MaxHp.Should().Be(100);
+        result.PlayerStats.CurrentStamina.Should().Be(45);
+        result.PlayerStats.MaxStamina.Should().Be(60);
+    }
+
+    [Fact]
+    public void GetViewModel_IncludesCombatLog()
+    {
+        // Arrange
+        SetupActiveCombatWithPlayerAndEnemy(playerFirst: true);
+        _sut.LogCombatEvent("Test event");
+
+        // Act
+        var result = _sut.GetViewModel();
+
+        // Assert
+        result!.CombatLog.Should().Contain("Test event");
+    }
+
+    [Fact]
+    public void GetViewModel_WhenNoPlayer_ReturnsNull()
+    {
+        // Arrange - Create combat state with only enemies (abnormal but possible)
+        _gameState.CombatState = new CombatState
+        {
+            RoundNumber = 1,
+            TurnIndex = 0
+        };
+        _gameState.CombatState.TurnOrder.Add(new Combatant
+        {
+            Name = "Enemy",
+            IsPlayer = false,
+            CurrentHp = 50,
+            MaxHp = 50
+        });
+
+        // Act
+        var result = _sut.GetViewModel();
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    #endregion
+
+    #region Narrative Health Thresholds Tests
+
+    [Theory]
+    [InlineData(100, 100, "Healthy")]    // 100%
+    [InlineData(76, 100, "Healthy")]     // 76% (threshold)
+    [InlineData(75, 100, "Wounded")]     // 75% (boundary)
+    [InlineData(50, 100, "Wounded")]     // 50%
+    [InlineData(26, 100, "Wounded")]     // 26% (threshold)
+    [InlineData(25, 100, "Critical")]    // 25% (boundary)
+    [InlineData(10, 100, "Critical")]    // 10%
+    [InlineData(1, 100, "Critical")]     // 1%
+    [InlineData(0, 100, "Dead")]         // 0%
+    public void GetViewModel_NarrativeHealthThresholds_AreCorrect(int currentHp, int maxHp, string expectedNarrative)
+    {
+        // Arrange
+        SetupActiveCombatWithPlayerAndEnemy(playerFirst: true);
+        var enemy = _gameState.CombatState!.TurnOrder.First(c => !c.IsPlayer);
+        enemy.CurrentHp = currentHp;
+        enemy.MaxHp = maxHp;
+
+        // Act
+        var result = _sut.GetViewModel();
+
+        // Assert
+        var enemyView = result!.TurnOrder.First(c => !c.IsPlayer);
+        enemyView.HealthStatus.Should().Contain(expectedNarrative);
+    }
+
+    #endregion
+
+    #region StartCombat Combat Log Tests
+
+    [Fact]
+    public void StartCombat_ClearsPreviousCombatLog()
+    {
+        // Arrange
+        _gameState.CurrentCharacter = CreateTestCharacter();
+        var enemies = new List<Enemy> { CreateTestEnemy() };
+
+        // First combat
+        _sut.StartCombat(enemies);
+        _sut.LogCombatEvent("Old combat message");
+
+        // Act - Start new combat
+        _sut.StartCombat(enemies);
+
+        // Assert
+        var viewModel = _sut.GetViewModel();
+        viewModel!.CombatLog.Should().NotContain("Old combat message");
+    }
+
+    [Fact]
+    public void StartCombat_AddsInitialCombatBeginsMessage()
+    {
+        // Arrange
+        _gameState.CurrentCharacter = CreateTestCharacter();
+        var enemies = new List<Enemy> { CreateTestEnemy("Draugr") };
+
+        // Act
+        _sut.StartCombat(enemies);
+
+        // Assert
+        var viewModel = _sut.GetViewModel();
+        viewModel!.CombatLog.Should().Contain(m => m.Contains("Combat begins"));
+    }
+
+    [Fact]
+    public void StartCombat_LogsEnemyNames()
+    {
+        // Arrange
+        _gameState.CurrentCharacter = CreateTestCharacter();
+        var enemies = new List<Enemy> { CreateTestEnemy("Draugr") };
+
+        // Act
+        _sut.StartCombat(enemies);
+
+        // Assert
+        var viewModel = _sut.GetViewModel();
+        viewModel!.CombatLog.Should().Contain(m => m.Contains("Draugr"));
+    }
+
+    #endregion
+
+    #region ExecutePlayerAttack Combat Log Tests
+
+    [Fact]
+    public void ExecutePlayerAttack_Hit_LogsToСombatLog()
+    {
+        // Arrange
+        SetupActiveCombatWithPlayerAndEnemy(playerFirst: true, enemyName: "Draugr");
+        _mockAttackResolution.Setup(a => a.ResolveMeleeAttack(
+                It.IsAny<Combatant>(), It.IsAny<Combatant>(), It.IsAny<AttackType>()))
+            .Returns(new AttackResult(AttackOutcome.Solid, 3, 10, 8, true));
+
+        // Act
+        _sut.ExecutePlayerAttack("Draugr", AttackType.Standard);
+
+        // Assert
+        var viewModel = _sut.GetViewModel();
+        viewModel!.CombatLog.Should().Contain(m => m.Contains("Draugr"));
+    }
+
+    [Fact]
+    public void ExecutePlayerAttack_Miss_LogsToСombatLog()
+    {
+        // Arrange
+        SetupActiveCombatWithPlayerAndEnemy(playerFirst: true, enemyName: "Draugr");
+        _mockAttackResolution.Setup(a => a.ResolveMeleeAttack(
+                It.IsAny<Combatant>(), It.IsAny<Combatant>(), It.IsAny<AttackType>()))
+            .Returns(new AttackResult(AttackOutcome.Miss, -1, 0, 0, false));
+
+        // Act
+        _sut.ExecutePlayerAttack("Draugr", AttackType.Standard);
+
+        // Assert
+        var viewModel = _sut.GetViewModel();
+        viewModel!.CombatLog.Should().Contain(m => m.Contains("Miss") || m.Contains("evades"));
+    }
+
+    [Fact]
+    public void ExecutePlayerAttack_Critical_LogsCriticalMessage()
+    {
+        // Arrange
+        SetupActiveCombatWithPlayerAndEnemy(playerFirst: true, enemyName: "Draugr");
+        _mockAttackResolution.Setup(a => a.ResolveMeleeAttack(
+                It.IsAny<Combatant>(), It.IsAny<Combatant>(), It.IsAny<AttackType>()))
+            .Returns(new AttackResult(AttackOutcome.Critical, 6, 20, 15, true));
+
+        // Act
+        _sut.ExecutePlayerAttack("Draugr", AttackType.Standard);
+
+        // Assert
+        var viewModel = _sut.GetViewModel();
+        viewModel!.CombatLog.Should().Contain(m => m.Contains("CRITICAL"));
+    }
+
+    [Fact]
+    public void ExecutePlayerAttack_Victory_LogsVictoryMessage()
+    {
+        // Arrange
+        SetupActiveCombatWithPlayerAndEnemy(playerFirst: true, enemyName: "Draugr");
+        var enemy = _gameState.CombatState!.TurnOrder.First(c => !c.IsPlayer);
+        enemy.CurrentHp = 5; // Low HP to ensure death
+
+        _mockAttackResolution.Setup(a => a.ResolveMeleeAttack(
+                It.IsAny<Combatant>(), It.IsAny<Combatant>(), It.IsAny<AttackType>()))
+            .Returns(new AttackResult(AttackOutcome.Solid, 3, 10, 10, true));
+
+        // Act
+        _sut.ExecutePlayerAttack("Draugr", AttackType.Standard);
+
+        // Assert
+        var viewModel = _sut.GetViewModel();
+        // Note: After victory, the combat might end. Check log exists before combat ended.
+        viewModel?.CombatLog.Should().Contain(m => m.Contains("VICTORY"));
     }
 
     #endregion

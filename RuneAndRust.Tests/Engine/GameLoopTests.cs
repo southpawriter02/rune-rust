@@ -18,6 +18,7 @@ public class GameLoopTests
     private readonly Mock<ILogger<GameService>> _mockGameLogger;
     private readonly Mock<ILogger<CommandParser>> _mockParserLogger;
     private readonly Mock<IInputHandler> _mockInputHandler;
+    private readonly Mock<ICombatService> _mockCombatService;
     private readonly GameState _state;
     private readonly CommandParser _parser;
 
@@ -26,6 +27,7 @@ public class GameLoopTests
         _mockGameLogger = new Mock<ILogger<GameService>>();
         _mockParserLogger = new Mock<ILogger<CommandParser>>();
         _mockInputHandler = new Mock<IInputHandler>();
+        _mockCombatService = new Mock<ICombatService>();
         _state = new GameState();
         _parser = new CommandParser(_mockParserLogger.Object, _mockInputHandler.Object, _state);
     }
@@ -37,7 +39,7 @@ public class GameLoopTests
     {
         // Arrange - Input sequence: "quit"
         _mockInputHandler.Setup(x => x.GetInput(It.IsAny<string>())).Returns("quit");
-        var service = new GameService(_mockGameLogger.Object, _mockInputHandler.Object, _parser, _state);
+        var service = new GameService(_mockGameLogger.Object, _mockInputHandler.Object, _parser, _state, _mockCombatService.Object, null);
 
         // Act
         service.StartAsync().GetAwaiter().GetResult();
@@ -54,7 +56,7 @@ public class GameLoopTests
         _mockInputHandler.SetupSequence(x => x.GetInput(It.IsAny<string>()))
             .Returns("start")
             .Returns("quit");
-        var service = new GameService(_mockGameLogger.Object, _mockInputHandler.Object, _parser, _state);
+        var service = new GameService(_mockGameLogger.Object, _mockInputHandler.Object, _parser, _state, _mockCombatService.Object, null);
 
         // Act
         service.StartAsync().GetAwaiter().GetResult();
@@ -73,7 +75,7 @@ public class GameLoopTests
             .Returns("look")
             .Returns("look")
             .Returns("quit");
-        var service = new GameService(_mockGameLogger.Object, _mockInputHandler.Object, _parser, _state);
+        var service = new GameService(_mockGameLogger.Object, _mockInputHandler.Object, _parser, _state, _mockCombatService.Object, null);
 
         // Act
         service.StartAsync().GetAwaiter().GetResult();
@@ -96,7 +98,7 @@ public class GameLoopTests
             .Returns("look")     // Stay in Exploration
             .Returns("menu")     // Exploration -> MainMenu
             .Returns("quit");    // MainMenu -> Quit
-        var service = new GameService(_mockGameLogger.Object, _mockInputHandler.Object, _parser, _state);
+        var service = new GameService(_mockGameLogger.Object, _mockInputHandler.Object, _parser, _state, _mockCombatService.Object, null);
 
         // Act
         service.StartAsync().GetAwaiter().GetResult();
@@ -113,7 +115,7 @@ public class GameLoopTests
         _mockInputHandler.SetupSequence(x => x.GetInput(It.IsAny<string>()))
             .Returns("start")
             .Returns("quit");
-        var service = new GameService(_mockGameLogger.Object, _mockInputHandler.Object, _parser, _state);
+        var service = new GameService(_mockGameLogger.Object, _mockInputHandler.Object, _parser, _state, _mockCombatService.Object, null);
 
         // Act
         service.StartAsync().GetAwaiter().GetResult();
@@ -134,7 +136,7 @@ public class GameLoopTests
             .Returns("invalid")
             .Returns("nonsense")
             .Returns("quit");
-        var service = new GameService(_mockGameLogger.Object, _mockInputHandler.Object, _parser, _state);
+        var service = new GameService(_mockGameLogger.Object, _mockInputHandler.Object, _parser, _state, _mockCombatService.Object, null);
 
         // Act
         service.StartAsync().GetAwaiter().GetResult();
@@ -152,7 +154,7 @@ public class GameLoopTests
             .Returns("")
             .Returns("   ")
             .Returns("quit");
-        var service = new GameService(_mockGameLogger.Object, _mockInputHandler.Object, _parser, _state);
+        var service = new GameService(_mockGameLogger.Object, _mockInputHandler.Object, _parser, _state, _mockCombatService.Object, null);
 
         // Act
         service.StartAsync().GetAwaiter().GetResult();
@@ -173,7 +175,7 @@ public class GameLoopTests
         _mockInputHandler.SetupSequence(x => x.GetInput(It.IsAny<string>()))
             .Returns("help")
             .Returns("quit");
-        var service = new GameService(_mockGameLogger.Object, _mockInputHandler.Object, _parser, _state);
+        var service = new GameService(_mockGameLogger.Object, _mockInputHandler.Object, _parser, _state, _mockCombatService.Object, null);
 
         // Act
         service.StartAsync().GetAwaiter().GetResult();
@@ -191,7 +193,7 @@ public class GameLoopTests
             .Returns("start")
             .Returns("help")
             .Returns("quit");
-        var service = new GameService(_mockGameLogger.Object, _mockInputHandler.Object, _parser, _state);
+        var service = new GameService(_mockGameLogger.Object, _mockInputHandler.Object, _parser, _state, _mockCombatService.Object, null);
 
         // Act
         service.StartAsync().GetAwaiter().GetResult();
@@ -215,7 +217,7 @@ public class GameLoopTests
             .Returns("look")
             .Returns("status")
             .Returns("quit");
-        var service = new GameService(_mockGameLogger.Object, _mockInputHandler.Object, _parser, _state);
+        var service = new GameService(_mockGameLogger.Object, _mockInputHandler.Object, _parser, _state, _mockCombatService.Object, null);
 
         // Act
         service.StartAsync().GetAwaiter().GetResult();
@@ -235,7 +237,7 @@ public class GameLoopTests
             .Returns("menu")
             .Returns("start")  // New game should reset turn count
             .Returns("quit");
-        var service = new GameService(_mockGameLogger.Object, _mockInputHandler.Object, _parser, _state);
+        var service = new GameService(_mockGameLogger.Object, _mockInputHandler.Object, _parser, _state, _mockCombatService.Object, null);
 
         // Act
         service.StartAsync().GetAwaiter().GetResult();
@@ -253,7 +255,7 @@ public class GameLoopTests
     {
         // Arrange
         _mockInputHandler.Setup(x => x.GetInput(It.IsAny<string>())).Returns("quit");
-        var service = new GameService(_mockGameLogger.Object, _mockInputHandler.Object, _parser, _state);
+        var service = new GameService(_mockGameLogger.Object, _mockInputHandler.Object, _parser, _state, _mockCombatService.Object, null);
 
         // Act
         service.StartAsync().GetAwaiter().GetResult();
@@ -269,7 +271,7 @@ public class GameLoopTests
         _mockInputHandler.SetupSequence(x => x.GetInput(It.IsAny<string>()))
             .Returns("start")
             .Returns("quit");
-        var service = new GameService(_mockGameLogger.Object, _mockInputHandler.Object, _parser, _state);
+        var service = new GameService(_mockGameLogger.Object, _mockInputHandler.Object, _parser, _state, _mockCombatService.Object, null);
 
         // Act
         service.StartAsync().GetAwaiter().GetResult();

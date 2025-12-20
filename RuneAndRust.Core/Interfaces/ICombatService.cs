@@ -1,6 +1,7 @@
 using RuneAndRust.Core.Entities;
 using RuneAndRust.Core.Enums;
 using RuneAndRust.Core.Models.Combat;
+using RuneAndRust.Core.ViewModels;
 
 namespace RuneAndRust.Core.Interfaces;
 
@@ -24,9 +25,10 @@ public interface ICombatService
 
     /// <summary>
     /// Ends the current combat encounter.
-    /// Clears the combat state and returns to Exploration phase.
+    /// Clears the combat state, generates loot on victory, and returns to Exploration phase.
     /// </summary>
-    void EndCombat();
+    /// <returns>A CombatResult containing victory state, XP earned, and loot found, or null if no combat was active.</returns>
+    CombatResult? EndCombat();
 
     /// <summary>
     /// Executes a player attack against a named target.
@@ -56,4 +58,18 @@ public interface ICombatService
     /// </summary>
     /// <returns>A formatted string showing the status of all combatants.</returns>
     string GetCombatStatus();
+
+    /// <summary>
+    /// Gets an immutable view model snapshot of the current combat state for UI rendering.
+    /// Transforms raw combat data into display-ready format with narrative health for enemies.
+    /// </summary>
+    /// <returns>A CombatViewModel containing all display data, or null if not in combat.</returns>
+    CombatViewModel? GetViewModel();
+
+    /// <summary>
+    /// Adds a message to the player-visible combat log.
+    /// The log maintains a rolling buffer of the last 10 events.
+    /// </summary>
+    /// <param name="message">The formatted message to add (may include Spectre markup).</param>
+    void LogCombatEvent(string message);
 }

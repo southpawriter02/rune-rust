@@ -15,6 +15,8 @@ public class GameService : IGameService
     private readonly IInputHandler _inputHandler;
     private readonly CommandParser _parser;
     private readonly GameState _state;
+    private readonly ICombatService _combatService;
+    private readonly ICombatScreenRenderer? _combatRenderer;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="GameService"/> class.
@@ -23,16 +25,22 @@ public class GameService : IGameService
     /// <param name="inputHandler">The input handler for user interaction.</param>
     /// <param name="parser">The command parser for processing input.</param>
     /// <param name="state">The game state singleton.</param>
+    /// <param name="combatService">The combat service for ViewModel access.</param>
+    /// <param name="combatRenderer">The combat screen renderer (optional for testing).</param>
     public GameService(
         ILogger<GameService> logger,
         IInputHandler inputHandler,
         CommandParser parser,
-        GameState state)
+        GameState state,
+        ICombatService combatService,
+        ICombatScreenRenderer? combatRenderer = null)
     {
         _logger = logger;
         _inputHandler = inputHandler;
         _parser = parser;
         _state = state;
+        _combatService = combatService;
+        _combatRenderer = combatRenderer;
     }
 
     /// <inheritdoc/>
@@ -45,13 +53,23 @@ public class GameService : IGameService
 
         while (_state.Phase != GamePhase.Quit)
         {
-            // 1. Determine prompt based on current phase
+            // 1. Render combat UI if in combat phase
+            if (_state.Phase == GamePhase.Combat && _combatRenderer != null)
+            {
+                var viewModel = _combatService.GetViewModel();
+                if (viewModel != null)
+                {
+                    _combatRenderer.Render(viewModel);
+                }
+            }
+
+            // 2. Determine prompt based on current phase
             string prompt = GetPhasePrompt();
 
-            // 2. Get input from the user (abstracted for testability)
+            // 3. Get input from the user (abstracted for testability)
             string input = _inputHandler.GetInput(prompt);
 
-            // 3. Process the input through the command parser
+            // 4. Process the input through the command parser
             await _parser.ParseAndExecuteAsync(input, _state);
         }
 
