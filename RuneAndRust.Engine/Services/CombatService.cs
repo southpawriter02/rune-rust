@@ -24,6 +24,7 @@ public class CombatService : ICombatService
     private readonly IResourceService _resourceService;
     private readonly IAbilityService _abilityService;
     private readonly IActiveAbilityRepository _abilityRepository;
+    private readonly ITraumaService _traumaService;
     private readonly ILogger<CombatService> _logger;
 
     /// <summary>
@@ -54,6 +55,7 @@ public class CombatService : ICombatService
     /// <param name="resourceService">The resource service for stamina/aether management.</param>
     /// <param name="abilityService">The ability service for cooldown and ability management.</param>
     /// <param name="abilityRepository">The ability repository for loading archetype abilities.</param>
+    /// <param name="traumaService">The trauma service for stress and trauma mechanics (v0.3.0).</param>
     /// <param name="logger">The logger for traceability.</param>
     public CombatService(
         GameState gameState,
@@ -66,6 +68,7 @@ public class CombatService : ICombatService
         IResourceService resourceService,
         IAbilityService abilityService,
         IActiveAbilityRepository abilityRepository,
+        ITraumaService traumaService,
         ILogger<CombatService> logger)
     {
         _gameState = gameState;
@@ -78,6 +81,7 @@ public class CombatService : ICombatService
         _resourceService = resourceService;
         _abilityService = abilityService;
         _abilityRepository = abilityRepository;
+        _traumaService = traumaService;
         _logger = logger;
     }
 
@@ -200,6 +204,13 @@ public class CombatService : ICombatService
 
             // Process ability cooldowns at turn start (v0.2.3b)
             _abilityService.ProcessCooldowns(active);
+
+            // Process trauma triggers at turn start (v0.3.0c)
+            // Only for player combatants with active traumas
+            if (active.IsPlayer && active.CharacterSource != null)
+            {
+                ProcessTraumaTriggers(active);
+            }
 
             // Reset defending stance at start of turn
             if (active.IsDefending)
@@ -1063,6 +1074,59 @@ public class CombatService : ICombatService
             : "";
 
         return $"[cyan]{user.Name}[/] uses [yellow]{ability.Name}[/] on {targetText}!{effects}";
+    }
+
+    #endregion
+
+    #region Trauma System (v0.3.0c)
+
+    /// <summary>
+    /// Processes trauma triggers at the start of a player's turn.
+    /// Applies passive stress from traumas with always-active or met conditions.
+    /// </summary>
+    /// <param name="combatant">The player combatant to process traumas for.</param>
+    private void ProcessTraumaTriggers(Combatant combatant)
+    {
+        if (combatant.CharacterSource == null) return;
+
+        var character = combatant.CharacterSource;
+        var activeTraumas = character.ActiveTraumas.Where(t => t.IsActive).ToList();
+
+        if (activeTraumas.Count == 0) return;
+
+        _logger.LogDebug(
+            "Processing {Count} active traumas for {Name}",
+            activeTraumas.Count, combatant.Name);
+
+        foreach (var trauma in activeTraumas)
+        {
+            var definition = TraumaRegistry.GetById(trauma.DefinitionId);
+            if (definition == null || definition.StressPerTurnInCondition <= 0)
+            {
+                continue;
+            }
+
+            // Check if trauma condition is met
+            // For v0.3.0c, only process "Always active" traumas automatically
+            // Other conditions (environmental, combat-specific) require future hook integration
+            if (definition.TriggerCondition.Contains("Always active", StringComparison.OrdinalIgnoreCase))
+            {
+                var stressResult = _traumaService.InflictStress(
+                    combatant,
+                    definition.StressPerTurnInCondition,
+                    $"Trauma: {trauma.Name}");
+
+                if (stressResult.NetStressApplied > 0)
+                {
+                    LogCombatEvent(
+                        $"[magenta]{combatant.Name}[/] suffers from [grey]{trauma.Name}[/] (+{stressResult.NetStressApplied} stress)");
+                }
+
+                _logger.LogDebug(
+                    "Trauma trigger: {Trauma} inflicted {Net} stress (Raw: {Raw}, Mitigated: {Mit})",
+                    trauma.Name, stressResult.NetStressApplied, stressResult.RawStress, stressResult.MitigatedAmount);
+            }
+        }
     }
 
     #endregion

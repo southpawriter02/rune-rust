@@ -152,6 +152,16 @@ public class Character
 
     #endregion
 
+    #region Trauma System (v0.3.0c)
+
+    /// <summary>
+    /// Gets or sets the collection of permanent psychological traumas.
+    /// Traumas are acquired when failing a Breaking Point resolve check.
+    /// </summary>
+    public List<Trauma> ActiveTraumas { get; set; } = new();
+
+    #endregion
+
     #region Attribute Methods
 
     /// <summary>

@@ -155,13 +155,154 @@ public class TraumaService : ITraumaService
     /// <inheritdoc/>
     public void HandleBreakingPoint(Combatant target)
     {
-        // TODO: Implement in v0.3.0c
-        // Placeholder: log the event, future versions will trigger trauma selection
-        _logger.LogWarning(
-            "BREAKING POINT: {Target} has reached maximum stress. " +
-            "Trauma mechanics will be implemented in v0.3.0c.",
-            target.Name);
+        // For combatants with a Character source, resolve the Breaking Point
+        if (target.CharacterSource != null)
+        {
+            var result = ResolveBreakingPoint(target.CharacterSource, "Stress threshold reached");
+
+            // Sync stress back to combatant
+            target.CurrentStress = target.CharacterSource.PsychicStress;
+
+            _logger.LogWarning(
+                "BREAKING POINT RESOLVED: {Target} - Outcome: {Outcome}, New Stress: {Stress}",
+                target.Name, result.Outcome, result.NewStressLevel);
+        }
+        else
+        {
+            // Non-player combatants: just reset stress to 75 (no trauma mechanic)
+            _logger.LogWarning(
+                "BREAKING POINT: {Target} (non-player) stress reset to 75",
+                target.Name);
+            target.CurrentStress = 75;
+        }
     }
+
+    #region Breaking Point Resolution (v0.3.0c)
+
+    /// <inheritdoc/>
+    public BreakingPointResult ResolveBreakingPoint(Character character, string source)
+    {
+        _logger.LogWarning(
+            "BREAKING POINT: {Name} triggered. Source: {Source}. Rolling WILL resolve check...",
+            character.Name, source);
+
+        // Roll WILL dice pool for resolve check (difficulty 3)
+        var willValue = character.GetAttribute(CharacterAttribute.Will);
+        var resolveRoll = _dice.Roll(willValue, $"{character.Name} Breaking Point Resolve");
+
+        _logger.LogInformation(
+            "Resolve check: {Will}d10 = {Successes} successes, {Botches} botches",
+            willValue, resolveRoll.Successes, resolveRoll.Botches);
+
+        // Determine outcome based on successes and botches
+        BreakingPointOutcome outcome;
+        Trauma? acquiredTrauma = null;
+        bool wasStunned = false;
+        bool wasDisoriented = false;
+
+        if (resolveRoll.Successes >= 3)
+        {
+            // STABILIZED: 3+ successes
+            outcome = BreakingPointOutcome.Stabilized;
+            character.PsychicStress = 75;
+            wasDisoriented = true;
+
+            _logger.LogInformation(
+                "{Name} STABILIZED from Breaking Point. Stress reset to 75. Gains Disoriented status.",
+                character.Name);
+        }
+        else if (resolveRoll.Successes == 0 && resolveRoll.Botches > 0)
+        {
+            // CATASTROPHE: 0 successes AND at least 1 botch
+            outcome = BreakingPointOutcome.Catastrophe;
+            character.PsychicStress = 50;
+            wasStunned = true;
+
+            // Acquire a random trauma
+            var traumaDefinition = TraumaRegistry.GetRandom();
+            acquiredTrauma = traumaDefinition.CreateInstance(source);
+            character.ActiveTraumas.Add(acquiredTrauma);
+
+            // Apply permanent attribute penalties
+            ApplyTraumaPenalties(character, acquiredTrauma);
+
+            _logger.LogCritical(
+                "{Name} CATASTROPHE at Breaking Point! Acquired trauma: {Trauma}. Stress reset to 50. Gains Stunned.",
+                character.Name, acquiredTrauma.Name);
+        }
+        else
+        {
+            // TRAUMA: <3 successes, no catastrophe condition
+            outcome = BreakingPointOutcome.Trauma;
+            character.PsychicStress = 50;
+
+            // Acquire a random trauma
+            var traumaDefinition = TraumaRegistry.GetRandom();
+            acquiredTrauma = traumaDefinition.CreateInstance(source);
+            character.ActiveTraumas.Add(acquiredTrauma);
+
+            // Apply permanent attribute penalties
+            ApplyTraumaPenalties(character, acquiredTrauma);
+
+            _logger.LogWarning(
+                "{Name} acquired trauma at Breaking Point: {Trauma}. Stress reset to 50.",
+                character.Name, acquiredTrauma.Name);
+        }
+
+        return new BreakingPointResult(
+            Outcome: outcome,
+            AcquiredTrauma: acquiredTrauma,
+            NewStressLevel: character.PsychicStress,
+            ResolveSuccesses: resolveRoll.Successes,
+            ResolveBotches: resolveRoll.Botches,
+            WasStunned: wasStunned,
+            WasDisoriented: wasDisoriented
+        );
+    }
+
+    /// <inheritdoc/>
+    public void ApplyTraumaPenalties(Character character, Trauma trauma)
+    {
+        // Look up the trauma definition to get penalties
+        var definition = TraumaRegistry.GetById(trauma.DefinitionId);
+        if (definition == null)
+        {
+            _logger.LogWarning(
+                "No trauma definition found for {DefinitionId}, skipping penalty application",
+                trauma.DefinitionId);
+            return;
+        }
+
+        foreach (var penalty in definition.AttributePenalties)
+        {
+            var currentValue = character.GetAttribute(penalty.Key);
+            var newValue = Math.Max(1, currentValue + penalty.Value); // Penalty is negative, min 1
+            character.SetAttribute(penalty.Key, newValue);
+
+            _logger.LogInformation(
+                "{Name} trauma penalty applied: {Attribute} {CurrentValue} -> {NewValue} (from {Trauma})",
+                character.Name, penalty.Key, currentValue, newValue, trauma.Name);
+        }
+    }
+
+    /// <inheritdoc/>
+    public int GetTraumaAttributePenalty(Character character, CharacterAttribute attribute)
+    {
+        var totalPenalty = 0;
+
+        foreach (var trauma in character.ActiveTraumas.Where(t => t.IsActive))
+        {
+            var definition = TraumaRegistry.GetById(trauma.DefinitionId);
+            if (definition != null && definition.AttributePenalties.TryGetValue(attribute, out var penalty))
+            {
+                totalPenalty += penalty;
+            }
+        }
+
+        return totalPenalty;
+    }
+
+    #endregion
 
     #region Corruption Methods (v0.3.0b)
 

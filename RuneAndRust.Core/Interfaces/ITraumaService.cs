@@ -48,10 +48,39 @@ public interface ITraumaService
 
     /// <summary>
     /// Handles the breaking point event when stress reaches 100.
-    /// Placeholder for v0.3.0c trauma mechanics.
+    /// Rolls a WILL-based resolve check to determine outcome.
     /// </summary>
     /// <param name="target">The combatant who reached 100 stress.</param>
     void HandleBreakingPoint(Combatant target);
+
+    #region Breaking Point Resolution (v0.3.0c)
+
+    /// <summary>
+    /// Resolves a Breaking Point event by rolling a WILL-based resolve check.
+    /// Difficulty 3: Success stabilizes, failure causes trauma, fumble causes catastrophe.
+    /// </summary>
+    /// <param name="character">The character at the breaking point.</param>
+    /// <param name="source">Description of what caused the breaking point.</param>
+    /// <returns>A BreakingPointResult with outcome, trauma (if any), and new stress level.</returns>
+    BreakingPointResult ResolveBreakingPoint(Character character, string source);
+
+    /// <summary>
+    /// Applies permanent attribute penalties from a trauma to a character.
+    /// Called when a trauma is first acquired.
+    /// </summary>
+    /// <param name="character">The character acquiring the trauma.</param>
+    /// <param name="trauma">The trauma being applied.</param>
+    void ApplyTraumaPenalties(Character character, Trauma trauma);
+
+    /// <summary>
+    /// Gets the total attribute penalty from all active traumas.
+    /// </summary>
+    /// <param name="character">The character to check.</param>
+    /// <param name="attribute">The attribute to get penalties for.</param>
+    /// <returns>The total penalty (negative value) from traumas.</returns>
+    int GetTraumaAttributePenalty(Character character, Enums.Attribute attribute);
+
+    #endregion
 
     #region Corruption Methods (v0.3.0b)
 

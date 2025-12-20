@@ -187,21 +187,22 @@ public class TraumaServiceTests
     }
 
     [Fact]
-    public void InflictStress_ClampsAt100()
+    public void InflictStress_ClampsAt100AndTriggersBreakingPoint()
     {
         // Arrange - combatant already at 90 stress
         var combatant = CreateCombatant(will: 1, currentStress: 90);
 
-        // Mock: Roll 0 successes (no mitigation)
+        // Mock: Roll 0 successes (no mitigation) - this causes Trauma outcome (stress reset to 50)
         _mockDice.Setup(d => d.Roll(1, It.IsAny<string>()))
             .Returns(new DiceResult(0, 0, new[] { 3 }));
 
         // Act - inflict 50 stress (would go to 140)
         var result = _sut.InflictStress(combatant, 50, "Massive Trauma");
 
-        // Assert
-        result.CurrentTotal.Should().Be(100); // Clamped at 100
-        combatant.CurrentStress.Should().Be(100);
+        // Assert - Breaking Point triggered, Trauma outcome (0 successes, no botches) resets to 50
+        // (v0.3.0c: HandleBreakingPoint now resolves the breaking point)
+        result.IsBreakingPoint.Should().BeTrue();
+        combatant.CurrentStress.Should().Be(50); // Trauma outcome resets to 50
     }
 
     [Fact]
@@ -210,17 +211,17 @@ public class TraumaServiceTests
         // Arrange - combatant at 85 stress
         var combatant = CreateCombatant(will: 1, currentStress: 85);
 
-        // Mock: Roll 0 successes
+        // Mock: Roll 0 successes - causes Trauma outcome (stress reset to 50)
         _mockDice.Setup(d => d.Roll(1, It.IsAny<string>()))
             .Returns(new DiceResult(0, 0, new[] { 4 }));
 
         // Act - inflict 20 stress (pushes to 100+)
         var result = _sut.InflictStress(combatant, 20, "Final Straw");
 
-        // Assert
+        // Assert - Breaking Point triggered and resolved (v0.3.0c)
         result.IsBreakingPoint.Should().BeTrue();
-        result.CurrentTotal.Should().Be(100);
-        result.NewStatus.Should().Be(StressStatus.Breaking);
+        // Trauma outcome (0 successes, no botches) resets stress to 50
+        combatant.CurrentStress.Should().Be(50);
     }
 
     [Fact]
@@ -613,6 +614,296 @@ public class TraumaServiceTests
             Wits = 5,
             Corruption = 0
         };
+    }
+
+    #endregion
+
+    #region Breaking Point Tests (v0.3.0c)
+
+    [Fact]
+    public void ResolveBreakingPoint_Stabilized_WhenThreeOrMoreSuccesses()
+    {
+        // Arrange
+        var character = CreateCharacter();
+        character.PsychicStress = 100;
+
+        _mockDice.Setup(d => d.Roll(It.IsAny<int>(), It.IsAny<string>()))
+            .Returns(new DiceResult(Successes: 3, Botches: 0, Rolls: [8, 9, 10, 2, 3]));
+
+        // Act
+        var result = _sut.ResolveBreakingPoint(character, "Test Source");
+
+        // Assert
+        result.Outcome.Should().Be(BreakingPointOutcome.Stabilized);
+        result.NewStressLevel.Should().Be(75);
+        result.AcquiredTrauma.Should().BeNull();
+        result.WasDisoriented.Should().BeTrue();
+        result.WasStunned.Should().BeFalse();
+        result.ResolveSuccesses.Should().Be(3);
+    }
+
+    [Fact]
+    public void ResolveBreakingPoint_Trauma_WhenFewerThanThreeSuccessesNoBotches()
+    {
+        // Arrange
+        var character = CreateCharacter();
+        character.PsychicStress = 100;
+
+        _mockDice.Setup(d => d.Roll(It.IsAny<int>(), It.IsAny<string>()))
+            .Returns(new DiceResult(Successes: 2, Botches: 0, Rolls: [8, 9, 4, 5, 6]));
+
+        // Act
+        var result = _sut.ResolveBreakingPoint(character, "Test Source");
+
+        // Assert
+        result.Outcome.Should().Be(BreakingPointOutcome.Trauma);
+        result.NewStressLevel.Should().Be(50);
+        result.AcquiredTrauma.Should().NotBeNull();
+        result.WasDisoriented.Should().BeFalse();
+        result.WasStunned.Should().BeFalse();
+        character.ActiveTraumas.Should().HaveCount(1);
+    }
+
+    [Fact]
+    public void ResolveBreakingPoint_Catastrophe_WhenZeroSuccessesAndBotches()
+    {
+        // Arrange
+        var character = CreateCharacter();
+        character.PsychicStress = 100;
+
+        _mockDice.Setup(d => d.Roll(It.IsAny<int>(), It.IsAny<string>()))
+            .Returns(new DiceResult(Successes: 0, Botches: 2, Rolls: [1, 1, 4, 5, 6]));
+
+        // Act
+        var result = _sut.ResolveBreakingPoint(character, "Test Source");
+
+        // Assert
+        result.Outcome.Should().Be(BreakingPointOutcome.Catastrophe);
+        result.NewStressLevel.Should().Be(50);
+        result.AcquiredTrauma.Should().NotBeNull();
+        result.WasDisoriented.Should().BeFalse();
+        result.WasStunned.Should().BeTrue();
+        character.ActiveTraumas.Should().HaveCount(1);
+    }
+
+    [Fact]
+    public void ResolveBreakingPoint_Trauma_NotCatastrophe_WhenZeroSuccessesButNoBotches()
+    {
+        // Arrange - edge case: zero successes but no botches is Trauma, not Catastrophe
+        var character = CreateCharacter();
+        character.PsychicStress = 100;
+
+        _mockDice.Setup(d => d.Roll(It.IsAny<int>(), It.IsAny<string>()))
+            .Returns(new DiceResult(Successes: 0, Botches: 0, Rolls: [4, 5, 6, 7, 3]));
+
+        // Act
+        var result = _sut.ResolveBreakingPoint(character, "Test Source");
+
+        // Assert
+        result.Outcome.Should().Be(BreakingPointOutcome.Trauma);
+        result.WasStunned.Should().BeFalse();
+    }
+
+    [Fact]
+    public void ResolveBreakingPoint_AddsTraumaToCharacterActiveTraumas()
+    {
+        // Arrange
+        var character = CreateCharacter();
+        character.PsychicStress = 100;
+        character.ActiveTraumas.Should().BeEmpty();
+
+        _mockDice.Setup(d => d.Roll(It.IsAny<int>(), It.IsAny<string>()))
+            .Returns(new DiceResult(Successes: 1, Botches: 0, Rolls: [8, 4, 5, 6, 7]));
+
+        // Act
+        var result = _sut.ResolveBreakingPoint(character, "Battle Stress");
+
+        // Assert
+        character.ActiveTraumas.Should().HaveCount(1);
+        var trauma = character.ActiveTraumas[0];
+        trauma.Source.Should().Be("Battle Stress");
+        trauma.IsActive.Should().BeTrue();
+        trauma.DefinitionId.Should().NotBeNullOrEmpty();
+    }
+
+    [Fact]
+    public void ApplyTraumaPenalties_AppliesAttributePenalties()
+    {
+        // Arrange
+        var character = CreateCharacter();
+        character.Finesse = 5;
+
+        // Get "The Shakes" trauma which has -1 Finesse penalty
+        var shakesDef = TraumaRegistry.GetById("TRM_SHAKES");
+        shakesDef.Should().NotBeNull();
+
+        var trauma = shakesDef!.CreateInstance("Test");
+
+        // Act
+        _sut.ApplyTraumaPenalties(character, trauma);
+
+        // Assert
+        character.Finesse.Should().Be(4); // 5 - 1 = 4
+    }
+
+    [Fact]
+    public void ApplyTraumaPenalties_ClampsAttributeToMinimumOne()
+    {
+        // Arrange
+        var character = CreateCharacter();
+        character.Finesse = 1; // Already at minimum
+
+        var shakesDef = TraumaRegistry.GetById("TRM_SHAKES");
+        var trauma = shakesDef!.CreateInstance("Test");
+
+        // Act
+        _sut.ApplyTraumaPenalties(character, trauma);
+
+        // Assert
+        character.Finesse.Should().Be(1); // Should not go below 1
+    }
+
+    [Fact]
+    public void GetTraumaAttributePenalty_ReturnsTotalPenaltiesForAttribute()
+    {
+        // Arrange
+        var character = CreateCharacter();
+
+        // Add two traumas with Finesse penalties
+        var shakesDef = TraumaRegistry.GetById("TRM_SHAKES")!;
+        var trauma1 = shakesDef.CreateInstance("Source1");
+        character.ActiveTraumas.Add(trauma1);
+
+        // Act
+        var penalty = _sut.GetTraumaAttributePenalty(character, CharacterAttribute.Finesse);
+
+        // Assert
+        penalty.Should().Be(-1); // The Shakes has -1 Finesse
+    }
+
+    [Fact]
+    public void GetTraumaAttributePenalty_IgnoresInactiveTraumas()
+    {
+        // Arrange
+        var character = CreateCharacter();
+
+        var shakesDef = TraumaRegistry.GetById("TRM_SHAKES")!;
+        var trauma = shakesDef.CreateInstance("Source");
+        trauma.IsActive = false; // Inactive trauma
+        character.ActiveTraumas.Add(trauma);
+
+        // Act
+        var penalty = _sut.GetTraumaAttributePenalty(character, CharacterAttribute.Finesse);
+
+        // Assert
+        penalty.Should().Be(0); // Inactive trauma should not contribute
+    }
+
+    [Fact]
+    public void HandleBreakingPoint_ResolvesBreakingPointForPlayerCombatant()
+    {
+        // Arrange
+        var character = CreateCharacter();
+        character.PsychicStress = 100;
+        var combatant = Combatant.FromCharacter(character);
+        combatant.CurrentStress = 100;
+
+        _mockDice.Setup(d => d.Roll(It.IsAny<int>(), It.IsAny<string>()))
+            .Returns(new DiceResult(Successes: 3, Botches: 0, Rolls: [8, 9, 10, 4, 5]));
+
+        // Act
+        _sut.HandleBreakingPoint(combatant);
+
+        // Assert
+        combatant.CurrentStress.Should().Be(75); // Stabilized resets to 75
+        character.PsychicStress.Should().Be(75);
+    }
+
+    [Fact]
+    public void HandleBreakingPoint_ResetsStressTo75ForNonPlayerCombatant()
+    {
+        // Arrange
+        var combatant = CreateEnemyCombatant();
+        combatant.CurrentStress = 100;
+
+        // Act
+        _sut.HandleBreakingPoint(combatant);
+
+        // Assert
+        combatant.CurrentStress.Should().Be(75);
+    }
+
+    #endregion
+
+    #region Trauma Registry Tests (v0.3.0c)
+
+    [Fact]
+    public void TraumaRegistry_HasAllStarterTraumas()
+    {
+        // Assert
+        TraumaRegistry.All.Should().HaveCountGreaterThanOrEqualTo(10);
+    }
+
+    [Fact]
+    public void TraumaRegistry_GetById_ReturnsCorrectTrauma()
+    {
+        // Act
+        var trauma = TraumaRegistry.GetById("TRM_NYCTO");
+
+        // Assert
+        trauma.Should().NotBeNull();
+        trauma!.Name.Should().Be("Nyctophobia");
+        trauma.Type.Should().Be(TraumaType.Phobia);
+    }
+
+    [Fact]
+    public void TraumaRegistry_GetById_ReturnsNullForInvalidId()
+    {
+        // Act
+        var trauma = TraumaRegistry.GetById("INVALID_ID");
+
+        // Assert
+        trauma.Should().BeNull();
+    }
+
+    [Fact]
+    public void TraumaRegistry_GetByType_ReturnsMatchingTraumas()
+    {
+        // Act
+        var phobias = TraumaRegistry.GetByType(TraumaType.Phobia).ToList();
+
+        // Assert
+        phobias.Should().HaveCountGreaterThanOrEqualTo(3);
+        phobias.Should().AllSatisfy(t => t.Type.Should().Be(TraumaType.Phobia));
+    }
+
+    [Fact]
+    public void TraumaRegistry_GetRandom_ReturnsValidTrauma()
+    {
+        // Act
+        var trauma = TraumaRegistry.GetRandom();
+
+        // Assert
+        trauma.Should().NotBeNull();
+        trauma.DefinitionId.Should().NotBeNullOrEmpty();
+        TraumaRegistry.All.Should().Contain(trauma);
+    }
+
+    [Fact]
+    public void TraumaDefinition_CreateInstance_CreatesValidTrauma()
+    {
+        // Arrange
+        var definition = TraumaRegistry.GetById("TRM_SHAKES")!;
+
+        // Act
+        var trauma = definition.CreateInstance("Test Battle");
+
+        // Assert
+        trauma.DefinitionId.Should().Be("TRM_SHAKES");
+        trauma.Name.Should().Be("The Shakes");
+        trauma.Source.Should().Be("Test Battle");
+        trauma.IsActive.Should().BeTrue();
+        trauma.Id.Should().NotBeEmpty();
     }
 
     #endregion

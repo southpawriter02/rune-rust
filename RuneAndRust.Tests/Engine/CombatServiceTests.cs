@@ -27,6 +27,7 @@ public class CombatServiceTests
     private readonly Mock<IResourceService> _mockResourceService;
     private readonly Mock<IAbilityService> _mockAbilityService;
     private readonly Mock<IActiveAbilityRepository> _mockAbilityRepository;
+    private readonly Mock<ITraumaService> _mockTraumaService;
     private readonly Mock<ILogger<CombatService>> _mockLogger;
     private readonly GameState _gameState;
     private readonly CombatService _sut;
@@ -42,6 +43,7 @@ public class CombatServiceTests
         _mockResourceService = new Mock<IResourceService>();
         _mockAbilityService = new Mock<IAbilityService>();
         _mockAbilityRepository = new Mock<IActiveAbilityRepository>();
+        _mockTraumaService = new Mock<ITraumaService>();
         _mockLogger = new Mock<ILogger<CombatService>>();
         _gameState = new GameState();
         _sut = new CombatService(
@@ -55,6 +57,7 @@ public class CombatServiceTests
             _mockResourceService.Object,
             _mockAbilityService.Object,
             _mockAbilityRepository.Object,
+            _mockTraumaService.Object,
             _mockLogger.Object);
 
         // Default setup for loot service

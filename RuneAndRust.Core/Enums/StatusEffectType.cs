@@ -34,6 +34,13 @@ public enum StatusEffectType
     /// </summary>
     Vulnerable = 3,
 
+    /// <summary>
+    /// Mental impairment from near-breaking point. -1 to all dice pools.
+    /// Does not stack; reapplication refreshes duration only.
+    /// Acquired when stabilizing from a Breaking Point (v0.3.0c).
+    /// </summary>
+    Disoriented = 4,
+
     // ═══════════════════════════════════════════════════════════════════════
     // BUFFS (100+)
     // ═══════════════════════════════════════════════════════════════════════
