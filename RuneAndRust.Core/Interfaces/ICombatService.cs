@@ -102,4 +102,28 @@ public interface ICombatService
     /// <param name="enemy">The enemy combatant whose turn it is.</param>
     /// <returns>A task that completes when the enemy turn is processed.</returns>
     Task ProcessEnemyTurnAsync(Combatant enemy);
+
+    /// <summary>
+    /// Gets the list of abilities available to the player during combat.
+    /// </summary>
+    /// <returns>The list of abilities for the current player combatant.</returns>
+    List<ActiveAbility> GetPlayerAbilities();
+
+    /// <summary>
+    /// Executes a player ability by hotkey index (1-based).
+    /// Auto-targets if only one valid target exists.
+    /// </summary>
+    /// <param name="hotkey">The 1-based hotkey index of the ability.</param>
+    /// <param name="targetName">Optional target name for multi-enemy scenarios.</param>
+    /// <returns>A narrative message describing the ability result.</returns>
+    string ExecutePlayerAbility(int hotkey, string? targetName = null);
+
+    /// <summary>
+    /// Executes a player ability by name (partial match supported).
+    /// Auto-targets if only one valid target exists.
+    /// </summary>
+    /// <param name="abilityName">The name (or partial name) of the ability to use.</param>
+    /// <param name="targetName">Optional target name for multi-enemy scenarios.</param>
+    /// <returns>A narrative message describing the ability result.</returns>
+    string ExecutePlayerAbility(string abilityName, string? targetName = null);
 }

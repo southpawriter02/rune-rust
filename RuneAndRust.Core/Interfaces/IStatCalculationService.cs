@@ -53,7 +53,17 @@ public interface IStatCalculationService
     int CalculateActionPoints(int wits);
 
     /// <summary>
+    /// Calculates the base max Aether Points for a character based on archetype and Will.
+    /// Mystics: 10 + (Will * 5), Others: 0.
+    /// </summary>
+    /// <param name="archetype">The character's archetype.</param>
+    /// <param name="will">The character's Will attribute.</param>
+    /// <returns>The calculated base max AP (before corruption penalties).</returns>
+    int CalculateBaseMaxAp(ArchetypeType archetype, int will);
+
+    /// <summary>
     /// Recalculates and updates all derived stats on a character.
+    /// Includes corruption penalties for Max AP and affected attributes.
     /// </summary>
     /// <param name="character">The character whose derived stats should be recalculated.</param>
     void RecalculateDerivedStats(Character character);

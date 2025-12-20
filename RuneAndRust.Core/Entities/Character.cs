@@ -92,6 +92,31 @@ public class Character
     public int CurrentAp { get; set; } = 0;
 
     /// <summary>
+    /// Current psychic stress accumulated by the character. Range: 0-100.
+    /// Increases from traumatic combat events, decreases from rest or abilities.
+    /// Affects defense score: Defense = 10 + FINESSE - (Stress / 20).
+    /// </summary>
+    public int PsychicStress { get; set; } = 0;
+
+    /// <summary>
+    /// Maximum psychic stress threshold. Fixed at 100 for all characters.
+    /// Reaching 100 triggers a Breaking Point event.
+    /// </summary>
+    public int MaxPsychicStress => 100;
+
+    /// <summary>
+    /// Current Runic Blight corruption accumulated by the character. Range: 0-100.
+    /// Unlike Stress, Corruption is permanent and not mitigated by WILL.
+    /// Reaching 100 triggers Terminal Error (character becomes a Forlorn).
+    /// </summary>
+    public int Corruption { get; set; } = 0;
+
+    /// <summary>
+    /// Maximum corruption threshold. Fixed at 100 for all characters.
+    /// </summary>
+    public int MaxCorruption => 100;
+
+    /// <summary>
     /// Experience points accumulated by the character.
     /// </summary>
     public int ExperiencePoints { get; set; } = 0;

@@ -9,12 +9,14 @@ namespace RuneAndRust.Core.ViewModels;
 /// <param name="TurnOrder">Ordered list of combatants with display information.</param>
 /// <param name="CombatLog">Rolling buffer of recent combat events (max 10).</param>
 /// <param name="PlayerStats">Player's HP and Stamina for header display.</param>
+/// <param name="PlayerAbilities">List of player abilities with hotkeys and status.</param>
 public record CombatViewModel(
     int RoundNumber,
     string ActiveCombatantName,
     List<CombatantView> TurnOrder,
     List<string> CombatLog,
-    PlayerStatsView PlayerStats
+    PlayerStatsView PlayerStats,
+    List<AbilityView>? PlayerAbilities = null
 );
 
 /// <summary>
@@ -44,9 +46,33 @@ public record CombatantView(
 /// <param name="MaxHp">Player's maximum HP.</param>
 /// <param name="CurrentStamina">Player's current stamina.</param>
 /// <param name="MaxStamina">Player's maximum stamina.</param>
+/// <param name="CurrentStress">Player's current psychic stress (0-100).</param>
+/// <param name="MaxStress">Player's maximum stress (always 100).</param>
+/// <param name="CurrentCorruption">Player's current Runic Blight corruption (0-100).</param>
+/// <param name="MaxCorruption">Player's maximum corruption (always 100).</param>
 public record PlayerStatsView(
     int CurrentHp,
     int MaxHp,
     int CurrentStamina,
-    int MaxStamina
+    int MaxStamina,
+    int CurrentStress,
+    int MaxStress,
+    int CurrentCorruption,
+    int MaxCorruption
+);
+
+/// <summary>
+/// Display-ready ability information for combat UI rendering.
+/// </summary>
+/// <param name="Hotkey">The 1-based hotkey index for this ability.</param>
+/// <param name="Name">Display name of the ability.</param>
+/// <param name="CostDisplay">Formatted cost string (e.g., "35 STA" or "15 AP").</param>
+/// <param name="CooldownRemaining">Turns remaining on cooldown, or 0 if ready.</param>
+/// <param name="IsUsable">Whether the ability can currently be used.</param>
+public record AbilityView(
+    int Hotkey,
+    string Name,
+    string CostDisplay,
+    int CooldownRemaining,
+    bool IsUsable
 );

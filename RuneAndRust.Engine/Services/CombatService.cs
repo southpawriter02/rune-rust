@@ -23,6 +23,7 @@ public class CombatService : ICombatService
     private readonly ICreatureTraitService _traitService;
     private readonly IResourceService _resourceService;
     private readonly IAbilityService _abilityService;
+    private readonly IActiveAbilityRepository _abilityRepository;
     private readonly ILogger<CombatService> _logger;
 
     /// <summary>
@@ -52,6 +53,7 @@ public class CombatService : ICombatService
     /// <param name="traitService">The creature trait service for Elite enemy effects.</param>
     /// <param name="resourceService">The resource service for stamina/aether management.</param>
     /// <param name="abilityService">The ability service for cooldown and ability management.</param>
+    /// <param name="abilityRepository">The ability repository for loading archetype abilities.</param>
     /// <param name="logger">The logger for traceability.</param>
     public CombatService(
         GameState gameState,
@@ -63,6 +65,7 @@ public class CombatService : ICombatService
         ICreatureTraitService traitService,
         IResourceService resourceService,
         IAbilityService abilityService,
+        IActiveAbilityRepository abilityRepository,
         ILogger<CombatService> logger)
     {
         _gameState = gameState;
@@ -74,6 +77,7 @@ public class CombatService : ICombatService
         _traitService = traitService;
         _resourceService = resourceService;
         _abilityService = abilityService;
+        _abilityRepository = abilityRepository;
         _logger = logger;
     }
 
@@ -90,11 +94,21 @@ public class CombatService : ICombatService
 
         var state = new CombatState();
 
-        // Add player
-        var player = Combatant.FromCharacter(_gameState.CurrentCharacter);
+        // Load abilities for the player's archetype (v0.2.3c)
+        var character = _gameState.CurrentCharacter;
+        var abilities = _abilityRepository.GetByArchetypeAsync(character.Archetype, maxTier: 1)
+            .GetAwaiter().GetResult().ToList();
+
+        _logger.LogInformation(
+            "Loaded {Count} abilities for archetype {Archetype}",
+            abilities.Count, character.Archetype);
+
+        // Add player with abilities
+        var player = Combatant.FromCharacter(character, abilities);
         _initiative.RollInitiative(player);
         state.TurnOrder.Add(player);
-        _logger.LogDebug("Added player {Name} to combat", player.Name);
+        _logger.LogDebug("Added player {Name} to combat with {AbilityCount} abilities",
+            player.Name, player.Abilities.Count);
 
         // Add enemies
         foreach (var enemy in enemies)
@@ -557,6 +571,17 @@ public class CombatService : ICombatService
             return null;
         }
 
+        // Map abilities to AbilityView with hotkeys (v0.2.3c)
+        var abilityViews = player.Abilities
+            .Select((ability, index) => new AbilityView(
+                Hotkey: index + 1,
+                Name: ability.Name,
+                CostDisplay: FormatAbilityCost(ability),
+                CooldownRemaining: _abilityService.GetCooldownRemaining(player, ability.Id),
+                IsUsable: _abilityService.CanUse(player, ability)
+            ))
+            .ToList();
+
         _logger.LogTrace("Generated CombatViewModel for Round {Round}", state.RoundNumber);
 
         return new CombatViewModel(
@@ -564,8 +589,33 @@ public class CombatService : ICombatService
             state.ActiveCombatant?.Name ?? "Unknown",
             state.TurnOrder.Select(c => MapToView(c, state.ActiveCombatant)).ToList(),
             _combatLog.ToList(),
-            new PlayerStatsView(player.CurrentHp, player.MaxHp, player.CurrentStamina, player.MaxStamina)
+            new PlayerStatsView(
+                player.CurrentHp, player.MaxHp,
+                player.CurrentStamina, player.MaxStamina,
+                player.CurrentStress, player.MaxStress,
+                player.CurrentCorruption, player.MaxCorruption),
+            abilityViews
         );
+    }
+
+    /// <summary>
+    /// Formats the cost of an ability for display.
+    /// </summary>
+    private static string FormatAbilityCost(ActiveAbility ability)
+    {
+        var costs = new List<string>();
+
+        if (ability.StaminaCost > 0)
+        {
+            costs.Add($"{ability.StaminaCost} STA");
+        }
+
+        if (ability.AetherCost > 0)
+        {
+            costs.Add($"{ability.AetherCost} AP");
+        }
+
+        return costs.Count > 0 ? string.Join(", ", costs) : "Free";
     }
 
     /// <summary>
@@ -793,6 +843,226 @@ public class CombatService : ICombatService
         return result.Outcome == AttackOutcome.Fumble
             ? $"[red]{attacker.Name}[/] fumbles their attack!"
             : $"[red]{attacker.Name}[/] misses [cyan]{target.Name}[/]!";
+    }
+
+    #endregion
+
+    #region Ability Methods (v0.2.3c)
+
+    /// <inheritdoc/>
+    public List<ActiveAbility> GetPlayerAbilities()
+    {
+        var state = _gameState.CombatState;
+        var player = state?.TurnOrder.FirstOrDefault(c => c.IsPlayer);
+        return player?.Abilities ?? new List<ActiveAbility>();
+    }
+
+    /// <inheritdoc/>
+    public string ExecutePlayerAbility(int hotkey, string? targetName = null)
+    {
+        var abilities = GetPlayerAbilities();
+
+        // Validate hotkey (1-based index)
+        if (hotkey < 1 || hotkey > abilities.Count)
+        {
+            _logger.LogDebug("Invalid ability hotkey: {Hotkey}. Player has {Count} abilities.",
+                hotkey, abilities.Count);
+            return $"Invalid ability. Use 1-{abilities.Count}.";
+        }
+
+        var ability = abilities[hotkey - 1];
+        return ExecuteAbilityInternal(ability, targetName);
+    }
+
+    /// <inheritdoc/>
+    public string ExecutePlayerAbility(string abilityName, string? targetName = null)
+    {
+        var abilities = GetPlayerAbilities();
+
+        // Find ability by name (partial match, case-insensitive)
+        var ability = abilities.FirstOrDefault(a =>
+            a.Name.Contains(abilityName, StringComparison.OrdinalIgnoreCase));
+
+        if (ability == null)
+        {
+            _logger.LogDebug("Ability '{AbilityName}' not found in player's kit", abilityName);
+            return $"Ability '{abilityName}' not found.";
+        }
+
+        return ExecuteAbilityInternal(ability, targetName);
+    }
+
+    /// <summary>
+    /// Internal method to execute an ability with auto-targeting logic.
+    /// </summary>
+    /// <param name="ability">The ability to execute.</param>
+    /// <param name="targetName">Optional explicit target name.</param>
+    /// <returns>A narrative message describing the result.</returns>
+    private string ExecuteAbilityInternal(ActiveAbility ability, string? targetName)
+    {
+        var state = _gameState.CombatState;
+
+        // Validate combat state
+        if (state == null)
+        {
+            _logger.LogWarning("ExecutePlayerAbility called but no combat is active");
+            return "You are not in combat.";
+        }
+
+        // Validate it's the player's turn
+        if (!state.IsPlayerTurn)
+        {
+            _logger.LogDebug("Ability attempted but it is not the player's turn");
+            return "It is not your turn.";
+        }
+
+        var user = state.ActiveCombatant!;
+
+        // Check if ability can be used (cooldown, resources)
+        if (!_abilityService.CanUse(user, ability))
+        {
+            var cooldown = _abilityService.GetCooldownRemaining(user, ability.Id);
+            if (cooldown > 0)
+            {
+                return $"{ability.Name} is on cooldown ({cooldown} turn{(cooldown > 1 ? "s" : "")} remaining).";
+            }
+
+            if (ability.StaminaCost > 0 && user.CurrentStamina < ability.StaminaCost)
+            {
+                return $"Not enough stamina for {ability.Name}. Need {ability.StaminaCost}, have {user.CurrentStamina}.";
+            }
+
+            if (ability.AetherCost > 0 && user.CurrentAp < ability.AetherCost)
+            {
+                return $"Not enough Aether for {ability.Name}. Need {ability.AetherCost}, have {user.CurrentAp}.";
+            }
+
+            return $"Cannot use {ability.Name}.";
+        }
+
+        // Resolve target
+        var target = ResolveAbilityTarget(ability, targetName, state);
+        if (target == null)
+        {
+            // Multiple enemies, target required
+            var enemies = state.TurnOrder.Where(c => !c.IsPlayer && c.CurrentHp > 0).ToList();
+            var enemyNames = string.Join(", ", enemies.Select(e => e.Name));
+            _logger.LogWarning("Multiple enemies present, target required for {Ability}", ability.Name);
+            return $"Multiple targets available: {enemyNames}. Specify a target with 'use {ability.Name} on <target>'.";
+        }
+
+        // Execute the ability
+        var result = _abilityService.Execute(user, target, ability);
+
+        // Log to combat log
+        var logMessage = BuildAbilityLogMessage(ability, result, target, user);
+        LogCombatEvent(logMessage);
+
+        // Check for death
+        if (target.CurrentHp <= 0 && target != user)
+        {
+            _logger.LogWarning("{Target} was slain by ability!", target.Name);
+            RemoveDefeatedCombatant(target);
+
+            // Check victory condition
+            if (CheckVictoryCondition())
+            {
+                _logger.LogInformation("Combat Victory! All enemies defeated by ability.");
+                _statusEffects.ProcessTurnEnd(user);
+                return $"{result.Message} VICTORY! All enemies defeated!";
+            }
+        }
+
+        // Process turn end
+        _statusEffects.ProcessTurnEnd(user);
+
+        return result.Message;
+    }
+
+    /// <summary>
+    /// Resolves the target for an ability based on range and auto-targeting logic.
+    /// </summary>
+    /// <param name="ability">The ability being used.</param>
+    /// <param name="targetName">Optional explicit target name.</param>
+    /// <param name="state">The current combat state.</param>
+    /// <returns>The resolved target, or null if multiple targets exist and none was specified.</returns>
+    private Combatant? ResolveAbilityTarget(ActiveAbility ability, string? targetName, CombatState state)
+    {
+        var user = state.ActiveCombatant!;
+
+        // Self-targeting abilities
+        if (ability.Range == 0)
+        {
+            _logger.LogDebug("{Ability} is self-targeting", ability.Name);
+            return user;
+        }
+
+        // Get living enemies
+        var enemies = state.TurnOrder.Where(c => !c.IsPlayer && c.CurrentHp > 0).ToList();
+
+        // Explicit target specified
+        if (!string.IsNullOrWhiteSpace(targetName))
+        {
+            var explicitTarget = enemies.FirstOrDefault(e =>
+                e.Name.Contains(targetName, StringComparison.OrdinalIgnoreCase));
+
+            if (explicitTarget != null)
+            {
+                _logger.LogDebug("Explicit target: {Target}", explicitTarget.Name);
+                return explicitTarget;
+            }
+
+            _logger.LogDebug("Specified target '{Target}' not found", targetName);
+            return null;
+        }
+
+        // Auto-target single enemy
+        if (enemies.Count == 1)
+        {
+            _logger.LogDebug("Auto-targeting single enemy: {Target}", enemies[0].Name);
+            return enemies[0];
+        }
+
+        // Multiple enemies, no target specified
+        _logger.LogDebug("Multiple enemies present ({Count}), no auto-target", enemies.Count);
+        return null;
+    }
+
+    /// <summary>
+    /// Builds a Spectre-markup formatted log message for ability use.
+    /// </summary>
+    private static string BuildAbilityLogMessage(
+        ActiveAbility ability,
+        AbilityResult result,
+        Combatant target,
+        Combatant user)
+    {
+        var targetText = target == user
+            ? "[cyan]self[/]"
+            : $"[red]{target.Name}[/]";
+
+        var effectText = new List<string>();
+
+        if (result.TotalDamage > 0)
+        {
+            effectText.Add($"[red]{result.TotalDamage}[/] damage");
+        }
+
+        if (result.TotalHealing > 0)
+        {
+            effectText.Add($"[green]{result.TotalHealing}[/] HP healed");
+        }
+
+        if (result.StatusesApplied?.Count > 0)
+        {
+            effectText.Add($"[purple]{string.Join(", ", result.StatusesApplied)}[/] applied");
+        }
+
+        var effects = effectText.Count > 0
+            ? $" ({string.Join(", ", effectText)})"
+            : "";
+
+        return $"[cyan]{user.Name}[/] uses [yellow]{ability.Name}[/] on {targetText}!{effects}";
     }
 
     #endregion

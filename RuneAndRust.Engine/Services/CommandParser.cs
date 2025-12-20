@@ -697,6 +697,18 @@ public class CommandParser
             return ExecuteCombatAttack(heavyTarget, AttackType.Heavy);
         }
 
+        // Check for ability use commands (v0.2.3c)
+        if (command.StartsWith("use "))
+        {
+            return ExecuteAbilityCommand(command.Substring(4).Trim());
+        }
+
+        // Check for numbered hotkey shortcuts (1, 2, 3)
+        if (int.TryParse(command, out var hotkey) && hotkey >= 1 && hotkey <= 9)
+        {
+            return ExecuteAbilityByHotkey(hotkey);
+        }
+
         switch (command)
         {
             case "quit":
@@ -772,6 +784,126 @@ public class CommandParser
         }
 
         // Advance to next turn after attack
+        _combatService.NextTurn();
+        DisplayCombatTurnInfo();
+
+        return ParseResult.None;
+    }
+
+    /// <summary>
+    /// Executes an ability command, parsing the ability name and optional target.
+    /// Format: "use <ability> [on <target>]" or "use <hotkey> [on <target>]"
+    /// </summary>
+    /// <param name="args">The arguments after "use ".</param>
+    /// <returns>A ParseResult for the command.</returns>
+    private ParseResult ExecuteAbilityCommand(string args)
+    {
+        if (_combatService == null)
+        {
+            _inputHandler.DisplayError("Combat system not available.");
+            return ParseResult.None;
+        }
+
+        if (string.IsNullOrWhiteSpace(args))
+        {
+            _inputHandler.DisplayError("Use what? Specify an ability name or number.");
+            return ParseResult.None;
+        }
+
+        // Check for target specifier (use <ability> on <target>)
+        string? targetName = null;
+        var abilityArg = args;
+
+        var onIndex = args.IndexOf(" on ", StringComparison.OrdinalIgnoreCase);
+        if (onIndex >= 0)
+        {
+            abilityArg = args.Substring(0, onIndex).Trim();
+            targetName = args.Substring(onIndex + 4).Trim();
+        }
+        else
+        {
+            var atIndex = args.IndexOf(" at ", StringComparison.OrdinalIgnoreCase);
+            if (atIndex >= 0)
+            {
+                abilityArg = args.Substring(0, atIndex).Trim();
+                targetName = args.Substring(atIndex + 4).Trim();
+            }
+        }
+
+        string result;
+
+        // Check if ability argument is a number (hotkey)
+        if (int.TryParse(abilityArg, out var hotkey))
+        {
+            result = _combatService.ExecutePlayerAbility(hotkey, targetName);
+        }
+        else
+        {
+            result = _combatService.ExecutePlayerAbility(abilityArg, targetName);
+        }
+
+        _inputHandler.DisplayMessage(result);
+
+        // Check if combat ended (victory)
+        if (_gameState.CombatState == null || _combatService.CheckVictoryCondition())
+        {
+            var combatResult = _combatService.EndCombat();
+
+            if (combatResult != null && combatResult.Victory && _victoryRenderer != null)
+            {
+                _victoryRenderer.Render(combatResult);
+            }
+            else
+            {
+                _inputHandler.DisplayMessage("");
+                _inputHandler.DisplayMessage("Combat has ended. Returning to exploration.");
+            }
+
+            return new ParseResult { RequiresLook = true };
+        }
+
+        // Advance to next turn after ability
+        _combatService.NextTurn();
+        DisplayCombatTurnInfo();
+
+        return ParseResult.None;
+    }
+
+    /// <summary>
+    /// Executes an ability by its hotkey number.
+    /// </summary>
+    /// <param name="hotkey">The 1-based hotkey index.</param>
+    /// <returns>A ParseResult for the command.</returns>
+    private ParseResult ExecuteAbilityByHotkey(int hotkey)
+    {
+        if (_combatService == null)
+        {
+            _inputHandler.DisplayError("Combat system not available.");
+            return ParseResult.None;
+        }
+
+        var result = _combatService.ExecutePlayerAbility(hotkey);
+        _inputHandler.DisplayMessage(result);
+
+        // Check if combat ended (victory)
+        if (_gameState.CombatState == null || _combatService.CheckVictoryCondition())
+        {
+            var combatResult = _combatService.EndCombat();
+
+            if (combatResult != null && combatResult.Victory && _victoryRenderer != null)
+            {
+                _victoryRenderer.Render(combatResult);
+            }
+            else
+            {
+                _inputHandler.DisplayMessage("");
+                _inputHandler.DisplayMessage("Combat has ended. Returning to exploration.");
+            }
+
+            return new ParseResult { RequiresLook = true };
+        }
+
+        // Advance to next turn after ability
         _combatService.NextTurn();
         DisplayCombatTurnInfo();
 
@@ -896,6 +1028,12 @@ public class CommandParser
         _inputHandler.DisplayMessage("  quick <target>   - Same as light");
         _inputHandler.DisplayMessage("  heavy <target>   - Power attack (40 stamina, d8 damage, -1 hit)");
         _inputHandler.DisplayMessage("  power <target>   - Same as heavy");
+        _inputHandler.DisplayMessage("");
+        _inputHandler.DisplayMessage("Abilities:");
+        _inputHandler.DisplayMessage("  use <name>       - Use an ability by name");
+        _inputHandler.DisplayMessage("  use 1, 2, 3...   - Use an ability by hotkey number");
+        _inputHandler.DisplayMessage("  1, 2, 3...       - Shortcut for use <number>");
+        _inputHandler.DisplayMessage("  use <name> on X  - Use ability targeting a specific enemy");
         _inputHandler.DisplayMessage("");
         _inputHandler.DisplayMessage("Actions:");
         _inputHandler.DisplayMessage("  status           - View HP/Stamina for all combatants");

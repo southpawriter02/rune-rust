@@ -66,6 +66,31 @@ public class Combatant
     public int MaxAp { get; set; }
 
     /// <summary>
+    /// Current psychic stress during combat. Copied from source at combat start.
+    /// Stress 0-100 with tiered status effects. Affects defense calculation.
+    /// </summary>
+    public int CurrentStress { get; set; } = 0;
+
+    /// <summary>
+    /// Maximum stress threshold. Fixed at 100 for all combatants.
+    /// Reaching 100 triggers a Breaking Point event.
+    /// </summary>
+    public int MaxStress { get; set; } = 100;
+
+    /// <summary>
+    /// Current Runic Blight corruption. Copied from source at combat start.
+    /// Corruption 0-100 with tiered penalties. Affects Max AP and attributes.
+    /// Unlike Stress, Corruption is permanent and not mitigated by WILL.
+    /// </summary>
+    public int CurrentCorruption { get; set; } = 0;
+
+    /// <summary>
+    /// Maximum corruption threshold. Fixed at 100 for all combatants.
+    /// Reaching 100 triggers Terminal Error (character becomes a Forlorn).
+    /// </summary>
+    public int MaxCorruption { get; set; } = 100;
+
+    /// <summary>
     /// Active status effects on this combatant during combat.
     /// Combat-volatile: cleared when combat ends.
     /// </summary>
@@ -100,6 +125,12 @@ public class Combatant
     /// Combat-volatile: cleared when combat ends.
     /// </summary>
     public Dictionary<Guid, int> Cooldowns { get; set; } = new();
+
+    /// <summary>
+    /// List of abilities available to this combatant during combat.
+    /// Loaded from the database based on archetype at combat start.
+    /// </summary>
+    public List<ActiveAbility> Abilities { get; set; } = new();
 
     #endregion
 
@@ -160,8 +191,9 @@ public class Combatant
     /// Snapshots equipment stats at combat start to avoid DB access during combat.
     /// </summary>
     /// <param name="c">The source Character.</param>
+    /// <param name="abilities">Optional list of abilities to assign to this combatant.</param>
     /// <returns>A new Combatant wrapping the Character with equipment stats cached.</returns>
-    public static Combatant FromCharacter(CharacterEntity c)
+    public static Combatant FromCharacter(CharacterEntity c, IEnumerable<ActiveAbility>? abilities = null)
     {
         // Find equipped weapon (MainHand slot)
         var weapon = c.Inventory?
@@ -186,11 +218,19 @@ public class Combatant
             // Aether Pool (v0.2.3a)
             CurrentAp = c.CurrentAp,
             MaxAp = c.MaxAp,
+            // Psychic Stress (v0.3.0a)
+            CurrentStress = c.PsychicStress,
+            MaxStress = 100,
+            // Runic Blight Corruption (v0.3.0b)
+            CurrentCorruption = c.Corruption,
+            MaxCorruption = 100,
             // Equipment snapshot
             WeaponDamageDie = weapon?.DamageDie ?? 4,
             WeaponAccuracyBonus = 0, // Future: derive from weapon attributes
             ArmorSoak = totalSoak,
-            WeaponName = weapon?.Name ?? "Fists"
+            WeaponName = weapon?.Name ?? "Fists",
+            // Abilities (v0.2.3c)
+            Abilities = abilities?.ToList() ?? new List<ActiveAbility>()
         };
     }
 
@@ -209,6 +249,12 @@ public class Combatant
         MaxHp = e.MaxHp,
         CurrentStamina = e.CurrentStamina,
         MaxStamina = e.MaxStamina,
+        // Psychic Stress (v0.3.0a) - enemies start at 0
+        CurrentStress = 0,
+        MaxStress = 100,
+        // Runic Blight Corruption (v0.3.0b) - enemies start at 0
+        CurrentCorruption = 0,
+        MaxCorruption = 100,
         // Enemy equipment stats
         WeaponDamageDie = e.WeaponDamageDie,
         WeaponAccuracyBonus = e.WeaponAccuracyBonus,

@@ -20,6 +20,7 @@ public class AttackResolutionServiceTests
 {
     private readonly Mock<IDiceService> _mockDice;
     private readonly Mock<IStatusEffectService> _mockStatusEffects;
+    private readonly Mock<ITraumaService> _mockTraumaService;
     private readonly Mock<ILogger<AttackResolutionService>> _mockLogger;
     private readonly AttackResolutionService _sut;
 
@@ -27,13 +28,21 @@ public class AttackResolutionServiceTests
     {
         _mockDice = new Mock<IDiceService>();
         _mockStatusEffects = new Mock<IStatusEffectService>();
+        _mockTraumaService = new Mock<ITraumaService>();
         _mockLogger = new Mock<ILogger<AttackResolutionService>>();
 
         // Default status effect behavior: no modifiers
         _mockStatusEffects.Setup(s => s.GetDamageMultiplier(It.IsAny<Combatant>())).Returns(1.0f);
         _mockStatusEffects.Setup(s => s.GetSoakModifier(It.IsAny<Combatant>())).Returns(0);
 
-        _sut = new AttackResolutionService(_mockDice.Object, _mockStatusEffects.Object, _mockLogger.Object);
+        // Default trauma service behavior: no stress penalty
+        _mockTraumaService.Setup(t => t.GetDefensePenalty(It.IsAny<int>())).Returns(0);
+
+        _sut = new AttackResolutionService(
+            _mockDice.Object,
+            _mockStatusEffects.Object,
+            _mockTraumaService.Object,
+            _mockLogger.Object);
     }
 
     #region Helper Methods
@@ -198,6 +207,63 @@ public class AttackResolutionServiceTests
 
         // Assert
         defense.Should().Be(expectedDefense);
+    }
+
+    [Fact]
+    public void CalculateDefenseScore_IncludesStressPenalty()
+    {
+        // Arrange - defender with Finesse 5 and stress penalty of 3
+        var enemy = new Enemy
+        {
+            Attributes = new Dictionary<CharacterAttribute, int>
+            {
+                { CharacterAttribute.Finesse, 5 },
+                { CharacterAttribute.Sturdiness, 5 },
+                { CharacterAttribute.Might, 5 },
+                { CharacterAttribute.Wits, 3 },
+                { CharacterAttribute.Will, 3 }
+            }
+        };
+        var defender = Combatant.FromEnemy(enemy);
+        defender.CurrentStress = 60; // Distressed tier
+
+        // Configure mock to return penalty of 3 for stress 60
+        _mockTraumaService.Setup(t => t.GetDefensePenalty(60)).Returns(3);
+
+        // Act
+        var defense = _sut.CalculateDefenseScore(defender);
+
+        // Assert - Defense = 10 + 5 (Finesse) - 3 (Stress Penalty) = 12
+        defense.Should().Be(12);
+        _mockTraumaService.Verify(t => t.GetDefensePenalty(60), Times.Once);
+    }
+
+    [Fact]
+    public void CalculateDefenseScore_WithMaxStressPenalty()
+    {
+        // Arrange - defender at breaking point (100 stress = max penalty of 5)
+        var enemy = new Enemy
+        {
+            Attributes = new Dictionary<CharacterAttribute, int>
+            {
+                { CharacterAttribute.Finesse, 3 },
+                { CharacterAttribute.Sturdiness, 5 },
+                { CharacterAttribute.Might, 5 },
+                { CharacterAttribute.Wits, 3 },
+                { CharacterAttribute.Will, 3 }
+            }
+        };
+        var defender = Combatant.FromEnemy(enemy);
+        defender.CurrentStress = 100;
+
+        // Configure mock to return max penalty of 5
+        _mockTraumaService.Setup(t => t.GetDefensePenalty(100)).Returns(5);
+
+        // Act
+        var defense = _sut.CalculateDefenseScore(defender);
+
+        // Assert - Defense = 10 + 3 (Finesse) - 5 (Max Stress Penalty) = 8
+        defense.Should().Be(8);
     }
 
     #endregion

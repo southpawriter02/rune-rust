@@ -1,3 +1,5 @@
+using RuneAndRust.Core.Enums;
+
 namespace RuneAndRust.Core.Entities;
 
 /// <summary>
@@ -52,4 +54,16 @@ public class ActiveAbility
     /// - STATUS:Type:Duration:Stacks (e.g., "STATUS:Bleeding:3:2")
     /// </summary>
     public string EffectScript { get; set; } = string.Empty;
+
+    /// <summary>
+    /// The character archetype that has access to this ability.
+    /// Determines which characters can learn and use this ability.
+    /// </summary>
+    public ArchetypeType Archetype { get; set; }
+
+    /// <summary>
+    /// Tier level (1-3). Higher tiers unlock at higher character levels.
+    /// Tier 1: Level 1+, Tier 2: Level 5+, Tier 3: Level 10+.
+    /// </summary>
+    public int Tier { get; set; } = 1;
 }

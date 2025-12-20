@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using RuneAndRust.Core.Entities;
 using RuneAndRust.Core.Enums;
 using RuneAndRust.Core.Interfaces;
+using RuneAndRust.Core.Models.Combat;
 using CharacterAttribute = RuneAndRust.Core.Enums.Attribute;
 
 namespace RuneAndRust.Engine.Services;
@@ -93,24 +94,78 @@ public class StatCalculationService : IStatCalculationService
     }
 
     /// <inheritdoc/>
+    public int CalculateBaseMaxAp(ArchetypeType archetype, int will)
+    {
+        _logger.LogTrace("Calculating BaseMaxAp for Archetype {Archetype}, Will {Will}", archetype, will);
+
+        // Only Mystics have an Aether Pool
+        if (archetype != ArchetypeType.Mystic)
+        {
+            _logger.LogDebug("Non-Mystic archetype {Archetype} has 0 base AP", archetype);
+            return 0;
+        }
+
+        var result = 10 + (will * 5);
+
+        _logger.LogDebug("BaseMaxAp calculated: 10 + ({Will} * 5) = {Result}", will, result);
+
+        return result;
+    }
+
+    /// <inheritdoc/>
     public void RecalculateDerivedStats(Character character)
     {
         _logger.LogInformation("Recalculating derived stats for character {CharacterName}", character.Name);
+
+        // Get corruption state for penalty calculations
+        var corruptionState = new CorruptionState(character.Corruption);
 
         // Use effective attributes (base + equipment bonuses)
         var effectiveSturdiness = character.GetEffectiveAttribute(CharacterAttribute.Sturdiness);
         var effectiveFinesse = character.GetEffectiveAttribute(CharacterAttribute.Finesse);
         var effectiveWits = character.GetEffectiveAttribute(CharacterAttribute.Wits);
+        var effectiveWill = character.GetEffectiveAttribute(CharacterAttribute.Will);
 
-        _logger.LogDebug("Effective attributes - Sturdiness: {Sturdiness}, Finesse: {Finesse}, Wits: {Wits}",
-            effectiveSturdiness, effectiveFinesse, effectiveWits);
+        // Apply corruption attribute penalties (v0.3.0b)
+        // Blighted: -1 WILL, Fractured: -2 WILL, -1 WITS
+        if (corruptionState.WillPenalty > 0)
+        {
+            effectiveWill = Math.Max(1, effectiveWill - corruptionState.WillPenalty);
+            _logger.LogDebug(
+                "Corruption penalty applied to WILL: -{Penalty} (effective: {Effective})",
+                corruptionState.WillPenalty, effectiveWill);
+        }
+
+        if (corruptionState.WitsPenalty > 0)
+        {
+            effectiveWits = Math.Max(1, effectiveWits - corruptionState.WitsPenalty);
+            _logger.LogDebug(
+                "Corruption penalty applied to WITS: -{Penalty} (effective: {Effective})",
+                corruptionState.WitsPenalty, effectiveWits);
+        }
+
+        _logger.LogDebug(
+            "Effective attributes - Sturdiness: {Sturdiness}, Finesse: {Finesse}, Wits: {Wits}, Will: {Will}",
+            effectiveSturdiness, effectiveFinesse, effectiveWits, effectiveWill);
 
         var previousMaxHP = character.MaxHP;
         var previousMaxStamina = character.MaxStamina;
+        var previousMaxAp = character.MaxAp;
 
         character.MaxHP = CalculateMaxHP(effectiveSturdiness);
         character.MaxStamina = CalculateMaxStamina(effectiveFinesse, effectiveSturdiness);
         character.ActionPoints = CalculateActionPoints(effectiveWits);
+
+        // Calculate Max AP with corruption penalty (v0.3.0b)
+        var baseMaxAp = CalculateBaseMaxAp(character.Archetype, effectiveWill);
+        character.MaxAp = (int)(baseMaxAp * corruptionState.MaxApMultiplier);
+
+        if (corruptionState.MaxApPenaltyPercent > 0 && baseMaxAp > 0)
+        {
+            _logger.LogDebug(
+                "Corruption penalty applied to MaxAP: -{Penalty}% (base: {Base}, final: {Final})",
+                corruptionState.MaxApPenaltyPercent, baseMaxAp, character.MaxAp);
+        }
 
         // Adjust current HP/Stamina proportionally if max changed (preserve ratio)
         // Or initialize to max if this is the first calculation
@@ -138,9 +193,22 @@ public class StatCalculationService : IStatCalculationService
             character.CurrentStamina = Math.Max(0, (int)(character.MaxStamina * staminaRatio));
         }
 
+        // Adjust current AP if max dropped below it
+        if (previousMaxAp == 0 && character.MaxAp > 0)
+        {
+            // First time initialization - set current to max
+            character.CurrentAp = character.MaxAp;
+        }
+        else if (character.CurrentAp > character.MaxAp)
+        {
+            // Clamp current to new max
+            character.CurrentAp = character.MaxAp;
+            _logger.LogDebug("CurrentAp clamped to new MaxAp: {MaxAp}", character.MaxAp);
+        }
+
         _logger.LogInformation(
-            "Derived stats calculated - MaxHP: {MaxHP}, MaxStamina: {MaxStamina}, ActionPoints: {ActionPoints}",
-            character.MaxHP, character.MaxStamina, character.ActionPoints);
+            "Derived stats calculated - MaxHP: {MaxHP}, MaxStamina: {MaxStamina}, MaxAp: {MaxAp}, ActionPoints: {ActionPoints}",
+            character.MaxHP, character.MaxStamina, character.MaxAp, character.ActionPoints);
     }
 
     /// <inheritdoc/>

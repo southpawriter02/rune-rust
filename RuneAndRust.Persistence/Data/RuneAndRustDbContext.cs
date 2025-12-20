@@ -68,6 +68,11 @@ public class RuneAndRustDbContext : DbContext
     public DbSet<DataCapture> DataCaptures { get; set; } = null!;
 
     /// <summary>
+    /// Gets or sets the ActiveAbilities table (combat abilities by archetype).
+    /// </summary>
+    public DbSet<ActiveAbility> ActiveAbilities { get; set; } = null!;
+
+    /// <summary>
     /// Configures the entity mappings and relationships.
     /// </summary>
     /// <param name="modelBuilder">The model builder instance.</param>
@@ -433,6 +438,49 @@ public class RuneAndRustDbContext : DbContext
                 .WithMany(e => e.Fragments)
                 .HasForeignKey(d => d.CodexEntryId)
                 .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        modelBuilder.Entity<ActiveAbility>(entity =>
+        {
+            entity.ToTable("ActiveAbilities");
+
+            entity.HasKey(a => a.Id);
+
+            entity.HasIndex(a => a.Name)
+                .IsUnique();
+
+            // Composite index for archetype + tier queries
+            entity.HasIndex(a => new { a.Archetype, a.Tier });
+
+            entity.Property(a => a.Name)
+                .HasMaxLength(100)
+                .IsRequired();
+
+            entity.Property(a => a.Description)
+                .HasMaxLength(500)
+                .IsRequired();
+
+            entity.Property(a => a.EffectScript)
+                .HasMaxLength(500)
+                .IsRequired();
+
+            entity.Property(a => a.StaminaCost)
+                .IsRequired();
+
+            entity.Property(a => a.AetherCost)
+                .IsRequired();
+
+            entity.Property(a => a.CooldownTurns)
+                .IsRequired();
+
+            entity.Property(a => a.Range)
+                .IsRequired();
+
+            entity.Property(a => a.Archetype)
+                .IsRequired();
+
+            entity.Property(a => a.Tier)
+                .IsRequired();
         });
     }
 }

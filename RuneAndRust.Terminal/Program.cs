@@ -45,6 +45,7 @@ class Program
                     services.AddScoped<IInteractableObjectRepository, InteractableObjectRepository>();
                     services.AddScoped<ICodexEntryRepository, CodexEntryRepository>();
                     services.AddScoped<IDataCaptureRepository, DataCaptureRepository>();
+                    services.AddScoped<IActiveAbilityRepository, ActiveAbilityRepository>();
 
                     // Register Core State (Singleton to persist across game loop)
                     services.AddSingleton<GameState>();
@@ -75,13 +76,14 @@ class Program
                     // Register Combat Services
                     services.AddSingleton<IInitiativeService, InitiativeService>();
                     services.AddSingleton<IStatusEffectService, StatusEffectService>();
+                    services.AddSingleton<ITraumaService, TraumaService>();
                     services.AddSingleton<IAttackResolutionService, AttackResolutionService>();
                     services.AddSingleton<IEnemyAIService, EnemyAIService>();
                     services.AddSingleton<ICreatureTraitService, CreatureTraitService>();
                     services.AddSingleton<IResourceService, ResourceService>();
                     services.AddSingleton<IAbilityService, AbilityService>();
                     services.AddScoped<ILootService, LootService>();
-                    services.AddSingleton<ICombatService, CombatService>();
+                    services.AddScoped<ICombatService, CombatService>();
                     services.AddSingleton<ICombatScreenRenderer, CombatScreenRenderer>();
                     services.AddSingleton<IVictoryScreenRenderer, VictoryScreenRenderer>();
 
@@ -95,8 +97,15 @@ class Program
                 .UseSerilog() // Wire Serilog into ILogger
                 .Build();
 
-            // 3. UI Handover
-            AnsiConsole.MarkupLine("[green]Rune & Rust v0.2.0c Booting...[/]");
+            // 3. Seed data
+            using (var scope = host.Services.CreateScope())
+            {
+                var context = scope.ServiceProvider.GetRequiredService<RuneAndRustDbContext>();
+                AbilitySeeder.SeedAsync(context).GetAwaiter().GetResult();
+            }
+
+            // 4. UI Handover
+            AnsiConsole.MarkupLine("[green]Rune & Rust v0.3.0a Booting...[/]");
             AnsiConsole.WriteLine();
 
             // Resolve the entry point from DI

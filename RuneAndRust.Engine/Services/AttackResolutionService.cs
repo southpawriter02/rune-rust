@@ -14,6 +14,7 @@ public class AttackResolutionService : IAttackResolutionService
 {
     private readonly IDiceService _dice;
     private readonly IStatusEffectService _statusEffects;
+    private readonly ITraumaService _traumaService;
     private readonly ILogger<AttackResolutionService> _logger;
 
     /// <summary>
@@ -52,14 +53,17 @@ public class AttackResolutionService : IAttackResolutionService
     /// </summary>
     /// <param name="dice">The dice service for rolling.</param>
     /// <param name="statusEffects">The status effect service for modifier calculations.</param>
+    /// <param name="traumaService">The trauma service for stress-based defense penalties.</param>
     /// <param name="logger">The logger for traceability.</param>
     public AttackResolutionService(
         IDiceService dice,
         IStatusEffectService statusEffects,
+        ITraumaService traumaService,
         ILogger<AttackResolutionService> logger)
     {
         _dice = dice;
         _statusEffects = statusEffects;
+        _traumaService = traumaService;
         _logger = logger;
     }
 
@@ -183,16 +187,16 @@ public class AttackResolutionService : IAttackResolutionService
     /// <inheritdoc/>
     public int CalculateDefenseScore(Combatant defender)
     {
-        // Defense = 10 + FINESSE - Stress
-        // Note: Stress is not yet implemented, defaults to 0
+        // Defense = 10 + FINESSE - StressPenalty
+        // StressPenalty = Stress / 20 (max 5 at 100 stress)
         var finesse = defender.GetAttribute(CharacterAttribute.Finesse);
-        const int stress = 0; // TODO: Implement stress system in future version
+        var stressPenalty = _traumaService.GetDefensePenalty(defender.CurrentStress);
 
-        var defense = 10 + finesse - stress;
+        var defense = 10 + finesse - stressPenalty;
 
         _logger.LogTrace(
-            "Defense calculation for {Defender}: 10 + Finesse({Finesse}) - Stress({Stress}) = {Defense}",
-            defender.Name, finesse, stress, defense);
+            "Defense calculation for {Defender}: 10 + Finesse({Finesse}) - StressPenalty({Penalty}) = {Defense}",
+            defender.Name, finesse, stressPenalty, defense);
 
         return defense;
     }

@@ -26,6 +26,7 @@ public class CombatServiceTests
     private readonly Mock<ICreatureTraitService> _mockTraitService;
     private readonly Mock<IResourceService> _mockResourceService;
     private readonly Mock<IAbilityService> _mockAbilityService;
+    private readonly Mock<IActiveAbilityRepository> _mockAbilityRepository;
     private readonly Mock<ILogger<CombatService>> _mockLogger;
     private readonly GameState _gameState;
     private readonly CombatService _sut;
@@ -40,6 +41,7 @@ public class CombatServiceTests
         _mockTraitService = new Mock<ICreatureTraitService>();
         _mockResourceService = new Mock<IResourceService>();
         _mockAbilityService = new Mock<IAbilityService>();
+        _mockAbilityRepository = new Mock<IActiveAbilityRepository>();
         _mockLogger = new Mock<ILogger<CombatService>>();
         _gameState = new GameState();
         _sut = new CombatService(
@@ -52,6 +54,7 @@ public class CombatServiceTests
             _mockTraitService.Object,
             _mockResourceService.Object,
             _mockAbilityService.Object,
+            _mockAbilityRepository.Object,
             _mockLogger.Object);
 
         // Default setup for loot service
@@ -81,6 +84,10 @@ public class CombatServiceTests
 
         // Default setup for resource service: no stamina regeneration
         _mockResourceService.Setup(r => r.RegenerateStamina(It.IsAny<Combatant>())).Returns(0);
+
+        // Default setup for ability repository: return empty list of abilities
+        _mockAbilityRepository.Setup(r => r.GetByArchetypeAsync(It.IsAny<ArchetypeType>(), It.IsAny<int>()))
+            .ReturnsAsync(new List<ActiveAbility>());
     }
 
     #region StartCombat Tests
