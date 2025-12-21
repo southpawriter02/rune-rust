@@ -346,31 +346,42 @@ public class ConstraintValidationTests
     public async Task Item_Delete_CascadesItemProperties()
     {
         // Arrange
-        using var context = _fixture.CreateContext();
-        var item = new Item
+        Guid itemId;
+        Guid propertyId;
+
+        using (var setupContext = _fixture.CreateContext())
         {
-            Name = $"PropertyCascade_{Guid.NewGuid():N}",
-            ItemType = ItemType.Weapon,
-            Description = "Has properties"
-        };
+            var property = new ItemProperty
+            {
+                Name = "Test Enchantment",
+                StatModifiers = new Dictionary<string, int> { { "Might", 2 } }
+            };
 
-        context.Items.Add(item);
-        await context.SaveChangesAsync();
+            var item = new Item
+            {
+                Name = $"PropertyCascade_{Guid.NewGuid():N}",
+                ItemType = ItemType.Weapon,
+                Description = "Has properties"
+            };
 
-        var property = new ItemProperty
+            // Add property before saving (ensures FK is set correctly)
+            item.Properties.Add(property);
+            setupContext.Items.Add(item);
+            await setupContext.SaveChangesAsync();
+
+            itemId = item.Id;
+            propertyId = property.Id;
+        }
+
+        // Act - Delete the item in a new context
+        using (var deleteContext = _fixture.CreateContext())
         {
-            Name = "Test Enchantment",
-            StatModifiers = new Dictionary<string, int> { { "Might", 2 } }
-        };
-
-        item.Properties.Add(property);
-        await context.SaveChangesAsync();
-
-        var propertyId = property.Id;
-
-        // Act - Delete the item
-        context.Items.Remove(item);
-        await context.SaveChangesAsync();
+            var itemToDelete = await deleteContext.Items
+                .Include(i => i.Properties)
+                .FirstAsync(i => i.Id == itemId);
+            deleteContext.Items.Remove(itemToDelete);
+            await deleteContext.SaveChangesAsync();
+        }
 
         // Assert - ItemProperty should be deleted
         using var freshContext = _fixture.CreateContext();

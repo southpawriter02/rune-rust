@@ -60,29 +60,42 @@ public class JsonbQueryTests
     public async Task Room_Exits_UpdatesJsonbDictionary()
     {
         // Arrange
-        using var context = _fixture.CreateContext();
-        var room = new Room
-        {
-            Name = "Changing Room",
-            Description = "A room with exits that change",
-            Exits = new Dictionary<Direction, Guid>
-            {
-                { Direction.North, Guid.NewGuid() }
-            }
-        };
-
-        context.Rooms.Add(room);
-        await context.SaveChangesAsync();
-
-        // Act - Add more exits
+        Guid roomId;
         var westRoomId = Guid.NewGuid();
-        room.Exits[Direction.West] = westRoomId;
-        room.Exits[Direction.Down] = Guid.NewGuid();
-        await context.SaveChangesAsync();
+
+        using (var context = _fixture.CreateContext())
+        {
+            var room = new Room
+            {
+                Name = "Changing Room",
+                Description = "A room with exits that change",
+                Exits = new Dictionary<Direction, Guid>
+                {
+                    { Direction.North, Guid.NewGuid() }
+                }
+            };
+
+            context.Rooms.Add(room);
+            await context.SaveChangesAsync();
+            roomId = room.Id;
+        }
+
+        // Act - Add more exits in a new context
+        // Note: JSONB value conversions require explicit notification that the property changed
+        using (var updateContext = _fixture.CreateContext())
+        {
+            var room = await updateContext.Rooms.FindAsync(roomId);
+            // Create a new dictionary to ensure change detection works
+            var updatedExits = new Dictionary<Direction, Guid>(room!.Exits);
+            updatedExits[Direction.West] = westRoomId;
+            updatedExits[Direction.Down] = Guid.NewGuid();
+            room.Exits = updatedExits;
+            await updateContext.SaveChangesAsync();
+        }
 
         // Assert
         using var freshContext = _fixture.CreateContext();
-        var loaded = await freshContext.Rooms.FindAsync(room.Id);
+        var loaded = await freshContext.Rooms.FindAsync(roomId);
 
         loaded!.Exits.Should().HaveCount(3);
         loaded.Exits[Direction.West].Should().Be(westRoomId);
@@ -195,7 +208,7 @@ public class JsonbQueryTests
     [Fact]
     public async Task ItemProperty_StatModifiers_PersistsJsonbDictionary()
     {
-        // Arrange - Create an item first
+        // Arrange - Create an item with properties in one transaction
         using var context = _fixture.CreateContext();
         var item = new Item
         {
@@ -204,10 +217,7 @@ public class JsonbQueryTests
             Description = "A ring to test properties"
         };
 
-        context.Items.Add(item);
-        await context.SaveChangesAsync();
-
-        // Add a property
+        // Add property before saving (in same context)
         var property = new ItemProperty
         {
             Name = "Rune of Fortitude",
@@ -219,8 +229,9 @@ public class JsonbQueryTests
                 { "Soak", 1 }
             }
         };
-
         item.Properties.Add(property);
+
+        context.Items.Add(item);
         await context.SaveChangesAsync();
 
         // Assert
@@ -240,7 +251,7 @@ public class JsonbQueryTests
     [Fact]
     public async Task ItemProperty_MultipleProperties_PersistIndependently()
     {
-        // Arrange
+        // Arrange - Add all properties before saving (EF Core tracks them with the parent)
         using var context = _fixture.CreateContext();
         var item = new Item
         {
@@ -249,10 +260,7 @@ public class JsonbQueryTests
             Description = "A blade with multiple enchantments"
         };
 
-        context.Items.Add(item);
-        await context.SaveChangesAsync();
-
-        // Add multiple properties
+        // Add multiple properties before saving
         item.Properties.Add(new ItemProperty
         {
             Name = "Rune of Might",
@@ -265,6 +273,7 @@ public class JsonbQueryTests
             StatModifiers = new Dictionary<string, int> { { "Initiative", 2 }, { "Finesse", 1 } }
         });
 
+        context.Items.Add(item);
         await context.SaveChangesAsync();
 
         // Assert
