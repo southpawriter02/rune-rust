@@ -4,8 +4,10 @@ using Moq;
 using RuneAndRust.Core.Entities;
 using RuneAndRust.Core.Enums;
 using RuneAndRust.Core.Interfaces;
+using RuneAndRust.Core.Models;
 using RuneAndRust.Engine.Services;
 using Xunit;
+using Character = RuneAndRust.Core.Entities.Character;
 
 namespace RuneAndRust.Tests.Engine;
 
@@ -16,14 +18,16 @@ namespace RuneAndRust.Tests.Engine;
 public class RestServiceTests
 {
     private readonly Mock<IInventoryService> _mockInventoryService;
+    private readonly Mock<IAmbushService> _mockAmbushService;
     private readonly Mock<ILogger<RestService>> _mockLogger;
     private readonly RestService _sut;
 
     public RestServiceTests()
     {
         _mockInventoryService = new Mock<IInventoryService>();
+        _mockAmbushService = new Mock<IAmbushService>();
         _mockLogger = new Mock<ILogger<RestService>>();
-        _sut = new RestService(_mockInventoryService.Object, _mockLogger.Object);
+        _sut = new RestService(_mockInventoryService.Object, _mockAmbushService.Object, _mockLogger.Object);
     }
 
     private Character CreateTestCharacter(
@@ -66,6 +70,16 @@ public class RestServiceTests
             Tags = new List<string> { "Water" }
         };
         return new InventoryItem { Item = item, Quantity = 1 };
+    }
+
+    private Room CreateTestRoom(DangerLevel dangerLevel = DangerLevel.Hostile, BiomeType biome = BiomeType.Ruin)
+    {
+        return new Room
+        {
+            Name = "Test Room",
+            DangerLevel = dangerLevel,
+            BiomeType = biome
+        };
     }
 
     #region Sanctuary Rest Tests
@@ -542,6 +556,296 @@ public class RestServiceTests
         // Assert - Still gets halved recovery due to pre-existing exhaustion
         character.CurrentHP.Should().Be(60); // 10 HP recovery (halved from 20)
         result.IsExhausted.Should().BeTrue();
+    }
+
+    #endregion
+
+    #region Ambush Integration Tests (v0.3.2b)
+
+    [Fact]
+    public async Task Wilderness_WithRoom_CallsAmbushService()
+    {
+        // Arrange
+        var character = CreateTestCharacter();
+        var room = CreateTestRoom(DangerLevel.Hostile);
+        var ration = CreateRationItem();
+        var water = CreateWaterItem();
+
+        _mockInventoryService
+            .Setup(x => x.FindItemByTagAsync(character, "Ration"))
+            .ReturnsAsync(ration);
+        _mockInventoryService
+            .Setup(x => x.FindItemByTagAsync(character, "Water"))
+            .ReturnsAsync(water);
+        _mockAmbushService
+            .Setup(x => x.CalculateAmbushAsync(character, room))
+            .ReturnsAsync(new AmbushResult(
+                IsAmbush: false,
+                Message: "Safe passage.",
+                BaseRiskPercent: 30,
+                MitigationPercent: 10,
+                FinalRiskPercent: 20,
+                RollValue: 50,
+                MitigationSuccesses: 2));
+
+        // Act
+        await _sut.PerformRestAsync(character, RestType.Wilderness, room);
+
+        // Assert
+        _mockAmbushService.Verify(
+            x => x.CalculateAmbushAsync(character, room), Times.Once);
+    }
+
+    [Fact]
+    public async Task Wilderness_AmbushTriggered_ReturnsWasAmbushed()
+    {
+        // Arrange
+        var character = CreateTestCharacter();
+        var room = CreateTestRoom(DangerLevel.Hostile);
+        var ration = CreateRationItem();
+        var water = CreateWaterItem();
+        var encounter = new EncounterDefinition(
+            TemplateIds: new List<string> { "bst_vargr_01" },
+            Budget: 80f,
+            IsAmbush: true);
+
+        _mockInventoryService
+            .Setup(x => x.FindItemByTagAsync(character, "Ration"))
+            .ReturnsAsync(ration);
+        _mockInventoryService
+            .Setup(x => x.FindItemByTagAsync(character, "Water"))
+            .ReturnsAsync(water);
+        _mockAmbushService
+            .Setup(x => x.CalculateAmbushAsync(character, room))
+            .ReturnsAsync(new AmbushResult(
+                IsAmbush: true,
+                Message: "You are not alone!",
+                BaseRiskPercent: 30,
+                MitigationPercent: 0,
+                FinalRiskPercent: 30,
+                RollValue: 15,
+                MitigationSuccesses: 0,
+                Encounter: encounter));
+
+        // Act
+        var result = await _sut.PerformRestAsync(character, RestType.Wilderness, room);
+
+        // Assert
+        result.WasAmbushed.Should().BeTrue();
+        result.AmbushDetails.Should().NotBeNull();
+        result.AmbushDetails!.Encounter.Should().NotBeNull();
+        result.AmbushDetails.Encounter!.TemplateIds.Should().Contain("bst_vargr_01");
+    }
+
+    [Fact]
+    public async Task Wilderness_AmbushTriggered_ConsumesSupplies()
+    {
+        // Arrange
+        var character = CreateTestCharacter();
+        var room = CreateTestRoom(DangerLevel.Hostile);
+        var ration = CreateRationItem();
+        var water = CreateWaterItem();
+
+        _mockInventoryService
+            .Setup(x => x.FindItemByTagAsync(character, "Ration"))
+            .ReturnsAsync(ration);
+        _mockInventoryService
+            .Setup(x => x.FindItemByTagAsync(character, "Water"))
+            .ReturnsAsync(water);
+        _mockAmbushService
+            .Setup(x => x.CalculateAmbushAsync(character, room))
+            .ReturnsAsync(new AmbushResult(
+                IsAmbush: true,
+                Message: "You are not alone!",
+                BaseRiskPercent: 30,
+                MitigationPercent: 0,
+                FinalRiskPercent: 30,
+                RollValue: 15,
+                MitigationSuccesses: 0,
+                Encounter: new EncounterDefinition(
+                    TemplateIds: new List<string> { "bst_vargr_01" },
+                    Budget: 80f,
+                    IsAmbush: true)));
+
+        // Act
+        var result = await _sut.PerformRestAsync(character, RestType.Wilderness, room);
+
+        // Assert - Supplies still consumed even when ambushed
+        result.SuppliesConsumed.Should().BeTrue();
+        _mockInventoryService.Verify(
+            x => x.RemoveItemAsync(character, "Field Rations", 1), Times.Once);
+        _mockInventoryService.Verify(
+            x => x.RemoveItemAsync(character, "Waterskin", 1), Times.Once);
+    }
+
+    [Fact]
+    public async Task Wilderness_AmbushTriggered_AppliesDisoriented()
+    {
+        // Arrange
+        var character = CreateTestCharacter();
+        var room = CreateTestRoom(DangerLevel.Hostile);
+        var ration = CreateRationItem();
+        var water = CreateWaterItem();
+
+        _mockInventoryService
+            .Setup(x => x.FindItemByTagAsync(character, "Ration"))
+            .ReturnsAsync(ration);
+        _mockInventoryService
+            .Setup(x => x.FindItemByTagAsync(character, "Water"))
+            .ReturnsAsync(water);
+        _mockAmbushService
+            .Setup(x => x.CalculateAmbushAsync(character, room))
+            .ReturnsAsync(new AmbushResult(
+                IsAmbush: true,
+                Message: "You are not alone!",
+                BaseRiskPercent: 30,
+                MitigationPercent: 0,
+                FinalRiskPercent: 30,
+                RollValue: 15,
+                MitigationSuccesses: 0,
+                Encounter: new EncounterDefinition(
+                    TemplateIds: new List<string> { "bst_vargr_01" },
+                    Budget: 80f,
+                    IsAmbush: true)));
+
+        // Act
+        await _sut.PerformRestAsync(character, RestType.Wilderness, room);
+
+        // Assert
+        character.HasStatusEffect(StatusEffectType.Disoriented).Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task Wilderness_NoAmbush_NoDisoriented()
+    {
+        // Arrange
+        var character = CreateTestCharacter();
+        var room = CreateTestRoom(DangerLevel.Hostile);
+        var ration = CreateRationItem();
+        var water = CreateWaterItem();
+
+        _mockInventoryService
+            .Setup(x => x.FindItemByTagAsync(character, "Ration"))
+            .ReturnsAsync(ration);
+        _mockInventoryService
+            .Setup(x => x.FindItemByTagAsync(character, "Water"))
+            .ReturnsAsync(water);
+        _mockAmbushService
+            .Setup(x => x.CalculateAmbushAsync(character, room))
+            .ReturnsAsync(new AmbushResult(
+                IsAmbush: false,
+                Message: "Safe passage.",
+                BaseRiskPercent: 30,
+                MitigationPercent: 20,
+                FinalRiskPercent: 10,
+                RollValue: 50,
+                MitigationSuccesses: 4));
+
+        // Act
+        await _sut.PerformRestAsync(character, RestType.Wilderness, room);
+
+        // Assert
+        character.HasStatusEffect(StatusEffectType.Disoriented).Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task Wilderness_AmbushTriggered_NoRecovery()
+    {
+        // Arrange
+        var character = CreateTestCharacter(
+            currentHp: 50,
+            maxHp: 100,
+            currentStamina: 30,
+            maxStamina: 60);
+        var room = CreateTestRoom(DangerLevel.Hostile);
+        var ration = CreateRationItem();
+        var water = CreateWaterItem();
+
+        _mockInventoryService
+            .Setup(x => x.FindItemByTagAsync(character, "Ration"))
+            .ReturnsAsync(ration);
+        _mockInventoryService
+            .Setup(x => x.FindItemByTagAsync(character, "Water"))
+            .ReturnsAsync(water);
+        _mockAmbushService
+            .Setup(x => x.CalculateAmbushAsync(character, room))
+            .ReturnsAsync(new AmbushResult(
+                IsAmbush: true,
+                Message: "You are not alone!",
+                BaseRiskPercent: 30,
+                MitigationPercent: 0,
+                FinalRiskPercent: 30,
+                RollValue: 15,
+                MitigationSuccesses: 0,
+                Encounter: new EncounterDefinition(
+                    TemplateIds: new List<string> { "bst_vargr_01" },
+                    Budget: 80f,
+                    IsAmbush: true)));
+
+        // Act
+        var result = await _sut.PerformRestAsync(character, RestType.Wilderness, room);
+
+        // Assert - No HP or Stamina recovery when ambushed
+        result.HpRecovered.Should().Be(0);
+        result.StaminaRecovered.Should().Be(0);
+        character.CurrentHP.Should().Be(50);
+        character.CurrentStamina.Should().Be(30);
+    }
+
+    [Fact]
+    public async Task Wilderness_AmbushTriggered_StressNotReduced()
+    {
+        // Arrange
+        var character = CreateTestCharacter(
+            psychicStress: 50,
+            will: 5);
+        var room = CreateTestRoom(DangerLevel.Hostile);
+        var ration = CreateRationItem();
+        var water = CreateWaterItem();
+
+        _mockInventoryService
+            .Setup(x => x.FindItemByTagAsync(character, "Ration"))
+            .ReturnsAsync(ration);
+        _mockInventoryService
+            .Setup(x => x.FindItemByTagAsync(character, "Water"))
+            .ReturnsAsync(water);
+        _mockAmbushService
+            .Setup(x => x.CalculateAmbushAsync(character, room))
+            .ReturnsAsync(new AmbushResult(
+                IsAmbush: true,
+                Message: "You are not alone!",
+                BaseRiskPercent: 30,
+                MitigationPercent: 0,
+                FinalRiskPercent: 30,
+                RollValue: 15,
+                MitigationSuccesses: 0,
+                Encounter: new EncounterDefinition(
+                    TemplateIds: new List<string> { "bst_vargr_01" },
+                    Budget: 80f,
+                    IsAmbush: true)));
+
+        // Act
+        var result = await _sut.PerformRestAsync(character, RestType.Wilderness, room);
+
+        // Assert - No stress recovery when ambushed
+        result.StressRecovered.Should().Be(0);
+        character.PsychicStress.Should().Be(50);
+    }
+
+    [Fact]
+    public async Task Sanctuary_SkipsAmbushCheck()
+    {
+        // Arrange
+        var character = CreateTestCharacter();
+        var room = CreateTestRoom(DangerLevel.Hostile);
+
+        // Act
+        await _sut.PerformRestAsync(character, RestType.Sanctuary, room);
+
+        // Assert - Sanctuary rest should not call ambush service
+        _mockAmbushService.Verify(
+            x => x.CalculateAmbushAsync(It.IsAny<Character>(), It.IsAny<Room>()),
+            Times.Never);
     }
 
     #endregion

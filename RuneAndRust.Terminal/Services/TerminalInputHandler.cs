@@ -13,8 +13,9 @@ public class TerminalInputHandler : IInputHandler
     public string GetInput(string prompt)
     {
         // Use Spectre.Console's Prompt for rich input handling
+        // Escape prompt to prevent markup interpretation (e.g., [MENU] would fail)
         return AnsiConsole.Prompt(
-            new TextPrompt<string>($"[green]{prompt}[/] [grey]>[/]")
+            new TextPrompt<string>($"[green]{EscapeMarkup(prompt)}[/] [grey]>[/]")
                 .AllowEmpty());
     }
 

@@ -53,6 +53,14 @@ public class GameState
     public CombatState? CombatState { get; set; }
 
     /// <summary>
+    /// Gets or sets a pending encounter from ambush or other trigger.
+    /// Consumed by GameService on Combat phase entry.
+    /// Not serialized to save files.
+    /// </summary>
+    [JsonIgnore]
+    public EncounterDefinition? PendingEncounter { get; set; }
+
+    /// <summary>
     /// Resets the game state to initial values for a new session.
     /// </summary>
     public void Reset()
@@ -64,5 +72,6 @@ public class GameState
         PendingAction = PendingGameAction.None;
         CurrentRoomId = null;
         CombatState = null;
+        PendingEncounter = null;
     }
 }

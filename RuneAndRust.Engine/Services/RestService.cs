@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using RuneAndRust.Core.Entities;
 using RuneAndRust.Core.Enums;
 using RuneAndRust.Core.Interfaces;
 using RuneAndRust.Core.Models;
@@ -9,10 +10,12 @@ namespace RuneAndRust.Engine.Services;
 /// <summary>
 /// Service for handling rest and recovery mechanics.
 /// Manages resource consumption, recovery formulas, and the Exhausted status effect.
+/// Integrates with IAmbushService for wilderness rest danger mechanics (v0.3.2b).
 /// </summary>
 public class RestService : IRestService
 {
     private readonly IInventoryService _inventoryService;
+    private readonly IAmbushService _ambushService;
     private readonly ILogger<RestService> _logger;
 
     /// <summary>
@@ -44,10 +47,15 @@ public class RestService : IRestService
     /// Initializes a new instance of the <see cref="RestService"/> class.
     /// </summary>
     /// <param name="inventoryService">The inventory service for supply management.</param>
+    /// <param name="ambushService">The ambush service for danger calculation.</param>
     /// <param name="logger">The logger for traceability.</param>
-    public RestService(IInventoryService inventoryService, ILogger<RestService> logger)
+    public RestService(
+        IInventoryService inventoryService,
+        IAmbushService ambushService,
+        ILogger<RestService> logger)
     {
         _inventoryService = inventoryService;
+        _ambushService = ambushService;
         _logger = logger;
     }
 
@@ -64,6 +72,33 @@ public class RestService : IRestService
         {
             return await PerformWildernessRestAsync(character);
         }
+    }
+
+    /// <inheritdoc/>
+    public async Task<RestResult> PerformRestAsync(Character character, RestType type, Room room)
+    {
+        _logger.LogInformation("{Name} initiating {Type} rest in {Room}.", character.Name, type, room.Name);
+
+        // Sanctuary rest - no ambush check, full recovery
+        if (type == RestType.Sanctuary)
+        {
+            return await PerformSanctuaryRestAsync(character);
+        }
+
+        // Wilderness rest - perform ambush check first
+        var ambushResult = await _ambushService.CalculateAmbushAsync(character, room);
+
+        if (ambushResult.IsAmbush)
+        {
+            // Ambush triggered - consume supplies but no recovery
+            return await PerformAmbushedRestAsync(character, ambushResult);
+        }
+
+        // No ambush - proceed with normal wilderness rest
+        var restResult = await PerformWildernessRestAsync(character);
+
+        // Return result with ambush details attached
+        return restResult with { AmbushDetails = ambushResult };
     }
 
     /// <inheritdoc/>
@@ -197,6 +232,48 @@ public class RestService : IRestService
             StressRecovered: stressRecovered,
             SuppliesConsumed: hasSupplies,
             IsExhausted: applyExhaustion || isExhausted
+        );
+    }
+
+    /// <summary>
+    /// Handles an ambushed rest - consumes supplies but provides no recovery.
+    /// Applies Disoriented status to represent being caught off-guard.
+    /// </summary>
+    /// <param name="character">The character who was ambushed.</param>
+    /// <param name="ambushResult">The ambush result with encounter details.</param>
+    /// <returns>A RestResult indicating the ambush with no recovery.</returns>
+    private async Task<RestResult> PerformAmbushedRestAsync(Character character, AmbushResult ambushResult)
+    {
+        _logger.LogWarning("{Name} was ambushed during rest!", character.Name);
+
+        // Check for supplies - they are consumed even on ambush (wasted)
+        var ration = await _inventoryService.FindItemByTagAsync(character, RationTag);
+        var water = await _inventoryService.FindItemByTagAsync(character, WaterTag);
+        var hadSupplies = ration != null && water != null;
+
+        if (hadSupplies)
+        {
+            // Consume supplies - they were used/scattered during the ambush
+            await _inventoryService.RemoveItemAsync(character, ration!.Item.Name, 1);
+            await _inventoryService.RemoveItemAsync(character, water!.Item.Name, 1);
+
+            _logger.LogDebug("Supplies lost in ambush: 1x {RationName}, 1x {WaterName}.",
+                ration.Item.Name, water.Item.Name);
+        }
+
+        // Apply Disoriented status - caught off-guard
+        character.AddStatusEffect(StatusEffectType.Disoriented);
+        _logger.LogInformation("{Name} is [Disoriented] from the ambush.", character.Name);
+
+        // No recovery - rest was interrupted
+        return new RestResult(
+            HpRecovered: 0,
+            StaminaRecovered: 0,
+            StressRecovered: 0,
+            SuppliesConsumed: hadSupplies,
+            IsExhausted: false,
+            WasAmbushed: true,
+            AmbushDetails: ambushResult
         );
     }
 }

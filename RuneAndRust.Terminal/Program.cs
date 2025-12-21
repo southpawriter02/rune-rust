@@ -100,8 +100,14 @@ class Program
                     services.AddScoped<IInventoryRepository, InventoryRepository>();
                     services.AddScoped<IInventoryService, InventoryService>();
 
+                    // Register Ambush Services (v0.3.2b)
+                    services.AddScoped<IAmbushService, AmbushService>();
+
                     // Register Rest Services (v0.3.2a)
                     services.AddScoped<IRestService, RestService>();
+
+                    // Register Rest Screen Renderer (v0.3.2c)
+                    services.AddSingleton<IRestScreenRenderer, RestScreenRenderer>();
 
                     // Register Crafting Services (v0.3.1a)
                     services.AddScoped<ICraftingService, CraftingService>();
@@ -120,7 +126,7 @@ class Program
             }
 
             // 4. UI Handover
-            AnsiConsole.MarkupLine("[green]Rune & Rust v0.3.1c Booting...[/]");
+            AnsiConsole.MarkupLine("[green]Rune & Rust v0.3.2c Booting...[/]");
             AnsiConsole.WriteLine();
 
             // Resolve the entry point from DI

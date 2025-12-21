@@ -217,6 +217,9 @@ public class CommandParser
     private readonly IJournalService? _journalService;
     private readonly ICombatService? _combatService;
     private readonly IVictoryScreenRenderer? _victoryRenderer;
+    private readonly IRestService? _restService;
+    private readonly IRestScreenRenderer? _restRenderer;
+    private readonly IRoomRepository? _roomRepository;
     private readonly GameState _gameState;
 
     /// <summary>
@@ -228,13 +231,19 @@ public class CommandParser
     /// <param name="journalService">The optional journal service for codex display.</param>
     /// <param name="combatService">The optional combat service for debug combat initiation.</param>
     /// <param name="victoryRenderer">The optional victory screen renderer for combat rewards.</param>
+    /// <param name="restService">The optional rest service for rest/camp commands (v0.3.2c).</param>
+    /// <param name="restRenderer">The optional rest screen renderer for rest/camp display (v0.3.2c).</param>
+    /// <param name="roomRepository">The optional room repository for rest location checks (v0.3.2c).</param>
     public CommandParser(
         ILogger<CommandParser> logger,
         IInputHandler inputHandler,
         GameState gameState,
         IJournalService? journalService = null,
         ICombatService? combatService = null,
-        IVictoryScreenRenderer? victoryRenderer = null)
+        IVictoryScreenRenderer? victoryRenderer = null,
+        IRestService? restService = null,
+        IRestScreenRenderer? restRenderer = null,
+        IRoomRepository? roomRepository = null)
     {
         _logger = logger;
         _inputHandler = inputHandler;
@@ -242,6 +251,9 @@ public class CommandParser
         _journalService = journalService;
         _combatService = combatService;
         _victoryRenderer = victoryRenderer;
+        _restService = restService;
+        _restRenderer = restRenderer;
+        _roomRepository = roomRepository;
     }
 
     /// <summary>
@@ -770,6 +782,14 @@ public class CommandParser
                 _inputHandler.DisplayMessage("[grey]Usage: codex <entry name>[/]");
                 return ParseResult.None;
 
+            // REST & CAMP COMMANDS (v0.3.2c)
+            case "rest":
+                return await HandleRestCommandAsync(state, preferSanctuary: true);
+
+            case "camp":
+            case "sleep":
+                return await HandleRestCommandAsync(state, preferSanctuary: false);
+
             case "debug-combat":
                 if (_combatService != null && _gameState.CurrentCharacter != null)
                 {
@@ -1221,6 +1241,11 @@ public class CommandParser
         _inputHandler.DisplayMessage("  forge X on Y     - Inscribe rune X onto item Y");
         _inputHandler.DisplayMessage("  inscribe X on Y  - Same as forge");
         _inputHandler.DisplayMessage("");
+        _inputHandler.DisplayMessage("Rest & Recovery:");
+        _inputHandler.DisplayMessage("  rest             - Rest (Sanctuary at anchors, Wilderness elsewhere)");
+        _inputHandler.DisplayMessage("  camp             - Set up camp in the wilderness (ambush risk)");
+        _inputHandler.DisplayMessage("  sleep            - Same as camp");
+        _inputHandler.DisplayMessage("");
         _inputHandler.DisplayMessage("Journal:");
         _inputHandler.DisplayMessage("  journal, j       - Open the Scavenger's Journal");
         _inputHandler.DisplayMessage("  codex <name>     - View a specific journal entry");
@@ -1287,4 +1312,95 @@ public class CommandParser
             _inputHandler.DisplayMessage("  Character: None");
         }
     }
+
+    #region Rest & Camp Commands (v0.3.2c)
+
+    /// <summary>
+    /// Handles the rest and camp commands.
+    /// Rest prefers Sanctuary at RunicAnchor locations, camp always uses Wilderness.
+    /// </summary>
+    /// <param name="state">The current game state.</param>
+    /// <param name="preferSanctuary">If true, use Sanctuary when at a RunicAnchor; otherwise always Wilderness.</param>
+    /// <returns>A ParseResult indicating any follow-up actions needed.</returns>
+    private async Task<ParseResult> HandleRestCommandAsync(GameState state, bool preferSanctuary)
+    {
+        // Validate dependencies
+        if (_restService == null || _restRenderer == null || _roomRepository == null)
+        {
+            _inputHandler.DisplayError("Rest system not available.");
+            _logger.LogWarning("Rest command attempted but required services are not configured.");
+            return ParseResult.None;
+        }
+
+        // Validate character
+        if (state.CurrentCharacter == null)
+        {
+            _inputHandler.DisplayError("No active character.");
+            return ParseResult.None;
+        }
+
+        // Validate room
+        if (state.CurrentRoomId == null)
+        {
+            _inputHandler.DisplayError("You are nowhere. This should not happen.");
+            _logger.LogError("Rest command attempted with null CurrentRoomId.");
+            return ParseResult.None;
+        }
+
+        // Get current room
+        var room = await _roomRepository.GetByIdAsync(state.CurrentRoomId.Value);
+        if (room == null)
+        {
+            _inputHandler.DisplayError("Cannot determine your location.");
+            _logger.LogError("Room {RoomId} not found in database.", state.CurrentRoomId.Value);
+            return ParseResult.None;
+        }
+
+        // Determine rest type based on location and preference
+        RestType restType;
+        bool hasAnchor = room.HasFeature(RoomFeature.RunicAnchor);
+
+        if (preferSanctuary && hasAnchor)
+        {
+            restType = RestType.Sanctuary;
+            _inputHandler.DisplayMessage("You rest at the Runic Anchor...");
+            _logger.LogDebug("Rest type determined: {RestType} (HasAnchor: {HasAnchor})", restType, hasAnchor);
+        }
+        else
+        {
+            restType = RestType.Wilderness;
+            _inputHandler.DisplayMessage("You set up camp in the wilderness...");
+            _logger.LogDebug("Rest type determined: {RestType} (HasAnchor: {HasAnchor})", restType, hasAnchor);
+        }
+
+        _logger.LogInformation("Player executed {Command} in {Room}.", restType == RestType.Sanctuary ? "rest" : "camp", room.Name);
+
+        // Perform rest with ambush check
+        var result = await _restService.PerformRestAsync(state.CurrentCharacter, restType, room);
+
+        // Handle ambush
+        if (result.WasAmbushed && result.AmbushDetails != null)
+        {
+            _logger.LogWarning("Rest interrupted by ambush. Transitioning to Combat.");
+            _restRenderer.RenderAmbushWarning(result.AmbushDetails);
+
+            // Store encounter for GameService to handle
+            state.PendingEncounter = result.AmbushDetails.Encounter;
+            state.Phase = GamePhase.Combat;
+
+            return ParseResult.None;
+        }
+
+        // Display rest results
+        _restRenderer.Render(result);
+        state.TurnCount++;
+
+        _logger.LogInformation(
+            "Rest complete. HP+{HP} Stamina+{Stamina} Stress-{Stress}.",
+            result.HpRecovered, result.StaminaRecovered, result.StressRecovered);
+
+        return ParseResult.None;
+    }
+
+    #endregion
 }

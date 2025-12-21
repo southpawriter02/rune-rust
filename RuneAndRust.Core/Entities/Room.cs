@@ -50,4 +50,17 @@ public class Room
     /// Gets or sets the danger level affecting encounter and loot quality.
     /// </summary>
     public DangerLevel DangerLevel { get; set; } = DangerLevel.Safe;
+
+    /// <summary>
+    /// Features present in this room that enable specific gameplay mechanics.
+    /// Examples: RunicAnchor (Sanctuary rest), Workbench (crafting).
+    /// </summary>
+    public List<RoomFeature> Features { get; set; } = new();
+
+    /// <summary>
+    /// Checks if this room has a specific feature.
+    /// </summary>
+    /// <param name="feature">The feature to check for.</param>
+    /// <returns>True if the room has the feature; false otherwise.</returns>
+    public bool HasFeature(RoomFeature feature) => Features.Contains(feature);
 }

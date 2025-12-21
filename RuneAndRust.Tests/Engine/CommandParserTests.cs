@@ -755,6 +755,101 @@ public class CommandParserTests
 
     #endregion
 
+    #region Rest & Camp Commands (v0.3.2c)
+
+    [Fact]
+    public void Rest_WithoutRequiredServices_DisplaysErrorMessage()
+    {
+        // Arrange
+        _state.Phase = GamePhase.Exploration;
+
+        // Act - Parser doesn't have rest service injected
+        _sut.ParseAndExecuteAsync("rest", _state).GetAwaiter().GetResult();
+
+        // Assert
+        _mockInputHandler.Verify(h => h.DisplayError(It.Is<string>(s => s.Contains("not available"))), Times.Once);
+    }
+
+    [Fact]
+    public void Camp_WithoutRequiredServices_DisplaysErrorMessage()
+    {
+        // Arrange
+        _state.Phase = GamePhase.Exploration;
+
+        // Act - Parser doesn't have rest service injected
+        _sut.ParseAndExecuteAsync("camp", _state).GetAwaiter().GetResult();
+
+        // Assert
+        _mockInputHandler.Verify(h => h.DisplayError(It.Is<string>(s => s.Contains("not available"))), Times.Once);
+    }
+
+    [Fact]
+    public void Sleep_WithoutRequiredServices_DisplaysErrorMessage()
+    {
+        // Arrange
+        _state.Phase = GamePhase.Exploration;
+
+        // Act - Parser doesn't have rest service injected (sleep is alias for camp)
+        _sut.ParseAndExecuteAsync("sleep", _state).GetAwaiter().GetResult();
+
+        // Assert
+        _mockInputHandler.Verify(h => h.DisplayError(It.Is<string>(s => s.Contains("not available"))), Times.Once);
+    }
+
+    [Fact]
+    public void Rest_InMainMenuPhase_DoesNotTriggerRestCommand()
+    {
+        // Arrange
+        _state.Phase = GamePhase.MainMenu;
+
+        // Act
+        _sut.ParseAndExecuteAsync("rest", _state).GetAwaiter().GetResult();
+
+        // Assert - Should be treated as unknown command in MainMenu
+        _mockInputHandler.Verify(h => h.DisplayError(It.Is<string>(s => s.Contains("Unknown"))), Times.Once);
+    }
+
+    [Fact]
+    public void Camp_InMainMenuPhase_DoesNotTriggerCampCommand()
+    {
+        // Arrange
+        _state.Phase = GamePhase.MainMenu;
+
+        // Act
+        _sut.ParseAndExecuteAsync("camp", _state).GetAwaiter().GetResult();
+
+        // Assert - Should be treated as unknown command in MainMenu
+        _mockInputHandler.Verify(h => h.DisplayError(It.Is<string>(s => s.Contains("Unknown"))), Times.Once);
+    }
+
+    [Fact]
+    public void Rest_InCombatPhase_DoesNotTriggerRestCommand()
+    {
+        // Arrange
+        _state.Phase = GamePhase.Combat;
+
+        // Act
+        _sut.ParseAndExecuteAsync("rest", _state).GetAwaiter().GetResult();
+
+        // Assert - Should be treated as unknown command in Combat
+        _mockInputHandler.Verify(h => h.DisplayError(It.Is<string>(s => s.Contains("Unknown"))), Times.Once);
+    }
+
+    [Fact]
+    public void Camp_InCombatPhase_DoesNotTriggerCampCommand()
+    {
+        // Arrange
+        _state.Phase = GamePhase.Combat;
+
+        // Act
+        _sut.ParseAndExecuteAsync("camp", _state).GetAwaiter().GetResult();
+
+        // Assert - Should be treated as unknown command in Combat
+        _mockInputHandler.Verify(h => h.DisplayError(It.Is<string>(s => s.Contains("Unknown"))), Times.Once);
+    }
+
+    #endregion
+
     #region Helper Methods
 
     private void VerifyLogLevel(LogLevel level)
