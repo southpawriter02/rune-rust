@@ -23,6 +23,7 @@ This document serves as the master index for all game system specifications. Eac
 | SPEC-HAZARD-001 | Dynamic Hazard System | [SPEC-HAZARD-001.md](./SPEC-HAZARD-001.md) | `HazardService`, `EffectScriptExecutor` |
 | SPEC-COND-001 | Ambient Condition System | [SPEC-COND-001.md](./SPEC-COND-001.md) | `ConditionService` |
 | SPEC-STATUS-001 | Status Effect System | [SPEC-STATUS-001.md](./SPEC-STATUS-001.md) | `StatusEffectService` |
+| SPEC-CODEX-001 | Scavenger's Journal (Codex) | [SPEC-CODEX-001.md](./SPEC-CODEX-001.md) | `CodexEntryRepository`, `DataCaptureRepository` |
 
 ---
 
@@ -73,6 +74,7 @@ This document serves as the master index for all game system specifications. Eac
 │  ┌─────────────────────────────────────────────────────────────────────┐   │
 │  │  REPOSITORIES                                                        │   │
 │  │  CharacterRepo │ RoomRepo │ ItemRepo │ InventoryRepo │ SaveGameRepo  │   │
+│  │  CodexEntryRepo│ DataCaptureRepo                                     │   │
 │  └─────────────────────────────────────────────────────────────────────┘   │
 │                                    │                                        │
 │  ┌─────────────────────────────────┴───────────────────────────────────┐   │
