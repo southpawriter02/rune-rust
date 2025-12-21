@@ -1,6 +1,6 @@
 # SPEC-STATUS-001: Status Effect System
 
-> **Version:** 1.0.0
+> **Version:** 1.0.1
 > **Status:** Implemented
 > **Service:** `StatusEffectService`
 > **Location:** `RuneAndRust.Engine/Services/StatusEffectService.cs`
@@ -20,27 +20,24 @@ This system creates tactical depth through buff/debuff management and timing.
 ### Damaging (DoT)
 | Effect | Damage | Stacks? | Source |
 |--------|--------|---------|--------|
-| **Bleeding** | 2 per stack per turn | Yes | Physical attacks, abilities |
-| **Poisoned** | 3 per stack per turn | Yes | Poison abilities, conditions |
-| **Burning** | 4 per turn | No | Fire abilities, hazards |
+| **Bleeding** | 1d6 per stack per turn | Yes | Physical attacks, abilities |
+| **Poisoned** | 1d6 per stack per turn | Yes | Poison abilities, conditions |
 
 ### Debuffs
 | Effect | Impact | Source |
 |--------|--------|--------|
 | **Stunned** | Cannot act for turn | Critical hits, abilities |
 | **Vulnerable** | +50% damage received | Abilities, conditions |
-| **Slowed** | Reduced initiative (future) | Abilities |
-| **Disoriented** | -2 to all rolls (future) | Ambush, abilities |
+| **Disoriented** | -1 to all dice pools | Ambush, Breaking Point recovery |
 | **Exhausted** | Halved rest recovery | No supplies during rest |
 
 ### Buffs
 | Effect | Impact | Source |
 |--------|--------|--------|
-| **Defending** | +2 Defense until next turn | Defend action |
-| **Fortified** | +soak per stack | Abilities |
-| **Inspired** | +2 to attacks | Abilities |
-| **Hasted** | +2 Initiative (future) | Abilities |
-| **Blessed** | Stress reduction | Sacred ground |
+| **Defending** | (Flag) +2 Defense | Defend action |
+| **Fortified** | +2 soak per stack | Abilities |
+| **Inspired** | +1 bonus die to damage | Abilities |
+| **Hasted** | +1 action per turn | Abilities |
 
 ---
 
@@ -55,17 +52,15 @@ int ProcessTurnStart(Combatant combatant)
 ```
 
 **Sequence:**
-1. Check for Bleeding → deal `2 × stacks` damage
-2. Check for Poisoned → deal `3 × stacks` damage
-3. Check for Burning → deal `4` flat damage
-4. Return total DoT damage dealt
+1. Check for Bleeding → deal `1d6` damage per stack (ignores soak)
+2. Check for Poisoned → deal `1d6` damage per stack (applies soak)
+3. Return total DoT damage dealt
 
 **Example:**
 ```csharp
-// Combatant has Bleeding x2 and Burning
+// Combatant has Bleeding x2
 var dot = statusEffects.ProcessTurnStart(combatant);
-// Bleeding: 2 × 2 = 4 damage
-// Burning: 4 damage
+// Bleeding: 2d6 rolled (e.g., 3 + 5 = 8)
 // Returns: 8 total
 ```
 
@@ -77,7 +72,7 @@ void ProcessTurnEnd(Combatant combatant)
 
 **Sequence:**
 1. Iterate all status effects
-2. Decrement `RemainingTurns` by 1
+2. Decrement `DurationRemaining` by 1
 3. If turns reach 0 → mark for removal
 4. Remove expired effects
 5. Reset `IsDefending` (handled separately in combat)
@@ -111,26 +106,26 @@ int GetSoakModifier(Combatant combatant)
 ```
 
 **Returns:**
-- `+stacks` if `Fortified` active
+- `+2 × stacks` if `Fortified` active
 - `0` otherwise
 
 **Used by:** `AttackResolutionService` for damage reduction.
 
-#### 6. Apply Status (`ApplyStatus`)
+#### 6. Apply Effect (`ApplyEffect`)
 
 ```csharp
-void ApplyStatus(Combatant target, StatusEffectType type, int duration, int stacks = 1)
+void ApplyEffect(Combatant target, StatusEffectType type, int duration, Guid sourceId)
 ```
 
 **Stack Behavior:**
-- If already has effect and stackable → add stacks, refresh duration
+- If already has effect and stackable → add stacks (up to 5), refresh duration
 - If already has effect and not stackable → refresh duration only
 - If new → add to `StatusEffects` list
 
-#### 7. Remove Status (`RemoveStatus`)
+#### 7. Remove Effect (`RemoveEffect`)
 
 ```csharp
-void RemoveStatus(Combatant target, StatusEffectType type)
+void RemoveEffect(Combatant target, StatusEffectType type)
 ```
 
 **Removes:** All instances of the specified effect type.
@@ -142,17 +137,20 @@ void RemoveStatus(Combatant target, StatusEffectType type)
 ### Stacking Effects
 | Effect | Stacks | Max Stacks | Behavior |
 |--------|--------|------------|----------|
-| Bleeding | Yes | 5 | Damage = 2 × stacks |
-| Poisoned | Yes | 5 | Damage = 3 × stacks |
-| Fortified | Yes | 5 | Soak = stacks |
+| Bleeding | Yes | 5 | Damage = 1d6 per stack |
+| Poisoned | Yes | 5 | Damage = 1d6 per stack |
+| Fortified | Yes | 5 | Soak = 2 per stack |
 
 ### Non-Stacking Effects
 | Effect | Behavior on Reapply |
 |--------|---------------------|
-| Burning | Refreshes duration |
 | Stunned | Refreshes duration |
 | Vulnerable | Refreshes duration |
+| Disoriented | Refreshes duration |
+| Exhausted | Refreshes duration |
 | Defending | Refreshes (but usually 1 turn anyway) |
+| Inspired | Refreshes duration |
+| Hasted | Refreshes duration |
 
 ---
 
@@ -166,9 +164,9 @@ void RemoveStatus(Combatant target, StatusEffectType type)
 ### Example Timeline
 ```
 Turn 1: Apply Bleeding x2 for 3 turns
-Turn 1: Combatant takes 4 DoT, duration → 2
-Turn 2: Combatant takes 4 DoT, duration → 1
-Turn 3: Combatant takes 4 DoT, duration → 0 (removed)
+Turn 1: Combatant takes DoT, duration → 2
+Turn 2: Combatant takes DoT, duration → 1
+Turn 3: Combatant takes DoT, duration → 0 (removed)
 ```
 
 ---
@@ -178,11 +176,11 @@ Turn 3: Combatant takes 4 DoT, duration → 0 (removed)
 ### Application Rules
 1. **Combat only** - Most effects only apply during combat
 2. **Persistent effects** - `Exhausted` persists outside combat
-3. **Stack limits** - Cannot exceed max stack count
+3. **Stack limits** - Cannot exceed max stack count (5)
 
 ### Removal Rules
 1. **Duration expiry** - Automatic at turn end
-2. **Explicit removal** - `RemoveStatus()` call
+2. **Explicit removal** - `RemoveEffect()` call
 3. **Combat end** - Most effects cleared on combat end
 4. **Persistent exceptions** - `Exhausted` survives combat
 
@@ -195,8 +193,9 @@ Turn 3: Combatant takes 4 DoT, duration → 0 (removed)
 |------------|-------|-------|
 | Max stacks | 5 | Per effect type |
 | Max duration | Unbounded | Typically 1-5 turns |
-| DoT damage | Fixed formula | 2/3/4 per type |
+| DoT damage | 1d6 | Per stack |
 | Vulnerable multiplier | 1.5x | +50% damage |
+| Fortified bonus | +2 | Soak per stack |
 
 ### System Gaps
 - No effect resistance/immunity
@@ -210,48 +209,48 @@ Turn 3: Combatant takes 4 DoT, duration → 0 (removed)
 
 ### UC-1: Bleeding from Ability
 ```csharp
-// Ability with EffectScript: "DAMAGE:PHYSICAL:1d6;STATUS:BLEEDING:3"
-statusEffects.ApplyStatus(target, StatusEffectType.Bleeding, duration: 3, stacks: 1);
+// Ability with EffectScript: "DAMAGE:PHYSICAL:1d6;STATUS:Bleeding:3"
+_statusEffectService.ApplyEffect(target, StatusEffectType.Bleeding, duration: 3, sourceId);
 
 // Each turn start
-var dot = statusEffects.ProcessTurnStart(target);
-// 2 damage from Bleeding x1
+var dot = _statusEffectService.ProcessTurnStart(target);
+// 1d6 damage from Bleeding x1 (Ignores Armor)
 ```
 
 ### UC-2: Stacking Poison
 ```csharp
-// First poison application
-statusEffects.ApplyStatus(target, StatusEffectType.Poisoned, 3, 2);
+// First poison application (2 stacks)
+_statusEffectService.ApplyEffect(target, StatusEffectType.Poisoned, 3, sourceId);
+_statusEffectService.ApplyEffect(target, StatusEffectType.Poisoned, 3, sourceId);
 // Poisoned x2 for 3 turns
 
-// Second poison (stacks)
-statusEffects.ApplyStatus(target, StatusEffectType.Poisoned, 3, 1);
+// Second poison (stacks +1)
+_statusEffectService.ApplyEffect(target, StatusEffectType.Poisoned, 3, sourceId);
 // Poisoned x3 for 3 turns (refreshed)
 
-// Turn start: 3 × 3 = 9 poison damage
+// Turn start: 3d6 poison damage (Subject to Armor)
 ```
 
 ### UC-3: Defend Action
 ```csharp
 // Player chooses defend
 combatant.IsDefending = true;
-statusEffects.ApplyStatus(combatant, StatusEffectType.Defending, 1);
 
 // Until next turn:
 // +2 Defense from IsDefending flag
-// Effect cleared at turn start
+// Flag cleared at turn start
 ```
 
 ### UC-4: Stun Skip Turn
 ```csharp
 // Enemy applies stun
-statusEffects.ApplyStatus(player, StatusEffectType.Stunned, 1);
+_statusEffectService.ApplyEffect(player, StatusEffectType.Stunned, 1, sourceId);
 
 // Next turn check
-if (!statusEffects.CanAct(player))
+if (!_statusEffectService.CanAct(player))
 {
     LogCombatEvent("You are stunned and lose your turn!");
-    statusEffects.ProcessTurnEnd(player);
+    _statusEffectService.ProcessTurnEnd(player);
     NextTurn();  // Skip to next combatant
 }
 ```
@@ -263,6 +262,7 @@ if (!statusEffects.CanAct(player))
 ### Dependencies (Consumes)
 | Service | Usage |
 |---------|-------|
+| `IDiceService` | DoT damage rolls |
 | `ILogger` | Effect application/removal tracing |
 
 ### Dependents (Provides To)
@@ -298,9 +298,9 @@ if (!statusEffects.CanAct(player))
 public class ActiveStatusEffect
 {
     public StatusEffectType Type { get; set; }
-    public int RemainingTurns { get; set; }
+    public int DurationRemaining { get; set; }
     public int Stacks { get; set; } = 1;
-    public string? Source { get; set; }
+    public Guid SourceId { get; set; }
 }
 ```
 
@@ -308,41 +308,18 @@ public class ActiveStatusEffect
 ```csharp
 public enum StatusEffectType
 {
-    // DoT
-    Bleeding,
-    Poisoned,
-    Burning,
-
     // Debuffs
-    Stunned,
-    Vulnerable,
-    Slowed,
-    Disoriented,
+    Bleeding = 0,     // 1d6/stack (True Dmg)
+    Poisoned = 1,     // 1d6/stack (Soakable)
+    Stunned = 2,      // Skip turn
+    Vulnerable = 3,   // +50% dmg taken
+    Disoriented = 4,  // -1 to dice pools
+    Exhausted = 5,    // Halved recovery
 
     // Buffs
-    Defending,
-    Fortified,
-    Inspired,
-    Hasted,
-    Blessed,
-
-    // Persistent
-    Exhausted
-}
-```
-
-### Combatant Integration
-```csharp
-public class Combatant
-{
-    public List<ActiveStatusEffect> StatusEffects { get; set; } = new();
-    public bool IsDefending { get; set; }
-
-    public bool HasStatus(StatusEffectType type) =>
-        StatusEffects.Any(e => e.Type == type);
-
-    public int GetStacks(StatusEffectType type) =>
-        StatusEffects.FirstOrDefault(e => e.Type == type)?.Stacks ?? 0;
+    Fortified = 100,  // +2 Soak/stack
+    Hasted = 101,     // +1 Action (Reserved)
+    Inspired = 102    // +1 Dmg Die (Reserved)
 }
 ```
 
@@ -392,53 +369,18 @@ var effectIcons = combatant.StatusEffects.Select(e => e.Type switch
 
 ---
 
-## Testing
-
-### Test Files
-- `StatusEffectServiceTests.cs`
-
-### Critical Test Scenarios
-1. DoT damage calculation (all types)
-2. Stack accumulation
-3. Stack cap enforcement
-4. Duration decrement
-5. Effect expiry and removal
-6. Stun blocks action
-7. Vulnerable multiplier
-8. Fortified soak bonus
-9. Non-stacking effect refresh
-10. Persistent effect (Exhausted) survival
-
----
-
 ## Design Rationale
 
-### Why Duration-Based?
-- Predictable for players
-- Tactical timing decisions
-- Cleaner than charge-based for combat pacing
+### Why 1d6 DoT?
+- Standardizes damage rolls
+- Scales cleanly with stacks (2d6, 3d6)
+- "Bleeding" ignores armor (internal injury) vs "Poisoned" which is soakable (bodily resistance)
 
-### Why Stacking DoTs?
-- Rewards focused strategies
-- Creates build-up threat
-- Stack cap prevents runaway damage
-
-### Why Fixed DoT Values?
-- Simple mental math
-- Predictable damage planning
-- Balance adjustable per effect type
-
-### Why Separate Defending Flag?
-- Reset logic is simpler
-- Clear semantic meaning
-- Doesn't need duration tracking
+### Why No Burning?
+- Removed to simplify elemental effects for now
+- Can be re-added if fire mechanics become central
 
 ### Why Persistent Exhausted?
 - Rest penalty needs to survive combat
 - Creates meaningful resource pressure
 - Cleared only at sanctuary
-
-### Why No Effect Interactions?
-- Keeps system simple
-- Avoids complex priority rules
-- Can add later if needed

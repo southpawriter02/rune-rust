@@ -1,6 +1,6 @@
 # SPEC-COND-001: Ambient Condition System
 
-> **Version:** 1.0.0
+> **Version:** 1.0.1
 > **Status:** Implemented (v0.3.3b)
 > **Service:** `ConditionService`
 > **Location:** `RuneAndRust.Engine/Services/ConditionService.cs`
@@ -26,14 +26,14 @@ This system creates distinct zone atmospheres that influence tactical decisions.
 ### Condition Types
 | Type | Theme | Passive Effect | Tick Effect |
 |------|-------|----------------|-------------|
-| **Poisoned** | Toxic air | -1 STURDINESS | Damage |
-| **Burning** | Intense heat | -1 FINESSE | Damage |
-| **Frozen** | Extreme cold | -2 FINESSE | Damage |
-| **Radioactive** | Lingering radiation | -1 STURDINESS, -1 WILL | Stress |
-| **Corrupted** | Aetheric corruption | -1 WILL | Corruption |
-| **StaticField** | Electrical interference | -1 WITS | Damage (25% chance) |
-| **Blessed** | Sacred ground | +1 WILL | Stress recovery |
-| **Neutral** | No effect | None | None |
+| **PsychicResonance** | Mental pressure | -1 WILL | +2 Stress |
+| **ToxicAtmosphere** | Poisonous air | None | 1d4 Poison Dmg |
+| **DeepCold** | Freezing temperature | -1 FINESSE | 1 Ice Dmg |
+| **ScorchingHeat** | Extreme heat | -1 STURDINESS | 1 Fire Dmg |
+| **LowVisibility** | Obscured vision | -2 WITS | None |
+| **BlightedGround** | Corrupted terrain | -1 WILL, -1 WITS | +1 Corruption |
+| **StaticField** | Electrical discharge | -1 FINESSE | 1d6 Lightning Dmg (25%) |
+| **DreadPresence** | Ancient horror | -2 WILL | +3 Stress |
 
 ---
 
@@ -68,17 +68,14 @@ public static Dictionary<Attribute, int> GetPassivePenalties(this ConditionType 
 {
     return type switch
     {
-        ConditionType.Poisoned => new() { [Attribute.Sturdiness] = -1 },
-        ConditionType.Burning => new() { [Attribute.Finesse] = -1 },
-        ConditionType.Frozen => new() { [Attribute.Finesse] = -2 },
-        ConditionType.Radioactive => new()
-        {
-            [Attribute.Sturdiness] = -1,
-            [Attribute.Will] = -1
-        },
-        ConditionType.Corrupted => new() { [Attribute.Will] = -1 },
-        ConditionType.StaticField => new() { [Attribute.Wits] = -1 },
-        ConditionType.Blessed => new() { [Attribute.Will] = 1 },
+        ConditionType.PsychicResonance => new() { [Attribute.Will] = -1 },
+        ConditionType.DeepCold => new() { [Attribute.Finesse] = -1 },
+        ConditionType.ScorchingHeat => new() { [Attribute.Sturdiness] = -1 },
+        ConditionType.LowVisibility => new() { [Attribute.Wits] = -2 },
+        ConditionType.BlightedGround => new() { [Attribute.Will] = -1, [Attribute.Wits] = -1 },
+        ConditionType.StaticField => new() { [Attribute.Finesse] = -1 },
+        ConditionType.DreadPresence => new() { [Attribute.Will] = -2 },
+        ConditionType.ToxicAtmosphere => new(), // None
         _ => new()
     };
 }
@@ -139,13 +136,13 @@ if (condition.TickChance < 1.0f)
 ### Supported Commands
 | Command | Format | Example |
 |---------|--------|---------|
-| **DAMAGE** | `DAMAGE:{type}:{amount}` | `DAMAGE:FIRE:1d6` |
+| **DAMAGE** | `DAMAGE:{type}:{amount}` | `DAMAGE:Fire:1d6` |
 | **STRESS** | `STRESS:{amount}` | `STRESS:3` |
 | **CORRUPTION** | `CORRUPTION:{amount}` | `CORRUPTION:1` |
 
 ### Multi-Command Scripts
 ```
-DAMAGE:POISON:2d4;STRESS:2
+DAMAGE:Poison:1d4;STRESS:2
 // Deals poison damage AND applies stress
 ```
 
@@ -153,16 +150,17 @@ DAMAGE:POISON:2d4;STRESS:2
 
 ## Condition Definitions
 
-### Standard Conditions
+### Standard Conditions (Seeded)
 | Name | Type | Passive | TickScript | TickChance |
 |------|------|---------|------------|------------|
-| Noxious Fumes | Poisoned | -1 STU | DAMAGE:POISON:1d4 | 100% |
-| Blazing Heat | Burning | -1 FIN | DAMAGE:FIRE:1d6 | 100% |
-| Bitter Cold | Frozen | -2 FIN | DAMAGE:COLD:1d4 | 100% |
-| Radiation Zone | Radioactive | -1 STU, -1 WIL | STRESS:3 | 100% |
-| Blight Zone | Corrupted | -1 WIL | CORRUPTION:1 | 100% |
-| Static Field | StaticField | -1 WIT | DAMAGE:LIGHTNING:2d6 | 25% |
-| Sacred Ground | Blessed | +1 WIL | STRESS:-5 | 100% |
+| Psychic Resonance | PsychicResonance | -1 WIL | STRESS:2 | 100% |
+| Toxic Atmosphere | ToxicAtmosphere | None | DAMAGE:Poison:1d4 | 100% |
+| Deep Cold | DeepCold | -1 FIN | DAMAGE:Ice:1d1 | 100% |
+| Scorching Heat | ScorchingHeat | -1 STU | DAMAGE:Fire:1d1 | 100% |
+| Low Visibility | LowVisibility | -2 WIT | (None) | 0% |
+| Blighted Ground | BlightedGround | -1 WIL, -1 WIT | CORRUPTION:1 | 100% |
+| Static Field | StaticField | -1 FIN | DAMAGE:Lightning:1d6 | 25% |
+| Dread Presence | DreadPresence | -2 WIL | STRESS:3 | 100% |
 
 ---
 
@@ -185,10 +183,10 @@ DAMAGE:POISON:2d4;STRESS:2
 ### Numerical Bounds
 | Constraint | Value | Notes |
 |------------|-------|-------|
-| Max passive penalty | -2 | Frozen (FINESSE) |
-| Min tick chance | 0% | Effectively disabled |
+| Max passive penalty | -2 | DreadPresence (WILL), LowVis (WITS) |
+| Min tick chance | 0% | Effectively disabled (LowVis) |
 | Max tick chance | 100% | Guaranteed effect |
-| Corruption per tick | Typically 1 | Low to prevent Terminal Error rush |
+| Corruption per tick | 1 | Low to prevent Terminal Error rush |
 
 ### System Gaps
 - No condition immunity
@@ -200,7 +198,7 @@ DAMAGE:POISON:2d4;STRESS:2
 
 ## Use Cases
 
-### UC-1: Combat in Poisoned Room
+### UC-1: Combat in Toxic Room
 ```csharp
 // On StartCombat
 var condition = await conditionService.GetRoomConditionAsync(roomId);
@@ -210,7 +208,6 @@ if (condition != null)
     {
         conditionService.ApplyPassiveModifiers(combatant, condition.Type);
     }
-    // All combatants now have -1 STURDINESS
 }
 
 // Each turn
@@ -219,7 +216,7 @@ if (combatant.ActiveCondition != null)
     var tickResult = await conditionService.ProcessTurnTickAsync(combatant, condition);
     if (tickResult.WasApplied)
     {
-        // "Noxious Fumes: 3 damage."
+        // "Toxic Atmosphere: 3 Poison damage."
         combatant.CurrentHp -= tickResult.DamageDealt;
     }
 }
@@ -228,22 +225,9 @@ if (combatant.ActiveCondition != null)
 ### UC-2: Static Field (Probabilistic Tick)
 ```csharp
 // TickChance = 0.25 (25%)
-// Each combatant's turn, 25% chance of 2d6 lightning damage
+// Each combatant's turn, 25% chance of 1d6 lightning damage
 var tickResult = await conditionService.ProcessTurnTickAsync(combatant, staticField);
 // May or may not apply damage this turn
-```
-
-### UC-3: Sanctuary (Blessed Ground)
-```csharp
-// Positive condition: +1 WILL, recovers 5 stress per turn
-var blessed = new AmbientCondition
-{
-    Name = "Sacred Ground",
-    Type = ConditionType.Blessed,
-    TickScript = "STRESS:-5"  // Negative stress = recovery
-};
-
-// Combat in blessed room is safer, stress naturally drops
 ```
 
 ---
@@ -293,31 +277,15 @@ public class AmbientCondition
     public Guid Id { get; set; }
     public string Name { get; set; }
     public ConditionType Type { get; set; }
-    public string Description { get; set; }  // AAM-VOICE compliant
-    public string? Color { get; set; }        // UI rendering hint
+    public string Description { get; set; }
+    public string? Color { get; set; }
 
     // Tick Effect Configuration
     public string? TickScript { get; set; }
     public float TickChance { get; set; } = 1.0f;  // 0.0-1.0
 
     // Procedural Placement
-    public List<string> BiomeTags { get; set; } = new();
-}
-```
-
-### ConditionTickResult
-```csharp
-public record ConditionTickResult(
-    bool WasApplied,
-    string ConditionName,
-    string Message,
-    int DamageDealt,
-    int StressApplied,
-    int CorruptionApplied
-)
-{
-    public static ConditionTickResult None =>
-        new(false, "", "", 0, 0, 0);
+    public List<BiomeType> BiomeTags { get; set; } = new();
 }
 ```
 
@@ -325,14 +293,14 @@ public record ConditionTickResult(
 ```csharp
 public enum ConditionType
 {
-    Neutral,      // No effect
-    Poisoned,     // Toxic
-    Burning,      // Fire/heat
-    Frozen,       // Cold/ice
-    Radioactive,  // Radiation
-    Corrupted,    // Aetheric blight
-    StaticField,  // Electrical
-    Blessed       // Positive (sacred)
+    PsychicResonance = 0,
+    ToxicAtmosphere = 1,
+    DeepCold = 2,
+    ScorchingHeat = 3,
+    LowVisibility = 4,
+    BlightedGround = 5,
+    StaticField = 6,
+    DreadPresence = 7
 }
 ```
 
@@ -367,72 +335,3 @@ public class Combatant
     }
 }
 ```
-
----
-
-## Procedural Population
-
-### BiomeEnvironmentMapping Integration
-```csharp
-// EnvironmentPopulator assigns conditions based on biome
-var conditionId = biomeMapping.GetConditionForBiome(room.BiomeType, room.DangerLevel);
-if (conditionId != null)
-{
-    room.ConditionId = conditionId;
-}
-```
-
-### Biome-Condition Mapping
-| Biome | Common Conditions |
-|-------|-------------------|
-| Industrial | StaticField, Burning |
-| Aetheric | Corrupted, Radioactive |
-| Organic | Poisoned |
-| Frozen | Frozen |
-| Sacred | Blessed |
-
----
-
-## Testing
-
-### Test Files
-- `ConditionServiceTests.cs`
-
-### Critical Test Scenarios
-1. Get room condition (present and absent)
-2. Passive modifier application for all types
-3. Tick processing with 100% chance
-4. Tick processing with probability (25%)
-5. Multi-command tick scripts
-6. Stress tick (positive and negative)
-7. Corruption tick
-8. Modifier aggregation in Combatant.GetAttribute()
-
----
-
-## Design Rationale
-
-### Why Room-Level?
-- Simplifies navigation ("this room is dangerous")
-- Creates distinct tactical zones
-- Supports dungeon design (avoid the radiation zone)
-
-### Why Passive + Tick Separation?
-- Passive affects decision making immediately
-- Ticks create ongoing pressure
-- Allows varied condition severity
-
-### Why Tick Chance?
-- Some conditions should be unpredictable
-- Static Field (25%) creates tension without guarantee
-- Allows condition balancing without changing damage
-
-### Why Corruption Tick?
-- Creates zones where time matters
-- Connects environment to progression system
-- Encourages speed vs. caution tradeoffs
-
-### Why Blessed Condition?
-- Not all conditions should be negative
-- Creates safe havens worth finding
-- Balances dungeon difficulty spikes
