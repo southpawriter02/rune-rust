@@ -171,6 +171,35 @@ public class ParseResult
     /// </summary>
     public string? SalvageTarget { get; set; }
 
+    #region Alchemy & Runeforging Commands (v0.3.1c)
+
+    /// <summary>
+    /// Gets or sets whether a brew command was issued (Alchemy).
+    /// </summary>
+    public bool RequiresBrew { get; set; }
+
+    /// <summary>
+    /// Gets or sets the target recipe for the brew command.
+    /// </summary>
+    public string? BrewTarget { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether a forge command was issued (Runeforging).
+    /// </summary>
+    public bool RequiresForge { get; set; }
+
+    /// <summary>
+    /// Gets or sets the rune name for the forge command.
+    /// </summary>
+    public string? ForgeRune { get; set; }
+
+    /// <summary>
+    /// Gets or sets the target item for the forge command.
+    /// </summary>
+    public string? ForgeTarget { get; set; }
+
+    #endregion
+
     /// <summary>
     /// Gets a default result with no async requirements.
     /// </summary>
@@ -577,6 +606,44 @@ public class CommandParser
             }
         }
 
+        // Check for brew command with target (Alchemy - v0.3.1c)
+        if (command.StartsWith("brew ") || command.StartsWith("mix ") || command.StartsWith("concoct "))
+        {
+            var target = ExtractTarget(command, new[] { "brew ", "mix ", "concoct " });
+            if (!string.IsNullOrWhiteSpace(target))
+            {
+                state.TurnCount++;
+                _logger.LogDebug("Brew command for target: {Target}", target);
+                return new ParseResult
+                {
+                    RequiresBrew = true,
+                    BrewTarget = target
+                };
+            }
+            else
+            {
+                _inputHandler.DisplayError("Brew what? Specify a potion recipe.");
+                return ParseResult.None;
+            }
+        }
+
+        // Check for forge command with target (Runeforging - v0.3.1c)
+        // Format: "forge <rune> on <item>" or "inscribe <rune> on <item>" or "etch <rune> on <item>"
+        if (command.StartsWith("forge ") || command.StartsWith("inscribe ") || command.StartsWith("etch "))
+        {
+            var result = ParseForgeCommand(command);
+            if (result != null)
+            {
+                state.TurnCount++;
+                return result;
+            }
+            else
+            {
+                _inputHandler.DisplayError("Forge what? Format: forge <rune> on <item>");
+                return ParseResult.None;
+            }
+        }
+
         // Check for codex command with target
         if (command.StartsWith("codex "))
         {
@@ -764,6 +831,52 @@ public class CommandParser
             }
         }
         return null;
+    }
+
+    /// <summary>
+    /// Parses a forge command in the format "forge <rune> on <item>".
+    /// </summary>
+    /// <param name="command">The full command string.</param>
+    /// <returns>A ParseResult with forge properties, or null if invalid format.</returns>
+    private ParseResult? ParseForgeCommand(string command)
+    {
+        // Remove the verb prefix
+        var content = ExtractTarget(command, new[] { "forge ", "inscribe ", "etch " });
+        if (string.IsNullOrWhiteSpace(content))
+        {
+            return null;
+        }
+
+        // Look for "on" separator (case insensitive)
+        var onIndex = content.IndexOf(" on ", StringComparison.OrdinalIgnoreCase);
+        if (onIndex < 0)
+        {
+            // No target item specified - this is valid for some runeforging recipes
+            // that create new items rather than enchanting existing ones
+            _logger.LogDebug("Forge command (no target): {Rune}", content);
+            return new ParseResult
+            {
+                RequiresForge = true,
+                ForgeRune = content.Trim(),
+                ForgeTarget = null
+            };
+        }
+
+        var runeName = content.Substring(0, onIndex).Trim();
+        var targetItem = content.Substring(onIndex + 4).Trim();
+
+        if (string.IsNullOrWhiteSpace(runeName))
+        {
+            return null;
+        }
+
+        _logger.LogDebug("Forge command: {Rune} on {Target}", runeName, targetItem);
+        return new ParseResult
+        {
+            RequiresForge = true,
+            ForgeRune = runeName,
+            ForgeTarget = string.IsNullOrWhiteSpace(targetItem) ? null : targetItem
+        };
     }
 
     /// <summary>
@@ -1098,6 +1211,15 @@ public class CommandParser
         _inputHandler.DisplayMessage("  fix <item>       - Same as repair");
         _inputHandler.DisplayMessage("  salvage <item>   - Destroy equipment to extract Scrap");
         _inputHandler.DisplayMessage("  scrap <item>     - Same as salvage");
+        _inputHandler.DisplayMessage("");
+        _inputHandler.DisplayMessage("Alchemy:");
+        _inputHandler.DisplayMessage("  brew <recipe>    - Brew a potion or compound (uses WITS)");
+        _inputHandler.DisplayMessage("  mix <recipe>     - Same as brew");
+        _inputHandler.DisplayMessage("");
+        _inputHandler.DisplayMessage("Runeforging:");
+        _inputHandler.DisplayMessage("  forge <rune>     - Forge a runic item (uses WITS)");
+        _inputHandler.DisplayMessage("  forge X on Y     - Inscribe rune X onto item Y");
+        _inputHandler.DisplayMessage("  inscribe X on Y  - Same as forge");
         _inputHandler.DisplayMessage("");
         _inputHandler.DisplayMessage("Journal:");
         _inputHandler.DisplayMessage("  journal, j       - Open the Scavenger's Journal");

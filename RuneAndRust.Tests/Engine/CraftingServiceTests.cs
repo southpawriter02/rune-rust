@@ -5,6 +5,7 @@ using RuneAndRust.Core.Data;
 using RuneAndRust.Core.Entities;
 using RuneAndRust.Core.Enums;
 using RuneAndRust.Core.Interfaces;
+using RuneAndRust.Core.Models.Combat;
 using RuneAndRust.Core.Models.Crafting;
 using RuneAndRust.Engine.Services;
 using Xunit;
@@ -21,6 +22,7 @@ public class CraftingServiceTests
     private readonly Mock<IDiceService> _mockDiceService;
     private readonly Mock<IInventoryService> _mockInventoryService;
     private readonly Mock<IItemRepository> _mockItemRepository;
+    private readonly Mock<ITraumaService> _mockTraumaService;
     private readonly Mock<ILogger<CraftingService>> _mockLogger;
     private readonly CraftingService _sut;
 
@@ -34,12 +36,14 @@ public class CraftingServiceTests
         _mockDiceService = new Mock<IDiceService>();
         _mockInventoryService = new Mock<IInventoryService>();
         _mockItemRepository = new Mock<IItemRepository>();
+        _mockTraumaService = new Mock<ITraumaService>();
         _mockLogger = new Mock<ILogger<CraftingService>>();
 
         _sut = new CraftingService(
             _mockDiceService.Object,
             _mockInventoryService.Object,
             _mockItemRepository.Object,
+            _mockTraumaService.Object,
             _mockLogger.Object);
 
         // Set up test character with WITS 5
@@ -367,6 +371,235 @@ public class CraftingServiceTests
 
     #endregion
 
+    #region Trade-Specific Catastrophe Tests (v0.3.1c)
+
+    [Fact]
+    public async Task CraftItem_AlchemyCatastrophe_DealsDamage()
+    {
+        // Arrange - Set up character with alchemy ingredients
+        _testCharacter.CurrentHP = 50;
+        _testCharacter.MaxHP = 50;
+        SetupCharacterWithAlchemyIngredients();
+        SetupCatastropheCraftRoll();
+        SetupInventoryServiceSuccess();
+
+        // Act
+        var result = await _sut.CraftItemAsync(_testCharacter, "RCP_ALC_STIM");
+
+        // Assert
+        result.Outcome.Should().Be(CraftingOutcome.Catastrophe);
+        result.DamageDealt.Should().Be(5); // RCP_ALC_STIM has CatastropheDamage = 5
+        _testCharacter.CurrentHP.Should().Be(45); // 50 - 5 damage
+    }
+
+    [Fact]
+    public async Task CraftItem_AlchemyCatastrophe_SetsResultDamage()
+    {
+        // Arrange
+        _testCharacter.CurrentHP = 100;
+        _testCharacter.MaxHP = 100;
+        SetupCharacterWithAlchemyIngredients();
+        SetupCatastropheCraftRoll();
+        SetupInventoryServiceSuccess();
+
+        // Act
+        var result = await _sut.CraftItemAsync(_testCharacter, "RCP_ALC_STIM");
+
+        // Assert
+        result.DamageDealt.Should().NotBeNull();
+        result.DamageDealt.Should().BeGreaterThan(0);
+        result.Message.Should().Contain("damage");
+    }
+
+    [Fact]
+    public async Task CraftItem_RuneforgingCatastrophe_AddsCorruption()
+    {
+        // Arrange - Set up character with runeforging ingredients
+        _testCharacter.Corruption = 0;
+        SetupCharacterWithRuneforgingIngredients();
+        SetupCatastropheCraftRoll();
+        SetupInventoryServiceSuccess();
+
+        // Setup TraumaService to track AddCorruption calls
+        _mockTraumaService
+            .Setup(s => s.AddCorruption(It.IsAny<Character>(), It.IsAny<int>(), It.IsAny<string>()))
+            .Returns(new CorruptionResult(3, 3, 3, CorruptionTier.Pristine, CorruptionTier.Pristine, false, false, "Runic Backlash"));
+
+        // Act
+        var result = await _sut.CraftItemAsync(_testCharacter, "RCP_RUN_GLOW");
+
+        // Assert
+        result.Outcome.Should().Be(CraftingOutcome.Catastrophe);
+        _mockTraumaService.Verify(
+            s => s.AddCorruption(_testCharacter, 3, "Runic Backlash"),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task CraftItem_RuneforgingCatastrophe_SetsResultCorruption()
+    {
+        // Arrange
+        _testCharacter.Corruption = 0;
+        SetupCharacterWithRuneforgingIngredients();
+        SetupCatastropheCraftRoll();
+        SetupInventoryServiceSuccess();
+
+        _mockTraumaService
+            .Setup(s => s.AddCorruption(It.IsAny<Character>(), It.IsAny<int>(), It.IsAny<string>()))
+            .Returns(new CorruptionResult(3, 3, 3, CorruptionTier.Pristine, CorruptionTier.Pristine, false, false, "Runic Backlash"));
+
+        // Act
+        var result = await _sut.CraftItemAsync(_testCharacter, "RCP_RUN_GLOW");
+
+        // Assert
+        result.CorruptionAdded.Should().NotBeNull();
+        result.CorruptionAdded.Should().Be(3); // RCP_RUN_GLOW has CatastropheCorruption = 3
+        result.Message.Should().Contain("Corruption");
+    }
+
+    [Fact]
+    public async Task CraftItem_BodgingCatastrophe_NoDamageOrCorruption()
+    {
+        // Arrange - Bodging has CatastropheType.None
+        SetupCharacterWithTorchIngredients();
+        SetupCatastropheCraftRoll();
+        SetupInventoryServiceSuccess();
+        var originalHp = _testCharacter.CurrentHP;
+        var originalCorruption = _testCharacter.Corruption;
+
+        // Act
+        var result = await _sut.CraftItemAsync(_testCharacter, "RCP_BOD_TORCH");
+
+        // Assert
+        result.Outcome.Should().Be(CraftingOutcome.Catastrophe);
+        result.DamageDealt.Should().BeNull();
+        result.CorruptionAdded.Should().BeNull();
+        _testCharacter.CurrentHP.Should().Be(originalHp);
+        _testCharacter.Corruption.Should().Be(originalCorruption);
+    }
+
+    [Fact]
+    public async Task CraftItem_AlchemySuccess_CreatesPotionWithNoDamage()
+    {
+        // Arrange
+        _testCharacter.CurrentHP = 50;
+        SetupCharacterWithAlchemyIngredients();
+        SetupSuccessfulCraftRoll(netSuccesses: 4); // DC 3, so success
+        SetupItemRepository();
+        SetupInventoryServiceSuccess();
+
+        // Act
+        var result = await _sut.CraftItemAsync(_testCharacter, "RCP_ALC_STIM");
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        result.Outcome.Should().Be(CraftingOutcome.Success);
+        result.DamageDealt.Should().BeNull();
+        _testCharacter.CurrentHP.Should().Be(50); // No damage on success
+    }
+
+    [Fact]
+    public async Task CraftItem_RuneforgingSuccess_NoCorruptionAdded()
+    {
+        // Arrange
+        _testCharacter.Corruption = 0;
+        SetupCharacterWithRuneforgingIngredients();
+        SetupSuccessfulCraftRoll(netSuccesses: 3); // DC 2, so success
+        SetupItemRepository();
+        SetupInventoryServiceSuccess();
+
+        // Act
+        var result = await _sut.CraftItemAsync(_testCharacter, "RCP_RUN_GLOW");
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        result.CorruptionAdded.Should().BeNull();
+        _mockTraumaService.Verify(
+            s => s.AddCorruption(It.IsAny<Character>(), It.IsAny<int>(), It.IsAny<string>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public void Recipe_CatastropheType_DefaultsToNone()
+    {
+        // Arrange
+        var recipe = new Recipe
+        {
+            RecipeId = "TEST_RECIPE",
+            Name = "Test Recipe",
+            Trade = CraftingTrade.Bodging
+        };
+
+        // Assert
+        recipe.CatastropheType.Should().Be(CatastropheType.None);
+        recipe.CatastropheDamage.Should().Be(0);
+        recipe.CatastropheCorruption.Should().Be(0);
+    }
+
+    [Fact]
+    public void Recipe_AlchemyRecipes_HaveExplosiveCatastrophe()
+    {
+        // Arrange
+        var alchemyRecipes = RecipeRegistry.GetByTrade(CraftingTrade.Alchemy);
+
+        // Assert
+        alchemyRecipes.Should().AllSatisfy(r =>
+        {
+            r.CatastropheType.Should().Be(CatastropheType.Explosive);
+            r.CatastropheDamage.Should().BeGreaterThan(0);
+        });
+    }
+
+    [Fact]
+    public void Recipe_RuneforgingRecipes_HaveCorruptionCatastrophe()
+    {
+        // Arrange
+        var runeforgingRecipes = RecipeRegistry.GetByTrade(CraftingTrade.Runeforging);
+
+        // Assert
+        runeforgingRecipes.Should().AllSatisfy(r =>
+        {
+            r.CatastropheType.Should().Be(CatastropheType.Corruption);
+            r.CatastropheCorruption.Should().BeGreaterThan(0);
+        });
+    }
+
+    [Fact]
+    public async Task CraftItem_AlchemyCatastrophe_DoesNotReduceHpBelowZero()
+    {
+        // Arrange - Character with very low HP
+        _testCharacter.CurrentHP = 3;
+        _testCharacter.MaxHP = 50;
+        SetupCharacterWithAlchemyIngredients();
+        SetupCatastropheCraftRoll();
+        SetupInventoryServiceSuccess();
+
+        // Act - RCP_ALC_STIM deals 5 damage on catastrophe
+        var result = await _sut.CraftItemAsync(_testCharacter, "RCP_ALC_STIM");
+
+        // Assert
+        _testCharacter.CurrentHP.Should().Be(0); // Clamped to 0, not negative
+    }
+
+    [Fact]
+    public async Task CraftItem_FirebombCatastrophe_DealsHighDamage()
+    {
+        // Arrange - Firebomb has the highest catastrophe damage (15)
+        _testCharacter.CurrentHP = 100;
+        SetupCharacterWithFirebombIngredients();
+        SetupCatastropheCraftRoll();
+        SetupInventoryServiceSuccess();
+
+        // Act
+        var result = await _sut.CraftItemAsync(_testCharacter, "RCP_ALC_FIREBOMB");
+
+        // Assert
+        result.DamageDealt.Should().Be(15);
+        _testCharacter.CurrentHP.Should().Be(85);
+    }
+
+    #endregion
+
     #region Helper Methods
 
     private void SetupCharacterWithTorchIngredients()
@@ -434,6 +667,47 @@ public class CraftingServiceTests
         _mockInventoryService
             .Setup(s => s.AddItemAsync(It.IsAny<Character>(), It.IsAny<Item>(), It.IsAny<int>()))
             .ReturnsAsync(new InventoryResult(true, "Added"));
+    }
+
+    private void SetupCharacterWithAlchemyIngredients()
+    {
+        // RCP_ALC_STIM requires: blight_moss x1, clean_water x1
+        var blightMoss = new Item { Name = "blight_moss", ItemType = ItemType.Material, IsStackable = true };
+        var cleanWater = new Item { Name = "clean_water", ItemType = ItemType.Material, IsStackable = true };
+
+        _testCharacter.Inventory = new List<InventoryItem>
+        {
+            new InventoryItem { Item = blightMoss, Quantity = 1 },
+            new InventoryItem { Item = cleanWater, Quantity = 1 }
+        };
+    }
+
+    private void SetupCharacterWithRuneforgingIngredients()
+    {
+        // RCP_RUN_GLOW requires: quartz_shard x1, aether_dust x1
+        var quartzShard = new Item { Name = "quartz_shard", ItemType = ItemType.Material, IsStackable = true };
+        var aetherDust = new Item { Name = "aether_dust", ItemType = ItemType.Material, IsStackable = true };
+
+        _testCharacter.Inventory = new List<InventoryItem>
+        {
+            new InventoryItem { Item = quartzShard, Quantity = 1 },
+            new InventoryItem { Item = aetherDust, Quantity = 1 }
+        };
+    }
+
+    private void SetupCharacterWithFirebombIngredients()
+    {
+        // RCP_ALC_FIREBOMB requires: oily_rag x2, sulfur x1, glass_vial x1
+        var oilyRag = new Item { Name = "oily_rag", ItemType = ItemType.Material, IsStackable = true };
+        var sulfur = new Item { Name = "sulfur", ItemType = ItemType.Material, IsStackable = true };
+        var glassVial = new Item { Name = "glass_vial", ItemType = ItemType.Material, IsStackable = true };
+
+        _testCharacter.Inventory = new List<InventoryItem>
+        {
+            new InventoryItem { Item = oilyRag, Quantity = 2 },
+            new InventoryItem { Item = sulfur, Quantity = 1 },
+            new InventoryItem { Item = glassVial, Quantity = 1 }
+        };
     }
 
     #endregion

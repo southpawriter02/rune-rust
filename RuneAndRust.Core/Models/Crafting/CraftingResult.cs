@@ -1,3 +1,4 @@
+using RuneAndRust.Core.Entities;
 using RuneAndRust.Core.Enums;
 
 namespace RuneAndRust.Core.Models.Crafting;
@@ -20,6 +21,9 @@ namespace RuneAndRust.Core.Models.Crafting;
 /// <param name="OutputQuality">The quality tier of the produced item, or null if none.</param>
 /// <param name="Message">A descriptive message about the crafting result.</param>
 /// <param name="Rolls">The individual die roll values.</param>
+/// <param name="DamageDealt">HP damage dealt on Alchemy catastrophe (Explosive), or null if none.</param>
+/// <param name="CorruptionAdded">Corruption added on Runeforging catastrophe, or null if none.</param>
+/// <param name="EnchantedItem">The item that was enchanted by Runeforging, or null if none.</param>
 public record CraftingResult(
     bool IsSuccess,
     CraftingOutcome Outcome,
@@ -34,5 +38,8 @@ public record CraftingResult(
     int OutputQuantity,
     QualityTier? OutputQuality,
     string Message,
-    IReadOnlyList<int> Rolls
+    IReadOnlyList<int> Rolls,
+    int? DamageDealt = null,
+    int? CorruptionAdded = null,
+    Equipment? EnchantedItem = null
 );

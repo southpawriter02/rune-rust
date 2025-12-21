@@ -10,12 +10,14 @@ namespace RuneAndRust.Engine.Services;
 /// <summary>
 /// Implements crafting operations using WITS-based dice rolls.
 /// Handles recipe lookup, ingredient validation, and item creation.
+/// Supports trade-specific catastrophe effects (v0.3.1c).
 /// </summary>
 public class CraftingService : ICraftingService
 {
     private readonly IDiceService _diceService;
     private readonly IInventoryService _inventoryService;
     private readonly IItemRepository _itemRepository;
+    private readonly ITraumaService _traumaService;
     private readonly ILogger<CraftingService> _logger;
 
     /// <summary>
@@ -27,11 +29,13 @@ public class CraftingService : ICraftingService
         IDiceService diceService,
         IInventoryService inventoryService,
         IItemRepository itemRepository,
+        ITraumaService traumaService,
         ILogger<CraftingService> logger)
     {
         _diceService = diceService;
         _inventoryService = inventoryService;
         _itemRepository = itemRepository;
+        _traumaService = traumaService;
         _logger = logger;
     }
 
@@ -90,7 +94,7 @@ public class CraftingService : ICraftingService
             CraftingOutcome.Masterwork => await HandleMasterworkAsync(crafter, recipe, diceResult, netSuccesses),
             CraftingOutcome.Success => await HandleSuccessAsync(crafter, recipe, diceResult, netSuccesses),
             CraftingOutcome.Failure => HandleFailure(recipe, diceResult, netSuccesses),
-            CraftingOutcome.Catastrophe => HandleCatastrophe(recipe, diceResult, netSuccesses),
+            CraftingOutcome.Catastrophe => HandleCatastrophe(crafter, recipe, diceResult, netSuccesses),
             _ => HandleFailure(recipe, diceResult, netSuccesses)
         };
     }
@@ -266,11 +270,42 @@ public class CraftingService : ICraftingService
 
     /// <summary>
     /// Handles a catastrophic crafting result.
+    /// Applies trade-specific consequences based on CatastropheType (v0.3.1c).
     /// </summary>
-    private CraftingResult HandleCatastrophe(Recipe recipe, DiceResult diceResult, int netSuccesses)
+    private CraftingResult HandleCatastrophe(Character crafter, Recipe recipe, DiceResult diceResult, int netSuccesses)
     {
-        var message = $"CATASTROPHE! Your {recipe.Name} attempt goes terribly wrong. Materials destroyed.";
-        _logger.LogWarning("Craft CATASTROPHE: {RecipeName} - materials lost!", recipe.Name);
+        string message;
+        int? damageDealt = null;
+        int? corruptionAdded = null;
+
+        switch (recipe.CatastropheType)
+        {
+            case CatastropheType.Explosive:
+                // Alchemy: Explosive catastrophe deals physical damage
+                damageDealt = recipe.CatastropheDamage;
+                crafter.CurrentHP = Math.Max(0, crafter.CurrentHP - recipe.CatastropheDamage);
+                message = $"CATASTROPHE! Your {recipe.Name} explodes violently! You take {recipe.CatastropheDamage} damage!";
+                _logger.LogWarning(
+                    "ALCHEMY CATASTROPHE: {CharacterName} takes {Damage} explosive damage!",
+                    crafter.Name, recipe.CatastropheDamage);
+                break;
+
+            case CatastropheType.Corruption:
+                // Runeforging: Corruption catastrophe adds permanent Corruption
+                corruptionAdded = recipe.CatastropheCorruption;
+                _traumaService.AddCorruption(crafter, recipe.CatastropheCorruption, "Runic Backlash");
+                message = $"CATASTROPHE! The runes of {recipe.Name} twist against you! You gain {recipe.CatastropheCorruption} Corruption!";
+                _logger.LogWarning(
+                    "RUNEFORGING CATASTROPHE: {CharacterName} gains {Corruption} Corruption!",
+                    crafter.Name, recipe.CatastropheCorruption);
+                break;
+
+            default:
+                // Standard catastrophe: Materials lost only
+                message = $"CATASTROPHE! Your {recipe.Name} attempt goes terribly wrong. Materials destroyed.";
+                _logger.LogWarning("Craft CATASTROPHE: {RecipeName} - materials lost!", recipe.Name);
+                break;
+        }
 
         return new CraftingResult(
             IsSuccess: false,
@@ -286,7 +321,9 @@ public class CraftingService : ICraftingService
             OutputQuantity: 0,
             OutputQuality: null,
             Message: message,
-            Rolls: diceResult.Rolls);
+            Rolls: diceResult.Rolls,
+            DamageDealt: damageDealt,
+            CorruptionAdded: corruptionAdded);
     }
 
     /// <summary>

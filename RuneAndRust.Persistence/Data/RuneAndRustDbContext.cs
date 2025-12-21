@@ -73,6 +73,11 @@ public class RuneAndRustDbContext : DbContext
     public DbSet<ActiveAbility> ActiveAbilities { get; set; } = null!;
 
     /// <summary>
+    /// Gets or sets the ItemProperties table (runic enchantments on items, v0.3.1c).
+    /// </summary>
+    public DbSet<ItemProperty> ItemProperties { get; set; } = null!;
+
+    /// <summary>
     /// Configures the entity mappings and relationships.
     /// </summary>
     /// <param name="modelBuilder">The model builder instance.</param>
@@ -290,6 +295,38 @@ public class RuneAndRustDbContext : DbContext
             entity.HasIndex(i => i.Name);
             entity.HasIndex(i => i.Quality);
             entity.HasIndex(i => i.ItemType);
+
+            // Item.Properties relationship (v0.3.1c - Runeforging)
+            entity.HasMany(i => i.Properties)
+                .WithOne()
+                .HasForeignKey("ItemId")
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // ItemProperty configuration (v0.3.1c - Runeforging enchantments)
+        modelBuilder.Entity<ItemProperty>(entity =>
+        {
+            entity.ToTable("ItemProperties");
+
+            entity.HasKey(p => p.Id);
+
+            entity.Property(p => p.Name)
+                .HasMaxLength(100)
+                .IsRequired();
+
+            entity.Property(p => p.Description)
+                .HasMaxLength(500);
+
+            // Store StatModifiers dictionary as JSONB
+            entity.Property(p => p.StatModifiers)
+                .HasColumnType("jsonb")
+                .HasConversion(
+                    v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
+                    v => JsonSerializer.Deserialize<Dictionary<string, int>>(v, (JsonSerializerOptions?)null) ?? new Dictionary<string, int>()
+                )
+                .IsRequired();
+
+            entity.Property(p => p.AppliedAt).IsRequired();
         });
 
         modelBuilder.Entity<Equipment>(entity =>

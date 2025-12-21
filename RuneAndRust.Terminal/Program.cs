@@ -26,8 +26,9 @@ class Program
         try
         {
             // Database connection string - use environment variable in production
+            // Default uses port 5433 for Docker container (see docker-compose.yml)
             var connectionString = Environment.GetEnvironmentVariable("RUNEANDRUST_CONNECTION_STRING")
-                ?? "Host=localhost;Database=RuneAndRust;Username=postgres;Password=password";
+                ?? "Host=localhost;Port=5433;Database=RuneAndRust;Username=postgres;Password=password";
 
             // 2. Build Host
             var host = Host.CreateDefaultBuilder(args)
@@ -115,7 +116,7 @@ class Program
             }
 
             // 4. UI Handover
-            AnsiConsole.MarkupLine("[green]Rune & Rust v0.3.1b Booting...[/]");
+            AnsiConsole.MarkupLine("[green]Rune & Rust v0.3.1c Booting...[/]");
             AnsiConsole.WriteLine();
 
             // Resolve the entry point from DI

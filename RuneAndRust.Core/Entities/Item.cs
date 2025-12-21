@@ -97,4 +97,14 @@ public class Item
     public DateTime LastModified { get; set; } = DateTime.UtcNow;
 
     #endregion
+
+    #region Enchantment Properties (v0.3.1c)
+
+    /// <summary>
+    /// Gets or sets the magical properties applied to this item through Runeforging.
+    /// Empty by default - properties are added when items are enchanted.
+    /// </summary>
+    public List<ItemProperty> Properties { get; set; } = new();
+
+    #endregion
 }

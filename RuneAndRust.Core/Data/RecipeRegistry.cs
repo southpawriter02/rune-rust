@@ -111,6 +111,7 @@ public static class RecipeRegistry
         });
 
         // ==================== ALCHEMY (3 recipes) ====================
+        // Alchemy recipes have Explosive catastrophe type (v0.3.1c)
         Register(new Recipe
         {
             RecipeId = "RCP_ALC_STIM",
@@ -124,7 +125,9 @@ public static class RecipeRegistry
                 { "clean_water", 1 }
             },
             OutputItemId = "stimulant",
-            OutputQuantity = 1
+            OutputQuantity = 1,
+            CatastropheType = CatastropheType.Explosive,
+            CatastropheDamage = 5
         });
 
         Register(new Recipe
@@ -140,7 +143,9 @@ public static class RecipeRegistry
                 { "charcoal", 1 }
             },
             OutputItemId = "antitoxin",
-            OutputQuantity = 1
+            OutputQuantity = 1,
+            CatastropheType = CatastropheType.Explosive,
+            CatastropheDamage = 8
         });
 
         Register(new Recipe
@@ -157,10 +162,13 @@ public static class RecipeRegistry
                 { "glass_vial", 1 }
             },
             OutputItemId = "firebomb",
-            OutputQuantity = 1
+            OutputQuantity = 1,
+            CatastropheType = CatastropheType.Explosive,
+            CatastropheDamage = 15
         });
 
         // ==================== RUNEFORGING (3 recipes) ====================
+        // Runeforging recipes have Corruption catastrophe type (v0.3.1c)
         Register(new Recipe
         {
             RecipeId = "RCP_RUN_GLOW",
@@ -174,7 +182,9 @@ public static class RecipeRegistry
                 { "aether_dust", 1 }
             },
             OutputItemId = "glowstone",
-            OutputQuantity = 1
+            OutputQuantity = 1,
+            CatastropheType = CatastropheType.Corruption,
+            CatastropheCorruption = 3
         });
 
         Register(new Recipe
@@ -190,7 +200,9 @@ public static class RecipeRegistry
                 { "aether_dust", 2 }
             },
             OutputItemId = "wardtoken",
-            OutputQuantity = 1
+            OutputQuantity = 1,
+            CatastropheType = CatastropheType.Corruption,
+            CatastropheCorruption = 5
         });
 
         Register(new Recipe
@@ -206,7 +218,9 @@ public static class RecipeRegistry
                 { "aether_dust", 3 }
             },
             OutputItemId = "battery",
-            OutputQuantity = 1
+            OutputQuantity = 1,
+            CatastropheType = CatastropheType.Corruption,
+            CatastropheCorruption = 8
         });
 
         // ==================== FIELD MEDICINE (3 recipes) ====================
