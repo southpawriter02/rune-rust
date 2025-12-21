@@ -2,8 +2,10 @@ using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using RuneAndRust.Core.Entities;
 using RuneAndRust.Core.Enums;
+using RuneAndRust.Core.Models;
 using RuneAndRust.Core.ValueObjects;
 using CharacterAttribute = RuneAndRust.Core.Enums.Attribute;
+using CharacterEntity = RuneAndRust.Core.Entities.Character;
 
 namespace RuneAndRust.Persistence.Data;
 
@@ -35,7 +37,7 @@ public class RuneAndRustDbContext : DbContext
     /// <summary>
     /// Gets or sets the Characters table.
     /// </summary>
-    public DbSet<Character> Characters { get; set; } = null!;
+    public DbSet<CharacterEntity> Characters { get; set; } = null!;
 
     /// <summary>
     /// Gets or sets the InteractableObjects table (TPH - includes DynamicHazard).
@@ -81,6 +83,16 @@ public class RuneAndRustDbContext : DbContext
     /// Gets or sets the ItemProperties table (runic enchantments on items, v0.3.1c).
     /// </summary>
     public DbSet<ItemProperty> ItemProperties { get; set; } = null!;
+
+    /// <summary>
+    /// Gets or sets the AmbientConditions table (room environmental effects, v0.3.3b).
+    /// </summary>
+    public DbSet<AmbientCondition> AmbientConditions { get; set; } = null!;
+
+    /// <summary>
+    /// Gets or sets the HazardTemplates table (hazard template definitions, v0.3.3c).
+    /// </summary>
+    public DbSet<HazardTemplate> HazardTemplates { get; set; } = null!;
 
     /// <summary>
     /// Configures the entity mappings and relationships.
@@ -155,7 +167,7 @@ public class RuneAndRustDbContext : DbContext
                 .IsRequired();
         });
 
-        modelBuilder.Entity<Character>(entity =>
+        modelBuilder.Entity<CharacterEntity>(entity =>
         {
             entity.ToTable("Characters");
 
@@ -590,6 +602,102 @@ public class RuneAndRustDbContext : DbContext
                 .IsRequired();
 
             entity.Property(a => a.Tier)
+                .IsRequired();
+        });
+
+        // AmbientCondition configuration (v0.3.3b - Ambient Conditions)
+        modelBuilder.Entity<AmbientCondition>(entity =>
+        {
+            entity.ToTable("AmbientConditions");
+
+            entity.HasKey(c => c.Id);
+
+            entity.HasIndex(c => c.Type)
+                .IsUnique();
+
+            entity.Property(c => c.Type)
+                .HasConversion<int>()
+                .IsRequired();
+
+            entity.Property(c => c.Name)
+                .HasMaxLength(100)
+                .IsRequired();
+
+            entity.Property(c => c.Description)
+                .HasMaxLength(500)
+                .IsRequired();
+
+            entity.Property(c => c.Color)
+                .HasMaxLength(20)
+                .IsRequired();
+
+            entity.Property(c => c.TickScript)
+                .HasMaxLength(200)
+                .IsRequired();
+
+            entity.Property(c => c.TickChance)
+                .IsRequired();
+
+            // BiomeTags stored as JSONB (v0.3.3c - Environment Ecosystem)
+            entity.Property(c => c.BiomeTags)
+                .HasColumnType("jsonb")
+                .HasConversion(
+                    v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
+                    v => JsonSerializer.Deserialize<List<BiomeType>>(v, (JsonSerializerOptions?)null) ?? new List<BiomeType>()
+                )
+                .IsRequired();
+        });
+
+        // Room -> Condition relationship (optional FK, v0.3.3b)
+        modelBuilder.Entity<Room>()
+            .HasOne<AmbientCondition>()
+            .WithMany()
+            .HasForeignKey(r => r.ConditionId)
+            .IsRequired(false);
+
+        // HazardTemplate configuration (v0.3.3c - Environment Ecosystem)
+        modelBuilder.Entity<HazardTemplate>(entity =>
+        {
+            entity.ToTable("HazardTemplates");
+
+            entity.HasKey(t => t.Id);
+
+            entity.HasIndex(t => t.Name)
+                .IsUnique();
+
+            entity.Property(t => t.Name)
+                .HasMaxLength(100)
+                .IsRequired();
+
+            entity.Property(t => t.Description)
+                .HasMaxLength(500)
+                .IsRequired();
+
+            entity.Property(t => t.HazardType)
+                .HasConversion<int>()
+                .IsRequired();
+
+            entity.Property(t => t.Trigger)
+                .HasConversion<int>()
+                .IsRequired();
+
+            entity.Property(t => t.EffectScript)
+                .HasMaxLength(500)
+                .IsRequired();
+
+            entity.Property(t => t.MaxCooldown)
+                .IsRequired();
+
+            entity.Property(t => t.OneTimeUse)
+                .IsRequired();
+
+            // BiomeTags stored as JSONB
+            entity.Property(t => t.BiomeTags)
+                .HasColumnType("jsonb")
+                .HasConversion(
+                    v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
+                    v => JsonSerializer.Deserialize<List<BiomeType>>(v, (JsonSerializerOptions?)null) ?? new List<BiomeType>()
+                )
                 .IsRequired();
         });
     }

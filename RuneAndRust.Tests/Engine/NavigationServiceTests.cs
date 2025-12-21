@@ -20,6 +20,7 @@ public class NavigationServiceTests
 {
     private readonly Mock<IRoomRepository> _mockRoomRepo;
     private readonly Mock<IHazardService> _mockHazardService;
+    private readonly Mock<IConditionService> _mockConditionService;
     private readonly Mock<IInputHandler> _mockInputHandler;
     private readonly Mock<ILogger<NavigationService>> _mockLogger;
     private readonly GameState _gameState;
@@ -29,6 +30,7 @@ public class NavigationServiceTests
     {
         _mockRoomRepo = new Mock<IRoomRepository>();
         _mockHazardService = new Mock<IHazardService>();
+        _mockConditionService = new Mock<IConditionService>();
         _mockInputHandler = new Mock<IInputHandler>();
         _mockLogger = new Mock<ILogger<NavigationService>>();
         _gameState = new GameState();
@@ -36,12 +38,17 @@ public class NavigationServiceTests
             _gameState,
             _mockRoomRepo.Object,
             _mockHazardService.Object,
+            _mockConditionService.Object,
             _mockInputHandler.Object,
             _mockLogger.Object);
 
         // Default setup: no hazards trigger
         _mockHazardService.Setup(h => h.TriggerOnRoomEnterAsync(It.IsAny<Room>(), It.IsAny<Combatant?>()))
             .ReturnsAsync(new List<HazardResult>());
+
+        // Default setup: no conditions
+        _mockConditionService.Setup(c => c.GetRoomConditionAsync(It.IsAny<Guid>()))
+            .ReturnsAsync((AmbientCondition?)null);
     }
 
     #region MoveAsync Tests

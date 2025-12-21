@@ -10,20 +10,27 @@ namespace RuneAndRust.Engine.Services;
 /// Generates dungeon layouts by creating connected room graphs.
 /// For v0.0.5, provides a simple test map. Future versions will implement
 /// procedural generation algorithms (e.g., Wave Function Collapse).
+/// Updated in v0.3.3c to integrate EnvironmentPopulator for biome-based hazards.
 /// </summary>
 public class DungeonGenerator
 {
     private readonly IRoomRepository _roomRepository;
+    private readonly IEnvironmentPopulator _environmentPopulator;
     private readonly ILogger<DungeonGenerator> _logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DungeonGenerator"/> class.
     /// </summary>
     /// <param name="roomRepository">The room repository for persistence.</param>
+    /// <param name="environmentPopulator">The environment populator for hazards/conditions (v0.3.3c).</param>
     /// <param name="logger">The logger instance.</param>
-    public DungeonGenerator(IRoomRepository roomRepository, ILogger<DungeonGenerator> logger)
+    public DungeonGenerator(
+        IRoomRepository roomRepository,
+        IEnvironmentPopulator environmentPopulator,
+        ILogger<DungeonGenerator> logger)
     {
         _roomRepository = roomRepository;
+        _environmentPopulator = environmentPopulator;
         _logger = logger;
     }
 
@@ -44,6 +51,9 @@ public class DungeonGenerator
 
         // Link the rooms together
         LinkRooms(rooms);
+
+        // Populate with environmental hazards and conditions (v0.3.3c)
+        await _environmentPopulator.PopulateDungeonAsync(rooms.Values);
 
         // Persist to database
         await _roomRepository.AddRangeAsync(rooms.Values);

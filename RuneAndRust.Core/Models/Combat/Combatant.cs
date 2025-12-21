@@ -114,6 +114,36 @@ public class Combatant
     /// </summary>
     public List<CreatureTraitType> ActiveTraits { get; set; } = new();
 
+    #region Ambient Condition Modifiers (v0.3.3b)
+
+    /// <summary>
+    /// The active ambient condition type affecting this combatant, if any.
+    /// Set at combat start based on room condition.
+    /// </summary>
+    public ConditionType? ActiveCondition { get; set; }
+
+    /// <summary>
+    /// Condition-based modifier to Sturdiness (v0.3.3b). Applied at combat start.
+    /// </summary>
+    public int ConditionSturdinessModifier { get; set; } = 0;
+
+    /// <summary>
+    /// Condition-based modifier to Finesse (v0.3.3b). Applied at combat start.
+    /// </summary>
+    public int ConditionFinesseModifier { get; set; } = 0;
+
+    /// <summary>
+    /// Condition-based modifier to Wits (v0.3.3b). Applied at combat start.
+    /// </summary>
+    public int ConditionWitsModifier { get; set; } = 0;
+
+    /// <summary>
+    /// Condition-based modifier to Will (v0.3.3b). Applied at combat start.
+    /// </summary>
+    public int ConditionWillModifier { get; set; } = 0;
+
+    #endregion
+
     /// <summary>
     /// Whether this combatant is currently defending (temporary soak bonus).
     /// Reset at the start of their next turn.

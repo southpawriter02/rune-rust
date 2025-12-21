@@ -118,6 +118,12 @@ class Program
                     // Register Hazard Services (v0.3.3a)
                     services.AddSingleton<EffectScriptExecutor>();
                     services.AddScoped<IHazardService, HazardService>();
+
+                    // Register Condition Services (v0.3.3b)
+                    services.AddScoped<IConditionService, ConditionService>();
+
+                    // Register Environment Ecosystem Services (v0.3.3c)
+                    services.AddScoped<IEnvironmentPopulator, EnvironmentPopulator>();
                 })
                 .UseSerilog() // Wire Serilog into ILogger
                 .Build();
@@ -127,10 +133,12 @@ class Program
             {
                 var context = scope.ServiceProvider.GetRequiredService<RuneAndRustDbContext>();
                 AbilitySeeder.SeedAsync(context).GetAwaiter().GetResult();
+                ConditionSeeder.SeedAsync(context).GetAwaiter().GetResult();
+                HazardTemplateSeeder.SeedAsync(context).GetAwaiter().GetResult();
             }
 
             // 4. UI Handover
-            AnsiConsole.MarkupLine("[green]Rune & Rust v0.3.3a Booting...[/]");
+            AnsiConsole.MarkupLine("[green]Rune & Rust v0.3.3c Booting...[/]");
             AnsiConsole.WriteLine();
 
             // Resolve the entry point from DI

@@ -64,6 +64,12 @@ public class Room
     public List<DynamicHazard> Hazards { get; set; } = new();
 
     /// <summary>
+    /// The ambient condition affecting this room, if any (v0.3.3b).
+    /// Null means no active condition.
+    /// </summary>
+    public Guid? ConditionId { get; set; }
+
+    /// <summary>
     /// Checks if this room has a specific feature.
     /// </summary>
     /// <param name="feature">The feature to check for.</param>

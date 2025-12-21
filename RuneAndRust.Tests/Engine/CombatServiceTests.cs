@@ -29,6 +29,7 @@ public class CombatServiceTests
     private readonly Mock<IActiveAbilityRepository> _mockAbilityRepository;
     private readonly Mock<ITraumaService> _mockTraumaService;
     private readonly Mock<IHazardService> _mockHazardService;
+    private readonly Mock<IConditionService> _mockConditionService;
     private readonly Mock<IRoomRepository> _mockRoomRepository;
     private readonly Mock<ILogger<CombatService>> _mockLogger;
     private readonly GameState _gameState;
@@ -47,6 +48,7 @@ public class CombatServiceTests
         _mockAbilityRepository = new Mock<IActiveAbilityRepository>();
         _mockTraumaService = new Mock<ITraumaService>();
         _mockHazardService = new Mock<IHazardService>();
+        _mockConditionService = new Mock<IConditionService>();
         _mockRoomRepository = new Mock<IRoomRepository>();
         _mockLogger = new Mock<ILogger<CombatService>>();
         _gameState = new GameState();
@@ -63,6 +65,7 @@ public class CombatServiceTests
             _mockAbilityRepository.Object,
             _mockTraumaService.Object,
             _mockHazardService.Object,
+            _mockConditionService.Object,
             _mockRoomRepository.Object,
             _mockLogger.Object);
 

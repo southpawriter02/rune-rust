@@ -26,6 +26,7 @@ public class CombatService : ICombatService
     private readonly IActiveAbilityRepository _abilityRepository;
     private readonly ITraumaService _traumaService;
     private readonly IHazardService _hazardService;
+    private readonly IConditionService _conditionService;
     private readonly IRoomRepository _roomRepository;
     private readonly ILogger<CombatService> _logger;
 
@@ -59,6 +60,7 @@ public class CombatService : ICombatService
     /// <param name="abilityRepository">The ability repository for loading archetype abilities.</param>
     /// <param name="traumaService">The trauma service for stress and trauma mechanics (v0.3.0).</param>
     /// <param name="hazardService">The hazard service for environmental triggers (v0.3.3a).</param>
+    /// <param name="conditionService">The condition service for ambient effects (v0.3.3b).</param>
     /// <param name="roomRepository">The room repository for current room lookup.</param>
     /// <param name="logger">The logger for traceability.</param>
     public CombatService(
@@ -74,6 +76,7 @@ public class CombatService : ICombatService
         IActiveAbilityRepository abilityRepository,
         ITraumaService traumaService,
         IHazardService hazardService,
+        IConditionService conditionService,
         IRoomRepository roomRepository,
         ILogger<CombatService> logger)
     {
@@ -89,6 +92,7 @@ public class CombatService : ICombatService
         _abilityRepository = abilityRepository;
         _traumaService = traumaService;
         _hazardService = hazardService;
+        _conditionService = conditionService;
         _roomRepository = roomRepository;
         _logger = logger;
     }
@@ -129,6 +133,26 @@ public class CombatService : ICombatService
             _initiative.RollInitiative(combatant);
             state.TurnOrder.Add(combatant);
             _logger.LogDebug("Added enemy {Name} to combat", combatant.Name);
+        }
+
+        // Apply ambient condition modifiers to all combatants (v0.3.3b)
+        if (_gameState.CurrentRoomId.HasValue)
+        {
+            var condition = _conditionService.GetRoomConditionAsync(_gameState.CurrentRoomId.Value)
+                .GetAwaiter().GetResult();
+
+            if (condition != null)
+            {
+                foreach (var combatant in state.TurnOrder)
+                {
+                    _conditionService.ApplyPassiveModifiers(combatant, condition.Type);
+                }
+
+                LogCombatEvent($"[orange1][AMBIENT][/] {condition.Name}: {condition.Description}");
+                _logger.LogInformation(
+                    "[Condition] Combat starting in [{ConditionName}] zone. {Count} combatants affected.",
+                    condition.Name, state.TurnOrder.Count);
+            }
         }
 
         // Sort by initiative
@@ -218,6 +242,12 @@ public class CombatService : ICombatService
             if (active.IsPlayer && active.CharacterSource != null)
             {
                 ProcessTraumaTriggers(active);
+            }
+
+            // Process ambient condition tick at turn start (v0.3.3b)
+            if (active.ActiveCondition != null && _gameState.CurrentRoomId.HasValue)
+            {
+                ProcessConditionTick(active);
             }
 
             // Reset defending stance at start of turn
@@ -1182,6 +1212,58 @@ public class CombatService : ICombatService
                 _logger.LogDebug(
                     "Trauma trigger: {Trauma} inflicted {Net} stress (Raw: {Raw}, Mitigated: {Mit})",
                     trauma.Name, stressResult.NetStressApplied, stressResult.RawStress, stressResult.MitigatedAmount);
+            }
+        }
+    }
+
+    #endregion
+
+    #region Ambient Condition System (v0.3.3b)
+
+    /// <summary>
+    /// Processes ambient condition tick effects at the start of a combatant's turn.
+    /// Applies damage, stress, or corruption based on the room's active condition.
+    /// </summary>
+    /// <param name="combatant">The combatant whose turn is starting.</param>
+    private void ProcessConditionTick(Combatant combatant)
+    {
+        if (!_gameState.CurrentRoomId.HasValue || combatant.ActiveCondition == null)
+        {
+            return;
+        }
+
+        var condition = _conditionService.GetRoomConditionAsync(_gameState.CurrentRoomId.Value)
+            .GetAwaiter().GetResult();
+
+        if (condition == null)
+        {
+            return;
+        }
+
+        var tickResult = _conditionService.ProcessTurnTickAsync(combatant, condition)
+            .GetAwaiter().GetResult();
+
+        if (tickResult.WasApplied)
+        {
+            LogCombatEvent($"[orange1][AMBIENT][/] {tickResult.Message}");
+
+            // Sync player state if applicable
+            if (combatant.IsPlayer && combatant.CharacterSource != null)
+            {
+                combatant.CharacterSource.CurrentHP = combatant.CurrentHp;
+                combatant.CharacterSource.PsychicStress = combatant.CurrentStress;
+                combatant.CharacterSource.Corruption = combatant.CurrentCorruption;
+
+                _logger.LogDebug(
+                    "[Condition] Synced condition effects to player source. HP: {HP}, Stress: {Stress}, Corruption: {Corruption}",
+                    combatant.CharacterSource.CurrentHP, combatant.CharacterSource.PsychicStress, combatant.CharacterSource.Corruption);
+            }
+
+            // Check for death from condition damage
+            if (combatant.CurrentHp <= 0)
+            {
+                LogCombatEvent($"[red]{combatant.Name}[/] succumbs to the {condition.Name}!");
+                _logger.LogWarning("{Name} killed by condition damage", combatant.Name);
             }
         }
     }

@@ -10,12 +10,14 @@ namespace RuneAndRust.Engine.Services;
 /// Handles player navigation between rooms.
 /// Validates exits, updates game state, and provides room descriptions.
 /// Triggers movement hazards on room entry (v0.3.3a).
+/// Displays ambient condition effects on room entry (v0.3.3b).
 /// </summary>
 public class NavigationService : INavigationService
 {
     private readonly GameState _gameState;
     private readonly IRoomRepository _roomRepository;
     private readonly IHazardService _hazardService;
+    private readonly IConditionService _conditionService;
     private readonly IInputHandler _inputHandler;
     private readonly ILogger<NavigationService> _logger;
 
@@ -25,18 +27,21 @@ public class NavigationService : INavigationService
     /// <param name="gameState">The current game state.</param>
     /// <param name="roomRepository">The room repository.</param>
     /// <param name="hazardService">The hazard service for movement triggers (v0.3.3a).</param>
+    /// <param name="conditionService">The condition service for ambient effects (v0.3.3b).</param>
     /// <param name="inputHandler">The input handler for displaying hazard messages.</param>
     /// <param name="logger">The logger instance.</param>
     public NavigationService(
         GameState gameState,
         IRoomRepository roomRepository,
         IHazardService hazardService,
+        IConditionService conditionService,
         IInputHandler inputHandler,
         ILogger<NavigationService> logger)
     {
         _gameState = gameState;
         _roomRepository = roomRepository;
         _hazardService = hazardService;
+        _conditionService = conditionService;
         _inputHandler = inputHandler;
         _logger = logger;
     }
@@ -92,8 +97,8 @@ public class NavigationService : INavigationService
                 result.HazardName, nextRoom.Name, result.TotalDamage);
         }
 
-        // 6. Return the new room description
-        return FormatRoomDescription(nextRoom, $"You move {direction.ToString().ToLower()}...\n\n");
+        // 6. Return the new room description with ambient condition (v0.3.3b)
+        return await FormatRoomDescriptionAsync(nextRoom, $"You move {direction.ToString().ToLower()}...\n\n");
     }
 
     /// <inheritdoc/>
@@ -107,7 +112,7 @@ public class NavigationService : INavigationService
             return "You are surrounded by an impenetrable void.";
         }
 
-        return FormatRoomDescription(room);
+        return await FormatRoomDescriptionAsync(room);
     }
 
     /// <inheritdoc/>
@@ -136,17 +141,29 @@ public class NavigationService : INavigationService
 
     /// <summary>
     /// Formats a room description for display to the player.
+    /// Includes ambient condition information if present (v0.3.3b).
     /// </summary>
     /// <param name="room">The room to describe.</param>
     /// <param name="prefix">Optional prefix text (e.g., movement confirmation).</param>
     /// <returns>Formatted room description string.</returns>
-    private string FormatRoomDescription(Room room, string prefix = "")
+    private async Task<string> FormatRoomDescriptionAsync(Room room, string prefix = "")
     {
         var exits = room.Exits.Keys.Select(d => d.ToString().ToLower());
         var exitText = exits.Any()
             ? $"Exits: {string.Join(", ", exits)}"
             : "There are no obvious exits.";
 
-        return $"{prefix}[{room.Name}]\n{room.Description}\n\n{exitText}";
+        // Check for ambient condition (v0.3.3b)
+        var conditionText = string.Empty;
+        var condition = await _conditionService.GetRoomConditionAsync(room.Id);
+        if (condition != null)
+        {
+            conditionText = $"\n[AMBIENT] [{condition.Color}]{condition.Name}[/]: {condition.Description}";
+            _logger.LogDebug(
+                "[Condition] Room {RoomName} has condition [{ConditionName}]",
+                room.Name, condition.Name);
+        }
+
+        return $"{prefix}[{room.Name}]\n{room.Description}{conditionText}\n\n{exitText}";
     }
 }

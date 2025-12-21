@@ -17,6 +17,7 @@ namespace RuneAndRust.Tests.Engine;
 public class DungeonGeneratorTests
 {
     private readonly Mock<IRoomRepository> _mockRoomRepo;
+    private readonly Mock<IEnvironmentPopulator> _mockEnvironmentPopulator;
     private readonly Mock<ILogger<DungeonGenerator>> _mockLogger;
     private readonly DungeonGenerator _generator;
     private List<Room> _addedRooms = new();
@@ -24,8 +25,12 @@ public class DungeonGeneratorTests
     public DungeonGeneratorTests()
     {
         _mockRoomRepo = new Mock<IRoomRepository>();
+        _mockEnvironmentPopulator = new Mock<IEnvironmentPopulator>();
         _mockLogger = new Mock<ILogger<DungeonGenerator>>();
-        _generator = new DungeonGenerator(_mockRoomRepo.Object, _mockLogger.Object);
+        _generator = new DungeonGenerator(
+            _mockRoomRepo.Object,
+            _mockEnvironmentPopulator.Object,
+            _mockLogger.Object);
 
         // Capture rooms when AddRangeAsync is called
         _mockRoomRepo.Setup(r => r.AddRangeAsync(It.IsAny<IEnumerable<Room>>()))
