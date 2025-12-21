@@ -242,8 +242,8 @@ The following cross-system dependencies are NOT documented:
 ## SUMMARY
 
 **Total Specifications Needed:** 16 new specs
-**Current Coverage:** 12/28 systems (43%)
-**Target Coverage:** 28/28 systems (100%)
+**Current Coverage:** 21/37 services (56.8%)
+**Target Coverage:** 37/37 services (100%)
 
 ### Action Items
 1. Prioritize SPEC-CRAFT-001, SPEC-REPAIR-001, SPEC-ENEMY-001 for immediate creation
