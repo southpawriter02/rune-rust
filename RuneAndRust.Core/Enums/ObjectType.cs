@@ -34,5 +34,11 @@ public enum ObjectType
     /// Remains of creatures or people that can be searched.
     /// Examples: fallen rangers, ancient bones, creature remains.
     /// </summary>
-    Corpse = 4
+    Corpse = 4,
+
+    /// <summary>
+    /// Dynamic environmental hazard that triggers based on conditions (v0.3.3a).
+    /// Examples: steam vents, pressure plates, spore pods.
+    /// </summary>
+    Hazard = 5
 }

@@ -9,11 +9,14 @@ namespace RuneAndRust.Engine.Services;
 /// <summary>
 /// Handles player navigation between rooms.
 /// Validates exits, updates game state, and provides room descriptions.
+/// Triggers movement hazards on room entry (v0.3.3a).
 /// </summary>
 public class NavigationService : INavigationService
 {
     private readonly GameState _gameState;
     private readonly IRoomRepository _roomRepository;
+    private readonly IHazardService _hazardService;
+    private readonly IInputHandler _inputHandler;
     private readonly ILogger<NavigationService> _logger;
 
     /// <summary>
@@ -21,14 +24,20 @@ public class NavigationService : INavigationService
     /// </summary>
     /// <param name="gameState">The current game state.</param>
     /// <param name="roomRepository">The room repository.</param>
+    /// <param name="hazardService">The hazard service for movement triggers (v0.3.3a).</param>
+    /// <param name="inputHandler">The input handler for displaying hazard messages.</param>
     /// <param name="logger">The logger instance.</param>
     public NavigationService(
         GameState gameState,
         IRoomRepository roomRepository,
+        IHazardService hazardService,
+        IInputHandler inputHandler,
         ILogger<NavigationService> logger)
     {
         _gameState = gameState;
         _roomRepository = roomRepository;
+        _hazardService = hazardService;
+        _inputHandler = inputHandler;
         _logger = logger;
     }
 
@@ -73,7 +82,17 @@ public class NavigationService : INavigationService
         _logger.LogInformation("Player moved {Direction} to '{RoomName}' ({RoomId})",
             direction, nextRoom.Name, nextRoom.Id);
 
-        // 5. Return the new room description
+        // 5. Trigger movement hazards (v0.3.3a)
+        var hazardResults = await _hazardService.TriggerOnRoomEnterAsync(nextRoom);
+        foreach (var result in hazardResults.Where(r => r.WasTriggered))
+        {
+            _inputHandler.DisplayMessage($"[HAZARD] {result.Message}");
+            _logger.LogWarning(
+                "[Hazard] Movement trigger: {Hazard} in {Room}. Damage: {Damage}",
+                result.HazardName, nextRoom.Name, result.TotalDamage);
+        }
+
+        // 6. Return the new room description
         return FormatRoomDescription(nextRoom, $"You move {direction.ToString().ToLower()}...\n\n");
     }
 

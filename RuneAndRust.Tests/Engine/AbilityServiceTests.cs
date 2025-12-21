@@ -20,6 +20,8 @@ public class AbilityServiceTests
     private readonly Mock<IStatusEffectService> _mockStatusEffectService;
     private readonly Mock<IDiceService> _mockDiceService;
     private readonly Mock<ILogger<AbilityService>> _mockLogger;
+    private readonly Mock<ILogger<EffectScriptExecutor>> _mockScriptLogger;
+    private readonly EffectScriptExecutor _scriptExecutor;
     private readonly AbilityService _sut;
 
     public AbilityServiceTests()
@@ -28,11 +30,17 @@ public class AbilityServiceTests
         _mockStatusEffectService = new Mock<IStatusEffectService>();
         _mockDiceService = new Mock<IDiceService>();
         _mockLogger = new Mock<ILogger<AbilityService>>();
+        _mockScriptLogger = new Mock<ILogger<EffectScriptExecutor>>();
+
+        // Create EffectScriptExecutor with mocked dependencies (v0.3.3a refactor)
+        _scriptExecutor = new EffectScriptExecutor(
+            _mockDiceService.Object,
+            _mockStatusEffectService.Object,
+            _mockScriptLogger.Object);
 
         _sut = new AbilityService(
             _mockResourceService.Object,
-            _mockStatusEffectService.Object,
-            _mockDiceService.Object,
+            _scriptExecutor,
             _mockLogger.Object);
 
         // Default setup: resources are always affordable

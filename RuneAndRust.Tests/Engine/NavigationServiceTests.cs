@@ -5,6 +5,7 @@ using RuneAndRust.Core.Entities;
 using RuneAndRust.Core.Enums;
 using RuneAndRust.Core.Interfaces;
 using RuneAndRust.Core.Models;
+using RuneAndRust.Core.Models.Combat;
 using RuneAndRust.Core.ValueObjects;
 using RuneAndRust.Engine.Services;
 using Xunit;
@@ -18,6 +19,8 @@ namespace RuneAndRust.Tests.Engine;
 public class NavigationServiceTests
 {
     private readonly Mock<IRoomRepository> _mockRoomRepo;
+    private readonly Mock<IHazardService> _mockHazardService;
+    private readonly Mock<IInputHandler> _mockInputHandler;
     private readonly Mock<ILogger<NavigationService>> _mockLogger;
     private readonly GameState _gameState;
     private readonly NavigationService _navigationService;
@@ -25,9 +28,20 @@ public class NavigationServiceTests
     public NavigationServiceTests()
     {
         _mockRoomRepo = new Mock<IRoomRepository>();
+        _mockHazardService = new Mock<IHazardService>();
+        _mockInputHandler = new Mock<IInputHandler>();
         _mockLogger = new Mock<ILogger<NavigationService>>();
         _gameState = new GameState();
-        _navigationService = new NavigationService(_gameState, _mockRoomRepo.Object, _mockLogger.Object);
+        _navigationService = new NavigationService(
+            _gameState,
+            _mockRoomRepo.Object,
+            _mockHazardService.Object,
+            _mockInputHandler.Object,
+            _mockLogger.Object);
+
+        // Default setup: no hazards trigger
+        _mockHazardService.Setup(h => h.TriggerOnRoomEnterAsync(It.IsAny<Room>(), It.IsAny<Combatant?>()))
+            .ReturnsAsync(new List<HazardResult>());
     }
 
     #region MoveAsync Tests

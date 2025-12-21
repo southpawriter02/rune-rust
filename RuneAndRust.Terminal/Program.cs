@@ -114,6 +114,10 @@ class Program
 
                     // Register Bodging Services (v0.3.1b)
                     services.AddScoped<IBodgingService, BodgingService>();
+
+                    // Register Hazard Services (v0.3.3a)
+                    services.AddSingleton<EffectScriptExecutor>();
+                    services.AddScoped<IHazardService, HazardService>();
                 })
                 .UseSerilog() // Wire Serilog into ILogger
                 .Build();
@@ -126,7 +130,7 @@ class Program
             }
 
             // 4. UI Handover
-            AnsiConsole.MarkupLine("[green]Rune & Rust v0.3.2c Booting...[/]");
+            AnsiConsole.MarkupLine("[green]Rune & Rust v0.3.3a Booting...[/]");
             AnsiConsole.WriteLine();
 
             // Resolve the entry point from DI

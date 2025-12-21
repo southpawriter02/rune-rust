@@ -1,5 +1,4 @@
 using System.Text;
-using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 using RuneAndRust.Core.Entities;
 using RuneAndRust.Core.Enums;
@@ -10,37 +9,27 @@ namespace RuneAndRust.Engine.Services;
 
 /// <summary>
 /// Implements ability execution and cooldown management.
-/// Parses EffectScript strings and delegates to appropriate services.
+/// Delegates EffectScript parsing to EffectScriptExecutor (v0.3.3a refactor).
 /// </summary>
-public partial class AbilityService : IAbilityService
+public class AbilityService : IAbilityService
 {
     private readonly IResourceService _resourceService;
-    private readonly IStatusEffectService _statusEffectService;
-    private readonly IDiceService _diceService;
+    private readonly EffectScriptExecutor _scriptExecutor;
     private readonly ILogger<AbilityService> _logger;
-
-    /// <summary>
-    /// Regex pattern for parsing dice notation (e.g., "2d6", "1d8").
-    /// </summary>
-    [GeneratedRegex(@"^(\d+)d(\d+)$", RegexOptions.Compiled)]
-    private static partial Regex DiceNotationRegex();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AbilityService"/> class.
     /// </summary>
     /// <param name="resourceService">Service for resource validation and deduction.</param>
-    /// <param name="statusEffectService">Service for applying status effects.</param>
-    /// <param name="diceService">Service for dice rolling.</param>
+    /// <param name="scriptExecutor">Shared utility for effect script execution.</param>
     /// <param name="logger">Logger for traceability.</param>
     public AbilityService(
         IResourceService resourceService,
-        IStatusEffectService statusEffectService,
-        IDiceService diceService,
+        EffectScriptExecutor scriptExecutor,
         ILogger<AbilityService> logger)
     {
         _resourceService = resourceService;
-        _statusEffectService = statusEffectService;
-        _diceService = diceService;
+        _scriptExecutor = scriptExecutor;
         _logger = logger;
 
         _logger.LogInformation("AbilityService initialized");
@@ -123,7 +112,7 @@ public partial class AbilityService : IAbilityService
                 user.Name, ability.Name, ability.CooldownTurns);
         }
 
-        // Parse and execute effect script
+        // Execute effect script via shared executor (v0.3.3a)
         var result = ExecuteEffectScript(user, target, ability);
 
         _logger.LogInformation(
@@ -204,68 +193,22 @@ public partial class AbilityService : IAbilityService
     }
 
     /// <summary>
-    /// Parses and executes the EffectScript, applying all effects.
+    /// Delegates to EffectScriptExecutor and wraps result in AbilityResult.
     /// </summary>
     private AbilityResult ExecuteEffectScript(Combatant user, Combatant target, ActiveAbility ability)
     {
         if (string.IsNullOrWhiteSpace(ability.EffectScript))
         {
-            _logger.LogWarning(
-                "[Ability] {Ability} has no EffectScript",
-                ability.Name);
+            _logger.LogWarning("[Ability] {Ability} has no EffectScript", ability.Name);
             return AbilityResult.Ok($"{user.Name} uses {ability.Name}, but nothing happens.");
         }
 
-        _logger.LogDebug(
-            "[Ability] Parsing EffectScript: {Script}",
-            ability.EffectScript);
-
-        var commands = ability.EffectScript.Split(';', StringSplitOptions.RemoveEmptyEntries);
-        var totalDamage = 0;
-        var totalHealing = 0;
-        var statusesApplied = new List<string>();
-        var narratives = new List<string>();
-
-        foreach (var command in commands)
-        {
-            var parts = command.Trim().Split(':');
-            if (parts.Length == 0) continue;
-
-            var commandType = parts[0].ToUpperInvariant();
-            _logger.LogDebug(
-                "[Ability] Executing command: {Command}",
-                command);
-
-            switch (commandType)
-            {
-                case "DAMAGE":
-                    var damageResult = ExecuteDamageCommand(user, target, parts);
-                    totalDamage += damageResult.damage;
-                    narratives.Add(damageResult.narrative);
-                    break;
-
-                case "HEAL":
-                    var healResult = ExecuteHealCommand(target, parts);
-                    totalHealing += healResult.healing;
-                    narratives.Add(healResult.narrative);
-                    break;
-
-                case "STATUS":
-                    var statusResult = ExecuteStatusCommand(user, target, parts);
-                    if (statusResult.applied)
-                    {
-                        statusesApplied.Add(statusResult.statusName);
-                    }
-                    narratives.Add(statusResult.narrative);
-                    break;
-
-                default:
-                    _logger.LogWarning(
-                        "[Ability] Unknown command type: {CommandType}",
-                        commandType);
-                    break;
-            }
-        }
+        // Delegate to shared executor
+        var scriptResult = _scriptExecutor.Execute(
+            ability.EffectScript,
+            target,
+            user.Name,
+            user.Id);
 
         // Build combined narrative
         var message = new StringBuilder();
@@ -278,161 +221,17 @@ public partial class AbilityService : IAbilityService
 
         message.Append('!');
 
-        if (narratives.Count > 0)
+        if (!string.IsNullOrEmpty(scriptResult.Narrative))
         {
             message.Append(' ');
-            message.Append(string.Join(" ", narratives));
+            message.Append(scriptResult.Narrative);
         }
 
         return AbilityResult.Ok(
             message.ToString(),
-            totalDamage,
-            totalHealing,
-            statusesApplied.Count > 0 ? statusesApplied : null);
-    }
-
-    /// <summary>
-    /// Executes a DAMAGE command: DAMAGE:Type:Dice (e.g., "DAMAGE:Physical:2d6")
-    /// </summary>
-    private (int damage, string narrative) ExecuteDamageCommand(Combatant user, Combatant target, string[] parts)
-    {
-        if (parts.Length < 3)
-        {
-            _logger.LogWarning(
-                "[Ability] DAMAGE command missing parameters: {Parts}",
-                string.Join(":", parts));
-            return (0, "");
-        }
-
-        var damageType = parts[1];
-        var diceNotation = parts[2];
-
-        // Parse dice notation (e.g., "2d6" -> count=2, sides=6)
-        var match = DiceNotationRegex().Match(diceNotation);
-        if (!match.Success)
-        {
-            _logger.LogWarning(
-                "[Ability] Invalid dice notation: {Notation}",
-                diceNotation);
-            return (0, "");
-        }
-
-        var diceCount = int.Parse(match.Groups[1].Value);
-        var diceSides = int.Parse(match.Groups[2].Value);
-
-        // Roll damage
-        var totalRoll = 0;
-        for (var i = 0; i < diceCount; i++)
-        {
-            totalRoll += _diceService.RollSingle(diceSides, $"Ability damage ({diceNotation})");
-        }
-
-        // Apply vulnerability multiplier
-        var multiplier = _statusEffectService.GetDamageMultiplier(target);
-        var finalDamage = (int)(totalRoll * multiplier);
-
-        // Apply armor soak (Physical damage is soaked)
-        if (damageType.Equals("Physical", StringComparison.OrdinalIgnoreCase))
-        {
-            var soak = target.ArmorSoak + _statusEffectService.GetSoakModifier(target);
-            finalDamage = Math.Max(0, finalDamage - soak);
-        }
-
-        // Apply damage to target
-        target.CurrentHp -= finalDamage;
-
-        _logger.LogInformation(
-            "[Ability] DAMAGE: {User} deals {Damage} {Type} damage to {Target} (rolled {Roll}, soak applied)",
-            user.Name, finalDamage, damageType, target.Name, totalRoll);
-
-        var narrative = $"Deals {finalDamage} {damageType.ToLower()} damage.";
-        return (finalDamage, narrative);
-    }
-
-    /// <summary>
-    /// Executes a HEAL command: HEAL:Amount (e.g., "HEAL:15")
-    /// </summary>
-    private (int healing, string narrative) ExecuteHealCommand(Combatant target, string[] parts)
-    {
-        if (parts.Length < 2)
-        {
-            _logger.LogWarning(
-                "[Ability] HEAL command missing amount parameter");
-            return (0, "");
-        }
-
-        if (!int.TryParse(parts[1], out var amount))
-        {
-            _logger.LogWarning(
-                "[Ability] HEAL command has invalid amount: {Amount}",
-                parts[1]);
-            return (0, "");
-        }
-
-        // Apply healing, clamped to max HP
-        var actualHealing = Math.Min(amount, target.MaxHp - target.CurrentHp);
-        target.CurrentHp += actualHealing;
-
-        _logger.LogInformation(
-            "[Ability] HEAL: {Target} healed for {Amount} HP (actual: {Actual})",
-            target.Name, amount, actualHealing);
-
-        var narrative = actualHealing > 0
-            ? $"Restores {actualHealing} HP."
-            : "HP is already full.";
-        return (actualHealing, narrative);
-    }
-
-    /// <summary>
-    /// Executes a STATUS command: STATUS:Type:Duration:Stacks (e.g., "STATUS:Bleeding:3:2")
-    /// </summary>
-    private (bool applied, string statusName, string narrative) ExecuteStatusCommand(
-        Combatant user, Combatant target, string[] parts)
-    {
-        if (parts.Length < 3)
-        {
-            _logger.LogWarning(
-                "[Ability] STATUS command missing parameters: {Parts}",
-                string.Join(":", parts));
-            return (false, "", "");
-        }
-
-        var statusTypeName = parts[1];
-        if (!Enum.TryParse<StatusEffectType>(statusTypeName, true, out var statusType))
-        {
-            _logger.LogWarning(
-                "[Ability] Unknown status effect type: {Type}",
-                statusTypeName);
-            return (false, statusTypeName, "");
-        }
-
-        if (!int.TryParse(parts[2], out var duration))
-        {
-            _logger.LogWarning(
-                "[Ability] STATUS command has invalid duration: {Duration}",
-                parts[2]);
-            return (false, statusTypeName, "");
-        }
-
-        // Optional stacks parameter (default to 1)
-        var stacks = 1;
-        if (parts.Length >= 4 && int.TryParse(parts[3], out var parsedStacks))
-        {
-            stacks = parsedStacks;
-        }
-
-        // Apply the effect (stacks times if stackable)
-        for (var i = 0; i < stacks; i++)
-        {
-            _statusEffectService.ApplyEffect(target, statusType, duration, user.Id);
-        }
-
-        _logger.LogInformation(
-            "[Ability] STATUS: Applied {Type} to {Target} (Duration: {Duration}, Stacks: {Stacks})",
-            statusType, target.Name, duration, stacks);
-
-        var narrative = $"Applies {statusTypeName}.";
-        return (true, statusTypeName, narrative);
+            scriptResult.TotalDamage,
+            scriptResult.TotalHealing,
+            scriptResult.StatusesApplied.Count > 0 ? scriptResult.StatusesApplied : null);
     }
 
     #endregion

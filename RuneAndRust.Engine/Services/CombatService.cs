@@ -25,6 +25,8 @@ public class CombatService : ICombatService
     private readonly IAbilityService _abilityService;
     private readonly IActiveAbilityRepository _abilityRepository;
     private readonly ITraumaService _traumaService;
+    private readonly IHazardService _hazardService;
+    private readonly IRoomRepository _roomRepository;
     private readonly ILogger<CombatService> _logger;
 
     /// <summary>
@@ -56,6 +58,8 @@ public class CombatService : ICombatService
     /// <param name="abilityService">The ability service for cooldown and ability management.</param>
     /// <param name="abilityRepository">The ability repository for loading archetype abilities.</param>
     /// <param name="traumaService">The trauma service for stress and trauma mechanics (v0.3.0).</param>
+    /// <param name="hazardService">The hazard service for environmental triggers (v0.3.3a).</param>
+    /// <param name="roomRepository">The room repository for current room lookup.</param>
     /// <param name="logger">The logger for traceability.</param>
     public CombatService(
         GameState gameState,
@@ -69,6 +73,8 @@ public class CombatService : ICombatService
         IAbilityService abilityService,
         IActiveAbilityRepository abilityRepository,
         ITraumaService traumaService,
+        IHazardService hazardService,
+        IRoomRepository roomRepository,
         ILogger<CombatService> logger)
     {
         _gameState = gameState;
@@ -82,6 +88,8 @@ public class CombatService : ICombatService
         _abilityService = abilityService;
         _abilityRepository = abilityRepository;
         _traumaService = traumaService;
+        _hazardService = hazardService;
+        _roomRepository = roomRepository;
         _logger = logger;
     }
 
@@ -1074,6 +1082,55 @@ public class CombatService : ICombatService
             : "";
 
         return $"[cyan]{user.Name}[/] uses [yellow]{ability.Name}[/] on {targetText}!{effects}";
+    }
+
+    #endregion
+
+    #region Hazard System (v0.3.3a)
+
+    /// <summary>
+    /// Triggers hazards in the current room when damage is dealt.
+    /// Called after each damage application to check for DamageTaken triggers.
+    /// </summary>
+    /// <param name="damageType">The type of damage dealt.</param>
+    /// <param name="amount">The amount of damage dealt.</param>
+    /// <param name="target">The combatant who may be affected by hazard effects.</param>
+    private async Task ProcessDamageHazardsAsync(DamageType damageType, int amount, Combatant target)
+    {
+        if (!_gameState.CurrentRoomId.HasValue) return;
+
+        var room = await _roomRepository.GetByIdAsync(_gameState.CurrentRoomId.Value);
+        if (room == null) return;
+
+        var results = await _hazardService.TriggerOnDamageAsync(room, damageType, amount, target);
+
+        foreach (var result in results.Where(r => r.WasTriggered))
+        {
+            LogCombatEvent($"[orange1][HAZARD][/] {result.Message}");
+
+            // Sync player HP if affected
+            if (target.IsPlayer && target.CharacterSource != null)
+            {
+                target.CharacterSource.CurrentHP = target.CurrentHp;
+            }
+
+            _logger.LogInformation(
+                "[Hazard] {Hazard} triggered: {Damage} damage, State: {State}",
+                result.HazardName, result.TotalDamage, result.NewState);
+        }
+    }
+
+    /// <summary>
+    /// Ticks hazard cooldowns at the end of a combat round.
+    /// </summary>
+    private async Task TickHazardCooldownsAsync()
+    {
+        if (!_gameState.CurrentRoomId.HasValue) return;
+
+        var room = await _roomRepository.GetByIdAsync(_gameState.CurrentRoomId.Value);
+        if (room == null) return;
+
+        await _hazardService.TickCooldownsAsync(room);
     }
 
     #endregion

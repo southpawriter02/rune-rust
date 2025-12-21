@@ -6,18 +6,18 @@ namespace RuneAndRust.Tests.Core;
 
 /// <summary>
 /// Tests for the ObjectType enum.
-/// Validates the five object categories: Furniture, Container, Device, Inscription, Corpse.
+/// Validates the six object categories: Furniture, Container, Device, Inscription, Corpse, Hazard.
 /// </summary>
 public class ObjectTypeTests
 {
     [Fact]
-    public void ObjectType_ShouldHaveExactlyFiveValues()
+    public void ObjectType_ShouldHaveExactlySixValues()
     {
         // Arrange
         var values = Enum.GetValues<ObjectType>();
 
-        // Assert
-        values.Should().HaveCount(5, "Rune & Rust has exactly five object types");
+        // Assert - Updated to 6 in v0.3.3a with Hazard addition
+        values.Should().HaveCount(6, "Rune & Rust has exactly six object types (including Hazard)");
     }
 
     [Fact]

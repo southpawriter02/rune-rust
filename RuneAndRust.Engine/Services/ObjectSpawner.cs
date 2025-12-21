@@ -197,11 +197,15 @@ public class ObjectSpawner
 
     /// <summary>
     /// Selects which object types to spawn, ensuring variety.
+    /// Hazards are excluded as they should be placed intentionally, not spawned randomly.
     /// </summary>
     private List<ObjectType> SelectObjectTypes(int count, BiomeType biome)
     {
         var types = new List<ObjectType>();
-        var availableTypes = Enum.GetValues<ObjectType>().ToList();
+        // Exclude Hazard - hazards are placed intentionally via HazardService, not spawned randomly
+        var availableTypes = Enum.GetValues<ObjectType>()
+            .Where(t => t != ObjectType.Hazard)
+            .ToList();
 
         // Bias toward certain types based on biome
         var biasedTypes = GetBiomeBias(biome);

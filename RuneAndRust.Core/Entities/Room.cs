@@ -58,6 +58,12 @@ public class Room
     public List<RoomFeature> Features { get; set; } = new();
 
     /// <summary>
+    /// Dynamic hazards present in this room (v0.3.3a).
+    /// Loaded lazily via repository or navigation property.
+    /// </summary>
+    public List<DynamicHazard> Hazards { get; set; } = new();
+
+    /// <summary>
     /// Checks if this room has a specific feature.
     /// </summary>
     /// <param name="feature">The feature to check for.</param>

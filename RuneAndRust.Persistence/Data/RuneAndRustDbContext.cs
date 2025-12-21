@@ -38,9 +38,14 @@ public class RuneAndRustDbContext : DbContext
     public DbSet<Character> Characters { get; set; } = null!;
 
     /// <summary>
-    /// Gets or sets the InteractableObjects table.
+    /// Gets or sets the InteractableObjects table (TPH - includes DynamicHazard).
     /// </summary>
     public DbSet<InteractableObject> InteractableObjects { get; set; } = null!;
+
+    /// <summary>
+    /// Gets or sets the DynamicHazards table view (subset of InteractableObjects via TPH, v0.3.3a).
+    /// </summary>
+    public DbSet<DynamicHazard> DynamicHazards { get; set; } = null!;
 
     /// <summary>
     /// Gets or sets the Items table (TPH - includes Equipment).
@@ -216,11 +221,21 @@ public class RuneAndRustDbContext : DbContext
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
+        // TPH (Table-per-Hierarchy) configuration for InteractableObject/DynamicHazard (v0.3.3a)
         modelBuilder.Entity<InteractableObject>(entity =>
         {
             entity.ToTable("InteractableObjects");
 
             entity.HasKey(o => o.Id);
+
+            // TPH discriminator column based on ObjectType
+            entity.HasDiscriminator(o => o.ObjectType)
+                .HasValue<InteractableObject>(ObjectType.Furniture)
+                .HasValue<InteractableObject>(ObjectType.Container)
+                .HasValue<InteractableObject>(ObjectType.Device)
+                .HasValue<InteractableObject>(ObjectType.Inscription)
+                .HasValue<InteractableObject>(ObjectType.Corpse)
+                .HasValue<DynamicHazard>(ObjectType.Hazard);
 
             // Index on RoomId for efficient room-based queries
             entity.HasIndex(o => o.RoomId);
@@ -263,6 +278,46 @@ public class RuneAndRustDbContext : DbContext
             // Timestamps
             entity.Property(o => o.CreatedAt).IsRequired();
             entity.Property(o => o.LastModified).IsRequired();
+        });
+
+        // DynamicHazard-specific columns (v0.3.3a)
+        modelBuilder.Entity<DynamicHazard>(entity =>
+        {
+            // Inherits from InteractableObject via TPH
+
+            entity.Property(h => h.HazardType)
+                .HasConversion<int>()
+                .IsRequired();
+
+            entity.Property(h => h.State)
+                .HasConversion<int>()
+                .IsRequired();
+
+            entity.Property(h => h.CooldownRemaining)
+                .IsRequired();
+
+            entity.Property(h => h.MaxCooldown)
+                .IsRequired();
+
+            entity.Property(h => h.OneTimeUse)
+                .IsRequired();
+
+            entity.Property(h => h.Trigger)
+                .HasConversion<int>()
+                .IsRequired();
+
+            entity.Property(h => h.RequiredDamageType)
+                .HasConversion<int?>();
+
+            entity.Property(h => h.DamageThreshold)
+                .IsRequired();
+
+            entity.Property(h => h.EffectScript)
+                .HasMaxLength(500)
+                .IsRequired();
+
+            entity.Property(h => h.TriggerMessage)
+                .HasMaxLength(500);
         });
 
         // TPH (Table-per-Hierarchy) configuration for Item/Equipment
