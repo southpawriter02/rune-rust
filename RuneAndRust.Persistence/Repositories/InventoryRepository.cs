@@ -128,6 +128,36 @@ public class InventoryRepository : IInventoryRepository
     }
 
     /// <inheritdoc/>
+    public async Task<InventoryItem?> FindByTagAsync(Guid characterId, string tag)
+    {
+        _logger.LogDebug("Searching for item with tag '{Tag}' in inventory of character {CharacterId}", tag, characterId);
+
+        var normalizedTag = tag.Trim().ToLowerInvariant();
+
+        // Note: This query loads all items for the character and filters in memory
+        // because JSONB array queries are complex in EF Core. For large inventories,
+        // consider a raw SQL query with jsonb_exists.
+        var items = await _dbSet
+            .Include(ii => ii.Item)
+            .Where(ii => ii.CharacterId == characterId)
+            .ToListAsync();
+
+        var item = items.FirstOrDefault(ii =>
+            ii.Item.Tags.Any(t => t.Equals(normalizedTag, StringComparison.OrdinalIgnoreCase)));
+
+        if (item == null)
+        {
+            _logger.LogDebug("No item with tag '{Tag}' found in inventory of character {CharacterId}", tag, characterId);
+        }
+        else
+        {
+            _logger.LogDebug("Found item '{ItemName}' with tag '{Tag}' in inventory", item.Item.Name, tag);
+        }
+
+        return item;
+    }
+
+    /// <inheritdoc/>
     public async Task<int> GetTotalWeightAsync(Guid characterId)
     {
         _logger.LogDebug("Calculating total inventory weight for character {CharacterId}", characterId);

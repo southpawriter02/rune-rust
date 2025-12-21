@@ -51,6 +51,15 @@ public interface IInventoryRepository
     Task<InventoryItem?> FindByItemNameAsync(Guid characterId, string itemName);
 
     /// <summary>
+    /// Finds the first item in a character's inventory that has the specified tag.
+    /// Uses case-insensitive matching on the tag.
+    /// </summary>
+    /// <param name="characterId">The character's unique identifier.</param>
+    /// <param name="tag">The tag to search for (e.g., "Ration", "Water").</param>
+    /// <returns>The inventory entry if found, null otherwise.</returns>
+    Task<InventoryItem?> FindByTagAsync(Guid characterId, string tag);
+
+    /// <summary>
     /// Calculates the total weight of all items in a character's inventory.
     /// </summary>
     /// <param name="characterId">The character's unique identifier.</param>

@@ -97,7 +97,11 @@ class Program
                     services.AddScoped<IEnemyFactory, EnemyFactory>();
 
                     // Register Inventory Services
+                    services.AddScoped<IInventoryRepository, InventoryRepository>();
                     services.AddScoped<IInventoryService, InventoryService>();
+
+                    // Register Rest Services (v0.3.2a)
+                    services.AddScoped<IRestService, RestService>();
 
                     // Register Crafting Services (v0.3.1a)
                     services.AddScoped<ICraftingService, CraftingService>();

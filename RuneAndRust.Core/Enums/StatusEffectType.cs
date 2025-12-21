@@ -41,6 +41,13 @@ public enum StatusEffectType
     /// </summary>
     Disoriented = 4,
 
+    /// <summary>
+    /// Out-of-combat debuff from resting without supplies.
+    /// Halves all recovery from rest. Prevents running.
+    /// Cured by resting at a Sanctuary or consuming supplies (v0.3.2a).
+    /// </summary>
+    Exhausted = 5,
+
     // ═══════════════════════════════════════════════════════════════════════
     // BUFFS (100+)
     // ═══════════════════════════════════════════════════════════════════════

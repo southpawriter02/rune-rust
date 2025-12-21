@@ -217,7 +217,10 @@ public static class LootTables
         {
             new("Questionable Rations", "Preserved food of uncertain provenance.",
                 "The packaging has long since degraded. Contents appear stable, if unappetizing.",
-                100, 5),
+                100, 5, new List<string> { "Ration" }),
+            new("Cracked Waterskin", "A patched container that leaks at the seams.",
+                "Several repairs suggest long use. Contents remain drinkable, if not appetizing.",
+                200, 4, new List<string> { "Water" }),
             new("Dirty Bandages", "Cloth strips salvaged from various sources.",
                 "Some staining suggests prior use. Better than bleeding out.",
                 50, 3)
@@ -226,7 +229,10 @@ public static class LootTables
         {
             new("Field Rations", "Standard preserved provisions for wasteland travel.",
                 "Compressed nutrient blocks and dried meats. Sustaining, if not satisfying.",
-                150, 12),
+                150, 12, new List<string> { "Ration" }),
+            new("Waterskin", "A leather container for carrying water.",
+                "The stitching holds well. Sufficient for a day's hydration in the wastes.",
+                250, 10, new List<string> { "Water" }),
             new("Healing Salve", "An herbal compound with antiseptic properties.",
                 "The mixture smells of pine and something bitter. Application promotes tissue repair.",
                 80, 20),
@@ -238,7 +244,10 @@ public static class LootTables
         {
             new("Dvergr Iron-Bread", "Dense waybread produced by master bakers.",
                 "A single portion sustains for a full day. The complex flavor improves with each bite.",
-                120, 35),
+                120, 35, new List<string> { "Ration" }),
+            new("Dvergr Flask", "A metal-bound container of superior construction.",
+                "The interior coating prevents contamination. Water stays fresh for extended periods.",
+                300, 30, new List<string> { "Water" }),
             new("Wound-Knit Poultice", "A carefully prepared medical compound.",
                 "Application produces a warm sensation as flesh mends. Scarring appears reduced.",
                 60, 55),
@@ -396,12 +405,19 @@ public record ArmorTemplate(
 /// <summary>
 /// Template for consumable generation.
 /// </summary>
+/// <param name="Name">Display name of the consumable.</param>
+/// <param name="Description">Short description for inventory lists.</param>
+/// <param name="DetailedDescription">Detailed description when examining.</param>
+/// <param name="Weight">Weight in grams.</param>
+/// <param name="Value">Value in Scrip currency.</param>
+/// <param name="Tags">Optional tags for categorization (e.g., "Ration", "Water").</param>
 public record ConsumableTemplate(
     string Name,
     string Description,
     string DetailedDescription,
     int Weight,
-    int Value);
+    int Value,
+    List<string>? Tags = null);
 
 /// <summary>
 /// Template for crafting material generation.

@@ -129,4 +129,13 @@ public interface IInventoryService
     /// <param name="character">The character whose equipment to display.</param>
     /// <returns>Formatted equipment string.</returns>
     Task<string> FormatEquipmentDisplayAsync(Character character);
+
+    /// <summary>
+    /// Finds an item in a character's inventory by tag.
+    /// Used by the Rest system to locate supplies (e.g., "Ration", "Water").
+    /// </summary>
+    /// <param name="character">The character whose inventory to search.</param>
+    /// <param name="tag">The tag to search for (case-insensitive).</param>
+    /// <returns>The inventory entry if found, null otherwise.</returns>
+    Task<InventoryItem?> FindItemByTagAsync(Character character, string tag);
 }

@@ -448,4 +448,23 @@ public class InventoryService : IInventoryService
 
         return sb.ToString();
     }
+
+    /// <inheritdoc/>
+    public async Task<InventoryItem?> FindItemByTagAsync(Character character, string tag)
+    {
+        _logger.LogDebug("Searching for item with tag '{Tag}' in {CharacterName}'s inventory", tag, character.Name);
+
+        var item = await _inventoryRepository.FindByTagAsync(character.Id, tag);
+
+        if (item == null)
+        {
+            _logger.LogDebug("No item with tag '{Tag}' found in inventory", tag);
+        }
+        else
+        {
+            _logger.LogDebug("Found item '{ItemName}' with tag '{Tag}'", item.Item.Name, tag);
+        }
+
+        return item;
+    }
 }

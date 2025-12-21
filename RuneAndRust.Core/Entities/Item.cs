@@ -107,4 +107,23 @@ public class Item
     public List<ItemProperty> Properties { get; set; } = new();
 
     #endregion
+
+    #region Tags (v0.3.2a)
+
+    /// <summary>
+    /// Gets or sets tags for categorization and behavior filtering.
+    /// Used by systems like Rest (e.g., "Ration", "Water") to identify valid supplies.
+    /// Stored as JSONB in PostgreSQL.
+    /// </summary>
+    public List<string> Tags { get; set; } = new();
+
+    /// <summary>
+    /// Checks if this item has the specified tag.
+    /// </summary>
+    /// <param name="tag">The tag to check for (case-insensitive).</param>
+    /// <returns>True if the item has the tag; otherwise false.</returns>
+    public bool HasTag(string tag) =>
+        Tags.Any(t => t.Equals(tag, StringComparison.OrdinalIgnoreCase));
+
+    #endregion
 }

@@ -162,6 +162,40 @@ public class Character
 
     #endregion
 
+    #region Status Effects (v0.3.2a)
+
+    /// <summary>
+    /// Persistent status effects active outside of combat.
+    /// Combat status effects are tracked separately on Combatant.
+    /// Stored as JSONB in PostgreSQL.
+    /// </summary>
+    public List<StatusEffectType> ActiveStatusEffects { get; set; } = new();
+
+    /// <summary>
+    /// Checks if the character has a specific status effect active.
+    /// </summary>
+    /// <param name="effect">The status effect to check for.</param>
+    /// <returns>True if the effect is active; otherwise false.</returns>
+    public bool HasStatusEffect(StatusEffectType effect) => ActiveStatusEffects.Contains(effect);
+
+    /// <summary>
+    /// Adds a status effect if not already present.
+    /// </summary>
+    /// <param name="effect">The status effect to add.</param>
+    public void AddStatusEffect(StatusEffectType effect)
+    {
+        if (!ActiveStatusEffects.Contains(effect))
+            ActiveStatusEffects.Add(effect);
+    }
+
+    /// <summary>
+    /// Removes a status effect if present.
+    /// </summary>
+    /// <param name="effect">The status effect to remove.</param>
+    public void RemoveStatusEffect(StatusEffectType effect) => ActiveStatusEffects.Remove(effect);
+
+    #endregion
+
     #region Attribute Methods
 
     /// <summary>

@@ -200,6 +200,15 @@ public class RuneAndRustDbContext : DbContext
                 )
                 .IsRequired();
 
+            // ActiveStatusEffects stored as JSONB (v0.3.2a - Rest System)
+            entity.Property(c => c.ActiveStatusEffects)
+                .HasColumnType("jsonb")
+                .HasConversion(
+                    v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
+                    v => JsonSerializer.Deserialize<List<StatusEffectType>>(v, (JsonSerializerOptions?)null) ?? new List<StatusEffectType>()
+                )
+                .IsRequired();
+
             // Inventory navigation property
             entity.HasMany(c => c.Inventory)
                 .WithOne(i => i.Character)
@@ -290,6 +299,15 @@ public class RuneAndRustDbContext : DbContext
 
             entity.Property(i => i.CreatedAt).IsRequired();
             entity.Property(i => i.LastModified).IsRequired();
+
+            // Tags stored as JSONB (v0.3.2a - Rest System)
+            entity.Property(i => i.Tags)
+                .HasColumnType("jsonb")
+                .HasConversion(
+                    v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
+                    v => JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions?)null) ?? new List<string>()
+                )
+                .IsRequired();
 
             // Indexes
             entity.HasIndex(i => i.Name);
