@@ -104,6 +104,9 @@ class Program
                     services.AddScoped<INarrativeService, NarrativeService>();
                     services.AddScoped<ITypewriterRenderer, TypewriterRenderer>();
 
+                    // Register Exploration HUD (v0.3.5a)
+                    services.AddSingleton<IExplorationScreenRenderer, ExplorationScreenRenderer>();
+
                     // Register Enemy Factory
                     services.AddScoped<IEnemyFactory, EnemyFactory>();
 
@@ -152,7 +155,7 @@ class Program
             }
 
             // 4. UI Handover
-            AnsiConsole.MarkupLine("[green]Rune & Rust v0.3.4c Booting...[/]");
+            AnsiConsole.MarkupLine("[green]Rune & Rust v0.3.5a Booting...[/]");
             AnsiConsole.WriteLine();
 
             // Show title screen and get menu selection (v0.3.4a)

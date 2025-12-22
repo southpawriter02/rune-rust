@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
 using RuneAndRust.Core.Enums;
@@ -19,6 +20,7 @@ public class GameServiceTests
     private readonly Mock<ILogger<CommandParser>> _mockParserLogger;
     private readonly Mock<IInputHandler> _mockInputHandler;
     private readonly Mock<ICombatService> _mockCombatService;
+    private readonly Mock<IServiceScopeFactory> _mockScopeFactory;
     private readonly GameState _state;
     private readonly CommandParser _parser;
 
@@ -28,6 +30,7 @@ public class GameServiceTests
         _mockParserLogger = new Mock<ILogger<CommandParser>>();
         _mockInputHandler = new Mock<IInputHandler>();
         _mockCombatService = new Mock<ICombatService>();
+        _mockScopeFactory = new Mock<IServiceScopeFactory>();
         _state = new GameState();
         _parser = new CommandParser(_mockParserLogger.Object, _mockInputHandler.Object, _state);
     }
@@ -37,7 +40,7 @@ public class GameServiceTests
     {
         // Arrange - Input "quit" immediately to exit the loop
         _mockInputHandler.Setup(x => x.GetInput(It.IsAny<string>())).Returns("quit");
-        var sut = new GameService(_mockGameLogger.Object, _mockInputHandler.Object, _parser, _state, _mockCombatService.Object, null);
+        var sut = new GameService(_mockGameLogger.Object, _mockInputHandler.Object, _parser, _state, _mockCombatService.Object, _mockScopeFactory.Object);
 
         // Act
         sut.StartAsync().GetAwaiter().GetResult();
@@ -58,7 +61,7 @@ public class GameServiceTests
     {
         // Arrange - Input "quit" immediately to exit the loop
         _mockInputHandler.Setup(x => x.GetInput(It.IsAny<string>())).Returns("quit");
-        var sut = new GameService(_mockGameLogger.Object, _mockInputHandler.Object, _parser, _state, _mockCombatService.Object, null);
+        var sut = new GameService(_mockGameLogger.Object, _mockInputHandler.Object, _parser, _state, _mockCombatService.Object, _mockScopeFactory.Object);
 
         // Act
         sut.StartAsync().GetAwaiter().GetResult();
@@ -84,7 +87,7 @@ public class GameServiceTests
             _parser,
             _state,
             _mockCombatService.Object,
-            null);
+            _mockScopeFactory.Object);
 
         // Assert
         action.Should().NotThrow();
@@ -95,7 +98,7 @@ public class GameServiceTests
     {
         // Arrange
         _mockInputHandler.Setup(x => x.GetInput(It.IsAny<string>())).Returns("quit");
-        var sut = new GameService(_mockGameLogger.Object, _mockInputHandler.Object, _parser, _state, _mockCombatService.Object, null);
+        var sut = new GameService(_mockGameLogger.Object, _mockInputHandler.Object, _parser, _state, _mockCombatService.Object, _mockScopeFactory.Object);
 
         // Act
         sut.StartAsync().GetAwaiter().GetResult();
@@ -111,7 +114,7 @@ public class GameServiceTests
     {
         // Arrange
         _mockInputHandler.Setup(x => x.GetInput(It.IsAny<string>())).Returns("quit");
-        var sut = new GameService(_mockGameLogger.Object, _mockInputHandler.Object, _parser, _state, _mockCombatService.Object, null);
+        var sut = new GameService(_mockGameLogger.Object, _mockInputHandler.Object, _parser, _state, _mockCombatService.Object, _mockScopeFactory.Object);
 
         // Act
         sut.StartAsync().GetAwaiter().GetResult();
