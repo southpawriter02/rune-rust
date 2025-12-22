@@ -39,8 +39,9 @@ public class CombatScreenRenderer : ICombatScreenRenderer
 
         AnsiConsole.WriteLine();
 
-        // 3. Turn Order Table
-        RenderTurnOrder(vm.TurnOrder);
+        // 3. Initiative Timeline (v0.3.6b) - replaces turn order table
+        var timelinePanel = TimelineRenderer.Render(vm.TimelineProjection, vm.RoundNumber);
+        AnsiConsole.Write(timelinePanel);
 
         AnsiConsole.WriteLine();
 

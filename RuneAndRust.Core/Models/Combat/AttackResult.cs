@@ -11,10 +11,12 @@ namespace RuneAndRust.Core.Models.Combat;
 /// <param name="RawDamage">Damage before applying soak and modifiers.</param>
 /// <param name="FinalDamage">Damage after soak reduction. Minimum 1 on hit, 0 on miss.</param>
 /// <param name="IsHit">Whether the attack connected (NetSuccesses > 0).</param>
+/// <param name="DamageType">The type of damage dealt (v0.3.6b). Defaults to Physical.</param>
 public record AttackResult(
     AttackOutcome Outcome,
     int NetSuccesses,
     int RawDamage,
     int FinalDamage,
-    bool IsHit
+    bool IsHit,
+    DamageType DamageType = DamageType.Physical
 );

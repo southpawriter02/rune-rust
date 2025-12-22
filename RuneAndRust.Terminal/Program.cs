@@ -155,7 +155,7 @@ class Program
             }
 
             // 4. UI Handover
-            AnsiConsole.MarkupLine("[green]Rune & Rust v0.3.6a Booting...[/]");
+            AnsiConsole.MarkupLine("[green]Rune & Rust v0.3.6b Booting...[/]");
             AnsiConsole.WriteLine();
 
             // Show title screen and get menu selection (v0.3.4a)

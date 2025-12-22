@@ -113,6 +113,77 @@ public class CombatService : ICombatService
 
     #endregion
 
+    #region Timeline Projection (v0.3.6b)
+
+    /// <summary>
+    /// Gets the timeline projection showing remaining turns this round plus next round (v0.3.6b).
+    /// Displays upcoming combatants to help players anticipate the flow of battle.
+    /// </summary>
+    /// <param name="windowSize">Maximum number of entries to include in the projection.</param>
+    /// <returns>A list of timeline entries showing upcoming turns.</returns>
+    public List<TimelineEntryView> GetTimelineProjection(int windowSize = 8)
+    {
+        if (_gameState.CombatState == null)
+        {
+            return new List<TimelineEntryView>();
+        }
+
+        var state = _gameState.CombatState;
+        var projection = new List<TimelineEntryView>();
+
+        // Current round: remaining turns from TurnIndex to end
+        var currentRoundRemaining = state.TurnOrder
+            .Skip(state.TurnIndex)
+            .Where(c => c.CurrentHp > 0);
+
+        foreach (var combatant in currentRoundRemaining)
+        {
+            projection.Add(MapToTimelineEntry(combatant, state.RoundNumber, state.ActiveCombatant));
+            if (projection.Count >= windowSize) break;
+        }
+
+        // Next round: full turn order (alive only) if we need more entries
+        if (projection.Count < windowSize)
+        {
+            var nextRoundOrder = state.TurnOrder.Where(c => c.CurrentHp > 0);
+            foreach (var combatant in nextRoundOrder)
+            {
+                projection.Add(MapToTimelineEntry(combatant, state.RoundNumber + 1, null));
+                if (projection.Count >= windowSize) break;
+            }
+        }
+
+        _logger.LogTrace("Built timeline projection with {Count} entries", projection.Count);
+        return projection;
+    }
+
+    /// <summary>
+    /// Maps a combatant to a timeline entry view (v0.3.6b).
+    /// </summary>
+    /// <param name="c">The combatant to map.</param>
+    /// <param name="roundNumber">The round number this entry occurs in.</param>
+    /// <param name="active">The currently active combatant (to mark IsActive).</param>
+    /// <returns>A timeline entry view for the combatant.</returns>
+    private static TimelineEntryView MapToTimelineEntry(Combatant c, int roundNumber, Combatant? active)
+    {
+        var healthIndicator = c.CurrentHp <= 0 ? "dead"
+            : c.CurrentHp <= c.MaxHp / 4 ? "critical"
+            : c.CurrentHp <= c.MaxHp / 2 ? "wounded"
+            : "healthy";
+
+        return new TimelineEntryView(
+            CombatantId: c.Id,
+            Name: c.Name,
+            IsPlayer: c.IsPlayer,
+            IsActive: c.Id == active?.Id,
+            Initiative: c.Initiative,
+            RoundNumber: roundNumber,
+            HealthIndicator: healthIndicator
+        );
+    }
+
+    #endregion
+
     /// <summary>
     /// Initializes a new instance of the <see cref="CombatService"/> class.
     /// </summary>
@@ -629,10 +700,15 @@ public class CombatService : ICombatService
     }
 
     /// <summary>
-    /// Builds a Spectre-markup formatted log message for hits.
+    /// Builds a Spectre-markup formatted log message for hits (v0.3.6b - uses CombatLogFormatter).
     /// </summary>
     private static string BuildLogMessage(AttackResult result, Combatant target, bool isDeath = false, bool isVictory = false)
     {
+        // v0.3.6b: Use damage type coloring from CombatLogFormatter
+        var damageColor = CombatLogFormatter.GetDamageColor(result.DamageType);
+        var damageLabel = result.DamageType == DamageType.Physical ? "" : $" {result.DamageType}";
+        var damageText = $"[{damageColor}]{result.FinalDamage}{damageLabel}[/] damage";
+
         var outcomeMarkup = result.Outcome switch
         {
             AttackOutcome.Glancing => "[grey]Glancing blow![/]",
@@ -640,8 +716,6 @@ public class CombatService : ICombatService
             AttackOutcome.Critical => "[bold yellow]CRITICAL HIT![/]",
             _ => "[white]Hit![/]"
         };
-
-        var damageText = $"[cyan]{result.FinalDamage}[/] damage";
 
         if (isVictory)
         {
@@ -743,7 +817,9 @@ public class CombatService : ICombatService
             PlayerFrontRow: playerFrontRow,
             PlayerBackRow: playerBackRow,
             EnemyFrontRow: enemyFrontRow,
-            EnemyBackRow: enemyBackRow
+            EnemyBackRow: enemyBackRow,
+            // v0.3.6b timeline projection
+            TimelineProjection: GetTimelineProjection()
         );
     }
 

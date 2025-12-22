@@ -12,6 +12,7 @@ namespace RuneAndRust.Core.ViewModels;
 /// <param name="CombatLog">Rolling buffer of recent combat events (max 10).</param>
 /// <param name="PlayerStats">Player's HP and Stamina for header display.</param>
 /// <param name="PlayerAbilities">List of player abilities with hotkeys and status.</param>
+/// <param name="TimelineProjection">Timeline projection showing upcoming turns (v0.3.6b).</param>
 public record CombatViewModel(
     int RoundNumber,
     string ActiveCombatantName,
@@ -23,7 +24,9 @@ public record CombatViewModel(
     List<CombatantView>? PlayerFrontRow = null,
     List<CombatantView>? PlayerBackRow = null,
     List<CombatantView>? EnemyFrontRow = null,
-    List<CombatantView>? EnemyBackRow = null
+    List<CombatantView>? EnemyBackRow = null,
+    // Timeline projection (v0.3.6b)
+    List<TimelineEntryView>? TimelineProjection = null
 );
 
 /// <summary>
