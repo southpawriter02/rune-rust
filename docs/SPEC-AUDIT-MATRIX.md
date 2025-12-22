@@ -12,10 +12,10 @@
 | Category | Count |
 |----------|-------|
 | **Documented Specifications** | 12 |
-| **Implemented Services** | 37 |
+| **Implemented Services** | 38 |
 | **Services WITH Specs** | 21 |
-| **Services MISSING Specs** | 16 |
-| **Coverage Rate** | 56.8% |
+| **Services MISSING Specs** | 17 |
+| **Coverage Rate** | 55.3% |
 
 ---
 
@@ -93,6 +93,7 @@
 |---------|--------------|-----------------|
 | `LootService` | SPEC-INV-001 | Loot table structure, biome weighting, quality tier distribution |
 | `LootTables` | SPEC-INV-001 | Configuration schema, pool definitions |
+| `CaptureTemplates` | SPEC-CODEX-001, SPEC-CAPTURE-001 | Template catalog, flavor text patterns |
 | `AmbushService` | SPEC-REST-001 | Risk calculation formula, biome enemy tables |
 | `EffectScriptExecutor` | SPEC-ABILITY-001, SPEC-HAZARD-001 | Full script syntax reference, command catalog |
 | `CharacterFactory` | SPEC-CHAR-001 | Attribute allocation rules, lineage/archetype bonuses |
@@ -241,9 +242,9 @@ The following cross-system dependencies are NOT documented:
 
 ## SUMMARY
 
-**Total Specifications Needed:** 16 new specs
-**Current Coverage:** 21/37 services (56.8%)
-**Target Coverage:** 37/37 services (100%)
+**Total Specifications Needed:** 17 new specs  
+**Current Coverage:** 12 documented specs covering 21/38 systems (55.3%)  
+**Target Coverage:** 38/38 systems (100%)
 
 ### Action Items
 1. Prioritize SPEC-CRAFT-001, SPEC-REPAIR-001, SPEC-ENEMY-001 for immediate creation
