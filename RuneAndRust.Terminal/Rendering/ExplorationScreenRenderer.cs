@@ -8,6 +8,7 @@ namespace RuneAndRust.Terminal.Rendering;
 /// <summary>
 /// Renders the persistent exploration HUD using Spectre.Console Layout (v0.3.5a).
 /// Displays a three-pane interface: Header (stats), Body (room/minimap), Footer (turn).
+/// Updated with RoomRenderer integration in v0.3.5c.
 /// </summary>
 public class ExplorationScreenRenderer : IExplorationScreenRenderer
 {
@@ -38,11 +39,8 @@ public class ExplorationScreenRenderer : IExplorationScreenRenderer
         // 1. Update Header (Status Bar)
         rootLayout["Header"].Update(CreateStatusBar(vm));
 
-        // 2. Update Main Content (Room View - placeholder for v0.3.5c)
-        var roomPanel = new Panel(Markup.Escape(vm.RoomDescription))
-            .Header($"[bold orange1]{Markup.Escape(vm.RoomName)}[/]")
-            .Border(BoxBorder.Rounded)
-            .Expand();
+        // 2. Update Main Content (Room View - v0.3.5c)
+        var roomPanel = RoomRenderer.Render(vm);
         rootLayout["Main"].Update(roomPanel);
 
         // 3. Update Sidebar (Minimap - v0.3.5b)

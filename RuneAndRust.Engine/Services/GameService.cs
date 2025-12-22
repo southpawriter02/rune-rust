@@ -6,6 +6,7 @@ using RuneAndRust.Core.Interfaces;
 using RuneAndRust.Core.Models;
 using RuneAndRust.Core.ValueObjects;
 using RuneAndRust.Core.ViewModels;
+using RuneAndRust.Engine.Helpers;
 
 namespace RuneAndRust.Engine.Services;
 
@@ -115,6 +116,7 @@ public class GameService : IGameService
     /// Builds the exploration view model from current game state (v0.3.5a).
     /// Uses a scoped service to fetch room data.
     /// Extended with minimap data in v0.3.5b.
+    /// Extended with room rendering data in v0.3.5c.
     /// </summary>
     private async Task<ExplorationViewModel?> BuildExplorationViewModelAsync()
     {
@@ -128,6 +130,10 @@ public class GameService : IGameService
         string roomDescription = "You are in an unknown location.";
         Coordinate playerPosition = Coordinate.Origin;
         List<Room> localMapRooms = new();
+        List<string> visibleObjects = new();
+        List<string> visibleEnemies = new();
+        string exits = "";
+        string biomeColor = "grey";
 
         // Fetch room data using a scoped service
         if (_state.CurrentRoomId.HasValue)
@@ -140,6 +146,13 @@ public class GameService : IGameService
                 roomName = room.Name;
                 roomDescription = room.Description;
                 playerPosition = room.Position;
+                biomeColor = RoomViewHelper.GetBiomeColor(room.BiomeType);
+
+                // Format exits (v0.3.5c)
+                if (room.Exits.Any())
+                {
+                    exits = string.Join(", ", room.Exits.Keys.Select(d => d.ToString().ToLower()));
+                }
 
                 // Fetch 3x3 grid around player for minimap (v0.3.5b)
                 const int radius = 1;
@@ -152,8 +165,21 @@ public class GameService : IGameService
                 )).ToList();
 
                 _logger.LogTrace("[HUD] Fetched {Count} rooms for minimap grid", localMapRooms.Count);
+
+                // Fetch visible objects (v0.3.5c)
+                var interactionService = scope.ServiceProvider.GetRequiredService<IInteractionService>();
+                var objects = await interactionService.GetVisibleObjectsAsync();
+                visibleObjects = objects
+                    .Select(o => RoomViewHelper.FormatObjectName(o.Name, o.IsContainer, o.IsLocked))
+                    .ToList();
+
+                _logger.LogTrace("[HUD] Found {ObjectCount} visible objects in room", objects.Count());
             }
         }
+
+        // Note: Enemies are only present during Combat phase
+        // During Exploration, enemies are spawned by AmbushService when entering rooms
+        // VisibleEnemies remains empty during Exploration phase
 
         var character = _state.CurrentCharacter;
 
@@ -175,7 +201,11 @@ public class GameService : IGameService
             TurnCount: _state.TurnCount,
             PlayerPosition: playerPosition,
             LocalMapRooms: localMapRooms,
-            VisitedRoomIds: _state.VisitedRoomIds
+            VisitedRoomIds: _state.VisitedRoomIds,
+            VisibleObjects: visibleObjects,
+            VisibleEnemies: visibleEnemies,
+            Exits: exits,
+            BiomeColor: biomeColor
         );
     }
 }

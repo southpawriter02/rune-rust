@@ -7,6 +7,7 @@ namespace RuneAndRust.Core.ViewModels;
 /// Immutable view model for the exploration screen HUD (v0.3.5a).
 /// Contains all display data for the persistent three-pane interface.
 /// Extended with minimap data in v0.3.5b.
+/// Extended with room rendering data in v0.3.5c.
 /// </summary>
 /// <param name="CharacterName">The player character's display name.</param>
 /// <param name="CurrentHp">Current hit points.</param>
@@ -23,6 +24,10 @@ namespace RuneAndRust.Core.ViewModels;
 /// <param name="PlayerPosition">Player's current coordinate position (v0.3.5b).</param>
 /// <param name="LocalMapRooms">Rooms within the minimap grid radius (v0.3.5b).</param>
 /// <param name="VisitedRoomIds">Set of room IDs the player has visited for Fog of War (v0.3.5b).</param>
+/// <param name="VisibleObjects">Formatted object names with markup colors (v0.3.5c).</param>
+/// <param name="VisibleEnemies">Formatted enemy names with health status (v0.3.5c).</param>
+/// <param name="Exits">Comma-separated lowercase exit directions (v0.3.5c).</param>
+/// <param name="BiomeColor">Spectre.Console color name for biome theming (v0.3.5c).</param>
 public record ExplorationViewModel(
     string CharacterName,
     int CurrentHp,
@@ -38,5 +43,9 @@ public record ExplorationViewModel(
     int TurnCount,
     Coordinate PlayerPosition,
     List<Room> LocalMapRooms,
-    HashSet<Guid> VisitedRoomIds
+    HashSet<Guid> VisitedRoomIds,
+    List<string> VisibleObjects,
+    List<string> VisibleEnemies,
+    string Exits,
+    string BiomeColor
 );
