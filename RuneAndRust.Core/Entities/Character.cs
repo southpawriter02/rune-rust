@@ -30,6 +30,12 @@ public class Character
     public ArchetypeType Archetype { get; set; } = ArchetypeType.Warrior;
 
     /// <summary>
+    /// The character's narrative background (v0.3.4c).
+    /// Shapes the prologue text and story context.
+    /// </summary>
+    public BackgroundType Background { get; set; } = BackgroundType.Scavenger;
+
+    /// <summary>
     /// Physical resilience, health, and endurance. Range: 1-10.
     /// </summary>
     public int Sturdiness { get; set; } = 5;

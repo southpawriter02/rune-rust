@@ -45,18 +45,20 @@ public class CharacterFactory
     /// <param name="name">The character's name.</param>
     /// <param name="lineage">The character's lineage.</param>
     /// <param name="archetype">The character's archetype.</param>
+    /// <param name="background">The character's narrative background (v0.3.4c). Defaults to Scavenger.</param>
     /// <returns>A fully configured character with all bonuses and derived stats applied.</returns>
-    public Character CreateSimple(string name, LineageType lineage, ArchetypeType archetype)
+    public Character CreateSimple(string name, LineageType lineage, ArchetypeType archetype, BackgroundType background = BackgroundType.Scavenger)
     {
         _logger.LogInformation(
-            "Creating simple character: {Name}, Lineage: {Lineage}, Archetype: {Archetype}",
-            name, lineage, archetype);
+            "Creating simple character: {Name}, Lineage: {Lineage}, Archetype: {Archetype}, Background: {Background}",
+            name, lineage, archetype, background);
 
         var character = new Character
         {
             Name = name,
             Lineage = lineage,
             Archetype = archetype,
+            Background = background,
             Sturdiness = BaseAttributeValue,
             Might = BaseAttributeValue,
             Wits = BaseAttributeValue,

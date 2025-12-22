@@ -19,9 +19,14 @@ public class WizardContext
     public LineageType? Lineage { get; set; }
 
     /// <summary>
-    /// The selected archetype, confirmed in step 3.
+    /// The selected archetype, confirmed in step 2.
     /// </summary>
     public ArchetypeType? Archetype { get; set; }
+
+    /// <summary>
+    /// The selected background, confirmed in step 3 (v0.3.4c).
+    /// </summary>
+    public BackgroundType? Background { get; set; }
 
     /// <summary>
     /// The current step index in the wizard (0-based).
@@ -38,6 +43,7 @@ public class WizardContext
         0 => !string.IsNullOrWhiteSpace(Name),
         1 => Lineage.HasValue,
         2 => Archetype.HasValue,
+        3 => Background.HasValue,
         _ => false
     };
 
@@ -49,6 +55,7 @@ public class WizardContext
         Name = string.Empty;
         Lineage = null;
         Archetype = null;
+        Background = null;
         CurrentStep = 0;
     }
 
@@ -67,6 +74,9 @@ public class WizardContext
                 break;
             case 2:
                 Archetype = null;
+                break;
+            case 3:
+                Background = null;
                 break;
         }
     }

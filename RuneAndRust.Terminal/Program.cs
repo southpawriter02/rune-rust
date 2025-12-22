@@ -9,9 +9,11 @@ using RuneAndRust.Engine.Factories;
 using RuneAndRust.Engine.Services;
 using RuneAndRust.Persistence.Data;
 using RuneAndRust.Persistence.Repositories;
+using RuneAndRust.Terminal.Rendering;
 using RuneAndRust.Terminal.Services;
 using Serilog;
 using Spectre.Console;
+using Character = RuneAndRust.Core.Entities.Character;
 
 class Program
 {
@@ -98,6 +100,10 @@ class Program
                     services.AddScoped<IWizardService, WizardService>();
                     services.AddScoped<CreationWizard>();
 
+                    // Register Narrative Services (v0.3.4c)
+                    services.AddScoped<INarrativeService, NarrativeService>();
+                    services.AddScoped<ITypewriterRenderer, TypewriterRenderer>();
+
                     // Register Enemy Factory
                     services.AddScoped<IEnemyFactory, EnemyFactory>();
 
@@ -146,7 +152,7 @@ class Program
             }
 
             // 4. UI Handover
-            AnsiConsole.MarkupLine("[green]Rune & Rust v0.3.4b Booting...[/]");
+            AnsiConsole.MarkupLine("[green]Rune & Rust v0.3.4c Booting...[/]");
             AnsiConsole.WriteLine();
 
             // Show title screen and get menu selection (v0.3.4a)
@@ -166,10 +172,44 @@ class Program
 
                 case MainMenuOption.NewGame:
                     // Run character creation wizard (v0.3.4b)
+                    Character? character = null;
                     using (var scope = host.Services.CreateScope())
                     {
                         var wizard = scope.ServiceProvider.GetRequiredService<CreationWizard>();
-                        wizard.RunAsync().GetAwaiter().GetResult();
+                        character = wizard.RunAsync().GetAwaiter().GetResult();
+                    }
+
+                    if (character != null)
+                    {
+                        // CRITICAL FIX (v0.3.4c): Bridge character to GameState
+                        var gameState = host.Services.GetRequiredService<GameState>();
+                        gameState.CurrentCharacter = character;
+                        gameState.Phase = GamePhase.Exploration;
+                        Log.Debug("[Program] Character {Name} set to GameState", character.Name);
+
+                        // Generate starting dungeon
+                        using (var scope = host.Services.CreateScope())
+                        {
+                            var dungeonGen = scope.ServiceProvider.GetRequiredService<DungeonGenerator>();
+                            var startRoomId = dungeonGen.GenerateTestMapAsync().GetAwaiter().GetResult();
+                            gameState.CurrentRoomId = startRoomId;
+                            Log.Information("[Program] World initialized: Starting room {RoomId}", startRoomId);
+                        }
+
+                        // Play prologue (v0.3.4c)
+                        using (var scope = host.Services.CreateScope())
+                        {
+                            var narrative = scope.ServiceProvider.GetRequiredService<INarrativeService>();
+                            var typewriter = scope.ServiceProvider.GetRequiredService<ITypewriterRenderer>();
+                            var prologueText = narrative.GetPrologueText(character);
+                            typewriter.PlaySequenceAsync(prologueText).GetAwaiter().GetResult();
+                        }
+                    }
+                    else
+                    {
+                        // Character creation was cancelled, exit
+                        AnsiConsole.MarkupLine("[grey]Character creation cancelled.[/]");
+                        return;
                     }
                     break;
 
