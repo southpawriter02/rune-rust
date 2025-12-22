@@ -1,8 +1,10 @@
+using RuneAndRust.Core.Enums;
+
 namespace RuneAndRust.Core.Settings;
 
 /// <summary>
-/// Static game settings for accessibility and visual preferences (v0.3.9a).
-/// Provides global access to user preferences that affect visual effects and animations.
+/// Static game settings for accessibility and visual preferences (v0.3.9b).
+/// Provides global access to user preferences that affect visual effects, themes, and animations.
 /// </summary>
 public static class GameSettings
 {
@@ -12,7 +14,12 @@ public static class GameSettings
     /// </summary>
     public static bool ReduceMotion { get; set; } = false;
 
-    // Future settings (v0.3.9b+):
-    // public static ThemeType Theme { get; set; } = ThemeType.Default;
+    /// <summary>
+    /// The current color theme for the game UI.
+    /// Supports accessibility for color vision deficiencies (v0.3.9b).
+    /// </summary>
+    public static ThemeType Theme { get; set; } = ThemeType.Standard;
+
+    // Future settings (v0.3.10+):
     // public static int FontScale { get; set; } = 100;
 }

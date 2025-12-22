@@ -1,18 +1,33 @@
 using RuneAndRust.Core.Enums;
+using RuneAndRust.Core.Interfaces;
 
 namespace RuneAndRust.Terminal.Rendering;
 
 /// <summary>
-/// Static helper for inventory display formatting (v0.3.7a).
-/// Provides color mapping and text formatting utilities.
+/// Static helper for inventory display formatting (v0.3.9b).
+/// Provides color mapping and text formatting utilities with theme support.
 /// </summary>
 public static class InventoryViewHelper
 {
     /// <summary>
-    /// Gets the Spectre.Console color name for a quality tier.
+    /// Gets the Spectre.Console color name for a quality tier with theme support.
     /// </summary>
     /// <param name="quality">The quality tier to map.</param>
+    /// <param name="themeService">The theme service for color lookups.</param>
     /// <returns>A Spectre.Console color name string.</returns>
+    public static string GetQualityColor(QualityTier quality, IThemeService themeService) => quality switch
+    {
+        QualityTier.JuryRigged => themeService.GetColor("QualityJunk"),
+        QualityTier.Scavenged => themeService.GetColor("QualityCommon"),
+        QualityTier.ClanForged => themeService.GetColor("QualityUncommon"),
+        QualityTier.Optimized => themeService.GetColor("QualityRare"),
+        QualityTier.MythForged => themeService.GetColor("QualityLegendary"),
+        _ => themeService.GetColor("QualityCommon")
+    };
+
+    /// <summary>
+    /// Gets the Spectre.Console color name for a quality tier (legacy, non-themed).
+    /// </summary>
     public static string GetQualityColor(QualityTier quality) => quality switch
     {
         QualityTier.JuryRigged => "grey",
@@ -24,10 +39,22 @@ public static class InventoryViewHelper
     };
 
     /// <summary>
-    /// Gets the Spectre.Console color name for a burden state.
+    /// Gets the Spectre.Console color name for a burden state with theme support.
     /// </summary>
     /// <param name="state">The burden state to map.</param>
+    /// <param name="themeService">The theme service for color lookups.</param>
     /// <returns>A Spectre.Console color name string.</returns>
+    public static string GetBurdenColor(BurdenState state, IThemeService themeService) => state switch
+    {
+        BurdenState.Light => themeService.GetColor("SuccessColor"),
+        BurdenState.Heavy => themeService.GetColor("WarningColor"),
+        BurdenState.Overburdened => themeService.GetColor("HealthCritical"),
+        _ => themeService.GetColor("QualityCommon")
+    };
+
+    /// <summary>
+    /// Gets the Spectre.Console color name for a burden state (legacy, non-themed).
+    /// </summary>
     public static string GetBurdenColor(BurdenState state) => state switch
     {
         BurdenState.Light => "green",
@@ -93,10 +120,25 @@ public static class InventoryViewHelper
     }
 
     /// <summary>
-    /// Gets the icon character for an item type with Spectre markup color.
+    /// Gets the icon character for an item type with themed Spectre markup color.
     /// </summary>
     /// <param name="type">The item type to map.</param>
+    /// <param name="themeService">The theme service for color lookups.</param>
     /// <returns>A colored Unicode icon string.</returns>
+    public static string GetItemTypeIcon(ItemType type, IThemeService themeService) => type switch
+    {
+        ItemType.Weapon => $"[{themeService.GetColor("EnemyColor")}]\u2694[/]",        // Crossed swords
+        ItemType.Armor => $"[{themeService.GetColor("PlayerColor")}]\u26E8[/]",        // Shield
+        ItemType.Consumable => $"[{themeService.GetColor("SuccessColor")}]\u2615[/]",  // Cup (potion)
+        ItemType.Material => $"[{themeService.GetColor("WarningColor")}]\u25C6[/]",    // Diamond (resource)
+        ItemType.KeyItem => $"[{themeService.GetColor("QualityLegendary")}]\u2605[/]", // Star (important)
+        ItemType.Junk => $"[{themeService.GetColor("NeutralColor")}]\u25A0[/]",        // Square (misc)
+        _ => $"[{themeService.GetColor("NeutralColor")}]\u25A0[/]"
+    };
+
+    /// <summary>
+    /// Gets the icon character for an item type with Spectre markup color (legacy, non-themed).
+    /// </summary>
     public static string GetItemTypeIcon(ItemType type) => type switch
     {
         ItemType.Weapon => "[red]\u2694[/]",       // Crossed swords

@@ -1,23 +1,42 @@
+using RuneAndRust.Core.Interfaces;
 using Spectre.Console;
 
 namespace RuneAndRust.Terminal.Rendering;
 
 /// <summary>
-/// Static helper for rendering colored resource bars in the exploration HUD (v0.3.5a).
-/// Provides color-coding logic and Unicode block-based progress bars.
+/// Static helper for rendering colored resource bars in the exploration HUD (v0.3.9b).
+/// Provides color-coding logic and Unicode block-based progress bars with theme support.
 /// </summary>
 public static class StatusWidget
 {
     /// <summary>
-    /// Gets the color for HP based on percentage thresholds.
+    /// Gets the color for HP based on percentage thresholds using theme service.
     /// </summary>
     /// <remarks>
     /// 4-tier system:
-    /// - Green (>75%): Healthy
-    /// - Yellow (50-75%): Wounded
-    /// - Orange (25-49%): Danger
-    /// - Red (≤25%): Critical
+    /// - HealthFull (>75%): Healthy
+    /// - HealthHigh (50-75%): Wounded
+    /// - HealthLow (25-49%): Danger
+    /// - HealthCritical (≤25%): Critical
     /// </remarks>
+    public static Color GetHpColor(int current, int max, IThemeService themeService)
+    {
+        if (max == 0) return ParseColor(themeService.GetColor("NeutralColor"));
+
+        var pct = (double)current / max * 100;
+        var role = pct switch
+        {
+            <= 25 => "HealthCritical",
+            <= 50 => "HealthLow",
+            <= 75 => "HealthHigh",
+            _ => "HealthFull"
+        };
+        return ParseColor(themeService.GetColor(role));
+    }
+
+    /// <summary>
+    /// Gets the color for HP based on percentage thresholds (legacy, non-themed).
+    /// </summary>
     public static Color GetHpColor(int current, int max)
     {
         if (max == 0) return Color.Grey;
@@ -33,13 +52,26 @@ public static class StatusWidget
     }
 
     /// <summary>
-    /// Gets the color for Stamina based on percentage thresholds.
+    /// Gets the color for Stamina based on percentage thresholds using theme service.
     /// </summary>
     /// <remarks>
     /// 2-tier system:
-    /// - Cyan (≥20%): Active
-    /// - Grey (<20%): Exhausted
+    /// - StaminaColor (≥20%): Active
+    /// - NeutralColor (<20%): Exhausted
     /// </remarks>
+    public static Color GetStaminaColor(int current, int max, IThemeService themeService)
+    {
+        if (max == 0) return ParseColor(themeService.GetColor("NeutralColor"));
+
+        var pct = (double)current / max * 100;
+        return pct < 20
+            ? ParseColor(themeService.GetColor("NeutralColor"))
+            : ParseColor(themeService.GetColor("StaminaColor"));
+    }
+
+    /// <summary>
+    /// Gets the color for Stamina based on percentage thresholds (legacy, non-themed).
+    /// </summary>
     public static Color GetStaminaColor(int current, int max)
     {
         if (max == 0) return Color.Grey;
@@ -49,16 +81,32 @@ public static class StatusWidget
     }
 
     /// <summary>
-    /// Gets the color for Stress based on absolute value thresholds.
+    /// Gets the color for Stress based on absolute value thresholds using theme service.
     /// </summary>
     /// <remarks>
     /// 5-tier system:
-    /// - Grey (<20): Stable
-    /// - Cyan (20-39): Unsettled
-    /// - Yellow (40-59): Shaken
-    /// - Magenta (60-79): Distressed
-    /// - Purple (≥80): Fractured
+    /// - StressLow (<20): Stable
+    /// - StressLow (20-39): Unsettled (using StaminaColor for distinction)
+    /// - StressMid (40-59): Shaken
+    /// - StressHigh (60-79): Distressed
+    /// - StressHigh (≥80): Fractured
     /// </remarks>
+    public static Color GetStressColor(int stress, IThemeService themeService)
+    {
+        var role = stress switch
+        {
+            >= 80 => "StressHigh",    // Fractured
+            >= 60 => "StressHigh",    // Distressed (same color, different intensity handled by UI)
+            >= 40 => "StressMid",     // Shaken
+            >= 20 => "StaminaColor",  // Unsettled (cyan in standard)
+            _ => "StressLow"          // Stable
+        };
+        return ParseColor(themeService.GetColor(role));
+    }
+
+    /// <summary>
+    /// Gets the color for Stress based on absolute value thresholds (legacy, non-themed).
+    /// </summary>
     public static Color GetStressColor(int stress)
     {
         return stress switch
@@ -98,5 +146,36 @@ public static class StatusWidget
     {
         // Map common colors to their markup names
         return color.ToString().ToLowerInvariant();
+    }
+
+    /// <summary>
+    /// Parses a color string to a Spectre.Console Color object.
+    /// Handles "bold " prefix by stripping it (boldness is a style, not a color).
+    /// </summary>
+    private static Color ParseColor(string colorString)
+    {
+        // Strip "bold " prefix if present - boldness is handled separately in markup
+        var cleanColor = colorString.StartsWith("bold ", StringComparison.OrdinalIgnoreCase)
+            ? colorString[5..]
+            : colorString;
+
+        return cleanColor.ToLowerInvariant() switch
+        {
+            "red" => Color.Red,
+            "red1" => Color.Red1,
+            "green" => Color.Green,
+            "blue" => Color.Blue,
+            "cyan" => Color.Cyan1,
+            "cyan1" => Color.Cyan1,
+            "yellow" => Color.Yellow,
+            "orange1" => Color.Orange1,
+            "magenta1" => Color.Magenta1,
+            "purple" => Color.Purple,
+            "gold1" => Color.Gold1,
+            "white" => Color.White,
+            "grey" => Color.Grey,
+            "gray" => Color.Grey,
+            _ => Color.Grey
+        };
     }
 }

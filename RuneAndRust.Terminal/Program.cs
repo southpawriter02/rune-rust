@@ -143,6 +143,9 @@ class Program
                     // Register Visual Effect Service (v0.3.9a)
                     services.AddSingleton<IVisualEffectService, VisualEffectService>();
 
+                    // Register Theme Service (v0.3.9b)
+                    services.AddSingleton<IThemeService, ThemeService>();
+
                     // Register Bodging Services (v0.3.1b)
                     services.AddScoped<IBodgingService, BodgingService>();
 

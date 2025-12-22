@@ -10,23 +10,28 @@ namespace RuneAndRust.Terminal.Services;
 /// Renders the combat TUI using Spectre.Console.
 /// Displays player stats, turn order, and combat log in a structured layout.
 /// Updated v0.3.9a: Added visual effect service for border flash effects.
+/// Updated v0.3.9b: Added theme service for accessibility color support.
 /// </summary>
 public class CombatScreenRenderer : ICombatScreenRenderer
 {
     private readonly ILogger<CombatScreenRenderer> _logger;
     private readonly IVisualEffectService _visualEffectService;
+    private readonly IThemeService _themeService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CombatScreenRenderer"/> class.
     /// </summary>
     /// <param name="logger">The logger for traceability.</param>
     /// <param name="visualEffectService">The visual effect service for border flash effects (v0.3.9a).</param>
+    /// <param name="themeService">The theme service for accessibility color support (v0.3.9b).</param>
     public CombatScreenRenderer(
         ILogger<CombatScreenRenderer> logger,
-        IVisualEffectService visualEffectService)
+        IVisualEffectService visualEffectService,
+        IThemeService themeService)
     {
         _logger = logger;
         _visualEffectService = visualEffectService;
+        _themeService = themeService;
     }
 
     /// <inheritdoc/>
@@ -35,19 +40,19 @@ public class CombatScreenRenderer : ICombatScreenRenderer
         AnsiConsole.Clear();
 
         // 1. Header - Player Stats Bar
-        RenderHeader(vm.PlayerStats);
+        RenderHeader(vm.PlayerStats, _themeService);
 
         AnsiConsole.WriteLine();
 
-        // 2. Tactical Grid (v0.3.6a) - with VFX border override (v0.3.9a)
+        // 2. Tactical Grid (v0.3.6a) - with VFX border override (v0.3.9a) and theme (v0.3.9b)
         var borderOverride = _visualEffectService.GetBorderOverride();
-        var gridPanel = CombatGridRenderer.Render(vm, borderOverride);
+        var gridPanel = CombatGridRenderer.Render(vm, _themeService, borderOverride);
         AnsiConsole.Write(gridPanel);
 
         AnsiConsole.WriteLine();
 
-        // 3. Initiative Timeline (v0.3.6b) - replaces turn order table
-        var timelinePanel = TimelineRenderer.Render(vm.TimelineProjection, vm.RoundNumber);
+        // 3. Initiative Timeline (v0.3.6b) - with theme support (v0.3.9b)
+        var timelinePanel = TimelineRenderer.Render(vm.TimelineProjection, vm.RoundNumber, _themeService);
         AnsiConsole.Write(timelinePanel);
 
         AnsiConsole.WriteLine();
@@ -68,27 +73,28 @@ public class CombatScreenRenderer : ICombatScreenRenderer
     }
 
     /// <summary>
-    /// Renders the player stats header bar.
+    /// Renders the player stats header bar with theme support.
     /// </summary>
-    private static void RenderHeader(PlayerStatsView stats)
+    private static void RenderHeader(PlayerStatsView stats, IThemeService themeService)
     {
-        var hpColor = stats.CurrentHp <= stats.MaxHp / 4 ? "red"
-            : stats.CurrentHp <= stats.MaxHp / 2 ? "yellow"
-            : "green";
+        // Use themed colors for health states
+        var hpColor = stats.CurrentHp <= stats.MaxHp / 4 ? themeService.GetColor("HealthCritical")
+            : stats.CurrentHp <= stats.MaxHp / 2 ? themeService.GetColor("HealthHigh")
+            : themeService.GetColor("HealthFull");
 
-        var staminaColor = stats.CurrentStamina <= stats.MaxStamina / 4 ? "red"
-            : stats.CurrentStamina <= stats.MaxStamina / 2 ? "yellow"
-            : "cyan";
+        var staminaColor = stats.CurrentStamina <= stats.MaxStamina / 4 ? themeService.GetColor("HealthCritical")
+            : stats.CurrentStamina <= stats.MaxStamina / 2 ? themeService.GetColor("HealthHigh")
+            : themeService.GetColor("StaminaColor");
 
-        // Stress uses 6-tier color system based on StressStatus thresholds
+        // Stress uses themed color system
         var stressColor = stats.CurrentStress switch
         {
-            >= 100 => "bold red",   // Breaking
-            >= 80 => "red",          // Fractured
-            >= 60 => "magenta",      // Distressed
-            >= 40 => "yellow",       // Shaken
-            >= 20 => "cyan",         // Unsettled
-            _ => "green"             // Stable
+            >= 100 => $"bold {themeService.GetColor("HealthCritical")}",  // Breaking
+            >= 80 => themeService.GetColor("HealthCritical"),              // Fractured
+            >= 60 => themeService.GetColor("StressHigh"),                  // Distressed
+            >= 40 => themeService.GetColor("StressMid"),                   // Shaken
+            >= 20 => themeService.GetColor("StaminaColor"),                // Unsettled
+            _ => themeService.GetColor("HealthFull")                       // Stable
         };
 
         var stressLabel = stats.CurrentStress switch
@@ -101,15 +107,15 @@ public class CombatScreenRenderer : ICombatScreenRenderer
             _ => "Stable"
         };
 
-        // Corruption uses 6-tier dark color system (v0.3.0b)
+        // Corruption uses themed color system (v0.3.0b/v0.3.9b)
         var corruptionColor = stats.CurrentCorruption switch
         {
-            >= 100 => "bold white on red",  // Terminal - inverted for emphasis
-            >= 81 => "bold red",             // Fractured
-            >= 61 => "red",                  // Blighted
-            >= 41 => "maroon",               // Corrupted
-            >= 21 => "grey",                 // Tainted
-            _ => "green"                     // Pristine
+            >= 100 => $"bold white on {themeService.GetColor("HealthCritical")}",  // Terminal
+            >= 81 => $"bold {themeService.GetColor("HealthCritical")}",             // Fractured
+            >= 61 => themeService.GetColor("HealthCritical"),                        // Blighted
+            >= 41 => themeService.GetColor("HealthLow"),                             // Corrupted
+            >= 21 => themeService.GetColor("NeutralColor"),                          // Tainted
+            _ => themeService.GetColor("HealthFull")                                 // Pristine
         };
 
         var corruptionLabel = stats.CurrentCorruption switch
@@ -122,23 +128,25 @@ public class CombatScreenRenderer : ICombatScreenRenderer
             _ => "Pristine"
         };
 
+        var headerColor = themeService.GetColor("InfoColor");
         var header = new Rule("[bold]COMBAT[/]")
         {
             Justification = Justify.Left,
-            Style = Style.Parse("blue")
+            Style = Style.Parse(headerColor)
         };
         AnsiConsole.Write(header);
 
+        var neutralColor = themeService.GetColor("NeutralColor");
         AnsiConsole.MarkupLine(
             $"  [bold]HP:[/] [{hpColor}]{stats.CurrentHp}/{stats.MaxHp}[/]    " +
             $"[bold]Stamina:[/] [{staminaColor}]{stats.CurrentStamina}/{stats.MaxStamina}[/]    " +
-            $"[bold]Stress:[/] [{stressColor}]{stats.CurrentStress}[/] [grey]({stressLabel})[/]");
+            $"[bold]Stress:[/] [{stressColor}]{stats.CurrentStress}[/] [{neutralColor}]({stressLabel})[/]");
 
         // Second line for corruption (only show if > 0 to avoid clutter when pristine)
         if (stats.CurrentCorruption > 0)
         {
             AnsiConsole.MarkupLine(
-                $"  [bold darkred]Blight:[/] [{corruptionColor}]{stats.CurrentCorruption}[/] [grey]({corruptionLabel})[/]");
+                $"  [bold {themeService.GetColor("HealthCritical")}]Blight:[/] [{corruptionColor}]{stats.CurrentCorruption}[/] [{neutralColor}]({corruptionLabel})[/]");
         }
     }
 
