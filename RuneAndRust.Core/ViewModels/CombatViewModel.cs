@@ -1,3 +1,5 @@
+using RuneAndRust.Core.Enums;
+
 namespace RuneAndRust.Core.ViewModels;
 
 /// <summary>
@@ -16,7 +18,12 @@ public record CombatViewModel(
     List<CombatantView> TurnOrder,
     List<string> CombatLog,
     PlayerStatsView PlayerStats,
-    List<AbilityView>? PlayerAbilities = null
+    List<AbilityView>? PlayerAbilities = null,
+    // Row-grouped combatants for grid display (v0.3.6a)
+    List<CombatantView>? PlayerFrontRow = null,
+    List<CombatantView>? PlayerBackRow = null,
+    List<CombatantView>? EnemyFrontRow = null,
+    List<CombatantView>? EnemyBackRow = null
 );
 
 /// <summary>
@@ -36,7 +43,10 @@ public record CombatantView(
     bool IsActive,
     string HealthStatus,
     string StatusEffects,
-    string InitiativeDisplay
+    string InitiativeDisplay,
+    // Row system (v0.3.6a)
+    RowPosition Row = RowPosition.Front,
+    bool IsTargeted = false
 );
 
 /// <summary>

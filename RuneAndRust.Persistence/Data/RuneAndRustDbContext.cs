@@ -249,9 +249,9 @@ public class RuneAndRustDbContext : DbContext
                 .HasValue<InteractableObject>(ObjectType.Corpse)
                 .HasValue<DynamicHazard>(ObjectType.Hazard);
 
-            // Index on RoomId for efficient room-based queries
-            entity.HasIndex(o => o.RoomId)
-                .HasDatabaseName("IX_InteractableObjects_RoomId");
+            // Note: Index on RoomId is created via migration, not here.
+            // TPH inheritance with DynamicHazard causes EF Core to create conflicting unnamed indexes.
+            // See migration V4__Add_RoomId_Index.sql for the actual index.
 
             entity.Property(o => o.RoomId)
                 .IsRequired();
@@ -297,6 +297,8 @@ public class RuneAndRustDbContext : DbContext
         modelBuilder.Entity<DynamicHazard>(entity =>
         {
             // Inherits from InteractableObject via TPH
+            // Explicitly set base type to prevent duplicate index creation
+            entity.HasBaseType<InteractableObject>();
 
             entity.Property(h => h.HazardType)
                 .HasConversion<int>()

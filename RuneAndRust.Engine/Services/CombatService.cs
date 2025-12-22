@@ -45,6 +45,74 @@ public class CombatService : ICombatService
     /// </summary>
     private const int EnemyActionDelayMs = 750;
 
+    #region Row Assignment (v0.3.6a)
+
+    /// <summary>
+    /// Gets the default row position for a player archetype (v0.3.6a).
+    /// Warriors and Skirmishers fight in the Front Row, while casters stay in the Back.
+    /// </summary>
+    /// <param name="archetype">The player's archetype.</param>
+    /// <returns>The default row position for the archetype.</returns>
+    public static RowPosition GetDefaultPlayerRow(ArchetypeType archetype) => archetype switch
+    {
+        ArchetypeType.Warrior => RowPosition.Front,
+        ArchetypeType.Skirmisher => RowPosition.Front,
+        ArchetypeType.Adept => RowPosition.Back,
+        ArchetypeType.Mystic => RowPosition.Back,
+        _ => RowPosition.Front
+    };
+
+    /// <summary>
+    /// Gets the default row position for an enemy archetype (v0.3.6a).
+    /// Tanks, DPS, and GlassCannons fight in the Front Row, while Support, Swarm, Caster, and Boss stay in the Back.
+    /// </summary>
+    /// <param name="archetype">The enemy's archetype.</param>
+    /// <returns>The default row position for the archetype.</returns>
+    public static RowPosition GetDefaultEnemyRow(EnemyArchetype archetype) => archetype switch
+    {
+        EnemyArchetype.Tank => RowPosition.Front,
+        EnemyArchetype.DPS => RowPosition.Front,
+        EnemyArchetype.GlassCannon => RowPosition.Front,
+        EnemyArchetype.Support => RowPosition.Back,
+        EnemyArchetype.Swarm => RowPosition.Back,
+        EnemyArchetype.Caster => RowPosition.Back,
+        EnemyArchetype.Boss => RowPosition.Back,
+        _ => RowPosition.Front
+    };
+
+    /// <summary>
+    /// Determines if a target is valid for a melee attack (v0.3.6a).
+    /// Back Row combatants are protected by their Front Row unless it's empty.
+    /// </summary>
+    /// <param name="attacker">The attacking combatant.</param>
+    /// <param name="target">The intended target.</param>
+    /// <param name="hasReach">Whether the attacker has a Reach weapon (bypasses row protection).</param>
+    /// <returns>True if the target can be attacked with melee, false otherwise.</returns>
+    public bool IsValidMeleeTarget(Combatant attacker, Combatant target, bool hasReach = false)
+    {
+        if (_gameState.CombatState == null) return false;
+        var state = _gameState.CombatState;
+
+        // Allies are always valid targets (healing/buffs)
+        if (attacker.IsPlayer == target.IsPlayer) return true;
+
+        // Front Row targets are always valid for melee
+        if (target.Row == RowPosition.Front) return true;
+
+        // Back Row targets are valid with Reach weapons
+        if (hasReach) return true;
+
+        // Back Row targets are valid if opposing Front Row is empty
+        var opposingFrontEmpty = !state.TurnOrder.Any(c =>
+            c.IsPlayer != attacker.IsPlayer &&
+            c.Row == RowPosition.Front &&
+            c.CurrentHp > 0);
+
+        return opposingFrontEmpty;
+    }
+
+    #endregion
+
     /// <summary>
     /// Initializes a new instance of the <see cref="CombatService"/> class.
     /// </summary>
@@ -121,18 +189,20 @@ public class CombatService : ICombatService
 
         // Add player with abilities
         var player = Combatant.FromCharacter(character, abilities);
+        player.Row = GetDefaultPlayerRow(character.Archetype); // v0.3.6a row assignment
         _initiative.RollInitiative(player);
         state.TurnOrder.Add(player);
-        _logger.LogDebug("Added player {Name} to combat with {AbilityCount} abilities",
-            player.Name, player.Abilities.Count);
+        _logger.LogDebug("Added player {Name} to combat with {AbilityCount} abilities, Row: {Row}",
+            player.Name, player.Abilities.Count, player.Row);
 
         // Add enemies
         foreach (var enemy in enemies)
         {
             var combatant = Combatant.FromEnemy(enemy);
+            combatant.Row = GetDefaultEnemyRow(enemy.Archetype); // v0.3.6a row assignment
             _initiative.RollInitiative(combatant);
             state.TurnOrder.Add(combatant);
-            _logger.LogDebug("Added enemy {Name} to combat", combatant.Name);
+            _logger.LogDebug("Added enemy {Name} to combat, Row: {Row}", combatant.Name, combatant.Row);
         }
 
         // Apply ambient condition modifiers to all combatants (v0.3.3b)
@@ -356,6 +426,13 @@ public class CombatService : ICombatService
         {
             _logger.LogDebug("Target '{TargetName}' not found in combat", targetName);
             return $"Target '{targetName}' not found.";
+        }
+
+        // Validate melee targeting (v0.3.6a row system)
+        if (!IsValidMeleeTarget(attacker, target))
+        {
+            _logger.LogDebug("{Target} is in Back Row and protected by Front Row", target.Name);
+            return $"{target.Name} is protected by the front line. Target a front row enemy first.";
         }
 
         // Check stamina affordability
@@ -633,6 +710,24 @@ public class CombatService : ICombatService
 
         _logger.LogTrace("Generated CombatViewModel for Round {Round}", state.RoundNumber);
 
+        // Group combatants by row (v0.3.6a)
+        var playerFrontRow = state.TurnOrder
+            .Where(c => c.IsPlayer && c.Row == RowPosition.Front)
+            .Select(c => MapToView(c, state.ActiveCombatant))
+            .ToList();
+        var playerBackRow = state.TurnOrder
+            .Where(c => c.IsPlayer && c.Row == RowPosition.Back)
+            .Select(c => MapToView(c, state.ActiveCombatant))
+            .ToList();
+        var enemyFrontRow = state.TurnOrder
+            .Where(c => !c.IsPlayer && c.Row == RowPosition.Front)
+            .Select(c => MapToView(c, state.ActiveCombatant))
+            .ToList();
+        var enemyBackRow = state.TurnOrder
+            .Where(c => !c.IsPlayer && c.Row == RowPosition.Back)
+            .Select(c => MapToView(c, state.ActiveCombatant))
+            .ToList();
+
         return new CombatViewModel(
             state.RoundNumber,
             state.ActiveCombatant?.Name ?? "Unknown",
@@ -643,7 +738,12 @@ public class CombatService : ICombatService
                 player.CurrentStamina, player.MaxStamina,
                 player.CurrentStress, player.MaxStress,
                 player.CurrentCorruption, player.MaxCorruption),
-            abilityViews
+            abilityViews,
+            // v0.3.6a row groupings
+            PlayerFrontRow: playerFrontRow,
+            PlayerBackRow: playerBackRow,
+            EnemyFrontRow: enemyFrontRow,
+            EnemyBackRow: enemyBackRow
         );
     }
 
@@ -701,7 +801,10 @@ public class CombatService : ICombatService
             combatant.Id == activeCombatant?.Id,
             healthStatus,
             string.IsNullOrWhiteSpace(effectIcons) ? "[ ]" : effectIcons,
-            combatant.Initiative.ToString()
+            combatant.Initiative.ToString(),
+            // v0.3.6a row system
+            Row: combatant.Row,
+            IsTargeted: combatant.IsTargeted
         );
     }
 

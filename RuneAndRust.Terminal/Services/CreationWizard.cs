@@ -4,6 +4,7 @@ using RuneAndRust.Core.Enums;
 using RuneAndRust.Core.Interfaces;
 using RuneAndRust.Core.Models;
 using RuneAndRust.Engine.Factories;
+using RuneAndRust.Terminal.Helpers;
 using RuneAndRust.Terminal.Rendering;
 using Spectre.Console;
 using Spectre.Console.Rendering;
@@ -52,19 +53,28 @@ public class CreationWizard
         _context.Reset();
         Console.Clear();
 
-        // Step 0: Name entry (blocking prompt - no preview needed)
-        var name = PromptForName();
-        if (string.IsNullOrEmpty(name) || name.Equals("cancel", StringComparison.OrdinalIgnoreCase))
+        // Step 0: Name entry with duplicate check loop (v0.3.5d)
+        string? name = null;
+        while (name == null)
         {
-            _logger.LogInformation("[Wizard] Character creation cancelled at name entry");
-            return null;
-        }
+            var enteredName = PromptForName();
+            if (string.IsNullOrEmpty(enteredName) || enteredName.Equals("cancel", StringComparison.OrdinalIgnoreCase))
+            {
+                _logger.LogInformation("[Wizard] Character creation cancelled at name entry");
+                return null;
+            }
 
-        if (await _characterRepository.NameExistsAsync(name))
-        {
-            AnsiConsole.MarkupLine("[red]A character with that name already exists.[/]");
-            _logger.LogWarning("[Wizard] Duplicate character name attempted: {Name}", name);
-            return null;
+            if (await _characterRepository.NameExistsAsync(enteredName))
+            {
+                AnsiConsole.MarkupLine("[red]A character with that name already exists. Please choose another.[/]");
+                _logger.LogWarning("[Wizard] Duplicate character name attempted: {Name}", enteredName);
+                AnsiConsole.WriteLine();
+                // Loop continues, prompting for a new name
+            }
+            else
+            {
+                name = enteredName;
+            }
         }
         _context.Name = name;
         _context.CurrentStep = 1;
@@ -425,6 +435,6 @@ public class CreationWizard
         AnsiConsole.Write(panel);
         AnsiConsole.WriteLine();
         AnsiConsole.MarkupLine("[grey]Press any key to continue...[/]");
-        Console.ReadKey(intercept: true);
+        ConsoleInputHelper.WaitForKeyPress();
     }
 }

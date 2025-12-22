@@ -114,6 +114,22 @@ public class Combatant
     /// </summary>
     public List<CreatureTraitType> ActiveTraits { get; set; } = new();
 
+    #region Row System (v0.3.6a)
+
+    /// <summary>
+    /// The combatant's row position on the battlefield (v0.3.6a).
+    /// Affects melee targeting - Back Row is protected by Front Row.
+    /// </summary>
+    public RowPosition Row { get; set; } = RowPosition.Front;
+
+    /// <summary>
+    /// Whether this combatant is currently being targeted (v0.3.6a).
+    /// Used for visual highlighting in the combat grid.
+    /// </summary>
+    public bool IsTargeted { get; set; } = false;
+
+    #endregion
+
     #region Ambient Condition Modifiers (v0.3.3b)
 
     /// <summary>

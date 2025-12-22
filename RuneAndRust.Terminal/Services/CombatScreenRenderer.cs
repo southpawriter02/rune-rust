@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using RuneAndRust.Core.Interfaces;
 using RuneAndRust.Core.ViewModels;
+using RuneAndRust.Terminal.Rendering;
 using Spectre.Console;
 
 namespace RuneAndRust.Terminal.Services;
@@ -32,19 +33,25 @@ public class CombatScreenRenderer : ICombatScreenRenderer
 
         AnsiConsole.WriteLine();
 
-        // 2. Turn Order Table
+        // 2. Tactical Grid (v0.3.6a)
+        var gridPanel = CombatGridRenderer.Render(vm);
+        AnsiConsole.Write(gridPanel);
+
+        AnsiConsole.WriteLine();
+
+        // 3. Turn Order Table
         RenderTurnOrder(vm.TurnOrder);
 
         AnsiConsole.WriteLine();
 
-        // 3. Player Abilities (v0.2.3c)
+        // 4. Player Abilities (v0.2.3c)
         if (vm.PlayerAbilities != null && vm.PlayerAbilities.Count > 0)
         {
             RenderAbilities(vm.PlayerAbilities);
             AnsiConsole.WriteLine();
         }
 
-        // 4. Combat Log Panel
+        // 5. Combat Log Panel
         RenderCombatLog(vm.RoundNumber, vm.CombatLog);
 
         AnsiConsole.WriteLine();

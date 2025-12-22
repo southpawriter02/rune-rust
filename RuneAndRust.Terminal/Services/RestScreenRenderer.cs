@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using RuneAndRust.Core.Interfaces;
 using RuneAndRust.Core.Models;
+using RuneAndRust.Terminal.Helpers;
 using Spectre.Console;
 
 namespace RuneAndRust.Terminal.Services;
@@ -55,7 +56,7 @@ public class RestScreenRenderer : IRestScreenRenderer
         // Continue prompt
         AnsiConsole.WriteLine();
         AnsiConsole.MarkupLine("[grey]Press Enter to continue...[/]");
-        Console.ReadKey(true);
+        ConsoleInputHelper.WaitForKeyPress();
 
         _logger.LogTrace("Rest screen rendered and dismissed");
     }
@@ -83,7 +84,7 @@ public class RestScreenRenderer : IRestScreenRenderer
         AnsiConsole.WriteLine();
         AnsiConsole.MarkupLine("[grey]Enemies approach...[/]");
         AnsiConsole.MarkupLine("[grey]Press Enter to engage.[/]");
-        Console.ReadKey(true);
+        ConsoleInputHelper.WaitForKeyPress();
 
         _logger.LogTrace("Ambush warning rendered and dismissed");
     }

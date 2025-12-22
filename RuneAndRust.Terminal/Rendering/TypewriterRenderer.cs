@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using RuneAndRust.Core.Interfaces;
+using RuneAndRust.Terminal.Helpers;
 using Spectre.Console;
 
 namespace RuneAndRust.Terminal.Rendering;
@@ -69,7 +70,7 @@ public class TypewriterRenderer : ITypewriterRenderer
         }
 
         AnsiConsole.MarkupLine("[grey italic]Press any key to enter the ruins...[/]");
-        Console.ReadKey(intercept: true);
+        ConsoleInputHelper.WaitForKeyPress();
         _logger.LogInformation("[Narrative] Prologue complete. Transitioning to Exploration.");
         AnsiConsole.Clear();
     }

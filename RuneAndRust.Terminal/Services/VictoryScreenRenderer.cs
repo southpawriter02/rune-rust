@@ -3,6 +3,7 @@ using RuneAndRust.Core.Entities;
 using RuneAndRust.Core.Enums;
 using RuneAndRust.Core.Interfaces;
 using RuneAndRust.Core.Models.Combat;
+using RuneAndRust.Terminal.Helpers;
 using Spectre.Console;
 
 namespace RuneAndRust.Terminal.Services;
@@ -53,7 +54,7 @@ public class VictoryScreenRenderer : IVictoryScreenRenderer
         // Continue prompt
         AnsiConsole.WriteLine();
         AnsiConsole.MarkupLine("[grey]Press any key to continue...[/]");
-        Console.ReadKey(true);
+        ConsoleInputHelper.WaitForKeyPress();
 
         _logger.LogTrace("Victory screen rendered and dismissed");
     }
