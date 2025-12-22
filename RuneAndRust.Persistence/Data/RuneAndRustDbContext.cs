@@ -853,32 +853,13 @@ public class RuneAndRustDbContext : DbContext
                 .IsRequired();
 
             // DescriptorCategories nested object stored as JSONB
-            entity.OwnsOne(b => b.DescriptorCategories, desc =>
-            {
-                desc.Property(d => d.Adjectives)
-                    .HasColumnType("jsonb")
-                    .HasColumnName("DescriptorCategories")
-                    .HasConversion(
-                        v => JsonSerializer.Serialize(new
-                        {
-                            Adjectives = v,
-                            Details = desc.Property(p => p.Details).CurrentValue ?? new List<string>(),
-                            Sounds = desc.Property(p => p.Sounds).CurrentValue ?? new List<string>(),
-                            Smells = desc.Property(p => p.Smells).CurrentValue ?? new List<string>()
-                        }, (JsonSerializerOptions?)null),
-                        v =>
-                        {
-                            var doc = JsonSerializer.Deserialize<BiomeDescriptorCategories>(v, (JsonSerializerOptions?)null);
-                            return doc?.Adjectives ?? new List<string>();
-                        }
-                    )
-                    .IsRequired();
-
-                // NOTE: Details, Sounds, Smells are stored in the same JSONB column via the Adjectives converter above
-                desc.Ignore(d => d.Details);
-                desc.Ignore(d => d.Sounds);
-                desc.Ignore(d => d.Smells);
-            });
+            entity.Property(b => b.DescriptorCategories)
+                .HasColumnType("jsonb")
+                .HasConversion(
+                    v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
+                    v => JsonSerializer.Deserialize<BiomeDescriptorCategories>(v, (JsonSerializerOptions?)null) ?? new BiomeDescriptorCategories()
+                )
+                .IsRequired();
         });
 
         // BiomeElement configuration (v0.4.0 - Dynamic Room Engine)
@@ -911,26 +892,13 @@ public class RuneAndRustDbContext : DbContext
                 .IsRequired();
 
             // SpawnRules nested object stored as JSONB
-            entity.OwnsOne(e => e.SpawnRules, rules =>
-            {
-                rules.Property(r => r.NeverInEntryHall)
-                    .HasColumnType("jsonb")
-                    .HasColumnName("SpawnRules")
-                    .HasConversion(
-                        v => JsonSerializer.Serialize(rules.Property(p => p).CurrentValue, (JsonSerializerOptions?)null),
-                        v => JsonSerializer.Deserialize<ElementSpawnRules>(v, (JsonSerializerOptions?)null) ?? new ElementSpawnRules()
-                    );
-
-                // NOTE: All other SpawnRules properties are stored in the same JSONB column
-                rules.Ignore(r => r.NeverInBossArena);
-                rules.Ignore(r => r.OnlyInLargeRooms);
-                rules.Ignore(r => r.RequiredArchetype);
-                rules.Ignore(r => r.RequiresRoomNameContains);
-                rules.Ignore(r => r.HigherWeightInSecretRooms);
-                rules.Ignore(r => r.SecretRoomWeightMultiplier);
-                rules.Ignore(r => r.RequiresEnemyType);
-                rules.Ignore(r => r.RequiresHazardType);
-            });
+            entity.Property(e => e.SpawnRules)
+                .HasColumnType("jsonb")
+                .HasConversion(
+                    v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
+                    v => JsonSerializer.Deserialize<ElementSpawnRules>(v, (JsonSerializerOptions?)null) ?? new ElementSpawnRules()
+                )
+                .IsRequired();
 
             // Indexes for query optimization
             entity.HasIndex(e => e.BiomeId);

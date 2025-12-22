@@ -140,6 +140,9 @@ class Program
                     // Register Journal Screen Renderer (v0.3.7c)
                     services.AddSingleton<IJournalScreenRenderer, JournalScreenRenderer>();
 
+                    // Register Visual Effect Service (v0.3.9a)
+                    services.AddSingleton<IVisualEffectService, VisualEffectService>();
+
                     // Register Bodging Services (v0.3.1b)
                     services.AddScoped<IBodgingService, BodgingService>();
 

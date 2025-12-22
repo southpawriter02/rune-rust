@@ -19,6 +19,8 @@ public class EnvironmentPopulatorTests
 {
     private readonly Mock<IRepository<HazardTemplate>> _mockHazardTemplateRepo;
     private readonly Mock<IRepository<AmbientCondition>> _mockConditionRepo;
+    private readonly Mock<IRepository<BiomeElement>> _mockBiomeElementRepo;
+    private readonly Mock<IElementSpawnEvaluator> _mockSpawnEvaluator;
     private readonly Mock<IDiceService> _mockDiceService;
     private readonly Mock<ILogger<EnvironmentPopulator>> _mockLogger;
     private readonly EnvironmentPopulator _sut;
@@ -27,12 +29,16 @@ public class EnvironmentPopulatorTests
     {
         _mockHazardTemplateRepo = new Mock<IRepository<HazardTemplate>>();
         _mockConditionRepo = new Mock<IRepository<AmbientCondition>>();
+        _mockBiomeElementRepo = new Mock<IRepository<BiomeElement>>();
+        _mockSpawnEvaluator = new Mock<IElementSpawnEvaluator>();
         _mockDiceService = new Mock<IDiceService>();
         _mockLogger = new Mock<ILogger<EnvironmentPopulator>>();
 
         _sut = new EnvironmentPopulator(
             _mockHazardTemplateRepo.Object,
             _mockConditionRepo.Object,
+            _mockBiomeElementRepo.Object,
+            _mockSpawnEvaluator.Object,
             _mockDiceService.Object,
             _mockLogger.Object);
     }

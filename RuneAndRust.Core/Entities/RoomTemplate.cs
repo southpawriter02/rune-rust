@@ -26,7 +26,7 @@ public class RoomTemplate
     /// Gets or sets the room size classification (Small, Medium, Large).
     /// Affects spawn rules (OnlyInLargeRooms, etc.).
     /// </summary>
-    public string Size { get; set} = string.Empty;
+    public string Size { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the architectural archetype (Corridor, Chamber, BossArena, EntryHall, SecretRoom).

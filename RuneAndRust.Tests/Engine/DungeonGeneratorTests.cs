@@ -18,6 +18,10 @@ public class DungeonGeneratorTests
 {
     private readonly Mock<IRoomRepository> _mockRoomRepo;
     private readonly Mock<IEnvironmentPopulator> _mockEnvironmentPopulator;
+    private readonly Mock<IRoomTemplateRepository> _mockRoomTemplateRepo;
+    private readonly Mock<IBiomeDefinitionRepository> _mockBiomeDefinitionRepo;
+    private readonly Mock<ITemplateRendererService> _mockTemplateRendererService;
+    private readonly Mock<IDiceService> _mockDiceService;
     private readonly Mock<ILogger<DungeonGenerator>> _mockLogger;
     private readonly DungeonGenerator _generator;
     private List<Room> _addedRooms = new();
@@ -26,10 +30,18 @@ public class DungeonGeneratorTests
     {
         _mockRoomRepo = new Mock<IRoomRepository>();
         _mockEnvironmentPopulator = new Mock<IEnvironmentPopulator>();
+        _mockRoomTemplateRepo = new Mock<IRoomTemplateRepository>();
+        _mockBiomeDefinitionRepo = new Mock<IBiomeDefinitionRepository>();
+        _mockTemplateRendererService = new Mock<ITemplateRendererService>();
+        _mockDiceService = new Mock<IDiceService>();
         _mockLogger = new Mock<ILogger<DungeonGenerator>>();
         _generator = new DungeonGenerator(
             _mockRoomRepo.Object,
             _mockEnvironmentPopulator.Object,
+            _mockRoomTemplateRepo.Object,
+            _mockBiomeDefinitionRepo.Object,
+            _mockTemplateRendererService.Object,
+            _mockDiceService.Object,
             _mockLogger.Object);
 
         // Capture rooms when AddRangeAsync is called

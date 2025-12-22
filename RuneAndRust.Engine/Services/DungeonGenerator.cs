@@ -96,8 +96,8 @@ public class DungeonGenerator
         // 7. Populate each room with elements
         foreach (var room in rooms)
         {
-            var template = roomLayouts.First(l => l.Position == room.Position).Template;
-            await _environmentPopulator.PopulateRoomAsync(room, template, biomeId);
+            // TODO (v0.4.0): Pass template and biomeId when interface is updated
+            await _environmentPopulator.PopulateRoomAsync(room);
         }
 
         // 8. Persist to database
@@ -287,10 +287,10 @@ public class DungeonGenerator
         return difficulty.ToLowerInvariant() switch
         {
             "easy" => DangerLevel.Safe,
-            "medium" => DangerLevel.Moderate,
-            "hard" => DangerLevel.Dangerous,
+            "medium" => DangerLevel.Unstable,
+            "hard" => DangerLevel.Hostile,
             "veryhard" => DangerLevel.Lethal,
-            _ => DangerLevel.Moderate // Default fallback
+            _ => DangerLevel.Unstable // Default fallback
         };
     }
 

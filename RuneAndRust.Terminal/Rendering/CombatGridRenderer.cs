@@ -8,6 +8,7 @@ namespace RuneAndRust.Terminal.Rendering;
 /// <summary>
 /// Renders the tactical combat grid showing team formations (v0.3.6a).
 /// Displays combatants organized by row position: Enemy Back, Enemy Front, Player Front, Player Back.
+/// Updated v0.3.9a: Added border color override support for visual effects.
 /// </summary>
 public static class CombatGridRenderer
 {
@@ -15,8 +16,9 @@ public static class CombatGridRenderer
     /// Renders the tactical battlefield panel showing combatant positions.
     /// </summary>
     /// <param name="vm">The combat view model containing row-grouped combatants.</param>
+    /// <param name="borderColorOverride">Optional border color override for visual effects (v0.3.9a).</param>
     /// <returns>A Panel containing the battlefield grid.</returns>
-    public static Panel Render(CombatViewModel vm)
+    public static Panel Render(CombatViewModel vm, string? borderColorOverride = null)
     {
         var rows = new List<IRenderable>
         {
@@ -35,9 +37,13 @@ public static class CombatGridRenderer
             RenderCombatantRow(vm.PlayerBackRow, isEnemy: false)
         };
 
+        // Use override color if provided, otherwise use default grey (v0.3.9a)
+        var borderStyle = Style.Parse(borderColorOverride ?? "grey");
+
         return new Panel(new Rows(rows))
             .Header("[bold yellow]BATTLEFIELD[/]")
             .Border(BoxBorder.Double)
+            .BorderStyle(borderStyle)
             .Expand();
     }
 

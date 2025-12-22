@@ -9,18 +9,24 @@ namespace RuneAndRust.Terminal.Services;
 /// <summary>
 /// Renders the combat TUI using Spectre.Console.
 /// Displays player stats, turn order, and combat log in a structured layout.
+/// Updated v0.3.9a: Added visual effect service for border flash effects.
 /// </summary>
 public class CombatScreenRenderer : ICombatScreenRenderer
 {
     private readonly ILogger<CombatScreenRenderer> _logger;
+    private readonly IVisualEffectService _visualEffectService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CombatScreenRenderer"/> class.
     /// </summary>
     /// <param name="logger">The logger for traceability.</param>
-    public CombatScreenRenderer(ILogger<CombatScreenRenderer> logger)
+    /// <param name="visualEffectService">The visual effect service for border flash effects (v0.3.9a).</param>
+    public CombatScreenRenderer(
+        ILogger<CombatScreenRenderer> logger,
+        IVisualEffectService visualEffectService)
     {
         _logger = logger;
+        _visualEffectService = visualEffectService;
     }
 
     /// <inheritdoc/>
@@ -33,8 +39,9 @@ public class CombatScreenRenderer : ICombatScreenRenderer
 
         AnsiConsole.WriteLine();
 
-        // 2. Tactical Grid (v0.3.6a)
-        var gridPanel = CombatGridRenderer.Render(vm);
+        // 2. Tactical Grid (v0.3.6a) - with VFX border override (v0.3.9a)
+        var borderOverride = _visualEffectService.GetBorderOverride();
+        var gridPanel = CombatGridRenderer.Render(vm, borderOverride);
         AnsiConsole.Write(gridPanel);
 
         AnsiConsole.WriteLine();

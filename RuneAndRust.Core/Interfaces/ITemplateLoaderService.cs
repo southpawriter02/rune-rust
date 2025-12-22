@@ -1,4 +1,4 @@
-namespace RuneAndRust.Engine.Services;
+namespace RuneAndRust.Core.Interfaces;
 
 /// <summary>
 /// Service for loading room templates and biome definitions from JSON files into the database.

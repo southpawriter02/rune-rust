@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using RuneAndRust.Engine.Services;
+using RuneAndRust.Core.Interfaces;
 
 namespace RuneAndRust.Persistence.Data;
 
