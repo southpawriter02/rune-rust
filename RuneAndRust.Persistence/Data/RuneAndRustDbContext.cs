@@ -95,6 +95,21 @@ public class RuneAndRustDbContext : DbContext
     public DbSet<HazardTemplate> HazardTemplates { get; set; } = null!;
 
     /// <summary>
+    /// Gets or sets the RoomTemplates table (room template definitions, v0.4.0).
+    /// </summary>
+    public DbSet<RoomTemplate> RoomTemplates { get; set; } = null!;
+
+    /// <summary>
+    /// Gets or sets the BiomeDefinitions table (biome configuration data, v0.4.0).
+    /// </summary>
+    public DbSet<BiomeDefinition> BiomeDefinitions { get; set; } = null!;
+
+    /// <summary>
+    /// Gets or sets the BiomeElements table (spawnable elements per biome, v0.4.0).
+    /// </summary>
+    public DbSet<BiomeElement> BiomeElements { get; set; } = null!;
+
+    /// <summary>
     /// Configures the entity mappings and relationships.
     /// </summary>
     /// <param name="modelBuilder">The model builder instance.</param>
@@ -702,6 +717,231 @@ public class RuneAndRustDbContext : DbContext
                     v => JsonSerializer.Deserialize<List<BiomeType>>(v, (JsonSerializerOptions?)null) ?? new List<BiomeType>()
                 )
                 .IsRequired();
+        });
+
+        // RoomTemplate configuration (v0.4.0 - Dynamic Room Engine)
+        modelBuilder.Entity<RoomTemplate>(entity =>
+        {
+            entity.ToTable("RoomTemplates");
+
+            entity.HasKey(t => t.Id);
+
+            entity.HasIndex(t => t.TemplateId)
+                .IsUnique();
+
+            entity.Property(t => t.TemplateId)
+                .HasMaxLength(100)
+                .IsRequired();
+
+            entity.Property(t => t.BiomeId)
+                .HasMaxLength(100)
+                .IsRequired();
+
+            entity.Property(t => t.Size)
+                .HasMaxLength(50)
+                .IsRequired();
+
+            entity.Property(t => t.Archetype)
+                .HasMaxLength(50)
+                .IsRequired();
+
+            entity.Property(t => t.Difficulty)
+                .HasMaxLength(50)
+                .IsRequired();
+
+            entity.Property(t => t.MinConnectionPoints)
+                .IsRequired();
+
+            entity.Property(t => t.MaxConnectionPoints)
+                .IsRequired();
+
+            // JSONB arrays for template strings
+            entity.Property(t => t.NameTemplates)
+                .HasColumnType("jsonb")
+                .HasConversion(
+                    v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
+                    v => JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions?)null) ?? new List<string>()
+                )
+                .IsRequired();
+
+            entity.Property(t => t.Adjectives)
+                .HasColumnType("jsonb")
+                .HasConversion(
+                    v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
+                    v => JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions?)null) ?? new List<string>()
+                )
+                .IsRequired();
+
+            entity.Property(t => t.DescriptionTemplates)
+                .HasColumnType("jsonb")
+                .HasConversion(
+                    v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
+                    v => JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions?)null) ?? new List<string>()
+                )
+                .IsRequired();
+
+            entity.Property(t => t.Details)
+                .HasColumnType("jsonb")
+                .HasConversion(
+                    v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
+                    v => JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions?)null) ?? new List<string>()
+                )
+                .IsRequired();
+
+            entity.Property(t => t.ValidConnections)
+                .HasColumnType("jsonb")
+                .HasConversion(
+                    v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
+                    v => JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions?)null) ?? new List<string>()
+                )
+                .IsRequired();
+
+            entity.Property(t => t.Tags)
+                .HasColumnType("jsonb")
+                .HasConversion(
+                    v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
+                    v => JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions?)null) ?? new List<string>()
+                )
+                .IsRequired();
+
+            // Indexes for query optimization
+            entity.HasIndex(t => t.BiomeId);
+            entity.HasIndex(t => t.Archetype);
+        });
+
+        // BiomeDefinition configuration (v0.4.0 - Dynamic Room Engine)
+        modelBuilder.Entity<BiomeDefinition>(entity =>
+        {
+            entity.ToTable("BiomeDefinitions");
+
+            entity.HasKey(b => b.Id);
+
+            entity.HasIndex(b => b.BiomeId)
+                .IsUnique();
+
+            entity.Property(b => b.BiomeId)
+                .HasMaxLength(100)
+                .IsRequired();
+
+            entity.Property(b => b.Name)
+                .HasMaxLength(100)
+                .IsRequired();
+
+            entity.Property(b => b.Description)
+                .HasMaxLength(2000)
+                .IsRequired();
+
+            entity.Property(b => b.MinRoomCount)
+                .IsRequired();
+
+            entity.Property(b => b.MaxRoomCount)
+                .IsRequired();
+
+            entity.Property(b => b.BranchingProbability)
+                .IsRequired();
+
+            entity.Property(b => b.SecretRoomProbability)
+                .IsRequired();
+
+            // AvailableTemplates array stored as JSONB
+            entity.Property(b => b.AvailableTemplates)
+                .HasColumnType("jsonb")
+                .HasConversion(
+                    v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
+                    v => JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions?)null) ?? new List<string>()
+                )
+                .IsRequired();
+
+            // DescriptorCategories nested object stored as JSONB
+            entity.OwnsOne(b => b.DescriptorCategories, desc =>
+            {
+                desc.Property(d => d.Adjectives)
+                    .HasColumnType("jsonb")
+                    .HasColumnName("DescriptorCategories")
+                    .HasConversion(
+                        v => JsonSerializer.Serialize(new
+                        {
+                            Adjectives = v,
+                            Details = desc.Property(p => p.Details).CurrentValue ?? new List<string>(),
+                            Sounds = desc.Property(p => p.Sounds).CurrentValue ?? new List<string>(),
+                            Smells = desc.Property(p => p.Smells).CurrentValue ?? new List<string>()
+                        }, (JsonSerializerOptions?)null),
+                        v =>
+                        {
+                            var doc = JsonSerializer.Deserialize<BiomeDescriptorCategories>(v, (JsonSerializerOptions?)null);
+                            return doc?.Adjectives ?? new List<string>();
+                        }
+                    )
+                    .IsRequired();
+
+                // NOTE: Details, Sounds, Smells are stored in the same JSONB column via the Adjectives converter above
+                desc.Ignore(d => d.Details);
+                desc.Ignore(d => d.Sounds);
+                desc.Ignore(d => d.Smells);
+            });
+        });
+
+        // BiomeElement configuration (v0.4.0 - Dynamic Room Engine)
+        modelBuilder.Entity<BiomeElement>(entity =>
+        {
+            entity.ToTable("BiomeElements");
+
+            entity.HasKey(e => e.Id);
+
+            entity.Property(e => e.BiomeId)
+                .HasMaxLength(100)
+                .IsRequired();
+
+            entity.Property(e => e.ElementName)
+                .HasMaxLength(100)
+                .IsRequired();
+
+            entity.Property(e => e.ElementType)
+                .HasMaxLength(50)
+                .IsRequired();
+
+            entity.Property(e => e.Weight)
+                .IsRequired();
+
+            entity.Property(e => e.SpawnCost)
+                .IsRequired();
+
+            entity.Property(e => e.AssociatedDataId)
+                .HasMaxLength(100)
+                .IsRequired();
+
+            // SpawnRules nested object stored as JSONB
+            entity.OwnsOne(e => e.SpawnRules, rules =>
+            {
+                rules.Property(r => r.NeverInEntryHall)
+                    .HasColumnType("jsonb")
+                    .HasColumnName("SpawnRules")
+                    .HasConversion(
+                        v => JsonSerializer.Serialize(rules.Property(p => p).CurrentValue, (JsonSerializerOptions?)null),
+                        v => JsonSerializer.Deserialize<ElementSpawnRules>(v, (JsonSerializerOptions?)null) ?? new ElementSpawnRules()
+                    );
+
+                // NOTE: All other SpawnRules properties are stored in the same JSONB column
+                rules.Ignore(r => r.NeverInBossArena);
+                rules.Ignore(r => r.OnlyInLargeRooms);
+                rules.Ignore(r => r.RequiredArchetype);
+                rules.Ignore(r => r.RequiresRoomNameContains);
+                rules.Ignore(r => r.HigherWeightInSecretRooms);
+                rules.Ignore(r => r.SecretRoomWeightMultiplier);
+                rules.Ignore(r => r.RequiresEnemyType);
+                rules.Ignore(r => r.RequiresHazardType);
+            });
+
+            // Indexes for query optimization
+            entity.HasIndex(e => e.BiomeId);
+            entity.HasIndex(e => e.ElementType);
+
+            // Foreign key to BiomeDefinitions
+            entity.HasOne<BiomeDefinition>()
+                .WithMany()
+                .HasForeignKey(e => e.BiomeId)
+                .HasPrincipalKey(b => b.BiomeId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }
