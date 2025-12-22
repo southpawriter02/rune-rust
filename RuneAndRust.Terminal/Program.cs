@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using RuneAndRust.Core.Entities;
+using RuneAndRust.Core.Enums;
 using RuneAndRust.Core.Interfaces;
 using RuneAndRust.Core.Models;
 using RuneAndRust.Engine.Factories;
@@ -93,6 +94,10 @@ class Program
                     services.AddScoped<CharacterFactory>();
                     services.AddScoped<CharacterCreationController>();
 
+                    // Register Wizard Services (v0.3.4b)
+                    services.AddScoped<IWizardService, WizardService>();
+                    services.AddScoped<CreationWizard>();
+
                     // Register Enemy Factory
                     services.AddScoped<IEnemyFactory, EnemyFactory>();
 
@@ -124,6 +129,9 @@ class Program
 
                     // Register Environment Ecosystem Services (v0.3.3c)
                     services.AddScoped<IEnvironmentPopulator, EnvironmentPopulator>();
+
+                    // Register Title Screen Service (v0.3.4a)
+                    services.AddScoped<ITitleScreenService, TitleScreenService>();
                 })
                 .UseSerilog() // Wire Serilog into ILogger
                 .Build();
@@ -138,10 +146,55 @@ class Program
             }
 
             // 4. UI Handover
-            AnsiConsole.MarkupLine("[green]Rune & Rust v0.3.3c Booting...[/]");
+            AnsiConsole.MarkupLine("[green]Rune & Rust v0.3.4b Booting...[/]");
             AnsiConsole.WriteLine();
 
-            // Resolve the entry point from DI
+            // Show title screen and get menu selection (v0.3.4a)
+            TitleScreenResult menuResult;
+            using (var scope = host.Services.CreateScope())
+            {
+                var titleScreen = scope.ServiceProvider.GetRequiredService<ITitleScreenService>();
+                menuResult = titleScreen.ShowAsync().GetAwaiter().GetResult();
+            }
+
+            // Route based on menu selection
+            switch (menuResult.SelectedOption)
+            {
+                case MainMenuOption.Quit:
+                    AnsiConsole.MarkupLine("[grey]Farewell, Traveler...[/]");
+                    return;
+
+                case MainMenuOption.NewGame:
+                    // Run character creation wizard (v0.3.4b)
+                    using (var scope = host.Services.CreateScope())
+                    {
+                        var wizard = scope.ServiceProvider.GetRequiredService<CreationWizard>();
+                        wizard.RunAsync().GetAwaiter().GetResult();
+                    }
+                    break;
+
+                case MainMenuOption.LoadGame:
+                    if (menuResult.SaveSlotNumber.HasValue)
+                    {
+                        using (var scope = host.Services.CreateScope())
+                        {
+                            var saveManager = scope.ServiceProvider.GetRequiredService<SaveManager>();
+                            var gameState = scope.ServiceProvider.GetRequiredService<GameState>();
+                            var loadedState = saveManager.LoadGameAsync(menuResult.SaveSlotNumber.Value).GetAwaiter().GetResult();
+                            if (loadedState != null)
+                            {
+                                // Copy loaded state to current game state
+                                gameState.CurrentCharacter = loadedState.CurrentCharacter;
+                                gameState.CurrentRoomId = loadedState.CurrentRoomId;
+                                gameState.Phase = loadedState.Phase;
+                                gameState.TurnCount = loadedState.TurnCount;
+                            }
+                        }
+                    }
+                    break;
+            }
+
+            // Start the game loop
             var game = host.Services.GetRequiredService<IGameService>();
             game.StartAsync().GetAwaiter().GetResult();
         }
