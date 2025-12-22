@@ -1,0 +1,105 @@
+[
+  {
+    "Id": "thorvald_greeting",
+    "Text": "Hail, traveler. I guard this outpost for the Combine. State your business.",
+    "Options": [
+      {
+        "Text": "Just exploring.",
+        "NextNodeId": "thorvald_exploring",
+        "Outcome": null
+      },
+      {
+        "Text": "Can I help the Combine?",
+        "NextNodeId": "thorvald_quest",
+        "Outcome": null
+      },
+      {
+        "Text": "What threats are you watching for?",
+        "NextNodeId": "thorvald_threats",
+        "Outcome": null
+      },
+      {
+        "Text": "I'll be on my way.",
+        "NextNodeId": null,
+        "Outcome": {
+          "Type": "EndConversation",
+          "Data": "",
+          "ReputationChange": 0,
+          "AffectedFaction": null
+        }
+      }
+    ],
+    "EndsConversation": false
+  },
+  {
+    "Id": "thorvald_exploring",
+    "Text": "Be careful. These ruins are dangerous. Rust-Horrors have been multiplying in the eastern corridor.",
+    "Options": [
+      {
+        "Text": "Thanks for the warning.",
+        "NextNodeId": null,
+        "Outcome": {
+          "Type": "EndConversation",
+          "Data": "",
+          "ReputationChange": 0,
+          "AffectedFaction": null
+        }
+      },
+      {
+        "Text": "I can help with that.",
+        "NextNodeId": "thorvald_quest",
+        "Outcome": null
+      }
+    ],
+    "EndsConversation": false
+  },
+  {
+    "Id": "thorvald_quest",
+    "Text": "We need those Rust-Horrors cleared out. Kill at least 5 of them and I'll make it worth your while. The Combine rewards those who help secure our territory.",
+    "Options": [
+      {
+        "Text": "I'll take care of it.",
+        "NextNodeId": null,
+        "Outcome": {
+          "Type": "QuestGiven",
+          "Data": "quest_clear_nest",
+          "ReputationChange": 0,
+          "AffectedFaction": null
+        }
+      },
+      {
+        "Text": "Not interested.",
+        "NextNodeId": null,
+        "Outcome": {
+          "Type": "ReputationChange",
+          "Data": "Refused to help",
+          "ReputationChange": -5,
+          "AffectedFaction": "MidgardCombine"
+        }
+      }
+    ],
+    "EndsConversation": false
+  },
+  {
+    "Id": "thorvald_threats",
+    "Text": "Rust-Horrors mostly. But also raiders from the Rust-Clans. They don't respect the Combine's claim to these ruins.",
+    "Options": [
+      {
+        "Text": "Sounds tense.",
+        "NextNodeId": null,
+        "Outcome": {
+          "Type": "EndConversation",
+          "Data": "",
+          "ReputationChange": 0,
+          "AffectedFaction": null
+        }
+      },
+      {
+        "Text": "I'll help keep watch.",
+        "NextNodeId": "thorvald_quest",
+        "Outcome": null
+      }
+    ],
+    "EndsConversation": false
+  }
+]
