@@ -1,0 +1,43 @@
+{
+  "TemplateId": "maintenance_access",
+  "Biome": "the_roots",
+  "Size": "Small",
+  "Archetype": "EntryHall",
+  "NameTemplates": [
+    "The {Adjective} Maintenance Access",
+    "The {Adjective} Service Entrance",
+    "The {Adjective} Worker's Gate"
+  ],
+  "Adjectives": [
+    "Narrow",
+    "Cramped",
+    "Rusted",
+    "Forgotten",
+    "Abandoned"
+  ],
+  "DescriptionTemplates": [
+    "A {Adjective} maintenance corridor serves as your entry point. {Detail}. The walls are lined with corroded pipes and ancient warning signs.",
+    "This {Adjective} service passage was once used by facility workers. {Detail}. The air tastes of ozone and rust.",
+    "You enter through a {Adjective} worker's access point. {Detail}. Overhead, failing lights flicker at irregular intervals."
+  ],
+  "Details": [
+    "A maintenance locker hangs open, its contents long since pillaged",
+    "Warning labels in Old Aetheric script warn of geothermal hazards",
+    "The floor is slick with condensation from broken cooling systems",
+    "Ancient bootprints are still visible in the rust-stained floor",
+    "A faded schematic of the facility clings to the wall"
+  ],
+  "MinConnectionPoints": 1,
+  "MaxConnectionPoints": 2,
+  "ValidConnections": [
+    "Corridor",
+    "Chamber"
+  ],
+  "Difficulty": "Easy",
+  "Tags": [
+    "Entry",
+    "Safe",
+    "Start",
+    "Maintenance"
+  ]
+}
