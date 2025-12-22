@@ -23,5 +23,25 @@ public enum RoomFeature
     /// <summary>
     /// An alchemy table that allows potion brewing.
     /// </summary>
-    AlchemyTable = 3
+    AlchemyTable = 3,
+
+    /// <summary>
+    /// Stairs leading to a higher Z-level (v0.3.5b).
+    /// </summary>
+    StairsUp = 4,
+
+    /// <summary>
+    /// Stairs leading to a lower Z-level (v0.3.5b).
+    /// </summary>
+    StairsDown = 5,
+
+    /// <summary>
+    /// A boss encounter room (v0.3.5b).
+    /// </summary>
+    BossLair = 6,
+
+    /// <summary>
+    /// A safe zone with vendors or services (v0.3.5b).
+    /// </summary>
+    Settlement = 7
 }

@@ -1,8 +1,10 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using RuneAndRust.Core.Entities;
 using RuneAndRust.Core.Enums;
 using RuneAndRust.Core.Interfaces;
 using RuneAndRust.Core.Models;
+using RuneAndRust.Core.ValueObjects;
 using RuneAndRust.Core.ViewModels;
 
 namespace RuneAndRust.Engine.Services;
@@ -112,6 +114,7 @@ public class GameService : IGameService
     /// <summary>
     /// Builds the exploration view model from current game state (v0.3.5a).
     /// Uses a scoped service to fetch room data.
+    /// Extended with minimap data in v0.3.5b.
     /// </summary>
     private async Task<ExplorationViewModel?> BuildExplorationViewModelAsync()
     {
@@ -123,6 +126,8 @@ public class GameService : IGameService
 
         string roomName = "Unknown";
         string roomDescription = "You are in an unknown location.";
+        Coordinate playerPosition = Coordinate.Origin;
+        List<Room> localMapRooms = new();
 
         // Fetch room data using a scoped service
         if (_state.CurrentRoomId.HasValue)
@@ -134,6 +139,19 @@ public class GameService : IGameService
             {
                 roomName = room.Name;
                 roomDescription = room.Description;
+                playerPosition = room.Position;
+
+                // Fetch 3x3 grid around player for minimap (v0.3.5b)
+                const int radius = 1;
+                localMapRooms = (await roomRepo.GetRoomsInGridAsync(
+                    playerPosition.Z,
+                    playerPosition.X - radius,
+                    playerPosition.X + radius,
+                    playerPosition.Y - radius,
+                    playerPosition.Y + radius
+                )).ToList();
+
+                _logger.LogTrace("[HUD] Fetched {Count} rooms for minimap grid", localMapRooms.Count);
             }
         }
 
@@ -154,7 +172,10 @@ public class GameService : IGameService
             MaxCorruption: character.MaxCorruption,
             RoomName: roomName,
             RoomDescription: roomDescription,
-            TurnCount: _state.TurnCount
+            TurnCount: _state.TurnCount,
+            PlayerPosition: playerPosition,
+            LocalMapRooms: localMapRooms,
+            VisitedRoomIds: _state.VisitedRoomIds
         );
     }
 }

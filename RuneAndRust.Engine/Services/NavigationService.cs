@@ -83,9 +83,12 @@ public class NavigationService : INavigationService
         // 4. Update game state
         _gameState.CurrentRoomId = nextRoomId;
         _gameState.TurnCount++;
+        _gameState.VisitedRoomIds.Add(nextRoomId);
 
         _logger.LogInformation("Player moved {Direction} to '{RoomName}' ({RoomId})",
             direction, nextRoom.Name, nextRoom.Id);
+        _logger.LogDebug("[Navigation] Room {RoomId} marked as visited. Total visited: {Count}",
+            nextRoomId, _gameState.VisitedRoomIds.Count);
 
         // 5. Trigger movement hazards (v0.3.3a)
         var hazardResults = await _hazardService.TriggerOnRoomEnterAsync(nextRoom);

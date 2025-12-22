@@ -124,4 +124,22 @@ public class RoomRepository : GenericRepository<Room>, IRoomRepository
 
         _roomLogger.LogDebug("Successfully added {Count} rooms to context", roomList.Count);
     }
+
+    /// <inheritdoc/>
+    public async Task<IEnumerable<Room>> GetRoomsInGridAsync(int z, int minX, int maxX, int minY, int maxY)
+    {
+        _roomLogger.LogDebug(
+            "[Room] Fetching rooms in grid Z={Z}, X=[{MinX},{MaxX}], Y=[{MinY},{MaxY}]",
+            z, minX, maxX, minY, maxY);
+
+        var rooms = await _dbSet
+            .Where(r => r.Position.Z == z
+                     && r.Position.X >= minX && r.Position.X <= maxX
+                     && r.Position.Y >= minY && r.Position.Y <= maxY)
+            .ToListAsync();
+
+        _roomLogger.LogDebug("[Room] Retrieved {Count} rooms in grid", rooms.Count);
+
+        return rooms;
+    }
 }

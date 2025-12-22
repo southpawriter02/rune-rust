@@ -155,7 +155,7 @@ class Program
             }
 
             // 4. UI Handover
-            AnsiConsole.MarkupLine("[green]Rune & Rust v0.3.5a Booting...[/]");
+            AnsiConsole.MarkupLine("[green]Rune & Rust v0.3.5b Booting...[/]");
             AnsiConsole.WriteLine();
 
             // Show title screen and get menu selection (v0.3.4a)
@@ -196,6 +196,7 @@ class Program
                             var dungeonGen = scope.ServiceProvider.GetRequiredService<DungeonGenerator>();
                             var startRoomId = dungeonGen.GenerateTestMapAsync().GetAwaiter().GetResult();
                             gameState.CurrentRoomId = startRoomId;
+                            gameState.VisitedRoomIds.Add(startRoomId);  // Mark starting room as visited (v0.3.5b)
                             Log.Information("[Program] World initialized: Starting room {RoomId}", startRoomId);
                         }
 
@@ -231,6 +232,7 @@ class Program
                                 gameState.CurrentRoomId = loadedState.CurrentRoomId;
                                 gameState.Phase = loadedState.Phase;
                                 gameState.TurnCount = loadedState.TurnCount;
+                                gameState.VisitedRoomIds = loadedState.VisitedRoomIds;  // Restore fog of war (v0.3.5b)
                             }
                         }
                     }

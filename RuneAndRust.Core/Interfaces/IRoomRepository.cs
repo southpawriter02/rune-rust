@@ -45,4 +45,16 @@ public interface IRoomRepository : IRepository<Room>
     /// </summary>
     /// <param name="rooms">The rooms to add.</param>
     Task AddRangeAsync(IEnumerable<Room> rooms);
+
+    /// <summary>
+    /// Gets all rooms within a coordinate grid on a specific Z-level (v0.3.5b).
+    /// Used for minimap rendering to batch-fetch local rooms.
+    /// </summary>
+    /// <param name="z">The Z-level to query.</param>
+    /// <param name="minX">Minimum X coordinate (inclusive).</param>
+    /// <param name="maxX">Maximum X coordinate (inclusive).</param>
+    /// <param name="minY">Minimum Y coordinate (inclusive).</param>
+    /// <param name="maxY">Maximum Y coordinate (inclusive).</param>
+    /// <returns>All rooms within the specified grid bounds.</returns>
+    Task<IEnumerable<Room>> GetRoomsInGridAsync(int z, int minX, int maxX, int minY, int maxY);
 }

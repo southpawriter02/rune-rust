@@ -46,6 +46,12 @@ public class GameState
     public Guid? CurrentRoomId { get; set; }
 
     /// <summary>
+    /// Tracks which rooms the player has visited for Fog of War (v0.3.5b).
+    /// Used by MinimapRenderer to determine visibility.
+    /// </summary>
+    public HashSet<Guid> VisitedRoomIds { get; set; } = new();
+
+    /// <summary>
     /// Gets or sets the current combat state.
     /// Null when not in combat.
     /// </summary>
@@ -71,6 +77,7 @@ public class GameState
         IsSessionActive = false;
         PendingAction = PendingGameAction.None;
         CurrentRoomId = null;
+        VisitedRoomIds.Clear();
         CombatState = null;
         PendingEncounter = null;
     }

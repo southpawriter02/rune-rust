@@ -45,11 +45,12 @@ public class ExplorationScreenRenderer : IExplorationScreenRenderer
             .Expand();
         rootLayout["Main"].Update(roomPanel);
 
-        // 3. Update Sidebar (Minimap - placeholder for v0.3.5b)
-        var minimapPlaceholder = new Panel("[grey]Minimap coming in v0.3.5b[/]")
-            .Header("[yellow]Map[/]")
-            .Border(BoxBorder.Rounded);
-        rootLayout["Sidebar"].Update(minimapPlaceholder);
+        // 3. Update Sidebar (Minimap - v0.3.5b)
+        var minimapPanel = MinimapRenderer.Render(
+            vm.PlayerPosition,
+            vm.LocalMapRooms,
+            vm.VisitedRoomIds);
+        rootLayout["Sidebar"].Update(minimapPanel);
 
         // 4. Update Footer (Turn counter)
         rootLayout["Footer"].Update(

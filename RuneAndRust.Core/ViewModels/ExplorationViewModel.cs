@@ -1,8 +1,12 @@
+using RuneAndRust.Core.Entities;
+using RuneAndRust.Core.ValueObjects;
+
 namespace RuneAndRust.Core.ViewModels;
 
 /// <summary>
 /// Immutable view model for the exploration screen HUD (v0.3.5a).
 /// Contains all display data for the persistent three-pane interface.
+/// Extended with minimap data in v0.3.5b.
 /// </summary>
 /// <param name="CharacterName">The player character's display name.</param>
 /// <param name="CurrentHp">Current hit points.</param>
@@ -16,6 +20,9 @@ namespace RuneAndRust.Core.ViewModels;
 /// <param name="RoomName">Current room's display name.</param>
 /// <param name="RoomDescription">Current room's narrative description.</param>
 /// <param name="TurnCount">Current exploration turn number.</param>
+/// <param name="PlayerPosition">Player's current coordinate position (v0.3.5b).</param>
+/// <param name="LocalMapRooms">Rooms within the minimap grid radius (v0.3.5b).</param>
+/// <param name="VisitedRoomIds">Set of room IDs the player has visited for Fog of War (v0.3.5b).</param>
 public record ExplorationViewModel(
     string CharacterName,
     int CurrentHp,
@@ -28,5 +35,8 @@ public record ExplorationViewModel(
     int MaxCorruption,
     string RoomName,
     string RoomDescription,
-    int TurnCount
+    int TurnCount,
+    Coordinate PlayerPosition,
+    List<Room> LocalMapRooms,
+    HashSet<Guid> VisitedRoomIds
 );
