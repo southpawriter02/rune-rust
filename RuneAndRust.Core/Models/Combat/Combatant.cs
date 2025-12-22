@@ -130,6 +130,24 @@ public class Combatant
 
     #endregion
 
+    #region Intent System (v0.3.6c)
+
+    /// <summary>
+    /// The action the AI intends to take this round (v0.3.6c).
+    /// Calculated at round start and on state changes (HP, status).
+    /// Null for player combatants.
+    /// </summary>
+    public CombatAction? PlannedAction { get; set; }
+
+    /// <summary>
+    /// Whether the player has successfully perceived this enemy's intent (v0.3.6c).
+    /// Set by CombatService based on WITS check or Analyzed status.
+    /// Always false for player combatants.
+    /// </summary>
+    public bool IsIntentRevealed { get; set; } = false;
+
+    #endregion
+
     #region Ambient Condition Modifiers (v0.3.3b)
 
     /// <summary>

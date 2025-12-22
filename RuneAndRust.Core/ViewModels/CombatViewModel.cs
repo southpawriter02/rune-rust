@@ -37,8 +37,12 @@ public record CombatViewModel(
 /// <param name="IsPlayer">Whether this combatant is the player character.</param>
 /// <param name="IsActive">Whether it is currently this combatant's turn.</param>
 /// <param name="HealthStatus">Health display: "75/100" for player, "Healthy"/"Wounded"/"Critical" for enemies.</param>
-/// <param name="StatusEffects">Placeholder for status effect icons (future expansion).</param>
+/// <param name="StatusEffects">Legacy text format for status effects: "BLD×2 PSN×1".</param>
 /// <param name="InitiativeDisplay">Initiative value as string for table display.</param>
+/// <param name="Row">Row position on the battlefield (v0.3.6a).</param>
+/// <param name="IsTargeted">Whether this combatant is being targeted (v0.3.6a).</param>
+/// <param name="IntentIcon">Icon showing enemy's planned action: ⚔️/🛡️/💨/💤/? or null for player (v0.3.6c).</param>
+/// <param name="StatusIcons">Unicode status icons: 🩸🤢💫💔🛡️ or null if none (v0.3.6c).</param>
 public record CombatantView(
     Guid Id,
     string Name,
@@ -49,7 +53,10 @@ public record CombatantView(
     string InitiativeDisplay,
     // Row system (v0.3.6a)
     RowPosition Row = RowPosition.Front,
-    bool IsTargeted = false
+    bool IsTargeted = false,
+    // Intent system (v0.3.6c)
+    string? IntentIcon = null,
+    string? StatusIcons = null
 );
 
 /// <summary>

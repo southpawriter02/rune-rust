@@ -28,6 +28,7 @@ public class CombatService : ICombatService
     private readonly IHazardService _hazardService;
     private readonly IConditionService _conditionService;
     private readonly IRoomRepository _roomRepository;
+    private readonly IDiceService _dice;
     private readonly ILogger<CombatService> _logger;
 
     /// <summary>
@@ -184,6 +185,132 @@ public class CombatService : ICombatService
 
     #endregion
 
+    #region Intent System (v0.3.6c)
+
+    /// <summary>
+    /// Plans actions for all living enemies and calculates intent visibility.
+    /// Called at combat start, round start, and after state changes.
+    /// </summary>
+    private void PlanEnemyActions()
+    {
+        if (_gameState.CombatState == null) return;
+
+        var state = _gameState.CombatState;
+        var player = state.TurnOrder.FirstOrDefault(c => c.IsPlayer);
+        if (player == null) return;
+
+        foreach (var enemy in state.TurnOrder.Where(c => !c.IsPlayer && c.CurrentHp > 0))
+        {
+            // Plan the action
+            enemy.PlannedAction = _aiService.DetermineAction(enemy, state);
+
+            // Calculate visibility
+            enemy.IsIntentRevealed = CalculateIntentVisibility(player, enemy);
+
+            _logger.LogTrace(
+                "[AI] {Enemy} planned action: {ActionType}. Revealed: {Revealed}",
+                enemy.Name, enemy.PlannedAction?.Type, enemy.IsIntentRevealed);
+        }
+    }
+
+    /// <summary>
+    /// Determines whether the player can see the enemy's planned action.
+    /// </summary>
+    /// <param name="player">The player combatant.</param>
+    /// <param name="enemy">The enemy combatant to check visibility for.</param>
+    /// <returns>True if the player can see the enemy's intent, false otherwise.</returns>
+    private bool CalculateIntentVisibility(Combatant player, Combatant enemy)
+    {
+        // Analyzed status always reveals intent
+        if (_statusEffects.HasEffect(enemy, StatusEffectType.Analyzed))
+        {
+            _logger.LogDebug("[Combat] {Enemy} intent revealed via Analyzed status", enemy.Name);
+            return true;
+        }
+
+        // Calculate WITS pool with archetype bonus
+        var baseWits = player.GetAttribute(CharacterAttribute.Wits);
+        var archetypeBonus = player.CharacterSource?.Archetype == ArchetypeType.Adept ? 2 : 0;
+        var totalPool = baseWits + archetypeBonus + player.ConditionWitsModifier;
+
+        // Roll WITS check (success threshold is 1+ successes)
+        var check = _dice.Roll(Math.Max(1, totalPool), "Intent Check");
+        var success = check.Successes >= 1;
+
+        _logger.LogDebug(
+            "[Combat] Intent check vs {Enemy}: {Result} ({Successes} successes, pool: {Pool})",
+            enemy.Name, success ? "Revealed" : "Hidden", check.Successes, totalPool);
+
+        return success;
+    }
+
+    /// <summary>
+    /// Maps action type to intent icon for display.
+    /// </summary>
+    /// <param name="action">The planned action.</param>
+    /// <param name="isRevealed">Whether the intent is revealed to the player.</param>
+    /// <returns>An icon representing the action type, or "?" if hidden.</returns>
+    private static string GetIntentIcon(CombatAction? action, bool isRevealed)
+    {
+        if (!isRevealed || action == null) return "?";
+
+        return action.Type switch
+        {
+            ActionType.Attack => "⚔️",
+            ActionType.Defend => "🛡️",
+            ActionType.Flee => "💨",
+            ActionType.Pass => "💤",
+            _ => "?"
+        };
+    }
+
+    /// <summary>
+    /// Maps status effects to icon string for display.
+    /// </summary>
+    /// <param name="effects">The list of active status effects.</param>
+    /// <returns>A string of status icons, or null if none.</returns>
+    private static string? GetStatusIcons(List<ActiveStatusEffect>? effects)
+    {
+        if (effects == null || effects.Count == 0) return null;
+
+        var icons = new List<string>();
+        foreach (var effect in effects)
+        {
+            var icon = effect.Type switch
+            {
+                StatusEffectType.Bleeding => "🩸",
+                StatusEffectType.Poisoned => "🤢",
+                StatusEffectType.Stunned => "💫",
+                StatusEffectType.Vulnerable => "💔",
+                StatusEffectType.Disoriented => "😵",
+                StatusEffectType.Exhausted => "😴",
+                StatusEffectType.Analyzed => "🔍",
+                StatusEffectType.Fortified => "🛡️",
+                StatusEffectType.Hasted => "⚡",
+                StatusEffectType.Inspired => "✨",
+                _ => null
+            };
+
+            if (icon != null)
+            {
+                icons.Add(effect.Stacks > 1 ? $"{icon}×{effect.Stacks}" : icon);
+            }
+        }
+
+        return icons.Count > 0 ? string.Join(" ", icons) : null;
+    }
+
+    /// <summary>
+    /// Triggers replanning when combat state changes significantly.
+    /// </summary>
+    private void OnStateChange()
+    {
+        PlanEnemyActions();
+        _logger.LogTrace("[Combat] Replanned enemy actions after state change");
+    }
+
+    #endregion
+
     /// <summary>
     /// Initializes a new instance of the <see cref="CombatService"/> class.
     /// </summary>
@@ -201,6 +328,7 @@ public class CombatService : ICombatService
     /// <param name="hazardService">The hazard service for environmental triggers (v0.3.3a).</param>
     /// <param name="conditionService">The condition service for ambient effects (v0.3.3b).</param>
     /// <param name="roomRepository">The room repository for current room lookup.</param>
+    /// <param name="dice">The dice service for WITS checks (v0.3.6c).</param>
     /// <param name="logger">The logger for traceability.</param>
     public CombatService(
         GameState gameState,
@@ -217,6 +345,7 @@ public class CombatService : ICombatService
         IHazardService hazardService,
         IConditionService conditionService,
         IRoomRepository roomRepository,
+        IDiceService dice,
         ILogger<CombatService> logger)
     {
         _gameState = gameState;
@@ -233,6 +362,7 @@ public class CombatService : ICombatService
         _hazardService = hazardService;
         _conditionService = conditionService;
         _roomRepository = roomRepository;
+        _dice = dice;
         _logger = logger;
     }
 
@@ -308,6 +438,9 @@ public class CombatService : ICombatService
         LogCombatEvent("[bold]Combat begins![/]");
         LogCombatEvent($"[cyan]{player.Name}[/] faces {string.Join(", ", enemies.Select(e => $"[red]{e.Name}[/]"))}.");
 
+        // Plan enemy actions at combat start (v0.3.6c)
+        PlanEnemyActions();
+
         _logger.LogInformation("Combat Started. Round {Round}. Active: {Name}",
             state.RoundNumber, state.ActiveCombatant?.Name ?? "None");
     }
@@ -329,6 +462,9 @@ public class CombatService : ICombatService
             state.TurnIndex = 0;
             state.RoundNumber++;
             _logger.LogInformation("Round {Round} begins", state.RoundNumber);
+
+            // Replan enemy actions at round start (v0.3.6c)
+            PlanEnemyActions();
         }
 
         var active = state.ActiveCombatant;
@@ -536,6 +672,9 @@ public class CombatService : ICombatService
             _logger.LogDebug(
                 "{Target} took {Damage} damage. HP: {Current}/{Max}",
                 target.Name, result.FinalDamage, target.CurrentHp, target.MaxHp);
+
+            // Trigger replanning after damage (v0.3.6c)
+            OnStateChange();
 
             // Process thorns damage (v0.2.2c)
             var thornsDamage = _traitService.ProcessTraitOnDamageReceived(target, attacker, result.FinalDamage);
@@ -880,7 +1019,10 @@ public class CombatService : ICombatService
             combatant.Initiative.ToString(),
             // v0.3.6a row system
             Row: combatant.Row,
-            IsTargeted: combatant.IsTargeted
+            IsTargeted: combatant.IsTargeted,
+            // v0.3.6c intent system
+            IntentIcon: combatant.IsPlayer ? null : GetIntentIcon(combatant.PlannedAction, combatant.IsIntentRevealed),
+            StatusIcons: GetStatusIcons(combatant.StatusEffects)
         );
     }
 
@@ -920,8 +1062,11 @@ public class CombatService : ICombatService
         // Reset defending state from previous turn
         enemy.IsDefending = false;
 
-        // Get AI decision
-        var action = _aiService.DetermineAction(enemy, _gameState.CombatState!);
+        // Use planned action if available, otherwise determine fresh (v0.3.6c)
+        var action = enemy.PlannedAction ?? _aiService.DetermineAction(enemy, _gameState.CombatState!);
+
+        // Clear the planned action after use
+        enemy.PlannedAction = null;
 
         _logger.LogInformation(
             "[AI] {Name} decided: {ActionType}. Target: {Target}",
@@ -1002,6 +1147,9 @@ public class CombatService : ICombatService
             _logger.LogDebug(
                 "{Target} took {Damage} damage. HP: {Current}/{Max}",
                 target.Name, result.FinalDamage, target.CurrentHp, target.MaxHp);
+
+            // Trigger replanning after damage (v0.3.6c)
+            OnStateChange();
 
             // Process vampiric healing (v0.2.2c)
             var vampiricHeal = _traitService.ProcessTraitOnDamageDealt(attacker, result.FinalDamage);

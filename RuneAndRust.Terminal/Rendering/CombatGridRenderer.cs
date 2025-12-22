@@ -66,7 +66,7 @@ public static class CombatGridRenderer
     }
 
     /// <summary>
-    /// Formats a single combatant for display with health indicators.
+    /// Formats a single combatant for display with health, intent, and status indicators.
     /// </summary>
     /// <param name="c">The combatant view to format.</param>
     /// <param name="isEnemy">Whether this is an enemy combatant.</param>
@@ -89,9 +89,23 @@ public static class CombatGridRenderer
                 healthIcon = " [yellow]!![/]";
         }
 
+        // Add intent icon for enemies (v0.3.6c)
+        var intentDisplay = "";
+        if (isEnemy && !string.IsNullOrEmpty(c.IntentIcon))
+        {
+            intentDisplay = $" [yellow]{c.IntentIcon}[/]";
+        }
+
+        // Add status icons (v0.3.6c)
+        var statusDisplay = "";
+        if (!string.IsNullOrEmpty(c.StatusIcons))
+        {
+            statusDisplay = $" {c.StatusIcons}";
+        }
+
         // Add targeting indicator
         var targetIndicator = c.IsTargeted ? "[bold white]*[/]" : "";
 
-        return $"{activeMarker}[{color}]{escapedName}[/]{healthIcon}{targetIndicator}";
+        return $"{activeMarker}[{color}]{escapedName}[/]{healthIcon}{intentDisplay}{statusDisplay}{targetIndicator}";
     }
 }

@@ -31,6 +31,7 @@ public class TimelineProjectionTests
     private readonly Mock<IHazardService> _mockHazardService;
     private readonly Mock<IConditionService> _mockConditionService;
     private readonly Mock<IRoomRepository> _mockRoomRepository;
+    private readonly Mock<IDiceService> _mockDice;
     private readonly Mock<ILogger<CombatService>> _mockLogger;
     private readonly GameState _gameState;
     private readonly CombatService _sut;
@@ -50,6 +51,7 @@ public class TimelineProjectionTests
         _mockHazardService = new Mock<IHazardService>();
         _mockConditionService = new Mock<IConditionService>();
         _mockRoomRepository = new Mock<IRoomRepository>();
+        _mockDice = new Mock<IDiceService>();
         _mockLogger = new Mock<ILogger<CombatService>>();
         _gameState = new GameState();
         _sut = new CombatService(
@@ -67,6 +69,7 @@ public class TimelineProjectionTests
             _mockHazardService.Object,
             _mockConditionService.Object,
             _mockRoomRepository.Object,
+            _mockDice.Object,
             _mockLogger.Object);
 
         // Default setup for initiative service
@@ -77,6 +80,10 @@ public class TimelineProjectionTests
         _mockAbilityRepository
             .Setup(r => r.GetByArchetypeAsync(It.IsAny<ArchetypeType>(), It.IsAny<int>()))
             .ReturnsAsync(new List<ActiveAbility>());
+
+        // Default setup for dice service (v0.3.6c): return 0 successes for intent checks
+        _mockDice.Setup(d => d.Roll(It.IsAny<int>(), It.IsAny<string>()))
+            .Returns(new DiceResult(0, 0, new List<int> { 3 }));
     }
 
     #region GetTimelineProjection Tests

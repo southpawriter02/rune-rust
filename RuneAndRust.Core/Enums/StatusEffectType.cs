@@ -48,6 +48,13 @@ public enum StatusEffectType
     /// </summary>
     Exhausted = 5,
 
+    /// <summary>
+    /// Intel effect. Target's planned action is revealed to the player.
+    /// Reveals enemy intent regardless of WITS check result.
+    /// Does not stack; reapplication refreshes duration only (v0.3.6c).
+    /// </summary>
+    Analyzed = 6,
+
     // ═══════════════════════════════════════════════════════════════════════
     // BUFFS (100+)
     // ═══════════════════════════════════════════════════════════════════════
