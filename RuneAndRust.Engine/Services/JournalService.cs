@@ -1,6 +1,8 @@
 using System.Text;
 using Microsoft.Extensions.Logging;
+using RuneAndRust.Core.Enums;
 using RuneAndRust.Core.Interfaces;
+using RuneAndRust.Core.ViewModels;
 
 namespace RuneAndRust.Engine.Services;
 
@@ -35,6 +37,105 @@ public class JournalService : IJournalService
         _codexRepository = codexRepository;
         _redactor = new TextRedactor();
     }
+
+    #region Full-Screen Journal UI (v0.3.7c)
+
+    /// <inheritdoc/>
+    public async Task<JournalViewModel> BuildViewModelAsync(
+        Guid characterId,
+        string characterName,
+        JournalTab tab,
+        int selectedIndex = 0,
+        int stressLevel = 0)
+    {
+        _logger.LogTrace("[Journal] Building ViewModel for {CharacterId}, Tab={Tab}", characterId, tab);
+
+        // Get all discovered entries
+        var discovered = await _captureService.GetDiscoveredEntriesAsync(characterId);
+        var discoveredList = discovered.ToList();
+
+        // Filter by tab (map JournalTab to EntryCategory)
+        var filtered = discoveredList
+            .Where(e => MapCategoryToTab(e.Entry.Category) == tab)
+            .OrderBy(e => e.Entry.Title)
+            .Select((e, i) => new JournalEntryView(
+                Index: i + 1,
+                EntryId: e.Entry.Id,
+                Title: e.Entry.Title,
+                Category: e.Entry.Category,
+                CompletionPercent: e.CompletionPercent,
+                IsComplete: e.CompletionPercent >= 100
+            ))
+            .ToList();
+
+        _logger.LogDebug("[Journal] Found {Count} entries for {Tab}", filtered.Count, tab);
+
+        // Build details for selected entry
+        JournalEntryDetailView? details = null;
+        if (selectedIndex >= 0 && selectedIndex < filtered.Count)
+        {
+            var selected = filtered[selectedIndex];
+            details = await BuildEntryDetailsAsync(characterId, selected.EntryId);
+        }
+
+        return new JournalViewModel(
+            CharacterName: characterName,
+            StressLevel: stressLevel,
+            ActiveTab: tab,
+            Entries: filtered,
+            SelectedEntryIndex: selectedIndex,
+            SelectedDetail: details
+        );
+    }
+
+    /// <summary>
+    /// Maps an EntryCategory to the appropriate JournalTab.
+    /// </summary>
+    /// <param name="category">The category to map.</param>
+    /// <returns>The corresponding JournalTab.</returns>
+    private static JournalTab MapCategoryToTab(EntryCategory category) => category switch
+    {
+        EntryCategory.Bestiary => JournalTab.Bestiary,
+        EntryCategory.FieldGuide => JournalTab.FieldGuide,
+        _ => JournalTab.Codex // BlightOrigin, Factions, Technical, Geography
+    };
+
+    /// <summary>
+    /// Builds detail view data for a specific entry.
+    /// </summary>
+    /// <param name="characterId">The character viewing the entry.</param>
+    /// <param name="entryId">The entry to build details for.</param>
+    /// <returns>JournalEntryDetailView with redacted content and threshold data.</returns>
+    private async Task<JournalEntryDetailView?> BuildEntryDetailsAsync(Guid characterId, Guid entryId)
+    {
+        _logger.LogTrace("[Journal] Building details for Entry {EntryId}", entryId);
+
+        var entry = await _codexRepository.GetByIdAsync(entryId);
+        if (entry == null)
+        {
+            _logger.LogWarning("[Journal] Entry {EntryId} not found", entryId);
+            return null;
+        }
+
+        var pct = await _captureService.GetCompletionPercentageAsync(entryId, characterId);
+        var thresholds = await _captureService.GetUnlockedThresholdsAsync(entryId, characterId);
+        var fragmentCount = await _captureRepository.GetFragmentCountAsync(entryId, characterId);
+
+        return new JournalEntryDetailView(
+            EntryId: entry.Id,
+            Title: entry.Title,
+            Category: entry.Category,
+            CompletionPercent: pct,
+            RedactedContent: _redactor.RedactText(entry.FullText, pct),
+            UnlockedThresholds: thresholds.ToList(),
+            FragmentsCollected: fragmentCount,
+            FragmentsRequired: entry.TotalFragments
+        );
+    }
+
+    #endregion
+
+    #region Legacy String Formatting Methods
 
     /// <inheritdoc/>
     public async Task<string> FormatJournalListAsync(Guid characterId)
@@ -154,6 +255,8 @@ public class JournalService : IJournalService
         _logger.LogDebug("Formatted {Count} unassigned captures", captureList.Count);
         return sb.ToString();
     }
+
+    #endregion
 
     #region Private Methods
 

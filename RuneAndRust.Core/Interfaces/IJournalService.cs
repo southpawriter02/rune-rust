@@ -1,3 +1,5 @@
+using RuneAndRust.Core.ViewModels;
+
 namespace RuneAndRust.Core.Interfaces;
 
 /// <summary>
@@ -6,6 +8,22 @@ namespace RuneAndRust.Core.Interfaces;
 /// </summary>
 public interface IJournalService
 {
+    /// <summary>
+    /// Builds a ViewModel for the full-screen journal UI (v0.3.7c).
+    /// </summary>
+    /// <param name="characterId">The character to build the view for.</param>
+    /// <param name="characterName">The character's display name.</param>
+    /// <param name="tab">The active tab to filter entries by.</param>
+    /// <param name="selectedIndex">The currently selected entry index (0-based).</param>
+    /// <param name="stressLevel">Character's current stress for glitch effects (0-100).</param>
+    /// <returns>A JournalViewModel with all display-ready data.</returns>
+    Task<JournalViewModel> BuildViewModelAsync(
+        Guid characterId,
+        string characterName,
+        JournalTab tab,
+        int selectedIndex = 0,
+        int stressLevel = 0);
+
     /// <summary>
     /// Formats the journal list view showing all discovered entries grouped by category.
     /// Entries are displayed with completion percentages and status indicators.

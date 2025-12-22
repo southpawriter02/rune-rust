@@ -132,6 +132,9 @@ class Program
                     // Register Crafting Screen Renderer (v0.3.7b)
                     services.AddSingleton<ICraftingScreenRenderer, CraftingScreenRenderer>();
 
+                    // Register Journal Screen Renderer (v0.3.7c)
+                    services.AddSingleton<IJournalScreenRenderer, JournalScreenRenderer>();
+
                     // Register Bodging Services (v0.3.1b)
                     services.AddScoped<IBodgingService, BodgingService>();
 

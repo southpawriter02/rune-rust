@@ -181,6 +181,11 @@ public class ParseResult
     /// </summary>
     public bool RequiresCraftingScreen { get; set; }
 
+    /// <summary>
+    /// Gets or sets whether the full journal screen should be opened (v0.3.7c).
+    /// </summary>
+    public bool RequiresJournalScreen { get; set; }
+
     #region Alchemy & Runeforging Commands (v0.3.1c)
 
     /// <summary>
@@ -764,6 +769,10 @@ public class CommandParser
             case "craft-menu":
                 _logger.LogDebug("Full crafting screen requested (v0.3.7b).");
                 return new ParseResult { RequiresCraftingScreen = true };
+
+            case "archive":
+                _logger.LogDebug("Full journal screen requested (v0.3.7c).");
+                return new ParseResult { RequiresJournalScreen = true };
 
             case "equipment":
             case "gear":
