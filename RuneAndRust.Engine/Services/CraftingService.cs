@@ -4,6 +4,7 @@ using RuneAndRust.Core.Entities;
 using RuneAndRust.Core.Enums;
 using RuneAndRust.Core.Interfaces;
 using RuneAndRust.Core.Models.Crafting;
+using RuneAndRust.Core.ViewModels;
 
 namespace RuneAndRust.Engine.Services;
 
@@ -144,6 +145,86 @@ public class CraftingService : ICraftingService
     public IReadOnlyList<Recipe> GetAllRecipes()
     {
         return RecipeRegistry.GetAll();
+    }
+
+    /// <inheritdoc />
+    public CraftingViewModel BuildViewModel(Character crafter, CraftingTrade trade, int selectedIndex = 0)
+    {
+        _logger.LogTrace("[Crafting] Building ViewModel for {Character}, Trade={Trade}", crafter.Name, trade);
+
+        // Get filtered recipes
+        var tradeRecipes = GetRecipesByTrade(trade);
+        _logger.LogDebug("[Crafting] Found {Count} recipes for {Trade}", tradeRecipes.Count, trade);
+
+        var recipes = tradeRecipes
+            .Select((r, i) => new RecipeView(
+                Index: i + 1,
+                RecipeId: r.RecipeId,
+                Name: r.Name,
+                Trade: r.Trade,
+                DifficultyClass: r.BaseDc,
+                CanCraft: HasIngredients(crafter, r)
+            ))
+            .ToList();
+
+        // Build details for selected recipe
+        RecipeDetailsView? details = null;
+        if (selectedIndex >= 0 && selectedIndex < recipes.Count)
+        {
+            var selected = GetRecipe(recipes[selectedIndex].RecipeId);
+            if (selected != null)
+            {
+                details = BuildRecipeDetails(crafter, selected);
+            }
+        }
+
+        return new CraftingViewModel(
+            CharacterName: crafter.Name,
+            CrafterWits: crafter.Wits,
+            SelectedTrade: trade,
+            Recipes: recipes,
+            SelectedRecipeIndex: selectedIndex,
+            SelectedRecipeDetails: details
+        );
+    }
+
+    /// <summary>
+    /// Builds the details view for a specific recipe with ingredient availability.
+    /// </summary>
+    /// <param name="crafter">The character to check inventory against.</param>
+    /// <param name="recipe">The recipe to build details for.</param>
+    /// <returns>A RecipeDetailsView with ingredient breakdown.</returns>
+    private RecipeDetailsView BuildRecipeDetails(Character crafter, Recipe recipe)
+    {
+        _logger.LogTrace("[Crafting] Building details for {RecipeId}", recipe.RecipeId);
+
+        var ingredients = recipe.Ingredients
+            .Select(kvp =>
+            {
+                var available = crafter.Inventory
+                    .FirstOrDefault(i => i.Item.Name.Equals(kvp.Key, StringComparison.OrdinalIgnoreCase))
+                    ?.Quantity ?? 0;
+                return new IngredientView(
+                    ItemName: kvp.Key,
+                    RequiredQuantity: kvp.Value,
+                    AvailableQuantity: available,
+                    IsSatisfied: available >= kvp.Value
+                );
+            })
+            .ToList();
+
+        return new RecipeDetailsView(
+            RecipeId: recipe.RecipeId,
+            Name: recipe.Name,
+            Description: recipe.Description,
+            Trade: recipe.Trade,
+            DifficultyClass: recipe.BaseDc,
+            CrafterWits: crafter.Wits,
+            Ingredients: ingredients,
+            OutputItemName: recipe.OutputItemId,
+            OutputQuantity: recipe.OutputQuantity,
+            CanCraft: ingredients.All(i => i.IsSatisfied)
+        );
     }
 
     /// <summary>

@@ -1,6 +1,7 @@
 using RuneAndRust.Core.Entities;
 using RuneAndRust.Core.Enums;
 using RuneAndRust.Core.Models.Crafting;
+using RuneAndRust.Core.ViewModels;
 
 namespace RuneAndRust.Core.Interfaces;
 
@@ -53,4 +54,13 @@ public interface ICraftingService
     /// </summary>
     /// <returns>List of all recipes in the registry.</returns>
     IReadOnlyList<Recipe> GetAllRecipes();
+
+    /// <summary>
+    /// Builds a ViewModel for the crafting UI from current character state (v0.3.7b).
+    /// </summary>
+    /// <param name="crafter">The character to build the view for.</param>
+    /// <param name="trade">The trade to filter recipes by.</param>
+    /// <param name="selectedIndex">The currently selected recipe index (0-based).</param>
+    /// <returns>A CraftingViewModel with all display-ready data.</returns>
+    CraftingViewModel BuildViewModel(Character crafter, CraftingTrade trade, int selectedIndex = 0);
 }

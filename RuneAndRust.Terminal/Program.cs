@@ -129,6 +129,9 @@ class Program
                     // Register Crafting Services (v0.3.1a)
                     services.AddScoped<ICraftingService, CraftingService>();
 
+                    // Register Crafting Screen Renderer (v0.3.7b)
+                    services.AddSingleton<ICraftingScreenRenderer, CraftingScreenRenderer>();
+
                     // Register Bodging Services (v0.3.1b)
                     services.AddScoped<IBodgingService, BodgingService>();
 
