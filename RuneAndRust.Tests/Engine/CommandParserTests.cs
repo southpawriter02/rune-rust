@@ -604,7 +604,6 @@ public class CommandParserTests
     [Theory]
     [InlineData("inventory")]
     [InlineData("i")]
-    [InlineData("pack")]
     public void ParseAndExecute_Exploration_InventoryCommands_ReturnsRequiresInventory(string command)
     {
         // Arrange
@@ -615,6 +614,21 @@ public class CommandParserTests
 
         // Assert
         result.RequiresInventory.Should().BeTrue();
+    }
+
+    [Theory]
+    [InlineData("pack")]
+    [InlineData("p")]
+    public void ParseAndExecute_Exploration_PackCommand_ReturnsRequiresInventoryScreen(string command)
+    {
+        // Arrange
+        _state.Phase = GamePhase.Exploration;
+
+        // Act
+        var result = _sut.ParseAndExecuteAsync(command, _state).GetAwaiter().GetResult();
+
+        // Assert - v0.3.7a: "pack"/"p" now opens the full-screen inventory UI
+        result.RequiresInventoryScreen.Should().BeTrue();
     }
 
     [Theory]

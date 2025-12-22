@@ -171,6 +171,11 @@ public class ParseResult
     /// </summary>
     public string? SalvageTarget { get; set; }
 
+    /// <summary>
+    /// Gets or sets whether the full inventory screen should be opened (v0.3.7a).
+    /// </summary>
+    public bool RequiresInventoryScreen { get; set; }
+
     #region Alchemy & Runeforging Commands (v0.3.1c)
 
     /// <summary>
@@ -741,9 +746,13 @@ public class CommandParser
 
             case "inventory":
             case "i":
-            case "pack":
-                _logger.LogDebug("Inventory display command executed.");
+                _logger.LogDebug("Inventory text display command executed.");
                 return new ParseResult { RequiresInventory = true };
+
+            case "pack":
+            case "p":
+                _logger.LogDebug("Full inventory screen requested (v0.3.7a).");
+                return new ParseResult { RequiresInventoryScreen = true };
 
             case "equipment":
             case "gear":

@@ -1,5 +1,6 @@
 using RuneAndRust.Core.Entities;
 using RuneAndRust.Core.Enums;
+using RuneAndRust.Core.ViewModels;
 
 namespace RuneAndRust.Core.Interfaces;
 
@@ -138,4 +139,12 @@ public interface IInventoryService
     /// <param name="tag">The tag to search for (case-insensitive).</param>
     /// <returns>The inventory entry if found, null otherwise.</returns>
     Task<InventoryItem?> FindItemByTagAsync(Character character, string tag);
+
+    /// <summary>
+    /// Creates an immutable view model snapshot of the character's inventory (v0.3.7a).
+    /// </summary>
+    /// <param name="character">The character whose inventory to snapshot.</param>
+    /// <param name="selectedIndex">Currently selected item index for navigation.</param>
+    /// <returns>An InventoryViewModel for UI rendering.</returns>
+    Task<InventoryViewModel> GetViewModelAsync(Character character, int selectedIndex = 0);
 }

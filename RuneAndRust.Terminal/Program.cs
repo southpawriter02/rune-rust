@@ -114,6 +114,9 @@ class Program
                     services.AddScoped<IInventoryRepository, InventoryRepository>();
                     services.AddScoped<IInventoryService, InventoryService>();
 
+                    // Register Inventory Screen Renderer (v0.3.7a)
+                    services.AddSingleton<IInventoryScreenRenderer, InventoryScreenRenderer>();
+
                     // Register Ambush Services (v0.3.2b)
                     services.AddScoped<IAmbushService, AmbushService>();
 

@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using RuneAndRust.Core.Entities;
 using RuneAndRust.Core.Enums;
 using RuneAndRust.Core.Interfaces;
+using RuneAndRust.Core.ViewModels;
 using CharacterAttribute = RuneAndRust.Core.Enums.Attribute;
 
 namespace RuneAndRust.Engine.Services;
@@ -466,5 +467,70 @@ public class InventoryService : IInventoryService
         }
 
         return item;
+    }
+
+    /// <inheritdoc/>
+    public async Task<InventoryViewModel> GetViewModelAsync(Character character, int selectedIndex = 0)
+    {
+        _logger.LogTrace("[GetViewModel] Building inventory snapshot for {CharacterName}", character.Name);
+
+        var allItems = (await _inventoryRepository.GetByCharacterIdAsync(character.Id)).ToList();
+
+        // Build equipped items dictionary
+        var equippedDict = new Dictionary<EquipmentSlot, EquippedItemView?>();
+        foreach (var slot in Enum.GetValues<EquipmentSlot>())
+        {
+            var equipped = allItems.FirstOrDefault(i => i.IsEquipped && i.Item is Equipment eq && eq.Slot == slot);
+            if (equipped?.Item is Equipment equipment)
+            {
+                equippedDict[slot] = new EquippedItemView(
+                    Name: equipment.Name,
+                    Quality: equipment.Quality,
+                    DurabilityPercentage: equipment.MaxDurability > 0
+                        ? (int)((double)equipment.CurrentDurability / equipment.MaxDurability * 100)
+                        : 100,
+                    IsBroken: equipment.IsBroken
+                );
+            }
+            else
+            {
+                equippedDict[slot] = null;
+            }
+        }
+
+        // Build backpack items list (non-equipped, ordered by slot position)
+        var backpackItems = allItems
+            .Where(i => !i.IsEquipped)
+            .OrderBy(i => i.SlotPosition)
+            .Select((item, idx) => new BackpackItemView(
+                Index: idx + 1,
+                Name: item.Item.Name,
+                Quantity: item.Quantity,
+                Quality: item.Item.Quality,
+                WeightGrams: item.Item.Weight * item.Quantity,
+                ItemType: item.Item.ItemType,
+                IsEquipable: item.Item is Equipment
+            ))
+            .ToList();
+
+        // Calculate burden metrics
+        var currentWeight = await GetCurrentWeightAsync(character);
+        var maxCapacity = GetMaxCapacity(character);
+        var burdenPct = maxCapacity > 0 ? (int)((double)currentWeight / maxCapacity * 100) : 0;
+        var burdenState = await CalculateBurdenAsync(character);
+
+        _logger.LogDebug("[GetViewModel] Inventory snapshot built: {BackpackCount} backpack items, {Weight}g/{MaxWeight}g ({BurdenPct}%)",
+            backpackItems.Count, currentWeight, maxCapacity, burdenPct);
+
+        return new InventoryViewModel(
+            CharacterName: character.Name,
+            EquippedItems: equippedDict,
+            BackpackItems: backpackItems,
+            CurrentWeight: currentWeight,
+            MaxCapacity: maxCapacity,
+            BurdenPercentage: burdenPct,
+            BurdenState: burdenState,
+            SelectedIndex: Math.Clamp(selectedIndex, 0, Math.Max(0, backpackItems.Count - 1))
+        );
     }
 }
