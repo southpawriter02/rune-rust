@@ -250,7 +250,8 @@ public class RuneAndRustDbContext : DbContext
                 .HasValue<DynamicHazard>(ObjectType.Hazard);
 
             // Index on RoomId for efficient room-based queries
-            entity.HasIndex(o => o.RoomId);
+            entity.HasIndex(o => o.RoomId)
+                .HasDatabaseName("IX_InteractableObjects_RoomId");
 
             entity.Property(o => o.RoomId)
                 .IsRequired();
