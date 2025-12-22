@@ -29,6 +29,7 @@ public class CombatService : ICombatService
     private readonly IConditionService _conditionService;
     private readonly IRoomRepository _roomRepository;
     private readonly IDiceService _dice;
+    private readonly IVisualEffectService _visualEffectService;
     private readonly ILogger<CombatService> _logger;
 
     /// <summary>
@@ -329,6 +330,7 @@ public class CombatService : ICombatService
     /// <param name="conditionService">The condition service for ambient effects (v0.3.3b).</param>
     /// <param name="roomRepository">The room repository for current room lookup.</param>
     /// <param name="dice">The dice service for WITS checks (v0.3.6c).</param>
+    /// <param name="visualEffectService">The visual effect service for combat VFX (v0.3.9a).</param>
     /// <param name="logger">The logger for traceability.</param>
     public CombatService(
         GameState gameState,
@@ -346,6 +348,7 @@ public class CombatService : ICombatService
         IConditionService conditionService,
         IRoomRepository roomRepository,
         IDiceService dice,
+        IVisualEffectService visualEffectService,
         ILogger<CombatService> logger)
     {
         _gameState = gameState;
@@ -363,6 +366,7 @@ public class CombatService : ICombatService
         _conditionService = conditionService;
         _roomRepository = roomRepository;
         _dice = dice;
+        _visualEffectService = visualEffectService;
         _logger = logger;
     }
 
@@ -672,6 +676,12 @@ public class CombatService : ICombatService
             _logger.LogDebug(
                 "{Target} took {Damage} damage. HP: {Current}/{Max}",
                 target.Name, result.FinalDamage, target.CurrentHp, target.MaxHp);
+
+            // Trigger visual effect for hit (v0.3.9a)
+            var effectType = result.Outcome == AttackOutcome.Critical
+                ? VisualEffectType.CriticalFlash
+                : VisualEffectType.DamageFlash;
+            _ = _visualEffectService.TriggerEffectAsync(effectType);
 
             // Trigger replanning after damage (v0.3.6c)
             OnStateChange();
@@ -1147,6 +1157,15 @@ public class CombatService : ICombatService
             _logger.LogDebug(
                 "{Target} took {Damage} damage. HP: {Current}/{Max}",
                 target.Name, result.FinalDamage, target.CurrentHp, target.MaxHp);
+
+            // Trigger visual effect for player taking damage (v0.3.9a)
+            if (target.IsPlayer)
+            {
+                var effectType = result.Outcome == AttackOutcome.Critical
+                    ? VisualEffectType.CriticalFlash
+                    : VisualEffectType.DamageFlash;
+                _ = _visualEffectService.TriggerEffectAsync(effectType);
+            }
 
             // Trigger replanning after damage (v0.3.6c)
             OnStateChange();

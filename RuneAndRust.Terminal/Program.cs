@@ -52,6 +52,11 @@ class Program
                     services.AddScoped<IActiveAbilityRepository, ActiveAbilityRepository>();
                     services.AddScoped<IItemRepository, ItemRepository>();
 
+                    // Register Dynamic Room Engine Repositories (v0.4.0)
+                    services.AddScoped<IRoomTemplateRepository, RoomTemplateRepository>();
+                    services.AddScoped<IBiomeDefinitionRepository, BiomeDefinitionRepository>();
+                    services.AddScoped<IBiomeElementRepository, BiomeElementRepository>();
+
                     // Register Core State (Singleton to persist across game loop)
                     services.AddSingleton<GameState>();
 
@@ -132,6 +137,12 @@ class Program
                     // Register Crafting Screen Renderer (v0.3.7b)
                     services.AddSingleton<ICraftingScreenRenderer, CraftingScreenRenderer>();
 
+                    // Register Journal Screen Renderer (v0.3.7c)
+                    services.AddSingleton<IJournalScreenRenderer, JournalScreenRenderer>();
+
+                    // Register Visual Effect Service (v0.3.9a)
+                    services.AddSingleton<IVisualEffectService, VisualEffectService>();
+
                     // Register Bodging Services (v0.3.1b)
                     services.AddScoped<IBodgingService, BodgingService>();
 
@@ -145,6 +156,11 @@ class Program
                     // Register Environment Ecosystem Services (v0.3.3c)
                     services.AddScoped<IEnvironmentPopulator, EnvironmentPopulator>();
 
+                    // Register Dynamic Room Engine Services (v0.4.0)
+                    services.AddScoped<ITemplateLoaderService, TemplateLoaderService>();
+                    services.AddScoped<ITemplateRendererService, TemplateRendererService>();
+                    services.AddScoped<IElementSpawnEvaluator, ElementSpawnEvaluator>();
+
                     // Register Title Screen Service (v0.3.4a)
                     services.AddScoped<ITitleScreenService, TitleScreenService>();
                 })
@@ -155,9 +171,15 @@ class Program
             using (var scope = host.Services.CreateScope())
             {
                 var context = scope.ServiceProvider.GetRequiredService<RuneAndRustDbContext>();
+                var templateLoader = scope.ServiceProvider.GetRequiredService<ITemplateLoaderService>();
+                var logger = scope.ServiceProvider.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Program>>();
+
                 AbilitySeeder.SeedAsync(context).GetAwaiter().GetResult();
                 ConditionSeeder.SeedAsync(context).GetAwaiter().GetResult();
                 HazardTemplateSeeder.SeedAsync(context).GetAwaiter().GetResult();
+
+                // Seed Room Templates and Biome Definitions (v0.4.0)
+                RoomTemplateSeeder.SeedAsync(context, templateLoader, logger).GetAwaiter().GetResult();
             }
 
             // 4. UI Handover
