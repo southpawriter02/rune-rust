@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using RuneAndRust.Core.Interfaces;
+using RuneAndRust.Core.Models;
 using RuneAndRust.Core.ViewModels;
 using RuneAndRust.Terminal.Rendering;
 using Spectre.Console;
@@ -11,6 +12,7 @@ namespace RuneAndRust.Terminal.Services;
 /// Displays player stats, turn order, and combat log in a structured layout.
 /// Updated v0.3.9a: Added visual effect service for border flash effects.
 /// Updated v0.3.9b: Added theme service for accessibility color support.
+/// Updated v0.3.9c: Added context help tips panel.
 /// </summary>
 public class CombatScreenRenderer : ICombatScreenRenderer
 {
@@ -64,7 +66,14 @@ public class CombatScreenRenderer : ICombatScreenRenderer
             AnsiConsole.WriteLine();
         }
 
-        // 5. Combat Log Panel
+        // 5. Context Help Tips Panel (v0.3.9c)
+        if (vm.ContextTips != null && vm.ContextTips.Count > 0)
+        {
+            RenderContextTips(vm.ContextTips, _themeService);
+            AnsiConsole.WriteLine();
+        }
+
+        // 6. Combat Log Panel
         RenderCombatLog(vm.RoundNumber, vm.CombatLog);
 
         AnsiConsole.WriteLine();
@@ -234,6 +243,41 @@ public class CombatScreenRenderer : ICombatScreenRenderer
         }
 
         AnsiConsole.Write(table);
+    }
+
+    /// <summary>
+    /// Renders the context-aware help tips panel (v0.3.9c).
+    /// </summary>
+    /// <param name="tips">The list of help tips to display.</param>
+    /// <param name="themeService">The theme service for color lookups.</param>
+    private static void RenderContextTips(List<HelpTip> tips, IThemeService themeService)
+    {
+        var rows = new List<string>();
+
+        foreach (var tip in tips)
+        {
+            // Get icon based on priority
+            var icon = tip.Priority switch
+            {
+                >= HelpTip.PriorityCritical => "!!",
+                >= HelpTip.PriorityWarning => "!",
+                >= HelpTip.PriorityTactical => "*",
+                _ => "-"
+            };
+
+            rows.Add($"[{tip.Color}]{icon} {tip.Title}:[/] {tip.Message}");
+        }
+
+        var content = string.Join("\n", rows);
+        var panel = new Panel(new Markup(content))
+        {
+            Header = new PanelHeader("[bold cyan]TACTICAL INTEL[/]"),
+            Border = BoxBorder.Rounded,
+            BorderStyle = Style.Parse(themeService.GetColor("InfoColor")),
+            Padding = new Padding(1, 0, 1, 0)
+        };
+
+        AnsiConsole.Write(panel);
     }
 
     /// <summary>

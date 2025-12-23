@@ -1,4 +1,5 @@
 using RuneAndRust.Core.Entities;
+using RuneAndRust.Core.Models;
 using RuneAndRust.Core.ValueObjects;
 
 namespace RuneAndRust.Core.ViewModels;
@@ -8,6 +9,7 @@ namespace RuneAndRust.Core.ViewModels;
 /// Contains all display data for the persistent three-pane interface.
 /// Extended with minimap data in v0.3.5b.
 /// Extended with room rendering data in v0.3.5c.
+/// Extended with context help tips in v0.3.9c.
 /// </summary>
 /// <param name="CharacterName">The player character's display name.</param>
 /// <param name="CurrentHp">Current hit points.</param>
@@ -28,6 +30,7 @@ namespace RuneAndRust.Core.ViewModels;
 /// <param name="VisibleEnemies">Formatted enemy names with health status (v0.3.5c).</param>
 /// <param name="Exits">Comma-separated lowercase exit directions (v0.3.5c).</param>
 /// <param name="BiomeColor">Spectre.Console color name for biome theming (v0.3.5c).</param>
+/// <param name="ContextTips">Context-aware help tips for the current exploration state (v0.3.9c).</param>
 public record ExplorationViewModel(
     string CharacterName,
     int CurrentHp,
@@ -47,5 +50,6 @@ public record ExplorationViewModel(
     List<string> VisibleObjects,
     List<string> VisibleEnemies,
     string Exits,
-    string BiomeColor
+    string BiomeColor,
+    List<HelpTip>? ContextTips = null
 );

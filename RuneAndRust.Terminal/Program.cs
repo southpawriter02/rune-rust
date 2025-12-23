@@ -146,6 +146,12 @@ class Program
                     // Register Theme Service (v0.3.9b)
                     services.AddSingleton<IThemeService, ThemeService>();
 
+                    // Register Input Configuration Service (v0.3.9c)
+                    services.AddSingleton<IInputConfigurationService, InputConfigurationService>();
+
+                    // Register Context Help Service (v0.3.9c)
+                    services.AddSingleton<IContextHelpService, ContextHelpService>();
+
                     // Register Bodging Services (v0.3.1b)
                     services.AddScoped<IBodgingService, BodgingService>();
 
