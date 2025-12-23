@@ -484,3 +484,380 @@ Focus: Replayability and systems that extend beyond a single run.
     •   v1.1.4: Community Cycles
     ◦   Scope: Implement Daily Runs with fixed seeds and leaderboards based on Legend score.
 Shall we begin detailing v0.8.0: The Deep Framework?
+
+Here is the implementation status checklist for Rune & Rust, tracking the "Walking Skeleton" from foundational infrastructure through the current "Interface Polish" phase and into the planned Saga expansion.
+Phase 1: Infrastructure & Core Domain (Milestone 1)
+Version
+Status
+Codename
+Scope
+v0.0.1
+✅
+The Foundation
+Solution scaffolding, DI container, Serilog logging.
+v0.0.2
+✅
+The Domain
+Dice mechanics, Attributes enum, basic Character entity.
+v0.0.3
+✅
+The Loop
+Game state machine, Command Parser, I/O abstraction.
+v0.0.4
+✅
+Persistence
+PostgreSQL/EF Core integration, Save/Load services.
+v0.0.5
+✅
+Spatial Core
+3D coordinate system, Room entity, basic navigation.
+Phase 2: Exploration & Economy (Milestone 2)
+Version
+Status
+Codename
+Scope
+v0.1.0
+✅
+The Survivor
+Character creation wizard, Lineage/Archetype selection.
+v0.1.1
+✅
+Interaction
+Interactable objects, WITS examination, procedural descriptions.
+v0.1.2a
+✅
+Survival (Base)
+Item entities, Quality tiers, equipment slots, burden mechanics.
+v0.1.2b
+✅
+Survival (Player)
+Inventory management, equip/unequip logic, burden penalties.
+v0.1.2c
+✅
+Survival (World)
+Loot generation, container searching, take/drop commands.
+v0.1.3a
+✅
+Codex (Data)
+Data Capture entities, Codex Entry schema, unlock thresholds.
+v0.1.3b
+✅
+Codex (Logic)
+Capture generation, auto-assignment, completion tracking.
+v0.1.3c
+✅
+Codex (UI)
+Journal TUI, text redaction service, glitch effects.
+Phase 3: The Warrior (Milestone 3)
+Version
+Status
+Codename
+Scope
+v0.2.0a
+✅
+Arena (State)
+Combat state machine, initiative sorting, combatant adapter.
+v0.2.0b
+✅
+Exchange (Action)
+Attack resolution, stamina costs, hit/miss/crit logic.
+v0.2.0c
+✅
+Interface (UI)
+Combat TUI, turn order table, scrolling log.
+v0.2.1a
+✅
+Armory (Gear)
+Weapon damage dice, armor soak integration, victory loot.
+v0.2.1b
+✅
+Affliction (Status)
+Status effects (Bleed, Stun), DoT ticking, stacking rules.
+v0.2.1c
+✅
+Visuals (UI)
+Status icons in UI, post-combat victory screen.
+v0.2.2a
+✅
+Bestiary (Data)
+Enemy templates, factory scaling, initial mob roster.
+v0.2.2b
+✅
+Mind (AI)
+Enemy AI behaviors (Aggressive, Defensive, Fleeing).
+v0.2.2c
+✅
+Elite (Traits)
+Procedural elite enemies with traits (Explosive, Vampiric).
+v0.2.3a
+✅
+Fuel (Resource)
+Stamina regen, Aether pool, Overcast mechanic.
+v0.2.3b
+✅
+Engine (Ability)
+EffectScript parser (DAMAGE, HEAL, STATUS commands).
+v0.2.3c
+✅
+Arsenal (Kits)
+Tier 1 archetype abilities seeded, use command wired.
+v0.2.4a
+✅
+Loadout (Data)
+Enemy ability hydration and template integration.
+v0.2.4b
+📝
+Tactician (Select)
+Utility-based AI ability selection logic.
+v0.2.4c
+📝
+Omen (Telegraph)
+Enemy charge attacks, "Chant" mechanic, telegraph UI.
+Phase 4: The Survivor (Milestone 4)
+Version
+Status
+Codename
+Scope
+v0.3.0a
+✅
+Weight (Stress)
+Psychic Stress resource, WILL-based Resolve Checks.
+v0.3.0b
+✅
+Stain (Blight)
+Corruption resource, permanent tiers, Terminal Error state.
+v0.3.0c
+✅
+Scar (Trauma)
+Breaking Point event, permanent Trauma acquisition.
+v0.3.1a
+✅
+Blueprint (Craft)
+Crafting engine, Recipe registry, WITS checks.
+v0.3.1b
+✅
+Tinkerer (Bodge)
+Repair/Salvage logic, Field Medicine constraints.
+v0.3.1c
+✅
+Alchemist (Volatile)
+Alchemy/Runeforging, Catastrophe mechanics (Explosions).
+v0.3.1d
+✅
+Infrastructure
+Docker PostgreSQL container, EF design-time factory.
+v0.3.1e
+✅
+Validation
+PostgreSQL integration tests, JSONB query validation.
+v0.3.2a
+✅
+Campfire (Logic)
+Rest mechanics, resource consumption, recovery formulas.
+v0.3.2b
+✅
+Watch (Ambush)
+Ambush risk calculation, Camp Craft mitigation.
+v0.3.2c
+✅
+Dawn (Integrate)
+Rest UI renderer, rest/camp command wiring.
+v0.3.3a
+✅
+Ground (Hazards)
+Interactive traps (Vents, Plates), trigger logic.
+v0.3.3b
+✅
+Air (Conditions)
+Room-wide ambient effects (Toxic Air, Psychic Resonance).
+v0.3.3c
+✅
+Ecosystem
+Procedural hazard population based on biome/danger.
+Phase 5: Interface Polish (Milestone 4.5)
+Version
+Status
+Codename
+Scope
+v0.3.4a
+✅
+Facade (Menu)
+Animated ASCII title screen, glitch effects.
+v0.3.4b
+✅
+Forge (Wizard)
+Split-screen character creator with live stat preview.
+v0.3.4c
+✅
+Prologue (Intro)
+Typewriter narrative engine, seamless game entry.
+v0.3.5a
+✅
+Dashboard (HUD)
+Persistent 3-pane exploration UI (Header/Body/Log).
+v0.3.5b
+✅
+Map (Minimap)
+ASCII minimap with Fog of War and Z-levels.
+v0.3.5c
+✅
+Surveyor (Room)
+Rich-text room panel with entity highlighting.
+v0.3.5d
+✅
+Stabilizer
+Critical bug fixes, mouse input filtering.
+v0.3.6a
+✅
+Grid (Combat)
+Tactical grid visualization (Front/Back rows).
+v0.3.6b
+✅
+Timeline (Turn)
+Horizontal initiative timeline, rich combat log.
+v0.3.6c
+✅
+Telegraph (Intent)
+Enemy intent icons, status effect symbols.
+v0.3.7a
+✅
+Pack (Inventory)
+Split-screen inventory UI, burden bar.
+v0.3.7b
+✅
+Bench (Crafting)
+Tabbed crafting UI, recipe details, ingredient checks.
+v0.3.7c
+✅
+Archive (Journal)
+Tabbed Journal UI, text redaction, glitch rendering.
+v0.3.8
+✅
+Dynamic Engine
+Template-based room generation with variable substitution.
+v0.3.9a
+✅
+Impact (FX)
+Screen shake, border flash effects.
+v0.3.9b
+✅
+Lens (Theme)
+Accessibility themes (High Contrast, Colorblind).
+v0.3.9c
+✅
+Guide (Controls)
+Context help system, Key rebinding logic.
+v0.3.10a
+✅
+Preferences
+Persistent settings engine (JSON).
+v0.3.10b
+✅
+Control Panel
+Interactive Options UI.
+v0.3.10c
+✅
+Keymaster
+Interactive Key Rebinding UI.
+Upcoming Polish (Milestone 4.8 - 4.9)
+Version
+Status
+Codename
+Scope
+v0.3.11
+📝
+Archivist
+In-game help wiki, auto-generated docs.
+v0.3.12
+📝
+Gauntlet
+End-to-end integration test suite.
+v0.3.13
+📝
+Scales
+Balance tuning (loot tables, combat math).
+v0.3.14
+📝
+Experience
+UX polish, color standardization.
+v0.3.15
+📝
+Scribe
+Localization infrastructure.
+v0.3.16
+📝
+Sentinel
+Crash reporting and emergency save.
+v0.3.17
+📝
+Architect
+Debug console overlay.
+v0.3.18
+📝
+Auditor
+Performance profiling.
+v0.3.19
+📝
+Bard
+Audio service hooks.
+v0.3.20
+📝
+Cartographer II
+Map annotations and export.
+v0.3.21
+📝
+Steward
+Save management UI.
+v0.3.22
+📝
+Tactician II
+Combat log filtering, enemy inspection.
+v0.3.23
+📝
+Gatekeeper
+Input refactoring (mouse support).
+v0.3.24
+📝
+Precursor
+Final cleanup for Alpha (v0.4.0).
+Future Roadmap (Milestones 5-13)
+Milestone
+Version
+Focus
+Key Features
+5. Saga
+v0.4.x
+Progression
+Leveling, Specializations, Factions.
+6. Weaver
+v0.4.3+
+Magic
+Spells, Chants, Wild Magic, Runeforging.
+7. Architect
+v0.5.x
+Settlements
+Safe Zones, Trade, Quest Chains.
+8. Adversary
+v0.6.x
+Adv. Combat
+Traits, Squad AI, Bosses, Stealth.
+9. World
+v0.7.x
+Biomes
+Muspelheim, Niflheim, Jötunheim, Alfheim.
+10. Deep
+v0.8.x
+Underworld
+Svartalfheim, Helheim, Sunken Sectors.
+11. Sky
+v0.9.x
+Endgame
+Asgard, Valhalla, Counter-Rune.
+12. Launch
+v1.0.x
+GUI
+Avalonia GUI, Audio, Achievements.
+13. Legacy
+v1.1.x
+Replay
+New Game+, Territory Control.

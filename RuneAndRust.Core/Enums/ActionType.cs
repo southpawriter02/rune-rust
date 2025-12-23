@@ -23,5 +23,11 @@ public enum ActionType
     /// <summary>
     /// Skip turn (stunned, out of stamina, no valid action).
     /// </summary>
-    Pass
+    Pass,
+
+    /// <summary>
+    /// Use an active ability from the combatant's ability loadout.
+    /// Requires AbilityId in CombatAction (v0.2.4b).
+    /// </summary>
+    UseAbility
 }

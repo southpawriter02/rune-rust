@@ -11,10 +11,12 @@ namespace RuneAndRust.Core.Models.Combat;
 /// <param name="TargetId">The target combatant's ID (null for Defend/Flee/Pass).</param>
 /// <param name="AttackType">The attack variant if Type is Attack (Light/Standard/Heavy).</param>
 /// <param name="FlavorText">Optional AAM-VOICE compliant narrative description.</param>
+/// <param name="AbilityId">The specific ability to use when Type is UseAbility (v0.2.4b).</param>
 public record CombatAction(
     ActionType Type,
     Guid SourceId,
     Guid? TargetId,
     AttackType? AttackType = null,
-    string? FlavorText = null
+    string? FlavorText = null,
+    Guid? AbilityId = null
 );

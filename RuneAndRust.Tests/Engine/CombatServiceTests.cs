@@ -1263,4 +1263,123 @@ public class CombatServiceTests
     }
 
     #endregion
+
+    #region Enemy Ability Execution Tests (v0.2.4b)
+
+    [Fact]
+    public async Task ProcessEnemyTurnAsync_ExecutesAbility_WhenActionTypeIsUseAbility()
+    {
+        // Arrange
+        SetupActiveCombatWithPlayerAndEnemy(playerFirst: false);
+        var enemy = _gameState.CombatState!.TurnOrder.First(c => !c.IsPlayer);
+        var player = _gameState.CombatState.TurnOrder.First(c => c.IsPlayer);
+
+        var ability = new ActiveAbility
+        {
+            Id = Guid.NewGuid(),
+            Name = "Power Strike",
+            EffectScript = "DAMAGE:Physical:2d6",
+            StaminaCost = 5
+        };
+        enemy.Abilities.Add(ability);
+
+        var useAbilityAction = new CombatAction(
+            ActionType.UseAbility,
+            enemy.Id,
+            player.Id,
+            AbilityId: ability.Id);
+
+        _mockAIService.Setup(a => a.DetermineAction(enemy, _gameState.CombatState))
+            .Returns(useAbilityAction);
+
+        _mockAbilityService.Setup(a => a.Execute(enemy, It.IsAny<Combatant>(), ability))
+            .Returns(new AbilityResult(true, "Power Strike deals 8 damage!"));
+
+        // Act
+        await _sut.ProcessEnemyTurnAsync();
+
+        // Assert
+        _mockAbilityService.Verify(a => a.Execute(enemy, It.IsAny<Combatant>(), ability), Times.Once);
+    }
+
+    [Fact]
+    public async Task ProcessEnemyTurnAsync_LogsAbilityUsage_WhenUseAbilityExecuted()
+    {
+        // Arrange
+        SetupActiveCombatWithPlayerAndEnemy(playerFirst: false);
+        var enemy = _gameState.CombatState!.TurnOrder.First(c => !c.IsPlayer);
+        var player = _gameState.CombatState.TurnOrder.First(c => c.IsPlayer);
+
+        var ability = new ActiveAbility
+        {
+            Id = Guid.NewGuid(),
+            Name = "Flame Burst",
+            EffectScript = "DAMAGE:Fire:3d6",
+            StaminaCost = 8
+        };
+        enemy.Abilities.Add(ability);
+
+        var useAbilityAction = new CombatAction(
+            ActionType.UseAbility,
+            enemy.Id,
+            player.Id,
+            AbilityId: ability.Id);
+
+        _mockAIService.Setup(a => a.DetermineAction(enemy, _gameState.CombatState))
+            .Returns(useAbilityAction);
+
+        _mockAbilityService.Setup(a => a.Execute(enemy, It.IsAny<Combatant>(), ability))
+            .Returns(new AbilityResult(true, "Flame Burst scorches the target for 12 damage!"));
+
+        // Act
+        await _sut.ProcessEnemyTurnAsync();
+
+        // Assert
+        var viewModel = _sut.GetViewModel();
+        viewModel!.CombatLog.Should().Contain(m => m.Contains("Flame Burst"));
+    }
+
+    [Fact]
+    public async Task ProcessEnemyTurnAsync_HandlesAbilityNotFound_Gracefully()
+    {
+        // Arrange
+        SetupActiveCombatWithPlayerAndEnemy(playerFirst: false);
+        var enemy = _gameState.CombatState!.TurnOrder.First(c => !c.IsPlayer);
+        var player = _gameState.CombatState.TurnOrder.First(c => c.IsPlayer);
+
+        // No abilities added to enemy
+
+        var useAbilityAction = new CombatAction(
+            ActionType.UseAbility,
+            enemy.Id,
+            player.Id,
+            AbilityId: Guid.NewGuid()); // Non-existent ability
+
+        _mockAIService.Setup(a => a.DetermineAction(enemy, _gameState.CombatState))
+            .Returns(useAbilityAction);
+
+        // Act - Should not throw
+        await _sut.ProcessEnemyTurnAsync();
+
+        // Assert - Ability service should not be called since ability doesn't exist
+        _mockAbilityService.Verify(a => a.Execute(It.IsAny<Combatant>(), It.IsAny<Combatant>(), It.IsAny<ActiveAbility>()), Times.Never);
+    }
+
+    [Fact]
+    public void NextTurn_RegeneratesStamina_ForAllCombatants()
+    {
+        // Arrange
+        SetupActiveCombatWithPlayerAndEnemy(playerFirst: true);
+        var player = _gameState.CombatState!.TurnOrder.First(c => c.IsPlayer);
+        var enemy = _gameState.CombatState.TurnOrder.First(c => !c.IsPlayer);
+
+        // Act
+        _sut.NextTurn();
+
+        // Assert - Both combatants should have regeneration called
+        _mockResourceService.Verify(r => r.RegenerateStamina(player), Times.Once);
+        _mockResourceService.Verify(r => r.RegenerateStamina(enemy), Times.Once);
+    }
+
+    #endregion
 }
