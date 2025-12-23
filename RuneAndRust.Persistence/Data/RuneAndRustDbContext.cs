@@ -616,8 +616,9 @@ public class RuneAndRustDbContext : DbContext
             entity.Property(a => a.Range)
                 .IsRequired();
 
+            // Archetype is nullable for enemy abilities (v0.2.4a)
             entity.Property(a => a.Archetype)
-                .IsRequired();
+                .IsRequired(false);
 
             entity.Property(a => a.Tier)
                 .IsRequired();

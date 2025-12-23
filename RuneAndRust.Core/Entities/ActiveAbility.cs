@@ -58,8 +58,9 @@ public class ActiveAbility
     /// <summary>
     /// The character archetype that has access to this ability.
     /// Determines which characters can learn and use this ability.
+    /// Null for enemy-specific abilities (v0.2.4a).
     /// </summary>
-    public ArchetypeType Archetype { get; set; }
+    public ArchetypeType? Archetype { get; set; }
 
     /// <summary>
     /// Tier level (1-3). Higher tiers unlock at higher character levels.

@@ -6,19 +6,18 @@ using RuneAndRust.Core.Enums;
 namespace RuneAndRust.Persistence.Data;
 
 /// <summary>
-/// Seeds the database with Tier 1 abilities for each character archetype.
+/// Seeds the database with abilities for characters and enemies.
 /// </summary>
 /// <remarks>
-/// Each archetype receives 2 abilities at Tier 1:
-/// - One offensive/primary ability
-/// - One utility/defensive ability
+/// Character abilities (Tier 1): Each archetype receives 2 abilities.
+/// Enemy abilities (v0.2.4a): Shared pool for enemy templates to reference.
 ///
 /// All descriptions must be Domain 4 compliant (no precision measurements).
 /// </remarks>
 public static class AbilitySeeder
 {
     /// <summary>
-    /// Seeds the abilities if none exist.
+    /// Seeds all abilities if none exist, including enemy abilities (v0.2.4a).
     /// </summary>
     /// <param name="context">The database context.</param>
     /// <param name="logger">Optional logger for seeding operations.</param>
@@ -30,13 +29,17 @@ public static class AbilitySeeder
             return;
         }
 
-        logger?.LogInformation("Seeding Tier 1 abilities...");
+        logger?.LogInformation("Seeding abilities...");
 
-        var abilities = GetTier1Abilities();
-        await context.ActiveAbilities.AddRangeAsync(abilities);
+        var playerAbilities = GetTier1Abilities();
+        var enemyAbilities = GetEnemyAbilities();
+        var allAbilities = playerAbilities.Concat(enemyAbilities).ToList();
+
+        await context.ActiveAbilities.AddRangeAsync(allAbilities);
         await context.SaveChangesAsync();
 
-        logger?.LogInformation("Seeded {Count} Tier 1 abilities", abilities.Count);
+        logger?.LogInformation("Seeded {PlayerCount} player abilities and {EnemyCount} enemy abilities",
+            playerAbilities.Count, enemyAbilities.Count);
     }
 
     /// <summary>
@@ -157,6 +160,129 @@ public static class AbilitySeeder
                 CooldownTurns = 1,
                 Range = 1, // Melee
                 EffectScript = "DAMAGE:Radiant:1d6;HEAL:6"
+            }
+        };
+    }
+
+    /// <summary>
+    /// Gets all enemy-specific abilities for seeding (v0.2.4a).
+    /// These abilities are referenced by name in EnemyTemplate.AbilityNames.
+    /// </summary>
+    /// <returns>A list of ActiveAbility entities for enemies.</returns>
+    public static List<ActiveAbility> GetEnemyAbilities()
+    {
+        return new List<ActiveAbility>
+        {
+            // === UNDEAD ABILITIES ===
+            new ActiveAbility
+            {
+                Name = "Rusty Cleave",
+                Description = "A crude, sweeping strike with corroded steel. The jagged edge tears flesh " +
+                              "and leaves wounds that fester with rust-borne corruption.",
+                Archetype = null, // Enemy ability, no player archetype
+                Tier = 0, // Enemy tier marker
+                StaminaCost = 2,
+                AetherCost = 0,
+                CooldownTurns = 0,
+                Range = 1,
+                EffectScript = "DAMAGE:Physical:1d6+2;STATUS:Bleed:1:1"
+            },
+            new ActiveAbility
+            {
+                Name = "Grave Chill",
+                Description = "An aura of deathly cold radiates from the corpse-warrior. Nearby foes " +
+                              "feel their limbs grow sluggish as warmth drains away.",
+                Archetype = null,
+                Tier = 0,
+                StaminaCost = 4,
+                AetherCost = 0,
+                CooldownTurns = 3,
+                Range = 2,
+                EffectScript = "DAMAGE:Cold:1d6;STATUS:Slow:2:1"
+            },
+            new ActiveAbility
+            {
+                Name = "Baleful Glare",
+                Description = "Eyes burn with malevolent light, freezing prey with dread. " +
+                              "Ancient hatred seeps through that terrible gaze.",
+                Archetype = null,
+                Tier = 0,
+                StaminaCost = 3,
+                AetherCost = 0,
+                CooldownTurns = 2,
+                Range = 2,
+                EffectScript = "STATUS:Fear:2:1"
+            },
+
+            // === MECHANICAL ABILITIES ===
+            new ActiveAbility
+            {
+                Name = "Servo Slam",
+                Description = "Hydraulic limbs deliver a crushing blow. The impact rings with " +
+                              "the scream of tortured metal, leaving targets staggering.",
+                Archetype = null,
+                Tier = 0,
+                StaminaCost = 3,
+                AetherCost = 0,
+                CooldownTurns = 1,
+                Range = 1,
+                EffectScript = "DAMAGE:Physical:1d8+4;STATUS:Stagger:1:1"
+            },
+            new ActiveAbility
+            {
+                Name = "Overclock",
+                Description = "Internal mechanisms surge with dangerous intensity. Speed increases " +
+                              "at the cost of structural integrity as systems redline.",
+                Archetype = null,
+                Tier = 0,
+                StaminaCost = 5,
+                AetherCost = 0,
+                CooldownTurns = 4,
+                Range = 0, // Self
+                EffectScript = "STATUS:Haste:2:1;DAMAGE:Self:1d4"
+            },
+
+            // === BEAST ABILITIES ===
+            new ActiveAbility
+            {
+                Name = "Savage Lunge",
+                Description = "A desperate leap toward vulnerable prey. The beast's momentum " +
+                              "carries it forward in a blur of fangs and fury.",
+                Archetype = null,
+                Tier = 0,
+                StaminaCost = 4,
+                AetherCost = 0,
+                CooldownTurns = 2,
+                Range = 2,
+                EffectScript = "DAMAGE:Physical:1d8+3;STATUS:Prone:1:1"
+            },
+
+            // === HUMANOID ABILITIES ===
+            new ActiveAbility
+            {
+                Name = "Scavenger's Swing",
+                Description = "An uncontrolled but devastating attack. Wild and unpredictable, " +
+                              "trading precision for sheer brutality.",
+                Archetype = null,
+                Tier = 0,
+                StaminaCost = 2,
+                AetherCost = 0,
+                CooldownTurns = 0,
+                Range = 1,
+                EffectScript = "DAMAGE:Physical:1d6+1"
+            },
+            new ActiveAbility
+            {
+                Name = "Intimidating Shout",
+                Description = "A bellowing war cry that shakes resolve. The primal scream echoes " +
+                              "through ruins, sowing doubt in enemy hearts.",
+                Archetype = null,
+                Tier = 0,
+                StaminaCost = 3,
+                AetherCost = 0,
+                CooldownTurns = 3,
+                Range = 2,
+                EffectScript = "STATUS:Intimidate:2:1"
             }
         };
     }
