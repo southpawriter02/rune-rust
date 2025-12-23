@@ -1104,6 +1104,32 @@ public class CombatService : ICombatService
                 LogCombatEvent($"[grey]{enemy.Name}[/] {action.FlavorText ?? "flees the battle!"}");
                 break;
 
+            case ActionType.UseAbility when action.AbilityId.HasValue:
+                var ability = enemy.Abilities.FirstOrDefault(a => a.Id == action.AbilityId.Value);
+                if (ability != null)
+                {
+                    var abilityTarget = action.TargetId.HasValue
+                        ? _gameState.CombatState!.TurnOrder.FirstOrDefault(c => c.Id == action.TargetId)
+                        : null;
+
+                    // For self-targeting abilities or if target required
+                    var effectiveTarget = abilityTarget ?? enemy;
+                    var abilityResult = _abilityService.Execute(enemy, effectiveTarget, ability);
+
+                    LogCombatEvent($"[olive]{enemy.Name}[/] uses [cyan]{ability.Name}[/]!");
+                    LogCombatEvent(abilityResult.Message);
+
+                    _logger.LogInformation("[Combat] {Enemy} used {Ability}: {Result}",
+                        enemy.Name, ability.Name, abilityResult.Success ? "Success" : "Failed");
+                }
+                else
+                {
+                    _logger.LogWarning("[Combat] Ability {AbilityId} not found on {Enemy}",
+                        action.AbilityId, enemy.Name);
+                    LogCombatEvent($"[grey]{enemy.Name}[/] fumbles their attack.");
+                }
+                break;
+
             case ActionType.Pass:
             default:
                 LogCombatEvent($"[grey]{enemy.Name}[/] {action.FlavorText ?? "hesitates."}");
