@@ -1,7 +1,15 @@
+---
+id: SPEC-SPAWN-001
+title: Object Spawning System
+version: 1.0.0
+status: Implemented
+related_specs: [SPEC-DUNGEON-001, SPEC-INTERACT-001, SPEC-DICE-001]
+---
+
 # SPEC-SPAWN-001: Object Spawning System
 
 **Version:** 1.0.0
-**Status:** Active
+**Status:** Implemented
 **Last Updated:** 2025-12-22
 **Owner:** Engine Team
 **Category:** World Generation & Procedural Content
@@ -661,7 +669,23 @@ SelectObjectTypes(count, biome) INVOKED
 
 ---
 
-## Cross-System Integration
+## Cross-Links
+
+### Dependencies (Consumes)
+
+| Service | Specification | Usage |
+|---------|---------------|-------|
+| `IInteractableObjectRepository` | Infrastructure | Object persistence (ClearRoomObjectsAsync, AddRangeAsync, SaveChangesAsync) |
+| `Random.Shared` | .NET BCL | Randomization for object counts, type selection, template selection, lock generation |
+
+### Dependents (Provides To)
+
+| Service | Specification | Usage |
+|---------|---------------|-------|
+| `DungeonGenerator` | [SPEC-DUNGEON-001](SPEC-DUNGEON-001.md) | Object population during room generation |
+| `InteractionService` | [SPEC-INTERACT-001](SPEC-INTERACT-001.md) | Examination and container interaction with spawned objects |
+
+### Cross-System Integration
 
 ### Integration Matrix
 
