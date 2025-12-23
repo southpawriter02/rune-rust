@@ -1,4 +1,5 @@
 using RuneAndRust.Core.Enums;
+using RuneAndRust.Core.Models;
 
 namespace RuneAndRust.Core.ViewModels;
 
@@ -13,6 +14,7 @@ namespace RuneAndRust.Core.ViewModels;
 /// <param name="PlayerStats">Player's HP and Stamina for header display.</param>
 /// <param name="PlayerAbilities">List of player abilities with hotkeys and status.</param>
 /// <param name="TimelineProjection">Timeline projection showing upcoming turns (v0.3.6b).</param>
+/// <param name="ContextTips">Context-aware help tips for the current combat state (v0.3.9c).</param>
 public record CombatViewModel(
     int RoundNumber,
     string ActiveCombatantName,
@@ -26,7 +28,9 @@ public record CombatViewModel(
     List<CombatantView>? EnemyFrontRow = null,
     List<CombatantView>? EnemyBackRow = null,
     // Timeline projection (v0.3.6b)
-    List<TimelineEntryView>? TimelineProjection = null
+    List<TimelineEntryView>? TimelineProjection = null,
+    // Context help tips (v0.3.9c)
+    List<HelpTip>? ContextTips = null
 );
 
 /// <summary>

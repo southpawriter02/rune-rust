@@ -1,14 +1,17 @@
 using Microsoft.Extensions.Logging;
 using RuneAndRust.Core.Interfaces;
+using RuneAndRust.Core.Models;
 using RuneAndRust.Core.ViewModels;
 using Spectre.Console;
+using Spectre.Console.Rendering;
 
 namespace RuneAndRust.Terminal.Rendering;
 
 /// <summary>
 /// Renders the persistent exploration HUD using Spectre.Console Layout (v0.3.5a).
-/// Displays a three-pane interface: Header (stats), Body (room/minimap), Footer (turn).
+/// Displays a three-pane interface: Header (stats), Body (room/minimap), Footer (turn/tips).
 /// Updated with RoomRenderer integration in v0.3.5c.
+/// Updated with context help tips in expanded footer in v0.3.9c.
 /// </summary>
 public class ExplorationScreenRenderer : IExplorationScreenRenderer
 {
@@ -25,6 +28,10 @@ public class ExplorationScreenRenderer : IExplorationScreenRenderer
         _logger.LogTrace("[HUD] Rendering exploration screen. HP: {HP}/{MaxHP}, Room: {Room}",
             vm.CurrentHp, vm.MaxHp, vm.RoomName);
 
+        // Calculate footer size based on tips (v0.3.9c)
+        var hasTips = vm.ContextTips != null && vm.ContextTips.Count > 0;
+        var footerSize = hasTips ? 3 : 1;
+
         // Build fresh layout each render (Layout is mutable, safer to rebuild)
         var rootLayout = new Layout("Root")
             .SplitRows(
@@ -33,7 +40,7 @@ public class ExplorationScreenRenderer : IExplorationScreenRenderer
                     new Layout("Main").Ratio(7),
                     new Layout("Sidebar").Ratio(3)
                 ),
-                new Layout("Footer").Size(1)
+                new Layout("Footer").Size(footerSize)
             );
 
         // 1. Update Header (Status Bar)
@@ -50,9 +57,8 @@ public class ExplorationScreenRenderer : IExplorationScreenRenderer
             vm.VisitedRoomIds);
         rootLayout["Sidebar"].Update(minimapPanel);
 
-        // 4. Update Footer (Turn counter)
-        rootLayout["Footer"].Update(
-            new Markup($"[grey]Turn {vm.TurnCount}[/]"));
+        // 4. Update Footer (Turn counter + tips - v0.3.9c)
+        rootLayout["Footer"].Update(CreateFooter(vm));
 
         // 5. Clear and render complete layout
         AnsiConsole.Clear();
@@ -97,5 +103,33 @@ public class ExplorationScreenRenderer : IExplorationScreenRenderer
         );
 
         return new Panel(grid).Border(BoxBorder.None);
+    }
+
+    /// <summary>
+    /// Creates the footer with turn counter and optional context tips (v0.3.9c).
+    /// </summary>
+    private static IRenderable CreateFooter(ExplorationViewModel vm)
+    {
+        var lines = new List<string>
+        {
+            $"[grey]Turn {vm.TurnCount}[/]"
+        };
+
+        // Add context tips if present
+        if (vm.ContextTips != null && vm.ContextTips.Count > 0)
+        {
+            foreach (var tip in vm.ContextTips.Take(2))  // Max 2 tips in footer
+            {
+                var icon = tip.Priority switch
+                {
+                    >= HelpTip.PriorityCritical => "!",
+                    >= HelpTip.PriorityWarning => "*",
+                    _ => "-"
+                };
+                lines.Add($"  [{tip.Color}]{icon} {tip.Title}:[/] {tip.Message}");
+            }
+        }
+
+        return new Markup(string.Join("\n", lines));
     }
 }
