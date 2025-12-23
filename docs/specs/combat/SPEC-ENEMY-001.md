@@ -15,6 +15,8 @@ related_specs: [SPEC-COMBAT-001, SPEC-TRAIT-001, SPEC-DICE-001]
 
 The **Enemy AI System** implements archetype-based decision logic for enemy combatants during combat encounters. Each enemy is assigned one of seven archetypes (Tank, DPS, GlassCannon, Support, Swarm, Caster, Boss) that define their behavioral priorities, attack preferences, and response to state triggers.
 
+> **Note:** This specification focuses on **EnemyAIService implementation details** with code references and test coverage. For high-level AI behavior patterns and archetype design philosophy, see [SPEC-AI-001](./SPEC-AI-001.md).
+
 ### Core Design Principles
 
 1. **Archetype-Driven Behavior**: AI decisions are routed through archetype-specific logic methods that encode distinct tactical patterns.
