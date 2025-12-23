@@ -186,6 +186,11 @@ public class ParseResult
     /// </summary>
     public bool RequiresJournalScreen { get; set; }
 
+    /// <summary>
+    /// Gets or sets whether the options screen should be opened (v0.3.10b).
+    /// </summary>
+    public bool RequiresOptionsScreen { get; set; }
+
     #region Alchemy & Runeforging Commands (v0.3.1c)
 
     /// <summary>
@@ -773,6 +778,13 @@ public class CommandParser
             case "archive":
                 _logger.LogDebug("Full journal screen requested (v0.3.7c).");
                 return new ParseResult { RequiresJournalScreen = true };
+
+            case "options":
+            case "settings":
+            case "config":
+            case "o":
+                _logger.LogDebug("Options screen requested (v0.3.10b).");
+                return new ParseResult { RequiresOptionsScreen = true };
 
             case "equipment":
             case "gear":

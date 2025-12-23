@@ -34,6 +34,9 @@ TestResults/
 logs/
 *.log
 
+# User settings (v0.3.10a)
+data/options.json
+
 # OS generated files
 .DS_Store
 Thumbs.db

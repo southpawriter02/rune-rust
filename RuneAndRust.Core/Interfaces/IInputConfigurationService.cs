@@ -25,6 +25,13 @@ public interface IInputConfigurationService
     string? GetCommandForKey(ConsoleKey key);
 
     /// <summary>
+    /// Gets the key currently bound to a command (reverse lookup) (v0.3.10c).
+    /// </summary>
+    /// <param name="command">The command string to look up.</param>
+    /// <returns>The console key if command is bound; null otherwise.</returns>
+    ConsoleKey? GetKeyForCommand(string command);
+
+    /// <summary>
     /// Sets or updates a key binding.
     /// </summary>
     /// <param name="key">The console key to bind.</param>

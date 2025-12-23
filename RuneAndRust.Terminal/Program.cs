@@ -152,6 +152,13 @@ class Program
                     // Register Context Help Service (v0.3.9c)
                     services.AddSingleton<IContextHelpService, ContextHelpService>();
 
+                    // Register Settings Service (v0.3.10a)
+                    services.AddSingleton<ISettingsService, SettingsService>();
+
+                    // Register Options Screen (v0.3.10b)
+                    services.AddSingleton<IOptionsScreenRenderer, OptionsScreenRenderer>();
+                    services.AddScoped<OptionsController>();
+
                     // Register Bodging Services (v0.3.1b)
                     services.AddScoped<IBodgingService, BodgingService>();
 
@@ -176,7 +183,11 @@ class Program
                 .UseSerilog() // Wire Serilog into ILogger
                 .Build();
 
-            // 3. Seed data
+            // 3. Load user settings (v0.3.10a)
+            var settingsService = host.Services.GetRequiredService<ISettingsService>();
+            settingsService.LoadAsync().GetAwaiter().GetResult();
+
+            // 4. Seed data
             using (var scope = host.Services.CreateScope())
             {
                 var context = scope.ServiceProvider.GetRequiredService<RuneAndRustDbContext>();
@@ -191,7 +202,7 @@ class Program
                 RoomTemplateSeeder.SeedAsync(context, templateLoader, logger).GetAwaiter().GetResult();
             }
 
-            // 4. UI Handover
+            // 5. UI Handover
             AnsiConsole.MarkupLine("[green]Rune & Rust v0.3.6c Booting...[/]");
             AnsiConsole.WriteLine();
 
