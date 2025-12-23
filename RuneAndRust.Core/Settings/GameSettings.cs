@@ -3,8 +3,9 @@ using RuneAndRust.Core.Enums;
 namespace RuneAndRust.Core.Settings;
 
 /// <summary>
-/// Static game settings for accessibility and visual preferences (v0.3.9b).
+/// Static game settings for accessibility and visual preferences (v0.3.10a).
 /// Provides global access to user preferences that affect visual effects, themes, and animations.
+/// Persisted to data/options.json via SettingsService.
 /// </summary>
 public static class GameSettings
 {
@@ -20,6 +21,22 @@ public static class GameSettings
     /// </summary>
     public static ThemeType Theme { get; set; } = ThemeType.Standard;
 
-    // Future settings (v0.3.10+):
-    // public static int FontScale { get; set; } = 100;
+    /// <summary>
+    /// Text display speed as a percentage (10-200).
+    /// Lower values = slower typewriter effects, higher values = faster.
+    /// Default: 100 (normal speed). Added in v0.3.10a.
+    /// </summary>
+    public static int TextSpeed { get; set; } = 100;
+
+    /// <summary>
+    /// Master audio volume as a percentage (0-100).
+    /// Default: 100 (full volume). Added in v0.3.10a.
+    /// </summary>
+    public static int MasterVolume { get; set; } = 100;
+
+    /// <summary>
+    /// Interval between autosaves in minutes (1-60).
+    /// Default: 5 minutes. Added in v0.3.10a.
+    /// </summary>
+    public static int AutosaveIntervalMinutes { get; set; } = 5;
 }
