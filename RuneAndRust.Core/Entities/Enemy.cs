@@ -1,4 +1,5 @@
 using RuneAndRust.Core.Enums;
+using RuneAndRust.Core.Models.Combat;
 using CharacterAttribute = RuneAndRust.Core.Enums.Attribute;
 
 namespace RuneAndRust.Core.Entities;
@@ -107,6 +108,12 @@ public class Enemy
     /// Whether this enemy has any active traits (Elite or higher).
     /// </summary>
     public bool IsElite => ActiveTraits.Count > 0;
+
+    /// <summary>
+    /// The active abilities available to this enemy (v0.2.4a).
+    /// Populated during factory hydration from template AbilityNames.
+    /// </summary>
+    public List<ActiveAbility> Abilities { get; set; } = new();
 
     #endregion
 

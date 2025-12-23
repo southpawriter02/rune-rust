@@ -10,12 +10,14 @@ namespace RuneAndRust.Engine.Factories;
 /// <summary>
 /// Factory for creating Enemy entities from templates with scaling and variance.
 /// Implements the Prototype pattern - templates define base stats, factory hydrates into live entities.
+/// Extended in v0.2.4a to hydrate abilities from repository.
 /// </summary>
 public class EnemyFactory : IEnemyFactory
 {
     private readonly ILogger<EnemyFactory> _logger;
     private readonly IDiceService _dice;
     private readonly ICreatureTraitService _traitService;
+    private readonly IActiveAbilityRepository _abilityRepository;
     private readonly Dictionary<string, EnemyTemplate> _templates;
 
     /// <summary>
@@ -39,21 +41,24 @@ public class EnemyFactory : IEnemyFactory
     /// <param name="logger">The logger for traceability.</param>
     /// <param name="dice">The dice service for variance rolls.</param>
     /// <param name="traitService">The trait service for Elite enhancement.</param>
+    /// <param name="abilityRepository">The ability repository for hydrating enemy abilities (v0.2.4a).</param>
     public EnemyFactory(
         ILogger<EnemyFactory> logger,
         IDiceService dice,
-        ICreatureTraitService traitService)
+        ICreatureTraitService traitService,
+        IActiveAbilityRepository abilityRepository)
     {
         _logger = logger;
         _dice = dice;
         _traitService = traitService;
+        _abilityRepository = abilityRepository;
         _templates = InitializeTemplates();
 
         _logger.LogInformation("EnemyFactory initialized with {Count} templates", _templates.Count);
     }
 
     /// <inheritdoc/>
-    public Enemy CreateFromTemplate(EnemyTemplate template, int partyLevel = 1)
+    public async Task<Enemy> CreateFromTemplateAsync(EnemyTemplate template, int partyLevel = 1)
     {
         _logger.LogInformation(
             "Creating enemy from template: {Id} (Tier: {Tier}, PartyLevel: {Level})",
@@ -109,11 +114,17 @@ public class EnemyFactory : IEnemyFactory
                 enemy.Name, enemy.ActiveTraits.Count, string.Join(", ", enemy.ActiveTraits));
         }
 
+        // Hydrate abilities from repository (v0.2.4a)
+        await HydrateAbilitiesAsync(enemy, template);
+
+        _logger.LogInformation("[EnemyFactory] Created {Enemy} with {AbilityCount} abilities",
+            enemy.Name, enemy.Abilities.Count);
+
         return enemy;
     }
 
     /// <inheritdoc/>
-    public Enemy CreateById(string templateId, int partyLevel = 1)
+    public async Task<Enemy> CreateByIdAsync(string templateId, int partyLevel = 1)
     {
         if (!_templates.TryGetValue(templateId, out var template))
         {
@@ -123,7 +134,40 @@ public class EnemyFactory : IEnemyFactory
             template = _templates[FallbackTemplateId];
         }
 
-        return CreateFromTemplate(template, partyLevel);
+        return await CreateFromTemplateAsync(template, partyLevel);
+    }
+
+    /// <summary>
+    /// Hydrates abilities from the repository based on template AbilityNames (v0.2.4a).
+    /// </summary>
+    /// <param name="enemy">The enemy to populate with abilities.</param>
+    /// <param name="template">The template containing ability names to resolve.</param>
+    private async Task HydrateAbilitiesAsync(Enemy enemy, EnemyTemplate template)
+    {
+        if (template.AbilityNames.Count == 0)
+        {
+            _logger.LogTrace("[EnemyFactory] No abilities to hydrate for {Enemy}", enemy.Name);
+            return;
+        }
+
+        _logger.LogDebug("[EnemyFactory] Hydrating {Count} abilities for {Enemy}",
+            template.AbilityNames.Count, enemy.Name);
+
+        foreach (var abilityName in template.AbilityNames)
+        {
+            var ability = await _abilityRepository.GetByNameAsync(abilityName);
+            if (ability != null)
+            {
+                enemy.Abilities.Add(ability);
+                _logger.LogTrace("[EnemyFactory] Added ability '{Ability}' to {Enemy}",
+                    abilityName, enemy.Name);
+            }
+            else
+            {
+                _logger.LogWarning("[EnemyFactory] Ability '{Ability}' not found for {Enemy}",
+                    abilityName, enemy.Name);
+            }
+        }
     }
 
     /// <inheritdoc/>
@@ -186,7 +230,8 @@ public class EnemyFactory : IEnemyFactory
                 },
                 WeaponDamageDie: 6,
                 WeaponName: "Rusted Blade",
-                Tags: new List<string> { "Undying", "IronHeart", "Construct" }
+                Tags: new List<string> { "Undying", "IronHeart", "Construct" },
+                AbilityNames: new List<string> { "Rusty Cleave" }
             ),
 
             ["und_haug_01"] = new EnemyTemplate(
@@ -208,7 +253,8 @@ public class EnemyFactory : IEnemyFactory
                 },
                 WeaponDamageDie: 8,
                 WeaponName: "Industrial Fist",
-                Tags: new List<string> { "Undying", "IronHeart", "Construct" }
+                Tags: new List<string> { "Undying", "IronHeart", "Construct" },
+                AbilityNames: new List<string> { "Grave Chill", "Baleful Glare" }
             ),
 
             // ═══════════════════════════════════════════════════════════════
@@ -234,7 +280,8 @@ public class EnemyFactory : IEnemyFactory
                 },
                 WeaponDamageDie: 4,
                 WeaponName: "Cleaning Implement",
-                Tags: new List<string> { "Mechanical", "Construct" }
+                Tags: new List<string> { "Mechanical", "Construct" },
+                AbilityNames: new List<string> { "Servo Slam", "Overclock" }
             ),
 
             // ═══════════════════════════════════════════════════════════════
@@ -260,7 +307,8 @@ public class EnemyFactory : IEnemyFactory
                 },
                 WeaponDamageDie: 8,
                 WeaponName: "Fangs",
-                Tags: new List<string> { "Beast", "Blighted" }
+                Tags: new List<string> { "Beast", "Blighted" },
+                AbilityNames: new List<string> { "Savage Lunge" }
             ),
 
             // ═══════════════════════════════════════════════════════════════
@@ -286,7 +334,8 @@ public class EnemyFactory : IEnemyFactory
                 },
                 WeaponDamageDie: 6,
                 WeaponName: "Salvaged Pipe",
-                Tags: new List<string> { "Humanoid" }
+                Tags: new List<string> { "Humanoid" },
+                AbilityNames: new List<string> { "Scavenger's Swing", "Intimidating Shout" }
             )
         };
     }

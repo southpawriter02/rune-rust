@@ -19,6 +19,7 @@ namespace RuneAndRust.Core.Models.Combat;
 /// <param name="WeaponDamageDie">Damage die size for attacks (4 = d4, 6 = d6, etc.).</param>
 /// <param name="WeaponName">Display name for the enemy's weapon/attack.</param>
 /// <param name="Tags">Tags for status effect interactions (e.g., "Mechanical" = Bleed immune).</param>
+/// <param name="AbilityNames">Ability identifiers to hydrate from repository at creation time (v0.2.4a).</param>
 /// <param name="LootTableId">Optional reference to loot table for drops.</param>
 public record EnemyTemplate(
     string Id,
@@ -33,5 +34,6 @@ public record EnemyTemplate(
     int WeaponDamageDie,
     string WeaponName,
     List<string> Tags,
+    List<string> AbilityNames,
     string? LootTableId = null
 );

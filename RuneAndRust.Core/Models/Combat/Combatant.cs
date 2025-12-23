@@ -328,6 +328,8 @@ public class Combatant
         Archetype = e.Archetype,
         Tags = new List<string>(e.Tags),
         // Trait properties (v0.2.2c)
-        ActiveTraits = new List<CreatureTraitType>(e.ActiveTraits)
+        ActiveTraits = new List<CreatureTraitType>(e.ActiveTraits),
+        // Abilities (v0.2.4a)
+        Abilities = e.Abilities?.ToList() ?? new List<ActiveAbility>()
     };
 }
