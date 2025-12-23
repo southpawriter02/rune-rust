@@ -67,4 +67,28 @@ public class ActiveAbility
     /// Tier 1: Level 1+, Tier 2: Level 5+, Tier 3: Level 10+.
     /// </summary>
     public int Tier { get; set; } = 1;
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // Telegraphed Ability Properties (v0.2.4c)
+    // ═══════════════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// Number of turns required to charge before release. 0 = instant cast.
+    /// During charge, the caster gains Chanting status (v0.2.4c).
+    /// </summary>
+    public int ChargeTurns { get; set; } = 0;
+
+    /// <summary>
+    /// AAM-VOICE compliant message displayed when charge begins.
+    /// Example: "The Construct's core begins to glow violent red."
+    /// If null, a default message is generated (v0.2.4c).
+    /// </summary>
+    public string? TelegraphMessage { get; set; }
+
+    /// <summary>
+    /// Damage threshold to interrupt the charge (percentage of MaxHP).
+    /// Default 0.10 means 10% of enemy MaxHP must be dealt in one hit.
+    /// Set to 1.0 for uninterruptible abilities (v0.2.4c).
+    /// </summary>
+    public float InterruptThreshold { get; set; } = 0.10f;
 }

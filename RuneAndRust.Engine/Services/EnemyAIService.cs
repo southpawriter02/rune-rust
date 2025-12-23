@@ -86,6 +86,25 @@ public class EnemyAIService : IEnemyAIService
     /// </summary>
     private const int MinimumActionScore = 0;
 
+    // ═══════════════════════════════════════════════════════════════════════
+    // Charge Ability Scoring Constants (v0.2.4c)
+    // ═══════════════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// Base bonus for charge abilities (powerful attacks get priority).
+    /// </summary>
+    private const int ChargeAbilityBonus = 20;
+
+    /// <summary>
+    /// Penalty for charge abilities when HP is below 30% (too risky to stand still).
+    /// </summary>
+    private const int ChargeLowHpPenalty = -50;
+
+    /// <summary>
+    /// Bonus for charge abilities when player is stunned (free setup).
+    /// </summary>
+    private const int ChargePlayerStunnedBonus = 30;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="EnemyAIService"/> class.
     /// </summary>
@@ -121,6 +140,34 @@ public class EnemyAIService : IEnemyAIService
         {
             _logger.LogWarning("[AI] No player target found");
             return new CombatAction(ActionType.Pass, enemy.Id, null, null, "finds no threats.");
+        }
+
+        // v0.2.4c: Check if locked in Chanting state
+        if (enemy.StatusEffects.Any(e => e.Type == StatusEffectType.Chanting) &&
+            enemy.ChanneledAbilityId.HasValue)
+        {
+            var chantingEffect = enemy.StatusEffects.First(e => e.Type == StatusEffectType.Chanting);
+            var channeledAbility = enemy.Abilities.FirstOrDefault(a => a.Id == enemy.ChanneledAbilityId);
+
+            if (chantingEffect.DurationRemaining > 0)
+            {
+                // Still charging - continue chant (Pass action)
+                _logger.LogTrace(
+                    "[AI] {Enemy} is chanting. {Turns} turns remaining.",
+                    enemy.Name, chantingEffect.DurationRemaining);
+                return new CombatAction(ActionType.Pass, enemy.Id, null, null,
+                    $"continues focusing... ({chantingEffect.DurationRemaining} turns until release)");
+            }
+            else
+            {
+                // Duration expired - release the ability!
+                _logger.LogDebug(
+                    "[AI] {Enemy} chant complete. Releasing {Ability}!",
+                    enemy.Name, channeledAbility?.Name ?? "unknown");
+                return new CombatAction(ActionType.UseAbility, enemy.Id, target.Id,
+                    AbilityId: enemy.ChanneledAbilityId,
+                    FlavorText: $"unleashes {channeledAbility?.Name ?? "charged energy"}!");
+            }
         }
 
         // Build list of scored actions (v0.2.4b utility scoring)
@@ -257,6 +304,20 @@ public class EnemyAIService : IEnemyAIService
         // Resource conservation
         if (user.MaxStamina > 0 && ability.StaminaCost > user.CurrentStamina * 0.5)
             score += StaminaConservationPenalty;
+
+        // v0.2.4c: Charge ability scoring
+        if (ability.ChargeTurns > 0)
+        {
+            score += ChargeAbilityBonus;
+
+            // Risk penalty when low HP (too risky to stand still)
+            if (userHpPercent < 0.3f)
+                score += ChargeLowHpPenalty;
+
+            // Opportunity bonus when player is stunned (free setup)
+            if (target.StatusEffects.Any(e => e.Type == StatusEffectType.Stunned))
+                score += ChargePlayerStunnedBonus;
+        }
 
         return score;
     }

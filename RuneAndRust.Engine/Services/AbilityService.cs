@@ -10,10 +10,12 @@ namespace RuneAndRust.Engine.Services;
 /// <summary>
 /// Implements ability execution and cooldown management.
 /// Delegates EffectScript parsing to EffectScriptExecutor (v0.3.3a refactor).
+/// Supports telegraphed charge abilities (v0.2.4c).
 /// </summary>
 public class AbilityService : IAbilityService
 {
     private readonly IResourceService _resourceService;
+    private readonly IStatusEffectService _statusEffects;
     private readonly EffectScriptExecutor _scriptExecutor;
     private readonly ILogger<AbilityService> _logger;
 
@@ -21,14 +23,17 @@ public class AbilityService : IAbilityService
     /// Initializes a new instance of the <see cref="AbilityService"/> class.
     /// </summary>
     /// <param name="resourceService">Service for resource validation and deduction.</param>
+    /// <param name="statusEffects">Service for status effect management (v0.2.4c).</param>
     /// <param name="scriptExecutor">Shared utility for effect script execution.</param>
     /// <param name="logger">Logger for traceability.</param>
     public AbilityService(
         IResourceService resourceService,
+        IStatusEffectService statusEffects,
         EffectScriptExecutor scriptExecutor,
         ILogger<AbilityService> logger)
     {
         _resourceService = resourceService;
+        _statusEffects = statusEffects;
         _scriptExecutor = scriptExecutor;
         _logger = logger;
 
@@ -92,25 +97,22 @@ public class AbilityService : IAbilityService
             return AbilityResult.Failure(reason);
         }
 
-        // Deduct resources
-        if (ability.StaminaCost > 0)
+        // v0.2.4c: Check if this is a charge ability initiation
+        if (ability.ChargeTurns > 0 && !_statusEffects.HasEffect(user, StatusEffectType.Chanting))
         {
-            _resourceService.Deduct(user, ResourceType.Stamina, ability.StaminaCost);
+            return InitiateCharge(user, ability);
         }
 
-        if (ability.AetherCost > 0)
+        // v0.2.4c: Check if this is a charge release (user is chanting and ability matches)
+        if (user.ChanneledAbilityId == ability.Id &&
+            _statusEffects.HasEffect(user, StatusEffectType.Chanting))
         {
-            _resourceService.Deduct(user, ResourceType.Aether, ability.AetherCost);
+            return ReleaseCharge(user, target, ability);
         }
 
-        // Set cooldown
-        if (ability.CooldownTurns > 0)
-        {
-            user.Cooldowns[ability.Id] = ability.CooldownTurns;
-            _logger.LogDebug(
-                "[Ability] {User} ability {Ability} on cooldown: {Turns} turns",
-                user.Name, ability.Name, ability.CooldownTurns);
-        }
+        // Standard instant-cast logic
+        DeductResources(user, ability);
+        SetCooldown(user, ability);
 
         // Execute effect script via shared executor (v0.3.3a)
         var result = ExecuteEffectScript(user, target, ability);
@@ -121,6 +123,96 @@ public class AbilityService : IAbilityService
 
         return result;
     }
+
+    #region Telegraphed Ability Methods (v0.2.4c)
+
+    /// <summary>
+    /// Initiates a charge for a telegraphed ability.
+    /// Applies Chanting status, deducts resources, and stores the channeled ability.
+    /// </summary>
+    private AbilityResult InitiateCharge(Combatant user, ActiveAbility ability)
+    {
+        _logger.LogInformation(
+            "[Ability] {User} begins charging {Ability}",
+            user.Name, ability.Name);
+
+        // Deduct resources immediately (committed to the action)
+        DeductResources(user, ability);
+
+        // Apply Chanting status with duration = ChargeTurns
+        _statusEffects.ApplyEffect(user, StatusEffectType.Chanting, ability.ChargeTurns, user.Id);
+
+        // Store which ability is being channeled
+        user.ChanneledAbilityId = ability.Id;
+
+        // Return telegraph message
+        var message = ability.TelegraphMessage ?? $"{user.Name} begins charging a powerful attack!";
+        return AbilityResult.Ok($"⚠ {message}");
+    }
+
+    /// <summary>
+    /// Releases a charged ability, executing its effect script.
+    /// Clears Chanting status, sets cooldown, and deals damage.
+    /// </summary>
+    private AbilityResult ReleaseCharge(Combatant user, Combatant target, ActiveAbility ability)
+    {
+        _logger.LogInformation(
+            "[Ability] {User} releases {Ability}!",
+            user.Name, ability.Name);
+
+        // Clear channeling state
+        user.ChanneledAbilityId = null;
+        _statusEffects.RemoveEffect(user, StatusEffectType.Chanting);
+
+        // Set cooldown now (after release)
+        SetCooldown(user, ability);
+
+        // Execute the actual effect
+        var scriptResult = ExecuteEffectScript(user, target, ability);
+
+        var message = $"{user.Name} unleashes {ability.Name}! {scriptResult.Message}";
+        _logger.LogInformation(
+            "[Ability] {User} released {Ability} on {Target}: {Message}",
+            user.Name, ability.Name, target.Name, message);
+
+        return AbilityResult.Ok(
+            message,
+            scriptResult.TotalDamage,
+            scriptResult.TotalHealing,
+            scriptResult.StatusesApplied);
+    }
+
+    /// <summary>
+    /// Deducts stamina and aether costs from the user.
+    /// </summary>
+    private void DeductResources(Combatant user, ActiveAbility ability)
+    {
+        if (ability.StaminaCost > 0)
+        {
+            _resourceService.Deduct(user, ResourceType.Stamina, ability.StaminaCost);
+        }
+
+        if (ability.AetherCost > 0)
+        {
+            _resourceService.Deduct(user, ResourceType.Aether, ability.AetherCost);
+        }
+    }
+
+    /// <summary>
+    /// Sets the cooldown for an ability if applicable.
+    /// </summary>
+    private void SetCooldown(Combatant user, ActiveAbility ability)
+    {
+        if (ability.CooldownTurns > 0)
+        {
+            user.Cooldowns[ability.Id] = ability.CooldownTurns;
+            _logger.LogDebug(
+                "[Ability] {User} ability {Ability} on cooldown: {Turns} turns",
+                user.Name, ability.Name, ability.CooldownTurns);
+        }
+    }
+
+    #endregion
 
     /// <inheritdoc/>
     public void ProcessCooldowns(Combatant combatant)

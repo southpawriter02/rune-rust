@@ -148,6 +148,17 @@ public class Combatant
 
     #endregion
 
+    #region Telegraphed Ability System (v0.2.4c)
+
+    /// <summary>
+    /// The ability being channeled during Chanting state (v0.2.4c).
+    /// Set when charge begins, cleared on release or interruption.
+    /// Null when not channeling.
+    /// </summary>
+    public Guid? ChanneledAbilityId { get; set; }
+
+    #endregion
+
     #region Ambient Condition Modifiers (v0.3.3b)
 
     /// <summary>

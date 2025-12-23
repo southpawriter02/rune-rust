@@ -312,6 +312,52 @@ public class CombatService : ICombatService
 
     #endregion
 
+    #region Telegraphed Ability Interruption (v0.2.4c)
+
+    /// <summary>
+    /// Checks if damage interrupts a chanting enemy and processes the interruption.
+    /// </summary>
+    /// <param name="target">The combatant that received damage.</param>
+    /// <param name="damageDealt">The amount of damage dealt.</param>
+    private void CheckInterruption(Combatant target, int damageDealt)
+    {
+        // Only check enemies that are chanting
+        if (!target.StatusEffects.Any(e => e.Type == StatusEffectType.Chanting))
+            return;
+
+        if (!target.ChanneledAbilityId.HasValue)
+            return;
+
+        var channeledAbility = target.Abilities.FirstOrDefault(a => a.Id == target.ChanneledAbilityId);
+        var threshold = channeledAbility?.InterruptThreshold ?? 0.10f;
+        var requiredDamage = (int)(target.MaxHp * threshold);
+
+        if (damageDealt >= requiredDamage)
+        {
+            // INTERRUPTED!
+            _logger.LogWarning(
+                "[Combat] {Enemy}'s concentration is BROKEN! (Dealt {Damage} >= {Threshold})",
+                target.Name, damageDealt, requiredDamage);
+
+            _statusEffects.RemoveEffect(target, StatusEffectType.Chanting);
+            target.ChanneledAbilityId = null;
+
+            // Apply Stunned for 1 turn as penalty
+            _statusEffects.ApplyEffect(target, StatusEffectType.Stunned, 1, Guid.Empty);
+
+            LogCombatEvent($"[yellow]{target.Name}'s concentration is BROKEN![/]");
+        }
+        else
+        {
+            _logger.LogTrace(
+                "[Combat] {Enemy} maintains focus through {Damage} damage (needed {Threshold})",
+                target.Name, damageDealt, requiredDamage);
+            LogCombatEvent($"[grey]{target.Name} maintains focus through the pain.[/]");
+        }
+    }
+
+    #endregion
+
     /// <summary>
     /// Initializes a new instance of the <see cref="CombatService"/> class.
     /// </summary>
@@ -676,6 +722,9 @@ public class CombatService : ICombatService
             _logger.LogDebug(
                 "{Target} took {Damage} damage. HP: {Current}/{Max}",
                 target.Name, result.FinalDamage, target.CurrentHp, target.MaxHp);
+
+            // v0.2.4c: Check for charge ability interruption
+            CheckInterruption(target, result.FinalDamage);
 
             // Trigger visual effect for hit (v0.3.9a)
             var effectType = result.Outcome == AttackOutcome.Critical

@@ -55,6 +55,13 @@ public enum StatusEffectType
     /// </summary>
     Analyzed = 6,
 
+    /// <summary>
+    /// Locked-in casting state. Enemy is charging a powerful ability.
+    /// Cannot change actions while chanting. Vulnerable to interruption.
+    /// Does not stack; reapplication refreshes duration only (v0.2.4c).
+    /// </summary>
+    Chanting = 7,
+
     // ═══════════════════════════════════════════════════════════════════════
     // BUFFS (100+)
     // ═══════════════════════════════════════════════════════════════════════

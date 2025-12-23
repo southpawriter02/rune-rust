@@ -1296,7 +1296,7 @@ public class CombatServiceTests
             .Returns(new AbilityResult(true, "Power Strike deals 8 damage!"));
 
         // Act
-        await _sut.ProcessEnemyTurnAsync();
+        await _sut.ProcessEnemyTurnAsync(enemy);
 
         // Assert
         _mockAbilityService.Verify(a => a.Execute(enemy, It.IsAny<Combatant>(), ability), Times.Once);
@@ -1332,7 +1332,7 @@ public class CombatServiceTests
             .Returns(new AbilityResult(true, "Flame Burst scorches the target for 12 damage!"));
 
         // Act
-        await _sut.ProcessEnemyTurnAsync();
+        await _sut.ProcessEnemyTurnAsync(enemy);
 
         // Assert
         var viewModel = _sut.GetViewModel();
@@ -1359,7 +1359,7 @@ public class CombatServiceTests
             .Returns(useAbilityAction);
 
         // Act - Should not throw
-        await _sut.ProcessEnemyTurnAsync();
+        await _sut.ProcessEnemyTurnAsync(enemy);
 
         // Assert - Ability service should not be called since ability doesn't exist
         _mockAbilityService.Verify(a => a.Execute(It.IsAny<Combatant>(), It.IsAny<Combatant>(), It.IsAny<ActiveAbility>()), Times.Never);

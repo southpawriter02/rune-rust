@@ -40,6 +40,7 @@ public class AbilityServiceTests
 
         _sut = new AbilityService(
             _mockResourceService.Object,
+            _mockStatusEffectService.Object,
             _scriptExecutor,
             _mockLogger.Object);
 
