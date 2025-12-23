@@ -155,6 +155,10 @@ class Program
                     // Register Settings Service (v0.3.10a)
                     services.AddSingleton<ISettingsService, SettingsService>();
 
+                    // Register Options Screen (v0.3.10b)
+                    services.AddSingleton<IOptionsScreenRenderer, OptionsScreenRenderer>();
+                    services.AddScoped<OptionsController>();
+
                     // Register Bodging Services (v0.3.1b)
                     services.AddScoped<IBodgingService, BodgingService>();
 

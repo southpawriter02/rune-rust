@@ -133,6 +133,22 @@ public class InputConfigurationService : IInputConfigurationService
     }
 
     /// <inheritdoc/>
+    public ConsoleKey? GetKeyForCommand(string command)
+    {
+        foreach (var kvp in _keyMap)
+        {
+            if (kvp.Value.Equals(command, StringComparison.OrdinalIgnoreCase))
+            {
+                _logger.LogTrace("[Input] Resolved command '{Command}' to {Key}", command, kvp.Key);
+                return kvp.Key;
+            }
+        }
+
+        _logger.LogTrace("[Input] No key bound to command '{Command}'", command);
+        return null;
+    }
+
+    /// <inheritdoc/>
     public void SetBinding(ConsoleKey key, string command)
     {
         var previousCommand = _keyMap.TryGetValue(key, out var existing) ? existing : null;

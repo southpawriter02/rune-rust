@@ -7,8 +7,8 @@ using Xunit;
 namespace RuneAndRust.Tests.Engine;
 
 /// <summary>
-/// Unit tests for the InputConfigurationService class (v0.3.9c).
-/// Validates JSON loading/saving, key binding operations, and logging behavior.
+/// Unit tests for the InputConfigurationService class (v0.3.9c, extended v0.3.10c).
+/// Validates JSON loading/saving, key binding operations, reverse lookup, and logging behavior.
 /// </summary>
 public class InputConfigurationServiceTests : IDisposable
 {
@@ -251,6 +251,91 @@ public class InputConfigurationServiceTests : IDisposable
         bindings[ConsoleKey.I].Should().Be("inventory");
         bindings[ConsoleKey.N].Should().Be("north");
         bindings[ConsoleKey.L].Should().Be("look");
+    }
+
+    #endregion
+
+    #region GetKeyForCommand Tests (v0.3.10c)
+
+    [Fact]
+    public void GetKeyForCommand_ReturnsKey_WhenCommandBound()
+    {
+        // Arrange
+        _sut.SetBinding(ConsoleKey.T, "test_action");
+
+        // Act
+        var result = _sut.GetKeyForCommand("test_action");
+
+        // Assert
+        result.Should().Be(ConsoleKey.T);
+    }
+
+    [Fact]
+    public void GetKeyForCommand_ReturnsNull_WhenCommandUnbound()
+    {
+        // Act
+        var result = _sut.GetKeyForCommand("nonexistent_command");
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public void GetKeyForCommand_IsCaseInsensitive()
+    {
+        // Arrange
+        _sut.SetBinding(ConsoleKey.T, "Test_Action");
+
+        // Act
+        var result = _sut.GetKeyForCommand("test_action");
+
+        // Assert
+        result.Should().Be(ConsoleKey.T);
+    }
+
+    [Fact]
+    public void GetKeyForCommand_ReturnsDefaultKey_ForDefaultCommand()
+    {
+        // Arrange - reset to defaults
+        _sut.ResetToDefaults();
+
+        // Act
+        var result = _sut.GetKeyForCommand("north");
+
+        // Assert
+        result.Should().Be(ConsoleKey.N);
+    }
+
+    #endregion
+
+    #region Conflict Resolution Tests (v0.3.10c)
+
+    [Fact]
+    public void SetBinding_OverwritesExistingKey_WhenConflict()
+    {
+        // Arrange - bind key T to action1
+        _sut.SetBinding(ConsoleKey.T, "action1");
+
+        // Act - bind same key T to action2 (conflict)
+        _sut.SetBinding(ConsoleKey.T, "action2");
+
+        // Assert - T should now be bound to action2
+        _sut.GetCommandForKey(ConsoleKey.T).Should().Be("action2");
+    }
+
+    [Fact]
+    public void RemoveBinding_AllowsRebindToNewKey()
+    {
+        // Arrange
+        _sut.SetBinding(ConsoleKey.T, "action1");
+        _sut.RemoveBinding(ConsoleKey.T);
+
+        // Act
+        _sut.SetBinding(ConsoleKey.U, "action1");
+
+        // Assert
+        _sut.GetKeyForCommand("action1").Should().Be(ConsoleKey.U);
+        _sut.GetCommandForKey(ConsoleKey.T).Should().BeNull();
     }
 
     #endregion
