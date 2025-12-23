@@ -1,3 +1,11 @@
+---
+id: SPEC-CODEX-001
+title: Scavenger's Journal (Codex) System
+version: 1.0.0
+status: Implemented
+related_specs: [SPEC-INTERACT-001]
+---
+
 # SPEC-CODEX-001: Scavenger's Journal (Codex) System
 
 > **Version:** 1.0.0

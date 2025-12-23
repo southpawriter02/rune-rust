@@ -1,3 +1,11 @@
+---
+id: SPEC-COMBAT-001
+title: Combat System
+version: 1.0.0
+status: Implemented
+related_specs: [SPEC-DICE-001, SPEC-TRAUMA-001, SPEC-ABILITY-001, SPEC-STATUS-001, SPEC-HAZARD-001, SPEC-COND-001, SPEC-ENEMY-001]
+---
+
 # SPEC-COMBAT-001: Combat System
 
 > **Version:** 1.0.0
@@ -286,28 +294,28 @@ combatService.ProcessDefend(playerCombatant);
 ## Cross-Links
 
 ### Dependencies (Consumes)
-| Service | Usage |
-|---------|-------|
-| `GameState` | Phase management, current character/room |
-| `IInitiativeService` | Turn order calculation |
-| `IAttackResolutionService` | Attack/defense resolution |
-| `ILootService` | Victory reward generation |
-| `IStatusEffectService` | DoT processing, modifier queries |
-| `IEnemyAIService` | Enemy decision making |
-| `ICreatureTraitService` | Regen, thorns, vampiric, explosive |
-| `IResourceService` | Stamina regeneration |
-| `IAbilityService` | Ability execution, cooldowns |
-| `IActiveAbilityRepository` | Player ability loading |
-| `ITraumaService` | Stress/trauma triggers |
-| `IHazardService` | Damage-triggered hazards (v0.3.3a) |
-| `IConditionService` | Ambient condition effects (v0.3.3b) |
-| `IRoomRepository` | Current room for hazard/condition lookup |
+| Service | Specification | Usage |
+|---------|---------------|-------|
+| `GameState` | [SPEC-GAME-001](SPEC-GAME-001.md) | Phase management, current character/room |
+| `IInitiativeService` | [SPEC-COMBAT-001](SPEC-COMBAT-001.md) | Turn order calculation |
+| `IAttackResolutionService` | [SPEC-COMBAT-001](SPEC-COMBAT-001.md) | Attack/defense resolution |
+| `ILootService` | [SPEC-INV-001](SPEC-INV-001.md) | Victory reward generation |
+| `IStatusEffectService` | [SPEC-STATUS-001](SPEC-STATUS-001.md) | DoT processing, modifier queries |
+| `IEnemyAIService` | [SPEC-ENEMY-001](SPEC-ENEMY-001.md) | Enemy decision making |
+| `ICreatureTraitService` | [SPEC-TRAIT-001](SPEC-TRAIT-001.md) | Regen, thorns, vampiric, explosive |
+| `IResourceService` | [SPEC-ABILITY-001](SPEC-ABILITY-001.md) | Stamina regeneration |
+| `IAbilityService` | [SPEC-ABILITY-001](SPEC-ABILITY-001.md) | Ability execution, cooldowns |
+| `IActiveAbilityRepository` | [SPEC-ABILITY-001](SPEC-ABILITY-001.md) | Player ability loading |
+| `ITraumaService` | [SPEC-TRAUMA-001](SPEC-TRAUMA-001.md) | Stress/trauma triggers |
+| `IHazardService` | [SPEC-HAZARD-001](SPEC-HAZARD-001.md) | Damage-triggered hazards (v0.3.3a) |
+| `IConditionService` | [SPEC-COND-001](SPEC-COND-001.md) | Ambient condition effects (v0.3.3b) |
+| `IRoomRepository` | [SPEC-NAV-001](SPEC-NAV-001.md) | Current room for hazard/condition lookup |
 
 ### Dependents (Provides To)
-| Service | Usage |
-|---------|-------|
-| `GameService` | Main game loop orchestration |
-| `CombatScreenRenderer` | ViewModel generation |
+| Service | Specification | Usage |
+|---------|---------------|-------|
+| `GameService` | [SPEC-GAME-001](SPEC-GAME-001.md) | Main game loop orchestration |
+| `CombatScreenRenderer` | UI Layer | ViewModel generation |
 
 ---
 

@@ -1,3 +1,11 @@
+---
+id: SPEC-CORRUPT-001
+title: Corruption System
+version: 1.0.0
+status: Implemented
+related_specs: [SPEC-CHAR-001, SPEC-COMBAT-001]
+---
+
 # SPEC-CORRUPT-001: Corruption System
 
 > **Version:** 1.0.0
@@ -254,16 +262,16 @@ void OverchargeAether(Character character, int aetherBeyondMax)
 ## Cross-Links
 
 ### Dependencies (Consumes)
-| Service | Usage |
-|---------|-------|
-| `ILogger` | Terminal Error logging |
+| Service | Specification | Usage |
+|---------|---------------|-------|
+| `ILogger` | Infrastructure | Terminal Error logging |
 
 ### Dependents (Provides To)
-| Service | Usage |
-|---------|-------|
-| `StatCalculationService` | Attribute penalties, MaxAP modifier |
-| `CombatService` | Combat log corruption events |
-| `ConditionService` | Corruption tick effects |
+| Service | Specification | Usage |
+|---------|---------------|-------|
+| `StatCalculationService` | [SPEC-CHAR-001](SPEC-CHAR-001.md) | Attribute penalties, MaxAP modifier |
+| `CombatService` | [SPEC-COMBAT-001](SPEC-COMBAT-001.md) | Combat log corruption events |
+| `ConditionService` | [SPEC-COND-001](SPEC-COND-001.md) | Corruption tick effects |
 
 ---
 

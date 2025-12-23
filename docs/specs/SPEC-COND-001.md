@@ -1,3 +1,11 @@
+---
+id: SPEC-COND-001
+title: Ambient Condition System
+version: 1.0.1
+status: Implemented
+related_specs: [SPEC-DICE-001, SPEC-COMBAT-001, SPEC-NAV-001]
+---
+
 # SPEC-COND-001: Ambient Condition System
 
 > **Version:** 1.0.1
@@ -235,19 +243,19 @@ var tickResult = await conditionService.ProcessTurnTickAsync(combatant, staticFi
 ## Cross-Links
 
 ### Dependencies (Consumes)
-| Service | Usage |
-|---------|-------|
-| `IRepository<AmbientCondition>` | Condition entity lookup |
-| `IRoomRepository` | Room → Condition link |
-| `EffectScriptExecutor` | DAMAGE command execution |
-| `IDiceService` | Tick chance rolls, damage dice |
-| `ILogger` | Event tracing |
+| Service | Specification | Usage |
+|---------|---------------|-------|
+| `IRepository<AmbientCondition>` | Infrastructure | Condition entity lookup |
+| `IRoomRepository` | Infrastructure | Room → Condition link |
+| `EffectScriptExecutor` | [SPEC-ABILITY-001](SPEC-ABILITY-001.md) | DAMAGE command execution |
+| `IDiceService` | [SPEC-DICE-001](SPEC-DICE-001.md) | Tick chance rolls, damage dice |
+| `ILogger` | Infrastructure | Event tracing |
 
 ### Dependents (Provides To)
-| Service | Usage |
-|---------|-------|
-| `CombatService` | Passive modifiers, tick processing |
-| `EnvironmentPopulator` | Procedural condition placement |
+| Service | Specification | Usage |
+|---------|---------------|-------|
+| `CombatService` | [SPEC-COMBAT-001](SPEC-COMBAT-001.md) | Passive modifiers, tick processing |
+| `EnvironmentPopulator` | [SPEC-ENVPOP-001](SPEC-ENVPOP-001.md) | Procedural condition placement |
 
 ---
 

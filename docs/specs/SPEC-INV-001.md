@@ -1,3 +1,11 @@
+---
+id: SPEC-INV-001
+title: Inventory & Equipment System
+version: 1.0.0
+status: Implemented
+related_specs: [SPEC-CHAR-001, SPEC-REST-001, SPEC-CRAFT-001, SPEC-REPAIR-001]
+---
+
 # SPEC-INV-001: Inventory & Equipment System
 
 > **Version:** 1.0.0
@@ -282,18 +290,18 @@ if (!await inventoryService.CanMoveAsync(character))
 ## Cross-Links
 
 ### Dependencies (Consumes)
-| Service | Usage |
-|---------|-------|
-| `IInventoryRepository` | Persistence |
-| `ILogger` | Operation tracing |
+| Service | Specification | Usage |
+|---------|---------------|-------|
+| `IInventoryRepository` | Infrastructure | Persistence |
+| `ILogger` | Infrastructure | Operation tracing |
 
 ### Dependents (Provides To)
-| Service | Usage |
-|---------|-------|
-| `RestService` | Supply consumption |
-| `StatCalculationService` | Equipment bonus integration |
-| `NavigationService` | Burden movement check |
-| `CombatService` | Weapon/armor stats |
+| Service | Specification | Usage |
+|---------|---------------|-------|
+| `RestService` | [SPEC-REST-001](SPEC-REST-001.md) | Supply consumption |
+| `StatCalculationService` | [SPEC-CHAR-001](SPEC-CHAR-001.md) | Equipment bonus integration |
+| `NavigationService` | [SPEC-NAV-001](SPEC-NAV-001.md) | Burden movement check |
+| `CombatService` | [SPEC-COMBAT-001](SPEC-COMBAT-001.md) | Weapon/armor stats |
 
 ---
 
