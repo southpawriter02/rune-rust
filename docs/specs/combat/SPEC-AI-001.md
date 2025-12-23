@@ -21,6 +21,8 @@ The Enemy AI & Behavior System governs autonomous enemy decision-making during c
 
 This system creates distinct enemy personalities through archetype-driven behavior patterns without requiring complex state machines.
 
+> **Note:** This specification focuses on **high-level AI behavior patterns** and archetype definitions. For implementation details, code references, and test coverage, see [SPEC-ENEMY-001](./SPEC-ENEMY-001.md).
+
 ---
 
 ## Core Concepts
