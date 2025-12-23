@@ -1,3 +1,11 @@
+---
+id: SPEC-REST-001
+title: Rest & Recovery System
+version: 1.0.0
+status: Implemented
+related_specs: [SPEC-DICE-001, SPEC-INV-001]
+---
+
 # SPEC-REST-001: Rest & Recovery System
 
 > **Version:** 1.0.0
@@ -292,17 +300,17 @@ var result = await restService.PerformRestAsync(character, RestType.Wilderness, 
 ## Cross-Links
 
 ### Dependencies (Consumes)
-| Service | Usage |
-|---------|-------|
-| `IInventoryService` | Supply lookup and consumption |
-| `IAmbushService` | Risk calculation, encounter generation |
-| `ILogger` | Rest traceability |
+| Service | Specification | Usage |
+|---------|---------------|-------|
+| `IInventoryService` | [SPEC-INV-001](SPEC-INV-001.md) | Supply lookup and consumption |
+| `IAmbushService` | [SPEC-REST-001](SPEC-REST-001.md) | Risk calculation, encounter generation |
+| `ILogger` | Infrastructure | Rest traceability |
 
 ### Dependents (Provides To)
-| Service | Usage |
-|---------|-------|
-| `GameService` | Rest command processing |
-| `RestScreenRenderer` | UI display |
+| Service | Specification | Usage |
+|---------|---------------|-------|
+| `GameService` | [SPEC-GAME-001](SPEC-GAME-001.md) | Rest command processing |
+| `RestScreenRenderer` | UI Layer | UI display |
 
 ---
 

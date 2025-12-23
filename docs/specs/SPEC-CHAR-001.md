@@ -1,3 +1,11 @@
+---
+id: SPEC-CHAR-001
+title: Character & Progression System
+version: 1.0.0
+status: Implemented
+related_specs: [SPEC-CORRUPT-001, SPEC-INV-001]
+---
+
 # SPEC-CHAR-001: Character & Progression System
 
 > **Version:** 1.0.0
@@ -239,20 +247,20 @@ void LevelUp(Character character)
 ## Cross-Links
 
 ### Dependencies (Consumes)
-| Service | Usage |
-|---------|-------|
-| `ILogger<StatCalculationService>` | Calculation tracing |
-| `CorruptionState` | Penalty calculations |
+| Service | Specification | Usage |
+|---------|---------------|-------|
+| `ILogger<StatCalculationService>` | Infrastructure | Calculation tracing |
+| `CorruptionState` | [SPEC-CORRUPT-001](SPEC-CORRUPT-001.md) | Penalty calculations |
 
 ### Dependents (Provides To)
-| Service | Usage |
-|---------|-------|
-| `CharacterFactory` | Initial stat calculation |
-| `InventoryService` | Recalculate on equip |
-| `CombatService` | Effective attributes in combat |
-| `AttackResolutionService` | MIGHT/FINESSE for combat |
-| `TraumaService` | WILL for resolve checks |
-| `AmbushService` | WITS for mitigation |
+| Service | Specification | Usage |
+|---------|---------------|-------|
+| `CharacterFactory` | [SPEC-CHAR-001](SPEC-CHAR-001.md) | Initial stat calculation |
+| `InventoryService` | [SPEC-INV-001](SPEC-INV-001.md) | Recalculate on equip |
+| `CombatService` | [SPEC-COMBAT-001](SPEC-COMBAT-001.md) | Effective attributes in combat |
+| `AttackResolutionService` | [SPEC-COMBAT-001](SPEC-COMBAT-001.md) | MIGHT/FINESSE for combat |
+| `TraumaService` | [SPEC-TRAUMA-001](SPEC-TRAUMA-001.md) | WILL for resolve checks |
+| `AmbushService` | [SPEC-REST-001](SPEC-REST-001.md) | WITS for mitigation |
 
 ---
 

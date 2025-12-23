@@ -1,3 +1,11 @@
+---
+id: SPEC-STATUS-001
+title: Status Effect System
+version: 1.0.1
+status: Implemented
+related_specs: [SPEC-DICE-001, SPEC-COMBAT-001]
+---
+
 # SPEC-STATUS-001: Status Effect System
 
 > **Version:** 1.0.1
@@ -260,19 +268,19 @@ if (!_statusEffectService.CanAct(player))
 ## Cross-Links
 
 ### Dependencies (Consumes)
-| Service | Usage |
-|---------|-------|
-| `IDiceService` | DoT damage rolls |
-| `ILogger` | Effect application/removal tracing |
+| Service | Specification | Usage |
+|---------|---------------|-------|
+| `IDiceService` | [SPEC-DICE-001](SPEC-DICE-001.md) | DoT damage rolls |
+| `ILogger` | Infrastructure | Effect application/removal tracing |
 
 ### Dependents (Provides To)
-| Service | Usage |
-|---------|-------|
-| `CombatService` | DoT processing, stun check |
-| `AttackResolutionService` | Damage multiplier, soak modifier |
-| `ConditionService` | Status application from conditions |
-| `AbilityService` | Status application from abilities |
-| `HazardService` | Status application from hazards |
+| Service | Specification | Usage |
+|---------|---------------|-------|
+| `CombatService` | [SPEC-COMBAT-001](SPEC-COMBAT-001.md) | DoT processing, stun check |
+| `AttackResolutionService` | [SPEC-COMBAT-001](SPEC-COMBAT-001.md) | Damage multiplier, soak modifier |
+| `ConditionService` | [SPEC-COND-001](SPEC-COND-001.md) | Status application from conditions |
+| `AbilityService` | [SPEC-ABILITY-001](SPEC-ABILITY-001.md) | Status application from abilities |
+| `HazardService` | [SPEC-HAZARD-001](SPEC-HAZARD-001.md) | Status application from hazards |
 
 ---
 

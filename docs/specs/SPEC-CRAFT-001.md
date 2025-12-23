@@ -1,3 +1,11 @@
+---
+id: SPEC-CRAFT-001
+title: Crafting System
+version: 1.0.0
+status: Implemented
+related_specs: [SPEC-DICE-001, SPEC-INV-001, SPEC-REPAIR-001]
+---
+
 # SPEC-CRAFT-001: Crafting System
 
 > **Version:** 1.0.0

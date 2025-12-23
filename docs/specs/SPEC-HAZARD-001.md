@@ -1,3 +1,11 @@
+---
+id: SPEC-HAZARD-001
+title: Dynamic Hazard System
+version: 1.0.0
+status: Implemented
+related_specs: [SPEC-DICE-001, SPEC-COMBAT-001, SPEC-NAV-001]
+---
+
 # SPEC-HAZARD-001: Dynamic Hazard System
 
 > **Version:** 1.0.0
@@ -284,18 +292,18 @@ var results = await hazardService.ProcessTurnStartHazardsAsync(room, combatants)
 ## Cross-Links
 
 ### Dependencies (Consumes)
-| Service | Usage |
-|---------|-------|
-| `IInteractableObjectRepository` | Hazard persistence |
-| `EffectScriptExecutor` | Script execution |
-| `ILogger` | Event tracing |
+| Service | Specification | Usage |
+|---------|---------------|-------|
+| `IInteractableObjectRepository` | Infrastructure | Hazard persistence |
+| `EffectScriptExecutor` | [SPEC-ABILITY-001](SPEC-ABILITY-001.md) | Script execution |
+| `ILogger` | Infrastructure | Event tracing |
 
 ### Dependents (Provides To)
-| Service | Usage |
-|---------|-------|
-| `CombatService` | Damage-triggered hazards |
-| `NavigationService` | Room entry triggers |
-| `EnvironmentPopulator` | Procedural hazard placement |
+| Service | Specification | Usage |
+|---------|---------------|-------|
+| `CombatService` | [SPEC-COMBAT-001](SPEC-COMBAT-001.md) | Damage-triggered hazards |
+| `NavigationService` | [SPEC-NAV-001](SPEC-NAV-001.md) | Room entry triggers |
+| `EnvironmentPopulator` | [SPEC-ENVPOP-001](SPEC-ENVPOP-001.md) | Procedural hazard placement |
 
 ---
 

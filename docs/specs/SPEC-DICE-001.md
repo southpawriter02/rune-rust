@@ -1,3 +1,11 @@
+---
+id: SPEC-DICE-001
+title: Dice Pool System
+version: 1.0.0
+status: Implemented
+related_specs: []
+---
+
 # SPEC-DICE-001: Dice Pool System
 
 > **Version:** 1.0.0
@@ -182,14 +190,14 @@ var rawDamage = attacker.Might + weaponDamage + attackTypeBonus;
 | `ILogger<DiceService>` | Roll traceability |
 
 ### Dependents (Provides To)
-| Service | Usage |
-|---------|-------|
-| `AttackResolutionService` | Attack/defense rolls |
-| `TraumaService` | WILL resolve checks |
-| `AmbushService` | WITS mitigation, d100 ambush |
-| `HazardService` | Damage rolls via EffectScriptExecutor |
-| `ConditionService` | Tick chance rolls |
-| `InitiativeService` | Initiative determination |
+| Service | Specification | Usage |
+|---------|---------------|-------|
+| `AttackResolutionService` | [SPEC-COMBAT-001](SPEC-COMBAT-001.md) | Attack/defense rolls |
+| `TraumaService` | [SPEC-TRAUMA-001](SPEC-TRAUMA-001.md) | WILL resolve checks |
+| `AmbushService` | [SPEC-REST-001](SPEC-REST-001.md) | WITS mitigation, d100 ambush |
+| `HazardService` | [SPEC-HAZARD-001](SPEC-HAZARD-001.md) | Damage rolls via EffectScriptExecutor |
+| `ConditionService` | [SPEC-COND-001](SPEC-COND-001.md) | Tick chance rolls |
+| `InitiativeService` | [SPEC-COMBAT-001](SPEC-COMBAT-001.md) | Initiative determination |
 
 ---
 

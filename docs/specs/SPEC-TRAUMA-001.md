@@ -1,3 +1,11 @@
+---
+id: SPEC-TRAUMA-001
+title: Trauma & Stress System
+version: 1.0.0
+status: Implemented
+related_specs: [SPEC-DICE-001, SPEC-COMBAT-001]
+---
+
 # SPEC-TRAUMA-001: Trauma & Stress System
 
 > **Version:** 1.0.0
@@ -266,19 +274,19 @@ traumaService.RecoverStress(combatant, combatant.CurrentStress, "Sanctuary Rest"
 ## Cross-Links
 
 ### Dependencies (Consumes)
-| Service | Usage |
-|---------|-------|
-| `IDiceService` | WILL resolve checks |
-| `TraumaRegistry` | Trauma definitions |
-| `ILogger` | Event traceability |
+| Service | Specification | Usage |
+|---------|---------------|-------|
+| `IDiceService` | [SPEC-DICE-001](SPEC-DICE-001.md) | WILL resolve checks |
+| `TraumaRegistry` | [SPEC-TRAUMA-001](SPEC-TRAUMA-001.md) | Trauma definitions |
+| `ILogger` | Infrastructure | Event traceability |
 
 ### Dependents (Provides To)
-| Service | Usage |
-|---------|-------|
-| `CombatService` | Defense penalty, trauma triggers |
-| `AttackResolutionService` | Defense score calculation |
-| `RestService` | Stress recovery |
-| `ConditionService` | Stress tick effects |
+| Service | Specification | Usage |
+|---------|---------------|-------|
+| `CombatService` | [SPEC-COMBAT-001](SPEC-COMBAT-001.md) | Defense penalty, trauma triggers |
+| `AttackResolutionService` | [SPEC-COMBAT-001](SPEC-COMBAT-001.md) | Defense score calculation |
+| `RestService` | [SPEC-REST-001](SPEC-REST-001.md) | Stress recovery |
+| `ConditionService` | [SPEC-COND-001](SPEC-COND-001.md) | Stress tick effects |
 
 ---
 

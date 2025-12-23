@@ -1,3 +1,11 @@
+---
+id: SPEC-ABILITY-001
+title: Ability System
+version: 1.0.0
+status: Implemented
+related_specs: [SPEC-DICE-001, SPEC-COMBAT-001]
+---
+
 # SPEC-ABILITY-001: Ability System
 
 > **Version:** 1.0.0
@@ -254,17 +262,17 @@ var result = abilityService.Execute(player, player, shieldWall);
 ## Cross-Links
 
 ### Dependencies (Consumes)
-| Service | Usage |
-|---------|-------|
-| `IResourceService` | Resource validation and deduction |
-| `EffectScriptExecutor` | Effect execution |
-| `ILogger` | Operation tracing |
+| Service | Specification | Usage |
+|---------|---------------|-------|
+| `IResourceService` | [SPEC-ABILITY-001](SPEC-ABILITY-001.md) | Resource validation and deduction |
+| `EffectScriptExecutor` | [SPEC-ABILITY-001](SPEC-ABILITY-001.md) | Effect execution |
+| `ILogger` | Infrastructure | Operation tracing |
 
 ### Dependents (Provides To)
-| Service | Usage |
-|---------|-------|
-| `CombatService` | Player ability execution |
-| `EnemyAIService` | Enemy ability selection |
+| Service | Specification | Usage |
+|---------|---------------|-------|
+| `CombatService` | [SPEC-COMBAT-001](SPEC-COMBAT-001.md) | Player ability execution |
+| `EnemyAIService` | [SPEC-ENEMY-001](SPEC-ENEMY-001.md) | Enemy ability selection |
 
 ---
 

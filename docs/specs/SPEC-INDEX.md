@@ -24,6 +24,12 @@ This document serves as the master index for all game system specifications. Eac
 | SPEC-COND-001 | Ambient Condition System | [SPEC-COND-001.md](./SPEC-COND-001.md) | `ConditionService` |
 | SPEC-STATUS-001 | Status Effect System | [SPEC-STATUS-001.md](./SPEC-STATUS-001.md) | `StatusEffectService` |
 | SPEC-CODEX-001 | Scavenger's Journal (Codex) | [SPEC-CODEX-001.md](./SPEC-CODEX-001.md) | `CodexEntryRepository`, `DataCaptureRepository` |
+| SPEC-CRAFT-001 | Crafting System | [SPEC-CRAFT-001.md](./SPEC-CRAFT-001.md) | `CraftingService` |
+| SPEC-REPAIR-001 | Repair & Salvage System | [SPEC-REPAIR-001.md](./SPEC-REPAIR-001.md) | `BodgingService` |
+| SPEC-ENEMY-001 | Enemy AI System | [SPEC-ENEMY-001.md](./SPEC-ENEMY-001.md) | `EnemyAIService` |
+| SPEC-TRAIT-001 | Creature Trait System | [SPEC-TRAIT-001.md](./SPEC-TRAIT-001.md) | `CreatureTraitService` |
+| SPEC-INTERACT-001 | Interaction System | [SPEC-INTERACT-001.md](./SPEC-INTERACT-001.md) | `InteractionService` |
+| SPEC-NAV-001 | Navigation System | [SPEC-NAV-001.md](./SPEC-NAV-001.md) | `NavigationService` |
 
 ---
 
@@ -100,6 +106,12 @@ This document serves as the master index for all game system specifications. Eac
 | **HazardService** | EffectScriptExecutor | Combat, Navigation |
 | **ConditionService** | EffectScriptExecutor, DiceService | Combat |
 | **AbilityService** | ResourceService, EffectScriptExecutor | Combat |
+| **CraftingService** | DiceService, InventoryService, ItemRepository | GameService |
+| **BodgingService** | DiceService, InventoryService, ItemRepository | GameService |
+| **EnemyAIService** | DiceService, AttackResolutionService | CombatService |
+| **CreatureTraitService** | DiceService | CombatService, EnemyFactory |
+| **InteractionService** | DiceService, InventoryService | GameService |
+| **NavigationService** | HazardService, ConditionService | GameService |
 
 ---
 
