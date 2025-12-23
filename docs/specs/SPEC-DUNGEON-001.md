@@ -1,7 +1,15 @@
-# SPEC-DUNGEON-001: Dungeon Generation (Legacy Test Map)
+---
+id: SPEC-DUNGEON-001
+title: Dungeon Generation System
+version: 2.0.0
+status: Implemented
+related_specs: [SPEC-ENVPOP-001, SPEC-SPAWN-001, SPEC-NAV-001, SPEC-DICE-001]
+---
 
-**Version:** 1.0.0 (Test Map Implementation)
-**Status:** Active (v0.0.5 - v0.3.3c) - Placeholder for Future Procedural System
+# SPEC-DUNGEON-001: Dungeon Generation System
+
+**Version:** 2.0.0 (v0.4.0 Dynamic Room Engine + v0.0.5 Legacy Test Map)
+**Status:** Implemented
 **Last Updated:** 2025-12-22
 **Owner:** Engine Team
 **Category:** World Generation

@@ -1,7 +1,15 @@
+---
+id: SPEC-ENVPOP-001
+title: Environment Population System
+version: 2.0.0
+status: Implemented
+related_specs: [SPEC-DUNGEON-001, SPEC-HAZARD-001, SPEC-COND-001, SPEC-DICE-001, SPEC-ENEMY-001]
+---
+
 # SPEC-ENVPOP-001: Environment Population System
 
-**Version:** 1.0.0
-**Status:** Active (v0.3.3c)
+**Version:** 2.0.0 (v0.4.0 BiomeElement System + v0.3.3c Legacy)
+**Status:** Implemented
 **Last Updated:** 2025-12-22
 **Owner:** Engine Team
 **Category:** World Generation & Procedural Content
@@ -1098,7 +1106,28 @@ EnvironmentPopulator  DiceService
 
 ---
 
-## Cross-System Integration
+## Cross-Links
+
+### Dependencies (Consumes)
+
+| Service | Specification | Usage |
+|---------|---------------|-------|
+| `IRepository<HazardTemplate>` | Infrastructure | Hazard template entity loading |
+| `IRepository<AmbientCondition>` | [SPEC-COND-001](SPEC-COND-001.md) | Condition entity loading |
+| `IRepository<BiomeElement>` | Infrastructure | v0.4.0 BiomeElement definitions |
+| `IElementSpawnEvaluator` | Infrastructure | v0.4.0 Spawn rule evaluation |
+| `IDiceService` | [SPEC-DICE-001](SPEC-DICE-001.md) | Probability rolls, weighted random selection |
+| `ILogger` | Infrastructure | Population event tracing |
+
+### Dependents (Provides To)
+
+| Service | Specification | Usage |
+|---------|---------------|-------|
+| `DungeonGenerator` | [SPEC-DUNGEON-001](SPEC-DUNGEON-001.md) | Batch room population via PopulateDungeonAsync() |
+| `HazardService` | [SPEC-HAZARD-001](SPEC-HAZARD-001.md) | Consumes spawned DynamicHazard entities |
+| `ConditionService` | [SPEC-COND-001](SPEC-COND-001.md) | Consumes room condition assignments |
+
+### Cross-System Integration
 
 ### Integration Matrix
 
@@ -1106,6 +1135,7 @@ EnvironmentPopulator  DiceService
 |--------|----------------|-------------------|-----------|
 | **HazardTemplate Repository** | Required | `GetAllAsync()` | EnvironmentPopulator → Repository (template retrieval) |
 | **AmbientCondition Repository** | Required | `GetAllAsync()` | EnvironmentPopulator → Repository (condition retrieval) |
+| **BiomeElement Repository** | Required (v0.4.0) | `GetByBiomeIdAsync()` | EnvironmentPopulator → Repository (element definitions) |
 | **DiceService** | Required | `RollSingle()` | EnvironmentPopulator → DiceService (random selection, probability rolls) |
 | **BiomeEnvironmentMapping** | Required | `GetConditionTypes()`, `GetDangerMultiplier()` | EnvironmentPopulator → Static mapping (thematic rules) |
 | **DungeonGenerator** | Consumer | `PopulateDungeonAsync()` | DungeonGenerator → EnvironmentPopulator (batch population) |
