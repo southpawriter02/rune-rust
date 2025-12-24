@@ -1,8 +1,17 @@
+---
+id: SPEC-GAME-001
+title: Game Orchestration System
+version: 1.1.0
+status: Implemented
+last_updated: 2025-12-24
+related_specs: [SPEC-COMBAT-001, SPEC-DESC-001, SPEC-NAV-001]
+---
+
 # SPEC-GAME-001: Game Orchestration System
 
-**Version:** 1.0.0
+**Version:** 1.1.0
 **Status:** Implemented
-**Last Updated:** 2025-12-22
+**Last Updated:** 2025-12-24
 **Implementation File:** [RuneAndRust.Engine/Services/GameService.cs](../../RuneAndRust.Engine/Services/GameService.cs)
 **Test File:** [RuneAndRust.Tests/Engine/GameServiceTests.cs](../../RuneAndRust.Tests/Engine/GameServiceTests.cs)
 
@@ -1573,7 +1582,7 @@ var formattedName2 = RoomViewHelper.FormatObjectName("Security Terminal", isCont
 
 **Purpose:** Singleton runtime game state shared across all services.
 
-**Schema:**
+**Schema (v1.1.0):**
 ```csharp
 public class GameState
 {
@@ -1583,7 +1592,13 @@ public class GameState
     public EntityCharacter? CurrentCharacter { get; set; }
     public Guid? CurrentRoomId { get; set; }
     public CombatState? CombatState { get; set; }
-    public List<Guid> VisitedRoomIds { get; set; } = new();
+    public HashSet<Guid> VisitedRoomIds { get; set; } = new();  // Changed: List → HashSet for O(1) lookups
+
+    // Runtime-only fields (not persisted)
+    [JsonIgnore]
+    public PendingGameAction PendingAction { get; set; } = PendingGameAction.None;
+    [JsonIgnore]
+    public EncounterDefinition? PendingEncounter { get; set; }
 }
 ```
 
@@ -1623,34 +1638,50 @@ public record ExplorationViewModel(
     int TurnCount,
     Coordinate PlayerPosition,
     List<Room> LocalMapRooms,
-    List<Guid> VisitedRoomIds,
+    HashSet<Guid> VisitedRoomIds,  // Changed: List → HashSet for O(1) lookup
     List<string> VisibleObjects,
     List<string> VisibleEnemies,
     string Exits,
-    string BiomeColor
+    string BiomeColor,
+    List<HelpTip>? ContextTips = null  // Added: v0.3.9c context-aware help tips
 );
 ```
 
 **Introduced:** v0.3.5a
-**Extended:** v0.3.5b (LocalMapRooms), v0.3.5c (VisibleObjects, Exits, BiomeColor)
+**Extended:** v0.3.5b (LocalMapRooms), v0.3.5c (VisibleObjects, Exits, BiomeColor), v0.3.9c (ContextTips)
 
 ---
 
 ### CombatViewModel
 
-**Location:** [CombatViewModel.cs](../../RuneAndRust.Core/ViewModels/CombatViewModel.cs)
+**Location:** [ExplorationViewModel.cs](../../RuneAndRust.Core/ViewModels/ExplorationViewModel.cs) (nested record)
 
-**Purpose:** Data transfer object for Combat UI rendering (retrieved from CombatService, not built by GameService).
+**Purpose:** Data transfer object for Combat UI rendering (retrieved from CombatService, not built by GameService). Updated in v0.4.0 for row-based combat.
 
-**Schema (Not defined in GameService, documented for completeness):**
+**Schema (v0.4.0 - Row-Based Combat):**
 ```csharp
 public record CombatViewModel(
-    List<Combatant> PlayerCombatants,
-    List<Combatant> EnemyCombatants,
-    List<string> TurnOrder,
-    int CurrentTurnIndex
+    int RoundNumber,
+    string ActiveCombatantName,
+    List<CombatantView> TurnOrder,
+    List<string> CombatLog,
+    PlayerStatsView PlayerStats,
+    List<AbilityView>? PlayerAbilities = null,
+    List<CombatantView>? PlayerFrontRow = null,
+    List<CombatantView>? PlayerBackRow = null,
+    List<CombatantView>? EnemyFrontRow = null,
+    List<CombatantView>? EnemyBackRow = null,
+    List<TimelineEntryView>? TimelineProjection = null,
+    List<HelpTip>? ContextTips = null
 );
 ```
+
+**Changes from v0.3.x:**
+- Replaced `List<Combatant>` with `List<CombatantView>` (view-layer DTOs)
+- Added `RoundNumber` and `ActiveCombatantName` for turn tracking
+- Added row-based grouping (`PlayerFrontRow`, `PlayerBackRow`, etc.)
+- Added `TimelineProjection` for predictive combat UI
+- Added `ContextTips` for situational help
 
 ---
 
@@ -2242,6 +2273,26 @@ if (_state.Phase == GamePhase.Combat && _combatRenderer != null)
 ### External Dependencies
 - Microsoft.Extensions.Logging (logging framework)
 - Microsoft.Extensions.DependencyInjection (service scoping)
+
+---
+
+## Changelog
+
+### v1.1.0 (2025-12-24)
+**Schema Updates:**
+- Updated CombatViewModel to reflect v0.4.0 row-based combat (Front/Back rows, TimelineProjection, ContextTips)
+- Updated GameState to use `HashSet<Guid>` for VisitedRoomIds (O(1) lookup performance)
+- Added PendingAction and PendingEncounter fields to GameState (with `[JsonIgnore]` for transient state)
+- Updated ExplorationViewModel: `List<Guid>` → `HashSet<Guid>` for VisitedRoomIds, added ContextTips
+- Added code traceability remarks to IGameService and GameService
+- Added `related_specs` field to frontmatter
+
+### v1.0.0 (2025-12-22)
+**Initial Release:**
+- Game loop management with phase-based state machine
+- ExplorationViewModel and CombatViewModel rendering
+- Headless testing mode support
+- 5 unit tests covering basic lifecycle
 
 ---
 

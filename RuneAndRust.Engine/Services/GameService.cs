@@ -14,6 +14,7 @@ namespace RuneAndRust.Engine.Services;
 /// The main game service implementation.
 /// Handles game initialization and the core game loop.
 /// </summary>
+/// <remarks>See: SPEC-GAME-001 for Game Orchestration System design.</remarks>
 public class GameService : IGameService
 {
     private readonly ILogger<GameService> _logger;
