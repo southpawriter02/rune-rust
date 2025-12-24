@@ -1,8 +1,8 @@
 # Rune & Rust - Specification Index
 
-> **Version:** 0.4.0
-> **Last Updated:** 2025-12-22
-> **Total Specifications:** 42
+> **Version:** 0.4.1
+> **Last Updated:** 2025-12-23
+> **Total Specifications:** 44
 > **Maintained By:** The Architect
 
 This document serves as the master index for all game system specifications. Each specification provides comprehensive documentation including behaviors, restrictions, limitations, use cases, and cross-system dependencies.
@@ -23,6 +23,20 @@ This document serves as the master index for all game system specifications. Eac
 | [Content](#content-generation) | 2 | [`content/`](./content/) | Descriptor engine, templates |
 | [UI](#ui--rendering) | 4 | [`ui/`](./ui/) | User interface, rendering |
 | [Data](#data--persistence) | 4 | [`data/`](./data/) | Save system, repositories, migrations |
+| [Meta](#meta-specifications) | 2 | [`./`](./) | Specification workflow, governance |
+
+---
+
+## Meta Specifications
+
+Specifications about specifications - governance, workflows, and standards.
+
+| Spec ID | Title | Scope | Description |
+|---------|-------|-------|-------------|
+| [SPEC-WORKFLOW-001](./SPEC-WORKFLOW-001.md) | Specification Writing Workflow | All specs | Deep dive, creation, update, and validation workflows |
+| [_SPEC-TEMPLATE](./_SPEC-TEMPLATE.md) | Specification Template | All specs | Copy this template when creating new specifications |
+
+> **AI Agents:** Start with [SPEC-WORKFLOW-001](./SPEC-WORKFLOW-001.md) for all specification work. It contains Quick Start instructions, the template link, and complete workflows.
 
 ---
 

@@ -57,69 +57,39 @@ START: What is the document's purpose?
 **Pattern:** `SPEC-[DOMAIN]-[NUMBER].md`
 **Domains:** core, combat, character, exploration, environment, economy, knowledge, content, ui, data
 
-#### Required Structure
+> **Authoritative References:**
+> - **Template:** [_SPEC-TEMPLATE.md](../specs/_SPEC-TEMPLATE.md) - Copy this for new specs
+> - **Workflow:** [SPEC-WORKFLOW-001](../specs/SPEC-WORKFLOW-001.md) - Creation, deep dive, and update workflows
+> - **Validation:** See SPEC-WORKFLOW-001 for 20+ item validation checklist
 
-```markdown
----
-id: SPEC-[DOMAIN]-[NUMBER]
-title: [Descriptive Title]
-status: draft | review | approved | deprecated
-version: X.Y.Z
-last_updated: YYYY-MM-DD
-dependencies: [List of SPEC IDs]
-implements: [List of vX.Y.Z versions]
----
+#### Required Sections (13)
 
-# [Title]
-
-## Overview
-[2-3 paragraph summary of what this spec defines]
-
-## Core Concepts
-[Key terminology and definitions]
-
-## Requirements
-### Functional Requirements
-### Non-Functional Requirements
-
-## Architecture
-[System design, data flow diagrams]
-
-## Implementation Notes
-[Guidance for developers]
-
-## Testing Criteria
-[How to verify implementation]
-
-## References
-[Links to related specs, external resources]
-```
-
-#### Spec Numbering Convention
-
-| Domain | Number Range | Example |
-|--------|-------------|---------|
-| CORE | 001-099 | SPEC-CORE-001 |
-| COMBAT | 100-199 | SPEC-COMBAT-115 |
-| CHARACTER | 200-299 | SPEC-CHARACTER-201 |
-| EXPLORATION | 300-399 | SPEC-EXPLORATION-310 |
-| ENVIRONMENT | 400-499 | SPEC-ENVIRONMENT-420 |
-| ECONOMY | 500-599 | SPEC-ECONOMY-501 |
-| KNOWLEDGE | 600-699 | SPEC-KNOWLEDGE-610 |
-| CONTENT | 700-799 | SPEC-CONTENT-701 |
-| UI | 800-899 | SPEC-UI-801 |
-| DATA | 900-999 | SPEC-DATA-901 |
+1. Table of Contents
+2. Overview
+3. Core Concepts / Behaviors
+4. Restrictions
+5. Limitations
+6. Use Cases (at least UC-1)
+7. Decision Trees (at least 1 diagram)
+8. Cross-Links (Dependencies/Dependents)
+9. Related Services (with line numbers)
+10. Data Models
+11. Testing
+12. Design Rationale
+13. Changelog
 
 #### Spec Creation Checklist
 
-- [ ] ID follows `SPEC-[DOMAIN]-[NUMBER]` pattern
-- [ ] YAML frontmatter is complete
-- [ ] Status is set to `draft`
-- [ ] Dependencies list all prerequisite specs
-- [ ] Overview explains the "why" not just the "what"
-- [ ] Requirements use RFC 2119 keywords (MUST, SHOULD, MAY)
-- [ ] Architecture includes at least one diagram or flow
-- [ ] Testing Criteria are measurable and specific
+- [ ] Copy template from `docs/specs/_SPEC-TEMPLATE.md`
+- [ ] ID follows `SPEC-[ABBREV]-[NUMBER]` pattern
+- [ ] YAML frontmatter complete (id, title, version, status, last_updated, related_specs)
+- [ ] All 13 required sections present
+- [ ] Table of Contents with working anchor links
+- [ ] At least 1 use case with code example
+- [ ] At least 1 decision tree diagram
+- [ ] Line number references in Related Services
+- [ ] Changelog with initial v1.0.0 entry
+- [ ] Run full validation checklist from SPEC-WORKFLOW-001
 
 ---
 
@@ -557,6 +527,25 @@ INPUT: Text to validate
 4. PRIORITIZE fixes by severity
 5. CREATE remediation tasks
 ```
+
+### Specification Deep Dive Workflow
+
+> **See:** [SPEC-WORKFLOW-001](../specs/SPEC-WORKFLOW-001.md) for the authoritative specification writing workflow.
+
+The Deep Dive workflow validates specifications against the codebase:
+
+```
+1. EXPLORE codebase with parallel agents (max 3)
+2. DETECT discrepancies between spec and code
+3. CREATE plan with prioritized fixes
+4. UPDATE spec (version, ToC, discrepancies, decision trees)
+5. ANNOTATE code with XML doc comments referencing spec
+6. VALIDATE all changes with checklist
+```
+
+**Triggers:** "Deep dive on SPEC-X", "Verify spec accuracy", "Update spec to match code"
+
+**Outputs:** Updated spec file + code annotations with spec references
 
 ---
 
