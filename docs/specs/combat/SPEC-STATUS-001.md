@@ -1,14 +1,15 @@
 ---
 id: SPEC-STATUS-001
 title: Status Effect System
-version: 1.0.1
+version: 1.0.2
 status: Implemented
+last_updated: 2025-12-24
 related_specs: [SPEC-DICE-001, SPEC-COMBAT-001]
 ---
 
 # SPEC-STATUS-001: Status Effect System
 
-> **Version:** 1.0.1
+> **Version:** 1.0.2
 > **Status:** Implemented
 > **Service:** `StatusEffectService`
 > **Location:** `RuneAndRust.Engine/Services/StatusEffectService.cs`
@@ -36,16 +37,20 @@ This system creates tactical depth through buff/debuff management and timing.
 |--------|--------|--------|
 | **Stunned** | Cannot act for turn | Critical hits, abilities |
 | **Vulnerable** | +50% damage received | Abilities, conditions |
-| **Disoriented** | -1 to all dice pools | Ambush, Breaking Point recovery |
+| **Disoriented** | -1 to all dice pools* | Ambush, Breaking Point recovery |
 | **Exhausted** | Halved rest recovery | No supplies during rest |
+
+> *Disoriented is applied as a status effect but the dice pool penalty is not yet implemented in DiceService.
 
 ### Buffs
 | Effect | Impact | Source |
 |--------|--------|--------|
-| **Defending** | (Flag) +2 Defense | Defend action |
+| **Defending** | +2 Defense | Defend action |
 | **Fortified** | +2 soak per stack | Abilities |
-| **Inspired** | +1 bonus die to damage | Abilities |
-| **Hasted** | +1 action per turn | Abilities |
+| **Inspired** | +1 bonus die to damage (Reserved) | Abilities |
+| **Hasted** | +1 action per turn (Reserved) | Abilities |
+
+> **Note:** Defending is implemented as `Combatant.IsDefending` boolean flag, not a StatusEffect type. It resets at turn start. Inspired and Hasted are reserved in the enum but not yet implemented.
 
 ---
 
@@ -138,6 +143,40 @@ void RemoveEffect(Combatant target, StatusEffectType type)
 
 **Removes:** All instances of the specified effect type.
 
+### Utility Methods
+
+#### 8. Clear All Effects (`ClearAllEffects`)
+
+```csharp
+void ClearAllEffects(Combatant combatant)
+```
+
+**Purpose:** Removes all status effects from a combatant. Used for combat end cleanup.
+
+#### 9. Get Active Effects (`GetActiveEffects`)
+
+```csharp
+IReadOnlyList<ActiveStatusEffect> GetActiveEffects(Combatant combatant)
+```
+
+**Returns:** Read-only list of all active effects on the combatant.
+
+#### 10. Has Effect (`HasEffect`)
+
+```csharp
+bool HasEffect(Combatant combatant, StatusEffectType type)
+```
+
+**Returns:** `true` if combatant has the specified effect type active.
+
+#### 11. Get Effect Stacks (`GetEffectStacks`)
+
+```csharp
+int GetEffectStacks(Combatant combatant, StatusEffectType type)
+```
+
+**Returns:** Stack count for the specified effect (0 if not present).
+
 ---
 
 ## Stack Mechanics
@@ -156,9 +195,8 @@ void RemoveEffect(Combatant target, StatusEffectType type)
 | Vulnerable | Refreshes duration |
 | Disoriented | Refreshes duration |
 | Exhausted | Refreshes duration |
-| Defending | Refreshes (but usually 1 turn anyway) |
-| Inspired | Refreshes duration |
-| Hasted | Refreshes duration |
+| Inspired | Refreshes duration (Reserved) |
+| Hasted | Refreshes duration (Reserved) |
 
 ---
 
@@ -392,3 +430,23 @@ var effectIcons = combatant.StatusEffects.Select(e => e.Type switch
 - Rest penalty needs to survive combat
 - Creates meaningful resource pressure
 - Cleared only at sanctuary
+
+---
+
+## Changelog
+
+### v1.0.2 (2025-12-24)
+**Documentation Update:**
+- Added `last_updated` field to frontmatter
+- Clarified Defending is a Combatant flag (`IsDefending`), not a StatusEffect type
+- Documented utility methods: `ClearAllEffects`, `GetActiveEffects`, `HasEffect`, `GetEffectStacks`
+- Noted Disoriented dice penalty not yet implemented in DiceService
+- Marked Inspired/Hasted as reserved/not implemented
+- Removed Defending from Non-Stacking Effects table (not a StatusEffect)
+
+### v1.0.1 (2025-12-22)
+**Initial Implementation:**
+- Core DoT effects (Bleeding, Poisoned) with stack mechanics
+- Debuffs (Stunned, Vulnerable, Disoriented, Exhausted)
+- Buffs (Fortified) with stack mechanics
+- Reserved types (Inspired, Hasted) in enum

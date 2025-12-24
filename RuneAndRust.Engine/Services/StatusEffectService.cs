@@ -9,6 +9,7 @@ namespace RuneAndRust.Engine.Services;
 /// Manages status effect lifecycle: application, ticking, and removal.
 /// Provides comprehensive logging for all effect operations.
 /// </summary>
+/// <remarks>See: SPEC-STATUS-001 for Status Effect System design.</remarks>
 public class StatusEffectService : IStatusEffectService
 {
     private readonly IDiceService _dice;

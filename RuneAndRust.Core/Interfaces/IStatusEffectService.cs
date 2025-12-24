@@ -7,6 +7,7 @@ namespace RuneAndRust.Core.Interfaces;
 /// Manages status effect lifecycle: application, ticking, and removal.
 /// Provides methods for effect application, turn processing, and stat modifiers.
 /// </summary>
+/// <remarks>See: SPEC-STATUS-001 for Status Effect System design.</remarks>
 public interface IStatusEffectService
 {
     /// <summary>
