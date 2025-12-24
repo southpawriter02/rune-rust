@@ -19,6 +19,7 @@ public class JournalServiceTests
     private readonly Mock<IDataCaptureService> _mockCaptureService;
     private readonly Mock<IDataCaptureRepository> _mockCaptureRepository;
     private readonly Mock<ICodexEntryRepository> _mockCodexRepository;
+    private readonly Mock<ILibraryService> _mockLibraryService;
     private readonly JournalService _sut;
     private readonly Guid _testCharacterId;
 
@@ -28,13 +29,20 @@ public class JournalServiceTests
         _mockCaptureService = new Mock<IDataCaptureService>();
         _mockCaptureRepository = new Mock<IDataCaptureRepository>();
         _mockCodexRepository = new Mock<ICodexEntryRepository>();
+        _mockLibraryService = new Mock<ILibraryService>();
         _testCharacterId = Guid.NewGuid();
+
+        // Default: return empty collection for system entries
+        _mockLibraryService
+            .Setup(x => x.GetEntriesByCategory(It.IsAny<EntryCategory>()))
+            .Returns(Enumerable.Empty<CodexEntry>());
 
         _sut = new JournalService(
             _mockLogger.Object,
             _mockCaptureService.Object,
             _mockCaptureRepository.Object,
-            _mockCodexRepository.Object);
+            _mockCodexRepository.Object,
+            _mockLibraryService.Object);
     }
 
     #region FormatJournalListAsync Tests

@@ -16,6 +16,7 @@ public class JournalService : IJournalService
     private readonly IDataCaptureService _captureService;
     private readonly IDataCaptureRepository _captureRepository;
     private readonly ICodexEntryRepository _codexRepository;
+    private readonly ILibraryService _libraryService;
     private readonly TextRedactor _redactor;
 
     /// <summary>
@@ -25,16 +26,19 @@ public class JournalService : IJournalService
     /// <param name="captureService">The data capture service for completion data.</param>
     /// <param name="captureRepository">The data capture repository for fragment queries.</param>
     /// <param name="codexRepository">The codex entry repository for entry lookups.</param>
+    /// <param name="libraryService">The library service for system-generated entries.</param>
     public JournalService(
         ILogger<JournalService> logger,
         IDataCaptureService captureService,
         IDataCaptureRepository captureRepository,
-        ICodexEntryRepository codexRepository)
+        ICodexEntryRepository codexRepository,
+        ILibraryService libraryService)
     {
         _logger = logger;
         _captureService = captureService;
         _captureRepository = captureRepository;
         _codexRepository = codexRepository;
+        _libraryService = libraryService;
         _redactor = new TextRedactor();
     }
 
@@ -50,7 +54,7 @@ public class JournalService : IJournalService
     {
         _logger.LogTrace("[Journal] Building ViewModel for {CharacterId}, Tab={Tab}", characterId, tab);
 
-        // Get all discovered entries
+        // Get all discovered entries from database
         var discovered = await _captureService.GetDiscoveredEntriesAsync(characterId);
         var discoveredList = discovered.ToList();
 
@@ -67,6 +71,42 @@ public class JournalService : IJournalService
                 IsComplete: e.CompletionPercent >= 100
             ))
             .ToList();
+
+        // Merge system-generated entries for FieldGuide tab (v0.3.11a)
+        if (tab == JournalTab.FieldGuide)
+        {
+            var systemEntries = _libraryService.GetEntriesByCategory(EntryCategory.FieldGuide);
+            var dbEntryIds = new HashSet<Guid>(filtered.Select(f => f.EntryId));
+
+            // Add system entries that aren't already in DB results
+            var systemViews = systemEntries
+                .Where(e => !dbEntryIds.Contains(e.Id))
+                .Select(e => new JournalEntryView(
+                    Index: 0, // Will be renumbered below
+                    EntryId: e.Id,
+                    Title: e.Title,
+                    Category: e.Category,
+                    CompletionPercent: 100, // System entries are always "complete"
+                    IsComplete: true
+                ))
+                .ToList();
+
+            // Merge and renumber
+            filtered = filtered.Concat(systemViews)
+                .OrderBy(e => e.Title)
+                .Select((e, i) => new JournalEntryView(
+                    Index: i + 1,
+                    EntryId: e.EntryId,
+                    Title: e.Title,
+                    Category: e.Category,
+                    CompletionPercent: e.CompletionPercent,
+                    IsComplete: e.IsComplete
+                ))
+                .ToList();
+
+            _logger.LogDebug("[Journal] Merged {DbCount} DB entries with {SysCount} system entries",
+                dbEntryIds.Count, systemViews.Count);
+        }
 
         _logger.LogDebug("[Journal] Found {Count} entries for {Tab}", filtered.Count, tab);
 
@@ -102,6 +142,7 @@ public class JournalService : IJournalService
 
     /// <summary>
     /// Builds detail view data for a specific entry.
+    /// Checks both database and system-generated entries (v0.3.11a).
     /// </summary>
     /// <param name="characterId">The character viewing the entry.</param>
     /// <param name="entryId">The entry to build details for.</param>
@@ -110,7 +151,29 @@ public class JournalService : IJournalService
     {
         _logger.LogTrace("[Journal] Building details for Entry {EntryId}", entryId);
 
+        // Try database first
         var entry = await _codexRepository.GetByIdAsync(entryId);
+
+        // If not in DB, check system-generated entries (v0.3.11a)
+        if (entry == null)
+        {
+            entry = _libraryService.GetEntryById(entryId);
+            if (entry != null)
+            {
+                // System entries are always 100% complete with no fragments to collect
+                return new JournalEntryDetailView(
+                    EntryId: entry.Id,
+                    Title: entry.Title,
+                    Category: entry.Category,
+                    CompletionPercent: 100,
+                    RedactedContent: entry.FullText, // No redaction for system entries
+                    UnlockedThresholds: new List<string> { "SYSTEM_ENTRY" },
+                    FragmentsCollected: 1,
+                    FragmentsRequired: 1
+                );
+            }
+        }
+
         if (entry == null)
         {
             _logger.LogWarning("[Journal] Entry {EntryId} not found", entryId);
