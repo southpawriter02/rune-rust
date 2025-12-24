@@ -430,6 +430,9 @@ public class CombatService : ICombatService
         var state = new CombatState();
 
         // Load abilities for the player's archetype (v0.2.3c)
+        // TODO: Replace hardcoded maxTier:1 with GetMaxAbilityTier(character.Level)
+        // See: SPEC-ADVANCEMENT-001, Section "System Gaps" - "No ability tier auto-unlock"
+        // Tier unlock schedule: Tier 1 (Level 1+), Tier 2 (Level 5+), Tier 3 (Level 10+)
         var character = _gameState.CurrentCharacter;
         var abilities = _abilityRepository.GetByArchetypeAsync(character.Archetype, maxTier: 1)
             .GetAwaiter().GetResult().ToList();

@@ -30,7 +30,11 @@ public class ActiveAbilityRepository : GenericRepository<ActiveAbility>, IActive
         _abilityLogger = abilityLogger;
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Retrieves abilities for an archetype, filtered by maximum tier.
+    /// Tier unlock schedule: Tier 1 (Level 1+), Tier 2 (Level 5+), Tier 3 (Level 10+).
+    /// </summary>
+    /// <remarks>See: SPEC-ADVANCEMENT-001, Section "Ability Tier Restrictions"</remarks>
     public async Task<IEnumerable<ActiveAbility>> GetByArchetypeAsync(ArchetypeType archetype, int maxTier = 1)
     {
         _abilityLogger.LogDebug(

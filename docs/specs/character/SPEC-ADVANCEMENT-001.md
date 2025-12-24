@@ -1,17 +1,45 @@
 ---
 id: SPEC-ADVANCEMENT-001
 title: Character Advancement System
-version: 1.0.0
+version: 1.1.0
 status: Scaffolded
+last_updated: 2025-12-23
 related_specs: [SPEC-XP-001, SPEC-CHAR-001, SPEC-ABILITY-001, SPEC-TRAIT-001]
 ---
 
 # SPEC-ADVANCEMENT-001: Character Advancement System
 
-> **Version:** 1.0.0
+> **Version:** 1.1.0
 > **Status:** Scaffolded (Formulas exist, level-up logic incomplete)
 > **Service:** `StatCalculationService` (partial), `CharacterAdvancementService` (planned)
 > **Location:** `RuneAndRust.Engine/Services/StatCalculationService.cs`
+
+---
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Core Concepts](#core-concepts)
+  - [Level-Up Rewards](#level-up-rewards)
+  - [Derived Stat Scaling](#derived-stat-scaling)
+  - [Archetype Bonuses](#archetype-bonuses)
+  - [Lineage Bonuses](#lineage-bonuses)
+  - [Corruption Integration](#corruption-integration)
+- [Behaviors](#behaviors)
+  - [Primary Behaviors](#primary-behaviors)
+- [Restrictions](#restrictions)
+- [Limitations](#limitations)
+- [Use Cases](#use-cases)
+- [Decision Trees](#decision-trees)
+- [Cross-Links](#cross-links)
+- [Related Services](#related-services)
+- [Data Models](#data-models)
+- [Configuration](#configuration)
+- [Testing](#testing)
+- [Design Rationale](#design-rationale)
+- [Changelog](#changelog)
+- [Future Enhancements](#future-enhancements)
+- [AAM-VOICE Compliance](#aam-voice-compliance)
 
 ---
 
@@ -49,18 +77,107 @@ This system translates XP accumulation into tangible power increases while maint
 
 ### Derived Stat Scaling
 
-**Formulas (from StatCalculationService):**
+**Formulas (from StatCalculationService, Lines 61-113):**
 ```csharp
-MaxHP = 50 + (Sturdiness × 10)
-MaxStamina = 20 + (Finesse × 5) + (Sturdiness × 3)
-ActionPoints = 2 + (Wits ÷ 4)
-MaxAP = 10 + (Will × 5)  // Mystic archetype only
+MaxHP = 50 + (Sturdiness × 10)        // Line 61-70
+MaxStamina = 20 + (Finesse × 5) + (Sturdiness × 3)  // Line 73-82
+ActionPoints = 2 + (Wits ÷ 4)          // Line 85-94
+MaxAP = 10 + (Will × 5)  // Mystic archetype only, Line 97-113
 ```
+
+**Implementation Gap:** The following formulas are documented but NOT implemented in `StatCalculationService`:
+- `Defense = 10 + Finesse` (planned for combat damage reduction)
+- `Soak = Sturdiness ÷ 2` (planned for damage absorption)
 
 **Level Scaling:**
 - **Attribute-Driven:** MaxHP/Stamina scale with STU/FIN increases
 - **Flat Bonus (Planned):** +10 HP, +5 Stamina per level (NOT YET IMPLEMENTED)
 - **Compound Growth:** Each attribute point from level-up increases derived stats
+
+---
+
+### Archetype Bonuses
+
+**Source:** `StatCalculationService.GetArchetypeBonuses()` (Lines 215-247)
+
+| Archetype | STU | MIG | FIN | WIT | WILL |
+|-----------|-----|-----|-----|-----|------|
+| **Warrior** | +2 | +1 | - | - | - |
+| **Skirmisher** | - | - | +2 | +1 | - |
+| **Adept** | - | - | - | +2 | +1 |
+| **Mystic** | +1 | - | - | - | +2 |
+
+**Application:** Bonuses are applied during character creation and included in `RecalculateDerivedStats()` base attribute calculations.
+
+---
+
+### Lineage Bonuses
+
+**Source:** `StatCalculationService.GetLineageBonuses()` (Lines 250-288)
+
+| Lineage | STU | MIG | FIN | WIT | WILL |
+|---------|-----|-----|-----|-----|------|
+| **Human (Clan-Born)** | +1 | +1 | +1 | +1 | +1 |
+| **RuneMarked** | -1 | - | - | +2 | +2 |
+| **IronBlooded** | +2 | +2 | - | -1 | - |
+| **VargrKin** | - | - | +2 | +2 | -1 |
+
+**Application:** Lineage bonuses stack with Archetype bonuses. Negative bonuses can reduce attributes below starting values.
+
+---
+
+### Corruption Integration
+
+**Source:** `StatCalculationService.RecalculateDerivedStats()` (Lines 160-200)
+
+The advancement system integrates with the Corruption mechanic. When recalculating derived stats, corruption stages apply penalties:
+
+**Attribute Penalties by Corruption Stage:**
+| Stage | Will Penalty | Wits Penalty |
+|-------|--------------|--------------|
+| Stable | 0 | 0 |
+| Corrupted | 0 | 0 |
+| Blighted | -1 | 0 |
+| Fractured | -2 | -1 |
+| Terminal | -2 | -1 |
+
+**MaxAP Multipliers (Mystic Only):**
+| Stage | MaxAP Multiplier |
+|-------|------------------|
+| Stable | 100% |
+| Corrupted | 90% |
+| Blighted | 80% |
+| Fractured | 60% |
+| Terminal | 0% |
+
+**Example:**
+```csharp
+// Mystic with WILL 6, Blighted corruption stage
+// Base MaxAP: 10 + (6 × 5) = 40
+// Will Penalty: -1 → Effective WILL: 5
+// Recalculated MaxAP: 10 + (5 × 5) = 35
+// Blighted Multiplier: 80%
+// Final MaxAP: 35 × 0.80 = 28
+```
+
+---
+
+### Ratio Preservation
+
+**Source:** `StatCalculationService.RecalculateDerivedStats()` (Lines 130-145)
+
+When MaxHP or MaxStamina change due to stat recalculation, CurrentHP and CurrentStamina preserve their **ratio** rather than resetting to maximum. This prevents exploits where players could heal by equipping/unequipping gear.
+
+**Example:**
+```csharp
+// Before: CurrentHP 30, MaxHP 100 (30% health)
+// Equip armor that grants +1 STU (+10 MaxHP)
+// After: CurrentHP 33, MaxHP 110 (still 30% health)
+
+// The ratio is preserved:
+// newCurrentHP = (previousCurrent / previousMax) * newMax
+// 33 = (30 / 100) * 110
+```
 
 ---
 
@@ -135,7 +252,7 @@ int GetMaxAbilityTier(Character character)
 
 **Current Implementation:**
 ```csharp
-// In CombatService.StartCombat() (Line 386-393)
+// In CombatService.StartCombat() (Line 434)
 var abilities = _abilityRepository.GetByArchetypeAsync(character.Archetype, maxTier: 1)
     .GetAwaiter().GetResult().ToList();
 ```
@@ -570,6 +687,8 @@ public class Character
 }
 ```
 
+**Warning:** The `SetAttribute()` method shown above does NOT exist in the actual `Character.cs` implementation. The real entity uses direct property access without clamping. Attribute validation (1-10 range) is handled by `StatCalculationService.ClampAttribute()` but this is not called by the entity itself. Future implementations should add validation at the entity level.
+
 ---
 
 ### ActiveAbility Entity (Tier Field)
@@ -655,7 +774,64 @@ public static class DerivedStatFormulas
 
 ## Testing
 
-### Test Coverage (Planned)
+### Existing Test Coverage
+
+**File:** `RuneAndRust.Engine.Tests/Services/StatCalculationServiceTests.cs` (832 lines, ~50 tests)
+
+Tests are organized by method:
+
+1. **ApplyModifier Tests** (~8 tests)
+   - Modifier application with positive/negative values
+   - Edge cases for modifier stacking
+
+2. **ClampAttribute Tests** (~6 tests)
+   - Values below minimum clamped to 1
+   - Values above maximum clamped to 10
+   - Valid values pass through unchanged
+
+3. **CalculateMaxHP Tests** (~8 tests)
+   - STU 1 → MaxHP 60
+   - STU 5 → MaxHP 100
+   - STU 10 → MaxHP 150
+   - Edge cases for minimum/maximum sturdiness
+
+4. **CalculateMaxStamina Tests** (~8 tests)
+   - FIN 5, STU 5 → MaxStamina 60
+   - Various FIN/STU combinations
+   - Formula verification: 20 + (FIN × 5) + (STU × 3)
+
+5. **CalculateActionPoints Tests** (~5 tests)
+   - WIT 4 → ActionPoints 3
+   - WIT 8 → ActionPoints 4
+   - Formula verification: 2 + (WIT ÷ 4)
+
+6. **CalculateBaseMaxAp Tests** (~5 tests)
+   - Mystic with WILL 5 → MaxAP 35
+   - Non-Mystic returns 0
+   - Formula verification: 10 + (WILL × 5) for Mystic only
+
+7. **RecalculateDerivedStats Tests** (~10 tests)
+   - Full stat recalculation from character
+   - Corruption penalty application
+   - Ratio preservation for CurrentHP/CurrentStamina
+   - Archetype bonus application
+   - Lineage bonus application
+
+8. **GetArchetypeBonuses Tests** (~4 tests)
+   - Warrior: STU +2, MIG +1
+   - Skirmisher: FIN +2, WIT +1
+   - Adept: WIT +2, WILL +1
+   - Mystic: WILL +2, STU +1
+
+9. **GetLineageBonuses Tests** (~4 tests)
+   - Human: +1 to all
+   - RuneMarked: WIT +2, WILL +2, STU -1
+   - IronBlooded: STU +2, MIG +2, WIT -1
+   - VargrKin: FIN +2, WIT +2, WILL -1
+
+---
+
+### Planned Test Coverage
 
 `CharacterAdvancementServiceTests.cs` (NOT YET CREATED) should cover:
 
@@ -684,14 +860,6 @@ public static class DerivedStatFormulas
    - GetMaxAbilityTier returns 3 for Level 10+ (future-proofing)
    - Load Tier 1 abilities only for Level 1 character
    - Load Tier 1 + Tier 2 abilities for Level 5 character
-
-4. **Stat Calculation Tests** (6 tests)
-   - RecalculateDerivedStats with STU 5 → MaxHP 100
-   - RecalculateDerivedStats with STU 10 → MaxHP 150
-   - RecalculateDerivedStats with FIN 6, STU 4 → MaxStamina 62
-   - RecalculateDerivedStats with WIT 8 → ActionPoints 4
-   - RecalculateDerivedStats with equipment bonuses (STU +2)
-   - RecalculateDerivedStats with corruption penalties (STU -1)
 
 ---
 
@@ -784,7 +952,7 @@ public static class DerivedStatFormulas
 
 **Integration Points:**
 - `StatCalculationService.RecalculateDerivedStats()` called after attribute changes
-- `CombatService.StartCombat()` loads abilities with hardcoded `maxTier: 1` (Line 386-393)
+- `CombatService.StartCombat()` loads abilities with hardcoded `maxTier: 1` (Line 434)
 
 ---
 

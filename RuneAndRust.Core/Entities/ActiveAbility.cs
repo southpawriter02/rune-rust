@@ -66,6 +66,7 @@ public class ActiveAbility
     /// Tier level (1-3). Higher tiers unlock at higher character levels.
     /// Tier 1: Level 1+, Tier 2: Level 5+, Tier 3: Level 10+.
     /// </summary>
+    /// <remarks>See: SPEC-ADVANCEMENT-001, Section "Ability Tier Restrictions"</remarks>
     public int Tier { get; set; } = 1;
 
     // ═══════════════════════════════════════════════════════════════════════

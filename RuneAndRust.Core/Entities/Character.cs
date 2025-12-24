@@ -63,6 +63,7 @@ public class Character
     /// <summary>
     /// Maximum health points. Derived: 50 + (Sturdiness * 10).
     /// </summary>
+    /// <remarks>See: SPEC-ADVANCEMENT-001, Section "Derived Stat Scaling"</remarks>
     public int MaxHP { get; set; } = 100;
 
     /// <summary>
@@ -73,6 +74,7 @@ public class Character
     /// <summary>
     /// Maximum stamina points. Derived: 20 + (Finesse * 5) + (Sturdiness * 3).
     /// </summary>
+    /// <remarks>See: SPEC-ADVANCEMENT-001, Section "Derived Stat Scaling"</remarks>
     public int MaxStamina { get; set; } = 60;
 
     /// <summary>
@@ -83,12 +85,14 @@ public class Character
     /// <summary>
     /// Action points available per turn. Derived: 2 + (Wits / 4).
     /// </summary>
+    /// <remarks>See: SPEC-ADVANCEMENT-001, Section "Derived Stat Scaling"</remarks>
     public int ActionPoints { get; set; } = 3;
 
     /// <summary>
     /// Maximum Aether Points (magical energy pool for Mystic archetype).
     /// Derived: 10 + (Will * 5) for Mystics, 0 for non-Mystics.
     /// </summary>
+    /// <remarks>See: SPEC-ADVANCEMENT-001, Section "Derived Stat Scaling" and "Corruption Integration"</remarks>
     public int MaxAp { get; set; } = 0;
 
     /// <summary>
@@ -125,11 +129,14 @@ public class Character
     /// <summary>
     /// Experience points accumulated by the character.
     /// </summary>
+    /// <remarks>See: SPEC-ADVANCEMENT-001, Section "Level-Up Rewards" for XP thresholds.</remarks>
     public int ExperiencePoints { get; set; } = 0;
 
     /// <summary>
-    /// Character's current level. Starts at 1.
+    /// Character's current level. Starts at 1, max 5.
+    /// Level-up rewards (+10 HP, +5 Stamina, +1 attribute point) are NOT YET IMPLEMENTED.
     /// </summary>
+    /// <remarks>See: SPEC-ADVANCEMENT-001, Section "Level-Up Rewards" and "Ability Tier Restrictions"</remarks>
     public int Level { get; set; } = 1;
 
     /// <summary>
