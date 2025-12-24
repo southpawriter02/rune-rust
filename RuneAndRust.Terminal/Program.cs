@@ -89,6 +89,9 @@ class Program
                     // Register Loot Audit Service (v0.3.13a - The Loot Audit)
                     services.AddScoped<ILootAuditService, LootAuditService>();
 
+                    // Register Combat Simulation Service (v0.3.13b - The Combat Simulator)
+                    services.AddSingleton<CombatSimulationService>();
+
                     // Register Journal Services
                     services.AddScoped<IJournalService, JournalService>();
 
@@ -269,6 +272,49 @@ class Program
                 return;
             }
 
+            // 5c. CLI Argument Handling (v0.3.13b - Combat Simulator)
+            if (args.Any(a => a.StartsWith("--sim-combat")))
+            {
+                // Parse CLI arguments with defaults
+                var count = ParseIntArg(args, "count", 100);
+                var archetype = ParseStringArg(args, "archetype", "Warrior");
+                var enemyId = ParseStringArg(args, "enemy", "und_draugr_01");
+
+                AnsiConsole.MarkupLine($"[yellow]Running Combat Simulation: {archetype} vs {enemyId} ({count:N0} matches)...[/]");
+
+                using (var scope = host.Services.CreateScope())
+                {
+                    var simService = scope.ServiceProvider.GetRequiredService<CombatSimulationService>();
+                    var result = simService.RunBatchAsync(archetype, enemyId, count).GetAwaiter().GetResult();
+
+                    // Ensure output directory exists
+                    var outputDir = "docs/balance";
+                    if (!Directory.Exists(outputDir))
+                        Directory.CreateDirectory(outputDir);
+
+                    // Write report
+                    var reportPath = Path.Combine(outputDir, $"sim_combat_{DateTime.Now:yyyyMMdd_HHmmss}.md");
+                    var reportContent = $@"# Combat Simulation Report
+**Date:** {DateTime.Now}
+**Batch:** {count} matches
+**Archetype:** {archetype}
+**Enemy:** {enemyId}
+
+## Results
+- **Win Rate:** {result.WinRate:F2}%
+- **Avg Turns:** {result.AvgTurns:F1}
+- **Avg HP Remaining:** {result.AvgHpRemaining:F1}
+- **Avg Stamina Spent:** {result.AvgStaminaSpent:F1}
+";
+                    File.WriteAllText(reportPath, reportContent);
+
+                    AnsiConsole.MarkupLine($"[green]Simulation complete. Win Rate: {result.WinRate:F1}%[/]");
+                    AnsiConsole.MarkupLine($"[grey]Report: {reportPath}[/]");
+                }
+
+                return;
+            }
+
             // 6. UI Handover
             AnsiConsole.MarkupLine("[green]Rune & Rust v0.3.6c Booting...[/]");
             AnsiConsole.WriteLine();
@@ -369,6 +415,20 @@ class Program
     }
 
     #region CLI Argument Helpers
+
+    /// <summary>
+    /// Parses a string argument from CLI args (e.g., --archetype=Warrior).
+    /// </summary>
+    private static string ParseStringArg(string[] args, string name, string defaultValue)
+    {
+        var prefix = $"--{name}=";
+        var arg = args.FirstOrDefault(a => a.StartsWith(prefix, StringComparison.OrdinalIgnoreCase));
+
+        if (arg == null)
+            return defaultValue;
+
+        return arg.Substring(prefix.Length);
+    }
 
     /// <summary>
     /// Parses an integer argument from CLI args (e.g., --iterations=10000).
