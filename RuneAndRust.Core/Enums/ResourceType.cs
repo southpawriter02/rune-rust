@@ -6,6 +6,7 @@ namespace RuneAndRust.Core.Enums;
 /// Types of resources that can be spent or regenerated during combat.
 /// Resources represent the economy of actions - without resources, actions become limited.
 /// </summary>
+/// <remarks>See: SPEC-RESOURCE-001, Section "Core Behaviors".</remarks>
 public enum ResourceType
 {
     /// <summary>

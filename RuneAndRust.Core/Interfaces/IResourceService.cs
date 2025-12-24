@@ -7,6 +7,7 @@ namespace RuneAndRust.Core.Interfaces;
 /// Defines the contract for resource management during combat.
 /// Handles spending, regeneration, and validation of resources (Stamina, Aether).
 /// </summary>
+/// <remarks>See: SPEC-RESOURCE-001 for Resource Management System design.</remarks>
 public interface IResourceService
 {
     /// <summary>

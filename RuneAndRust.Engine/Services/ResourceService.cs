@@ -9,6 +9,7 @@ namespace RuneAndRust.Engine.Services;
 /// Implements resource management during combat.
 /// Handles spending, regeneration, and validation of resources (Stamina, Aether).
 /// </summary>
+/// <remarks>See: SPEC-RESOURCE-001 for Resource Management System design.</remarks>
 public class ResourceService : IResourceService
 {
     private readonly ILogger<ResourceService> _logger;
