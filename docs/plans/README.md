@@ -1,7 +1,7 @@
 # Rune & Rust Implementation Plans
 
-> **Last Updated:** 2025-12-22
-> **Current Version:** v0.3.10c (Settings & Controls)
+> **Last Updated:** 2025-12-23
+> **Current Version:** v0.3.11b (Documentation & Help)
 
 This directory contains all implementation plans for Rune & Rust, organized by version and milestone.
 
@@ -15,7 +15,9 @@ This directory contains all implementation plans for Rune & Rust, organized by v
 | [2. Exploration](#milestone-2-exploration) | v0.1.0 - v0.1.3 | Character Creation, Interaction, Codex | Complete |
 | [3. Combat](#milestone-3-combat) | v0.2.0 - v0.2.4 | Combat System, AI, Abilities | Complete |
 | [4. Survivor](#milestone-4-survivor) | v0.3.0 - v0.3.3 | Trauma, Crafting, Rest, Hazards | Complete |
-| [4.5 Interface Polish](#milestone-45-interface-polish) | v0.3.4 - v0.3.10 | TUI Enhancement, UX | In Progress |
+| [4.5 Interface Polish](#milestone-45-interface-polish) | v0.3.4 - v0.3.10 | TUI Enhancement, UX | Complete |
+| [4.6 Documentation](#milestone-46-documentation) | v0.3.11 | Dynamic Knowledge Engine, DocGen | Complete |
+| [4.7 Automated Testing](#milestone-47-automated-testing) | v0.3.12 | E2E Integration Testing | Planned |
 | [5-13. Future](#milestones-5-13-future) | v0.4.0+ | Saga, Magic, Settlements, Endgame | Planned |
 
 ---
@@ -97,6 +99,26 @@ This directory contains all implementation plans for Rune & Rust, organized by v
 | v0.3.8 | Dynamic Engine | Template-based room generation | Complete |
 | [v0.3.9](v0.3.9.md) | The Feedback | Screen FX, Accessibility themes, Help system | Complete |
 | [v0.3.10](v0.3.10.md) | The Configurator | Settings engine, Options UI, Key rebinding | Complete |
+
+---
+
+## Milestone 4.6: Documentation
+
+*The Archivist - Dynamic knowledge engine and documentation*
+
+| Version | Codename | Focus | Status |
+|---------|----------|-------|--------|
+| [v0.3.11](v0.3.11.md) | The Archivist | Dynamic Knowledge Engine, DocGen CLI | Complete |
+
+---
+
+## Milestone 4.7: Automated Testing
+
+*The Gauntlet - End-to-End integration testing*
+
+| Version | Codename | Focus | Status |
+|---------|----------|-------|--------|
+| [v0.3.12](v0.3.12.md) | The Gauntlet | Scripted Journeys, Deterministic Testing | Planned |
 
 ---
 
