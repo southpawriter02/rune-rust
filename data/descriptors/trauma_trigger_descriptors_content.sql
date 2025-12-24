@@ -124,7 +124,7 @@ INSERT INTO Trauma_Trigger_Conditions (trigger_name, trigger_category, trigger_c
 
 -- Combat
 ('Similar_Enemy', 'Combat', 'enemy_type_match', '["flashbacks", "battle_tremors", "hypervigilance"]', '{"enemy_type": "trauma_source"}', 'When encountering enemy type that caused trauma', '+5 Psychic Stress or Stunned', '["Enemy", "Memory"]'),
-('Low_Health', 'Combat', 'health_percentage', '["flashbacks", "battle_tremors", "existential_dread"]', '{"health_percent": 25}', 'When health drops below 25%', 'Flashback trigger or +5 Stress', '["Near_Death", "Injured"]'),
+('Low_Health', 'Combat', 'health_percentage', '["flashbacks", "battle_tremors", "existential_dread"]', '{"health_percent": 25}', 'When health drops below critical levels', 'Flashback trigger or +5 Stress', '["Near_Death", "Injured"]'),
 ('Outnumbered', 'Combat', 'enemy_count', '["hypervigilance", "flashbacks", "systemic_apathy"]', '{"enemy_count_ratio": 2}', 'When facing 2+ enemies per ally', '+3-4 Psychic Stress', '["Outnumbered", "Overwhelmed"]'),
 ('Ambushed', 'Combat', 'surprise_round', '["hypervigilance", "flashbacks"]', '{"surprise": true}', 'When ambushed by enemies', '+3-4 Psychic Stress or Stunned', '["Ambush", "Surprise"]'),
 ('Ally_Down', 'Combat', 'ally_unconscious', '["flashbacks", "trust_erosion", "systemic_apathy"]', '{"ally_downed": true}', 'When an ally is knocked unconscious', '+3-4 Psychic Stress', '["Ally", "Failure"]'),

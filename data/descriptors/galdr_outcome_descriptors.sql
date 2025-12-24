@@ -47,8 +47,8 @@ VALUES
 
 INSERT INTO Galdr_Outcome_Descriptors (ability_name, outcome_type, success_count, target_type, effect_category, descriptor_text, weight, tags)
 VALUES
-('LightningBolt', 'Hit', 3, 'Enemy', 'Damage', 'Lightning arcs into the {Target}! Electricity courses through them—muscles spasming involuntarily!', 1.0, '["Lightning", "Damage"]'),
-('LightningBolt', 'Hit', 4, 'Enemy', 'Damage', 'Your bolt strikes true! The {Target} convulses as electricity ravages their {Target_Location}!', 1.0, '["Brutal"]'),
+('LightningBolt', 'Hit', 3, 'Enemy', 'Damage', 'Lightning arcs into the {Target}! Lightning courses through them—muscles spasming involuntarily!', 1.0, '["Lightning", "Damage"]'),
+('LightningBolt', 'Hit', 4, 'Enemy', 'Damage', 'Your bolt strikes true! The {Target} convulses as lightning ravages their {Target_Location}!', 1.0, '["Brutal"]'),
 ('LightningBolt', 'CriticalHit', 5, 'Enemy', 'Damage', 'Ansuz erupts in white-hot fury! Lightning chains through the {Target}—their {Vital_Location} explodes in sparks!', 1.0, '["Devastating"]'),
 ('LightningBolt', 'CriticalHit', 6, 'Enemy', 'Damage', 'Direct hit! Lightning overloads the {Target}—they collapse, smoke rising from charred remains!', 1.0, '["Lethal"]'),
 ('LightningBolt', 'Amplified', 5, 'Enemy', 'Damage', 'Your lightning finds conductive material! The bolt amplifies, arcing through the {Target} with doubled fury!', 1.0, '["Amplified", "Environmental"]');
