@@ -6,6 +6,7 @@ namespace RuneAndRust.Core.Models.Combat;
 /// Represents the result of adding or purging corruption on a character.
 /// Unlike Stress, corruption is NOT mitigated by WILL - it accumulates directly.
 /// </summary>
+/// <remarks>See: SPEC-CORRUPT-001, Section "Behaviors" for AddCorruption/PurgeCorruption</remarks>
 /// <param name="RawCorruption">The initial corruption amount (positive for add, negative for purge).</param>
 /// <param name="NetCorruptionApplied">Actual corruption change (clamped to 0-100 range).</param>
 /// <param name="CurrentTotal">Character's new corruption total after application.</param>

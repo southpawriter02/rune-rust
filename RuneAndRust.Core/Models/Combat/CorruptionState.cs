@@ -7,6 +7,10 @@ namespace RuneAndRust.Core.Models.Combat;
 /// Corruption is a "High Water Mark" mechanic that scales up easily
 /// but requires significant, rare resources to lower.
 /// </summary>
+/// <remarks>
+/// See: SPEC-CORRUPT-001 (Corruption System) for design documentation.
+/// See: SPEC-CORRUPT-001, Section "CorruptionState Details" for property breakdown.
+/// </remarks>
 /// <param name="Value">The current corruption value (0-100).</param>
 public record CorruptionState(int Value)
 {
