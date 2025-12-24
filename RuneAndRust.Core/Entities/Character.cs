@@ -7,6 +7,10 @@ namespace RuneAndRust.Core.Entities;
 /// Represents a player character in Rune &amp; Rust.
 /// Contains identity, lineage, archetype, attributes, and derived stats.
 /// </summary>
+/// <remarks>
+/// See: SPEC-CHAR-001 (Character &amp; Progression System) for design documentation.
+/// See: SPEC-ADVANCEMENT-001 for level-up and XP systems.
+/// </remarks>
 public class Character
 {
     /// <summary>

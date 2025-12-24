@@ -4,6 +4,7 @@ namespace RuneAndRust.Core.Enums;
 /// Defines the character lineages available in Rune &amp; Rust.
 /// Lineage represents the character's heritage and provides unique traits.
 /// </summary>
+/// <remarks>See: SPEC-CHAR-001, Section "Attribute Bonuses by Lineage"</remarks>
 public enum LineageType
 {
     /// <summary>

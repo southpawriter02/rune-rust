@@ -1,17 +1,37 @@
 ---
 id: SPEC-CHAR-001
 title: Character & Progression System
-version: 1.0.0
+version: 1.1.0
 status: Implemented
-related_specs: [SPEC-CORRUPT-001, SPEC-INV-001]
+last_updated: 2025-12-23
+related_specs: [SPEC-CORRUPT-001, SPEC-INV-001, SPEC-ADVANCEMENT-001]
 ---
 
 # SPEC-CHAR-001: Character & Progression System
 
-> **Version:** 1.0.0
+> **Version:** 1.1.0
 > **Status:** Implemented
 > **Services:** `StatCalculationService`, `CharacterFactory`
 > **Location:** `RuneAndRust.Engine/Services/`, `RuneAndRust.Engine/Factories/`
+
+---
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Core Attributes](#core-attributes)
+- [Behaviors](#behaviors)
+- [Restrictions](#restrictions)
+- [Limitations](#limitations)
+- [Use Cases](#use-cases)
+- [Decision Trees](#decision-trees)
+- [Cross-Links](#cross-links)
+- [Related Services](#related-services)
+- [Data Models](#data-models)
+- [Configuration](#configuration)
+- [Testing](#testing)
+- [Design Rationale](#design-rationale)
+- [Changelog](#changelog)
 
 ---
 
@@ -73,9 +93,16 @@ MaxAP = (Mystic only) 10 + (Will × 5)
 **Corruption Integration:**
 ```csharp
 // Corruption penalties from CorruptionState
-effectiveWill -= corruptionState.WillPenalty;    // -1 at Blighted, -2 at Fractured
-effectiveWits -= corruptionState.WitsPenalty;    // -1 at Fractured
-MaxAP *= corruptionState.MaxApMultiplier;        // 0.75x at Blighted, 0.5x at Fractured
+effectiveWill -= corruptionState.WillPenalty;    // -1 at Blighted, -2 at Fractured/Terminal
+effectiveWits -= corruptionState.WitsPenalty;    // -1 at Fractured/Terminal
+
+// Corruption MaxAP Multipliers:
+// - Pristine/Tainted: 100%
+// - Corrupted: 90%
+// - Blighted: 80%
+// - Fractured: 60%
+// - Terminal: 0%
+MaxAP *= corruptionState.MaxApMultiplier;
 ```
 
 #### 2. Attribute Bonuses by Archetype
@@ -141,7 +168,14 @@ When max stats change mid-game (equipment change):
 ```csharp
 var hpRatio = (double)character.CurrentHP / previousMaxHP;
 character.CurrentHP = Math.Max(1, (int)(character.MaxHP * hpRatio));
+
+var staminaRatio = (double)character.CurrentStamina / previousMaxStamina;
+character.CurrentStamina = Math.Max(0, (int)(character.MaxStamina * staminaRatio));
 ```
+
+**HP vs Stamina Floor:**
+- HP uses `Math.Max(1, ...)` - Character cannot die from ratio preservation
+- Stamina uses `Math.Max(0, ...)` - Exhaustion (0 stamina) is a valid state
 
 #### Minimum Attribute Floor
 Attributes can never go below 1:
@@ -225,8 +259,12 @@ await inventoryService.EquipItemAsync(character, "Iron Helm");
 // CurrentHP preserved at ratio
 ```
 
-### UC-3: Level Up
+### UC-3: Level Up - NOT YET IMPLEMENTED
+
+> **Status:** Planned - See [SPEC-ADVANCEMENT-001](SPEC-ADVANCEMENT-001.md)
+
 ```csharp
+// Planned implementation:
 void LevelUp(Character character)
 {
     character.Level++;
@@ -240,6 +278,93 @@ void LevelUp(Character character)
     character.CurrentHP = character.MaxHP;
     character.CurrentStamina = character.MaxStamina;
 }
+```
+
+---
+
+## Decision Trees
+
+### Character Creation Flow
+
+```
+┌─────────────────────────────────┐
+│  Player Starts New Character    │
+└────────────┬────────────────────┘
+             │
+    ┌────────┴────────┐
+    │ Enter Name      │
+    │ (2-50 chars)    │
+    └────────┬────────┘
+             │
+    ┌────────┴────────────┐
+    │ Select Lineage      │
+    │ (Human/RuneMarked/  │
+    │  IronBlooded/Vargr) │
+    └────────┬────────────┘
+             │
+    ┌────────┴────────────┐
+    │ Select Archetype    │
+    │ (Warrior/Skirmisher/│
+    │  Adept/Mystic)      │
+    └────────┬────────────┘
+             │
+    ┌────────┴─────────────────┐
+    │ Apply Bonuses:           │
+    │ 1. Base attributes (5)   │
+    │ 2. + Lineage bonus/pen   │
+    │ 3. + Archetype bonus     │
+    │ 4. Clamp to [1, 10]      │
+    └────────┬─────────────────┘
+             │
+    ┌────────┴────────────┐
+    │ Calculate Derived   │
+    │ Stats (MaxHP, etc.) │
+    └────────┬────────────┘
+             │
+    ┌────────┴────────────┐
+    │ Persist to Database │
+    └─────────────────────┘
+```
+
+### Derived Stat Recalculation Flow
+
+```
+┌────────────────────────────────────┐
+│  Trigger: Equipment/Corruption     │
+│  change or level-up                │
+└───────────────┬────────────────────┘
+                │
+       ┌────────┴────────────┐
+       │ Get Corruption State │
+       └────────┬────────────┘
+                │
+       ┌────────┴────────────────────┐
+       │ Calculate Effective Attrs:  │
+       │ Base + Equipment - Penalties│
+       └────────┬────────────────────┘
+                │
+       ┌────────┴────────────────────┐
+       │ Apply Formulas:             │
+       │ MaxHP = 50 + (STU × 10)     │
+       │ MaxStamina = 20 + FIN×5... │
+       │ ActionPoints = 2 + WIT÷4   │
+       │ MaxAP = Mystic? 10+WIL×5:0 │
+       └────────┬────────────────────┘
+                │
+       ┌────────┴────────────────────┐
+       │ Apply Corruption Penalties: │
+       │ MaxAP *= Multiplier         │
+       └────────┬────────────────────┘
+                │
+       ┌────────┴────────────────────┐
+       │ Preserve Ratios:            │
+       │ HP: Math.Max(1, ratio×new)  │
+       │ STA: Math.Max(0, ratio×new) │
+       └────────┬────────────────────┘
+                │
+       ┌────────┴──────────┐
+       │ Update Character  │
+       └───────────────────┘
 ```
 
 ---
@@ -267,18 +392,19 @@ void LevelUp(Character character)
 ## Related Services
 
 ### Primary Implementation
-| File | Purpose |
-|------|---------|
-| `StatCalculationService.cs` | Derived stat calculations |
-| `CharacterFactory.cs` | Character creation |
+| File | Purpose | Key Lines |
+|------|---------|-----------|
+| `StatCalculationService.cs` | Derived stat calculations | 61-113 (formulas), 116-212 (recalculation) |
+| `CharacterFactory.cs` | Character creation | 50-86 (CreateSimple), 96-150 (CreateWithDistribution) |
 
 ### Supporting Types
-| File | Purpose |
-|------|---------|
-| `Character.cs` | Core entity |
-| `ArchetypeType.cs` | Archetype enum |
-| `LineageType.cs` | Lineage enum |
-| `Attribute.cs` | Attribute enum |
+| File | Purpose | Key Lines |
+|------|---------|-----------|
+| `Character.cs` | Core entity | 15-273 (all properties and methods) |
+| `ArchetypeType.cs` | Archetype enum | 1-32 (4 archetypes) |
+| `LineageType.cs` | Lineage enum | 1-32 (4 lineages) |
+| `Attribute.cs` | Attribute enum | 1-33 (5 attributes) |
+| `BackgroundType.cs` | Background enum (v0.3.4c) | 1-26 (6 backgrounds) |
 
 ---
 
@@ -318,6 +444,7 @@ public class Character
     // Classification
     public LineageType Lineage { get; set; }
     public ArchetypeType Archetype { get; set; }
+    public BackgroundType Background { get; set; }  // v0.3.4c
 
     // Equipment Integration
     public Dictionary<Attribute, int> EquipmentBonuses { get; set; } = new();
@@ -351,6 +478,21 @@ public enum LineageType
     VargrKin    // Beast heritage, +FINESSE/WITS, -WILL
 }
 ```
+
+### BackgroundType Enum (v0.3.4c)
+```csharp
+public enum BackgroundType
+{
+    Scavenger = 0,  // Born among rust heaps, surviving on salvage
+    Exile = 1,      // Cast out from settlement for crimes real or imagined
+    Scholar = 2,    // Seeker of forbidden knowledge from the old world
+    Soldier = 3,    // Former soldier from a fallen outpost
+    Noble = 4,      // Survivor of noble lineage, now dispossessed
+    Cultist = 5     // Once a follower of a corrupted faith
+}
+```
+
+**Note:** BackgroundType is narrative flavor only. Does not affect attributes or derived stats. Used in prologue generation and dialogue flavor.
 
 ---
 
@@ -387,20 +529,35 @@ private const int AetherPerWill = 5;
 ## Testing
 
 ### Test Files
-- `StatCalculationServiceTests.cs`
-- `CharacterFactoryTests.cs`
-- `CharacterTests.cs`
+| File | Tests | Coverage |
+|------|-------|----------|
+| `StatCalculationServiceTests.cs` | 50+ tests | Formula validation, edge cases, corruption penalties |
+| `CharacterFactoryTests.cs` | 16+ tests | All lineage/archetype combinations |
+| `CharacterTests.cs` | TBD | Entity behavior, status effects |
 
 ### Critical Test Scenarios
-1. Derived stat calculation accuracy
-2. Archetype bonus application
-3. Lineage bonus/penalty application
-4. Equipment bonus integration
-5. Corruption penalty application
-6. Ratio preservation on max changes
-7. Minimum attribute enforcement (≥1)
-8. Mystic-only Aether pool
-9. First-time initialization vs. recalculation
+1. Derived stat calculation accuracy (all 4 formulas)
+2. Archetype bonus application (4 archetypes × 5 attributes)
+3. Lineage bonus/penalty application (4 lineages × 5 attributes)
+4. All 16 lineage/archetype combinations validated
+5. Equipment bonus integration via GetEffectiveAttribute
+6. Corruption penalty application (5 tiers)
+7. Ratio preservation on max changes (HP and Stamina separate)
+8. Minimum attribute enforcement (≥1 after penalties)
+9. Mystic-only Aether pool (non-Mystic returns 0)
+10. First-time initialization vs. recalculation logic
+
+### Validation Checklist
+- [ ] All 4 archetypes create with correct bonuses
+- [ ] All 4 lineages apply correct bonuses/penalties
+- [ ] MaxHP formula matches spec: `50 + (STU × 10)`
+- [ ] MaxStamina formula matches spec: `20 + (FIN × 5) + (STU × 3)`
+- [ ] ActionPoints formula matches spec: `2 + (WIT ÷ 4)`
+- [ ] MaxAP formula matches spec: `10 + (WILL × 5)` (Mystic only)
+- [ ] Corruption multipliers: 100%/90%/80%/60%/0%
+- [ ] HP ratio preserves with floor of 1
+- [ ] Stamina ratio preserves with floor of 0
+- [ ] Equipment bonuses add to effective attributes
 
 ---
 
@@ -425,3 +582,22 @@ private const int AetherPerWill = 5;
 - Prevents "full heal on equip" exploits
 - Maintains sense of damage taken
 - Equipment changes should feel like adjustments, not resets
+
+---
+
+## Changelog
+
+### v1.1.0 (2025-12-23)
+- Added Table of Contents
+- Fixed corruption multiplier values to match implementation (100%/90%/80%/60%/0%)
+- Added BackgroundType to Data Models (v0.3.4c)
+- Added line number references for key methods
+- Updated UC-3 level-up status to "NOT YET IMPLEMENTED"
+- Added Decision Trees for creation and recalculation flows
+- Documented HP vs Stamina floor difference (HP ≥1, Stamina ≥0)
+- Added detailed test coverage matrix
+- Added Validation Checklist
+- Added related_specs: SPEC-ADVANCEMENT-001
+
+### v1.0.0 (Initial)
+- Initial specification

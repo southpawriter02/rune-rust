@@ -4,6 +4,7 @@ namespace RuneAndRust.Core.Enums;
 /// Defines the five core character attributes in Rune &amp; Rust.
 /// These attributes form the foundation of all dice pool calculations.
 /// </summary>
+/// <remarks>See: SPEC-CHAR-001, Section "Core Attributes"</remarks>
 public enum Attribute
 {
     /// <summary>

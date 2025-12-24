@@ -4,6 +4,7 @@ namespace RuneAndRust.Core.Enums;
 /// Defines the character archetypes available in Rune &amp; Rust.
 /// Archetypes determine the character's combat style and stat bonuses.
 /// </summary>
+/// <remarks>See: SPEC-CHAR-001, Section "Attribute Bonuses by Archetype"</remarks>
 public enum ArchetypeType
 {
     /// <summary>
