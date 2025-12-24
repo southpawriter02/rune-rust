@@ -261,8 +261,8 @@ INSERT OR IGNORE INTO Descriptor_Base_Templates (
       "status_effect": ["Stunned", 1],
       "enhanced_by": ["Flooded"]
     }',
-    'Live Power Conduit',
-    'An exposed power conduit arcs with {Modifier_Adj} electricity. Approach with caution.',
+    'Spark-Vein',
+    'An exposed spark-vein arcs with {Modifier_Adj} lightning. Approach with caution.',
     '["Hazard", "Proximity", "Electrical"]',
     'Coherent Glitch: If room has [Flooded] ambient condition, damage increases to 6d6, range increases to 4'
 );
@@ -384,8 +384,8 @@ INSERT OR IGNORE INTO Descriptor_Base_Templates (
       "tiles_affected": 6,
       "status_effect": ["Stunned", 0.2]
     }',
-    'Electrified Floor',
-    'The {Modifier_Adj} floor pulses with electrical current. Moving across it triggers shocks.',
+    'Lightning Floor',
+    'The {Modifier_Adj} floor pulses with trapped lightning. Moving across it triggers shocks.',
     '["Hazard", "Movement_Triggered", "Electrical"]',
     'Activates when characters move across affected tiles, 20% chance to inflict [Stunned]'
 );
@@ -415,8 +415,8 @@ INSERT OR IGNORE INTO Descriptor_Base_Templates (
       "status_effect": ["Irradiated", 1],
       "stacks": true
     }',
-    'Radiation Zone',
-    'A {Modifier_Adj} zone pulses with dangerous radiation. Prolonged exposure is lethal.',
+    'Blighted Zone',
+    'A {Modifier_Adj} zone pulses with invisible sickness. Prolonged exposure is lethal.',
     '["Hazard", "Persistent", "Radiation", "Debuff"]',
     '[Irradiated] stacks with duration, increasing damage over time'
 );
