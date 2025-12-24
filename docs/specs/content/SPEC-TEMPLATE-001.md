@@ -1,13 +1,13 @@
 ---
 id: SPEC-TEMPLATE-001
 title: Dynamic Room Template System
-version: 1.0.0
+version: 1.0.1
 status: Implemented
 priority: P1
 owner: Backend Team
 related_specs: [SPEC-DUNGEON-001, SPEC-ENVPOP-001, SPEC-DESC-001, SPEC-SEED-001]
 created: 2025-12-22
-updated: 2025-12-22
+last_updated: 2025-12-24
 ---
 
 # SPEC-TEMPLATE-001: Dynamic Room Template System
@@ -953,3 +953,20 @@ All template text should be reviewed for:
 | AmbientCondition | 5 | Rust Spore Cloud, Steam Vents, Electrical Storm |
 
 **Total: 28 BiomeElements**
+
+---
+
+## Changelog
+
+### v1.0.1 (2025-12-24)
+**Documentation Update:**
+- Renamed `updated` to `last_updated` in frontmatter for consistency
+- Added code traceability remarks to services and interfaces
+
+### v1.0.0 (2025-12-22)
+**Initial Release:**
+- Dynamic Room Template System with token substitution
+- BiomeDefinition, RoomTemplate, BiomeElement entities
+- TemplateRendererService for name/description rendering
+- TemplateLoaderService for JSON template loading
+- ElementSpawnRules for conditional element spawning
