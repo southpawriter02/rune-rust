@@ -47,11 +47,18 @@ public class TestGameHost : IDisposable
     /// </summary>
     public int? Seed { get; }
 
-    private TestGameHost(ServiceProvider provider, ScriptedInputHandler inputHandler, int? seed)
+    /// <summary>
+    /// The database name used by this test host.
+    /// Can be passed to another TestGameHost.Create() to share the same database (for persistence tests).
+    /// </summary>
+    public string DatabaseName { get; }
+
+    private TestGameHost(ServiceProvider provider, ScriptedInputHandler inputHandler, int? seed, string databaseName)
     {
         _serviceProvider = provider;
         InputHandler = inputHandler;
         Seed = seed;
+        DatabaseName = databaseName;
     }
 
     /// <summary>
@@ -213,7 +220,7 @@ public class TestGameHost : IDisposable
 
         var provider = services.BuildServiceProvider();
 
-        return new TestGameHost(provider, scriptedHandler, seed);
+        return new TestGameHost(provider, scriptedHandler, seed, dbName);
     }
 
     /// <summary>
@@ -324,6 +331,56 @@ public class TestGameHost : IDisposable
     /// Gets the combat service for direct assertions on combat state.
     /// </summary>
     public ICombatService GetCombatService() => _serviceProvider.GetRequiredService<ICombatService>();
+
+    /// <summary>
+    /// Gets the save manager for persistence operations.
+    /// Creates a new scope to ensure proper repository lifecycle.
+    /// </summary>
+    /// <returns>A tuple containing the scope (for disposal) and the SaveManager instance.</returns>
+    public (IServiceScope Scope, SaveManager Manager) GetSaveManager()
+    {
+        var scope = _serviceProvider.CreateScope();
+        var manager = scope.ServiceProvider.GetRequiredService<SaveManager>();
+        return (scope, manager);
+    }
+
+    /// <summary>
+    /// Saves the current game state to a slot using SaveManager.
+    /// </summary>
+    /// <param name="slot">The save slot number (1-3).</param>
+    /// <returns>True if save succeeded; otherwise, false.</returns>
+    public async Task<bool> SaveGameAsync(int slot)
+    {
+        using var scope = _serviceProvider.CreateScope();
+        var saveManager = scope.ServiceProvider.GetRequiredService<SaveManager>();
+        return await saveManager.SaveGameAsync(slot, GameState);
+    }
+
+    /// <summary>
+    /// Loads game state from a slot and applies it to this host's GameState.
+    /// </summary>
+    /// <param name="slot">The save slot number to load.</param>
+    /// <returns>True if load succeeded; otherwise, false.</returns>
+    public async Task<bool> LoadGameAsync(int slot)
+    {
+        using var scope = _serviceProvider.CreateScope();
+        var saveManager = scope.ServiceProvider.GetRequiredService<SaveManager>();
+        var loadedState = await saveManager.LoadGameAsync(slot);
+
+        if (loadedState == null)
+            return false;
+
+        // Apply loaded state to this host's GameState singleton
+        var gameState = GameState;
+        gameState.CurrentCharacter = loadedState.CurrentCharacter;
+        gameState.CurrentRoomId = loadedState.CurrentRoomId;
+        gameState.Phase = loadedState.Phase;
+        gameState.TurnCount = loadedState.TurnCount;
+        gameState.VisitedRoomIds = loadedState.VisitedRoomIds;
+        gameState.IsSessionActive = loadedState.IsSessionActive;
+
+        return true;
+    }
 
     /// <inheritdoc/>
     public void Dispose()
