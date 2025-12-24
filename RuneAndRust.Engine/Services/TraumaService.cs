@@ -12,6 +12,7 @@ namespace RuneAndRust.Engine.Services;
 /// Stress uses WILL-based resolve checks for mitigation.
 /// Corruption accumulates directly without mitigation (permanent scars).
 /// </summary>
+/// <remarks>See: SPEC-TRAUMA-001 for Trauma & Stress System design.</remarks>
 public class TraumaService : ITraumaService
 {
     private readonly IDiceService _dice;

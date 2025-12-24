@@ -4,6 +4,7 @@ namespace RuneAndRust.Core.Models;
 /// Result of a rest action containing recovery deltas and status information.
 /// Used by the UI to display the rest summary screen.
 /// </summary>
+/// <remarks>See: SPEC-REST-001, Section "Data Models".</remarks>
 /// <param name="HpRecovered">Amount of HP recovered during rest.</param>
 /// <param name="StaminaRecovered">Amount of Stamina recovered during rest.</param>
 /// <param name="StressRecovered">Amount of Stress relieved during rest.</param>

@@ -9,6 +9,7 @@ namespace RuneAndRust.Core.Interfaces;
 /// Defines the contract for rest and recovery operations.
 /// Handles resource consumption, HP/Stamina/Stress recovery, and status effect management.
 /// </summary>
+/// <remarks>See: SPEC-REST-001 for Rest & Recovery System design.</remarks>
 public interface IRestService
 {
     /// <summary>

@@ -8,6 +8,7 @@ namespace RuneAndRust.Core.Models.Combat;
 /// Defines a trauma template with its effects and behaviors.
 /// Used by the TraumaRegistry to create Trauma instances.
 /// </summary>
+/// <remarks>See: SPEC-TRAUMA-001, Section "Data Models".</remarks>
 /// <param name="DefinitionId">Unique identifier for the trauma definition (e.g., "TRM_NYCTO").</param>
 /// <param name="Name">Display name of the trauma.</param>
 /// <param name="Description">Narrative description of the trauma's effects.</param>

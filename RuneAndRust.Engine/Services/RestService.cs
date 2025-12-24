@@ -12,6 +12,7 @@ namespace RuneAndRust.Engine.Services;
 /// Manages resource consumption, recovery formulas, and the Exhausted status effect.
 /// Integrates with IAmbushService for wilderness rest danger mechanics (v0.3.2b).
 /// </summary>
+/// <remarks>See: SPEC-REST-001 for Rest & Recovery System design.</remarks>
 public class RestService : IRestService
 {
     private readonly IInventoryService _inventoryService;

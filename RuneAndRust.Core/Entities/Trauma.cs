@@ -6,6 +6,7 @@ namespace RuneAndRust.Core.Entities;
 /// Represents a permanent psychological trauma acquired at a Breaking Point.
 /// Traumas alter gameplay through passive effects or triggered behaviors.
 /// </summary>
+/// <remarks>See: SPEC-TRAUMA-001, Section "Data Models".</remarks>
 public class Trauma
 {
     /// <summary>

@@ -1,14 +1,15 @@
 ---
 id: SPEC-TRAUMA-001
 title: Trauma & Stress System
-version: 1.0.0
+version: 1.1.0
 status: Implemented
+last_updated: 2025-12-23
 related_specs: [SPEC-DICE-001, SPEC-COMBAT-001]
 ---
 
 # SPEC-TRAUMA-001: Trauma & Stress System
 
-> **Version:** 1.0.0
+> **Version:** 1.1.0
 > **Status:** Implemented (v0.3.0c)
 > **Service:** `TraumaService`, `TraumaRegistry`
 > **Location:** `RuneAndRust.Engine/Services/TraumaService.cs`
@@ -371,17 +372,19 @@ public record TraumaDefinition(
 
 ## TraumaRegistry Definitions
 
-### Current Trauma Pool
+### Current Trauma Pool (10 Definitions)
 | Trauma | Type | Penalties | Trigger | Stress/Turn |
 |--------|------|-----------|---------|-------------|
-| Paranoia | Delusion | WITS -1, WILL -1 | Always active | 2 |
-| Flashbacks | Somatic | FINESSE -1 | Combat start | 3 |
-| Hypervigilance | Compulsion | WITS -1 | Exploration | 1 |
-| Nihilism | Delusion | WILL -2 | Always active | 1 |
-| Tremors | Somatic | FINESSE -1, MIGHT -1 | Combat | 0 |
-| Phobia (Dark) | Phobia | WILL -1 | Dark areas | 5 |
-| Phobia (Machines) | Phobia | WITS -1 | Mechanical enemies | 4 |
-| Dissociation | Somatic | WITS -2 | High stress | 0 |
+| Nyctophobia | Phobia | (none) | In dark or dimly lit areas | 2 |
+| Claustrophobia | Phobia | (none) | In small rooms or tunnels | 2 |
+| Hemophobia | Phobia | (none) | When any combatant takes damage | 1 |
+| The Shakes | Somatic | FINESSE -1 | Always active | 0 |
+| Chronic Migraines | Somatic | WITS -1 | Always active | 0 |
+| Bone-Deep Exhaustion | Somatic | STURDINESS -1 | Always active | 0 |
+| Paranoia | Delusion | (none) | When receiving beneficial effects from allies | 1 |
+| The Whispers | Delusion | WILL -1 | Always active | 0 |
+| Self-Destructive Urges | Compulsion | (none) | When stress reaches Fractured tier | 0 |
+| Compulsive Hoarding | Compulsion | (none) | When discarding items | 1 |
 
 ---
 
@@ -447,3 +450,18 @@ private const int MaxDefensePenalty = 5;
 - Reward high-WILL characters (Stabilization)
 - Punish fumbles (Catastrophe with stun)
 - Standard failure path (Trauma only)
+
+---
+
+## Changelog
+
+### v1.1.0 (2025-12-23)
+- Added `last_updated` field to YAML frontmatter
+- Updated TraumaRegistry table to match actual implementation (10 traumas)
+- Fixed trauma names, penalties, and trigger conditions to reflect code
+
+### v1.0.0 (Initial)
+- Core stress mechanics (infliction, recovery, mitigation)
+- Breaking Point resolution (3 outcomes)
+- Defense penalty calculation
+- TraumaRegistry with initial definitions

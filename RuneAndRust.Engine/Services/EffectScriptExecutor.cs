@@ -11,6 +11,7 @@ namespace RuneAndRust.Engine.Services;
 /// Effect scripts are semicolon-delimited commands: "DAMAGE:Fire:2d6;STATUS:Burning:2".
 /// Used by both AbilityService and HazardService.
 /// </summary>
+/// <remarks>See: SPEC-ABILITY-001, Section "Effect Script Language".</remarks>
 public partial class EffectScriptExecutor
 {
     private readonly IDiceService _diceService;

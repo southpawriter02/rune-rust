@@ -1,11 +1,18 @@
+---
+id: SPEC-RESOURCE-001
+title: Resource Management System
+version: 1.1.0
+status: Implemented
+last_updated: 2025-12-23
+related_specs: [SPEC-COMBAT-001, SPEC-CHAR-001, SPEC-STATUS-001]
+---
+
 # SPEC-RESOURCE-001: Resource Management System
 
-**Version:** 1.0.0
-**Status:** Implemented
-**Last Updated:** 2025-12-22
-**Author:** The Architect
-**Implementation:** `RuneAndRust.Engine/Services/ResourceService.cs` (302 lines)
-**Tests:** `RuneAndRust.Tests/Engine/ResourceServiceTests.cs` (619 lines, 30 tests)
+> **Version:** 1.1.0
+> **Status:** Implemented
+> **Service:** `ResourceService`
+> **Location:** `RuneAndRust.Engine/Services/ResourceService.cs`
 
 ---
 
@@ -120,8 +127,8 @@ public bool CanAfford(Combatant combatant, ResourceType resourceType, int cost)
 **Resource-Specific Logic**:
 
 1. **Health** (`CanAffordHealth`):
-   - Check: `combatant.CurrentHp > cost` (must survive the cost)
-   - Rationale: Prevents suicidal abilities (HP cannot reach 0 by choice)
+   - Check: `combatant.CurrentHp >= cost` (must have at least the cost amount)
+   - Rationale: Allows spending HP if you have exactly enough; death occurs at 0 HP
 
 2. **Stamina** (`CanAffordStamina`):
    - Check: `combatant.CurrentStamina >= cost`
@@ -856,7 +863,7 @@ Input: CanAfford(combatant, resourceType, cost)
    │
    ├─ ResourceType.Health
    │  └─ CanAffordHealth(combatant, cost)
-   │     └─ combatant.CurrentHp > cost?
+   │     └─ combatant.CurrentHp >= cost?
    │        ├─ YES → Return TRUE
    │        └─ NO → Return FALSE
    │
@@ -1667,9 +1674,9 @@ private const int OvercastHpRatio = 2;
    - Scenario: Combatant has 10 HP, ability costs 20 HP
    - Expected: `CanAfford` returns `false`
 
-3. **CanAfford_Health_WouldDie_ReturnsFalse** (lines 57-69)
+3. **CanAfford_Health_ExactMatch_ReturnsTrue** (behavior from code)
    - Scenario: Combatant has 20 HP, ability costs 20 HP (exact match)
-   - Expected: `CanAfford` returns `false` (requires `CurrentHp > cost`)
+   - Expected: `CanAfford` returns `true` (requires `CurrentHp >= cost`)
 
 4. **CanAfford_Stamina_WithSufficientStamina_ReturnsTrue** (lines 71-83)
    - Scenario: Combatant has 50 Stamina, ability costs 10 Stamina
@@ -2213,6 +2220,14 @@ if (_statusEffectService == null)
 ---
 
 ## Changelog
+
+### v1.1.0 (2025-12-23)
+
+- Added YAML frontmatter with id, title, version, status, last_updated, related_specs
+- Fixed CanAffordHealth documentation: changed `>` to `>=` to match code behavior
+- Fixed decision tree diagram to show `CurrentHp >= cost` for Health affordability
+- Fixed test scenario description for exact HP match case
+- Added code traceability references to ResourceService.cs, IResourceService.cs, ResourceType.cs
 
 ### Version 1.0.0 (2025-12-22) - Initial Implementation
 

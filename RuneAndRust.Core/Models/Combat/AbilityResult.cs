@@ -4,6 +4,7 @@ namespace RuneAndRust.Core.Models.Combat;
 /// Represents the result of executing an ability during combat.
 /// Contains success/failure status, narrative message for UI, and effect totals.
 /// </summary>
+/// <remarks>See: SPEC-ABILITY-001, Section "Data Models".</remarks>
 /// <param name="Success">Whether the ability was successfully executed.</param>
 /// <param name="Message">Narrative message describing what happened (for combat log).</param>
 /// <param name="TotalDamage">Total damage dealt by the ability (0 if none).</param>

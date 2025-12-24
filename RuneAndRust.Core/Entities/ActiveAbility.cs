@@ -6,6 +6,7 @@ namespace RuneAndRust.Core.Entities;
 /// Represents an active ability that a combatant can use during combat.
 /// Abilities define their costs, cooldowns, and effects through an EffectScript system.
 /// </summary>
+/// <remarks>See: SPEC-ABILITY-001, Section "Ability Properties".</remarks>
 public class ActiveAbility
 {
     /// <summary>
