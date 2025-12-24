@@ -4,6 +4,7 @@ namespace RuneAndRust.Core.Models;
 /// Result of an ambush check during wilderness rest.
 /// Contains probability calculations and optional encounter data.
 /// </summary>
+/// <remarks>See: SPEC-REST-001, Section "Data Models".</remarks>
 /// <param name="IsAmbush">True if an ambush was triggered.</param>
 /// <param name="Message">AAM-VOICE compliant narrative message.</param>
 /// <param name="BaseRiskPercent">Initial risk based on DangerLevel.</param>

@@ -3,6 +3,7 @@ id: SPEC-REST-001
 title: Rest & Recovery System
 version: 1.0.0
 status: Implemented
+last_updated: 2025-12-23
 related_specs: [SPEC-DICE-001, SPEC-INV-001]
 ---
 

@@ -4,6 +4,7 @@ namespace RuneAndRust.Core.Enums;
 /// Defines the type of rest being performed.
 /// Determines recovery amounts and resource requirements.
 /// </summary>
+/// <remarks>See: SPEC-REST-001, Section "Rest Types".</remarks>
 public enum RestType
 {
     /// <summary>
