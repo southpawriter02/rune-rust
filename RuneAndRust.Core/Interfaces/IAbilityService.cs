@@ -7,6 +7,7 @@ namespace RuneAndRust.Core.Interfaces;
 /// Defines the contract for ability execution and cooldown management.
 /// Parses EffectScript strings and applies their effects to combatants.
 /// </summary>
+/// <remarks>See: SPEC-ABILITY-001 for Ability System design.</remarks>
 public interface IAbilityService
 {
     /// <summary>

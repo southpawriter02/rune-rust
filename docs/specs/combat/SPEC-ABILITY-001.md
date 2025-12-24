@@ -3,6 +3,7 @@ id: SPEC-ABILITY-001
 title: Ability System
 version: 1.0.0
 status: Implemented
+last_updated: 2025-12-23
 related_specs: [SPEC-DICE-001, SPEC-COMBAT-001]
 ---
 

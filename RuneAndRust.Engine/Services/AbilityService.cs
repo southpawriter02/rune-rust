@@ -12,6 +12,7 @@ namespace RuneAndRust.Engine.Services;
 /// Delegates EffectScript parsing to EffectScriptExecutor (v0.3.3a refactor).
 /// Supports telegraphed charge abilities (v0.2.4c).
 /// </summary>
+/// <remarks>See: SPEC-ABILITY-001 for Ability System design.</remarks>
 public class AbilityService : IAbilityService
 {
     private readonly IResourceService _resourceService;
