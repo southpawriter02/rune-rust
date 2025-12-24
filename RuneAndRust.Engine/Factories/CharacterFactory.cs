@@ -10,6 +10,10 @@ namespace RuneAndRust.Engine.Factories;
 /// Factory for creating and configuring Character entities.
 /// Handles attribute allocation, lineage/archetype bonuses, and derived stat calculation.
 /// </summary>
+/// <remarks>
+/// See: SPEC-CHAR-001, Section "Use Cases" (UC-1: Character Creation).
+/// Creation process: Base attributes → Lineage bonuses → Archetype bonuses → Clamp → Derive stats.
+/// </remarks>
 public class CharacterFactory
 {
     private readonly ILogger<CharacterFactory> _logger;

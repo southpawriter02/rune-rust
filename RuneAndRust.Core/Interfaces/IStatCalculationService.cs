@@ -8,6 +8,10 @@ namespace RuneAndRust.Core.Interfaces;
 /// Defines the contract for stat calculation services.
 /// Provides modifier operations, attribute clamping, and derived stat calculations.
 /// </summary>
+/// <remarks>
+/// See: SPEC-ADVANCEMENT-001 (Character Advancement System) for formula documentation.
+/// Implementation: <see cref="RuneAndRust.Engine.Services.StatCalculationService"/>
+/// </remarks>
 public interface IStatCalculationService
 {
     /// <summary>
@@ -33,6 +37,7 @@ public interface IStatCalculationService
     /// </summary>
     /// <param name="sturdiness">The character's Sturdiness attribute.</param>
     /// <returns>The calculated maximum HP.</returns>
+    /// <remarks>See: SPEC-ADVANCEMENT-001, Section "Derived Stat Scaling"</remarks>
     int CalculateMaxHP(int sturdiness);
 
     /// <summary>
@@ -42,6 +47,7 @@ public interface IStatCalculationService
     /// <param name="finesse">The character's Finesse attribute.</param>
     /// <param name="sturdiness">The character's Sturdiness attribute.</param>
     /// <returns>The calculated maximum Stamina.</returns>
+    /// <remarks>See: SPEC-ADVANCEMENT-001, Section "Derived Stat Scaling"</remarks>
     int CalculateMaxStamina(int finesse, int sturdiness);
 
     /// <summary>
@@ -50,6 +56,7 @@ public interface IStatCalculationService
     /// </summary>
     /// <param name="wits">The character's Wits attribute.</param>
     /// <returns>The calculated action points.</returns>
+    /// <remarks>See: SPEC-ADVANCEMENT-001, Section "Derived Stat Scaling"</remarks>
     int CalculateActionPoints(int wits);
 
     /// <summary>
@@ -59,6 +66,7 @@ public interface IStatCalculationService
     /// <param name="archetype">The character's archetype.</param>
     /// <param name="will">The character's Will attribute.</param>
     /// <returns>The calculated base max AP (before corruption penalties).</returns>
+    /// <remarks>See: SPEC-ADVANCEMENT-001, Section "Derived Stat Scaling"</remarks>
     int CalculateBaseMaxAp(ArchetypeType archetype, int will);
 
     /// <summary>
@@ -66,6 +74,11 @@ public interface IStatCalculationService
     /// Includes corruption penalties for Max AP and affected attributes.
     /// </summary>
     /// <param name="character">The character whose derived stats should be recalculated.</param>
+    /// <remarks>
+    /// See: SPEC-ADVANCEMENT-001, Section "RecalculateDerivedStats".
+    /// Integrates with Corruption system per Section "Corruption Integration".
+    /// Preserves current HP/Stamina ratios per Section "Ratio Preservation".
+    /// </remarks>
     void RecalculateDerivedStats(Character character);
 
     /// <summary>
@@ -73,6 +86,7 @@ public interface IStatCalculationService
     /// </summary>
     /// <param name="archetype">The archetype to get bonuses for.</param>
     /// <returns>A dictionary mapping attributes to their bonus values.</returns>
+    /// <remarks>See: SPEC-ADVANCEMENT-001, Section "Archetype Bonuses"</remarks>
     Dictionary<CharacterAttribute, int> GetArchetypeBonuses(ArchetypeType archetype);
 
     /// <summary>
@@ -80,5 +94,6 @@ public interface IStatCalculationService
     /// </summary>
     /// <param name="lineage">The lineage to get bonuses for.</param>
     /// <returns>A dictionary mapping attributes to their bonus values.</returns>
+    /// <remarks>See: SPEC-ADVANCEMENT-001, Section "Lineage Bonuses"</remarks>
     Dictionary<CharacterAttribute, int> GetLineageBonuses(LineageType lineage);
 }
