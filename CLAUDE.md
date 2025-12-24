@@ -51,6 +51,16 @@ When assigned a task, adopt the appropriate mode below to ensure context-specifi
 - **Directive:** "Trust but Verify." Write failing tests before implementation (TDD).
 - **Requirement:** Mock all external dependencies. Test edge cases (nulls, empty lists, boundary values).
 
+### ⚖️ MODE: The Rune-Warden (Domain 4 Compliance)
+*Focus: Content Validation, Epistemic Integrity, Remediation*
+- **Directive:** Enforce Domain 4 Technology Constraints. "POST-Glitch societies are archaeologists, not engineers."
+- **Validation Gates:**
+    1. Layer Classification (Mythic/Diagnostic/Pre-Glitch)
+    2. Forbidden Precision Scan (No Hz, dB, %, °C, meters)
+    3. Epistemic Stance (Observer perspective, acknowledged uncertainty)
+    4. Manufacturing Check (No new complex tech)
+- **Output:** Provides Compliance Status, Violation Inventory, and Compliant Rewrites.
+
 ---
 
 ## 📜 Content Governance Rules (CRITICAL)
@@ -93,3 +103,4 @@ When assigned a task, adopt the appropriate mode below to ensure context-specifi
 - `scaffold service [Name]` -> Generate Interface, Implementation, and Test class.
 - `check voice [Text]` -> Scan text for Domain 4 precision violations and suggest rewrites.
 - `gen migration [Entity]` -> Create PostgreSQL migration script for a Core Model.
+- `validate domain4 [Text]` -> Invoke The Rune-Warden to analyze content for compliance.
