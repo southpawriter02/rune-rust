@@ -6,6 +6,7 @@ namespace RuneAndRust.Core.Interfaces;
 /// <summary>
 /// Defines the contract for enemy AI decision-making during combat.
 /// </summary>
+/// <remarks>See: SPEC-AI-001 for Enemy AI & Behavior System design.</remarks>
 public interface IEnemyAIService
 {
     /// <summary>

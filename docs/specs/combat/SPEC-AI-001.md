@@ -1,15 +1,16 @@
 ---
 id: SPEC-AI-001
 title: Enemy AI & Behavior System
-version: 1.0.0
+version: 2.0.0
 status: Implemented
-related_specs: [SPEC-DICE-001, SPEC-COMBAT-001, SPEC-ATTACK-001, SPEC-ENEMY-001]
+last_updated: 2025-12-23
+related_specs: [SPEC-DICE-001, SPEC-COMBAT-001, SPEC-ATTACK-001, SPEC-ENEMY-001, SPEC-ABILITY-001]
 ---
 
 # SPEC-AI-001: Enemy AI & Behavior System
 
-> **Version:** 1.0.0
-> **Status:** Implemented
+> **Version:** 2.0.0
+> **Status:** Implemented (v0.2.4c)
 > **Service:** `EnemyAIService`
 > **Location:** `RuneAndRust.Engine/Services/EnemyAIService.cs`
 
@@ -17,266 +18,180 @@ related_specs: [SPEC-DICE-001, SPEC-COMBAT-001, SPEC-ATTACK-001, SPEC-ENEMY-001]
 
 ## Overview
 
-The Enemy AI & Behavior System governs autonomous enemy decision-making during combat. It translates enemy archetypes into tactical combat actions, balancing offensive pressure, defensive positioning, and ability usage based on battlefield state.
+The Enemy AI & Behavior System governs autonomous enemy decision-making during combat using a **utility-based scoring algorithm** (v0.2.4b). Each turn, the AI evaluates all valid actions, assigns scores based on context (HP, stamina, target state, archetype), and uses weighted random selection to choose an action.
 
-This system creates distinct enemy personalities through archetype-driven behavior patterns without requiring complex state machines.
+This system creates distinct enemy personalities through archetype-specific score modifiers while maintaining tactical adaptability through context-aware bonuses.
 
-> **Note:** This specification focuses on **high-level AI behavior patterns** and archetype definitions. For implementation details, code references, and test coverage, see [SPEC-ENEMY-001](./SPEC-ENEMY-001.md).
+> **Note:** This specification focuses on **AI decision logic and scoring constants**. For enemy template definitions and archetype properties, see [SPEC-ENEMY-001](./SPEC-ENEMY-001.md).
 
 ---
 
 ## Core Concepts
 
+### Utility-Based Scoring
+
+The AI uses a **utility scoring system** rather than fixed probability tables:
+
+1. **All valid actions are evaluated** in parallel (attacks, abilities, defend, flee)
+2. **Each action receives a score** based on base value + context modifiers + archetype bonuses
+3. **Scores are normalized** and used for weighted random selection
+4. **Higher scores = more likely** but not guaranteed (maintains unpredictability)
+
 ### Enemy Archetypes
 
-Seven distinct behavioral patterns define enemy decision-making:
+Seven distinct behavioral patterns define enemy tendencies through score modifiers:
 
-| Archetype | Philosophy | Primary Behavior | Secondary Behavior |
-|-----------|------------|------------------|-------------------|
-| **Tank** | Protect allies, absorb damage | Defend when HP < 40% | Heavy attacks when healthy |
-| **DPS** | Consistent damage output | Standard attacks (70%) | Heavy attacks (30%) |
-| **GlassCannon** | High-risk offense | Heavy attacks (60%) | Abilities (40%) |
-| **Support** | Enable allies | Abilities (80%) | Defend when threatened |
-| **Swarm** | Rapid weak attacks | Light attacks (100%) | None |
-| **Caster** | Ranged abilities | Abilities (80%) | Light attacks (20%) |
-| **Boss** | Balanced threat | Even split (33% each) | Context-adaptive |
+| Archetype | Philosophy | Score Tendencies | HP Threshold |
+|-----------|------------|------------------|--------------|
+| **Tank** | Protect allies, absorb damage | +55 Defend when wounded, +10 always | < 40% |
+| **DPS** | Consistent damage output | No special modifiers | None |
+| **GlassCannon** | High-risk offense | +20 damage abilities | None |
+| **Support** | Enable allies | +15 Defend when wounded | < 50% |
+| **Swarm** | Rapid weak attacks | +20 Light attacks | None |
+| **Caster** | Ranged abilities | Standard scoring | None |
+| **Boss** | Balanced threat | +10 Heavy attacks | None |
 
 ### Decision Factors
 
-The AI evaluates three primary factors each turn:
+The AI evaluates five primary factors each turn:
 
-1. **Current HP Percentage** - Triggers defensive behavior thresholds
-2. **Available Stamina** - Constrains action affordability
-3. **Archetype Profile** - Defines probability distributions
+1. **Current HP Percentage** - Affects heal scoring, defend bonuses, flee triggers
+2. **Available Stamina** - Constrains action affordability, conservation penalties
+3. **Target HP Percentage** - Kill range bonuses for damage actions
+4. **Target Status Effects** - Redundant debuff penalties
+5. **Archetype Profile** - Defines score modifiers
 
 ---
 
 ## Behaviors
 
-### Primary Behaviors
-
-#### 1. Choose Combat Action (`ChooseCombatAction`)
+### Primary Behavior: Determine Action (`DetermineAction`)
 
 ```csharp
-CombatAction ChooseCombatAction(
-    Combatant enemy,
-    List<Combatant> allCombatants)
+CombatAction DetermineAction(Combatant enemy, CombatState state)
 ```
 
 **Sequence:**
-1. Identify enemy archetype from template
-2. Check current HP percentage
-3. Evaluate stamina availability
-4. Apply archetype behavior logic
-5. Validate stamina sufficiency
-6. Return CombatAction (Attack type or Defend)
+1. Find target (typically the player)
+2. Check if locked in Chanting state (v0.2.4c charge abilities)
+3. Build scored action list:
+   - `EvaluateBasicAttacks()` → Heavy, Standard, Light
+   - `EvaluateAbilities()` → All usable abilities
+   - `EvaluateDefend()` → Defend action
+   - `EvaluateFlee()` → Flee (if Cowardly tag)
+4. Filter actions with score < 0
+5. `SelectBestAction()` → Weighted random selection
+6. Return CombatAction
 
-**State Triggers:**
+---
 
-| Archetype | HP Threshold | Behavior Override |
-|-----------|--------------|-------------------|
-| Tank | < 40% | Always Defend |
-| Support | < 30% | Always Defend |
-| Cowardly | < 25% | Flee (if implemented) |
-| All Others | N/A | No HP-based override |
+## Scoring Constants
+
+### Base Action Scores
+
+| Action | Base Score | Notes |
+|--------|------------|-------|
+| Heavy Attack | 65 | BaseScore (50) + 15 |
+| Standard Attack | 55 | BaseScore (50) + 5 |
+| Light Attack | 40 | BaseScore (50) - 10 |
+| Defend | 35 | BaseScore (50) - 15 |
+| Ability | 50 | BaseScore, modified by effect type |
+
+### Context Modifiers
+
+| Modifier | Value | Trigger Condition |
+|----------|-------|-------------------|
+| `CriticalHpHealBonus` | +50 | HEAL ability when user HP < 30% |
+| `WastefulHealPenalty` | -40 | HEAL ability when user HP > 80% |
+| `KillRangeBonus` | +30 | DAMAGE ability when target HP < 20% |
+| `KillRangeBonus / 2` | +15 | Standard attack when target HP < 20% |
+| `StaminaConservationPenalty` | -20 | Ability cost > 50% of current stamina |
+| `RedundantDebuffPenalty` | -100 | STATUS ability on target with that status |
+
+### Archetype Modifiers
+
+| Archetype | Action | Modifier | Condition |
+|-----------|--------|----------|-----------|
+| **Tank** | Defend | +10 | Always |
+| **Tank** | Defend | +55 | HP < 40% (25 + 30) |
+| **GlassCannon** | Heavy | +20 | Always |
+| **GlassCannon** | Damage Ability | +20 | Always |
+| **GlassCannon** | Standard | +10 | Always |
+| **Swarm** | Light | +20 | Always |
+| **Boss** | Heavy | +10 | Always |
+| **Support** | Defend | +15 | HP < 50% |
+
+### Charge Ability Modifiers (v0.2.4c)
+
+| Modifier | Value | Trigger Condition |
+|----------|-------|-------------------|
+| `ChargeAbilityBonus` | +20 | Ability has ChargeTurns > 0 |
+| `ChargeLowHpPenalty` | -50 | User HP < 30% (risky to stand still) |
+| `ChargePlayerStunnedBonus` | +30 | Target has Stunned status |
+
+### Flee Scoring
+
+| Modifier | Value | Trigger Condition |
+|----------|-------|-------------------|
+| Cowardly Flee | +80 | Has "Cowardly" tag AND HP < 25% |
+
+---
+
+## Weighted Selection Algorithm
+
+The `SelectBestAction()` method uses weighted random selection:
+
+```
+1. Filter actions with score >= MinimumActionScore (0)
+2. Find minimum score among valid actions
+3. Normalize scores: Weight = Max(1, Score - MinScore + 1)
+4. Calculate totalWeight = Sum of all normalized weights
+5. Roll random number from 0 to totalWeight
+6. Iterate actions, accumulating weights until roll < cumulative
+7. Return selected action
+```
 
 **Example:**
-```csharp
-// Tank at 35% HP with 50 stamina
-var action = _aiService.ChooseCombatAction(tankEnemy, allCombatants);
-// Returns: CombatAction.Defend (HP < 40% threshold)
-
-// Tank at 80% HP with 50 stamina
-var action = _aiService.ChooseCombatAction(tankEnemy, allCombatants);
-// Returns: CombatAction.HeavyAttack (75% probability when healthy)
 ```
+Actions: Heavy (65), Standard (55), Defend (35)
+MinScore: 35
+Normalized: Heavy (31), Standard (21), Defend (1)
+TotalWeight: 53
+
+Roll 25 → Cumulative: 31 → Heavy selected (25 < 31)
+Roll 40 → Cumulative: 31 + 21 = 52 → Standard selected (40 < 52)
+Roll 52 → Cumulative: 52 + 1 = 53 → Defend selected (52 < 53)
+```
+
+**Key Property:** Higher scores have proportionally higher selection probability, but any valid action can be chosen.
 
 ---
 
-### Archetype-Specific Logic
+## Charge Ability Handling (v0.2.4c)
 
-#### Tank Archetype
+Enemies can use **telegraphed charge abilities** that require multiple turns:
 
-**Philosophy:** "Protect allies through damage absorption and threat presence."
+### Charge Initiation
+1. AI selects a charge ability (ChargeTurns > 0)
+2. Enemy gains `Chanting` status for ChargeTurns duration
+3. `ChanneledAbilityId` is set to the ability being charged
+4. Resources are deducted immediately
 
-**Decision Tree:**
-```
-IF HP < 40%
-  RETURN Defend
-ELSE IF Stamina >= 40
-  ROLL d100
-  IF roll <= 75
-    RETURN HeavyAttack
-  ELSE
-    RETURN StandardAttack
-ELSE IF Stamina >= 25
-  RETURN StandardAttack
-ELSE IF Stamina >= 15
-  RETURN LightAttack
-ELSE
-  RETURN Defend
-```
+### During Charge
+- If `Chanting` status is active with duration > 0:
+  - AI returns `Pass` action ("continues focusing...")
+  - No other actions evaluated
 
-**Key Characteristics:**
-- Wounded threshold: 40% HP
-- Heavy attack preference: 75% when healthy
-- Fallback: Always has stamina for Defend
+### Charge Release
+- When `Chanting` duration reaches 0:
+  - AI returns `UseAbility` action for the channeled ability
+  - Ability effect is executed
+  - Cooldown is set on release
 
----
-
-#### DPS Archetype
-
-**Philosophy:** "Consistent, reliable damage without overcommitment."
-
-**Decision Tree:**
-```
-IF Stamina >= 40
-  ROLL d100
-  IF roll <= 30
-    RETURN HeavyAttack
-  ELSE
-    RETURN StandardAttack
-ELSE IF Stamina >= 25
-  RETURN StandardAttack
-ELSE IF Stamina >= 15
-  RETURN LightAttack
-ELSE
-  RETURN Defend
-```
-
-**Key Characteristics:**
-- No HP-based behavior changes
-- 70% Standard / 30% Heavy attack split
-- Stamina-efficient combat rhythm
-
----
-
-#### GlassCannon Archetype
-
-**Philosophy:** "Maximize damage output, ignore sustainability."
-
-**Decision Tree:**
-```
-IF Stamina >= 40
-  ROLL d100
-  IF roll <= 60
-    RETURN HeavyAttack
-  ELSE IF HasAbility AND Stamina >= 30
-    RETURN UseAbility
-  ELSE
-    RETURN HeavyAttack
-ELSE IF Stamina >= 25
-  RETURN StandardAttack
-ELSE IF Stamina >= 15
-  RETURN LightAttack
-ELSE
-  RETURN Defend
-```
-
-**Key Characteristics:**
-- No defensive behavior until out of stamina
-- 60% Heavy attack / 40% Ability split
-- High damage, high risk playstyle
-
----
-
-#### Support Archetype
-
-**Philosophy:** "Enable allies through buffs and debuffs, preserve self."
-
-**Decision Tree:**
-```
-IF HP < 30%
-  RETURN Defend
-ELSE IF HasAbility AND Stamina >= 30
-  ROLL d100
-  IF roll <= 80
-    RETURN UseAbility
-  ELSE
-    RETURN LightAttack
-ELSE IF Stamina >= 15
-  RETURN LightAttack
-ELSE
-  RETURN Defend
-```
-
-**Key Characteristics:**
-- Threatened threshold: 30% HP
-- 80% Ability usage when available
-- Minimal offensive pressure
-
----
-
-#### Swarm Archetype
-
-**Philosophy:** "Rapid, relentless light attacks to overwhelm defenses."
-
-**Decision Tree:**
-```
-IF Stamina >= 15
-  RETURN LightAttack
-ELSE
-  RETURN Defend
-```
-
-**Key Characteristics:**
-- No complex decision-making
-- 100% Light attacks when able
-- Designed for numerical superiority tactics
-
----
-
-#### Caster Archetype
-
-**Philosophy:** "Maintain distance, prioritize abilities over physical attacks."
-
-**Decision Tree:**
-```
-IF HasAbility AND Stamina >= 30
-  ROLL d100
-  IF roll <= 80
-    RETURN UseAbility
-  ELSE
-    RETURN LightAttack
-ELSE IF Stamina >= 15
-  RETURN LightAttack
-ELSE
-  RETURN Defend
-```
-
-**Key Characteristics:**
-- 80% Ability preference
-- No Heavy attacks (thematic: weak physical strength)
-- Light attacks as filler actions
-
----
-
-#### Boss Archetype
-
-**Philosophy:** "Balanced, unpredictable threat with access to all tactics."
-
-**Decision Tree:**
-```
-IF Stamina >= 40
-  ROLL d100
-  IF roll <= 33
-    RETURN HeavyAttack
-  ELSE IF roll <= 66 AND HasAbility
-    RETURN UseAbility
-  ELSE
-    RETURN StandardAttack
-ELSE IF Stamina >= 25
-  RETURN StandardAttack
-ELSE IF Stamina >= 15
-  RETURN LightAttack
-ELSE
-  RETURN Defend
-```
-
-**Key Characteristics:**
-- 33% / 33% / 33% action distribution
-- No HP-based behavior changes (represents confidence)
-- Uses full combat toolkit
+### Charge Interruption
+Handled by combat system (not AI):
+- Damage exceeding `InterruptThreshold` (default 10% MaxHP) breaks chant
+- Interrupted enemy gains `Stunned` status
 
 ---
 
@@ -284,16 +199,16 @@ ELSE
 
 ### Decision Constraints
 
-1. **Stamina Gating** - Actions unavailable if stamina insufficient
-   - Heavy Attack: 40 stamina
-   - Ability: 30 stamina (typical, varies by ability)
-   - Standard Attack: 25 stamina
-   - Light Attack: 15 stamina
-   - Defend: 0 stamina (always available)
+1. **Stamina Gating** - Actions not added to scored list if unaffordable
+   - Heavy Attack: Uses `CanAffordAttack()` check
+   - Ability: Uses `CanUse()` check
+   - Standard Attack: Uses `CanAffordAttack()` check
+   - Light Attack: Uses `CanAffordAttack()` check
+   - Defend: Always available (0 stamina)
 
-2. **Ability Availability** - UseAbility only valid if enemy has learned abilities
+2. **Ability Cooldowns** - Abilities on cooldown excluded from evaluation
 
-3. **HP-Based Overrides** - Take precedence over archetype probabilities
+3. **Score Filtering** - Actions with score < 0 are excluded from selection
 
 ---
 
@@ -303,230 +218,206 @@ ELSE
 
 | Constraint | Value | Notes |
 |------------|-------|-------|
-| Probability range | 0-100 | d100 roll for weighted decisions |
-| HP threshold (Tank) | 40% | Triggers Defend override |
-| HP threshold (Support) | 30% | Triggers Defend override |
-| Heavy attack cost | 40 stamina | Highest action cost |
-| Ability cost | 30 stamina | Typical cost (varies) |
-| Standard attack cost | 25 stamina | Default action |
-| Light attack cost | 15 stamina | Economy option |
+| BaseScore | 50 | Starting score for all actions |
+| MinimumActionScore | 0 | Threshold for filtering out actions |
+| HP threshold (Tank wounded) | 40% | Triggers +55 defend bonus |
+| HP threshold (Support wounded) | 50% | Triggers +15 defend bonus |
+| HP threshold (Heal critical) | 30% | Triggers +50 heal bonus |
+| HP threshold (Cowardly flee) | 25% | Triggers +80 flee bonus |
+| HP threshold (Kill range) | 20% | Triggers +30 damage bonus |
 
 ### System Gaps
 
 - **No multi-turn planning** - Decisions made turn-by-turn without foresight
-- **No target selection logic** - Assumes CombatService handles target choice
-- **No ability-specific selection** - If multiple abilities available, selection is not AI-driven
+- **No target selection logic** - AI targets player only (CombatService controls)
 - **No environmental awareness** - Cannot react to hazards or conditions strategically
 - **No ally coordination** - Archetype decisions are independent, no team tactics
-- **No learning/adaptation** - Static behavior patterns throughout combat
+- **No learning/adaptation** - Static scoring constants throughout combat
 
 ---
 
 ## Use Cases
 
-### UC-1: Tank Behavior Shift
+### UC-1: Tank Behavior Shift (Utility Scoring)
 
 ```csharp
 // Combat Start - Tank at 100% HP, 100 stamina
-var action = _aiService.ChooseCombatAction(tank, allCombatants);
-// d100 roll: 42 → HeavyAttack (75% chance when healthy)
+var action = _aiService.DetermineAction(tank, state);
+// Scores: Heavy(65+10=75), Standard(55), Defend(35+10=45)
+// Weighted selection favors Heavy (75 highest score)
 
-// Turn 5 - Tank at 38% HP, 60 stamina (after taking damage)
-var action = _aiService.ChooseCombatAction(tank, allCombatants);
-// Returns: Defend (HP < 40% threshold override)
+// Turn 5 - Tank at 38% HP (wounded), 60 stamina
+var action = _aiService.DetermineAction(tank, state);
+// Scores: Heavy(75), Standard(55), Defend(35+55=90) ← Wounded bonus!
+// Weighted selection likely picks Defend (90 highest score)
 
-// Turn 7 - Tank at 42% HP, 100 stamina (after rest/heal)
-var action = _aiService.ChooseCombatAction(tank, allCombatants);
-// d100 roll: 88 → StandardAttack (above 40%, but roll failed 75% Heavy chance)
+// Turn 7 - Tank at 42% HP, 100 stamina (above threshold)
+var action = _aiService.DetermineAction(tank, state);
+// Scores: Heavy(75), Standard(55), Defend(45) ← No wounded bonus
+// Weighted selection likely picks Heavy
 ```
 
-**Narrative Impact:** Tank transitions from aggressive front-line combatant to defensive turtle when wounded, creating tactical openings for players.
+**Narrative Impact:** Tank transitions from aggressive to defensive when wounded, but the probabilistic nature means they might still attack occasionally (weighted selection, not deterministic).
 
 ---
 
-### UC-2: Swarm Overwhelm Tactics
+### UC-2: Swarm Light Attack Preference
 
 ```csharp
 // Three Swarm enemies (Blight-Rats) engage player
 foreach (var swarmEnemy in swarmEnemies)
 {
-    var action = _aiService.ChooseCombatAction(swarmEnemy, allCombatants);
-    // All return: LightAttack (100% behavior)
+    var action = _aiService.DetermineAction(swarmEnemy, state);
+    // Scores: Heavy(65), Standard(55), Light(40+20=60)
+    // Heavy still has highest score, but Light competes well
 }
 
-// Player receives 3 separate Light attacks (3 × 1d8+STR)
-// Even with low individual damage, cumulative pressure forces resource spending
+// With weighted selection, most Swarm enemies favor Light attacks
+// but occasionally may use heavier attacks if available
 ```
 
-**Narrative Impact:** "A tide of rusted claws overwhelms careful defenses through sheer numbers."
+**Narrative Impact:** "A tide of rusted claws overwhelms careful defenses through sheer numbers." Swarm TENDS toward light attacks but isn't locked to them.
 
 ---
 
-### UC-3: Boss Unpredictability
+### UC-3: Boss Weighted Distribution
 
 ```csharp
-// Boss (Ancient Guardian) Turn 1 - 100% HP, 100 stamina
-var action = _aiService.ChooseCombatAction(boss, allCombatants);
-// d100 roll: 25 → HeavyAttack (33% range)
+// Boss (Ancient Guardian) - 100% HP, has abilities
+var action = _aiService.DetermineAction(boss, state);
+// Scores: Heavy(65+10=75), Standard(55), Ability(50), Defend(35)
+// Weighted selection: Heavy has edge, but all viable
 
-// Boss Turn 2 - 95% HP, 60 stamina
-var action = _aiService.ChooseCombatAction(boss, allCombatants);
-// d100 roll: 50 → UseAbility (34-66% range)
-
-// Boss Turn 3 - 90% HP, 100 stamina (regenerated)
-var action = _aiService.ChooseCombatAction(boss, allCombatants);
-// d100 roll: 75 → StandardAttack (67-100% range)
+// Example selection probabilities (normalized):
+// Heavy: ~35%, Standard: ~25%, Ability: ~22%, Defend: ~18%
+// (Actual ratios depend on all available actions and scores)
 ```
 
-**Narrative Impact:** Players cannot rely on predictable patterns, forcing adaptive tactical responses.
+**Narrative Impact:** Players cannot rely on predictable patterns. Boss actions are weighted toward damage but unpredictable.
 
 ---
 
-### UC-4: Support Preservation Instinct
+### UC-4: Heal Priority When Wounded
 
 ```csharp
-// Support (Dvergr Shaman) at 45% HP, 50 stamina
-var action = _aiService.ChooseCombatAction(shaman, allCombatants);
-// d100 roll: 35 → UseAbility (80% chance, applies Fortified to Tank ally)
+// Enemy with Heal ability at 25% HP
+var action = _aiService.DetermineAction(enemy, state);
+// Scores: Heavy(65), Heal(50+50=100) ← CriticalHpHealBonus!
+// Weighted selection strongly favors Heal
 
-// Support takes 15 damage → now at 28% HP, 20 stamina
-var action = _aiService.ChooseCombatAction(shaman, allCombatants);
-// Returns: Defend (HP < 30% threshold override)
+// Same enemy at 90% HP
+var action = _aiService.DetermineAction(enemy, state);
+// Scores: Heavy(65), Heal(50-40=10) ← WastefulHealPenalty
+// Heal is deprioritized, likely filters out (score < minimum)
 ```
 
-**Narrative Impact:** Support enemies become defensive when threatened, forcing players to choose between eliminating buffers or focusing primary threats.
+**Narrative Impact:** Enemies intelligently prioritize healing when wounded but don't waste heal abilities when healthy.
 
 ---
 
-### UC-5: DPS Stamina Management
+### UC-5: Redundant Debuff Avoidance
 
 ```csharp
-// DPS (Iron-Husk Marauder) Turn 1 - 100 stamina
-var action = _aiService.ChooseCombatAction(dps, allCombatants);
-// d100 roll: 15 → HeavyAttack (30% chance, costs 40 stamina → 60 remaining)
+// Caster with Slow debuff ability, target already Slowed
+var action = _aiService.DetermineAction(caster, state);
+// Scores: Slow(50-100=-50) ← RedundantDebuffPenalty!
+// Slow action filtered out (score < 0), other actions selected
 
-// DPS Turn 2 - 60 stamina
-var action = _aiService.ChooseCombatAction(dps, allCombatants);
-// d100 roll: 55 → StandardAttack (70% chance, costs 25 stamina → 35 remaining)
-
-// DPS Turn 3 - 35 stamina (< 40 threshold, Heavy unavailable)
-var action = _aiService.ChooseCombatAction(dps, allCombatants);
-// Returns: StandardAttack (only affordable offensive option)
-
-// DPS Turn 4 - 10 stamina (< 15 threshold)
-var action = _aiService.ChooseCombatAction(dps, allCombatants);
-// Returns: Defend (out of stamina for attacks)
+// Target clears Slow status
+var action = _aiService.DetermineAction(caster, state);
+// Scores: Slow(50) ← No penalty, viable option again
 ```
 
-**Narrative Impact:** Consistent damage pressure that naturally ebbs as stamina depletes, creating rhythm in extended combats.
+**Narrative Impact:** Enemies don't stack redundant debuffs, creating tactical depth around status management.
 
 ---
 
-### UC-6: GlassCannon All-In Strategy
+### UC-6: GlassCannon Damage Focus
 
 ```csharp
-// GlassCannon (Blight-Caster Adept) at 25% HP, 100 stamina
-var action = _aiService.ChooseCombatAction(glassCannon, allCombatants);
-// d100 roll: 45 → HeavyAttack (60% chance, no HP-based override!)
+// GlassCannon at 25% HP with damage ability
+var action = _aiService.DetermineAction(glassCannon, state);
+// Scores: Heavy(65+20=85), Damage Ability(50+20=70), Defend(35)
+// GlassCannon continues attacking even when wounded (no HP override)
 
-// GlassCannon at 10% HP, 50 stamina
-var action = _aiService.ChooseCombatAction(glassCannon, allCombatants);
-// d100 roll: 70 → UseAbility (40% chance)
-// Continues full offense even near death
+// GlassCannon with charge ability, target stunned
+var action = _aiService.DetermineAction(glassCannon, state);
+// Scores: Charge Ability(50+20+20+30=120) ← Archetype + Charge + Stunned bonuses!
+// Strongly favors devastating charged attack
 ```
 
-**Narrative Impact:** High-risk enemies remain dangerous until eliminated, rewarding prioritization in target selection.
+**Narrative Impact:** High-risk enemies remain dangerous until eliminated, favoring damage output over self-preservation.
 
 ---
 
-## Decision Trees
+### UC-7: Cowardly Flee Behavior
 
-### Master Archetype Dispatcher
+```csharp
+// Enemy with "Cowardly" tag at 50% HP
+var action = _aiService.DetermineAction(cowardEnemy, state);
+// Flee not evaluated (HP > 25% threshold)
+// Normal action selection
+
+// Same enemy at 20% HP
+var action = _aiService.DetermineAction(cowardEnemy, state);
+// Scores: Heavy(65), Flee(50+80=130) ← Cowardly + Low HP!
+// Weighted selection strongly favors Flee
+```
+
+**Narrative Impact:** Cowardly enemies attempt escape when wounded, creating opportunities for finishing blows or chase decisions.
+
+---
+
+## Architecture Diagram
+
+### Utility Scoring Flow
 
 ```
 ┌─────────────────────────────────┐
-│  ChooseCombatAction(enemy)      │
+│  DetermineAction(enemy, state)  │
 └────────────┬────────────────────┘
              │
-             ├─ Tank → TankLogic()
-             ├─ DPS → DPSLogic()
-             ├─ GlassCannon → GlassCannonLogic()
-             ├─ Support → SupportLogic()
-             ├─ Swarm → SwarmLogic()
-             ├─ Caster → CasterLogic()
-             └─ Boss → BossLogic()
-```
-
----
-
-### Stamina-Gated Action Selection
-
-```
+             ▼
 ┌─────────────────────────────────┐
-│  ValidateStaminaSufficiency     │
+│  Check Chanting Status          │
+│  (v0.2.4c charge abilities)     │
 └────────────┬────────────────────┘
-             │
-    ┌────────┴────────┐
-    │ Check desired   │
-    │ action stamina  │
-    └────────┬────────┘
-             │
-    ┌────────┴──────────┐
-    │ Stamina >= Cost?  │
-    └────────┬──────────┘
          ┌───┴───┐
          │       │
-        YES     NO
-         │       │
-         │   ┌───┴────────────────┐
-         │   │ Cascade to cheaper │
-         │   │ affordable action: │
-         │   │ Heavy → Standard → │
-         │   │ Light → Defend     │
-         │   └────────────────────┘
-         │
-         ▼
-    Return validated action
-```
-
----
-
-### Tank HP-Based Behavior Tree
-
-```
-┌─────────────────────────────────┐
-│  TankLogic(enemy)               │
-└────────────┬────────────────────┘
-             │
-    ┌────────┴────────┐
-    │ HP < 40%?       │
-    └────────┬────────┘
-         ┌───┴───┐
-         │       │
-        YES     NO
+   Chanting?    No
          │       │
          ▼       ▼
     ┌────────┐  ┌──────────────────┐
-    │ DEFEND │  │ Stamina >= 40?   │
-    └────────┘  └────────┬──────────┘
-                     ┌───┴───┐
-                     │       │
-                    YES     NO
-                     │       │
-                     ▼       ▼
-                ┌─────────┐ ┌─────────────┐
-                │ Roll    │ │ Cascade:    │
-                │ d100    │ │ Std → Light │
-                └────┬────┘ │ → Defend    │
-                 ┌───┴───┐  └─────────────┘
-                 │       │
-            <= 75?     > 75?
-                 │       │
-                 ▼       ▼
-            ┌─────────┐ ┌──────────┐
-            │ HEAVY   │ │ STANDARD │
-            │ ATTACK  │ │ ATTACK   │
-            └─────────┘ └──────────┘
+    │ Pass / │  │ Build Scored     │
+    │ Release│  │ Action List      │
+    └────────┘  └────────┬─────────┘
+                         │
+         ┌───────────────┼───────────────┐
+         │               │               │
+         ▼               ▼               ▼
+┌─────────────┐ ┌─────────────┐ ┌─────────────┐
+│ Evaluate    │ │ Evaluate    │ │ Evaluate    │
+│ Attacks     │ │ Abilities   │ │ Defend/Flee │
+└──────┬──────┘ └──────┬──────┘ └──────┬──────┘
+       │               │               │
+       └───────────────┴───────────────┘
+                       │
+                       ▼
+              ┌────────────────┐
+              │ Filter & Norm- │
+              │ alize Scores   │
+              └───────┬────────┘
+                      │
+                      ▼
+              ┌────────────────┐
+              │ Weighted Rand- │
+              │ om Selection   │
+              └───────┬────────┘
+                      │
+                      ▼
+              ┌────────────────┐
+              │ Return Action  │
+              └────────────────┘
 ```
 
 ---
@@ -537,8 +428,9 @@ var action = _aiService.ChooseCombatAction(glassCannon, allCombatants);
 
 | Service | Specification | Usage |
 |---------|---------------|-------|
-| `IDiceService` | [SPEC-DICE-001](SPEC-DICE-001.md) | d100 probability rolls for archetype behavior |
-| `IRepository<EnemyTemplate>` | [SPEC-ENEMY-001](SPEC-ENEMY-001.md) | Archetype lookup from enemy entity |
+| `IDiceService` | [SPEC-DICE-001](SPEC-DICE-001.md) | Weighted random selection for action choice |
+| `IAttackResolutionService` | [SPEC-ATTACK-001](SPEC-ATTACK-001.md) | Stamina affordability checks |
+| `IAbilityService` | [SPEC-ABILITY-001](SPEC-ABILITY-001.md) | Ability cooldown and usage validation |
 | `ILogger` | Infrastructure | AI decision tracing for debugging |
 
 ### Dependents (Provides To)
@@ -562,15 +454,15 @@ var action = _aiService.ChooseCombatAction(glassCannon, allCombatants);
 
 | File | Purpose |
 |------|------------|
-| `EnemyAIService.cs` | Archetype behavior logic, decision trees |
+| `EnemyAIService.cs` | Utility scoring logic, weighted selection |
 
 ### Supporting Types
 
 | File | Purpose |
 |------|------------|
-| `CombatAction.cs` | Action type enum (Defend, Light/Standard/Heavy Attack, UseAbility) |
+| `CombatAction.cs` | Action record (Type, SourceId, TargetId, AttackType, AbilityId) |
 | `EnemyArchetype.cs` | Archetype enum (Tank, DPS, GlassCannon, Support, Swarm, Caster, Boss) |
-| `EnemyTemplate.cs` | Enemy definition with Archetype field |
+| `CombatState.cs` | Combat state with turn order for target lookup |
 
 ---
 
@@ -621,21 +513,31 @@ public class EnemyTemplate
 
 ## Configuration
 
-### Archetype Probability Tables
+### Scoring Constants (Hardcoded)
 
-Hardcoded in `EnemyAIService` logic:
+All scoring constants are defined as `private const int` in `EnemyAIService.cs`:
 
-| Archetype | Heavy % | Standard % | Light % | Ability % | Defend Override |
-|-----------|---------|------------|---------|-----------|-----------------|
-| Tank | 75 (healthy) | 25 | Fallback | None | HP < 40% |
-| DPS | 30 | 70 | Fallback | None | Never |
-| GlassCannon | 60 | Fallback | Fallback | 40 | Never |
-| Support | None | None | 20 | 80 | HP < 30% |
-| Swarm | None | None | 100 | None | Never |
-| Caster | None | None | 20 | 80 | Never |
-| Boss | 33 | 34 | Fallback | 33 | Never |
+| Constant Name | Value | Category |
+|---------------|-------|----------|
+| `BaseScore` | 50 | Base |
+| `CriticalHpHealBonus` | 50 | Context |
+| `WastefulHealPenalty` | -40 | Context |
+| `KillRangeBonus` | 30 | Context |
+| `StaminaConservationPenalty` | -20 | Context |
+| `RedundantDebuffPenalty` | -100 | Context |
+| `ArchetypeDamageBonus` | 20 | Archetype |
+| `TankDefendBonus` | 25 | Archetype |
+| `ChargeAbilityBonus` | 20 | Charge (v0.2.4c) |
+| `ChargeLowHpPenalty` | -50 | Charge (v0.2.4c) |
+| `ChargePlayerStunnedBonus` | 30 | Charge (v0.2.4c) |
+| `MinimumActionScore` | 0 | Filter |
 
-**Fallback:** Action used when stamina insufficient for higher-priority choices.
+### HP Thresholds (Hardcoded)
+
+| Threshold Name | Value | Usage |
+|----------------|-------|-------|
+| `LowHpThreshold` | 0.25f | Cowardly flee trigger |
+| `WoundedThreshold` | 0.40f | Tank defend bonus |
 
 ---
 
@@ -643,49 +545,68 @@ Hardcoded in `EnemyAIService` logic:
 
 ### Test Coverage
 
-`EnemyAIServiceTests.cs` - 27 test methods covering:
+`EnemyAIServiceTests.cs` - 31 test methods covering:
 
-1. **Archetype Behavior Validation** (7 tests)
-   - One test per archetype verifying probability distributions
+1. **Scoring Constant Validation** (8 tests)
+   - Base score applied to all action candidates
+   - Attack type bonuses (Heavy +15, Standard +5, Light -10)
+   - Context modifiers (CriticalHpHealBonus, WastefulHealPenalty, etc.)
+   - Archetype modifiers (TankDefendBonus, GlassCannonDamageBonus, etc.)
 
-2. **HP Threshold Triggers** (3 tests)
-   - Tank defense at < 40% HP
-   - Support defense at < 30% HP
-   - No override for non-defensive archetypes
+2. **Archetype Behavior Tendencies** (7 tests)
+   - Tank favors defend when wounded (score bonuses applied)
+   - GlassCannon favors damage abilities
+   - Support favors healing when wounded
+   - Boss balanced scoring across action types
+   - Swarm light attack bonus applied
 
-3. **Stamina Gating** (5 tests)
-   - Heavy attack unavailable when stamina < 40
-   - Cascading to Standard when Heavy unaffordable
-   - Cascading to Light when Standard unaffordable
-   - Force Defend when all attacks unaffordable
+3. **Charge Ability Handling** (5 tests)
+   - Charge abilities receive ChargeAbilityBonus (+20)
+   - Low HP penalty applied (ChargeLowHpPenalty -50 at < 30% HP)
+   - Stunned target bonus (ChargePlayerStunnedBonus +30)
+   - Charge action returned when channeling
 
-4. **Ability Integration** (3 tests)
-   - UseAbility only when enemy has learned abilities
-   - Fallback to attacks when abilities unavailable
-   - Ability percentage respected by archetype
+4. **Weighted Selection** (6 tests)
+   - Score normalization produces valid probabilities
+   - Zero/negative scores excluded from selection
+   - Single viable action selected deterministically
+   - Multiple actions selected proportionally to scores
 
-5. **Edge Cases** (9 tests)
-   - 0 stamina → always Defend
-   - 100% HP Tank → still rolls for Heavy
-   - 1% HP GlassCannon → still full offense
-   - Boss equal 33% distribution validation
-   - Swarm deterministic 100% Light
+5. **Edge Cases** (5 tests)
+   - 0 stamina → Defend only viable action
+   - All negative scores → forced Defend fallback
+   - RedundantDebuffPenalty eliminates duplicate statuses
+   - Cowardly flee scoring at low HP
 
 ---
 
 ## Design Rationale
 
-### Why Archetypes Over State Machines?
+### Why Utility Scoring Over Decision Trees?
 
-**Decision:** Use archetype-driven probability tables instead of complex FSMs.
+**Decision:** Use utility-based scoring with weighted random selection instead of deterministic d100 probability tables.
 
 **Rationale:**
-- **Simplicity:** Each archetype = one function with clear decision tree
-- **Predictability:** Players can learn archetype behaviors and adapt tactics
-- **Maintainability:** Adding new archetype = add new function, no state graph refactoring
-- **Performance:** Single function call per turn, no state transition overhead
+- **Context Awareness:** Scores dynamically adjust based on HP, stamina, target state, abilities available
+- **Soft Preferences:** Archetype tendencies expressed as score bonuses, not hard overrides
+- **Emergent Behavior:** Same archetype can behave differently based on combat state
+- **Extensibility:** New scoring factors added without refactoring decision trees
 
-**Trade-off:** Less emergent complexity, but combat clarity for player strategic planning.
+**Trade-off:** Less predictable than fixed percentages, but more adaptive and realistic combat AI.
+
+---
+
+### Why Archetypes as Score Modifiers?
+
+**Decision:** Archetypes apply score bonuses rather than selecting from separate decision trees.
+
+**Rationale:**
+- **Unified Evaluation:** All actions scored by same algorithm, archetypes just tune weights
+- **Predictability:** Players learn archetype tendencies while AI retains situational flexibility
+- **Maintainability:** Adding new archetype = add new modifier constants, no new evaluation paths
+- **Balance:** Easy to tune archetype behavior by adjusting single constants
+
+**Trade-off:** Requires careful constant tuning for distinct archetype personalities.
 
 ---
 
@@ -728,7 +649,35 @@ Hardcoded in `EnemyAIService` logic:
 
 ## Changelog
 
-### v1.0.0 (Initial Implementation)
+### v2.0.0 (Utility Scoring Architecture)
+
+**Breaking Changes:**
+- **REPLACED** d100 probability tables with utility-based scoring system
+- **REPLACED** archetype decision trees with score modifier constants
+- **REMOVED** fixed percentage distributions (e.g., "70% Standard, 30% Heavy")
+
+**Added:**
+- Utility scoring constants (BaseScore, attack bonuses, context modifiers)
+- Weighted random selection algorithm
+- Archetype score modifiers (TankDefendBonus, GlassCannonDamageBonus, etc.)
+- Charge ability handling (v0.2.4c) with ChargeAbilityBonus, ChargeLowHpPenalty
+- Context-aware scoring (HP thresholds, stamina conservation, target state)
+- 31 test methods covering scoring, selection, and charge abilities
+
+**Design Decisions:**
+- Utility scoring over decision trees for context-aware behavior
+- Archetypes as score modifiers for unified evaluation
+- Soft preferences via bonuses instead of hard overrides
+- Weighted random selection for probabilistic variety
+
+**Integration Points:**
+- `CombatService.ProcessEnemyTurn()` calls `DetermineAction()`
+- `AbilityService` provides ability evaluation for scoring
+- `Combatant.ActiveAbilities` consumed for ability candidate generation
+
+---
+
+### v1.0.0 (Initial Implementation - Superseded)
 
 **Added:**
 - Seven archetype behavior patterns (Tank, DPS, GlassCannon, Support, Swarm, Caster, Boss)

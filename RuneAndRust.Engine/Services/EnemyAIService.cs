@@ -11,6 +11,7 @@ namespace RuneAndRust.Engine.Services;
 /// Implements utility-based AI decision logic for enemy combatants.
 /// Evaluates all valid actions and selects via weighted random (v0.2.4b).
 /// </summary>
+/// <remarks>See: SPEC-AI-001 for Enemy AI & Behavior System design.</remarks>
 public class EnemyAIService : IEnemyAIService
 {
     private readonly IDiceService _dice;
