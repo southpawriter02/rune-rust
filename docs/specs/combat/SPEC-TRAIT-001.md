@@ -1,10 +1,10 @@
 ---
 id: SPEC-TRAIT-001
 title: Creature Trait System
-version: 1.0.0
+version: 1.0.1
 status: Implemented
 created: 2025-12-22
-updated: 2025-12-22
+last_updated: 2025-12-24
 tags: [combat, traits, enemies, elite, champion, boss]
 related_specs: [SPEC-ENEMY-001, SPEC-COMBAT-001, SPEC-STATUS-001]
 ---
@@ -27,7 +27,7 @@ The **Creature Trait System** implements procedural trait generation and runtime
 
 - **Service**: [RuneAndRust.Engine/Services/CreatureTraitService.cs](../../RuneAndRust.Engine/Services/CreatureTraitService.cs) (314 lines)
 - **Interface**: [RuneAndRust.Core/Interfaces/ICreatureTraitService.cs](../../RuneAndRust.Core/Interfaces/ICreatureTraitService.cs) (58 lines)
-- **Tests**: [RuneAndRust.Tests/Engine/CreatureTraitServiceTests.cs](../../RuneAndRust.Tests/Engine/CreatureTraitServiceTests.cs) (490 lines, 24 tests)
+- **Tests**: [RuneAndRust.Tests/Engine/CreatureTraitServiceTests.cs](../../RuneAndRust.Tests/Engine/CreatureTraitServiceTests.cs) (490 lines, 22 tests)
 
 ---
 
@@ -1647,7 +1647,24 @@ if (attacker.ActiveTraits.Contains(CreatureTraitType.Corrosive))
 - **Corrosive Placeholder**: Same as Berserker; Vulnerable application deferred to status effect system integration.
 - **Explosive Flat Damage**: Using fixed 15 damage for v0.2.2c; will scale with tier in future version.
 - **Trait Limit**: Maximum 3 traits per enemy (Boss tier); no mechanical restriction prevents more than 8 unique traits, but procedural selection ensures 1-3 per enemy.
-- **Test Count**: 24 tests provide strong coverage, but Berserker/Corrosive integration will require additional tests when implemented.
+- **Test Count**: 22 tests provide strong coverage, but Berserker/Corrosive integration will require additional tests when implemented.
+
+---
+
+## Changelog
+
+### v1.0.1 (2025-12-24)
+**Documentation Update:**
+- Renamed `updated` to `last_updated` in frontmatter for consistency
+- Corrected test count: 24 → 22 [Fact] tests
+- Added code traceability remarks to interface and service
+
+### v1.0.0 (2025-12-22)
+**Initial Release:**
+- 8 creature traits (Armored, Relentless, Berserker, Vampiric, Corrosive, Explosive, Regenerating, Thorns)
+- Tier-based distribution (Elite: 1, Champion: 2, Boss: 3)
+- Trait compatibility filtering (Mechanical/Construct cannot be Vampiric)
+- Runtime effect processing at 4 trigger points
 
 ---
 

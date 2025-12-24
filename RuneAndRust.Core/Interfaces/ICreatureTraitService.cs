@@ -7,6 +7,7 @@ namespace RuneAndRust.Core.Interfaces;
 /// <summary>
 /// Defines the contract for creature trait generation and application.
 /// </summary>
+/// <remarks>See: SPEC-TRAIT-001 for Creature Trait System design.</remarks>
 public interface ICreatureTraitService
 {
     /// <summary>

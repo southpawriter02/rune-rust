@@ -10,6 +10,7 @@ namespace RuneAndRust.Engine.Services;
 /// Implements creature trait generation and runtime effect processing.
 /// Traits are procedurally assigned to Elite/Champion enemies to create diverse combat encounters.
 /// </summary>
+/// <remarks>See: SPEC-TRAIT-001 for Creature Trait System design.</remarks>
 public class CreatureTraitService : ICreatureTraitService
 {
     private readonly IDiceService _dice;
