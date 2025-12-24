@@ -1211,6 +1211,98 @@ public class CombatService : ICombatService
     }
 
     /// <inheritdoc/>
+    public void ProcessEnemyTurnSync(Combatant enemy)
+    {
+        _logger.LogDebug("Processing enemy turn (sync) for {Name}", enemy.Name);
+
+        // Reset defending state from previous turn
+        enemy.IsDefending = false;
+
+        // Use planned action if available, otherwise determine fresh (v0.3.6c)
+        var action = enemy.PlannedAction ?? _aiService.DetermineAction(enemy, _gameState.CombatState!);
+
+        // Clear the planned action after use
+        enemy.PlannedAction = null;
+
+        _logger.LogInformation(
+            "[AI] {Name} decided: {ActionType}. Target: {Target}",
+            enemy.Name, action.Type, action.TargetId?.ToString() ?? "None");
+
+        // Execute the action (same logic as async version, no delay)
+        switch (action.Type)
+        {
+            case ActionType.Attack when action.TargetId.HasValue && action.AttackType.HasValue:
+                var target = _gameState.CombatState!.TurnOrder.FirstOrDefault(c => c.Id == action.TargetId);
+                if (target != null)
+                {
+                    var result = ExecuteEnemyAttack(enemy, target, action.AttackType.Value);
+                    LogCombatEvent(result);
+                }
+                break;
+
+            case ActionType.Defend:
+                ProcessDefend(enemy);
+                LogCombatEvent($"[yellow]{enemy.Name}[/] {action.FlavorText ?? "takes a defensive stance."}");
+                break;
+
+            case ActionType.Flee:
+                ProcessFlee(enemy);
+                LogCombatEvent($"[grey]{enemy.Name}[/] {action.FlavorText ?? "flees the battle!"}");
+                break;
+
+            case ActionType.UseAbility when action.AbilityId.HasValue:
+                var ability = enemy.Abilities.FirstOrDefault(a => a.Id == action.AbilityId.Value);
+                if (ability != null)
+                {
+                    var abilityTarget = action.TargetId.HasValue
+                        ? _gameState.CombatState!.TurnOrder.FirstOrDefault(c => c.Id == action.TargetId)
+                        : null;
+
+                    var effectiveTarget = abilityTarget ?? enemy;
+                    var abilityResult = _abilityService.Execute(enemy, effectiveTarget, ability);
+
+                    LogCombatEvent($"[olive]{enemy.Name}[/] uses [cyan]{ability.Name}[/]!");
+                    LogCombatEvent(abilityResult.Message);
+
+                    _logger.LogInformation("[Combat] {Enemy} used {Ability}: {Result}",
+                        enemy.Name, ability.Name, abilityResult.Success ? "Success" : "Failed");
+                }
+                else
+                {
+                    _logger.LogWarning("[Combat] Ability {AbilityId} not found on {Enemy}",
+                        action.AbilityId, enemy.Name);
+                    LogCombatEvent($"[grey]{enemy.Name}[/] fumbles their attack.");
+                }
+                break;
+
+            case ActionType.Pass:
+            default:
+                LogCombatEvent($"[grey]{enemy.Name}[/] {action.FlavorText ?? "hesitates."}");
+                break;
+        }
+
+        // Process turn end
+        _statusEffects.ProcessTurnEnd(enemy);
+
+        // Check for player death
+        if (!CheckPlayerAlive())
+        {
+            _logger.LogWarning("Player has been defeated!");
+            return;
+        }
+
+        // Check for victory (enemy fled might have been the last one)
+        if (CheckVictoryCondition())
+        {
+            _logger.LogInformation("Combat Victory! All enemies defeated or fled.");
+            return;
+        }
+
+        // Advance to next turn
+        NextTurn();
+    }
+
+    /// <inheritdoc/>
     public string ExecuteEnemyAttack(Combatant attacker, Combatant target, AttackType attackType)
     {
         // Deduct stamina
