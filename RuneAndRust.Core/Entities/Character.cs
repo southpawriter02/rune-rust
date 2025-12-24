@@ -133,14 +133,14 @@ public class Character
     /// <summary>
     /// Experience points accumulated by the character.
     /// </summary>
-    /// <remarks>See: SPEC-ADVANCEMENT-001, Section "Level-Up Rewards" for XP thresholds.</remarks>
+    /// <remarks>See: SPEC-XP-001 for XP thresholds and scaling formulas.</remarks>
     public int ExperiencePoints { get; set; } = 0;
 
     /// <summary>
     /// Character's current level. Starts at 1, max 5.
     /// Level-up rewards (+10 HP, +5 Stamina, +1 attribute point) are NOT YET IMPLEMENTED.
     /// </summary>
-    /// <remarks>See: SPEC-ADVANCEMENT-001, Section "Level-Up Rewards" and "Ability Tier Restrictions"</remarks>
+    /// <remarks>See: SPEC-XP-001 for level thresholds; SPEC-ADVANCEMENT-001 for level-up rewards.</remarks>
     public int Level { get; set; } = 1;
 
     /// <summary>

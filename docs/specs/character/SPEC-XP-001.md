@@ -3,6 +3,7 @@ id: SPEC-XP-001
 title: Experience & Leveling System
 version: 1.0.0
 status: Scaffolded
+last_updated: 2025-12-23
 related_specs: [SPEC-COMBAT-001, SPEC-CHAR-001, SPEC-ADVANCEMENT-001]
 ---
 
