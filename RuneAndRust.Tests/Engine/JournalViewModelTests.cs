@@ -20,6 +20,7 @@ public class JournalViewModelTests
     private readonly Mock<IDataCaptureService> _mockCaptureService;
     private readonly Mock<IDataCaptureRepository> _mockCaptureRepository;
     private readonly Mock<ICodexEntryRepository> _mockCodexRepository;
+    private readonly Mock<ILibraryService> _mockLibraryService;
     private readonly JournalService _sut;
 
     private readonly Guid _testCharacterId = Guid.NewGuid();
@@ -31,12 +32,19 @@ public class JournalViewModelTests
         _mockCaptureService = new Mock<IDataCaptureService>();
         _mockCaptureRepository = new Mock<IDataCaptureRepository>();
         _mockCodexRepository = new Mock<ICodexEntryRepository>();
+        _mockLibraryService = new Mock<ILibraryService>();
+
+        // Default: return empty collection for system entries
+        _mockLibraryService
+            .Setup(x => x.GetEntriesByCategory(It.IsAny<EntryCategory>()))
+            .Returns(Enumerable.Empty<CodexEntry>());
 
         _sut = new JournalService(
             _mockLogger.Object,
             _mockCaptureService.Object,
             _mockCaptureRepository.Object,
-            _mockCodexRepository.Object);
+            _mockCodexRepository.Object,
+            _mockLibraryService.Object);
     }
 
     #region Tab Filtering Tests

@@ -40,7 +40,7 @@
 **Placement:** Immediately after the metadata block, before the first `---` separator.
 
 ### Single-Part Format
-Flat list of all `##` level sections:
+Flat list of all `##` level sections (optional sections marked with asterisk):
 
 ```markdown
 ## Table of Contents
@@ -49,13 +49,16 @@ Flat list of all `##` level sections:
 - [New Files Created](#new-files-created)
 - [Files Modified](#files-modified)
 - [Code Implementation Details](#code-implementation-details)
+- [Annotated Enums Reference](#annotated-enums-reference) *(optional)*
 - [Logging Matrix](#logging-matrix)
 - [Test Coverage](#test-coverage)
 - [DI Registration](#di-registration)
 - [Verification Results](#verification-results)
 - [Directory Structure After vX.Y.Z](#directory-structure-after-vxyz)
 - [Running Tests](#running-tests)
+- [Design Decisions](#design-decisions) *(optional)*
 - [Next Steps](#next-steps)
+- [Credits](#credits)
 ```
 
 ### Multi-Part Format
@@ -183,6 +186,27 @@ Each Part contains its own complete set of standard sections:
   - Bulleted list of *behaviors* (e.g., "Clamps value between 1 and 10")
   - Document specific constants or thresholds (e.g., "Success threshold: 8+")
 
+### D.1 Domain-Specific Reference Sections (Optional)
+
+When a release involves annotating multiple types with attributes (e.g., enums with `[GameDocument]`), add a dedicated reference section:
+
+- **Section Name:** Use descriptive names like "Annotated Enums Reference" or "Decorated Types Reference"
+- **Placement:** After Code Implementation Details, before Logging Matrix
+- **Format:** Group by type with tables showing Value/Title/Description Summary
+- **Purpose:** Provides quick-reference documentation for bulk annotations
+
+**Example:**
+```markdown
+## Annotated Enums Reference
+
+### StatusEffectType (11 values)
+
+| Value | Title | Description Summary |
+|-------|-------|---------------------|
+| Bleeding | Bleeding | Physical affliction causing damage over time |
+| Poisoned | Poisoned | Toxic contamination, internal damage |
+```
+
 ### E. Logging Matrix (CRITICAL)
 - **Purpose:** Explicit documentation of all structured log events introduced
 - **Grouping:** Group by Service or formatting context
@@ -216,6 +240,43 @@ Each Part contains its own complete set of standard sections:
 
 ### K. Next Steps
 - Bulleted list of what comes in `vX.Y.Z+1`
+
+### L. Design Decisions (Optional)
+
+For releases with significant architectural choices, document the reasoning:
+
+- **Format:** Q&A style with Problem/Solution or Requirements/Decision structure
+- **Content:** Explain "why" not just "what"
+- **Examples:**
+  - Why Reflection Over Manual Entry?
+  - Why Singleton Lifetime?
+  - Why MD5 for ID Generation?
+
+**Example:**
+```markdown
+## Design Decisions
+
+### Why Reflection Over Manual Entry?
+
+**Problem:** Manual documentation maintenance leads to drift between code and in-game help text.
+
+**Solution:** The Dynamic Knowledge Engine extracts documentation directly from source code, ensuring synchronization by design.
+```
+
+### M. Credits
+
+- **Format:** Key-value pairs
+- **Required Fields:** Primary Developer, Test Coverage
+- **Optional Fields:** Integration notes, reviewer acknowledgments
+
+**Example:**
+```markdown
+## Credits
+
+**Primary Developer:** The Architect (Claude)
+**Test Coverage:** 100% for new LibraryService (15/15 tests passing)
+**Integration:** Zero regressions in existing tests
+```
 
 ---
 
@@ -251,7 +312,7 @@ All original files are preserved in the archive for reference and historical acc
 
 ## 7. Example Templates
 
-### Single-Part Template
+### Single-Part Template (Minimal)
 
 ```markdown
 # Changelog: v0.0.X - The Feature Name
@@ -272,6 +333,7 @@ All original files are preserved in the archive for reference and historical acc
 - [Directory Structure After v0.0.X](#directory-structure-after-v00x)
 - [Running Tests](#running-tests)
 - [Next Steps](#next-steps)
+- [Credits](#credits)
 
 ---
 
@@ -299,6 +361,83 @@ Brief architectural summary...
 - Constants and thresholds
 
 ...
+
+---
+
+## Credits
+
+**Primary Developer:** The Architect (Claude)
+**Test Coverage:** X% for new services
+```
+
+### Single-Part Template (Extended)
+
+Use for releases with bulk annotations or significant architectural decisions:
+
+```markdown
+# Changelog: v0.0.X - The Feature Name
+
+**Release Date:** 2025-MM-DD
+**Total Tests:** N (M new tests added)
+
+## Table of Contents
+
+- [Summary](#summary)
+- [New Files Created](#new-files-created)
+- [Files Modified](#files-modified)
+- [Code Implementation Details](#code-implementation-details)
+- [Annotated Enums Reference](#annotated-enums-reference)
+- [Logging Matrix](#logging-matrix)
+- [Test Coverage](#test-coverage)
+- [DI Registration](#di-registration)
+- [Verification Results](#verification-results)
+- [Directory Structure After v0.0.X](#directory-structure-after-v00x)
+- [Running Tests](#running-tests)
+- [Design Decisions](#design-decisions)
+- [Next Steps](#next-steps)
+- [Credits](#credits)
+
+---
+
+## Summary
+
+Brief architectural summary with:
+- **Layers Touched:** Core, Engine, Terminal, Test
+- **Patterns Introduced:** List key patterns
+- **Key Metrics:** Quantifiable achievements
+
+---
+
+[Continue with standard sections...]
+
+---
+
+## Annotated Enums Reference
+
+### EnumName (N values)
+
+| Value | Title | Description Summary |
+|-------|-------|---------------------|
+| Value1 | Title1 | Brief description |
+| Value2 | Title2 | Brief description |
+
+---
+
+## Design Decisions
+
+### Why [Decision Name]?
+
+**Problem:** Description of the problem being solved.
+
+**Solution:** Explanation of the chosen approach.
+
+---
+
+## Credits
+
+**Primary Developer:** The Architect (Claude)
+**Test Coverage:** X% for new services
+**Integration:** Zero regressions in existing tests
 ```
 
 ### Multi-Part Template
@@ -403,5 +542,6 @@ Part C completes the trilogy by...
 
 | Type | Reference File | Description |
 |------|----------------|-------------|
-| Single-Part | [v0.0.2.md](v0.0.x/v0.0.2.md) | Clean single-release changelog with all required sections |
+| Single-Part (Minimal) | [v0.0.2.md](v0.0.x/v0.0.2.md) | Clean single-release changelog with required sections |
+| Single-Part (Extended) | [v0.3.11a.md](v0.3.x/v0.3.11a.md) | Golden standard with optional sections (Annotated Enums Reference, Design Decisions, Credits) |
 | Multi-Part | [v0.3.10.md](v0.3.x/v0.3.10.md) | Three-part consolidated changelog with TOC and Part structure |

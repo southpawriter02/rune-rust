@@ -80,6 +80,9 @@ class Program
                     services.AddScoped<IDataCaptureService, DataCaptureService>();
                     services.AddScoped<ObjectSpawner>();
 
+                    // Register Library Service (v0.3.11a - Dynamic Knowledge Engine)
+                    services.AddSingleton<ILibraryService, LibraryService>();
+
                     // Register Journal Services
                     services.AddScoped<IJournalService, JournalService>();
 

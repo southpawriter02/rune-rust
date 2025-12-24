@@ -1,3 +1,5 @@
+using RuneAndRust.Core.Attributes;
+
 namespace RuneAndRust.Core.Enums;
 
 /// <summary>
@@ -12,6 +14,9 @@ public enum ConditionType
     /// Passive: -1 WILL
     /// Active: +2 Stress per turn
     /// </summary>
+    [GameDocument(
+        "Psychic Resonance",
+        "A low hum at the edge of perception that erodes mental stability. Those exposed find their willpower diminished as stress accumulates with each passing moment. The source remains unknown.")]
     PsychicResonance = 0,
 
     /// <summary>
@@ -19,6 +24,9 @@ public enum ConditionType
     /// Passive: None
     /// Active: 1d4 Poison damage per turn
     /// </summary>
+    [GameDocument(
+        "Toxic Atmosphere",
+        "Corrosive vapors that damage lungs and tissue with each breath. No passive impairment, but the damage accumulates rapidly. Gas masks or breath-holding offer brief respite.")]
     ToxicAtmosphere = 1,
 
     /// <summary>
@@ -26,6 +34,9 @@ public enum ConditionType
     /// Passive: -1 FINESSE
     /// Active: 1 Ice damage per turn
     /// </summary>
+    [GameDocument(
+        "Deep Cold",
+        "Numbing frost that penetrates to the bone. Reactions slow as extremities grow clumsy, while the constant chill inflicts steady harm. Warm clothing and fire provide relief.")]
     DeepCold = 2,
 
     /// <summary>
@@ -33,6 +44,9 @@ public enum ConditionType
     /// Passive: -1 STURDINESS
     /// Active: 1 Fire damage per turn
     /// </summary>
+    [GameDocument(
+        "Scorching Heat",
+        "Oppressive heat that saps physical endurance. The body weakens as constant damage accumulates from the environment. Hydration and shade become precious commodities.")]
     ScorchingHeat = 3,
 
     /// <summary>
@@ -40,6 +54,9 @@ public enum ConditionType
     /// Passive: -2 WITS (for perception-based checks)
     /// Active: None
     /// </summary>
+    [GameDocument(
+        "Low Visibility",
+        "Thick dust, fog, or darkness that obscures perception. The environment itself offers no harm, but the inability to perceive threats makes danger far more lethal.")]
     LowVisibility = 4,
 
     /// <summary>
@@ -47,6 +64,9 @@ public enum ConditionType
     /// Passive: -1 WILL, -1 WITS
     /// Active: +1 Corruption per turn
     /// </summary>
+    [GameDocument(
+        "Blighted Ground",
+        "Runic corruption seeping from surfaces, walls, and floor alike. Mental faculties dim as the Blight works its influence. Corruption accumulates with exposure.")]
     BlightedGround = 5,
 
     /// <summary>
@@ -54,6 +74,9 @@ public enum ConditionType
     /// Passive: -1 FINESSE
     /// Active: 1d6 Lightning damage (25% chance per turn)
     /// </summary>
+    [GameDocument(
+        "Static Field",
+        "Electrical discharge crackling through the air. Precision suffers as muscles twitch involuntarily. Periodic lightning strikes threaten anyone in the affected area.")]
     StaticField = 6,
 
     /// <summary>
@@ -61,6 +84,9 @@ public enum ConditionType
     /// Passive: -2 WILL
     /// Active: +3 Stress per turn
     /// </summary>
+    [GameDocument(
+        "Dread Presence",
+        "The weight of something ancient and terrible pressing upon the psyche. Willpower crumbles under the oppressive aura while stress mounts with terrible speed. Leaving is the only cure.")]
     DreadPresence = 7
 }
 
