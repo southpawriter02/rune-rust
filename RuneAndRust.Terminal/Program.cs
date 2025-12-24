@@ -83,6 +83,9 @@ class Program
                     // Register Library Service (v0.3.11a - Dynamic Knowledge Engine)
                     services.AddSingleton<ILibraryService, LibraryService>();
 
+                    // Register DocGen Service (v0.3.11b - Developer's Handbook)
+                    services.AddScoped<IDocGenService, DocGenService>();
+
                     // Register Journal Services
                     services.AddScoped<IJournalService, JournalService>();
 
@@ -205,7 +208,22 @@ class Program
                 RoomTemplateSeeder.SeedAsync(context, templateLoader, logger).GetAwaiter().GetResult();
             }
 
-            // 5. UI Handover
+            // 5. CLI Argument Handling (v0.3.11b - DocGen)
+            if (args.Contains("--docgen"))
+            {
+                AnsiConsole.MarkupLine("[yellow]Generating documentation from [GameDocument] attributes...[/]");
+
+                using (var scope = host.Services.CreateScope())
+                {
+                    var docGen = scope.ServiceProvider.GetRequiredService<IDocGenService>();
+                    docGen.GenerateDocsAsync("docs/generated").GetAwaiter().GetResult();
+                }
+
+                AnsiConsole.MarkupLine("[green]Documentation generation complete. See docs/generated/[/]");
+                return;
+            }
+
+            // 6. UI Handover
             AnsiConsole.MarkupLine("[green]Rune & Rust v0.3.6c Booting...[/]");
             AnsiConsole.WriteLine();
 
