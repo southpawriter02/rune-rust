@@ -12,14 +12,36 @@ namespace RuneAndRust.Engine.Services;
 public class DiceService : IDiceService
 {
     private readonly ILogger<DiceService> _logger;
+    private readonly Random _random;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DiceService"/> class.
     /// </summary>
     /// <param name="logger">The logger for traceability.</param>
     public DiceService(ILogger<DiceService> logger)
+        : this(logger, seed: null)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="DiceService"/> class with optional seeding.
+    /// </summary>
+    /// <param name="logger">The logger for traceability.</param>
+    /// <param name="seed">Optional seed for deterministic rolls. When null, uses Random.Shared.</param>
+    public DiceService(ILogger<DiceService> logger, int? seed)
     {
         _logger = logger;
+
+        if (seed.HasValue)
+        {
+            _random = new Random(seed.Value);
+            _logger.LogInformation("DiceService initialized with seed {Seed} for deterministic rolls", seed.Value);
+        }
+        else
+        {
+            _random = Random.Shared;
+            _logger.LogDebug("DiceService initialized with Random.Shared");
+        }
     }
 
     /// <inheritdoc/>
@@ -37,7 +59,7 @@ public class DiceService : IDiceService
         for (int i = 0; i < actualPoolSize; i++)
         {
             int dieNumber = i + 1;
-            int value = Random.Shared.Next(1, 11);
+            int value = _random.Next(1, 11);
             rolls.Add(value);
 
             _logger.LogTrace("Die {DieNumber}: rolled {Value}", dieNumber, value);
@@ -80,7 +102,7 @@ public class DiceService : IDiceService
         }
 
         _logger.LogTrace("Rolling 1d{Sides} for {Context}", sides, context);
-        var result = Random.Shared.Next(1, sides + 1);
+        var result = _random.Next(1, sides + 1);
         _logger.LogDebug("Rolled {Result} on 1d{Sides} ({Context})", result, sides, context);
         return result;
     }
