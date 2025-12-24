@@ -5,6 +5,7 @@ namespace RuneAndRust.Core.Enums;
 /// Corruption is a permanent, accumulating consequence of exposure to the Runic Blight.
 /// Unlike Stress, Corruption does not heal naturally and imposes permanent penalties.
 /// </summary>
+/// <remarks>See: SPEC-CORRUPT-001, Section "Corruption Tiers"</remarks>
 public enum CorruptionTier
 {
     /// <summary>

@@ -305,6 +305,7 @@ public class TraumaService : ITraumaService
     #endregion
 
     #region Corruption Methods (v0.3.0b)
+    // See: SPEC-CORRUPT-001 for Corruption System design documentation
 
     /// <inheritdoc/>
     public CorruptionResult AddCorruption(Character character, int amount, string source)
