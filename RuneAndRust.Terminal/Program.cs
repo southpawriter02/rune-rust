@@ -89,6 +89,9 @@ class Program
                     // Register Loot Audit Service (v0.3.13a - The Loot Audit)
                     services.AddScoped<ILootAuditService, LootAuditService>();
 
+                    // Register Combat Audit Service (v0.3.13b - The Combat Simulator)
+                    services.AddScoped<ICombatAuditService, CombatAuditService>();
+
                     // Register Journal Services
                     services.AddScoped<IJournalService, JournalService>();
 
@@ -269,6 +272,52 @@ class Program
                 return;
             }
 
+            // 5c. CLI Argument Handling (v0.3.13b - Combat Audit)
+            if (args.Any(a => a.StartsWith("--audit-combat")))
+            {
+                // Parse CLI arguments with defaults
+                var iterations = ParseIntArg(args, "iterations", 1000);
+                var archetype = ParseEnumArg(args, "archetype", ArchetypeType.Warrior);
+                var enemy = ParseStringArg(args, "enemy", "und_draugr_01");
+                var level = ParseIntArg(args, "level", 1);
+
+                AnsiConsole.MarkupLine($"[yellow]Running Combat Audit: {iterations:N0} matches, {archetype} vs {enemy} (Level {level})...[/]");
+
+                using (var scope = host.Services.CreateScope())
+                {
+                    var auditService = scope.ServiceProvider.GetRequiredService<ICombatAuditService>();
+                    var config = new CombatAuditConfiguration(iterations, archetype, enemy, level);
+                    var report = auditService.RunAuditAsync(config).GetAwaiter().GetResult();
+
+                    // Ensure output directory exists
+                    var outputDir = "docs/audits";
+                    if (!Directory.Exists(outputDir))
+                        Directory.CreateDirectory(outputDir);
+
+                    // Write report
+                    var outputPath = Path.Combine(outputDir, $"combat_audit_{DateTime.Now:yyyyMMdd_HHmmss}.md");
+                    File.WriteAllText(outputPath, report.MarkdownReport);
+
+                    // Summary output
+                    var criticals = report.Flags.Count(f => f.Severity == VarianceSeverity.Critical);
+                    var warnings = report.Flags.Count(f => f.Severity == VarianceSeverity.Warning);
+
+                    AnsiConsole.MarkupLine($"[green]Win Rate: {report.Statistics.WinRate:F1}%[/]");
+                    AnsiConsole.MarkupLine($"[green]Avg Rounds: {report.Statistics.AvgRoundsPerEncounter:F1}[/]");
+
+                    if (criticals > 0)
+                        AnsiConsole.MarkupLine($"[red]Audit complete with {criticals} critical deviation(s).[/]");
+                    else if (warnings > 0)
+                        AnsiConsole.MarkupLine($"[yellow]Audit complete with {warnings} warning(s).[/]");
+                    else
+                        AnsiConsole.MarkupLine("[green]Audit complete. All metrics within acceptable bounds.[/]");
+
+                    AnsiConsole.MarkupLine($"[grey]Report: {outputPath}[/]");
+                }
+
+                return;
+            }
+
             // 6. UI Handover
             AnsiConsole.MarkupLine("[green]Rune & Rust v0.3.6c Booting...[/]");
             AnsiConsole.WriteLine();
@@ -398,6 +447,20 @@ class Program
 
         var valueStr = arg.Substring(prefix.Length);
         return Enum.TryParse<T>(valueStr, ignoreCase: true, out var value) ? value : defaultValue;
+    }
+
+    /// <summary>
+    /// Parses a string argument from CLI args (e.g., --enemy=und_draugr_01).
+    /// </summary>
+    private static string ParseStringArg(string[] args, string name, string defaultValue)
+    {
+        var prefix = $"--{name}=";
+        var arg = args.FirstOrDefault(a => a.StartsWith(prefix, StringComparison.OrdinalIgnoreCase));
+
+        if (arg == null)
+            return defaultValue;
+
+        return arg.Substring(prefix.Length);
     }
 
     #endregion

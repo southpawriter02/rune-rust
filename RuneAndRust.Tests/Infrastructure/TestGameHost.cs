@@ -147,6 +147,12 @@ public class TestGameHost : IDisposable
         // Register DocGen Service
         services.AddScoped<IDocGenService, DocGenService>();
 
+        // Register Loot Audit Service
+        services.AddScoped<ILootAuditService, LootAuditService>();
+
+        // Register Combat Audit Service
+        services.AddScoped<ICombatAuditService, CombatAuditService>();
+
         // Register Journal Services
         services.AddScoped<IJournalService, JournalService>();
 

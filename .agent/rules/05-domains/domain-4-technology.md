@@ -134,12 +134,47 @@ trigger: always_on
 
 ### Remediation Strategies
 
-**Option 1: Qualitative Conversion**
+**Option 1: Qualitative Conversion Reference**
 
-*   Replace percentages with descriptive bands (Low/Moderate/High)
-*   Replace exact temperatures with sensation ("freezing", "scorching")
-*   Replace distances with travel time ("half-day journey")
-*   Replace populations with scale ("crowded settlement", "sparse")
+Use these standard conversions:
+
+**Distance:**
+
+*   1-5 meters → "arm's reach," "a few paces"
+*   10-20 meters → "javelin-throw distance," "across a small chamber"
+*   50-100 meters → "bowshot range," "the far end of a great hall"
+*   100+ meters → "beyond bowshot," "barely visible in good light"
+*   1+ kilometers → "a hard morning's walk," "visible from the ridgeline"
+
+**Temperature:**
+
+*   Extreme cold → "cold enough to crack iron," "breath freezes before it leaves your lips"
+*   Extreme heat → "hot enough to blister skin instantly," "metal glows cherry-red"
+*   Moderate variations → "warmer than the surface," "uncomfortably cool"
+
+**Time:**
+
+*   Seconds → "a few heartbeats," "time to draw breath"
+*   Minutes → "long enough to recite the Foundling's Prayer," "while a candle burns a finger's width"
+*   Hours → "from dawn to midday," "a full watch rotation"
+
+**Weight:**
+
+*   Light → "light enough for a child to carry"
+*   Medium → "weight of a grown adult," "burden for one strong bearer"
+*   Heavy → "requiring multiple bearers," "weight of a draft horse"
+
+**Sound:**
+
+*   Low frequency → "sub-audible rumble felt in the chest," "thrumming that sets teeth on edge"
+*   High frequency → "piercing shriek that causes physical pain," "whistle beyond comfortable hearing"
+*   Volume → "deafening," "barely audible," "loud enough to echo through the district"
+
+**Probability/Efficiency:**
+
+*   High percentage → "almost certain," "reliable in most circumstances"
+*   Low percentage → "rarely," "in exceptional cases"
+*   Efficiency → "functions well/poorly compared to intact examples"
 
 **Option 2: Empirical Approximations**
 

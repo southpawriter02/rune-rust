@@ -83,6 +83,7 @@ The project uses specialized agent personas (defined in `/CLAUDE.md`):
 - **🎨 The Rune-Scribe**: UI/UX (Avalonia, XAML, ViewModels)
 - **📜 The Archivist**: Data & Lore (SQL, JSON, Game Content)
 - **🛡️ The QA Sentinel**: Testing (xUnit, Validation)
+- **⚖️ The Rune-Warden**: Domain 4 Compliance (Content Validation)
 
 ## 📋 File Conventions
 

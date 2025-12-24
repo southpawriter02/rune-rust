@@ -105,6 +105,13 @@ public interface ICombatService
     Task ProcessEnemyTurnAsync(Combatant enemy);
 
     /// <summary>
+    /// Processes an enemy's turn synchronously without UX delays.
+    /// For headless simulation use only (v0.3.13b Combat Simulator).
+    /// </summary>
+    /// <param name="enemy">The enemy combatant whose turn it is.</param>
+    void ProcessEnemyTurnSync(Combatant enemy);
+
+    /// <summary>
     /// Gets the list of abilities available to the player during combat.
     /// </summary>
     /// <returns>The list of abilities for the current player combatant.</returns>
