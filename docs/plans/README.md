@@ -26,6 +26,7 @@ This directory contains all implementation plans for Rune & Rust, organized by v
 |----------|-------------|
 | [roadmap.md](roadmap.md) | Master status tracker with implementation checklist |
 | [MILESTONES.md](MILESTONES.md) | Consolidated milestone definitions |
+| [PLAN_GENERATION_RULES.md](PLAN_GENERATION_RULES.md) | Template and standards for creating implementation plans |
 
 ---
 
@@ -119,15 +120,20 @@ This directory contains all implementation plans for Rune & Rust, organized by v
 
 ## Version Plan Structure
 
-Each version plan follows this structure:
-- **Overview**: Summary of goals and phases
+Each version plan follows the structure defined in [PLAN_GENERATION_RULES.md](PLAN_GENERATION_RULES.md):
+
+- **Metadata Block**: Status, Milestone, Theme
+- **Table of Contents**: Linked section navigation
+- **Overview**: Summary of goals and phase table
 - **Phase A/B/C**: Detailed implementation for each sub-version
   - Architecture & Data Flow
   - Logic Decision Trees
   - Code Implementation
+  - Logging Requirements
   - Testing Requirements
   - Deliverable Checklist
-  - Draft Changelog
+- **Testing Strategy**: Consolidated test matrix
+- **Changelog**: Draft release notes
 
 ---
 
