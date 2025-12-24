@@ -80,6 +80,7 @@ public class DataCapture
     /// Affects Legend reward when the parent entry is completed.
     /// Standard captures: 15 points. Specialist captures: 30 points.
     /// </summary>
+    /// <remarks>See: SPEC-LEGEND-001, Section "Fragment Quality → LP Mapping"</remarks>
     public int Quality { get; set; } = 15;
 
     #endregion

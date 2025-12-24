@@ -3,6 +3,7 @@ id: SPEC-LEGEND-001
 title: Legend Point System
 version: 1.0.0
 status: Planned
+last_updated: 2025-12-23
 related_specs: [SPEC-CODEX-001, SPEC-CHAR-001, SPEC-XP-001]
 ---
 
@@ -12,6 +13,38 @@ related_specs: [SPEC-CODEX-001, SPEC-CHAR-001, SPEC-XP-001]
 > **Status:** Planned (v0.1.4+ roadmap)
 > **Service:** None (planned: `ILegendService`)
 > **Location:** Planned: `RuneAndRust.Engine/Services/LegendService.cs`
+
+---
+
+> **WARNING: DESIGN SPECIFICATION ONLY**
+>
+> This specification describes a **planned feature** that has **NOT been implemented**.
+> No C# services, entities, or tests exist for this system yet.
+>
+> **What Exists:** Architectural hook in `DataCapture.Quality` field (15/30 LP values)
+>
+> **Target Version:** v0.1.4+
+
+---
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Core Concepts](#core-concepts)
+- [Behaviors](#behaviors)
+- [Restrictions](#restrictions)
+- [Limitations](#limitations)
+- [Use Cases](#use-cases)
+- [Decision Trees](#decision-trees)
+- [Cross-Links](#cross-links)
+- [Related Services](#related-services)
+- [Data Models](#data-models)
+- [Configuration](#configuration)
+- [Testing](#testing)
+- [Design Rationale](#design-rationale)
+- [Future Enhancements](#future-enhancements)
+- [AAM-VOICE Compliance](#aam-voice-compliance)
+- [Changelog](#changelog)
 
 ---
 
@@ -95,6 +128,9 @@ This system rewards lore discovery and long-term mastery, providing meaningful p
 ---
 
 ## Behaviors
+
+> **Note:** All behaviors in this section are **PLANNED** and not yet implemented.
+> Method signatures and sequences represent the intended design.
 
 ### Primary Behaviors (Planned)
 
@@ -524,23 +560,33 @@ else
 
 ## Related Services
 
+> **Note:** All files listed below are **NOT YET CREATED**. These represent the planned implementation structure.
+
 ### Primary Implementation (Planned)
 
-| File | Purpose |
-|------|----------|
-| `LegendService.cs` (NOT YET CREATED) | LP award, purchase validation, bonus application |
+| File | Purpose | Status |
+|------|----------|--------|
+| `LegendService.cs` | LP award, purchase validation, bonus application | NOT CREATED |
 
 ### Supporting Types (Planned)
 
-| File | Purpose |
-|------|----------|
-| `Account.cs` (NOT YET CREATED) | LP balance and purchase history storage |
-| `LegendPurchase.cs` (NOT YET CREATED) | Purchase record entity |
-| `LegendUpgradeConfig.cs` (NOT YET CREATED) | Upgrade catalog definitions |
+| File | Purpose | Status |
+|------|----------|--------|
+| `Account.cs` | LP balance and purchase history storage | NOT CREATED |
+| `LegendPurchase.cs` | Purchase record entity | NOT CREATED |
+| `LegendUpgradeConfig.cs` | Upgrade catalog definitions | NOT CREATED |
+
+### Existing Hooks
+
+| File | Purpose | Status |
+|------|----------|--------|
+| `DataCapture.cs` | `Quality` field (15/30 LP values) | EXISTS |
 
 ---
 
 ## Data Models (Planned)
+
+> **Note:** All data models below are **proposed designs** and do not exist in the codebase yet.
 
 ### Account Entity
 
@@ -683,6 +729,8 @@ public async Task<int> CalculateEntryLegendPoints(Guid entryId)
 
 ## Testing (Planned)
 
+> **Note:** No tests exist for this system yet. The test scenarios below define the **required coverage** when implementation begins.
+
 ### Test Coverage
 
 `LegendServiceTests.cs` (NOT YET CREATED) should cover:
@@ -784,9 +832,11 @@ public async Task<int> CalculateEntryLegendPoints(Guid entryId)
 
 ## Changelog
 
-### v1.0.0 (Planned)
+### v1.0.0 (2025-12-23) - Design Specification
 
-**NOT Implemented (Design Specification Only):**
+**Status:** Planned (NOT Implemented)
+
+**Design Specification Only:**
 - Account entity with LP tracking
 - Legend service with award/purchase logic
 - Upgrade catalog configuration
