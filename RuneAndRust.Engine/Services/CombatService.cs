@@ -12,6 +12,7 @@ namespace RuneAndRust.Engine.Services;
 /// <summary>
 /// Manages the lifecycle of combat encounters including starting, advancing turns, and ending combat.
 /// </summary>
+/// <remarks>See: SPEC-COMBAT-001 for Combat System design.</remarks>
 public class CombatService : ICombatService
 {
     private readonly GameState _gameState;

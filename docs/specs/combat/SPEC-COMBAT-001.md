@@ -1,14 +1,15 @@
 ---
 id: SPEC-COMBAT-001
 title: Combat System
-version: 1.0.0
+version: 1.1.0
 status: Implemented
-related_specs: [SPEC-DICE-001, SPEC-TRAUMA-001, SPEC-ABILITY-001, SPEC-STATUS-001, SPEC-HAZARD-001, SPEC-COND-001, SPEC-ENEMY-001]
+last_updated: 2025-12-23
+related_specs: [SPEC-DICE-001, SPEC-TRAUMA-001, SPEC-ABILITY-001, SPEC-STATUS-001, SPEC-HAZARD-001, SPEC-COND-001, SPEC-ENEMY-001, SPEC-ATTACK-001, SPEC-AI-001]
 ---
 
 # SPEC-COMBAT-001: Combat System
 
-> **Version:** 1.0.0
+> **Version:** 1.1.0
 > **Status:** Implemented
 > **Services:** `CombatService`, `AttackResolutionService`, `InitiativeService`, `EnemyAIService`
 > **Location:** `RuneAndRust.Engine/Services/`
@@ -208,6 +209,183 @@ When a combatant is removed mid-round:
 
 ---
 
+## Row System (v0.3.6a)
+
+Combat positioning uses a two-row system (Front/Back) that affects targeting and protection.
+
+### Default Row Assignment
+
+**Player Archetypes:**
+```csharp
+ArchetypeType.Warrior => RowPosition.Front
+ArchetypeType.Skirmisher => RowPosition.Front
+ArchetypeType.Adept => RowPosition.Back
+ArchetypeType.Mystic => RowPosition.Back
+```
+
+**Enemy Archetypes:**
+```csharp
+EnemyArchetype.Tank => RowPosition.Front
+EnemyArchetype.DPS => RowPosition.Front
+EnemyArchetype.GlassCannon => RowPosition.Front
+EnemyArchetype.Support => RowPosition.Back
+EnemyArchetype.Swarm => RowPosition.Back
+EnemyArchetype.Caster => RowPosition.Back
+EnemyArchetype.Boss => RowPosition.Back
+```
+
+### Row Protection
+
+Back Row combatants are **protected** by their Front Row:
+- Cannot be targeted with melee attacks while friendly Front Row is alive
+- Protection is bypassed by **Reach** weapons
+- Ranged attacks ignore row protection (future feature)
+
+**Validation Logic (`IsValidMeleeTarget`):**
+```csharp
+// Front Row targets are always valid for melee
+if (target.Row == RowPosition.Front) return true;
+
+// Back Row targets are valid with Reach weapons
+if (hasReach) return true;
+
+// Back Row targets are valid if opposing Front Row is empty
+var opposingFrontEmpty = !state.TurnOrder.Any(c =>
+    c.IsPlayer != attacker.IsPlayer &&
+    c.Row == RowPosition.Front &&
+    c.CurrentHp > 0);
+
+return opposingFrontEmpty;
+```
+
+### ViewModel Row Grouping
+
+The `GetViewModel()` method groups combatants by position for UI rendering:
+- `PlayerFrontRow` - Player combatants in front
+- `PlayerBackRow` - Player combatants in back
+- `EnemyFrontRow` - Enemy combatants in front
+- `EnemyBackRow` - Enemy combatants in back
+
+---
+
+## Intent System (v0.3.6c)
+
+Enemies telegraph their next action through an intent visibility system.
+
+### Intent Planning
+
+**`PlanEnemyActions()`** is called at:
+1. Combat initialization (after turn order is established)
+2. Start of each new round
+3. After significant state changes (damage dealt, status applied)
+
+For each living enemy:
+1. Query AI service for planned action: `_aiService.DetermineAction(enemy, state)`
+2. Store action in `enemy.PlannedAction`
+3. Calculate visibility with `CalculateIntentVisibility()`
+4. Store result in `enemy.IsIntentRevealed`
+
+### Intent Visibility Check
+
+**Formula:**
+```
+Pool = WITS + Archetype Bonus + Condition Modifier
+Success = Roll(Pool) >= 1 success
+```
+
+**Archetype Bonus:**
+- Adept: +2 to WITS pool
+- All others: +0
+
+**Automatic Reveals:**
+- `Analyzed` status effect always reveals intent (no roll required)
+
+### Intent Icons
+
+| Action Type | Icon | Notes |
+|-------------|------|-------|
+| Attack | ⚔️ | Any attack action |
+| Defend | 🛡️ | Defensive stance |
+| Flee | 💨 | Escape attempt |
+| Pass | 💤 | Skip turn |
+| Hidden | ? | Not revealed |
+
+### Replanning Triggers
+
+`OnStateChange()` triggers replanning when:
+- Damage is dealt to any combatant
+- Status effects are applied or removed
+- Combatant is defeated
+- Ability is used
+
+---
+
+## Timeline Projection (v0.3.6b)
+
+The timeline shows upcoming turns to help players anticipate combat flow.
+
+### `GetTimelineProjection(windowSize)`
+
+**Parameters:**
+- `windowSize`: Maximum entries to return (default: 8)
+
+**Returns:** List of `TimelineEntryView` records
+
+**Projection Logic:**
+1. Include remaining turns in current round (from `TurnIndex` to end)
+2. If window not filled, include full next round order
+3. Only include living combatants (`CurrentHp > 0`)
+
+### Health Indicators
+
+| Indicator | Condition |
+|-----------|-----------|
+| `dead` | HP ≤ 0 |
+| `critical` | HP ≤ 25% of MaxHP |
+| `wounded` | HP ≤ 50% of MaxHP |
+| `healthy` | HP > 50% of MaxHP |
+
+### TimelineEntryView Record
+
+```csharp
+record TimelineEntryView(
+    Guid CombatantId,
+    string Name,
+    bool IsPlayer,
+    bool IsActive,     // Currently taking turn
+    int Initiative,
+    int RoundNumber,
+    string HealthIndicator
+);
+```
+
+---
+
+## Visual Effects (v0.3.9a)
+
+Combat integrates with the visual effects system for UI feedback.
+
+### Effect Triggers
+
+| Event | Effect Type |
+|-------|-------------|
+| Player critical hit | `CriticalFlash` |
+| Player normal hit | `DamageFlash` |
+| Enemy critical hit on player | `CriticalFlash` |
+| Enemy normal hit on player | `DamageFlash` |
+
+### Integration
+
+```csharp
+// After attack resolution
+if (result.Outcome == AttackOutcome.Critical)
+    await _visualEffects.TriggerEffectAsync(VisualEffectType.CriticalFlash);
+else if (result.IsHit)
+    await _visualEffects.TriggerEffectAsync(VisualEffectType.DamageFlash);
+```
+
+---
+
 ## Restrictions
 
 ### Combat State Requirements
@@ -364,7 +542,8 @@ public class Combatant
     public int MaxStamina { get; set; }
     public int CurrentStress { get; set; }
     public int CurrentCorruption { get; set; }
-    public int CurrentAp { get; set; }
+    public int CurrentAp { get; set; }      // Aether Points (v0.2.3a)
+    public int MaxAp { get; set; }          // Max Aether Points (v0.2.3a)
 
     // Combat State
     public bool IsDefending { get; set; }
@@ -373,10 +552,26 @@ public class Combatant
     public Dictionary<Guid, int> Cooldowns { get; set; }
     public List<ActiveAbility> Abilities { get; set; }
 
+    // Row Positioning (v0.3.6a)
+    public RowPosition Row { get; set; }
+    public bool IsTargeted { get; set; }    // UI highlight for targeting
+
+    // Intent System (v0.3.6c)
+    public CombatAction? PlannedAction { get; set; }
+    public bool IsIntentRevealed { get; set; }
+
+    // Channeling (v0.2.4c)
+    public Guid? ChanneledAbilityId { get; set; }
+
     // Equipment
     public int WeaponDamageDie { get; set; }
     public string WeaponName { get; set; }
     public int ArmorSoak { get; set; }
+
+    // Traits (v0.2.2c)
+    public List<CreatureTrait> ActiveTraits { get; set; }
+    public List<string> Tags { get; set; }  // Enemy tags (e.g., "Cowardly")
+    public EnemyArchetype? Archetype { get; set; }
 
     // Condition Modifiers (v0.3.3b)
     public ConditionType? ActiveCondition { get; set; }
@@ -506,3 +701,36 @@ FinalDamage = Max(1, ModifiedDamage - (ArmorSoak + FortifiedBonus))
 - Gives player time to read combat log
 - Creates dramatic pacing
 - Distinguishes AI turns from player turns visually
+
+---
+
+## Changelog
+
+### v1.1.0 (2025-12-23)
+**Documentation Update** - Added undocumented systems to specification.
+
+#### Added
+- **Row System (v0.3.6a)**: Two-row positioning system with Front/Back rows, archetype-based defaults, row protection mechanics, and Reach weapon bypass logic
+- **Intent System (v0.3.6c)**: Enemy action planning with WITS-based visibility checks, Adept archetype bonus, Analyzed status override, and intent icons (⚔️, 🛡️, 💨, 💤, ?)
+- **Timeline Projection (v0.3.6b)**: Turn order preview system with health indicators (dead/critical/wounded/healthy), configurable window size, and TimelineEntryView integration
+- **Visual Effects (v0.3.9a)**: IVisualEffectService integration with CriticalFlash and DamageFlash effect triggers
+- **Combatant Model Properties**: Row, IsTargeted, PlannedAction, IsIntentRevealed, ChanneledAbilityId, MaxAp, ActiveTraits, Tags, Archetype
+- `last_updated` field to YAML frontmatter
+- SPEC-ATTACK-001 and SPEC-AI-001 to related_specs
+
+#### Changed
+- Version bumped from 1.0.0 to 1.1.0
+
+### v1.0.0 (2024-12-20)
+**Initial Release** - Core combat system specification.
+
+- Combat initialization and turn management
+- Player attack execution and enemy AI processing
+- Ability execution and combat ending
+- Death handling and turn index adjustment
+- Status effect DoT processing
+- Stamina regeneration mechanics
+- Trait processing (Regen, Thorns, Vampiric)
+- Trauma triggers (v0.3.0c)
+- Ambient conditions (v0.3.3b)
+- Chanting interruption (v0.2.4c)

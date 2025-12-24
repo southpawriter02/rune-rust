@@ -8,6 +8,7 @@ namespace RuneAndRust.Core.Interfaces;
 /// <summary>
 /// Defines the contract for combat lifecycle management.
 /// </summary>
+/// <remarks>See: SPEC-COMBAT-001 for Combat System design.</remarks>
 public interface ICombatService
 {
     /// <summary>
