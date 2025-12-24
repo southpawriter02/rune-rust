@@ -1,14 +1,15 @@
 ---
 id: SPEC-ATTACK-001
 title: Attack Resolution System
-version: 1.0.0
+version: 1.1.0
 status: Implemented
+last_updated: 2025-12-23
 related_specs: [SPEC-DICE-001, SPEC-COMBAT-001, SPEC-STATUS-001, SPEC-TRAUMA-001]
 ---
 
 # SPEC-ATTACK-001: Attack Resolution System
 
-> **Version:** 1.0.0
+> **Version:** 1.1.0
 > **Status:** Implemented (v0.2.2b)
 > **Service:** `AttackResolutionService`
 > **Location:** `RuneAndRust.Engine/Services/AttackResolutionService.cs`
@@ -82,11 +83,11 @@ The **Attack Resolution System** determines hit/miss outcomes and calculates dam
 
 ### Primary Behaviors
 
-#### 1. Attack Resolution (`ResolveAttackAsync`)
+#### 1. Attack Resolution (`ResolveMeleeAttack`)
 
 **Signature:**
 ```csharp
-Task<AttackResult> ResolveAttackAsync(
+AttackResult ResolveMeleeAttack(
     Combatant attacker,
     Combatant defender,
     AttackType attackType)
@@ -160,7 +161,7 @@ Task<AttackResult> ResolveAttackAsync(
 
 **Formula:**
 ```
-Defense Score = 10 + Finesse + Defending Bonus - Stress Penalty
+Defense Score = 10 + Finesse - Stress Penalty
 ```
 
 **Stress Penalty Calculation:**
@@ -169,16 +170,10 @@ var stressPenalty = Math.Min(defender.PsychicStress / 20, 5);
 // Penalty = Stress / 20, capped at -5 maximum
 ```
 
-**Defending Bonus:**
-```csharp
-var defendingBonus = defender.IsDefending ? 2 : 0;
-```
-
 **Example:**
 - Base: 10
 - Finesse: 8
 - Stress: 60 (penalty = 60/20 = 3)
-- Defending: No (bonus = 0)
 - **Defense Score: 10 + 8 - 3 = 15**
 - **Success Threshold: 15 / 5 = 3 successes required**
 
@@ -401,7 +396,7 @@ if (!_attackResolution.CanAffordAttack(enemy, AttackType.Heavy))
 
 5. **MUST NOT skip outcome determination**
    - **Violation Impact:** Undefined damage multiplier
-   - **Enforcement:** All paths through ResolveAttackAsync() call DetermineOutcome()
+   - **Enforcement:** All paths through ResolveMeleeAttack() call DetermineOutcome()
 
 ---
 
@@ -442,7 +437,11 @@ if (!_attackResolution.CanAffordAttack(enemy, AttackType.Heavy))
 
 6. **No Critical Failure Effects**
    - Current: Fumble = 0 damage, no penalties
-   - Future: Weapon damage, stamina loss, status effects
+   - Future: Fumble penalties (self-damage, weapon drop, etc.)
+
+7. **No Defending Stance Bonus**
+   - Current: `IsDefending` property exists on Combatant but is not used in defense calculation
+   - Future: +2 defense bonus when in defending stance (requires CombatService integration)
 
 ---
 
@@ -464,14 +463,13 @@ var enemy = new Combatant
 {
     Finesse = 5,
     PsychicStress = 40,  // 2 penalty
-    Soak = 3,
-    IsDefending = false
+    Soak = 3
 };
 ```
 
 **Execution:**
 ```csharp
-var result = await _attackResolution.ResolveAttackAsync(
+var result = _attackResolution.ResolveMeleeAttack(
     player, enemy, AttackType.Standard);
 ```
 
@@ -521,7 +519,7 @@ var enemy = new Combatant
 
 **Execution:**
 ```csharp
-var result = await _attackResolution.ResolveAttackAsync(
+var result = _attackResolution.ResolveMeleeAttack(
     player, enemy, AttackType.Heavy);
 ```
 
@@ -574,7 +572,7 @@ var enemy = new Combatant
 
 **Execution:**
 ```csharp
-var result = await _attackResolution.ResolveAttackAsync(
+var result = _attackResolution.ResolveMeleeAttack(
     player, enemy, AttackType.Light);
 ```
 
@@ -609,7 +607,7 @@ var enemy = new Combatant { Finesse = 8, Soak = 5 };
 **Execution:**
 ```csharp
 // Simulated dice roll: {1, 1, 4, 6} → 0 successes, 2 botches
-var result = await _attackResolution.ResolveAttackAsync(
+var result = _attackResolution.ResolveMeleeAttack(
     player, enemy, AttackType.Standard);
 ```
 
@@ -634,21 +632,20 @@ var result = await _attackResolution.ResolveAttackAsync(
 var player = new Combatant { Might = 3, CurrentStamina = 40 };
 var enemy = new Combatant
 {
-    Finesse = 10,
-    IsDefending = true  // +2 defense
+    Finesse = 10
 };
 ```
 
 **Execution:**
 ```csharp
-var result = await _attackResolution.ResolveAttackAsync(
+var result = _attackResolution.ResolveMeleeAttack(
     player, enemy, AttackType.Heavy);
 ```
 
 **Internal Flow:**
 
-1. **Defense Score**: 10 + 10 + 2 (Defending) = 22
-2. **Success Threshold**: 22 / 5 = 4
+1. **Defense Score**: 10 + 10 = 20
+2. **Success Threshold**: 20 / 5 = 4
 3. **Attack Pool**: 3 - 1 (Heavy) = 2d10 (very small pool)
 4. **Roll**: {8, 7} → 2 successes
 5. **Net Successes**: 2 - 4 = -2
@@ -678,7 +675,7 @@ var enemy = new Combatant { Finesse = 5 };
 **Execution:**
 ```csharp
 // Attempt Heavy attack (40 stamina cost)
-await _attackResolution.ResolveAttackAsync(
+_attackResolution.ResolveMeleeAttack(
     player, enemy, AttackType.Heavy);
 ```
 
@@ -699,7 +696,7 @@ InvalidOperationException: "Insufficient stamina for Heavy attack (required: 40,
 ### Decision Tree 1: Attack Resolution Flow
 
 ```
-ResolveAttackAsync(attacker, defender, attackType)
+ResolveMeleeAttack(attacker, defender, attackType)
 │
 ├─ VALIDATE STAMINA
 │  ├─ CurrentStamina < Cost?
@@ -709,7 +706,6 @@ ResolveAttackAsync(attacker, defender, attackType)
 ├─ CALCULATE DEFENSE SCORE
 │  ├─ Base = 10
 │  ├─ Add Finesse
-│  ├─ Add Defending Bonus (0 or +2)
 │  ├─ Subtract Stress Penalty (min(Stress/20, 5))
 │  └─ Success Threshold = Defense / 5 (integer)
 │
@@ -890,7 +886,6 @@ private const int HeavyDamageBonus = 4;
 
 ```csharp
 private const int BaseDefenseScore = 10;
-private const int DefendingBonus = 2;
 private const int StressPenaltyDivisor = 20;
 private const int MaxStressPenalty = 5;
 private const int SuccessThresholdDivisor = 5;
@@ -950,7 +945,6 @@ private const float CriticalMultiplier = 2.0f;
 2. **Defense Score with Stress** (lines 92-120)
    - Base 10 + Finesse - (Stress/20)
    - Stress penalty capped at -5
-   - Defending bonus (+2)
 
 3. **Success Threshold Conversion** (lines 128-145)
    - Defense 15 → Threshold 3
@@ -1022,8 +1016,20 @@ private const float CriticalMultiplier = 2.0f;
 
 ## Changelog
 
+### v1.1.0 - Documentation Accuracy Update (2025-12-23)
+
+**Documentation Corrections:**
+- **CHANGED**: Method signature `ResolveAttackAsync()` → `ResolveMeleeAttack()` (sync, not async)
+- **REMOVED**: Defending Bonus from defense formula (not implemented in code)
+- **ADDED**: "No Defending Stance Bonus" to Limitations section as future feature
+- **UPDATED**: All USE CASE examples to use synchronous method signature
+
+**No code changes - documentation-only update to match actual implementation.**
+
+---
+
 ### v0.2.2b - Initial Attack Resolution Implementation (2025-11-28)
-- **ADDED**: `ResolveAttackAsync()` core attack resolution method
+- **ADDED**: `ResolveMeleeAttack()` core attack resolution method
 - **ADDED**: Three attack types (Light, Standard, Heavy)
 - **ADDED**: Defense score calculation with stress penalties
 - **ADDED**: Success threshold conversion (Defense / 5)

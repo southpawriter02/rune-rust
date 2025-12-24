@@ -10,6 +10,7 @@ namespace RuneAndRust.Engine.Services;
 /// Handles the mechanics of attack resolution including hit determination,
 /// damage calculation, and outcome classification.
 /// </summary>
+/// <remarks>See: SPEC-ATTACK-001 for Attack Resolution System design.</remarks>
 public class AttackResolutionService : IAttackResolutionService
 {
     private readonly IDiceService _dice;

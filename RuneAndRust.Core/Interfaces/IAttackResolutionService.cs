@@ -7,6 +7,7 @@ namespace RuneAndRust.Core.Interfaces;
 /// Defines the contract for attack resolution services.
 /// Handles the mechanics of determining hit/miss, damage calculation, and attack outcomes.
 /// </summary>
+/// <remarks>See: SPEC-ATTACK-001 for Attack Resolution System design.</remarks>
 public interface IAttackResolutionService
 {
     /// <summary>
