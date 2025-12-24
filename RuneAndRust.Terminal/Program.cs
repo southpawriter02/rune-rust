@@ -86,6 +86,9 @@ class Program
                     // Register DocGen Service (v0.3.11b - Developer's Handbook)
                     services.AddScoped<IDocGenService, DocGenService>();
 
+                    // Register Loot Audit Service (v0.3.13a - The Loot Audit)
+                    services.AddScoped<ILootAuditService, LootAuditService>();
+
                     // Register Journal Services
                     services.AddScoped<IJournalService, JournalService>();
 
@@ -223,6 +226,49 @@ class Program
                 return;
             }
 
+            // 5b. CLI Argument Handling (v0.3.13a - Loot Audit)
+            if (args.Any(a => a.StartsWith("--audit-loot")))
+            {
+                // Parse CLI arguments with defaults
+                var iterations = ParseIntArg(args, "iterations", 10000);
+                var biome = ParseEnumArg(args, "biome", BiomeType.Ruin);
+                var danger = ParseEnumArg(args, "danger", DangerLevel.Safe);
+                var witsBonus = ParseIntArg(args, "wits", 0);
+
+                AnsiConsole.MarkupLine($"[yellow]Running Loot Audit: {iterations:N0} iterations in {biome} ({danger})...[/]");
+
+                using (var scope = host.Services.CreateScope())
+                {
+                    var auditService = scope.ServiceProvider.GetRequiredService<ILootAuditService>();
+                    var config = new LootAuditConfiguration(iterations, biome, danger, witsBonus);
+                    var report = auditService.RunAuditAsync(config).GetAwaiter().GetResult();
+
+                    // Ensure output directory exists
+                    var outputDir = "docs/audits";
+                    if (!Directory.Exists(outputDir))
+                        Directory.CreateDirectory(outputDir);
+
+                    // Write report
+                    var outputPath = Path.Combine(outputDir, $"loot_audit_{DateTime.Now:yyyyMMdd_HHmmss}.md");
+                    File.WriteAllText(outputPath, report.MarkdownReport);
+
+                    // Summary output
+                    var criticals = report.Flags.Count(f => f.Severity == VarianceSeverity.Critical);
+                    var warnings = report.Flags.Count(f => f.Severity == VarianceSeverity.Warning);
+
+                    if (criticals > 0)
+                        AnsiConsole.MarkupLine($"[red]Audit complete with {criticals} critical variance(s).[/]");
+                    else if (warnings > 0)
+                        AnsiConsole.MarkupLine($"[yellow]Audit complete with {warnings} warning(s).[/]");
+                    else
+                        AnsiConsole.MarkupLine("[green]Audit complete. All distributions within acceptable bounds.[/]");
+
+                    AnsiConsole.MarkupLine($"[grey]Report: {outputPath}[/]");
+                }
+
+                return;
+            }
+
             // 6. UI Handover
             AnsiConsole.MarkupLine("[green]Rune & Rust v0.3.6c Booting...[/]");
             AnsiConsole.WriteLine();
@@ -321,4 +367,38 @@ class Program
             Log.CloseAndFlush();
         }
     }
+
+    #region CLI Argument Helpers
+
+    /// <summary>
+    /// Parses an integer argument from CLI args (e.g., --iterations=10000).
+    /// </summary>
+    private static int ParseIntArg(string[] args, string name, int defaultValue)
+    {
+        var prefix = $"--{name}=";
+        var arg = args.FirstOrDefault(a => a.StartsWith(prefix, StringComparison.OrdinalIgnoreCase));
+
+        if (arg == null)
+            return defaultValue;
+
+        var valueStr = arg.Substring(prefix.Length);
+        return int.TryParse(valueStr, out var value) ? value : defaultValue;
+    }
+
+    /// <summary>
+    /// Parses an enum argument from CLI args (e.g., --biome=Industrial).
+    /// </summary>
+    private static T ParseEnumArg<T>(string[] args, string name, T defaultValue) where T : struct, Enum
+    {
+        var prefix = $"--{name}=";
+        var arg = args.FirstOrDefault(a => a.StartsWith(prefix, StringComparison.OrdinalIgnoreCase));
+
+        if (arg == null)
+            return defaultValue;
+
+        var valueStr = arg.Substring(prefix.Length);
+        return Enum.TryParse<T>(valueStr, ignoreCase: true, out var value) ? value : defaultValue;
+    }
+
+    #endregion
 }
