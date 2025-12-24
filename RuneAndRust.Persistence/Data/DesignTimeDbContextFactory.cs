@@ -7,6 +7,7 @@ namespace RuneAndRust.Persistence.Data;
 /// Design-time factory for creating RuneAndRustDbContext.
 /// Used by EF Core tools (migrations, scaffolding) without running the full application.
 /// </summary>
+/// <remarks>See: SPEC-MIGRATE-001 for Migration System design.</remarks>
 public class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<RuneAndRustDbContext>
 {
     /// <summary>

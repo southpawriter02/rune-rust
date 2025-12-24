@@ -1,13 +1,13 @@
 ---
 id: SPEC-MIGRATE-001
 title: Migration System
-version: 1.0.0
+version: 1.0.1
 status: Implemented
 priority: P0
 owner: Backend Team
 related_specs: [SPEC-REPO-001, SPEC-SEED-001]
 created: 2025-12-22
-updated: 2025-12-22
+last_updated: 2025-12-24
 ---
 
 # SPEC-MIGRATE-001: Migration System
@@ -27,7 +27,7 @@ This specification covers:
 - Design-time factory configuration
 - Schema versioning and naming conventions
 - PostgreSQL-specific features (JSONB, arrays, GUIDs)
-- Migration execution at application startup
+- Migration execution via CLI tooling
 - Rollback and recovery procedures
 
 ### 1.3 Design Goals
@@ -62,7 +62,7 @@ This specification covers:
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                  │
 │  ┌─────────────────┐    ┌──────────────────┐                    │
-│  │ Design-Time     │    │ Runtime          │                    │
+│  │ Design-Time     │    │ Test Fixture     │                    │
 │  │ (dotnet ef)     │    │ (MigrateAsync)   │                    │
 │  └────────┬────────┘    └────────┬─────────┘                    │
 │           │                      │                               │
@@ -333,26 +333,28 @@ migrationBuilder.AlterColumn<int>(
     oldNullable: true);
 ```
 
-### 4.3 Runtime Execution
+### 4.3 Migration Execution
 
-Migrations execute at application startup in `Program.cs`:
+Migrations are applied via CLI tooling, **not at application startup**:
 
-```csharp
-// Program.cs lines 190-203
-using (var scope = app.Services.CreateScope())
-{
-    var context = scope.ServiceProvider.GetRequiredService<RuneAndRustDbContext>();
+```bash
+# Apply all pending migrations
+dotnet ef database update --project RuneAndRust.Persistence
 
-    // MigrateAsync applies all pending migrations
-    await context.Database.MigrateAsync();
-
-    // Seeding runs after migrations complete
-    await AbilitySeeder.SeedAsync(context);
-    // ... additional seeders
-}
+# Apply migrations up to a specific one
+dotnet ef database update AddEnvironmentEcosystemTables --project RuneAndRust.Persistence
 ```
 
-**MigrateAsync Behavior:**
+**Note:** The application assumes the database schema is already migrated. `Program.cs` only runs seeders after database connection—it does **not** call `MigrateAsync()`. This design separates schema deployment from application execution for clearer operational control.
+
+**Test Environment:** For integration tests, `PostgreSqlTestFixture` does call `MigrateAsync()` to ensure a clean test database:
+
+```csharp
+// PostgreSqlTestFixture.cs
+await migrationContext.Database.MigrateAsync();
+```
+
+**MigrateAsync Behavior (when invoked):**
 1. Connects to PostgreSQL
 2. Creates `__EFMigrationsHistory` if not exists
 3. Queries applied migrations
@@ -961,19 +963,21 @@ builder.Services.AddDbContext<RuneAndRustDbContext>(options =>
 - Compact binary storage
 - Native PostgreSQL operators (@>, ->, ?)
 
-### 13.3 Why Automatic Migration at Startup?
+### 13.3 Why CLI Migration (Not Startup)?
 
-| Alternative | Rejected Because |
-|-------------|------------------|
-| Manual Migration | Deployment friction, human error risk |
-| CI/CD Only | Local development complexity |
-| Migration Service | Additional infrastructure |
+| Alternative | Status |
+|-------------|--------|
+| **CLI Migration** | **Adopted** - Explicit control, clear separation of concerns |
+| Automatic Startup | Rejected - Mixes deployment concerns with application execution |
+| CI/CD Only | Considered - Good for production, but CLI also supports local dev |
+| Migration Service | Rejected - Unnecessary infrastructure complexity |
 
-**Benefits of Startup Migration:**
-- Schema always matches code on deployment
-- No manual intervention required
-- Works for local development and production
-- Idempotent - safe to run multiple times
+**Benefits of CLI Migration:**
+- Explicit control over when migrations run
+- Cleaner separation: deployment vs. runtime
+- Easier debugging when migrations fail
+- Test infrastructure uses `MigrateAsync()` for isolated databases
+- Works for local development (`dotnet ef database update`) and CI/CD pipelines
 
 ---
 
@@ -1097,3 +1101,25 @@ CREATE TABLE "__EFMigrationsHistory" (
 | IX_RoomTemplates_Archetype | RoomTemplates | Archetype | No |
 | IX_RoomTemplates_BiomeId | RoomTemplates | BiomeId | No |
 | IX_RoomTemplates_TemplateId | RoomTemplates | TemplateId | Yes |
+
+---
+
+## Changelog
+
+### v1.0.1 (2025-12-24)
+**Critical Correction:**
+- Fixed section 4.3: Migrations are applied via CLI (`dotnet ef database update`), **not at application startup**
+- `Program.cs` does not call `MigrateAsync()`—only seeders run after database connection
+- `PostgreSqlTestFixture` uses `MigrateAsync()` for integration test databases
+- Updated section 13.3 to reflect CLI migration rationale
+- Updated architecture diagram (Runtime → Test Fixture)
+- Standardized frontmatter: `updated` → `last_updated`
+- Added code traceability remark to DesignTimeDbContextFactory
+
+### v1.0.0 (2025-12-22)
+**Initial Release:**
+- EF Core Code-First migration documentation
+- 4 migrations: InitialCreate, AddRestSystemColumns, AddEnvironmentEcosystemTables, MakeActiveAbilityArchetypeNullable
+- DesignTimeDbContextFactory for CLI tooling
+- PostgreSQL-specific features (JSONB, arrays, GUIDs)
+- Complete index registry (21 indexes)
