@@ -11,6 +11,7 @@ namespace RuneAndRust.Persistence.Repositories;
 /// Repository implementation for Room entity operations.
 /// Provides specialized queries for spatial navigation.
 /// </summary>
+/// <remarks>See: SPEC-REPO-001 for Repository Pattern design.</remarks>
 public class RoomRepository : GenericRepository<Room>, IRoomRepository
 {
     private readonly ILogger<RoomRepository> _roomLogger;

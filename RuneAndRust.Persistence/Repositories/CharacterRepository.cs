@@ -10,6 +10,7 @@ namespace RuneAndRust.Persistence.Repositories;
 /// Repository implementation for Character entity operations.
 /// Provides specialized queries for character management.
 /// </summary>
+/// <remarks>See: SPEC-REPO-001 for Repository Pattern design.</remarks>
 public class CharacterRepository : GenericRepository<Character>, ICharacterRepository
 {
     private readonly ILogger<CharacterRepository> _characterLogger;

@@ -1,14 +1,15 @@
 ---
 id: SPEC-REPO-001
 title: Repository Pattern
-version: 1.0.0
+version: 1.0.1
 status: Implemented
 related_specs: [SPEC-SAVE-001, SPEC-SEED-001, SPEC-MIGRATE-001]
+last_updated: 2025-12-24
 ---
 
 # SPEC-REPO-001: Repository Pattern
 
-> **Version:** 1.0.0
+> **Version:** 1.0.1
 > **Status:** Implemented
 > **Services:** IRepository<T>, GenericRepository<T>, 13 Specialized Repositories
 > **Location:** `RuneAndRust.Core/Interfaces/`, `RuneAndRust.Persistence/Repositories/`
@@ -169,16 +170,16 @@ public class GenericRepository<T> : IRepository<T> where T : class
 | Interface | Purpose | Key Methods |
 |-----------|---------|-------------|
 | `ICharacterRepository` | Player character management | `GetByNameAsync`, `NameExistsAsync`, `GetAllOrderedByCreationAsync`, `GetMostRecentAsync` |
-| `IRoomRepository` | Spatial navigation | `GetByPositionAsync`, `GetStartingRoomAsync`, `PositionExistsAsync`, `GetRoomsInGridAsync`, `AddRangeAsync` |
-| `IInventoryRepository` | Equipment/item management | `GetByCharacterIdAsync`, `GetEquippedItemsAsync`, `GetEquippedInSlotAsync`, `GetTotalWeightAsync`, `FindByTagAsync` |
+| `IRoomRepository` | Spatial navigation | `GetByPositionAsync`, `GetStartingRoomAsync`, `PositionExistsAsync`, `GetRoomsInGridAsync`, `AddRangeAsync`, `GetAllRoomsAsync`, `ClearAllRoomsAsync` |
+| `IInventoryRepository` | Equipment/item management | `GetByCharacterIdAsync`, `GetEquippedItemsAsync`, `GetEquippedInSlotAsync`, `GetTotalWeightAsync`, `FindByTagAsync`, `GetByCharacterAndItemAsync`, `FindByItemNameAsync`, `ClearInventoryAsync` |
 | `ISaveGameRepository` | Save slot management | `GetBySlotAsync`, `SlotExistsAsync`, `GetAllOrderedByLastPlayedAsync` |
-| `IDataCaptureRepository` | Journal fragments | `GetByCharacterIdAsync`, `GetByEntryIdAsync`, `GetFragmentCountAsync`, `GetUnassignedAsync` |
+| `IDataCaptureRepository` | Journal fragments | `GetByCharacterIdAsync`, `GetByEntryIdAsync`, `GetFragmentCountAsync`, `GetUnassignedAsync`, `GetDiscoveredEntryIdsAsync` |
 | `IItemRepository` | Item queries | `GetByQualityAsync`, `GetByTypeAsync`, `GetEquipmentBySlotAsync`, `GetByNameAsync`, `GetAllEquipmentAsync` |
-| `ICodexEntryRepository` | Lore entries | Standard CRUD (extends IRepository) |
-| `IInteractableObjectRepository` | Room objects | Standard CRUD (extends IRepository) |
+| `ICodexEntryRepository` | Lore entries | `GetByCategoryAsync` (extends IRepository) |
+| `IInteractableObjectRepository` | Room objects | `AddRangeAsync`, `ClearRoomObjectsAsync` (extends IRepository) |
 | `IActiveAbilityRepository` | Combat abilities | `GetByArchetypeAsync`, `GetByTierAsync` |
-| `IRoomTemplateRepository` | Dynamic room generation | `GetByIdAsync(string templateId)`, `GetByBiomeAsync` |
-| `IBiomeDefinitionRepository` | Biome configuration | `GetByIdAsync(string biomeId)`, `GetAllAsync` |
+| `IRoomTemplateRepository` | Dynamic room generation | `GetByIdAsync(string templateId)`, `GetByBiomeAsync`, `UpsertAsync` |
+| `IBiomeDefinitionRepository` | Biome configuration | `GetByIdAsync(string biomeId)`, `GetAllAsync`, `UpsertAsync`, `GetElementsForBiomeAsync` |
 | `IBiomeElementRepository` | Biome spawn elements | `GetByBiomeIdAsync`, `GetByElementTypeAsync` |
 
 **Pattern**:
@@ -370,7 +371,7 @@ public async Task<IEnumerable<Room>> GetRoomsInGridAsync(
 
 #### Aggregation
 ```csharp
-public async Task<decimal> GetTotalWeightAsync(Guid characterId)
+public async Task<int> GetTotalWeightAsync(Guid characterId)
 {
     return await _dbSet
         .Where(ii => ii.CharacterId == characterId)
@@ -787,15 +788,15 @@ WHERE r."Position_Z" = @p0
 1. InventoryService receives weight check request
 2. Call _inventoryRepository.GetTotalWeightAsync(characterId)
 3. InventoryRepository executes SUM aggregation with JOIN
-4. Return total weight (decimal)
+4. Return total weight (int)
 5. InventoryService compares to character's MaxCarryWeight
 ```
 
 **Code**:
 ```csharp
-public async Task<decimal> GetTotalWeightAsync(Guid characterId)
+public async Task<int> GetTotalWeightAsync(Guid characterId)
 {
-    _logger.LogDebug("GetTotalWeightAsync for character {CharacterId}", characterId);
+    _logger.LogDebug("Calculating total inventory weight for character {CharacterId}", characterId);
 
     return await _dbSet
         .Include(ii => ii.Item)
@@ -1226,16 +1227,19 @@ var connectionString = Environment.GetEnvironmentVariable("DATABASE_URL")
 
 ### Unit Testing Strategy
 
-**Test Coverage Target**: 70% (repository methods are data access, limited logic)
+**Test Coverage**: No dedicated repository unit tests. Repositories are indirectly tested via:
+- Integration tests using `PostgreSqlTestFixture`
+- Service-level tests that exercise repository methods
+- Journey tests that validate end-to-end data flows
 
 **Mocking Approach**:
 - Mock `IXxxRepository` interfaces in service tests
 - Use InMemory provider or SQLite for repository integration tests
 - NSubstitute for interface mocking
 
-### Example Test: CharacterRepository
+### Example Test Pattern: CharacterRepository
 
-**File**: RuneAndRust.Tests/Persistence/CharacterRepositoryTests.cs
+**File**: RuneAndRust.Tests/Persistence/CharacterRepositoryTests.cs (example pattern, not implemented)
 
 ```csharp
 public class CharacterRepositoryTests : IDisposable
@@ -1547,6 +1551,33 @@ public interface IReadOnlyRepository<T>
 - **Definitive Statements**: "All repositories MUST be Scoped"
 - **Code Examples**: C# implementations with expected SQL output
 - **Quantifiable Metrics**: "70% test coverage," "15+ DbSet properties"
+
+---
+
+## Changelog
+
+### v1.0.1 (2025-12-24)
+**Documentation Updates:**
+- Added `last_updated` field to frontmatter
+- Fixed `GetTotalWeightAsync` return type: `decimal` → `int` (matches implementation)
+- Documented 11 additional repository methods:
+  - `IRoomRepository`: `GetAllRoomsAsync`, `ClearAllRoomsAsync`
+  - `IInventoryRepository`: `GetByCharacterAndItemAsync`, `FindByItemNameAsync`, `ClearInventoryAsync`
+  - `IDataCaptureRepository`: `GetDiscoveredEntryIdsAsync`
+  - `ICodexEntryRepository`: `GetByCategoryAsync`
+  - `IInteractableObjectRepository`: `AddRangeAsync`, `ClearRoomObjectsAsync`
+  - `IRoomTemplateRepository`: `UpsertAsync`
+  - `IBiomeDefinitionRepository`: `UpsertAsync`, `GetElementsForBiomeAsync`
+- Updated test coverage section (no dedicated tests, indirect coverage via integration tests)
+- Added code traceability remarks to 6 key repository files
+
+### v1.0.0 (2025-12-22)
+**Initial Release:**
+- Repository pattern documentation
+- 13 specialized repositories
+- GenericRepository base class
+- DI registration patterns
+- Query pattern examples (spatial, filtering, aggregation)
 
 ---
 

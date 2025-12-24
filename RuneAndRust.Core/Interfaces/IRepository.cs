@@ -5,6 +5,7 @@ namespace RuneAndRust.Core.Interfaces;
 /// Provides standard CRUD operations for any entity type.
 /// </summary>
 /// <typeparam name="T">The entity type this repository handles.</typeparam>
+/// <remarks>See: SPEC-REPO-001 for Repository Pattern design.</remarks>
 public interface IRepository<T> where T : class
 {
     /// <summary>

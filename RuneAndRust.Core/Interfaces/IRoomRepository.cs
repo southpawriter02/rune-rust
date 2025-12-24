@@ -7,6 +7,7 @@ namespace RuneAndRust.Core.Interfaces;
 /// Repository interface for Room entity operations.
 /// Extends the generic repository with room-specific queries.
 /// </summary>
+/// <remarks>See: SPEC-REPO-001 for Repository Pattern design.</remarks>
 public interface IRoomRepository : IRepository<Room>
 {
     /// <summary>

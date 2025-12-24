@@ -6,6 +6,7 @@ namespace RuneAndRust.Core.Interfaces;
 /// Repository interface for Character entity operations.
 /// Extends the generic repository with character-specific queries.
 /// </summary>
+/// <remarks>See: SPEC-REPO-001 for Repository Pattern design.</remarks>
 public interface ICharacterRepository : IRepository<Character>
 {
     /// <summary>
