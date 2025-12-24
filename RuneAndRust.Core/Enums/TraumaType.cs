@@ -6,6 +6,7 @@ namespace RuneAndRust.Core.Enums;
 /// Represents the category of a permanent psychological trauma.
 /// Traumas are acquired when a character fails a Breaking Point resolve check.
 /// </summary>
+/// <remarks>See: SPEC-TRAUMA-001, Section "Core Concepts".</remarks>
 public enum TraumaType
 {
     /// <summary>

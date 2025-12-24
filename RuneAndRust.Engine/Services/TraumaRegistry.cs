@@ -9,6 +9,7 @@ namespace RuneAndRust.Engine.Services;
 /// Static registry of all available trauma definitions.
 /// Provides trauma lookup and random selection for Breaking Point events.
 /// </summary>
+/// <remarks>See: SPEC-TRAUMA-001, Section "TraumaRegistry Definitions".</remarks>
 public static class TraumaRegistry
 {
     /// <summary>

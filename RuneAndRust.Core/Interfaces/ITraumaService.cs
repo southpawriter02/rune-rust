@@ -9,6 +9,7 @@ namespace RuneAndRust.Core.Interfaces;
 /// Handles stress infliction with WILL-based resolve checks, corruption accumulation,
 /// and breaking point/terminal error triggers.
 /// </summary>
+/// <remarks>See: SPEC-TRAUMA-001 for Trauma & Stress System design.</remarks>
 public interface ITraumaService
 {
     /// <summary>
