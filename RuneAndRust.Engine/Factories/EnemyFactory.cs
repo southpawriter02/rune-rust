@@ -12,6 +12,7 @@ namespace RuneAndRust.Engine.Factories;
 /// Implements the Prototype pattern - templates define base stats, factory hydrates into live entities.
 /// Extended in v0.2.4a to hydrate abilities from repository.
 /// </summary>
+/// <remarks>See: SPEC-ENEMYFAC-001 for Enemy Factory System design.</remarks>
 public class EnemyFactory : IEnemyFactory
 {
     private readonly ILogger<EnemyFactory> _logger;

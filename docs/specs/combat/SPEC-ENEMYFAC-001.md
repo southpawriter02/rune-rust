@@ -1,8 +1,17 @@
+---
+id: SPEC-ENEMYFAC-001
+title: Enemy Factory System
+version: 1.1.0
+status: Implemented
+last_updated: 2025-12-24
+related_specs: [SPEC-TRAIT-001, SPEC-DICE-001, SPEC-ENEMY-001, SPEC-ENVPOP-001, SPEC-ABILITY-001]
+---
+
 # SPEC-ENEMYFAC-001: Enemy Factory System
 
-**Version:** 1.0.0
+**Version:** 1.1.0
 **Status:** Implemented
-**Last Updated:** 2025-12-22
+**Last Updated:** 2025-12-24
 **Implementation File:** [RuneAndRust.Engine/Factories/EnemyFactory.cs](../../RuneAndRust.Engine/Factories/EnemyFactory.cs)
 **Test File:** [RuneAndRust.Tests/Engine/EnemyFactoryTests.cs](../../RuneAndRust.Tests/Engine/EnemyFactoryTests.cs)
 
@@ -80,7 +89,14 @@ EnemyTemplate (Prototype) → Clone → Apply Scaling → Apply Variance → App
 
 ## Core Behaviors
 
+> **Note:** All factory methods are `async` to support ability hydration from the repository (v0.2.4a).
+
 ### 1. Enemy Creation from Template
+
+**Method Signature:**
+```csharp
+Task<Enemy> CreateFromTemplateAsync(EnemyTemplate template, int partyLevel = 1)
+```
 
 **Primary Flow:**
 1. Accept `EnemyTemplate` and optional `partyLevel` parameter
@@ -96,9 +112,10 @@ EnemyTemplate (Prototype) → Clone → Apply Scaling → Apply Variance → App
 11. If tier ≥ Elite:
     - Add tier tag (e.g., "Elite", "Boss") to tags list
     - Call `CreatureTraitService.EnhanceEnemy()` to apply traits
-12. Return fully-hydrated Enemy entity
+12. Hydrate abilities from `AbilityNames` via `IActiveAbilityRepository` (v0.2.4a)
+13. Return fully-hydrated Enemy entity
 
-**Implementation:** [EnemyFactory.cs:56-113](../../RuneAndRust.Engine/Factories/EnemyFactory.cs#L56-L113)
+**Implementation:** [EnemyFactory.cs:61-124](../../RuneAndRust.Engine/Factories/EnemyFactory.cs#L61-L124)
 
 **Logging:**
 - **Information:** Enemy creation start (template ID, tier, party level)
@@ -263,16 +280,21 @@ Elite Enhancement:
 
 **Purpose:** Convenience method for spawning enemies from string IDs.
 
+**Method Signature:**
+```csharp
+Task<Enemy> CreateByIdAsync(string templateId, int partyLevel = 1)
+```
+
 **Flow:**
 1. Accept `templateId` string (e.g., "und_draugr_01")
 2. Lookup template in registry via `_templates.TryGetValue(templateId, out var template)`
 3. If not found:
    - Log warning with requested ID and fallback ID
    - Use fallback template ("und_draugr_01")
-4. Call `CreateFromTemplate(template, partyLevel)`
+4. Call `CreateFromTemplateAsync(template, partyLevel)`
 5. Return created enemy
 
-**Implementation:** [EnemyFactory.cs:116-127](../../RuneAndRust.Engine/Factories/EnemyFactory.cs#L116-L127)
+**Implementation:** [EnemyFactory.cs:127-138](../../RuneAndRust.Engine/Factories/EnemyFactory.cs#L127-L138)
 
 **Fallback Behavior:**
 - Ensures method always returns valid enemy (never null)
@@ -281,7 +303,51 @@ Elite Enhancement:
 
 ---
 
-### 7. Template Registry Management
+### 7. Ability Hydration (v0.2.4a)
+
+**Purpose:** Load active abilities from repository based on template `AbilityNames`.
+
+**Method Signature:**
+```csharp
+private async Task HydrateAbilitiesAsync(Enemy enemy, EnemyTemplate template)
+```
+
+**Flow:**
+1. Check if template has `AbilityNames` (list of ability name strings)
+2. If null or empty, skip (enemy.Abilities remains empty list)
+3. For each ability name:
+   - Query `IActiveAbilityRepository.GetByNameAsync(abilityName)`
+   - If found: add to `enemy.Abilities`
+   - If not found: log warning, continue to next ability
+4. Graceful degradation: missing abilities don't prevent enemy creation
+
+**Implementation:** [EnemyFactory.cs:145-171](../../RuneAndRust.Engine/Factories/EnemyFactory.cs#L145-L171)
+
+**EnemyTemplate AbilityNames Field:**
+```csharp
+public record EnemyTemplate(
+    // ... other fields ...
+    List<string>? AbilityNames = null  // Optional ability references
+);
+```
+
+**Example:**
+```csharp
+new EnemyTemplate(
+    Id: "bst_vargr_01",
+    Name: "Ash-Vargr",
+    // ... other fields ...
+    AbilityNames: new List<string> { "Pounce", "Rending Claws" }
+)
+```
+
+**Logging:**
+- **Warning:** Ability not found in repository (logs ability name, continues)
+- **Debug:** Ability successfully hydrated (logs ability name, enemy name)
+
+---
+
+### 8. Template Registry Management
 
 **Initialization:**
 - Templates loaded in constructor via `InitializeTemplates()` method
@@ -1565,8 +1631,8 @@ var levelScale = 1.0f + ((partyLevel - 1) * 0.1f);
 ### Test Coverage Summary
 
 **Test File:** [EnemyFactoryTests.cs](../../RuneAndRust.Tests/Engine/EnemyFactoryTests.cs)
-**Total Tests:** 42 tests across 8 categories
-**Lines of Code:** 604 lines
+**Total Tests:** 44 tests across 9 categories
+**Lines of Code:** 775 lines
 **Coverage:** ~95% (all public methods and scaling logic covered)
 
 ---
@@ -2024,6 +2090,31 @@ var finalHp = Math.Max(1, (int)(template.BaseHp * scaler * variance));
 
 ## Changelog
 
+### Version 1.1.0 (2025-12-24)
+
+**Documentation Update:**
+- Added YAML frontmatter for consistency with other specs
+- Added `last_updated` field
+- Added SPEC-ABILITY-001 to related_specs
+
+**Ability Hydration (v0.2.4a):**
+- Documented `AbilityNames` field in EnemyTemplate
+- Documented `IActiveAbilityRepository` dependency
+- Documented `HydrateAbilitiesAsync()` private method
+- Documented graceful missing ability handling
+
+**Async Method Signatures:**
+- Updated `CreateFromTemplate` → `CreateFromTemplateAsync`
+- Updated `CreateById` → `CreateByIdAsync`
+- Added note on async requirement for ability repository
+
+**Test Coverage:**
+- Updated test count: 42 → 44 tests
+- Updated line count: 604 → 775 lines
+- Added test category for ability hydration
+
+---
+
 ### Version 1.0.0 (2025-12-22)
 
 **Initial Implementation:**
@@ -2034,7 +2125,7 @@ var finalHp = Math.Max(1, (int)(template.BaseHp * scaler * variance));
 - Implemented Elite enhancement integration with CreatureTraitService
 - Implemented fallback template system for missing IDs
 - Created 5 built-in templates (Undying, Mechanical, Beast, Humanoid)
-- 42 unit tests with 95% coverage
+- 44 unit tests with 95% coverage
 
 **Scaling Formulas:**
 - Tier multipliers: Minion 0.6x, Standard 1.0x, Elite 1.5x, Boss 2.5x
@@ -2065,6 +2156,7 @@ var finalHp = Math.Max(1, (int)(template.BaseHp * scaler * variance));
 - ILogger<EnemyFactory> - logging
 - IDiceService - variance roll
 - ICreatureTraitService - Elite enhancement
+- IActiveAbilityRepository - ability loading (v0.2.4a)
 
 **Domain 4 Compliance:**
 - All template descriptions AAM-VOICE compliant
@@ -2077,7 +2169,7 @@ var finalHp = Math.Max(1, (int)(template.BaseHp * scaler * variance));
 
 ### Implementation Files
 - [EnemyFactory.cs](../../RuneAndRust.Engine/Factories/EnemyFactory.cs) (293 lines)
-- [EnemyFactoryTests.cs](../../RuneAndRust.Tests/Engine/EnemyFactoryTests.cs) (604 lines)
+- [EnemyFactoryTests.cs](../../RuneAndRust.Tests/Engine/EnemyFactoryTests.cs) (775 lines)
 
 ### Related Entities
 - [EnemyTemplate.cs](../../RuneAndRust.Core/Models/Combat/EnemyTemplate.cs)

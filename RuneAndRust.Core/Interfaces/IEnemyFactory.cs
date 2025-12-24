@@ -7,6 +7,7 @@ namespace RuneAndRust.Core.Interfaces;
 /// Factory for creating Enemy entities from templates with scaling and variance.
 /// Implements the Prototype pattern for enemy instantiation.
 /// </summary>
+/// <remarks>See: SPEC-ENEMYFAC-001 for Enemy Factory System design.</remarks>
 public interface IEnemyFactory
 {
     /// <summary>
