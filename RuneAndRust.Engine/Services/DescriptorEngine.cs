@@ -9,6 +9,7 @@ namespace RuneAndRust.Engine.Services;
 /// Combines base templates with biome modifiers and danger-level details.
 /// All descriptions follow AAM-VOICE (Domain 4) compliance.
 /// </summary>
+/// <remarks>See: SPEC-DESC-001 for Descriptor Engine design.</remarks>
 public class DescriptorEngine : IDescriptorEngine
 {
     private readonly ILogger<DescriptorEngine> _logger;

@@ -9,6 +9,7 @@ namespace RuneAndRust.Engine.Services;
 /// Uses IDiceService for random selection to ensure deterministic seeding compatibility.
 /// Part of the Dynamic Room Engine (v0.4.0).
 /// </summary>
+/// <remarks>See: SPEC-TEMPLATE-001 for Dynamic Room Template System design.</remarks>
 public class TemplateRendererService : ITemplateRendererService
 {
     private readonly IDiceService _diceService;

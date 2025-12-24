@@ -1,8 +1,17 @@
+---
+id: SPEC-DESC-001
+title: Descriptor Engine
+version: 1.1
+status: Final
+last_updated: 2025-12-24
+related_specs: [SPEC-COMBAT-001]
+---
+
 # SPEC-DESC-001: Descriptor Engine
 
-**Version:** 1.0
+**Version:** 1.1
 **Status:** Final
-**Last Updated:** 2025-01-22
+**Last Updated:** 2025-12-24
 **Implementation:** `/RuneAndRust.Engine/Services/DescriptorEngine.cs` (180 lines)
 **Tests:** `/RuneAndRust.Tests/Engine/DescriptorEngineTests.cs` (318 lines, 19 tests)
 **Author:** Architect (v0.3.3c)
@@ -1536,6 +1545,16 @@ void RegisterDangerDetail(DangerLevel danger, string detail);
 ---
 
 ## Changelog
+
+### [1.1] - 2025-12-24 - Documentation Update
+
+**Changed:**
+- Added YAML frontmatter with `id`, `title`, `version`, `status`, `last_updated`, `related_specs`
+- Added code traceability remarks to interface and service
+
+**Author:** Architect
+
+---
 
 ### [1.0.0] - 2025-01-22 - Initial Specification
 

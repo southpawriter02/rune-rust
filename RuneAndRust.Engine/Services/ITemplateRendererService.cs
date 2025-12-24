@@ -6,6 +6,7 @@ namespace RuneAndRust.Engine.Services;
 /// Service for rendering room names and descriptions from templates with variable substitution.
 /// Part of the Dynamic Room Engine (v0.4.0).
 /// </summary>
+/// <remarks>See: SPEC-TEMPLATE-001 for Dynamic Room Template System design.</remarks>
 public interface ITemplateRendererService
 {
     /// <summary>

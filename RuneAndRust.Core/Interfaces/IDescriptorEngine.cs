@@ -6,6 +6,7 @@ namespace RuneAndRust.Core.Interfaces;
 /// Defines the contract for procedural description generation.
 /// Implements the Three-Tier Composition model (Base + Modifier + Detail).
 /// </summary>
+/// <remarks>See: SPEC-DESC-001 for Descriptor Engine design.</remarks>
 public interface IDescriptorEngine
 {
     /// <summary>

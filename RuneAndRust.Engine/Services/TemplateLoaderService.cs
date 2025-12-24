@@ -9,6 +9,7 @@ namespace RuneAndRust.Engine.Services;
 /// Service for loading room templates and biome definitions from JSON files into the database.
 /// Part of the Dynamic Room Engine (v0.4.0).
 /// </summary>
+/// <remarks>See: SPEC-TEMPLATE-001 for Dynamic Room Template System design.</remarks>
 public class TemplateLoaderService : ITemplateLoaderService
 {
     private readonly IRoomTemplateRepository _roomTemplateRepo;
