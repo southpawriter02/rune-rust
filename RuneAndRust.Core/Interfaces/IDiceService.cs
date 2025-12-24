@@ -12,6 +12,7 @@ public record DiceResult(int Successes, int Botches, IReadOnlyList<int> Rolls);
 /// Defines the contract for dice rolling services.
 /// Implements a d10 dice pool system where 8+ is a success and 1 is a botch.
 /// </summary>
+/// <remarks>See: SPEC-DICE-001 for Dice Pool System design.</remarks>
 public interface IDiceService
 {
     /// <summary>

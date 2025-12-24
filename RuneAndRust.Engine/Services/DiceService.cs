@@ -9,6 +9,7 @@ namespace RuneAndRust.Engine.Services;
 /// Botch: roll of 1.
 /// Fumble: Zero successes with at least one botch.
 /// </summary>
+/// <remarks>See: SPEC-DICE-001 for Dice Pool System design.</remarks>
 public class DiceService : IDiceService
 {
     private readonly ILogger<DiceService> _logger;

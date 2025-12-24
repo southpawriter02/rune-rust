@@ -1,14 +1,15 @@
 ---
 id: SPEC-DICE-001
 title: Dice Pool System
-version: 1.0.0
+version: 1.0.1
 status: Implemented
-related_specs: []
+last_updated: 2025-12-24
+related_specs: [SPEC-COMBAT-001, SPEC-STATUS-001]
 ---
 
 # SPEC-DICE-001: Dice Pool System
 
-> **Version:** 1.0.0
+> **Version:** 1.0.1
 > **Status:** Implemented
 > **Service:** `DiceService`
 > **Location:** `RuneAndRust.Engine/Services/DiceService.cs`
@@ -90,7 +91,7 @@ var damage = _diceService.RollSingle(8, "Iron Sword d8");
 ## Restrictions
 
 ### MUST NOT
-1. **Seed the random number generator** - Uses `Random.Shared` for thread safety
+1. **Seed the random number generator in production** - Uses `Random.Shared` for thread safety (optional seed parameter acceptable for testing)
 2. **Persist roll history** - Rolls are ephemeral; logging handles audit trail
 3. **Apply modifiers** - Modifier logic belongs in consuming services
 4. **Interpret results** - Success/failure determination is caller responsibility
@@ -308,3 +309,21 @@ public void Roll_ValidPool_CountsSuccessesCorrectly()
 - Enables parallel processing
 - Simplifies testing (no state management)
 - Clear separation of concerns (rolling vs. interpretation)
+
+---
+
+## Changelog
+
+### v1.0.1 (2025-12-24)
+**Documentation Update:**
+- Added `last_updated` field to frontmatter
+- Added `related_specs` linking to SPEC-COMBAT-001 and SPEC-STATUS-001
+- Clarified seeding restriction applies to production (test seeding is acceptable)
+- Added code traceability remarks to interface and service
+
+### v1.0.0 (Initial)
+**Initial Release:**
+- d10 dice pool system with success threshold (8+) and botch detection (1)
+- RollSingle for damage dice (d4, d6, d8, etc.)
+- Comprehensive logging at Trace, Debug, Warning levels
+- DiceResult record with Successes, Botches, Rolls properties
