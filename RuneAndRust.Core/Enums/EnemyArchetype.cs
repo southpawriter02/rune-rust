@@ -4,6 +4,7 @@ namespace RuneAndRust.Core.Enums;
 /// Combat role archetype that drives AI behavior patterns in v0.2.2b.
 /// Determines attack priority, target selection, and ability usage.
 /// </summary>
+/// <remarks>See: SPEC-ENEMY-001 for archetype definitions, SPEC-AI-001 for scoring.</remarks>
 public enum EnemyArchetype
 {
     /// <summary>

@@ -8,6 +8,7 @@ namespace RuneAndRust.Core.Entities;
 /// Represents an enemy combatant in Rune &amp; Rust.
 /// Stub entity for v0.2.0a - will be expanded with behaviors and AI in v0.2.1.
 /// </summary>
+/// <remarks>See: SPEC-ENEMY-001 for Enemy Definitions & Archetypes.</remarks>
 public class Enemy
 {
     /// <summary>
