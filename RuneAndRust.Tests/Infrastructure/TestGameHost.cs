@@ -279,6 +279,52 @@ public class TestGameHost : IDisposable
         gameState.VisitedRoomIds.Add(startRoom.Id);
     }
 
+    /// <summary>
+    /// Sets up the game state for combat testing.
+    /// Creates a test character, a test room, and initiates combat with a weak enemy.
+    /// </summary>
+    /// <param name="characterName">Name for the test character.</param>
+    /// <param name="enemyHp">HP for the test enemy. Lower values allow faster combat tests.</param>
+    public async Task SetupCombatAsync(string characterName = "TestWarrior", int enemyHp = 15)
+    {
+        // First set up exploration (creates character and room)
+        await SetupExplorationAsync(characterName);
+
+        // Create a weak test enemy for quick combat resolution
+        var testEnemy = new Enemy
+        {
+            Id = Guid.NewGuid(),
+            Name = "Training Dummy",
+            MaxHp = enemyHp,
+            CurrentHp = enemyHp,
+            MaxStamina = 50,
+            CurrentStamina = 50,
+            WeaponDamageDie = 4,
+            WeaponAccuracyBonus = 0,
+            ArmorSoak = 0,
+            WeaponName = "Wooden Arms",
+            Archetype = EnemyArchetype.DPS,
+            Tags = new List<string> { "Training" },
+            Attributes = new Dictionary<RuneAndRust.Core.Enums.Attribute, int>
+            {
+                { RuneAndRust.Core.Enums.Attribute.Sturdiness, 3 },
+                { RuneAndRust.Core.Enums.Attribute.Might, 3 },
+                { RuneAndRust.Core.Enums.Attribute.Wits, 1 },
+                { RuneAndRust.Core.Enums.Attribute.Will, 1 },
+                { RuneAndRust.Core.Enums.Attribute.Finesse, 2 }
+            }
+        };
+
+        // Start combat with the test enemy
+        var combatService = _serviceProvider.GetRequiredService<ICombatService>();
+        combatService.StartCombat(new List<Enemy> { testEnemy });
+    }
+
+    /// <summary>
+    /// Gets the combat service for direct assertions on combat state.
+    /// </summary>
+    public ICombatService GetCombatService() => _serviceProvider.GetRequiredService<ICombatService>();
+
     /// <inheritdoc/>
     public void Dispose()
     {
