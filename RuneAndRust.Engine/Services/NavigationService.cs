@@ -12,6 +12,7 @@ namespace RuneAndRust.Engine.Services;
 /// Triggers movement hazards on room entry (v0.3.3a).
 /// Displays ambient condition effects on room entry (v0.3.3b).
 /// </summary>
+/// <remarks>See: SPEC-NAV-001 for Navigation System design.</remarks>
 public class NavigationService : INavigationService
 {
     private readonly GameState _gameState;

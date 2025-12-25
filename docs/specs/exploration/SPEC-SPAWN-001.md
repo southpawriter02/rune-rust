@@ -1,16 +1,17 @@
 ---
 id: SPEC-SPAWN-001
 title: Object Spawning System
-version: 1.0.0
+version: 1.0.1
 status: Implemented
+last_updated: 2025-12-25
 related_specs: [SPEC-DUNGEON-001, SPEC-INTERACT-001, SPEC-DICE-001]
 ---
 
 # SPEC-SPAWN-001: Object Spawning System
 
-**Version:** 1.0.0
+**Version:** 1.0.1
 **Status:** Implemented
-**Last Updated:** 2025-12-22
+**Last Updated:** 2025-12-25
 **Owner:** Engine Team
 **Category:** World Generation & Procedural Content
 
@@ -796,7 +797,7 @@ LockDifficulty = Random.Shared.Next(1, 4); // 1, 2, or 3
 
 **Source:** `RuneAndRust.Tests/Engine/ObjectSpawnerTests.cs` (310 lines)
 
-**Test Count:** 17 tests
+**Test Count:** 16 tests
 
 **Coverage Breakdown:**
 - SpawnObjectsInRoomAsync(): 10 tests
@@ -903,6 +904,13 @@ var objectCount = room.Size switch
 
 ## Changelog
 
+### v1.0.1 (2025-12-25)
+**Documentation Updates:**
+- Updated `last_updated` to 2025-12-25
+- **FIX:** Corrected test count from 17 to 16
+- Added code traceability remarks to implementation:
+  - `ObjectSpawner.cs` - service spec reference
+
 ### v1.0.0 - Initial ObjectSpawner Implementation (2025-11-25)
 - **ADDED**: `SpawnObjectsInRoomAsync()` for single room population
 - **ADDED**: `SpawnObjectsInRoomsAsync()` for batch population
@@ -929,7 +937,7 @@ var objectCount = room.Size switch
 - `RuneAndRust.Engine/Services/ObjectSpawner.cs` (289 lines)
 
 **Tests:**
-- `RuneAndRust.Tests/Engine/ObjectSpawnerTests.cs` (310 lines, 17 tests)
+- `RuneAndRust.Tests/Engine/ObjectSpawnerTests.cs` (310 lines, 16 tests)
 
 **Data Models:**
 - `RuneAndRust.Core/Entities/InteractableObject.cs`
