@@ -6,6 +6,7 @@ namespace RuneAndRust.Core.Interfaces;
 /// Service contract for Scavenger's Journal display formatting.
 /// Provides methods to format journal views with redaction based on completion percentages.
 /// </summary>
+/// <remarks>See: SPEC-JOURNAL-001 for Journal Display System design.</remarks>
 public interface IJournalService
 {
     /// <summary>

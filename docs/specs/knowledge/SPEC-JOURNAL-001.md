@@ -1,11 +1,12 @@
 # SPEC-JOURNAL-001: Journal Display System
 
-**Version:** 1.0.0 (v0.3.7c)
+**ID:** SPEC-JOURNAL-001
+**Version:** 1.0.1 (v0.3.7c)
 **Status:** Implemented
-**Last Updated:** 2025-12-22
+**Last Updated:** 2025-12-25
 **Author:** The Architect
-**Implementation:** `RuneAndRust.Engine/Services/JournalService.cs` (298 lines)
-**Tests:** `RuneAndRust.Tests/Engine/JournalServiceTests.cs` (385 lines, 16 tests)
+**Implementation:** `RuneAndRust.Engine/Services/JournalService.cs` (361 lines)
+**Tests:** `RuneAndRust.Tests/Engine/JournalServiceTests.cs` (393 lines, 16 tests)
 
 ---
 
@@ -2123,6 +2124,20 @@ public string RedactText(string fullText, int completionPercent)
 ---
 
 ## Changelog
+
+### Version 1.0.1 (v0.3.7c) - 2025-12-25
+
+**Documentation Updates:**
+- Added `ID` field to spec header metadata
+- Updated `Last Updated` to 2025-12-25
+- Corrected implementation line count (298 → 361 lines, includes v0.3.11a enhancements)
+- Corrected test file line count (385 → 393 lines)
+- Added code traceability remarks to implementation files:
+  - `IJournalService.cs` - interface spec reference
+  - `JournalService.cs` - service spec reference
+  - `JournalViewModel.cs` - all records and enum spec reference
+
+---
 
 ### Version 1.0.0 (v0.3.7c) - 2025-12-22
 

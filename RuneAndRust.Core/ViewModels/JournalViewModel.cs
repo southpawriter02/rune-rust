@@ -6,6 +6,7 @@ namespace RuneAndRust.Core.ViewModels;
 /// Tab options for the Journal UI navigation (v0.3.7c).
 /// Maps to grouped EntryCategory values.
 /// </summary>
+/// <remarks>See: SPEC-JOURNAL-001 for Journal Display System design.</remarks>
 public enum JournalTab
 {
     /// <summary>
@@ -33,6 +34,7 @@ public enum JournalTab
 /// Main ViewModel for the full-screen Journal UI (v0.3.7c).
 /// Contains all display-ready data for rendering THE ARCHIVE screen.
 /// </summary>
+/// <remarks>See: SPEC-JOURNAL-001 for Journal Display System design.</remarks>
 /// <param name="CharacterName">The name of the character viewing the journal.</param>
 /// <param name="StressLevel">Current psychic stress level (0-100) for glitch effects.</param>
 /// <param name="ActiveTab">The currently selected tab for filtering entries.</param>
@@ -52,6 +54,7 @@ public record JournalViewModel(
 /// Summary row for an entry in the Journal list panel (v0.3.7c).
 /// Displays title, category, and completion status.
 /// </summary>
+/// <remarks>See: SPEC-JOURNAL-001 for Journal Display System design.</remarks>
 /// <param name="Index">1-based display index for navigation.</param>
 /// <param name="EntryId">Unique identifier for detail lookup.</param>
 /// <param name="Title">Display title of the Codex entry.</param>
@@ -71,6 +74,7 @@ public record JournalEntryView(
 /// Expanded detail view for a selected Journal entry (v0.3.7c).
 /// Shows redacted content, milestones, and fragment progress.
 /// </summary>
+/// <remarks>See: SPEC-JOURNAL-001 for Journal Display System design.</remarks>
 /// <param name="EntryId">Unique identifier of the entry.</param>
 /// <param name="Title">Display title of the entry.</param>
 /// <param name="Category">Entry category for display.</param>
