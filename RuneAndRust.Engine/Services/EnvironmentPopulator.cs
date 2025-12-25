@@ -12,6 +12,7 @@ namespace RuneAndRust.Engine.Services;
 /// Danger level affects spawn probability.
 /// Updated in v0.4.0 to support BiomeElement-based spawning with spawn rule evaluation.
 /// </summary>
+/// <remarks>See: SPEC-ENVPOP-001 for Environment Population System design.</remarks>
 public class EnvironmentPopulator : IEnvironmentPopulator
 {
     private readonly IRepository<HazardTemplate> _hazardTemplateRepo;

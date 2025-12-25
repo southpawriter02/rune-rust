@@ -7,6 +7,7 @@ namespace RuneAndRust.Core.Interfaces;
 /// Used during dungeon generation to assign environmental threats based on
 /// room BiomeType and DangerLevel properties.
 /// </summary>
+/// <remarks>See: SPEC-ENVPOP-001 for Environment Population System design.</remarks>
 public interface IEnvironmentPopulator
 {
     /// <summary>

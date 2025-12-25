@@ -8,6 +8,7 @@ namespace RuneAndRust.Core.Interfaces;
 /// Defines the contract for player-object interaction operations.
 /// Handles examine, open, close, search, and loot commands.
 /// </summary>
+/// <remarks>See: SPEC-INTERACT-001 for Interaction System design.</remarks>
 public interface IInteractionService
 {
     /// <summary>

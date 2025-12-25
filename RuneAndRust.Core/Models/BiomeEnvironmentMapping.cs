@@ -7,6 +7,7 @@ namespace RuneAndRust.Core.Models;
 /// Used by EnvironmentPopulator for thematic consistency during dungeon generation.
 /// Uses existing BiomeType enum values: Ruin, Industrial, Organic, Void.
 /// </summary>
+/// <remarks>See: SPEC-ENVPOP-001 for Environment Population System design.</remarks>
 public static class BiomeEnvironmentMapping
 {
     /// <summary>

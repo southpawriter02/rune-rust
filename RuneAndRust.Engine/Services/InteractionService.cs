@@ -11,6 +11,7 @@ namespace RuneAndRust.Engine.Services;
 /// Implements player-object interaction logic using WITS-based dice checks.
 /// Handles examine, open, close, search, and loot commands during exploration.
 /// </summary>
+/// <remarks>See: SPEC-INTERACT-001 for Interaction System design.</remarks>
 public class InteractionService : IInteractionService
 {
     private readonly ILogger<InteractionService> _logger;
