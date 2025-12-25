@@ -2,17 +2,19 @@ using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using RuneAndRust.Core.Constants;
 using RuneAndRust.Core.Interfaces;
+using RuneAndRust.Engine.Helpers;
 
 namespace RuneAndRust.Engine.Services;
 
 /// <summary>
-/// JSON-based localization service implementation (v0.3.15b - The Translator).
+/// JSON-based localization service implementation (v0.3.15c - The Polyglot).
 /// Loads locale strings from data/locales/{locale}.json files with fallback chain.
 /// </summary>
 /// <remarks>
 /// See: SPEC-LOC-001 for Localization System design.
 /// v0.3.15a: Initial implementation with JSON loading and flattening.
 /// v0.3.15b: Added two-tier fallback chain (primary -> fallback -> return key).
+/// v0.3.15c: Added GetAvailableLocales() and pseudo-localization (qps-ploc) support.
 /// </remarks>
 public class LocalizationService : ILocalizationService
 {
@@ -39,6 +41,16 @@ public class LocalizationService : ILocalizationService
     /// <inheritdoc />
     public async Task<bool> LoadLocaleAsync(string locale)
     {
+        // Handle pseudo-locale specially (v0.3.15c - The Polyglot)
+        if (locale == "qps-ploc")
+        {
+            _strings.Clear();
+            await LoadSingleLocaleAsync(DefaultLocale, isPrimary: false);
+            CurrentLocale = "qps-ploc";
+            _logger.LogInformation("[Localization] Pseudo-localization enabled");
+            return true;
+        }
+
         // Load primary locale
         var success = await LoadSingleLocaleAsync(locale, isPrimary: true);
 
@@ -120,6 +132,14 @@ public class LocalizationService : ILocalizationService
     /// <inheritdoc />
     public string Get(string key)
     {
+        // Handle pseudo-localization (v0.3.15c - The Polyglot)
+        if (CurrentLocale == "qps-ploc")
+        {
+            if (_fallbackStrings.TryGetValue(key, out var fallbackValue))
+                return PseudoLocalizer.Transform(fallbackValue);
+            return PseudoLocalizer.Transform(key);
+        }
+
         // Try primary locale first
         if (_strings.TryGetValue(key, out var value))
         {
@@ -127,10 +147,10 @@ public class LocalizationService : ILocalizationService
         }
 
         // Try fallback locale (v0.3.15b)
-        if (_fallbackStrings.TryGetValue(key, out var fallbackValue))
+        if (_fallbackStrings.TryGetValue(key, out var fallbackValue2))
         {
             _logger.LogDebug("[Localization] Key {Key} not in primary locale, using fallback", key);
-            return fallbackValue;
+            return fallbackValue2;
         }
 
         _logger.LogDebug("[Localization] Key not found: {Key}", key);
@@ -168,6 +188,28 @@ public class LocalizationService : ILocalizationService
         return LocKeys.AllKeys
             .Where(k => !_strings.ContainsKey(k) && !_fallbackStrings.ContainsKey(k))
             .ToList();
+    }
+
+    /// <inheritdoc />
+    public IReadOnlyList<string> GetAvailableLocales()
+    {
+        var locales = new List<string>();
+
+        if (Directory.Exists(_localesPath))
+        {
+            foreach (var file in Directory.GetFiles(_localesPath, "*.json"))
+            {
+                locales.Add(Path.GetFileNameWithoutExtension(file));
+            }
+        }
+
+        // Always include pseudo-locale for testing (v0.3.15c)
+        if (!locales.Contains("qps-ploc"))
+            locales.Add("qps-ploc");
+
+        locales.Sort();
+        _logger.LogDebug("[Localization] Found {Count} available locales", locales.Count);
+        return locales;
     }
 
     /// <summary>

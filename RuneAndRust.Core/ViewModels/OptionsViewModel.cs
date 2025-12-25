@@ -3,7 +3,7 @@ using RuneAndRust.Core.Enums;
 namespace RuneAndRust.Core.ViewModels;
 
 /// <summary>
-/// Mutable state container for the Options screen UI (v0.3.10b, extended v0.3.10c).
+/// Mutable state container for the Options screen UI (v0.3.10b, extended v0.3.10c, v0.3.15c).
 /// Updated in real-time as user navigates and modifies settings.
 /// Unlike other ViewModels, this is mutable because settings are modified during the modal loop.
 /// </summary>
@@ -55,6 +55,12 @@ public class OptionsViewModel
     /// Gets or sets the autosave interval in minutes (1-60).
     /// </summary>
     public int AutosaveIntervalMinutes { get; set; }
+
+    /// <summary>
+    /// Gets or sets the current language/locale code (e.g., "en-US", "qps-ploc").
+    /// Added in v0.3.15c - The Polyglot.
+    /// </summary>
+    public string Language { get; set; } = "en-US";
 }
 
 /// <summary>

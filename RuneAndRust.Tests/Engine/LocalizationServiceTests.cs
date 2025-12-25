@@ -229,6 +229,87 @@ public class LocalizationServiceTests
 
     #endregion
 
+    #region Pseudo-Localization Tests (v0.3.15c)
+
+    [Fact]
+    public void GetAvailableLocales_AlwaysIncludesPseudoLocale()
+    {
+        // Arrange - Service with no locale files loaded
+
+        // Act
+        var locales = _sut.GetAvailableLocales();
+
+        // Assert - qps-ploc should always be present
+        locales.Should().Contain("qps-ploc");
+    }
+
+    [Fact]
+    public async Task LoadLocaleAsync_SetsPseudoLocale_WithoutFile()
+    {
+        // Arrange
+        var localeFile = Path.Combine(_testLocalesPath, "en-US.json");
+        if (!File.Exists(localeFile))
+        {
+            return; // Skip if en-US doesn't exist
+        }
+
+        // Act - Load the pseudo-locale
+        var result = await _sut.LoadLocaleAsync("qps-ploc");
+
+        // Assert
+        result.Should().BeTrue();
+        _sut.CurrentLocale.Should().Be("qps-ploc");
+    }
+
+    [Fact]
+    public async Task Get_ReturnsTransformedString_WhenPseudoLocaleActive()
+    {
+        // Arrange
+        var localeFile = Path.Combine(_testLocalesPath, "en-US.json");
+        if (!File.Exists(localeFile))
+        {
+            return;
+        }
+
+        // Act
+        await _sut.LoadLocaleAsync("qps-ploc");
+        var result = _sut.Get(LocKeys.UI_MainMenu_NewGame);
+
+        // Assert - Pseudo-localized strings should have brackets and diacritics
+        result.Should().StartWith("[");
+        result.Should().EndWith("]");
+        result.Should().Contain("_"); // Expansion
+    }
+
+    [Fact]
+    public async Task GetAvailableLocales_IncludesInstalledLocales()
+    {
+        // Arrange
+        var localeFile = Path.Combine(_testLocalesPath, "en-US.json");
+        if (!File.Exists(localeFile))
+        {
+            return;
+        }
+
+        // Act
+        var locales = _sut.GetAvailableLocales();
+
+        // Assert - Should include the installed locale
+        locales.Should().Contain("en-US");
+    }
+
+    [Fact]
+    public async Task GetAvailableLocales_ReturnsSortedList()
+    {
+        // Act
+        var locales = _sut.GetAvailableLocales();
+
+        // Assert - Should be alphabetically sorted
+        locales.Should().BeInAscendingOrder();
+    }
+
+    #endregion
+
     #region Integration Tests (require locale file)
 
     [Fact]

@@ -1,7 +1,7 @@
 {
   "meta": {
     "locale": "en-US",
-    "version": "0.3.15a",
+    "version": "0.3.15c",
     "name": "English (US)",
     "author": "Rune & Rust Team"
   },
@@ -39,7 +39,8 @@
         "Theme": "Theme",
         "ReduceMotion": "Reduce Motion",
         "TextSpeed": "Text Speed",
-        "MasterVolume": "Master Volume"
+        "MasterVolume": "Master Volume",
+        "Language": "Language"
       },
       "Themes": {
         "Standard": "Standard",
