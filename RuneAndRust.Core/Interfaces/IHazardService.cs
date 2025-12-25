@@ -9,6 +9,7 @@ namespace RuneAndRust.Core.Interfaces;
 /// Service contract for dynamic hazard processing (v0.3.3a).
 /// Handles hazard triggers, effect execution, and lifecycle state management.
 /// </summary>
+/// <remarks>See: SPEC-HAZARD-001 for Dynamic Hazard System design.</remarks>
 public interface IHazardService
 {
     /// <summary>

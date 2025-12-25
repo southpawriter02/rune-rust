@@ -1,14 +1,15 @@
 ---
 id: SPEC-HAZARD-001
 title: Dynamic Hazard System
-version: 1.0.0
+version: 1.0.1
 status: Implemented
+last_updated: 2025-12-24
 related_specs: [SPEC-DICE-001, SPEC-COMBAT-001, SPEC-NAV-001]
 ---
 
 # SPEC-HAZARD-001: Dynamic Hazard System
 
-> **Version:** 1.0.0
+> **Version:** 1.0.1
 > **Status:** Implemented (v0.3.3a)
 > **Service:** `HazardService`, `EffectScriptExecutor`
 > **Location:** `RuneAndRust.Engine/Services/`
@@ -28,10 +29,9 @@ This system creates environmental gameplay beyond simple enemy encounters.
 ### Hazard Types
 | Type | Description | Examples |
 |------|-------------|----------|
-| **Environmental** | Natural/elemental hazards | Steam vents, acid pools |
 | **Mechanical** | Traps and devices | Spike traps, pressure plates |
+| **Environmental** | Natural/elemental hazards | Steam vents, acid pools |
 | **Biological** | Living/organic hazards | Spore clusters, poison plants |
-| **Catastrophic** | Major environmental events | Cave-ins, explosions |
 
 ### Hazard States
 | State | Description | Can Trigger? |
@@ -372,10 +372,9 @@ public record HazardResult(
 ```csharp
 public enum HazardType
 {
-    Environmental,
     Mechanical,
-    Biological,
-    Catastrophic
+    Environmental,
+    Biological
 }
 
 public enum HazardState
@@ -504,3 +503,16 @@ if (hazardTemplate != null)
 - Some hazards should permanently break
 - Creates sense of world change
 - Prevents infinite exploitation
+
+---
+
+## Changelog
+
+### v1.0.1 (2025-12-24)
+**Documentation Updates:**
+- Added `last_updated` field to YAML frontmatter
+- **FIX:** Removed `HazardType.Catastrophic` from spec (never implemented in code)
+- Updated HazardType enum to match implementation: `Mechanical`, `Environmental`, `Biological`
+- Added code traceability remarks to implementation files:
+  - `IHazardService.cs` - interface spec reference
+  - `HazardService.cs` - service spec reference

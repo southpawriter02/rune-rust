@@ -11,6 +11,7 @@ namespace RuneAndRust.Engine.Services;
 /// Implements dynamic hazard processing (v0.3.3a).
 /// Handles hazard triggers, effect execution via EffectScriptExecutor, and lifecycle state management.
 /// </summary>
+/// <remarks>See: SPEC-HAZARD-001 for Dynamic Hazard System design.</remarks>
 public class HazardService : IHazardService
 {
     private readonly IInteractableObjectRepository _objectRepository;
