@@ -7,6 +7,8 @@ namespace RuneAndRust.Core.Entities;
 /// Players compile Data Captures (fragments) to unlock and reveal these entries.
 /// </summary>
 /// <remarks>
+/// See: SPEC-CODEX-001 for Scavenger's Journal (Codex) System design.
+///
 /// CodexEntry is the "target" that players work toward completing.
 /// Each entry has a set number of fragments needed for 100% completion.
 /// The UI redacts portions of FullText based on the player's fragment count.

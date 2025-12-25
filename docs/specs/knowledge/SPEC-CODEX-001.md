@@ -1,16 +1,17 @@
 ---
 id: SPEC-CODEX-001
 title: Scavenger's Journal (Codex) System
-version: 1.0.0
+version: 1.0.1
 status: Implemented
-related_specs: [SPEC-INTERACT-001]
+last_updated: 2025-12-25
+related_specs: [SPEC-INTERACT-001, SPEC-CAPTURE-001]
 ---
 
 # SPEC-CODEX-001: Scavenger's Journal (Codex) System
 
-> **Version:** 1.0.0
+> **Version:** 1.0.1
 > **Status:** Implemented (v0.1.3a)
-> **Services:** `ICodexEntryRepository`, `IDataCaptureRepository`
+> **Services:** `ICodexEntryRepository`, `IDataCaptureRepository`, `IDataCaptureService`
 > **Location:** `RuneAndRust.Core/Entities/`
 
 ---
@@ -166,3 +167,23 @@ public class DataCapture
 - **v0.1.3d:** UI implementation (Journal screen).
 - **v0.1.3e:** Text redaction logic based on % completion.
 - **v0.1.4:** Legend Reward system integration.
+
+---
+
+## Changelog
+
+### v1.0.1 (2025-12-25)
+**Documentation Updates:**
+- Added `last_updated` field to YAML frontmatter
+- Added `SPEC-CAPTURE-001` to related specs (companion spec for data capture mechanics)
+- Added `IDataCaptureService` to Services list (implements capture generation)
+- Added code traceability remarks to entity files:
+  - `CodexEntry.cs` - entity spec reference
+  - `DataCapture.cs` - entity spec reference
+
+### v1.0.0 (Initial)
+- Initial specification documenting Scavenger's Journal (Codex) System
+- Defined CodexEntry and DataCapture entities
+- Documented EntryCategory and CaptureType enums
+- Specified unlock threshold mechanics
+- Outlined repository interfaces
