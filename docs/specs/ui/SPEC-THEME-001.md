@@ -1,14 +1,15 @@
 ---
 id: SPEC-THEME-001
 title: Theme System
-version: 1.0.0
+version: 1.1.0
 status: Implemented
-related_specs: [SPEC-RENDER-001, SPEC-UI-001]
+last_updated: 2025-12-25
+related_specs: [SPEC-RENDER-001, SPEC-UI-001, SPEC-TRANSITION-001]
 ---
 
 # SPEC-THEME-001: Theme System
 
-> **Version:** 1.0.0
+> **Version:** 1.1.0
 > **Status:** Implemented
 > **Service:** ThemeService
 > **Location:** `RuneAndRust.Terminal/Services/ThemeService.cs`
@@ -1181,6 +1182,22 @@ public enum ThemeType
 - `XpColor` - XP gain text
 - `LegendColor` - Legend progress
 
+#### Biome Colors (v0.3.14a)
+- `BiomeRuin` - Ruin biome room headers (grey/white)
+- `BiomeIndustrial` - Industrial biome room headers (orange1/bold yellow)
+- `BiomeOrganic` - Organic biome room headers (green/cyan)
+- `BiomeVoid` - Void biome room headers (purple/blue/magenta1)
+
+#### UI Structural Colors (v0.3.14a)
+- `DimColor` - Secondary/muted text, empty states (grey)
+- `SeparatorColor` - Rule lines between sections (grey/white)
+- `LabelColor` - Form labels, descriptive text (grey/white)
+- `InputColor` - User input, interactive elements (cyan/bold cyan)
+- `BorderActive` - Focused panel borders (yellow/bold yellow)
+- `BorderInactive` - Unfocused panel borders (grey)
+- `NarrativeColor` - Story/prologue text, descriptions (grey/white)
+- `TabActive` - Active tab highlight (gold1/bold gold1)
+
 ---
 
 ### Theme Palette Dictionaries
@@ -1675,6 +1692,26 @@ foreach (var role in _currentPalette.Keys)
 - **Quantifiable Metrics**: "40+ semantic roles," "5 themes," "80% test coverage"
 
 **Justification**: Developers require precise, unambiguous technical specifications. Epistemic uncertainty ("appears to support fallback") would introduce confusion and implementation errors.
+
+---
+
+## Changelog
+
+### v1.1.0 (2025-12-25)
+
+- Added 12 new semantic color keys from v0.3.14a:
+  - **Biome Colors (4):** `BiomeRuin`, `BiomeIndustrial`, `BiomeOrganic`, `BiomeVoid`
+  - **UI Structural Colors (8):** `DimColor`, `SeparatorColor`, `LabelColor`, `InputColor`, `BorderActive`, `BorderInactive`, `NarrativeColor`, `TabActive`
+- Added `SPEC-TRANSITION-001` to related specs (screen transitions use theme colors)
+- Updated total semantic roles count (40+ → 52+)
+
+### v1.0.0 (2025-12-23)
+
+- Initial specification
+- 5 accessibility themes documented (Standard, HighContrast, Protanopia, Deuteranopia, Tritanopia)
+- 40+ semantic color roles
+- Fallback chain specification
+- Theme switching mechanism
 
 ---
 
