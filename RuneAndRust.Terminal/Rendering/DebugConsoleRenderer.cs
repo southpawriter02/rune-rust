@@ -6,20 +6,24 @@ namespace RuneAndRust.Terminal.Rendering;
 /// <summary>
 /// Renders the Quake-style debug console overlay (v0.3.17a).
 /// Uses a modal input loop similar to OptionsController pattern.
+/// v0.3.17b: Added cheat command routing.
 /// </summary>
 public class DebugConsoleRenderer : IDebugConsoleRenderer
 {
     private const int VisibleLogLines = 15;
 
     private readonly IDebugConsoleService _console;
+    private readonly ICheatService _cheats;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DebugConsoleRenderer"/> class.
     /// </summary>
     /// <param name="console">The debug console service.</param>
-    public DebugConsoleRenderer(IDebugConsoleService console)
+    /// <param name="cheats">The cheat service.</param>
+    public DebugConsoleRenderer(IDebugConsoleService console, ICheatService cheats)
     {
         _console = console;
+        _cheats = cheats;
     }
 
     /// <summary>
@@ -97,8 +101,8 @@ public class DebugConsoleRenderer : IDebugConsoleRenderer
 
     /// <summary>
     /// Processes a submitted command.
-    /// v0.3.17a: Only handles built-in console commands.
-    /// v0.3.17b will add cheat commands.
+    /// v0.3.17a: Built-in console commands.
+    /// v0.3.17b: Added cheat command routing.
     /// </summary>
     /// <param name="command">The command to process.</param>
     private void ProcessCommand(string command)
@@ -107,14 +111,26 @@ public class DebugConsoleRenderer : IDebugConsoleRenderer
 
         var cmd = command.Trim().ToLowerInvariant();
 
+        // v0.3.17b: Check for cheat commands (/ prefix)
+        if (cmd.StartsWith('/'))
+        {
+            ProcessCheatCommand(cmd);
+            return;
+        }
+
         switch (cmd)
         {
             case "help":
-                _console.WriteLog("Available commands:");
-                _console.WriteLog("  help  - Show this help message");
-                _console.WriteLog("  clear - Clear the console log");
-                _console.WriteLog("  exit  - Close the debug console");
-                _console.WriteLog("  ~     - Close the debug console");
+                _console.WriteLog("Console commands:");
+                _console.WriteLog("  help   - Show this help");
+                _console.WriteLog("  clear  - Clear console log");
+                _console.WriteLog("  exit/~ - Close console");
+                _console.WriteLog("");
+                _console.WriteLog("Cheat commands (/ prefix):");
+                _console.WriteLog("  /god    - Toggle invincibility");
+                _console.WriteLog("  /heal   - Restore HP/Stamina/AP");
+                _console.WriteLog("  /tp X   - Teleport to room (GUID or name)");
+                _console.WriteLog("  /reveal - Reveal all map rooms");
                 break;
 
             case "clear":
@@ -131,6 +147,69 @@ public class DebugConsoleRenderer : IDebugConsoleRenderer
             default:
                 _console.WriteLog($"Unknown command: {command}", "Error");
                 _console.WriteLog("Type 'help' for available commands.");
+                break;
+        }
+    }
+
+    /// <summary>
+    /// Processes cheat commands prefixed with /.
+    /// v0.3.17b: The Toolbox implementation.
+    /// </summary>
+    /// <param name="cmd">The command (already lowercased, with / prefix).</param>
+    private void ProcessCheatCommand(string cmd)
+    {
+        var parts = cmd.TrimStart('/').Split(' ', 2);
+        var verb = parts[0];
+        var args = parts.Length > 1 ? parts[1] : "";
+
+        switch (verb)
+        {
+            case "god":
+            case "godmode":
+                var state = _cheats.ToggleGodMode();
+                _console.WriteLog($"God Mode: {(state ? "ON" : "OFF")}", "Cheat");
+                break;
+
+            case "heal":
+                if (_cheats.FullHeal())
+                {
+                    _console.WriteLog("Character fully restored.", "Cheat");
+                }
+                else
+                {
+                    _console.WriteLog("No active character.", "Error");
+                }
+                break;
+
+            case "tp":
+            case "teleport":
+                if (string.IsNullOrEmpty(args))
+                {
+                    _console.WriteLog("Usage: /tp <room-id or name>", "Error");
+                    break;
+                }
+                var roomName = _cheats.TeleportAsync(args).GetAwaiter().GetResult();
+                if (roomName != null)
+                {
+                    _console.WriteLog($"Teleported to: {roomName}", "Cheat");
+                }
+                else
+                {
+                    _console.WriteLog($"Room not found: {args}", "Error");
+                }
+                break;
+
+            case "reveal":
+                var count = _cheats.RevealMapAsync().GetAwaiter().GetResult();
+                _console.WriteLog($"Revealed {count} rooms.", "Cheat");
+                break;
+
+            case "spawn":
+                _console.WriteLog("Spawn not yet implemented.", "Error");
+                break;
+
+            default:
+                _console.WriteLog($"Unknown cheat: /{verb}", "Error");
                 break;
         }
     }

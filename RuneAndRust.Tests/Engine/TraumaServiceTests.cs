@@ -9,6 +9,7 @@ using RuneAndRust.Engine.Services;
 using Xunit;
 using CharacterAttribute = RuneAndRust.Core.Enums.Attribute;
 using CharacterEntity = RuneAndRust.Core.Entities.Character;
+using GameState = RuneAndRust.Core.Models.GameState;
 
 namespace RuneAndRust.Tests.Engine;
 
@@ -20,14 +21,16 @@ namespace RuneAndRust.Tests.Engine;
 public class TraumaServiceTests
 {
     private readonly Mock<IDiceService> _mockDice;
+    private readonly GameState _gameState;
     private readonly Mock<ILogger<TraumaService>> _mockLogger;
     private readonly TraumaService _sut;
 
     public TraumaServiceTests()
     {
         _mockDice = new Mock<IDiceService>();
+        _gameState = new GameState();
         _mockLogger = new Mock<ILogger<TraumaService>>();
-        _sut = new TraumaService(_mockDice.Object, _mockLogger.Object);
+        _sut = new TraumaService(_mockDice.Object, _gameState, _mockLogger.Object);
     }
 
     #region Helper Methods

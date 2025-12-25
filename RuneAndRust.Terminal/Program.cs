@@ -211,7 +211,10 @@ class Program
 
                     // Register Debug Console Services (v0.3.17a)
                     services.AddSingleton<IDebugConsoleService, DebugConsoleService>();
-                    services.AddSingleton<IDebugConsoleRenderer, DebugConsoleRenderer>();
+                    services.AddScoped<IDebugConsoleRenderer, DebugConsoleRenderer>();
+
+                    // Register Cheat Service (v0.3.17b)
+                    services.AddScoped<ICheatService, CheatService>();
                 })
                 .UseSerilog() // Wire Serilog into ILogger
                 .Build();
