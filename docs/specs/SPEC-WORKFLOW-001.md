@@ -1,15 +1,15 @@
 ---
 id: SPEC-WORKFLOW-001
 title: Specification Writing Workflow
-version: 1.1.0
+version: 1.2.0
 status: Implemented
-last_updated: 2025-12-23
+last_updated: 2025-12-25
 related_specs: []
 ---
 
 # SPEC-WORKFLOW-001: Specification Writing Workflow
 
-> **Version:** 1.1.0
+> **Version:** 1.2.0
 > **Status:** Implemented
 > **Scope:** All SPEC-* documents in `docs/specs/`
 > **Template:** [_SPEC-TEMPLATE.md](./_SPEC-TEMPLATE.md) - Copy this for new specs
@@ -54,7 +54,7 @@ The Specification Writing Workflow defines the authoritative process for creatin
 
 **Key Principle:** Specifications must accurately reflect implementation code. When discrepancies exist, they must be resolved through this workflow.
 
-**Scope:** All SPEC-* documents in `docs/specs/` across all 10 domains (Core, Combat, Character, Exploration, Environment, Economy, Knowledge, Content, UI, Data).
+**Scope:** All SPEC-* documents in `docs/specs/` across all 11 domains (Core, Combat, Character, Exploration, Environment, Economy, Knowledge, Content, UI, Data, Tools).
 
 ---
 
@@ -188,6 +188,7 @@ Check `docs/specs/README.md` for the next available number in the target domain.
 | CONTENT | 001-099 | SPEC-DESC-001 |
 | UI | 001-099 | SPEC-UI-001 |
 | DATA | 001-099 | SPEC-SAVE-001 |
+| TOOLS | 001-099 | SPEC-AUDIT-001 |
 
 ### Step 3: Create Spec File
 
@@ -364,7 +365,7 @@ START: What is the implementation state?
 id: SPEC-DOMAIN-NNN
 title: Descriptive Title
 version: X.Y.Z
-status: draft | review | approved | deprecated | scaffolded | implemented
+status: Draft | Review | Approved | Deprecated | Scaffolded | Implemented | In Progress
 last_updated: YYYY-MM-DD
 related_specs: [SPEC-XXX-001, SPEC-YYY-001]
 ---
@@ -387,17 +388,19 @@ related_specs: [SPEC-XXX-001, SPEC-YYY-001]
 |---|---------|---------|
 | 1 | Table of Contents | Navigation with anchor links |
 | 2 | Overview | 2-3 paragraph summary |
-| 3 | Core Concepts / Behaviors | Primary functionality documentation |
-| 4 | Restrictions | What the system MUST NOT do |
-| 5 | Limitations | Known constraints and caps |
-| 6 | Use Cases | At least UC-1 with code example |
-| 7 | Decision Trees | At least 1 flow diagram |
-| 8 | Cross-Links | Dependencies and dependents |
-| 9 | Related Services | File paths with line numbers |
-| 10 | Data Models | Entity/enum definitions with code blocks |
-| 11 | Testing | Test files, counts, scenarios |
-| 12 | Design Rationale | Explains "why" for key decisions |
-| 13 | Changelog | Version history |
+| 3 | Core Concepts | Key terminology and definitions |
+| 4 | Behaviors | Primary functionality documentation |
+| 5 | Restrictions | What the system MUST NOT do |
+| 6 | Limitations | Known constraints and caps |
+| 7 | Use Cases | At least UC-1 with code example |
+| 8 | Decision Trees | At least 1 flow diagram |
+| 9 | Cross-Links | Dependencies and dependents |
+| 10 | Related Services | File paths with line numbers |
+| 11 | Data Models | Entity/enum definitions with code blocks |
+| 12 | Configuration | Constants and settings |
+| 13 | Testing | Test files, counts, scenarios |
+| 14 | Design Rationale | Explains "why" for key decisions |
+| 15 | Changelog | Version history |
 
 ---
 
@@ -543,7 +546,7 @@ When updating a spec:
 ### Gate Transition Requirements
 
 **Draft → Review:**
-- All 13 required sections present
+- All 15 required sections present
 - No placeholder text
 - All code blocks have syntax highlighting
 
@@ -623,6 +626,15 @@ When updating a spec:
 ---
 
 ## Changelog
+
+### v1.2.0 (2025-12-25)
+
+- Fixed domain count from 10 to 11 (added TOOLS domain)
+- Added TOOLS domain to domain assignment table
+- Updated required sections from 13 to 15 (added Configuration, split Core Concepts/Behaviors)
+- Fixed status value casing to use Title Case (Draft, Review, etc.)
+- Added "In Progress" as valid status option
+- Updated gate transition requirement to reference 15 sections
 
 ### v1.1.0 (2025-12-23)
 - Added Quick Start section for AI agents
