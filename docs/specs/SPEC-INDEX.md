@@ -20,7 +20,7 @@ This file has been deprecated and replaced by [README.md](./README.md), which pr
 
 ## Quick Links
 
-- **[Specification Index](./README.md)** - Master index with all 41 specifications
+- **[Specification Index](./README.md)** - Master index with all specifications
 - **[Core Specifications](./core/)** - Dice, Game Orchestration
 - **[Combat Specifications](./combat/)** - Combat, Abilities, Enemies
 - **[Character Specifications](./character/)** - Stats, Progression, Trauma
