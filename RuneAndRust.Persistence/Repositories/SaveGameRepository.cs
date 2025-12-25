@@ -10,6 +10,7 @@ namespace RuneAndRust.Persistence.Repositories;
 /// Repository implementation for SaveGame entities.
 /// Provides slot-based lookups in addition to standard CRUD operations.
 /// </summary>
+/// <remarks>See: SPEC-SAVE-001 for Save/Load System design.</remarks>
 public class SaveGameRepository : GenericRepository<SaveGame>, ISaveGameRepository
 {
     private readonly ILogger<SaveGameRepository> _saveGameLogger;

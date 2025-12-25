@@ -1,8 +1,17 @@
+---
+id: SPEC-SAVE-001
+title: Save/Load System
+version: 1.0.1
+status: Implemented
+related_specs: [SPEC-REPO-001, SPEC-MIGRATE-001]
+last_updated: 2025-12-24
+---
+
 # SPEC-SAVE-001: Save/Load System
 
-**Version:** 1.0.0
+**Version:** 1.0.1
 **Status:** Implemented
-**Last Updated:** 2025-12-22
+**Last Updated:** 2025-12-24
 **Implementation File:** [RuneAndRust.Engine/Services/SaveManager.cs](../../RuneAndRust.Engine/Services/SaveManager.cs)
 **Test File:** [RuneAndRust.Tests/Engine/SaveManagerTests.cs](../../RuneAndRust.Tests/Engine/SaveManagerTests.cs)
 
@@ -126,20 +135,18 @@ The system follows a **Service-Repository pattern**:
 ### 3. Get Save Slot Summaries
 
 **Primary Flow:**
-1. Query repository for all save games via `GetAllAsync()`
-2. Initialize list of 3 `SaveGameSummary` objects (slots 1-3) with `IsEmpty = true`
-3. For each save game returned:
-   - Find corresponding summary by `SlotNumber`
-   - Populate `CharacterName` and `LastPlayed`
-   - Set `IsEmpty = false`
-4. Return complete list (always 3 summaries)
+1. Query repository for all save games via `GetAllOrderedByLastPlayedAsync()`
+2. Transform each save game into a `SaveGameSummary` with `IsEmpty = false`
+3. Return list of populated summaries (variable count based on actual saves)
 
-**Implementation:** [SaveManager.cs:148-176](../../RuneAndRust.Engine/Services/SaveManager.cs#L148-L176)
+**Implementation:** [SaveManager.cs:146-163](../../RuneAndRust.Engine/Services/SaveManager.cs#L146-L163)
 
 **UI Optimization:**
 - Does not deserialize full JSON (lightweight operation)
-- Always returns exactly 3 summaries (one per slot)
-- Empty slots clearly marked with `IsEmpty = true`
+- Returns only populated slots (empty slots not represented)
+- Ordered by LastPlayed descending (most recent first)
+
+**Note:** The UI layer is responsible for displaying empty slot placeholders if needed. This service only returns actual save data.
 
 ### 4. Delete Save
 
@@ -228,9 +235,9 @@ The system follows a **Service-Repository pattern**:
    - Reference loops will cause serialization failure
 
 2. **Slot Count:**
-   - Designed for 3 slots (hard-coded in `GetSaveSlotSummariesAsync`)
-   - Adding more slots requires code change
-   - No dynamic slot count configuration
+   - No hard-coded slot limit in SaveManager
+   - UI layer should enforce slot limits if desired (e.g., 3 slots)
+   - `GetSaveSlotSummariesAsync` returns only populated slots
 
 3. **Performance:**
    - Full `GameState` serialization on every save (no delta saves)
@@ -647,34 +654,29 @@ LoadGameAsync(slot)
 ```
 GetSaveSlotSummariesAsync()
 │
-├─ Query repository.GetAllAsync()
-│  └─ Returns List<SaveGame> (may be empty)
+├─ Query repository.GetAllOrderedByLastPlayedAsync()
+│  └─ Returns List<SaveGame> ordered by LastPlayed DESC (may be empty)
 │
-├─ Initialize summaryList = []
-│  ├─ Add SaveGameSummary { SlotNumber = 1, IsEmpty = true }
-│  ├─ Add SaveGameSummary { SlotNumber = 2, IsEmpty = true }
-│  └─ Add SaveGameSummary { SlotNumber = 3, IsEmpty = true }
-│
-├─ For each saveGame in retrieved saves:
-│  ├─ Find summary in summaryList where summary.SlotNumber == saveGame.SlotNumber
-│  │  │
-│  │  ├─ [Summary found]
-│  │  │  ├─ Set summary.CharacterName = saveGame.CharacterName
-│  │  │  ├─ Set summary.LastPlayed = saveGame.LastPlayed
-│  │  │  └─ Set summary.IsEmpty = false
-│  │  │
-│  │  └─ [Summary not found]
-│  │     └─ Skip (should not happen with 3-slot design)
+├─ Transform each saveGame to SaveGameSummary:
+│  │
+│  ├─ For each saveGame in saves:
+│  │  ├─ Create SaveGameSummary {
+│  │  │     SlotNumber = saveGame.SlotNumber,
+│  │  │     CharacterName = saveGame.CharacterName,
+│  │  │     LastPlayed = saveGame.LastPlayed,
+│  │  │     IsEmpty = false
+│  │  │  }
+│  │  └─ Add to summaryList
 │  │
 │  └─ Continue to next saveGame
 │
-└─ Return summaryList (always contains exactly 3 entries)
+└─ Return summaryList (count = number of actual saves)
 ```
 
 **Key Decision Points:**
-1. **Fixed slot count:** Always returns 3 summaries (hard-coded)
-2. **Slot matching:** Finds summary by SlotNumber to populate
-3. **Empty slot handling:** Unpopulated summaries remain with `IsEmpty = true`
+1. **Variable slot count:** Returns only populated slots
+2. **Ordering:** Most recently played save appears first
+3. **Empty slots:** Not represented in return value (UI layer handles placeholders)
 
 ---
 
@@ -1150,18 +1152,28 @@ if (input.StartsWith("load "))
 
 **Interface Contract:**
 ```csharp
-public interface ISaveGameRepository
+public interface ISaveGameRepository : IRepository<SaveGame>
 {
+    /// <summary>Gets a save game by slot number.</summary>
     Task<SaveGame?> GetBySlotAsync(int slotNumber);
-    Task<List<SaveGame>> GetAllAsync();
-    Task AddAsync(SaveGame saveGame);
-    Task UpdateAsync(SaveGame saveGame);
-    Task DeleteAsync(SaveGame saveGame);
-    Task SaveChangesAsync();
+
+    /// <summary>Checks if a save exists in the specified slot.</summary>
+    Task<bool> SlotExistsAsync(int slotNumber);
+
+    /// <summary>Gets all saves ordered by LastPlayed descending (most recent first).</summary>
+    Task<IEnumerable<SaveGame>> GetAllOrderedByLastPlayedAsync();
 }
 ```
 
-**Implementation:** Typically uses Entity Framework Core or Dapper for PostgreSQL access.
+**Inherited from IRepository<SaveGame>:**
+- `GetByIdAsync(Guid id)` - Get save by ID
+- `GetAllAsync()` - Get all saves (unordered)
+- `AddAsync(SaveGame)` - Insert new save
+- `UpdateAsync(SaveGame)` - Update existing save
+- `DeleteAsync(Guid id)` - Delete save by ID
+- `SaveChangesAsync()` - Persist changes
+
+**Implementation:** Uses Entity Framework Core with PostgreSQL (see [SaveGameRepository.cs](../../RuneAndRust.Persistence/Repositories/SaveGameRepository.cs)).
 
 ---
 
@@ -1371,7 +1383,7 @@ var summaryList = new List<SaveGameSummary>
 ### Test Coverage Summary
 
 **Test File:** [SaveManagerTests.cs](../../RuneAndRust.Tests/Engine/SaveManagerTests.cs)
-**Total Tests:** 20 tests across 6 categories
+**Total Tests:** 18 tests across 6 categories
 **Lines of Code:** 377 lines
 **Coverage:** ~95% (all public methods covered)
 
@@ -1438,15 +1450,15 @@ var summaryList = new List<SaveGameSummary>
 
 **Location:** [SaveManagerTests.cs:222-257](../../RuneAndRust.Tests/Engine/SaveManagerTests.cs#L222-L257)
 
-1. **GetSaveSlotSummariesAsync_ReturnsSummariesForAllSlots** (lines 224-243)
-   - **Scenario:** Database has saves in slots 1 and 3 (slot 2 empty)
-   - **Assertion:** Returns 3 summaries, slot 2 has `IsEmpty = true`
-   - **Verification:** Slot 1 and 3 populated with CharacterName and LastPlayed
+1. **GetSaveSlotSummariesAsync_ReturnsSummaries** (lines 224-243)
+   - **Scenario:** Database has saves in slots 1 and 3
+   - **Assertion:** Returns summaries for populated slots only
+   - **Verification:** Slot 1 and 3 have CharacterName and LastPlayed, ordered by LastPlayed
 
-2. **GetSaveSlotSummariesAsync_NoSaves_ReturnsAllEmpty** (lines 246-257)
+2. **GetSaveSlotSummariesAsync_EmptyDatabase_ReturnsEmptyList** (lines 246-257)
    - **Scenario:** Database has no saves
-   - **Assertion:** Returns 3 summaries, all with `IsEmpty = true`
-   - **Verification:** List always contains exactly 3 entries
+   - **Assertion:** Returns empty list
+   - **Verification:** No summaries returned when no saves exist
 
 ---
 
@@ -1883,19 +1895,29 @@ if (saveGame == null)
 
 ## Changelog
 
+### Version 1.0.1 (2025-12-24)
+
+**Documentation Updates:**
+- Added YAML frontmatter with `id`, `title`, `version`, `status`, `related_specs`, `last_updated`
+- Fixed `GetSaveSlotSummariesAsync` documentation: returns variable count (not fixed 3)
+- Documented `ISaveGameRepository.SlotExistsAsync` and `GetAllOrderedByLastPlayedAsync` methods
+- Updated slot count limitation: no hard-coded limit, UI layer enforces if needed
+- Updated test count: 20 → 18 (matches actual)
+- Added code traceability remarks to SaveManager, ISaveGameRepository, SaveGameRepository
+
 ### Version 1.0.0 (2025-12-22)
 
 **Initial Implementation:**
 - Implemented `SaveGameAsync()` with update-or-insert logic
 - Implemented `LoadGameAsync()` with JSON deserialization
-- Implemented `GetSaveSlotSummariesAsync()` with 3-slot hard-coded list
+- Implemented `GetSaveSlotSummariesAsync()` with dynamic slot list
 - Implemented `DeleteSaveAsync()` with existence check
 - Implemented `SaveExistsAsync()` for quick slot check
 - Added `SaveGameSummary` DTO for UI display
 - Configured JSON serialization (camelCase, non-indented)
 - Added Stopwatch performance tracking for save/load operations
 - Comprehensive error handling with logging
-- 20 unit tests with 95% coverage
+- 18 unit tests with 95% coverage
 
 **Known Limitations:**
 - No slot count validation (accepts any slot number)
@@ -1912,7 +1934,7 @@ if (saveGame == null)
 - DeleteSaveAsync: 3 tests
 - SaveExistsAsync: 2 tests
 - SaveGameSummary: 2 tests
-- Total: 20 tests, 377 lines
+- Total: 18 tests, 377 lines
 
 ---
 

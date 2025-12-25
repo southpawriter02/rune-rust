@@ -6,6 +6,7 @@ namespace RuneAndRust.Core.Interfaces;
 /// Repository interface specific to SaveGame operations.
 /// Extends generic repository with slot-based lookups.
 /// </summary>
+/// <remarks>See: SPEC-SAVE-001 for Save/Load System design.</remarks>
 public interface ISaveGameRepository : IRepository<SaveGame>
 {
     /// <summary>

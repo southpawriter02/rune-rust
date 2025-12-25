@@ -11,6 +11,7 @@ namespace RuneAndRust.Engine.Services;
 /// Manages save game operations including saving and loading game state.
 /// Translates between runtime GameState and persistent SaveGame entities.
 /// </summary>
+/// <remarks>See: SPEC-SAVE-001 for Save/Load System design.</remarks>
 public class SaveManager
 {
     private readonly ISaveGameRepository _saveRepo;
