@@ -1062,6 +1062,11 @@ Calculate HP Percentage (currentHp / maxHp)
    - **Relationship**: Command prompts use theme colors
    - **Integration Point**: `AnsiConsole.Markup($"[{_theme.GetColor("PromptColor")}]> [/]")`
 
+2. **SPEC-VISUAL-001 (Visual Effects System)**
+   - **Relationship**: Visual effects use hardcoded colors that could be theme-integrated
+   - **Integration Point**: VisualEffectService border flash colors (red, gold1, green, magenta1)
+   - **Note**: Effects also respect `GameSettings.ReduceMotion` for accessibility
+
 ---
 
 ## Related Services
