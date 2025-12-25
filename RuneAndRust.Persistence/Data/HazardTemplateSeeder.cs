@@ -13,6 +13,8 @@ namespace RuneAndRust.Persistence.Data;
 /// Templates define the properties of hazards; DynamicHazard instances are
 /// created from templates by EnvironmentPopulator during dungeon generation.
 /// All descriptions must be Domain 4 compliant (no precision measurements).
+///
+/// See: SPEC-SEED-001 for Database Seeding System design.
 /// </remarks>
 public static class HazardTemplateSeeder
 {

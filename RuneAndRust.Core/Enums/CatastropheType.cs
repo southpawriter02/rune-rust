@@ -4,6 +4,7 @@ namespace RuneAndRust.Core.Enums;
 /// Defines the type of catastrophic consequence for crafting failures.
 /// Different trades have different catastrophe effects when net successes are negative.
 /// </summary>
+/// <remarks>See: SPEC-CRAFT-001 for Crafting System design.</remarks>
 public enum CatastropheType
 {
     /// <summary>

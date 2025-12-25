@@ -8,6 +8,7 @@ namespace RuneAndRust.Core.Interfaces;
 /// Provides procedural loot generation based on biome, danger level, and quality tiers.
 /// Implements weighted random item selection with WITS-based quality bonuses.
 /// </summary>
+/// <remarks>See: SPEC-INV-001 for Inventory & Equipment System design.</remarks>
 public interface ILootService
 {
     /// <summary>

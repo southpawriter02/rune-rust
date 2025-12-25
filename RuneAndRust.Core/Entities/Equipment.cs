@@ -7,6 +7,7 @@ namespace RuneAndRust.Core.Entities;
 /// Represents equipable items that provide stat bonuses.
 /// Extends Item using Table-per-Hierarchy (TPH) pattern.
 /// </summary>
+/// <remarks>See: SPEC-INV-001 for Inventory & Equipment System design.</remarks>
 public class Equipment : Item
 {
     #region Equipment Properties

@@ -15,6 +15,9 @@ namespace RuneAndRust.Persistence.Data;
 /// still discover the DataCaptures to unlock them.
 ///
 /// All content must be Domain 4 compliant (no precision measurements).
+///
+/// See: SPEC-SEED-001 for Database Seeding System design.
+/// Note: This seeder exists but is not currently called in Program.cs initialization.
 /// </remarks>
 public static class CodexSeeder
 {

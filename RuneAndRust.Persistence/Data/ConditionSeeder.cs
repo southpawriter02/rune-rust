@@ -13,6 +13,8 @@ namespace RuneAndRust.Persistence.Data;
 /// <remarks>
 /// Conditions are room-wide environmental effects that persist until the player leaves.
 /// All descriptions must be Domain 4 compliant (no precision measurements).
+///
+/// See: SPEC-SEED-001 for Database Seeding System design.
 /// </remarks>
 public static class ConditionSeeder
 {

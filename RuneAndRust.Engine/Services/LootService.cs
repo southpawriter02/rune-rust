@@ -11,6 +11,7 @@ namespace RuneAndRust.Engine.Services;
 /// Implements procedural loot generation based on biome, danger level, and quality tiers.
 /// Uses weighted random selection with WITS-based quality bonuses.
 /// </summary>
+/// <remarks>See: SPEC-INV-001 for Inventory & Equipment System design.</remarks>
 public class LootService : ILootService
 {
     private readonly ILogger<LootService> _logger;

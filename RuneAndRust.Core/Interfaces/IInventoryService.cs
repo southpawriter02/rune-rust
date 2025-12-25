@@ -13,6 +13,7 @@ public record InventoryResult(bool Success, string Message);
 /// Defines the contract for inventory management operations.
 /// Handles item addition, removal, equipment, and burden calculation.
 /// </summary>
+/// <remarks>See: SPEC-INV-001 for Inventory & Equipment System design.</remarks>
 public interface IInventoryService
 {
     /// <summary>

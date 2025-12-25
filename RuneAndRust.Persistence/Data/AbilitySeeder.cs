@@ -13,6 +13,8 @@ namespace RuneAndRust.Persistence.Data;
 /// Enemy abilities (v0.2.4a): Shared pool for enemy templates to reference.
 ///
 /// All descriptions must be Domain 4 compliant (no precision measurements).
+///
+/// See: SPEC-SEED-001 for Database Seeding System design.
 /// </remarks>
 public static class AbilitySeeder
 {

@@ -9,6 +9,7 @@ namespace RuneAndRust.Core.Interfaces;
 /// Provides crafting operations including recipe lookup, ingredient validation, and item creation.
 /// Crafting uses WITS-based dice rolls to determine success and quality.
 /// </summary>
+/// <remarks>See: SPEC-CRAFT-001 for Crafting System design.</remarks>
 public interface ICraftingService
 {
     /// <summary>

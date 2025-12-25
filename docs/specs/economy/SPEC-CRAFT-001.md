@@ -1,14 +1,15 @@
 ---
 id: SPEC-CRAFT-001
 title: Crafting System
-version: 1.0.0
+version: 1.0.1
 status: Implemented
+last_updated: 2025-12-24
 related_specs: [SPEC-DICE-001, SPEC-INV-001, SPEC-REPAIR-001]
 ---
 
 # SPEC-CRAFT-001: Crafting System
 
-> **Version:** 1.0.0
+> **Version:** 1.0.1
 > **Status:** Implemented
 > **Service:** `CraftingService`
 > **Location:** `RuneAndRust.Engine/Services/CraftingService.cs`
@@ -18,7 +19,7 @@ related_specs: [SPEC-DICE-001, SPEC-INV-001, SPEC-REPAIR-001]
 
 ## Overview
 
-The Crafting System implements **WITS-based skill checks** for creating items from raw materials using learned recipes. It supports four trade disciplines (Alchemy, Smith, Tinkerer, Runescribe), each with unique catastrophe mechanics. The system uses the d10 dice pool mechanic for success determination and integrates with inventory, trauma, and item quality subsystems.
+The Crafting System implements **WITS-based skill checks** for creating items from raw materials using learned recipes. It supports four trade disciplines (Alchemy, Bodging, FieldMedicine, Runeforging), each with unique catastrophe mechanics. The system uses the d10 dice pool mechanic for success determination and integrates with inventory, trauma, and item quality subsystems.
 
 **Core Design Principles:**
 - **Ingredient Consumption Before Rolling:** Materials are always consumed when attempting crafting (failure still costs resources)
@@ -309,8 +310,8 @@ crafter.CurrentHP = Math.Max(0, crafter.CurrentHP - 15);
 |-------|------------------|----------------------|-------------------|
 | Alchemy | Explosive | Deals HP damage | Add fire status effect |
 | Runeforging | Corruption | Adds permanent corruption | Add tier progression |
-| Smith | None | Materials lost only | Add equipment damage |
-| Tinkerer | None | Materials lost only | Add malfunction chance |
+| Bodging | None | Materials lost only | Add equipment damage |
+| FieldMedicine | None | Materials lost only | Add malfunction chance |
 
 ---
 
@@ -469,7 +470,7 @@ crafter.CurrentHP == 7  // Reduced from 15
 var crafter = new Character { Name = "Ragnhild", Wits = 4, CurrentHP = 20, Corruption = 0 };
 var recipe = RecipeRegistry.GetById("RCP_RUN_FLAMEBLADE");
 // recipe.BaseDc = 8
-// recipe.Trade = CraftingTrade.Runescribe
+// recipe.Trade = CraftingTrade.Runeforging
 // recipe.CatastropheType = CatastropheType.Corruption
 // recipe.CatastropheCorruption = 3
 ```
@@ -614,7 +615,7 @@ result.Message == "Missing ingredients for Basic Stimpack."
     │   ↓
     │   [Return CraftingResult with CorruptionAdded field]
     │
-    └─ None (Smith, Tinkerer, or default)
+    └─ None (Bodging, FieldMedicine, or default)
         ↓
         [Materials Lost Only]
         ├─ No HP damage
@@ -776,7 +777,7 @@ CraftingService              Character              TraumaService              L
      - [ ] Call `_traumaService.AddCorruption(crafter, corruption, "Runic Backlash")`
      - [ ] Log warning: `"RUNEFORGING CATASTROPHE: {Name} gains {Corruption} Corruption!"`
      - [ ] Populate `CraftingResult.CorruptionAdded` field
-   - **None (Smith, Tinkerer):**
+   - **None (Bodging, FieldMedicine):**
      - [ ] No additional penalty (materials already lost)
      - [ ] Log warning: `"Craft CATASTROPHE: {RecipeName} - materials lost!"`
 3. [ ] **Construct Message**
@@ -884,7 +885,7 @@ public class Recipe
     public string RecipeId { get; set; }              // Unique ID (e.g., "RCP_ALC_STIM")
     public string Name { get; set; }                  // Display name
     public string Description { get; set; }           // Narrative description
-    public CraftingTrade Trade { get; set; }          // Alchemy | Smith | Tinkerer | Runescribe
+    public CraftingTrade Trade { get; set; }          // Alchemy | Bodging | FieldMedicine | Runeforging
     public int BaseDc { get; set; }                   // Difficulty class (3-11 typical range)
     public Dictionary<string, int> Ingredients { get; set; }  // ItemId => Quantity
     public string OutputItemId { get; set; }          // Result item ID
@@ -921,7 +922,8 @@ public record CraftingResult(
     string Message,                       // Player-facing result message
     IReadOnlyList<int> Rolls,             // Individual die results
     int? DamageDealt = null,              // HP damage (Explosive catastrophe)
-    int? CorruptionAdded = null           // Corruption gain (Corruption catastrophe)
+    int? CorruptionAdded = null,          // Corruption gain (Corruption catastrophe)
+    Equipment? EnchantedItem = null       // Item enchanted by Runeforging (if applicable)
 );
 ```
 
@@ -942,10 +944,10 @@ public enum CraftingOutcome
 // Location: RuneAndRust.Core/Enums/CraftingTrade.cs
 public enum CraftingTrade
 {
-    Alchemy,      // Potions, bombs, stimulants
-    Smith,        // Weapons, armor, metalwork
-    Tinkerer,     // Mechanisms, tools, devices
-    Runescribe    // Enchantments, rune etching
+    Bodging = 0,       // Mechanical repairs, improvised tools, salvage work
+    Alchemy = 1,       // Potions, salves, and chemical compounds
+    Runeforging = 2,   // Aetheric inscriptions and enchantments
+    FieldMedicine = 3  // Bandages, stimulants, and medical kits
 }
 ```
 
@@ -954,9 +956,11 @@ public enum CraftingTrade
 // Location: RuneAndRust.Core/Enums/CatastropheType.cs
 public enum CatastropheType
 {
-    None,         // Materials lost only (Smith, Tinkerer)
-    Explosive,    // HP damage (Alchemy)
-    Corruption    // Permanent corruption (Runeforging)
+    None = 0,         // Materials lost only (Bodging, FieldMedicine)
+    Explosive = 1,    // HP damage (Alchemy)
+    Toxic = 2,        // Reserved for future (poison/sickness effects)
+    Corrosive = 3,    // Reserved for future (equipment/environment damage)
+    Corruption = 4    // Permanent corruption (Runeforging)
 }
 ```
 
@@ -1154,7 +1158,7 @@ All in-game recipe descriptions and crafting messages comply with Domain 4 Techn
 ### v1.0.0 (Current - SPEC-CRAFT-001)
 - Initial specification based on implemented `CraftingService.cs`
 - Reflects v0.3.1c catastrophe system
-- Documented all four trades (Alchemy, Smith, Tinkerer, Runescribe)
+- Documented all four trades (Alchemy, Bodging, FieldMedicine, Runeforging)
 - Comprehensive use cases with code examples
 - Decision trees for all workflows
 - Cross-system integration matrices complete
@@ -1177,8 +1181,8 @@ All in-game recipe descriptions and crafting messages comply with Domain 4 Techn
 5. **Critical Success Effects:** On natural all-10s roll, apply bonus properties (Durable, Lightweight, etc.)
 6. **Enchanting System Expansion:** Runeforging recipes apply multiple properties simultaneously
 7. **Trade-Specific Catastrophes:**
-   - **Smith:** Equipment durability loss on catastrophe
-   - **Tinkerer:** Malfunction chance (item created but with negative property)
+   - **Bodging:** Equipment durability loss on catastrophe
+   - **FieldMedicine:** Malfunction chance (item created but with negative property)
 8. **Apprentice System:** Assistants reduce DC or increase pool size
 
 ### Known Limitations for Future Resolution
@@ -1186,3 +1190,34 @@ All in-game recipe descriptions and crafting messages comply with Domain 4 Techn
 2. **Static DC:** Recipe difficulty never scales with character level (may add "Expert Crafting" skill tree)
 3. **No Partial Success:** Either full output or nothing (may add "Crude Version" on near-success)
 4. **No Crafting Queues:** One craft at a time (may add workshop automation later)
+
+---
+
+## Changelog
+
+### v1.0.1 (2025-12-24)
+**Documentation Updates:**
+- Added `last_updated` field to YAML frontmatter
+- **CRITICAL:** Fixed trade names to match implementation:
+  - Smith → Bodging (mechanical repairs, improvised tools)
+  - Tinkerer → FieldMedicine (bandages, stimulants, medical kits)
+  - Runescribe → Runeforging (aetheric inscriptions)
+- Documented `Equipment? EnchantedItem` parameter in CraftingResult
+- Documented reserved CatastropheType values (Toxic = 2, Corrosive = 3)
+- Added code traceability remarks (`See: SPEC-CRAFT-001...`) to 8 implementation files:
+  - ICraftingService.cs, CraftingService.cs
+  - Recipe.cs, RecipeRegistry.cs
+  - CraftingResult.cs
+  - CraftingTrade.cs, CraftingOutcome.cs, CatastropheType.cs
+
+### v1.0.0 (2025-12-22)
+**Initial Release:**
+- Crafting system documentation
+- WITS-based dice roll mechanics
+- Four trade disciplines with catastrophe mechanics
+- Recipe validation and ingredient consumption
+- Quality tier progression (Masterwork → Success → Failure → Catastrophe)
+
+---
+
+**END OF SPECIFICATION**
