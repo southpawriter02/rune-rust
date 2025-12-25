@@ -7,6 +7,7 @@ namespace RuneAndRust.Core.Interfaces;
 /// Service contract for Data Capture generation and management.
 /// Handles discovery of lore fragments during gameplay and tracks Codex completion.
 /// </summary>
+/// <remarks>See: SPEC-CAPTURE-001 for Data Capture System design.</remarks>
 public interface IDataCaptureService
 {
     /// <summary>

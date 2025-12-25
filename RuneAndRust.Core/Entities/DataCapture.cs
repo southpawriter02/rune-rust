@@ -7,6 +7,8 @@ namespace RuneAndRust.Core.Entities;
 /// Data Captures compile into Codex Entries to reveal world lore.
 /// </summary>
 /// <remarks>
+/// See: SPEC-CODEX-001 for Scavenger's Journal (Codex) System design.
+///
 /// Unlike inventory items, Data Captures have no weight burden and exist
 /// in a separate progression system (the Scavenger's Journal). They are
 /// automatically stored when discovered and contribute to Codex completion.

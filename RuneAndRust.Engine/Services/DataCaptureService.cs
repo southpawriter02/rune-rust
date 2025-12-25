@@ -10,6 +10,7 @@ namespace RuneAndRust.Engine.Services;
 /// Service for generating and managing Data Captures during gameplay.
 /// Handles discovery of lore fragments and auto-assignment to Codex entries.
 /// </summary>
+/// <remarks>See: SPEC-CAPTURE-001 for Data Capture System design.</remarks>
 public class DataCaptureService : IDataCaptureService
 {
     private readonly ILogger<DataCaptureService> _logger;
