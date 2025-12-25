@@ -1,10 +1,11 @@
 # SPEC-NAV-001: Navigation System
 
-**Version:** 1.0.0
+**Version:** 1.0.1
 **Status:** Active (v0.3.3a - v0.3.3b)
-**Last Updated:** 2025-12-22
+**Last Updated:** 2025-12-25
 **Owner:** Engine Team
 **Category:** Navigation & Exploration
+**Related Specs:** SPEC-HAZARD-001, SPEC-COND-001, SPEC-INTERACT-001, SPEC-DICE-001
 
 ---
 
@@ -2319,6 +2320,14 @@ _gameState.MovementHistory.Add(new MovementRecord
 ---
 
 ## Changelog
+
+### v1.0.1 (2025-12-25)
+**Documentation Updates:**
+- Added `Related Specs` field to frontmatter header
+- Updated `Last Updated` to 2025-12-25
+- Added code traceability remarks to implementation files:
+  - `INavigationService.cs` - interface spec reference
+  - `NavigationService.cs` - service spec reference
 
 ### v0.3.3b - Ambient Condition Display (2025-12-15)
 - **ADDED**: Ambient condition display on room entry

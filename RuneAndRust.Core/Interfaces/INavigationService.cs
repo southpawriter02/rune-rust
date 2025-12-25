@@ -6,6 +6,7 @@ namespace RuneAndRust.Core.Interfaces;
 /// <summary>
 /// Provides navigation capabilities for room-to-room movement.
 /// </summary>
+/// <remarks>See: SPEC-NAV-001 for Navigation System design.</remarks>
 public interface INavigationService
 {
     /// <summary>
