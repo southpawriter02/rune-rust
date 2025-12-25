@@ -9,6 +9,10 @@ namespace RuneAndRust.Core.Models.Combat;
 /// Adapter that wraps a Character or Enemy for use during combat.
 /// Holds combat-volatile state (initiative, current HP) without modifying the source entity.
 /// </summary>
+/// <remarks>
+/// See: SPEC-COMBAT-001 for Combat System design.
+/// See: SPEC-INTENT-001 for Enemy Intent & Telegraph System design (PlannedAction, IsIntentRevealed).
+/// </remarks>
 public class Combatant
 {
     /// <summary>

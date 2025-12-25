@@ -4,6 +4,7 @@ namespace RuneAndRust.Core.Interfaces;
 /// Service for executing debug cheat commands (v0.3.17b).
 /// Part of "The Toolbox" debug tools milestone.
 /// </summary>
+/// <remarks>See: SPEC-CHEAT-001 for Cheat Command System design.</remarks>
 public interface ICheatService
 {
     /// <summary>

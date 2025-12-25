@@ -7,6 +7,7 @@ namespace RuneAndRust.Engine.Services;
 /// Manages the debug console state and log buffer (v0.3.17a).
 /// Thread-safe implementation for concurrent log access.
 /// </summary>
+/// <remarks>See: SPEC-DEBUG-001 for Debug Console System design.</remarks>
 public class DebugConsoleService : IDebugConsoleService
 {
     private const int MaxLogHistory = 50;
