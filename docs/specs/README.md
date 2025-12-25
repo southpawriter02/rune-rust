@@ -1,8 +1,8 @@
 # Rune & Rust - Specification Index
 
-> **Version:** 0.4.4
+> **Version:** 0.4.5
 > **Last Updated:** 2025-12-25
-> **Total Specifications:** 47
+> **Total Specifications:** 49
 > **Maintained By:** The Architect
 
 This document serves as the master index for all game system specifications. Each specification provides comprehensive documentation including behaviors, restrictions, limitations, use cases, and cross-system dependencies.
@@ -19,11 +19,11 @@ This document serves as the master index for all game system specifications. Eac
 | [Exploration](#exploration--world) | 5 | [`exploration/`](./exploration/) | Navigation, dungeon generation |
 | [Environment](#environment-systems) | 2 | [`environment/`](./environment/) | Hazards, ambient conditions |
 | [Economy](#economy--items) | 4 | [`economy/`](./economy/) | Inventory, crafting, loot |
-| [Knowledge](#knowledge--lore) | 3 | [`knowledge/`](./knowledge/) | Codex, data captures, journals |
+| [Knowledge](#knowledge--lore) | 4 | [`knowledge/`](./knowledge/) | Codex, data captures, journals, library |
 | [Content](#content-generation) | 3 | [`content/`](./content/) | Descriptor engine, templates, localization |
 | [UI](#ui--rendering) | 5 | [`ui/`](./ui/) | User interface, rendering, transitions |
 | [Data](#data--persistence) | 4 | [`data/`](./data/) | Save system, repositories, migrations |
-| [Tools](#developer-tools) | 1 | [`tools/`](./tools/) | Audit and validation tools |
+| [Tools](#developer-tools) | 2 | [`tools/`](./tools/) | Audit, documentation generation |
 | [Meta](#meta-specifications) | 2 | [`./`](./) | Specification workflow, governance |
 
 ---
@@ -133,6 +133,7 @@ Codex system, data captures, and journal display.
 | [SPEC-CODEX-001](./knowledge/SPEC-CODEX-001.md) | Scavenger's Journal | `CodexService` | Lore entries, fragment collection |
 | [SPEC-CAPTURE-001](./knowledge/SPEC-CAPTURE-001.md) | Data Capture | `DataCaptureService` | Lore fragment generation |
 | [SPEC-JOURNAL-001](./knowledge/SPEC-JOURNAL-001.md) | Journal Display | `JournalService` | Journal UI, text formatting |
+| [SPEC-LIBRARY-001](./knowledge/SPEC-LIBRARY-001.md) | Library Service | `LibraryService` | Reflection-based Field Guide generation |
 
 ---
 
@@ -182,6 +183,7 @@ Audit and validation tools for game balance testing.
 | Spec ID | Title | Primary Service(s) | Description |
 |---------|-------|-------------------|-------------|
 | [SPEC-AUDIT-001](./tools/SPEC-AUDIT-001.md) | Audit Framework | `LootAuditService`, `CombatAuditService` | Monte Carlo simulation for economy/combat validation |
+| [SPEC-DOCGEN-001](./tools/SPEC-DOCGEN-001.md) | Documentation Generator | `DocGenService` | CLI Markdown export for Field Guide |
 
 ---
 
@@ -237,6 +239,8 @@ Audit and validation tools for game balance testing.
 | **SPEC-LOC-001** | *(none)* | UI, Terminal |
 | **SPEC-TRANSITION-001** | THEME | GAME |
 | **SPEC-AUDIT-001** | LOOT, COMBAT | *(developer tool)* |
+| **SPEC-LIBRARY-001** | *(none)* | JOURNAL, DOCGEN |
+| **SPEC-DOCGEN-001** | LIBRARY | *(developer tool)* |
 | **SPEC-REPO-001** | *(none)* | SAVE, SEED, MIGRATE |
 | **SPEC-SAVE-001** | REPO | GAME |
 
@@ -262,6 +266,7 @@ Audit and validation tools for game balance testing.
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 0.4.5 | 2025-12-25 | Added SPEC-LIBRARY-001 Library Service, SPEC-DOCGEN-001 Documentation Generator |
 | 0.4.4 | 2025-12-25 | Added SPEC-AUDIT-001 Audit Framework; created Developer Tools section |
 | 0.4.3 | 2025-12-25 | Added SPEC-TRANSITION-001 Screen Transition System |
 | 0.4.2 | 2025-12-24 | Added SPEC-LOC-001 Localization System |
