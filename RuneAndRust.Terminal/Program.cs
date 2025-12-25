@@ -425,8 +425,27 @@ class Program
             var game = host.Services.GetRequiredService<IGameService>();
             game.StartAsync().GetAwaiter().GetResult();
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
+            // v0.3.16a: The Safety Net - Global Exception Handler
+            // 1. Attempt to log crash details to file
+            string? logPath = null;
+            try
+            {
+                // Manually instantiate CrashService since DI container may not be available
+                var crashService = new CrashService(
+                    Microsoft.Extensions.Logging.Abstractions.NullLogger<CrashService>.Instance);
+                logPath = crashService.LogCrash(ex);
+            }
+            catch
+            {
+                // Swallow - don't crash the crash handler
+            }
+
+            // 2. Render user-friendly crash screen
+            CrashScreenRenderer.Render(ex, logPath);
+
+            // 3. Log to Serilog if still available
             Log.Fatal(ex, "System Crash");
         }
         finally
