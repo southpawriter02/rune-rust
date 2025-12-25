@@ -1,8 +1,8 @@
 # Rune & Rust - Specification Index
 
-> **Version:** 0.4.2
-> **Last Updated:** 2025-12-24
-> **Total Specifications:** 45
+> **Version:** 0.4.3
+> **Last Updated:** 2025-12-25
+> **Total Specifications:** 46
 > **Maintained By:** The Architect
 
 This document serves as the master index for all game system specifications. Each specification provides comprehensive documentation including behaviors, restrictions, limitations, use cases, and cross-system dependencies.
@@ -21,7 +21,7 @@ This document serves as the master index for all game system specifications. Eac
 | [Economy](#economy--items) | 4 | [`economy/`](./economy/) | Inventory, crafting, loot |
 | [Knowledge](#knowledge--lore) | 3 | [`knowledge/`](./knowledge/) | Codex, data captures, journals |
 | [Content](#content-generation) | 3 | [`content/`](./content/) | Descriptor engine, templates, localization |
-| [UI](#ui--rendering) | 4 | [`ui/`](./ui/) | User interface, rendering |
+| [UI](#ui--rendering) | 5 | [`ui/`](./ui/) | User interface, rendering, transitions |
 | [Data](#data--persistence) | 4 | [`data/`](./data/) | Save system, repositories, migrations |
 | [Meta](#meta-specifications) | 2 | [`./`](./) | Specification workflow, governance |
 
@@ -157,6 +157,7 @@ User interface framework, rendering pipeline, and input handling.
 | [SPEC-RENDER-001](./ui/SPEC-RENDER-001.md) | Rendering Pipeline | `RenderService` | Terminal rendering, colors |
 | [SPEC-INPUT-001](./ui/SPEC-INPUT-001.md) | Input Handling | `InputService` | Keyboard input, command parsing |
 | [SPEC-THEME-001](./ui/SPEC-THEME-001.md) | Theme System | `ThemeService` | Color themes, styling |
+| [SPEC-TRANSITION-001](./ui/SPEC-TRANSITION-001.md) | Screen Transitions | `ScreenTransitionService` | Phase transition animations |
 
 ---
 
@@ -223,6 +224,7 @@ Database access, save system, and data migrations.
 | **SPEC-CAPTURE-001** | CODEX | INTERACT, COMBAT |
 | **SPEC-JOURNAL-001** | CODEX, CAPTURE | UI |
 | **SPEC-LOC-001** | *(none)* | UI, Terminal |
+| **SPEC-TRANSITION-001** | THEME | GAME |
 | **SPEC-REPO-001** | *(none)* | SAVE, SEED, MIGRATE |
 | **SPEC-SAVE-001** | REPO | GAME |
 
@@ -248,6 +250,7 @@ Database access, save system, and data migrations.
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 0.4.3 | 2025-12-25 | Added SPEC-TRANSITION-001 Screen Transition System |
 | 0.4.2 | 2025-12-24 | Added SPEC-LOC-001 Localization System |
 | 0.4.0 | 2025-12-22 | Reorganized into domain subdirectories; Added 26 new specs |
 | 0.3.3c | 2025-12-21 | Initial specification documentation (15 specs) |
@@ -257,52 +260,52 @@ Database access, save system, and data migrations.
 ## Architecture Overview
 
 ```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                              TERMINAL LAYER                                  │
+┌────────────────────────────────────────────────────────────────────────────┐
+│                              TERMINAL LAYER                                │
 │  ┌─────────────────┐  ┌───────────────────┐  ┌─────────────────────────┐   │
-│  │ CombatRenderer  │  │ RestScreenRenderer │  │ CharacterCreationCtrl   │   │
+│  │ CombatRenderer  │  │ RestScreenRenderer│  │ CharacterCreationCtrl   │   │
 │  └────────┬────────┘  └─────────┬─────────┘  └───────────┬─────────────┘   │
 └───────────┼─────────────────────┼────────────────────────┼─────────────────┘
             │                     │                        │
 ┌───────────┼─────────────────────┼────────────────────────┼─────────────────┐
 │           ▼                     ▼                        ▼   ENGINE LAYER  │
 │  ┌────────────────────────────────────────────────────────────────────┐    │
-│  │                          GameService                                │    │
-│  │  (Main Orchestrator - Manages GameState, Phase Transitions)         │    │
+│  │                          GameService                               │    │
+│  │  (Main Orchestrator - Manages GameState, Phase Transitions)        │    │
 │  └────────────────────────────────────────────────────────────────────┘    │
-│           │                     │                        │                  │
-│  ┌────────┴──────┐     ┌───────┴───────┐      ┌─────────┴─────────┐       │
-│  │ CombatService │     │  RestService  │      │  NavigationService │       │
-│  └───────┬───────┘     └───────┬───────┘      └─────────┬─────────┘       │
+│           │                     │                        │                 │
+│  ┌────────┴──────┐     ┌───────┴───────┐      ┌─────────┴─────────┐        │
+│  │ CombatService │     │  RestService  │      │  NavigationService│        │
+│  └───────┬───────┘     └───────┬───────┘      └─────────┬─────────┘        │
 │          │                     │                        │                  │
-│  ┌───────┴───────────────────────────────────────────────────────────┐    │
-│  │  SUPPORTING SERVICES                                               │    │
-│  │  ┌───────────────┐ ┌─────────────┐ ┌─────────────┐ ┌────────────┐ │    │
-│  │  │ TraumaService │ │ HazardSvc   │ │ ConditionSvc│ │ AbilitySvc │ │    │
-│  │  └───────────────┘ └─────────────┘ └─────────────┘ └────────────┘ │    │
-│  │  ┌───────────────┐ ┌─────────────┐ ┌─────────────┐ ┌────────────┐ │    │
-│  │  │ InventoryService│ │ LootService │ │ AmbushSvc  │ │ ResourceSvc│ │    │
-│  │  └───────────────┘ └─────────────┘ └─────────────┘ └────────────┘ │    │
-│  └───────────────────────────────────────────────────────────────────┘    │
-│                                    │                                        │
-│  ┌─────────────────────────────────┴─────────────────────────────────┐    │
-│  │  FOUNDATIONAL SERVICES                                             │    │
-│  │  ┌───────────────┐ ┌─────────────────────┐ ┌───────────────────┐  │    │
-│  │  │  DiceService  │ │ StatCalculationSvc  │ │ StatusEffectService│  │    │
-│  │  └───────────────┘ └─────────────────────┘ └───────────────────┘  │    │
-│  └───────────────────────────────────────────────────────────────────┘    │
+│  ┌───────┴───────────────────────────────────────────────────────────┐     │
+│  │  SUPPORTING SERVICES                                              │     │
+│  │  ┌───────────────┐ ┌─────────────┐ ┌─────────────┐ ┌────────────┐ │     │
+│  │  │ TraumaSvc     │ │ HazardSvc   │ │ ConditionSvc│ │ AbilitySvc │ │     │
+│  │  └───────────────┘ └─────────────┘ └─────────────┘ └────────────┘ │     │
+│  │  ┌───────────────┐ ┌─────────────┐ ┌─────────────┐ ┌────────────┐ │     │
+│  │  │ InventorySvc│ │ │ LootSvc     │ │ AmbushSvc   │ │ ResourceSvc│ │     │
+│  │  └───────────────┘ └─────────────┘ └─────────────┘ └────────────┘ │     │
+│  └───────────────────────────────────────────────────────────────────┘     │
+│                                    │                                       │
+│  ┌─────────────────────────────────┴─────────────────────────────────┐     │
+│  │  FOUNDATIONAL SERVICES                                            │     │
+│  │  ┌───────────────┐ ┌─────────────────────┐ ┌───────────────────┐  │     │
+│  │  │  DiceService  │ │ StatCalculationSvc  │ │ StatusEffectService│ │     │
+│  │  └───────────────┘ └─────────────────────┘ └───────────────────┘  │     │
+│  └───────────────────────────────────────────────────────────────────┘     │
 └────────────────────────────────────────────────────────────────────────────┘
             │
 ┌───────────┼────────────────────────────────────────────────────────────────┐
-│           ▼                      PERSISTENCE LAYER                          │
+│           ▼                      PERSISTENCE LAYER                         │
 │  ┌─────────────────────────────────────────────────────────────────────┐   │
-│  │  REPOSITORIES                                                        │   │
-│  │  CharacterRepo │ RoomRepo │ ItemRepo │ InventoryRepo │ SaveGameRepo  │   │
-│  │  CodexEntryRepo│ DataCaptureRepo                                     │   │
+│  │  REPOSITORIES                                                       │   │
+│  │  CharacterRepo │ RoomRepo │ ItemRepo │ InventoryRepo │ SaveGameRepo │   │
+│  │  CodexEntryRepo│ DataCaptureRepo                                    │   │
 │  └─────────────────────────────────────────────────────────────────────┘   │
-│                                    │                                        │
+│                                    │                                       │
 │  ┌─────────────────────────────────┴───────────────────────────────────┐   │
-│  │                     PostgreSQL 16 + EF Core 8.0                      │   │
+│  │                     PostgreSQL 16 + EF Core 8.0                     │   │
 │  └─────────────────────────────────────────────────────────────────────┘   │
 └────────────────────────────────────────────────────────────────────────────┘
 ```
@@ -325,4 +328,4 @@ Database access, save system, and data migrations.
 
 ---
 
-*Generated by The Architect | Rune & Rust v0.4.2*
+*Generated by The Architect | Rune & Rust v0.4.3*
