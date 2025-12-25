@@ -12,6 +12,7 @@ namespace RuneAndRust.Engine.Services;
 /// Service for processing ambient conditions in rooms (v0.3.3b).
 /// Handles passive stat modifiers and turn-based tick effects (damage, stress, corruption).
 /// </summary>
+/// <remarks>See: SPEC-COND-001 for Ambient Condition System design.</remarks>
 public partial class ConditionService : IConditionService
 {
     private readonly IRepository<AmbientCondition> _conditionRepository;
