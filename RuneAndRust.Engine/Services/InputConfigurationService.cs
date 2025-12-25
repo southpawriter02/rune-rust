@@ -8,6 +8,7 @@ namespace RuneAndRust.Engine.Services;
 /// Manages input key bindings via JSON configuration (v0.3.9c).
 /// Loads/saves bindings from data/input_bindings.json.
 /// </summary>
+/// <remarks>See: SPEC-INPUT-001, Section "InputConfigurationService" for keybinding API.</remarks>
 public class InputConfigurationService : IInputConfigurationService
 {
     private readonly ILogger<InputConfigurationService> _logger;

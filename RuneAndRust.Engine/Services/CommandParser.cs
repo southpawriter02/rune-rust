@@ -8,7 +8,9 @@ namespace RuneAndRust.Engine.Services;
 
 /// <summary>
 /// Represents the result of parsing a command, indicating if async follow-up is needed.
+/// Uses boolean flags for deferred execution - the parser signals intent, the caller executes.
 /// </summary>
+/// <remarks>See: SPEC-INPUT-001, Section "ParseResult Class" for property inventory.</remarks>
 public class ParseResult
 {
     /// <summary>
@@ -228,8 +230,9 @@ public class ParseResult
 
 /// <summary>
 /// Parses raw user input and executes commands based on the current game phase.
-/// Implements a simple state machine pattern for command handling.
+/// Implements phase-based routing with deferred execution via ParseResult flags.
 /// </summary>
+/// <remarks>See: SPEC-INPUT-001 for Input Handling System design.</remarks>
 public class CommandParser
 {
     private readonly ILogger<CommandParser> _logger;
