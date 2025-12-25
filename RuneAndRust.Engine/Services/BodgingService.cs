@@ -11,6 +11,7 @@ namespace RuneAndRust.Engine.Services;
 /// Repair uses WITS-based dice rolls to determine success and quality.
 /// Salvage destroys equipment to extract Scrap materials.
 /// </summary>
+/// <remarks>See: SPEC-REPAIR-001 for Repair & Salvage System design.</remarks>
 public class BodgingService : IBodgingService
 {
     private readonly IDiceService _diceService;

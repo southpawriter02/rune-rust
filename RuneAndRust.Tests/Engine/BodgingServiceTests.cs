@@ -14,6 +14,7 @@ namespace RuneAndRust.Tests.Engine;
 /// Validates repair and salvage mechanics including WITS-based rolls,
 /// Scrap consumption, and durability changes.
 /// </summary>
+/// <remarks>See: SPEC-REPAIR-001 for Repair & Salvage System design.</remarks>
 public class BodgingServiceTests
 {
     private readonly Mock<IDiceService> _mockDiceService;

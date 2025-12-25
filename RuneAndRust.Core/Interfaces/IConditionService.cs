@@ -9,6 +9,7 @@ namespace RuneAndRust.Core.Interfaces;
 /// Defines the contract for ambient condition processing (v0.3.3b).
 /// Handles passive stat modifiers and turn-based tick effects.
 /// </summary>
+/// <remarks>See: SPEC-COND-001 for Ambient Condition System design.</remarks>
 public interface IConditionService
 {
     /// <summary>

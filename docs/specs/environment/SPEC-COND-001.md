@@ -1,14 +1,15 @@
 ---
 id: SPEC-COND-001
 title: Ambient Condition System
-version: 1.0.1
+version: 1.0.2
 status: Implemented
+last_updated: 2025-12-24
 related_specs: [SPEC-DICE-001, SPEC-COMBAT-001, SPEC-NAV-001]
 ---
 
 # SPEC-COND-001: Ambient Condition System
 
-> **Version:** 1.0.1
+> **Version:** 1.0.2
 > **Status:** Implemented (v0.3.3b)
 > **Service:** `ConditionService`
 > **Location:** `RuneAndRust.Engine/Services/ConditionService.cs`
@@ -343,3 +344,25 @@ public class Combatant
     }
 }
 ```
+
+---
+
+## Changelog
+
+### v1.0.2 (2025-12-24)
+**Documentation Updates:**
+- Added `last_updated` field to YAML frontmatter
+- Added code traceability remarks to implementation files:
+  - `IConditionService.cs` - interface spec reference
+  - `ConditionService.cs` - service spec reference
+
+### v1.0.1 (2025-12-22)
+- Added BiomeTags to AmbientCondition entity (v0.3.3c)
+- Documented ConditionSeeder integration
+
+### v1.0.0 (2025-12-20)
+**Initial Release:**
+- Ambient Condition System specification
+- 8 condition types with passive penalties and tick effects
+- ConditionService interface and implementation
+- Combatant integration for condition modifiers

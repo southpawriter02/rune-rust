@@ -1,14 +1,15 @@
 ---
 id: SPEC-REPAIR-001
 title: Repair & Salvage System
-version: 1.0.0
+version: 1.0.1
 status: Implemented
+last_updated: 2025-12-24
 related_specs: [SPEC-DICE-001, SPEC-INV-001, SPEC-CRAFT-001]
 ---
 
 # SPEC-REPAIR-001: Repair & Salvage System
 
-> **Version:** 1.0.0
+> **Version:** 1.0.1
 > **Status:** Implemented
 > **Service:** `BodgingService`
 > **Location:** `RuneAndRust.Engine/Services/BodgingService.cs`
@@ -1331,6 +1332,18 @@ All repair/salvage messages comply with Domain 4 Technology Constraints. No prec
 - No system terminology exposed to players ("Net Successes", "DC", "Botches" are internal only)
 - Catastrophe messages use vivid descriptions ("fumbled repair", "permanently damaged")
 - Numeric values in results are for internal tracking, not player display
+
+---
+
+## Changelog
+
+### v1.0.1 (2025-12-24)
+**Documentation Updates:**
+- Added `last_updated` field to YAML frontmatter
+- Added code traceability remarks to implementation files:
+  - `IBodgingService.cs` - interface spec reference
+  - `BodgingService.cs` - service spec reference
+  - `BodgingServiceTests.cs` - test spec reference
 
 ---
 
