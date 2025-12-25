@@ -28,6 +28,9 @@ class Program
             .WriteTo.File("logs/runeandrust.log", rollingInterval: RollingInterval.Day)
             .CreateLogger();
 
+        // Declare host outside try block for crash handler access (v0.3.16b)
+        IHost? host = null;
+
         try
         {
             // Database connection string - use environment variable in production
@@ -36,7 +39,7 @@ class Program
                 ?? "Host=localhost;Port=5433;Database=RuneAndRust;Username=postgres;Password=password";
 
             // 2. Build Host
-            var host = Host.CreateDefaultBuilder(args)
+            host = Host.CreateDefaultBuilder(args)
                 .ConfigureServices((context, services) =>
                 {
                     // Register Database Context
@@ -442,10 +445,30 @@ class Program
                 // Swallow - don't crash the crash handler
             }
 
-            // 2. Render user-friendly crash screen
-            CrashScreenRenderer.Render(ex, logPath);
+            // v0.3.16b: The Black Box - Attempt emergency save
+            // 2. Try to preserve game state before displaying crash screen
+            bool? backupSaved = null;
+            try
+            {
+                if (host != null)
+                {
+                    var gameState = host.Services.GetService<GameState>();
+                    if (gameState?.CurrentCharacter != null && gameState.IsSessionActive)
+                    {
+                        var emergencySaveService = new EmergencySaveService();
+                        backupSaved = emergencySaveService.TryEmergencySave(gameState);
+                    }
+                }
+            }
+            catch
+            {
+                backupSaved = false;
+            }
 
-            // 3. Log to Serilog if still available
+            // 3. Render user-friendly crash screen with backup status
+            CrashScreenRenderer.Render(ex, logPath, backupSaved);
+
+            // 4. Log to Serilog if still available
             Log.Fatal(ex, "System Crash");
         }
         finally

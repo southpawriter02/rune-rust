@@ -4,9 +4,9 @@ using Spectre.Console.Rendering;
 namespace RuneAndRust.Terminal.Rendering;
 
 /// <summary>
-/// Renders the "Red Screen of Death" when a critical error occurs (v0.3.16a).
+/// Renders the "Red Screen of Death" when a critical error occurs (v0.3.16a/b).
 /// Uses Spectre.Console for styled terminal output.
-/// Part of "The Safety Net" crash recovery system.
+/// Part of "The Safety Net" and "The Black Box" crash recovery system.
 /// </summary>
 /// <remarks>
 /// This is a static class because it must function when the DI container
@@ -20,7 +20,8 @@ public static class CrashScreenRenderer
     /// </summary>
     /// <param name="ex">The exception that caused the crash.</param>
     /// <param name="logPath">Path to the crash log file, if available.</param>
-    public static void Render(Exception ex, string? logPath = null)
+    /// <param name="backupSaved">Whether the emergency save was successful (v0.3.16b). Null if not attempted.</param>
+    public static void Render(Exception ex, string? logPath = null, bool? backupSaved = null)
     {
         AnsiConsole.Clear();
 
@@ -43,6 +44,20 @@ public static class CrashScreenRenderer
         else
         {
             rows.Add(new Markup("[yellow]Unable to save crash report.[/]"));
+        }
+
+        // v0.3.16b: Add backup status section
+        if (backupSaved.HasValue)
+        {
+            rows.Add(new Text(""));
+            if (backupSaved.Value)
+            {
+                rows.Add(new Markup("[green]Game progress backed up successfully[/]"));
+            }
+            else
+            {
+                rows.Add(new Markup("[yellow]Unable to backup game progress[/]"));
+            }
         }
 
         rows.Add(new Text(""));
