@@ -4,6 +4,7 @@ namespace RuneAndRust.Core.Enums;
 /// Defines available color themes for accessibility support (v0.3.9b).
 /// Each theme provides optimized color palettes for different visual needs.
 /// </summary>
+/// <remarks>See: SPEC-THEME-001 for Theme System design.</remarks>
 public enum ThemeType
 {
     /// <summary>

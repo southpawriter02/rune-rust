@@ -10,6 +10,7 @@ namespace RuneAndRust.Terminal.Services;
 /// Provides themed color palettes for accessibility support (v0.3.9b).
 /// Manages 5 color palettes: Standard, HighContrast, Protanopia, Deuteranopia, Tritanopia.
 /// </summary>
+/// <remarks>See: SPEC-THEME-001 for Theme System design.</remarks>
 public class ThemeService : IThemeService
 {
     private readonly ILogger<ThemeService> _logger;

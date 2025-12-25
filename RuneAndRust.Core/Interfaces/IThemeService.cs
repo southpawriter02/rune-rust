@@ -6,6 +6,7 @@ namespace RuneAndRust.Core.Interfaces;
 /// Service for managing color themes and accessibility palettes (v0.3.9b).
 /// Provides semantic color lookups that adapt based on the current theme setting.
 /// </summary>
+/// <remarks>See: SPEC-THEME-001 for Theme System design.</remarks>
 public interface IThemeService
 {
     /// <summary>

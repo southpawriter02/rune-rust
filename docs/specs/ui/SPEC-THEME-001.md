@@ -1,7 +1,7 @@
 ---
 id: SPEC-THEME-001
 title: Theme System
-version: 1.1.0
+version: 1.1.1
 status: Implemented
 last_updated: 2025-12-25
 related_specs: [SPEC-RENDER-001, SPEC-UI-001, SPEC-TRANSITION-001]
@@ -9,7 +9,7 @@ related_specs: [SPEC-RENDER-001, SPEC-UI-001, SPEC-TRANSITION-001]
 
 # SPEC-THEME-001: Theme System
 
-> **Version:** 1.1.0
+> **Version:** 1.1.1
 > **Status:** Implemented
 > **Service:** ThemeService
 > **Location:** `RuneAndRust.Terminal/Services/ThemeService.cs`
@@ -59,10 +59,10 @@ Renderer Request → ThemeService.GetColor(role) → Lookup in Current Theme →
 **Example**:
 | Semantic Role | Standard Theme | Protanopia Theme | Purpose |
 |---------------|---------------|------------------|---------|
-| `PlayerColor` | Green (#00FF00) | Blue (#0088FF) | Player name, HP bar |
-| `EnemyColor` | Red (#FF0000) | Orange (#FF8800) | Enemy name, damage numbers |
-| `HealthCritical` | Red (#FF0000) | Magenta (#FF00FF) | HP bar < 25% |
-| `QualityLegendary` | Gold (#FFD700) | Cyan (#00FFFF) | Legendary item rarity |
+| `PlayerColor` | cyan | blue | Player name, HP bar |
+| `EnemyColor` | red | orange1 | Enemy name, damage numbers |
+| `HealthCritical` | red | magenta1 | HP bar < 25% |
+| `QualityLegendary` | gold1 | cyan | Legendary item rarity |
 
 **Benefits**:
 - **Maintainability**: Changing "PlayerColor" from green to blue requires one config change, not searching 100+ renderer files
@@ -79,9 +79,9 @@ Renderer Request → ThemeService.GetColor(role) → Lookup in Current Theme →
 **Audience**: Players with typical color vision
 
 **Palette Philosophy**: High contrast, vibrant colors
-- **Primary**: Green (player), Red (enemy), Blue (magic), Yellow (warning)
-- **HP Gradient**: Green (full) → Yellow (low) → Red (critical)
-- **Quality Tiers**: Grey (poor) → White (common) → Green (uncommon) → Blue (rare) → Purple (epic) → Gold (legendary)
+- **Primary**: Cyan (player), Red (enemy), Blue (magic), Yellow (warning)
+- **HP Gradient**: Green (full) → Orange (low) → Red (critical)
+- **Quality Tiers**: Grey (junk) → White (common) → Green (uncommon) → Blue (rare) → Gold (legendary)
 
 **Use Cases**: Default theme, optimal for visually unimpaired players
 
@@ -202,18 +202,13 @@ public string GetColor(string role)
 ```csharp
 public void SetTheme(ThemeType theme)
 {
-    _currentTheme = theme;
-    _currentPalette = theme switch
-    {
-        ThemeType.Standard => _standardPalette,
-        ThemeType.HighContrast => _highContrastPalette,
-        ThemeType.Protanopia => _protanopiaPalette,
-        ThemeType.Deuteranopia => _deuteranopiaPalette,
-        ThemeType.Tritanopia => _tritanopiaPalette,
-        _ => _standardPalette
-    };
+    var oldTheme = CurrentTheme;
+    GameSettings.Theme = theme;
+    _logger.LogInformation("[Theme] Changed from {OldTheme} to {NewTheme}", oldTheme, theme);
 }
 ```
+
+**Note**: Theme is stored in `GameSettings.Theme`. The `CurrentTheme` property reads directly from GameSettings, so palette lookup automatically uses the new theme on next `GetColor()` call.
 
 **Persistence** (GameSettings):
 ```json
@@ -351,38 +346,28 @@ var panel = new Panel("Content")
 
 **Signature**: `void SetTheme(ThemeType theme)`
 
-**Purpose**: Switch active theme (updates current palette pointer).
+**Purpose**: Switch active theme by updating GameSettings.Theme.
 
 **Sequence**:
 ```
-1. Validate ThemeType is valid enum value
-2. Update _currentTheme field
-3. Update _currentPalette pointer to corresponding palette dictionary
-4. Log theme change
+1. Capture old theme from CurrentTheme property
+2. Update GameSettings.Theme to new value
+3. Log theme change with structured logging
 ```
 
 **Code**:
 ```csharp
 public void SetTheme(ThemeType theme)
 {
-    _currentTheme = theme;
-    _currentPalette = theme switch
-    {
-        ThemeType.Standard => _standardPalette,
-        ThemeType.HighContrast => _highContrastPalette,
-        ThemeType.Protanopia => _protanopiaPalette,
-        ThemeType.Deuteranopia => _deuteranopiaPalette,
-        ThemeType.Tritanopia => _tritanopiaPalette,
-        _ => _standardPalette // Fallback
-    };
-
-    _logger.LogInformation($"Theme switched to {theme}");
+    var oldTheme = CurrentTheme;
+    GameSettings.Theme = theme;
+    _logger.LogInformation("[Theme] Changed from {OldTheme} to {NewTheme}", oldTheme, theme);
 }
 ```
 
-**Immediate Effect**: Next call to `GetColor()` uses new palette
+**Architecture Note**: Theme is stored in `GameSettings.Theme` (static property). The `CurrentTheme` property reads directly from GameSettings, so palette lookup automatically uses the new theme on next `GetColor()` call without needing internal state management.
 
-**Persistence**: Caller responsible for persisting theme to GameSettings
+**Immediate Effect**: Next call to `GetColor()` uses new palette (via CurrentTheme → GameSettings.Theme lookup)
 
 ---
 
@@ -793,18 +778,9 @@ public void SetTheme(ThemeType theme)
 // ThemeService.SetTheme()
 public void SetTheme(ThemeType theme)
 {
-    _currentTheme = theme;
-    _currentPalette = theme switch
-    {
-        ThemeType.Standard => _standardPalette,
-        ThemeType.HighContrast => _highContrastPalette,
-        ThemeType.Protanopia => _protanopiaPalette,
-        ThemeType.Deuteranopia => _deuteranopiaPalette,
-        ThemeType.Tritanopia => _tritanopiaPalette,
-        _ => _standardPalette
-    };
-
-    _logger.LogInformation($"Theme switched to {theme}");
+    var oldTheme = CurrentTheme;
+    GameSettings.Theme = theme;
+    _logger.LogInformation("[Theme] Changed from {OldTheme} to {NewTheme}", oldTheme, theme);
 }
 ```
 
@@ -1074,12 +1050,14 @@ Calculate HP Percentage (currentHp / maxHp)
 ### Core Service (from RuneAndRust.Terminal/Services/)
 
 1. **ThemeService** (RuneAndRust.Terminal/Services/ThemeService.cs)
-   - **Lines**: 344
+   - **Lines**: 423
+   - **Properties**:
+     - `ThemeType CurrentTheme => GameSettings.Theme`
    - **Key Methods**:
-     - `string GetColor(string role)`
-     - `Color GetColorObject(string role)`
+     - `string GetColor(string colorRole)`
+     - `Color GetColorObject(string colorRole)` (public, not in interface)
      - `void SetTheme(ThemeType theme)`
-     - `void LoadPalettes()` (private, called in constructor)
+     - `Dictionary<ThemeType, Dictionary<string, string>> InitializePalettes()` (private)
 
 ### Supporting Services
 
@@ -1088,11 +1066,12 @@ Calculate HP Percentage (currentHp / maxHp)
      ```csharp
      public interface IThemeService
      {
-         string GetColor(string role);
-         Color GetColorObject(string role);
+         ThemeType CurrentTheme { get; }
+         string GetColor(string colorRole);
          void SetTheme(ThemeType theme);
      }
      ```
+   - **Note**: `GetColorObject(string)` is a public method on `ThemeService` class but NOT part of the interface. Callers needing `Color` objects reference `ThemeService` directly.
 
 3. **SettingsService** (RuneAndRust.Engine/Services/SettingsService.cs)
    - **Methods Used**:
@@ -1701,6 +1680,20 @@ foreach (var role in _currentPalette.Keys)
 ---
 
 ## Changelog
+
+### v1.1.1 (2025-12-25) - Documentation Accuracy
+
+**Fixed:**
+- Corrected PlayerColor value: green → cyan in Standard theme table
+- Corrected HealthLow value: yellow → orange1 in Standard theme table
+- Updated IThemeService interface: removed GetColorObject (not in interface), added CurrentTheme property
+- Updated SetTheme implementation examples to show GameSettings integration
+- Updated ThemeService line count (344 → 423 lines)
+
+**Added:**
+- Code traceability remarks to 4 implementation files
+- Documentation of CurrentTheme property behavior
+- Architecture notes explaining GameSettings as single source of truth
 
 ### v1.1.0 (2025-12-25)
 

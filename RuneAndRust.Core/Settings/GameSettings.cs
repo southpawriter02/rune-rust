@@ -7,6 +7,7 @@ namespace RuneAndRust.Core.Settings;
 /// Provides global access to user preferences that affect visual effects, themes, and animations.
 /// Persisted to data/options.json via SettingsService.
 /// </summary>
+/// <remarks>See: SPEC-THEME-001 for Theme property integration with ThemeService.</remarks>
 public static class GameSettings
 {
     /// <summary>
