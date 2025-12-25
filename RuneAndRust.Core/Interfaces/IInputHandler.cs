@@ -4,6 +4,7 @@ namespace RuneAndRust.Core.Interfaces;
 /// Defines the contract for handling user input.
 /// Abstracted to allow different implementations (Terminal, GUI, Test Mock).
 /// </summary>
+/// <remarks>See: SPEC-INPUT-001, Section "IInputHandler Interface" for contract details.</remarks>
 public interface IInputHandler
 {
     /// <summary>
