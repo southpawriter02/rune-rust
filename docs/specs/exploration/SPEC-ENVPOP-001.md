@@ -1,16 +1,17 @@
 ---
 id: SPEC-ENVPOP-001
 title: Environment Population System
-version: 2.0.0
+version: 2.0.1
 status: Implemented
+last_updated: 2025-12-24
 related_specs: [SPEC-DUNGEON-001, SPEC-HAZARD-001, SPEC-COND-001, SPEC-DICE-001, SPEC-ENEMY-001]
 ---
 
 # SPEC-ENVPOP-001: Environment Population System
 
-**Version:** 2.0.0 (v0.4.0 BiomeElement System + v0.3.3c Legacy)
+**Version:** 2.0.1 (v0.4.0 BiomeElement System + v0.3.3c Legacy)
 **Status:** Implemented
-**Last Updated:** 2025-12-22
+**Last Updated:** 2025-12-24
 **Owner:** Engine Team
 **Category:** World Generation & Procedural Content
 
@@ -1224,7 +1225,7 @@ public class DynamicHazard
     public bool OneTimeUse { get; set; }
 
     public HazardState State { get; set; } // Dormant, Active, Triggered, Disabled
-    public int CurrentCooldown { get; set; }
+    public int CooldownRemaining { get; set; }
 }
 ```
 
@@ -1271,15 +1272,14 @@ DangerLevel.Lethal   → +0.7f (70%)
 
 **Source:** `RuneAndRust.Tests/Engine/EnvironmentPopulatorTests.cs` (427 lines)
 
-**Test Count:** 18 tests
+**Test Count:** 11 tests
 
 **Coverage Breakdown:**
 - BiomeEnvironmentMapping: 6 tests
-- PopulateRoomAsync(): 9 tests
+- PopulateRoomAsync(): 3 tests
 - PopulateDungeonAsync(): 2 tests
-- Helper methods: 1 test
 
-**Coverage Percentage:** ~90%
+**Coverage Percentage:** ~85% (main paths well covered)
 
 ---
 
@@ -1400,12 +1400,26 @@ var validTemplates = templates
 - `RuneAndRust.Core/Interfaces/IEnvironmentPopulator.cs` (27 lines)
 
 **Tests:**
-- `RuneAndRust.Tests/Engine/EnvironmentPopulatorTests.cs` (427 lines, 18 tests)
+- `RuneAndRust.Tests/Engine/EnvironmentPopulatorTests.cs` (427 lines, 11 tests)
 
 **Data Models:**
 - `RuneAndRust.Core/Entities/HazardTemplate.cs`
 - `RuneAndRust.Core/Entities/AmbientCondition.cs`
 - `RuneAndRust.Core/Entities/DynamicHazard.cs`
+
+---
+
+## Changelog
+
+### v2.0.1 (2025-12-24)
+**Documentation Updates:**
+- Added `last_updated` field to YAML frontmatter
+- **FIX:** Corrected `DynamicHazard.CurrentCooldown` to `CooldownRemaining` (matches code)
+- **FIX:** Updated test count from 18 to 11
+- Added code traceability remarks to implementation files:
+  - `IEnvironmentPopulator.cs` - interface spec reference
+  - `EnvironmentPopulator.cs` - service spec reference
+  - `BiomeEnvironmentMapping.cs` - mapping spec reference
 
 ---
 

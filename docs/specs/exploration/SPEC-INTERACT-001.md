@@ -1,10 +1,11 @@
 ---
 id: SPEC-INTERACT-001
 title: Interaction System
-version: 1.0.0
+version: 1.0.1
 status: Implemented
 created: 2025-12-22
 updated: 2025-12-22
+last_updated: 2025-12-25
 tags: [exploration, wits, examine, loot, containers, discovery]
 related_specs: [SPEC-DICE-001, SPEC-INV-001, SPEC-CODEX-001]
 ---
@@ -590,6 +591,43 @@ public async Task<string> ListObjectsAsync()
 **Grammar**:
 - Single object: `"You notice: Rusted Crate."`
 - Multiple objects: `"You notice: Rusted Crate, Metal Locker, and Terminal."`
+
+---
+
+#### 11. Available Items Retrieval
+
+**Purpose**: Get all items currently available in open containers for taking.
+
+**Implementation** ([InteractionService.cs:506-529](../../RuneAndRust.Engine/Services/InteractionService.cs#L506-L529)):
+```csharp
+public async Task<IEnumerable<Item>> GetAvailableItemsAsync()
+{
+    if (_gameState.CurrentRoomId == null)
+    {
+        return Enumerable.Empty<Item>();
+    }
+
+    var allItems = new List<Item>();
+
+    // Get items from all open containers
+    var containers = await _objectRepository.GetByRoomIdAsync(_gameState.CurrentRoomId.Value);
+    foreach (var container in containers.Where(c => c.IsContainer && c.IsOpen))
+    {
+        if (_containerLoot.TryGetValue(container.Id, out var items))
+        {
+            allItems.AddRange(items);
+        }
+    }
+
+    return allItems;
+}
+```
+
+**Behavior Details**:
+- **No Dice Roll**: Unlike examine/search, this is a passive query (no WITS check).
+- **Open Containers Only**: Only returns items from containers where `IsOpen == true`.
+- **In-Memory Loot**: Items come from `_containerLoot` dictionary, not database.
+- **Empty State**: Returns empty enumerable if no room set or no items available.
 
 ---
 
@@ -1712,6 +1750,14 @@ public async Task<string> PickLockAsync(string targetName)
 ---
 
 ## Changelog
+
+### v1.0.1 (2025-12-25)
+**Documentation Updates:**
+- Added `last_updated` field to YAML frontmatter
+- **ADD:** Documented `GetAvailableItemsAsync()` method (Secondary Behavior #11)
+- Added code traceability remarks to implementation files:
+  - `IInteractionService.cs` - interface spec reference
+  - `InteractionService.cs` - service spec reference
 
 ### v1.0.0 (2025-12-22)
 - ✅ Initial specification created
