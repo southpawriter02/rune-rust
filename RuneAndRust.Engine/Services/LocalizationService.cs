@@ -2,19 +2,26 @@ using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using RuneAndRust.Core.Constants;
 using RuneAndRust.Core.Interfaces;
+using RuneAndRust.Engine.Helpers;
 
 namespace RuneAndRust.Engine.Services;
 
 /// <summary>
-/// JSON-based localization service implementation (v0.3.15a - The Lexicon).
-/// Loads locale strings from data/locales/{locale}.json files.
+/// JSON-based localization service implementation (v0.3.15c - The Polyglot).
+/// Loads locale strings from data/locales/{locale}.json files with fallback chain.
 /// </summary>
-/// <remarks>See: SPEC-LOC-001 for Localization System design.</remarks>
+/// <remarks>
+/// See: SPEC-LOC-001 for Localization System design.
+/// v0.3.15a: Initial implementation with JSON loading and flattening.
+/// v0.3.15b: Added two-tier fallback chain (primary -> fallback -> return key).
+/// v0.3.15c: Added GetAvailableLocales() and pseudo-localization (qps-ploc) support.
+/// </remarks>
 public class LocalizationService : ILocalizationService
 {
     private readonly ILogger<LocalizationService> _logger;
     private readonly string _localesPath;
     private Dictionary<string, string> _strings = new();
+    private Dictionary<string, string> _fallbackStrings = new();
 
     private const string DefaultLocale = "en-US";
 
@@ -34,19 +41,56 @@ public class LocalizationService : ILocalizationService
     /// <inheritdoc />
     public async Task<bool> LoadLocaleAsync(string locale)
     {
+        // Handle pseudo-locale specially (v0.3.15c - The Polyglot)
+        if (locale == "qps-ploc")
+        {
+            _strings.Clear();
+            await LoadSingleLocaleAsync(DefaultLocale, isPrimary: false);
+            CurrentLocale = "qps-ploc";
+            _logger.LogInformation("[Localization] Pseudo-localization enabled");
+            return true;
+        }
+
+        // Load primary locale
+        var success = await LoadSingleLocaleAsync(locale, isPrimary: true);
+
+        // Load fallback if different from default (v0.3.15b)
+        if (locale != DefaultLocale)
+        {
+            await LoadSingleLocaleAsync(DefaultLocale, isPrimary: false);
+        }
+        else
+        {
+            _fallbackStrings.Clear(); // No fallback needed for en-US
+        }
+
+        return success;
+    }
+
+    /// <summary>
+    /// Loads a single locale file into either primary or fallback dictionary.
+    /// </summary>
+    /// <param name="locale">The locale code to load.</param>
+    /// <param name="isPrimary">True to load into primary strings, false for fallback.</param>
+    /// <returns>True if loaded successfully.</returns>
+    private async Task<bool> LoadSingleLocaleAsync(string locale, bool isPrimary)
+    {
         var filePath = Path.Combine(_localesPath, $"{locale}.json");
 
         if (!File.Exists(filePath))
         {
-            _logger.LogWarning("[Localization] Locale file not found: {Path}. Falling back to {Default}",
-                filePath, DefaultLocale);
-
-            if (locale != DefaultLocale)
+            if (isPrimary)
             {
-                return await LoadLocaleAsync(DefaultLocale);
-            }
+                _logger.LogWarning("[Localization] Locale file not found: {Path}. Falling back to {Default}",
+                    filePath, DefaultLocale);
 
-            _logger.LogError("[Localization] Default locale file not found: {Path}", filePath);
+                if (locale != DefaultLocale)
+                {
+                    return await LoadSingleLocaleAsync(DefaultLocale, isPrimary: true);
+                }
+
+                _logger.LogError("[Localization] Default locale file not found: {Path}", filePath);
+            }
             return false;
         }
 
@@ -55,12 +99,21 @@ public class LocalizationService : ILocalizationService
             var json = await File.ReadAllTextAsync(filePath);
             using var document = JsonDocument.Parse(json);
 
-            _strings.Clear();
-            FlattenJson(document.RootElement, string.Empty);
+            var targetDict = isPrimary ? _strings : _fallbackStrings;
+            targetDict.Clear();
+            FlattenJson(document.RootElement, string.Empty, targetDict);
 
-            CurrentLocale = locale;
-            _logger.LogInformation("[Localization] Loaded locale {Locale} with {Count} strings",
-                locale, _strings.Count);
+            if (isPrimary)
+            {
+                CurrentLocale = locale;
+                _logger.LogInformation("[Localization] Loaded locale {Locale} with {Count} strings",
+                    locale, _strings.Count);
+            }
+            else
+            {
+                _logger.LogDebug("[Localization] Loaded fallback locale {Locale} with {Count} strings",
+                    locale, _fallbackStrings.Count);
+            }
 
             return true;
         }
@@ -79,9 +132,25 @@ public class LocalizationService : ILocalizationService
     /// <inheritdoc />
     public string Get(string key)
     {
+        // Handle pseudo-localization (v0.3.15c - The Polyglot)
+        if (CurrentLocale == "qps-ploc")
+        {
+            if (_fallbackStrings.TryGetValue(key, out var fallbackValue))
+                return PseudoLocalizer.Transform(fallbackValue);
+            return PseudoLocalizer.Transform(key);
+        }
+
+        // Try primary locale first
         if (_strings.TryGetValue(key, out var value))
         {
             return value;
+        }
+
+        // Try fallback locale (v0.3.15b)
+        if (_fallbackStrings.TryGetValue(key, out var fallbackValue2))
+        {
+            _logger.LogDebug("[Localization] Key {Key} not in primary locale, using fallback", key);
+            return fallbackValue2;
         }
 
         _logger.LogDebug("[Localization] Key not found: {Key}", key);
@@ -111,14 +180,36 @@ public class LocalizationService : ILocalizationService
     }
 
     /// <inheritdoc />
-    public bool HasKey(string key) => _strings.ContainsKey(key);
+    public bool HasKey(string key) => _strings.ContainsKey(key) || _fallbackStrings.ContainsKey(key);
 
     /// <inheritdoc />
     public IReadOnlyList<string> GetMissingKeys()
     {
         return LocKeys.AllKeys
-            .Where(k => !_strings.ContainsKey(k))
+            .Where(k => !_strings.ContainsKey(k) && !_fallbackStrings.ContainsKey(k))
             .ToList();
+    }
+
+    /// <inheritdoc />
+    public IReadOnlyList<string> GetAvailableLocales()
+    {
+        var locales = new List<string>();
+
+        if (Directory.Exists(_localesPath))
+        {
+            foreach (var file in Directory.GetFiles(_localesPath, "*.json"))
+            {
+                locales.Add(Path.GetFileNameWithoutExtension(file));
+            }
+        }
+
+        // Always include pseudo-locale for testing (v0.3.15c)
+        if (!locales.Contains("qps-ploc"))
+            locales.Add("qps-ploc");
+
+        locales.Sort();
+        _logger.LogDebug("[Localization] Found {Count} available locales", locales.Count);
+        return locales;
     }
 
     /// <summary>
@@ -127,7 +218,8 @@ public class LocalizationService : ILocalizationService
     /// </summary>
     /// <param name="element">The JSON element to process.</param>
     /// <param name="prefix">The current key prefix (dot-separated path).</param>
-    private void FlattenJson(JsonElement element, string prefix)
+    /// <param name="target">The dictionary to populate with flattened keys.</param>
+    private void FlattenJson(JsonElement element, string prefix, Dictionary<string, string> target)
     {
         switch (element.ValueKind)
         {
@@ -142,21 +234,21 @@ public class LocalizationService : ILocalizationService
                         ? property.Name
                         : $"{prefix}.{property.Name}";
 
-                    FlattenJson(property.Value, newPrefix);
+                    FlattenJson(property.Value, newPrefix, target);
                 }
                 break;
 
             case JsonValueKind.String:
-                _strings[prefix] = element.GetString() ?? string.Empty;
+                target[prefix] = element.GetString() ?? string.Empty;
                 break;
 
             case JsonValueKind.Number:
-                _strings[prefix] = element.GetRawText();
+                target[prefix] = element.GetRawText();
                 break;
 
             case JsonValueKind.True:
             case JsonValueKind.False:
-                _strings[prefix] = element.GetBoolean().ToString();
+                target[prefix] = element.GetBoolean().ToString();
                 break;
         }
     }

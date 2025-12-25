@@ -5,7 +5,7 @@ using RuneAndRust.Core.Interfaces;
 namespace RuneAndRust.Terminal.Rendering;
 
 /// <summary>
-/// Service for Options screen formatting and styling (v0.3.15a - The Lexicon).
+/// Service for Options screen formatting and styling (v0.3.15c - The Polyglot).
 /// Provides methods for rendering sliders, toggles, and localized enum display names.
 /// Converted from static class to support ILocalizationService injection.
 /// </summary>
@@ -190,4 +190,33 @@ public class OptionsViewHelperService
             ConsoleKey.RightArrow => "[cyan]→[/]",
             _ => $"[cyan]{key}[/]"
         };
+
+    /// <summary>
+    /// Gets the display name for a locale code (v0.3.15c - The Polyglot).
+    /// </summary>
+    /// <param name="locale">The locale code (e.g., "en-US", "qps-ploc").</param>
+    /// <returns>Human-readable locale name.</returns>
+    public string GetLanguageDisplayName(string locale)
+        => locale switch
+        {
+            "en-US" => "English (US)",
+            "qps-ploc" => "[Pseudo-Loc]",
+            _ => locale
+        };
+
+    /// <summary>
+    /// Cycles through available locales (v0.3.15c - The Polyglot).
+    /// </summary>
+    /// <param name="current">The current locale code.</param>
+    /// <param name="direction">1 for next, -1 for previous.</param>
+    /// <param name="available">The list of available locale codes.</param>
+    /// <returns>The next/previous locale code, wrapping around.</returns>
+    public string CycleLanguage(string current, int direction, IReadOnlyList<string> available)
+    {
+        var index = available.ToList().IndexOf(current);
+        if (index < 0) index = 0;
+
+        var newIndex = (index + direction + available.Count) % available.Count;
+        return available[newIndex];
+    }
 }

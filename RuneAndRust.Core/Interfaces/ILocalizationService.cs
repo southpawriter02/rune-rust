@@ -1,7 +1,7 @@
 namespace RuneAndRust.Core.Interfaces;
 
 /// <summary>
-/// Service contract for localized string retrieval (v0.3.15a - The Lexicon).
+/// Service contract for localized string retrieval (v0.3.15c - The Polyglot).
 /// Provides string lookup by key with optional format arguments and fallback behavior.
 /// </summary>
 /// <remarks>
@@ -54,4 +54,11 @@ public interface ILocalizationService
     /// </summary>
     /// <returns>List of missing keys.</returns>
     IReadOnlyList<string> GetMissingKeys();
+
+    /// <summary>
+    /// Gets a list of available locale codes based on installed JSON files.
+    /// Always includes "qps-ploc" for pseudo-localization testing (v0.3.15c).
+    /// </summary>
+    /// <returns>Sorted list of locale codes (e.g., "en-US", "qps-ploc").</returns>
+    IReadOnlyList<string> GetAvailableLocales();
 }

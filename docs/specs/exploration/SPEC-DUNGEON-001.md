@@ -1,7 +1,7 @@
 ---
 id: SPEC-DUNGEON-001
 title: Dungeon Generation System
-version: 0.4.0
+version: 0.4.1
 status: Implemented
 last_updated: 2025-12-24
 related_specs: [SPEC-ENVPOP-001, SPEC-TEMPLATE-001, SPEC-NAV-001, SPEC-DICE-001]
@@ -9,7 +9,7 @@ related_specs: [SPEC-ENVPOP-001, SPEC-TEMPLATE-001, SPEC-NAV-001, SPEC-DICE-001]
 
 # SPEC-DUNGEON-001: Dungeon Generation System
 
-> **Version:** 0.4.0 (Dynamic Room Engine)
+> **Version:** 0.4.1 (Dynamic Room Engine)
 > **Status:** Implemented
 > **Service:** `DungeonGenerator`
 > **Location:** `RuneAndRust.Engine/Services/DungeonGenerator.cs`
@@ -501,7 +501,6 @@ public class Room
     public Dictionary<Direction, Guid> Exits { get; set; } = new();
 
     public bool IsStartingRoom { get; set; }
-    public bool IsBossRoom { get; set; }
 
     public BiomeType BiomeType { get; set; }
     public DangerLevel DangerLevel { get; set; }
@@ -552,10 +551,10 @@ public record Coordinate(int X, int Y, int Z)
 {
     public static readonly Coordinate Origin = new(0, 0, 0);
 
-    public int ManhattanDistance(Coordinate other)
-    {
-        return Math.Abs(X - other.X) + Math.Abs(Y - other.Y) + Math.Abs(Z - other.Z);
-    }
+    public override string ToString() => $"({X}, {Y}, {Z})";
+
+    public Coordinate Offset(int deltaX, int deltaY, int deltaZ) =>
+        new(X + deltaX, Y + deltaY, Z + deltaZ);
 }
 ```
 
@@ -819,6 +818,13 @@ The echoes of your footsteps seem to go on forever.
 ---
 
 ## Changelog
+
+### v0.4.1 (2025-12-24)
+**Documentation Corrections (Deep Dive)**
+- **REMOVED**: `IsBossRoom` property from Room entity documentation (not implemented in code)
+- **REMOVED**: `ManhattanDistance()` method from Coordinate documentation (not implemented in code)
+- **UPDATED**: Coordinate definition to match actual implementation (`ToString()`, `Offset()`)
+- **VERIFIED**: All other spec content matches DungeonGenerator.cs implementation exactly
 
 ### v0.4.0 (2025-12-24)
 **Major Rewrite: Template-Based Generation**

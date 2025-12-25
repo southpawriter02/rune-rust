@@ -9,7 +9,7 @@ using RuneAndRust.Terminal.Rendering;
 namespace RuneAndRust.Terminal.Services;
 
 /// <summary>
-/// Controller for the Options screen modal loop (v0.3.15a - The Lexicon).
+/// Controller for the Options screen modal loop (v0.3.15c - The Polyglot).
 /// Handles input navigation, setting modification, key rebinding, and persistence on exit.
 /// Uses localized strings via ILocalizationService.
 /// </summary>
@@ -130,7 +130,8 @@ public class OptionsController
             Theme = (int)GameSettings.Theme,
             TextSpeed = GameSettings.TextSpeed,
             MasterVolume = GameSettings.MasterVolume,
-            AutosaveIntervalMinutes = GameSettings.AutosaveIntervalMinutes
+            AutosaveIntervalMinutes = GameSettings.AutosaveIntervalMinutes,
+            Language = GameSettings.Language
         };
     }
 
@@ -207,6 +208,13 @@ public class OptionsController
                     Type: SettingType.Enum,
                     IsSelected: index++ == vm.SelectedIndex,
                     PropertyName: "Theme"
+                ));
+                vm.CurrentItems.Add(new SettingItemView(
+                    Name: _loc.Get(LocKeys.UI_Options_Setting_Language),
+                    ValueDisplay: _viewHelper.GetLanguageDisplayName(vm.Language),
+                    Type: SettingType.Enum,
+                    IsSelected: index++ == vm.SelectedIndex,
+                    PropertyName: "Language"
                 ));
                 vm.CurrentItems.Add(new SettingItemView(
                     Name: _loc.Get(LocKeys.UI_Options_Setting_ReduceMotion),
@@ -367,6 +375,14 @@ public class OptionsController
                 vm.Theme = _viewHelper.CycleTheme(vm.Theme, direction);
                 _logger.LogDebug("[Options] Theme changed to {Value}", _viewHelper.GetThemeName(vm.Theme));
                 break;
+
+            case "Language":
+                var availableLocales = _loc.GetAvailableLocales();
+                vm.Language = _viewHelper.CycleLanguage(vm.Language, direction, availableLocales);
+                // Reload locale immediately for live preview (v0.3.15c)
+                _loc.LoadLocaleAsync(vm.Language).GetAwaiter().GetResult();
+                _logger.LogDebug("[Options] Language changed to {Value}", _viewHelper.GetLanguageDisplayName(vm.Language));
+                break;
         }
     }
 
@@ -498,6 +514,10 @@ public class OptionsController
         vm.TextSpeed = GameSettings.TextSpeed;
         vm.MasterVolume = GameSettings.MasterVolume;
         vm.AutosaveIntervalMinutes = GameSettings.AutosaveIntervalMinutes;
+        vm.Language = GameSettings.Language;
+
+        // Reload locale to match reset language (v0.3.15c)
+        await _loc.LoadLocaleAsync(vm.Language);
 
         _logger.LogInformation("[Options] Settings reset to defaults");
     }
@@ -513,5 +533,6 @@ public class OptionsController
         GameSettings.TextSpeed = vm.TextSpeed;
         GameSettings.MasterVolume = vm.MasterVolume;
         GameSettings.AutosaveIntervalMinutes = vm.AutosaveIntervalMinutes;
+        GameSettings.Language = vm.Language;
     }
 }
