@@ -2,13 +2,13 @@ namespace RuneAndRust.Core.ValueObjects;
 
 /// <summary>
 /// Represents a 3D coordinate position in the game world.
-/// Uses record type for value equality semantics.
+/// Uses readonly record struct for stack allocation and value equality semantics (v0.3.18a).
 /// The Z-axis supports vertical navigation (The Deep, Canopy Sea, etc.).
 /// </summary>
 /// <param name="X">East-West position (East is positive).</param>
 /// <param name="Y">North-South position (North is positive).</param>
 /// <param name="Z">Vertical position (Up is positive).</param>
-public record Coordinate(int X, int Y, int Z)
+public readonly record struct Coordinate(int X, int Y, int Z)
 {
     /// <summary>
     /// Gets the origin coordinate (0, 0, 0).

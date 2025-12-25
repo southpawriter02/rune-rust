@@ -284,4 +284,94 @@ public class CoordinateTests
     }
 
     #endregion
+
+    #region Value Type Tests (v0.3.18a - The Garbage Collector)
+
+    [Fact]
+    public void Coordinate_IsValueType()
+    {
+        // Assert
+        typeof(Coordinate).IsValueType.Should().BeTrue(
+            "Coordinate should be a value type (struct) for stack allocation");
+    }
+
+    [Fact]
+    public void Coordinate_IsReadOnlyRecordStruct()
+    {
+        // Assert - Verify it's a struct
+        typeof(Coordinate).IsValueType.Should().BeTrue();
+
+        // Verify it has record semantics (ToString, Equality, etc. are compiler-generated)
+        var coord = new Coordinate(1, 2, 3);
+        coord.ToString().Should().Contain("1").And.Contain("2").And.Contain("3");
+    }
+
+    [Fact]
+    public void Coordinate_DefaultValue_IsOrigin()
+    {
+        // Arrange - Structs have default values
+        Coordinate defaultCoord = default;
+
+        // Assert
+        defaultCoord.X.Should().Be(0);
+        defaultCoord.Y.Should().Be(0);
+        defaultCoord.Z.Should().Be(0);
+        defaultCoord.Should().Be(Coordinate.Origin);
+    }
+
+    [Fact]
+    public void Coordinate_CanBeUsedInArrayWithoutBoxing()
+    {
+        // Arrange - Struct arrays don't box elements
+        var coords = new Coordinate[1000];
+
+        // Act - Fill array with coordinates
+        for (int i = 0; i < coords.Length; i++)
+        {
+            coords[i] = new Coordinate(i, i * 2, i * 3);
+        }
+
+        // Assert - Verify values are stored correctly
+        coords[500].Should().Be(new Coordinate(500, 1000, 1500));
+    }
+
+    [Fact]
+    public void Coordinate_WithExpression_StillWorksAsStruct()
+    {
+        // Arrange
+        var original = new Coordinate(10, 20, 30);
+
+        // Act - Record structs support 'with' expressions
+        var modifiedX = original with { X = 100 };
+        var modifiedY = original with { Y = 200 };
+        var modifiedZ = original with { Z = 300 };
+
+        // Assert
+        modifiedX.Should().Be(new Coordinate(100, 20, 30));
+        modifiedY.Should().Be(new Coordinate(10, 200, 30));
+        modifiedZ.Should().Be(new Coordinate(10, 20, 300));
+
+        // Original unchanged
+        original.Should().Be(new Coordinate(10, 20, 30));
+    }
+
+    [Fact]
+    public void Coordinate_PassByValue_DoesNotModifyOriginal()
+    {
+        // Arrange
+        var original = new Coordinate(5, 5, 5);
+
+        // Act - Passing struct by value creates a copy
+        static void TryToModify(Coordinate coord)
+        {
+            coord = new Coordinate(99, 99, 99);
+            // This modification only affects the local copy
+        }
+        TryToModify(original);
+
+        // Assert - Original is unchanged
+        original.Should().Be(new Coordinate(5, 5, 5));
+    }
+
+    #endregion
 }
