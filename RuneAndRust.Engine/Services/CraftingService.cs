@@ -13,6 +13,7 @@ namespace RuneAndRust.Engine.Services;
 /// Handles recipe lookup, ingredient validation, and item creation.
 /// Supports trade-specific catastrophe effects (v0.3.1c).
 /// </summary>
+/// <remarks>See: SPEC-CRAFT-001 for Crafting System design.</remarks>
 public class CraftingService : ICraftingService
 {
     private readonly IDiceService _diceService;

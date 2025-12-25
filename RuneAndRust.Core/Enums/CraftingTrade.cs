@@ -4,6 +4,7 @@ namespace RuneAndRust.Core.Enums;
 /// Defines the crafting trade specializations available in Rune &amp; Rust.
 /// Each trade represents a distinct set of skills and recipe types.
 /// </summary>
+/// <remarks>See: SPEC-CRAFT-001 for Crafting System design.</remarks>
 public enum CraftingTrade
 {
     /// <summary>

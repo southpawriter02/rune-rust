@@ -6,6 +6,7 @@ namespace RuneAndRust.Core.Entities;
 /// Defines a crafting recipe with its requirements and outputs.
 /// Recipes are stored in the RecipeRegistry and referenced by ID.
 /// </summary>
+/// <remarks>See: SPEC-CRAFT-001 for Crafting System design.</remarks>
 public class Recipe
 {
     /// <summary>

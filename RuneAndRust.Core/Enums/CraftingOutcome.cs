@@ -4,6 +4,7 @@ namespace RuneAndRust.Core.Enums;
 /// Defines the possible outcomes of a crafting attempt.
 /// Outcome is determined by comparing net successes (successes - botches) to the recipe's DC.
 /// </summary>
+/// <remarks>See: SPEC-CRAFT-001 for Crafting System design.</remarks>
 public enum CraftingOutcome
 {
     /// <summary>

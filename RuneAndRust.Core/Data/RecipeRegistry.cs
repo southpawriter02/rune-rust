@@ -7,6 +7,7 @@ namespace RuneAndRust.Core.Data;
 /// Static registry containing all available crafting recipes.
 /// Provides lookup methods for recipe access by ID or trade.
 /// </summary>
+/// <remarks>See: SPEC-CRAFT-001 for Crafting System design.</remarks>
 public static class RecipeRegistry
 {
     private static readonly Dictionary<string, Recipe> _recipes = new(StringComparer.OrdinalIgnoreCase);

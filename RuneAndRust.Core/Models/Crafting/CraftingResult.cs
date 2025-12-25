@@ -7,6 +7,7 @@ namespace RuneAndRust.Core.Models.Crafting;
 /// Represents the complete result of a crafting attempt.
 /// Contains all details about the roll, outcome, and any produced items.
 /// </summary>
+/// <remarks>See: SPEC-CRAFT-001 for Crafting System design.</remarks>
 /// <param name="IsSuccess">Whether the craft produced an output item.</param>
 /// <param name="Outcome">The outcome category (Failure, Success, Masterwork, Catastrophe).</param>
 /// <param name="RecipeId">The ID of the recipe that was attempted.</param>
