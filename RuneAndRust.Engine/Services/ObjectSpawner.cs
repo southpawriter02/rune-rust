@@ -9,6 +9,7 @@ namespace RuneAndRust.Engine.Services;
 /// Spawns interactable objects in rooms during dungeon generation.
 /// Generates 2-3 objects per room with AAM-VOICE compliant descriptions.
 /// </summary>
+/// <remarks>See: SPEC-SPAWN-001 for Object Spawning System design.</remarks>
 public class ObjectSpawner
 {
     private readonly IInteractableObjectRepository _objectRepository;
