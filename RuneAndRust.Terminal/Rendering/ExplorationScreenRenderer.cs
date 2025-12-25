@@ -14,6 +14,7 @@ namespace RuneAndRust.Terminal.Rendering;
 /// Updated with context help tips in expanded footer in v0.3.9c.
 /// Updated with IThemeService for accessibility themes in v0.3.14a.
 /// </summary>
+/// <remarks>See: SPEC-RENDER-001 for Rendering Pipeline System design.</remarks>
 public class ExplorationScreenRenderer : IExplorationScreenRenderer
 {
     private readonly ILogger<ExplorationScreenRenderer> _logger;

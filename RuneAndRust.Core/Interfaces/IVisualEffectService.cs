@@ -6,6 +6,7 @@ namespace RuneAndRust.Core.Interfaces;
 /// Service contract for visual effects during gameplay (v0.3.9a).
 /// Provides methods to trigger visual feedback like border flashes during combat events.
 /// </summary>
+/// <remarks>See: SPEC-RENDER-001 for Rendering Pipeline System design.</remarks>
 public interface IVisualEffectService
 {
     /// <summary>

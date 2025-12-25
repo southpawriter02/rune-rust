@@ -6,6 +6,7 @@ namespace RuneAndRust.Core.Interfaces;
 /// Defines the contract for rendering the post-combat victory screen.
 /// Implementations display loot drops, XP rewards, and combat summary.
 /// </summary>
+/// <remarks>See: SPEC-RENDER-001 for Rendering Pipeline System design.</remarks>
 public interface IVictoryScreenRenderer
 {
     /// <summary>

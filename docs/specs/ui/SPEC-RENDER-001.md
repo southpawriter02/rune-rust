@@ -1,14 +1,15 @@
 ---
 id: SPEC-RENDER-001
 title: Rendering Pipeline System
-version: 1.0.0
+version: 1.0.1
 status: Implemented
+last_updated: 2025-12-25
 related_specs: [SPEC-UI-001, SPEC-THEME-001, SPEC-COMBAT-001]
 ---
 
 # SPEC-RENDER-001: Rendering Pipeline System
 
-> **Version:** 1.0.0
+> **Version:** 1.0.1
 > **Status:** Implemented
 > **Services:** ICombatScreenRenderer, IExplorationScreenRenderer, IInventoryScreenRenderer, IVictoryScreenRenderer, IVisualEffectService
 > **Location:** `RuneAndRust.Terminal/Services/`, `RuneAndRust.Terminal/Rendering/`
@@ -90,39 +91,45 @@ public void Render(CombatViewModel viewModel)
 | `ICraftingScreenRenderer` | `CraftingScreenRenderer` | `CraftingViewModel` | Recipe browser + material inventory |
 | `IOptionsScreenRenderer` | `OptionsScreenRenderer` | `OptionsViewModel` | Settings menu (theme, controls, accessibility) |
 | `IRestScreenRenderer` | `RestScreenRenderer` | `RestViewModel` | Camp menu (heal, craft, manage inventory) |
-| `IVictoryScreenRenderer` | `VictoryScreenRenderer` | `VictoryViewModel` | XP gain summary + loot display |
+| `IVictoryScreenRenderer` | `VictoryScreenRenderer` | `CombatResult` | XP gain summary + loot display |
 
-**Contract**: Each renderer implements `void Render(TViewModel viewModel)` where TViewModel is the corresponding immutable record from `RuneAndRust.Core/ViewModels/`.
+**Contract**: Each renderer implements `void Render(TViewModel viewModel)` where TViewModel is the corresponding immutable record from `RuneAndRust.Core/ViewModels/` (exception: `IVictoryScreenRenderer` uses `CombatResult` from `RuneAndRust.Core/Models/Combat/`).
 
 ### 3. Sub-Renderer Pattern
 
 **Purpose**: Delegate complex UI sections to specialized components for code organization and reusability.
 
-**Key Sub-Renderers**:
+**Key Sub-Renderers** (all static classes):
 - **CombatGridRenderer**: Renders 4-row tactical grid with player/enemy positions
 - **TimelineRenderer**: Renders initiative timeline with 8-slot projection and turn order
 - **MinimapRenderer**: Renders 3×3 grid of adjacent rooms with direction indicators
 - **RoomRenderer**: Renders current room description with exits and objects
-- **StatusWidget**: Renders HP/Stamina bars with color-coded thresholds
+- **StatusWidget**: Static helper for HP/Stamina/Stress bars with color-coded thresholds
 
-**Example (Sub-Renderer Composition)**:
+**Example (Sub-Renderer Composition with Static Methods)**:
 ```csharp
 public class CombatScreenRenderer : ICombatScreenRenderer
 {
-    private readonly CombatGridRenderer _gridRenderer;
-    private readonly TimelineRenderer _timelineRenderer;
     private readonly IThemeService _themeService;
+    private readonly IVisualEffectService _visualEffectService;
 
     public void Render(CombatViewModel vm)
     {
+        AnsiConsole.Clear();
+
+        // Query active border override from visual effect service
+        var borderOverride = _visualEffectService.GetBorderOverride();
+
         var mainLayout = new Layout()
             .SplitColumns(
                 new Layout("Grid").Ratio(3),
                 new Layout("Timeline").Ratio(1)
             );
 
-        mainLayout["Grid"].Update(_gridRenderer.Render(vm));
-        mainLayout["Timeline"].Update(_timelineRenderer.Render(vm));
+        // Static method calls with theme service injection
+        mainLayout["Grid"].Update(CombatGridRenderer.Render(vm, _themeService, borderOverride));
+        mainLayout["Timeline"].Update(TimelineRenderer.Render(
+            vm.TimelineProjection, vm.RoundNumber, _themeService));
 
         AnsiConsole.Write(mainLayout);
     }
@@ -160,22 +167,33 @@ root["Main"].SplitColumns(
 
 **IVisualEffectService**: Coordinates transient UI enhancements that don't persist between renders.
 
-**Core Method**:
+**Core Methods** (v0.3.9a):
 ```csharp
-void ApplyBorderFlash(Panel panel, int intensity);
+Task TriggerEffectAsync(VisualEffectType effectType, int intensity = 1);
+void SetBorderOverride(string? colorOverride);
+string? GetBorderOverride();
+void ClearBorderOverride();
 ```
+
+**VisualEffectType Enum**:
+- `DamageTaken` - Red flash when player takes damage
+- `CriticalHit` - Yellow/gold flash for critical strikes
+- `Healing` - Green flash for HP restoration
 
 **Behavior**:
 - **Intensity Mapping**: `1 = 50ms`, `2 = 100ms`, `3 = 150ms`, etc.
-- **Implementation**: Temporarily changes panel border color, delays, then reverts
-- **Use Cases**: Damage taken (red flash), healing (green flash), critical hit (yellow flash)
+- **Async Pattern**: Effect runs asynchronously, respects `GameSettings.ReduceMotion`
+- **Border Override**: `SetBorderOverride()` sets color, renderer queries via `GetBorderOverride()`
+- **Use Cases**: Damage taken (red flash), healing (green flash), critical hit (gold flash)
 
 **Example (Combat Damage Flash)**:
 ```csharp
-var enemyPanel = new Panel($"[red]{enemy.Name}[/]")
-    .BorderColor(Color.White);
+// In CombatService after damage resolution:
+await _visualEffectService.TriggerEffectAsync(VisualEffectType.DamageTaken, intensity: 3);
 
-_visualEffectService.ApplyBorderFlash(enemyPanel, intensity: 3); // 150ms red flash
+// In CombatScreenRenderer, query active override:
+var borderOverride = _visualEffectService.GetBorderOverride();
+var grid = CombatGridRenderer.Render(vm, _themeService, borderOverride);
 ```
 
 ### 6. Theme-Driven Color Application
@@ -1872,6 +1890,19 @@ public class TimelineRendererTests
 ---
 
 ## Changelog
+
+### Version 1.0.1 (2025-12-25) - API Alignment
+
+**Fixed**:
+- Updated IVisualEffectService signature to async `TriggerEffectAsync` pattern (v0.3.9a)
+- Updated IVictoryScreenRenderer to use `CombatResult` parameter instead of `VictoryViewModel`
+- Corrected sub-renderer examples to show static method patterns
+- Added `last_updated` to YAML frontmatter
+
+**Added**:
+- Code traceability remarks to 10+ implementation files
+- Documented `SetBorderOverride`/`GetBorderOverride`/`ClearBorderOverride` methods
+- Documented `VisualEffectType` enum values
 
 ### Version 1.0.0 (2025-01-XX) - Initial Specification
 
