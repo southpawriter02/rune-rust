@@ -243,6 +243,7 @@ public class CommandParser
     private readonly IRestService? _restService;
     private readonly IRestScreenRenderer? _restRenderer;
     private readonly IRoomRepository? _roomRepository;
+    private readonly IDebugConsoleRenderer? _debugConsoleRenderer;
     private readonly GameState _gameState;
 
     /// <summary>
@@ -257,6 +258,7 @@ public class CommandParser
     /// <param name="restService">The optional rest service for rest/camp commands (v0.3.2c).</param>
     /// <param name="restRenderer">The optional rest screen renderer for rest/camp display (v0.3.2c).</param>
     /// <param name="roomRepository">The optional room repository for rest location checks (v0.3.2c).</param>
+    /// <param name="debugConsoleRenderer">The optional debug console renderer (v0.3.17a).</param>
     public CommandParser(
         ILogger<CommandParser> logger,
         IInputHandler inputHandler,
@@ -266,7 +268,8 @@ public class CommandParser
         IVictoryScreenRenderer? victoryRenderer = null,
         IRestService? restService = null,
         IRestScreenRenderer? restRenderer = null,
-        IRoomRepository? roomRepository = null)
+        IRoomRepository? roomRepository = null,
+        IDebugConsoleRenderer? debugConsoleRenderer = null)
     {
         _logger = logger;
         _inputHandler = inputHandler;
@@ -277,6 +280,7 @@ public class CommandParser
         _restService = restService;
         _restRenderer = restRenderer;
         _roomRepository = roomRepository;
+        _debugConsoleRenderer = debugConsoleRenderer;
     }
 
     /// <summary>
@@ -295,6 +299,21 @@ public class CommandParser
 
         var command = input.Trim().ToLowerInvariant();
         _logger.LogDebug("Parsing command: '{Command}' in Phase: {Phase}", command, state.Phase);
+
+        // v0.3.17a: Debug console toggle (works in any phase)
+        if (command == "~" || command == "debug")
+        {
+            if (_debugConsoleRenderer != null)
+            {
+                _logger.LogTrace("[DEBUG] Opening debug console");
+                _debugConsoleRenderer.Run();
+            }
+            else
+            {
+                _inputHandler.DisplayError("Debug console not available.");
+            }
+            return ParseResult.None;
+        }
 
         ParseResult result;
         switch (state.Phase)

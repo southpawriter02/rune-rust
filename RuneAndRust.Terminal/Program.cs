@@ -208,6 +208,10 @@ class Program
 
                     // Register Title Screen Service (v0.3.4a)
                     services.AddScoped<ITitleScreenService, TitleScreenService>();
+
+                    // Register Debug Console Services (v0.3.17a)
+                    services.AddSingleton<IDebugConsoleService, DebugConsoleService>();
+                    services.AddSingleton<IDebugConsoleRenderer, DebugConsoleRenderer>();
                 })
                 .UseSerilog() // Wire Serilog into ILogger
                 .Build();
