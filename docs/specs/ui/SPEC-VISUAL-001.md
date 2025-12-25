@@ -1,15 +1,15 @@
 ---
 id: SPEC-VISUAL-001
 title: Visual Effects System
-version: 1.0.0
-status: implemented
+version: 1.0.1
+status: Implemented
 last_updated: 2025-12-25
 related_specs: [SPEC-THEME-001, SPEC-COMBAT-001, SPEC-SETTINGS-001]
 ---
 
 # SPEC-VISUAL-001: Visual Effects System
 
-> **Version:** 1.0.0
+> **Version:** 1.0.1
 > **Status:** Implemented
 > **Service:** `VisualEffectService`
 > **Location:** `RuneAndRust.Terminal/Services/VisualEffectService.cs`
@@ -428,16 +428,17 @@ private const int MaxIntensity = 3;
 2. **SetBorderOverride accepts null** - Verifies null clearing works
 3. **SetBorderOverride overwrites previous** - Verifies no accumulation
 4. **GetBorderOverride returns null initially** - Verifies clean state
-5. **ClearBorderOverride removes override** - Verifies clearing mechanism
-6. **ClearBorderOverride is idempotent** - Safe to call multiple times
-7. **TriggerEffectAsync skips when ReduceMotion enabled** - Accessibility compliance
-8. **TriggerEffectAsync skips when None type** - No-op for None
-9. **TriggerEffectAsync clears override after delay** - Self-cleanup
-10. **TriggerEffectAsync uses correct color per type** - Color mapping validation (Theory)
-11. **TriggerEffectAsync scales duration with intensity** - Duration calculation (Theory)
-12. **TriggerEffectAsync clamps intensity to minimum** - Prevents zero/negative
-13. **TriggerEffectAsync clamps intensity to maximum** - Prevents excessive duration
-14. **TriggerEffectAsync respects ReduceMotion changed mid-session** - Dynamic setting check
+5. **GetBorderOverride returns set color** - Verifies retrieval after set
+6. **ClearBorderOverride removes override** - Verifies clearing mechanism
+7. **ClearBorderOverride is idempotent** - Safe to call multiple times
+8. **TriggerEffectAsync skips when ReduceMotion enabled** - Accessibility compliance
+9. **TriggerEffectAsync skips when None type** - No-op for None
+10. **TriggerEffectAsync clears override after delay** - Self-cleanup
+11. **TriggerEffectAsync uses correct color per type** - Color mapping validation (Theory)
+12. **TriggerEffectAsync scales duration with intensity** - Duration calculation (Theory)
+13. **TriggerEffectAsync clamps intensity to minimum** - Prevents zero/negative
+14. **TriggerEffectAsync clamps intensity to maximum** - Prevents excessive duration
+15. **TriggerEffectAsync respects ReduceMotion changed mid-session** - Dynamic setting check
 
 ### Validation Checklist
 
@@ -481,6 +482,15 @@ private const int MaxIntensity = 3;
 ---
 
 ## Changelog
+
+### v1.0.1 (2025-12-25) - Documentation Accuracy
+
+**Fixed:**
+- Corrected status field capitalization: implemented → Implemented
+- Added missing test scenario #5 (GetBorderOverride returns set color) to critical test checklist
+
+**Added:**
+- Code traceability remarks to VisualEffectType.cs
 
 ### v1.0.0 (2025-12-25)
 

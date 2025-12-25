@@ -4,6 +4,7 @@ namespace RuneAndRust.Core.Enums;
 /// Types of visual effects that can be triggered during gameplay (v0.3.9a).
 /// Used by VisualEffectService to determine border flash colors and animations.
 /// </summary>
+/// <remarks>See: SPEC-VISUAL-001 for Visual Effects System design.</remarks>
 public enum VisualEffectType
 {
     /// <summary>
