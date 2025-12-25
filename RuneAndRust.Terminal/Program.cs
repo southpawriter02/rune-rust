@@ -9,6 +9,7 @@ using RuneAndRust.Engine.Factories;
 using RuneAndRust.Engine.Services;
 using RuneAndRust.Persistence.Data;
 using RuneAndRust.Persistence.Repositories;
+using RuneAndRust.Terminal.Controllers;
 using RuneAndRust.Terminal.Rendering;
 using RuneAndRust.Terminal.Services;
 using Serilog;
@@ -161,6 +162,15 @@ class Program
                     // Register Screen Transition Service (v0.3.14b)
                     services.AddSingleton<IScreenTransitionService, ScreenTransitionService>();
 
+                    // Register Localization Service (v0.3.15a - The Lexicon)
+                    services.AddSingleton<ILocalizationService, LocalizationService>();
+
+                    // Register Main Menu Controller (v0.3.15a)
+                    services.AddSingleton<MainMenuController>();
+
+                    // Register Options View Helper Service (v0.3.15a)
+                    services.AddSingleton<OptionsViewHelperService>();
+
                     // Register Input Configuration Service (v0.3.9c)
                     services.AddSingleton<IInputConfigurationService, InputConfigurationService>();
 
@@ -201,6 +211,10 @@ class Program
             // 3. Load user settings (v0.3.10a)
             var settingsService = host.Services.GetRequiredService<ISettingsService>();
             settingsService.LoadAsync().GetAwaiter().GetResult();
+
+            // 3b. Load locale (v0.3.15a - The Lexicon)
+            var locService = host.Services.GetRequiredService<ILocalizationService>();
+            locService.LoadLocaleAsync("en-US").GetAwaiter().GetResult();
 
             // 4. Seed data
             using (var scope = host.Services.CreateScope())

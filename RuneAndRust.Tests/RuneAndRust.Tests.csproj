@@ -29,4 +29,12 @@
     <ProjectReference Include="..\RuneAndRust.Terminal\RuneAndRust.Terminal.csproj" />
   </ItemGroup>
 
+  <!-- Copy locale files to test output for LocalizationService integration tests -->
+  <ItemGroup>
+    <None Include="..\data\locales\**\*">
+      <Link>data\locales\%(RecursiveDir)%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

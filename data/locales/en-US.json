@@ -1,0 +1,139 @@
+{
+  "meta": {
+    "locale": "en-US",
+    "version": "0.3.15a",
+    "name": "English (US)",
+    "author": "Rune & Rust Team"
+  },
+  "UI": {
+    "MainMenu": {
+      "SelectOption": "Select an option:",
+      "NewGame": "New Game",
+      "LoadGame": "Load Game",
+      "Options": "Options",
+      "Quit": "Quit",
+      "Version": "v0.3.15a - The Lexicon",
+      "NoSaves": "No saved games found.",
+      "OptionsNotImplemented": "Options not yet implemented."
+    },
+    "Options": {
+      "Title": "OPTIONS",
+      "NoSettings": "(No settings in this tab)",
+      "NoBindings": "(No bindings defined)",
+      "KeyBindingsHeader": "Key Bindings",
+      "SettingsHeaderSuffix": "Settings",
+      "PressEnter": "[ Press Enter ]",
+      "PressKeyFor": "Press key for: {0}",
+      "PressEscCancel": "(Press Esc to cancel)",
+      "FooterSettings": "[[Tab]] Switch Tab  [[↑↓]] Navigate  [[←→]] Adjust  [[Enter]] Toggle/Action  [[ESC]] Save & Close",
+      "FooterControls": "[[Tab]] Switch Tab  [[↑↓]] Navigate  [[Enter]] Rebind  [[ESC]] Save & Close",
+      "Tabs": {
+        "General": "General",
+        "Display": "Display",
+        "Audio": "Audio",
+        "Controls": "Controls"
+      },
+      "Settings": {
+        "AutosaveInterval": "Autosave Interval",
+        "ResetToDefaults": "Reset to Defaults",
+        "Theme": "Theme",
+        "ReduceMotion": "Reduce Motion",
+        "TextSpeed": "Text Speed",
+        "MasterVolume": "Master Volume"
+      },
+      "Themes": {
+        "Standard": "Standard",
+        "HighContrast": "High Contrast",
+        "Protanopia": "Protanopia",
+        "Deuteranopia": "Deuteranopia",
+        "Tritanopia": "Tritanopia",
+        "Unknown": "Unknown"
+      },
+      "Toggle": {
+        "On": "ON",
+        "Off": "OFF"
+      },
+      "Units": {
+        "Minutes": "{0} min",
+        "Percent": "{0}%"
+      },
+      "Commands": {
+        "MoveNorth": "Move North",
+        "MoveSouth": "Move South",
+        "MoveEast": "Move East",
+        "MoveWest": "Move West",
+        "MoveUp": "Move Up",
+        "MoveDown": "Move Down",
+        "Confirm": "Confirm",
+        "Cancel": "Cancel/Back",
+        "Menu": "Menu",
+        "Help": "Help",
+        "Inventory": "Inventory",
+        "Character": "Character",
+        "Journal": "Journal",
+        "Crafting": "Crafting",
+        "Interact": "Interact",
+        "Look": "Look",
+        "Search": "Search",
+        "Wait": "Wait",
+        "Attack": "Attack",
+        "LightAttack": "Light Attack",
+        "HeavyAttack": "Heavy Attack"
+      },
+      "Categories": {
+        "Movement": "Movement",
+        "Core": "Core",
+        "Screens": "Screens",
+        "Gameplay": "Gameplay",
+        "Combat": "Combat",
+        "Other": "Other"
+      },
+      "Keys": {
+        "Unbound": "[Unbound]",
+        "Space": "Space",
+        "Enter": "Enter",
+        "Escape": "Esc",
+        "Tab": "Tab",
+        "Backspace": "Backspace",
+        "Delete": "Delete",
+        "Insert": "Insert",
+        "Home": "Home",
+        "End": "End",
+        "PageUp": "PgUp",
+        "PageDown": "PgDn"
+      }
+    },
+    "Creation": {
+      "Title": "CHARACTER CREATION",
+      "Subtitle": "Forge your survivor in the ashes of the old world.",
+      "Instruction": "Choose wisely, for these choices shape your fate.",
+      "NamePrompt": "Enter character name",
+      "NameCancelHint": "(or 'cancel' to abort)",
+      "DuplicateName": "A character with that name already exists. Please choose another.",
+      "NameEmpty": "Name cannot be empty",
+      "NameTooShort": "Name must be at least 2 characters",
+      "NameTooLong": "Name cannot exceed 50 characters",
+      "Steps": {
+        "Lineage": "Choose Your Lineage",
+        "Archetype": "Choose Your Archetype",
+        "Background": "Choose Your Background"
+      },
+      "Preview": "Preview",
+      "NavigationHint": "↑↓/JK Navigate | Enter/Space Select | Esc/Q Back",
+      "Success": {
+        "Title": "Character Created",
+        "Message": "Your character, {0}, has been forged in the ashes of the old world.",
+        "LineageLabel": "Lineage:",
+        "ArchetypeLabel": "Archetype:",
+        "BackgroundLabel": "Background:",
+        "Closing": "May they survive the trials ahead."
+      },
+      "ContinuePrompt": "Press any key to continue..."
+    }
+  },
+  "Art": {
+    "TitleScreen": {
+      "Logo": "\n╔═══════════════════════════════════════════════════════════════════╗\n║                                                                   ║\n║   ██████╗ ██╗   ██╗███╗   ██╗███████╗                             ║\n║   ██╔══██╗██║   ██║████╗  ██║██╔════╝                             ║\n║   ██████╔╝██║   ██║██╔██╗ ██║█████╗                               ║\n║   ██╔══██╗██║   ██║██║╚██╗██║██╔══╝                               ║\n║   ██║  ██║╚██████╔╝██║ ╚████║███████╗                             ║\n║   ╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═══╝╚══════╝                             ║\n║                           ▲                                        ║\n║                          ╱ ╲                                       ║\n║   ██████╗ ██╗   ██╗███████╗████████╗                              ║\n║   ██╔══██╗██║   ██║██╔════╝╚══██╔══╝                              ║\n║   ██████╔╝██║   ██║███████╗   ██║                                 ║\n║   ██╔══██╗██║   ██║╚════██║   ██║                                 ║\n║   ██║  ██║╚██████╔╝███████║   ██║                                 ║\n║   ╚═╝  ╚═╝ ╚═════╝ ╚══════╝   ╚═╝                                 ║\n║                                                                   ║\n╚═══════════════════════════════════════════════════════════════════╝"
+    }
+  }
+}

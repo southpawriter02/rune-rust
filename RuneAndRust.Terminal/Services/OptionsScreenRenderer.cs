@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using RuneAndRust.Core.Constants;
 using RuneAndRust.Core.Enums;
 using RuneAndRust.Core.Interfaces;
 using RuneAndRust.Core.ViewModels;
@@ -9,23 +10,35 @@ using Spectre.Console.Rendering;
 namespace RuneAndRust.Terminal.Services;
 
 /// <summary>
-/// Renders the full-screen Options UI using Spectre.Console Layout (v0.3.10b, extended v0.3.10c).
+/// Renders the full-screen Options UI using Spectre.Console Layout (v0.3.15a - The Lexicon).
 /// Displays tabbed navigation, settings list with visual controls, and command legend.
+/// Uses localized strings via ILocalizationService.
 /// </summary>
+/// <remarks>See: SPEC-LOC-001 for Localization System design.</remarks>
 public class OptionsScreenRenderer : IOptionsScreenRenderer
 {
     private readonly ILogger<OptionsScreenRenderer> _logger;
     private readonly IThemeService _themeService;
+    private readonly ILocalizationService _loc;
+    private readonly OptionsViewHelperService _viewHelper;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OptionsScreenRenderer"/> class.
     /// </summary>
     /// <param name="logger">The logger for traceability.</param>
     /// <param name="themeService">The theme service for color resolution.</param>
-    public OptionsScreenRenderer(ILogger<OptionsScreenRenderer> logger, IThemeService themeService)
+    /// <param name="localizationService">The localization service for string lookup.</param>
+    /// <param name="viewHelper">The options view helper service.</param>
+    public OptionsScreenRenderer(
+        ILogger<OptionsScreenRenderer> logger,
+        IThemeService themeService,
+        ILocalizationService localizationService,
+        OptionsViewHelperService viewHelper)
     {
         _logger = logger;
         _themeService = themeService;
+        _loc = localizationService;
+        _viewHelper = viewHelper;
     }
 
     /// <inheritdoc />
@@ -60,11 +73,12 @@ public class OptionsScreenRenderer : IOptionsScreenRenderer
     }
 
     /// <summary>
-    /// Creates the header panel with the OPTIONS title.
+    /// Creates the header panel with the localized OPTIONS title.
     /// </summary>
     private Panel CreateHeader()
     {
-        var title = new Rule("[bold gold1]OPTIONS[/]")
+        var titleText = _loc.Get(LocKeys.UI_Options_Title);
+        var title = new Rule($"[bold gold1]{titleText}[/]")
         {
             Justification = Justify.Center,
             Style = Style.Parse("gold1")
@@ -82,7 +96,7 @@ public class OptionsScreenRenderer : IOptionsScreenRenderer
 
         foreach (var tab in tabs)
         {
-            var name = OptionsViewHelper.GetTabDisplayName(tab);
+            var name = _viewHelper.GetTabDisplayName(tab);
             if (tab == activeTab)
             {
                 tabStrings.Add($"[bold gold1][ {name} ][/]");
@@ -107,17 +121,21 @@ public class OptionsScreenRenderer : IOptionsScreenRenderer
     /// </summary>
     private Panel CreateSettingsPanel(OptionsViewModel vm)
     {
+        var tabName = _viewHelper.GetTabDisplayName(vm.ActiveTab);
+        var settingsSuffix = _loc.Get(LocKeys.UI_Options_SettingsHeaderSuffix);
+
         if (vm.CurrentItems.Count == 0)
         {
-            return new Panel(new Markup("[grey](No settings in this tab)[/]"))
+            return new Panel(new Markup($"[grey]{_loc.Get(LocKeys.UI_Options_NoSettings)}[/]"))
             {
-                Header = new PanelHeader($"[bold white]{OptionsViewHelper.GetTabDisplayName(vm.ActiveTab)} Settings[/]"),
+                Header = new PanelHeader($"[bold white]{tabName} {settingsSuffix}[/]"),
                 Border = BoxBorder.Rounded,
                 BorderStyle = Style.Parse("grey")
             };
         }
 
         var rows = new List<Markup>();
+        var pressEnter = _loc.Get(LocKeys.UI_Options_PressEnter);
 
         for (int i = 0; i < vm.CurrentItems.Count; i++)
         {
@@ -134,7 +152,7 @@ public class OptionsScreenRenderer : IOptionsScreenRenderer
                 SettingType.Slider when item.MinValue.HasValue && item.MaxValue.HasValue =>
                     FormatSliderWithBar(item, isSelected),
                 SettingType.Enum => $"[{valueColor}]< {item.ValueDisplay} >[/]",
-                SettingType.Action => $"[{valueColor}][ Press Enter ][/]",
+                SettingType.Action => $"[{valueColor}]{pressEnter}[/]",
                 _ => $"[{valueColor}]{item.ValueDisplay}[/]"
             };
 
@@ -144,7 +162,7 @@ public class OptionsScreenRenderer : IOptionsScreenRenderer
 
         return new Panel(new Rows(rows))
         {
-            Header = new PanelHeader($"[bold white]{OptionsViewHelper.GetTabDisplayName(vm.ActiveTab)} Settings[/]"),
+            Header = new PanelHeader($"[bold white]{tabName} {settingsSuffix}[/]"),
             Border = BoxBorder.Rounded,
             BorderStyle = Style.Parse("white"),
             Padding = new Padding(1, 1)
@@ -154,7 +172,7 @@ public class OptionsScreenRenderer : IOptionsScreenRenderer
     /// <summary>
     /// Formats a slider setting with a visual bar and value.
     /// </summary>
-    private static string FormatSliderWithBar(SettingItemView item, bool isSelected)
+    private string FormatSliderWithBar(SettingItemView item, bool isSelected)
     {
         // Parse the current value from ValueDisplay (which might include units)
         var valueStr = item.ValueDisplay.Replace("%", "").Replace(" min", "").Trim();
@@ -163,21 +181,23 @@ public class OptionsScreenRenderer : IOptionsScreenRenderer
             return item.ValueDisplay;
         }
 
-        var bar = OptionsViewHelper.RenderSlider(value, item.MinValue!.Value, item.MaxValue!.Value, 15);
+        var bar = _viewHelper.RenderSlider(value, item.MinValue!.Value, item.MaxValue!.Value, 15);
         var color = isSelected ? "white" : "grey";
         return $"{bar} [{color}]{item.ValueDisplay}[/]";
     }
 
     /// <summary>
-    /// Creates the Controls panel showing key bindings grouped by category (v0.3.10c).
+    /// Creates the Controls panel showing key bindings grouped by category.
     /// </summary>
     private Panel CreateControlsPanel(OptionsViewModel vm)
     {
+        var keyBindingsHeader = _loc.Get(LocKeys.UI_Options_KeyBindingsHeader);
+
         if (vm.Bindings.Count == 0)
         {
-            return new Panel(new Markup("[grey](No bindings defined)[/]"))
+            return new Panel(new Markup($"[grey]{_loc.Get(LocKeys.UI_Options_NoBindings)}[/]"))
             {
-                Header = new PanelHeader("[bold white]Key Bindings[/]"),
+                Header = new PanelHeader($"[bold white]{keyBindingsHeader}[/]"),
                 Border = BoxBorder.Rounded,
                 BorderStyle = Style.Parse("grey")
             };
@@ -211,7 +231,7 @@ public class OptionsScreenRenderer : IOptionsScreenRenderer
 
         return new Panel(new Rows(rows))
         {
-            Header = new PanelHeader("[bold white]Key Bindings[/]"),
+            Header = new PanelHeader($"[bold white]{keyBindingsHeader}[/]"),
             Border = BoxBorder.Rounded,
             BorderStyle = Style.Parse("white"),
             Padding = new Padding(1, 1)
@@ -221,13 +241,13 @@ public class OptionsScreenRenderer : IOptionsScreenRenderer
     /// <summary>
     /// Creates the footer showing available commands.
     /// </summary>
-    private static Panel CreateFooter(OptionsTab activeTab)
+    private Panel CreateFooter(OptionsTab activeTab)
     {
-        var commandText = activeTab == OptionsTab.Controls
-            ? "[grey][[Tab]] Switch Tab  [[↑↓]] Navigate  [[Enter]] Rebind  [[ESC]] Save & Close[/]"
-            : "[grey][[Tab]] Switch Tab  [[↑↓]] Navigate  [[←→]] Adjust  [[Enter]] Toggle/Action  [[ESC]] Save & Close[/]";
+        var footerText = activeTab == OptionsTab.Controls
+            ? _loc.Get(LocKeys.UI_Options_FooterControls)
+            : _loc.Get(LocKeys.UI_Options_FooterSettings);
 
-        var commands = new Markup(commandText);
+        var commands = new Markup($"[grey]{footerText}[/]");
         return new Panel(commands).Border(BoxBorder.None);
     }
 }

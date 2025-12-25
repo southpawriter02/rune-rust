@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using RuneAndRust.Core.Constants;
 using RuneAndRust.Core.Enums;
 using RuneAndRust.Core.Interfaces;
 using RuneAndRust.Core.Settings;
@@ -8,14 +9,18 @@ using RuneAndRust.Terminal.Rendering;
 namespace RuneAndRust.Terminal.Services;
 
 /// <summary>
-/// Controller for the Options screen modal loop (v0.3.10b, extended v0.3.10c).
+/// Controller for the Options screen modal loop (v0.3.15a - The Lexicon).
 /// Handles input navigation, setting modification, key rebinding, and persistence on exit.
+/// Uses localized strings via ILocalizationService.
 /// </summary>
+/// <remarks>See: SPEC-LOC-001 for Localization System design.</remarks>
 public class OptionsController
 {
     private readonly IOptionsScreenRenderer _renderer;
     private readonly ISettingsService _settingsService;
     private readonly IInputConfigurationService _inputConfigService;
+    private readonly ILocalizationService _loc;
+    private readonly OptionsViewHelperService _viewHelper;
     private readonly ILogger<OptionsController> _logger;
 
     /// <summary>
@@ -23,17 +28,23 @@ public class OptionsController
     /// </summary>
     /// <param name="renderer">The options screen renderer.</param>
     /// <param name="settingsService">The settings service for persistence.</param>
-    /// <param name="inputConfigService">The input configuration service for key rebinding (v0.3.10c).</param>
+    /// <param name="inputConfigService">The input configuration service for key rebinding.</param>
+    /// <param name="localizationService">The localization service for string lookup.</param>
+    /// <param name="viewHelper">The options view helper service.</param>
     /// <param name="logger">The logger for traceability.</param>
     public OptionsController(
         IOptionsScreenRenderer renderer,
         ISettingsService settingsService,
         IInputConfigurationService inputConfigService,
+        ILocalizationService localizationService,
+        OptionsViewHelperService viewHelper,
         ILogger<OptionsController> logger)
     {
         _renderer = renderer;
         _settingsService = settingsService;
         _inputConfigService = inputConfigService;
+        _loc = localizationService;
+        _viewHelper = viewHelper;
         _logger = logger;
     }
 
@@ -171,8 +182,8 @@ public class OptionsController
         {
             case OptionsTab.General:
                 vm.CurrentItems.Add(new SettingItemView(
-                    Name: "Autosave Interval",
-                    ValueDisplay: OptionsViewHelper.FormatSliderValue(vm.AutosaveIntervalMinutes, "AutosaveIntervalMinutes"),
+                    Name: _loc.Get(LocKeys.UI_Options_Setting_AutosaveInterval),
+                    ValueDisplay: _viewHelper.FormatSliderValue(vm.AutosaveIntervalMinutes, "AutosaveIntervalMinutes"),
                     Type: SettingType.Slider,
                     IsSelected: index++ == vm.SelectedIndex,
                     MinValue: 1,
@@ -181,7 +192,7 @@ public class OptionsController
                     PropertyName: "AutosaveIntervalMinutes"
                 ));
                 vm.CurrentItems.Add(new SettingItemView(
-                    Name: "Reset to Defaults",
+                    Name: _loc.Get(LocKeys.UI_Options_Setting_ResetToDefaults),
                     ValueDisplay: "",
                     Type: SettingType.Action,
                     IsSelected: index++ == vm.SelectedIndex,
@@ -191,22 +202,22 @@ public class OptionsController
 
             case OptionsTab.Display:
                 vm.CurrentItems.Add(new SettingItemView(
-                    Name: "Theme",
-                    ValueDisplay: OptionsViewHelper.GetThemeName(vm.Theme),
+                    Name: _loc.Get(LocKeys.UI_Options_Setting_Theme),
+                    ValueDisplay: _viewHelper.GetThemeName(vm.Theme),
                     Type: SettingType.Enum,
                     IsSelected: index++ == vm.SelectedIndex,
                     PropertyName: "Theme"
                 ));
                 vm.CurrentItems.Add(new SettingItemView(
-                    Name: "Reduce Motion",
-                    ValueDisplay: OptionsViewHelper.FormatToggle(vm.ReduceMotion),
+                    Name: _loc.Get(LocKeys.UI_Options_Setting_ReduceMotion),
+                    ValueDisplay: _viewHelper.FormatToggle(vm.ReduceMotion),
                     Type: SettingType.Toggle,
                     IsSelected: index++ == vm.SelectedIndex,
                     PropertyName: "ReduceMotion"
                 ));
                 vm.CurrentItems.Add(new SettingItemView(
-                    Name: "Text Speed",
-                    ValueDisplay: OptionsViewHelper.FormatSliderValue(vm.TextSpeed, "TextSpeed"),
+                    Name: _loc.Get(LocKeys.UI_Options_Setting_TextSpeed),
+                    ValueDisplay: _viewHelper.FormatSliderValue(vm.TextSpeed, "TextSpeed"),
                     Type: SettingType.Slider,
                     IsSelected: index++ == vm.SelectedIndex,
                     MinValue: 10,
@@ -218,8 +229,8 @@ public class OptionsController
 
             case OptionsTab.Audio:
                 vm.CurrentItems.Add(new SettingItemView(
-                    Name: "Master Volume",
-                    ValueDisplay: OptionsViewHelper.FormatSliderValue(vm.MasterVolume, "MasterVolume"),
+                    Name: _loc.Get(LocKeys.UI_Options_Setting_MasterVolume),
+                    ValueDisplay: _viewHelper.FormatSliderValue(vm.MasterVolume, "MasterVolume"),
                     Type: SettingType.Slider,
                     IsSelected: index++ == vm.SelectedIndex,
                     MinValue: 0,
@@ -238,7 +249,7 @@ public class OptionsController
     }
 
     /// <summary>
-    /// Refreshes the Bindings list for the Controls tab (v0.3.10c).
+    /// Refreshes the Bindings list for the Controls tab.
     /// </summary>
     private void RefreshBindings(OptionsViewModel vm)
     {
@@ -260,10 +271,10 @@ public class OptionsController
             var key = _inputConfigService.GetKeyForCommand(cmd);
 
             vm.Bindings.Add(new BindingItemView(
-                ActionName: OptionsViewHelper.GetCommandDisplayName(cmd),
-                KeyDisplay: OptionsViewHelper.FormatKeyName(key),
+                ActionName: _viewHelper.GetCommandDisplayName(cmd),
+                KeyDisplay: _viewHelper.FormatKeyName(key),
                 Command: cmd,
-                Category: OptionsViewHelper.GetCommandCategory(cmd),
+                Category: _viewHelper.GetCommandCategory(cmd),
                 IsSelected: i == vm.SelectedIndex,
                 IsUnbound: !key.HasValue
             ));
@@ -353,8 +364,8 @@ public class OptionsController
         switch (item.PropertyName)
         {
             case "Theme":
-                vm.Theme = OptionsViewHelper.CycleTheme(vm.Theme, direction);
-                _logger.LogDebug("[Options] Theme changed to {Value}", OptionsViewHelper.GetThemeName(vm.Theme));
+                vm.Theme = _viewHelper.CycleTheme(vm.Theme, direction);
+                _logger.LogDebug("[Options] Theme changed to {Value}", _viewHelper.GetThemeName(vm.Theme));
                 break;
         }
     }
@@ -390,7 +401,7 @@ public class OptionsController
     }
 
     /// <summary>
-    /// Handles key rebinding in listening mode (v0.3.10c).
+    /// Handles key rebinding in listening mode.
     /// Captures the next key press and assigns it to the selected action.
     /// </summary>
     private void HandleRebind(OptionsViewModel vm)
@@ -399,10 +410,13 @@ public class OptionsController
         _logger.LogDebug("[Options] Listening for new key for {Command}", binding.Command);
 
         // Display listening prompt by updating the view temporarily
+        var pressKeyPrompt = _loc.Get(LocKeys.UI_Options_PressKeyFor, binding.ActionName);
+        var escCancelPrompt = _loc.Get(LocKeys.UI_Options_PressEscCancel);
+
         vm.CurrentItems.Clear();
         vm.CurrentItems.Add(new SettingItemView(
-            Name: $"Press key for: {binding.ActionName}",
-            ValueDisplay: "[yellow](Press Esc to cancel)[/]",
+            Name: pressKeyPrompt,
+            ValueDisplay: $"[yellow]{escCancelPrompt}[/]",
             Type: SettingType.Action,
             IsSelected: true
         ));
@@ -416,8 +430,8 @@ public class OptionsController
             CurrentItems = new List<SettingItemView>
             {
                 new(
-                    Name: $"Press key for: {binding.ActionName}",
-                    ValueDisplay: "[yellow](Press Esc to cancel)[/]",
+                    Name: pressKeyPrompt,
+                    ValueDisplay: $"[yellow]{escCancelPrompt}[/]",
                     Type: SettingType.Action,
                     IsSelected: true
                 )

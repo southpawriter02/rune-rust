@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using RuneAndRust.Core.Constants;
 using RuneAndRust.Core.Entities;
 using RuneAndRust.Core.Enums;
 using RuneAndRust.Core.Interfaces;
@@ -14,32 +15,45 @@ using CharacterAttribute = RuneAndRust.Core.Enums.Attribute;
 namespace RuneAndRust.Terminal.Services;
 
 /// <summary>
-/// Interactive character creation wizard with split-screen UI (v0.3.4b).
-/// Updated in v0.3.4c to add Background selection step.
+/// Interactive character creation wizard with split-screen UI (v0.3.15a - The Lexicon).
 /// Uses Spectre.Console Layout for real-time stat preview during selection.
+/// Uses localized strings via ILocalizationService.
 /// </summary>
+/// <remarks>See: SPEC-LOC-001 for Localization System design.</remarks>
 public class CreationWizard
 {
     private readonly IWizardService _wizardService;
     private readonly INarrativeService _narrativeService;
     private readonly CharacterFactory _characterFactory;
     private readonly ICharacterRepository _characterRepository;
+    private readonly ILocalizationService _loc;
     private readonly ILogger<CreationWizard> _logger;
 
     private WizardContext _context = new();
     private int _selectedIndex = 0;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CreationWizard"/> class.
+    /// </summary>
+    /// <param name="wizardService">The wizard service for stat calculations.</param>
+    /// <param name="narrativeService">The narrative service for background descriptions.</param>
+    /// <param name="characterFactory">The character factory for creating characters.</param>
+    /// <param name="characterRepository">The character repository for persistence.</param>
+    /// <param name="localizationService">The localization service for string lookup.</param>
+    /// <param name="logger">The logger for traceability.</param>
     public CreationWizard(
         IWizardService wizardService,
         INarrativeService narrativeService,
         CharacterFactory characterFactory,
         ICharacterRepository characterRepository,
+        ILocalizationService localizationService,
         ILogger<CreationWizard> logger)
     {
         _wizardService = wizardService;
         _narrativeService = narrativeService;
         _characterFactory = characterFactory;
         _characterRepository = characterRepository;
+        _loc = localizationService;
         _logger = logger;
     }
 
@@ -53,7 +67,7 @@ public class CreationWizard
         _context.Reset();
         Console.Clear();
 
-        // Step 0: Name entry with duplicate check loop (v0.3.5d)
+        // Step 0: Name entry with duplicate check loop
         string? name = null;
         while (name == null)
         {
@@ -66,7 +80,7 @@ public class CreationWizard
 
             if (await _characterRepository.NameExistsAsync(enteredName))
             {
-                AnsiConsole.MarkupLine("[red]A character with that name already exists. Please choose another.[/]");
+                AnsiConsole.MarkupLine($"[red]{_loc.Get(LocKeys.UI_Creation_DuplicateName)}[/]");
                 _logger.LogWarning("[Wizard] Duplicate character name attempted: {Name}", enteredName);
                 AnsiConsole.WriteLine();
                 // Loop continues, prompting for a new name
@@ -82,7 +96,7 @@ public class CreationWizard
         // Step 1: Lineage selection (split-screen)
         Console.Clear();
         var lineage = await RunSelectionStepAsync(
-            "Choose Your Lineage",
+            _loc.Get(LocKeys.UI_Creation_Step_Lineage),
             Enum.GetValues<LineageType>(),
             l => _wizardService.GetLineageDisplayName(l),
             l => _wizardService.GetLineageDescription(l),
@@ -102,7 +116,7 @@ public class CreationWizard
         // Step 2: Archetype selection (split-screen)
         Console.Clear();
         var archetype = await RunSelectionStepAsync(
-            "Choose Your Archetype",
+            _loc.Get(LocKeys.UI_Creation_Step_Archetype),
             Enum.GetValues<ArchetypeType>(),
             a => _wizardService.GetArchetypeDisplayName(a),
             a => _wizardService.GetArchetypeDescription(a),
@@ -119,10 +133,10 @@ public class CreationWizard
         _context.CurrentStep = 3;
         _logger.LogDebug("[Wizard] Step 2 - Archetype selected: {Archetype}", archetype.Value);
 
-        // Step 3: Background selection (v0.3.4c)
+        // Step 3: Background selection
         Console.Clear();
         var background = await RunSimpleSelectionStepAsync(
-            "Choose Your Background",
+            _loc.Get(LocKeys.UI_Creation_Step_Background),
             Enum.GetValues<BackgroundType>(),
             b => _narrativeService.GetBackgroundDisplayName(b),
             b => _narrativeService.GetBackgroundDescription(b));
@@ -224,7 +238,7 @@ public class CreationWizard
                         derived,
                         lineageDisplay,
                         archetypeDisplay);
-                    layout["Right"].Update(new Panel(statsPanel).Header("[yellow]Preview[/]").Border(BoxBorder.Rounded));
+                    layout["Right"].Update(new Panel(statsPanel).Header($"[yellow]{_loc.Get(LocKeys.UI_Creation_Preview)}[/]").Border(BoxBorder.Rounded));
 
                     ctx.UpdateTarget(layout);
 
@@ -320,7 +334,7 @@ public class CreationWizard
     }
 
     /// <summary>
-    /// Builds a simple menu panel for selections without bonuses (v0.3.4c).
+    /// Builds a simple menu panel for selections without bonuses.
     /// </summary>
     private Panel BuildSimpleMenuPanel<T>(
         string title,
@@ -346,7 +360,7 @@ public class CreationWizard
         }
 
         rows.Add(new Rule().RuleStyle(Style.Parse("grey")));
-        rows.Add(new Markup("[grey]↑↓/JK Navigate | Enter/Space Select | Esc/Q Back[/]"));
+        rows.Add(new Markup($"[grey]{_loc.Get(LocKeys.UI_Creation_NavigationHint)}[/]"));
 
         return new Panel(new Rows(rows)).Border(BoxBorder.Rounded);
     }
@@ -381,7 +395,7 @@ public class CreationWizard
         }
 
         rows.Add(new Rule().RuleStyle(Style.Parse("grey")));
-        rows.Add(new Markup("[grey]↑↓/JK Navigate | Enter/Space Select | Esc/Q Back[/]"));
+        rows.Add(new Markup($"[grey]{_loc.Get(LocKeys.UI_Creation_NavigationHint)}[/]"));
 
         return new Panel(new Rows(rows)).Border(BoxBorder.Rounded);
     }
@@ -391,24 +405,24 @@ public class CreationWizard
     /// </summary>
     private string PromptForName()
     {
-        AnsiConsole.Write(new Rule("[yellow]CHARACTER CREATION[/]").Centered());
+        AnsiConsole.Write(new Rule($"[yellow]{_loc.Get(LocKeys.UI_Creation_Title)}[/]").Centered());
         AnsiConsole.WriteLine();
-        AnsiConsole.MarkupLine("[grey]Forge your survivor in the ashes of the old world.[/]");
-        AnsiConsole.MarkupLine("[grey]Choose wisely, for these choices shape your fate.[/]");
+        AnsiConsole.MarkupLine($"[grey]{_loc.Get(LocKeys.UI_Creation_Subtitle)}[/]");
+        AnsiConsole.MarkupLine($"[grey]{_loc.Get(LocKeys.UI_Creation_Instruction)}[/]");
         AnsiConsole.WriteLine();
 
         return AnsiConsole.Prompt(
-            new TextPrompt<string>("[green]Enter character name[/] [grey](or 'cancel' to abort)[/]:")
+            new TextPrompt<string>($"[green]{_loc.Get(LocKeys.UI_Creation_NamePrompt)}[/] [grey]{_loc.Get(LocKeys.UI_Creation_NameCancelHint)}[/]:")
                 .Validate(n =>
                 {
                     if (n.Equals("cancel", StringComparison.OrdinalIgnoreCase))
                         return ValidationResult.Success();
                     if (string.IsNullOrWhiteSpace(n))
-                        return ValidationResult.Error("[red]Name cannot be empty[/]");
+                        return ValidationResult.Error($"[red]{_loc.Get(LocKeys.UI_Creation_NameEmpty)}[/]");
                     if (n.Length < 2)
-                        return ValidationResult.Error("[red]Name must be at least 2 characters[/]");
+                        return ValidationResult.Error($"[red]{_loc.Get(LocKeys.UI_Creation_NameTooShort)}[/]");
                     if (n.Length > 50)
-                        return ValidationResult.Error("[red]Name cannot exceed 50 characters[/]");
+                        return ValidationResult.Error($"[red]{_loc.Get(LocKeys.UI_Creation_NameTooLong)}[/]");
                     return ValidationResult.Success();
                 }));
     }
@@ -420,21 +434,27 @@ public class CreationWizard
     {
         Console.Clear();
 
+        var successMessage = _loc.Get(LocKeys.UI_Creation_Success_Message, Markup.Escape(character.Name));
+        var lineageLabel = _loc.Get(LocKeys.UI_Creation_Success_LineageLabel);
+        var archetypeLabel = _loc.Get(LocKeys.UI_Creation_Success_ArchetypeLabel);
+        var backgroundLabel = _loc.Get(LocKeys.UI_Creation_Success_BackgroundLabel);
+        var closingText = _loc.Get(LocKeys.UI_Creation_Success_Closing);
+
         var panel = new Panel(new Markup(
-            $"[green]Your character, [yellow]{Markup.Escape(character.Name)}[/], has been forged in the ashes of the old world.[/]\n\n" +
-            $"[grey]Lineage:[/] [cyan]{character.Lineage}[/]\n" +
-            $"[grey]Archetype:[/] [cyan]{character.Archetype}[/]\n" +
-            $"[grey]Background:[/] [cyan]{character.Background}[/]\n\n" +
-            $"[grey]May they survive the trials ahead.[/]"))
+            $"[green]{successMessage}[/]\n\n" +
+            $"[grey]{lineageLabel}[/] [cyan]{character.Lineage}[/]\n" +
+            $"[grey]{archetypeLabel}[/] [cyan]{character.Archetype}[/]\n" +
+            $"[grey]{backgroundLabel}[/] [cyan]{character.Background}[/]\n\n" +
+            $"[grey]{closingText}[/]"))
         {
             Border = BoxBorder.Double,
             Padding = new Padding(2, 1),
-            Header = new PanelHeader("[yellow]Character Created[/]")
+            Header = new PanelHeader($"[yellow]{_loc.Get(LocKeys.UI_Creation_Success_Title)}[/]")
         };
 
         AnsiConsole.Write(panel);
         AnsiConsole.WriteLine();
-        AnsiConsole.MarkupLine("[grey]Press any key to continue...[/]");
+        AnsiConsole.MarkupLine($"[grey]{_loc.Get(LocKeys.UI_Creation_ContinuePrompt)}[/]");
         ConsoleInputHelper.WaitForKeyPress();
     }
 }

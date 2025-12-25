@@ -3,52 +3,44 @@ using Microsoft.Extensions.Logging;
 using RuneAndRust.Core.Enums;
 using RuneAndRust.Core.Interfaces;
 using RuneAndRust.Core.Models;
+using RuneAndRust.Terminal.Controllers;
 using Spectre.Console;
 
 namespace RuneAndRust.Terminal.Services;
 
 /// <summary>
-/// Terminal-based implementation of ITitleScreenService using Spectre.Console (v0.3.4a).
+/// Terminal-based implementation of ITitleScreenService using Spectre.Console (v0.3.15a - The Lexicon).
 /// Displays an animated ASCII title with Elder Futhark rune glitch effects and main menu.
+/// Uses MainMenuController for localized menu display.
 /// </summary>
+/// <remarks>See: SPEC-LOC-001 for Localization System design.</remarks>
 public class TitleScreenService : ITitleScreenService
 {
     private readonly ISaveGameRepository _saveRepository;
+    private readonly MainMenuController _menuController;
     private readonly ILogger<TitleScreenService> _logger;
     private static readonly Random _random = new();
 
     // Elder Futhark runes for glitch effect
     private static readonly char[] GlitchChars = { 'ᚠ', 'ᚢ', 'ᚦ', 'ᚨ', 'ᚱ', 'ᚾ', 'ᛖ', '▓', '░', '▒' };
 
-    private const string TitleArt = @"
-╔═══════════════════════════════════════════════════════════════════╗
-║                                                                   ║
-║   ██████╗ ██╗   ██╗███╗   ██╗███████╗                             ║
-║   ██╔══██╗██║   ██║████╗  ██║██╔════╝                             ║
-║   ██████╔╝██║   ██║██╔██╗ ██║█████╗                               ║
-║   ██╔══██╗██║   ██║██║╚██╗██║██╔══╝                               ║
-║   ██║  ██║╚██████╔╝██║ ╚████║███████╗                             ║
-║   ╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═══╝╚══════╝                             ║
-║                           ▲                                        ║
-║                          ╱ ╲                                       ║
-║   ██████╗ ██╗   ██╗███████╗████████╗                              ║
-║   ██╔══██╗██║   ██║██╔════╝╚══██╔══╝                              ║
-║   ██████╔╝██║   ██║███████╗   ██║                                 ║
-║   ██╔══██╗██║   ██║╚════██║   ██║                                 ║
-║   ██║  ██║╚██████╔╝███████║   ██║                                 ║
-║   ╚═╝  ╚═╝ ╚═════╝ ╚══════╝   ╚═╝                                 ║
-║                                                                   ║
-╚═══════════════════════════════════════════════════════════════════╝";
-
     private const int GlitchIterations = 15;
     private const int GlitchDelayMs = 80;
     private const float GlitchProbability = 0.03f;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="TitleScreenService"/> class.
+    /// </summary>
+    /// <param name="saveRepository">The save game repository.</param>
+    /// <param name="menuController">The main menu controller for localized display.</param>
+    /// <param name="logger">The logger for traceability.</param>
     public TitleScreenService(
         ISaveGameRepository saveRepository,
+        MainMenuController menuController,
         ILogger<TitleScreenService> logger)
     {
         _saveRepository = saveRepository;
+        _menuController = menuController;
         _logger = logger;
     }
 
@@ -63,7 +55,7 @@ public class TitleScreenService : ITitleScreenService
 
         while (true)
         {
-            var selection = ShowMainMenu();
+            var selection = _menuController.ShowMainMenu();
 
             switch (selection)
             {
@@ -75,7 +67,7 @@ public class TitleScreenService : ITitleScreenService
                     var saves = await _saveRepository.GetAllAsync();
                     if (!saves.Any())
                     {
-                        AnsiConsole.MarkupLine("[yellow]No saved games found.[/]");
+                        AnsiConsole.MarkupLine($"[yellow]{_menuController.GetNoSavesMessage()}[/]");
                         AnsiConsole.WriteLine();
                         continue; // Return to menu
                     }
@@ -85,7 +77,7 @@ public class TitleScreenService : ITitleScreenService
                     return TitleScreenResult.LoadGame(mostRecent.SlotNumber);
 
                 case MainMenuOption.Options:
-                    AnsiConsole.MarkupLine("[grey]Options not yet implemented.[/]");
+                    AnsiConsole.MarkupLine($"[grey]{_menuController.GetOptionsNotImplementedMessage()}[/]");
                     AnsiConsole.WriteLine();
                     continue; // Return to menu
 
@@ -101,7 +93,8 @@ public class TitleScreenService : ITitleScreenService
     /// </summary>
     private async Task PlayGlitchAnimationAsync()
     {
-        var lines = TitleArt.Split('\n');
+        var titleArt = _menuController.GetTitleLogo();
+        var lines = titleArt.Split('\n');
 
         await AnsiConsole.Live(new Markup(""))
             .StartAsync(async ctx =>
@@ -146,32 +139,10 @@ public class TitleScreenService : ITitleScreenService
     /// </summary>
     private void RenderStableTitle()
     {
-        AnsiConsole.MarkupLine($"[red]{Markup.Escape(TitleArt)}[/]");
+        var titleArt = _menuController.GetTitleLogo();
+        AnsiConsole.MarkupLine($"[red]{Markup.Escape(titleArt)}[/]");
         AnsiConsole.WriteLine();
-        AnsiConsole.MarkupLine("[grey]v0.3.4a - The Gateway[/]");
+        AnsiConsole.MarkupLine($"[grey]{_menuController.GetVersionString()}[/]");
         AnsiConsole.WriteLine();
-    }
-
-    /// <summary>
-    /// Displays the main menu and returns the user's selection.
-    /// </summary>
-    private MainMenuOption ShowMainMenu()
-    {
-        return AnsiConsole.Prompt(
-            new SelectionPrompt<MainMenuOption>()
-                .Title("[bold white]Select an option:[/]")
-                .AddChoices(
-                    MainMenuOption.NewGame,
-                    MainMenuOption.LoadGame,
-                    MainMenuOption.Options,
-                    MainMenuOption.Quit)
-                .UseConverter(option => option switch
-                {
-                    MainMenuOption.NewGame => "New Game",
-                    MainMenuOption.LoadGame => "Load Game",
-                    MainMenuOption.Options => "Options",
-                    MainMenuOption.Quit => "Quit",
-                    _ => option.ToString()
-                }));
     }
 }
