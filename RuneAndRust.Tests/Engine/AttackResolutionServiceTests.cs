@@ -9,6 +9,7 @@ using RuneAndRust.Engine.Services;
 using Xunit;
 using CharacterAttribute = RuneAndRust.Core.Enums.Attribute;
 using CharacterEntity = RuneAndRust.Core.Entities.Character;
+using GameState = RuneAndRust.Core.Models.GameState;
 
 namespace RuneAndRust.Tests.Engine;
 
@@ -21,6 +22,7 @@ public class AttackResolutionServiceTests
     private readonly Mock<IDiceService> _mockDice;
     private readonly Mock<IStatusEffectService> _mockStatusEffects;
     private readonly Mock<ITraumaService> _mockTraumaService;
+    private readonly GameState _gameState;
     private readonly Mock<ILogger<AttackResolutionService>> _mockLogger;
     private readonly AttackResolutionService _sut;
 
@@ -29,6 +31,7 @@ public class AttackResolutionServiceTests
         _mockDice = new Mock<IDiceService>();
         _mockStatusEffects = new Mock<IStatusEffectService>();
         _mockTraumaService = new Mock<ITraumaService>();
+        _gameState = new GameState();
         _mockLogger = new Mock<ILogger<AttackResolutionService>>();
 
         // Default status effect behavior: no modifiers
@@ -42,6 +45,7 @@ public class AttackResolutionServiceTests
             _mockDice.Object,
             _mockStatusEffects.Object,
             _mockTraumaService.Object,
+            _gameState,
             _mockLogger.Object);
     }
 

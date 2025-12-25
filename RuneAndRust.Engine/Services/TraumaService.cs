@@ -4,6 +4,7 @@ using RuneAndRust.Core.Enums;
 using RuneAndRust.Core.Interfaces;
 using RuneAndRust.Core.Models.Combat;
 using CharacterAttribute = RuneAndRust.Core.Enums.Attribute;
+using GameState = RuneAndRust.Core.Models.GameState;
 
 namespace RuneAndRust.Engine.Services;
 
@@ -16,16 +17,19 @@ namespace RuneAndRust.Engine.Services;
 public class TraumaService : ITraumaService
 {
     private readonly IDiceService _dice;
+    private readonly GameState _gameState;
     private readonly ILogger<TraumaService> _logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TraumaService"/> class.
     /// </summary>
     /// <param name="dice">The dice service for resolve check rolls.</param>
+    /// <param name="gameState">The game state for God Mode check (v0.3.17b).</param>
     /// <param name="logger">The logger for traceability.</param>
-    public TraumaService(IDiceService dice, ILogger<TraumaService> logger)
+    public TraumaService(IDiceService dice, GameState gameState, ILogger<TraumaService> logger)
     {
         _dice = dice;
+        _gameState = gameState;
         _logger = logger;
         _logger.LogInformation("TraumaService initialized");
     }
@@ -33,6 +37,24 @@ public class TraumaService : ITraumaService
     /// <inheritdoc/>
     public StressResult InflictStress(Combatant target, int amount, string source)
     {
+        // v0.3.17b: God Mode check - player takes no stress
+        if (target.IsPlayer && _gameState.IsGodMode)
+        {
+            _logger.LogDebug("[Trauma] God Mode active - stress negated ({Amount} from {Source})", amount, source);
+            var currentStatus = GetStressStatus(target.CurrentStress);
+            return new StressResult(
+                RawStress: amount,
+                MitigatedAmount: amount,
+                NetStressApplied: 0,
+                CurrentTotal: target.CurrentStress,
+                PreviousStatus: currentStatus,
+                NewStatus: currentStatus,
+                IsBreakingPoint: false,
+                ResolveSuccesses: 0,
+                Source: source
+            );
+        }
+
         _logger.LogInformation(
             "Inflicting {Amount} stress on {Target} from {Source}",
             amount, target.Name, source);
@@ -311,6 +333,23 @@ public class TraumaService : ITraumaService
     /// <inheritdoc/>
     public CorruptionResult AddCorruption(Character character, int amount, string source)
     {
+        // v0.3.17b: God Mode check - player takes no corruption
+        if (_gameState.IsGodMode)
+        {
+            _logger.LogDebug("[Trauma] God Mode active - corruption negated ({Amount} from {Source})", amount, source);
+            var currentState = GetCorruptionState(character.Corruption);
+            return new CorruptionResult(
+                RawCorruption: amount,
+                NetCorruptionApplied: 0,
+                CurrentTotal: character.Corruption,
+                PreviousTier: currentState.Tier,
+                NewTier: currentState.Tier,
+                TierChanged: false,
+                IsTerminal: currentState.IsTerminal,
+                Source: source
+            );
+        }
+
         if (amount <= 0)
         {
             _logger.LogDebug("AddCorruption called with non-positive amount {Amount}, skipping", amount);

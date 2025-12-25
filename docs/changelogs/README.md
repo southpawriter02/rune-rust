@@ -52,6 +52,14 @@ Trauma, crafting, rest mechanics, environment, exploration, and settings.
 | [v0.3.8](v0.3.x/v0.3.8.md) | Dynamic Room Engine Implementation |
 | [v0.3.9](v0.3.x/v0.3.9.md) | Inventory Screen & View Models |
 | [v0.3.10](v0.3.x/v0.3.10.md) | The Settings Trilogy |
+| [v0.3.11](v0.3.x/v0.3.11.md) | The Archivist (Dynamic Knowledge Engine & Developer's Handbook) |
+| [v0.3.12](v0.3.x/v0.3.12.md) | The Test Gauntlet (E2E Testing Infrastructure) |
+| [v0.3.13](v0.3.x/v0.3.13.md) | The Audit Suite |
+| [v0.3.14](v0.3.x/v0.3.14.md) | The Experience (Theme & Transitions) |
+| [v0.3.15](v0.3.x/v0.3.15.md) | The Polyglot (Localization System) |
+| [v0.3.16a](v0.3.x/v0.3.16a.md) | The Safety Net (Global Exception Handler) |
+| [v0.3.17a](v0.3.x/v0.3.17a.md) | The Console (Overlay UI) |
+| [v0.3.17b](v0.3.x/v0.3.17b.md) | The Toolbox (Cheat Commands) |
 
 ---
 

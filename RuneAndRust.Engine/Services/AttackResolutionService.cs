@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using RuneAndRust.Core.Enums;
 using RuneAndRust.Core.Interfaces;
+using RuneAndRust.Core.Models;
 using RuneAndRust.Core.Models.Combat;
 using CharacterAttribute = RuneAndRust.Core.Enums.Attribute;
 
@@ -16,6 +17,7 @@ public class AttackResolutionService : IAttackResolutionService
     private readonly IDiceService _dice;
     private readonly IStatusEffectService _statusEffects;
     private readonly ITraumaService _traumaService;
+    private readonly GameState _gameState;
     private readonly ILogger<AttackResolutionService> _logger;
 
     /// <summary>
@@ -55,16 +57,19 @@ public class AttackResolutionService : IAttackResolutionService
     /// <param name="dice">The dice service for rolling.</param>
     /// <param name="statusEffects">The status effect service for modifier calculations.</param>
     /// <param name="traumaService">The trauma service for stress-based defense penalties.</param>
+    /// <param name="gameState">The game state for God Mode check (v0.3.17b).</param>
     /// <param name="logger">The logger for traceability.</param>
     public AttackResolutionService(
         IDiceService dice,
         IStatusEffectService statusEffects,
         ITraumaService traumaService,
+        GameState gameState,
         ILogger<AttackResolutionService> logger)
     {
         _dice = dice;
         _statusEffects = statusEffects;
         _traumaService = traumaService;
+        _gameState = gameState;
         _logger = logger;
     }
 
@@ -158,6 +163,13 @@ public class AttackResolutionService : IAttackResolutionService
                 _logger.LogDebug(
                     "Minimum damage enforced: {Calculated} -> 1",
                     modifiedDamage - totalSoak);
+            }
+
+            // v0.3.17b: God Mode check - player takes no damage
+            if (defender.IsPlayer && _gameState.IsGodMode)
+            {
+                _logger.LogDebug("[Combat] God Mode active - damage negated ({OriginalDamage} -> 0)", finalDamage);
+                finalDamage = 0;
             }
 
             _logger.LogDebug(

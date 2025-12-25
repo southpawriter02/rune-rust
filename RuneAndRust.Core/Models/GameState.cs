@@ -67,6 +67,14 @@ public class GameState
     public EncounterDefinition? PendingEncounter { get; set; }
 
     /// <summary>
+    /// Gets or sets whether God Mode is active (v0.3.17b).
+    /// When true, player takes no damage, stress, or corruption.
+    /// Not serialized to save files.
+    /// </summary>
+    [JsonIgnore]
+    public bool IsGodMode { get; set; } = false;
+
+    /// <summary>
     /// Resets the game state to initial values for a new session.
     /// </summary>
     public void Reset()
@@ -80,5 +88,6 @@ public class GameState
         VisitedRoomIds.Clear();
         CombatState = null;
         PendingEncounter = null;
+        IsGodMode = false;
     }
 }
