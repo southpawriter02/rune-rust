@@ -6,6 +6,7 @@ namespace RuneAndRust.Core.Interfaces;
 /// Service for playing screen transition animations between game phases (v0.3.14b).
 /// Implements ASCII-based visual effects using Spectre.Console.Live rendering.
 /// </summary>
+/// <remarks>See: SPEC-TRANSITION-001 for Screen Transition System design.</remarks>
 public interface IScreenTransitionService
 {
     /// <summary>

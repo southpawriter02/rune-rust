@@ -4,6 +4,7 @@ namespace RuneAndRust.Core.Enums;
 /// Defines screen transition animation types (v0.3.14b).
 /// Used by IScreenTransitionService to play visual effects between game phases.
 /// </summary>
+/// <remarks>See: SPEC-TRANSITION-001 for Screen Transition System design.</remarks>
 public enum TransitionType
 {
     /// <summary>No transition - instant screen clear.</summary>

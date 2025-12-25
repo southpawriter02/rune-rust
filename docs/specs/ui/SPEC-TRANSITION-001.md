@@ -1,7 +1,7 @@
 ---
 id: SPEC-TRANSITION-001
 title: Screen Transition System
-version: 1.0.0
+version: 1.0.1
 status: Implemented
 last_updated: 2025-12-25
 related_specs: [SPEC-THEME-001, SPEC-GAME-001, SPEC-UI-001]
@@ -455,7 +455,7 @@ public interface IScreenTransitionService
 // Animation timing
 private const int FrameCount = 10;      // Frames per animation
 private const int FrameDelayMs = 50;    // Standard delay (500ms total)
-private const int GlitchDelayMs = 70;   // GlitchDecay delay (700ms total)
+// GlitchDecay uses: FrameDelayMs + 20 = 70ms per frame (700ms total)
 private const int MaxHeight = 24;       // Maximum terminal height
 
 // Character sets
@@ -477,7 +477,7 @@ private static readonly char[] GlitchChars = { '░', '▒', '▓', '█', '▀'
 
 | File | Tests | Coverage |
 |------|-------|----------|
-| `ScreenTransitionServiceTests.cs` | 13 | ReduceMotion, transitions, theme integration, logging |
+| `ScreenTransitionServiceTests.cs` | 8 | ReduceMotion, transitions, theme integration, logging |
 
 ### Critical Test Scenarios
 
@@ -506,7 +506,7 @@ private static readonly char[] GlitchChars = { '░', '▒', '▓', '█', '▀'
 
 ### Validation Checklist
 
-- [x] All 13 tests passing
+- [x] All 8 tests passing
 - [x] ReduceMotion respected for all transition types
 - [x] Theme service integration verified
 - [x] No console rendering in test environment (prevents test failures)
@@ -543,10 +543,19 @@ private static readonly char[] GlitchChars = { '░', '▒', '▓', '█', '▀'
 
 ## Changelog
 
+### v1.0.1 (2025-12-25) - Documentation Accuracy
+
+**Fixed:**
+- Corrected test count: 13 → 8 (test methods, not counting Theory data points)
+- Clarified GlitchDecay delay: uses `FrameDelayMs + 20` (computed value, not named constant)
+
+**Added:**
+- Code traceability remarks to 3 implementation files
+
 ### v1.0.0 (2025-12-25)
 
 - Initial specification documenting v0.3.14b implementation
 - 4 transition types: None, Shatter, Dissolve, GlitchDecay
 - ReduceMotion accessibility compliance
 - Theme integration via IThemeService
-- 13 unit tests, 100% passing
+- 8 unit tests, 100% passing

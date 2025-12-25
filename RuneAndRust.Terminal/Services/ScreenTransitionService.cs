@@ -12,6 +12,7 @@ namespace RuneAndRust.Terminal.Services;
 /// Uses Spectre.Console.Live for frame-based rendering.
 /// Respects GameSettings.ReduceMotion for accessibility.
 /// </summary>
+/// <remarks>See: SPEC-TRANSITION-001 for Screen Transition System design.</remarks>
 public class ScreenTransitionService : IScreenTransitionService
 {
     private readonly ILogger<ScreenTransitionService> _logger;
