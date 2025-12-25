@@ -27,8 +27,33 @@ public class Room
 
     /// <summary>
     /// The room's 3D position in the world grid.
+    /// Backed by individual coordinate fields for EF Core compatibility (v0.3.18a).
     /// </summary>
-    public Coordinate Position { get; set; } = Coordinate.Origin;
+    public Coordinate Position
+    {
+        get => new(PositionX, PositionY, PositionZ);
+        set
+        {
+            PositionX = value.X;
+            PositionY = value.Y;
+            PositionZ = value.Z;
+        }
+    }
+
+    /// <summary>
+    /// X coordinate (East-West). Backing field for EF Core.
+    /// </summary>
+    public int PositionX { get; set; }
+
+    /// <summary>
+    /// Y coordinate (North-South). Backing field for EF Core.
+    /// </summary>
+    public int PositionY { get; set; }
+
+    /// <summary>
+    /// Z coordinate (Vertical). Backing field for EF Core.
+    /// </summary>
+    public int PositionZ { get; set; }
 
     /// <summary>
     /// Maps directions to connected room IDs.

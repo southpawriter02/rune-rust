@@ -7,6 +7,7 @@ using RuneAndRust.Core.Interfaces;
 using RuneAndRust.Core.Models;
 using RuneAndRust.Core.Settings;
 using RuneAndRust.Engine.Factories;
+using RuneAndRust.Engine.Performance;
 using RuneAndRust.Engine.Services;
 using RuneAndRust.Persistence.Data;
 using RuneAndRust.Persistence.Repositories;
@@ -215,6 +216,9 @@ class Program
 
                     // Register Cheat Service (v0.3.17b)
                     services.AddScoped<ICheatService, CheatService>();
+
+                    // Register Performance Pools (v0.3.18a - The Garbage Collector)
+                    services.AddSingleton<ITextBufferPool, TextBufferPool>();
                 })
                 .UseSerilog() // Wire Serilog into ILogger
                 .Build();

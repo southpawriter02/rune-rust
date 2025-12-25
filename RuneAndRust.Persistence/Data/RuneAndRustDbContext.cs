@@ -161,13 +161,14 @@ public class RuneAndRustDbContext : DbContext
             entity.Property(r => r.IsStartingRoom)
                 .IsRequired();
 
-            // Map Coordinate as owned type (creates PositionX, PositionY, PositionZ columns)
-            entity.OwnsOne(r => r.Position, position =>
-            {
-                position.Property(p => p.X).HasColumnName("PositionX").IsRequired();
-                position.Property(p => p.Y).HasColumnName("PositionY").IsRequired();
-                position.Property(p => p.Z).HasColumnName("PositionZ").IsRequired();
-            });
+            // Map Position backing fields directly (v0.3.18a - struct support)
+            // Coordinate is now a readonly record struct with backing properties
+            entity.Property(r => r.PositionX).IsRequired();
+            entity.Property(r => r.PositionY).IsRequired();
+            entity.Property(r => r.PositionZ).IsRequired();
+
+            // Ignore the computed Position property (uses backing fields)
+            entity.Ignore(r => r.Position);
 
             // Note: Unique index on position is handled at the application level
             // InMemory provider doesn't support unique indexes on owned types well

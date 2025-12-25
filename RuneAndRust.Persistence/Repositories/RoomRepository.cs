@@ -36,10 +36,11 @@ public class RoomRepository : GenericRepository<Room>, IRoomRepository
     {
         _roomLogger.LogDebug("Fetching room at position {Position}", position);
 
+        // Use backing fields for EF Core LINQ translation (v0.3.18a)
         var room = await _dbSet
-            .FirstOrDefaultAsync(r => r.Position.X == position.X
-                                   && r.Position.Y == position.Y
-                                   && r.Position.Z == position.Z);
+            .FirstOrDefaultAsync(r => r.PositionX == position.X
+                                   && r.PositionY == position.Y
+                                   && r.PositionZ == position.Z);
 
         if (room == null)
         {
@@ -77,10 +78,11 @@ public class RoomRepository : GenericRepository<Room>, IRoomRepository
     {
         _roomLogger.LogDebug("Checking if room exists at position {Position}", position);
 
+        // Use backing fields for EF Core LINQ translation (v0.3.18a)
         var exists = await _dbSet
-            .AnyAsync(r => r.Position.X == position.X
-                        && r.Position.Y == position.Y
-                        && r.Position.Z == position.Z);
+            .AnyAsync(r => r.PositionX == position.X
+                        && r.PositionY == position.Y
+                        && r.PositionZ == position.Z);
 
         _roomLogger.LogDebug("Position {Position} exists: {Exists}", position, exists);
 
@@ -92,10 +94,11 @@ public class RoomRepository : GenericRepository<Room>, IRoomRepository
     {
         _roomLogger.LogDebug("Fetching all rooms ordered by position");
 
+        // Use backing fields for EF Core LINQ translation (v0.3.18a)
         var rooms = await _dbSet
-            .OrderBy(r => r.Position.Z)
-            .ThenBy(r => r.Position.Y)
-            .ThenBy(r => r.Position.X)
+            .OrderBy(r => r.PositionZ)
+            .ThenBy(r => r.PositionY)
+            .ThenBy(r => r.PositionX)
             .ToListAsync();
 
         _roomLogger.LogDebug("Retrieved {Count} rooms", rooms.Count);
@@ -133,10 +136,11 @@ public class RoomRepository : GenericRepository<Room>, IRoomRepository
             "[Room] Fetching rooms in grid Z={Z}, X=[{MinX},{MaxX}], Y=[{MinY},{MaxY}]",
             z, minX, maxX, minY, maxY);
 
+        // Use backing fields for EF Core LINQ translation (v0.3.18a)
         var rooms = await _dbSet
-            .Where(r => r.Position.Z == z
-                     && r.Position.X >= minX && r.Position.X <= maxX
-                     && r.Position.Y >= minY && r.Position.Y <= maxY)
+            .Where(r => r.PositionZ == z
+                     && r.PositionX >= minX && r.PositionX <= maxX
+                     && r.PositionY >= minY && r.PositionY <= maxY)
             .ToListAsync();
 
         _roomLogger.LogDebug("[Room] Retrieved {Count} rooms in grid", rooms.Count);

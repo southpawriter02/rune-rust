@@ -57,9 +57,8 @@ Trauma, crafting, rest mechanics, environment, exploration, and settings.
 | [v0.3.13](v0.3.x/v0.3.13.md) | The Audit Suite |
 | [v0.3.14](v0.3.x/v0.3.14.md) | The Experience (Theme & Transitions) |
 | [v0.3.15](v0.3.x/v0.3.15.md) | The Polyglot (Localization System) |
-| [v0.3.16a](v0.3.x/v0.3.16a.md) | The Safety Net (Global Exception Handler) |
-| [v0.3.17a](v0.3.x/v0.3.17a.md) | The Console (Overlay UI) |
-| [v0.3.17b](v0.3.x/v0.3.17b.md) | The Toolbox (Cheat Commands) |
+| [v0.3.16](v0.3.x/v0.3.16.md) | The Sentinel (Stability & Recovery) |
+| [v0.3.17](v0.3.x/v0.3.17.md) | The Toolbox (Debug Console & Cheat Commands) |
 
 ---
 
