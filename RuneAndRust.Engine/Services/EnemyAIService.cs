@@ -4,6 +4,7 @@ using RuneAndRust.Core.Enums;
 using RuneAndRust.Core.Interfaces;
 using RuneAndRust.Core.Models;
 using RuneAndRust.Core.Models.Combat;
+using RuneAndRust.Core.ValueObjects;
 
 namespace RuneAndRust.Engine.Services;
 
@@ -17,6 +18,8 @@ public class EnemyAIService : IEnemyAIService
     private readonly IDiceService _dice;
     private readonly IAttackResolutionService _attackResolution;
     private readonly IAbilityService _abilityService;
+    private readonly IPathfindingService _pathfinding;
+    private readonly ISpatialHashGrid _spatialGrid;
     private readonly ILogger<EnemyAIService> _logger;
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -112,16 +115,22 @@ public class EnemyAIService : IEnemyAIService
     /// <param name="dice">The dice service for probability rolls.</param>
     /// <param name="attackResolution">The attack resolution service for stamina checks.</param>
     /// <param name="abilityService">The ability service for ability validation (v0.2.4b).</param>
+    /// <param name="pathfinding">The pathfinding service for movement calculations (v0.3.18b).</param>
+    /// <param name="spatialGrid">The spatial grid for position queries (v0.3.18b).</param>
     /// <param name="logger">The logger for traceability.</param>
     public EnemyAIService(
         IDiceService dice,
         IAttackResolutionService attackResolution,
         IAbilityService abilityService,
+        IPathfindingService pathfinding,
+        ISpatialHashGrid spatialGrid,
         ILogger<EnemyAIService> logger)
     {
         _dice = dice;
         _attackResolution = attackResolution;
         _abilityService = abilityService;
+        _pathfinding = pathfinding;
+        _spatialGrid = spatialGrid;
         _logger = logger;
     }
 
@@ -141,6 +150,23 @@ public class EnemyAIService : IEnemyAIService
         {
             _logger.LogWarning("[AI] No player target found");
             return new CombatAction(ActionType.Pass, enemy.Id, null, null, "finds no threats.");
+        }
+
+        // v0.3.18b: Calculate path to target for pathfinding awareness
+        var distanceToTarget = _pathfinding.GetDistance(enemy.Position, target.Position);
+        var hasPathToTarget = _pathfinding.HasPath(enemy.Position, target.Position, _spatialGrid);
+
+        if (!hasPathToTarget)
+        {
+            _logger.LogDebug(
+                "[AI] {Enemy} has no path to {Target}. Distance: {Distance}. May prefer defensive actions.",
+                enemy.Name, target.Name, distanceToTarget);
+        }
+        else
+        {
+            _logger.LogTrace(
+                "[AI] {Enemy} can reach {Target}. Distance: {Distance}",
+                enemy.Name, target.Name, distanceToTarget);
         }
 
         // v0.2.4c: Check if locked in Chanting state

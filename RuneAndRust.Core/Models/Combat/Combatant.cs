@@ -1,5 +1,6 @@
 using RuneAndRust.Core.Entities;
 using RuneAndRust.Core.Enums;
+using RuneAndRust.Core.ValueObjects;
 using CharacterAttribute = RuneAndRust.Core.Enums.Attribute;
 using CharacterEntity = RuneAndRust.Core.Entities.Character;
 
@@ -127,6 +128,16 @@ public class Combatant
     /// Used for visual highlighting in the combat grid.
     /// </summary>
     public bool IsTargeted { get; set; } = false;
+
+    #endregion
+
+    #region Spatial Positioning (v0.3.18b)
+
+    /// <summary>
+    /// The combatant's position on the combat grid (v0.3.18b - The Hot Path).
+    /// Used by SpatialHashGrid for O(1) occupancy checks and A* pathfinding.
+    /// </summary>
+    public Coordinate Position { get; set; } = Coordinate.Origin;
 
     #endregion
 

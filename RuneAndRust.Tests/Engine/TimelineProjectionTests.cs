@@ -33,6 +33,7 @@ public class TimelineProjectionTests
     private readonly Mock<IRoomRepository> _mockRoomRepository;
     private readonly Mock<IDiceService> _mockDice;
     private readonly Mock<IVisualEffectService> _mockVisualEffectService;
+    private readonly Mock<ISpatialHashGrid> _mockSpatialGrid;
     private readonly Mock<ILogger<CombatService>> _mockLogger;
     private readonly GameState _gameState;
     private readonly CombatService _sut;
@@ -54,6 +55,7 @@ public class TimelineProjectionTests
         _mockRoomRepository = new Mock<IRoomRepository>();
         _mockDice = new Mock<IDiceService>();
         _mockVisualEffectService = new Mock<IVisualEffectService>();
+        _mockSpatialGrid = new Mock<ISpatialHashGrid>();
         _mockLogger = new Mock<ILogger<CombatService>>();
         _gameState = new GameState();
         _sut = new CombatService(
@@ -73,6 +75,7 @@ public class TimelineProjectionTests
             _mockRoomRepository.Object,
             _mockDice.Object,
             _mockVisualEffectService.Object,
+            _mockSpatialGrid.Object,
             _mockLogger.Object);
 
         // Default setup for initiative service

@@ -6,6 +6,7 @@ using RuneAndRust.Core.Enums;
 using RuneAndRust.Core.Interfaces;
 using RuneAndRust.Core.Models;
 using RuneAndRust.Core.Settings;
+using RuneAndRust.Engine.Algorithms;
 using RuneAndRust.Engine.Factories;
 using RuneAndRust.Engine.Performance;
 using RuneAndRust.Engine.Services;
@@ -219,6 +220,10 @@ class Program
 
                     // Register Performance Pools (v0.3.18a - The Garbage Collector)
                     services.AddSingleton<ITextBufferPool, TextBufferPool>();
+
+                    // Register Pathfinding Infrastructure (v0.3.18b - The Hot Path)
+                    services.AddSingleton<ISpatialHashGrid, SpatialHashGrid>();
+                    services.AddSingleton<IPathfindingService, AStarPathfinder>();
                 })
                 .UseSerilog() // Wire Serilog into ILogger
                 .Build();

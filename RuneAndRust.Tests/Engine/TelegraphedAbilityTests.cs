@@ -6,6 +6,7 @@ using RuneAndRust.Core.Enums;
 using RuneAndRust.Core.Interfaces;
 using RuneAndRust.Core.Models;
 using RuneAndRust.Core.Models.Combat;
+using RuneAndRust.Core.ValueObjects;
 using RuneAndRust.Engine.Services;
 using Xunit;
 using CharacterAttribute = RuneAndRust.Core.Enums.Attribute;
@@ -653,17 +654,25 @@ public class TelegraphedAbilityTests
         var mockDice = new Mock<IDiceService>();
         var mockAttackResolution = new Mock<IAttackResolutionService>();
         var mockAbilityService = new Mock<IAbilityService>();
+        var mockPathfinding = new Mock<IPathfindingService>();
+        var mockSpatialGrid = new Mock<ISpatialHashGrid>();
         var mockLogger = new Mock<ILogger<EnemyAIService>>();
 
         mockAttackResolution.Setup(a => a.CanAffordAttack(It.IsAny<Combatant>(), It.IsAny<AttackType>()))
             .Returns(true);
         mockAbilityService.Setup(a => a.CanUse(It.IsAny<Combatant>(), It.IsAny<ActiveAbility>()))
             .Returns(true);
+        mockPathfinding.Setup(p => p.HasPath(It.IsAny<Coordinate>(), It.IsAny<Coordinate>(), It.IsAny<ISpatialHashGrid>()))
+            .Returns(true);
+        mockPathfinding.Setup(p => p.GetDistance(It.IsAny<Coordinate>(), It.IsAny<Coordinate>()))
+            .Returns(1);
 
         return new EnemyAIService(
             mockDice.Object,
             mockAttackResolution.Object,
             mockAbilityService.Object,
+            mockPathfinding.Object,
+            mockSpatialGrid.Object,
             mockLogger.Object);
     }
 

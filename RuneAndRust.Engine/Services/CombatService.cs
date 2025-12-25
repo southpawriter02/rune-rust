@@ -4,6 +4,7 @@ using RuneAndRust.Core.Enums;
 using RuneAndRust.Core.Interfaces;
 using RuneAndRust.Core.Models;
 using RuneAndRust.Core.Models.Combat;
+using RuneAndRust.Core.ValueObjects;
 using RuneAndRust.Core.ViewModels;
 using CharacterAttribute = RuneAndRust.Core.Enums.Attribute;
 
@@ -31,6 +32,7 @@ public class CombatService : ICombatService
     private readonly IRoomRepository _roomRepository;
     private readonly IDiceService _dice;
     private readonly IVisualEffectService _visualEffectService;
+    private readonly ISpatialHashGrid _spatialGrid;
     private readonly ILogger<CombatService> _logger;
 
     /// <summary>
@@ -112,6 +114,51 @@ public class CombatService : ICombatService
             c.CurrentHp > 0);
 
         return opposingFrontEmpty;
+    }
+
+    #endregion
+
+    #region Spatial Positioning (v0.3.18b)
+
+    /// <summary>
+    /// Initializes the spatial grid with all combatant positions (v0.3.18b - The Hot Path).
+    /// Assigns unique positions to each combatant based on their side and index.
+    /// </summary>
+    /// <param name="combatants">The list of combatants to register.</param>
+    private void InitializeSpatialGrid(List<Combatant> combatants)
+    {
+        _spatialGrid.Clear();
+
+        var playerIndex = 0;
+        var enemyIndex = 0;
+
+        foreach (var combatant in combatants)
+        {
+            // Assign positions: Players on left (negative X), Enemies on right (positive X)
+            // Y position based on row: Front = 0, Back = 1
+            if (combatant.IsPlayer)
+            {
+                combatant.Position = new Coordinate(
+                    -2 - playerIndex,
+                    combatant.Row == RowPosition.Front ? 0 : 1,
+                    0);
+                playerIndex++;
+            }
+            else
+            {
+                combatant.Position = new Coordinate(
+                    2 + enemyIndex,
+                    combatant.Row == RowPosition.Front ? 0 : 1,
+                    0);
+                enemyIndex++;
+            }
+
+            _spatialGrid.Register(combatant.Id, combatant.Position);
+        }
+
+        _logger.LogDebug(
+            "[Spatial] Initialized combat grid with {Count} combatants. Players: {Players}, Enemies: {Enemies}",
+            combatants.Count, playerIndex, enemyIndex);
     }
 
     #endregion
@@ -396,6 +443,7 @@ public class CombatService : ICombatService
         IRoomRepository roomRepository,
         IDiceService dice,
         IVisualEffectService visualEffectService,
+        ISpatialHashGrid spatialGrid,
         ILogger<CombatService> logger)
     {
         _gameState = gameState;
@@ -414,6 +462,7 @@ public class CombatService : ICombatService
         _roomRepository = roomRepository;
         _dice = dice;
         _visualEffectService = visualEffectService;
+        _spatialGrid = spatialGrid;
         _logger = logger;
     }
 
@@ -482,6 +531,9 @@ public class CombatService : ICombatService
 
         // Sort by initiative
         state.TurnOrder = _initiative.SortTurnOrder(state.TurnOrder);
+
+        // Initialize spatial grid for pathfinding (v0.3.18b)
+        InitializeSpatialGrid(state.TurnOrder);
 
         // Update global state
         _gameState.CombatState = state;
@@ -814,8 +866,11 @@ public class CombatService : ICombatService
         var index = state.TurnOrder.IndexOf(combatant);
         if (index < 0) return;
 
+        // Remove from spatial grid (v0.3.18b)
+        _spatialGrid.Remove(combatant.Id, combatant.Position);
+
         state.TurnOrder.Remove(combatant);
-        _logger.LogDebug("Removed {Name} from turn order", combatant.Name);
+        _logger.LogDebug("Removed {Name} from turn order and spatial grid", combatant.Name);
 
         // Adjust turn index if necessary
         if (index < state.TurnIndex)

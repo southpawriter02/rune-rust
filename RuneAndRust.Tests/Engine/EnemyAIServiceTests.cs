@@ -6,6 +6,7 @@ using RuneAndRust.Core.Enums;
 using RuneAndRust.Core.Interfaces;
 using RuneAndRust.Core.Models;
 using RuneAndRust.Core.Models.Combat;
+using RuneAndRust.Core.ValueObjects;
 using RuneAndRust.Engine.Services;
 using Xunit;
 using CharacterAttribute = RuneAndRust.Core.Enums.Attribute;
@@ -22,6 +23,8 @@ public class EnemyAIServiceTests
     private readonly Mock<IDiceService> _mockDice;
     private readonly Mock<IAttackResolutionService> _mockAttackResolution;
     private readonly Mock<IAbilityService> _mockAbilityService;
+    private readonly Mock<IPathfindingService> _mockPathfinding;
+    private readonly Mock<ISpatialHashGrid> _mockSpatialGrid;
     private readonly Mock<ILogger<EnemyAIService>> _mockLogger;
     private readonly EnemyAIService _sut;
 
@@ -30,6 +33,8 @@ public class EnemyAIServiceTests
         _mockDice = new Mock<IDiceService>();
         _mockAttackResolution = new Mock<IAttackResolutionService>();
         _mockAbilityService = new Mock<IAbilityService>();
+        _mockPathfinding = new Mock<IPathfindingService>();
+        _mockSpatialGrid = new Mock<ISpatialHashGrid>();
         _mockLogger = new Mock<ILogger<EnemyAIService>>();
 
         // Default: All attacks are affordable
@@ -40,10 +45,18 @@ public class EnemyAIServiceTests
         _mockAbilityService.Setup(a => a.CanUse(It.IsAny<Combatant>(), It.IsAny<ActiveAbility>()))
             .Returns(false);
 
+        // Default: Pathfinding always has a path
+        _mockPathfinding.Setup(p => p.HasPath(It.IsAny<Coordinate>(), It.IsAny<Coordinate>(), It.IsAny<ISpatialHashGrid>()))
+            .Returns(true);
+        _mockPathfinding.Setup(p => p.GetDistance(It.IsAny<Coordinate>(), It.IsAny<Coordinate>()))
+            .Returns(1);
+
         _sut = new EnemyAIService(
             _mockDice.Object,
             _mockAttackResolution.Object,
             _mockAbilityService.Object,
+            _mockPathfinding.Object,
+            _mockSpatialGrid.Object,
             _mockLogger.Object);
     }
 
