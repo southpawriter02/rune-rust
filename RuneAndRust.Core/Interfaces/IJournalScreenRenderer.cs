@@ -6,6 +6,7 @@ namespace RuneAndRust.Core.Interfaces;
 /// Defines the contract for rendering the full-screen Journal UI (v0.3.7c).
 /// Implementations handle platform-specific rendering (Terminal, GUI, etc.).
 /// </summary>
+/// <remarks>See: SPEC-RENDER-001 for Rendering Pipeline System design.</remarks>
 public interface IJournalScreenRenderer
 {
     /// <summary>

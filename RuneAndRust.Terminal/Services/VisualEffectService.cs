@@ -9,6 +9,7 @@ namespace RuneAndRust.Terminal.Services;
 /// Terminal implementation of visual effects service (v0.3.9a).
 /// Provides border flash effects for combat feedback using Spectre.Console color overrides.
 /// </summary>
+/// <remarks>See: SPEC-RENDER-001 for Rendering Pipeline System design.</remarks>
 public class VisualEffectService : IVisualEffectService
 {
     private readonly ILogger<VisualEffectService> _logger;

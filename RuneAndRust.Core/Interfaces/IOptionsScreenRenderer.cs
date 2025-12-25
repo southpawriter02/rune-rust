@@ -6,6 +6,7 @@ namespace RuneAndRust.Core.Interfaces;
 /// Defines the contract for rendering the Options screen (v0.3.10b).
 /// Implementations use Spectre.Console Layout for a full-screen tabbed interface.
 /// </summary>
+/// <remarks>See: SPEC-RENDER-001 for Rendering Pipeline System design.</remarks>
 public interface IOptionsScreenRenderer
 {
     /// <summary>

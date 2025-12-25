@@ -6,6 +6,7 @@ namespace RuneAndRust.Core.Interfaces;
 /// Defines the contract for rendering combat UI to the terminal.
 /// Implementations should use Spectre.Console for rich text rendering.
 /// </summary>
+/// <remarks>See: SPEC-RENDER-001 for Rendering Pipeline System design.</remarks>
 public interface ICombatScreenRenderer
 {
     /// <summary>

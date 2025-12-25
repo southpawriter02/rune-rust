@@ -14,6 +14,7 @@ namespace RuneAndRust.Terminal.Services;
 /// Updated v0.3.9b: Added theme service for accessibility color support.
 /// Updated v0.3.9c: Added context help tips panel.
 /// </summary>
+/// <remarks>See: SPEC-RENDER-001 for Rendering Pipeline System design.</remarks>
 public class CombatScreenRenderer : ICombatScreenRenderer
 {
     private readonly ILogger<CombatScreenRenderer> _logger;

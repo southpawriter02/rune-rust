@@ -6,6 +6,7 @@ namespace RuneAndRust.Core.Interfaces;
 /// Defines the contract for rendering rest results to the player.
 /// Displays resource consumption, recovery deltas, and ambush warnings.
 /// </summary>
+/// <remarks>See: SPEC-RENDER-001 for Rendering Pipeline System design.</remarks>
 public interface IRestScreenRenderer
 {
     /// <summary>

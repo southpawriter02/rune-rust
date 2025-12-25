@@ -6,6 +6,7 @@ namespace RuneAndRust.Core.Interfaces;
 /// Defines the contract for rendering the inventory screen (v0.3.7a).
 /// Implementations use Spectre.Console Layout for a full-screen interface.
 /// </summary>
+/// <remarks>See: SPEC-RENDER-001 for Rendering Pipeline System design.</remarks>
 public interface IInventoryScreenRenderer
 {
     /// <summary>
