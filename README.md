@@ -2,11 +2,11 @@
 
 A text-based dungeon crawler set in the twilight of a broken world. Corrupted machines guard ancient ruins. Only the bold survive.
 
-**Current Version:** v0.3 Equipment & Loot ✅ **COMPLETE**
+**Current Version:** v0.3.15 The Polyglot (Localization System) ✅ **COMPLETE**
 
 ## Overview
 
-Rune & Rust is a turn-based dungeon crawler where you explore a ruined facility, fight corrupted machines, solve environmental puzzles, and defeat a powerful boss. The game features a comprehensive equipment and loot system with 36 unique items across 5 quality tiers, progression systems with leveling and abilities, and save/load functionality for extended play sessions.
+Rune & Rust is a turn-based dungeon crawler where you explore a ruined facility, fight corrupted machines, solve environmental puzzles, and defeat a powerful boss. The game features a comprehensive equipment and loot system with 36 unique items across 5 quality tiers, progression systems with leveling and abilities, save/load functionality for extended play sessions, and a multi-language localization system with pseudo-localization for QA testing.
 
 ### Core Loop
 1. **Character Creation** → Choose from 3 classes, each with starting equipment and 4 unique abilities
@@ -151,6 +151,25 @@ dotnet run --project RuneAndRust.ConsoleApp
 - Build diversity and progression through gear
 - 5 Quality Tiers: Jury-Rigged → Scavenged → Clan-Forged → Optimized → Myth-Forged
 
+## What's New in v0.3.15
+
+### New Features (Localization System)
+✅ **Type-Safe Key Registry** - 100+ localization key constants for compile-time validation
+✅ **Hierarchical JSON Locales** - Human-readable nested structure with O(1) lookup
+✅ **Two-Tier Fallback Chain** - Primary locale → en-US fallback → key return
+✅ **Pseudo-Localization (qps-ploc)** - QA testing mode with diacritics and text expansion
+✅ **Live Locale Switching** - Change language without application restart
+✅ **Persistent Language Settings** - User preference saved to options file
+✅ **Format String Support** - Placeholders ({0}, {1}) preserved across locales
+
+### Localization Architecture
+- **LocKeys** - Type-safe constants prevent typos and enable refactoring
+- **LocalizationService** - JSON-based implementation with fallback chain
+- **PseudoLocalizer** - Transforms text for visual QA testing
+- **Settings Integration** - Language persisted in options.json
+
+---
+
 ## What's New in v0.3
 
 ### New Features (Equipment & Loot)
@@ -242,18 +261,18 @@ dotnet run --project RuneAndRust.ConsoleApp
 - **UI Library**: [Spectre.Console](https://spectreconsole.net/) for rich terminal UI
 - **Architecture**: Clean Architecture with separated concerns
 
-## Scope: What's IN v0.3
+## Scope: What's IN v0.3.15
 
 ✅ 3 character classes with 4 abilities each
 ✅ XP and leveling system (5 levels)
 ✅ Progression rewards (HP, Stamina, Attributes)
-✅ **36 unique equipment items** (NEW)
-✅ **Equipment slots: weapon + armor** (NEW)
-✅ **5-slot inventory system** (NEW)
-✅ **Quality tier progression (5 tiers)** (NEW)
-✅ **Dynamic loot generation** (NEW)
-✅ **Class-appropriate smart loot** (NEW)
-✅ **Equipment persistence** (NEW)
+✅ 36 unique equipment items
+✅ Equipment slots: weapon + armor
+✅ 5-slot inventory system
+✅ Quality tier progression (5 tiers)
+✅ Dynamic loot generation
+✅ Class-appropriate smart loot
+✅ Equipment persistence
 ✅ 5 attributes (MIGHT, FINESSE, WITS, WILL, STURDINESS)
 ✅ Turn-based combat with dice pool mechanics
 ✅ 3 enemy types with XP rewards
@@ -263,6 +282,10 @@ dotnet run --project RuneAndRust.ConsoleApp
 ✅ Save/load system with SQLite
 ✅ Auto-save on room transitions
 ✅ Victory/defeat screens
+✅ **Multi-language localization system** (v0.3.15)
+✅ **Type-safe key registry (100+ keys)** (v0.3.15)
+✅ **Pseudo-localization for QA testing** (v0.3.15)
+✅ **Live locale switching** (v0.3.15)
 
 ## Scope: What's OUT of v0.3
 
