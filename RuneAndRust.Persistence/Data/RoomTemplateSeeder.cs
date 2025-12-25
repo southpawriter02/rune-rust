@@ -8,6 +8,7 @@ namespace RuneAndRust.Persistence.Data;
 /// Seeds the database with room templates and biome definitions from JSON files (v0.4.0).
 /// Executes on first application launch if the RoomTemplates table is empty.
 /// </summary>
+/// <remarks>See: SPEC-SEED-001 for Database Seeding System design.</remarks>
 public static class RoomTemplateSeeder
 {
     /// <summary>

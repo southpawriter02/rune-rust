@@ -1,14 +1,15 @@
 ---
 id: SPEC-SEED-001
 title: Database Seeding System
-version: 1.0.0
+version: 1.0.1
 status: Implemented
 related_specs: [SPEC-REPO-001, SPEC-MIGRATE-001]
+last_updated: 2025-12-24
 ---
 
 # SPEC-SEED-001: Database Seeding System
 
-> **Version:** 1.0.0
+> **Version:** 1.0.1
 > **Status:** Implemented
 > **Services:** AbilitySeeder, ConditionSeeder, HazardTemplateSeeder, CodexSeeder, RoomTemplateSeeder, TemplateLoaderService
 > **Location:** `RuneAndRust.Persistence/Data/`, `RuneAndRust.Engine/Services/`
@@ -40,8 +41,14 @@ Application Startup (Program.cs)
 ├───────────────────────────────────────────────────────────────┤
 │ AbilitySeeder.SeedAsync()     → ActiveAbilities (16 records)  │
 │ ConditionSeeder.SeedAsync()   → AmbientConditions (8 records) │
-│ HazardTemplateSeeder.SeedAsync() → HazardTemplates (13 records)│
+│ HazardTemplateSeeder.SeedAsync() → HazardTemplates (12 records)│
+└───────────────────────────────────────────────────────────────┘
+        ↓
+┌───────────────────────────────────────────────────────────────┐
+│                    Optional Seeders (Not Auto-Called)         │
+├───────────────────────────────────────────────────────────────┤
 │ CodexSeeder.SeedAsync()       → CodexEntries (4 records)      │
+│ (Available but not called in Program.cs initialization)       │
 └───────────────────────────────────────────────────────────────┘
         ↓
 ┌───────────────────────────────────────────────────────────────┐
@@ -50,7 +57,7 @@ Application Startup (Program.cs)
 │ RoomTemplateSeeder.SeedAsync()                                │
 │   → ITemplateLoaderService.LoadAllTemplatesAsync()            │
 │     → /data/templates/*.json (20 room templates)              │
-│     → /data/biomes/the_roots.json (1 biome + 27 elements)     │
+│     → /data/biomes/the_roots.json (1 biome + 28 elements)     │
 └───────────────────────────────────────────────────────────────┘
         ↓
     DbContext.SaveChangesAsync()
@@ -367,11 +374,11 @@ using (var scope = host.Services.CreateScope())
     // 3. Seed hazard templates
     await HazardTemplateSeeder.SeedAsync(context);
 
-    // 4. Seed codex entries (journal)
-    await CodexSeeder.SeedAsync(context);
-
-    // 5. Seed room templates and biome definitions (v0.4.0)
+    // 4. Seed room templates and biome definitions (v0.4.0)
     await RoomTemplateSeeder.SeedAsync(context, templateLoader, logger);
+
+    // NOTE: CodexSeeder.SeedAsync() exists but is NOT called in current initialization
+    // It can be invoked manually when codex/journal features are implemented
 }
 ```
 
@@ -379,8 +386,10 @@ using (var scope = host.Services.CreateScope())
 1. **Abilities first**: Required for character creation and combat
 2. **Conditions next**: Referenced by room generation
 3. **Hazards next**: Referenced by room generation
-4. **Codex entries**: Independent, but needed early for journal system
-5. **Templates last**: Depends on other data being present; largest dataset
+4. **Templates last**: Depends on other data being present; largest dataset
+
+> **Note**: CodexSeeder exists but is not called during application startup.
+> It will be integrated when the journal/codex feature is fully implemented.
 
 **Timing**: Runs after `MigrateAsync()` but before game loop starts.
 
@@ -556,7 +565,7 @@ public static async Task SeedAsync(RuneAndRustDbContext context, ILogger? logger
 
 **Purpose**: Initialize hazard prototypes grouped by biome.
 
-**Seeded Data (13 templates)**:
+**Seeded Data (12 templates)**:
 
 **Ruin Hazards (3)**:
 - Pressure Plate - Triggers trap when stepped on
@@ -573,11 +582,10 @@ public static async Task SeedAsync(RuneAndRustDbContext context, ILogger? logger
 - Corruption Pool - Acid damage zone
 - Grasping Tendrils - Immobilizes on contact
 
-**Void Hazards (4)**:
+**Void Hazards (3)**:
 - Reality Fissure - Teleports player randomly
 - Entropy Field - Drains stamina over time
 - Echoing Whispers - Psychic damage and confusion
-- Shadow Tendril - Grabs and pulls player
 
 **Code**:
 ```csharp
@@ -792,19 +800,18 @@ public static async Task SeedAsync(
 3. DI scope created
 4. AbilitySeeder.SeedAsync() - AnyAsync() returns false, seeds 16 abilities
 5. ConditionSeeder.SeedAsync() - AnyAsync() returns false, seeds 8 conditions
-6. HazardTemplateSeeder.SeedAsync() - AnyAsync() returns false, seeds 13 hazards
-7. CodexSeeder.SeedAsync() - AnyAsync() returns false, seeds 4 entries
-8. RoomTemplateSeeder.SeedAsync() - loads 20 templates + 1 biome + 27 elements
-9. All SaveChangesAsync() calls succeed
-10. Game loop starts with fully seeded database
+6. HazardTemplateSeeder.SeedAsync() - AnyAsync() returns false, seeds 12 hazards
+7. RoomTemplateSeeder.SeedAsync() - loads 20 templates + 1 biome + 28 elements
+8. All SaveChangesAsync() calls succeed
+9. Game loop starts with fully seeded database
+(Note: CodexSeeder is not called during initialization)
 ```
 
 **Log Output**:
 ```
 [INFO] Seeded 16 active abilities
 [INFO] Seeded 8 ambient conditions
-[INFO] Seeded 13 hazard templates
-[INFO] Seeded 4 codex entries
+[INFO] Seeded 12 hazard templates
 [INFO] Room template seeding complete
 ```
 
@@ -824,9 +831,8 @@ public static async Task SeedAsync(
 4. AbilitySeeder.SeedAsync() - AnyAsync() returns true, skips
 5. ConditionSeeder.SeedAsync() - AnyAsync() returns true, skips
 6. HazardTemplateSeeder.SeedAsync() - AnyAsync() returns true, skips
-7. CodexSeeder.SeedAsync() - AnyAsync() returns true, skips
-8. RoomTemplateSeeder.SeedAsync() - checks for updates, upserts if needed
-9. Game loop starts immediately (minimal seeding time)
+7. RoomTemplateSeeder.SeedAsync() - checks for updates, upserts if needed
+8. Game loop starts immediately (minimal seeding time)
 ```
 
 **Log Output**:
@@ -1010,12 +1016,9 @@ Start Seeding
 ├─ HazardTemplateSeeder.SeedAsync()
 │  ├─ HazardTemplates.AnyAsync()?
 │  │  ├─ YES → Skip (log debug)
-│  │  └─ NO → Seed 13 hazards → SaveChangesAsync()
+│  │  └─ NO → Seed 12 hazards → SaveChangesAsync()
 │
-├─ CodexSeeder.SeedAsync()
-│  ├─ CodexEntries.AnyAsync()?
-│  │  ├─ YES → Skip (log debug)
-│  │  └─ NO → Seed 4 entries → SaveChangesAsync()
+│  (Note: CodexSeeder.SeedAsync() exists but is not called here)
 │
 └─ RoomTemplateSeeder.SeedAsync()
    └─ TemplateLoaderService.LoadAllTemplatesAsync()
@@ -1166,7 +1169,7 @@ Create Description Text
    - Seeds 8 AmbientCondition records
 
 3. **HazardTemplateSeeder** (RuneAndRust.Persistence/Data/HazardTemplateSeeder.cs)
-   - Seeds 13 HazardTemplate records
+   - Seeds 12 HazardTemplate records
 
 4. **CodexSeeder** (RuneAndRust.Persistence/Data/CodexSeeder.cs)
    - Seeds 4 CodexEntry records
@@ -1490,10 +1493,10 @@ public class TemplateLoaderServiceTests
 **Documented Data**:
 - 16 ActiveAbility records
 - 8 AmbientCondition records
-- 13 HazardTemplate records
+- 12 HazardTemplate records
 - 4 CodexEntry records
 - 20 RoomTemplate JSON files
-- 1 BiomeDefinition + 27 BiomeElement records
+- 1 BiomeDefinition + 28 BiomeElement records
 
 ---
 
@@ -1617,6 +1620,31 @@ public interface ISeedExporter
 **For Specification**: Precise technical language (counts, file paths, method signatures)
 
 **For Seeded Content**: Domain 4 compliant narrative voice
+
+---
+
+## Changelog
+
+### v1.0.1 (2025-12-24)
+**Documentation Updates:**
+- Added `last_updated` field to YAML frontmatter
+- Fixed HazardTemplateSeeder count: 13 → 12 (Void has 3 templates, not 4; "Shadow Tendril" does not exist)
+- Fixed BiomeElements count: 27 → 28
+- Updated seeding order to reflect that CodexSeeder is NOT called in Program.cs initialization
+- Added note that CodexSeeder exists but is optional/manual
+- Added code traceability remarks (`See: SPEC-SEED-001...`) to all 5 seeders:
+  - AbilitySeeder.cs
+  - ConditionSeeder.cs
+  - HazardTemplateSeeder.cs
+  - CodexSeeder.cs (includes note about not being called in initialization)
+  - RoomTemplateSeeder.cs
+
+### v1.0.0 (2025-12-22)
+**Initial Release:**
+- Database seeding system documentation
+- 5 seeders: AbilitySeeder, ConditionSeeder, HazardTemplateSeeder, CodexSeeder, RoomTemplateSeeder
+- JSON data file structure for templates and biomes
+- Domain 4 compliance guidelines for seeded content
 
 ---
 
