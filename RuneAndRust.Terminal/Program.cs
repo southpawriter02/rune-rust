@@ -5,6 +5,7 @@ using RuneAndRust.Core.Entities;
 using RuneAndRust.Core.Enums;
 using RuneAndRust.Core.Interfaces;
 using RuneAndRust.Core.Models;
+using RuneAndRust.Core.Settings;
 using RuneAndRust.Engine.Factories;
 using RuneAndRust.Engine.Services;
 using RuneAndRust.Persistence.Data;
@@ -212,9 +213,9 @@ class Program
             var settingsService = host.Services.GetRequiredService<ISettingsService>();
             settingsService.LoadAsync().GetAwaiter().GetResult();
 
-            // 3b. Load locale (v0.3.15a - The Lexicon)
+            // 3b. Load locale (v0.3.15b - The Translator: uses GameSettings.Language)
             var locService = host.Services.GetRequiredService<ILocalizationService>();
-            locService.LoadLocaleAsync("en-US").GetAwaiter().GetResult();
+            locService.LoadLocaleAsync(GameSettings.Language).GetAwaiter().GetResult();
 
             // 4. Seed data
             using (var scope = host.Services.CreateScope())

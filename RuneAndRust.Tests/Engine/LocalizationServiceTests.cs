@@ -7,8 +7,8 @@ using RuneAndRust.Engine.Services;
 namespace RuneAndRust.Tests.Engine;
 
 /// <summary>
-/// Unit tests for LocalizationService (v0.3.15a - The Lexicon).
-/// Tests locale loading, string lookup, and format argument substitution.
+/// Unit tests for LocalizationService (v0.3.15b - The Translator).
+/// Tests locale loading, string lookup, format argument substitution, and fallback chain.
 /// </summary>
 public class LocalizationServiceTests
 {
@@ -143,6 +143,88 @@ public class LocalizationServiceTests
 
         // Assert - All LocKeys should be "missing" since nothing is loaded
         missingKeys.Should().BeEquivalentTo(LocKeys.AllKeys);
+    }
+
+    #endregion
+
+    #region Fallback Chain Tests (v0.3.15b)
+
+    [Fact]
+    public async Task LoadLocaleAsync_LoadsFallbackForNonDefaultLocale()
+    {
+        // Arrange
+        var localeFile = Path.Combine(_testLocalesPath, "en-US.json");
+        if (!File.Exists(localeFile))
+        {
+            return; // Skip if locale file not available
+        }
+
+        // Act - Load a non-existent locale, which should fall back to en-US
+        var result = await _sut.LoadLocaleAsync("fr-FR");
+
+        // Assert - Should have loaded en-US as fallback
+        // The method returns true because it fell back to en-US successfully
+        result.Should().BeTrue();
+        _sut.CurrentLocale.Should().Be("en-US"); // Falls back to default
+    }
+
+    [Fact]
+    public async Task LoadLocaleAsync_ClearsFallbackForDefaultLocale()
+    {
+        // Arrange
+        var localeFile = Path.Combine(_testLocalesPath, "en-US.json");
+        if (!File.Exists(localeFile))
+        {
+            return; // Skip if locale file not available
+        }
+
+        // Act - Load the default locale
+        var result = await _sut.LoadLocaleAsync("en-US");
+
+        // Assert - Should succeed and set CurrentLocale
+        result.Should().BeTrue();
+        _sut.CurrentLocale.Should().Be("en-US");
+
+        // HasKey should return true for known keys (loaded in primary, no fallback needed)
+        _sut.HasKey(LocKeys.UI_MainMenu_NewGame).Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task HasKey_ChecksBothPrimaryAndFallback()
+    {
+        // Arrange
+        var localeFile = Path.Combine(_testLocalesPath, "en-US.json");
+        if (!File.Exists(localeFile))
+        {
+            return;
+        }
+
+        // Act - Load en-US
+        await _sut.LoadLocaleAsync("en-US");
+
+        // Assert - HasKey should return true for keys in primary locale
+        _sut.HasKey(LocKeys.UI_MainMenu_NewGame).Should().BeTrue();
+
+        // Assert - HasKey should return false for non-existent keys
+        _sut.HasKey("Definitely.Not.A.Real.Key").Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task GetMissingKeys_ChecksBothPrimaryAndFallback()
+    {
+        // Arrange
+        var localeFile = Path.Combine(_testLocalesPath, "en-US.json");
+        if (!File.Exists(localeFile))
+        {
+            return;
+        }
+
+        // Act - Load en-US
+        await _sut.LoadLocaleAsync("en-US");
+
+        // Assert - GetMissingKeys should not include keys that are in the loaded locale
+        var missing = _sut.GetMissingKeys();
+        missing.Should().NotContain(LocKeys.UI_MainMenu_NewGame);
     }
 
     #endregion

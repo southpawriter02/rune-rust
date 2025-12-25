@@ -81,7 +81,8 @@ public class SettingsService : ISettingsService
                 Theme = (int)GameSettings.Theme,
                 TextSpeed = GameSettings.TextSpeed,
                 MasterVolume = GameSettings.MasterVolume,
-                AutosaveIntervalMinutes = GameSettings.AutosaveIntervalMinutes
+                AutosaveIntervalMinutes = GameSettings.AutosaveIntervalMinutes,
+                Language = GameSettings.Language
             };
 
             var directory = Path.GetDirectoryName(_optionsPath);
@@ -111,6 +112,7 @@ public class SettingsService : ISettingsService
         GameSettings.TextSpeed = 100;
         GameSettings.MasterVolume = 100;
         GameSettings.AutosaveIntervalMinutes = 5;
+        GameSettings.Language = "en-US";
 
         await SaveAsync();
         _logger.LogInformation("[Settings] Reset to default settings");
@@ -172,6 +174,17 @@ public class SettingsService : ISettingsService
         else
         {
             GameSettings.AutosaveIntervalMinutes = dto.AutosaveIntervalMinutes;
+        }
+
+        // Language - validate non-empty, default to en-US (v0.3.15b)
+        if (string.IsNullOrWhiteSpace(dto.Language))
+        {
+            _logger.LogWarning("[Settings] Invalid Language value, defaulting to en-US");
+            GameSettings.Language = "en-US";
+        }
+        else
+        {
+            GameSettings.Language = dto.Language;
         }
     }
 }

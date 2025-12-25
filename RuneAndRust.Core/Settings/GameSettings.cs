@@ -39,4 +39,10 @@ public static class GameSettings
     /// Default: 5 minutes. Added in v0.3.10a.
     /// </summary>
     public static int AutosaveIntervalMinutes { get; set; } = 5;
+
+    /// <summary>
+    /// The current language/locale code (e.g., "en-US", "de-DE").
+    /// Default: "en-US". Added in v0.3.15b.
+    /// </summary>
+    public static string Language { get; set; } = "en-US";
 }

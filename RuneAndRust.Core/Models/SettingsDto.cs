@@ -36,4 +36,10 @@ public record SettingsDto
     /// Default: 5 minutes.
     /// </summary>
     public int AutosaveIntervalMinutes { get; init; } = 5;
+
+    /// <summary>
+    /// The language/locale code (e.g., "en-US", "de-DE").
+    /// Default: "en-US". Added in v0.3.15b.
+    /// </summary>
+    public string Language { get; init; } = "en-US";
 }
