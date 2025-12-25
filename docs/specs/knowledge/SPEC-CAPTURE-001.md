@@ -1,8 +1,8 @@
 # SPEC-CAPTURE-001: Data Capture Generation System
 
-**Version:** 1.0.0
+**Version:** 1.0.1
 **Status:** Implemented
-**Last Updated:** 2025-12-22
+**Last Updated:** 2025-12-25
 **Author:** The Architect
 **Implementation:** `RuneAndRust.Engine/Services/DataCaptureService.cs` (418 lines)
 **Tests:** `RuneAndRust.Tests/Engine/DataCaptureServiceTests.cs` (651 lines, 25 tests)
@@ -2435,6 +2435,13 @@ if (templates.Length == 0)
 ---
 
 ## Changelog
+
+### v1.0.1 (2025-12-25)
+**Documentation Updates:**
+- Updated `Last Updated` to 2025-12-25
+- Added code traceability remarks to implementation files:
+  - `IDataCaptureService.cs` - interface spec reference
+  - `DataCaptureService.cs` - service spec reference
 
 ### Version 1.0.0 - 2025-12-22
 
