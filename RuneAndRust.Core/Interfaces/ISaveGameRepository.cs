@@ -1,4 +1,5 @@
 using RuneAndRust.Core.Entities;
+using RuneAndRust.Core.Models;
 
 namespace RuneAndRust.Core.Interfaces;
 
@@ -28,4 +29,11 @@ public interface ISaveGameRepository : IRepository<SaveGame>
     /// </summary>
     /// <returns>A collection of save games ordered by recency.</returns>
     Task<IEnumerable<SaveGame>> GetAllOrderedByLastPlayedAsync();
+
+    /// <summary>
+    /// Gets save slot summaries without loading full JSON blobs (v0.3.18c).
+    /// Uses database-level projection for minimal memory footprint.
+    /// </summary>
+    /// <returns>A list of save game summaries containing only metadata.</returns>
+    Task<List<SaveGameSummary>> GetSummariesAsync();
 }

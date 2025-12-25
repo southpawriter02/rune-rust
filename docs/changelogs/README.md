@@ -59,8 +59,7 @@ Trauma, crafting, rest mechanics, environment, exploration, and settings.
 | [v0.3.15](v0.3.x/v0.3.15.md) | The Polyglot (Localization System) |
 | [v0.3.16](v0.3.x/v0.3.16.md) | The Sentinel (Stability & Recovery) |
 | [v0.3.17](v0.3.x/v0.3.17.md) | The Toolbox (Debug Console & Cheat Commands) |
-| [v0.3.18a](v0.3.x/v0.3.18a.md) | The Garbage Collector (Memory Management Infrastructure) |
-| [v0.3.18b](v0.3.x/v0.3.18b.md) | The Hot Path (Pathfinding & AI Optimization) |
+| [v0.3.18](v0.3.x/v0.3.18.md) | The Performance Trilogy (Memory, Pathfinding, Serialization) |
 
 ---
 

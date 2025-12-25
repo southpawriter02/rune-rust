@@ -224,13 +224,13 @@ public class SaveManagerTests
     [Fact]
     public async Task GetSaveSlotSummariesAsync_ReturnsSummaries()
     {
-        // Arrange
-        var saves = new List<SaveGame>
+        // Arrange - v0.3.18c: Now uses GetSummariesAsync projection
+        var summaries = new List<SaveGameSummary>
         {
-            new() { SlotNumber = 1, CharacterName = "Hero1", LastPlayed = DateTime.UtcNow },
-            new() { SlotNumber = 2, CharacterName = "Hero2", LastPlayed = DateTime.UtcNow.AddDays(-1) }
+            new() { SlotNumber = 1, CharacterName = "Hero1", LastPlayed = DateTime.UtcNow, IsEmpty = false },
+            new() { SlotNumber = 2, CharacterName = "Hero2", LastPlayed = DateTime.UtcNow.AddDays(-1), IsEmpty = false }
         };
-        _mockRepo.Setup(r => r.GetAllOrderedByLastPlayedAsync()).ReturnsAsync(saves);
+        _mockRepo.Setup(r => r.GetSummariesAsync()).ReturnsAsync(summaries);
 
         // Act
         var result = (await _saveManager.GetSaveSlotSummariesAsync()).ToList();
@@ -245,8 +245,8 @@ public class SaveManagerTests
     [Fact]
     public async Task GetSaveSlotSummariesAsync_EmptyDatabase_ReturnsEmptyList()
     {
-        // Arrange
-        _mockRepo.Setup(r => r.GetAllOrderedByLastPlayedAsync()).ReturnsAsync(new List<SaveGame>());
+        // Arrange - v0.3.18c: Now uses GetSummariesAsync projection
+        _mockRepo.Setup(r => r.GetSummariesAsync()).ReturnsAsync(new List<SaveGameSummary>());
 
         // Act
         var result = await _saveManager.GetSaveSlotSummariesAsync();

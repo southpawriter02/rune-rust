@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using RuneAndRust.Core.Entities;
 using RuneAndRust.Core.Interfaces;
+using RuneAndRust.Core.Models;
 using RuneAndRust.Persistence.Data;
 
 namespace RuneAndRust.Persistence.Repositories;
@@ -75,5 +76,28 @@ public class SaveGameRepository : GenericRepository<SaveGame>, ISaveGameReposito
         _saveGameLogger.LogDebug("Retrieved {Count} SaveGames ordered by last played", saveGames.Count);
 
         return saveGames;
+    }
+
+    /// <inheritdoc/>
+    public async Task<List<SaveGameSummary>> GetSummariesAsync()
+    {
+        _saveGameLogger.LogDebug("[Persistence] Querying SaveGame metadata only (Projected)");
+
+        var summaries = await _dbSet
+            .Select(s => new SaveGameSummary
+            {
+                SlotNumber = s.SlotNumber,
+                CharacterName = s.CharacterName,
+                LastPlayed = s.LastPlayed,
+                IsEmpty = false
+            })
+            .OrderByDescending(s => s.LastPlayed)
+            .ToListAsync();
+
+        _saveGameLogger.LogDebug(
+            "[Persistence] Retrieved {Count} SaveGame summaries via projection",
+            summaries.Count);
+
+        return summaries;
     }
 }

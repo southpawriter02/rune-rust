@@ -4,24 +4,20 @@ using Microsoft.Extensions.Logging;
 using RuneAndRust.Core.Entities;
 using RuneAndRust.Core.Interfaces;
 using RuneAndRust.Core.Models;
+using RuneAndRust.Core.Serialization;
 
 namespace RuneAndRust.Engine.Services;
 
 /// <summary>
 /// Manages save game operations including saving and loading game state.
 /// Translates between runtime GameState and persistent SaveGame entities.
+/// Uses source-generated JSON serialization for optimal performance (v0.3.18c).
 /// </summary>
 /// <remarks>See: SPEC-SAVE-001 for Save/Load System design.</remarks>
 public class SaveManager
 {
     private readonly ISaveGameRepository _saveRepo;
     private readonly ILogger<SaveManager> _logger;
-
-    private static readonly JsonSerializerOptions JsonOptions = new()
-    {
-        WriteIndented = false,
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-    };
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SaveManager"/> class.
@@ -46,10 +42,12 @@ public class SaveManager
         var saveName = currentState.CurrentCharacter?.Name ?? "Unknown";
 
         _logger.LogInformation("Starting save to slot {Slot} ('{SaveName}')", slot, saveName);
+        _logger.LogTrace("[Save] Using SourceGenerated context for Type: {Type}", nameof(GameState));
 
         try
         {
-            var jsonState = JsonSerializer.Serialize(currentState, JsonOptions);
+            // Serialize using source-generated context (no reflection)
+            var jsonState = JsonSerializer.Serialize(currentState, GameStateContext.Default.GameState);
 
             var existingSave = await _saveRepo.GetBySlotAsync(slot);
 
@@ -84,8 +82,10 @@ public class SaveManager
             stopwatch.Stop();
             var saveId = existingSave?.Id ?? Guid.Empty;
 
-            _logger.LogInformation("Save completed in {Duration}ms (ID: {SaveId})",
-                stopwatch.ElapsedMilliseconds, saveId);
+            _logger.LogInformation(
+                "[Perf] Save serialization took {Ms}ms. Blob size: {Size}KB.",
+                stopwatch.ElapsedMilliseconds, jsonState.Length / 1024);
+            _logger.LogInformation("Save completed (ID: {SaveId})", saveId);
 
             return true;
         }
@@ -107,6 +107,7 @@ public class SaveManager
         var stopwatch = Stopwatch.StartNew();
 
         _logger.LogInformation("Starting load from slot {Slot}", slot);
+        _logger.LogTrace("[Load] Using SourceGenerated context for Type: {Type}", nameof(GameState));
 
         try
         {
@@ -118,7 +119,10 @@ public class SaveManager
                 return null;
             }
 
-            var gameState = JsonSerializer.Deserialize<GameState>(saveGame.SerializedState, JsonOptions);
+            // Deserialize using source-generated context (no reflection)
+            var gameState = JsonSerializer.Deserialize(
+                saveGame.SerializedState,
+                GameStateContext.Default.GameState);
 
             if (gameState == null)
             {
@@ -127,8 +131,11 @@ public class SaveManager
             }
 
             stopwatch.Stop();
-            _logger.LogInformation("Load completed in {Duration}ms from slot {Slot} ('{CharacterName}')",
-                stopwatch.ElapsedMilliseconds, slot, saveGame.CharacterName);
+            _logger.LogInformation(
+                "[Perf] Load deserialization took {Ms}ms. Blob size: {Size}KB.",
+                stopwatch.ElapsedMilliseconds, saveGame.SerializedState.Length / 1024);
+            _logger.LogInformation("Load completed from slot {Slot} ('{CharacterName}')",
+                slot, saveGame.CharacterName);
 
             return gameState;
         }
@@ -141,24 +148,18 @@ public class SaveManager
     }
 
     /// <summary>
-    /// Gets information about all save slots.
+    /// Gets information about all save slots using database projection (v0.3.18c).
+    /// Uses projected query to avoid fetching large SerializedState blob columns.
     /// </summary>
     /// <returns>A collection of save game summaries.</returns>
     public async Task<IEnumerable<SaveGameSummary>> GetSaveSlotSummariesAsync()
     {
-        _logger.LogDebug("Fetching save slot summaries");
+        _logger.LogDebug("Fetching save slot summaries via projection");
 
-        var saves = await _saveRepo.GetAllOrderedByLastPlayedAsync();
+        // Use projected query - database never fetches SerializedState column
+        var summaries = await _saveRepo.GetSummariesAsync();
 
-        var summaries = saves.Select(s => new SaveGameSummary
-        {
-            SlotNumber = s.SlotNumber,
-            CharacterName = s.CharacterName,
-            LastPlayed = s.LastPlayed,
-            IsEmpty = false
-        }).ToList();
-
-        _logger.LogDebug("Found {Count} save slots", summaries.Count);
+        _logger.LogDebug("Found {Count} save slots via projection", summaries.Count);
 
         return summaries;
     }
@@ -205,30 +206,4 @@ public class SaveManager
     {
         return await _saveRepo.SlotExistsAsync(slot);
     }
-}
-
-/// <summary>
-/// Summary information about a save game slot.
-/// </summary>
-public class SaveGameSummary
-{
-    /// <summary>
-    /// Gets or sets the slot number.
-    /// </summary>
-    public int SlotNumber { get; set; }
-
-    /// <summary>
-    /// Gets or sets the character name.
-    /// </summary>
-    public string CharacterName { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Gets or sets when the save was last played.
-    /// </summary>
-    public DateTime LastPlayed { get; set; }
-
-    /// <summary>
-    /// Gets or sets whether the slot is empty.
-    /// </summary>
-    public bool IsEmpty { get; set; } = true;
 }
