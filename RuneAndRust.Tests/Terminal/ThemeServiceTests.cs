@@ -450,4 +450,131 @@ public class ThemeServiceTests
     }
 
     #endregion
+
+    #region v0.3.14a - New Semantic Keys Tests
+
+    [Theory]
+    [InlineData(ThemeType.Standard)]
+    [InlineData(ThemeType.HighContrast)]
+    [InlineData(ThemeType.Protanopia)]
+    [InlineData(ThemeType.Deuteranopia)]
+    [InlineData(ThemeType.Tritanopia)]
+    public void GetColor_ReturnsValue_ForBiomeKeys_InAllThemes(ThemeType theme)
+    {
+        // Arrange
+        _sut.SetTheme(theme);
+        var biomeKeys = new[] { "BiomeRuin", "BiomeIndustrial", "BiomeOrganic", "BiomeVoid" };
+
+        // Act & Assert
+        foreach (var key in biomeKeys)
+        {
+            var result = _sut.GetColor(key);
+            result.Should().NotBeNullOrEmpty($"Key '{key}' should have a value in {theme} theme");
+        }
+    }
+
+    [Theory]
+    [InlineData(ThemeType.Standard)]
+    [InlineData(ThemeType.HighContrast)]
+    [InlineData(ThemeType.Protanopia)]
+    [InlineData(ThemeType.Deuteranopia)]
+    [InlineData(ThemeType.Tritanopia)]
+    public void GetColor_ReturnsValue_ForUIStructuralKeys_InAllThemes(ThemeType theme)
+    {
+        // Arrange
+        _sut.SetTheme(theme);
+        var uiKeys = new[]
+        {
+            "DimColor", "SeparatorColor", "LabelColor", "InputColor",
+            "BorderActive", "BorderInactive", "NarrativeColor", "TabActive"
+        };
+
+        // Act & Assert
+        foreach (var key in uiKeys)
+        {
+            var result = _sut.GetColor(key);
+            result.Should().NotBeNullOrEmpty($"Key '{key}' should have a value in {theme} theme");
+        }
+    }
+
+    [Fact]
+    public void GetColor_ReturnsCorrectBiomeColors_ForStandardTheme()
+    {
+        // Arrange
+        _sut.SetTheme(ThemeType.Standard);
+
+        // Act & Assert
+        _sut.GetColor("BiomeRuin").Should().Be("grey");
+        _sut.GetColor("BiomeIndustrial").Should().Be("orange1");
+        _sut.GetColor("BiomeOrganic").Should().Be("green");
+        _sut.GetColor("BiomeVoid").Should().Be("purple");
+    }
+
+    [Fact]
+    public void GetColor_ReturnsHighVisibilityBiomeColors_ForHighContrastTheme()
+    {
+        // Arrange
+        _sut.SetTheme(ThemeType.HighContrast);
+
+        // Act & Assert
+        _sut.GetColor("BiomeRuin").Should().Be("white");
+        _sut.GetColor("BiomeIndustrial").Should().Be("bold yellow");
+        _sut.GetColor("BiomeOrganic").Should().Be("bold green");
+        _sut.GetColor("BiomeVoid").Should().Be("bold purple");
+    }
+
+    [Fact]
+    public void GetColor_AvoidRedGreen_ForProtanopiaBiomeColors()
+    {
+        // Arrange - Protanopia users cannot distinguish red from green
+        _sut.SetTheme(ThemeType.Protanopia);
+
+        // Act & Assert - BiomeOrganic should not be green
+        _sut.GetColor("BiomeOrganic").Should().Be("cyan");
+        _sut.GetColor("BiomeVoid").Should().Be("blue");
+    }
+
+    [Fact]
+    public void GetColor_AvoidBlueYellow_ForTritanopiaBiomeColors()
+    {
+        // Arrange - Tritanopia users confuse blue with yellow
+        _sut.SetTheme(ThemeType.Tritanopia);
+
+        // Act & Assert - BiomeVoid should not be blue
+        _sut.GetColor("BiomeVoid").Should().Be("magenta1");
+    }
+
+    [Fact]
+    public void GetColor_ReturnsCorrectUIColors_ForStandardTheme()
+    {
+        // Arrange
+        _sut.SetTheme(ThemeType.Standard);
+
+        // Act & Assert
+        _sut.GetColor("DimColor").Should().Be("grey");
+        _sut.GetColor("SeparatorColor").Should().Be("grey");
+        _sut.GetColor("LabelColor").Should().Be("grey");
+        _sut.GetColor("InputColor").Should().Be("cyan");
+        _sut.GetColor("BorderActive").Should().Be("yellow");
+        _sut.GetColor("BorderInactive").Should().Be("grey");
+        _sut.GetColor("NarrativeColor").Should().Be("grey");
+        _sut.GetColor("TabActive").Should().Be("gold1");
+    }
+
+    [Fact]
+    public void GetColor_ReturnsHighVisibilityUIColors_ForHighContrastTheme()
+    {
+        // Arrange
+        _sut.SetTheme(ThemeType.HighContrast);
+
+        // Act & Assert
+        _sut.GetColor("SeparatorColor").Should().Be("white");
+        _sut.GetColor("LabelColor").Should().Be("white");
+        _sut.GetColor("InputColor").Should().Be("bold cyan");
+        _sut.GetColor("BorderActive").Should().Be("bold yellow");
+        _sut.GetColor("NarrativeColor").Should().Be("white");
+        _sut.GetColor("TabActive").Should().Be("bold gold1");
+    }
+
+    #endregion
 }

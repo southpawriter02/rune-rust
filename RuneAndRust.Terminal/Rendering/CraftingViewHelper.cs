@@ -1,15 +1,33 @@
 using RuneAndRust.Core.Enums;
+using RuneAndRust.Core.Interfaces;
 
 namespace RuneAndRust.Terminal.Rendering;
 
 /// <summary>
 /// Static helper for crafting display formatting (v0.3.7b).
 /// Provides color mapping, icons, and text formatting utilities.
+/// Updated with IThemeService overloads in v0.3.14a.
 /// </summary>
 public static class CraftingViewHelper
 {
     /// <summary>
+    /// Gets the themed Spectre.Console color name for a crafting trade (v0.3.14a).
+    /// </summary>
+    /// <param name="trade">The crafting trade to map.</param>
+    /// <param name="theme">The theme service for semantic color lookup.</param>
+    /// <returns>A Spectre.Console color name string from the current theme.</returns>
+    public static string GetTradeColor(CraftingTrade trade, IThemeService theme) => trade switch
+    {
+        CraftingTrade.Bodging => theme.GetColor("WarningColor"),        // Improvised crafting - risky
+        CraftingTrade.Alchemy => theme.GetColor("SuccessColor"),        // Potions and chemicals
+        CraftingTrade.Runeforging => theme.GetColor("QualityLegendary"), // Magical enchanting
+        CraftingTrade.FieldMedicine => theme.GetColor("InfoColor"),     // Medical/healing
+        _ => theme.GetColor("QualityCommon")
+    };
+
+    /// <summary>
     /// Gets the Spectre.Console color name for a crafting trade.
+    /// Legacy method - prefer themed overload (v0.3.14a).
     /// </summary>
     /// <param name="trade">The crafting trade to map.</param>
     /// <returns>A Spectre.Console color name string.</returns>
@@ -75,7 +93,21 @@ public static class CraftingViewHelper
     }
 
     /// <summary>
+    /// Gets the themed availability indicator for a recipe (v0.3.14a).
+    /// </summary>
+    /// <param name="canCraft">Whether all ingredients are available.</param>
+    /// <param name="theme">The theme service for semantic color lookup.</param>
+    /// <returns>Themed checkmark for available, themed X for unavailable.</returns>
+    public static string GetAvailabilityIndicator(bool canCraft, IThemeService theme)
+    {
+        var color = canCraft ? theme.GetColor("SuccessColor") : theme.GetColor("ErrorColor");
+        var icon = canCraft ? "\u2713" : "\u2717";
+        return $"[{color}]{icon}[/]";
+    }
+
+    /// <summary>
     /// Gets the availability indicator for a recipe.
+    /// Legacy method - prefer themed overload (v0.3.14a).
     /// </summary>
     /// <param name="canCraft">Whether all ingredients are available.</param>
     /// <returns>"[green]\u2713[/]" for available, "[red]\u2717[/]" for unavailable.</returns>
@@ -85,7 +117,21 @@ public static class CraftingViewHelper
     }
 
     /// <summary>
+    /// Gets the themed ingredient status indicator (v0.3.14a).
+    /// </summary>
+    /// <param name="isSatisfied">Whether the ingredient requirement is met.</param>
+    /// <param name="theme">The theme service for semantic color lookup.</param>
+    /// <returns>Themed checkmark for satisfied, themed X for unsatisfied.</returns>
+    public static string GetIngredientIndicator(bool isSatisfied, IThemeService theme)
+    {
+        var color = isSatisfied ? theme.GetColor("SuccessColor") : theme.GetColor("ErrorColor");
+        var icon = isSatisfied ? "\u2713" : "\u2717";
+        return $"[{color}]{icon}[/]";
+    }
+
+    /// <summary>
     /// Gets the ingredient status indicator.
+    /// Legacy method - prefer themed overload (v0.3.14a).
     /// </summary>
     /// <param name="isSatisfied">Whether the ingredient requirement is met.</param>
     /// <returns>"[green]\u2713[/]" for satisfied, "[red]\u2717[/]" for unsatisfied.</returns>
@@ -95,7 +141,24 @@ public static class CraftingViewHelper
     }
 
     /// <summary>
+    /// Formats an ingredient line with themed availability status (v0.3.14a).
+    /// </summary>
+    /// <param name="itemName">Name of the required item.</param>
+    /// <param name="required">Number required.</param>
+    /// <param name="available">Number available in inventory.</param>
+    /// <param name="isSatisfied">Whether requirement is met.</param>
+    /// <param name="theme">The theme service for semantic color lookup.</param>
+    /// <returns>Formatted string with themed colors.</returns>
+    public static string FormatIngredientLine(string itemName, int required, int available, bool isSatisfied, IThemeService theme)
+    {
+        var indicator = GetIngredientIndicator(isSatisfied, theme);
+        var color = isSatisfied ? theme.GetColor("LabelColor") : theme.GetColor("ErrorColor");
+        return $"  [{color}]- {itemName} x{required}[/] ({indicator} {available} avail)";
+    }
+
+    /// <summary>
     /// Formats an ingredient line with availability status.
+    /// Legacy method - prefer themed overload (v0.3.14a).
     /// </summary>
     /// <param name="itemName">Name of the required item.</param>
     /// <param name="required">Number required.</param>
@@ -110,7 +173,25 @@ public static class CraftingViewHelper
     }
 
     /// <summary>
+    /// Gets the themed color for difficulty based on DC vs WITS comparison (v0.3.14a).
+    /// </summary>
+    /// <param name="dc">The recipe's difficulty class.</param>
+    /// <param name="wits">The crafter's WITS attribute.</param>
+    /// <param name="theme">The theme service for semantic color lookup.</param>
+    /// <returns>Themed color: success (easy), warning (moderate), error (hard).</returns>
+    public static string GetDifficultyColor(int dc, int wits, IThemeService theme)
+    {
+        var expectedSuccesses = wits * 0.3;
+        var margin = expectedSuccesses - dc;
+
+        if (margin >= 1) return theme.GetColor("SuccessColor");   // Easy
+        if (margin >= 0) return theme.GetColor("WarningColor");   // Moderate
+        return theme.GetColor("ErrorColor");                       // Hard
+    }
+
+    /// <summary>
     /// Gets the color for difficulty based on DC vs WITS comparison.
+    /// Legacy method - prefer themed overload (v0.3.14a).
     /// </summary>
     /// <param name="dc">The recipe's difficulty class.</param>
     /// <param name="wits">The crafter's WITS attribute.</param>

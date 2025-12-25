@@ -1,4 +1,5 @@
 using RuneAndRust.Core.Enums;
+using RuneAndRust.Core.Interfaces;
 using RuneAndRust.Core.ViewModels;
 
 namespace RuneAndRust.Terminal.Rendering;
@@ -6,6 +7,7 @@ namespace RuneAndRust.Terminal.Rendering;
 /// <summary>
 /// Static helper methods for formatting Journal UI elements (v0.3.7c).
 /// Provides tab colors, completion indicators, category icons, and glitch effects.
+/// Updated with IThemeService overloads in v0.3.14a.
 /// </summary>
 public static class JournalViewHelper
 {
@@ -40,7 +42,32 @@ public static class JournalViewHelper
     };
 
     /// <summary>
+    /// Gets the themed Spectre.Console color for a tab based on active state (v0.3.14a).
+    /// </summary>
+    /// <param name="tab">The tab to get the color for.</param>
+    /// <param name="isActive">Whether this tab is currently active.</param>
+    /// <param name="theme">The theme service for semantic color lookup.</param>
+    /// <returns>Color string for Spectre.Console markup.</returns>
+    public static string GetTabColor(JournalTab tab, bool isActive, IThemeService theme)
+    {
+        if (!isActive)
+        {
+            return theme.GetColor("InactiveColor");
+        }
+
+        return tab switch
+        {
+            JournalTab.Codex => theme.GetColor("TabActive"),
+            JournalTab.Bestiary => theme.GetColor("EnemyColor"),
+            JournalTab.FieldGuide => theme.GetColor("InfoColor"),
+            JournalTab.Contracts => theme.GetColor("SuccessColor"),
+            _ => theme.GetColor("LabelColor")
+        };
+    }
+
+    /// <summary>
     /// Gets the Spectre.Console color for a tab based on active state.
+    /// Legacy method - prefer themed overload (v0.3.14a).
     /// </summary>
     /// <param name="tab">The tab to get the color for.</param>
     /// <param name="isActive">Whether this tab is currently active.</param>
@@ -67,7 +94,21 @@ public static class JournalViewHelper
     #region Completion Display
 
     /// <summary>
+    /// Gets the themed completion indicator character (v0.3.14a).
+    /// </summary>
+    /// <param name="isComplete">Whether the entry is 100% complete.</param>
+    /// <param name="theme">The theme service for semantic color lookup.</param>
+    /// <returns>Unicode indicator character with themed color markup.</returns>
+    public static string GetCompletionIndicator(bool isComplete, IThemeService theme)
+    {
+        return isComplete
+            ? $"[{theme.GetColor("SuccessColor")}]★[/]"
+            : $"[{theme.GetColor("DimColor")}]●[/]";
+    }
+
+    /// <summary>
     /// Gets the completion indicator character (★ for complete, ● for incomplete).
+    /// Legacy method - prefer themed overload (v0.3.14a).
     /// </summary>
     /// <param name="isComplete">Whether the entry is 100% complete.</param>
     /// <returns>Unicode indicator character with color markup.</returns>
@@ -79,7 +120,29 @@ public static class JournalViewHelper
     }
 
     /// <summary>
+    /// Gets the themed color for a completion percentage display (v0.3.14a).
+    /// </summary>
+    /// <param name="percent">Completion percentage (0-100).</param>
+    /// <param name="theme">The theme service for semantic color lookup.</param>
+    /// <returns>Themed color: success (100%), warning (50-99%), dim (0-49%).</returns>
+    public static string GetCompletionColor(int percent, IThemeService theme)
+    {
+        if (percent >= 100)
+        {
+            return theme.GetColor("SuccessColor");
+        }
+
+        if (percent >= 50)
+        {
+            return theme.GetColor("WarningColor");
+        }
+
+        return theme.GetColor("DimColor");
+    }
+
+    /// <summary>
     /// Gets the color for a completion percentage display.
+    /// Legacy method - prefer themed overload (v0.3.14a).
     /// </summary>
     /// <param name="percent">Completion percentage (0-100).</param>
     /// <returns>Color string: green (100%), yellow (50-99%), grey (0-49%).</returns>
@@ -99,7 +162,20 @@ public static class JournalViewHelper
     }
 
     /// <summary>
+    /// Formats a themed completion percentage for display (v0.3.14a).
+    /// </summary>
+    /// <param name="percent">Completion percentage (0-100).</param>
+    /// <param name="theme">The theme service for semantic color lookup.</param>
+    /// <returns>Formatted string like "(75%)" with themed color.</returns>
+    public static string FormatCompletionPercent(int percent, IThemeService theme)
+    {
+        var color = GetCompletionColor(percent, theme);
+        return $"[{color}]({percent}%)[/]";
+    }
+
+    /// <summary>
     /// Formats a completion percentage for display.
+    /// Legacy method - prefer themed overload (v0.3.14a).
     /// </summary>
     /// <param name="percent">Completion percentage (0-100).</param>
     /// <returns>Formatted string like "(75%)" with color.</returns>
@@ -146,7 +222,25 @@ public static class JournalViewHelper
     };
 
     /// <summary>
+    /// Gets the themed color for an entry category (v0.3.14a).
+    /// </summary>
+    /// <param name="category">The entry category.</param>
+    /// <param name="theme">The theme service for semantic color lookup.</param>
+    /// <returns>Color string for Spectre.Console markup.</returns>
+    public static string GetCategoryColor(EntryCategory category, IThemeService theme) => category switch
+    {
+        EntryCategory.FieldGuide => theme.GetColor("InfoColor"),
+        EntryCategory.BlightOrigin => theme.GetColor("StressHigh"),
+        EntryCategory.Bestiary => theme.GetColor("EnemyColor"),
+        EntryCategory.Factions => theme.GetColor("WarningColor"),
+        EntryCategory.Technical => theme.GetColor("QualityRare"),
+        EntryCategory.Geography => theme.GetColor("SuccessColor"),
+        _ => theme.GetColor("LabelColor")
+    };
+
+    /// <summary>
     /// Gets the color for an entry category.
+    /// Legacy method - prefer themed overload (v0.3.14a).
     /// </summary>
     /// <param name="category">The entry category.</param>
     /// <returns>Color string for Spectre.Console markup.</returns>
@@ -218,7 +312,24 @@ public static class JournalViewHelper
     #region Progress Formatting
 
     /// <summary>
+    /// Formats themed fragment progress for display (v0.3.14a).
+    /// </summary>
+    /// <param name="collected">Number of fragments collected.</param>
+    /// <param name="required">Total fragments required.</param>
+    /// <param name="theme">The theme service for semantic color lookup.</param>
+    /// <returns>Formatted string like "12/15 fragments" with themed colors.</returns>
+    public static string FormatFragmentProgress(int collected, int required, IThemeService theme)
+    {
+        var color = collected >= required
+            ? theme.GetColor("SuccessColor")
+            : theme.GetColor("WarningColor");
+        var dimColor = theme.GetColor("DimColor");
+        return $"[{color}]{collected}[/]/[{dimColor}]{required}[/] fragments";
+    }
+
+    /// <summary>
     /// Formats fragment progress for display.
+    /// Legacy method - prefer themed overload (v0.3.14a).
     /// </summary>
     /// <param name="collected">Number of fragments collected.</param>
     /// <param name="required">Total fragments required.</param>

@@ -152,7 +152,23 @@ public class ThemeService : IThemeService
                 ["DangerSafe"] = "grey",
                 ["DangerUnstable"] = "yellow",
                 ["DangerHostile"] = "orange1",
-                ["DangerLethal"] = "red"
+                ["DangerLethal"] = "red",
+
+                // Biome Colors (v0.3.14a)
+                ["BiomeRuin"] = "grey",
+                ["BiomeIndustrial"] = "orange1",
+                ["BiomeOrganic"] = "green",
+                ["BiomeVoid"] = "purple",
+
+                // UI Structural Colors (v0.3.14a)
+                ["DimColor"] = "grey",
+                ["SeparatorColor"] = "grey",
+                ["LabelColor"] = "grey",
+                ["InputColor"] = "cyan",
+                ["BorderActive"] = "yellow",
+                ["BorderInactive"] = "grey",
+                ["NarrativeColor"] = "grey",
+                ["TabActive"] = "gold1"
             },
 
             [ThemeType.HighContrast] = new()
@@ -198,7 +214,23 @@ public class ThemeService : IThemeService
                 ["DangerSafe"] = "white",
                 ["DangerUnstable"] = "bold yellow",
                 ["DangerHostile"] = "bold orange1",
-                ["DangerLethal"] = "bold red"
+                ["DangerLethal"] = "bold red",
+
+                // Biome Colors (v0.3.14a) - High visibility
+                ["BiomeRuin"] = "white",
+                ["BiomeIndustrial"] = "bold yellow",
+                ["BiomeOrganic"] = "bold green",
+                ["BiomeVoid"] = "bold purple",
+
+                // UI Structural Colors (v0.3.14a)
+                ["DimColor"] = "grey",
+                ["SeparatorColor"] = "white",
+                ["LabelColor"] = "white",
+                ["InputColor"] = "bold cyan",
+                ["BorderActive"] = "bold yellow",
+                ["BorderInactive"] = "grey",
+                ["NarrativeColor"] = "white",
+                ["TabActive"] = "bold gold1"
             },
 
             [ThemeType.Protanopia] = new()
@@ -244,7 +276,23 @@ public class ThemeService : IThemeService
                 ["DangerSafe"] = "grey",
                 ["DangerUnstable"] = "cyan",
                 ["DangerHostile"] = "yellow",
-                ["DangerLethal"] = "orange1"
+                ["DangerLethal"] = "orange1",
+
+                // Biome Colors (v0.3.14a) - Avoid red/green confusion
+                ["BiomeRuin"] = "grey",
+                ["BiomeIndustrial"] = "orange1",
+                ["BiomeOrganic"] = "cyan",
+                ["BiomeVoid"] = "blue",
+
+                // UI Structural Colors (v0.3.14a)
+                ["DimColor"] = "grey",
+                ["SeparatorColor"] = "grey",
+                ["LabelColor"] = "grey",
+                ["InputColor"] = "blue",
+                ["BorderActive"] = "cyan",
+                ["BorderInactive"] = "grey",
+                ["NarrativeColor"] = "grey",
+                ["TabActive"] = "yellow"
             },
 
             [ThemeType.Deuteranopia] = new()
@@ -290,7 +338,23 @@ public class ThemeService : IThemeService
                 ["DangerSafe"] = "grey",
                 ["DangerUnstable"] = "cyan",
                 ["DangerHostile"] = "yellow",
-                ["DangerLethal"] = "orange1"
+                ["DangerLethal"] = "orange1",
+
+                // Biome Colors (v0.3.14a) - Avoid red/green confusion
+                ["BiomeRuin"] = "grey",
+                ["BiomeIndustrial"] = "orange1",
+                ["BiomeOrganic"] = "cyan",
+                ["BiomeVoid"] = "blue",
+
+                // UI Structural Colors (v0.3.14a)
+                ["DimColor"] = "grey",
+                ["SeparatorColor"] = "grey",
+                ["LabelColor"] = "grey",
+                ["InputColor"] = "blue",
+                ["BorderActive"] = "cyan",
+                ["BorderInactive"] = "grey",
+                ["NarrativeColor"] = "grey",
+                ["TabActive"] = "yellow"
             },
 
             [ThemeType.Tritanopia] = new()
@@ -336,7 +400,23 @@ public class ThemeService : IThemeService
                 ["DangerSafe"] = "grey",
                 ["DangerUnstable"] = "cyan",
                 ["DangerHostile"] = "orange1",
-                ["DangerLethal"] = "magenta1"
+                ["DangerLethal"] = "magenta1",
+
+                // Biome Colors (v0.3.14a) - Avoid blue/yellow confusion
+                ["BiomeRuin"] = "grey",
+                ["BiomeIndustrial"] = "orange1",
+                ["BiomeOrganic"] = "green",
+                ["BiomeVoid"] = "magenta1",
+
+                // UI Structural Colors (v0.3.14a)
+                ["DimColor"] = "grey",
+                ["SeparatorColor"] = "grey",
+                ["LabelColor"] = "grey",
+                ["InputColor"] = "cyan",
+                ["BorderActive"] = "cyan",
+                ["BorderInactive"] = "grey",
+                ["NarrativeColor"] = "grey",
+                ["TabActive"] = "gold1"
             }
         };
     }

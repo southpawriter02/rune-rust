@@ -2,6 +2,7 @@ using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
 using RuneAndRust.Core.Enums;
+using RuneAndRust.Core.Interfaces;
 using RuneAndRust.Core.ViewModels;
 using RuneAndRust.Terminal.Services;
 using Xunit;
@@ -12,16 +13,20 @@ namespace RuneAndRust.Tests.Terminal;
 /// Tests for the InventoryScreenRenderer class (v0.3.7a).
 /// Note: These tests focus on renderer construction and input handling.
 /// Full visual rendering tests are done via manual integration testing.
+/// Updated with IThemeService mock in v0.3.14a.
 /// </summary>
 public class InventoryScreenRendererTests
 {
     private readonly Mock<ILogger<InventoryScreenRenderer>> _mockLogger;
+    private readonly Mock<IThemeService> _mockTheme;
     private readonly InventoryScreenRenderer _sut;
 
     public InventoryScreenRendererTests()
     {
         _mockLogger = new Mock<ILogger<InventoryScreenRenderer>>();
-        _sut = new InventoryScreenRenderer(_mockLogger.Object);
+        _mockTheme = new Mock<IThemeService>();
+        _mockTheme.Setup(t => t.GetColor(It.IsAny<string>())).Returns("grey");
+        _sut = new InventoryScreenRenderer(_mockLogger.Object, _mockTheme.Object);
     }
 
     [Fact]

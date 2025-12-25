@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using RuneAndRust.Core.Entities;
 using RuneAndRust.Core.Enums;
+using RuneAndRust.Core.Interfaces;
 using RuneAndRust.Core.Models.Combat;
 using RuneAndRust.Terminal.Services;
 using Xunit;
@@ -12,16 +13,20 @@ namespace RuneAndRust.Tests.Terminal;
 /// <summary>
 /// Tests for the VictoryScreenRenderer class.
 /// Validates quality color mapping and logging behavior.
+/// Updated with IThemeService mock in v0.3.14a.
 /// </summary>
 public class VictoryScreenRendererTests
 {
     private readonly Mock<ILogger<VictoryScreenRenderer>> _mockLogger;
+    private readonly Mock<IThemeService> _mockTheme;
     private readonly VictoryScreenRenderer _sut;
 
     public VictoryScreenRendererTests()
     {
         _mockLogger = new Mock<ILogger<VictoryScreenRenderer>>();
-        _sut = new VictoryScreenRenderer(_mockLogger.Object);
+        _mockTheme = new Mock<IThemeService>();
+        _mockTheme.Setup(t => t.GetColor(It.IsAny<string>())).Returns("grey");
+        _sut = new VictoryScreenRenderer(_mockLogger.Object, _mockTheme.Object);
     }
 
     #region GetQualityColor Tests
@@ -117,9 +122,11 @@ public class VictoryScreenRendererTests
     {
         // Arrange
         var logger = new Mock<ILogger<VictoryScreenRenderer>>();
+        var theme = new Mock<IThemeService>();
+        theme.Setup(t => t.GetColor(It.IsAny<string>())).Returns("grey");
 
         // Act
-        var renderer = new VictoryScreenRenderer(logger.Object);
+        var renderer = new VictoryScreenRenderer(logger.Object, theme.Object);
 
         // Assert
         renderer.Should().NotBeNull();
