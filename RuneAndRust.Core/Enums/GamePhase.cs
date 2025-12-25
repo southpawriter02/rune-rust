@@ -4,6 +4,7 @@ namespace RuneAndRust.Core.Enums;
 /// Represents the high-level state of the application loop.
 /// Controls what input is valid and how the game responds.
 /// </summary>
+/// <remarks>See: SPEC-UI-001 for UI Framework System design.</remarks>
 public enum GamePhase
 {
     /// <summary>

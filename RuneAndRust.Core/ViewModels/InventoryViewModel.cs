@@ -6,6 +6,7 @@ namespace RuneAndRust.Core.ViewModels;
 /// Immutable snapshot of inventory state for UI rendering (v0.3.7a).
 /// Transforms raw inventory data into display-ready format.
 /// </summary>
+/// <remarks>See: SPEC-UI-001 for UI Framework System design.</remarks>
 /// <param name="CharacterName">The player character's display name.</param>
 /// <param name="EquippedItems">Dictionary of slot to equipped item view (null if empty).</param>
 /// <param name="BackpackItems">Ordered list of non-equipped items in the backpack.</param>

@@ -11,6 +11,7 @@ namespace RuneAndRust.Core.ViewModels;
 /// Extended with room rendering data in v0.3.5c.
 /// Extended with context help tips in v0.3.9c.
 /// </summary>
+/// <remarks>See: SPEC-UI-001 for UI Framework System design.</remarks>
 /// <param name="CharacterName">The player character's display name.</param>
 /// <param name="CurrentHp">Current hit points.</param>
 /// <param name="MaxHp">Maximum hit points.</param>

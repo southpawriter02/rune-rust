@@ -1,14 +1,15 @@
 ---
 id: SPEC-UI-001
 title: UI Framework System
-version: 1.0.0
+version: 1.1.0
 status: Implemented
+last_updated: 2025-12-25
 related_specs: [SPEC-RENDER-001, SPEC-INPUT-001, SPEC-COMBAT-001, SPEC-CHAR-001]
 ---
 
 # SPEC-UI-001: UI Framework System
 
-> **Version:** 1.0.0
+> **Version:** 1.1.0
 > **Status:** Implemented
 > **Services:** Multiple (ViewModels, GameService, DI Container)
 > **Location:** `RuneAndRust.Core/ViewModels/`, `RuneAndRust.Engine/Services/GameService.cs`
@@ -73,12 +74,10 @@ public record CombatViewModel(
 ```csharp
 public enum GamePhase
 {
-    MainMenu,
-    CharacterCreation,
-    Exploration,
-    Combat,
-    Rest,
-    Quit
+    MainMenu = 0,       // Main menu phase
+    Exploration = 1,    // World navigation phase
+    Combat = 2,         // Turn-based combat phase
+    Quit = 3            // Application exit signal
 }
 ```
 
@@ -95,12 +94,19 @@ public enum GamePhase
 
 #### 1. Build ViewModel (`BuildViewModel`) - SERVICE LAYER PATTERN
 
-**Pattern across 8 services:**
+**Pattern across services:**
 ```csharp
-CombatViewModel BuildViewModel(GameState state)
-ExplorationViewModel BuildExplorationViewModelAsync(GameState state)
-CraftingViewModel BuildViewModel(Character crafter, CraftingTrade trade, int selectedIndex)
-JournalViewModel BuildViewModelAsync(Guid characterId, JournalTab tab, int selectedIndex)
+// CombatService - builds from internal CombatState
+CombatViewModel GetViewModel()
+
+// GameService - private method builds exploration view
+Task<ExplorationViewModel> BuildExplorationViewModelAsync()
+
+// CraftingService - builds from character and trade parameters
+CraftingViewModel BuildViewModel(Character crafter, CraftingTrade trade, int selectedIndex = 0)
+
+// JournalService - builds from character context
+JournalViewModel BuildViewModelAsync(Guid characterId, string characterName, JournalTab tab, int selectedIndex = 0, int stressLevel = 0)
 ```
 
 **Sequence (Example: CraftingViewModel):**
@@ -248,15 +254,12 @@ services.AddSingleton<ICombatService, CombatService>();
 
 **Valid Transitions:**
 ```
-MainMenu → CharacterCreation → Exploration
+MainMenu → Exploration
 Exploration ↔ Combat
-Exploration → Rest → Exploration
 Any → Quit
 ```
 
-**Invalid Transitions:**
-- Combat → Rest (must return to Exploration first)
-- CharacterCreation → Combat (must enter Exploration)
+**Note:** CharacterCreation and Rest are handled as modal overlays within Exploration phase, not separate GamePhase values.
 
 ---
 
@@ -677,17 +680,29 @@ using (var scope = _serviceProvider.CreateScope())
 
 ```csharp
 public record CombatViewModel(
-    string CharacterName,
-    int CurrentHp,
-    int MaxHp,
-    int CurrentStamina,
-    int MaxStamina,
-    int StressLevel,
-    int CorruptionLevel,
+    int RoundNumber,
+    string ActiveCombatantName,
     List<CombatantView> TurnOrder,
     List<string> CombatLog,
-    List<AbilityView> Abilities,
-    List<HelpTip>? ContextTips
+    PlayerStatsView PlayerStats,
+    List<AbilityView>? PlayerAbilities = null,
+    // Row-grouped combatants for grid display (v0.3.6a)
+    List<CombatantView>? PlayerFrontRow = null,
+    List<CombatantView>? PlayerBackRow = null,
+    List<CombatantView>? EnemyFrontRow = null,
+    List<CombatantView>? EnemyBackRow = null,
+    // Timeline projection (v0.3.6b)
+    List<TimelineEntryView>? TimelineProjection = null,
+    // Context help tips (v0.3.9c)
+    List<HelpTip>? ContextTips = null
+);
+
+// Nested record for player statistics
+public record PlayerStatsView(
+    int CurrentHp, int MaxHp,
+    int CurrentStamina, int MaxStamina,
+    int CurrentStress, int MaxStress,
+    int CurrentCorruption, int MaxCorruption
 );
 ```
 
@@ -702,14 +717,21 @@ public record ExplorationViewModel(
     int MaxHp,
     int CurrentStamina,
     int MaxStamina,
-    int StressLevel,
+    int CurrentStress,
+    int MaxStress,
+    int CurrentCorruption,
+    int MaxCorruption,
     string RoomName,
     string RoomDescription,
-    List<Direction> Exits,
+    int TurnCount,
+    Coordinate PlayerPosition,
+    List<Room> LocalMapRooms,
+    HashSet<Guid> VisitedRoomIds,
     List<string> VisibleObjects,
     List<string> VisibleEnemies,
-    MinimapView Minimap,
-    List<HelpTip>? ContextTips
+    string Exits,                    // Comma-separated lowercase directions
+    string BiomeColor,               // Spectre.Console color name
+    List<HelpTip>? ContextTips = null
 );
 ```
 
@@ -892,12 +914,26 @@ public class CraftingViewModelTests
 
 ## Changelog
 
-### v1.0.0 (Current - Implemented)
+### v1.1.0 (2025-12-25) - Documentation Accuracy
+
+**Fixed:**
+- Corrected GamePhase enum: 6 values → 4 values (removed CharacterCreation, Rest which don't exist)
+- Updated CombatViewModel structure: Added RoundNumber, ActiveCombatantName, PlayerStatsView, row system
+- Updated ExplorationViewModel: 13 properties → 19 properties (added stress/corruption pairs, TurnCount, minimap data, BiomeColor)
+- Corrected BuildViewModel signatures: GetViewModel() (no GameState param), async patterns
+- Updated phase transition rules to reflect actual implementation
+
+**Added:**
+- Code traceability remarks to 6 implementation files
+- PlayerStatsView nested record documentation
+- Coordinate, Room, and minimap-related property documentation
+
+### v1.0.0 (Initial - Implemented)
 
 **Implemented:**
-- 8 ViewModel records (Combat, Exploration, Inventory, Journal, Crafting, Options, Rest, TimelineEntry)
+- 7 ViewModel records (Combat, Exploration, Inventory, Journal, Crafting, Options, TimelineEntry)
 - GameService game loop with phase dispatch
-- DI container with 50+ service registrations
+- DI container with 79 service registrations
 - Service-based BuildViewModel pattern
 - Nullable renderer support (headless testing)
 - Async ViewModel building (Journal, Exploration)
@@ -909,11 +945,6 @@ public class CraftingViewModelTests
 - Phase enum dispatch over NavigationService
 - Singleton renderers (stateless)
 - Scoped services for database access
-
-**Integration Points:**
-- `GameService.RunAsync()` game loop (lines 60-99)
-- `Program.cs` DI registration (lines 97-159)
-- Screen renderers consume ViewModels via Render(vm) methods
 
 ---
 

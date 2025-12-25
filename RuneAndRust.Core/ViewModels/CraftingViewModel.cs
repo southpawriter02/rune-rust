@@ -6,6 +6,7 @@ namespace RuneAndRust.Core.ViewModels;
 /// Immutable snapshot of crafting state for UI rendering (v0.3.7b).
 /// Transforms raw recipe data into display-ready format with ingredient availability.
 /// </summary>
+/// <remarks>See: SPEC-UI-001 for UI Framework System design.</remarks>
 /// <param name="CharacterName">The player character's display name.</param>
 /// <param name="CrafterWits">The crafter's WITS attribute for DC comparison display.</param>
 /// <param name="SelectedTrade">The currently active trade filter.</param>

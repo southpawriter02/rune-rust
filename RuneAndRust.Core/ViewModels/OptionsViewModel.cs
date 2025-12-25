@@ -7,6 +7,7 @@ namespace RuneAndRust.Core.ViewModels;
 /// Updated in real-time as user navigates and modifies settings.
 /// Unlike other ViewModels, this is mutable because settings are modified during the modal loop.
 /// </summary>
+/// <remarks>See: SPEC-UI-001 for UI Framework System design.</remarks>
 public class OptionsViewModel
 {
     /// <summary>

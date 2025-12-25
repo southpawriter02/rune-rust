@@ -7,6 +7,7 @@ namespace RuneAndRust.Core.ViewModels;
 /// Immutable snapshot of combat state for UI rendering.
 /// Transforms raw CombatState into display-ready data.
 /// </summary>
+/// <remarks>See: SPEC-UI-001 for UI Framework System design.</remarks>
 /// <param name="RoundNumber">The current combat round.</param>
 /// <param name="ActiveCombatantName">Name of the combatant whose turn it is.</param>
 /// <param name="TurnOrder">Ordered list of combatants with display information.</param>
