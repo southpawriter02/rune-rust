@@ -11,6 +11,7 @@ namespace RuneAndRust.Engine.Services;
 /// v0.4.0: Implements template-based generation from BiomeDefinitions and RoomTemplates.
 /// Uses Dynamic Room Engine with variable substitution and element spawning.
 /// </summary>
+/// <remarks>See: SPEC-DUNGEON-001 for Dungeon Generation System design.</remarks>
 public class DungeonGenerator
 {
     private readonly IRoomRepository _roomRepository;

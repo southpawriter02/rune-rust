@@ -1,48 +1,95 @@
 ---
 id: SPEC-DUNGEON-001
 title: Dungeon Generation System
-version: 2.0.0
+version: 0.4.0
 status: Implemented
-related_specs: [SPEC-ENVPOP-001, SPEC-SPAWN-001, SPEC-NAV-001, SPEC-DICE-001]
+last_updated: 2025-12-24
+related_specs: [SPEC-ENVPOP-001, SPEC-TEMPLATE-001, SPEC-NAV-001, SPEC-DICE-001]
 ---
 
 # SPEC-DUNGEON-001: Dungeon Generation System
 
-**Version:** 2.0.0 (v0.4.0 Dynamic Room Engine + v0.0.5 Legacy Test Map)
-**Status:** Implemented
-**Last Updated:** 2025-12-22
-**Owner:** Engine Team
-**Category:** World Generation
+> **Version:** 0.4.0 (Dynamic Room Engine)
+> **Status:** Implemented
+> **Service:** `DungeonGenerator`
+> **Location:** `RuneAndRust.Engine/Services/DungeonGenerator.cs`
 
 ---
 
 ## Overview
 
-The **Dungeon Generator** creates interconnected room networks with bidirectional exits, spatial coordinates, and environmental content. The current implementation (v0.0.5) provides a **deterministic 5-room test map** to validate navigation and gameplay systems before implementing procedural generation algorithms (planned: Wave Function Collapse, BSP, etc.).
+The **Dungeon Generator** creates interconnected room networks using a template-based generation system. Version 0.4.0 implements the **Dynamic Room Engine** which loads room templates from the database, renders names and descriptions with variable substitution, and creates linear dungeon layouts with biome-specific content.
 
 ### Core Design Principles
 
-1. **Deterministic Test Layout**: Fixed 5-room structure with predictable connections for QA testing
-2. **Bidirectional Exit Integrity**: All connections are two-way (enforced by `LinkRooms()` method)
-3. **Spatial Coordinate System**: 3D positioning using `Coordinate(X, Y, Z)` value objects
-4. **Clean Slate Generation**: Clears existing rooms before creating new layout (idempotent operation)
-5. **Environment Integration**: Delegates hazard/condition spawning to `EnvironmentPopulator` (v0.3.3c)
+1. **Template-Based Room Creation**: Rooms are instantiated from `RoomTemplate` entities with variable substitution for dynamic content
+2. **Biome-Driven Generation**: `BiomeDefinition` controls available templates, room count ranges, and descriptor pools
+3. **Deterministic Randomization**: Uses `IDiceService` for reproducible random selection with context logging
+4. **Linear Layout (Phase 1)**: North-progression chain: EntryHall → Corridors/Chambers → BossArena
+5. **Environment Integration**: Delegates hazard/condition spawning to `IEnvironmentPopulator` per-room
 
 ### System Boundaries
 
 **IN SCOPE:**
-- Test map generation (5 specific rooms)
-- Bidirectional room linking (exit creation)
-- Spatial positioning (3D coordinate assignment)
+- Template-based room generation from biome definitions
+- Variable substitution for room names and descriptions
+- Linear room layout with bidirectional North/South connections
+- BiomeType and DangerLevel assignment
 - Environment population integration
 - Database persistence (room entity creation)
 
 **OUT OF SCOPE:**
-- Procedural generation algorithms (future feature)
-- Room content generation (interactable objects, loot - handled by other systems)
+- Non-linear layout algorithms (BSP, WFC - planned for Phase 2)
+- Room content generation (loot, interactables - handled by other systems)
 - Enemy spawning (handled by EnvironmentPopulator)
-- Hazard/condition placement (handled by EnvironmentPopulator)
 - Save/load of dungeon state (handled by SaveManager)
+
+---
+
+## Dependencies
+
+### Injected Services
+
+| Dependency | Interface | Purpose |
+|------------|-----------|---------|
+| Room Repository | `IRoomRepository` | Room persistence (CRUD, clear, save) |
+| Environment Populator | `IEnvironmentPopulator` | Hazard/condition spawning per room |
+| Room Template Repository | `IRoomTemplateRepository` | Load room templates from database |
+| Biome Definition Repository | `IBiomeDefinitionRepository` | Load biome configurations |
+| Template Renderer Service | `ITemplateRendererService` | Variable substitution for names/descriptions |
+| Dice Service | `IDiceService` | Deterministic random number generation |
+| Logger | `ILogger<DungeonGenerator>` | Structured logging and traceability |
+
+### Constructor Signature
+
+```csharp
+public DungeonGenerator(
+    IRoomRepository roomRepository,
+    IEnvironmentPopulator environmentPopulator,
+    IRoomTemplateRepository roomTemplateRepository,
+    IBiomeDefinitionRepository biomeDefinitionRepository,
+    ITemplateRendererService templateRendererService,
+    IDiceService diceService,
+    ILogger<DungeonGenerator> logger)
+```
+
+### Dependency Flow
+
+```
+BiomeDefinitionRepository → BiomeDefinition
+                              ↓
+                         AvailableTemplates
+                              ↓
+RoomTemplateRepository → RoomTemplate (filtered by archetype)
+                              ↓
+TemplateRendererService → Rendered Name/Description
+                              ↓
+DiceService → Random template selection, room count
+                              ↓
+EnvironmentPopulator → Hazards/Conditions per room
+                              ↓
+RoomRepository → Persistence
+```
 
 ---
 
@@ -50,220 +97,272 @@ The **Dungeon Generator** creates interconnected room networks with bidirectiona
 
 ### Primary Behaviors
 
-#### 1. Test Map Generation (`GenerateTestMapAsync`)
+#### 1. Template-Based Dungeon Generation (`GenerateDungeonAsync`)
 
-**Trigger:** New game initialization or manual dungeon regeneration
+**Signature:**
+```csharp
+public async Task<Guid> GenerateDungeonAsync(string biomeId)
+```
 
-**Process:**
-1. **Database Cleanup**:
-   ```csharp
-   await _roomRepository.ClearAllRoomsAsync();
-   ```
+**Parameters:**
+- `biomeId`: The biome identifier (e.g., `"the_roots"`)
 
-2. **Room Creation**:
-   ```csharp
-   var rooms = CreateTestRooms(); // Returns Dictionary<Coordinate, Room> (5 rooms)
-   ```
+**Returns:** The starting room GUID (EntryHall)
 
-3. **Exit Linking**:
-   ```csharp
-   LinkRooms(rooms); // Populates bidirectional exits
-   ```
+**Process Flow:**
 
-4. **Environment Population** (v0.3.3c):
-   ```csharp
-   await _environmentPopulator.PopulateDungeonAsync(rooms.Values);
-   ```
-
-5. **Database Persistence**:
-   ```csharp
-   await _roomRepository.AddRangeAsync(rooms.Values);
-   await _roomRepository.SaveChangesAsync();
-   ```
-
-6. **Starting Room ID Return**:
-   ```csharp
-   var startingRoom = rooms.Values.First(r => r.IsStartingRoom);
-   return startingRoom.Id;
-   ```
-
-**Outcomes:**
-- **Success**: 5 rooms created, linked, populated, and persisted. Returns starting room GUID.
-- **Database Failure**: Exception propagates to caller (no retry logic).
+```
+GenerateDungeonAsync(biomeId) INVOKED
+│
+├─ STEP 1: Load Biome Definition
+│  └─ _biomeDefinitionRepository.GetByBiomeIdAsync(biomeId)
+│     └─ If null → throw InvalidOperationException
+│
+├─ STEP 2: Determine Room Count
+│  └─ _diceService.RollSingle(MaxRoomCount - MinRoomCount + 1) + MinRoomCount - 1
+│
+├─ STEP 3: Clear Existing Rooms
+│  └─ _roomRepository.ClearAllRoomsAsync()
+│
+├─ STEP 4: Generate Layout
+│  └─ GenerateLinearLayoutAsync(roomCount, biome)
+│     └─ Returns List<RoomLayout> with templates and positions
+│
+├─ STEP 5: Instantiate Rooms
+│  └─ For each layout:
+│     └─ InstantiateRoomFromTemplateAsync(template, position, isStartingRoom, biomeId)
+│
+├─ STEP 6: Link Rooms
+│  └─ LinkRoomsInSequence(rooms)
+│     └─ Bidirectional North/South connections
+│
+├─ STEP 7: Populate Environment
+│  └─ For each room:
+│     └─ _environmentPopulator.PopulateRoomAsync(room)
+│
+├─ STEP 8: Persist to Database
+│  ├─ _roomRepository.AddRangeAsync(rooms)
+│  └─ _roomRepository.SaveChangesAsync()
+│
+└─ STEP 9: Return Starting Room ID
+   └─ rooms.First(r => r.IsStartingRoom).Id
+```
 
 **Logging:**
 ```csharp
-_logger.LogInformation("Generating test dungeon map...");
-_logger.LogDebug("Created {Count} room entities", rooms.Count); // 5
-_logger.LogDebug("Linking rooms together...");
-_logger.LogDebug("Room linking complete. Entry hall has {ExitCount} exits.", entry.Exits.Count); // 4
-_logger.LogInformation("Generated dungeon with {Count} rooms. Starting room: {RoomName} ({RoomId})", ...);
+_logger.LogInformation("[DungeonGenerator] Generating dungeon for biome: {BiomeId}", biomeId);
+_logger.LogDebug("[DungeonGenerator] Loaded biome: {Name} with {TemplateCount} available templates", ...);
+_logger.LogDebug("[DungeonGenerator] Generating {RoomCount} rooms (range: {Min}-{Max})", ...);
+_logger.LogInformation("[DungeonGenerator] Generated dungeon with {Count} rooms. Starting room: {RoomName} ({RoomId})", ...);
+```
+
+**Outcomes:**
+- **Success**: Variable room count created, linked, populated, and persisted. Returns starting room GUID.
+- **Biome Not Found**: `InvalidOperationException` with message to run seeder.
+- **Template Not Found**: `InvalidOperationException` if no templates match archetype.
+- **Database Failure**: Exception propagates to caller.
+
+---
+
+#### 2. Linear Layout Generation (`GenerateLinearLayoutAsync`)
+
+**Signature:**
+```csharp
+private async Task<List<RoomLayout>> GenerateLinearLayoutAsync(int roomCount, BiomeDefinition biome)
+```
+
+**Layout Algorithm:**
+
+```
+Position (0,0,0) → EntryHall (IsStartingRoom = true)
+Position (0,1,0) → Corridor or Chamber (33% / 67%)
+Position (0,2,0) → Corridor or Chamber
+...
+Position (0,N,0) → BossArena (final room)
+```
+
+**Archetype Selection:**
+- **First Room**: Always `"EntryHall"`
+- **Middle Rooms**: Random `"Corridor"` (33%) or `"Chamber"` (67%) via `_diceService.RollSingle(3)`
+- **Last Room**: Always `"BossArena"`
+
+**Process:**
+```csharp
+// 1. Place EntryHall at origin
+layouts.Add(new RoomLayout { Template = entryHallTemplate, Position = (0,0,0), IsStartingRoom = true });
+
+// 2. Generate main path northward (alternating Corridor and Chamber)
+for (int i = 1; i < roomCount - 1; i++)
+{
+    var archetype = _diceService.RollSingle(3) == 1 ? "Corridor" : "Chamber";
+    var template = await SelectTemplateByArchetypeAsync(archetype, biome);
+    layouts.Add(new RoomLayout { Template = template, Position = (0, i, 0), IsStartingRoom = false });
+}
+
+// 3. Place BossArena at the end
+layouts.Add(new RoomLayout { Template = bossArenaTemplate, Position = (0, roomCount-1, 0), IsStartingRoom = false });
+```
+
+**Spatial Layout (5 rooms):**
+```
+    BossArena (0,4,0)
+         |
+    Chamber (0,3,0)
+         |
+    Corridor (0,2,0)
+         |
+    Chamber (0,1,0)
+         |
+    EntryHall (0,0,0) ← Starting Room
 ```
 
 ---
 
-#### 2. Room Creation (`CreateTestRooms`)
+#### 3. Template Selection (`SelectTemplateByArchetypeAsync`)
 
-**Internal Method** - Creates the 5 hardcoded room entities
-
-**Room Definitions:**
-
-**1. Entry Hall (0,0,0) - Starting Room**
+**Signature:**
 ```csharp
-new Room
+private async Task<RoomTemplate> SelectTemplateByArchetypeAsync(string archetype, BiomeDefinition biome)
+```
+
+**Process:**
+1. Load all templates from `_roomTemplateRepository.GetAllAsync()`
+2. Filter by:
+   - `t.Archetype.Equals(archetype, StringComparison.OrdinalIgnoreCase)`
+   - `biome.AvailableTemplates.Contains(t.TemplateId)`
+3. If no candidates → throw `InvalidOperationException`
+4. Select random template via `_diceService.RollSingle(candidates.Count) - 1`
+
+**Example:**
+```csharp
+// Biome "the_roots" with AvailableTemplates: ["roots_entry", "roots_corridor_1", "roots_chamber_1", "roots_boss"]
+// Searching for "Chamber" archetype
+// Candidates: templates where Archetype == "Chamber" AND TemplateId in AvailableTemplates
+```
+
+---
+
+#### 4. Room Instantiation (`InstantiateRoomFromTemplateAsync`)
+
+**Signature:**
+```csharp
+private async Task<Room> InstantiateRoomFromTemplateAsync(
+    RoomTemplate template,
+    Coordinate position,
+    bool isStartingRoom,
+    string biomeId)
+```
+
+**Process:**
+1. Load biome definition for description rendering
+2. Render name: `_templateRendererService.RenderRoomName(template)`
+3. Render description: `_templateRendererService.RenderRoomDescription(template, biome)`
+4. Map `biomeId` → `BiomeType` enum
+5. Map `template.Difficulty` → `DangerLevel` enum
+6. Create `Room` entity with all properties
+
+**Field Mapping:**
+
+| Room Field | Source |
+|------------|--------|
+| `Name` | `TemplateRendererService.RenderRoomName()` |
+| `Description` | `TemplateRendererService.RenderRoomDescription()` |
+| `Position` | Layout coordinate |
+| `IsStartingRoom` | Layout flag |
+| `BiomeType` | `MapBiomeIdToBiomeType(biomeId)` |
+| `DangerLevel` | `MapDifficultyToDangerLevel(template.Difficulty)` |
+
+---
+
+#### 5. Room Linking (`LinkRoomsInSequence`)
+
+**Signature:**
+```csharp
+private void LinkRoomsInSequence(List<Room> rooms)
+```
+
+**Process:**
+```csharp
+for (int i = 0; i < rooms.Count - 1; i++)
 {
-    Name = "Entry Hall",
-    Description = "A cold, metallic chamber. The air smells of ozone and ancient dust. " +
-                 "Faded runes pulse weakly along the walls, their meaning lost to time. " +
-                 "Passages lead in several directions.",
-    Position = new Coordinate(0, 0, 0),
-    IsStartingRoom = true
+    var currentRoom = rooms[i];
+    var nextRoom = rooms[i + 1];
+
+    currentRoom.Exits[Direction.North] = nextRoom.Id;
+    nextRoom.Exits[Direction.South] = currentRoom.Id;
 }
 ```
 
-**2. Rusted Corridor (0,1,0) - North of Entry**
+**Exit Configuration (5 rooms):**
+- EntryHall: 1 exit (North)
+- Chamber 1: 2 exits (North, South)
+- Corridor: 2 exits (North, South)
+- Chamber 2: 2 exits (North, South)
+- BossArena: 1 exit (South)
+- **Total: 8 exit references (4 bidirectional pairs)**
+
+**Invariant:** For every `roomA.Exits[Direction.North] = roomB.Id`, there exists `roomB.Exits[Direction.South] = roomA.Id`.
+
+---
+
+#### 6. BiomeId to BiomeType Mapping (`MapBiomeIdToBiomeType`)
+
+**Signature:**
 ```csharp
-new Room
-{
-    Name = "Rusted Corridor",
-    Description = "Corroded pipes line the walls of this narrow passage. " +
-                 "Water drips from unseen sources, leaving rust-red stains on the floor. " +
-                 "The air grows colder here.",
-    Position = new Coordinate(0, 1, 0)
-}
+private BiomeType MapBiomeIdToBiomeType(string biomeId)
 ```
 
-**3. Storage Chamber (1,0,0) - East of Entry**
+**Mapping:**
 ```csharp
-new Room
+return biomeId.ToLowerInvariant() switch
 {
-    Name = "Storage Chamber",
-    Description = "Broken crates and shattered containers litter this abandoned storeroom. " +
-                 "Whatever was kept here was either looted long ago or claimed by decay. " +
-                 "Dust motes drift in the pale light.",
-    Position = new Coordinate(1, 0, 0)
-}
-```
-
-**4. Collapsed Tunnel (-1,0,0) - West of Entry**
-```csharp
-new Room
-{
-    Name = "Collapsed Tunnel",
-    Description = "Rubble partially blocks this passage. The ceiling groans ominously overhead. " +
-                 "Cracks in the walls reveal glimpses of darkness beyond. " +
-                 "This area seems unstable.",
-    Position = new Coordinate(-1, 0, 0)
-}
-```
-
-**5. The Pit (0,0,-1) - Below Entry**
-```csharp
-new Room
-{
-    Name = "The Pit",
-    Description = "A deep shaft descends into absolute darkness. " +
-                 "Ancient machinery clings to the walls, silent and still. " +
-                 "The echoes of your footsteps seem to go on forever.",
-    Position = new Coordinate(0, 0, -1)
-}
-```
-
-**Return Value:**
-```csharp
-Dictionary<Coordinate, Room> rooms = {
-    [Coordinate(0,0,0)]   = entryHall,
-    [Coordinate(0,1,0)]   = corridor,
-    [Coordinate(1,0,0)]   = storage,
-    [Coordinate(-1,0,0)]  = collapsed,
-    [Coordinate(0,0,-1)]  = pit
+    "the_roots" => BiomeType.Industrial,
+    _ => BiomeType.Industrial // Default fallback
 };
 ```
 
-**Spatial Layout:**
+---
+
+#### 7. Difficulty to DangerLevel Mapping (`MapDifficultyToDangerLevel`)
+
+**Signature:**
+```csharp
+private DangerLevel MapDifficultyToDangerLevel(string difficulty)
 ```
-        Corridor (0,1,0)
-             |
-             N
-             |
-Collapsed --- Entry --- Storage
-(-1,0,0)  W   |   E    (1,0,0)
-           (0,0,0)
-             |
-             D
-             |
-        The Pit (0,0,-1)
+
+**Mapping:**
+```csharp
+return difficulty.ToLowerInvariant() switch
+{
+    "easy" => DangerLevel.Safe,
+    "medium" => DangerLevel.Unstable,
+    "hard" => DangerLevel.Hostile,
+    "veryhard" => DangerLevel.Lethal,
+    _ => DangerLevel.Unstable // Default fallback
+};
 ```
 
 ---
 
-#### 3. Exit Linking (`LinkRooms`)
+#### 8. Opposite Direction Utility (`GetOppositeDirection`)
 
-**Internal Method** - Establishes bidirectional connections between rooms
-
-**Exit Configuration:**
-
-**Entry Hall → Connected to All 4 Rooms:**
+**Signature:**
 ```csharp
-entry.Exits[Direction.North] = corridor.Id;
-entry.Exits[Direction.East]  = storage.Id;
-entry.Exits[Direction.West]  = collapsed.Id;
-entry.Exits[Direction.Down]  = pit.Id;
+public static Direction GetOppositeDirection(Direction direction)
 ```
-
-**Corridor → Connected to Entry Only:**
-```csharp
-corridor.Exits[Direction.South] = entry.Id;
-```
-
-**Storage → Connected to Entry Only:**
-```csharp
-storage.Exits[Direction.West] = entry.Id;
-```
-
-**Collapsed → Connected to Entry Only:**
-```csharp
-collapsed.Exits[Direction.East] = entry.Id;
-```
-
-**Pit → Connected to Entry Only:**
-```csharp
-pit.Exits[Direction.Up] = entry.Id;
-```
-
-**Bidirectionality Enforcement:**
-- Every `entry.Exits[Direction.X] = targetRoom.Id` has corresponding `targetRoom.Exits[OppositeDirection] = entry.Id`
-- Example: Entry → North → Corridor AND Corridor → South → Entry
-
-**Exit Count Summary:**
-- Entry Hall: 4 exits (North, East, West, Down)
-- Corridor: 1 exit (South)
-- Storage: 1 exit (West)
-- Collapsed: 1 exit (East)
-- Pit: 1 exit (Up)
-- **Total: 8 exit references (4 bidirectional connections)**
-
----
-
-#### 4. Opposite Direction Calculation (`GetOppositeDirection`)
-
-**Purpose:** Static utility method for bidirectional exit creation
 
 **Implementation:**
 ```csharp
-public static Direction GetOppositeDirection(Direction direction)
+return direction switch
 {
-    return direction switch
-    {
-        Direction.North => Direction.South,
-        Direction.South => Direction.North,
-        Direction.East => Direction.West,
-        Direction.West => Direction.East,
-        Direction.Up => Direction.Down,
-        Direction.Down => Direction.Up,
-        _ => throw new ArgumentOutOfRangeException(nameof(direction))
-    };
-}
+    Direction.North => Direction.South,
+    Direction.South => Direction.North,
+    Direction.East => Direction.West,
+    Direction.West => Direction.East,
+    Direction.Up => Direction.Down,
+    Direction.Down => Direction.Up,
+    _ => throw new ArgumentOutOfRangeException(nameof(direction))
+};
 ```
 
 **Properties:**
@@ -271,138 +370,21 @@ public static Direction GetOppositeDirection(Direction direction)
 - **Exhaustive**: Covers all 6 `Direction` enum values
 - **Pure Function**: No side effects, deterministic
 
-**Usage:**
-```csharp
-// Manual bidirectional linking
-room1.Exits[direction] = room2.Id;
-room2.Exits[GetOppositeDirection(direction)] = room1.Id;
-```
-
 ---
 
 ### Secondary Behaviors
 
-#### 1. Environment Population Integration (v0.3.3c)
+#### 1. Legacy Test Map Wrapper (`GenerateTestMapAsync`)
 
-**Purpose:** Delegate hazard/condition spawning to specialized service
+**Status:** `[Obsolete]` - Use `GenerateDungeonAsync(biomeId)` instead.
 
-**Integration Point:**
+**Signature:**
 ```csharp
-await _environmentPopulator.PopulateDungeonAsync(rooms.Values);
+[Obsolete("Use GenerateDungeonAsync(biomeId) instead. This method is deprecated in v0.4.0.")]
+public async Task<Guid> GenerateTestMapAsync()
 ```
 
-**EnvironmentPopulator Responsibilities:**
-- Spawn `DynamicHazard` entities in rooms based on biome/danger level
-- Apply `AmbientCondition` effects to rooms
-- Add `InteractableObject` entities (containers, terminals, etc.)
-
-**Timing:**
-- Population occurs AFTER room creation and linking
-- Population occurs BEFORE database persistence
-- Allows populator to modify room entities before save
-
-**See Also:** SPEC-ENVPOP-001 for environment population details
-
----
-
-#### 2. Database Cleanup (Idempotent Generation)
-
-**Purpose:** Ensure fresh dungeon state on each generation
-
-**Implementation:**
-```csharp
-await _roomRepository.ClearAllRoomsAsync();
-```
-
-**Behavior:**
-- Deletes ALL rooms from database (cascade deletes hazards, objects, etc.)
-- Resets auto-increment counters (if applicable)
-- Allows repeated calls to `GenerateTestMapAsync()` without duplication
-
-**Safety:**
-- **NO CONFIRMATION**: Destructive operation with no undo
-- **NO VALIDATION**: Does not check if player is in dungeon
-- **ADMIN OPERATION**: Should only be called during new game initialization
-
-**Risk:**
-- Calling during active gameplay will delete current dungeon and corrupt player state
-- Future: Add safety check (`if (GameState.IsInGame) throw new InvalidOperationException()`)
-
----
-
-### Edge Cases
-
-#### 1. Repeated Generation (Multiple Calls)
-
-**Scenario:** `GenerateTestMapAsync()` called multiple times
-
-**Handling:**
-```csharp
-// First call
-var startingRoomId1 = await _generator.GenerateTestMapAsync();
-
-// Second call
-var startingRoomId2 = await _generator.GenerateTestMapAsync();
-
-// Result: startingRoomId1 != startingRoomId2 (new GUIDs generated)
-```
-
-**State Impact:**
-- First dungeon completely deleted
-- Second dungeon created with new GUIDs
-- Player state must be re-initialized with new starting room ID
-
-**Safety:** Calling during active game corrupts player location (CurrentRoomId points to deleted room)
-
----
-
-#### 2. Database Failure During Persistence
-
-**Scenario:** `AddRangeAsync()` or `SaveChangesAsync()` throws exception
-
-**Handling:**
-- Exception propagates to caller (no try/catch)
-- Database transaction may be rolled back (depends on repository implementation)
-- Rooms not persisted (dungeon incomplete)
-
-**Recovery:**
-- Caller must handle exception
-- Retry `GenerateTestMapAsync()` (idempotent due to `ClearAllRoomsAsync()`)
-
----
-
-#### 3. EnvironmentPopulator Failure (v0.3.3c)
-
-**Scenario:** `PopulateDungeonAsync()` throws exception
-
-**Handling:**
-- Exception propagates before room persistence
-- Rooms NOT saved to database (all-or-nothing)
-- Dungeon generation aborted
-
-**Recovery:**
-- Fix populator issue
-- Retry generation
-
-**Logging:**
-- No specific DungeonGenerator error logging (exception bubbles up)
-
----
-
-#### 4. Concurrent Generation Calls
-
-**Scenario:** Two threads call `GenerateTestMapAsync()` simultaneously
-
-**Handling:**
-- **NOT THREAD-SAFE**: Race condition on `ClearAllRoomsAsync()`
-- Possible outcomes:
-  - Duplicate room creation (if GUIDs collide - extremely unlikely)
-  - Partial dungeon state (one thread's rooms, other thread's links)
-- **UNDEFINED BEHAVIOR**: No synchronization primitives
-
-**Recommendation:**
-- Ensure single-threaded access
-- Future: Add `lock` or `SemaphoreSlim` around generation
+**Behavior:** Forwards to `GenerateDungeonAsync("the_roots")` for backwards compatibility.
 
 ---
 
@@ -410,703 +392,96 @@ var startingRoomId2 = await _generator.GenerateTestMapAsync();
 
 ### MUST Requirements
 
-1. **MUST clear existing rooms before generation**
+1. **MUST load biome from database** before generating rooms
+   - **Reason:** Template selection depends on `BiomeDefinition.AvailableTemplates`
+   - **Enforcement:** Exception thrown if biome not found
+
+2. **MUST use DiceService for all randomization**
+   - **Reason:** Deterministic generation with context logging for debugging
+   - **Enforcement:** No `Random` class usage in generator
+
+3. **MUST render names/descriptions via TemplateRendererService**
+   - **Reason:** Variable substitution requires biome descriptor pools
+   - **Enforcement:** Direct template string usage prohibited
+
+4. **MUST clear existing rooms before generation**
    - **Reason:** Prevents duplicate rooms and stale data
-   - **Implementation:** DungeonGenerator.cs:47
+   - **Enforcement:** `ClearAllRoomsAsync()` call in generation flow
 
-2. **MUST create exactly 5 rooms** (test map specification)
-   - **Reason:** Fixed test layout for QA validation
-   - **Implementation:** DungeonGenerator.cs:50, rooms dictionary size
-
-3. **MUST create bidirectional exits for all connections**
+5. **MUST create bidirectional exits for all connections**
    - **Reason:** Navigation expects two-way traversal
-   - **Implementation:** DungeonGenerator.cs:152-166
+   - **Enforcement:** `LinkRoomsInSequence()` creates paired exits
 
-4. **MUST designate exactly 1 starting room** (`IsStartingRoom = true`)
+6. **MUST designate exactly 1 starting room** (`IsStartingRoom = true`)
    - **Reason:** Player spawn point must be unambiguous
-   - **Implementation:** DungeonGenerator.cs:84
+   - **Enforcement:** Only EntryHall gets `IsStartingRoom = true`
 
-5. **MUST assign unique spatial coordinates** to each room
-   - **Reason:** Coordinate-based dictionary lookup requires uniqueness
-   - **Implementation:** DungeonGenerator.cs:74-134
+7. **MUST assign BiomeType and DangerLevel** to all rooms
+   - **Reason:** Environment population requires these values
+   - **Enforcement:** Mapping functions in instantiation flow
 
-6. **MUST persist rooms to database** before returning
+8. **MUST persist rooms to database** before returning
    - **Reason:** NavigationService requires rooms in database
-   - **Implementation:** DungeonGenerator.cs:59-60
-
-7. **MUST return starting room ID** on success
-   - **Reason:** GameState initialization requires CurrentRoomId
-   - **Implementation:** DungeonGenerator.cs:62-66
-
-8. **MUST populate environment content** (v0.3.3c)
-   - **Reason:** Rooms require hazards/conditions for gameplay
-   - **Implementation:** DungeonGenerator.cs:56
+   - **Enforcement:** `AddRangeAsync()` + `SaveChangesAsync()` in generation flow
 
 ---
 
 ### MUST NOT Requirements
 
-1. **MUST NOT create rooms with duplicate coordinates**
-   - **Violation Impact:** Dictionary key collision, room overwrite
-   - **Enforcement:** Dictionary key uniqueness (automatic)
+1. **MUST NOT use hardcoded room definitions** in production code
+   - **Violation Impact:** Bypasses template system, no biome theming
+   - **Enforcement:** Legacy methods marked `[Obsolete]`
 
-2. **MUST NOT create rooms with duplicate IDs**
-   - **Violation Impact:** Database primary key violation
-   - **Enforcement:** Guid.NewGuid() generates unique IDs (statistically guaranteed)
+2. **MUST NOT create rooms with duplicate coordinates**
+   - **Violation Impact:** Layout overlap, navigation confusion
+   - **Enforcement:** Linear layout generates unique Y coordinates
 
 3. **MUST NOT create unidirectional exits**
    - **Violation Impact:** Player can enter room but cannot return (softlock)
-   - **Enforcement:** Manual `LinkRooms()` implementation ensures bidirectionality
+   - **Enforcement:** `LinkRoomsInSequence()` creates bidirectional pairs
 
-4. **MUST NOT create exits pointing to non-existent rooms**
-   - **Violation Impact:** NavigationService error ("path leads nowhere")
-   - **Enforcement:** All exit target IDs reference rooms in the same generation batch
-
-5. **MUST NOT skip environment population** (v0.3.3c)
+4. **MUST NOT skip environment population**
    - **Violation Impact:** Rooms have no hazards/conditions (incomplete gameplay)
-   - **Enforcement:** Required method call in `GenerateTestMapAsync()`
+   - **Enforcement:** Required loop in generation flow
 
-6. **MUST NOT persist rooms before environment population**
-   - **Violation Impact:** Hazards/conditions not persisted (database incomplete)
-   - **Enforcement:** Population call before `AddRangeAsync()` (line 56 → line 59)
+5. **MUST NOT persist rooms before environment population**
+   - **Violation Impact:** Hazards/conditions not on Room entities
+   - **Enforcement:** Population occurs before `AddRangeAsync()`
 
 ---
 
 ## Limitations
 
-### Numerical Limits
+### Current Limitations (Phase 1)
 
-- **Room Count:** Fixed at 5 (hardcoded test map)
-- **Starting Room Count:** Exactly 1
-- **Exit Count Per Room:** 1-4 (Entry Hall has 4, all others have 1)
-- **Spatial Dimensions:** 3D coordinates (X, Y, Z) using `int` range
-- **Coordinate Range:** `int.MinValue` to `int.MaxValue` (not practically limited)
+1. **Linear Layout Only**
+   - Only North/South connections (no branching, no loops)
+   - Future: BSP, WFC, cellular automata for complex topologies
 
-### Functional Limitations
+2. **Single Biome Per Dungeon**
+   - All rooms share same `BiomeType`
+   - Future: Multi-biome dungeons with transition zones
 
-1. **No Procedural Generation**
-   - Current implementation is purely deterministic
-   - Future: Wave Function Collapse, BSP tree partitioning, cellular automata
-   - Placeholder design allows algorithm swapping without API changes
+3. **Fixed Archetype Sequence**
+   - EntryHall → Corridors/Chambers → BossArena
+   - Future: Configurable archetype pools and placement rules
 
-2. **No Room Customization**
-   - Room names, descriptions, and positions are hardcoded
-   - No configuration parameters (e.g., room count, biome type)
-   - Future: Accept `DungeonConfig` parameter for procedural settings
+4. **No Vertical Rooms**
+   - All rooms at Z=0 (no Up/Down exits)
+   - Future: Multi-level dungeons with stairs/elevators
 
-3. **No Branching/Loops**
-   - Current layout is star topology (Entry Hall connected to 4 leaf rooms)
-   - No cycles (cannot traverse A → B → C → A)
-   - Future: Graph algorithms for complex topologies
-
-4. **No Room Archetypes**
-   - All rooms have `IsStartingRoom` flag, but no other categorization
-   - No boss rooms, treasure rooms, trap rooms, etc. (classification system)
-   - Future: `RoomArchetype` enum (EntryHall, Corridor, Chamber, BossArena, etc.)
-
-5. **No Biome Support**
-   - Rooms do not have `BiomeType` assigned in generation
-   - EnvironmentPopulator may infer biome from other properties
-   - Future: Assign `BiomeType` during room creation for themed dungeons
-
-6. **No Difficulty Scaling**
-   - Rooms do not have `DangerLevel` assigned
-   - No progression from safe → dangerous areas
-   - Future: Distance-based difficulty scaling (further from start = harder)
-
-7. **No Save/Load**
-   - Generated dungeon is persisted to database but not versioned
-   - No dungeon state snapshots
-   - Future: Dungeon serialization for procedural seed replay
-
----
-
-### System-Specific Limitations
-
-1. **Not Thread-Safe**
-   - Concurrent calls to `GenerateTestMapAsync()` cause race conditions
-   - No synchronization primitives
+5. **Not Thread-Safe**
+   - Concurrent calls cause race conditions on `ClearAllRoomsAsync()`
    - Future: Add mutex or ensure single-threaded access
 
-2. **No Validation**
-   - Does not validate room data (e.g., empty names, null descriptions)
-   - Assumes hardcoded data is valid
-   - Future: Add validation pass before persistence
-
-3. **No Rollback on Failure**
-   - If `EnvironmentPopulator` fails, rooms are not persisted (good)
-   - If database save fails, no cleanup occurs (potentially bad)
-   - Future: Explicit transaction management
-
----
-
-## Use Cases
-
-### USE CASE 1: New Game Initialization
-
-**Setup:**
-```csharp
-// New game started, no existing dungeon
-_database.Rooms.Count == 0;
-```
-
-**Execution:**
-```csharp
-var startingRoomId = await _dungeonGenerator.GenerateTestMapAsync();
-_gameState.CurrentRoomId = startingRoomId;
-```
-
-**Internal Flow:**
-
-1. **Cleanup**: `ClearAllRoomsAsync()` → No-op (already empty)
-2. **Room Creation**: `CreateTestRooms()` → 5 rooms with unique GUIDs
-3. **Exit Linking**: `LinkRooms()` → 8 exit references (4 bidirectional)
-4. **Environment Population**: `PopulateDungeonAsync()` → Hazards/conditions added
-5. **Persistence**: `AddRangeAsync()` + `SaveChangesAsync()` → Database write
-6. **Return**: Starting room GUID (Entry Hall ID)
-
-**Database State After:**
-```
-Rooms Table:
-- Entry Hall (IsStartingRoom=true, Exits=4)
-- Rusted Corridor (Exits=1)
-- Storage Chamber (Exits=1)
-- Collapsed Tunnel (Exits=1)
-- The Pit (Exits=1)
-```
-
-**Assertions:**
-- `_database.Rooms.Count == 5`
-- `_database.Rooms.Single(r => r.IsStartingRoom).Id == startingRoomId`
-- All exits are bidirectional (verified by test)
-
-**Test Reference:** DungeonGeneratorTests.cs:50-66
-
----
-
-### USE CASE 2: Dungeon Regeneration (Admin Command)
-
-**Setup:**
-```csharp
-// Existing dungeon present
-_database.Rooms.Count == 5;
-var oldStartingRoomId = _database.Rooms.Single(r => r.IsStartingRoom).Id;
-```
-
-**Execution:**
-```csharp
-var newStartingRoomId = await _dungeonGenerator.GenerateTestMapAsync();
-```
-
-**Internal Flow:**
-
-1. **Cleanup**: `ClearAllRoomsAsync()` → **Deletes all 5 existing rooms**
-2. **Room Creation**: `CreateTestRooms()` → 5 NEW rooms with NEW GUIDs
-3. **Linking, Population, Persistence**: Standard
-4. **Return**: NEW starting room GUID
-
-**Database State After:**
-```
-Rooms Table:
-- Entry Hall (NEW GUID, IsStartingRoom=true)
-- Rusted Corridor (NEW GUID)
-- Storage Chamber (NEW GUID)
-- Collapsed Tunnel (NEW GUID)
-- The Pit (NEW GUID)
-```
-
-**Assertions:**
-- `_database.Rooms.Count == 5` (same count, different instances)
-- `newStartingRoomId != oldStartingRoomId` (GUIDs regenerated)
-- **CRITICAL**: Player's `CurrentRoomId` is now INVALID (points to deleted room)
-
-**Recovery Required:**
-```csharp
-_gameState.CurrentRoomId = newStartingRoomId;
-_gameState.VisitedRoomIds.Clear();
-_gameState.TurnCount = 0;
-```
-
-**Test Reference:** DungeonGeneratorTests.cs:50-56 (cleanup verification)
-
----
-
-### USE CASE 3: Bidirectional Exit Verification
-
-**Setup:**
-```csharp
-var startingRoomId = await _dungeonGenerator.GenerateTestMapAsync();
-```
-
-**Execution:**
-```csharp
-// Load Entry Hall
-var entry = await _roomRepository.GetByIdAsync(startingRoomId);
-
-// Load Corridor via North exit
-var corridorId = entry.Exits[Direction.North];
-var corridor = await _roomRepository.GetByIdAsync(corridorId);
-
-// Verify reverse exit
-var entryIdFromCorridor = corridor.Exits[Direction.South];
-```
-
-**Assertions:**
-- `entry.Exits[Direction.North] == corridor.Id` ✓
-- `corridor.Exits[Direction.South] == entry.Id` ✓
-- Bidirectional integrity verified
-
-**Test Reference:** DungeonGeneratorTests.cs:171-187
-
----
-
-### USE CASE 4: Spatial Coordinate Layout Validation
-
-**Setup:**
-```csharp
-await _dungeonGenerator.GenerateTestMapAsync();
-var rooms = await _roomRepository.GetAllAsync();
-```
-
-**Execution:**
-```csharp
-var entry = rooms.Single(r => r.Name == "Entry Hall");
-var corridor = rooms.Single(r => r.Name == "Rusted Corridor");
-var pit = rooms.Single(r => r.Name == "The Pit");
-```
-
-**Coordinate Assertions:**
-- `entry.Position == Coordinate.Origin` (0,0,0) ✓
-- `corridor.Position == new Coordinate(0,1,0)` (North of entry) ✓
-- `pit.Position == new Coordinate(0,0,-1)` (Below entry, Z=-1) ✓
-
-**Manhattan Distance:**
-```csharp
-entry.Position.ManhattanDistance(corridor.Position) == 1; // Adjacent
-entry.Position.ManhattanDistance(pit.Position) == 1;      // Vertically adjacent
-```
-
-**Test Reference:** DungeonGeneratorTests.cs:279-300
-
----
-
-### USE CASE 5: Environment Population Integration (v0.3.3c)
-
-**Setup:**
-```csharp
-// Mock environment populator
-_mockEnvironmentPopulator
-    .Setup(e => e.PopulateDungeonAsync(It.IsAny<IEnumerable<Room>>()))
-    .Callback<IEnumerable<Room>>(rooms =>
-    {
-        // Add hazard to Collapsed Tunnel
-        var collapsed = rooms.Single(r => r.Name == "Collapsed Tunnel");
-        collapsed.Hazards.Add(new DynamicHazard { Name = "Falling Rubble" });
-    });
-```
-
-**Execution:**
-```csharp
-await _dungeonGenerator.GenerateTestMapAsync();
-var collapsed = await _roomRepository.GetByNameAsync("Collapsed Tunnel");
-```
-
-**Assertions:**
-- `collapsed.Hazards.Count > 0` ✓
-- `collapsed.Hazards.Any(h => h.Name == "Falling Rubble")` ✓
-- Environment populator was invoked BEFORE persistence
-
-**Test Reference:** Integration test in EnvironmentPopulatorTests.cs
-
----
-
-### USE CASE 6: Starting Room ID Return
-
-**Execution:**
-```csharp
-var returnedId = await _dungeonGenerator.GenerateTestMapAsync();
-var rooms = await _roomRepository.GetAllAsync();
-var startingRoom = rooms.Single(r => r.IsStartingRoom);
-```
-
-**Assertions:**
-- `returnedId == startingRoom.Id` ✓
-- `startingRoom.Name == "Entry Hall"` ✓
-- `startingRoom.Position == Coordinate.Origin` ✓
-
-**Usage:**
-```csharp
-// Initialize game state with returned ID
-_gameState.CurrentRoomId = returnedId;
-_gameState.VisitedRoomIds.Add(returnedId);
-```
-
-**Test Reference:** DungeonGeneratorTests.cs:101-109
-
----
-
-### USE CASE 7: Opposite Direction Utility
-
-**Execution:**
-```csharp
-var opposite = DungeonGenerator.GetOppositeDirection(Direction.North);
-```
-
-**Assertions:**
-- `opposite == Direction.South` ✓
-
-**Symmetry Test:**
-```csharp
-foreach (var direction in Enum.GetValues<Direction>())
-{
-    var opp = DungeonGenerator.GetOppositeDirection(direction);
-    var backToOriginal = DungeonGenerator.GetOppositeDirection(opp);
-    Assert.Equal(direction, backToOriginal);
-}
-```
-
-**Test Reference:** DungeonGeneratorTests.cs:232-262
-
----
-
-## Decision Trees
-
-### Decision Tree 1: Test Map Generation Flow
-
-```
-GenerateTestMapAsync() INVOKED
-│
-├─ STEP 1: Database Cleanup
-│  └─ ClearAllRoomsAsync() → DELETE all rooms
-│
-├─ STEP 2: Room Creation
-│  └─ CreateTestRooms()
-│     ├─ Create Entry Hall (0,0,0) → IsStartingRoom=true
-│     ├─ Create Rusted Corridor (0,1,0)
-│     ├─ Create Storage Chamber (1,0,0)
-│     ├─ Create Collapsed Tunnel (-1,0,0)
-│     └─ Create The Pit (0,0,-1)
-│
-├─ STEP 3: Exit Linking
-│  └─ LinkRooms(rooms)
-│     ├─ Entry ↔ Corridor (North/South)
-│     ├─ Entry ↔ Storage (East/West)
-│     ├─ Entry ↔ Collapsed (West/East)
-│     └─ Entry ↔ Pit (Down/Up)
-│
-├─ STEP 4: Environment Population (v0.3.3c)
-│  └─ PopulateDungeonAsync(rooms)
-│     ├─ Add DynamicHazards
-│     ├─ Add AmbientConditions
-│     └─ Add InteractableObjects
-│
-├─ STEP 5: Database Persistence
-│  ├─ AddRangeAsync(rooms) → INSERT 5 rooms
-│  └─ SaveChangesAsync() → COMMIT transaction
-│
-└─ STEP 6: Return Starting Room ID
-   └─ RETURN Entry Hall GUID
-```
-
-**Error Paths:**
-- **Database Failure**: Exception at Step 5 → No persistence, generation aborted
-- **Population Failure**: Exception at Step 4 → No persistence, generation aborted
-
----
-
-### Decision Tree 2: Bidirectional Exit Linking
-
-```
-LinkRooms(rooms) INVOKED
-│
-├─ LINK: Entry Hall ↔ Rusted Corridor
-│  ├─ entry.Exits[Direction.North] = corridor.Id
-│  └─ corridor.Exits[Direction.South] = entry.Id
-│
-├─ LINK: Entry Hall ↔ Storage Chamber
-│  ├─ entry.Exits[Direction.East] = storage.Id
-│  └─ storage.Exits[Direction.West] = entry.Id
-│
-├─ LINK: Entry Hall ↔ Collapsed Tunnel
-│  ├─ entry.Exits[Direction.West] = collapsed.Id
-│  └─ collapsed.Exits[Direction.East] = entry.Id
-│
-└─ LINK: Entry Hall ↔ The Pit
-   ├─ entry.Exits[Direction.Down] = pit.Id
-   └─ pit.Exits[Direction.Up] = entry.Id
-
-RESULT:
-- Entry Hall: 4 exits
-- Other Rooms: 1 exit each
-- Total: 8 exit references (4 bidirectional pairs)
-```
-
-**Invariant:** For every `roomA.Exits[dir] = roomB.Id`, there exists `roomB.Exits[opposite(dir)] = roomA.Id`
-
----
-
-## Sequence Diagrams
-
-### Sequence Diagram 1: Complete Test Map Generation
-
-```
-Client        DungeonGenerator   RoomRepository   EnvironmentPopulator   Database
-  |                  |                  |                    |                |
-  |-- GenerateTestMapAsync() ---------->|                    |                |
-  |                  |                  |                    |                |
-  |                  |-- ClearAllRoomsAsync() -------------->|                |
-  |                  |                  |                    |                |
-  |                  |                  |-- DELETE FROM Rooms --------------->|
-  |                  |                  |<-- Success -----------------------  |
-  |                  |<-- Done ---------|                    |                |
-  |                  |                  |                    |                |
-  |                  |-- CreateTestRooms() (internal)                         |
-  |                  |   [Generate 5 Room objects with GUIDs]                 |
-  |                  |                  |                    |                |
-  |                  |-- LinkRooms() (internal)                               |
-  |                  |   [Populate Exits dictionaries]                        |
-  |                  |                  |                    |                |
-  |                  |-- PopulateDungeonAsync(rooms) -------->|                |
-  |                  |                  |                    |                |
-  |                  |                  |          [Add hazards/conditions]   |
-  |                  |                  |          [Modify room entities]     |
-  |                  |                  |                    |                |
-  |                  |<-- Done (rooms modified) -------------|                |
-  |                  |                  |                    |                |
-  |                  |-- AddRangeAsync(rooms) -------------->|                |
-  |                  |                  |                    |                |
-  |                  |                  |-- INSERT INTO Rooms (5 rows) ------>|
-  |                  |                  |<-- Success -----------------------  |
-  |                  |<-- Done ---------|                    |                |
-  |                  |                  |                    |                |
-  |                  |-- SaveChangesAsync() ---------------->|                |
-  |                  |                  |-- COMMIT -------------------------->|
-  |                  |                  |<-- Success -----------------------  |
-  |                  |<-- Done ---------|                    |                |
-  |                  |                  |                    |                |
-  |                  |-- Find Starting Room (Entry Hall) --                   |
-  |                  |                  |                    |                |
-  |<-- startingRoomId (GUID) -----------|                    |                |
-```
-
-**Timing:**
-- Total execution: ~200-500ms (database cleanup + 5 inserts + environment population)
-- Largest time sink: Environment population (procedural spawning)
-
----
-
-### Sequence Diagram 2: Failed Generation (Environment Populator Exception)
-
-```
-Client        DungeonGenerator   RoomRepository   EnvironmentPopulator
-  |                  |                  |                    |
-  |-- GenerateTestMapAsync() ---------->|                    |
-  |                  |                  |                    |
-  |                  |-- ClearAllRoomsAsync() -------------->|
-  |                  |<-- Done ---------|                    |
-  |                  |                  |                    |
-  |                  |-- CreateTestRooms() + LinkRooms()     |
-  |                  |                  |                    |
-  |                  |-- PopulateDungeonAsync(rooms) -------->|
-  |                  |                  |                    |
-  |                  |                  |          [EXCEPTION THROWN]
-  |                  |                  |                    |
-  |                  |<-- EXCEPTION --------------------------
-  |                  |                  |                    |
-  |<-- EXCEPTION -----|                    [No persistence occurs]
-  |                  |                  |                    |
-  [Caller handles exception]   [Rooms NOT in database]
-```
-
-**Result:**
-- Database remains empty (cleanup occurred, but persistence never reached)
-- Idempotent: Retry will work (cleanup will no-op on empty database)
-
----
-
-## Workflows
-
-### Workflow 1: New Game Dungeon Setup
-
-**Purpose:** Initialize game world with test dungeon
-
-**Steps:**
-
-1. ☐ **Call DungeonGenerator**
-   ```csharp
-   var startingRoomId = await _dungeonGenerator.GenerateTestMapAsync();
-   ```
-
-2. ☐ **Verify 5 Rooms Created**
-   ```csharp
-   var rooms = await _roomRepository.GetAllAsync();
-   Debug.Assert(rooms.Count == 5);
-   ```
-
-3. ☐ **Initialize GameState**
-   ```csharp
-   _gameState.CurrentRoomId = startingRoomId;
-   _gameState.VisitedRoomIds.Add(startingRoomId);
-   _gameState.TurnCount = 0;
-   ```
-
-4. ☐ **Load Starting Room Description**
-   ```csharp
-   var description = await _navigationService.LookAsync();
-   _inputHandler.DisplayMessage(description);
-   ```
-
-5. ☐ **Save Initial Game State**
-   ```csharp
-   await _saveManager.SaveGameAsync();
-   ```
-
-**Validation Points:**
-- After step 1: Verify `startingRoomId != Guid.Empty`
-- After step 2: Verify starting room has `IsStartingRoom == true`
-- After step 3: Verify `CurrentRoomId` is valid
-- After step 4: Verify description contains "Entry Hall"
-
----
-
-### Workflow 2: Dungeon Regeneration (Admin)
-
-**Purpose:** Clear and regenerate dungeon (DESTRUCTIVE)
-
-**Steps:**
-
-1. ☐ **Confirm Regeneration** (User Prompt)
-   - Display: "This will DELETE the current dungeon. Continue? (Y/N)"
-   - If NO: Abort
-
-2. ☐ **Backup Current Save** (Optional)
-   ```csharp
-   await _saveManager.CreateBackupAsync();
-   ```
-
-3. ☐ **Generate New Dungeon**
-   ```csharp
-   var newStartingRoomId = await _dungeonGenerator.GenerateTestMapAsync();
-   ```
-
-4. ☐ **Reset Player State**
-   ```csharp
-   _gameState.CurrentRoomId = newStartingRoomId;
-   _gameState.VisitedRoomIds.Clear();
-   _gameState.VisitedRoomIds.Add(newStartingRoomId);
-   _gameState.TurnCount = 0;
-   ```
-
-5. ☐ **Clear Temporary State**
-   ```csharp
-   _combatService.ClearActiveCombat();
-   _hazardService.ClearActiveHazards();
-   ```
-
-6. ☐ **Display Confirmation**
-   ```csharp
-   _inputHandler.DisplayMessage("Dungeon regenerated. You awaken in a new configuration...");
-   ```
-
-**Validation Points:**
-- After step 3: Verify `newStartingRoomId` is different from previous ID
-- After step 4: Verify `CurrentRoomId` is valid
-- After step 5: Verify no orphaned combat/hazard state
-
----
-
-## Cross-System Integration
-
-### Integration Matrix
-
-| System | Dependency Type | Integration Points | Data Flow |
-|--------|----------------|-------------------|-----------|
-| **RoomRepository** | Required | `ClearAllRoomsAsync()`, `AddRangeAsync()`, `SaveChangesAsync()` | DungeonGenerator → RoomRepository (room persistence) |
-| **EnvironmentPopulator** | Required | `PopulateDungeonAsync()` | DungeonGenerator → EnvironmentPopulator (hazard/condition spawning) |
-| **NavigationService** | Consumer | Room data retrieval | DungeonGenerator → RoomRepository → NavigationService |
-| **GameService** | Consumer | `GenerateTestMapAsync()` on new game | GameService → DungeonGenerator |
-| **SaveManager** | Observer | Dungeon state persistence | DungeonGenerator → RoomRepository → SaveManager |
-
----
-
-### Integration Details
-
-#### 1. RoomRepository Integration
-
-**Interface:** `IRoomRepository`
-
-**Methods Used:**
-- `ClearAllRoomsAsync()` - Delete all existing rooms
-- `AddRangeAsync(IEnumerable<Room> rooms)` - Bulk insert 5 rooms
-- `SaveChangesAsync()` - Commit transaction
-
-**Data Flow:**
-```
-DungeonGenerator.GenerateTestMapAsync()
-  └→ RoomRepository.ClearAllRoomsAsync()
-      └→ Database: DELETE FROM Rooms
-  └→ RoomRepository.AddRangeAsync(5 rooms)
-      └→ Database: INSERT INTO Rooms (5 rows)
-  └→ RoomRepository.SaveChangesAsync()
-      └→ Database: COMMIT
-```
-
-**Room Entity Fields Populated:**
-- `Id` (Guid) - Auto-generated
-- `Name` (string) - Hardcoded room names
-- `Description` (string) - Hardcoded descriptions
-- `Position` (Coordinate) - Hardcoded spatial positions
-- `Exits` (Dictionary<Direction, Guid>) - Populated by `LinkRooms()`
-- `IsStartingRoom` (bool) - True for Entry Hall only
-- `Hazards` (List<DynamicHazard>) - Populated by EnvironmentPopulator
-- `Objects` (List<InteractableObject>) - Populated by EnvironmentPopulator
-
----
-
-#### 2. EnvironmentPopulator Integration (v0.3.3c)
-
-**Interface:** `IEnvironmentPopulator`
-
-**Method Used:**
-- `PopulateDungeonAsync(IEnumerable<Room> rooms)`
-
-**Data Flow:**
-```
-DungeonGenerator.GenerateTestMapAsync()
-  └→ CreateTestRooms() + LinkRooms() [Room entities in memory]
-  └→ EnvironmentPopulator.PopulateDungeonAsync(rooms)
-      └→ For each room:
-          ├→ Add DynamicHazards (pressure plates, falling rubble, etc.)
-          ├→ Add AmbientConditions (toxic gas, extreme cold, etc.)
-          └→ Add InteractableObjects (containers, terminals, etc.)
-  └→ RoomRepository.AddRangeAsync(rooms) [Now includes hazards/objects]
-```
-
-**Timing:**
-- Population occurs AFTER room creation and linking
-- Population occurs BEFORE database persistence
-- Allows populator to modify room entities before save
-
-**See Also:** SPEC-ENVPOP-001 for environment population details
-
----
-
-#### 3. GameService Integration
-
-**Usage:** GameService calls DungeonGenerator on new game initialization
-
-**Pattern:**
-```csharp
-// GameService.StartNewGameAsync()
-var startingRoomId = await _dungeonGenerator.GenerateTestMapAsync();
-_gameState.CurrentRoomId = startingRoomId;
-_gameState.VisitedRoomIds.Add(startingRoomId);
-_gameState.TurnCount = 0;
-```
-
-**Responsibility:**
-- GameService owns game state initialization
-- DungeonGenerator owns room creation and linking
+### Numerical Limits
+
+| Constraint | Value | Source |
+|------------|-------|--------|
+| Min rooms | `BiomeDefinition.MinRoomCount` | Database |
+| Max rooms | `BiomeDefinition.MaxRoomCount` | Database |
+| Starting rooms | Exactly 1 | Hardcoded |
+| Exit count per room | 1-2 (linear chain) | Layout algorithm |
 
 ---
 
@@ -1128,29 +503,43 @@ public class Room
     public bool IsStartingRoom { get; set; }
     public bool IsBossRoom { get; set; }
 
-    public BiomeType BiomeType { get; set; } // Not currently set by DungeonGenerator
-    public DangerLevel DangerLevel { get; set; } // Not currently set by DungeonGenerator
+    public BiomeType BiomeType { get; set; }
+    public DangerLevel DangerLevel { get; set; }
 
-    // Populated by EnvironmentPopulator
+    public List<RoomFeature> Features { get; set; } = new();
     public List<DynamicHazard> Hazards { get; set; } = new();
-    public List<InteractableObject> Objects { get; set; } = new();
+    public Guid? ConditionId { get; set; }
 }
 ```
 
 **Fields Set by DungeonGenerator:**
 - `Id` - Auto-generated GUID
-- `Name` - Hardcoded room name
-- `Description` - Hardcoded description
-- `Position` - Hardcoded coordinate
-- `Exits` - Populated by `LinkRooms()`
-- `IsStartingRoom` - True for Entry Hall
+- `Name` - Rendered from template
+- `Description` - Rendered from template with biome descriptors
+- `Position` - Layout coordinate
+- `Exits` - Populated by `LinkRoomsInSequence()`
+- `IsStartingRoom` - True for EntryHall
+- `BiomeType` - Mapped from biomeId
+- `DangerLevel` - Mapped from template difficulty
 
-**Fields NOT Set by DungeonGenerator:**
-- `BiomeType` - Defaults to 0 (future feature)
-- `DangerLevel` - Defaults to 0 (future feature)
-- `IsBossRoom` - Defaults to false
-- `Hazards` - Populated by EnvironmentPopulator
-- `Objects` - Populated by EnvironmentPopulator
+**Fields Set by EnvironmentPopulator:**
+- `Hazards` - Dynamic hazards spawned per room
+- `ConditionId` - Ambient condition reference
+
+---
+
+### RoomLayout (Internal)
+
+**Source:** `DungeonGenerator.RoomLayout` (private nested class)
+
+```csharp
+private class RoomLayout
+{
+    public required RoomTemplate Template { get; init; }
+    public required Coordinate Position { get; init; }
+    public required bool IsStartingRoom { get; init; }
+}
+```
 
 ---
 
@@ -1170,17 +559,6 @@ public record Coordinate(int X, int Y, int Z)
 }
 ```
 
-**Usage in DungeonGenerator:**
-- Dictionary key for room lookup during creation
-- Spatial positioning for future pathfinding/distance calculations
-
-**Coordinate Assignments:**
-- Entry Hall: `(0, 0, 0)` - Origin
-- Rusted Corridor: `(0, 1, 0)` - North (+Y)
-- Storage Chamber: `(1, 0, 0)` - East (+X)
-- Collapsed Tunnel: `(-1, 0, 0)` - West (-X)
-- The Pit: `(0, 0, -1)` - Down (-Z)
-
 ---
 
 ### Direction Enum
@@ -1199,61 +577,116 @@ public enum Direction
 }
 ```
 
-**Usage in DungeonGenerator:**
-- Dictionary keys for `Room.Exits`
-- `GetOppositeDirection()` utility method
-
-**Opposite Pairs:**
-- North ↔ South
-- East ↔ West
-- Up ↔ Down
-
 ---
 
-## Configuration
+### BiomeType Enum
 
-### Constants (Hardcoded in Implementation)
+**Source:** `RuneAndRust.Core.Enums.BiomeType`
 
-**Room Count:**
 ```csharp
-private const int TestMapRoomCount = 5;
-```
-
-**Starting Room Position:**
-```csharp
-private static readonly Coordinate StartingRoomPosition = Coordinate.Origin; // (0,0,0)
-```
-
-**Room Names (Hardcoded):**
-```csharp
-"Entry Hall"
-"Rusted Corridor"
-"Storage Chamber"
-"Collapsed Tunnel"
-"The Pit"
-```
-
----
-
-### Future Configuration (Procedural Generation)
-
-**Planned Configuration Model:**
-```csharp
-public class DungeonConfig
+public enum BiomeType
 {
-    public int RoomCount { get; set; } = 10;
-    public BiomeType PrimaryBiome { get; set; } = BiomeType.Industrial;
-    public DangerLevel AverageDifficulty { get; set; } = DangerLevel.Moderate;
-    public bool IncludeBossRoom { get; set; } = true;
-    public int BranchingFactor { get; set; } = 2; // Paths from each junction
-    public GenerationAlgorithm Algorithm { get; set; } = GenerationAlgorithm.WaveFunctionCollapse;
+    Ruin = 0,
+    Industrial = 1,
+    Organic = 2,
+    Void = 3
 }
 ```
 
-**Usage:**
+---
+
+### DangerLevel Enum
+
+**Source:** `RuneAndRust.Core.Enums.DangerLevel`
+
 ```csharp
-var startingRoomId = await _dungeonGenerator.GenerateProceduralDungeonAsync(config);
+public enum DangerLevel
+{
+    Safe = 0,      // No active threats
+    Unstable = 1,  // Environmental hazards
+    Hostile = 2,   // Active enemies nearby
+    Lethal = 3     // Immediate danger
+}
 ```
+
+---
+
+## Use Cases
+
+### UC-1: Template-Based Dungeon Generation
+
+**Setup:**
+```csharp
+// BiomeDefinition "the_roots" seeded in database:
+// - MinRoomCount: 5
+// - MaxRoomCount: 8
+// - AvailableTemplates: ["roots_entry", "roots_corridor_1", "roots_chamber_1", "roots_boss"]
+```
+
+**Execution:**
+```csharp
+var startingRoomId = await _dungeonGenerator.GenerateDungeonAsync("the_roots");
+_gameState.CurrentRoomId = startingRoomId;
+```
+
+**Result:**
+- 5-8 rooms generated based on dice roll
+- Linear north-south layout
+- Room names/descriptions rendered from templates
+- All rooms have `BiomeType.Industrial` and appropriate `DangerLevel`
+- Environment populated with hazards/conditions
+
+---
+
+### UC-2: New Game Initialization
+
+**Setup:**
+```csharp
+// Starting a new game
+await _dungeonGenerator.GenerateDungeonAsync("the_roots");
+```
+
+**Post-Conditions:**
+- Database contains 5-8 room entities
+- Starting room at `(0,0,0)` with `IsStartingRoom = true`
+- All rooms linked bidirectionally
+- Hazards/conditions spawned per room
+- Player can navigate North from EntryHall
+
+---
+
+### UC-3: Dungeon Regeneration
+
+**Warning:** This is a destructive operation.
+
+**Execution:**
+```csharp
+// Clear old dungeon and generate new
+var newStartingRoomId = await _dungeonGenerator.GenerateDungeonAsync("the_roots");
+_gameState.CurrentRoomId = newStartingRoomId; // Required: old room IDs are invalid
+```
+
+**Post-Conditions:**
+- All previous rooms deleted
+- New rooms with new GUIDs
+- Player state must be re-initialized
+
+---
+
+## Cross-System Integration
+
+### Integration Matrix
+
+| System | Dependency Type | Integration Points |
+|--------|----------------|-------------------|
+| **RoomRepository** | Required | `ClearAllRoomsAsync()`, `AddRangeAsync()`, `SaveChangesAsync()` |
+| **EnvironmentPopulator** | Required | `PopulateRoomAsync()` per room |
+| **RoomTemplateRepository** | Required | `GetAllAsync()` for template loading |
+| **BiomeDefinitionRepository** | Required | `GetByBiomeIdAsync()` for biome config |
+| **TemplateRendererService** | Required | `RenderRoomName()`, `RenderRoomDescription()` |
+| **DiceService** | Required | `RollSingle()` for random selections |
+| **NavigationService** | Consumer | Room data retrieval |
+| **GameService** | Consumer | `GenerateDungeonAsync()` on new game |
 
 ---
 
@@ -1261,127 +694,15 @@ var startingRoomId = await _dungeonGenerator.GenerateProceduralDungeonAsync(conf
 
 ### Test Summary
 
-**Source:** `RuneAndRust.Tests/Engine/DungeonGeneratorTests.cs` (304 lines)
+**Source:** `RuneAndRust.Tests/Engine/DungeonGeneratorTests.cs`
 
-**Test Count:** 20 tests
-
-**Coverage Breakdown:**
-- `GenerateTestMapAsync()`: 15 tests
-- `GetOppositeDirection()`: 2 tests
-- Expected Layout Validation: 3 tests
-
-**Coverage Percentage:** ~100% (all public methods, all invariants)
-
----
-
-### Test Categories
-
-#### 1. GenerateTestMapAsync() Tests (15 tests)
-
-**DungeonGeneratorTests.cs:50-56** - `GenerateTestMapAsync_ClearsExistingRooms`
-- Validates database cleanup
-- Asserts `ClearAllRoomsAsync()` called exactly once
-
-**DungeonGeneratorTests.cs:70-77** - `GenerateTestMapAsync_CreatesFiveRooms`
-- Validates fixed room count
-- Asserts `_addedRooms.Count == 5`
-
-**DungeonGeneratorTests.cs:80-87** - `GenerateTestMapAsync_HasExactlyOneStartingRoom`
-- Validates single starting room
-- Asserts `_addedRooms.Count(r => r.IsStartingRoom) == 1`
-
-**DungeonGeneratorTests.cs:90-98** - `GenerateTestMapAsync_StartingRoomIsAtOrigin`
-- Validates starting room position
-- Asserts `startingRoom.Position == Coordinate.Origin`
-
-**DungeonGeneratorTests.cs:101-109** - `GenerateTestMapAsync_ReturnsStartingRoomId`
-- Validates return value
-- Asserts `result == startingRoom.Id`
-
-**DungeonGeneratorTests.cs:112-120** - `GenerateTestMapAsync_AllRoomsHaveUniqueIds`
-- Validates GUID uniqueness
-- Asserts `ids.Should().OnlyHaveUniqueItems()`
-
-**DungeonGeneratorTests.cs:123-131** - `GenerateTestMapAsync_AllRoomsHaveUniquePositions`
-- Validates coordinate uniqueness
-- Asserts `positions.Should().OnlyHaveUniqueItems()`
-
-**DungeonGeneratorTests.cs:134-144** - `GenerateTestMapAsync_AllRoomsHaveNonEmptyNames`
-- Validates room names
-- Asserts all names are non-empty strings
-
-**DungeonGeneratorTests.cs:147-157** - `GenerateTestMapAsync_AllRoomsHaveNonEmptyDescriptions`
-- Validates room descriptions
-- Asserts all descriptions are non-empty strings
-
-**DungeonGeneratorTests.cs:160-168** - `GenerateTestMapAsync_StartingRoomHasMultipleExits`
-- Validates starting room connectivity
-- Asserts `startingRoom.Exits.Count >= 2` (actually 4)
-
-**DungeonGeneratorTests.cs:171-187** - `GenerateTestMapAsync_ExitsAreBidirectional`
-- **CRITICAL TEST**: Validates bidirectionality invariant
-- For each room's exit, asserts target room has reverse exit
-
-**DungeonGeneratorTests.cs:190-205** - `GenerateTestMapAsync_ExitsPointToValidRooms`
-- Validates exit integrity
-- Asserts all exit target IDs reference rooms in the batch
-
-**DungeonGeneratorTests.cs:208-216** - `GenerateTestMapAsync_SavesChangesToDatabase`
-- Validates persistence
-- Asserts `AddRangeAsync()` and `SaveChangesAsync()` called once each
-
-**DungeonGeneratorTests.cs:219-227** - `GenerateTestMapAsync_IncludesVerticalRoom`
-- Validates 3D layout
-- Asserts at least one room has `Z < 0` (The Pit)
-
----
-
-#### 2. GetOppositeDirection() Tests (2 tests)
-
-**DungeonGeneratorTests.cs:233-247** - `GetOppositeDirection_ReturnsCorrectOpposite`
-- Parameterized test for all 6 directions
-- Asserts correct opposite direction returned
-
-**DungeonGeneratorTests.cs:250-262** - `GetOppositeDirection_IsSymmetric`
-- Validates symmetry property
-- Asserts `opposite(opposite(x)) == x` for all directions
-
----
-
-#### 3. Expected Layout Tests (3 tests)
-
-**DungeonGeneratorTests.cs:269-276** - `GenerateTestMapAsync_EntryHallIsNamed`
-- Validates specific room name
-- Asserts "Entry Hall" room exists
-
-**DungeonGeneratorTests.cs:279-288** - `GenerateTestMapAsync_RustedCorridorIsNorthOfEntry`
-- Validates specific room position
-- Asserts Rusted Corridor at `(0,1,0)`
-
-**DungeonGeneratorTests.cs:291-300** - `GenerateTestMapAsync_ThePitIsBelowEntry`
-- Validates vertical positioning
-- Asserts The Pit at `(0,0,-1)`
-
----
-
-### Mock Setup Patterns
-
-**Room Repository Mock:**
-```csharp
-_mockRoomRepo.Setup(r => r.AddRangeAsync(It.IsAny<IEnumerable<Room>>()))
-    .Callback<IEnumerable<Room>>(rooms => _addedRooms = rooms.ToList())
-    .Returns(Task.CompletedTask);
-
-_mockRoomRepo.Setup(r => r.ClearAllRoomsAsync())
-    .Returns(Task.CompletedTask);
-
-_mockRoomRepo.Setup(r => r.SaveChangesAsync())
-    .Returns(Task.CompletedTask);
-```
-
-**Callback Pattern:**
-- Captures rooms passed to `AddRangeAsync()` for assertions
-- Allows test validation without actual database
+**Test Categories:**
+1. Room count and generation
+2. Starting room designation
+3. Bidirectional exit verification
+4. Template integration
+5. Biome configuration
+6. `GetOppositeDirection()` utility
 
 ---
 
@@ -1389,250 +710,168 @@ _mockRoomRepo.Setup(r => r.SaveChangesAsync())
 
 ### Validation Status
 
-**DungeonGenerator.cs:** ✅ **COMPLIANT**
+**DungeonGenerator.cs:** Compliant (no direct content generation)
 
-All room names and descriptions comply with Domain 4 constraints:
+All room content is generated by `TemplateRendererService` using biome descriptor pools. Compliance is enforced at the template/descriptor level, not the generator level.
 
-**Room Descriptions Analysis:**
+**Template Responsibility:**
+- Room names rendered from `RoomTemplate.NameTemplate`
+- Room descriptions rendered from `RoomTemplate.DescriptionTemplate`
+- Variable substitution uses `BiomeDefinition.DescriptorCategories`
 
-1. **Entry Hall:**
-   - ✅ "cold, metallic chamber" (qualitative)
-   - ✅ "smells of ozone and ancient dust" (sensory, not measured)
-   - ✅ "Faded runes pulse weakly" (qualitative intensity)
-
-2. **Rusted Corridor:**
-   - ✅ "Corroded pipes" (descriptive state)
-   - ✅ "Water drips from unseen sources" (observational)
-   - ✅ "rust-red stains" (qualitative color)
-
-3. **Storage Chamber:**
-   - ✅ "Broken crates and shattered containers" (state description)
-   - ✅ "looted long ago or claimed by decay" (temporal vagueness)
-   - ✅ "Dust motes drift in the pale light" (observational)
-
-4. **Collapsed Tunnel:**
-   - ✅ "Rubble partially blocks" (qualitative obstruction)
-   - ✅ "ceiling groans ominously" (sensory, threatening)
-   - ✅ "This area seems unstable" (subjective assessment)
-
-5. **The Pit:**
-   - ✅ "deep shaft descends into absolute darkness" (qualitative depth)
-   - ✅ "Ancient machinery clings to the walls" (observational)
-   - ✅ "echoes of your footsteps seem to go on forever" (subjective experience)
-
-**No Forbidden Patterns:**
-- ❌ No precision measurements ("5 meters wide", "23°C")
-- ❌ No technical jargon ("structural integrity at 47%", "oxygen levels low")
-- ❌ No modern units ("15 kilograms of debris")
+**See Also:** SPEC-TEMPLATE-001 for template/descriptor Domain 4 compliance.
 
 ---
 
-## Future Extensions
+## Related Specifications
 
-### Planned Enhancements
-
-#### 1. Procedural Generation Algorithms
-
-**Requirement:** Replace hardcoded test map with algorithmic generation
-
-**Planned Algorithms:**
-
-**Wave Function Collapse (WFC):**
-```csharp
-public async Task<Guid> GenerateWFCDungeonAsync(DungeonConfig config)
-{
-    var grid = new WFCGrid(config.Width, config.Height);
-    var tiles = LoadTileSet(config.TileSetName);
-
-    while (!grid.IsFullyCollapsed())
-    {
-        var cell = grid.FindLowestEntropyCell();
-        grid.CollapseCell(cell, tiles);
-        grid.PropagateConstraints(cell);
-    }
-
-    var rooms = ConvertGridToRooms(grid);
-    await PersistRooms(rooms);
-    return rooms.First(r => r.IsStartingRoom).Id;
-}
-```
-
-**Binary Space Partitioning (BSP):**
-```csharp
-public async Task<Guid> GenerateBSPDungeonAsync(DungeonConfig config)
-{
-    var root = new BSPNode(new Rect(0, 0, config.Width, config.Height));
-    root.Split(config.MinRoomSize, config.MaxDepth);
-
-    var rooms = root.CreateRooms();
-    var corridors = root.CreateCorridors();
-
-    await PersistRooms(rooms.Concat(corridors));
-    return rooms.First().Id;
-}
-```
+| Spec | Relationship |
+|------|-------------|
+| [SPEC-TEMPLATE-001](../content/SPEC-TEMPLATE-001.md) | Template rendering system |
+| [SPEC-ENVPOP-001](../environment/SPEC-ENVPOP-001.md) | Environment population |
+| [SPEC-NAV-001](SPEC-NAV-001.md) | Navigation consumes room data |
+| [SPEC-DICE-001](../combat/SPEC-DICE-001.md) | Dice service for randomization |
 
 ---
 
-#### 2. Biome-Based Generation
+## Appendix A: Legacy Test Map (Deprecated)
 
-**Requirement:** Assign BiomeType during room creation
+> **Status:** `[Obsolete]` as of v0.4.0
+> **Use Instead:** `GenerateDungeonAsync(biomeId)`
 
-**Extension Point:**
+### Legacy Methods
+
+The following methods are preserved for backwards compatibility but should not be used in new code:
+
+#### GenerateTestMapAsync()
+
 ```csharp
-private Dictionary<Coordinate, Room> CreateProceduralRooms(DungeonConfig config)
+[Obsolete("Use GenerateDungeonAsync(biomeId) instead. This method is deprecated in v0.4.0.")]
+public async Task<Guid> GenerateTestMapAsync()
 {
-    var rooms = new Dictionary<Coordinate, Room>();
-
-    foreach (var coordinate in GenerateLayout(config))
-    {
-        var room = new Room
-        {
-            Name = GenerateRoomName(config.PrimaryBiome),
-            Description = GenerateRoomDescription(config.PrimaryBiome),
-            Position = coordinate,
-            BiomeType = config.PrimaryBiome, // ASSIGN BIOME
-            DangerLevel = CalculateDangerLevel(coordinate, config)
-        };
-        rooms[coordinate] = room;
-    }
-
-    return rooms;
+    return await GenerateDungeonAsync("the_roots");
 }
 ```
 
----
+#### CreateTestRooms() (Private, Obsolete)
 
-#### 3. Difficulty Progression
+Created 5 hardcoded rooms with fixed names/descriptions:
+- Entry Hall (0,0,0) - Starting Room
+- Rusted Corridor (0,1,0)
+- Storage Chamber (1,0,0)
+- Collapsed Tunnel (-1,0,0)
+- The Pit (0,0,-1)
 
-**Requirement:** Scale DangerLevel based on distance from start
+#### LinkRooms() (Private, Obsolete)
 
-**Extension Point:**
-```csharp
-private DangerLevel CalculateDangerLevel(Coordinate position, DungeonConfig config)
-{
-    var distanceFromStart = position.ManhattanDistance(Coordinate.Origin);
-
-    // Linear scaling: 0-2 = Safe, 3-5 = Moderate, 6-8 = Dangerous, 9+ = Lethal
-    return distanceFromStart switch
-    {
-        <= 2 => DangerLevel.Safe,
-        <= 5 => DangerLevel.Moderate,
-        <= 8 => DangerLevel.Dangerous,
-        _ => DangerLevel.Lethal
-    };
-}
+Created star topology connections:
+```
+        Corridor (0,1,0)
+             |
+             N
+             |
+Collapsed --- Entry --- Storage
+(-1,0,0)  W   |   E    (1,0,0)
+           (0,0,0)
+             |
+             D
+             |
+        The Pit (0,0,-1)
 ```
 
----
+### Legacy Room Definitions (Reference)
 
-#### 4. Room Archetype System
-
-**Requirement:** Categorize rooms by function (entry, corridor, chamber, boss, treasure)
-
-**Extension Point:**
-```csharp
-public enum RoomArchetype
-{
-    EntryHall,
-    Corridor,
-    Chamber,
-    BossArena,
-    TreasureRoom,
-    TrapRoom,
-    SecretRoom
-}
-
-// Assign during generation
-room.Archetype = DetermineArchetype(position, config);
+**Entry Hall:**
+```
+A cold, metallic chamber. The air smells of ozone and ancient dust.
+Faded runes pulse weakly along the walls, their meaning lost to time.
+Passages lead in several directions.
 ```
 
----
-
-#### 5. Seed-Based Regeneration
-
-**Requirement:** Allow dungeon replay via seed value
-
-**Extension Point:**
-```csharp
-public async Task<Guid> GenerateSeededDungeonAsync(int seed, DungeonConfig config)
-{
-    var rng = new Random(seed);
-    // Use rng for all randomization
-    var rooms = GenerateRooms(config, rng);
-    await PersistRooms(rooms);
-    return rooms.First(r => r.IsStartingRoom).Id;
-}
+**Rusted Corridor:**
+```
+Corroded pipes line the walls of this narrow passage.
+Water drips from unseen sources, leaving rust-red stains on the floor.
+The air grows colder here.
 ```
 
-**Storage:**
-```csharp
-public class SaveGame
-{
-    public int DungeonSeed { get; set; }
-    // ...
-}
+**Storage Chamber:**
+```
+Broken crates and shattered containers litter this abandoned storeroom.
+Whatever was kept here was either looted long ago or claimed by decay.
+Dust motes drift in the pale light.
+```
+
+**Collapsed Tunnel:**
+```
+Rubble partially blocks this passage. The ceiling groans ominously overhead.
+Cracks in the walls reveal glimpses of darkness beyond.
+This area seems unstable.
+```
+
+**The Pit:**
+```
+A deep shaft descends into absolute darkness.
+Ancient machinery clings to the walls, silent and still.
+The echoes of your footsteps seem to go on forever.
 ```
 
 ---
 
 ## Changelog
 
-### v0.3.3c - Environment Population Integration (2025-12-16)
+### v0.4.0 (2025-12-24)
+**Major Rewrite: Template-Based Generation**
+- **BREAKING**: Replaced hardcoded test map with template-based dynamic generation
+- **ADDED**: `GenerateDungeonAsync(biomeId)` as primary generation method
+- **ADDED**: BiomeDefinition + RoomTemplate integration
+- **ADDED**: IRoomTemplateRepository and IBiomeDefinitionRepository dependencies
+- **ADDED**: ITemplateRendererService for name/description variable substitution
+- **ADDED**: IDiceService for deterministic randomization
+- **ADDED**: Room count variability based on biome min/max configuration
+- **ADDED**: BiomeType and DangerLevel assignment during generation
+- **DEPRECATED**: `GenerateTestMapAsync()`, `CreateTestRooms()`, `LinkRooms()` marked `[Obsolete]`
+- **CHANGED**: Layout from star topology (4 directions) to linear north chain
+- **CHANGED**: Environment population from batch to per-room via `PopulateRoomAsync()`
+- **UPDATED**: Spec to document v0.4.0 Dynamic Room Engine
+- **MOVED**: Legacy v0.0.5 documentation to Appendix A
+
+### v0.3.3c (2025-12-16)
 - **ADDED**: `IEnvironmentPopulator` dependency injection
 - **ADDED**: `PopulateDungeonAsync()` call before room persistence
-- **UPDATED**: Room entities now include hazards/conditions/objects before save
 
-### v0.0.5 - Initial Test Map Implementation (2025-11-22)
-- **ADDED**: `GenerateTestMapAsync()` for deterministic 5-room layout
-- **ADDED**: `CreateTestRooms()` internal method with hardcoded room definitions
-- **ADDED**: `LinkRooms()` internal method for bidirectional exit creation
+### v0.0.5 (2025-11-22)
+- **ADDED**: Initial `GenerateTestMapAsync()` for deterministic 5-room layout
+- **ADDED**: `CreateTestRooms()` with hardcoded room definitions
+- **ADDED**: `LinkRooms()` for bidirectional exit creation
 - **ADDED**: `GetOppositeDirection()` static utility method
-- **ADDED**: Database cleanup via `ClearAllRoomsAsync()`
-- **ADDED**: Spatial positioning using `Coordinate` value objects
 
 ---
 
-## Appendix
-
-### Related Specifications
-
-- **SPEC-NAV-001**: Navigation System (consumes dungeon structure)
-- **SPEC-ENVPOP-001**: Environment Population (populates rooms with content)
-- **SPEC-ROOMGEN-001**: Dynamic Room Engine (future procedural system)
-
----
-
-### Code References
+## Code References
 
 **Primary Implementation:**
-- `RuneAndRust.Engine/Services/DungeonGenerator.cs` (190 lines)
+- `RuneAndRust.Engine/Services/DungeonGenerator.cs`
 
-**Tests:**
-- `RuneAndRust.Tests/Engine/DungeonGeneratorTests.cs` (304 lines, 20 tests)
+**Dependencies:**
+- `RuneAndRust.Core/Interfaces/IRoomRepository.cs`
+- `RuneAndRust.Core/Interfaces/IEnvironmentPopulator.cs`
+- `RuneAndRust.Core/Interfaces/IRoomTemplateRepository.cs`
+- `RuneAndRust.Core/Interfaces/IBiomeDefinitionRepository.cs`
+- `RuneAndRust.Core/Interfaces/ITemplateRendererService.cs`
+- `RuneAndRust.Core/Interfaces/IDiceService.cs`
 
 **Data Models:**
 - `RuneAndRust.Core/Entities/Room.cs`
+- `RuneAndRust.Core/Entities/RoomTemplate.cs`
+- `RuneAndRust.Core/Entities/BiomeDefinition.cs`
 - `RuneAndRust.Core/ValueObjects/Coordinate.cs`
 - `RuneAndRust.Core/Enums/Direction.cs`
+- `RuneAndRust.Core/Enums/BiomeType.cs`
+- `RuneAndRust.Core/Enums/DangerLevel.cs`
 
----
-
-### Glossary
-
-**Test Map:** Deterministic 5-room dungeon layout used for QA validation before procedural generation implementation
-
-**Bidirectional Exit:** Two-way connection between rooms (Room A → Room B AND Room B → Room A)
-
-**Spatial Coordinate:** 3D position (X, Y, Z) assigned to each room for layout representation
-
-**Starting Room:** Room marked with `IsStartingRoom = true` where player spawns on game start
-
-**Opposite Direction:** Reverse direction for bidirectional linking (North ↔ South, East ↔ West, Up ↔ Down)
-
-**Environment Population:** Process of adding hazards, conditions, and objects to rooms after creation
-
-**Idempotent Generation:** Property that allows repeated calls to `GenerateTestMapAsync()` without side effects (cleanup ensures fresh state)
+**Tests:**
+- `RuneAndRust.Tests/Engine/DungeonGeneratorTests.cs`
 
 ---
 
