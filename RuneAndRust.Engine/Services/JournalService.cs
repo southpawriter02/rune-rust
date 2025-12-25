@@ -10,6 +10,7 @@ namespace RuneAndRust.Engine.Services;
 /// Service for formatting Scavenger's Journal display output.
 /// Provides formatted views for journal list, entry details, and unassigned fragments.
 /// </summary>
+/// <remarks>See: SPEC-JOURNAL-001 for Journal Display System design.</remarks>
 public class JournalService : IJournalService
 {
     private readonly ILogger<JournalService> _logger;
