@@ -22,7 +22,7 @@
 id: SPEC-[DOMAIN]-[NNN]
 title: [Descriptive Title]
 version: 1.0.0
-status: draft
+status: Draft
 last_updated: [YYYY-MM-DD]
 related_specs: []
 ---
@@ -288,7 +288,7 @@ private const int [ConstantName] = [Value];
 
 ## Quick Reference
 
-### Required Sections (13)
+### Required Sections (15)
 
 1. Table of Contents
 2. Overview
@@ -301,9 +301,10 @@ private const int [ConstantName] = [Value];
 9. Cross-Links
 10. Related Services
 11. Data Models
-12. Testing
-13. Design Rationale
-14. Changelog
+12. Configuration
+13. Testing
+14. Design Rationale
+15. Changelog
 
 ### Frontmatter Fields
 
@@ -312,7 +313,7 @@ private const int [ConstantName] = [Value];
 | `id` | Yes | `SPEC-COMBAT-001` |
 | `title` | Yes | `Combat System` |
 | `version` | Yes | `1.0.0` |
-| `status` | Yes | `draft`, `review`, `approved`, `deprecated`, `scaffolded`, `implemented` |
+| `status` | Yes | `Draft`, `Review`, `Approved`, `Deprecated`, `Scaffolded`, `Implemented`, `In Progress` |
 | `last_updated` | Yes | `2025-12-23` |
 | `related_specs` | Yes | `[SPEC-DICE-001, SPEC-STATUS-001]` |
 

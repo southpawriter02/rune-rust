@@ -47,7 +47,7 @@ Foundational systems that other domains depend on.
 
 | Spec ID | Title | Primary Service(s) | Description |
 |---------|-------|-------------------|-------------|
-| [SPEC-DICE-001](./core/SPEC-DICE-001.md) | Dice Pool System | `DiceService` | D6 dice pool mechanics, success counting, probability |
+| [SPEC-DICE-001](./core/SPEC-DICE-001.md) | Dice Pool System | `DiceService` | D10 dice pool mechanics, success counting, probability |
 | [SPEC-GAME-001](./core/SPEC-GAME-001.md) | Game Orchestration | `GameService` | Main loop, phase management, state coordination |
 
 ---
@@ -256,15 +256,22 @@ Audit and validation tools for game balance testing.
 
 | Status | Count | Percentage |
 |--------|-------|------------|
-| Implemented | 44 | 100% |
-| In Progress | 0 | 0% |
-| Planned | 1 | - |
+| Implemented | 43 | 93% |
+| Scaffolded | 2 | 4% |
+| Planned | 1 | 2% |
 
 ### Planned Specifications
 
 | Spec ID | Title | Priority | Notes |
 |---------|-------|----------|-------|
-| SPEC-TEMPLATE-001 | Template System | HIGH | v0.4.0 BiomeDefinition, RoomTemplate system |
+| SPEC-LEGEND-001 | Legend Points | MEDIUM | Meta-currency, special abilities |
+
+### Scaffolded Specifications
+
+| Spec ID | Title | Notes |
+|---------|-------|-------|
+| SPEC-ADVANCEMENT-001 | Character Advancement | Level progression system |
+| SPEC-XP-001 | Experience & Leveling | XP rewards, level thresholds |
 
 ---
 
