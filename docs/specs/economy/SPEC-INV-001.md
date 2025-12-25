@@ -1,14 +1,15 @@
 ---
 id: SPEC-INV-001
 title: Inventory & Equipment System
-version: 1.0.0
+version: 1.0.1
 status: Implemented
+last_updated: 2025-12-24
 related_specs: [SPEC-CHAR-001, SPEC-REST-001, SPEC-CRAFT-001, SPEC-REPAIR-001]
 ---
 
 # SPEC-INV-001: Inventory & Equipment System
 
-> **Version:** 1.0.0
+> **Version:** 1.0.1
 > **Status:** Implemented (v0.3.0)
 > **Service:** `InventoryService`, `LootService`
 > **Location:** `RuneAndRust.Engine/Services/`
@@ -41,14 +42,15 @@ The Inventory & Equipment System manages item storage, equipment slots, burden c
 
 ## Equipment Slots
 
-| Slot | Description | Typical Items |
-|------|-------------|---------------|
-| MainHand | Primary weapon | Swords, axes, staves |
-| OffHand | Secondary/shield | Shields, torches, secondary weapons |
-| Head | Headgear | Helms, hoods, goggles |
-| Body | Torso armor | Plate, leather, robes |
-| Legs | Leg armor | Greaves, pants, boots |
-| Feet | Footwear | Boots, sandals, sabatons |
+| Slot | Value | Description | Typical Items |
+|------|-------|-------------|---------------|
+| MainHand | 0 | Primary weapon | Swords, axes, staves |
+| OffHand | 1 | Secondary/shield | Shields, torches, secondary weapons |
+| Head | 2 | Headgear | Helms, hoods, goggles |
+| Body | 3 | Torso armor | Plate, leather, robes |
+| Hands | 4 | Hand protection | Gauntlets, gloves, bracers |
+| Feet | 5 | Footwear | Boots, sandals, sabatons |
+| Accessory | 6 | Miscellaneous | Rings, amulets, belts |
 
 ---
 
@@ -406,13 +408,13 @@ public enum BurdenState
 
 ## Quality Tiers
 
-| Tier | Description | Typical Stats |
-|------|-------------|---------------|
-| JuryRigged | Improvised, fragile | Low stats, poor durability |
-| Salvaged | Repaired scrap | Moderate stats |
-| Functional | Working condition | Standard stats |
-| Refined | Quality craftsmanship | Good stats, bonuses |
-| MythForged | Legendary, enhanced | High stats, special effects |
+| Tier | Value | Description | Typical Stats |
+|------|-------|-------------|---------------|
+| JuryRigged | 0 | Improvised, fragile | Low stats, poor durability |
+| Scavenged | 1 | Standard salvaged goods | Moderate stats |
+| ClanForged | 2 | Dvergr-crafted quality | Standard stats |
+| Optimized | 3 | Pre-Glitch or masterwork | Good stats, bonuses |
+| MythForged | 4 | Legendary, enhanced | High stats, special effects |
 
 ---
 
@@ -495,3 +497,35 @@ if (burden == BurdenState.Heavy)
 - Clear consequence for overloading
 - Forces decision making
 - Prevents trivial inventory abuse
+
+---
+
+## Changelog
+
+### v1.0.1 (2025-12-24)
+**Documentation Updates:**
+- Added `last_updated` field to YAML frontmatter
+- **CRITICAL:** Fixed Equipment Slots table:
+  - Removed "Legs" slot (never implemented)
+  - Added "Hands" slot (position 4) for gauntlets, gloves, bracers
+  - Added "Accessory" slot (position 6) for rings, amulets, belts
+- **CRITICAL:** Fixed QualityTier names to match implementation:
+  - Salvaged → Scavenged
+  - Functional → ClanForged
+  - Refined → Optimized
+- Added code traceability remarks to 6 implementation files:
+  - IInventoryService.cs, InventoryService.cs
+  - ILootService.cs, LootService.cs
+  - Equipment.cs, InventoryItem.cs
+
+### v1.0.0 (2025-12-22)
+**Initial Release:**
+- Inventory & Equipment system documentation
+- Burden calculation (Light, Heavy, Overburdened)
+- Weight-based capacity (MIGHT × 10,000g)
+- Equipment slots and attribute bonuses
+- Loot generation system
+
+---
+
+**END OF SPECIFICATION**

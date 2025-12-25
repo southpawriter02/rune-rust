@@ -12,6 +12,7 @@ namespace RuneAndRust.Engine.Services;
 /// Provides inventory management operations including item handling,
 /// equipment, and burden calculations.
 /// </summary>
+/// <remarks>See: SPEC-INV-001 for Inventory & Equipment System design.</remarks>
 public class InventoryService : IInventoryService
 {
     private readonly IInventoryRepository _inventoryRepository;

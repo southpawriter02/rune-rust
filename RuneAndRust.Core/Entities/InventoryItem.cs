@@ -4,6 +4,7 @@ namespace RuneAndRust.Core.Entities;
 /// Join entity representing an item in a character's inventory.
 /// Supports stacking, slot positioning, and equipment state.
 /// </summary>
+/// <remarks>See: SPEC-INV-001 for Inventory & Equipment System design.</remarks>
 public class InventoryItem
 {
     #region Keys
