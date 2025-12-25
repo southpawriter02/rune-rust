@@ -158,6 +158,9 @@ class Program
                     // Register Theme Service (v0.3.9b)
                     services.AddSingleton<IThemeService, ThemeService>();
 
+                    // Register Screen Transition Service (v0.3.14b)
+                    services.AddSingleton<IScreenTransitionService, ScreenTransitionService>();
+
                     // Register Input Configuration Service (v0.3.9c)
                     services.AddSingleton<IInputConfigurationService, InputConfigurationService>();
 

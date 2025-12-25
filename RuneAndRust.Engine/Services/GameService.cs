@@ -25,6 +25,8 @@ public class GameService : IGameService
     private readonly ICombatScreenRenderer? _combatRenderer;
     private readonly IExplorationScreenRenderer? _explorationRenderer;
     private readonly IServiceScopeFactory _scopeFactory;
+    private readonly IScreenTransitionService? _transitionService;
+    private GamePhase _previousPhase = GamePhase.MainMenu;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="GameService"/> class.
@@ -37,6 +39,7 @@ public class GameService : IGameService
     /// <param name="scopeFactory">Factory for creating scoped services (v0.3.5a).</param>
     /// <param name="combatRenderer">The combat screen renderer (optional for testing).</param>
     /// <param name="explorationRenderer">The exploration screen renderer (v0.3.5a, optional for testing).</param>
+    /// <param name="transitionService">The screen transition service (v0.3.14b, optional for testing).</param>
     public GameService(
         ILogger<GameService> logger,
         IInputHandler inputHandler,
@@ -45,7 +48,8 @@ public class GameService : IGameService
         ICombatService combatService,
         IServiceScopeFactory scopeFactory,
         ICombatScreenRenderer? combatRenderer = null,
-        IExplorationScreenRenderer? explorationRenderer = null)
+        IExplorationScreenRenderer? explorationRenderer = null,
+        IScreenTransitionService? transitionService = null)
     {
         _logger = logger;
         _inputHandler = inputHandler;
@@ -55,6 +59,7 @@ public class GameService : IGameService
         _scopeFactory = scopeFactory;
         _combatRenderer = combatRenderer;
         _explorationRenderer = explorationRenderer;
+        _transitionService = transitionService;
     }
 
     /// <inheritdoc/>
@@ -65,8 +70,17 @@ public class GameService : IGameService
         _inputHandler.DisplayMessage("Type 'help' for available commands.");
         _inputHandler.DisplayMessage("");
 
+        _previousPhase = _state.Phase;
+
         while (_state.Phase != GamePhase.Quit)
         {
+            // 0. Check for phase transition and play animation (v0.3.14b)
+            if (_state.Phase != _previousPhase)
+            {
+                await HandlePhaseTransitionAsync(_previousPhase, _state.Phase);
+                _previousPhase = _state.Phase;
+            }
+
             // 1. Render phase-specific UI
             if (_state.Phase == GamePhase.Combat && _combatRenderer != null)
             {
@@ -95,6 +109,12 @@ public class GameService : IGameService
             await _parser.ParseAndExecuteAsync(input, _state);
         }
 
+        // Final transition before quit (v0.3.14b)
+        if (_previousPhase == GamePhase.Combat)
+        {
+            await HandlePhaseTransitionAsync(_previousPhase, GamePhase.Quit);
+        }
+
         _logger.LogInformation("Game Loop Ended. Shutting down.");
         _inputHandler.DisplayMessage("Thank you for playing Rune & Rust. Farewell!");
     }
@@ -111,6 +131,32 @@ public class GameService : IGameService
             GamePhase.Combat => "[COMBAT]",
             _ => "[???]"
         };
+    }
+
+    /// <summary>
+    /// Handles phase transitions by playing appropriate screen animations (v0.3.14b).
+    /// </summary>
+    /// <param name="from">The phase being transitioned from.</param>
+    /// <param name="to">The phase being transitioned to.</param>
+    private async Task HandlePhaseTransitionAsync(GamePhase from, GamePhase to)
+    {
+        if (_transitionService == null)
+        {
+            return;
+        }
+
+        var transitionType = (from, to) switch
+        {
+            (GamePhase.Exploration, GamePhase.Combat) => TransitionType.Shatter,
+            (GamePhase.Combat, GamePhase.Exploration) => TransitionType.Dissolve,
+            (GamePhase.Combat, GamePhase.Quit) => TransitionType.GlitchDecay,
+            _ => TransitionType.None
+        };
+
+        _logger.LogDebug("[Game] Phase transition: {From} -> {To}, Effect: {Effect}",
+            from, to, transitionType);
+
+        await _transitionService.PlayAsync(transitionType);
     }
 
     /// <summary>
