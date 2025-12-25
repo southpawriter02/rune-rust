@@ -9,6 +9,7 @@ namespace RuneAndRust.Engine.Services;
 /// All descriptions follow AAM-VOICE Layer 2 (Diagnostic) constraints.
 /// Domain 4 compliant: No precision measurements or modern terminology.
 /// </summary>
+/// <remarks>See: SPEC-LOOT-001 for Loot Generation System design.</remarks>
 public static class LootTables
 {
     #region Quality Weights by Danger Level

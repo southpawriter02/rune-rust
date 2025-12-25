@@ -1,14 +1,15 @@
 ---
 id: SPEC-LOOT-001
 title: Loot Generation System
-version: 1.0.0
+version: 1.0.1
 status: Implemented
+last_updated: 2025-12-24
 related_specs: [SPEC-INTERACT-001, SPEC-INV-001, SPEC-COMBAT-001]
 ---
 
 # SPEC-LOOT-001: Loot Generation System
 
-> **Version:** 1.0.0
+> **Version:** 1.0.1
 > **Status:** Implemented (v0.3.1a)
 > **Service:** `LootService`
 > **Location:** `RuneAndRust.Engine/Services/LootService.cs`
@@ -1234,6 +1235,14 @@ private const int MaxWitsUpgradeChance = 20;  // 20% cap
 ---
 
 ## Changelog
+
+### v1.0.1 (2025-12-24)
+**Documentation Updates:**
+- Added `last_updated` field to YAML frontmatter
+- **FIX:** Corrected code traceability in implementation files:
+  - `ILootService.cs` now references SPEC-LOOT-001 (was incorrectly SPEC-INV-001)
+  - `LootService.cs` now references SPEC-LOOT-001 (was incorrectly SPEC-INV-001)
+  - `LootTables.cs` now includes spec reference (was missing)
 
 ### v0.3.1a - Initial Loot Service Implementation (2025-12-10)
 - **ADDED**: `SearchContainerAsync()` for container-based loot
