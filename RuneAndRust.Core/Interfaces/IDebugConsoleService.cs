@@ -4,6 +4,7 @@ namespace RuneAndRust.Core.Interfaces;
 /// Service for managing the debug console state and log buffer (v0.3.17a).
 /// Part of "The Architect" debug tools milestone.
 /// </summary>
+/// <remarks>See: SPEC-DEBUG-001 for Debug Console System design.</remarks>
 public interface IDebugConsoleService
 {
     /// <summary>

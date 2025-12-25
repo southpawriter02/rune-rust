@@ -22,6 +22,7 @@ namespace RuneAndRust.Tests.Infrastructure;
 /// A self-contained test host for running E2E integration tests.
 /// Provides isolated DI container with ScriptedInputHandler and seeded RNG.
 /// </summary>
+/// <remarks>See: SPEC-JOURNEY-001 for E2E Journey Testing Framework design.</remarks>
 public class TestGameHost : IDisposable
 {
     private readonly ServiceProvider _serviceProvider;

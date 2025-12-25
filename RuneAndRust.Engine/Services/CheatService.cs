@@ -8,6 +8,7 @@ namespace RuneAndRust.Engine.Services;
 /// Executes debug cheat commands (v0.3.17b).
 /// Part of "The Toolbox" debug tools milestone.
 /// </summary>
+/// <remarks>See: SPEC-CHEAT-001 for Cheat Command System design.</remarks>
 public class CheatService : ICheatService
 {
     private readonly GameState _state;

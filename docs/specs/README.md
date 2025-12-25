@@ -1,8 +1,8 @@
 # Rune & Rust - Specification Index
 
-> **Version:** 0.4.7
+> **Version:** 0.5.3
 > **Last Updated:** 2025-12-25
-> **Total Specifications:** 52
+> **Total Specifications:** 58
 > **Maintained By:** The Architect
 
 This document serves as the master index for all game system specifications. Each specification provides comprehensive documentation including behaviors, restrictions, limitations, use cases, and cross-system dependencies.
@@ -14,16 +14,16 @@ This document serves as the master index for all game system specifications. Eac
 | Domain | Specs | Directory | Description |
 |--------|-------|-----------|-------------|
 | [Core](#core-infrastructure) | 2 | [`core/`](./core/) | Foundational systems (dice, orchestration) |
-| [Combat](#combat-systems) | 8 | [`combat/`](./combat/) | Combat mechanics, abilities, enemies |
+| [Combat](#combat-systems) | 9 | [`combat/`](./combat/) | Combat mechanics, abilities, enemies, intent |
 | [Character](#character--progression) | 8 | [`character/`](./character/) | Character stats, advancement, trauma |
-| [Exploration](#exploration--world) | 5 | [`exploration/`](./exploration/) | Navigation, dungeon generation |
+| [Exploration](#exploration--world) | 6 | [`exploration/`](./exploration/) | Navigation, dungeon generation, ambush |
 | [Environment](#environment-systems) | 2 | [`environment/`](./environment/) | Hazards, ambient conditions |
 | [Economy](#economy--items) | 4 | [`economy/`](./economy/) | Inventory, crafting, loot |
 | [Knowledge](#knowledge--lore) | 4 | [`knowledge/`](./knowledge/) | Codex, data captures, journals, library |
 | [Content](#content-generation) | 3 | [`content/`](./content/) | Descriptor engine, templates, localization |
-| [UI](#ui--rendering) | 8 | [`ui/`](./ui/) | User interface, rendering, visual effects, settings |
+| [UI](#ui--rendering) | 9 | [`ui/`](./ui/) | User interface, rendering, visual effects, settings, crash handling |
 | [Data](#data--persistence) | 4 | [`data/`](./data/) | Save system, repositories, migrations |
-| [Tools](#developer-tools) | 2 | [`tools/`](./tools/) | Audit, documentation generation |
+| [Tools](#developer-tools) | 5 | [`tools/`](./tools/) | Audit, documentation generation, debug console, cheats, testing |
 | [Meta](#meta-specifications) | 2 | [`./`](./) | Specification workflow, governance |
 
 ---
@@ -66,6 +66,7 @@ All combat-related mechanics including attacks, abilities, enemies, and status e
 | [SPEC-ENEMY-001](./combat/SPEC-ENEMY-001.md) | Enemy AI System | `EnemyAIService` | Specific implementations, threat assessment |
 | [SPEC-ENEMYFAC-001](./combat/SPEC-ENEMYFAC-001.md) | Enemy Factory | `EnemyFactory` | Enemy creation, scaling, templates |
 | [SPEC-TRAIT-001](./combat/SPEC-TRAIT-001.md) | Creature Traits | `CreatureTraitService` | Creature traits, special abilities |
+| [SPEC-INTENT-001](./combat/SPEC-INTENT-001.md) | Enemy Intent System | `CombatService` | WITS-based intent visibility, telegraph icons |
 
 ---
 
@@ -97,6 +98,7 @@ Navigation, dungeon generation, and world interaction systems.
 | [SPEC-ENVPOP-001](./exploration/SPEC-ENVPOP-001.md) | Environment Population | `EnvironmentPopulator` | Biome-based spawning, population |
 | [SPEC-SPAWN-001](./exploration/SPEC-SPAWN-001.md) | Object Spawning | `ObjectSpawner` | Interactable object placement |
 | [SPEC-INTERACT-001](./exploration/SPEC-INTERACT-001.md) | Interaction System | `InteractionService` | Object interaction, examination |
+| [SPEC-AMBUSH-001](./exploration/SPEC-AMBUSH-001.md) | Ambush Risk System | `AmbushService` | Wilderness rest ambush mechanics |
 
 ---
 
@@ -163,6 +165,7 @@ User interface framework, rendering pipeline, and input handling.
 | [SPEC-SETTINGS-001](./ui/SPEC-SETTINGS-001.md) | Settings Persistence | `SettingsService` | JSON-based user preferences persistence |
 | [SPEC-OPTIONS-001](./ui/SPEC-OPTIONS-001.md) | Options Menu | `OptionsController` | Tabbed options UI with key rebinding |
 | [SPEC-VISUAL-001](./ui/SPEC-VISUAL-001.md) | Visual Effects | `VisualEffectService` | Border flash effects, ReduceMotion accessibility |
+| [SPEC-CRASH-001](./ui/SPEC-CRASH-001.md) | Crash Handling | `CrashService`, `CrashScreenRenderer` | Global exception handler, crash reports |
 
 ---
 
@@ -187,6 +190,9 @@ Audit and validation tools for game balance testing.
 |---------|-------|-------------------|-------------|
 | [SPEC-AUDIT-001](./tools/SPEC-AUDIT-001.md) | Audit Framework | `LootAuditService`, `CombatAuditService` | Monte Carlo simulation for economy/combat validation |
 | [SPEC-DOCGEN-001](./tools/SPEC-DOCGEN-001.md) | Documentation Generator | `DocGenService` | CLI Markdown export for Field Guide |
+| [SPEC-DEBUG-001](./tools/SPEC-DEBUG-001.md) | Debug Console | `DebugConsoleService` | Quake-style console overlay for developer commands |
+| [SPEC-CHEAT-001](./tools/SPEC-CHEAT-001.md) | Cheat Commands | `CheatService` | God Mode, teleportation, full heal, map reveal |
+| [SPEC-JOURNEY-001](./tools/SPEC-JOURNEY-001.md) | E2E Journey Testing | `TestGameHost`, `ScriptedInputHandler` | Integration test framework with deterministic seeding |
 
 ---
 
@@ -248,7 +254,13 @@ Audit and validation tools for game balance testing.
 | **SPEC-LIBRARY-001** | *(none)* | JOURNAL, DOCGEN |
 | **SPEC-DOCGEN-001** | LIBRARY | *(developer tool)* |
 | **SPEC-REPO-001** | *(none)* | SAVE, SEED, MIGRATE |
-| **SPEC-SAVE-001** | REPO | GAME |
+| **SPEC-SAVE-001** | REPO | GAME, CRASH |
+| **SPEC-CRASH-001** | SAVE | GAME |
+| **SPEC-AMBUSH-001** | DICE, REST | REST, COMBAT |
+| **SPEC-INTENT-001** | DICE, STATUS, AI | COMBAT |
+| **SPEC-DEBUG-001** | *(none)* | CHEAT, GAME |
+| **SPEC-CHEAT-001** | DEBUG, COMBAT, TRAUMA, REST | GAME |
+| **SPEC-JOURNEY-001** | DICE, SAVE, GAME | *(developer tool)* |
 
 ---
 
@@ -256,7 +268,7 @@ Audit and validation tools for game balance testing.
 
 | Status | Count | Percentage |
 |--------|-------|------------|
-| Implemented | 43 | 93% |
+| Implemented | 44 | 94% |
 | Scaffolded | 2 | 4% |
 | Planned | 1 | 2% |
 
@@ -279,6 +291,12 @@ Audit and validation tools for game balance testing.
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 0.5.3 | 2025-12-25 | Added SPEC-JOURNEY-001 E2E Journey Testing Framework |
+| 0.5.2 | 2025-12-25 | Added SPEC-CHEAT-001 Cheat Command System |
+| 0.5.1 | 2025-12-25 | Added SPEC-DEBUG-001 Debug Console System |
+| 0.5.0 | 2025-12-25 | Added SPEC-INTENT-001 Enemy Intent & Telegraph System |
+| 0.4.9 | 2025-12-25 | Added SPEC-AMBUSH-001 Ambush Risk System |
+| 0.4.8 | 2025-12-25 | Added SPEC-CRASH-001 Global Exception Handler & Crash Reporting |
 | 0.4.7 | 2025-12-25 | Added SPEC-VISUAL-001 Visual Effects System |
 | 0.4.6 | 2025-12-25 | Added SPEC-SETTINGS-001 Settings Persistence, SPEC-OPTIONS-001 Options Menu |
 | 0.4.5 | 2025-12-25 | Added SPEC-LIBRARY-001 Library Service, SPEC-DOCGEN-001 Documentation Generator |

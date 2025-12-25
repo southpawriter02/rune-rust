@@ -5,6 +5,7 @@ namespace RuneAndRust.Core.Models;
 /// Captures diagnostic information when a critical exception occurs.
 /// Used by CrashService to generate human-readable crash log files.
 /// </summary>
+/// <remarks>See: SPEC-CRASH-001 for Crash Handling System design.</remarks>
 public record CrashReport
 {
     /// <summary>

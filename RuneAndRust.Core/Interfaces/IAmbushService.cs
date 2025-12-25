@@ -9,7 +9,7 @@ namespace RuneAndRust.Core.Interfaces;
 /// Service for calculating ambush risk and generating ambush encounters.
 /// Integrates with the rest system for wilderness rest danger mechanics.
 /// </summary>
-/// <remarks>See: SPEC-REST-001 for Rest & Recovery System design.</remarks>
+/// <remarks>See: SPEC-AMBUSH-001 for Ambush Risk System design.</remarks>
 public interface IAmbushService
 {
     /// <summary>

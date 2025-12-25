@@ -11,7 +11,7 @@ namespace RuneAndRust.Engine.Services;
 /// Implements ambush risk calculation and encounter generation for wilderness rest.
 /// Uses dice pools for mitigation and generates biome-appropriate enemy groups.
 /// </summary>
-/// <remarks>See: SPEC-REST-001 for Rest & Recovery System design.</remarks>
+/// <remarks>See: SPEC-AMBUSH-001 for Ambush Risk System design.</remarks>
 public class AmbushService : IAmbushService
 {
     private readonly IDiceService _diceService;

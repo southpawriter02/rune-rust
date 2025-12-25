@@ -7,6 +7,7 @@ namespace RuneAndRust.Tests.Infrastructure;
 /// A test implementation of IInputHandler that provides scripted input from a queue.
 /// Used for E2E integration testing to simulate user input sequences.
 /// </summary>
+/// <remarks>See: SPEC-JOURNEY-001 for E2E Journey Testing Framework design.</remarks>
 public class ScriptedInputHandler : IInputHandler
 {
     private readonly Queue<string> _commandQueue;

@@ -8,6 +8,10 @@ namespace RuneAndRust.Terminal.Rendering;
 /// Uses a modal input loop similar to OptionsController pattern.
 /// v0.3.17b: Added cheat command routing.
 /// </summary>
+/// <remarks>
+/// See: SPEC-DEBUG-001 for Debug Console System design.
+/// See: SPEC-CHEAT-001 for Cheat Command System design.
+/// </remarks>
 public class DebugConsoleRenderer : IDebugConsoleRenderer
 {
     private const int VisibleLogLines = 15;

@@ -9,6 +9,7 @@ namespace RuneAndRust.Terminal.Rendering;
 /// Part of "The Safety Net" and "The Black Box" crash recovery system.
 /// </summary>
 /// <remarks>
+/// See: SPEC-CRASH-001 for Crash Handling System design.
 /// This is a static class because it must function when the DI container
 /// may not be available (e.g., if the host failed to build).
 /// </remarks>
