@@ -1,0 +1,40 @@
+{
+  "RoomId": "jotun_reader_archive",
+  "Name": "[Jötun-Reader Archive]",
+  "Description": "A Pre-Glitch data vault lined with crystalline storage matrices. Runic glyphs flicker weakly across towering server banks, each housing millennia of accumulated knowledge. The air hums with residual Aether, thick with the weight of forgotten civilizations. At the center stands a Jötun-Reader terminal - one of the few devices capable of interpreting Pre-Collapse data encoding.",
+  "Archetype": "Chamber",
+  "SuggestedNodeType": "Main",
+  "NarrativeText": "This archive was sealed during the evacuation of Aethelgard's lower levels. The Dvergr Conclave believed critical schematics were stored here - technical specifications for Iron Heart reactors that could restore failing power systems throughout the city. The data is encrypted in Old Aetheric script, requiring a functional Jötun-Reader to decode.",
+  "FlavorText": "Centuries of dust coat the floor, disturbed only by the faint tremors of failing geothermal systems. Emergency lighting casts long shadows between the data banks.",
+  "EnemyIds": [
+    "servitor_archivist_01",
+    "servitor_archivist_02",
+    "data_wraith"
+  ],
+  "HazardIds": [
+    "psychic_resonance_archive",
+    "leaking_coolant_archive"
+  ],
+  "TerrainIds": [
+    "collapsed_server_bank",
+    "elevated_maintenance_catwalk"
+  ],
+  "LootIds": [
+    "lost_schematics_quest_item",
+    "corrupted_data_slate_archive",
+    "ancient_circuit_board_cache"
+  ],
+  "ConditionIds": [
+    "psychic_resonance",
+    "dim_lighting"
+  ],
+  "NPCIds": [],
+  "IsSafeZone": false,
+  "IsBossArena": false,
+  "HasQuestObjective": true,
+  "QuestObjectiveId": "retrieve_iron_heart_schematics",
+  "PreferredExits": {
+    "North": "Main",
+    "South": "Corridor"
+  }
+}

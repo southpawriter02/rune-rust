@@ -1,0 +1,416 @@
+# v0.39.2: Biome Transition & Blending - Integration Guide
+
+## Overview
+
+v0.39.2 introduces biome transition mechanics that allow sectors to span multiple biomes with logical environmental blending. This guide explains how to integrate the new system with existing v0.10-v0.12 generation pipelines.
+
+## What's New
+
+### Core Components
+
+1. **BiomeAdjacencyRepository** - Database access for biome compatibility rules
+2. **BiomeTransitionService** - Generates transition zones between biomes
+3. **BiomeBlendingService** - Blends descriptors from multiple biomes
+4. **EnvironmentalGradientService** - Applies temperature, Aetheric, and scale gradients
+
+### Database Schema
+
+- **Biome_Adjacency** table - Stores compatibility rules for biome pairs
+- **Room.primary_biome** - Primary biome for the room
+- **Room.secondary_biome** - Secondary biome (null for pure rooms)
+- **Room.biome_blend_ratio** - Blend ratio (0.0 = 100% primary, 1.0 = 100% secondary)
+- **Room_Environmental_Properties** table - Stores environmental gradient values
+
+## Integration Steps
+
+### 1. Database Migration
+
+Run the v0.39.2 schema migration:
+
+```sql
+sqlite3 runeandrust.db < Data/v0.39.2_biome_transition_schema.sql
+
+```
+
+Or use the updated `INITIALIZE_DATABASE.sql` for fresh installations.
+
+### 2. Service Initialization
+
+Initialize the new services in your dependency injection container:
+
+```csharp
+// In your service configuration
+var adjacencyRepo = new BiomeAdjacencyRepository(connectionString);
+var blendingService = new BiomeBlendingService();
+var transitionService = new BiomeTransitionService(adjacencyRepo, blendingService);
+var gradientService = new EnvironmentalGradientService();
+
+```
+
+### 3. Generation Pipeline Integration
+
+Modify your sector generation to support multi-biome sectors:
+
+```csharp
+public class SectorGenerationExample
+{
+    private readonly BiomeTransitionService _transitionService;
+    private readonly EnvironmentalGradientService _gradientService;
+
+    public Sector GenerateMultiBiomeSector(
+        string primaryBiome,
+        string secondaryBiome,
+        int totalRooms,
+        Random rng)
+    {
+        var sector = new Sector();
+
+        // Check if biomes can be adjacent
+        if (!_transitionService.CanBiomesBeAdjacent(primaryBiome, secondaryBiome))
+        {
+            throw new InvalidOperationException(
+                $"Biomes {primaryBiome} and {secondaryBiome} cannot be adjacent");
+        }
+
+        // Determine transition point (e.g., 60% through sector)
+        var transitionPoint = (int)(totalRooms * 0.6f);
+
+        // Get optimal transition count
+        var transitionCount = _transitionService.GetOptimalTransitionCount(
+            primaryBiome, secondaryBiome, rng);
+
+        // Generate pure primary biome rooms
+        for (int i = 0; i < transitionPoint - transitionCount; i++)
+        {
+            var room = GeneratePureBiomeRoom(primaryBiome, rng);
+            sector.Rooms.Add(room);
+        }
+
+        // Generate transition rooms
+        var primaryBiomeDef = GetBiomeDefinition(primaryBiome);
+        var secondaryBiomeDef = GetBiomeDefinition(secondaryBiome);
+
+        var transitionRooms = _transitionService.GenerateTransitionZone(
+            primaryBiomeDef,
+            secondaryBiomeDef,
+            transitionCount,
+            rng);
+
+        foreach (var room in transitionRooms)
+        {
+            // Apply environmental gradients
+            _gradientService.ApplyGradients(
+                room,
+                primaryBiome,
+                secondaryBiome,
+                room.BiomeBlendRatio);
+
+            sector.Rooms.Add(room);
+        }
+
+        // Generate pure secondary biome rooms
+        for (int i = 0; i < totalRooms - transitionPoint; i++)
+        {
+            var room = GeneratePureBiomeRoom(secondaryBiome, rng);
+            sector.Rooms.Add(room);
+        }
+
+        return sector;
+    }
+}
+
+```
+
+### 4. Using Room Biome Properties
+
+The enhanced Room class now provides helper methods:
+
+```csharp
+// Check if room is a transition room
+if (room.IsTransitionRoom())
+{
+    Console.WriteLine($"Transition room: {room.BiomeBlendRatio:P0} blend");
+}
+
+// Get dominant biome
+var dominantBiome = room.GetDominantBiome();
+
+// Get biome weights
+var weights = room.GetBiomeWeights();
+foreach (var (biome, weight) in weights)
+{
+    Console.WriteLine($"{biome}: {weight:P0}");
+}
+
+// Get environmental properties
+var temperature = room.GetEnvironmentalProperty("Temperature");
+if (temperature.HasValue)
+{
+    Console.WriteLine($"Temperature: {temperature.Value}°C");
+}
+
+```
+
+## Biome Compatibility Matrix
+
+### Compatible Biomes (0-1 transition rooms)
+
+- TheRoots ↔ Jötunheim
+- TheRoots ↔ Alfheim
+- TheRoots ↔ NeutralZone
+- Alfheim ↔ NeutralZone
+
+### Requires Transition (1-3 transition rooms)
+
+- TheRoots ↔ Muspelheim (1-2 rooms)
+- TheRoots ↔ Niflheim (1-2 rooms)
+- Muspelheim ↔ Jötunheim (2-3 rooms)
+- Muspelheim ↔ Alfheim (1-2 rooms)
+- Muspelheim ↔ NeutralZone (2-3 rooms)
+- Niflheim ↔ Jötunheim (1-2 rooms)
+- Niflheim ↔ Alfheim (1-2 rooms)
+- Niflheim ↔ NeutralZone (2-3 rooms)
+- Jötunheim ↔ Alfheim (1-2 rooms)
+- Jötunheim ↔ NeutralZone (1-2 rooms)
+
+### Incompatible Biomes (cannot coexist)
+
+- Muspelheim ↔ Niflheim (fire and ice)
+
+**Workaround for Incompatible Biomes:**
+
+To transition from Muspelheim to Niflheim, use a neutral zone intermediary:
+
+```
+Muspelheim → NeutralZone → Niflheim
+(2-3 rooms)  (1 room)      (2-3 rooms)
+
+```
+
+## Environmental Gradients
+
+### Temperature Gradient
+
+Applied automatically for transitions involving Muspelheim or Niflheim:
+
+```csharp
+var gradient = _gradientService.CalculateTemperatureGradient(
+    "Muspelheim",  // 300°C
+    "TheRoots",    // 20°C
+    0.5f           // 50% blend = ~160°C
+);
+
+Console.WriteLine($"Temperature: {gradient.Temperature}°C");
+Console.WriteLine(gradient.Description);
+
+```
+
+### Aetheric Gradient
+
+Applied automatically for transitions involving Alfheim:
+
+```csharp
+var gradient = _gradientService.CalculateAethericGradient(
+    "Alfheim",     // 1.0 intensity
+    "TheRoots",    // 0.1 intensity
+    0.3f           // 30% blend = ~0.37 intensity
+);
+
+Console.WriteLine($"Aetheric Intensity: {gradient.Intensity:P0}");
+Console.WriteLine(gradient.Description);
+
+foreach (var effect in gradient.VisualEffects)
+{
+    Console.WriteLine($"- {effect}");
+}
+
+```
+
+### Scale Gradient
+
+Applied automatically for transitions involving Jötunheim:
+
+```csharp
+var gradient = _gradientService.CalculateScaleGradient(
+    "Jotunheim",   // 10.0x scale
+    "TheRoots",    // 2.0x scale
+    0.5f           // 50% blend = ~6.0x scale
+);
+
+Console.WriteLine($"Scale Factor: {gradient.ScaleFactor}x");
+Console.WriteLine(gradient.Description);
+
+```
+
+## Example: Complete Multi-Biome Sector
+
+```csharp
+// Generate a sector transitioning from TheRoots to Muspelheim
+
+var sector = new Sector
+{
+    Name = "The Thermal Fault",
+    PrimaryBiome = "TheRoots",
+    SecondaryBiome = "Muspelheim"
+};
+
+// Ground level (Z=0): TheRoots
+var room1 = GeneratePureBiomeRoom("TheRoots", rng);
+room1.Position = new RoomPosition(0, 0, 0);
+room1.Layer = VerticalLayer.GroundLevel;
+sector.Rooms.Add(room1);
+
+// Descend to Z=-1: Start transition
+var transitionRooms = _transitionService.GenerateTransitionZone(
+    theRootsDef,
+    muspelheimDef,
+    transitionRoomCount: 2,
+    rng);
+
+transitionRooms[0].Position = new RoomPosition(0, 0, -1);
+transitionRooms[0].Layer = VerticalLayer.UpperRoots;
+_gradientService.ApplyGradients(
+    transitionRooms[0],
+    "TheRoots",
+    "Muspelheim",
+    transitionRooms[0].BiomeBlendRatio);
+
+transitionRooms[1].Position = new RoomPosition(0, 0, -2);
+transitionRooms[1].Layer = VerticalLayer.LowerRoots;
+_gradientService.ApplyGradients(
+    transitionRooms[1],
+    "TheRoots",
+    "Muspelheim",
+    transitionRooms[1].BiomeBlendRatio);
+
+sector.Rooms.AddRange(transitionRooms);
+
+// Deep level (Z=-3): Pure Muspelheim
+var room4 = GeneratePureBiomeRoom("Muspelheim", rng);
+room4.Position = new RoomPosition(0, 0, -3);
+room4.Layer = VerticalLayer.DeepRoots;
+sector.Rooms.Add(room4);
+
+// Output description of the transition
+foreach (var room in sector.Rooms)
+{
+    Console.WriteLine($"[Z={room.Position.Z}] {room.Name}");
+    Console.WriteLine($"  Biome: {room.PrimaryBiome}");
+
+    if (room.IsTransitionRoom())
+    {
+        Console.WriteLine($"  → {room.SecondaryBiome} ({room.BiomeBlendRatio:P0})");
+
+        var temp = room.GetEnvironmentalProperty("Temperature");
+        if (temp.HasValue)
+        {
+            Console.WriteLine($"  Temperature: {temp.Value}°C");
+        }
+    }
+
+    Console.WriteLine($"  {room.Description}");
+    Console.WriteLine();
+}
+
+```
+
+**Output:**
+
+```
+[Z=0] Corroded Entry Hall
+  Biome: TheRoots
+  Pipes leak condensation. Metal shows signs of decay. You hear hissing steam.
+
+[Z=-1] Transitional Chamber
+  Biome: TheRoots
+  → Muspelheim (25%)
+  Temperature: 90°C
+  Geothermal activity increases subtly. The air begins to warm. Heat intensifies noticeably.
+
+[Z=-2] Shifting Chamber
+  Biome: TheRoots
+  → Muspelheim (75%)
+  Temperature: 230°C
+  Heat radiates from the walls. Condensation turns to steam. Volcanic heat dominates.
+
+[Z=-3] Scorching Forge Chamber
+  Biome: Muspelheim
+  Superheated air shimmers above molten slag pools. Lava glows through grates.
+
+```
+
+## Customizing Adjacency Rules
+
+Add custom biome adjacency rules:
+
+```csharp
+var customRule = new BiomeAdjacencyRule
+{
+    BiomeA = "CustomBiome1",
+    BiomeB = "CustomBiome2",
+    Compatibility = BiomeCompatibility.RequiresTransition,
+    MinTransitionRooms = 2,
+    MaxTransitionRooms = 4,
+    TransitionTheme = "Magnetic flux distortion",
+    Notes = "Custom biomes with unique environmental properties"
+};
+
+_adjacencyRepo.UpsertRule(customRule);
+
+```
+
+## Testing Your Integration
+
+Run the included unit tests:
+
+```bash
+dotnet test --filter "BiomeTransitionTests"
+
+```
+
+Expected output:
+
+```
+✓ GetRule_ValidBiomePair_ReturnsRule
+✓ GenerateTransitionZone_CompatibleBiomes_CreatesTransitionRooms
+✓ GenerateTransitionZone_IncompatibleBiomes_ThrowsException
+✓ CalculateTemperatureGradient_MidBlend_ReturnsIntermediateTemperature
+✓ CalculateAethericGradient_Alfheim_ReturnsHighIntensity
+✓ CalculateScaleGradient_Jotunheim_ReturnsLargeScale
+... (25 tests total)
+
+```
+
+## Performance Considerations
+
+- **Transition Generation**: <100ms per transition zone
+- **Descriptor Blending**: <25ms per room
+- **Environmental Gradient Calculation**: <10ms per gradient
+- **Full Multi-Biome Sector (20 rooms)**: <3000ms
+
+## Known Limitations
+
+1. **Incompatible Biome Pairs**: Muspelheim ↔ Niflheim requires a neutral zone intermediary (7+ total transition rooms)
+2. **Vertical Transitions**: Currently transitions occur horizontally or vertically, but not diagonally
+3. **Descriptor Quality**: Blended descriptors may sometimes lack narrative coherence for extreme blend ratios (e.g., 10% / 90%)
+
+## Future Enhancements (v0.39.3+)
+
+- Content density budgets for multi-biome sectors
+- Advanced blending algorithms for smoother descriptor transitions
+- Dynamic biome boundaries that shift during gameplay
+- Quest integration with multi-biome sectors
+
+## Support
+
+For questions or issues, see:
+
+- Specification: `/Docs/v0.39.2_Specification.md`
+- Unit Tests: `/RuneAndRust.Tests/BiomeTransitionTests.cs`
+- Database Schema: `/Data/v0.39.2_biome_transition_schema.sql`
+
+---
+
+**Last Updated**: 2025-11-23
+**Version**: v0.39.2
+**Status**: Implementation Complete
