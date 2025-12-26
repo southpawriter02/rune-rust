@@ -77,7 +77,7 @@ VALUES
  'A nervous young person clutching a primer of runes, still learning the Old Ways.', 1.0, 1, '["Mystical", "Memorable"]'),
 
 ('Seidkona', 'YoungAcolyte', 'Bearing', NULL, NULL, 'Young',
- 'This acolyte''s hands tremble slightly—whether from fear or the touch of magic, you can''t tell.', 1.0, 1, '["Mystical", "Distinctive"]'),
+ 'This acolyte''s hands tremble slightly—whether from fear or the touch of the Aether, you can''t tell.', 1.0, 1, '["Mystical", "Distinctive"]'),
 
 ('Seidkona', 'YoungAcolyte', 'FullBody', 'Healthy', NULL, 'Young',
  'A student of the runes, earnest but uncertain.', 1.0, 1, '["Mystical", "Professional"]'),
@@ -135,7 +135,7 @@ VALUES
 
 -- Dvergr - At Work Barks
 ('Dvergr', 'Tinkerer', 'AtWork', 'Working', NULL, NULL, NULL,
- 'Tolerance specifications are off by point-oh-three millimeters. Unacceptable.', 1.0, 1, '["Dvergr_Technical"]'),
+ 'Tolerance specifications are off by a hair''s breadth. Unacceptable.', 1.0, 1, '["Dvergr_Technical"]'),
 
 ('Dvergr', 'Tinkerer', 'AtWork', 'Working', NULL, NULL, NULL,
  'This bearing is shot. We''ll need to fabricate a replacement.', 1.0, 1, '["Dvergr_Technical"]'),

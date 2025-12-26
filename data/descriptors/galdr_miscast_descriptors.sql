@@ -22,7 +22,7 @@ VALUES
 
 INSERT INTO Galdr_Miscast_Descriptors (miscast_type, severity, rune_school, ability_name, descriptor_text, mechanical_effect, weight, tags)
 VALUES
-('Paradox', 'Minor', NULL, NULL, 'The rune you summon isn''t quite right—it flickers between states. The spell works, but reality protests.', '{"damage": 0, "random_effect": "minor_glitch"}', 1.0, '["Reality-Bending", "Subtle"]'),
+('Paradox', 'Minor', NULL, NULL, 'The rune you summon isn''t quite right—it flickers between states. The Galdr works, but reality protests.', '{"damage": 0, "random_effect": "minor_glitch"}', 1.0, '["Reality-Bending", "Subtle"]'),
 ('Paradox', 'Moderate', NULL, NULL, 'The rune you summon isn''t {Rune}—it''s something else, something that shouldn''t exist. Paradoxical {Element} erupts unpredictably!', '{"damage": 5, "random_target": true}', 1.0, '["Unpredictable"]'),
 ('Paradox', 'Severe', 'Thurisaz', 'FrostLance', 'RunicBlight', 'The Blight corrupts your chant! Thurisaz inverts—the frost burns, thorns grow from ice, nothing makes sense! Your mind reels!', '{"damage": 8, "status": "Confused", "duration": 2, "target": "Self"}', 1.0, '["Mind-Breaking", "Severe"]'),
 ('Paradox', 'Catastrophic', NULL, NULL, 'Reality tears! The rune exists and doesn''t exist—past and future collapse into now! You scream as impossible knowledge floods your mind!', '{"damage": 15, "status": "Broken", "duration": 3, "target": "Self", "permanent_corruption": 1}', 0.5, '["Catastrophic", "Horrifying"]');
@@ -33,11 +33,11 @@ VALUES
 
 INSERT INTO Galdr_Miscast_Descriptors (miscast_type, severity, rune_school, ability_name, descriptor_text, mechanical_effect, weight, tags)
 VALUES
-('Backlash', 'Minor', NULL, NULL, 'The spell fizzles, energy dissipating harmlessly. You feel drained.', '{"ap_loss": 5}', 1.0, '["Harmless", "Draining"]'),
-('Backlash', 'Moderate', 'Fehu', 'FlameBolt', 'AethericOverload', 'The magic recoils! Fire lashes back at you! You stumble, singed and disoriented!', '{"damage": 5, "status": "Burning", "duration": 2, "target": "Self"}', 1.0, '["Painful"]'),
-('Backlash', 'Moderate', 'Ansuz', 'LightningBolt', 'AethericOverload', 'Lightning arcs back through you! Your muscles spasm as electricity courses through your body!', '{"damage": 6, "status": "Stunned", "duration": 1, "target": "Self"}', 1.0, '["Shocking"]'),
+('Backlash', 'Minor', NULL, NULL, 'The Galdr fizzles, energy dissipating harmlessly. You feel drained.', '{"ap_loss": 5}', 1.0, '["Harmless", "Draining"]'),
+('Backlash', 'Moderate', 'Fehu', 'FlameBolt', 'AethericOverload', 'The power recoils! Fire lashes back at you! You stumble, singed and disoriented!', '{"damage": 5, "status": "Burning", "duration": 2, "target": "Self"}', 1.0, '["Painful"]'),
+('Backlash', 'Moderate', 'Ansuz', 'LightningBolt', 'AethericOverload', 'Lightning arcs back through you! Your muscles spasm as raw power courses through your body!', '{"damage": 6, "status": "Stunned", "duration": 1, "target": "Self"}', 1.0, '["Shocking"]'),
 ('Backlash', 'Severe', 'Naudiz', 'DrainLife', 'RunicBlight', 'Naudiz reverses! Instead of draining the enemy, it drains YOU! Shadow tendrils tear at your life force!', '{"damage": 10, "healing_to_enemy": 10, "target": "Self"}', 1.0, '["Reversed", "Dangerous"]'),
-('Backlash', 'Catastrophic', NULL, NULL, 'The Aether itself rebels! Magic explodes outward in all directions—friend and foe alike caught in the blast!', '{"damage": 12, "target": "Area", "affects": "All"}', 0.5, '["Devastating", "Indiscriminate"]');
+('Backlash', 'Catastrophic', NULL, NULL, 'The Aether itself rebels! Power explodes outward in all directions—friend and foe alike caught in the blast!', '{"damage": 12, "target": "Area", "affects": "All"}', 0.5, '["Devastating", "Indiscriminate"]');
 
 -- ==============================================================================
 -- FIZZLE - Spell Failure
@@ -45,7 +45,7 @@ VALUES
 
 INSERT INTO Galdr_Miscast_Descriptors (miscast_type, severity, rune_school, ability_name, descriptor_text, mechanical_effect, weight, tags)
 VALUES
-('Fizzle', 'Minor', NULL, NULL, 'The spell fizzles as the {Rune} resists your invocation. Nothing happens.', '{"damage": 0, "ap_cost_wasted": true}', 1.5, '["Harmless", "Common"]'),
+('Fizzle', 'Minor', NULL, NULL, 'The Galdr fizzles as the {Rune} resists your invocation. Nothing happens.', '{"damage": 0, "ap_cost_wasted": true}', 1.5, '["Harmless", "Common"]'),
 ('Fizzle', 'Moderate', NULL, NULL, 'Your Galdr stutters mid-chant. The {Rune} manifests weakly, then collapses. You feel embarrassed.', '{"damage": 0, "ap_cost_wasted": true, "status": "Embarrassed", "duration": 1}', 1.0, '["Failure"]'),
 ('Fizzle', 'Minor', 'Berkanan', 'HealingChant', NULL, 'Berkanan flickers but won''t manifest. The healing fails—your wounds remain.', '{"damage": 0, "ap_cost_wasted": true}', 1.0, '["Disappointing"]');
 
@@ -55,9 +55,9 @@ VALUES
 
 INSERT INTO Galdr_Miscast_Descriptors (miscast_type, severity, rune_school, descriptor_text, mechanical_effect, weight, tags)
 VALUES
-('WildMagic', 'Moderate', NULL, 'Your Galdr spirals out of control! The {Rune} manifests—but not as you intended! Magic erupts wildly!', '{"random_effect": true, "unpredictable": true}', 1.0, '["Chaotic"]'),
+('WildMagic', 'Moderate', NULL, 'Your Galdr spirals out of control! The {Rune} manifests—but not as you intended! Power erupts wildly!', '{"random_effect": true, "unpredictable": true}', 1.0, '["Chaotic"]'),
 ('WildMagic', 'Moderate', 'Fehu', 'Fire explodes in random directions! Flames lance toward friend and foe alike—you''ve lost control!', '{"damage": 6, "target": "Random", "count": 3}', 1.0, '["Dangerous", "Chaotic"]'),
-('WildMagic', 'Severe', 'Jera', 'Time magic goes haywire! Everything speeds up, slows down, reverses—temporal chaos!', '{"random_time_effects": true, "affects": "All", "duration": 3}', 0.7, '["Reality-Warping", "Severe"]');
+('WildMagic', 'Severe', 'Jera', 'Time weaving goes haywire! Everything speeds up, slows down, reverses—temporal chaos!', '{"random_time_effects": true, "affects": "All", "duration": 3}', 0.7, '["Reality-Warping", "Severe"]');
 
 -- ==============================================================================
 -- ALFHEIM DISTORTION - Cursed Choir Interference
@@ -65,11 +65,11 @@ VALUES
 
 INSERT INTO Galdr_Miscast_Descriptors (miscast_type, severity, rune_school, biome_name, corruption_source, descriptor_text, mechanical_effect, weight, tags)
 VALUES
-('AlfheimDistortion', 'Minor', NULL, 'Alfheim', 'AlfheimCursedChoir', 'The Cursed Choir harmonizes with your Galdr—or does it corrupt it? The spell works, but feels... wrong.', '{"spell_works": true, "corruption": 1}', 1.0, '["Unsettling", "Biome"]'),
-('AlfheimDistortion', 'Moderate', NULL, 'Alfheim', 'AlfheimCursedChoir', 'Your rune flickers between states—was that {Rune} or is it {Rune} or will it be {Rune}? Reality rebels, but the spell resolves... somehow.', '{"spell_works": true, "status": "Disoriented", "duration": 2, "corruption": 2}', 1.0, '["Paradoxical", "Biome"]'),
-('AlfheimDistortion', 'Moderate', NULL, 'Alfheim', 'AlfheimCursedChoir', 'The Choir sings your Galdr backwards! Time inverts—the spell happened before you cast it!', '{"temporal_paradox": true, "random_outcome": true}', 1.0, '["Mind-Breaking", "Biome"]'),
-('AlfheimDistortion', 'Severe', NULL, 'Alfheim', 'AlfheimCursedChoir', 'Reality fractures! Your spell exists in all states simultaneously—hit, miss, critical, fizzle—all at once! Your mind strains to comprehend!', '{"all_outcomes": true, "status": "Broken", "duration": 2, "corruption": 3}', 0.5, '["Catastrophic", "Reality-Breaking"]'),
-('AlfheimDistortion', 'Catastrophic', NULL, 'Alfheim', 'AlfheimCursedChoir', 'The Cursed Choir BECOMES your Galdr! They sing through you—your voice merges with theirs! The spell is perfect and terrifying!', '{"amplified": true, "damage": 20, "corruption": 5, "permanent_effect": "Choir_Touched"}', 0.3, '["Horrifying", "Corrupting", "Powerful"]');
+('AlfheimDistortion', 'Minor', NULL, 'Alfheim', 'AlfheimCursedChoir', 'The Cursed Choir harmonizes with your Galdr—or does it corrupt it? The weaving works, but feels... wrong.', '{"spell_works": true, "corruption": 1}', 1.0, '["Unsettling", "Biome"]'),
+('AlfheimDistortion', 'Moderate', NULL, 'Alfheim', 'AlfheimCursedChoir', 'Your rune flickers between states—was that {Rune} or is it {Rune} or will it be {Rune}? Reality rebels, but the Galdr resolves... somehow.', '{"spell_works": true, "status": "Disoriented", "duration": 2, "corruption": 2}', 1.0, '["Paradoxical", "Biome"]'),
+('AlfheimDistortion', 'Moderate', NULL, 'Alfheim', 'AlfheimCursedChoir', 'The Choir sings your Galdr backwards! Time inverts—the Galdr happened before you cast it!', '{"temporal_paradox": true, "random_outcome": true}', 1.0, '["Mind-Breaking", "Biome"]'),
+('AlfheimDistortion', 'Severe', NULL, 'Alfheim', 'AlfheimCursedChoir', 'Reality fractures! Your Galdr exists in all states simultaneously—hit, miss, critical, fizzle—all at once! Your mind strains to comprehend!', '{"all_outcomes": true, "status": "Broken", "duration": 2, "corruption": 3}', 0.5, '["Catastrophic", "Reality-Breaking"]'),
+('AlfheimDistortion', 'Catastrophic', NULL, 'Alfheim', 'AlfheimCursedChoir', 'The Cursed Choir BECOMES your Galdr! They sing through you—your voice merges with theirs! The weaving is perfect and terrifying!', '{"amplified": true, "damage": 20, "corruption": 5, "permanent_effect": "Choir_Touched"}', 0.3, '["Horrifying", "Corrupting", "Powerful"]');
 
 -- ==============================================================================
 -- RUNIC INVERSION - Rune Meaning Corrupts
@@ -89,10 +89,10 @@ VALUES
 INSERT INTO Galdr_Miscast_Descriptors (miscast_type, severity, biome_name, corruption_source, descriptor_text, mechanical_effect, weight, tags)
 VALUES
 -- The Roots
-('BlightCorruption', 'Moderate', 'The_Roots', 'RunicBlight', 'Rust-tainted Blight seeps into your Galdr! The rune corrodes, magic decaying mid-cast!', '{"damage": 5, "status": "Corroded", "duration": 2}', 0.8, '["Biome", "Rust"]'),
+('BlightCorruption', 'Moderate', 'The_Roots', 'RunicBlight', 'Rust-tainted Blight seeps into your Galdr! The rune corrodes, power decaying mid-cast!', '{"damage": 5, "status": "Corroded", "duration": 2}', 0.8, '["Biome", "Rust"]'),
 
 -- Muspelheim
-('WildMagic', 'Moderate', 'Muspelheim', 'AethericOverload', 'The ambient inferno overwhelms your Galdr! Fire magic spirals out of control!', '{"damage": 8, "fire_explosion": true, "target": "Area"}', 0.8, '["Biome", "Fire"]'),
+('WildMagic', 'Moderate', 'Muspelheim', 'AethericOverload', 'The ambient inferno overwhelms your Galdr! Fire spirals out of control!', '{"damage": 8, "fire_explosion": true, "target": "Area"}', 0.8, '["Biome", "Fire"]'),
 
 -- Niflheim
 ('BlightCorruption', 'Moderate', 'Niflheim', 'RunicBlight', 'Primal cold invades your Galdr! The rune freezes mid-formation, shattering into ice shards!', '{"damage": 6, "status": "Frostbitten", "duration": 2, "target": "Self"}', 0.8, '["Biome", "Ice"]'),
@@ -109,7 +109,7 @@ VALUES
 ('Fizzle', 'Minor', 'Fehu', 'Your flames sputter out, producing only a puff of smoke. Embarrassing.', '{"cosmetic": true}', 1.2, '["Harmless", "Cosmetic"]'),
 ('Fizzle', 'Minor', 'Ansuz', 'Your lightning fizzles into a weak static shock. You feel a tingle, nothing more.', '{"cosmetic": true}', 1.2, '["Harmless", "Cosmetic"]'),
 ('Fizzle', 'Minor', 'Thurisaz', 'Your frost lance becomes a snowflake. It drifts gently to the ground.', '{"cosmetic": true}', 1.2, '["Harmless", "Comical"]'),
-('WildMagic', 'Minor', 'Berkanan', 'Healing magic misfires! Flowers sprout from your wounds instead of closing them. They''re pretty, at least.', '{"cosmetic": true, "flowers": true}', 1.0, '["Harmless", "Weird"]'),
+('WildMagic', 'Minor', 'Berkanan', 'Healing power misfires! Flowers sprout from your wounds instead of closing them. They''re pretty, at least.', '{"cosmetic": true, "flowers": true}', 1.0, '["Harmless", "Weird"]'),
 ('WildMagic', 'Minor', NULL, 'The {Rune} manifests as the wrong color. It works fine, but looks ridiculous.', '{"cosmetic": true, "color_swap": true}', 1.3, '["Harmless", "Comical"]');
 
 -- ==============================================================================
