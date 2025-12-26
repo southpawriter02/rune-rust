@@ -1,7 +1,7 @@
 # Rune & Rust Implementation Plans
 
-> **Last Updated:** 2025-12-23
-> **Current Version:** v0.3.11b (Documentation & Help)
+> **Last Updated:** 2025-12-25
+> **Current Version:** v0.3.18c (Performance Trilogy)
 
 This directory contains all implementation plans for Rune & Rust, organized by version and milestone.
 
@@ -17,7 +17,15 @@ This directory contains all implementation plans for Rune & Rust, organized by v
 | [4. Survivor](#milestone-4-survivor) | v0.3.0 - v0.3.3 | Trauma, Crafting, Rest, Hazards | Complete |
 | [4.5 Interface Polish](#milestone-45-interface-polish) | v0.3.4 - v0.3.10 | TUI Enhancement, UX | Complete |
 | [4.6 Documentation](#milestone-46-documentation) | v0.3.11 | Dynamic Knowledge Engine, DocGen | Complete |
-| [4.7 Automated Testing](#milestone-47-automated-testing) | v0.3.12 | E2E Integration Testing | Planned |
+| [4.7 Automated Testing](#milestone-47-automated-testing) | v0.3.12 | E2E Integration Testing | Complete |
+| [4.8 Balance & Tuning](#milestone-48-balance--tuning) | v0.3.13 | Loot Audit, Combat Simulation | Complete |
+| [4.9 Visual Polish](#milestone-49-visual-polish) | v0.3.14 | Theme Standardization, Transitions | Complete |
+| [4.10 Localization](#milestone-410-localization) | v0.3.15 | Multi-language Support | Complete |
+| [4.11 Stability](#milestone-411-stability) | v0.3.16-v0.3.17 | Error Handling, Debug Tools | Complete |
+| [4.12 Performance](#milestone-412-performance) | v0.3.18 | Memory, Pathfinding, Serialization | Complete |
+| [4.13 Audio](#milestone-413-audio) | v0.3.19 | Sound Effects, Ambience | Planned |
+| [4.14 Map Enhancement](#milestone-414-map-enhancement) | v0.3.20-v0.3.21 | Annotations, Export, Fast Travel, Saves | Planned |
+| [4.15 Advanced Systems](#milestone-415-advanced-systems) | v0.3.22-v0.3.24 | Intel, Input, Alpha Prep | Planned |
 | [5-13. Future](#milestones-5-13-future) | v0.4.0+ | Saga, Magic, Settlements, Endgame | Planned |
 
 ---
@@ -79,10 +87,10 @@ This directory contains all implementation plans for Rune & Rust, organized by v
 
 | Version | Codename | Focus | Status |
 |---------|----------|-------|--------|
-| [v0.3.0](v0.3.0.md) | Trauma Economy | Psychic Stress, Corruption, Breaking Points | Complete |
-| [v0.3.1](v0.3.1.md) | The Crafting Bench | Bodging, Alchemy, Runeforging, Field Medicine | Complete |
-| [v0.3.2](v0.3.2.md) | Rest & Recovery | Camp mechanics, Ambush risk, Resource recovery | Complete |
-| [v0.3.3](v0.3.3.md) | Dynamic Environment | Hazards, Ambient conditions, Ecosystem | Complete |
+| [v0.3.0](v0.3.x/v0.3.0.md) | Trauma Economy | Psychic Stress, Corruption, Breaking Points | Complete |
+| [v0.3.1](v0.3.x/v0.3.1.md) | The Crafting Bench | Bodging, Alchemy, Runeforging, Field Medicine | Complete |
+| [v0.3.2](v0.3.x/v0.3.2.md) | Rest & Recovery | Camp mechanics, Ambush risk, Resource recovery | Complete |
+| [v0.3.3](v0.3.x/v0.3.3.md) | Dynamic Environment | Hazards, Ambient conditions, Ecosystem | Complete |
 
 ---
 
@@ -92,13 +100,13 @@ This directory contains all implementation plans for Rune & Rust, organized by v
 
 | Version | Codename | Focus | Status |
 |---------|----------|-------|--------|
-| [v0.3.4](v0.3.4.md) | The Gateway | Main menu, Character creation wizard, Intro | Complete |
-| [v0.3.5](v0.3.5.md) | The HUD | Exploration UI, Minimap, Room descriptions | Complete |
-| [v0.3.6](v0.3.6.md) | The Tactician | Combat grid, Initiative timeline, Intent icons | Complete |
-| [v0.3.7](v0.3.7.md) | The Ledger | Inventory UI, Crafting bench, Journal tabs | Complete |
-| v0.3.8 | Dynamic Engine | Template-based room generation | Complete |
-| [v0.3.9](v0.3.9.md) | The Feedback | Screen FX, Accessibility themes, Help system | Complete |
-| [v0.3.10](v0.3.10.md) | The Configurator | Settings engine, Options UI, Key rebinding | Complete |
+| [v0.3.4](v0.3.x/v0.3.4.md) | The Gateway | Main menu, Character creation wizard, Intro | Complete |
+| [v0.3.5](v0.3.x/v0.3.5.md) | The HUD | Exploration UI, Minimap, Room descriptions | Complete |
+| [v0.3.6](v0.3.x/v0.3.6.md) | The Tactician | Combat grid, Initiative timeline, Intent icons | Complete |
+| [v0.3.7](v0.3.x/v0.3.7.md) | The Ledger | Inventory UI, Crafting bench, Journal tabs | Complete |
+| [v0.3.8](v0.3.x/v0.3.8.md) | Dynamic Engine | Template-based room generation | Complete |
+| [v0.3.9](v0.3.x/v0.3.9.md) | The Feedback | Screen FX, Accessibility themes, Help system | Complete |
+| [v0.3.10](v0.3.x/v0.3.10.md) | The Configurator | Settings engine, Options UI, Key rebinding | Complete |
 
 ---
 
@@ -108,7 +116,7 @@ This directory contains all implementation plans for Rune & Rust, organized by v
 
 | Version | Codename | Focus | Status |
 |---------|----------|-------|--------|
-| [v0.3.11](v0.3.11.md) | The Archivist | Dynamic Knowledge Engine, DocGen CLI | Complete |
+| [v0.3.11](v0.3.x/v0.3.11.md) | The Archivist | Dynamic Knowledge Engine, DocGen CLI | Complete |
 
 ---
 
@@ -118,7 +126,91 @@ This directory contains all implementation plans for Rune & Rust, organized by v
 
 | Version | Codename | Focus | Status |
 |---------|----------|-------|--------|
-| [v0.3.12](v0.3.12.md) | The Gauntlet | Scripted Journeys, Deterministic Testing | Planned |
+| [v0.3.12](v0.3.x/v0.3.12.md) | The Gauntlet | Scripted Journeys, Deterministic Testing | Complete |
+
+---
+
+## Milestone 4.8: Balance & Tuning
+
+*The Scales - Game balance and combat simulation*
+
+| Version | Codename | Focus | Status |
+|---------|----------|-------|--------|
+| [v0.3.13](v0.3.x/v0.3.13.md) | The Audit Suite | Loot audit, Combat simulation | Complete |
+
+---
+
+## Milestone 4.9: Visual Polish
+
+*The Experience - Theme and transitions*
+
+| Version | Codename | Focus | Status |
+|---------|----------|-------|--------|
+| [v0.3.14](v0.3.x/v0.3.14.md) | The Experience | Theme standardization, Screen transitions | Complete |
+
+---
+
+## Milestone 4.10: Localization
+
+*The Polyglot - Multi-language support*
+
+| Version | Codename | Focus | Status |
+|---------|----------|-------|--------|
+| [v0.3.15](v0.3.x/v0.3.15.md) | The Polyglot | String extraction, Localization system | Complete |
+
+---
+
+## Milestone 4.11: Stability
+
+*The Sentinel - Error handling and recovery*
+
+| Version | Codename | Focus | Status |
+|---------|----------|-------|--------|
+| [v0.3.16](v0.3.x/v0.3.16.md) | The Sentinel | Exception handling, Emergency save | Complete |
+| [v0.3.17](v0.3.x/v0.3.17.md) | The Toolbox | Debug console, Cheat commands | Complete |
+
+---
+
+## Milestone 4.12: Performance
+
+*The Performance Trilogy - Optimization*
+
+| Version | Codename | Focus | Status |
+|---------|----------|-------|--------|
+| [v0.3.18](v0.3.x/v0.3.18.md) | The Performance Trilogy | Memory, Pathfinding, Serialization | Complete |
+
+---
+
+## Milestone 4.13: Audio
+
+*The Symphony - Sound and ambience*
+
+| Version | Codename | Focus | Status |
+|---------|----------|-------|--------|
+| [v0.3.19](v0.3.x/v0.3.19.md) | The Symphony | Audio infrastructure, Event wiring, Ambience | Planned |
+
+---
+
+## Milestone 4.14: Map Enhancement
+
+*The Cartographer - Map tools and persistence*
+
+| Version | Codename | Focus | Status |
+|---------|----------|-------|--------|
+| [v0.3.20](v0.3.x/v0.3.20.md) | The Cartographer | Annotations, Map export, Fast travel | Planned |
+| [v0.3.21](v0.3.x/v0.3.21.md) | The Vault | Save metadata, Rolling backups | Planned |
+
+---
+
+## Milestone 4.15: Advanced Systems
+
+*The Finisher - Intel, input, and alpha preparation*
+
+| Version | Codename | Focus | Status |
+|---------|----------|-------|--------|
+| [v0.3.22](v0.3.x/v0.3.22.md) | The Oracle | Enemy intel, Predictive UI | Planned |
+| [v0.3.23](v0.3.x/v0.3.23.md) | The Controller | Input abstraction, Game loop, Mouse support | Planned |
+| [v0.3.24](v0.3.x/v0.3.24.md) | The Golden Master | Deprecation cleanup, Alpha packaging | Planned |
 
 ---
 
