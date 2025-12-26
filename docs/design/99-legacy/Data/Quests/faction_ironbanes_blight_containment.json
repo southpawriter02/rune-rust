@@ -1,0 +1,45 @@
+{
+  "Id": "faction_ironbanes_blight_containment",
+  "Title": "Blight Containment Protocol",
+  "Description": "Runic Blight corruption is spreading from a failed purification site. Contain the contaminated zone before reality coherence degrades further. Deploy containment sigils at corruption nodes.\n\n=== CONTAINMENT PROTOCOL ACTIVE ===\nID: CONTAIN_BLIGHT_SPREAD\nObjective: Deploy containment sigils\nPriority: CRITICAL\nClearance: Exalted Standing\nReward: Master Purifier designation",
+  "GiverNpcId": "ironbane_commander_ragna",
+  "GiverNpcName": "Commander Ragna",
+  "Status": "NotStarted",
+  "MinimumLegend": 600,
+  "PrerequisiteQuests": ["faction_ironbanes_destroy_sleeper"],
+  "Type": "Faction",
+  "Category": "Exploration",
+  "EstimatedDuration": 75,
+  "Objectives": [
+    {
+      "Description": "Deploy containment sigils at corruption nodes",
+      "Type": "InteractWithObject",
+      "TargetId": "corruption_node",
+      "Required": 5,
+      "Current": 0
+    },
+    {
+      "Description": "Eliminate Blight-corrupted enemies",
+      "Type": "KillEnemy",
+      "TargetId": "BlightCorrupted",
+      "Required": 20,
+      "Current": 0
+    }
+  ],
+  "Reward": {
+    "Experience": 1000,
+    "Currency": 1500,
+    "DetailedItems": [
+      {
+        "ItemId": "master_purifier_insignia",
+        "Quantity": 1,
+        "ForcedQuality": "Legendary"
+      }
+    ],
+    "ReputationGains": {
+      "IronBanes": 50
+    },
+    "UnlockedQuests": []
+  },
+  "GenerationReqs": null
+}

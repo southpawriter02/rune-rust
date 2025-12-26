@@ -1,0 +1,59 @@
+{
+  "Id": "faction_jotunreaders_forbidden_archive",
+  "Title": "The Forbidden Archive",
+  "Description": "Access a restricted Jötun-Reader archive containing dangerous Pre-Glitch knowledge. The corruption level is extreme, but the data could unlock secrets of the Great Silence.\n\n=== RESTRICTED ACCESS ===\nID: FORBIDDEN_ARCHIVE_ACCESS\nObjective: Retrieve classified data\nLocation: Alfheim Restricted Sector\nPriority: CRITICAL\nClearance: Master Researcher Required\nWARNING: High corruption exposure",
+  "GiverNpcId": "reader_grandmaster_erik",
+  "GiverNpcName": "Grandmaster Erik",
+  "Status": "NotStarted",
+  "MinimumLegend": 500,
+  "PrerequisiteQuests": ["faction_jotunreaders_glitch_analysis"],
+  "Type": "Faction",
+  "Category": "Exploration",
+  "EstimatedDuration": 90,
+  "Objectives": [
+    {
+      "Description": "Locate the Forbidden Archive",
+      "Type": "ExploreRoom",
+      "TargetId": "forbidden_archive",
+      "Required": 1,
+      "Current": 0
+    },
+    {
+      "Description": "Retrieve classified Pre-Glitch data",
+      "Type": "CollectItem",
+      "TargetId": "classified_data_core",
+      "Required": 1,
+      "Current": 0
+    },
+    {
+      "Description": "Survive corruption exposure",
+      "Type": "SurviveEncounter",
+      "TargetId": "data_corruption",
+      "Required": 1,
+      "Current": 0
+    }
+  ],
+  "Reward": {
+    "Experience": 1000,
+    "Currency": 1200,
+    "DetailedItems": [
+      {
+        "ItemId": "decryption_protocols",
+        "Quantity": 1,
+        "ForcedQuality": "Epic"
+      }
+    ],
+    "ReputationGains": {
+      "JotunReaders": 35
+    },
+    "UnlockedQuests": ["faction_jotunreaders_great_silence"]
+  },
+  "GenerationReqs": {
+    "BiomeId": "alfheim",
+    "MinDepth": 5,
+    "MaxDepth": 7,
+    "TargetRoomCount": 12,
+    "RequiredAnchorIds": ["forbidden_archive"],
+    "RequiredEnemies": {}
+  }
+}

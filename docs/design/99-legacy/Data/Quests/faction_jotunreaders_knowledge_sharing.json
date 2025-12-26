@@ -1,0 +1,33 @@
+{
+  "Id": "faction_jotunreaders_knowledge_sharing",
+  "Title": "Knowledge Must Flow",
+  "Description": "Share recovered data with other settlements. The Jötun-Readers believe knowledge should be preserved and distributed, not hoarded. Deliver data slates to Midgard outposts.\n\n=== DISTRIBUTION PROTOCOL ===\nID: KNOWLEDGE_SHARE_001\nObjective: Distribute data to settlements\nPriority: MEDIUM\nClearance: Reader Status\nReward: Reputation enhancement",
+  "GiverNpcId": "reader_archivist_leif",
+  "GiverNpcName": "Archivist Leif",
+  "Status": "NotStarted",
+  "MinimumLegend": 150,
+  "PrerequisiteQuests": ["faction_jotunreaders_data_recovery"],
+  "Type": "Faction",
+  "Category": "Delivery",
+  "EstimatedDuration": 45,
+  "Objectives": [
+    {
+      "Description": "Deliver data slates to Midgard outposts",
+      "Type": "DeliverItem",
+      "TargetId": "data_slate",
+      "Required": 5,
+      "Current": 0
+    }
+  ],
+  "Reward": {
+    "Experience": 250,
+    "Currency": 400,
+    "DetailedItems": [],
+    "ReputationGains": {
+      "JotunReaders": 20,
+      "RustClans": 10
+    },
+    "UnlockedQuests": []
+  },
+  "GenerationReqs": null
+}

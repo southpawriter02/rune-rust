@@ -1,0 +1,39 @@
+{
+  "Id": "faction_godsleeper_temple_duties",
+  "Title": "Temple Maintenance",
+  "Description": "Perform basic maintenance duties at the Jötunheim temple. Clean the sacred chambers, repair prayer stations, and assist with daily rituals. Simple work for new initiates.\n\n=== TEMPLE DUTIES ===\nID: MAINTENANCE_BASIC\nObjective: Complete temple chores\nPriority: LOW\nFaith Status: Initiate\nReward: Temple access",
+  "GiverNpcId": "cultist_acolyte_frida",
+  "GiverNpcName": "Acolyte Frida",
+  "Status": "NotStarted",
+  "MinimumLegend": 50,
+  "PrerequisiteQuests": [],
+  "Type": "Faction",
+  "Category": "Service",
+  "EstimatedDuration": 25,
+  "Objectives": [
+    {
+      "Description": "Clean temple chambers",
+      "Type": "InteractWithObject",
+      "TargetId": "temple_chamber",
+      "Required": 3,
+      "Current": 0
+    },
+    {
+      "Description": "Deliver offerings to altar",
+      "Type": "CollectItem",
+      "TargetId": "temple_offering",
+      "Required": 2,
+      "Current": 0
+    }
+  ],
+  "Reward": {
+    "Experience": 80,
+    "Currency": 100,
+    "DetailedItems": [],
+    "ReputationGains": {
+      "GodSleeperCultists": 10
+    },
+    "UnlockedQuests": ["faction_godsleeper_offerings"]
+  },
+  "GenerationReqs": null
+}

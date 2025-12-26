@@ -1,0 +1,39 @@
+{
+  "Id": "faction_independents_solo_survival",
+  "Title": "Solo Survival Challenge",
+  "Description": "Prove you can survive alone without faction support. Spend time in the wilderness, gather resources independently, and demonstrate self-sufficiency. Factions are chains - you walk your own path.\n\n=== INDEPENDENCE TRIAL ===\nID: SOLO_SURVIVAL_001\nObjective: Demonstrate self-sufficiency\nPriority: LOW\nAffiliation: None\nReward: Recognition from fellow independents",
+  "GiverNpcId": "independent_hermit_eirik",
+  "GiverNpcName": "Eirik the Hermit",
+  "Status": "NotStarted",
+  "MinimumLegend": 0,
+  "PrerequisiteQuests": [],
+  "Type": "Faction",
+  "Category": "Survival",
+  "EstimatedDuration": 60,
+  "Objectives": [
+    {
+      "Description": "Survive independently for extended period",
+      "Type": "SurviveEncounter",
+      "TargetId": "solo_survival",
+      "Required": 1,
+      "Current": 0
+    },
+    {
+      "Description": "Gather resources without faction help",
+      "Type": "CollectItem",
+      "TargetId": "survival_resources",
+      "Required": 20,
+      "Current": 0
+    }
+  ],
+  "Reward": {
+    "Experience": 200,
+    "Currency": 100,
+    "DetailedItems": [],
+    "ReputationGains": {
+      "Independents": 15
+    },
+    "UnlockedQuests": ["faction_independents_decline_recruitment"]
+  },
+  "GenerationReqs": null
+}

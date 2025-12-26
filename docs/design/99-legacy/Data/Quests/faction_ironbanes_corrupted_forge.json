@@ -1,0 +1,54 @@
+{
+  "Id": "faction_ironbanes_corrupted_forge",
+  "Title": "Corrupted Forge",
+  "Description": "Undying have infested a Muspelheim forge sector. The Iron-Banes need this facility purged to establish a coherent zone. Standard purification protocols apply.\n\n=== PURIFICATION PROTOCOL ACTIVE ===\nID: PURGE_FORGE_SECTOR\nObjective: Clear Undying from Muspelheim forge\nLocation: Muspelheim, Forge Sector\nPriority: HIGH\nClearance: Friendly Standing Required\nReward: Purification Sigil + Enhanced reputation",
+  "GiverNpcId": "ironbane_purifier_thorstein",
+  "GiverNpcName": "Thorstein the Purifier",
+  "Status": "NotStarted",
+  "MinimumLegend": 200,
+  "PrerequisiteQuests": ["faction_ironbanes_purge_rust"],
+  "Type": "Faction",
+  "Category": "Combat",
+  "EstimatedDuration": 60,
+  "Objectives": [
+    {
+      "Description": "Clear Undying from forge sector",
+      "Type": "KillEnemy",
+      "TargetId": "Undying",
+      "Required": 15,
+      "Current": 0
+    },
+    {
+      "Description": "Locate the corrupted forge",
+      "Type": "ExploreRoom",
+      "TargetId": "muspelheim_forge",
+      "Required": 1,
+      "Current": 0
+    }
+  ],
+  "Reward": {
+    "Experience": 400,
+    "Currency": 600,
+    "DetailedItems": [
+      {
+        "ItemId": "purification_sigil",
+        "Quantity": 3,
+        "ForcedQuality": "Uncommon"
+      }
+    ],
+    "ReputationGains": {
+      "IronBanes": 30
+    },
+    "UnlockedQuests": ["faction_ironbanes_destroy_sleeper"]
+  },
+  "GenerationReqs": {
+    "BiomeId": "muspelheim",
+    "MinDepth": 2,
+    "MaxDepth": 4,
+    "TargetRoomCount": 8,
+    "RequiredAnchorIds": ["muspelheim_forge"],
+    "RequiredEnemies": {
+      "Undying": 15
+    }
+  }
+}
