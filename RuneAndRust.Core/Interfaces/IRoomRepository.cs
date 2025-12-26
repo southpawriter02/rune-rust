@@ -58,4 +58,12 @@ public interface IRoomRepository : IRepository<Room>
     /// <param name="maxY">Maximum Y coordinate (inclusive).</param>
     /// <returns>All rooms within the specified grid bounds.</returns>
     Task<IEnumerable<Room>> GetRoomsInGridAsync(int z, int minX, int maxX, int minY, int maxY);
+
+    /// <summary>
+    /// Gets multiple rooms by their IDs in a single query (v0.3.20b).
+    /// Used for map export to batch-fetch all visited rooms efficiently.
+    /// </summary>
+    /// <param name="ids">The room IDs to fetch.</param>
+    /// <returns>All rooms matching the provided IDs.</returns>
+    Task<IEnumerable<Room>> GetBatchAsync(IEnumerable<Guid> ids);
 }

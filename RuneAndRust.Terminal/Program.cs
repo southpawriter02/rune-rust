@@ -235,6 +235,9 @@ class Program
 
                     // Register Ambience Service (v0.3.19c - The Soundscape)
                     services.AddSingleton<IAmbienceService, AmbienceService>();
+
+                    // Register Map Export Service (v0.3.20b - The Atlas)
+                    services.AddSingleton<IMapExportService, MapExportService>();
                 })
                 .UseSerilog() // Wire Serilog into ILogger
                 .Build();

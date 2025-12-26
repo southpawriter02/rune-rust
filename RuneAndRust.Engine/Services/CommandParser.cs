@@ -244,6 +244,7 @@ public class CommandParser
     private readonly IRestScreenRenderer? _restRenderer;
     private readonly IRoomRepository? _roomRepository;
     private readonly IDebugConsoleRenderer? _debugConsoleRenderer;
+    private readonly IMapExportService? _mapExportService;
     private readonly GameState _gameState;
 
     /// <summary>
@@ -259,6 +260,7 @@ public class CommandParser
     /// <param name="restRenderer">The optional rest screen renderer for rest/camp display (v0.3.2c).</param>
     /// <param name="roomRepository">The optional room repository for rest location checks (v0.3.2c).</param>
     /// <param name="debugConsoleRenderer">The optional debug console renderer (v0.3.17a).</param>
+    /// <param name="mapExportService">The optional map export service for atlas export (v0.3.20b).</param>
     public CommandParser(
         ILogger<CommandParser> logger,
         IInputHandler inputHandler,
@@ -269,7 +271,8 @@ public class CommandParser
         IRestService? restService = null,
         IRestScreenRenderer? restRenderer = null,
         IRoomRepository? roomRepository = null,
-        IDebugConsoleRenderer? debugConsoleRenderer = null)
+        IDebugConsoleRenderer? debugConsoleRenderer = null,
+        IMapExportService? mapExportService = null)
     {
         _logger = logger;
         _inputHandler = inputHandler;
@@ -281,6 +284,7 @@ public class CommandParser
         _restRenderer = restRenderer;
         _roomRepository = roomRepository;
         _debugConsoleRenderer = debugConsoleRenderer;
+        _mapExportService = mapExportService;
     }
 
     /// <summary>
@@ -706,6 +710,12 @@ public class CommandParser
         if (command == "note" || command.StartsWith("note "))
         {
             return HandleNoteCommand(originalInput, state);
+        }
+
+        // Check for map export command (v0.3.20b)
+        if (command == "map export" || command == "atlas" || command == "export map")
+        {
+            return await HandleMapExportAsync(state);
         }
 
         // Check for codex command with target
@@ -1556,6 +1566,78 @@ public class CommandParser
         state.UserNotes[roomId] = noteText;
         _inputHandler.DisplayMessage($"[green]Note set:[/] {noteText}");
         _logger.LogDebug("Note set for room {RoomId}: {Note}", roomId, noteText);
+
+        return ParseResult.None;
+    }
+
+    /// <summary>
+    /// Handles the map export command for generating ASCII atlas files (v0.3.20b).
+    /// </summary>
+    /// <param name="state">The current game state.</param>
+    /// <returns>A ParseResult (always None for map export commands).</returns>
+    private async Task<ParseResult> HandleMapExportAsync(GameState state)
+    {
+        _logger.LogDebug("[MapExport] Map export command received.");
+
+        // Validate service availability
+        if (_mapExportService == null)
+        {
+            _inputHandler.DisplayError("Map export service not available.");
+            _logger.LogWarning("Map export command attempted but service is null.");
+            return ParseResult.None;
+        }
+
+        // Validate character exists
+        if (state.CurrentCharacter == null)
+        {
+            _inputHandler.DisplayError("No active character. Cannot export map.");
+            _logger.LogWarning("Map export attempted with null CurrentCharacter.");
+            return ParseResult.None;
+        }
+
+        // Validate room context
+        if (state.CurrentRoomId == null)
+        {
+            _inputHandler.DisplayError("You are nowhere. Cannot export map.");
+            _logger.LogWarning("Map export attempted with null CurrentRoomId.");
+            return ParseResult.None;
+        }
+
+        // Validate visited rooms exist
+        if (state.VisitedRoomIds.Count == 0)
+        {
+            _inputHandler.DisplayMessage("[grey]No rooms explored yet. Nothing to export.[/]");
+            _logger.LogDebug("Map export attempted with empty VisitedRoomIds.");
+            return ParseResult.None;
+        }
+
+        try
+        {
+            _inputHandler.DisplayMessage("[yellow]Generating atlas...[/]");
+
+            // Get player position from room repository
+            var currentRoom = _roomRepository != null
+                ? await _roomRepository.GetByIdAsync(state.CurrentRoomId.Value)
+                : null;
+
+            var playerPosition = currentRoom?.Position ?? new Core.ValueObjects.Coordinate(0, 0, 0);
+
+            // Export the map
+            var filePath = await _mapExportService.ExportMapAsync(
+                state.CurrentCharacter.Name,
+                playerPosition,
+                state.VisitedRoomIds,
+                state.UserNotes);
+
+            _inputHandler.DisplayMessage($"[green]Atlas exported successfully![/]");
+            _inputHandler.DisplayMessage($"[grey]Saved to: {filePath}[/]");
+            _logger.LogInformation("Map exported to {FilePath}", filePath);
+        }
+        catch (Exception ex)
+        {
+            _inputHandler.DisplayError($"Failed to export map: {ex.Message}");
+            _logger.LogError(ex, "Map export failed.");
+        }
 
         return ParseResult.None;
     }
