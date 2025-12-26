@@ -34,6 +34,7 @@ public class CombatServiceTests
     private readonly Mock<IDiceService> _mockDice;
     private readonly Mock<IVisualEffectService> _mockVisualEffectService;
     private readonly Mock<ISpatialHashGrid> _mockSpatialGrid;
+    private readonly Mock<IEventBus> _mockEventBus;
     private readonly Mock<ILogger<CombatService>> _mockLogger;
     private readonly GameState _gameState;
     private readonly CombatService _sut;
@@ -56,6 +57,7 @@ public class CombatServiceTests
         _mockDice = new Mock<IDiceService>();
         _mockVisualEffectService = new Mock<IVisualEffectService>();
         _mockSpatialGrid = new Mock<ISpatialHashGrid>();
+        _mockEventBus = new Mock<IEventBus>();
         _mockLogger = new Mock<ILogger<CombatService>>();
         _gameState = new GameState();
         _sut = new CombatService(
@@ -76,6 +78,7 @@ public class CombatServiceTests
             _mockDice.Object,
             _mockVisualEffectService.Object,
             _mockSpatialGrid.Object,
+            _mockEventBus.Object,
             _mockLogger.Object);
 
         // Default setup for loot service

@@ -2,6 +2,7 @@ using System.Text;
 using Microsoft.Extensions.Logging;
 using RuneAndRust.Core.Entities;
 using RuneAndRust.Core.Enums;
+using RuneAndRust.Core.Events;
 using RuneAndRust.Core.Interfaces;
 using RuneAndRust.Core.ViewModels;
 using CharacterAttribute = RuneAndRust.Core.Enums.Attribute;
@@ -16,6 +17,7 @@ namespace RuneAndRust.Engine.Services;
 public class InventoryService : IInventoryService
 {
     private readonly IInventoryRepository _inventoryRepository;
+    private readonly IEventBus _eventBus;
     private readonly ILogger<InventoryService> _logger;
 
     /// <summary>
@@ -37,12 +39,15 @@ public class InventoryService : IInventoryService
     /// Initializes a new instance of the <see cref="InventoryService"/> class.
     /// </summary>
     /// <param name="inventoryRepository">The inventory repository.</param>
+    /// <param name="eventBus">The event bus for publishing loot events (v0.3.19b).</param>
     /// <param name="logger">The logger for traceability.</param>
     public InventoryService(
         IInventoryRepository inventoryRepository,
+        IEventBus eventBus,
         ILogger<InventoryService> logger)
     {
         _inventoryRepository = inventoryRepository;
+        _eventBus = eventBus;
         _logger = logger;
     }
 
@@ -78,6 +83,13 @@ public class InventoryService : IInventoryService
                 await _inventoryRepository.UpdateAsync(existingEntry);
                 await _inventoryRepository.SaveChangesAsync();
 
+                // v0.3.19b: Publish loot event for audio feedback
+                _eventBus.Publish(new ItemLootedEvent(
+                    character.Id,
+                    item.Name,
+                    quantity,
+                    item.Value * quantity));
+
                 _logger.LogDebug("Updated stack to {Quantity}x {ItemName}", newQuantity, item.Name);
                 return new InventoryResult(true, $"Added {quantity}x {item.Name}. Now have {newQuantity}.");
             }
@@ -101,6 +113,13 @@ public class InventoryService : IInventoryService
 
         await _inventoryRepository.AddAsync(newEntry);
         await _inventoryRepository.SaveChangesAsync();
+
+        // v0.3.19b: Publish loot event for audio feedback
+        _eventBus.Publish(new ItemLootedEvent(
+            character.Id,
+            item.Name,
+            quantity,
+            item.Value * quantity));
 
         _logger.LogInformation("Added {Quantity}x {ItemName} to inventory", quantity, item.Name);
         return new InventoryResult(true, $"Added {quantity}x {item.Name} to your pack.");

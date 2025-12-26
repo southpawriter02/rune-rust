@@ -18,6 +18,7 @@ namespace RuneAndRust.Tests.Engine;
 public class InventoryServiceViewModelTests
 {
     private readonly Mock<IInventoryRepository> _mockRepository;
+    private readonly Mock<IEventBus> _mockEventBus;
     private readonly Mock<ILogger<InventoryService>> _mockLogger;
     private readonly InventoryService _sut;
     private readonly Character _testCharacter;
@@ -25,8 +26,9 @@ public class InventoryServiceViewModelTests
     public InventoryServiceViewModelTests()
     {
         _mockRepository = new Mock<IInventoryRepository>();
+        _mockEventBus = new Mock<IEventBus>();
         _mockLogger = new Mock<ILogger<InventoryService>>();
-        _sut = new InventoryService(_mockRepository.Object, _mockLogger.Object);
+        _sut = new InventoryService(_mockRepository.Object, _mockEventBus.Object, _mockLogger.Object);
 
         _testCharacter = new Character
         {

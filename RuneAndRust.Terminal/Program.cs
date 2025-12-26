@@ -228,6 +228,10 @@ class Program
                     // Register Audio Infrastructure (v0.3.19a - The Instrument)
                     services.AddSingleton<IAudioProvider, ConsoleAudioProvider>();
                     services.AddSingleton<IAudioService, AudioService>();
+
+                    // Register Event Bus and Audio Listener (v0.3.19b - The Score)
+                    services.AddSingleton<IEventBus, EventBus>();
+                    services.AddSingleton<AudioEventListener>();
                 })
                 .UseSerilog() // Wire Serilog into ILogger
                 .Build();
@@ -239,6 +243,10 @@ class Program
             // 3b. Load locale (v0.3.15b - The Translator: uses GameSettings.Language)
             var locService = host.Services.GetRequiredService<ILocalizationService>();
             locService.LoadLocaleAsync(GameSettings.Language).GetAwaiter().GetResult();
+
+            // 3c. Initialize audio event listener (v0.3.19b - The Score)
+            var audioListener = host.Services.GetRequiredService<AudioEventListener>();
+            audioListener.SubscribeAll();
 
             // 4. Seed data
             using (var scope = host.Services.CreateScope())
