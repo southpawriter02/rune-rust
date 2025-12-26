@@ -1,15 +1,15 @@
 ---
 id: SPEC-COMBAT-001
 title: Combat System
-version: 1.1.0
+version: 1.1.1
 status: Implemented
-last_updated: 2025-12-23
+last_updated: 2025-12-25
 related_specs: [SPEC-DICE-001, SPEC-TRAUMA-001, SPEC-ABILITY-001, SPEC-STATUS-001, SPEC-HAZARD-001, SPEC-COND-001, SPEC-ENEMY-001, SPEC-ATTACK-001, SPEC-AI-001]
 ---
 
 # SPEC-COMBAT-001: Combat System
 
-> **Version:** 1.1.0
+> **Version:** 1.1.1
 > **Status:** Implemented
 > **Services:** `CombatService`, `AttackResolutionService`, `InitiativeService`, `EnemyAIService`
 > **Location:** `RuneAndRust.Engine/Services/`
@@ -569,9 +569,9 @@ public class Combatant
     public int ArmorSoak { get; set; }
 
     // Traits (v0.2.2c)
-    public List<CreatureTrait> ActiveTraits { get; set; }
+    public List<CreatureTraitType> ActiveTraits { get; set; }  // Enum list, not class
     public List<string> Tags { get; set; }  // Enemy tags (e.g., "Cowardly")
-    public EnemyArchetype? Archetype { get; set; }
+    public EnemyArchetype Archetype { get; set; } = EnemyArchetype.DPS;  // Non-nullable with default
 
     // Condition Modifiers (v0.3.3b)
     public ConditionType? ActiveCondition { get; set; }
@@ -589,7 +589,8 @@ public record AttackResult(
     int NetSuccesses,
     int RawDamage,
     int FinalDamage,
-    bool IsHit
+    bool IsHit,
+    DamageType DamageType = DamageType.Physical  // v0.3.6b - damage type for coloring/effects
 );
 ```
 
@@ -663,20 +664,25 @@ FinalDamage = Max(1, ModifiedDamage - (ArmorSoak + FortifiedBonus))
 ## Testing
 
 ### Test Files
-- `CombatServiceTests.cs`
-- `AttackResolutionServiceTests.cs`
-- `InitiativeServiceTests.cs`
+| File | Test Count |
+|------|------------|
+| `CombatServiceTests.cs` | 65 |
+| `AttackResolutionServiceTests.cs` | 23 |
+| `InitiativeServiceTests.cs` | 11 |
+| **Total** | **99** |
 
 ### Critical Test Scenarios
-1. Combat initialization with valid/invalid state
-2. Turn advancement with wraparound
-3. Attack resolution at all outcome levels
-4. Damage calculation with modifiers
-5. Death handling and turn index adjustment
-6. Victory/defeat condition detection
-7. Ability usage with cooldowns
-8. Status effect application and expiry
-9. Stress defense penalty calculation
+| # | Scenario | Coverage |
+|---|----------|----------|
+| 1 | Combat initialization with valid/invalid state | ✅ Full |
+| 2 | Turn advancement with wraparound | ✅ Full |
+| 3 | Attack resolution at all outcome levels | ✅ Full |
+| 4 | Damage calculation with modifiers | ✅ Full |
+| 5 | Death handling and turn index adjustment | ✅ Full |
+| 6 | Victory/defeat condition detection | ✅ Full |
+| 7 | Ability usage with cooldowns | ⚠️ Partial |
+| 8 | Status effect application and expiry | ⚠️ Partial (covered in StatusEffectServiceTests) |
+| 9 | Stress defense penalty calculation | ✅ Full |
 
 ---
 
@@ -705,6 +711,15 @@ FinalDamage = Max(1, ModifiedDamage - (ArmorSoak + FortifiedBonus))
 ---
 
 ## Changelog
+
+### v1.1.1 (2025-12-25)
+**Documentation Accuracy Update** - Fixed data model discrepancies found during deep-dive validation.
+
+#### Fixed
+- **Combatant.ActiveTraits**: Changed type from `List<CreatureTrait>` to `List<CreatureTraitType>` (enum type)
+- **Combatant.Archetype**: Changed from `EnemyArchetype?` (nullable) to `EnemyArchetype = DPS` (non-nullable with default)
+- **AttackResult.DamageType**: Added undocumented property `DamageType = Physical` (v0.3.6b)
+- **Testing section**: Added test count table (99 total: 65 + 23 + 11), marked scenarios 7-8 as partial coverage
 
 ### v1.1.0 (2025-12-23)
 **Documentation Update** - Added undocumented systems to specification.

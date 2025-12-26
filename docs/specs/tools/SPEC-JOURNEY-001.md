@@ -3,7 +3,7 @@
 ```yaml
 id: SPEC-JOURNEY-001
 title: E2E Journey Testing Framework
-version: 1.0.0
+version: 1.0.1
 status: Implemented
 last_updated: 2025-12-25
 related_specs:
@@ -320,12 +320,15 @@ When commands run out:
 
 | Test | Description |
 |------|-------------|
-| `Journey_Navigation_MovesBetweenRooms` | Basic north/south movement |
-| `Journey_Look_DisplaysRoomDescription` | Look command output |
-| `Journey_InvalidDirection_ShowsError` | Error handling for blocked exits |
-| `Journey_Inventory_DisplaysEmptyMessage` | Inventory command with no items |
+| `Journey_NewGame_To_FirstRoom_DisplaysWelcome` | Initial game start shows welcome |
+| `Journey_Look_Command_DisplaysRoomInfo` | Look command output |
+| `Journey_Navigation_MovesCharacter` | Basic north/south movement |
+| `Journey_InvalidCommand_ShowsError` | Error handling for invalid commands |
+| `Journey_Help_Command_DisplaysOptions` | Help command lists options |
+| `Journey_ScriptExhaustion_ReturnsQuit` | Queue empty returns "quit" |
 | `Journey_DeterministicSeed_ProducesSameResults` | Seed reproducibility |
-| ... | (4 additional tests) |
+| `Journey_DifferentSeeds_ProduceDifferentRoomIds` | Different seeds = different results |
+| `Journey_ExtendedExploration_CompletesSuccessfully` | Multi-command exploration sequence |
 
 ### 7.2 Combat Journey Tests
 
@@ -334,12 +337,18 @@ When commands run out:
 
 | Test | Description |
 |------|-------------|
-| `Journey_Combat_AttackDefeatsEnemy` | Basic attack loop to victory |
-| `Journey_Combat_DefendReducesDamage` | Defend action mechanics |
-| `Journey_Combat_FleeSucceeds` | Flee action at low health |
-| `Journey_Combat_StatusEffectApplication` | Bleeding, Stunned effects |
-| `Journey_Combat_AbilityUsage` | Special ability activation |
-| ... | (7 additional tests) |
+| `Combat_Victory_DefeatsEnemy_ReturnsToExploration` | Basic attack loop to victory |
+| `Combat_Flee_EscapesCombat_ReturnsToExploration` | Flee action exits combat |
+| `Combat_AttackCommand_DamagesEnemy` | Attack deals damage |
+| `Combat_DeterministicSeed_ProducesSameOutcome` | Seed reproducibility |
+| `Combat_EnemyTurn_ExecutesAfterPlayer` | Turn order verification |
+| `Combat_Status_DisplaysCombatantInfo` | Status command shows info |
+| `Combat_LightAttack_ExecutesWithReducedStamina` | Light attack stamina cost |
+| `Combat_HeavyAttack_ExecutesWithIncreasedDamage` | Heavy attack damage bonus |
+| `Combat_DifferentSeeds_ProduceDifferentOutcomes` | Different seeds = different results |
+| `Combat_FullEncounter_CompletesSuccessfully` | Complete combat sequence |
+| `Combat_Setup_SetsCorrectPhase` | Phase verification |
+| `Combat_GetCombatService_ReturnsValidService` | DI resolution check |
 
 ### 7.3 Persistence Journey Tests
 
@@ -351,10 +360,15 @@ When commands run out:
 | `Journey_SaveLoad_PreservesLocation` | CurrentRoomId persistence |
 | `Journey_SaveLoad_PreservesCharacter` | Character data persistence |
 | `Journey_SaveLoad_PreservesVisitedRooms` | Fog of war persistence |
-| `Journey_SaveLoad_PreservesInventory` | Item persistence |
 | `Journey_SaveLoad_PreservesPhase` | GamePhase persistence |
 | `Journey_SaveLoad_PreservesTurnCount` | Turn counter persistence |
-| ... | (6 additional tests) |
+| `Journey_SaveLoad_DifferentSlotsAreIsolated` | Slot isolation verification |
+| `Journey_SaveLoad_OverwritesExistingSlot` | Slot overwrite behavior |
+| `Journey_Load_NonExistentSlot_ReturnsFalse` | Missing slot handling |
+| `Journey_DatabaseName_IsExposedForReuse` | DB name accessibility |
+| `Journey_SharedDatabase_PersistsAcrossHosts` | Cross-host persistence |
+| `Journey_SaveLoad_PreservesInventoryCount` | Inventory item count persistence |
+| `Journey_SurvivorsCycle_CompleteStatePreservation` | Full state round-trip |
 
 **Total E2E Tests:** 33
 
