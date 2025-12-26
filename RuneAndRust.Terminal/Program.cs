@@ -238,6 +238,10 @@ class Program
 
                     // Register Map Export Service (v0.3.20b - The Atlas)
                     services.AddSingleton<IMapExportService, MapExportService>();
+
+                    // Register Fast Travel Services (v0.3.20c - The Pathfinder)
+                    services.AddScoped<IRoomPathfinderService, RoomPathfinderService>();
+                    services.AddScoped<IAutoTravelService, AutoTravelService>();
                 })
                 .UseSerilog() // Wire Serilog into ILogger
                 .Build();

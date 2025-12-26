@@ -193,6 +193,20 @@ public class ParseResult
     /// </summary>
     public bool RequiresOptionsScreen { get; set; }
 
+    #region Travel Commands (v0.3.20c)
+
+    /// <summary>
+    /// Gets or sets whether a travel command was issued.
+    /// </summary>
+    public bool RequiresTravel { get; set; }
+
+    /// <summary>
+    /// Gets or sets the destination target for the travel command.
+    /// </summary>
+    public string? TravelTarget { get; set; }
+
+    #endregion
+
     #region Alchemy & Runeforging Commands (v0.3.1c)
 
     /// <summary>
@@ -245,6 +259,7 @@ public class CommandParser
     private readonly IRoomRepository? _roomRepository;
     private readonly IDebugConsoleRenderer? _debugConsoleRenderer;
     private readonly IMapExportService? _mapExportService;
+    private readonly IAutoTravelService? _autoTravelService;
     private readonly GameState _gameState;
 
     /// <summary>
@@ -261,6 +276,7 @@ public class CommandParser
     /// <param name="roomRepository">The optional room repository for rest location checks (v0.3.2c).</param>
     /// <param name="debugConsoleRenderer">The optional debug console renderer (v0.3.17a).</param>
     /// <param name="mapExportService">The optional map export service for atlas export (v0.3.20b).</param>
+    /// <param name="autoTravelService">The optional auto-travel service for fast travel (v0.3.20c).</param>
     public CommandParser(
         ILogger<CommandParser> logger,
         IInputHandler inputHandler,
@@ -272,7 +288,8 @@ public class CommandParser
         IRestScreenRenderer? restRenderer = null,
         IRoomRepository? roomRepository = null,
         IDebugConsoleRenderer? debugConsoleRenderer = null,
-        IMapExportService? mapExportService = null)
+        IMapExportService? mapExportService = null,
+        IAutoTravelService? autoTravelService = null)
     {
         _logger = logger;
         _inputHandler = inputHandler;
@@ -285,6 +302,7 @@ public class CommandParser
         _roomRepository = roomRepository;
         _debugConsoleRenderer = debugConsoleRenderer;
         _mapExportService = mapExportService;
+        _autoTravelService = autoTravelService;
     }
 
     /// <summary>
@@ -716,6 +734,21 @@ public class CommandParser
         if (command == "map export" || command == "atlas" || command == "export map")
         {
             return await HandleMapExportAsync(state);
+        }
+
+        // Check for travel/goto command (v0.3.20c)
+        if (command.StartsWith("travel ") || command.StartsWith("goto "))
+        {
+            var target = ExtractTarget(command, new[] { "travel ", "goto " });
+            if (!string.IsNullOrWhiteSpace(target))
+            {
+                return await HandleTravelCommandAsync(target, state);
+            }
+            else
+            {
+                _inputHandler.DisplayError("Travel where? Specify a destination (room name, 'home', 'anchor', or 'surface').");
+                return ParseResult.None;
+            }
         }
 
         // Check for codex command with target
@@ -1339,6 +1372,17 @@ public class CommandParser
         _inputHandler.DisplayMessage("  note <text>      - Set note for current room (appears as ! on map)");
         _inputHandler.DisplayMessage("  note clear       - Remove note from current room");
         _inputHandler.DisplayMessage("");
+        _inputHandler.DisplayMessage("Fast Travel:");
+        _inputHandler.DisplayMessage("  travel <name>    - Auto-walk to a visited room by name");
+        _inputHandler.DisplayMessage("  travel home      - Auto-walk to nearest Runic Anchor");
+        _inputHandler.DisplayMessage("  travel anchor    - Same as travel home");
+        _inputHandler.DisplayMessage("  travel surface   - Auto-walk to nearest surface (Z=0) room");
+        _inputHandler.DisplayMessage("  goto <name>      - Same as travel");
+        _inputHandler.DisplayMessage("");
+        _inputHandler.DisplayMessage("Map:");
+        _inputHandler.DisplayMessage("  atlas            - Export explored map as ASCII text file");
+        _inputHandler.DisplayMessage("  map export       - Same as atlas");
+        _inputHandler.DisplayMessage("");
         _inputHandler.DisplayMessage("Actions:");
         _inputHandler.DisplayMessage("  look, l          - Examine your surroundings");
         _inputHandler.DisplayMessage("  exits            - Show available exits");
@@ -1637,6 +1681,56 @@ public class CommandParser
         {
             _inputHandler.DisplayError($"Failed to export map: {ex.Message}");
             _logger.LogError(ex, "Map export failed.");
+        }
+
+        return ParseResult.None;
+    }
+
+    #endregion
+
+    #region Travel Command (v0.3.20c)
+
+    /// <summary>
+    /// Handles the travel command for fast travel to visited locations.
+    /// </summary>
+    /// <param name="target">The destination target (room name, 'home', 'anchor', or 'surface').</param>
+    /// <param name="state">The current game state.</param>
+    /// <returns>A ParseResult (always None as travel executes inline).</returns>
+    private async Task<ParseResult> HandleTravelCommandAsync(string target, GameState state)
+    {
+        _logger.LogDebug("[Travel] Travel command received with target: '{Target}'", target);
+
+        // Validate service availability
+        if (_autoTravelService == null)
+        {
+            _inputHandler.DisplayError("Travel service not available.");
+            _logger.LogWarning("Travel command attempted but IAutoTravelService is null.");
+            return ParseResult.None;
+        }
+
+        // Execute travel (the service handles all validation internally)
+        // Note: ESC cancellation would require a CancellationTokenSource tied to Console.KeyAvailable polling
+        // For now, travel runs to completion or until interrupted by combat
+        var result = await _autoTravelService.TravelToAsync(target);
+
+        // Display result
+        if (result.Success)
+        {
+            _inputHandler.DisplayMessage($"[green]{result.Message}[/]");
+        }
+        else if (result.InterruptReason.HasValue && result.InterruptReason != TravelInterruptReason.None)
+        {
+            _inputHandler.DisplayMessage($"[yellow]{result.Message}[/]");
+        }
+        else
+        {
+            _inputHandler.DisplayError(result.Message);
+        }
+
+        // If travel completed or was interrupted, show current room
+        if (result.RoomsTraveled > 0)
+        {
+            return new ParseResult { RequiresLook = true };
         }
 
         return ParseResult.None;
