@@ -36,6 +36,13 @@ public static class GameSettings
     public static int MasterVolume { get; set; } = 100;
 
     /// <summary>
+    /// When true, enables ambient soundscape cues during exploration.
+    /// Plays biome-specific atmospheric tones between turns.
+    /// Default: true (enabled). Added in v0.3.19c.
+    /// </summary>
+    public static bool AmbienceEnabled { get; set; } = true;
+
+    /// <summary>
     /// Interval between autosaves in minutes (1-60).
     /// Default: 5 minutes. Added in v0.3.10a.
     /// </summary>

@@ -81,6 +81,7 @@ public class SettingsService : ISettingsService
                 Theme = (int)GameSettings.Theme,
                 TextSpeed = GameSettings.TextSpeed,
                 MasterVolume = GameSettings.MasterVolume,
+                AmbienceEnabled = GameSettings.AmbienceEnabled,
                 AutosaveIntervalMinutes = GameSettings.AutosaveIntervalMinutes,
                 Language = GameSettings.Language
             };
@@ -111,6 +112,7 @@ public class SettingsService : ISettingsService
         GameSettings.Theme = ThemeType.Standard;
         GameSettings.TextSpeed = 100;
         GameSettings.MasterVolume = 100;
+        GameSettings.AmbienceEnabled = true;
         GameSettings.AutosaveIntervalMinutes = 5;
         GameSettings.Language = "en-US";
 
@@ -162,6 +164,9 @@ public class SettingsService : ISettingsService
         {
             GameSettings.MasterVolume = dto.MasterVolume;
         }
+
+        // AmbienceEnabled - boolean, no validation needed (v0.3.19c)
+        GameSettings.AmbienceEnabled = dto.AmbienceEnabled;
 
         // AutosaveIntervalMinutes - clamp to 1-60
         if (dto.AutosaveIntervalMinutes < 1 || dto.AutosaveIntervalMinutes > 60)

@@ -107,6 +107,9 @@ public static class LocKeys
     /// <summary>Master Volume setting label.</summary>
     public const string UI_Options_Setting_MasterVolume = "UI.Options.Settings.MasterVolume";
 
+    /// <summary>Ambient Soundscape setting label (v0.3.19c).</summary>
+    public const string UI_Options_Setting_AmbienceEnabled = "UI.Options.Settings.AmbienceEnabled";
+
     /// <summary>Language setting label (v0.3.15c).</summary>
     public const string UI_Options_Setting_Language = "UI.Options.Settings.Language";
 
