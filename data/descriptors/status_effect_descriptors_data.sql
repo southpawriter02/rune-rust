@@ -93,7 +93,7 @@ VALUES
 -- Source: Lightning
 INSERT INTO Status_Effect_Descriptors (effect_type, application_context, severity, source_type, source_detail, target_type, descriptor_text, weight, tags)
 VALUES
-('Stunned', 'OnApply', NULL, 'Lightning', 'Electric', 'Player', 'Electricity courses through you—your muscles lock up!', 1.0, '["Dramatic", "Visceral"]'),
+('Stunned', 'OnApply', NULL, 'Lightning', 'Electric', 'Player', 'Lightning courses through you—your muscles lock up!', 1.0, '["Dramatic", "Visceral"]'),
 ('Stunned', 'OnApply', NULL, 'Lightning', 'Electric', 'Player', 'The lightning bolt leaves you convulsing, unable to act!', 1.0, '["Extreme", "Visceral"]'),
 ('Stunned', 'OnApply', NULL, 'Lightning', 'Electric', 'Player', 'Your nervous system rebels—you''re paralyzed by the shock!', 1.0, '["Technical", "Dramatic"]'),
 ('Stunned', 'OnApply', NULL, 'Lightning', 'Electric', 'Enemy', 'Lightning strikes the {Enemy}—it''s stunned!', 1.0, '["Concise"]');

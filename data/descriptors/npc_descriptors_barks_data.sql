@@ -135,7 +135,7 @@ VALUES
 
 -- Dvergr - At Work Barks
 ('Dvergr', 'Tinkerer', 'AtWork', 'Working', NULL, NULL, NULL,
- 'Tolerance specifications are off by point-oh-three millimeters. Unacceptable.', 1.0, 1, '["Dvergr_Technical"]'),
+ 'Tolerance specifications are off by a fraction of a hair''s breadth. Unacceptable.', 1.0, 1, '["Dvergr_Technical"]'),
 
 ('Dvergr', 'Tinkerer', 'AtWork', 'Working', NULL, NULL, NULL,
  'This bearing is shot. We''ll need to fabricate a replacement.', 1.0, 1, '["Dvergr_Technical"]'),

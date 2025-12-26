@@ -175,7 +175,7 @@ VALUES
 ('The_Roots', 'Decay', 'Rust', 'Moderate', 'Pervasive', 'The smell of rust and corrosion, metallic and sharp.', 1.0, '["Decay", "Metallic", "Rust"]'),
 ('The_Roots', 'Decay', 'Mildew', 'Moderate', 'Pervasive', 'Mildew and rot. The humidity breeds decay.', 1.0, '["Decay", "Organic", "Mildew"]'),
 ('The_Roots', 'Decay', 'StagnantWater', 'Moderate', 'Nearby', 'Stagnant water and algae growth. The smell is thick.', 1.0, '["Decay", "Water", "Algae"]'),
-('The_Roots', 'Mechanical', 'Electrical', 'Moderate', 'Nearby', 'Ozone from arcing electrical systems mixed with the stench of burnt insulation.', 1.0, '["Mechanical", "Electrical", "Burnt"]');
+('The_Roots', 'Mechanical', 'Electrical', 'Moderate', 'Nearby', 'Ozone from arcing spark-gaps mixed with the stench of burnt insulation.', 1.0, '["Mechanical", "Electrical", "Burnt"]');
 
 -- The Roots: Mechanical
 INSERT OR IGNORE INTO Ambient_Smell_Descriptors (biome, smell_category, smell_subcategory, intensity, proximity, descriptor_text, weight, tags)

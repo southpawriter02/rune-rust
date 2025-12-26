@@ -35,7 +35,7 @@ INSERT INTO Galdr_Miscast_Descriptors (miscast_type, severity, rune_school, abil
 VALUES
 ('Backlash', 'Minor', NULL, NULL, 'The spell fizzles, energy dissipating harmlessly. You feel drained.', '{"ap_loss": 5}', 1.0, '["Harmless", "Draining"]'),
 ('Backlash', 'Moderate', 'Fehu', 'FlameBolt', 'AethericOverload', 'The magic recoils! Fire lashes back at you! You stumble, singed and disoriented!', '{"damage": 5, "status": "Burning", "duration": 2, "target": "Self"}', 1.0, '["Painful"]'),
-('Backlash', 'Moderate', 'Ansuz', 'LightningBolt', 'AethericOverload', 'Lightning arcs back through you! Your muscles spasm as electricity courses through your body!', '{"damage": 6, "status": "Stunned", "duration": 1, "target": "Self"}', 1.0, '["Shocking"]'),
+('Backlash', 'Moderate', 'Ansuz', 'LightningBolt', 'AethericOverload', 'Lightning arcs back through you! Your muscles spasm as lightning courses through your body!', '{"damage": 6, "status": "Stunned", "duration": 1, "target": "Self"}', 1.0, '["Shocking"]'),
 ('Backlash', 'Severe', 'Naudiz', 'DrainLife', 'RunicBlight', 'Naudiz reverses! Instead of draining the enemy, it drains YOU! Shadow tendrils tear at your life force!', '{"damage": 10, "healing_to_enemy": 10, "target": "Self"}', 1.0, '["Reversed", "Dangerous"]'),
 ('Backlash', 'Catastrophic', NULL, NULL, 'The Aether itself rebels! Magic explodes outward in all directions—friend and foe alike caught in the blast!', '{"damage": 12, "target": "Area", "affects": "All"}', 0.5, '["Devastating", "Indiscriminate"]');
 

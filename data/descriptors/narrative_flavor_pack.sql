@@ -37,7 +37,7 @@ VALUES
 -- Large Health Potion
 ('Consumable', 'LargeMending', 'Cursory', NULL, 'Sealed', 'A heavy flask glowing with deep crimson light.', 1.0, '["Basic", "Consumable"]'),
 ('Consumable', 'LargeMending', 'Detailed', NULL, 'Sealed', 'A Life-Draught of the Old Makers. Even through the glass, you feel its pulse. It promises to deny death its due.', 1.0, '["Lore", "Consumable"]'),
-('Consumable', 'LargeMending', 'Expert', NULL, 'Sealed', 'High-Grade Trauma Infusion. Capable of restoring organ function and fusing broken bone in seconds. The shock to the system is severe.', 1.0, '["Technical", "Consumable"]');
+('Consumable', 'LargeMending', 'Expert', NULL, 'Sealed', 'High-Grade Trauma Infusion. Capable of restoring organ function and fusing broken bone in mere heartbeats. The shock to the system is severe.', 1.0, '["Technical", "Consumable"]');
 
 -- ============================================================
 -- SECTION 3: LOCATION ATMOSPHERE (Ozone & Rot)

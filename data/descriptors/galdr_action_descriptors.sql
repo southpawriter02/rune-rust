@@ -66,12 +66,12 @@ VALUES
 INSERT INTO Galdr_Action_Descriptors (category, action_type, rune_school, ability_name, success_level, descriptor_text, weight, tags)
 VALUES
 -- Minor Success
-('GaldrCasting', 'Invocation', 'Ansuz', 'LightningBolt', 'MinorSuccess', 'You invoke Ansuz, the breath of gods. Faint electricity crackles, barely touching the {Target}.', 1.0, '["Concise"]'),
+('GaldrCasting', 'Invocation', 'Ansuz', 'LightningBolt', 'MinorSuccess', 'You invoke Ansuz, the breath of gods. Faint sparks crackle, barely touching the {Target}.', 1.0, '["Concise"]'),
 ('GaldrCasting', 'Invocation', 'Ansuz', 'LightningBolt', 'MinorSuccess', 'Your Galdr calls upon Ansuz—weak sparks leap from your fingertips, more light than lightning.', 1.0, '["Descriptive"]'),
 
 -- Solid Success
 ('GaldrCasting', 'Invocation', 'Ansuz', 'LightningBolt', 'SolidSuccess', 'You invoke Ansuz, the breath of gods. Lightning arcs from your fingertips with a thunderous crack!', 1.0, '["Dramatic"]'),
-('GaldrCasting', 'Invocation', 'Ansuz', 'LightningBolt', 'SolidSuccess', 'Your Galdr calls upon Ansuz—electricity crackles through the air, coalescing into a bolt that strikes the {Target}!', 1.0, '["Descriptive"]'),
+('GaldrCasting', 'Invocation', 'Ansuz', 'LightningBolt', 'SolidSuccess', 'Your Galdr calls upon Ansuz—lightning crackles through the air, coalescing into a bolt that strikes the {Target}!', 1.0, '["Descriptive"]'),
 ('GaldrCasting', 'Invocation', 'Ansuz', 'LightningBolt', 'SolidSuccess', 'You shout Ansuz! The air splits—lightning answers, brilliant and deadly!', 1.0, '["Concise"]'),
 
 -- Exceptional Success
