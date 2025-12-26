@@ -224,6 +224,10 @@ class Program
                     // Register Pathfinding Infrastructure (v0.3.18b - The Hot Path)
                     services.AddSingleton<ISpatialHashGrid, SpatialHashGrid>();
                     services.AddSingleton<IPathfindingService, AStarPathfinder>();
+
+                    // Register Audio Infrastructure (v0.3.19a - The Instrument)
+                    services.AddSingleton<IAudioProvider, ConsoleAudioProvider>();
+                    services.AddSingleton<IAudioService, AudioService>();
                 })
                 .UseSerilog() // Wire Serilog into ILogger
                 .Build();
