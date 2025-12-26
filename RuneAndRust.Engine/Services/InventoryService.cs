@@ -52,14 +52,14 @@ public class InventoryService : IInventoryService
     }
 
     /// <inheritdoc/>
-    public async Task<InventoryResult> AddItemAsync(Character character, Item item, int quantity = 1)
+    public async Task<InventoryResult> AddItemAsync(Character character, Item item, int quantity = 1, string context = "Unspecified")
     {
-        _logger.LogInformation("Adding {Quantity}x {ItemName} to {CharacterName}'s inventory",
-            quantity, item.Name, character.Name);
+        _logger.LogTrace("Adding {Quantity}x {ItemName} to {CharacterName}'s inventory (Context: {Context})",
+            quantity, item.Name, character.Name, context);
 
         if (quantity <= 0)
         {
-            _logger.LogWarning("Invalid quantity {Quantity} for AddItemAsync", quantity);
+            _logger.LogWarning("Invalid quantity {Quantity} for AddItemAsync (Context: {Context})", quantity, context);
             return new InventoryResult(false, "Invalid quantity.");
         }
 
@@ -73,8 +73,8 @@ public class InventoryService : IInventoryService
                 var newQuantity = existingEntry.Quantity + quantity;
                 if (newQuantity > item.MaxStackSize)
                 {
-                    _logger.LogWarning("Stack would exceed max size: {NewQuantity} > {MaxStack}",
-                        newQuantity, item.MaxStackSize);
+                    _logger.LogWarning("Stack would exceed max size: {NewQuantity} > {MaxStack} (Context: {Context})",
+                        newQuantity, item.MaxStackSize, context);
                     return new InventoryResult(false, $"Cannot stack more than {item.MaxStackSize} {item.Name}.");
                 }
 
@@ -90,12 +90,12 @@ public class InventoryService : IInventoryService
                     quantity,
                     item.Value * quantity));
 
-                _logger.LogDebug("Updated stack to {Quantity}x {ItemName}", newQuantity, item.Name);
+                _logger.LogDebug("Updated stack to {Quantity}x {ItemName} (Context: {Context})", newQuantity, item.Name, context);
                 return new InventoryResult(true, $"Added {quantity}x {item.Name}. Now have {newQuantity}.");
             }
             else
             {
-                _logger.LogWarning("Item {ItemName} is not stackable and already in inventory", item.Name);
+                _logger.LogWarning("Item {ItemName} is not stackable and already in inventory (Context: {Context})", item.Name, context);
                 return new InventoryResult(false, $"You already have a {item.Name}.");
             }
         }
@@ -121,20 +121,20 @@ public class InventoryService : IInventoryService
             quantity,
             item.Value * quantity));
 
-        _logger.LogInformation("Added {Quantity}x {ItemName} to inventory", quantity, item.Name);
+        _logger.LogInformation("Added {Quantity}x {ItemName} to inventory (Context: {Context})", quantity, item.Name, context);
         return new InventoryResult(true, $"Added {quantity}x {item.Name} to your pack.");
     }
 
     /// <inheritdoc/>
-    public async Task<InventoryResult> RemoveItemAsync(Character character, string itemName, int quantity = 1)
+    public async Task<InventoryResult> RemoveItemAsync(Character character, string itemName, int quantity = 1, string context = "Unspecified")
     {
-        _logger.LogInformation("Removing {Quantity}x {ItemName} from {CharacterName}'s inventory",
-            quantity, itemName, character.Name);
+        _logger.LogTrace("Removing {Quantity}x {ItemName} from {CharacterName}'s inventory (Context: {Context})",
+            quantity, itemName, character.Name, context);
 
         var entry = await _inventoryRepository.FindByItemNameAsync(character.Id, itemName);
         if (entry == null)
         {
-            _logger.LogDebug("Item {ItemName} not found in inventory", itemName);
+            _logger.LogDebug("Item {ItemName} not found in inventory (Context: {Context})", itemName, context);
             return new InventoryResult(false, $"You don't have a {itemName}.");
         }
 
@@ -158,14 +158,14 @@ public class InventoryService : IInventoryService
 
         await _inventoryRepository.SaveChangesAsync();
 
-        _logger.LogInformation("Removed {Quantity}x {ItemName} from inventory", quantity, entry.Item.Name);
+        _logger.LogInformation("Removed {Quantity}x {ItemName} from inventory (Context: {Context})", quantity, entry.Item.Name, context);
         return new InventoryResult(true, $"Removed {quantity}x {entry.Item.Name}.");
     }
 
     /// <inheritdoc/>
-    public async Task<InventoryResult> DropItemAsync(Character character, string itemName)
+    public async Task<InventoryResult> DropItemAsync(Character character, string itemName, string context = "Unspecified")
     {
-        _logger.LogInformation("{CharacterName} dropping {ItemName}", character.Name, itemName);
+        _logger.LogTrace("{CharacterName} dropping {ItemName} (Context: {Context})", character.Name, itemName, context);
 
         var entry = await _inventoryRepository.FindByItemNameAsync(character.Id, itemName);
         if (entry == null)
@@ -186,14 +186,14 @@ public class InventoryService : IInventoryService
         await _inventoryRepository.RemoveAsync(character.Id, entry.ItemId);
         await _inventoryRepository.SaveChangesAsync();
 
-        _logger.LogInformation("Dropped {ItemName}", entry.Item.Name);
+        _logger.LogInformation("Dropped {ItemName} (Context: {Context})", entry.Item.Name, context);
         return new InventoryResult(true, $"You drop the {entry.Item.Name}.");
     }
 
     /// <inheritdoc/>
-    public async Task<InventoryResult> EquipItemAsync(Character character, string itemName)
+    public async Task<InventoryResult> EquipItemAsync(Character character, string itemName, string context = "Unspecified")
     {
-        _logger.LogInformation("{CharacterName} equipping {ItemName}", character.Name, itemName);
+        _logger.LogTrace("{CharacterName} equipping {ItemName} (Context: {Context})", character.Name, itemName, context);
 
         var entry = await _inventoryRepository.FindByItemNameAsync(character.Id, itemName);
         if (entry == null)
@@ -224,7 +224,7 @@ public class InventoryService : IInventoryService
             currentInSlot.IsEquipped = false;
             currentInSlot.LastModified = DateTime.UtcNow;
             await _inventoryRepository.UpdateAsync(currentInSlot);
-            _logger.LogDebug("Unequipped {OldItem} from {Slot}", currentInSlot.Item.Name, equipment.Slot);
+            _logger.LogDebug("Unequipped {OldItem} from {Slot} (Context: {Context})", currentInSlot.Item.Name, equipment.Slot, context);
         }
 
         // Equip the new item
@@ -240,14 +240,14 @@ public class InventoryService : IInventoryService
             ? $"You equip {entry.Item.Name}, replacing {currentInSlot.Item.Name}."
             : $"You equip {entry.Item.Name}.";
 
-        _logger.LogInformation("Equipped {ItemName} in {Slot}", entry.Item.Name, equipment.Slot);
+        _logger.LogInformation("Equipped {ItemName} in {Slot} (Context: {Context})", entry.Item.Name, equipment.Slot, context);
         return new InventoryResult(true, message);
     }
 
     /// <inheritdoc/>
-    public async Task<InventoryResult> UnequipSlotAsync(Character character, EquipmentSlot slot)
+    public async Task<InventoryResult> UnequipSlotAsync(Character character, EquipmentSlot slot, string context = "Unspecified")
     {
-        _logger.LogInformation("{CharacterName} unequipping slot {Slot}", character.Name, slot);
+        _logger.LogTrace("{CharacterName} unequipping slot {Slot} (Context: {Context})", character.Name, slot, context);
 
         var entry = await _inventoryRepository.GetEquippedInSlotAsync(character.Id, slot);
         if (entry == null)
@@ -262,14 +262,14 @@ public class InventoryService : IInventoryService
 
         await RecalculateEquipmentBonusesAsync(character);
 
-        _logger.LogInformation("Unequipped {ItemName} from {Slot}", entry.Item.Name, slot);
+        _logger.LogInformation("Unequipped {ItemName} from {Slot} (Context: {Context})", entry.Item.Name, slot, context);
         return new InventoryResult(true, $"You unequip {entry.Item.Name}.");
     }
 
     /// <inheritdoc/>
-    public async Task<InventoryResult> UnequipItemAsync(Character character, string itemName)
+    public async Task<InventoryResult> UnequipItemAsync(Character character, string itemName, string context = "Unspecified")
     {
-        _logger.LogInformation("{CharacterName} unequipping {ItemName}", character.Name, itemName);
+        _logger.LogTrace("{CharacterName} unequipping {ItemName} (Context: {Context})", character.Name, itemName, context);
 
         var entry = await _inventoryRepository.FindByItemNameAsync(character.Id, itemName);
         if (entry == null)
@@ -289,7 +289,7 @@ public class InventoryService : IInventoryService
 
         await RecalculateEquipmentBonusesAsync(character);
 
-        _logger.LogInformation("Unequipped {ItemName}", entry.Item.Name);
+        _logger.LogInformation("Unequipped {ItemName} (Context: {Context})", entry.Item.Name, context);
         return new InventoryResult(true, $"You unequip {entry.Item.Name}.");
     }
 
