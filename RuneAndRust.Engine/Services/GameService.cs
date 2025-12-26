@@ -259,6 +259,7 @@ public class GameService : IGameService
             PlayerPosition: playerPosition,
             LocalMapRooms: localMapRooms,
             VisitedRoomIds: _state.VisitedRoomIds,
+            UserNotes: _state.UserNotes,
             VisibleObjects: visibleObjects,
             VisibleEnemies: visibleEnemies,
             Exits: exits,

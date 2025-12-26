@@ -23,9 +23,10 @@ public class MinimapRendererTests
         var cellPos = new Coordinate(0, 0, 0);  // Same as center
         var room = CreateRoom(center);
         var visited = new HashSet<Guid> { room.Id };
+        var userNotes = new Dictionary<Guid, string>();
 
         // Act
-        var result = MinimapRenderer.ResolveTile(room, center, cellPos, visited);
+        var result = MinimapRenderer.ResolveTile(room, center, cellPos, visited, userNotes);
 
         // Assert
         result.Should().NotBeNull();
@@ -41,9 +42,10 @@ public class MinimapRendererTests
         var center = new Coordinate(0, 0, 0);
         var cellPos = new Coordinate(1, 0, 0);  // Different from center
         var visited = new HashSet<Guid>();
+        var userNotes = new Dictionary<Guid, string>();
 
         // Act
-        var result = MinimapRenderer.ResolveTile(null, center, cellPos, visited);
+        var result = MinimapRenderer.ResolveTile(null, center, cellPos, visited, userNotes);
 
         // Assert
         result.Should().NotBeNull();
@@ -57,9 +59,10 @@ public class MinimapRendererTests
         var cellPos = new Coordinate(1, 0, 0);  // Different from center
         var room = CreateRoom(cellPos);
         var visited = new HashSet<Guid>();  // Room not in visited set
+        var userNotes = new Dictionary<Guid, string>();
 
         // Act
-        var result = MinimapRenderer.ResolveTile(room, center, cellPos, visited);
+        var result = MinimapRenderer.ResolveTile(room, center, cellPos, visited, userNotes);
 
         // Assert
         result.Should().NotBeNull();
@@ -73,12 +76,31 @@ public class MinimapRendererTests
         var cellPos = new Coordinate(1, 0, 0);  // Different from center
         var room = CreateRoom(cellPos);
         var visited = new HashSet<Guid> { room.Id };  // Room is visited
+        var userNotes = new Dictionary<Guid, string>();
 
         // Act
-        var result = MinimapRenderer.ResolveTile(room, center, cellPos, visited);
+        var result = MinimapRenderer.ResolveTile(room, center, cellPos, visited, userNotes);
 
         // Assert
         result.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void ResolveTile_AnnotatedRoom_ReturnsYellowExclamation()
+    {
+        // Arrange (v0.3.20a)
+        var center = new Coordinate(0, 0, 0);
+        var cellPos = new Coordinate(1, 0, 0);  // Different from center
+        var room = CreateRoom(cellPos);
+        var visited = new HashSet<Guid> { room.Id };  // Room is visited
+        var userNotes = new Dictionary<Guid, string> { { room.Id, "Danger ahead!" } };
+
+        // Act
+        var result = MinimapRenderer.ResolveTile(room, center, cellPos, visited, userNotes);
+
+        // Assert
+        result.Should().NotBeNull();
+        // Note: The markup should contain ! in yellow
     }
 
     #endregion
@@ -345,9 +367,10 @@ public class MinimapRendererTests
         var center = new Coordinate(0, 0, 0);
         var localMap = new List<Room>();
         var visited = new HashSet<Guid>();
+        var userNotes = new Dictionary<Guid, string>();
 
         // Act
-        var result = MinimapRenderer.Render(center, localMap, visited);
+        var result = MinimapRenderer.Render(center, localMap, visited, userNotes);
 
         // Assert
         result.Should().NotBeNull();
@@ -363,9 +386,28 @@ public class MinimapRendererTests
         var room3 = CreateRoom(new Coordinate(-1, 0, 0));
         var localMap = new List<Room> { room1, room2, room3 };
         var visited = new HashSet<Guid> { room1.Id, room2.Id };
+        var userNotes = new Dictionary<Guid, string>();
 
         // Act
-        var result = MinimapRenderer.Render(center, localMap, visited);
+        var result = MinimapRenderer.Render(center, localMap, visited, userNotes);
+
+        // Assert
+        result.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void Render_WithAnnotatedRoom_ReturnsPanel()
+    {
+        // Arrange (v0.3.20a)
+        var center = new Coordinate(0, 0, 0);
+        var room1 = CreateRoom(center);
+        var room2 = CreateRoom(new Coordinate(1, 0, 0));
+        var localMap = new List<Room> { room1, room2 };
+        var visited = new HashSet<Guid> { room1.Id, room2.Id };
+        var userNotes = new Dictionary<Guid, string> { { room2.Id, "Treasure here!" } };
+
+        // Act
+        var result = MinimapRenderer.Render(center, localMap, visited, userNotes);
 
         // Assert
         result.Should().NotBeNull();

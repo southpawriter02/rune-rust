@@ -322,7 +322,7 @@ public class CommandParser
                 result = HandleMainMenu(command, state);
                 break;
             case GamePhase.Exploration:
-                result = await HandleExplorationAsync(command, state);
+                result = await HandleExplorationAsync(command, input.Trim(), state);
                 break;
             case GamePhase.Combat:
                 result = HandleCombat(command, state);
@@ -385,7 +385,10 @@ public class CommandParser
     /// <summary>
     /// Handles commands in the Exploration phase.
     /// </summary>
-    private async Task<ParseResult> HandleExplorationAsync(string command, GameState state)
+    /// <param name="command">The lowercased command for matching.</param>
+    /// <param name="originalInput">The original input with preserved casing (for note text, etc.).</param>
+    /// <param name="state">The game state.</param>
+    private async Task<ParseResult> HandleExplorationAsync(string command, string originalInput, GameState state)
     {
         // Check for direction aliases first
         var direction = ParseDirection(command);
@@ -696,6 +699,13 @@ public class CommandParser
                 _inputHandler.DisplayError("Forge what? Format: forge <rune> on <item>");
                 return ParseResult.None;
             }
+        }
+
+        // Check for note command (v0.3.20a)
+        // Note: Pass original input to preserve note text casing
+        if (command == "note" || command.StartsWith("note "))
+        {
+            return HandleNoteCommand(originalInput, state);
         }
 
         // Check for codex command with target
@@ -1314,6 +1324,11 @@ public class CommandParser
         _inputHandler.DisplayMessage("  codex <name>     - View a specific journal entry");
         _inputHandler.DisplayMessage("  fragments        - View unassigned knowledge fragments");
         _inputHandler.DisplayMessage("");
+        _inputHandler.DisplayMessage("Notes:");
+        _inputHandler.DisplayMessage("  note             - View note for current room");
+        _inputHandler.DisplayMessage("  note <text>      - Set note for current room (appears as ! on map)");
+        _inputHandler.DisplayMessage("  note clear       - Remove note from current room");
+        _inputHandler.DisplayMessage("");
         _inputHandler.DisplayMessage("Actions:");
         _inputHandler.DisplayMessage("  look, l          - Examine your surroundings");
         _inputHandler.DisplayMessage("  exits            - Show available exits");
@@ -1461,6 +1476,86 @@ public class CommandParser
         _logger.LogInformation(
             "Rest complete. HP+{HP} Stamina+{Stamina} Stress-{Stress}.",
             result.HpRecovered, result.StaminaRecovered, result.StressRecovered);
+
+        return ParseResult.None;
+    }
+
+    #endregion
+
+    #region Note Command (v0.3.20a)
+
+    /// <summary>
+    /// Handles the note command for annotating rooms on the minimap.
+    /// </summary>
+    /// <param name="originalInput">The original (non-lowercased) command string to preserve note text casing.</param>
+    /// <param name="state">The current game state.</param>
+    /// <returns>A ParseResult (always None for note commands).</returns>
+    private ParseResult HandleNoteCommand(string originalInput, GameState state)
+    {
+        // Validate room
+        if (state.CurrentRoomId == null)
+        {
+            _inputHandler.DisplayError("You are nowhere. Cannot set a note.");
+            _logger.LogWarning("Note command attempted with null CurrentRoomId.");
+            return ParseResult.None;
+        }
+
+        var roomId = state.CurrentRoomId.Value;
+
+        // Parse command: "note" (read), "note clear" (delete), "note <text>" (set)
+        if (originalInput.Equals("note", StringComparison.OrdinalIgnoreCase))
+        {
+            // Read current note
+            if (state.UserNotes.TryGetValue(roomId, out var existingNote))
+            {
+                _inputHandler.DisplayMessage($"[yellow]Note:[/] {existingNote}");
+                _logger.LogDebug("Note read for room {RoomId}: {Note}", roomId, existingNote);
+            }
+            else
+            {
+                _inputHandler.DisplayMessage("[grey]No note for this room.[/]");
+                _logger.LogDebug("No note exists for room {RoomId}.", roomId);
+            }
+            return ParseResult.None;
+        }
+
+        // Extract note text after "note " (case-insensitive prefix removal)
+        var noteText = originalInput.Substring(5).Trim(); // Remove "note "
+
+        if (noteText.Equals("clear", StringComparison.OrdinalIgnoreCase))
+        {
+            // Clear note
+            if (state.UserNotes.Remove(roomId))
+            {
+                _inputHandler.DisplayMessage("[grey]Note cleared.[/]");
+                _logger.LogDebug("Note cleared for room {RoomId}.", roomId);
+            }
+            else
+            {
+                _inputHandler.DisplayMessage("[grey]No note to clear.[/]");
+            }
+            return ParseResult.None;
+        }
+
+        // Validate note text
+        if (string.IsNullOrWhiteSpace(noteText))
+        {
+            _inputHandler.DisplayMessage("[grey]Usage: note <text> | note clear | note (to view)[/]");
+            return ParseResult.None;
+        }
+
+        // Clamp note length
+        const int maxNoteLength = 100;
+        if (noteText.Length > maxNoteLength)
+        {
+            noteText = noteText.Substring(0, maxNoteLength);
+            _inputHandler.DisplayMessage($"[yellow]Note truncated to {maxNoteLength} characters.[/]");
+        }
+
+        // Set note
+        state.UserNotes[roomId] = noteText;
+        _inputHandler.DisplayMessage($"[green]Note set:[/] {noteText}");
+        _logger.LogDebug("Note set for room {RoomId}: {Note}", roomId, noteText);
 
         return ParseResult.None;
     }
