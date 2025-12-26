@@ -47,3 +47,6 @@ Thumbs.db
 
 # Generated exports (use export_descriptors.py to regenerate)
 exports/
+
+# Migrated data
+migrated/
