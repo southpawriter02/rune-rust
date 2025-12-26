@@ -2,7 +2,7 @@
 id: SPEC-PHASE-1-FOUNDATION
 title: "Phase 1: The Foundation — Detailed Specification"
 version: 1.1
-status: draft
+status: archived
 last-updated: 2025-12-18
 parent: ./initial-implementation-strategy.md
 ---

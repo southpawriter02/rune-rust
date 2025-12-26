@@ -2,7 +2,7 @@
 id: SPEC-PHASE-2-GAMELOOP
 title: "Phase 2: The Game Loop — Detailed Specification"
 version: 1.0
-status: draft
+status: archived
 last-updated: 2025-12-18
 parent: ./initial-implementation-strategy.md
 ---

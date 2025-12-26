@@ -2,7 +2,7 @@
 id: SPEC-PHASE-4-EXPLORATION
 title: "Phase 4: Exploration — Detailed Specification"
 version: 1.0
-status: draft
+status: archived
 last-updated: 2025-12-18
 parent: ./initial-implementation-strategy.md
 ---

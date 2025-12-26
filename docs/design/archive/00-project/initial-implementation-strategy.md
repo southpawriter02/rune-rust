@@ -2,7 +2,7 @@
 id: SPEC-PROJECT-INITIAL-STRATEGY
 title: "Initial Implementation Strategy"
 version: 1.0
-status: draft
+status: archived
 last-updated: 2025-12-18
 ---
 

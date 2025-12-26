@@ -1,4 +1,11 @@
-# Specification Remediation Tracker
+---
+id: SPEC_REMEDIATION_TRACKER
+title: "Specification Remediation Tracker"
+version: 1.0
+status: archived
+last-updated: 2025-12-26
+parent: ./SPEC_REMEDIATION_TRACKER.md
+---
 
 **Created:** 2025-12-08
 **Purpose:** Track nonconformities in templates and documentation standards (not legacy specs)

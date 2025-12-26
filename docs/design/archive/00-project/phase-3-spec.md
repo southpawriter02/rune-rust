@@ -2,7 +2,7 @@
 id: SPEC-PHASE-3-PERSISTENCE
 title: "Phase 3: Persistence — Detailed Specification"
 version: 1.0
-status: draft
+status: archived
 last-updated: 2025-12-18
 parent: ./initial-implementation-strategy.md
 ---
