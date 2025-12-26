@@ -243,7 +243,7 @@ VALUES
 -- Alfheim: Psychic
 INSERT OR IGNORE INTO Ambient_Smell_Descriptors (biome, smell_category, smell_subcategory, intensity, proximity, descriptor_text, weight, tags)
 VALUES
-('Alfheim', 'Psychic', 'MetallicPsychic', 'Moderate', 'Pervasive', 'The metallic tang of psychic energy in the air.', 1.0, '["Psychic", "Metallic", "Energy"]'),
+('Alfheim', 'Psychic', 'MetallicPsychic', 'Moderate', 'Pervasive', 'The metallic tang of the Breaking Mind in the air.', 1.0, '["Psychic", "Metallic", "Energy"]'),
 ('Alfheim', 'Psychic', 'Consciousness', 'Moderate', 'Pervasive', 'Something that tickles your consciousness more than your nose.', 1.0, '["Psychic", "Consciousness", "Subtle"]'),
 ('Alfheim', 'Psychic', 'Fear', 'Moderate', 'Pervasive', 'Fear. You can smell fear. Yours? Someone else''s?', 1.0, '["Psychic", "Fear", "Uncertain"]');
 
