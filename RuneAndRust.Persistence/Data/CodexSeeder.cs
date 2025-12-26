@@ -53,49 +53,43 @@ public static class CodexSeeder
         {
             // Field Guide Entries (Tutorials)
             CreateFieldGuideEntry(
-                "Psychic Stress",
-                "Stress is the measure of your mind's coherence in the face of the Blight's corruption. " +
-                "When you witness horrors, push beyond your limits, or encounter anomalous phenomena, " +
-                "Stress accumulates. At critical levels, your perception warps—shadows lengthen, " +
-                "whispers emerge from silence, and reality itself seems to fray at the edges. " +
-                "Rest and certain consumables can restore clarity, but some traumas leave permanent marks."),
+                "The Breaking Mind", // Formerly "Psychic Stress"
+                "The horrors of this world weigh heavy. The Blight does not just corrupt flesh; it eats at the spirit. " +
+                "When you witness things that should not be—monsters, twisted runes, the void itself—your mind begins to crack. " +
+                "This is the Stress. If you let it grow, the shadows will lengthen, and you will hear whispers in the silence. " +
+                "Rest, drink, and prayer may steady you, but some scars never truly fade."),
 
             CreateFieldGuideEntry(
-                "Combat Basics",
-                "Violence in the Rust-lands is brutal and swift. Each exchange carries weight—" +
-                "every swing drains Stamina, every wound bleeds precious vitality. " +
-                "The wise fighter picks their battles, uses terrain and surprise, " +
-                "and knows when to retreat. The dead are many; the survivors are cautious."),
+                "The Art of Survival", // Formerly "Combat Basics"
+                "To fight in the Rust-lands is to dance with death. Do not swing your weapon blindly; " +
+                "every blow drains your breath (Stamina), and every mistake spills your blood. " +
+                "Watch your enemy. Strike when they falter. And remember: a coward lives to scavenge another day. " +
+                "The dead are many; the old are few."),
 
             CreateFieldGuideEntry(
-                "Burden and Carrying Capacity",
-                "What you carry defines what you can do. Every piece of salvage, every weapon, " +
-                "every morsel of food adds to your Burden. When Burden grows too heavy, " +
-                "movement slows, fatigue sets in faster, and escape becomes difficult. " +
-                "A Scavenger learns to balance need against weight, abandoning the merely useful " +
-                "to carry the essential."),
+                "The Burden of Greed", // Formerly "Burden and Carrying Capacity"
+                "A Scavenger's life is measured in what they can carry. But greed is a heavy chain. " +
+                "Every scrap of metal, every weapon, every meal adds to your Burden. " +
+                "Carry too much, and you will tire quickly. You will be slow when the wolves come. " +
+                "Learn to balance your need against your strength. Leave the rust; take the iron."),
 
             // Bestiary Entry (Sample Lore)
             new CodexEntry
             {
-                Title = "Rusted Servitor",
+                Title = "Iron-Husk", // Formerly "Rusted Servitor"
                 Category = EntryCategory.Bestiary,
                 TotalFragments = 4,
                 FullText =
-                    "The Rusted Servitor shambles through the ruins of its former masters' works, " +
-                    "a humanoid automaton of ancient Aesir design. Standing roughly as tall as a grown man, " +
-                    "its frame is corroded beyond recognition, joints seizing with each labored movement.\n\n" +
-                    "WEAKNESS: The Servitor's power core, visible as a faint amber glow through gaps " +
-                    "in its chest plating, remains vulnerable to piercing strikes. Destroying it " +
-                    "causes immediate shutdown.\n\n" +
-                    "HABITAT: Found wandering industrial complexes, maintenance tunnels, and " +
-                    "locations where Aesir machinery once operated. They seem drawn to " +
-                    "operational power sources.\n\n" +
-                    "BEHAVIOR: Without direction from their extinct masters, Servitors follow " +
-                    "corrupted maintenance protocols. They patrol fixed routes, repair nothing, " +
-                    "and attack any organic life that enters their designated zones.\n\n" +
-                    "NOTE: Some Scavengers report Servitors that pause mid-attack, as if receiving " +
-                    "orders from a source long silent. These moments pass quickly, and the violence resumes.",
+                    "The Iron-Husk shambles through the ruins, a mockery of a man made of cold metal. " +
+                    "Standing as tall as a warrior, its shell is eaten by rust, its joints screaming with every step.\n\n" +
+                    "WEAKNESS: The Husk's spark-vessel—the heart of fire—glows faintly through the ribs of its chest. " +
+                    "It is the seat of its false life. Smash it, and the thing will sleep forever.\n\n" +
+                    "HABITAT: They are found in the deep guts of the world, wandering the halls where the Old Ones once toiled. " +
+                    "They seem drawn to places where the lightning still hums.\n\n" +
+                    "BEHAVIOR: Without a master to command them, they follow forgotten rites. They walk the same paths, " +
+                    "mend nothing, and crush anything that breathes within their sight.\n\n" +
+                    "NOTE: I have seen them pause, head tilted, as if listening to a command from a god that died centuries ago. " +
+                    "Then the silence returns, and the killing begins again.",
                 UnlockThresholds = new Dictionary<int, string>
                 {
                     { 25, "WEAKNESS_REVEALED" },
