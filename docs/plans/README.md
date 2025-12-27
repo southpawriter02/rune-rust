@@ -26,7 +26,8 @@ This directory contains all implementation plans for Rune & Rust, organized by v
 | [4.13 Audio](#milestone-413-audio) | v0.3.19 | Sound Effects, Ambience | Planned |
 | [4.14 Map Enhancement](#milestone-414-map-enhancement) | v0.3.20-v0.3.21 | Annotations, Export, Fast Travel, Saves | Planned |
 | [4.15 Advanced Systems](#milestone-415-advanced-systems) | v0.3.22-v0.3.24 | Intel, Input, Alpha Prep | Planned |
-| [5-13. Future](#milestones-5-13-future) | v0.4.0+ | Saga, Magic, Settlements, Endgame | Planned |
+| [5. The Saga](#milestone-5-the-saga) | v0.4.0+ | Progression, Specializations | Planned |
+| [5-13. Future](#milestones-5-13-future) | v0.4.0+ | Magic, Settlements, Endgame | Planned |
 
 ---
 
@@ -214,13 +215,22 @@ This directory contains all implementation plans for Rune & Rust, organized by v
 
 ---
 
+## Milestone 5: The Saga
+
+*The Saga - Progression and Character Growth*
+
+| Version | Codename | Focus | Status |
+|---------|----------|-------|--------|
+| [v0.4.0](v0.4.x/v0.4.0.md) | The Saga | XP, Leveling, Attribute Upgrades | Planned |
+
+---
+
 ## Milestones 5-13: Future
 
 *See [MILESTONES.md](MILESTONES.md) for detailed future roadmap*
 
 | Milestone | Theme | Key Features |
 |-----------|-------|--------------|
-| 5. Saga | Progression | Leveling, Specializations, Factions |
 | 6. Weaver | Magic | Spells, Chants, Wild Magic, Runeforging |
 | 7. Architect | Settlements | Safe Zones, Trade, Quest Chains |
 | 8. Adversary | Advanced Combat | Traits, Squad AI, Bosses, Stealth |
