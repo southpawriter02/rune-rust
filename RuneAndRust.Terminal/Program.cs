@@ -183,6 +183,12 @@ class Program
                     // Register Input Service (v0.3.23a - The Gatekeeper)
                     services.AddSingleton<IInputService, InputService>();
 
+                    // Register Terminal Service (v0.3.23c - The Mouse)
+                    services.AddSingleton<ITerminalService, TerminalService>();
+
+                    // Register Hit Test Service (v0.3.23c - The Mouse)
+                    services.AddSingleton<IHitTestService, HitTestService>();
+
                     // Register Context Help Service (v0.3.9c)
                     services.AddSingleton<IContextHelpService, ContextHelpService>();
 
@@ -214,12 +220,16 @@ class Program
                     // Register Title Screen Service (v0.3.4a)
                     services.AddScoped<ITitleScreenService, TitleScreenService>();
 
+#if DEBUG
                     // Register Debug Console Services (v0.3.17a)
+                    // v0.3.24a: Wrapped in #if DEBUG to exclude from Release builds
                     services.AddSingleton<IDebugConsoleService, DebugConsoleService>();
                     services.AddScoped<IDebugConsoleRenderer, DebugConsoleRenderer>();
 
                     // Register Cheat Service (v0.3.17b)
+                    // v0.3.24a: Wrapped in #if DEBUG to exclude from Release builds
                     services.AddScoped<ICheatService, CheatService>();
+#endif
 
                     // Register Performance Pools (v0.3.18a - The Garbage Collector)
                     services.AddSingleton<ITextBufferPool, TextBufferPool>();
@@ -260,6 +270,18 @@ class Program
             // 3c. Initialize audio event listener (v0.3.19b - The Score)
             var audioListener = host.Services.GetRequiredService<AudioEventListener>();
             audioListener.SubscribeAll();
+
+            // 3d. Initialize terminal service for mouse mode (v0.3.23c)
+            var terminalService = host.Services.GetRequiredService<ITerminalService>();
+            if (terminalService.IsMouseSupported())
+            {
+                terminalService.EnableMouseMode();
+                Log.Information("[Startup] Mouse mode enabled (SGR Extended)");
+            }
+            else
+            {
+                Log.Debug("[Startup] Mouse mode not supported in this terminal");
+            }
 
             // 4. Seed data
             using (var scope = host.Services.CreateScope())
@@ -416,11 +438,11 @@ class Program
                         gameState.Phase = GamePhase.Exploration;
                         Log.Debug("[Program] Character {Name} set to GameState", character.Name);
 
-                        // Generate starting dungeon
+                        // Generate starting dungeon (v0.3.24a: Uses template-based generation)
                         using (var scope = host.Services.CreateScope())
                         {
                             var dungeonGen = scope.ServiceProvider.GetRequiredService<DungeonGenerator>();
-                            var startRoomId = dungeonGen.GenerateTestMapAsync().GetAwaiter().GetResult();
+                            var startRoomId = dungeonGen.GenerateDungeonAsync("the_roots").GetAwaiter().GetResult();
                             gameState.CurrentRoomId = startRoomId;
                             gameState.VisitedRoomIds.Add(startRoomId);  // Mark starting room as visited (v0.3.5b)
                             Log.Information("[Program] World initialized: Starting room {RoomId}", startRoomId);
@@ -473,6 +495,10 @@ class Program
             {
                 e.Cancel = true; // Prevent immediate termination
                 cts.Cancel();
+
+                // v0.3.23c: Disable mouse mode before exit
+                terminalService.DisableMouseMode();
+
                 Console.WriteLine("\n[System] Shutting down gracefully...");
             };
 
@@ -480,6 +506,9 @@ class Program
             AppDomain.CurrentDomain.ProcessExit += (sender, e) =>
             {
                 cts.Cancel();
+
+                // v0.3.23c: Disable mouse mode before exit
+                terminalService.DisableMouseMode();
             };
 
             // Start the game loop with cancellation support
@@ -494,6 +523,20 @@ class Program
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
             // v0.3.16a: The Safety Net - Global Exception Handler
+            // v0.3.23c: Attempt to disable mouse mode before crash screen
+            try
+            {
+                if (host != null)
+                {
+                    var terminalSvc = host.Services.GetService<ITerminalService>();
+                    terminalSvc?.DisableMouseMode();
+                }
+            }
+            catch
+            {
+                // Swallow - don't crash the crash handler
+            }
+
             // 1. Attempt to log crash details to file
             string? logPath = null;
             try

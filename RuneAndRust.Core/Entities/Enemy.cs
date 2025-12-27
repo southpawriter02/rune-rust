@@ -17,9 +17,10 @@ public class Enemy
     public Guid Id { get; set; } = Guid.NewGuid();
 
     /// <summary>
-    /// The enemy's display name.
+    /// Display name of the enemy. Defaults to "Unknown Enemy" for safety.
+    /// v0.3.24a: Changed from "Training Dummy" for Release builds.
     /// </summary>
-    public string Name { get; set; } = "Training Dummy";
+    public string Name { get; set; } = "Unknown Enemy";
 
     /// <summary>
     /// The enemy's attributes. Keys are attribute types, values are attribute scores.

@@ -113,18 +113,6 @@ public class DungeonGenerator
     }
 
     /// <summary>
-    /// Generates and persists a simple test map with connected rooms.
-    /// Backwards compatibility wrapper that calls GenerateDungeonAsync with "the_roots" biome.
-    /// </summary>
-    /// <returns>The ID of the starting room.</returns>
-    [Obsolete("Use GenerateDungeonAsync(biomeId) instead. This method is deprecated in v0.4.0.")]
-    public async Task<Guid> GenerateTestMapAsync()
-    {
-        _logger.LogInformation("[DungeonGenerator] GenerateTestMapAsync called - forwarding to GenerateDungeonAsync('the_roots')");
-        return await GenerateDungeonAsync("the_roots");
-    }
-
-    /// <summary>
     /// Generates a linear room layout: EntryHall → alternating Corridors/Chambers → BossArena.
     /// Phase 1 implementation uses simple northward progression.
     /// </summary>
@@ -305,114 +293,9 @@ public class DungeonGenerator
         public required bool IsStartingRoom { get; init; }
     }
 
-    #region Legacy Test Map Methods (Deprecated in v0.4.0)
-
-    /// <summary>
-    /// Creates the individual room entities for the test map.
-    /// </summary>
-    [Obsolete("Legacy method for hardcoded test map. Use GenerateDungeonAsync instead.")]
-    private Dictionary<Coordinate, Room> CreateTestRooms()
-    {
-        var rooms = new Dictionary<Coordinate, Room>();
-
-        // 1. Origin (0,0,0): Entry Hall - Starting Room
-        var entry = new Room
-        {
-            Name = "Entry Hall",
-            Description = "A cold, metallic chamber. The air smells of ozone and ancient dust. " +
-                         "Faded runes pulse weakly along the walls, their meaning lost to time. " +
-                         "Passages lead in several directions.",
-            Position = new Coordinate(0, 0, 0),
-            IsStartingRoom = true
-        };
-        rooms[entry.Position] = entry;
-
-        // 2. North (0,1,0): Rusted Corridor
-        var corridor = new Room
-        {
-            Name = "Rusted Corridor",
-            Description = "Corroded pipes line the walls of this narrow passage. " +
-                         "Water drips from unseen sources, leaving rust-red stains on the floor. " +
-                         "The air grows colder here.",
-            Position = new Coordinate(0, 1, 0)
-        };
-        rooms[corridor.Position] = corridor;
-
-        // 3. East (1,0,0): Storage Chamber
-        var storage = new Room
-        {
-            Name = "Storage Chamber",
-            Description = "Broken crates and shattered containers litter this abandoned storeroom. " +
-                         "Whatever was kept here was either looted long ago or claimed by decay. " +
-                         "Dust motes drift in the pale light.",
-            Position = new Coordinate(1, 0, 0)
-        };
-        rooms[storage.Position] = storage;
-
-        // 4. West (-1,0,0): Collapsed Tunnel
-        var collapsed = new Room
-        {
-            Name = "Collapsed Tunnel",
-            Description = "Rubble partially blocks this passage. The ceiling groans ominously overhead. " +
-                         "Cracks in the walls reveal glimpses of darkness beyond. " +
-                         "This area seems unstable.",
-            Position = new Coordinate(-1, 0, 0)
-        };
-        rooms[collapsed.Position] = collapsed;
-
-        // 5. Down (0,0,-1): The Pit
-        var pit = new Room
-        {
-            Name = "The Pit",
-            Description = "A deep shaft descends into absolute darkness. " +
-                         "Ancient machinery clings to the walls, silent and still. " +
-                         "The echoes of your footsteps seem to go on forever.",
-            Position = new Coordinate(0, 0, -1)
-        };
-        rooms[pit.Position] = pit;
-
-        _logger.LogDebug("Created {Count} room entities", rooms.Count);
-
-        return rooms;
-    }
-
-    /// <summary>
-    /// Links rooms together by populating their Exits dictionaries.
-    /// All connections are bidirectional.
-    /// </summary>
-    [Obsolete("Legacy method for hardcoded test map. Use LinkRoomsInSequence instead.")]
-    private void LinkRooms(Dictionary<Coordinate, Room> rooms)
-    {
-        _logger.LogDebug("Linking rooms together...");
-
-        // Entry Hall connections
-        var entry = rooms[new Coordinate(0, 0, 0)];
-        var corridor = rooms[new Coordinate(0, 1, 0)];
-        var storage = rooms[new Coordinate(1, 0, 0)];
-        var collapsed = rooms[new Coordinate(-1, 0, 0)];
-        var pit = rooms[new Coordinate(0, 0, -1)];
-
-        // Entry <-> Corridor (North/South)
-        entry.Exits[Direction.North] = corridor.Id;
-        corridor.Exits[Direction.South] = entry.Id;
-
-        // Entry <-> Storage (East/West)
-        entry.Exits[Direction.East] = storage.Id;
-        storage.Exits[Direction.West] = entry.Id;
-
-        // Entry <-> Collapsed (West/East)
-        entry.Exits[Direction.West] = collapsed.Id;
-        collapsed.Exits[Direction.East] = entry.Id;
-
-        // Entry <-> Pit (Down/Up)
-        entry.Exits[Direction.Down] = pit.Id;
-        pit.Exits[Direction.Up] = entry.Id;
-
-        _logger.LogDebug("Room linking complete. Entry hall has {ExitCount} exits.", entry.Exits.Count);
-    }
-
     /// <summary>
     /// Gets the opposite direction for bidirectional linking.
+    /// v0.3.24a: Retained as public utility; legacy CreateTestRooms/LinkRooms removed.
     /// </summary>
     /// <param name="direction">The original direction.</param>
     /// <returns>The opposite direction.</returns>
@@ -429,6 +312,4 @@ public class DungeonGenerator
             _ => throw new ArgumentOutOfRangeException(nameof(direction))
         };
     }
-
-    #endregion
 }

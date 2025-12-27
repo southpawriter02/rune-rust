@@ -49,12 +49,16 @@ public class EmergencySaveService : IEmergencySaveService
             var json = JsonSerializer.Serialize(state, JsonOptions);
             File.WriteAllText(EmergencyPath, json);
 
+            // INTENTIONAL: Console.WriteLine used here because Serilog may be unavailable during crash.
+            // This is part of "The Black Box" crash resilience system (v0.3.16b).
+            // v0.3.24a: Documented as intentional - do not replace with AnsiConsole.
             Console.WriteLine($"[EMERGENCY] Game state saved to {EmergencyPath}");
             return true;
         }
         catch (Exception ex)
         {
-            // Log to console since Serilog may be unavailable during crash
+            // INTENTIONAL: Console.WriteLine used here because Serilog may be unavailable during crash.
+            // v0.3.24a: Documented as intentional - do not replace with AnsiConsole.
             Console.WriteLine($"[EMERGENCY] Save failed: {ex.Message}");
             return false;
         }

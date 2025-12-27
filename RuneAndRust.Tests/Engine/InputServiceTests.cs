@@ -119,8 +119,8 @@ public class InputServiceTests
     [Fact]
     public void MouseEvent_StoresCoordinates_Correctly()
     {
-        // Arrange & Act
-        var evt = new MouseEvent(10, 20, true);
+        // Arrange & Act (v0.3.23c: Updated to new enhanced MouseEvent)
+        var evt = new MouseEvent(MouseEventType.ButtonDown, MouseButton.Left, 10, 20);
 
         // Assert
         evt.X.Should().Be(10);

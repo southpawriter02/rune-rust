@@ -322,7 +322,9 @@ public class CommandParser
         var command = input.Trim().ToLowerInvariant();
         _logger.LogDebug("Parsing command: '{Command}' in Phase: {Phase}", command, state.Phase);
 
+#if DEBUG
         // v0.3.17a: Debug console toggle (works in any phase)
+        // v0.3.24a: Wrapped in #if DEBUG to exclude from Release builds
         if (command == "~" || command == "debug")
         {
             if (_debugConsoleRenderer != null)
@@ -336,6 +338,7 @@ public class CommandParser
             }
             return ParseResult.None;
         }
+#endif
 
         ParseResult result;
         switch (state.Phase)
@@ -776,6 +779,30 @@ public class CommandParser
             }
         }
 
+#if DEBUG
+        // v0.3.24a: Debug combat command wrapped in #if DEBUG
+        if (command == "debug-combat")
+        {
+            if (_combatService != null && _gameState.CurrentCharacter != null)
+            {
+                _logger.LogDebug("DEBUG: Initiating test combat encounter");
+                var dummyEnemy = new Enemy
+                {
+                    Name = "Training Dummy",
+                    MaxHp = 30,
+                    CurrentHp = 30
+                };
+                _combatService.StartCombat(new List<Enemy> { dummyEnemy });
+                _inputHandler.DisplayMessage("[yellow]DEBUG: Combat initiated with Training Dummy.[/]");
+            }
+            else
+            {
+                _inputHandler.DisplayMessage("[red]Cannot start combat: No active character or combat service unavailable.[/]");
+            }
+            return ParseResult.None;
+        }
+#endif
+
         switch (command)
         {
             case "quit":
@@ -905,25 +932,6 @@ public class CommandParser
             case "camp":
             case "sleep":
                 return await HandleRestCommandAsync(state, preferSanctuary: false);
-
-            case "debug-combat":
-                if (_combatService != null && _gameState.CurrentCharacter != null)
-                {
-                    _logger.LogDebug("DEBUG: Initiating test combat encounter");
-                    var dummyEnemy = new Enemy
-                    {
-                        Name = "Training Dummy",
-                        MaxHp = 30,
-                        CurrentHp = 30
-                    };
-                    _combatService.StartCombat(new List<Enemy> { dummyEnemy });
-                    _inputHandler.DisplayMessage("[yellow]DEBUG: Combat initiated with Training Dummy.[/]");
-                }
-                else
-                {
-                    _inputHandler.DisplayMessage("[red]Cannot start combat: No active character or combat service unavailable.[/]");
-                }
-                return ParseResult.None;
 
             default:
                 _inputHandler.DisplayError($"Unknown command: '{command}'. Type 'help' for available commands.");
@@ -1392,9 +1400,11 @@ public class CommandParser
         _inputHandler.DisplayMessage("  menu, mainmenu   - Return to main menu");
         _inputHandler.DisplayMessage("  help, ?          - Show this help");
         _inputHandler.DisplayMessage("  quit, exit, q    - Exit the game");
+#if DEBUG
         _inputHandler.DisplayMessage("");
         _inputHandler.DisplayMessage("Debug:");
         _inputHandler.DisplayMessage("  debug-combat     - Start a test combat encounter");
+#endif
     }
 
     /// <summary>
