@@ -105,6 +105,7 @@ class Program
                     services.AddSingleton<IDiceService, DiceService>();
                     services.AddSingleton<IStatCalculationService, StatCalculationService>();
                     services.AddScoped<ISagaService, SagaService>();
+                    services.AddScoped<IProgressionService, ProgressionService>();
                     services.AddScoped<SaveManager>();
 
                     // Register Spatial Services
