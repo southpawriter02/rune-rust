@@ -32,7 +32,7 @@ VALUES
 -- Small Health Potion
 ('Consumable', 'SmallMending', 'Cursory', NULL, 'Sealed', 'A vial of red liquid, warm to the touch.', 1.0, '["Basic", "Consumable"]'),
 ('Consumable', 'SmallMending', 'Detailed', NULL, 'Sealed', 'Blood-Binder draught. It smells of copper and bitter herbs. It knits flesh, but leaves scars.', 1.0, '["Lore", "Consumable"]'),
-('Consumable', 'SmallMending', 'Expert', NULL, 'Sealed', 'Standard Military Coagulant. Stops bleeding instantly and accelerates cellular regeneration. Tastes like battery acid.', 1.0, '["Technical", "Consumable"]'),
+('Consumable', 'SmallMending', 'Expert', NULL, 'Sealed', 'Alchemical clot-binder. Stops the life-flow instantly and knits the living weave. Tastes like copper and old lightning.', 1.0, '["Technical", "Consumable"]'),
 
 -- Large Health Potion
 ('Consumable', 'LargeMending', 'Cursory', NULL, 'Sealed', 'A heavy flask glowing with deep crimson light.', 1.0, '["Basic", "Consumable"]'),
