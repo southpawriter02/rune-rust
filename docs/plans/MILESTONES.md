@@ -18,15 +18,14 @@ This document provides a comprehensive overview of all implementation milestones
 | 4.5 | The Interface | v0.3.4 - v0.3.10 | Polish & UX | Complete |
 | 4.8 | The Polish | v0.3.11 - v0.3.14 | Documentation & Testing | Planned |
 | 4.9 | The Long Polish | v0.3.15 - v0.3.24 | Stability & Prep | Planned |
-| 5 | The Saga | v0.4.0 - v0.4.2 | Progression & Content | Planned |
-| 6 | The Weaver | v0.4.3 - v0.4.7 | Magic Systems | Planned |
-| 7 | The Architect | v0.5.0 - v0.5.4 | Settlements & Economy | Planned |
-| 8 | The Adversary | v0.6.0 - v0.6.4 | Advanced Combat | Planned |
-| 9 | The World | v0.7.0 - v0.7.4 | Biome Expansion | Planned |
-| 10 | The Deep | v0.8.0 - v0.8.4 | Deep Realms | Planned |
-| 11 | The Sky | v0.9.0 - v0.9.4 | Endgame | Planned |
-| 12 | The Interface | v1.0.0 - v1.0.4 | GUI Launch | Planned |
-| 13 | The Legacy | v1.1.0 - v1.1.4 | Post-Launch | Planned |
+| 5 | The Saga & The Weaver | v0.4.0 - v0.4.10 | Progression & Magic | Planned |
+| 6 | The Architect | v0.5.0 - v0.5.4 | Settlements & Economy | Planned |
+| 7 | The Adversary | v0.6.0 - v0.6.4 | Advanced Combat | Planned |
+| 8 | The World | v0.7.0 - v0.7.4 | Biome Expansion | Planned |
+| 9 | The Deep | v0.8.0 - v0.8.4 | Deep Realms | Planned |
+| 10 | The Sky | v0.9.0 - v0.9.4 | Endgame | Planned |
+| 11 | The Interface | v1.0.0 - v1.0.4 | GUI Launch | Planned |
+| 12 | The Legacy | v1.1.0 - v1.1.4 | Post-Launch | Planned |
 
 ---
 
@@ -146,37 +145,29 @@ This document provides a comprehensive overview of all implementation milestones
 
 ---
 
-## Milestone 5: The Saga (Progression & Content)
+## Milestone 5: The Saga & The Weaver (v0.4.x)
 
-**Goal:** Long-term playability, character advancement, and narrative context.
+**Goal:** Long-term playability through Progression and Magic systems.
 
 | Version | Codename | Scope |
 |---------|----------|-------|
 | v0.4.0 | Saga Progression | SagaService for Legend (XP), Milestone rewards, Progression Points (PP) |
 | v0.4.1 | Specializations | Specialization unlock system, Tiered ability trees (T1-T3-Capstone) |
 | v0.4.2 | Factions & Dialogue | FactionService with reputation, Node-based dialogue, Skill-gated options |
-
-**Status:** Planned
-
----
-
-## Milestone 6: The Weaver (Magic Systems)
-
-**Goal:** Implement Aetheric manipulation with risk-based casting mechanics.
-
-| Version | Codename | Scope |
-|---------|----------|-------|
 | v0.4.3 | Magic Core | AetherService for flux tracking, Spell entity, "Weaving" mechanic |
 | v0.4.4 | Spells & Chants | Cast command, Multi-turn chants, Initial Mystic spell lists |
 | v0.4.5 | Runic Inscription | Runeforging trade, Rune items, Equipment embossing with ItemProperty |
 | v0.4.6 | The Glitch | WildMagicService, Paradox events based on Corruption/Stress |
 | v0.4.7 | Magic UI | Grimoire tab, Chant progress bars, Rune effect indicators |
+| v0.4.8 | The Stabilizer | Balance tuning, XP curve adjustments, Spell cost audits |
+| v0.4.9 | The Resonance | Audio hooks for magic, VFX polish, particle grading |
+| v0.4.10 | The Convergence | Full integration tests, Settlement seeding, v0.5.0 prep |
 
 **Status:** Planned
 
 ---
 
-## Milestone 7: The Architect (Settlements & Economy)
+## Milestone 6: The Architect (Settlements & Economy)
 
 **Goal:** Establish safe zones, commerce, and political interaction.
 
@@ -192,7 +183,7 @@ This document provides a comprehensive overview of all implementation milestones
 
 ---
 
-## Milestone 8: The Adversary (Advanced Combat)
+## Milestone 7: The Adversary (Advanced Combat)
 
 **Goal:** Deepen tactical complexity with advanced AI and boss mechanics.
 
@@ -208,7 +199,7 @@ This document provides a comprehensive overview of all implementation milestones
 
 ---
 
-## Milestone 9: The World (Biome Expansion)
+## Milestone 8: The World (Biome Expansion)
 
 **Goal:** Implement unique environmental mechanics for major realms.
 
@@ -224,7 +215,7 @@ This document provides a comprehensive overview of all implementation milestones
 
 ---
 
-## Milestone 10: The Forge & The Abyss (Deep Realms)
+## Milestone 9: The Deep (Deep Realms)
 
 **Goal:** Implement complex industrial and toxic underground realms.
 
@@ -240,7 +231,7 @@ This document provides a comprehensive overview of all implementation milestones
 
 ---
 
-## Milestone 11: The Shattered Sky (Endgame)
+## Milestone 10: The Sky (Endgame)
 
 **Goal:** The orbital realm of Asgard and resolution of the Trauma Economy.
 
@@ -256,7 +247,7 @@ This document provides a comprehensive overview of all implementation milestones
 
 ---
 
-## Milestone 12: The Interface (1.0 Launch)
+## Milestone 11: The Interface (1.0 Launch)
 
 **Goal:** Transition from Terminal to full Avalonia GUI.
 
@@ -272,7 +263,7 @@ This document provides a comprehensive overview of all implementation milestones
 
 ---
 
-## Milestone 13: The Legacy (Post-Launch)
+## Milestone 12: The Legacy (Post-Launch)
 
 **Goal:** Replayability and systems extending beyond a single campaign.
 
