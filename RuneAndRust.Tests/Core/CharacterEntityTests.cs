@@ -93,7 +93,8 @@ public class CharacterEntityTests
 
         // Assert
         character.Level.Should().Be(1);
-        character.ExperiencePoints.Should().Be(0);
+        character.Legend.Should().Be(0);
+        character.ProgressionPoints.Should().Be(0);
     }
 
     [Fact]

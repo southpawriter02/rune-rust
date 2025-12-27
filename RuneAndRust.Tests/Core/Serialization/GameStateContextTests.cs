@@ -72,7 +72,7 @@ public class GameStateContextTests
             CurrentStamina = 50,
             PsychicStress = 25,
             Corruption = 10,
-            ExperiencePoints = 500,
+            Legend = 500,
             Level = 2
         };
 

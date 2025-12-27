@@ -225,8 +225,9 @@ public class RuneAndRustDbContext : DbContext
             entity.Property(c => c.ActionPoints).IsRequired();
 
             // Progression
-            entity.Property(c => c.ExperiencePoints).IsRequired();
+            entity.Property(c => c.Legend).IsRequired();
             entity.Property(c => c.Level).IsRequired();
+            entity.Property(c => c.ProgressionPoints).IsRequired();
 
             // Timestamps
             entity.Property(c => c.CreatedAt).IsRequired();

@@ -161,7 +161,7 @@ public class CharacterPersistenceTests : IDisposable
         {
             Name = "Veteran",
             Level = 5,
-            ExperiencePoints = 2500
+            Legend = 2500
         };
 
         // Act
@@ -171,7 +171,7 @@ public class CharacterPersistenceTests : IDisposable
         // Assert
         var retrieved = await _repository.GetByIdAsync(character.Id);
         retrieved!.Level.Should().Be(5);
-        retrieved.ExperiencePoints.Should().Be(2500);
+        retrieved.Legend.Should().Be(2500);
     }
 
     #endregion
@@ -433,7 +433,7 @@ public class CharacterPersistenceTests : IDisposable
         character.Will.Should().Be(5);
         character.Finesse.Should().Be(5);
         character.Level.Should().Be(1);
-        character.ExperiencePoints.Should().Be(0);
+        character.Legend.Should().Be(0);
     }
 
     #endregion
