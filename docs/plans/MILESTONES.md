@@ -18,9 +18,9 @@ This document provides a comprehensive overview of all implementation milestones
 | 4.5 | The Interface | v0.3.4 - v0.3.10 | Polish & UX | Complete |
 | 4.8 | The Polish | v0.3.11 - v0.3.14 | Documentation & Testing | Planned |
 | 4.9 | The Long Polish | v0.3.15 - v0.3.24 | Stability & Prep | Planned |
-| 5 | The Saga & The Weaver | v0.4.0 - v0.4.10 | Progression & Magic | Planned |
-| 6 | The Architect | v0.5.0 - v0.5.14 | Settlements & Economy | Planned |
-| 7 | The Adversary | v0.6.0 - v0.6.4 | Advanced Combat | Planned |
+| 5 | The Saga & The Weaver | v0.4.0 - v0.4.15 | Progression & Magic | Planned |
+| 6 | The Architect | v0.5.0 - v0.5.20 | Settlements & Economy | Planned |
+| 7 | The Adversary | v0.6.0 - v0.6.15 | Advanced Combat | Planned |
 | 8 | The World | v0.7.0 - v0.7.4 | Biome Expansion | Planned |
 | 9 | The Deep | v0.8.0 - v0.8.4 | Deep Realms | Planned |
 | 10 | The Sky | v0.9.0 - v0.9.4 | Endgame | Planned |
@@ -162,6 +162,11 @@ This document provides a comprehensive overview of all implementation milestones
 | v0.4.8 | The Stabilizer | Balance tuning, XP curve adjustments, Spell cost audits |
 | v0.4.9 | The Resonance | Audio hooks for magic, VFX polish, particle grading |
 | v0.4.10 | The Convergence | Full integration tests, Settlement seeding, v0.5.0 prep |
+| v0.4.11 | The Library | Codex expansion, Research mechanics, Spell learning |
+| v0.4.12 | The Mentor | Legendary trainers, Duel challenges, Capstone unlocks |
+| v0.4.13 | The Artifact | Legendary items, Cursed relics, Purification rituals |
+| v0.4.14 | The Balance II | Sim-based tuning, Build saving, Level-up polish |
+| v0.4.15 | The Bridge | Pre-Settlement world events, Save migration prep |
 
 **Status:** Planned
 
@@ -188,22 +193,39 @@ This document provides a comprehensive overview of all implementation milestones
 | v0.5.12 | Road Encounters | Ambush generation, Roadside POIs, Mini-dungeons |
 | v0.5.13 | Trade Routes | Caravans, Supply lines, Interception missions |
 | v0.5.14 | The Frontier | Campsites, Outposts, Stashes, Wilderness survival |
+| v0.5.15 | The Festival | Seasonal events, Calendars, Minigames |
+| v0.5.16 | The Underworld | Black Markets, Smuggling missions, Hidden vendors |
+| v0.5.17 | The Diplomat | Alliances, Betrayals, State-level politics |
+| v0.5.18 | The Census | NPC names/lineage, Memory persistence, Greeting logic |
+| v0.5.19 | The Vault | Banking, Loans, Warehouse storage |
+| v0.5.20 | The Foundation II | Settlement defense, Siege previews, Final economy balance |
 
 **Status:** Planned
 
 ---
 
-## Milestone 7: The Adversary (Advanced Combat)
+## Milestone 7: The Adversary (v0.6.x)
 
 **Goal:** Deepen tactical complexity with advanced AI and boss mechanics.
 
 | Version | Codename | Scope |
 |---------|----------|-------|
-| v0.6.0 | Enemy Traits | CreatureTraitService for procedural Elite modifiers |
-| v0.6.1 | Advanced AI | BehaviorTree for squad tactics (healing, flanking, fleeing) |
-| v0.6.2 | Boss Mechanics | BossService for multi-phase encounters, Legendary Actions |
-| v0.6.3 | Stealth & Ambush | StealthService, Hide command, Surprise Round mechanics |
-| v0.6.4 | Companion System | Companion entities, Recruitment via Faction, Squad Command UI |
+| v0.6.0 | Enemy Traits | CreatureTraitService, Affixes, Dynamic resistance |
+| v0.6.1 | The Squad | Formations, Synergies, Combo attacks, Rally behavior |
+| v0.6.2 | Advanced AI | Behavior Trees, Archetypes (Controller/Support), State machines |
+| v0.6.3 | The Environment | Cover mechanics, Destructible terrain, Hazard usage |
+| v0.6.4 | The Hunter | Stalking AI, Ambush logic, Nemesis persistence |
+| v0.6.5 | The Legend | Boss UI, Legendary Actions, Phase indicators |
+| v0.6.6 | The Phase | Phase transitions, Model changes, Telegraphs |
+| v0.6.7 | The Minion | Summoning, Sacrifice mechanics, Command buffs |
+| v0.6.8 | The Arena | Lair Actions, Room hazards, Chase sequences |
+| v0.6.9 | The Loot | Boss specific drops, Trophies, Soul crafting |
+| v0.6.10 | The Ally | Mercenary recruitment, Companion stats, Equipment |
+| v0.6.11 | The Command | Squad UI, Tactics, Formations, Breach orders |
+| v0.6.12 | The Bond | Loyalty tracking, Banter, Desertion risk |
+| v0.6.13 | The Shadow | Stealth mechanics, Hide action, Sneak attacks |
+| v0.6.14 | The Bounty | Bounty contracts, Tracking, Non-lethal capture |
+| v0.6.15 | The Warlord | Commander auras, Mass combat morale, Battle sim |
 
 **Status:** Planned
 

@@ -1,13 +1,13 @@
 # Milestone 6 Roadmap: The Architect (v0.5.x)
 
 > **Status:** Planning
-> **Version Range:** v0.5.0 - v0.5.14
+> **Version Range:** v0.5.0 - v0.5.20
 > **Theme:** Settlements, Economy, and The World
 
 ## Overview
 Milestone 6 expands the game from a dungeon crawler into a world simulator. "The Architect" introduces civilized spaces (Settlements), complex economic systems, and the ability to travel across the surface world to reach new dungeons.
 
-This cycle is significantly expanded to **v0.5.14** to accommodate the depth of the simulation required for a living world.
+This cycle is significantly expanded to **v0.5.20** to accommodate the depth of the simulation required for a living world.
 
 ---
 
@@ -165,3 +165,62 @@ This cycle is significantly expanded to **v0.5.14** to accommodate the depth of 
 - **v0.5.14b: The Outpost (Upgrade)**
   - Upgrading a campsite to a permanent structure.
   - Stashing loot in the wild.
+
+---
+
+## Part IV: The Deepening (Expansion & Polish)
+**Focus:** Adding depth to the simulation and refining the player experience.
+
+### [v0.5.15] The Festival
+*Seasonal flavor.*
+- **v0.5.15a: The Calendar (Time)**
+  - Tracking months/seasons.
+  - Seasonal weather effects on travel.
+- **v0.5.15b: The Celebration (Event)**
+  - Recurring festival events (e.g., "The Forging Day") with unique vendors.
+  - Minigames (Dice, Drinking).
+
+### [v0.5.16] The Underworld
+*The illicit economy.*
+- **v0.5.16a: The Black Market (Shop)**
+  - Hidden vendors selling illegal goods.
+  - Password access logic.
+- **v0.5.16b: The Smuggler (Mission)**
+  - Transporting contraband between settlements.
+  - Avoiding Guard patrols.
+
+### [v0.5.17] The Diplomat
+*Advanced relations.*
+- **v0.5.17a: The Alliance (State)**
+  - Brokerage of peace between factions.
+  - Joint operations.
+- **v0.5.17b: The Betrayal (Consequence)**
+  - Consequences for breaking pacts.
+  - Assassin squads sent after player.
+
+### [v0.5.18] The Census
+*Simulation polish.*
+- **v0.5.18a: The Name (Generator)**
+  - Expanded name lists per culture/faction.
+  - Family lineage tracking for key NPCs.
+- **v0.5.18b: The Memory (Persistence)**
+  - NPCs remembering past interactions with player.
+  - Dynamic greeting changes.
+
+### [v0.5.19] The Vault
+*Banking and storage.*
+- **v0.5.19a: The Bank (Service)**
+  - Depositing scrip to avoid loss on death.
+  - Loans and interest rates.
+- **v0.5.19b: The Warehouse (Storage)**
+  - Renting bulk storage space in settlements.
+  - Cross-settlement transfer services.
+
+### [v0.5.20] The Foundation II
+*Preparing for war.*
+- **v0.5.20a: The Wall (Defense)**
+  - Settlement defense ratings affecting safety.
+  - Siege events (preview of v0.6.x combat).
+- **v0.5.20b: The Golden State (Finalize)**
+  - Final balance pass on economy (prices/wages).
+  - Integration tests for full Settlement loop.

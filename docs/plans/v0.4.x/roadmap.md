@@ -1,13 +1,13 @@
 # Milestone 5 Roadmap: The Saga & The Weaver (v0.4.x)
 
 > **Status:** Planning
-> **Version Range:** v0.4.0 - v0.4.10
+> **Version Range:** v0.4.0 - v0.4.15
 > **Theme:** Progression, Magic, and World Depth
 
 ## Overview
 Milestone 5 represents the transition of *Rune & Rust* from a survival simulator to a full-fledged RPG. This cycle introduces the two pillars of long-term engagement: **The Saga System** (Character Progression) and **The Weave** (Aetheric Magic).
 
-The version cycle is extended to **v0.4.10** to ensure these complex systems are fully integrated, balanced, and polished before the introduction of Settlements in v0.5.0.
+The version cycle is extended to **v0.4.15** to ensure these complex systems are fully integrated, balanced, and polished before the introduction of Settlements in v0.5.0.
 
 ---
 
@@ -133,3 +133,46 @@ The version cycle is extended to **v0.4.10** to ensure these complex systems are
 - **v0.4.10b: The Precursor (Settlement Seeds)**
   - Seeding "Dormant" settlement locations for v0.5.0.
   - Migration scripts for save compatibility.
+
+### [v0.4.11] The Library
+*Codifying the arcane.*
+- **v0.4.11a: The Archive (Content)**
+  - Expansion of Codex entries for all Spells and Specializations.
+  - Unlocking lore by mastering abilities.
+- **v0.4.11b: The Research (Mechanic)**
+  - System for deciphering ancient scrolls (Intelligence checks).
+  - Learning new spells from items instead of trainers.
+
+### [v0.4.12] The Mentor
+*Advanced training.*
+- **v0.4.12a: The Master (NPCs)**
+  - Legendary trainer NPCs who teach Capstone abilities.
+  - Requirement for specific reputation to unlock training.
+- **v0.4.12b: The Duel (Test)**
+  - 1v1 combat challenges to prove worthiness for Specialization unlocks.
+
+### [v0.4.13] The Artifact
+*Items of power.*
+- **v0.4.13a: The Relic (Item Type)**
+  - Unique legendary items with bound spells.
+  - Lore descriptions tied to game history.
+- **v0.4.13b: The Curse (Mechanic)**
+  - Negative properties on powerful items (e.g., drains Sanity).
+  - Purification rituals.
+
+### [v0.4.14] The Balance II
+*Fine-tuning for the long haul.*
+- **v0.4.14a: The Sim (Data)**
+  - Automated combat logs analysis for Level 10+ characters.
+  - Nerfing/Buffing outliers in Specialization trees.
+- **v0.4.14b: The Polish (UX)**
+  - streamlining the level-up process UI.
+  - Adding "Build" saving/loading for ease of testing.
+
+### [v0.4.15] The Bridge
+*Preparing for civilization.*
+- **v0.4.15a: The Prelude (Event)**
+  - World event hinting at the opening of Settlement gates.
+  - Rumors of trade routes appearing in dialogue.
+- **v0.4.15b: The Snapshot (Save)**
+  - Creating a stable "Pre-Settlement" save state format.
