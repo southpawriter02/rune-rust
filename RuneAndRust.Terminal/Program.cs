@@ -77,6 +77,10 @@ class Program
                     services.AddSingleton<IStatCalculationService, StatCalculationService>();
                     services.AddScoped<SaveManager>();
 
+                    // Register Magic Services (v0.4.4a)
+                    services.AddSingleton<ISpellRegistry, SpellRegistry>();
+                    services.AddScoped<IMagicService, MagicService>();
+
                     // Register Spatial Services
                     services.AddScoped<DungeonGenerator>();
                     services.AddScoped<INavigationService, NavigationService>();

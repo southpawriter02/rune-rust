@@ -1,4 +1,5 @@
 using RuneAndRust.Core.Enums;
+using RuneAndRust.Core.Models.Magic;
 using CharacterAttribute = RuneAndRust.Core.Enums.Attribute;
 
 namespace RuneAndRust.Core.Entities;
@@ -104,6 +105,11 @@ public class Character
     /// Mystics can Overcast (spend HP at 2:1 ratio) when depleted.
     /// </summary>
     public int CurrentAp { get; set; } = 0;
+
+    /// <summary>
+    /// The character's Aetheric energy pool, tracking current Aether and Flux.
+    /// </summary>
+    public AetherPool Aether { get; set; } = new AetherPool(0);
 
     /// <summary>
     /// Current psychic stress accumulated by the character. Range: 0-100.
