@@ -14,7 +14,10 @@ namespace RuneAndRust.Engine.Services;
 /// The main game service implementation.
 /// Handles game initialization and the core game loop.
 /// </summary>
-/// <remarks>See: SPEC-GAME-001 for Game Orchestration System design.</remarks>
+/// <remarks>
+/// See: SPEC-GAME-001 for Game Orchestration System design.
+/// v0.3.23b: Added CancellationToken support, dirty flag rendering, and VFX event subscription.
+/// </remarks>
 public class GameService : IGameService
 {
     private readonly ILogger<GameService> _logger;
@@ -27,7 +30,10 @@ public class GameService : IGameService
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly IScreenTransitionService? _transitionService;
     private readonly IAmbienceService? _ambienceService;
+    private readonly IVisualEffectService? _vfxService;
+
     private GamePhase _previousPhase = GamePhase.MainMenu;
+    private bool _renderRequired = true;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="GameService"/> class.
@@ -42,6 +48,7 @@ public class GameService : IGameService
     /// <param name="explorationRenderer">The exploration screen renderer (v0.3.5a, optional for testing).</param>
     /// <param name="transitionService">The screen transition service (v0.3.14b, optional for testing).</param>
     /// <param name="ambienceService">The ambient soundscape service (v0.3.19c, optional for testing).</param>
+    /// <param name="vfxService">The visual effect service for VFX invalidation (v0.3.23b, optional for testing).</param>
     public GameService(
         ILogger<GameService> logger,
         IInputHandler inputHandler,
@@ -52,7 +59,8 @@ public class GameService : IGameService
         ICombatScreenRenderer? combatRenderer = null,
         IExplorationScreenRenderer? explorationRenderer = null,
         IScreenTransitionService? transitionService = null,
-        IAmbienceService? ambienceService = null)
+        IAmbienceService? ambienceService = null,
+        IVisualEffectService? vfxService = null)
     {
         _logger = logger;
         _inputHandler = inputHandler;
@@ -64,58 +72,77 @@ public class GameService : IGameService
         _explorationRenderer = explorationRenderer;
         _transitionService = transitionService;
         _ambienceService = ambienceService;
+        _vfxService = vfxService;
+
+        // v0.3.23b: Subscribe to VFX invalidation events
+        if (_vfxService != null)
+        {
+            _vfxService.OnInvalidateVisuals += () => _renderRequired = true;
+        }
     }
 
     /// <inheritdoc/>
-    public async Task StartAsync()
+    /// <remarks>v0.3.23b: Added CancellationToken support and dirty flag rendering.</remarks>
+    public async Task StartAsync(CancellationToken cancellationToken = default)
     {
-        _logger.LogInformation("Game Loop Initialized.");
+        _logger.LogInformation("[GameLoop] Starting game loop (v0.3.23b)");
         _inputHandler.DisplayMessage("Welcome to Rune & Rust!");
         _inputHandler.DisplayMessage("Type 'help' for available commands.");
         _inputHandler.DisplayMessage("");
 
         _previousPhase = _state.Phase;
+        _renderRequired = true;
 
-        while (_state.Phase != GamePhase.Quit)
+        while (_state.Phase != GamePhase.Quit && !cancellationToken.IsCancellationRequested)
         {
-            // 0. Check for phase transition and play animation (v0.3.14b)
-            if (_state.Phase != _previousPhase)
+            try
             {
-                await HandlePhaseTransitionAsync(_previousPhase, _state.Phase);
-                _previousPhase = _state.Phase;
-            }
-
-            // 1. Render phase-specific UI
-            if (_state.Phase == GamePhase.Combat && _combatRenderer != null)
-            {
-                var viewModel = _combatService.GetViewModel();
-                if (viewModel != null)
+                // v0.3.23b: 1. Check VFX expiration
+                if (_vfxService?.CheckExpiredOverrides() == true)
                 {
-                    _combatRenderer.Render(viewModel);
+                    _renderRequired = true;
+                }
+
+                // 2. Check for phase transition and play animation (v0.3.14b)
+                if (_state.Phase != _previousPhase)
+                {
+                    await HandlePhaseTransitionAsync(_previousPhase, _state.Phase);
+                    _previousPhase = _state.Phase;
+                    _renderRequired = true;
+                }
+
+                // 3. Render phase-specific UI (v0.3.23b: Only if required)
+                if (_renderRequired)
+                {
+                    await RenderCurrentPhaseAsync();
+                    _renderRequired = false;
+                }
+
+                // 4. Determine prompt based on current phase
+                string prompt = GetPhasePrompt();
+
+                // 5. Get input from the user (abstracted for testability)
+                string input = _inputHandler.GetInput(prompt);
+
+                // 6. Process the input through the command parser
+                await _parser.ParseAndExecuteAsync(input, _state);
+                _renderRequired = true;
+
+                // 7. Tick ambient soundscape after exploration commands (v0.3.19c)
+                if (_state.Phase == GamePhase.Exploration && _state.CurrentRoomId.HasValue && _ambienceService != null)
+                {
+                    await _ambienceService.UpdateAsync(_state.CurrentRoomId.Value);
                 }
             }
-            else if (_state.Phase == GamePhase.Exploration && _explorationRenderer != null)
+            catch (OperationCanceledException)
             {
-                var viewModel = await BuildExplorationViewModelAsync();
-                if (viewModel != null)
-                {
-                    _explorationRenderer.Render(viewModel);
-                }
+                _logger.LogInformation("[GameLoop] Cancellation requested");
+                break;
             }
-
-            // 2. Determine prompt based on current phase
-            string prompt = GetPhasePrompt();
-
-            // 3. Get input from the user (abstracted for testability)
-            string input = _inputHandler.GetInput(prompt);
-
-            // 4. Process the input through the command parser
-            await _parser.ParseAndExecuteAsync(input, _state);
-
-            // 5. Tick ambient soundscape after exploration commands (v0.3.19c)
-            if (_state.Phase == GamePhase.Exploration && _state.CurrentRoomId.HasValue && _ambienceService != null)
+            catch (Exception ex)
             {
-                await _ambienceService.UpdateAsync(_state.CurrentRoomId.Value);
+                _logger.LogError(ex, "[GameLoop] Error in game loop iteration");
+                // Continue running - don't crash on single iteration errors
             }
         }
 
@@ -125,8 +152,34 @@ public class GameService : IGameService
             await HandlePhaseTransitionAsync(_previousPhase, GamePhase.Quit);
         }
 
-        _logger.LogInformation("Game Loop Ended. Shutting down.");
+        _logger.LogInformation("[GameLoop] Game loop ended. Phase: {Phase}", _state.Phase);
         _inputHandler.DisplayMessage("Thank you for playing Rune & Rust. Farewell!");
+    }
+
+    /// <summary>
+    /// Renders the appropriate screen based on current game phase.
+    /// </summary>
+    /// <remarks>v0.3.23b: Extracted from main loop for dirty flag pattern.</remarks>
+    private async Task RenderCurrentPhaseAsync()
+    {
+        _logger.LogTrace("[GameLoop] Rendering phase: {Phase}", _state.Phase);
+
+        if (_state.Phase == GamePhase.Combat && _combatRenderer != null)
+        {
+            var viewModel = _combatService.GetViewModel();
+            if (viewModel != null)
+            {
+                _combatRenderer.Render(viewModel);
+            }
+        }
+        else if (_state.Phase == GamePhase.Exploration && _explorationRenderer != null)
+        {
+            var viewModel = await BuildExplorationViewModelAsync();
+            if (viewModel != null)
+            {
+                _explorationRenderer.Render(viewModel);
+            }
+        }
     }
 
     /// <summary>

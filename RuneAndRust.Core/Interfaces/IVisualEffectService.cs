@@ -6,9 +6,26 @@ namespace RuneAndRust.Core.Interfaces;
 /// Service contract for visual effects during gameplay (v0.3.9a).
 /// Provides methods to trigger visual feedback like border flashes during combat events.
 /// </summary>
-/// <remarks>See: SPEC-RENDER-001 for Rendering Pipeline System design.</remarks>
+/// <remarks>
+/// See: SPEC-RENDER-001 for Rendering Pipeline System design.
+/// v0.3.23b: Added OnInvalidateVisuals event and CheckExpiredOverrides() for non-blocking loop support.
+/// </remarks>
 public interface IVisualEffectService
 {
+    /// <summary>
+    /// Event raised when visual state changes and a redraw is required.
+    /// v0.3.23b: Used by non-blocking game loop to trigger renders.
+    /// </summary>
+    event Action? OnInvalidateVisuals;
+
+    /// <summary>
+    /// Checks if any border override has expired and clears it.
+    /// Called by the game loop each tick to manage time-based effects.
+    /// </summary>
+    /// <returns>True if an override was cleared (redraw needed).</returns>
+    /// <remarks>v0.3.23b: Enables non-blocking VFX expiration.</remarks>
+    bool CheckExpiredOverrides();
+
     /// <summary>
     /// Triggers a visual effect asynchronously.
     /// The effect respects GameSettings.ReduceMotion for accessibility.

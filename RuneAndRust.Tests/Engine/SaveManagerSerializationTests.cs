@@ -17,14 +17,16 @@ namespace RuneAndRust.Tests.Engine;
 public class SaveManagerSerializationTests
 {
     private readonly Mock<ISaveGameRepository> _mockRepo;
+    private readonly Mock<IRoomRepository> _mockRoomRepo;
     private readonly Mock<ILogger<SaveManager>> _mockLogger;
     private readonly SaveManager _sut;
 
     public SaveManagerSerializationTests()
     {
         _mockRepo = new Mock<ISaveGameRepository>();
+        _mockRoomRepo = new Mock<IRoomRepository>();
         _mockLogger = new Mock<ILogger<SaveManager>>();
-        _sut = new SaveManager(_mockRepo.Object, _mockLogger.Object);
+        _sut = new SaveManager(_mockRepo.Object, _mockRoomRepo.Object, _mockLogger.Object);
     }
 
     [Fact]

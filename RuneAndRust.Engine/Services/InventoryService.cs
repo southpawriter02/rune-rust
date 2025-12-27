@@ -52,8 +52,9 @@ public class InventoryService : IInventoryService
     }
 
     /// <inheritdoc/>
-    public async Task<InventoryResult> AddItemAsync(Character character, Item item, int quantity = 1, string context = "Unspecified")
+    public async Task<InventoryResult> AddItemAsync(Character character, Item item, int quantity = 1)
     {
+        const string context = "AddItem";
         _logger.LogTrace("Adding {Quantity}x {ItemName} to {CharacterName}'s inventory (Context: {Context})",
             quantity, item.Name, character.Name, context);
 
@@ -126,8 +127,9 @@ public class InventoryService : IInventoryService
     }
 
     /// <inheritdoc/>
-    public async Task<InventoryResult> RemoveItemAsync(Character character, string itemName, int quantity = 1, string context = "Unspecified")
+    public async Task<InventoryResult> RemoveItemAsync(Character character, string itemName, int quantity = 1)
     {
+        const string context = "RemoveItem";
         _logger.LogTrace("Removing {Quantity}x {ItemName} from {CharacterName}'s inventory (Context: {Context})",
             quantity, itemName, character.Name, context);
 
@@ -163,8 +165,9 @@ public class InventoryService : IInventoryService
     }
 
     /// <inheritdoc/>
-    public async Task<InventoryResult> DropItemAsync(Character character, string itemName, string context = "Unspecified")
+    public async Task<InventoryResult> DropItemAsync(Character character, string itemName)
     {
+        const string context = "DropItem";
         _logger.LogTrace("{CharacterName} dropping {ItemName} (Context: {Context})", character.Name, itemName, context);
 
         var entry = await _inventoryRepository.FindByItemNameAsync(character.Id, itemName);
@@ -191,8 +194,9 @@ public class InventoryService : IInventoryService
     }
 
     /// <inheritdoc/>
-    public async Task<InventoryResult> EquipItemAsync(Character character, string itemName, string context = "Unspecified")
+    public async Task<InventoryResult> EquipItemAsync(Character character, string itemName)
     {
+        const string context = "EquipItem";
         _logger.LogTrace("{CharacterName} equipping {ItemName} (Context: {Context})", character.Name, itemName, context);
 
         var entry = await _inventoryRepository.FindByItemNameAsync(character.Id, itemName);
@@ -245,8 +249,9 @@ public class InventoryService : IInventoryService
     }
 
     /// <inheritdoc/>
-    public async Task<InventoryResult> UnequipSlotAsync(Character character, EquipmentSlot slot, string context = "Unspecified")
+    public async Task<InventoryResult> UnequipSlotAsync(Character character, EquipmentSlot slot)
     {
+        const string context = "UnequipSlot";
         _logger.LogTrace("{CharacterName} unequipping slot {Slot} (Context: {Context})", character.Name, slot, context);
 
         var entry = await _inventoryRepository.GetEquippedInSlotAsync(character.Id, slot);
@@ -267,8 +272,9 @@ public class InventoryService : IInventoryService
     }
 
     /// <inheritdoc/>
-    public async Task<InventoryResult> UnequipItemAsync(Character character, string itemName, string context = "Unspecified")
+    public async Task<InventoryResult> UnequipItemAsync(Character character, string itemName)
     {
+        const string context = "UnequipItem";
         _logger.LogTrace("{CharacterName} unequipping {ItemName} (Context: {Context})", character.Name, itemName, context);
 
         var entry = await _inventoryRepository.FindByItemNameAsync(character.Id, itemName);

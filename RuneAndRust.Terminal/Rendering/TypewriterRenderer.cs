@@ -10,20 +10,27 @@ namespace RuneAndRust.Terminal.Rendering;
 /// Uses dynamic pacing with longer pauses at punctuation marks.
 /// Supports skip functionality via any key press.
 /// </summary>
+/// <remarks>v0.3.23a: Refactored to use IInputService.</remarks>
 public class TypewriterRenderer : ITypewriterRenderer
 {
+    private readonly IInputService _inputService;
     private readonly ILogger<TypewriterRenderer> _logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TypewriterRenderer"/> class.
     /// </summary>
+    /// <param name="inputService">The input service for standardized input handling.</param>
     /// <param name="logger">The logger for traceability.</param>
-    public TypewriterRenderer(ILogger<TypewriterRenderer> logger)
+    public TypewriterRenderer(
+        IInputService inputService,
+        ILogger<TypewriterRenderer> logger)
     {
+        _inputService = inputService;
         _logger = logger;
     }
 
     /// <inheritdoc />
+    /// <remarks>v0.3.23a: Refactored to use IInputService for skip detection.</remarks>
     public async Task PlaySequenceAsync(string text, int delayMs = 30)
     {
         _logger.LogInformation("[Narrative] Starting typewriter sequence, {Length} characters", text.Length);
@@ -38,9 +45,10 @@ public class TypewriterRenderer : ITypewriterRenderer
 
         foreach (char c in text)
         {
-            if (Console.KeyAvailable)
+            // Check for skip input via IInputService (v0.3.23a)
+            if (_inputService.IsInputAvailable())
             {
-                Console.ReadKey(intercept: true);
+                _inputService.ReadNext(); // Consume the skip input
                 _logger.LogDebug("[Narrative] User skipped prologue sequence at character {Index}", charIndex);
 
                 // Print remaining text instantly
@@ -70,7 +78,7 @@ public class TypewriterRenderer : ITypewriterRenderer
         }
 
         AnsiConsole.MarkupLine("[grey italic]Press any key to enter the ruins...[/]");
-        ConsoleInputHelper.WaitForKeyPress();
+        _inputService.ReadNext(); // Wait for any key
         _logger.LogInformation("[Narrative] Prologue complete. Transitioning to Exploration.");
         AnsiConsole.Clear();
     }

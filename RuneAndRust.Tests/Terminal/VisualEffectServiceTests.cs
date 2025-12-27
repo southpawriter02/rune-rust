@@ -139,12 +139,16 @@ public class VisualEffectServiceTests
     }
 
     [Fact]
-    public async Task TriggerEffectAsync_ClearsBorderOverride_AfterDelay()
+    public async Task TriggerEffectAsync_SetsOverrideWithExpiry_ThenCheckExpiredClears()
     {
-        // Act
+        // Act - v0.3.23b: TriggerEffectAsync now sets expiry instead of auto-clearing
         await _service.TriggerEffectAsync(VisualEffectType.DamageFlash, intensity: 1);
 
-        // Assert - After the effect completes, override should be cleared
+        // Assert - Override still set after await (expiry-based clearing)
+        // The override persists until CheckExpiredOverrides() is called and time has passed
+        // Since we just awaited the delay, calling CheckExpiredOverrides should clear it
+        var cleared = _service.CheckExpiredOverrides();
+        Assert.True(cleared, "Override should have expired and been cleared");
         Assert.Null(_service.GetBorderOverride());
     }
 
@@ -246,6 +250,110 @@ public class VisualEffectServiceTests
 
         // Assert - The "test" override should still be there since effect was skipped
         Assert.Equal("test", _service.GetBorderOverride());
+    }
+
+    #endregion
+
+    #region v0.3.23b: OnInvalidateVisuals Event Tests
+
+    [Fact]
+    public void SetBorderOverride_RaisesOnInvalidateVisuals()
+    {
+        // Arrange
+        var eventRaised = false;
+        _service.OnInvalidateVisuals += () => eventRaised = true;
+
+        // Act
+        _service.SetBorderOverride("red");
+
+        // Assert
+        Assert.True(eventRaised);
+    }
+
+    [Fact]
+    public void ClearBorderOverride_RaisesOnInvalidateVisuals()
+    {
+        // Arrange
+        _service.SetBorderOverride("red");
+        var eventRaised = false;
+        _service.OnInvalidateVisuals += () => eventRaised = true;
+
+        // Act
+        _service.ClearBorderOverride();
+
+        // Assert
+        Assert.True(eventRaised);
+    }
+
+    [Fact]
+    public async Task TriggerEffectAsync_RaisesOnInvalidateVisuals()
+    {
+        // Arrange
+        var eventRaised = false;
+        _service.OnInvalidateVisuals += () => eventRaised = true;
+
+        // Act
+        await _service.TriggerEffectAsync(VisualEffectType.DamageFlash, intensity: 1);
+
+        // Assert
+        Assert.True(eventRaised);
+    }
+
+    #endregion
+
+    #region v0.3.23b: CheckExpiredOverrides Tests
+
+    [Fact]
+    public void CheckExpiredOverrides_ReturnsFalse_WhenNoOverride()
+    {
+        // Act
+        var result = _service.CheckExpiredOverrides();
+
+        // Assert
+        Assert.False(result);
+    }
+
+    [Fact]
+    public void CheckExpiredOverrides_ReturnsFalse_WhenOverrideNotExpired()
+    {
+        // Arrange - Set a manual override (no expiry)
+        _service.SetBorderOverride("red");
+
+        // Act
+        var result = _service.CheckExpiredOverrides();
+
+        // Assert - Manual overrides don't expire
+        Assert.False(result);
+        Assert.Equal("red", _service.GetBorderOverride());
+    }
+
+    [Fact]
+    public async Task CheckExpiredOverrides_ReturnsTrue_AndClears_WhenExpired()
+    {
+        // Arrange - Trigger an effect with short duration
+        await _service.TriggerEffectAsync(VisualEffectType.DamageFlash, intensity: 1);
+
+        // Act - The effect has now expired (we awaited the delay)
+        var result = _service.CheckExpiredOverrides();
+
+        // Assert
+        Assert.True(result);
+        Assert.Null(_service.GetBorderOverride());
+    }
+
+    [Fact]
+    public async Task CheckExpiredOverrides_RaisesOnInvalidateVisuals_WhenClearing()
+    {
+        // Arrange
+        await _service.TriggerEffectAsync(VisualEffectType.DamageFlash, intensity: 1);
+        var eventRaised = false;
+        _service.OnInvalidateVisuals += () => eventRaised = true;
+
+        // Act
+        _service.CheckExpiredOverrides();
+
+        // Assert
+        Assert.True(eventRaised);
     }
 
     #endregion

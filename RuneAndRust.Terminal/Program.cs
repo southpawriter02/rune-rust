@@ -180,6 +180,9 @@ class Program
                     // Register Input Configuration Service (v0.3.9c)
                     services.AddSingleton<IInputConfigurationService, InputConfigurationService>();
 
+                    // Register Input Service (v0.3.23a - The Gatekeeper)
+                    services.AddSingleton<IInputService, InputService>();
+
                     // Register Context Help Service (v0.3.9c)
                     services.AddSingleton<IContextHelpService, ContextHelpService>();
 
@@ -462,9 +465,31 @@ class Program
                     break;
             }
 
-            // Start the game loop
+            // v0.3.23b: Cancellation token for graceful shutdown
+            using var cts = new CancellationTokenSource();
+
+            // Handle Ctrl+C gracefully
+            Console.CancelKeyPress += (sender, e) =>
+            {
+                e.Cancel = true; // Prevent immediate termination
+                cts.Cancel();
+                Console.WriteLine("\n[System] Shutting down gracefully...");
+            };
+
+            // Handle SIGTERM (for containerized environments)
+            AppDomain.CurrentDomain.ProcessExit += (sender, e) =>
+            {
+                cts.Cancel();
+            };
+
+            // Start the game loop with cancellation support
             var game = host.Services.GetRequiredService<IGameService>();
-            game.StartAsync().GetAwaiter().GetResult();
+            game.StartAsync(cts.Token).GetAwaiter().GetResult();
+        }
+        catch (OperationCanceledException)
+        {
+            // v0.3.23b: Clean exit from cancellation
+            Console.WriteLine("Goodbye!");
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
