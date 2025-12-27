@@ -19,7 +19,7 @@ This document provides a comprehensive overview of all implementation milestones
 | 4.8 | The Polish | v0.3.11 - v0.3.14 | Documentation & Testing | Planned |
 | 4.9 | The Long Polish | v0.3.15 - v0.3.24 | Stability & Prep | Planned |
 | 5 | The Saga & The Weaver | v0.4.0 - v0.4.10 | Progression & Magic | Planned |
-| 6 | The Architect | v0.5.0 - v0.5.4 | Settlements & Economy | Planned |
+| 6 | The Architect | v0.5.0 - v0.5.14 | Settlements & Economy | Planned |
 | 7 | The Adversary | v0.6.0 - v0.6.4 | Advanced Combat | Planned |
 | 8 | The World | v0.7.0 - v0.7.4 | Biome Expansion | Planned |
 | 9 | The Deep | v0.8.0 - v0.8.4 | Deep Realms | Planned |
@@ -167,7 +167,7 @@ This document provides a comprehensive overview of all implementation milestones
 
 ---
 
-## Milestone 6: The Architect (Settlements & Economy)
+## Milestone 6: The Architect (v0.5.x)
 
 **Goal:** Establish safe zones, commerce, and political interaction.
 
@@ -175,9 +175,19 @@ This document provides a comprehensive overview of all implementation milestones
 |---------|----------|-------|
 | v0.5.0 | Settlement Engine | SettlementGenerator with districts, Enter/Exit commands |
 | v0.5.1 | Trade & Merchants | TradeService, Merchant entities, Dynamic stock, Currency (Scrip) |
-| v0.5.2 | Advanced Factions | Reputation tiers (Hated-Exalted), Faction-gated services |
-| v0.5.3 | Quest Chains | Multi-stage narratives, Branching outcomes, Delivery missions |
-| v0.5.4 | The World Map | WorldMapService, Fast travel, Journey Mode with encounters |
+| v0.5.2 | Services & Guilds | Inns, Hospitals, Bounty Boards, Guild Contracts |
+| v0.5.3 | The Workshop | Work orders, Bulk scrapping, Crafting commissions |
+| v0.5.4 | The Law | Theft mechanics, Jail system, Crime consequences |
+| v0.5.5 | Dynamic Population | NPC schedules, Day/Night cycles, Crowd density |
+| v0.5.6 | Faction Influence | District control, Dynamic skirmishes, Propaganda |
+| v0.5.7 | Advanced Reputation | Status perks, Favor currency, Social tiering |
+| v0.5.8 | Info Economy | Rumors, Secrets, Codex integration, Library research |
+| v0.5.9 | Political Events | Elections, Crisis events, Price fluctuations |
+| v0.5.10 | The World Map | Hex-grid atlas, Biomes, Fog of War UI |
+| v0.5.11 | The Journey | Travel supplies, Fatigue, Movement stances |
+| v0.5.12 | Road Encounters | Ambush generation, Roadside POIs, Mini-dungeons |
+| v0.5.13 | Trade Routes | Caravans, Supply lines, Interception missions |
+| v0.5.14 | The Frontier | Campsites, Outposts, Stashes, Wilderness survival |
 
 **Status:** Planned
 
