@@ -13,27 +13,37 @@ namespace RuneAndRust.Engine.Services;
 /// Translates between runtime GameState and persistent SaveGame entities.
 /// Uses source-generated JSON serialization for optimal performance (v0.3.18c).
 /// </summary>
-/// <remarks>See: SPEC-SAVE-001 for Save/Load System design.</remarks>
+/// <remarks>
+/// See: SPEC-SAVE-001 for Save/Load System design.
+/// v0.3.21a: Added SaveMetadata population for rich save previews.
+/// v0.3.21b: Added rolling backup system for autosaves (Slots 0, -1, -2).
+/// </remarks>
 public class SaveManager
 {
     private readonly ISaveGameRepository _saveRepo;
+    private readonly IRoomRepository _roomRepo;
     private readonly ILogger<SaveManager> _logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SaveManager"/> class.
     /// </summary>
     /// <param name="saveRepo">The save game repository.</param>
+    /// <param name="roomRepo">The room repository for location name lookup.</param>
     /// <param name="logger">The logger instance.</param>
-    public SaveManager(ISaveGameRepository saveRepo, ILogger<SaveManager> logger)
+    public SaveManager(
+        ISaveGameRepository saveRepo,
+        IRoomRepository roomRepo,
+        ILogger<SaveManager> logger)
     {
         _saveRepo = saveRepo;
+        _roomRepo = roomRepo;
         _logger = logger;
     }
 
     /// <summary>
     /// Saves the current game state to the specified slot.
     /// </summary>
-    /// <param name="slot">The save slot number (1-3).</param>
+    /// <param name="slot">The save slot number. Slot 0 = Autosave (triggers rotation), Slots 1-3 = Manual.</param>
     /// <param name="currentState">The current game state to save.</param>
     /// <returns>True if save succeeded; otherwise, false.</returns>
     public async Task<bool> SaveGameAsync(int slot, GameState currentState)
@@ -46,8 +56,20 @@ public class SaveManager
 
         try
         {
+            // v0.3.21b: If saving to autosave slot (0), rotate existing autosaves first
+            if (slot == 0)
+            {
+                _logger.LogDebug("[Save] Rotating autosave slots before write");
+                await _saveRepo.RotateAutosavesAsync();
+            }
+
             // Serialize using source-generated context (no reflection)
             var jsonState = JsonSerializer.Serialize(currentState, GameStateContext.Default.GameState);
+
+            // v0.3.21a: Generate metadata snapshot for save preview
+            var metadata = await ExtractMetadataAsync(currentState);
+            _logger.LogTrace("[Save] Metadata generated for {Char}: {Loc}, {HP}/{MaxHP} HP",
+                metadata.CharacterName, metadata.LocationName, metadata.CurrentHp, metadata.MaxHp);
 
             var existingSave = await _saveRepo.GetBySlotAsync(slot);
 
@@ -58,6 +80,7 @@ public class SaveManager
                 existingSave.CharacterName = saveName;
                 existingSave.LastPlayed = DateTime.UtcNow;
                 existingSave.SerializedState = jsonState;
+                existingSave.Metadata = metadata;
 
                 await _saveRepo.UpdateAsync(existingSave);
             }
@@ -71,7 +94,8 @@ public class SaveManager
                     CharacterName = saveName,
                     CreatedAt = DateTime.UtcNow,
                     LastPlayed = DateTime.UtcNow,
-                    SerializedState = jsonState
+                    SerializedState = jsonState,
+                    Metadata = metadata
                 };
 
                 await _saveRepo.AddAsync(newSave);
@@ -95,6 +119,36 @@ public class SaveManager
             _logger.LogError(ex, "Save failed: {Error}", ex.Message);
             return false;
         }
+    }
+
+    /// <summary>
+    /// Extracts lightweight metadata from the current game state for save preview (v0.3.21a).
+    /// </summary>
+    /// <param name="state">The current game state.</param>
+    /// <returns>A SaveMetadata snapshot containing character vitals and location.</returns>
+    private async Task<SaveMetadata> ExtractMetadataAsync(GameState state)
+    {
+        var character = state.CurrentCharacter;
+
+        // Look up room name if we have a current room ID
+        string locationName = "Unknown Location";
+        if (state.CurrentRoomId.HasValue)
+        {
+            var room = await _roomRepo.GetByIdAsync(state.CurrentRoomId.Value);
+            locationName = room?.Name ?? "Unknown Location";
+        }
+
+        return new SaveMetadata
+        {
+            CharacterName = character?.Name ?? "Unknown",
+            Archetype = character?.Archetype.ToString() ?? "None",
+            Level = character?.Level ?? 1,
+            CurrentHp = character?.CurrentHP ?? 0,
+            MaxHp = character?.MaxHP ?? 1,
+            LocationName = locationName,
+            TotalPlaytime = TimeSpan.Zero, // TODO: Implement playtime tracking
+            SaveTimestamp = DateTime.UtcNow
+        };
     }
 
     /// <summary>
