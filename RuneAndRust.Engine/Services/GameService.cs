@@ -4,6 +4,7 @@ using RuneAndRust.Core.Entities;
 using RuneAndRust.Core.Enums;
 using RuneAndRust.Core.Interfaces;
 using RuneAndRust.Core.Models;
+using RuneAndRust.Core.Models.Magic;
 using RuneAndRust.Core.ValueObjects;
 using RuneAndRust.Core.ViewModels;
 using RuneAndRust.Engine.Helpers;
@@ -110,7 +111,44 @@ public class GameService : IGameService
             string input = _inputHandler.GetInput(prompt);
 
             // 4. Process the input through the command parser
-            await _parser.ParseAndExecuteAsync(input, _state);
+            var parseResult = await _parser.ParseAndExecuteAsync(input, _state);
+
+            // 4a. Execute complex commands (like Magic) that require services not injected into CommandParser
+            if (parseResult.RequiresCast && !string.IsNullOrEmpty(parseResult.CastSpell))
+            {
+                using var scope = _scopeFactory.CreateScope();
+                var magicService = scope.ServiceProvider.GetRequiredService<IMagicService>();
+
+                var spell = magicService.GetSpell(parseResult.CastSpell);
+                if (spell == null)
+                {
+                    _inputHandler.DisplayError($"You do not know the Galdr for '{parseResult.CastSpell}'.");
+                }
+                else
+                {
+                    // Target resolution is simplified for v0.4.4a (assumes self or simple combat target logic needs to be here)
+                    // For now, let's just use self as target placeholder or null
+                    // In combat, targets are resolved by CombatService, but Cast might be outside combat too.
+                    // If in combat, we might need to route this through CombatService?
+                    // But MagicService handles the resource deduction.
+                    // Let's pass null target for now or current character as target if self-cast.
+
+                    var result = magicService.Cast(_state.CurrentCharacter, spell, null);
+
+                    switch (result)
+                    {
+                        case CastResult.Success:
+                            _inputHandler.DisplayMessage($"You cast {spell.Name}!");
+                            break;
+                        case CastResult.InsufficientAether:
+                            _inputHandler.DisplayError($"Your spark is too dim (Need {spell.Cost}, have {_state.CurrentCharacter.Aether.Current}).");
+                            break;
+                         case CastResult.StartedChant:
+                            _inputHandler.DisplayMessage($"You begin to weave the Galdr for {spell.Name}...");
+                            break;
+                    }
+                }
+            }
 
             // 5. Tick ambient soundscape after exploration commands (v0.3.19c)
             if (_state.Phase == GamePhase.Exploration && _state.CurrentRoomId.HasValue && _ambienceService != null)

@@ -220,6 +220,21 @@ public class ParseResult
     public string? BrewTarget { get; set; }
 
     /// <summary>
+    /// Gets or sets whether a cast command was issued (Magic).
+    /// </summary>
+    public bool RequiresCast { get; set; }
+
+    /// <summary>
+    /// Gets or sets the spell target for the cast command.
+    /// </summary>
+    public string? CastSpell { get; set; }
+
+    /// <summary>
+    /// Gets or sets the target entity for the cast command.
+    /// </summary>
+    public string? CastTarget { get; set; }
+
+    /// <summary>
     /// Gets or sets whether a forge command was issued (Runeforging).
     /// </summary>
     public bool RequiresForge { get; set; }
@@ -706,6 +721,46 @@ public class CommandParser
             }
         }
 
+        // Check for cast command (Magic - v0.4.4a)
+        if (command.StartsWith("cast "))
+        {
+             // Format: cast <spell> [target]
+             var content = command.Substring(5).Trim();
+             string spellName = content;
+             string? castTarget = null;
+
+             // Simple check for target if we assume spell names are single words for now,
+             // or check for spaces.
+             // A more robust parser might be needed if spell names have spaces.
+             // For now, let's assume the first word is the spell, and the rest is target if present.
+             // Or better, let the MagicService resolve "spell name" vs "spell name target".
+             // But to fit the pattern here, let's try to split by space.
+
+             var parts = content.Split(' ', 2, StringSplitOptions.RemoveEmptyEntries);
+             if (parts.Length > 0)
+             {
+                 spellName = parts[0];
+                 if (parts.Length > 1)
+                 {
+                     castTarget = parts[1];
+                 }
+
+                 state.TurnCount++;
+                 _logger.LogDebug("Cast command: Spell={Spell}, Target={Target}", spellName, castTarget);
+                 return new ParseResult
+                 {
+                     RequiresCast = true,
+                     CastSpell = spellName,
+                     CastTarget = castTarget
+                 };
+             }
+             else
+             {
+                 _inputHandler.DisplayError("Cast what? Format: cast <spell> [target]");
+                 return ParseResult.None;
+             }
+        }
+
         // Check for forge command with target (Runeforging - v0.3.1c)
         // Format: "forge <rune> on <item>" or "inscribe <rune> on <item>" or "etch <rune> on <item>"
         if (command.StartsWith("forge ") || command.StartsWith("inscribe ") || command.StartsWith("etch "))
@@ -1037,6 +1092,29 @@ public class CommandParser
         if (heavyTarget != null)
         {
             return ExecuteCombatAttack(heavyTarget, AttackType.Heavy);
+        }
+
+        // Check for cast command (Magic - v0.4.4a) in Combat
+        if (command.StartsWith("cast "))
+        {
+            // Re-use the same parsing logic, but we must return it to GameLoop to execute via MagicService
+            // as MagicService is not available here.
+
+             var content = command.Substring(5).Trim();
+             var parts = content.Split(' ', 2, StringSplitOptions.RemoveEmptyEntries);
+             if (parts.Length > 0)
+             {
+                 var spellName = parts[0];
+                 string? castTarget = null;
+                 if (parts.Length > 1) castTarget = parts[1];
+
+                 return new ParseResult
+                 {
+                     RequiresCast = true,
+                     CastSpell = spellName,
+                     CastTarget = castTarget
+                 };
+             }
         }
 
         // Check for ability use commands (v0.2.3c)
