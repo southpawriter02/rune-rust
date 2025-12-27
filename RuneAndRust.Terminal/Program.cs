@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using RuneAndRust.Core.Constants;
 using RuneAndRust.Core.Entities;
 using RuneAndRust.Core.Enums;
@@ -10,6 +11,7 @@ using RuneAndRust.Core.Settings;
 using RuneAndRust.Engine.Algorithms;
 using RuneAndRust.Engine.Factories;
 using RuneAndRust.Engine.Performance;
+using RuneAndRust.Engine.Repositories;
 using RuneAndRust.Engine.Services;
 using RuneAndRust.Persistence.Data;
 using RuneAndRust.Persistence.Repositories;
@@ -82,6 +84,14 @@ class Program
                     services.AddScoped<IRoomTemplateRepository, RoomTemplateRepository>();
                     services.AddScoped<IBiomeDefinitionRepository, BiomeDefinitionRepository>();
                     services.AddScoped<IBiomeElementRepository, BiomeElementRepository>();
+
+                    // Register Capture Template Repository (v0.3.25b: JSON-based templates)
+                    services.AddSingleton<ICaptureTemplateRepository>(sp =>
+                    {
+                        var logger = sp.GetRequiredService<ILogger<JsonCaptureTemplateRepository>>();
+                        var basePath = Path.Combine(AppContext.BaseDirectory, "data", "capture-templates", "categories");
+                        return new JsonCaptureTemplateRepository(logger, basePath);
+                    });
 
                     // Register Core State (Singleton to persist across game loop)
                     services.AddSingleton<GameState>();
