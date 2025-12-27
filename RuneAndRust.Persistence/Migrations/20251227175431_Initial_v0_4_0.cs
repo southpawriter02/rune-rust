@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace RuneAndRust.Persistence.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class Initial_v0_4_0 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -23,12 +23,54 @@ namespace RuneAndRust.Persistence.Migrations
                     CooldownTurns = table.Column<int>(type: "integer", nullable: false),
                     Range = table.Column<int>(type: "integer", nullable: false),
                     EffectScript = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
-                    Archetype = table.Column<int>(type: "integer", nullable: false),
-                    Tier = table.Column<int>(type: "integer", nullable: false)
+                    Archetype = table.Column<int>(type: "integer", nullable: true),
+                    Tier = table.Column<int>(type: "integer", nullable: false),
+                    ChargeTurns = table.Column<int>(type: "integer", nullable: false),
+                    TelegraphMessage = table.Column<string>(type: "text", nullable: true),
+                    InterruptThreshold = table.Column<float>(type: "real", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_ActiveAbilities", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "AmbientConditions",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Type = table.Column<int>(type: "integer", nullable: false),
+                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Description = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
+                    Color = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
+                    TickScript = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    TickChance = table.Column<float>(type: "real", nullable: false),
+                    BiomeTags = table.Column<string>(type: "jsonb", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AmbientConditions", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "BiomeDefinitions",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    BiomeId = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Description = table.Column<string>(type: "character varying(2000)", maxLength: 2000, nullable: false),
+                    AvailableTemplates = table.Column<string>(type: "jsonb", nullable: false),
+                    DescriptorCategories = table.Column<string>(type: "jsonb", nullable: false),
+                    MinRoomCount = table.Column<int>(type: "integer", nullable: false),
+                    MaxRoomCount = table.Column<int>(type: "integer", nullable: false),
+                    BranchingProbability = table.Column<float>(type: "real", nullable: false),
+                    SecretRoomProbability = table.Column<float>(type: "real", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_BiomeDefinitions", x => x.Id);
+                    table.UniqueConstraint("AK_BiomeDefinitions_BiomeId", x => x.BiomeId);
                 });
 
             migrationBuilder.CreateTable(
@@ -39,6 +81,7 @@ namespace RuneAndRust.Persistence.Migrations
                     Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     Lineage = table.Column<int>(type: "integer", nullable: false),
                     Archetype = table.Column<int>(type: "integer", nullable: false),
+                    Background = table.Column<int>(type: "integer", nullable: false),
                     Sturdiness = table.Column<int>(type: "integer", nullable: false),
                     Might = table.Column<int>(type: "integer", nullable: false),
                     Wits = table.Column<int>(type: "integer", nullable: false),
@@ -57,7 +100,8 @@ namespace RuneAndRust.Persistence.Migrations
                     Level = table.Column<int>(type: "integer", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     LastModified = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    EquipmentBonuses = table.Column<string>(type: "jsonb", nullable: false)
+                    EquipmentBonuses = table.Column<string>(type: "jsonb", nullable: false),
+                    ActiveStatusEffects = table.Column<string>(type: "jsonb", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -83,30 +127,22 @@ namespace RuneAndRust.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "InteractableObjects",
+                name: "HazardTemplates",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    RoomId = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    ObjectType = table.Column<int>(type: "integer", nullable: false),
                     Description = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
-                    DetailedDescription = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
-                    ExpertDescription = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
-                    IsContainer = table.Column<bool>(type: "boolean", nullable: false),
-                    IsOpen = table.Column<bool>(type: "boolean", nullable: false),
-                    IsLocked = table.Column<bool>(type: "boolean", nullable: false),
-                    LockDifficulty = table.Column<int>(type: "integer", nullable: false),
-                    HasBeenExamined = table.Column<bool>(type: "boolean", nullable: false),
-                    HighestExaminationTier = table.Column<int>(type: "integer", nullable: false),
-                    HasBeenSearched = table.Column<bool>(type: "boolean", nullable: false),
-                    LootTier = table.Column<int>(type: "integer", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    LastModified = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    HazardType = table.Column<int>(type: "integer", nullable: false),
+                    Trigger = table.Column<int>(type: "integer", nullable: false),
+                    EffectScript = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
+                    MaxCooldown = table.Column<int>(type: "integer", nullable: false),
+                    OneTimeUse = table.Column<bool>(type: "boolean", nullable: false),
+                    BiomeTags = table.Column<string>(type: "jsonb", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_InteractableObjects", x => x.Id);
+                    table.PrimaryKey("PK_HazardTemplates", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -125,6 +161,7 @@ namespace RuneAndRust.Persistence.Migrations
                     MaxStackSize = table.Column<int>(type: "integer", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     LastModified = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Tags = table.Column<string>(type: "jsonb", nullable: false),
                     ItemDiscriminator = table.Column<string>(type: "character varying(13)", maxLength: 13, nullable: false),
                     Slot = table.Column<int>(type: "integer", nullable: true),
                     AttributeBonuses = table.Column<string>(type: "jsonb", nullable: true),
@@ -140,6 +177,47 @@ namespace RuneAndRust.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "RoomTemplates",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    TemplateId = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    BiomeId = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Size = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    Archetype = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    NameTemplates = table.Column<string>(type: "jsonb", nullable: false),
+                    Adjectives = table.Column<string>(type: "jsonb", nullable: false),
+                    DescriptionTemplates = table.Column<string>(type: "jsonb", nullable: false),
+                    Details = table.Column<string>(type: "jsonb", nullable: false),
+                    ValidConnections = table.Column<string>(type: "jsonb", nullable: false),
+                    Tags = table.Column<string>(type: "jsonb", nullable: false),
+                    MinConnectionPoints = table.Column<int>(type: "integer", nullable: false),
+                    MaxConnectionPoints = table.Column<int>(type: "integer", nullable: false),
+                    Difficulty = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RoomTemplates", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "SaveGames",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    SlotNumber = table.Column<int>(type: "integer", nullable: false),
+                    CharacterName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    LastPlayed = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Metadata = table.Column<string>(type: "jsonb", nullable: true),
+                    SerializedState = table.Column<string>(type: "jsonb", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_SaveGames", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Rooms",
                 columns: table => new
                 {
@@ -152,27 +230,42 @@ namespace RuneAndRust.Persistence.Migrations
                     Exits = table.Column<string>(type: "jsonb", nullable: false),
                     IsStartingRoom = table.Column<bool>(type: "boolean", nullable: false),
                     BiomeType = table.Column<int>(type: "integer", nullable: false),
-                    DangerLevel = table.Column<int>(type: "integer", nullable: false)
+                    DangerLevel = table.Column<int>(type: "integer", nullable: false),
+                    Features = table.Column<int[]>(type: "integer[]", nullable: false),
+                    ConditionId = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Rooms", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Rooms_AmbientConditions_ConditionId",
+                        column: x => x.ConditionId,
+                        principalTable: "AmbientConditions",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
-                name: "SaveGames",
+                name: "BiomeElements",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    SlotNumber = table.Column<int>(type: "integer", nullable: false),
-                    CharacterName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    LastPlayed = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    SerializedState = table.Column<string>(type: "jsonb", nullable: false)
+                    BiomeId = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    ElementName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    ElementType = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    Weight = table.Column<float>(type: "real", nullable: false),
+                    SpawnCost = table.Column<int>(type: "integer", nullable: false),
+                    AssociatedDataId = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    SpawnRules = table.Column<string>(type: "jsonb", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_SaveGames", x => x.Id);
+                    table.PrimaryKey("PK_BiomeElements", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_BiomeElements_BiomeDefinitions_BiomeId",
+                        column: x => x.BiomeId,
+                        principalTable: "BiomeDefinitions",
+                        principalColumn: "BiomeId",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -275,6 +368,49 @@ namespace RuneAndRust.Persistence.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "InteractableObjects",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    RoomId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    ObjectType = table.Column<int>(type: "integer", nullable: false),
+                    Description = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
+                    DetailedDescription = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
+                    ExpertDescription = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
+                    IsContainer = table.Column<bool>(type: "boolean", nullable: false),
+                    IsOpen = table.Column<bool>(type: "boolean", nullable: false),
+                    IsLocked = table.Column<bool>(type: "boolean", nullable: false),
+                    LockDifficulty = table.Column<int>(type: "integer", nullable: false),
+                    HasBeenExamined = table.Column<bool>(type: "boolean", nullable: false),
+                    HighestExaminationTier = table.Column<int>(type: "integer", nullable: false),
+                    HasBeenSearched = table.Column<bool>(type: "boolean", nullable: false),
+                    LootTier = table.Column<int>(type: "integer", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    LastModified = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    HazardType = table.Column<int>(type: "integer", nullable: true),
+                    State = table.Column<int>(type: "integer", nullable: true),
+                    CooldownRemaining = table.Column<int>(type: "integer", nullable: true),
+                    MaxCooldown = table.Column<int>(type: "integer", nullable: true),
+                    OneTimeUse = table.Column<bool>(type: "boolean", nullable: true),
+                    Trigger = table.Column<int>(type: "integer", nullable: true),
+                    RequiredDamageType = table.Column<int>(type: "integer", nullable: true),
+                    DamageThreshold = table.Column<int>(type: "integer", nullable: true),
+                    EffectScript = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    TriggerMessage = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_InteractableObjects", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_InteractableObjects_Rooms_RoomId",
+                        column: x => x.RoomId,
+                        principalTable: "Rooms",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_ActiveAbilities_Archetype_Tier",
                 table: "ActiveAbilities",
@@ -285,6 +421,28 @@ namespace RuneAndRust.Persistence.Migrations
                 table: "ActiveAbilities",
                 column: "Name",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AmbientConditions_Type",
+                table: "AmbientConditions",
+                column: "Type",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_BiomeDefinitions_BiomeId",
+                table: "BiomeDefinitions",
+                column: "BiomeId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_BiomeElements_BiomeId",
+                table: "BiomeElements",
+                column: "BiomeId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_BiomeElements_ElementType",
+                table: "BiomeElements",
+                column: "ElementType");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Characters_Name",
@@ -312,6 +470,12 @@ namespace RuneAndRust.Persistence.Migrations
                 name: "IX_DataCaptures_CodexEntryId",
                 table: "DataCaptures",
                 column: "CodexEntryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_HazardTemplates_Name",
+                table: "HazardTemplates",
+                column: "Name",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_InteractableObjects_RoomId",
@@ -359,6 +523,27 @@ namespace RuneAndRust.Persistence.Migrations
                 column: "Slot");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Rooms_ConditionId",
+                table: "Rooms",
+                column: "ConditionId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RoomTemplates_Archetype",
+                table: "RoomTemplates",
+                column: "Archetype");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RoomTemplates_BiomeId",
+                table: "RoomTemplates",
+                column: "BiomeId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RoomTemplates_TemplateId",
+                table: "RoomTemplates",
+                column: "TemplateId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_SaveGames_SlotNumber",
                 table: "SaveGames",
                 column: "SlotNumber",
@@ -377,7 +562,13 @@ namespace RuneAndRust.Persistence.Migrations
                 name: "ActiveAbilities");
 
             migrationBuilder.DropTable(
+                name: "BiomeElements");
+
+            migrationBuilder.DropTable(
                 name: "DataCaptures");
+
+            migrationBuilder.DropTable(
+                name: "HazardTemplates");
 
             migrationBuilder.DropTable(
                 name: "InteractableObjects");
@@ -389,7 +580,7 @@ namespace RuneAndRust.Persistence.Migrations
                 name: "ItemProperties");
 
             migrationBuilder.DropTable(
-                name: "Rooms");
+                name: "RoomTemplates");
 
             migrationBuilder.DropTable(
                 name: "SaveGames");
@@ -398,13 +589,22 @@ namespace RuneAndRust.Persistence.Migrations
                 name: "Trauma");
 
             migrationBuilder.DropTable(
+                name: "BiomeDefinitions");
+
+            migrationBuilder.DropTable(
                 name: "CodexEntries");
+
+            migrationBuilder.DropTable(
+                name: "Rooms");
 
             migrationBuilder.DropTable(
                 name: "Items");
 
             migrationBuilder.DropTable(
                 name: "Characters");
+
+            migrationBuilder.DropTable(
+                name: "AmbientConditions");
         }
     }
 }

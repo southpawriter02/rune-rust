@@ -12,8 +12,8 @@ using RuneAndRust.Persistence.Data;
 namespace RuneAndRust.Persistence.Migrations
 {
     [DbContext(typeof(RuneAndRustDbContext))]
-    [Migration("20251225183547_v0318a_CoordinateStruct")]
-    partial class v0318a_CoordinateStruct
+    [Migration("20251227175431_Initial_v0_4_0")]
+    partial class Initial_v0_4_0
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -741,6 +741,9 @@ namespace RuneAndRust.Persistence.Migrations
 
                     b.Property<DateTime>("LastPlayed")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Metadata")
+                        .HasColumnType("jsonb");
 
                     b.Property<string>("SerializedState")
                         .IsRequired()

@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using RuneAndRust.Core.Constants;
 using RuneAndRust.Core.Entities;
 using RuneAndRust.Core.Enums;
 using RuneAndRust.Core.Interfaces;
@@ -16,6 +17,7 @@ using RuneAndRust.Terminal.Controllers;
 using RuneAndRust.Terminal.Rendering;
 using RuneAndRust.Terminal.Services;
 using Serilog;
+using Serilog.Events;
 using Spectre.Console;
 using Character = RuneAndRust.Core.Entities.Character;
 
@@ -23,12 +25,29 @@ class Program
 {
     static void Main(string[] args)
     {
-        // 1. Configure Serilog
+        // 1. Configure Serilog (v0.3.24b: Environment-aware configuration)
+#if DEBUG
+        // Debug: Verbose logging to console and file
         Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Debug()
-            .WriteTo.Console()
-            .WriteTo.File("logs/runeandrust.log", rollingInterval: RollingInterval.Day)
+            .WriteTo.Console(restrictedToMinimumLevel: LogEventLevel.Debug)
+            .WriteTo.File("logs/runeandrust.log",
+                rollingInterval: RollingInterval.Day,
+                restrictedToMinimumLevel: LogEventLevel.Debug)
             .CreateLogger();
+#else
+        // Release: Minimal console output, info+ to file
+        Log.Logger = new LoggerConfiguration()
+            .MinimumLevel.Information()
+            .WriteTo.Console(restrictedToMinimumLevel: LogEventLevel.Warning)
+            .WriteTo.File("logs/runeandrust.log",
+                rollingInterval: RollingInterval.Day,
+                restrictedToMinimumLevel: LogEventLevel.Information)
+            .CreateLogger();
+#endif
+
+        Log.Information("[Startup] Rune & Rust {Version} ({Config}) starting...",
+            BuildInfo.FullVersionString, BuildInfo.Configuration);
 
         // Declare host outside try block for crash handler access (v0.3.16b)
         IHost? host = null;
@@ -402,8 +421,8 @@ class Program
                 return;
             }
 
-            // 6. UI Handover
-            AnsiConsole.MarkupLine("[green]Rune & Rust v0.3.6c Booting...[/]");
+            // 6. UI Handover (v0.3.24b: Uses BuildInfo for version)
+            AnsiConsole.MarkupLine($"[green]Rune & Rust {BuildInfo.FullVersionString} Booting...[/]");
             AnsiConsole.WriteLine();
 
             // Show title screen and get menu selection (v0.3.4a)
