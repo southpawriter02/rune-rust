@@ -372,47 +372,55 @@ Goal: Final code cleanup and dependency updates before the massive Saga content 
 	◦	Scope: A final stability pass, version bumping, and release packaging script.
 	◦	Deliverable: RuneAndRust-v0.4.0-Ready.zip.
 
-    Milestone 5: The Saga (Progression & Content)
+## Milestone 5: The Saga (Progression & Content)
 
 Goal: Long-term playability, character advancement, and narrative context.
-    •   v0.4.0: Saga Progression
+•   v0.4.0: Saga Progression
     ◦   Leveling: Implement the SagaService for Legend (XP) accumulation and Milestone rewards.
     ◦   Spending: Implement the Saga Menu to spend Progression Points (PP) on Attributes and Skills.
-    •   v0.4.1: Specializations
+•   v0.4.1: Specializations
     ◦   Unlock: Implement the Specialization unlock system.
     ◦   Trees: Implement Ability Trees for the first 4 specializations (e.g., Berserkr, Jötun-Reader).
-    •   v0.4.2: Factions & Dialogue
+•   v0.4.2: Factions & Dialogue
     ◦   Reputation: Implement FactionService (Iron-Banes, Dvergr, etc.).
     ◦   Dialogue: Implement the DialogueService with skill-gated responses.
 
 Based on the completion of Milestone 5 (v0.4.x), the roadmap shifts toward Milestone 6: The Weaver (Magic), Milestone 7: The Architect (Settlements), Milestone 8: The Adversary (Advanced Combat), and Milestone 9: The World (Biomes).
 Here is the implementation roadmap for the next 20 versions.
-Milestone 6: The Weaver (Magic Systems)
-    •   v0.4.3: Magic Core
+
+## Milestone 6: The Weaver (Magic Systems)
+
+Goal: Implement core magic systems, including Aether, Spells, and Runes.
+•   v0.4.3: Magic Core
     ◦   Scope: Implement AetherService, Spell entity, and Aether (Mana) resource tracking.
-    •   v0.4.4: Spells & Chants
+•   v0.4.4: Spells & Chants
     ◦   Scope: Implement CastCommand, Chant mechanics (multi-turn casting), and the first set of Mystic spells.
-    •   v0.4.5: Runic Inscription
+•   v0.4.5: Runic Inscription
     ◦   Scope: Implement Runeforging crafting trade, Rune items, and equipment embossing logic.
-    •   v0.4.6: The Glitch (Wild Magic)
+•   v0.4.6: The Glitch (Wild Magic)
     ◦   Scope: Implement WildMagicService for critical spell failures and "Paradox" events.
-    •   v0.4.7: Magic UI
+•   v0.4.7: Magic UI
     ◦   Scope: Add Grimoire UI tab and visual feedback for active chants/runes.
-Milestone 7: The Architect (Settlements & Economy)
-    •   v0.5.0: Settlement Engine
+
+## Milestone 7: The Architect (Settlements & Economy)
+
+Goal: Implement settlement generation, district logic, and trade systems.
+•   v0.5.0: Settlement Engine
     ◦   Scope: Implement Settlement generation (Safe Zones), District logic, and Enter/Exit commands.
-    •   v0.5.1: Trade & Merchants
+•   v0.5.1: Trade & Merchants
     ◦   Scope: Implement TradeService, Merchant entities, Buy/Sell commands, and dynamic stock.
-    •   v0.5.2: Advanced Factions
+•   v0.5.2: Advanced Factions
     ◦   Scope: Implement Reputation tiers (Hated to Exalted) and faction-specific service gating.
-    •   v0.5.3: Quest Chains
+•   v0.5.3: Quest Chains
     ◦   Scope: Expand QuestService to support multi-stage quests, branching outcomes, and delivery missions.
-    •   v0.5.4: The World Map
+•   v0.5.4: The World Map
     ◦   Scope: Implement WorldMapService, fast travel mechanics, and "Journey Mode" for inter-settlement travel.
-Milestone 8: The Adversary (Advanced Combat)
-    •   v0.6.0: Enemy Traits (Affixes)
+## Milestone 8: The Adversary (Advanced Combat)
+
+Goal: Implement advanced combat systems, including enemy traits, AI, and boss mechanics.
+•   v0.6.0: Enemy Traits (Affixes)
     ◦   Scope: Implement CreatureTraitService to generate Elite enemies with modifiers (e.g., "Explosive," "Teleporting").
-    •   v0.6.1: Advanced AI
+•   v0.6.1: Advanced AI
     ◦   Scope: Implement BehaviorTree AI for squad tactics (healing, flanking, fleeing).
     •   v0.6.2: Boss Mechanics
     ◦   Scope: Implement BossService for multi-phase encounters and legendary actions.
