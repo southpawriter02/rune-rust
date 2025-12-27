@@ -1,5 +1,7 @@
 # Capture Templates
 
+> **For content authors:** See the full [Capture Template Authoring Guide](../../docs/guides/capture-template-authoring.md)
+
 This directory contains externalized Data Capture templates for the Rune & Rust knowledge system.
 
 ## Directory Structure
@@ -111,8 +113,21 @@ Total templates: 19
 OK All templates valid!
 ```
 
+## AAM-VOICE Layer 2 Quick Reference
+
+Data Captures use medieval-flavored vocabulary:
+
+| Don't Write | Write Instead |
+|-------------|---------------|
+| "Emergency bypass terminal" | "The humming altar" |
+| "Power core" | "The heart-stone" |
+| "Database" | "The memory-well" |
+| "Robot" | "Automaton" or "iron-walker" |
+| "Computer" | "Oracle-box" or "rune-mirror" |
+
 ## Related Documentation
 
-- [SPEC-CODEX-001](../docs/specs/knowledge/SPEC-CODEX-001.md) - Codex system architecture
-- [Sample Codex Entries](../docs/design/09-data/sample-codex-entries.md) - Lore content examples
-- [CaptureType.cs](../RuneAndRust.Core/Enums/CaptureType.cs) - Enum source of truth
+- [Capture Template Authoring Guide](../../docs/guides/capture-template-authoring.md) - Full authoring guide for content creators
+- [SPEC-CODEX-001](../../docs/specs/knowledge/SPEC-CODEX-001.md) - Codex system architecture
+- [Sample Codex Entries](../../docs/design/09-data/sample-codex-entries.md) - Lore content examples
+- [CaptureType.cs](../../RuneAndRust.Core/Enums/CaptureType.cs) - Enum source of truth

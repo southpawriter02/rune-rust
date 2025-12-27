@@ -10,12 +10,16 @@ namespace RuneAndRust.Engine.Services;
 /// Service for generating and managing Data Captures during gameplay.
 /// Handles discovery of lore fragments and auto-assignment to Codex entries.
 /// </summary>
-/// <remarks>See: SPEC-CAPTURE-001 for Data Capture System design.</remarks>
+/// <remarks>
+/// See: SPEC-CAPTURE-001 for Data Capture System design.
+/// v0.3.25c: Refactored to use ICaptureTemplateRepository for data-driven templates.
+/// </remarks>
 public class DataCaptureService : IDataCaptureService
 {
     private readonly ILogger<DataCaptureService> _logger;
     private readonly IDataCaptureRepository _captureRepository;
     private readonly ICodexEntryRepository _codexRepository;
+    private readonly ICaptureTemplateRepository _templateRepository;
     private readonly Random _random;
 
     /// <summary>
@@ -54,19 +58,35 @@ public class DataCaptureService : IDataCaptureService
     private const int DetailedTier = 1;
 
     /// <summary>
+    /// Maps keywords from object descriptions to JSON template categories.
+    /// v0.3.25c: Replaces hardcoded CaptureTemplates references.
+    /// </summary>
+    private static readonly Dictionary<string, string[]> CategoryKeywords = new()
+    {
+        ["rusted-servitor"] = ["servitor", "automaton", "machine", "mechanical"],
+        ["blighted-creature"] = ["blight", "corrupted", "infected", "mutation"],
+        ["industrial-site"] = ["industrial", "forge", "foundry", "factory", "mechanism"],
+        ["ancient-ruin"] = ["ruin", "ancient", "inscription", "tomb", "temple"],
+        ["generic-container"] = [] // Fallback for containers
+    };
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="DataCaptureService"/> class.
     /// </summary>
     /// <param name="logger">The logger for traceability.</param>
     /// <param name="captureRepository">The data capture repository.</param>
     /// <param name="codexRepository">The codex entry repository.</param>
+    /// <param name="templateRepository">The capture template repository.</param>
     public DataCaptureService(
         ILogger<DataCaptureService> logger,
         IDataCaptureRepository captureRepository,
-        ICodexEntryRepository codexRepository)
+        ICodexEntryRepository codexRepository,
+        ICaptureTemplateRepository templateRepository)
     {
         _logger = logger;
         _captureRepository = captureRepository;
         _codexRepository = codexRepository;
+        _templateRepository = templateRepository;
         _random = new Random();
     }
 
@@ -77,16 +97,19 @@ public class DataCaptureService : IDataCaptureService
     /// <param name="logger">The logger for traceability.</param>
     /// <param name="captureRepository">The data capture repository.</param>
     /// <param name="codexRepository">The codex entry repository.</param>
+    /// <param name="templateRepository">The capture template repository.</param>
     /// <param name="seed">The random seed for deterministic generation.</param>
     public DataCaptureService(
         ILogger<DataCaptureService> logger,
         IDataCaptureRepository captureRepository,
         ICodexEntryRepository codexRepository,
+        ICaptureTemplateRepository templateRepository,
         int seed)
     {
         _logger = logger;
         _captureRepository = captureRepository;
         _codexRepository = codexRepository;
+        _templateRepository = templateRepository;
         _random = new Random(seed);
     }
 
@@ -112,8 +135,8 @@ public class DataCaptureService : IDataCaptureService
             return CaptureResult.NoCapture("No lore fragments discovered.");
         }
 
-        // Select a template based on the container
-        var template = SelectTemplate(container);
+        // Select a template based on the container (v0.3.25c: now async from repository)
+        var template = await SelectTemplateAsync(container);
         if (template == null)
         {
             _logger.LogDebug("No suitable capture template found for container {ContainerName}", container.Name);
@@ -132,7 +155,7 @@ public class DataCaptureService : IDataCaptureService
         };
 
         // Try to auto-assign to a matching Codex entry
-        var wasAutoAssigned = await TryAutoAssignAsync(capture, template.MatchingKeywords);
+        var wasAutoAssigned = await TryAutoAssignAsync(capture, template.MatchKeywords);
 
         // Persist the capture
         await _captureRepository.AddAsync(capture);
@@ -179,8 +202,8 @@ public class DataCaptureService : IDataCaptureService
             return CaptureResult.NoCapture("Your examination reveals no additional knowledge.");
         }
 
-        // Select a template based on the target
-        var template = SelectTemplate(target);
+        // Select a template based on the target (v0.3.25c: now async from repository)
+        var template = await SelectTemplateAsync(target);
         if (template == null)
         {
             _logger.LogDebug("No suitable capture template found for target {TargetName}", target.Name);
@@ -204,7 +227,7 @@ public class DataCaptureService : IDataCaptureService
         };
 
         // Try to auto-assign to a matching Codex entry
-        var wasAutoAssigned = await TryAutoAssignAsync(capture, template.MatchingKeywords);
+        var wasAutoAssigned = await TryAutoAssignAsync(capture, template.MatchKeywords);
 
         // Persist the capture
         await _captureRepository.AddAsync(capture);
@@ -311,77 +334,58 @@ public class DataCaptureService : IDataCaptureService
 
     /// <summary>
     /// Selects a capture template based on the interactable object.
+    /// v0.3.25c: Async method using ICaptureTemplateRepository.
     /// </summary>
-    private CaptureTemplate? SelectTemplate(InteractableObject obj)
+    /// <param name="obj">The interactable object to match templates against.</param>
+    /// <returns>A matching template DTO, or null if no match found.</returns>
+    private async Task<CaptureTemplateDto?> SelectTemplateAsync(InteractableObject obj)
     {
-        _logger.LogTrace("Selecting capture template for object {ObjectName}", obj.Name);
+        _logger.LogTrace("[SelectTemplate] Starting template selection for object '{ObjectName}'", obj.Name);
 
         var objectName = obj.Name.ToLowerInvariant();
         var objectDesc = obj.Description.ToLowerInvariant();
         var combined = $"{objectName} {objectDesc}";
 
-        // Check for specific object types
-        if (ContainsAny(combined, "servitor", "automaton", "machine", "mechanical"))
+        _logger.LogTrace("[SelectTemplate] Combined text: '{Combined}'", combined);
+
+        // Check each category's keywords for a match
+        foreach (var (category, keywords) in CategoryKeywords)
         {
-            _logger.LogTrace("Selected RustedServitor template category for {ObjectName}", obj.Name);
-            return SelectRandomTemplate(CaptureTemplates.RustedServitor);
+            // Skip generic-container (fallback) unless it's actually a container
+            if (category == "generic-container")
+                continue;
+
+            if (keywords.Any(k => combined.Contains(k, StringComparison.OrdinalIgnoreCase)))
+            {
+                _logger.LogTrace("[SelectTemplate] Matched category '{Category}' for object '{ObjectName}'",
+                    category, obj.Name);
+
+                var template = await _templateRepository.GetRandomAsync(category);
+                if (template != null)
+                {
+                    _logger.LogDebug("[SelectTemplate] Selected template '{TemplateId}' from category '{Category}'",
+                        template.Id, category);
+                    return template;
+                }
+
+                _logger.LogWarning("[SelectTemplate] Category '{Category}' matched but returned no templates", category);
+            }
         }
 
-        if (ContainsAny(combined, "blight", "corrupted", "infected", "mutation"))
-        {
-            _logger.LogTrace("Selected BlightedCreature template category for {ObjectName}", obj.Name);
-            return SelectRandomTemplate(CaptureTemplates.BlightedCreature);
-        }
-
-        if (ContainsAny(combined, "industrial", "forge", "foundry", "factory", "mechanism"))
-        {
-            _logger.LogTrace("Selected IndustrialSite template category for {ObjectName}", obj.Name);
-            return SelectRandomTemplate(CaptureTemplates.IndustrialSite);
-        }
-
-        if (ContainsAny(combined, "ruin", "ancient", "inscription", "tomb", "temple"))
-        {
-            _logger.LogTrace("Selected AncientRuin template category for {ObjectName}", obj.Name);
-            return SelectRandomTemplate(CaptureTemplates.AncientRuin);
-        }
-
-        // For containers, use generic templates
+        // Fallback: use generic-container for container objects
         if (obj.IsContainer)
         {
-            _logger.LogTrace("Selected GenericContainer template category for {ObjectName}", obj.Name);
-            return SelectRandomTemplate(CaptureTemplates.GenericContainer);
+            _logger.LogTrace("[SelectTemplate] Using generic-container fallback for container '{ObjectName}'", obj.Name);
+            var template = await _templateRepository.GetRandomAsync("generic-container");
+            if (template != null)
+            {
+                _logger.LogDebug("[SelectTemplate] Selected template '{TemplateId}' from generic-container", template.Id);
+                return template;
+            }
         }
 
-        // No matching template
-        _logger.LogTrace("No template category matched for {ObjectName}", obj.Name);
+        _logger.LogDebug("[SelectTemplate] No template category matched for object '{ObjectName}'", obj.Name);
         return null;
-    }
-
-    /// <summary>
-    /// Checks if the text contains any of the specified keywords.
-    /// </summary>
-    private static bool ContainsAny(string text, params string[] keywords)
-    {
-        return keywords.Any(k => text.Contains(k, StringComparison.OrdinalIgnoreCase));
-    }
-
-    /// <summary>
-    /// Selects a random template from the array.
-    /// </summary>
-    private CaptureTemplate SelectRandomTemplate(CaptureTemplate[] templates)
-    {
-        _logger.LogTrace("Selecting random template from {TemplateCount} templates", templates.Length);
-
-        if (templates.Length == 0)
-        {
-            _logger.LogWarning("Template array is empty, returning null");
-            return null!;
-        }
-
-        var index = _random.Next(templates.Length);
-        var selected = templates[index];
-        _logger.LogTrace("Selected template at index {Index}: Type {TemplateType}", index, selected.Type);
-        return selected;
     }
 
     /// <summary>

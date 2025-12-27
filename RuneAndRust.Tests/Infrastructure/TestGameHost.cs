@@ -139,6 +139,7 @@ public class TestGameHost : IDisposable
         // Register Interaction Services
         services.AddScoped<IDescriptorEngine, DescriptorEngine>();
         services.AddScoped<IInteractionService, InteractionService>();
+        services.AddSingleton<ICaptureTemplateRepository, TestCaptureTemplateRepository>(); // v0.3.25c
         services.AddScoped<IDataCaptureService, DataCaptureService>();
         services.AddScoped<ObjectSpawner>();
 
@@ -418,6 +419,126 @@ internal class TestSettingsService : ISettingsService
 
     public Task ResetToDefaultsAsync()
     {
+        return Task.CompletedTask;
+    }
+}
+
+/// <summary>
+/// A minimal capture template repository implementation for tests.
+/// Returns test templates for each category without loading from disk.
+/// v0.3.25c: Supports data-driven template system in tests.
+/// </summary>
+internal class TestCaptureTemplateRepository : ICaptureTemplateRepository
+{
+    private readonly Dictionary<string, List<CaptureTemplateDto>> _templates;
+    private readonly Random _random = new();
+
+    public TestCaptureTemplateRepository()
+    {
+        // Initialize with test templates for each category
+        _templates = new Dictionary<string, List<CaptureTemplateDto>>
+        {
+            ["generic-container"] = new()
+            {
+                new CaptureTemplateDto
+                {
+                    Id = "test-generic-1",
+                    Type = CaptureType.TextFragment,
+                    FragmentContent = "A weathered document found within.",
+                    Source = "Container Search",
+                    MatchKeywords = new[] { "container", "salvage" },
+                    Category = "generic-container"
+                }
+            },
+            ["rusted-servitor"] = new()
+            {
+                new CaptureTemplateDto
+                {
+                    Id = "test-servitor-1",
+                    Type = CaptureType.Specimen,
+                    FragmentContent = "Corroded metal fragments from an ancient automaton.",
+                    Source = "Servitor Remains",
+                    MatchKeywords = new[] { "servitor", "automaton", "machine" },
+                    Category = "rusted-servitor"
+                }
+            },
+            ["blighted-creature"] = new()
+            {
+                new CaptureTemplateDto
+                {
+                    Id = "test-blighted-1",
+                    Type = CaptureType.Specimen,
+                    FragmentContent = "Tissue sample showing signs of corruption.",
+                    Source = "Blighted Remains",
+                    MatchKeywords = new[] { "blight", "corruption", "infected" },
+                    Category = "blighted-creature"
+                }
+            },
+            ["industrial-site"] = new()
+            {
+                new CaptureTemplateDto
+                {
+                    Id = "test-industrial-1",
+                    Type = CaptureType.TextFragment,
+                    FragmentContent = "Schematics for forgotten machinery.",
+                    Source = "Industrial Site",
+                    MatchKeywords = new[] { "forge", "mechanism", "industrial" },
+                    Category = "industrial-site"
+                }
+            },
+            ["ancient-ruin"] = new()
+            {
+                new CaptureTemplateDto
+                {
+                    Id = "test-ruin-1",
+                    Type = CaptureType.RunicTrace,
+                    FragmentContent = "Faded inscriptions on crumbling stone.",
+                    Source = "Ancient Inscription",
+                    MatchKeywords = new[] { "ancient", "ruin", "inscription" },
+                    Category = "ancient-ruin"
+                }
+            }
+        };
+    }
+
+    public int TotalTemplateCount => _templates.Values.Sum(list => list.Count);
+
+    public Task<IReadOnlyList<CaptureTemplateDto>> GetByCategoryAsync(string category)
+    {
+        if (_templates.TryGetValue(category, out var templates))
+            return Task.FromResult<IReadOnlyList<CaptureTemplateDto>>(templates.AsReadOnly());
+        return Task.FromResult<IReadOnlyList<CaptureTemplateDto>>(Array.Empty<CaptureTemplateDto>());
+    }
+
+    public Task<CaptureTemplateDto?> GetRandomAsync(string category)
+    {
+        if (_templates.TryGetValue(category, out var templates) && templates.Count > 0)
+        {
+            var index = _random.Next(templates.Count);
+            return Task.FromResult<CaptureTemplateDto?>(templates[index]);
+        }
+        return Task.FromResult<CaptureTemplateDto?>(null);
+    }
+
+    public Task<IReadOnlyList<string>> GetCategoriesAsync()
+    {
+        return Task.FromResult<IReadOnlyList<string>>(_templates.Keys.ToList().AsReadOnly());
+    }
+
+    public Task<CaptureTemplateDto?> GetByIdAsync(string templateId)
+    {
+        foreach (var templates in _templates.Values)
+        {
+            var template = templates.FirstOrDefault(t => t.Id == templateId);
+            if (template != null)
+                return Task.FromResult<CaptureTemplateDto?>(template);
+        }
+        return Task.FromResult<CaptureTemplateDto?>(null);
+    }
+
+    public Task ReloadAsync()
+    {
+        // No-op for tests
         return Task.CompletedTask;
     }
 }

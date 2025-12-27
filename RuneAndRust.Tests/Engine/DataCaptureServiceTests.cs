@@ -13,12 +13,14 @@ namespace RuneAndRust.Tests.Engine;
 /// <summary>
 /// Tests for the DataCaptureService class.
 /// Validates capture generation, auto-assignment, and completion percentage calculations.
+/// v0.3.25c: Updated to use mock ICaptureTemplateRepository.
 /// </summary>
 public class DataCaptureServiceTests
 {
     private readonly Mock<ILogger<DataCaptureService>> _mockLogger;
     private readonly Mock<IDataCaptureRepository> _mockCaptureRepository;
     private readonly Mock<ICodexEntryRepository> _mockCodexRepository;
+    private readonly Mock<ICaptureTemplateRepository> _mockTemplateRepository;
     private readonly DataCaptureService _sut;
     private readonly DataCaptureService _seededSut;
 
@@ -27,18 +29,95 @@ public class DataCaptureServiceTests
         _mockLogger = new Mock<ILogger<DataCaptureService>>();
         _mockCaptureRepository = new Mock<IDataCaptureRepository>();
         _mockCodexRepository = new Mock<ICodexEntryRepository>();
+        _mockTemplateRepository = new Mock<ICaptureTemplateRepository>();
+
+        // Configure mock template repository to return templates for each category
+        SetupMockTemplateRepository();
 
         _sut = new DataCaptureService(
             _mockLogger.Object,
             _mockCaptureRepository.Object,
-            _mockCodexRepository.Object);
+            _mockCodexRepository.Object,
+            _mockTemplateRepository.Object);
 
         // Seeded instance for deterministic tests (seed 42 produces roll 37 first time)
         _seededSut = new DataCaptureService(
             _mockLogger.Object,
             _mockCaptureRepository.Object,
             _mockCodexRepository.Object,
+            _mockTemplateRepository.Object,
             42);
+    }
+
+    /// <summary>
+    /// Configures the mock template repository with test templates.
+    /// </summary>
+    private void SetupMockTemplateRepository()
+    {
+        // Generic container template
+        _mockTemplateRepository
+            .Setup(r => r.GetRandomAsync("generic-container"))
+            .ReturnsAsync(new CaptureTemplateDto
+            {
+                Id = "test-generic-1",
+                Type = CaptureType.TextFragment,
+                FragmentContent = "A weathered document found within.",
+                Source = "Container Search",
+                MatchKeywords = new[] { "container", "salvage" },
+                Category = "generic-container"
+            });
+
+        // Rusted servitor template
+        _mockTemplateRepository
+            .Setup(r => r.GetRandomAsync("rusted-servitor"))
+            .ReturnsAsync(new CaptureTemplateDto
+            {
+                Id = "test-servitor-1",
+                Type = CaptureType.Specimen,
+                FragmentContent = "Corroded metal fragments from an ancient automaton.",
+                Source = "Servitor Remains",
+                MatchKeywords = new[] { "servitor", "automaton", "machine" },
+                Category = "rusted-servitor"
+            });
+
+        // Blighted creature template
+        _mockTemplateRepository
+            .Setup(r => r.GetRandomAsync("blighted-creature"))
+            .ReturnsAsync(new CaptureTemplateDto
+            {
+                Id = "test-blighted-1",
+                Type = CaptureType.Specimen,
+                FragmentContent = "Tissue sample showing signs of corruption.",
+                Source = "Blighted Remains",
+                MatchKeywords = new[] { "blight", "corruption", "infected" },
+                Category = "blighted-creature"
+            });
+
+        // Industrial site template
+        _mockTemplateRepository
+            .Setup(r => r.GetRandomAsync("industrial-site"))
+            .ReturnsAsync(new CaptureTemplateDto
+            {
+                Id = "test-industrial-1",
+                Type = CaptureType.TextFragment,
+                FragmentContent = "Schematics for forgotten machinery.",
+                Source = "Industrial Site",
+                MatchKeywords = new[] { "forge", "mechanism", "industrial" },
+                Category = "industrial-site"
+            });
+
+        // Ancient ruin template
+        _mockTemplateRepository
+            .Setup(r => r.GetRandomAsync("ancient-ruin"))
+            .ReturnsAsync(new CaptureTemplateDto
+            {
+                Id = "test-ruin-1",
+                Type = CaptureType.RunicTrace,
+                FragmentContent = "Faded inscriptions on crumbling stone.",
+                Source = "Ancient Inscription",
+                MatchKeywords = new[] { "ancient", "ruin", "inscription" },
+                Category = "ancient-ruin"
+            });
     }
 
     #region TryGenerateFromSearchAsync Tests
@@ -72,6 +151,7 @@ public class DataCaptureServiceTests
             _mockLogger.Object,
             _mockCaptureRepository.Object,
             _mockCodexRepository.Object,
+            _mockTemplateRepository.Object,
             100);
 
         var characterId = Guid.NewGuid();
@@ -106,12 +186,14 @@ public class DataCaptureServiceTests
                 _mockLogger.Object,
                 _mockCaptureRepository.Object,
                 _mockCodexRepository.Object,
+                _mockTemplateRepository.Object,
                 i);
 
             var sutWithoutBonus = new DataCaptureService(
                 _mockLogger.Object,
                 _mockCaptureRepository.Object,
                 _mockCodexRepository.Object,
+                _mockTemplateRepository.Object,
                 i);
 
             var withBonus = await sutWithBonus.TryGenerateFromSearchAsync(characterId, container, 10);
@@ -201,6 +283,7 @@ public class DataCaptureServiceTests
             _mockLogger.Object,
             _mockCaptureRepository.Object,
             _mockCodexRepository.Object,
+            _mockTemplateRepository.Object,
             5); // Seed 5 produces roll 26
 
         // Act
