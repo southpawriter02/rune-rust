@@ -36,4 +36,18 @@ public interface ISaveGameRepository : IRepository<SaveGame>
     /// </summary>
     /// <returns>A list of save game summaries containing only metadata.</returns>
     Task<List<SaveGameSummary>> GetSummariesAsync();
+
+    /// <summary>
+    /// Rotates autosave slots in a transactional cascade (v0.3.21b - The Vault).
+    /// Shifts Slot 0 -> -1 -> -2, deleting the oldest backup.
+    /// Must be called BEFORE writing a new autosave to Slot 0.
+    /// </summary>
+    /// <remarks>
+    /// Slot Schema:
+    /// - Slot 0: Primary Autosave (most recent)
+    /// - Slot -1: Backup 1 (previous autosave)
+    /// - Slot -2: Backup 2 (oldest backup, deleted on rotation)
+    /// - Slots 1-3: Manual saves (unaffected)
+    /// </remarks>
+    Task RotateAutosavesAsync();
 }
