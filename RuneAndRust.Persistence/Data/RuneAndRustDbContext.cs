@@ -142,6 +142,14 @@ public class RuneAndRustDbContext : DbContext
             entity.Property(s => s.SerializedState)
                 .HasColumnType("jsonb")
                 .IsRequired();
+
+            // v0.3.21a: SaveMetadata stored as JSONB for lightweight preview
+            entity.Property(s => s.Metadata)
+                .HasColumnType("jsonb")
+                .HasConversion(
+                    v => v == null ? null : JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
+                    v => v == null ? null : JsonSerializer.Deserialize<SaveMetadata>(v, (JsonSerializerOptions?)null)
+                );
         });
 
         modelBuilder.Entity<Room>(entity =>

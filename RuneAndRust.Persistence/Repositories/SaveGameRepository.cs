@@ -100,4 +100,52 @@ public class SaveGameRepository : GenericRepository<SaveGame>, ISaveGameReposito
 
         return summaries;
     }
+
+    /// <inheritdoc/>
+    public async Task RotateAutosavesAsync()
+    {
+        _saveGameLogger.LogTrace("[DB] Starting autosave rotation");
+
+        // Execute as a single transaction to prevent partial rotation
+        using var transaction = await _context.Database.BeginTransactionAsync();
+        try
+        {
+            // 1. Delete the oldest backup (-2)
+            var oldest = await _dbSet.FirstOrDefaultAsync(s => s.SlotNumber == -2);
+            if (oldest != null)
+            {
+                _dbSet.Remove(oldest);
+                _saveGameLogger.LogInformation("[DB] Pruned oldest backup (Slot -2, ID: {Id})", oldest.Id);
+            }
+
+            await _context.SaveChangesAsync();
+
+            // 2. Shift Backup 1 to Backup 2 (-1 -> -2)
+            var backup = await _dbSet.FirstOrDefaultAsync(s => s.SlotNumber == -1);
+            if (backup != null)
+            {
+                backup.SlotNumber = -2;
+                _saveGameLogger.LogDebug("[DB] Shifted Slot -1 to -2 (ID: {Id})", backup.Id);
+            }
+
+            // 3. Shift Current to Backup 1 (0 -> -1)
+            var current = await _dbSet.FirstOrDefaultAsync(s => s.SlotNumber == 0);
+            if (current != null)
+            {
+                current.SlotNumber = -1;
+                _saveGameLogger.LogDebug("[DB] Shifted Slot 0 to -1 (ID: {Id})", current.Id);
+            }
+
+            await _context.SaveChangesAsync();
+            await transaction.CommitAsync();
+
+            _saveGameLogger.LogTrace("[DB] Autosave rotation transaction committed");
+        }
+        catch (Exception ex)
+        {
+            await transaction.RollbackAsync();
+            _saveGameLogger.LogError(ex, "[DB] Rotation failed. Rolled back transaction. Error: {Error}", ex.Message);
+            throw;
+        }
+    }
 }

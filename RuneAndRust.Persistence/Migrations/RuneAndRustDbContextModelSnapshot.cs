@@ -739,6 +739,9 @@ namespace RuneAndRust.Persistence.Migrations
                     b.Property<DateTime>("LastPlayed")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("Metadata")
+                        .HasColumnType("jsonb");
+
                     b.Property<string>("SerializedState")
                         .IsRequired()
                         .HasColumnType("jsonb");
