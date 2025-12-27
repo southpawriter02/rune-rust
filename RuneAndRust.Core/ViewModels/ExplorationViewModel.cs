@@ -27,6 +27,7 @@ namespace RuneAndRust.Core.ViewModels;
 /// <param name="PlayerPosition">Player's current coordinate position (v0.3.5b).</param>
 /// <param name="LocalMapRooms">Rooms within the minimap grid radius (v0.3.5b).</param>
 /// <param name="VisitedRoomIds">Set of room IDs the player has visited for Fog of War (v0.3.5b).</param>
+/// <param name="UserNotes">User-defined room notes, keyed by RoomId (v0.3.20a).</param>
 /// <param name="VisibleObjects">Formatted object names with markup colors (v0.3.5c).</param>
 /// <param name="VisibleEnemies">Formatted enemy names with health status (v0.3.5c).</param>
 /// <param name="Exits">Comma-separated lowercase exit directions (v0.3.5c).</param>
@@ -48,6 +49,7 @@ public record ExplorationViewModel(
     Coordinate PlayerPosition,
     List<Room> LocalMapRooms,
     HashSet<Guid> VisitedRoomIds,
+    Dictionary<Guid, string> UserNotes,
     List<string> VisibleObjects,
     List<string> VisibleEnemies,
     string Exits,

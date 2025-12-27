@@ -26,6 +26,7 @@ public class GameService : IGameService
     private readonly IExplorationScreenRenderer? _explorationRenderer;
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly IScreenTransitionService? _transitionService;
+    private readonly IAmbienceService? _ambienceService;
     private GamePhase _previousPhase = GamePhase.MainMenu;
 
     /// <summary>
@@ -40,6 +41,7 @@ public class GameService : IGameService
     /// <param name="combatRenderer">The combat screen renderer (optional for testing).</param>
     /// <param name="explorationRenderer">The exploration screen renderer (v0.3.5a, optional for testing).</param>
     /// <param name="transitionService">The screen transition service (v0.3.14b, optional for testing).</param>
+    /// <param name="ambienceService">The ambient soundscape service (v0.3.19c, optional for testing).</param>
     public GameService(
         ILogger<GameService> logger,
         IInputHandler inputHandler,
@@ -49,7 +51,8 @@ public class GameService : IGameService
         IServiceScopeFactory scopeFactory,
         ICombatScreenRenderer? combatRenderer = null,
         IExplorationScreenRenderer? explorationRenderer = null,
-        IScreenTransitionService? transitionService = null)
+        IScreenTransitionService? transitionService = null,
+        IAmbienceService? ambienceService = null)
     {
         _logger = logger;
         _inputHandler = inputHandler;
@@ -60,6 +63,7 @@ public class GameService : IGameService
         _combatRenderer = combatRenderer;
         _explorationRenderer = explorationRenderer;
         _transitionService = transitionService;
+        _ambienceService = ambienceService;
     }
 
     /// <inheritdoc/>
@@ -107,6 +111,12 @@ public class GameService : IGameService
 
             // 4. Process the input through the command parser
             await _parser.ParseAndExecuteAsync(input, _state);
+
+            // 5. Tick ambient soundscape after exploration commands (v0.3.19c)
+            if (_state.Phase == GamePhase.Exploration && _state.CurrentRoomId.HasValue && _ambienceService != null)
+            {
+                await _ambienceService.UpdateAsync(_state.CurrentRoomId.Value);
+            }
         }
 
         // Final transition before quit (v0.3.14b)
@@ -249,6 +259,7 @@ public class GameService : IGameService
             PlayerPosition: playerPosition,
             LocalMapRooms: localMapRooms,
             VisitedRoomIds: _state.VisitedRoomIds,
+            UserNotes: _state.UserNotes,
             VisibleObjects: visibleObjects,
             VisibleEnemies: visibleEnemies,
             Exits: exits,

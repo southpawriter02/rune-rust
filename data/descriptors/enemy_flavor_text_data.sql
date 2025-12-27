@@ -39,7 +39,7 @@ VALUES
 -- Corroded Sentry
 ('Creature', 'CorrodedSentry', 'Cursory', NULL, 'Alive', 'A floating metal eye, drifting aimlessly.', 1.0, '["Basic", "Machine"]'),
 ('Creature', 'CorrodedSentry', 'Detailed', NULL, 'Alive', 'An ancient watcher, eaten by time. It leaks black oil like blood. It scans the dark for intruders to report to masters long dead.', 1.0, '["Lore", "Machine"]'),
-('Creature', 'CorrodedSentry', 'Expert', NULL, 'Alive', 'A low-altitude surveillance drone. Its targeting matrix is misaligned, making its aim poor, but it can still signal other horrors to your location.', 1.0, '["Technical", "Machine", "Tactical"]'),
+('Creature', 'CorrodedSentry', 'Expert', NULL, 'Alive', 'A low-altitude spy-spirit. Its hunting-sight is misaligned, making its aim poor, but it can still screech to other horrors, calling them to your location.', 1.0, '["Technical", "Machine", "Tactical"]'),
 
 -- Maintenance Construct
 ('Creature', 'MaintenanceConstruct', 'Cursory', NULL, 'Alive', 'A boxy, multi-armed machine moving with purpose.', 1.0, '["Basic", "Machine"]'),
@@ -64,9 +64,9 @@ VALUES
 ('Creature', 'TestSubject', 'Expert', NULL, 'Alive', 'Genetic experiment, likely from the Bio-Labs. Enhanced adrenal glands make it incredibly fast but fragile. Its unstable biology makes it prone to frenzy.', 1.0, '["Technical", "Mutant", "Tactical"]'),
 
 -- Blight-Drone
-('Creature', 'BlightDrone', 'Cursory', NULL, 'Alive', 'A flying insect-machine, buzzing loudly.', 1.0, '["Basic", "Machine"]'),
-('Creature', 'BlightDrone', 'Detailed', NULL, 'Alive', 'A hovering metal wasp the size of a shield. It carries a payload of sickness. The air around it tastes of copper.', 1.0, '["Lore", "Machine"]'),
-('Creature', 'BlightDrone', 'Expert', NULL, 'Alive', 'Aerial dispersal unit. Originally for pesticides, now filled with Blight agents. It attacks from range. Ground it immediately.', 1.0, '["Technical", "Machine", "Tactical"]'),
+('Creature', 'BlightDrone', 'Cursory', NULL, 'Alive', 'A flying insect-machine, buzzing loudly like an angry spirit.', 1.0, '["Basic", "Machine"]'),
+('Creature', 'BlightDrone', 'Detailed', NULL, 'Alive', 'A hovering iron-wasp the size of a shield. It carries a payload of sickness. The air around it tastes of copper.', 1.0, '["Lore", "Machine"]'),
+('Creature', 'BlightDrone', 'Expert', NULL, 'Alive', 'Sky-dispersal unit. Originally for raining poison, now filled with Blight agents. It attacks from range. Ground it immediately.', 1.0, '["Technical", "Machine", "Tactical"]'),
 
 -- Arc-Welder Unit (Industrial Robot)
 ('Creature', 'ArcWelderUnit', 'Cursory', NULL, 'Alive', 'A heavy machine with a crackling lightning-spear.', 1.0, '["Basic", "Machine"]'),

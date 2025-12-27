@@ -55,26 +55,26 @@ VALUES
 ('Machinery', 'ServitorCorpse', 'Cursory', NULL, 'Destroyed', 'The wreckage of a Servitor lies here, power core dark.', 1.0, '["Basic"]'),
 
 -- Detailed (DC 12)
-('Machinery', 'ServitorCorpse', 'Detailed', NULL, 'Destroyed', 'A destroyed Servitor, Model M-12 labor unit. Its chassis shows signs of corrupted runic energy—the Blight turned it hostile. Death was recent; the heart-stone is still warm. Salvageable parts include damaged motive-joints and a partially intact memory-gem.', 1.0, '["Technical", "Salvage", "Lore"]'),
+('Machinery', 'ServitorCorpse', 'Detailed', NULL, 'Destroyed', 'A destroyed Servitor, Model M-12 labor unit. Its chassis shows signs of corrupted rune-light—the Blight turned it hostile. Death was recent; the heart-stone is still warm. Salvageable parts include damaged motive-joints and a partially intact memory-gem.', 1.0, '["Technical", "Salvage", "Lore"]'),
 ('Machinery', 'ServitorCorpse', 'Detailed', NULL, 'Destroyed', 'This Servitor was a worker model, designed for heavy lifting and construction. The Blight''s corruption is evident in the twisted metal and blackened rune-traces. It died fighting something—defensive marks scar its chassis.', 1.0, '["Technical", "Combat"]'),
 
 -- Expert (DC 18)
-('Machinery', 'ServitorCorpse', 'Expert', NULL, 'Destroyed', 'A destroyed Servitor, Model M-12; markings suggest manufacture centuries before the Blight. The corruption pattern is unusual—this unit was exposed to concentrated Blight energy, likely from Alfheim''s expansion. The memory-gem, if recoverable, might contain pre-corruption logs showing what it witnessed. The motive-joints could be restored with proper tools.', 1.0, '["Technical", "Historical", "Salvage", "Lore"]'),
+('Machinery', 'ServitorCorpse', 'Expert', NULL, 'Destroyed', 'A destroyed Servitor, Model M-12; markings suggest manufacture centuries before the Blight. The corruption pattern is unusual—this unit was exposed to concentrated Blight-flow, likely from Alfheim''s expansion. The memory-gem, if recoverable, might contain pre-corruption memories showing what it witnessed. The motive-joints could be mended with proper tools.', 1.0, '["Technical", "Historical", "Salvage", "Lore"]'),
 ('Machinery', 'ServitorCorpse', 'Expert', NULL, 'Destroyed', 'Model M-12 Maintenance Servitor, one of thousands deployed throughout the citadel. This unit''s maker-stamp indicates Clan Ironforge construction—pre-Blight craftsmanship at its finest. The Blight corrupted its command-runes approximately a fortnight ago based on decay patterns. The memory-gem is intact; extracting it could provide valuable intelligence about recent Servitor activity. The death occurred recently—something powerful destroyed it with a single, devastating strike to the heart-stone.', 1.0, '["Technical", "Historical", "Combat", "Intelligence"]');
 
 -- Ancient Console Descriptors
 INSERT INTO Examination_Descriptors (object_category, object_type, detail_level, biome_name, object_state, descriptor_text, weight, tags)
 VALUES
 -- Cursory
-('Machinery', 'AncientConsole', 'Cursory', NULL, 'Operational', 'An ancient control console, still flickering with power.', 1.0, '["Basic"]'),
-('Machinery', 'AncientConsole', 'Cursory', NULL, 'Dormant', 'A dark control panel, ancient and inactive.', 1.0, '["Basic"]'),
+('Machinery', 'AncientConsole', 'Cursory', NULL, 'Operational', 'An ancient control console, still flickering with spirit-light.', 1.0, '["Basic"]'),
+('Machinery', 'AncientConsole', 'Cursory', NULL, 'Dormant', 'A dark control panel, ancient and sleeping.', 1.0, '["Basic"]'),
 
 -- Detailed (DC 12)
-('Machinery', 'AncientConsole', 'Detailed', NULL, 'Operational', 'An ancient Jötun control station designed for environmental systems management. The display shows a corrupted schematic of this ward. Three interface ports remain functional—you could connect a Lore-Slate to attempt memory retrieval. Warning sigils suggest hazardous atmosphere in connected areas.', 1.0, '["Technical", "Tactical"]'),
-('Machinery', 'AncientConsole', 'Detailed', NULL, 'Operational', 'This control altar once managed citadel infrastructure. It still has limited power, drawing from deep backup veins. The interface is in Classical Jötun—readable with difficulty. Several subsystems remain responsive.', 1.0, '["Technical", "Lore"]'),
+('Machinery', 'AncientConsole', 'Detailed', NULL, 'Operational', 'An ancient Jötun control station designed for environmental systems management. The spirit-glass shows a corrupted schematic of this ward. Three interface mouths remain functional—you could connect a Lore-Slate to attempt memory retrieval. Warning sigils suggest hazardous atmosphere in connected areas.', 1.0, '["Technical", "Tactical"]'),
+('Machinery', 'AncientConsole', 'Detailed', NULL, 'Operational', 'This control altar once managed citadel infrastructure. It still has limited spark, drawing from deep backup veins. The interface is in Classical Jötun—readable with difficulty. Several subsystems remain responsive.', 1.0, '["Technical", "Lore"]'),
 
 -- Expert (DC 18)
-('Machinery', 'AncientConsole', 'Expert', NULL, 'Operational', 'A Jötun Environmental Control Station, Designation ENV-4422. It still has partial connection to ancient systems. The schematic reveals this level connected to the main geothermal plant—heat regulation failed 800 years ago. The station could potentially be used to divert power, vent atmospheres, or even access locked-down emergency rites. However, any commands sent will echo through the entire web—everything connected will know you''re here.', 1.0, '["Technical", "Tactical", "Historical"]'),
+('Machinery', 'AncientConsole', 'Expert', NULL, 'Operational', 'A Jötun Environmental Control Station, Designation ENV-4422. It still has partial connection to ancient systems. The schematic reveals this level connected to the main geothermal plant—heat regulation failed 800 years ago. The station could potentially be used to divert the invisible fire, vent atmospheres, or even access locked-down emergency rites. However, any commands sent will echo through the entire web—everything connected will know you''re here.', 1.0, '["Technical", "Tactical", "Historical"]'),
 ('Machinery', 'AncientConsole', 'Expert', NULL, 'Operational', 'Environmental Control Station ENV-4422, one of 47 such terminals distributed throughout the citadel. This unit retains connection to the primary network backbone—a remarkable feat given 800 years of decay. You could access environmental controls, including atmospheric venting, temperature regulation, and emergency bulkhead controls. The warning logs reveal the last command issued was "EMERGENCY PURGE ALL WARDS" on Evacuation Day. Someone tried to cleanse the citadel of the Blight by venting every level to vacuum. The command failed. Using this station risks alerting any Blight-corrupted systems still monitoring the network.', 1.0, '["Technical", "Historical", "Tactical", "Lore"]');
 
 -- ============================================================
@@ -124,7 +124,7 @@ VALUES
 
 -- Expert (DC 18)
 ('Structural', 'SupportPillar', 'Expert', NULL, 'Damaged', 'A corroded support pillar bearing the maker''s mark of Clan Ironforge. The degradation pattern suggests 800 years of neglect. Hidden within the rust, you spot a concealed maintenance panel.', 1.0, '["Technical", "Tactical", "Historical"]'),
-('Structural', 'SupportPillar', 'Expert', NULL, 'Intact', 'This pillar bears Clan Ironforge''s mark and a manufacture date: 1,200 years ago. It has survived the Blight, the evacuation, and centuries of decay without weakening. The iron alloy is a lost formula—modern smiths cannot replicate this strength. If you could analyze the composition, the metallurgical knowledge would be invaluable. More practically, you notice the pillar has internal conduits—it was designed to carry power or fluids. The system might still be functional.', 1.0, '["Technical", "Historical", "Lore"]');
+('Structural', 'SupportPillar', 'Expert', NULL, 'Intact', 'This pillar bears Clan Ironforge''s mark and a manufacture date: 1,200 years ago. It has survived the Blight, the evacuation, and centuries of decay without weakening. The iron alloy is a lost formula—modern smiths cannot replicate this strength. If you could analyze the composition, the metallurgical knowledge would be invaluable. More practically, you notice the pillar has internal conduits—it was designed to carry lightning or fluids. The system might still be functional.', 1.0, '["Technical", "Historical", "Lore"]');
 
 -- Control Panel Descriptors (additional machinery)
 INSERT INTO Examination_Descriptors (object_category, object_type, detail_level, biome_name, object_state, descriptor_text, weight, tags)
@@ -175,7 +175,7 @@ VALUES
 ('SecretDoor', 'Success', 14, NULL, 'You notice scratch marks on the floor—something heavy has moved here repeatedly. A search reveals a pivoting wall section!', NULL, 1.0, '["Discovery"]'),
 
 -- Expert Success
-('SecretDoor', 'ExpertSuccess', 22, NULL, 'You find the hidden door and immediately understand its purpose.', 'This is an emergency escape route, Jötun construction. The mechanism is mechanical, not runic—it would still work even during power failures. The door opens to a service tunnel that bypasses the main corridors.', 1.0, '["Discovery", "Tactical"]'),
+('SecretDoor', 'ExpertSuccess', 22, NULL, 'You find the hidden door and immediately understand its purpose.', 'This is an emergency escape route, Jötun construction. The mechanism is mechanical, not runic—it would still work even during the great sleep of the machines. The door opens to a service tunnel that bypasses the main corridors.', 1.0, '["Discovery", "Tactical"]'),
 ('SecretDoor', 'ExpertSuccess', 20, NULL, 'The secret passage is masterfully concealed, but you spot the telltale signs.', 'This was built during the citadel''s original construction—a planned escape route for VIPs. The passage is marked on old schematics as "Emergency Evacuation Route 7." It likely leads to secure areas.', 1.0, '["Discovery", "Historical"]');
 
 -- Hidden Cache Detection
@@ -266,7 +266,7 @@ INSERT INTO Flora_Descriptors (flora_name, flora_type, detail_level, biome_name,
 VALUES
 ('Shadow Creeper', 'Vine', 'Cursory', 'The_Roots', 0, 0, NULL, 'Dark vines creep along the walls, avoiding the light.', 1.0, '["Ominous"]'),
 ('Shadow Creeper', 'Vine', 'Detailed', 'The_Roots', 0, 0, NULL, 'Shadow Creeper vines, a plant that thrives in total darkness. They actively avoid light sources. The vines are harmless but create an eerie atmosphere as they retreat from your torch.', 1.0, '["Ominous", "Unusual"]'),
-('Shadow Creeper', 'Vine', 'Expert', 'The_Roots', 1, 0, 'darkness potions, shadow Galdr components', 'Shadow Creeper, Tenebris reptans. One of the few plants that evolved to feed on the dark itself—it drinks ambient Aetheric energy instead of light. The vines possess rudimentary light-sensitivity, causing them to recoil from illumination. Harvesting requires darkness; attempting to collect them in light causes the vines to wither instantly. Used in darkness potions and shadow Galdr.', 1.0, '["Ominous", "Magical", "Alchemy"]');
+('Shadow Creeper', 'Vine', 'Expert', 'The_Roots', 1, 0, 'darkness potions, shadow Galdr components', 'Shadow Creeper, Tenebris reptans. One of the few plants that evolved to feed on the dark itself—it drinks the unseen light instead of the sun. The vines possess rudimentary light-fear, causing them to recoil from illumination. Harvesting requires darkness; attempting to collect them in light causes the vines to wither instantly. Used in darkness potions and shadow Galdr.', 1.0, '["Ominous", "Magical", "Alchemy"]');
 
 -- ============================================================
 -- MUSPELHEIM - Flora
@@ -277,7 +277,7 @@ INSERT INTO Flora_Descriptors (flora_name, flora_type, detail_level, biome_name,
 VALUES
 ('Ember Moss', 'Moss', 'Cursory', 'Muspelheim', 1, 1, NULL, 'Red moss growing near heat sources, pulsing like coals.', 1.0, '["Fire", "Dangerous"]'),
 ('Ember Moss', 'Moss', 'Detailed', 'Muspelheim', 1, 1, 'fire resistance potions', 'Ember Moss, a fire-drinking organism that thrives in extreme heat. The pulsing glow is real—the moss generates heat through alchemical fire. Touching it will burn you. Alchemically, it''s a key component in fire resistance potions.', 1.0, '["Fire", "Alchemy", "Dangerous"]'),
-('Ember Moss', 'Moss', 'Expert', 'Muspelheim', 1, 1, 'fire resistance, heat generation, explosive compounds', 'Ember Moss, one of the few organisms that survived Muspelheim''s volcanic transformation. It doesn''t just tolerate heat—it requires scalding temperatures to survive. The moss stores thermal energy in specialized vessels. Harvesting requires heat-resistant gloves and proper timing (during its dormant phase, which lasts mere heartbeats). Master alchemists use it for fire resistance, heat generation, and even experimental explosive compounds.', 1.0, '["Fire", "Alchemy", "Extreme"]');
+('Ember Moss', 'Moss', 'Expert', 'Muspelheim', 1, 1, 'fire resistance, heat generation, explosive compounds', 'Ember Moss, one of the few organisms that survived Muspelheim''s volcanic transformation. It doesn''t just tolerate heat—it requires scalding temperatures to survive. The moss stores heat-blood in specialized vessels. Harvesting requires heat-resistant gloves and proper timing (during its dormant phase, which lasts mere heartbeats). Master alchemists use it for fire resistance, heat generation, and even experimental explosive compounds.', 1.0, '["Fire", "Alchemy", "Extreme"]');
 
 -- Lava Blossoms
 INSERT INTO Flora_Descriptors (flora_name, flora_type, detail_level, biome_name, is_harvestable, is_dangerous, alchemy_use, descriptor_text, weight, tags)
@@ -313,7 +313,7 @@ INSERT INTO Flora_Descriptors (flora_name, flora_type, detail_level, biome_name,
 VALUES
 ('Paradox Spore Cluster', 'Spore', 'Cursory', 'Alfheim', 1, 1, NULL, 'Strange crystalline growths that seem to shift when you look away.', 1.0, '["Blight", "Weird"]'),
 ('Paradox Spore Cluster', 'Spore', 'Detailed', 'Alfheim', 1, 1, NULL, 'Paradox Spore Clusters—if they can even be called organic. They exist in multiple states simultaneously, both fungus and crystal, living and not. The Blight created them. Approach with extreme caution; they''re unpredictable.', 1.0, '["Blight", "Dangerous"]'),
-('Paradox Spore Cluster', 'Spore', 'Expert', 'Alfheim', 1, 1, 'reality-bending Galdr, experimental runecraft', 'Paradox Spore Clusters, a true impossibility made manifest by the Blight. They violate biological laws—reproducing backward through time, existing as both spore and mature colony. Harvesting them is dangerous; they may infect the harvester with Blight Corruption. However, they''re the most potent source of paradoxical energy known—essential for reality-bending Galdr and experimental runecraft. Handle only with proper containment protocols.', 1.0, '["Blight", "Forbidden", "Powerful"]');
+('Paradox Spore Cluster', 'Spore', 'Expert', 'Alfheim', 1, 1, 'reality-bending Galdr, experimental runecraft', 'Paradox Spore Clusters, a true impossibility made manifest by the Blight. They violate natural laws—reproducing backward through time, existing as both spore and mature colony. Harvesting them is dangerous; they may infect the harvester with Blight Corruption. However, they''re the most potent source of paradoxical power known—essential for reality-bending Galdr and experimental runecraft. Handle only with proper containment rites.', 1.0, '["Blight", "Forbidden", "Powerful"]');
 
 -- Reality Moss
 INSERT INTO Flora_Descriptors (flora_name, flora_type, detail_level, biome_name, is_harvestable, is_dangerous, alchemy_use, descriptor_text, weight, tags)
@@ -368,7 +368,7 @@ INSERT INTO Fauna_Descriptors (creature_name, creature_type, observation_type, b
 VALUES
 ('Blight-Moth', 'Insect', 'Sighting', 'Alfheim', 0, 'BlightAdapted', NULL, 'Pale moths flutter through the air, drawn to runic light.', 1.0, '["Blight", "Harmless"]'),
 ('Blight-Moth', 'Insect', 'Sound', 'Alfheim', 0, 'BlightAdapted', NULL, 'You hear the soft flutter of moth wings—pale shapes moving in the darkness.', 1.0, '["Blight"]'),
-('Blight-Moth', 'Insect', 'ExpertObservation', 'Alfheim', 0, 'BlightAdapted', 'Blight-Moths, creatures born from paradox. They shouldn''t exist but do, feeding on runic energy. They''re harmless and actually useful—they''re attracted to active Galdr. Seiðkona use them to detect Aetheric signatures.', 'Blight-Moths circle overhead, drawn to ambient Aetheric energy. Their behavior can reveal hidden wards or active Galdr.', 1.0, '["Blight", "Magical", "Useful"]');
+('Blight-Moth', 'Insect', 'ExpertObservation', 'Alfheim', 0, 'BlightAdapted', 'Blight-Moths, creatures born from paradox. They shouldn''t exist but do, feeding on rune-light. They''re harmless and actually useful—they''re attracted to active Galdr. Seiðkona use them to detect Aetheric signatures.', 'Blight-Moths circle overhead, drawn to ambient Aetheric currents. Their behavior can reveal hidden wards or active Galdr.', 1.0, '["Blight", "Magical", "Useful"]');
 
 -- ============================================================
 -- BIOME-SPECIFIC FAUNA

@@ -40,7 +40,7 @@ VALUES
  'An elderly Dvergr whose eyes reflect the light strangely, as if seeing beyond the physical.', 1.0, 1, '["Mystical", "Memorable"]'),
 
 ('Dvergr', 'Runecaster', 'Equipment', NULL, NULL, NULL,
- 'Runic tattoos cover this Dvergr''s arms, pulsing with faint energy.', 1.0, 1, '["Mystical", "Distinctive"]'),
+ 'Runic tattoos cover this Dvergr''s arms, pulsing with faint light.', 1.0, 1, '["Mystical", "Distinctive"]'),
 
 -- Dvergr Merchant - Full Body Descriptions
 ('Dvergr', 'Merchant', 'FullBody', 'Affluent', NULL, NULL,
@@ -67,7 +67,7 @@ VALUES
  'This Seiðkona''s eyes are distant, as if always seeing through the veil of reality.', 1.0, 1, '["Mystical", "Distinctive"]'),
 
 ('Seidkona', 'WanderingSeidkona', 'Bearing', NULL, NULL, 'Elderly',
- 'An elderly mystic whose very presence seems to shimmer with faint runic energy.', 1.0, 1, '["Mystical", "Memorable"]'),
+ 'An elderly mystic whose very presence seems to shimmer with faint rune-light.', 1.0, 1, '["Mystical", "Memorable"]'),
 
 ('Seidkona', 'WanderingSeidkona', 'Clothing', NULL, NULL, NULL,
  'This traveler''s cloak is adorned with small bones and feathers—ritual components.', 1.0, 1, '["Mystical", "Distinctive"]'),

@@ -22,9 +22,10 @@ public static class MinimapRenderer
     /// <param name="center">The player's current position (grid center).</param>
     /// <param name="localMap">List of rooms within the grid bounds.</param>
     /// <param name="visited">Set of room IDs the player has visited.</param>
+    /// <param name="userNotes">User-defined room notes for annotation display (v0.3.20a).</param>
     /// <param name="themeService">The theme service for color lookups.</param>
     /// <returns>A Panel containing the minimap grid.</returns>
-    public static Panel Render(Coordinate center, List<Room> localMap, HashSet<Guid> visited, IThemeService themeService)
+    public static Panel Render(Coordinate center, List<Room> localMap, HashSet<Guid> visited, Dictionary<Guid, string> userNotes, IThemeService themeService)
     {
         var grid = new Grid();
 
@@ -45,7 +46,7 @@ public static class MinimapRenderer
                 var room = localMap.FirstOrDefault(r =>
                     r.Position.X == x && r.Position.Y == y && r.Position.Z == center.Z);
 
-                rowItems.Add(ResolveTile(room, center, cellPos, visited, themeService));
+                rowItems.Add(ResolveTile(room, center, cellPos, visited, userNotes, themeService));
             }
 
             grid.AddRow(rowItems.ToArray());
@@ -70,7 +71,11 @@ public static class MinimapRenderer
     /// <summary>
     /// Renders the minimap panel (legacy, non-themed).
     /// </summary>
-    public static Panel Render(Coordinate center, List<Room> localMap, HashSet<Guid> visited)
+    /// <param name="center">The player's current position (grid center).</param>
+    /// <param name="localMap">List of rooms within the grid bounds.</param>
+    /// <param name="visited">Set of room IDs the player has visited.</param>
+    /// <param name="userNotes">User-defined room notes for annotation display (v0.3.20a).</param>
+    public static Panel Render(Coordinate center, List<Room> localMap, HashSet<Guid> visited, Dictionary<Guid, string> userNotes)
     {
         var grid = new Grid();
 
@@ -89,7 +94,7 @@ public static class MinimapRenderer
                 var room = localMap.FirstOrDefault(r =>
                     r.Position.X == x && r.Position.Y == y && r.Position.Z == center.Z);
 
-                rowItems.Add(ResolveTile(room, center, cellPos, visited));
+                rowItems.Add(ResolveTile(room, center, cellPos, visited, userNotes));
             }
 
             grid.AddRow(rowItems.ToArray());
@@ -112,7 +117,13 @@ public static class MinimapRenderer
     /// <summary>
     /// Resolves the symbol and color for a minimap tile with theme support.
     /// </summary>
-    public static Markup ResolveTile(Room? room, Coordinate center, Coordinate cellPos, HashSet<Guid> visited, IThemeService themeService)
+    /// <param name="room">The room at this position (null if empty).</param>
+    /// <param name="center">The player's current position.</param>
+    /// <param name="cellPos">The cell position being resolved.</param>
+    /// <param name="visited">Set of visited room IDs.</param>
+    /// <param name="userNotes">User-defined room notes (v0.3.20a).</param>
+    /// <param name="themeService">The theme service for color lookups.</param>
+    public static Markup ResolveTile(Room? room, Coordinate center, Coordinate cellPos, HashSet<Guid> visited, Dictionary<Guid, string> userNotes, IThemeService themeService)
     {
         var playerColor = themeService.GetColor("PlayerColor");
         var neutralColor = themeService.GetColor("NeutralColor");
@@ -135,6 +146,12 @@ public static class MinimapRenderer
             return new Markup($"[{neutralColor}]░[/]");  // Fog
         }
 
+        // User annotation - show yellow ! for rooms with notes (v0.3.20a)
+        if (userNotes.ContainsKey(room.Id))
+        {
+            return new Markup($"[{themeService.GetColor("WarningColor")}]![/]");
+        }
+
         // Visited room - resolve by feature priority
         var (symbol, color) = GetRoomSymbol(room, themeService);
         return new Markup($"[{color}]{symbol}[/]");
@@ -143,7 +160,12 @@ public static class MinimapRenderer
     /// <summary>
     /// Resolves the symbol and color for a minimap tile (legacy, non-themed).
     /// </summary>
-    public static Markup ResolveTile(Room? room, Coordinate center, Coordinate cellPos, HashSet<Guid> visited)
+    /// <param name="room">The room at this position (null if empty).</param>
+    /// <param name="center">The player's current position.</param>
+    /// <param name="cellPos">The cell position being resolved.</param>
+    /// <param name="visited">Set of visited room IDs.</param>
+    /// <param name="userNotes">User-defined room notes (v0.3.20a).</param>
+    public static Markup ResolveTile(Room? room, Coordinate center, Coordinate cellPos, HashSet<Guid> visited, Dictionary<Guid, string> userNotes)
     {
         if (cellPos.X == center.X && cellPos.Y == center.Y && cellPos.Z == center.Z)
         {
@@ -158,6 +180,12 @@ public static class MinimapRenderer
         if (!visited.Contains(room.Id))
         {
             return new Markup("[grey]░[/]");
+        }
+
+        // User annotation - show yellow ! for rooms with notes (v0.3.20a)
+        if (userNotes.ContainsKey(room.Id))
+        {
+            return new Markup("[yellow]![/]");
         }
 
         var (symbol, color) = GetRoomSymbol(room);

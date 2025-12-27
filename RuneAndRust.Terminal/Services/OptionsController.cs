@@ -130,6 +130,7 @@ public class OptionsController
             Theme = (int)GameSettings.Theme,
             TextSpeed = GameSettings.TextSpeed,
             MasterVolume = GameSettings.MasterVolume,
+            AmbienceEnabled = GameSettings.AmbienceEnabled,
             AutosaveIntervalMinutes = GameSettings.AutosaveIntervalMinutes,
             Language = GameSettings.Language
         };
@@ -245,6 +246,13 @@ public class OptionsController
                     MaxValue: 100,
                     Step: 5,
                     PropertyName: "MasterVolume"
+                ));
+                vm.CurrentItems.Add(new SettingItemView(
+                    Name: _loc.Get(LocKeys.UI_Options_Setting_AmbienceEnabled),
+                    ValueDisplay: _viewHelper.FormatToggle(vm.AmbienceEnabled),
+                    Type: SettingType.Toggle,
+                    IsSelected: index++ == vm.SelectedIndex,
+                    PropertyName: "AmbienceEnabled"
                 ));
                 break;
         }
@@ -498,6 +506,11 @@ public class OptionsController
                 vm.ReduceMotion = !vm.ReduceMotion;
                 _logger.LogDebug("[Options] ReduceMotion changed to {Value}", vm.ReduceMotion);
                 break;
+
+            case "AmbienceEnabled":
+                vm.AmbienceEnabled = !vm.AmbienceEnabled;
+                _logger.LogDebug("[Options] AmbienceEnabled changed to {Value}", vm.AmbienceEnabled);
+                break;
         }
     }
 
@@ -513,6 +526,7 @@ public class OptionsController
         vm.Theme = (int)GameSettings.Theme;
         vm.TextSpeed = GameSettings.TextSpeed;
         vm.MasterVolume = GameSettings.MasterVolume;
+        vm.AmbienceEnabled = GameSettings.AmbienceEnabled;
         vm.AutosaveIntervalMinutes = GameSettings.AutosaveIntervalMinutes;
         vm.Language = GameSettings.Language;
 
@@ -532,6 +546,7 @@ public class OptionsController
         GameSettings.Theme = (ThemeType)vm.Theme;
         GameSettings.TextSpeed = vm.TextSpeed;
         GameSettings.MasterVolume = vm.MasterVolume;
+        GameSettings.AmbienceEnabled = vm.AmbienceEnabled;
         GameSettings.AutosaveIntervalMinutes = vm.AutosaveIntervalMinutes;
         GameSettings.Language = vm.Language;
     }

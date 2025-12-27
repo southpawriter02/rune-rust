@@ -8,24 +8,31 @@ using RuneAndRust.Core.Models;
 using RuneAndRust.Engine.Services;
 using Xunit;
 using EntityCharacter = RuneAndRust.Core.Entities.Character;
+using Room = RuneAndRust.Core.Entities.Room;
 
 namespace RuneAndRust.Tests.Engine;
 
 /// <summary>
 /// Unit tests for the SaveManager service.
 /// </summary>
+/// <remarks>v0.3.21: Added tests for metadata population and autosave rotation.</remarks>
 public class SaveManagerTests
 {
-    private readonly Mock<ISaveGameRepository> _mockRepo;
+    private readonly Mock<ISaveGameRepository> _mockSaveRepo;
+    private readonly Mock<IRoomRepository> _mockRoomRepo;
     private readonly Mock<ILogger<SaveManager>> _mockLogger;
     private readonly SaveManager _saveManager;
 
     public SaveManagerTests()
     {
-        _mockRepo = new Mock<ISaveGameRepository>();
+        _mockSaveRepo = new Mock<ISaveGameRepository>();
+        _mockRoomRepo = new Mock<IRoomRepository>();
         _mockLogger = new Mock<ILogger<SaveManager>>();
-        _saveManager = new SaveManager(_mockRepo.Object, _mockLogger.Object);
+        _saveManager = new SaveManager(_mockSaveRepo.Object, _mockRoomRepo.Object, _mockLogger.Object);
     }
+
+    // Alias for backwards compatibility in existing tests
+    private Mock<ISaveGameRepository> _mockRepo => _mockSaveRepo;
 
     #region SaveGameAsync Tests
 
@@ -370,6 +377,227 @@ public class SaveManagerTests
         summary.CharacterName.Should().Be("TestChar");
         summary.LastPlayed.Should().Be(lastPlayed);
         summary.IsEmpty.Should().BeFalse();
+    }
+
+    #endregion
+
+    #region v0.3.21a: SaveMetadata Population Tests
+
+    [Fact]
+    public async Task SaveGameAsync_PopulatesMetadata_WithCharacterData()
+    {
+        // Arrange
+        var roomId = Guid.NewGuid();
+        var room = new Room { Id = roomId, Name = "The Deep Shaft" };
+        var gameState = new GameState
+        {
+            Phase = GamePhase.Exploration,
+            CurrentRoomId = roomId,
+            CurrentCharacter = new EntityCharacter
+            {
+                Name = "TestHero",
+                Archetype = ArchetypeType.Warrior,
+                Level = 5,
+                CurrentHP = 50,
+                MaxHP = 100
+            }
+        };
+        SaveGame? capturedSave = null;
+
+        _mockRoomRepo.Setup(r => r.GetByIdAsync(roomId)).ReturnsAsync(room);
+        _mockRepo.Setup(r => r.GetBySlotAsync(1)).ReturnsAsync((SaveGame?)null);
+        _mockRepo.Setup(r => r.AddAsync(It.IsAny<SaveGame>()))
+            .Callback<SaveGame>(s => capturedSave = s)
+            .Returns(Task.CompletedTask);
+        _mockRepo.Setup(r => r.SaveChangesAsync()).Returns(Task.CompletedTask);
+
+        // Act
+        var result = await _saveManager.SaveGameAsync(1, gameState);
+
+        // Assert
+        result.Should().BeTrue();
+        capturedSave.Should().NotBeNull();
+        capturedSave!.Metadata.Should().NotBeNull();
+        capturedSave.Metadata!.CharacterName.Should().Be("TestHero");
+        capturedSave.Metadata.Archetype.Should().Be("Warrior");
+        capturedSave.Metadata.Level.Should().Be(5);
+        capturedSave.Metadata.CurrentHp.Should().Be(50);
+        capturedSave.Metadata.MaxHp.Should().Be(100);
+        capturedSave.Metadata.LocationName.Should().Be("The Deep Shaft");
+    }
+
+    [Fact]
+    public async Task SaveGameAsync_PopulatesMetadata_WithDefaultsWhenNoCharacter()
+    {
+        // Arrange
+        var gameState = new GameState { CurrentCharacter = null };
+        SaveGame? capturedSave = null;
+
+        _mockRepo.Setup(r => r.GetBySlotAsync(1)).ReturnsAsync((SaveGame?)null);
+        _mockRepo.Setup(r => r.AddAsync(It.IsAny<SaveGame>()))
+            .Callback<SaveGame>(s => capturedSave = s)
+            .Returns(Task.CompletedTask);
+        _mockRepo.Setup(r => r.SaveChangesAsync()).Returns(Task.CompletedTask);
+
+        // Act
+        var result = await _saveManager.SaveGameAsync(1, gameState);
+
+        // Assert
+        result.Should().BeTrue();
+        capturedSave.Should().NotBeNull();
+        capturedSave!.Metadata.Should().NotBeNull();
+        capturedSave.Metadata!.CharacterName.Should().Be("Unknown");
+        capturedSave.Metadata.Archetype.Should().Be("None");
+        capturedSave.Metadata.Level.Should().Be(1);
+        capturedSave.Metadata.CurrentHp.Should().Be(0);
+        capturedSave.Metadata.MaxHp.Should().Be(1);
+        capturedSave.Metadata.LocationName.Should().Be("Unknown Location");
+    }
+
+    [Fact]
+    public async Task SaveGameAsync_PopulatesMetadata_WithUnknownLocationWhenRoomNotFound()
+    {
+        // Arrange
+        var roomId = Guid.NewGuid();
+        var gameState = new GameState
+        {
+            CurrentRoomId = roomId,
+            CurrentCharacter = new EntityCharacter { Name = "TestHero" }
+        };
+        SaveGame? capturedSave = null;
+
+        _mockRoomRepo.Setup(r => r.GetByIdAsync(roomId)).ReturnsAsync((Room?)null);
+        _mockRepo.Setup(r => r.GetBySlotAsync(1)).ReturnsAsync((SaveGame?)null);
+        _mockRepo.Setup(r => r.AddAsync(It.IsAny<SaveGame>()))
+            .Callback<SaveGame>(s => capturedSave = s)
+            .Returns(Task.CompletedTask);
+        _mockRepo.Setup(r => r.SaveChangesAsync()).Returns(Task.CompletedTask);
+
+        // Act
+        await _saveManager.SaveGameAsync(1, gameState);
+
+        // Assert
+        capturedSave!.Metadata!.LocationName.Should().Be("Unknown Location");
+    }
+
+    #endregion
+
+    #region v0.3.21b: Autosave Rotation Tests
+
+    [Fact]
+    public async Task SaveGameAsync_SlotZero_TriggersRotation()
+    {
+        // Arrange
+        var gameState = new GameState
+        {
+            CurrentCharacter = new EntityCharacter { Name = "AutoHero" }
+        };
+
+        _mockRepo.Setup(r => r.RotateAutosavesAsync()).Returns(Task.CompletedTask);
+        _mockRepo.Setup(r => r.GetBySlotAsync(0)).ReturnsAsync((SaveGame?)null);
+        _mockRepo.Setup(r => r.AddAsync(It.IsAny<SaveGame>())).Returns(Task.CompletedTask);
+        _mockRepo.Setup(r => r.SaveChangesAsync()).Returns(Task.CompletedTask);
+
+        // Act
+        var result = await _saveManager.SaveGameAsync(0, gameState);
+
+        // Assert
+        result.Should().BeTrue();
+        _mockRepo.Verify(r => r.RotateAutosavesAsync(), Times.Once);
+    }
+
+    [Fact]
+    public async Task SaveGameAsync_SlotOne_DoesNotTriggerRotation()
+    {
+        // Arrange
+        var gameState = new GameState
+        {
+            CurrentCharacter = new EntityCharacter { Name = "ManualHero" }
+        };
+
+        _mockRepo.Setup(r => r.GetBySlotAsync(1)).ReturnsAsync((SaveGame?)null);
+        _mockRepo.Setup(r => r.AddAsync(It.IsAny<SaveGame>())).Returns(Task.CompletedTask);
+        _mockRepo.Setup(r => r.SaveChangesAsync()).Returns(Task.CompletedTask);
+
+        // Act
+        var result = await _saveManager.SaveGameAsync(1, gameState);
+
+        // Assert
+        result.Should().BeTrue();
+        _mockRepo.Verify(r => r.RotateAutosavesAsync(), Times.Never);
+    }
+
+    [Fact]
+    public async Task SaveGameAsync_SlotTwo_DoesNotTriggerRotation()
+    {
+        // Arrange
+        var gameState = new GameState
+        {
+            CurrentCharacter = new EntityCharacter { Name = "ManualHero2" }
+        };
+
+        _mockRepo.Setup(r => r.GetBySlotAsync(2)).ReturnsAsync((SaveGame?)null);
+        _mockRepo.Setup(r => r.AddAsync(It.IsAny<SaveGame>())).Returns(Task.CompletedTask);
+        _mockRepo.Setup(r => r.SaveChangesAsync()).Returns(Task.CompletedTask);
+
+        // Act
+        var result = await _saveManager.SaveGameAsync(2, gameState);
+
+        // Assert
+        result.Should().BeTrue();
+        _mockRepo.Verify(r => r.RotateAutosavesAsync(), Times.Never);
+    }
+
+    #endregion
+
+    #region v0.3.21a: SaveMetadata Model Tests
+
+    [Fact]
+    public void SaveMetadata_Empty_ReturnsDefaultValues()
+    {
+        // Arrange & Act
+        var metadata = SaveMetadata.Empty();
+
+        // Assert
+        metadata.CharacterName.Should().Be("Empty");
+        metadata.Archetype.Should().Be("None");
+        metadata.Level.Should().Be(0);
+        metadata.CurrentHp.Should().Be(0);
+        metadata.MaxHp.Should().Be(0);
+        metadata.LocationName.Should().Be("Void");
+        metadata.TotalPlaytime.Should().Be(TimeSpan.Zero);
+        metadata.SaveTimestamp.Should().Be(DateTime.MinValue);
+    }
+
+    [Fact]
+    public void SaveMetadata_CanSetAllProperties()
+    {
+        // Arrange
+        var timestamp = DateTime.UtcNow;
+        var playtime = TimeSpan.FromHours(4.5);
+
+        // Act
+        var metadata = new SaveMetadata
+        {
+            CharacterName = "TestHero",
+            Archetype = "Mystic",
+            Level = 10,
+            CurrentHp = 75,
+            MaxHp = 100,
+            LocationName = "The Frozen Depths",
+            TotalPlaytime = playtime,
+            SaveTimestamp = timestamp
+        };
+
+        // Assert
+        metadata.CharacterName.Should().Be("TestHero");
+        metadata.Archetype.Should().Be("Mystic");
+        metadata.Level.Should().Be(10);
+        metadata.CurrentHp.Should().Be(75);
+        metadata.MaxHp.Should().Be(100);
+        metadata.LocationName.Should().Be("The Frozen Depths");
+        metadata.TotalPlaytime.Should().Be(playtime);
+        metadata.SaveTimestamp.Should().Be(timestamp);
     }
 
     #endregion

@@ -38,6 +38,7 @@ namespace RuneAndRust.Core.Serialization;
 [JsonSerializable(typeof(List<Entities.ItemProperty>))]
 // GameState collections
 [JsonSerializable(typeof(HashSet<Guid>))]
+[JsonSerializable(typeof(Dictionary<Guid, string>))] // UserNotes (v0.3.20a)
 // Value objects
 [JsonSerializable(typeof(Coordinate))]
 // Primitive collections used across entities

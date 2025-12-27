@@ -54,11 +54,12 @@ public class ExplorationScreenRenderer : IExplorationScreenRenderer
         var roomPanel = RoomRenderer.Render(vm, _theme);
         rootLayout["Main"].Update(roomPanel);
 
-        // 3. Update Sidebar (Minimap - v0.3.5b)
+        // 3. Update Sidebar (Minimap - v0.3.5b, with annotations v0.3.20a)
         var minimapPanel = MinimapRenderer.Render(
             vm.PlayerPosition,
             vm.LocalMapRooms,
-            vm.VisitedRoomIds);
+            vm.VisitedRoomIds,
+            vm.UserNotes);
         rootLayout["Sidebar"].Update(minimapPanel);
 
         // 4. Update Footer (Turn counter + tips - v0.3.9c)

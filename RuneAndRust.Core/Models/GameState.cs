@@ -52,6 +52,12 @@ public class GameState
     public HashSet<Guid> VisitedRoomIds { get; set; } = new();
 
     /// <summary>
+    /// User-defined notes for rooms, keyed by RoomId (v0.3.20a).
+    /// Displayed on minimap with '!' symbol.
+    /// </summary>
+    public Dictionary<Guid, string> UserNotes { get; set; } = new();
+
+    /// <summary>
     /// Gets or sets the current combat state.
     /// Null when not in combat.
     /// </summary>
@@ -86,6 +92,7 @@ public class GameState
         PendingAction = PendingGameAction.None;
         CurrentRoomId = null;
         VisitedRoomIds.Clear();
+        UserNotes.Clear();
         CombatState = null;
         PendingEncounter = null;
         IsGodMode = false;

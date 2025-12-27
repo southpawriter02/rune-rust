@@ -32,6 +32,12 @@ public record SettingsDto
     public int MasterVolume { get; init; } = 100;
 
     /// <summary>
+    /// Whether ambient soundscape is enabled (v0.3.19c).
+    /// Default: true (enabled).
+    /// </summary>
+    public bool AmbienceEnabled { get; init; } = true;
+
+    /// <summary>
     /// Interval between autosaves in minutes (1-60).
     /// Default: 5 minutes.
     /// </summary>
