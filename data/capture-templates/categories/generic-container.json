@@ -1,0 +1,35 @@
+{
+  "$schema": "../schema/capture-template.schema.json",
+  "category": "generic-container",
+  "version": "1.0.0",
+  "description": "Generic templates for container searches. Used when no specific object templates match.",
+  "matchKeywords": ["container", "chest", "crate", "box"],
+  "templates": [
+    {
+      "id": "container-eastern-tunnels",
+      "type": "TextFragment",
+      "fragmentContent": "A crumpled note with faded writing. Most is illegible, but a fragment remains: '...the eastern tunnels are blocked. Whatever happened there, the Clans have sealed it permanently.'",
+      "source": "Found in container",
+      "quality": 15,
+      "tags": ["tunnels", "clans", "sealed"]
+    },
+    {
+      "id": "container-old-tormund",
+      "type": "OralHistory",
+      "fragmentContent": "This container bears clan-marks matching stories told in the taverns: 'Old Tormund's cache,' they called it. The Scavenger who never returned from the deep ruins. Finding this explains his fate.",
+      "source": "Local knowledge",
+      "matchKeywords": ["container", "cache", "storage"],
+      "quality": 15,
+      "tags": ["scavenger", "ruins", "fate"]
+    },
+    {
+      "id": "container-inventory-records",
+      "type": "TextFragment",
+      "fragmentContent": "Inventory records scratched into the container's lid. Most items have been crossed out, but notes remain: 'Claimed by the Blight-touched. Avoid sector after nightfall.'",
+      "source": "Container markings",
+      "matchKeywords": ["container", "crate", "supply"],
+      "quality": 15,
+      "tags": ["blight", "warning", "inventory"]
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "$schema": "../schema/capture-template.schema.json",
+  "category": "industrial-site",
+  "version": "1.0.0",
+  "description": "Templates for industrial environment discoveries. Matched by keywords: machine, device, mechanism, industrial.",
+  "matchKeywords": ["industrial", "forge", "foundry", "factory"],
+  "templates": [
+    {
+      "id": "industrial-echo-stone",
+      "type": "EchoRecording",
+      "fragmentContent": "A damaged echo-stone preserves a fragment: '...production quotas exceeded for the third cycle. The Overseer demands we push the forges harder. Workers report strange sounds from the lower foundry...' The rest dissolves into static.",
+      "source": "Echo-stone playback",
+      "quality": 15,
+      "tags": ["echo-stone", "overseer", "production"]
+    },
+    {
+      "id": "industrial-schematics",
+      "type": "VisualRecord",
+      "fragmentContent": "Schematics etched into a metal plate. The design appears to be a power distribution network, though several sections are marked with warning glyphs in a script no longer taught.",
+      "source": "Technical schematic",
+      "matchKeywords": ["machine", "device", "mechanism", "technical"],
+      "quality": 15,
+      "tags": ["schematics", "power", "glyphs"]
+    },
+    {
+      "id": "industrial-safety-notice",
+      "type": "TextFragment",
+      "fragmentContent": "Safety notices posted throughout the area, written in formal Aesir: 'Unauthorized access to Level Seven facilities carries immediate termination. This is not negotiable.'",
+      "source": "Warning placard",
+      "matchKeywords": ["industrial", "aesir", "facility"],
+      "quality": 15,
+      "tags": ["aesir", "warning", "security"]
+    }
+  ]
+}
