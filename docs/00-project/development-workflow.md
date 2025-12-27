@@ -103,6 +103,7 @@ flowchart TD
 
 ### Stage 5: Task Tracking (GitHub)
 *Goal: Visible, trackable units of work.*
+* **Reference**: See detailed guide at [GitHub Project Configuration & Workflow](github-project-setup.md).
 * **Action**:
     1.  Create **GitHub Issues** from the Plan's checklist.
     2.  Link Issues to the Spec.
