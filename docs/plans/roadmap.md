@@ -798,6 +798,42 @@ Sentinel
 Crash reporting and emergency save.
 v0.3.17
 📝
+The Toolbox
+Debug console overlay.
+Phase 6: Advanced Systems (Milestone 4.15)
+Version
+Status
+Codename
+Scope
+v0.3.22a
+📝
+The Filter
+Combat log filtering and structured logging (Mechanics/Flavor).
+v0.3.22b
+📝
+The Inspector
+Enemy analysis engine, knowledge tiers, and inspect overlay.
+v0.3.23a
+📝
+The Abstraction
+InputService, InputEvent hierarchy, and key-to-action mapping.
+v0.3.23b
+📝
+The Loop
+Non-blocking event-driven game loop refactor.
+v0.3.24a
+📝
+The Broom
+Deprecation cleanup, debug command locking for release.
+Phase 7: The Saga (Milestone 5)
+Version
+Status
+Codename
+Scope
+v0.4.0a
+📝
+The Legend
+SagaService backend, Legend (XP) tracking, Level Up events.
 Architect
 Debug console overlay.
 v0.3.18
