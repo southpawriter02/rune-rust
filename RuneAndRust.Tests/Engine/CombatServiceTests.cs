@@ -35,6 +35,7 @@ public class CombatServiceTests
     private readonly Mock<IVisualEffectService> _mockVisualEffectService;
     private readonly Mock<ISpatialHashGrid> _mockSpatialGrid;
     private readonly Mock<IEventBus> _mockEventBus;
+    private readonly Mock<ISagaService> _mockSagaService;
     private readonly Mock<ILogger<CombatService>> _mockLogger;
     private readonly GameState _gameState;
     private readonly CombatService _sut;
@@ -58,6 +59,7 @@ public class CombatServiceTests
         _mockVisualEffectService = new Mock<IVisualEffectService>();
         _mockSpatialGrid = new Mock<ISpatialHashGrid>();
         _mockEventBus = new Mock<IEventBus>();
+        _mockSagaService = new Mock<ISagaService>();
         _mockLogger = new Mock<ILogger<CombatService>>();
         _gameState = new GameState();
         _sut = new CombatService(
@@ -79,6 +81,7 @@ public class CombatServiceTests
             _mockVisualEffectService.Object,
             _mockSpatialGrid.Object,
             _mockEventBus.Object,
+            _mockSagaService.Object,
             _mockLogger.Object);
 
         // Default setup for loot service
@@ -1385,6 +1388,159 @@ public class CombatServiceTests
         // Assert - Both combatants should have regeneration called
         _mockResourceService.Verify(r => r.RegenerateStamina(player), Times.Once);
         _mockResourceService.Verify(r => r.RegenerateStamina(enemy), Times.Once);
+    }
+
+    #endregion
+
+    #region XP Integration Tests (v0.4.0d)
+
+    [Fact]
+    public void RemoveDefeatedCombatant_AccumulatesXP_WhenEnemyDefeated()
+    {
+        // Arrange
+        SetupActiveCombatWithPlayerAndEnemy(playerFirst: true);
+        var enemy = _gameState.CombatState!.TurnOrder.First(c => !c.IsPlayer);
+        enemy.EnemySource!.Tier = ThreatTier.Standard; // 100 XP
+
+        // Act
+        _sut.RemoveDefeatedCombatant(enemy);
+
+        // Assert
+        _gameState.CombatState.XpPool.Should().Be(100, "Standard tier enemy should add 100 XP to pool");
+    }
+
+    [Theory]
+    [InlineData(ThreatTier.Minion, 25)]
+    [InlineData(ThreatTier.Standard, 100)]
+    [InlineData(ThreatTier.Elite, 250)]
+    [InlineData(ThreatTier.Boss, 1000)]
+    public void RemoveDefeatedCombatant_AccumulatesCorrectXP_ByTier(ThreatTier tier, int expectedXp)
+    {
+        // Arrange
+        SetupActiveCombatWithPlayerAndEnemy(playerFirst: true);
+        var enemy = _gameState.CombatState!.TurnOrder.First(c => !c.IsPlayer);
+        enemy.EnemySource!.Tier = tier;
+
+        // Act
+        _sut.RemoveDefeatedCombatant(enemy);
+
+        // Assert
+        _gameState.CombatState.XpPool.Should().Be(expectedXp);
+    }
+
+    [Fact]
+    public void RemoveDefeatedCombatant_DoesNotAccumulateXP_ForPlayerDeath()
+    {
+        // Arrange
+        SetupActiveCombatWithPlayerAndEnemy(playerFirst: true);
+        var player = _gameState.CombatState!.TurnOrder.First(c => c.IsPlayer);
+
+        // Act
+        _sut.RemoveDefeatedCombatant(player);
+
+        // Assert
+        _gameState.CombatState.XpPool.Should().Be(0, "Player death should not add XP");
+    }
+
+    [Fact]
+    public void RemoveDefeatedCombatant_CumulatesXP_WhenMultipleEnemiesDefeated()
+    {
+        // Arrange
+        _gameState.CurrentCharacter = CreateTestCharacter();
+        var enemies = new List<Enemy>
+        {
+            CreateTestEnemy("Enemy1"),
+            CreateTestEnemy("Enemy2")
+        };
+        enemies[0].Tier = ThreatTier.Standard; // 100 XP
+        enemies[1].Tier = ThreatTier.Elite;    // 250 XP
+        _sut.StartCombat(enemies);
+
+        var enemy1 = _gameState.CombatState!.TurnOrder.First(c => c.Name == "Enemy1");
+        var enemy2 = _gameState.CombatState.TurnOrder.First(c => c.Name == "Enemy2");
+
+        // Act
+        _sut.RemoveDefeatedCombatant(enemy1);
+        _sut.RemoveDefeatedCombatant(enemy2);
+
+        // Assert
+        _gameState.CombatState.XpPool.Should().Be(350, "100 + 250 = 350 XP total");
+    }
+
+    [Fact]
+    public void EndCombat_Victory_AwardsXPViaSagaService()
+    {
+        // Arrange
+        _gameState.CurrentCharacter = CreateTestCharacter();
+        var enemies = new List<Enemy> { CreateTestEnemy() };
+        enemies[0].Tier = ThreatTier.Standard;
+        _sut.StartCombat(enemies);
+
+        // Defeat the enemy to accumulate XP
+        var enemy = _gameState.CombatState!.TurnOrder.First(c => !c.IsPlayer);
+        _sut.RemoveDefeatedCombatant(enemy);
+
+        // Act
+        var result = _sut.EndCombat();
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.Victory.Should().BeTrue();
+        result.XpEarned.Should().Be(100, "Standard enemy = 100 XP");
+        _mockSagaService.Verify(
+            s => s.AddLegend(_gameState.CurrentCharacter!, 100, "Combat victory"),
+            Times.Once);
+    }
+
+    [Fact]
+    public void EndCombat_Defeat_DoesNotAwardXP()
+    {
+        // Arrange
+        SetupActiveCombatWithPlayerAndEnemy(playerFirst: true, enemyName: "Draugr");
+        _gameState.CurrentCharacter = CreateTestCharacter();
+
+        // Player dies (removed without victory)
+        var player = _gameState.CombatState!.TurnOrder.First(c => c.IsPlayer);
+        _sut.RemoveDefeatedCombatant(player);
+
+        // Act
+        var result = _sut.EndCombat();
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.Victory.Should().BeFalse();
+        result.XpEarned.Should().Be(0, "Defeat should award 0 XP");
+        _mockSagaService.Verify(
+            s => s.AddLegend(It.IsAny<CharacterEntity>(), It.IsAny<int>(), It.IsAny<string>()),
+            Times.Never,
+            "SagaService should not be called on defeat");
+    }
+
+    [Fact]
+    public void EndCombat_Victory_ReturnsAccumulatedXPInResult()
+    {
+        // Arrange
+        _gameState.CurrentCharacter = CreateTestCharacter();
+        var enemies = new List<Enemy>
+        {
+            CreateTestEnemy("Minion1"),
+            CreateTestEnemy("Elite1")
+        };
+        enemies[0].Tier = ThreatTier.Minion;  // 25 XP
+        enemies[1].Tier = ThreatTier.Elite;   // 250 XP
+        _sut.StartCombat(enemies);
+
+        // Defeat both enemies
+        var minion = _gameState.CombatState!.TurnOrder.First(c => c.Name == "Minion1");
+        var elite = _gameState.CombatState.TurnOrder.First(c => c.Name == "Elite1");
+        _sut.RemoveDefeatedCombatant(minion);
+        _sut.RemoveDefeatedCombatant(elite);
+
+        // Act
+        var result = _sut.EndCombat();
+
+        // Assert
+        result!.XpEarned.Should().Be(275, "25 + 250 = 275 XP total");
     }
 
     #endregion

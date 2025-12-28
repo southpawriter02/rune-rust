@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using RuneAndRust.Core.Calculators;
 using RuneAndRust.Core.Entities;
 using RuneAndRust.Core.Enums;
 using RuneAndRust.Core.Interfaces;
@@ -20,6 +21,7 @@ public class NavigationService : INavigationService
     private readonly IHazardService _hazardService;
     private readonly IConditionService _conditionService;
     private readonly IInputHandler _inputHandler;
+    private readonly ISagaService _sagaService;
     private readonly ILogger<NavigationService> _logger;
 
     /// <summary>
@@ -30,6 +32,7 @@ public class NavigationService : INavigationService
     /// <param name="hazardService">The hazard service for movement triggers (v0.3.3a).</param>
     /// <param name="conditionService">The condition service for ambient effects (v0.3.3b).</param>
     /// <param name="inputHandler">The input handler for displaying hazard messages.</param>
+    /// <param name="sagaService">The saga service for room discovery XP (v0.4.0d).</param>
     /// <param name="logger">The logger instance.</param>
     public NavigationService(
         GameState gameState,
@@ -37,6 +40,7 @@ public class NavigationService : INavigationService
         IHazardService hazardService,
         IConditionService conditionService,
         IInputHandler inputHandler,
+        ISagaService sagaService,
         ILogger<NavigationService> logger)
     {
         _gameState = gameState;
@@ -44,6 +48,7 @@ public class NavigationService : INavigationService
         _hazardService = hazardService;
         _conditionService = conditionService;
         _inputHandler = inputHandler;
+        _sagaService = sagaService;
         _logger = logger;
     }
 
@@ -84,7 +89,22 @@ public class NavigationService : INavigationService
         // 4. Update game state
         _gameState.CurrentRoomId = nextRoomId;
         _gameState.TurnCount++;
+
+        // Check if this is a new room discovery (v0.4.0d The Reward)
+        var isNewRoom = !_gameState.VisitedRoomIds.Contains(nextRoomId);
         _gameState.VisitedRoomIds.Add(nextRoomId);
+
+        // Award discovery XP for new rooms (v0.4.0d)
+        if (isNewRoom && _gameState.CurrentCharacter != null)
+        {
+            _sagaService.AddLegend(
+                _gameState.CurrentCharacter,
+                XpCalculator.RoomDiscoveryXp,
+                $"Discovered {nextRoom.Name}");
+            _logger.LogDebug(
+                "Awarded {Xp} Legend for discovering {Room}",
+                XpCalculator.RoomDiscoveryXp, nextRoom.Name);
+        }
 
         _logger.LogInformation("Player moved {Direction} to '{RoomName}' ({RoomId})",
             direction, nextRoom.Name, nextRoom.Id);

@@ -89,6 +89,13 @@ public class Enemy
     public string? TemplateId { get; set; }
 
     /// <summary>
+    /// The threat tier of this enemy for XP calculation and encounter balancing.
+    /// Defaults to Standard for legacy enemies without explicit tier assignment.
+    /// </summary>
+    /// <remarks>See: v0.4.0d (The Reward) for XP Integration.</remarks>
+    public ThreatTier Tier { get; set; } = ThreatTier.Standard;
+
+    /// <summary>
     /// Combat archetype for AI behavior selection in v0.2.2b.
     /// Determines attack priority, target selection, and ability usage.
     /// </summary>

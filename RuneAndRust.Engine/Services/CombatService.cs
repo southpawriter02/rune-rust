@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using RuneAndRust.Core.Calculators;
 using RuneAndRust.Core.Entities;
 using RuneAndRust.Core.Enums;
 using RuneAndRust.Core.Events;
@@ -38,6 +39,7 @@ public class CombatService : ICombatService
     private readonly IVisualEffectService _visualEffectService;
     private readonly ISpatialHashGrid _spatialGrid;
     private readonly IEventBus _eventBus;
+    private readonly ISagaService _sagaService;
     private readonly ILogger<CombatService> _logger;
 
     /// <summary>
@@ -432,6 +434,7 @@ public class CombatService : ICombatService
     /// <param name="visualEffectService">The visual effect service for combat VFX (v0.3.9a).</param>
     /// <param name="spatialGrid">The spatial hash grid for pathfinding (v0.3.18b).</param>
     /// <param name="eventBus">The event bus for publishing combat events (v0.3.19b).</param>
+    /// <param name="sagaService">The saga service for awarding XP on victory (v0.4.0d).</param>
     /// <param name="logger">The logger for traceability.</param>
     public CombatService(
         GameState gameState,
@@ -452,6 +455,7 @@ public class CombatService : ICombatService
         IVisualEffectService visualEffectService,
         ISpatialHashGrid spatialGrid,
         IEventBus eventBus,
+        ISagaService sagaService,
         ILogger<CombatService> logger)
     {
         _gameState = gameState;
@@ -472,6 +476,7 @@ public class CombatService : ICombatService
         _visualEffectService = visualEffectService;
         _spatialGrid = spatialGrid;
         _eventBus = eventBus;
+        _sagaService = sagaService;
         _logger = logger;
     }
 
@@ -683,12 +688,21 @@ public class CombatService : ICombatService
 
         if (victory)
         {
-            // Calculate XP based on Wits attribute for future scaling
+            // Use accumulated XP pool from defeated enemies (v0.4.0d The Reward)
             var character = _gameState.CurrentCharacter;
             var witsBonus = character?.GetEffectiveAttribute(CharacterAttribute.Wits) ?? 0;
 
-            // Placeholder XP calculation (will be expanded with enemy XP values)
-            xp = 50;
+            // XP from defeated enemies (accumulated in RemoveDefeatedCombatant)
+            xp = _gameState.CombatState.XpPool;
+
+            // Award XP via SagaService (v0.4.0d)
+            if (character != null && xp > 0)
+            {
+                _sagaService.AddLegend(character, xp, "Combat victory");
+                _logger.LogInformation(
+                    "Awarded {Xp} Legend to {Name} for combat victory",
+                    xp, character.Name);
+            }
 
             // Generate loot using the loot service
             var lootContext = new LootGenerationContext(
@@ -891,6 +905,16 @@ public class CombatService : ICombatService
 
         var index = state.TurnOrder.IndexOf(combatant);
         if (index < 0) return;
+
+        // Accumulate XP for defeated enemies (v0.4.0d The Reward)
+        if (!combatant.IsPlayer && combatant.EnemySource != null)
+        {
+            var xpGained = XpCalculator.GetXpForTier(combatant.EnemySource.Tier);
+            state.XpPool += xpGained;
+            _logger.LogDebug(
+                "Accumulated {Xp} XP for defeating {Name} (Tier: {Tier}). Pool total: {Pool}",
+                xpGained, combatant.Name, combatant.EnemySource.Tier, state.XpPool);
+        }
 
         // Remove from spatial grid (v0.3.18b)
         _spatialGrid.Remove(combatant.Id, combatant.Position);
