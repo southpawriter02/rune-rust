@@ -54,18 +54,18 @@ public static class CodexSeeder
             // Field Guide Entries (Tutorials)
             CreateFieldGuideEntry(
                 "Psychic Stress",
-                "Stress is the measure of your mind's coherence in the face of the Blight's corruption. " +
-                "When you witness horrors, push beyond your limits, or encounter anomalous phenomena, " +
-                "Stress accumulates. At critical levels, your perception warps—shadows lengthen, " +
-                "whispers emerge from silence, and reality itself seems to fray at the edges. " +
-                "Rest and certain consumables can restore clarity, but some traumas leave permanent marks."),
+                "We call it the Shakes, the Rattle, the Long Blink. It ain't just fear. " +
+                "It's your mind rejecting what the eyes see. Witness enough horror, " +
+                "and the walls crumble. Shadows lengthen. Whispers start. " +
+                "We've seen good scavengers lost to the madness before the beasts ever touched them. " +
+                "Rest often. Drink deep. Don't let the dark in."),
 
             CreateFieldGuideEntry(
                 "Combat Basics",
-                "Violence in the Rust-lands is brutal and swift. Each exchange carries weight—" +
-                "every swing drains Stamina, every wound bleeds precious vitality. " +
-                "The wise fighter picks their battles, uses terrain and surprise, " +
-                "and knows when to retreat. The dead are many; the survivors are cautious."),
+                "The Rust-lands don't forgive a clumsy blade. Every swing costs you breath, " +
+                "every scratch invites the rot. Don't just flail—watch your enemy. " +
+                "Use the terrain. Strike when they falter. And if the odds turn? " +
+                "Run. There's no shame in living to scavenge another day."),
 
             CreateFieldGuideEntry(
                 "Burden and Carrying Capacity",
@@ -82,23 +82,23 @@ public static class CodexSeeder
                 Category = EntryCategory.Bestiary,
                 TotalFragments = 4,
                 FullText =
-                    "The Rusted Servitor shambles through the ruins of its former masters' works, " +
-                    "a humanoid automaton of ancient Aesir design. Standing roughly as tall as a grown man, " +
+                    "OBSERVATION: The Rusted Servitor shambles through the ruins of its former masters' works, " +
+                    "a clockwork-husk of ancient Aesir design. Standing roughly as tall as a grown man, " +
                     "its frame is corroded beyond recognition, joints seizing with each labored movement.\n\n" +
-                    "WEAKNESS: The Servitor's power core, visible as a faint amber glow through gaps " +
+                    "ENGAGEMENT: The Servitor's power core, visible as a faint amber glow through gaps " +
                     "in its chest plating, remains vulnerable to piercing strikes. Destroying it " +
-                    "causes immediate shutdown.\n\n" +
+                    "causes immediate collapse.\n\n" +
                     "HABITAT: Found wandering industrial complexes, maintenance tunnels, and " +
                     "locations where Aesir machinery once operated. They seem drawn to " +
                     "operational power sources.\n\n" +
                     "BEHAVIOR: Without direction from their extinct masters, Servitors follow " +
                     "corrupted maintenance protocols. They patrol fixed routes, repair nothing, " +
                     "and attack any organic life that enters their designated zones.\n\n" +
-                    "NOTE: Some Scavengers report Servitors that pause mid-attack, as if receiving " +
+                    "AFTERMATH: Some Scavengers report Servitors that pause mid-attack, as if receiving " +
                     "orders from a source long silent. These moments pass quickly, and the violence resumes.",
                 UnlockThresholds = new Dictionary<int, string>
                 {
-                    { 25, "WEAKNESS_REVEALED" },
+                    { 25, "ENGAGEMENT_REVEALED" },
                     { 50, "HABITAT_REVEALED" },
                     { 75, "BEHAVIOR_REVEALED" },
                     { 100, "FULL_ENTRY" }
