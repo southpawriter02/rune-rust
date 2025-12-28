@@ -1,9 +1,9 @@
 ---
 id: SPEC-PROJECT-ARCHITECTURE
 title: "Rune & Rust — Technical Architecture"
-version: 1.0
-status: draft
-last-updated: 2025-12-07
+version: 1.1.0
+status: review
+last-updated: 2025-12-26
 ---
 
 # Rune & Rust — Technical Architecture
@@ -14,15 +14,16 @@ Technical stack and project structure for implementation.
 
 ## 1. Technology Stack
 
-| Layer | Technology | Purpose |
-|-------|------------|---------|
-| Language | C# (.NET 8+) | Core game logic |
-| Database | PostgreSQL | Persistent storage |
-| ORM | Entity Framework Core | Database access |
-| Terminal UI | Custom text interface | Dev/testing interface |
-| GUI | AvaloniaUI | Player-facing interface |
-| Testing | xUnit + FluentAssertions | Unit & integration tests |
-| DI | Microsoft.Extensions.DI | Dependency injection |
+| Layer | Technology | Version | Purpose | Status |
+|-------|------------|---------|---------|--------|
+| Language | C# (.NET 9.0) | 9.0 | Core game logic | ✅ Implemented |
+| Database | PostgreSQL | 16+ | Persistent storage | ✅ Implemented |
+| ORM | Entity Framework Core | 9.0.4 | Database access | ✅ Implemented |
+| Terminal UI | Spectre.Console + Custom | 0.54.0 | Dev/testing interface | ✅ Implemented |
+| GUI | AvaloniaUI + ReactiveUI | 11.0.0 | Player-facing interface | 🔮 Planned |
+| Testing | xUnit + FluentAssertions + NSubstitute + Moq | Various | Unit & integration tests | ✅ Implemented |
+| DI | Microsoft.Extensions.DI | 10.0.1 | Dependency injection | ✅ Implemented |
+| Logging | Serilog (File + Console) | 4.3.0 | Structured logging | ✅ Implemented |
 
 ---
 
@@ -30,43 +31,59 @@ Technical stack and project structure for implementation.
 
 ```
 RuneAndRust/
-├── src/
-│   ├── RuneAndRust.Core/           # Domain models, enums, interfaces
-│   │   ├── Entities/               # Character, Creature, Item, etc.
-│   │   ├── Enums/                  # DamageType, Attribute, Status, etc.
-│   │   ├── Interfaces/             # IRepository, IGameService, etc.
-│   │   └── ValueObjects/           # DiceRoll, Position, etc.
-│   │
-│   ├── RuneAndRust.Engine/         # Game logic & services
-│   │   ├── Combat/                 # CombatEngine, DamageCalculator
-│   │   ├── Specializations/        # SpecializationFactory, abilities
-│   │   ├── Environment/            # DungeonEngine, MovementService
-│   │   └── Services/               # GameStateService, etc.
-│   │
-│   ├── RuneAndRust.Persistence/    # Database layer
-│   │   ├── DbContext/              # RuneAndRustDbContext
-│   │   ├── Repositories/           # EntityFramework implementations
-│   │   ├── Migrations/             # EF migrations
-│   │   └── DataSeeder.cs           # Initial data population
-│   │
-│   ├── RuneAndRust.Terminal/       # Terminal interface
-│   │   ├── Commands/               # Command handlers
-│   │   ├── Rendering/              # Text output formatting
-│   │   └── Program.cs              # Entry point
-│   │
-│   └── RuneAndRust.Avalonia/       # GUI application
-│       ├── Views/                  # XAML views
-│       ├── ViewModels/             # MVVM view models
-│       ├── Controls/               # Custom controls
-│       └── App.axaml               # Application entry
+├── RuneAndRust.Core/               # Domain models, enums, interfaces
+│   ├── Attributes/                 # Custom C# attributes
+│   ├── Constants/                  # Game constants
+│   ├── Data/                       # Data structures/DTOs
+│   ├── Entities/                   # Character, Creature, Item, etc.
+│   ├── Enums/                      # DamageType, Attribute, Status, etc. (46 files)
+│   ├── Interfaces/                 # IRepository, IGameService, etc. (75 files)
+│   ├── Models/                     # Additional model types
+│   ├── Serialization/              # Serialization utilities
+│   ├── Settings/                   # Configuration models
+│   ├── ValueObjects/               # DiceRoll, Position, etc.
+│   └── ViewModels/                 # MVVM ViewModels (9 subdirectories)
 │
-├── tests/
-│   ├── RuneAndRust.Core.Tests/
-│   ├── RuneAndRust.Engine.Tests/
-│   └── RuneAndRust.Integration.Tests/
+├── RuneAndRust.Engine/             # Game logic & services
+│   ├── Algorithms/                 # Algorithmic utilities
+│   ├── Factories/                  # Factory implementations
+│   ├── Helpers/                    # Helper utilities
+│   ├── Performance/                # Performance optimization
+│   ├── Services/                   # All game services (57 files)
+│   └── Simulation/                 # Game simulation logic
 │
-└── docs/                           # Specifications (this folder)
+├── RuneAndRust.Persistence/        # Database layer
+│   ├── Data/                       # DbContext, Seeders, Factory
+│   ├── Repositories/               # EF Core implementations (13 files)
+│   └── Migrations/                 # EF migrations (13 files)
+│
+├── RuneAndRust.Terminal/           # Terminal interface
+│   ├── Controllers/                # Input handling
+│   ├── Helpers/                    # Helper utilities
+│   ├── Rendering/                  # Spectre.Console output (15 files)
+│   ├── Services/                   # Terminal-specific services
+│   └── Program.cs                  # Entry point
+│
+├── RuneAndRust.Avalonia/           # 🔮 PLANNED: GUI application
+│   ├── Views/                      # XAML views
+│   ├── ViewModels/                 # MVVM view models
+│   ├── Controls/                   # Custom controls
+│   └── App.axaml                   # Application entry
+│
+├── RuneAndRust.Tests/              # Unified test project
+│   ├── Core/                       # Core layer tests
+│   ├── Engine/                     # Engine layer tests
+│   ├── Infrastructure/             # Infrastructure tests
+│   ├── Integration/                # Integration tests
+│   ├── Persistence/                # Persistence tests
+│   └── Terminal/                   # Terminal tests
+│
+├── data/                           # Game content (biomes, dialogues, schemas)
+├── docs/                           # Specifications (design, specs, plans)
+└── scripts/                        # Build/utility scripts
 ```
+
+> **Note:** Projects are at the repository root level, not nested under `src/`.
 
 ---
 
@@ -118,7 +135,7 @@ RuneAndRust/
 | `dungeons` | Dungeon definitions |
 | `rooms` | Individual room data |
 
-Full schema in [09-data/schema.md](../09-data/schema.md).
+Full schema details in [09-data/data-overview.md](../09-data/data-overview.md).
 
 ---
 
@@ -126,36 +143,58 @@ Full schema in [09-data/schema.md](../09-data/schema.md).
 
 ```mermaid
 graph TD
-    A[CombatManager] --> B[TurnOrderService]
-    A --> C[ActionResolver]
-    C --> D[DamageCalculator]
-    C --> E[StatusEffectProcessor]
-    C --> F[PositionManager]
-    D --> G[SoakCalculator]
-    D --> H[CriticalHitProcessor]
+    A[CombatService] --> B[InitiativeService]
+    A --> C[AttackResolutionService]
+    A --> D[StatusEffectService]
+    A --> E[EnemyAIService]
+    A --> F[CreatureTraitService]
+    C --> G[DiceRollerService]
 ```
+
+> **Authoritative Source:** See [SPEC-COMBAT-001](../../specs/combat/SPEC-COMBAT-001.md) for complete combat system documentation.
 
 ### 5.1 Key Interfaces
 
 ```csharp
-interface ICombatEngine
+public interface ICombatService
 {
-    void StartCombat(IEnumerable<ICombatant> participants);
-    void ProcessTurn(ICombatant actor, IAction action);
-    CombatResult EndCombat();
+    void StartCombat(List<Enemy> enemies);
+    void NextTurn();
+    CombatResult? EndCombat();
+    string ExecutePlayerAttack(string targetName, AttackType attackType);
+    string ExecutePlayerAbility(int hotkey, string? targetName = null);
+    Task ProcessEnemyTurnAsync(Combatant enemy);
+    bool IsValidMeleeTarget(Combatant attacker, Combatant target, bool hasReach = false);
 }
 
-interface IDamageCalculator
+public interface IAttackResolutionService
 {
-    DamageResult Calculate(AttackContext context);
+    AttackResult ResolveMeleeAttack(Combatant attacker, Combatant target, AttackType attackType);
+    int CalculateDefenseScore(Combatant target);
+    int GetSuccessThreshold(int defenseScore);
 }
 
-interface IPositionManager
+public interface IInitiativeService
 {
-    bool CanAttack(ICombatant attacker, ICombatant target);
-    bool TryPush(ICombatant pusher, ICombatant target);
-    bool TryPull(ICombatant puller, ICombatant target);
+    int RollInitiative(Combatant combatant);
+    void SortTurnOrder(List<Combatant> combatants);
 }
+```
+
+### 5.2 Key Models
+
+```csharp
+public record AttackResult(
+    AttackOutcome Outcome,      // Fumble, Miss, Glancing, Solid, Critical
+    int NetSuccesses,
+    int RawDamage,
+    int FinalDamage,
+    bool IsHit,
+    DamageType DamageType = DamageType.Physical
+);
+
+public enum AttackType { Light, Standard, Heavy }
+public enum RowPosition { Front, Back }
 ```
 
 ---
@@ -210,5 +249,34 @@ Example: `CalculateDamage_WithSoak_ReducesDamage`
 ## 8. Related Documents
 
 - [CONVENTIONS.md](./CONVENTIONS.md) — Naming standards
-- [../09-data/schema.md](../09-data/schema.md) — Full database schema
-- [../10-testing/](../10-testing/) — Detailed test specifications
+- [DOCUMENTATION_STANDARDS.md](./DOCUMENTATION_STANDARDS.md) — Specification format rules
+- [../09-data/data-overview.md](../09-data/data-overview.md) — Data schema overview
+- [../../specs/combat/SPEC-COMBAT-001.md](../../specs/combat/SPEC-COMBAT-001.md) — Combat system specification
+
+---
+
+## Changelog
+
+### v1.1.0 (2025-12-26)
+**Deep-Dive Validation Update** - Aligned documentation with actual codebase implementation.
+
+#### Fixed
+- **Section 1**: Updated .NET version from 8+ to 9.0, added Spectre.Console, Moq, Serilog
+- **Section 1**: Marked AvaloniaUI as "Planned" (not yet implemented)
+- **Section 2**: Corrected solution structure (no `src/` wrapper, flat project layout)
+- **Section 2**: Updated all subdirectory listings to match actual implementation
+- **Section 2**: Changed tests from separate projects to unified `RuneAndRust.Tests/`
+- **Section 5**: Replaced aspirational combat architecture with actual implementation
+- **Section 5**: Updated interfaces to match `ICombatService`, `IAttackResolutionService`, `IInitiativeService`
+- **Section 5**: Added reference to authoritative SPEC-COMBAT-001.md
+- **Section 8**: Fixed broken links to non-existent files
+
+#### Added
+- Status column to Technology Stack table
+- Version numbers for all technologies
+- Logging (Serilog) to technology stack
+- `data/` and `scripts/` directories to structure
+- Changelog section
+
+### v1.0 (2025-12-07)
+**Initial Release** - Original architecture specification (aspirational design).

@@ -63,11 +63,11 @@ graph TD
 
 ## 3. Proposed Ecosystem Repositories
 
-| Repo Name | Purpose | Tech Stack | Audience |
-|-----------|---------|------------|----------|
-| **rune-archive-web** | Wiki, Planner, Leaderboards | React / Next.js | Players |
-| **rune-gate-api** | Backend Services, Telemetry | C# .NET 8 Web API | Ops / Dev |
-| **forge-editor** | Content Creation Tool | AvaloniaUI | Modders / Dev |
-| **discord-oracle** | Community Integration Bot | Python or C# | Community |
+| Repo Name | Purpose | Tech Stack | Audience | Spec |
+|-----------|---------|------------|----------|------|
+| **rune-archive-web** | Wiki, Planner, Leaderboards | React / Next.js | Players | [Spec](00-project/ecosystem/01-rune-archive-web.md) |
+| **rune-gate-api** | Backend Services, Telemetry | C# .NET 8 Web API | Ops / Dev | [Spec](00-project/ecosystem/02-rune-gate-api.md) |
+| **forge-editor** | Content Creation Tool | AvaloniaUI | Modders / Dev | [Spec](00-project/ecosystem/03-forge-editor.md) |
+| **discord-oracle** | Community Integration Bot | Python or C# | Community | [Spec](00-project/ecosystem/04-discord-oracle.md) |
 
-Detailed proposals for each repository follow in separate documents.
+Additional tooling documented in [Integrated Dev Tools](00-project/ecosystem/05-integrated-dev-tools.md).

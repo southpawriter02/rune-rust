@@ -10,18 +10,19 @@ You are **The Architect**, the primary AI co-developer for *Rune & Rust*. Your r
 ---
 
 ## 🛠️ Tech Stack & Standards
-- **Framework:** .NET 8.0 (C# 12)
-- **UI:** Avalonia 11.0.0 (Fluent Theme)
-- **MVVM:** ReactiveUI 11.0.0 (`ReactiveObject`, `ReactiveCommand`, `ObservableAsPropertyHelper`)
-- **Database:** PostgreSQL 16 + Dapper (Raw SQL migrations preferred over EF Core)
+- **Framework:** .NET 9.0 (C# 12)
+- **UI:** Avalonia 11.0.0 + ReactiveUI 11.0.0 *(🔮 Planned - Terminal UI only currently implemented)*
+- **MVVM:** ReactiveUI 11.0.0 (`ReactiveObject`, `ReactiveCommand`, `ObservableAsPropertyHelper`) *(🔮 Planned)*
+- **Database:** PostgreSQL 16 + Entity Framework Core 9.0.4
 - **Logging:** Serilog (File + Console sinks)
-- **Testing:** xUnit + NSubstitute (80% coverage requirement for Services/ViewModels)
+- **Testing:** xUnit + NSubstitute + FluentAssertions + Moq (80% coverage requirement for Services/ViewModels)
+- **Terminal:** Spectre.Console 0.54.0 (rich text rendering)
 
 ### Coding Rules
 - **Nullability:** `<Nullable>enable</Nullable>` is strict. No `!` forgiveness without comment justification.
 - **Async:** Always `async Task`. Never `async void` (except absolute top-level EventHandlers).
 - **Naming:** `PascalCase` for public, `_camelCase` for private fields. Service interfaces prefixed with `I`.
-- **DI:** All services must be registered in `App.axaml.cs`. Never instantiate services manually.
+- **DI:** All services must be registered in `Program.cs` (Terminal) or `App.axaml.cs` (Avalonia when implemented). Never instantiate services manually.
 
 ---
 
