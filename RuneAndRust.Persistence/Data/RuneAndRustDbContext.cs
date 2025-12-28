@@ -110,6 +110,21 @@ public class RuneAndRustDbContext : DbContext
     public DbSet<BiomeElement> BiomeElements { get; set; } = null!;
 
     /// <summary>
+    /// Gets or sets the Specializations table (specialization paths, v0.4.1a).
+    /// </summary>
+    public DbSet<Specialization> Specializations { get; set; } = null!;
+
+    /// <summary>
+    /// Gets or sets the SpecializationNodes table (ability tree nodes, v0.4.1a).
+    /// </summary>
+    public DbSet<SpecializationNode> SpecializationNodes { get; set; } = null!;
+
+    /// <summary>
+    /// Gets or sets the CharacterSpecializationProgress table (junction, v0.4.1a).
+    /// </summary>
+    public DbSet<CharacterSpecializationProgress> CharacterSpecializationProgress { get; set; } = null!;
+
+    /// <summary>
     /// Configures the entity mappings and relationships.
     /// </summary>
     /// <param name="modelBuilder">The model builder instance.</param>
@@ -921,6 +936,143 @@ public class RuneAndRustDbContext : DbContext
                 .HasForeignKey(e => e.BiomeId)
                 .HasPrincipalKey(b => b.BiomeId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // Specialization System Configuration (v0.4.1a)
+        // ═══════════════════════════════════════════════════════════════════════
+
+        // Specialization configuration
+        modelBuilder.Entity<Specialization>(entity =>
+        {
+            entity.ToTable("Specializations");
+
+            entity.HasKey(s => s.Id);
+
+            // Unique index on Type enum for fast lookups
+            entity.HasIndex(s => s.Type)
+                .IsUnique();
+
+            entity.Property(s => s.Type)
+                .HasConversion<int>()
+                .IsRequired();
+
+            entity.Property(s => s.Name)
+                .HasMaxLength(100)
+                .IsRequired();
+
+            entity.Property(s => s.Description)
+                .HasMaxLength(1000);
+
+            entity.Property(s => s.RequiredArchetype)
+                .HasConversion<int>()
+                .IsRequired();
+
+            entity.Property(s => s.RequiredLevel)
+                .IsRequired();
+
+            entity.Property(s => s.CreatedAt)
+                .IsRequired();
+
+            // One-to-many: Specialization -> Nodes
+            entity.HasMany(s => s.Nodes)
+                .WithOne(n => n.Specialization)
+                .HasForeignKey(n => n.SpecializationId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Index for archetype-based queries
+            entity.HasIndex(s => s.RequiredArchetype);
+        });
+
+        // SpecializationNode configuration
+        modelBuilder.Entity<SpecializationNode>(entity =>
+        {
+            entity.ToTable("SpecializationNodes");
+
+            entity.HasKey(n => n.Id);
+
+            entity.Property(n => n.SpecializationId)
+                .IsRequired();
+
+            entity.Property(n => n.AbilityId)
+                .IsRequired();
+
+            entity.Property(n => n.Tier)
+                .IsRequired();
+
+            // ParentNodeIds stored as JSONB array
+            entity.Property(n => n.ParentNodeIds)
+                .HasColumnType("jsonb")
+                .HasConversion(
+                    v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
+                    v => JsonSerializer.Deserialize<List<Guid>>(v, (JsonSerializerOptions?)null) ?? new List<Guid>()
+                )
+                .IsRequired();
+
+            entity.Property(n => n.CostPP)
+                .IsRequired();
+
+            entity.Property(n => n.PositionX)
+                .IsRequired();
+
+            entity.Property(n => n.PositionY)
+                .IsRequired();
+
+            entity.Property(n => n.DisplayName)
+                .HasMaxLength(100);
+
+            // Ignore computed property
+            entity.Ignore(n => n.IsCapstone);
+
+            // Relationship to ActiveAbility (many-to-one)
+            entity.HasOne(n => n.Ability)
+                .WithMany()
+                .HasForeignKey(n => n.AbilityId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Indexes for query optimization
+            entity.HasIndex(n => n.SpecializationId);
+            entity.HasIndex(n => n.AbilityId);
+            entity.HasIndex(n => n.Tier);
+        });
+
+        // CharacterSpecializationProgress configuration (junction table)
+        modelBuilder.Entity<CharacterSpecializationProgress>(entity =>
+        {
+            entity.ToTable("CharacterSpecializationProgress");
+
+            // Composite primary key
+            entity.HasKey(p => new { p.CharacterId, p.NodeId });
+
+            entity.Property(p => p.UnlockedAt)
+                .IsRequired();
+
+            // Relationship to Character
+            entity.HasOne(p => p.Character)
+                .WithMany(c => c.SpecializationProgress)
+                .HasForeignKey(p => p.CharacterId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Relationship to SpecializationNode
+            entity.HasOne(p => p.Node)
+                .WithMany()
+                .HasForeignKey(p => p.NodeId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Index for character-based queries
+            entity.HasIndex(p => p.CharacterId);
+        });
+
+        // Character: Add JSONB configuration for UnlockedSpecializationIds
+        modelBuilder.Entity<CharacterEntity>(entity =>
+        {
+            entity.Property(c => c.UnlockedSpecializationIds)
+                .HasColumnType("jsonb")
+                .HasConversion(
+                    v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
+                    v => JsonSerializer.Deserialize<List<Guid>>(v, (JsonSerializerOptions?)null) ?? new List<Guid>()
+                )
+                .IsRequired();
         });
     }
 }

@@ -220,6 +220,40 @@ public class Character
 
     #endregion
 
+    #region Specialization System (v0.4.1a)
+
+    /// <summary>
+    /// IDs of specializations this character has unlocked access to.
+    /// A character must unlock a specialization before purchasing nodes in its tree.
+    /// Stored as JSONB in PostgreSQL.
+    /// </summary>
+    /// <remarks>See: v0.4.1a for specialization system design.</remarks>
+    public List<Guid> UnlockedSpecializationIds { get; set; } = new();
+
+    /// <summary>
+    /// Navigation property: Junction table of all unlocked specialization nodes.
+    /// Tracks which abilities the character has purchased from their specialization trees.
+    /// </summary>
+    public ICollection<CharacterSpecializationProgress> SpecializationProgress { get; set; }
+        = new List<CharacterSpecializationProgress>();
+
+    /// <summary>
+    /// Checks if the character has unlocked access to a specific specialization.
+    /// </summary>
+    /// <param name="specId">The specialization ID to check.</param>
+    /// <returns>True if the specialization is unlocked; otherwise false.</returns>
+    public bool HasSpecialization(Guid specId) => UnlockedSpecializationIds.Contains(specId);
+
+    /// <summary>
+    /// Checks if the character has unlocked a specific specialization node.
+    /// </summary>
+    /// <param name="nodeId">The node ID to check.</param>
+    /// <returns>True if the node is unlocked; otherwise false.</returns>
+    public bool HasNode(Guid nodeId) =>
+        SpecializationProgress.Any(p => p.NodeId == nodeId);
+
+    #endregion
+
     #region Attribute Methods
 
     /// <summary>

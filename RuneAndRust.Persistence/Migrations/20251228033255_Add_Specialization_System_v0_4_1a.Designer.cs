@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using RuneAndRust.Persistence.Data;
@@ -11,9 +12,11 @@ using RuneAndRust.Persistence.Data;
 namespace RuneAndRust.Persistence.Migrations
 {
     [DbContext(typeof(RuneAndRustDbContext))]
-    partial class RuneAndRustDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251228033255_Add_Specialization_System_v0_4_1a")]
+    partial class Add_Specialization_System_v0_4_1a
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

@@ -85,6 +85,9 @@ class Program
                     services.AddScoped<IBiomeDefinitionRepository, BiomeDefinitionRepository>();
                     services.AddScoped<IBiomeElementRepository, BiomeElementRepository>();
 
+                    // Register Specialization Repository (v0.4.1a)
+                    services.AddScoped<ISpecializationRepository, SpecializationRepository>();
+
                     // Register Capture Template Repository (v0.3.25b: JSON-based templates)
                     services.AddSingleton<ICaptureTemplateRepository>(sp =>
                     {
