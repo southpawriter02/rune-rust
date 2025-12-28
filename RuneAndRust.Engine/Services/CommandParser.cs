@@ -241,6 +241,25 @@ public class ParseResult
 
     #endregion
 
+    #region Magic Commands (v0.4.4a)
+
+    /// <summary>
+    /// Gets or sets whether a cast command was issued.
+    /// </summary>
+    public bool RequiresCast { get; set; }
+
+    /// <summary>
+    /// Gets or sets the spell name for the cast command.
+    /// </summary>
+    public string? CastSpell { get; set; }
+
+    /// <summary>
+    /// Gets or sets the target for the cast command.
+    /// </summary>
+    public string? CastTarget { get; set; }
+
+    #endregion
+
     /// <summary>
     /// Gets a default result with no async requirements.
     /// </summary>
@@ -731,6 +750,22 @@ public class CommandParser
             }
         }
 
+        // Check for cast command (Magic - v0.4.4a)
+        if (command.StartsWith("cast ") || command.StartsWith("c "))
+        {
+            var result = ParseCastCommand(command);
+            if (result != null)
+            {
+                state.TurnCount++;
+                return result;
+            }
+            else
+            {
+                _inputHandler.DisplayError("Cast what? Format: cast <spell> [target]");
+                return ParseResult.None;
+            }
+        }
+
         // Check for note command (v0.3.20a)
         // Note: Pass original input to preserve note text casing
         if (command == "note" || command.StartsWith("note "))
@@ -1033,6 +1068,50 @@ public class CommandParser
             RequiresForge = true,
             ForgeRune = runeName,
             ForgeTarget = string.IsNullOrWhiteSpace(targetItem) ? null : targetItem
+        };
+    }
+
+    /// <summary>
+    /// Parses a cast command in the format "cast <spell> [target]".
+    /// </summary>
+    private ParseResult? ParseCastCommand(string command)
+    {
+        _logger.LogTrace("Parsing cast command: {Command}", command);
+
+        // Remove prefix
+        var content = ExtractTarget(command, new[] { "cast ", "c " });
+        if (string.IsNullOrWhiteSpace(content))
+        {
+            return null;
+        }
+
+        // Simple splitting for now: first word is spell, rest is target?
+        // Actually, spells might have multi-word names (e.g., "Wyrd Light").
+        // But targets might also be multi-word.
+        // For now, let's assume if there is a ' on ' or ' at ' separator, use that.
+        // Otherwise, the whole thing is the spell (self-cast/room-cast)
+
+        string spellName = content;
+        string? target = null;
+
+        // Check for ' at ' or ' on '
+        int splitIndex = -1;
+        if (content.Contains(" at ")) splitIndex = content.LastIndexOf(" at ", StringComparison.OrdinalIgnoreCase);
+        else if (content.Contains(" on ")) splitIndex = content.LastIndexOf(" on ", StringComparison.OrdinalIgnoreCase);
+
+        if (splitIndex > 0)
+        {
+            spellName = content.Substring(0, splitIndex).Trim();
+            target = content.Substring(splitIndex + 4).Trim();
+        }
+
+        _logger.LogDebug("Cast command parsed: {Spell} on {Target}", spellName, target ?? "Self/Room");
+
+        return new ParseResult
+        {
+            RequiresCast = true,
+            CastSpell = spellName,
+            CastTarget = target
         };
     }
 

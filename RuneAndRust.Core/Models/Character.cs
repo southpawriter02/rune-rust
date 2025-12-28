@@ -1,4 +1,5 @@
 using CharacterAttribute = RuneAndRust.Core.Enums.Attribute;
+using RuneAndRust.Core.Models.Magic;
 
 namespace RuneAndRust.Core.Models;
 
@@ -25,6 +26,11 @@ public class Character
     public Dictionary<CharacterAttribute, int> Attributes { get; }
 
     /// <summary>
+    /// Gets the character's Aether pool.
+    /// </summary>
+    public AetherPool Aether { get; private set; }
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="Character"/> class with default attribute values.
     /// </summary>
     /// <param name="name">The character's name.</param>
@@ -40,6 +46,9 @@ public class Character
             { CharacterAttribute.Will, DefaultAttributeValue },
             { CharacterAttribute.Finesse, DefaultAttributeValue }
         };
+
+        // Default Aether pool based on Will (simplified for now)
+        Aether = new AetherPool(10);
     }
 
     /// <summary>
