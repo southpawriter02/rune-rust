@@ -32,7 +32,7 @@ VALUES
 -- Source: Galdr Backfire
 INSERT INTO Status_Effect_Descriptors (effect_type, application_context, severity, source_type, source_detail, target_type, descriptor_text, weight, tags)
 VALUES
-('Burning', 'OnApply', NULL, 'GaldrBackfire', 'Fehu', 'Player', 'Your miscast Fehu turns inward—you''re burning from your own magic!', 1.0, '["Magical", "Ironic"]'),
+('Burning', 'OnApply', NULL, 'GaldrBackfire', 'Fehu', 'Player', 'Your miscast Fehu turns inward—you''re burning from your own Galdr!', 1.0, '["Magical", "Ironic"]'),
 ('Burning', 'OnApply', NULL, 'GaldrBackfire', 'Paradox', 'Player', 'Paradoxical flame erupts from your hands, searing your flesh!', 1.0, '["Magical", "Blight"]');
 
 -- ============================================================
