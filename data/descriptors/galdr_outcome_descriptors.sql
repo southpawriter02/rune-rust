@@ -47,8 +47,8 @@ VALUES
 
 INSERT INTO Galdr_Outcome_Descriptors (ability_name, outcome_type, success_count, target_type, effect_category, descriptor_text, weight, tags)
 VALUES
-('LightningBolt', 'Hit', 3, 'Enemy', 'Damage', 'Lightning arcs into the {Target}! Electricity courses through them—muscles spasming involuntarily!', 1.0, '["Lightning", "Damage"]'),
-('LightningBolt', 'Hit', 4, 'Enemy', 'Damage', 'Your bolt strikes true! The {Target} convulses as electricity ravages their {Target_Location}!', 1.0, '["Brutal"]'),
+('LightningBolt', 'Hit', 3, 'Enemy', 'Damage', 'Lightning arcs into the {Target}! The invisible fire courses through them—muscles spasming involuntarily!', 1.0, '["Lightning", "Damage"]'),
+('LightningBolt', 'Hit', 4, 'Enemy', 'Damage', 'Your bolt strikes true! The {Target} convulses as lightning ravages their {Target_Location}!', 1.0, '["Brutal"]'),
 ('LightningBolt', 'CriticalHit', 5, 'Enemy', 'Damage', 'Ansuz erupts in white-hot fury! Lightning chains through the {Target}—their {Vital_Location} explodes in sparks!', 1.0, '["Devastating"]'),
 ('LightningBolt', 'CriticalHit', 6, 'Enemy', 'Damage', 'Direct hit! Lightning overloads the {Target}—they collapse, smoke rising from charred remains!', 1.0, '["Lethal"]'),
 ('LightningBolt', 'Amplified', 5, 'Enemy', 'Damage', 'Your lightning finds conductive material! The bolt amplifies, arcing through the {Target} with doubled fury!', 1.0, '["Amplified", "Environmental"]');
@@ -61,9 +61,9 @@ INSERT INTO Galdr_Outcome_Descriptors (ability_name, outcome_type, success_count
 VALUES
 ('HealingChant', 'FullEffect', 3, 'Self', 'Healing', 'Berkanan''s warmth flows through you. Wounds knit, bruises fade, bones realign. [+{Healing} HP]', 1.0, '["Healing"]'),
 ('HealingChant', 'FullEffect', 4, 'Self', 'Healing', 'Green light bathes your injuries. Pain recedes as flesh mends itself! [+{Healing} HP]', 1.0, '["Restorative"]'),
-('HealingChant', 'FullEffect', 5, 'Self', 'Healing', 'Perfect healing! Berkanan''s power surges—even grievous wounds vanish, vitality fully restored! [+{Healing} HP]', 1.0, '["Epic"]'),
+('HealingChant', 'FullEffect', 5, 'Self', 'Healing', 'Perfect healing! Berkanan''s life-force surges—even grievous wounds vanish, vitality fully restored! [+{Healing} HP]', 1.0, '["Epic"]'),
 ('HealingChant', 'PartialEffect', 2, 'Self', 'Healing', 'Berkanan''s touch is gentle but weak. Minor wounds close, but deeper injuries remain. [+{Healing} HP]', 1.0, '["Limited"]'),
-('HealingChant', 'FullEffect', 3, 'Ally', 'Healing', 'You direct Berkanan''s power toward {Target}. Green light envelops them—wounds closing before your eyes! [+{Healing} HP]', 1.0, '["Support"]');
+('HealingChant', 'FullEffect', 3, 'Ally', 'Healing', 'You direct Berkanan''s gift toward {Target}. Green light envelops them—wounds closing before your eyes! [+{Healing} HP]', 1.0, '["Support"]');
 
 -- ==============================================================================
 -- RUNE WARD - Defensive Outcomes
@@ -81,7 +81,7 @@ VALUES
 INSERT INTO Galdr_Outcome_Descriptors (ability_name, outcome_type, success_count, target_type, effect_category, descriptor_text, weight, tags)
 VALUES
 ('DrainLife', 'Hit', 3, 'Enemy', 'Debuff', 'Naudiz''s shadow tendrils sink into the {Target}! Life force flows from them into you—they wither as you strengthen! [Drained: {Damage}]', 1.0, '["Dark", "Draining"]'),
-('DrainLife', 'Hit', 4, 'Enemy', 'Debuff', 'Your Galdr siphons vitality! The {Target} pales, weakening visibly as energy floods into you! [Drained: {Damage}]', 1.0, '["Vampiric"]'),
+('DrainLife', 'Hit', 4, 'Enemy', 'Debuff', 'Your Galdr siphons vitality! The {Target} pales, weakening visibly as life-blood floods into you! [Drained: {Damage}]', 1.0, '["Vampiric"]'),
 ('DrainLife', 'CriticalHit', 5, 'Enemy', 'Debuff', 'Naudiz erupts! Shadow pours from the {Target}—their life force torn away completely! You feel invigorated! [Drained: {Damage}]', 1.0, '["Devastating"]'),
 ('DrainLife', 'Resisted', 2, 'Enemy', 'Debuff', 'The {Target} resists your draining magic! Naudiz''s tendrils dissipate before taking hold.', 1.0, '["Ineffective"]');
 

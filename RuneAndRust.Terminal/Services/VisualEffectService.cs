@@ -9,11 +9,18 @@ namespace RuneAndRust.Terminal.Services;
 /// Terminal implementation of visual effects service (v0.3.9a).
 /// Provides border flash effects for combat feedback using Spectre.Console color overrides.
 /// </summary>
-/// <remarks>See: SPEC-RENDER-001 for Rendering Pipeline System design.</remarks>
+/// <remarks>
+/// See: SPEC-RENDER-001 for Rendering Pipeline System design.
+/// v0.3.23b: Added OnInvalidateVisuals event and expiry tracking for non-blocking loop support.
+/// </remarks>
 public class VisualEffectService : IVisualEffectService
 {
     private readonly ILogger<VisualEffectService> _logger;
     private string? _borderOverride;
+    private DateTime? _borderOverrideExpiry;
+
+    /// <inheritdoc />
+    public event Action? OnInvalidateVisuals;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="VisualEffectService"/> class.
@@ -58,23 +65,25 @@ public class VisualEffectService : IVisualEffectService
         _logger.LogTrace("[VFX] Triggering {EffectType} with color {Color} for {Duration}ms",
             effectType, color, durationMs);
 
-        // Set border override (flash on)
-        SetBorderOverride(color);
+        // v0.3.23b: Set expiry time for non-blocking loop to clear
+        _borderOverride = color;
+        _borderOverrideExpiry = DateTime.UtcNow.AddMilliseconds(durationMs);
+        OnInvalidateVisuals?.Invoke();
 
-        // Wait for flash duration
+        // Legacy await for backward compatibility with callers expecting completion
         await Task.Delay(durationMs);
-
-        // Clear override (flash off)
-        ClearBorderOverride();
 
         _logger.LogTrace("[VFX] Effect {EffectType} completed", effectType);
     }
 
     /// <inheritdoc />
+    /// <remarks>v0.3.23b: Manual override has no expiry and invokes OnInvalidateVisuals.</remarks>
     public void SetBorderOverride(string? colorOverride)
     {
         _borderOverride = colorOverride;
+        _borderOverrideExpiry = null; // Manual override has no expiry
         _logger.LogTrace("[VFX] Border override set to {Color}", colorOverride ?? "(null)");
+        OnInvalidateVisuals?.Invoke();
     }
 
     /// <inheritdoc />
@@ -84,10 +93,29 @@ public class VisualEffectService : IVisualEffectService
     }
 
     /// <inheritdoc />
+    /// <remarks>v0.3.23b: Invokes OnInvalidateVisuals and clears expiry.</remarks>
     public void ClearBorderOverride()
     {
         _borderOverride = null;
+        _borderOverrideExpiry = null;
         _logger.LogTrace("[VFX] Border override cleared");
+        OnInvalidateVisuals?.Invoke();
+    }
+
+    /// <inheritdoc />
+    /// <remarks>v0.3.23b: Called by game loop to manage time-based effects.</remarks>
+    public bool CheckExpiredOverrides()
+    {
+        if (_borderOverride != null && _borderOverrideExpiry.HasValue && DateTime.UtcNow > _borderOverrideExpiry.Value)
+        {
+            _logger.LogTrace("[VFX] Border override expired, clearing");
+            _borderOverride = null;
+            _borderOverrideExpiry = null;
+            OnInvalidateVisuals?.Invoke();
+            return true;
+        }
+
+        return false;
     }
 
     /// <summary>

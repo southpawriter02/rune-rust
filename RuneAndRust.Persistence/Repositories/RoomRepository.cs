@@ -147,4 +147,19 @@ public class RoomRepository : GenericRepository<Room>, IRoomRepository
 
         return rooms;
     }
+
+    /// <inheritdoc/>
+    public async Task<IEnumerable<Room>> GetBatchAsync(IEnumerable<Guid> ids)
+    {
+        var idList = ids.ToList();
+        _roomLogger.LogDebug("[Room] Fetching {Count} rooms by ID batch", idList.Count);
+
+        var rooms = await _dbSet
+            .Where(r => idList.Contains(r.Id))
+            .ToListAsync();
+
+        _roomLogger.LogDebug("[Room] Retrieved {Count} rooms from batch", rooms.Count);
+
+        return rooms;
+    }
 }

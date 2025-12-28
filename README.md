@@ -301,6 +301,21 @@ dotnet run --project RuneAndRust.ConsoleApp
 
 *These features are planned for future versions*
 
+## Upcoming Development
+
+The roadmap focuses on polishing core systems before the major **Saga** content expansion.
+
+### v0.3.x: Advanced Systems
+- **[v0.3.22 - The Oracle](docs/plans/v0.3.x/v0.3.22.md):** Enemy analysis engine (`inspect` command), Knowledge Tiers, and structured combat logs.
+- **[v0.3.23 - The Controller](docs/plans/v0.3.x/v0.3.23.md):** Event-driven game loop, non-blocking input, and key rebinding infrastructure.
+- **[v0.3.24 - The Golden Master](docs/plans/v0.3.x/v0.3.24.md):** Codebase cleanup, debug locking, and release preparation.
+
+### v0.4.x: The Saga
+- **[v0.4.0 - The Saga](docs/plans/v0.4.x/v0.4.0.md):** Core progression framework.
+    - **[v0.4.0a - The Legend](docs/plans/v0.4.x/v0.4.0a.md):** Backend for XP (Legend) tracking and Level Up events.
+
+See [Roadmap](docs/plans/roadmap.md) for the full implementation plan.
+
 ## Contributing
 
 This is a solo development project for the vertical slice. Feature requests and suggestions are welcome, but please note that v0.1 scope is locked.

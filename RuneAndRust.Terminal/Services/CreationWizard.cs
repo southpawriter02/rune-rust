@@ -4,6 +4,7 @@ using RuneAndRust.Core.Entities;
 using RuneAndRust.Core.Enums;
 using RuneAndRust.Core.Interfaces;
 using RuneAndRust.Core.Models;
+using RuneAndRust.Core.Models.Input;
 using RuneAndRust.Engine.Factories;
 using RuneAndRust.Terminal.Helpers;
 using RuneAndRust.Terminal.Rendering;
@@ -19,13 +20,17 @@ namespace RuneAndRust.Terminal.Services;
 /// Uses Spectre.Console Layout for real-time stat preview during selection.
 /// Uses localized strings via ILocalizationService.
 /// </summary>
-/// <remarks>See: SPEC-LOC-001 for Localization System design.</remarks>
+/// <remarks>
+/// See: SPEC-LOC-001 for Localization System design.
+/// v0.3.23a: Refactored to use IInputService for standardized input handling.
+/// </remarks>
 public class CreationWizard
 {
     private readonly IWizardService _wizardService;
     private readonly INarrativeService _narrativeService;
     private readonly CharacterFactory _characterFactory;
     private readonly ICharacterRepository _characterRepository;
+    private readonly IInputService _inputService;
     private readonly ILocalizationService _loc;
     private readonly ILogger<CreationWizard> _logger;
 
@@ -39,6 +44,7 @@ public class CreationWizard
     /// <param name="narrativeService">The narrative service for background descriptions.</param>
     /// <param name="characterFactory">The character factory for creating characters.</param>
     /// <param name="characterRepository">The character repository for persistence.</param>
+    /// <param name="inputService">The input service for standardized input handling.</param>
     /// <param name="localizationService">The localization service for string lookup.</param>
     /// <param name="logger">The logger for traceability.</param>
     public CreationWizard(
@@ -46,6 +52,7 @@ public class CreationWizard
         INarrativeService narrativeService,
         CharacterFactory characterFactory,
         ICharacterRepository characterRepository,
+        IInputService inputService,
         ILocalizationService localizationService,
         ILogger<CreationWizard> logger)
     {
@@ -53,6 +60,7 @@ public class CreationWizard
         _narrativeService = narrativeService;
         _characterFactory = characterFactory;
         _characterRepository = characterRepository;
+        _inputService = inputService;
         _loc = localizationService;
         _logger = logger;
     }
@@ -242,27 +250,36 @@ public class CreationWizard
 
                     ctx.UpdateTarget(layout);
 
-                    // Non-blocking input check
-                    if (Console.KeyAvailable)
+                    // Non-blocking input check via IInputService (v0.3.23a)
+                    if (_inputService.TryReadNext(out var inputEvent))
                     {
-                        var key = Console.ReadKey(intercept: true);
-                        switch (key.Key)
+                        switch (inputEvent)
                         {
-                            case ConsoleKey.UpArrow:
-                            case ConsoleKey.K:
+                            // Handle via GameAction
+                            case ActionEvent { Action: GameAction.MoveNorth }:
                                 _selectedIndex = Math.Max(0, _selectedIndex - 1);
                                 break;
-                            case ConsoleKey.DownArrow:
-                            case ConsoleKey.J:
+                            case ActionEvent { Action: GameAction.MoveSouth }:
                                 _selectedIndex = Math.Min(options.Length - 1, _selectedIndex + 1);
                                 break;
-                            case ConsoleKey.Enter:
-                            case ConsoleKey.Spacebar:
+                            case ActionEvent { Action: GameAction.Confirm }:
                                 result = options[_selectedIndex];
                                 break;
-                            case ConsoleKey.Backspace:
-                            case ConsoleKey.Escape:
-                            case ConsoleKey.Q:
+                            case ActionEvent { Action: GameAction.Cancel }:
+                                cancelled = true;
+                                break;
+
+                            // Fallback for raw keys
+                            case RawKeyEvent { KeyInfo.Key: ConsoleKey.UpArrow or ConsoleKey.K }:
+                                _selectedIndex = Math.Max(0, _selectedIndex - 1);
+                                break;
+                            case RawKeyEvent { KeyInfo.Key: ConsoleKey.DownArrow or ConsoleKey.J }:
+                                _selectedIndex = Math.Min(options.Length - 1, _selectedIndex + 1);
+                                break;
+                            case RawKeyEvent { KeyInfo.Key: ConsoleKey.Enter or ConsoleKey.Spacebar }:
+                                result = options[_selectedIndex];
+                                break;
+                            case RawKeyEvent { KeyInfo.Key: ConsoleKey.Backspace or ConsoleKey.Escape or ConsoleKey.Q }:
                                 cancelled = true;
                                 break;
                         }
@@ -279,6 +296,7 @@ public class CreationWizard
     /// Runs a simple selection step without stat preview (v0.3.4c).
     /// Used for Background selection which doesn't affect stats.
     /// </summary>
+    /// <remarks>v0.3.23a: Refactored to use IInputService.</remarks>
     private async Task<T?> RunSimpleSelectionStepAsync<T>(
         string title,
         T[] options,
@@ -300,27 +318,36 @@ public class CreationWizard
                     var menuPanel = BuildSimpleMenuPanel(title, options, getName, getDescription);
                     ctx.UpdateTarget(menuPanel);
 
-                    // Non-blocking input check
-                    if (Console.KeyAvailable)
+                    // Non-blocking input check via IInputService (v0.3.23a)
+                    if (_inputService.TryReadNext(out var inputEvent))
                     {
-                        var key = Console.ReadKey(intercept: true);
-                        switch (key.Key)
+                        switch (inputEvent)
                         {
-                            case ConsoleKey.UpArrow:
-                            case ConsoleKey.K:
+                            // Handle via GameAction
+                            case ActionEvent { Action: GameAction.MoveNorth }:
                                 _selectedIndex = Math.Max(0, _selectedIndex - 1);
                                 break;
-                            case ConsoleKey.DownArrow:
-                            case ConsoleKey.J:
+                            case ActionEvent { Action: GameAction.MoveSouth }:
                                 _selectedIndex = Math.Min(options.Length - 1, _selectedIndex + 1);
                                 break;
-                            case ConsoleKey.Enter:
-                            case ConsoleKey.Spacebar:
+                            case ActionEvent { Action: GameAction.Confirm }:
                                 result = options[_selectedIndex];
                                 break;
-                            case ConsoleKey.Backspace:
-                            case ConsoleKey.Escape:
-                            case ConsoleKey.Q:
+                            case ActionEvent { Action: GameAction.Cancel }:
+                                cancelled = true;
+                                break;
+
+                            // Fallback for raw keys
+                            case RawKeyEvent { KeyInfo.Key: ConsoleKey.UpArrow or ConsoleKey.K }:
+                                _selectedIndex = Math.Max(0, _selectedIndex - 1);
+                                break;
+                            case RawKeyEvent { KeyInfo.Key: ConsoleKey.DownArrow or ConsoleKey.J }:
+                                _selectedIndex = Math.Min(options.Length - 1, _selectedIndex + 1);
+                                break;
+                            case RawKeyEvent { KeyInfo.Key: ConsoleKey.Enter or ConsoleKey.Spacebar }:
+                                result = options[_selectedIndex];
+                                break;
+                            case RawKeyEvent { KeyInfo.Key: ConsoleKey.Backspace or ConsoleKey.Escape or ConsoleKey.Q }:
                                 cancelled = true;
                                 break;
                         }

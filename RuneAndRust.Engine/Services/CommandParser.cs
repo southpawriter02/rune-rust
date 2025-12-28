@@ -193,6 +193,25 @@ public class ParseResult
     /// </summary>
     public bool RequiresOptionsScreen { get; set; }
 
+    /// <summary>
+    /// Gets or sets whether the saga screen (The Shrine) should be opened (v0.4.0c).
+    /// </summary>
+    public bool RequiresSagaScreen { get; set; }
+
+    #region Travel Commands (v0.3.20c)
+
+    /// <summary>
+    /// Gets or sets whether a travel command was issued.
+    /// </summary>
+    public bool RequiresTravel { get; set; }
+
+    /// <summary>
+    /// Gets or sets the destination target for the travel command.
+    /// </summary>
+    public string? TravelTarget { get; set; }
+
+    #endregion
+
     #region Alchemy & Runeforging Commands (v0.3.1c)
 
     /// <summary>
@@ -244,6 +263,8 @@ public class CommandParser
     private readonly IRestScreenRenderer? _restRenderer;
     private readonly IRoomRepository? _roomRepository;
     private readonly IDebugConsoleRenderer? _debugConsoleRenderer;
+    private readonly IMapExportService? _mapExportService;
+    private readonly IAutoTravelService? _autoTravelService;
     private readonly GameState _gameState;
 
     /// <summary>
@@ -259,6 +280,8 @@ public class CommandParser
     /// <param name="restRenderer">The optional rest screen renderer for rest/camp display (v0.3.2c).</param>
     /// <param name="roomRepository">The optional room repository for rest location checks (v0.3.2c).</param>
     /// <param name="debugConsoleRenderer">The optional debug console renderer (v0.3.17a).</param>
+    /// <param name="mapExportService">The optional map export service for atlas export (v0.3.20b).</param>
+    /// <param name="autoTravelService">The optional auto-travel service for fast travel (v0.3.20c).</param>
     public CommandParser(
         ILogger<CommandParser> logger,
         IInputHandler inputHandler,
@@ -269,7 +292,9 @@ public class CommandParser
         IRestService? restService = null,
         IRestScreenRenderer? restRenderer = null,
         IRoomRepository? roomRepository = null,
-        IDebugConsoleRenderer? debugConsoleRenderer = null)
+        IDebugConsoleRenderer? debugConsoleRenderer = null,
+        IMapExportService? mapExportService = null,
+        IAutoTravelService? autoTravelService = null)
     {
         _logger = logger;
         _inputHandler = inputHandler;
@@ -281,6 +306,8 @@ public class CommandParser
         _restRenderer = restRenderer;
         _roomRepository = roomRepository;
         _debugConsoleRenderer = debugConsoleRenderer;
+        _mapExportService = mapExportService;
+        _autoTravelService = autoTravelService;
     }
 
     /// <summary>
@@ -300,7 +327,9 @@ public class CommandParser
         var command = input.Trim().ToLowerInvariant();
         _logger.LogDebug("Parsing command: '{Command}' in Phase: {Phase}", command, state.Phase);
 
+#if DEBUG
         // v0.3.17a: Debug console toggle (works in any phase)
+        // v0.3.24a: Wrapped in #if DEBUG to exclude from Release builds
         if (command == "~" || command == "debug")
         {
             if (_debugConsoleRenderer != null)
@@ -314,6 +343,7 @@ public class CommandParser
             }
             return ParseResult.None;
         }
+#endif
 
         ParseResult result;
         switch (state.Phase)
@@ -322,7 +352,7 @@ public class CommandParser
                 result = HandleMainMenu(command, state);
                 break;
             case GamePhase.Exploration:
-                result = await HandleExplorationAsync(command, state);
+                result = await HandleExplorationAsync(command, input.Trim(), state);
                 break;
             case GamePhase.Combat:
                 result = HandleCombat(command, state);
@@ -385,7 +415,10 @@ public class CommandParser
     /// <summary>
     /// Handles commands in the Exploration phase.
     /// </summary>
-    private async Task<ParseResult> HandleExplorationAsync(string command, GameState state)
+    /// <param name="command">The lowercased command for matching.</param>
+    /// <param name="originalInput">The original input with preserved casing (for note text, etc.).</param>
+    /// <param name="state">The game state.</param>
+    private async Task<ParseResult> HandleExplorationAsync(string command, string originalInput, GameState state)
     {
         // Check for direction aliases first
         var direction = ParseDirection(command);
@@ -698,6 +731,34 @@ public class CommandParser
             }
         }
 
+        // Check for note command (v0.3.20a)
+        // Note: Pass original input to preserve note text casing
+        if (command == "note" || command.StartsWith("note "))
+        {
+            return HandleNoteCommand(originalInput, state);
+        }
+
+        // Check for map export command (v0.3.20b)
+        if (command == "map export" || command == "atlas" || command == "export map")
+        {
+            return await HandleMapExportAsync(state);
+        }
+
+        // Check for travel/goto command (v0.3.20c)
+        if (command.StartsWith("travel ") || command.StartsWith("goto "))
+        {
+            var target = ExtractTarget(command, new[] { "travel ", "goto " });
+            if (!string.IsNullOrWhiteSpace(target))
+            {
+                return await HandleTravelCommandAsync(target, state);
+            }
+            else
+            {
+                _inputHandler.DisplayError("Travel where? Specify a destination (room name, 'home', 'anchor', or 'surface').");
+                return ParseResult.None;
+            }
+        }
+
         // Check for codex command with target
         if (command.StartsWith("codex "))
         {
@@ -722,6 +783,30 @@ public class CommandParser
                 return ParseResult.None;
             }
         }
+
+#if DEBUG
+        // v0.3.24a: Debug combat command wrapped in #if DEBUG
+        if (command == "debug-combat")
+        {
+            if (_combatService != null && _gameState.CurrentCharacter != null)
+            {
+                _logger.LogDebug("DEBUG: Initiating test combat encounter");
+                var dummyEnemy = new Enemy
+                {
+                    Name = "Training Dummy",
+                    MaxHp = 30,
+                    CurrentHp = 30
+                };
+                _combatService.StartCombat(new List<Enemy> { dummyEnemy });
+                _inputHandler.DisplayMessage("[yellow]DEBUG: Combat initiated with Training Dummy.[/]");
+            }
+            else
+            {
+                _inputHandler.DisplayMessage("[red]Cannot start combat: No active character or combat service unavailable.[/]");
+            }
+            return ParseResult.None;
+        }
+#endif
 
         switch (command)
         {
@@ -808,6 +893,14 @@ public class CommandParser
                 _logger.LogDebug("Options screen requested (v0.3.10b).");
                 return new ParseResult { RequiresOptionsScreen = true };
 
+            case "saga":
+            case "shrine":
+            case "legend":
+            case "progression":
+                _logger.LogDebug("Saga screen (The Shrine) requested (v0.4.0c).");
+                state.Phase = GamePhase.SagaMenu;
+                return ParseResult.None;
+
             case "equipment":
             case "gear":
             case "equipped":
@@ -852,25 +945,6 @@ public class CommandParser
             case "camp":
             case "sleep":
                 return await HandleRestCommandAsync(state, preferSanctuary: false);
-
-            case "debug-combat":
-                if (_combatService != null && _gameState.CurrentCharacter != null)
-                {
-                    _logger.LogDebug("DEBUG: Initiating test combat encounter");
-                    var dummyEnemy = new Enemy
-                    {
-                        Name = "Training Dummy",
-                        MaxHp = 30,
-                        CurrentHp = 30
-                    };
-                    _combatService.StartCombat(new List<Enemy> { dummyEnemy });
-                    _inputHandler.DisplayMessage("[yellow]DEBUG: Combat initiated with Training Dummy.[/]");
-                }
-                else
-                {
-                    _inputHandler.DisplayMessage("[red]Cannot start combat: No active character or combat service unavailable.[/]");
-                }
-                return ParseResult.None;
 
             default:
                 _inputHandler.DisplayError($"Unknown command: '{command}'. Type 'help' for available commands.");
@@ -1314,6 +1388,22 @@ public class CommandParser
         _inputHandler.DisplayMessage("  codex <name>     - View a specific journal entry");
         _inputHandler.DisplayMessage("  fragments        - View unassigned knowledge fragments");
         _inputHandler.DisplayMessage("");
+        _inputHandler.DisplayMessage("Notes:");
+        _inputHandler.DisplayMessage("  note             - View note for current room");
+        _inputHandler.DisplayMessage("  note <text>      - Set note for current room (appears as ! on map)");
+        _inputHandler.DisplayMessage("  note clear       - Remove note from current room");
+        _inputHandler.DisplayMessage("");
+        _inputHandler.DisplayMessage("Fast Travel:");
+        _inputHandler.DisplayMessage("  travel <name>    - Auto-walk to a visited room by name");
+        _inputHandler.DisplayMessage("  travel home      - Auto-walk to nearest Runic Anchor");
+        _inputHandler.DisplayMessage("  travel anchor    - Same as travel home");
+        _inputHandler.DisplayMessage("  travel surface   - Auto-walk to nearest surface (Z=0) room");
+        _inputHandler.DisplayMessage("  goto <name>      - Same as travel");
+        _inputHandler.DisplayMessage("");
+        _inputHandler.DisplayMessage("Map:");
+        _inputHandler.DisplayMessage("  atlas            - Export explored map as ASCII text file");
+        _inputHandler.DisplayMessage("  map export       - Same as atlas");
+        _inputHandler.DisplayMessage("");
         _inputHandler.DisplayMessage("Actions:");
         _inputHandler.DisplayMessage("  look, l          - Examine your surroundings");
         _inputHandler.DisplayMessage("  exits            - Show available exits");
@@ -1323,9 +1413,11 @@ public class CommandParser
         _inputHandler.DisplayMessage("  menu, mainmenu   - Return to main menu");
         _inputHandler.DisplayMessage("  help, ?          - Show this help");
         _inputHandler.DisplayMessage("  quit, exit, q    - Exit the game");
+#if DEBUG
         _inputHandler.DisplayMessage("");
         _inputHandler.DisplayMessage("Debug:");
         _inputHandler.DisplayMessage("  debug-combat     - Start a test combat encounter");
+#endif
     }
 
     /// <summary>
@@ -1461,6 +1553,208 @@ public class CommandParser
         _logger.LogInformation(
             "Rest complete. HP+{HP} Stamina+{Stamina} Stress-{Stress}.",
             result.HpRecovered, result.StaminaRecovered, result.StressRecovered);
+
+        return ParseResult.None;
+    }
+
+    #endregion
+
+    #region Note Command (v0.3.20a)
+
+    /// <summary>
+    /// Handles the note command for annotating rooms on the minimap.
+    /// </summary>
+    /// <param name="originalInput">The original (non-lowercased) command string to preserve note text casing.</param>
+    /// <param name="state">The current game state.</param>
+    /// <returns>A ParseResult (always None for note commands).</returns>
+    private ParseResult HandleNoteCommand(string originalInput, GameState state)
+    {
+        // Validate room
+        if (state.CurrentRoomId == null)
+        {
+            _inputHandler.DisplayError("You are nowhere. Cannot set a note.");
+            _logger.LogWarning("Note command attempted with null CurrentRoomId.");
+            return ParseResult.None;
+        }
+
+        var roomId = state.CurrentRoomId.Value;
+
+        // Parse command: "note" (read), "note clear" (delete), "note <text>" (set)
+        if (originalInput.Equals("note", StringComparison.OrdinalIgnoreCase))
+        {
+            // Read current note
+            if (state.UserNotes.TryGetValue(roomId, out var existingNote))
+            {
+                _inputHandler.DisplayMessage($"[yellow]Note:[/] {existingNote}");
+                _logger.LogDebug("Note read for room {RoomId}: {Note}", roomId, existingNote);
+            }
+            else
+            {
+                _inputHandler.DisplayMessage("[grey]No note for this room.[/]");
+                _logger.LogDebug("No note exists for room {RoomId}.", roomId);
+            }
+            return ParseResult.None;
+        }
+
+        // Extract note text after "note " (case-insensitive prefix removal)
+        var noteText = originalInput.Substring(5).Trim(); // Remove "note "
+
+        if (noteText.Equals("clear", StringComparison.OrdinalIgnoreCase))
+        {
+            // Clear note
+            if (state.UserNotes.Remove(roomId))
+            {
+                _inputHandler.DisplayMessage("[grey]Note cleared.[/]");
+                _logger.LogDebug("Note cleared for room {RoomId}.", roomId);
+            }
+            else
+            {
+                _inputHandler.DisplayMessage("[grey]No note to clear.[/]");
+            }
+            return ParseResult.None;
+        }
+
+        // Validate note text
+        if (string.IsNullOrWhiteSpace(noteText))
+        {
+            _inputHandler.DisplayMessage("[grey]Usage: note <text> | note clear | note (to view)[/]");
+            return ParseResult.None;
+        }
+
+        // Clamp note length
+        const int maxNoteLength = 100;
+        if (noteText.Length > maxNoteLength)
+        {
+            noteText = noteText.Substring(0, maxNoteLength);
+            _inputHandler.DisplayMessage($"[yellow]Note truncated to {maxNoteLength} characters.[/]");
+        }
+
+        // Set note
+        state.UserNotes[roomId] = noteText;
+        _inputHandler.DisplayMessage($"[green]Note set:[/] {noteText}");
+        _logger.LogDebug("Note set for room {RoomId}: {Note}", roomId, noteText);
+
+        return ParseResult.None;
+    }
+
+    /// <summary>
+    /// Handles the map export command for generating ASCII atlas files (v0.3.20b).
+    /// </summary>
+    /// <param name="state">The current game state.</param>
+    /// <returns>A ParseResult (always None for map export commands).</returns>
+    private async Task<ParseResult> HandleMapExportAsync(GameState state)
+    {
+        _logger.LogDebug("[MapExport] Map export command received.");
+
+        // Validate service availability
+        if (_mapExportService == null)
+        {
+            _inputHandler.DisplayError("Map export service not available.");
+            _logger.LogWarning("Map export command attempted but service is null.");
+            return ParseResult.None;
+        }
+
+        // Validate character exists
+        if (state.CurrentCharacter == null)
+        {
+            _inputHandler.DisplayError("No active character. Cannot export map.");
+            _logger.LogWarning("Map export attempted with null CurrentCharacter.");
+            return ParseResult.None;
+        }
+
+        // Validate room context
+        if (state.CurrentRoomId == null)
+        {
+            _inputHandler.DisplayError("You are nowhere. Cannot export map.");
+            _logger.LogWarning("Map export attempted with null CurrentRoomId.");
+            return ParseResult.None;
+        }
+
+        // Validate visited rooms exist
+        if (state.VisitedRoomIds.Count == 0)
+        {
+            _inputHandler.DisplayMessage("[grey]No rooms explored yet. Nothing to export.[/]");
+            _logger.LogDebug("Map export attempted with empty VisitedRoomIds.");
+            return ParseResult.None;
+        }
+
+        try
+        {
+            _inputHandler.DisplayMessage("[yellow]Generating atlas...[/]");
+
+            // Get player position from room repository
+            var currentRoom = _roomRepository != null
+                ? await _roomRepository.GetByIdAsync(state.CurrentRoomId.Value)
+                : null;
+
+            var playerPosition = currentRoom?.Position ?? new Core.ValueObjects.Coordinate(0, 0, 0);
+
+            // Export the map
+            var filePath = await _mapExportService.ExportMapAsync(
+                state.CurrentCharacter.Name,
+                playerPosition,
+                state.VisitedRoomIds,
+                state.UserNotes);
+
+            _inputHandler.DisplayMessage($"[green]Atlas exported successfully![/]");
+            _inputHandler.DisplayMessage($"[grey]Saved to: {filePath}[/]");
+            _logger.LogInformation("Map exported to {FilePath}", filePath);
+        }
+        catch (Exception ex)
+        {
+            _inputHandler.DisplayError($"Failed to export map: {ex.Message}");
+            _logger.LogError(ex, "Map export failed.");
+        }
+
+        return ParseResult.None;
+    }
+
+    #endregion
+
+    #region Travel Command (v0.3.20c)
+
+    /// <summary>
+    /// Handles the travel command for fast travel to visited locations.
+    /// </summary>
+    /// <param name="target">The destination target (room name, 'home', 'anchor', or 'surface').</param>
+    /// <param name="state">The current game state.</param>
+    /// <returns>A ParseResult (always None as travel executes inline).</returns>
+    private async Task<ParseResult> HandleTravelCommandAsync(string target, GameState state)
+    {
+        _logger.LogDebug("[Travel] Travel command received with target: '{Target}'", target);
+
+        // Validate service availability
+        if (_autoTravelService == null)
+        {
+            _inputHandler.DisplayError("Travel service not available.");
+            _logger.LogWarning("Travel command attempted but IAutoTravelService is null.");
+            return ParseResult.None;
+        }
+
+        // Execute travel (the service handles all validation internally)
+        // Note: ESC cancellation would require a CancellationTokenSource tied to Console.KeyAvailable polling
+        // For now, travel runs to completion or until interrupted by combat
+        var result = await _autoTravelService.TravelToAsync(target);
+
+        // Display result
+        if (result.Success)
+        {
+            _inputHandler.DisplayMessage($"[green]{result.Message}[/]");
+        }
+        else if (result.InterruptReason.HasValue && result.InterruptReason != TravelInterruptReason.None)
+        {
+            _inputHandler.DisplayMessage($"[yellow]{result.Message}[/]");
+        }
+        else
+        {
+            _inputHandler.DisplayError(result.Message);
+        }
+
+        // If travel completed or was interrupted, show current room
+        if (result.RoomsTraveled > 0)
+        {
+            return new ParseResult { RequiresLook = true };
+        }
 
         return ParseResult.None;
     }

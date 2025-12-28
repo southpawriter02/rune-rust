@@ -131,17 +131,24 @@ public class Character
     public int MaxCorruption => 100;
 
     /// <summary>
-    /// Experience points accumulated by the character.
+    /// Total accumulated Legend (Experience).
+    /// Used to calculate Level and Milestones.
     /// </summary>
-    /// <remarks>See: SPEC-XP-001 for XP thresholds and scaling formulas.</remarks>
-    public int ExperiencePoints { get; set; } = 0;
+    /// <remarks>See: v0.4.0a (The Legend) for Saga system design.</remarks>
+    public int Legend { get; set; } = 0;
 
     /// <summary>
-    /// Character's current level. Starts at 1, max 5.
-    /// Level-up rewards (+10 HP, +5 Stamina, +1 attribute point) are NOT YET IMPLEMENTED.
+    /// Character's current level. Starts at 1, max 10.
+    /// Determines ability access tiers and combat scaling.
     /// </summary>
-    /// <remarks>See: SPEC-XP-001 for level thresholds; SPEC-ADVANCEMENT-001 for level-up rewards.</remarks>
+    /// <remarks>See: v0.4.0a (The Legend) for milestone thresholds.</remarks>
     public int Level { get; set; } = 1;
+
+    /// <summary>
+    /// Currency earned via Leveling, used to purchase Attribute upgrades.
+    /// </summary>
+    /// <remarks>See: v0.4.0b (The Growth) for spending logic.</remarks>
+    public int ProgressionPoints { get; set; } = 0;
 
     /// <summary>
     /// Timestamp when the character was created.
@@ -210,6 +217,40 @@ public class Character
     /// </summary>
     /// <param name="effect">The status effect to remove.</param>
     public void RemoveStatusEffect(StatusEffectType effect) => ActiveStatusEffects.Remove(effect);
+
+    #endregion
+
+    #region Specialization System (v0.4.1a)
+
+    /// <summary>
+    /// IDs of specializations this character has unlocked access to.
+    /// A character must unlock a specialization before purchasing nodes in its tree.
+    /// Stored as JSONB in PostgreSQL.
+    /// </summary>
+    /// <remarks>See: v0.4.1a for specialization system design.</remarks>
+    public List<Guid> UnlockedSpecializationIds { get; set; } = new();
+
+    /// <summary>
+    /// Navigation property: Junction table of all unlocked specialization nodes.
+    /// Tracks which abilities the character has purchased from their specialization trees.
+    /// </summary>
+    public ICollection<CharacterSpecializationProgress> SpecializationProgress { get; set; }
+        = new List<CharacterSpecializationProgress>();
+
+    /// <summary>
+    /// Checks if the character has unlocked access to a specific specialization.
+    /// </summary>
+    /// <param name="specId">The specialization ID to check.</param>
+    /// <returns>True if the specialization is unlocked; otherwise false.</returns>
+    public bool HasSpecialization(Guid specId) => UnlockedSpecializationIds.Contains(specId);
+
+    /// <summary>
+    /// Checks if the character has unlocked a specific specialization node.
+    /// </summary>
+    /// <param name="nodeId">The node ID to check.</param>
+    /// <returns>True if the node is unlocked; otherwise false.</returns>
+    public bool HasNode(Guid nodeId) =>
+        SpecializationProgress.Any(p => p.NodeId == nodeId);
 
     #endregion
 

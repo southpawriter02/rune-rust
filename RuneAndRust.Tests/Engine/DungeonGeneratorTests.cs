@@ -11,8 +11,9 @@ using Xunit;
 namespace RuneAndRust.Tests.Engine;
 
 /// <summary>
-/// Tests for the DungeonGenerator service.
-/// Validates test map generation and room connectivity.
+/// Tests for the DungeonGenerator service (v0.3.24a).
+/// Validates template-based dungeon generation and room connectivity.
+/// v0.3.24a: Updated to test GenerateDungeonAsync after GenerateTestMapAsync removal.
 /// </summary>
 public class DungeonGeneratorTests
 {
@@ -56,53 +57,137 @@ public class DungeonGeneratorTests
             .Returns(Task.CompletedTask);
     }
 
-    #region GenerateTestMapAsync Tests
+    /// <summary>
+    /// Sets up mock repositories with a valid biome and templates for testing.
+    /// </summary>
+    private void SetupValidBiomeAndTemplates(int roomCount = 5)
+    {
+        // Create test biome
+        var biome = new BiomeDefinition
+        {
+            BiomeId = "the_roots",
+            Name = "The Roots",
+            Description = "Test biome for dungeon generation",
+            MinRoomCount = roomCount,
+            MaxRoomCount = roomCount,
+            AvailableTemplates = new List<string>
+            {
+                "roots_entry_01",
+                "roots_corridor_01",
+                "roots_chamber_01",
+                "roots_boss_01"
+            }
+        };
+
+        _mockBiomeDefinitionRepo.Setup(r => r.GetByBiomeIdAsync("the_roots"))
+            .ReturnsAsync(biome);
+
+        // Create test templates
+        var entryTemplate = new RoomTemplate
+        {
+            TemplateId = "roots_entry_01",
+            Archetype = "EntryHall",
+            BiomeId = "the_roots",
+            NameTemplates = new List<string> { "Entry Hall" },
+            DescriptionTemplates = new List<string> { "A cold, metallic chamber." },
+            Difficulty = "Easy"
+        };
+
+        var corridorTemplate = new RoomTemplate
+        {
+            TemplateId = "roots_corridor_01",
+            Archetype = "Corridor",
+            BiomeId = "the_roots",
+            NameTemplates = new List<string> { "Rusted Corridor" },
+            DescriptionTemplates = new List<string> { "Corroded pipes line the walls." },
+            Difficulty = "Medium"
+        };
+
+        var chamberTemplate = new RoomTemplate
+        {
+            TemplateId = "roots_chamber_01",
+            Archetype = "Chamber",
+            BiomeId = "the_roots",
+            NameTemplates = new List<string> { "Storage Chamber" },
+            DescriptionTemplates = new List<string> { "Broken crates litter the floor." },
+            Difficulty = "Medium"
+        };
+
+        var bossTemplate = new RoomTemplate
+        {
+            TemplateId = "roots_boss_01",
+            Archetype = "BossArena",
+            BiomeId = "the_roots",
+            NameTemplates = new List<string> { "The Pit" },
+            DescriptionTemplates = new List<string> { "A deep shaft descends into darkness." },
+            Difficulty = "Hard"
+        };
+
+        var allTemplates = new List<RoomTemplate> { entryTemplate, corridorTemplate, chamberTemplate, bossTemplate };
+        _mockRoomTemplateRepo.Setup(r => r.GetAllAsync())
+            .ReturnsAsync(allTemplates);
+
+        // Setup template renderer to return first template from list
+        _mockTemplateRendererService.Setup(r => r.RenderRoomName(It.IsAny<RoomTemplate>()))
+            .Returns<RoomTemplate>(t => t.NameTemplates.FirstOrDefault() ?? "Unknown Room");
+
+        _mockTemplateRendererService.Setup(r => r.RenderRoomDescription(It.IsAny<RoomTemplate>(), It.IsAny<BiomeDefinition>()))
+            .Returns<RoomTemplate, BiomeDefinition>((t, b) => t.DescriptionTemplates.FirstOrDefault() ?? "No description.");
+
+        // Setup dice service (deterministic)
+        _mockDiceService.Setup(d => d.RollSingle(It.IsAny<int>(), It.IsAny<string>()))
+            .Returns(1); // Always returns 1 for deterministic tests
+    }
+
+    #region GenerateDungeonAsync Tests
 
     [Fact]
-    public async Task GenerateTestMapAsync_ClearsExistingRooms()
+    public async Task GenerateDungeonAsync_ClearsExistingRooms()
     {
+        // Arrange
+        SetupValidBiomeAndTemplates();
+
         // Act
-        await _generator.GenerateTestMapAsync();
+        await _generator.GenerateDungeonAsync("the_roots");
 
         // Assert
         _mockRoomRepo.Verify(r => r.ClearAllRoomsAsync(), Times.Once);
     }
 
     [Fact]
-    public async Task GenerateTestMapAsync_CreatesAtLeastTwoRooms()
+    public async Task GenerateDungeonAsync_CreatesRoomsMatchingBiomeCount()
     {
-        // Act
-        await _generator.GenerateTestMapAsync();
+        // Arrange
+        SetupValidBiomeAndTemplates(roomCount: 5);
 
-        // Assert
-        _addedRooms.Should().HaveCountGreaterThanOrEqualTo(2);
-    }
-
-    [Fact]
-    public async Task GenerateTestMapAsync_CreatesFiveRooms()
-    {
         // Act
-        await _generator.GenerateTestMapAsync();
+        await _generator.GenerateDungeonAsync("the_roots");
 
         // Assert
         _addedRooms.Should().HaveCount(5);
     }
 
     [Fact]
-    public async Task GenerateTestMapAsync_HasExactlyOneStartingRoom()
+    public async Task GenerateDungeonAsync_HasExactlyOneStartingRoom()
     {
+        // Arrange
+        SetupValidBiomeAndTemplates();
+
         // Act
-        await _generator.GenerateTestMapAsync();
+        await _generator.GenerateDungeonAsync("the_roots");
 
         // Assert
         _addedRooms.Count(r => r.IsStartingRoom).Should().Be(1);
     }
 
     [Fact]
-    public async Task GenerateTestMapAsync_StartingRoomIsAtOrigin()
+    public async Task GenerateDungeonAsync_StartingRoomIsAtOrigin()
     {
+        // Arrange
+        SetupValidBiomeAndTemplates();
+
         // Act
-        await _generator.GenerateTestMapAsync();
+        await _generator.GenerateDungeonAsync("the_roots");
 
         // Assert
         var startingRoom = _addedRooms.Single(r => r.IsStartingRoom);
@@ -110,10 +195,13 @@ public class DungeonGeneratorTests
     }
 
     [Fact]
-    public async Task GenerateTestMapAsync_ReturnsStartingRoomId()
+    public async Task GenerateDungeonAsync_ReturnsStartingRoomId()
     {
+        // Arrange
+        SetupValidBiomeAndTemplates();
+
         // Act
-        var result = await _generator.GenerateTestMapAsync();
+        var result = await _generator.GenerateDungeonAsync("the_roots");
 
         // Assert
         var startingRoom = _addedRooms.Single(r => r.IsStartingRoom);
@@ -121,10 +209,13 @@ public class DungeonGeneratorTests
     }
 
     [Fact]
-    public async Task GenerateTestMapAsync_AllRoomsHaveUniqueIds()
+    public async Task GenerateDungeonAsync_AllRoomsHaveUniqueIds()
     {
+        // Arrange
+        SetupValidBiomeAndTemplates();
+
         // Act
-        await _generator.GenerateTestMapAsync();
+        await _generator.GenerateDungeonAsync("the_roots");
 
         // Assert
         var ids = _addedRooms.Select(r => r.Id).ToList();
@@ -132,10 +223,13 @@ public class DungeonGeneratorTests
     }
 
     [Fact]
-    public async Task GenerateTestMapAsync_AllRoomsHaveUniquePositions()
+    public async Task GenerateDungeonAsync_AllRoomsHaveUniquePositions()
     {
+        // Arrange
+        SetupValidBiomeAndTemplates();
+
         // Act
-        await _generator.GenerateTestMapAsync();
+        await _generator.GenerateDungeonAsync("the_roots");
 
         // Assert
         var positions = _addedRooms.Select(r => r.Position).ToList();
@@ -143,10 +237,13 @@ public class DungeonGeneratorTests
     }
 
     [Fact]
-    public async Task GenerateTestMapAsync_AllRoomsHaveNonEmptyNames()
+    public async Task GenerateDungeonAsync_AllRoomsHaveNonEmptyNames()
     {
+        // Arrange
+        SetupValidBiomeAndTemplates();
+
         // Act
-        await _generator.GenerateTestMapAsync();
+        await _generator.GenerateDungeonAsync("the_roots");
 
         // Assert
         foreach (var room in _addedRooms)
@@ -156,10 +253,13 @@ public class DungeonGeneratorTests
     }
 
     [Fact]
-    public async Task GenerateTestMapAsync_AllRoomsHaveNonEmptyDescriptions()
+    public async Task GenerateDungeonAsync_AllRoomsHaveNonEmptyDescriptions()
     {
+        // Arrange
+        SetupValidBiomeAndTemplates();
+
         // Act
-        await _generator.GenerateTestMapAsync();
+        await _generator.GenerateDungeonAsync("the_roots");
 
         // Assert
         foreach (var room in _addedRooms)
@@ -169,21 +269,13 @@ public class DungeonGeneratorTests
     }
 
     [Fact]
-    public async Task GenerateTestMapAsync_StartingRoomHasMultipleExits()
+    public async Task GenerateDungeonAsync_ExitsAreBidirectional()
     {
-        // Act
-        await _generator.GenerateTestMapAsync();
+        // Arrange
+        SetupValidBiomeAndTemplates();
 
-        // Assert
-        var startingRoom = _addedRooms.Single(r => r.IsStartingRoom);
-        startingRoom.Exits.Should().HaveCountGreaterThanOrEqualTo(2);
-    }
-
-    [Fact]
-    public async Task GenerateTestMapAsync_ExitsAreBidirectional()
-    {
         // Act
-        await _generator.GenerateTestMapAsync();
+        await _generator.GenerateDungeonAsync("the_roots");
 
         // Assert - verify that for each exit, the target room has a return exit
         foreach (var room in _addedRooms)
@@ -199,10 +291,13 @@ public class DungeonGeneratorTests
     }
 
     [Fact]
-    public async Task GenerateTestMapAsync_ExitsPointToValidRooms()
+    public async Task GenerateDungeonAsync_ExitsPointToValidRooms()
     {
+        // Arrange
+        SetupValidBiomeAndTemplates();
+
         // Act
-        await _generator.GenerateTestMapAsync();
+        await _generator.GenerateDungeonAsync("the_roots");
 
         // Assert
         var allIds = _addedRooms.Select(r => r.Id).ToHashSet();
@@ -217,10 +312,13 @@ public class DungeonGeneratorTests
     }
 
     [Fact]
-    public async Task GenerateTestMapAsync_SavesChangesToDatabase()
+    public async Task GenerateDungeonAsync_SavesChangesToDatabase()
     {
+        // Arrange
+        SetupValidBiomeAndTemplates();
+
         // Act
-        await _generator.GenerateTestMapAsync();
+        await _generator.GenerateDungeonAsync("the_roots");
 
         // Assert
         _mockRoomRepo.Verify(r => r.AddRangeAsync(It.IsAny<IEnumerable<Room>>()), Times.Once);
@@ -228,14 +326,30 @@ public class DungeonGeneratorTests
     }
 
     [Fact]
-    public async Task GenerateTestMapAsync_IncludesVerticalRoom()
+    public async Task GenerateDungeonAsync_ThrowsForUnknownBiome()
     {
-        // Act
-        await _generator.GenerateTestMapAsync();
+        // Arrange
+        _mockBiomeDefinitionRepo.Setup(r => r.GetByBiomeIdAsync("unknown_biome"))
+            .ReturnsAsync((BiomeDefinition?)null);
 
-        // Assert - should have a room below origin (The Pit)
-        var pitRoom = _addedRooms.FirstOrDefault(r => r.Position.Z < 0);
-        pitRoom.Should().NotBeNull();
+        // Act & Assert
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            _generator.GenerateDungeonAsync("unknown_biome"));
+    }
+
+    [Fact]
+    public async Task GenerateDungeonAsync_PopulatesEachRoom()
+    {
+        // Arrange
+        SetupValidBiomeAndTemplates(roomCount: 3);
+
+        // Act
+        await _generator.GenerateDungeonAsync("the_roots");
+
+        // Assert - Environment populator should be called once per room
+        _mockEnvironmentPopulator.Verify(
+            p => p.PopulateRoomAsync(It.IsAny<Room>()),
+            Times.Exactly(3));
     }
 
     #endregion
@@ -275,40 +389,60 @@ public class DungeonGeneratorTests
 
     #endregion
 
-    #region Expected Room Layout Tests
+    #region Linear Layout Tests
 
     [Fact]
-    public async Task GenerateTestMapAsync_EntryHallIsNamed()
+    public async Task GenerateDungeonAsync_RoomsFormLinearPath()
     {
-        // Act
-        await _generator.GenerateTestMapAsync();
+        // Arrange
+        SetupValidBiomeAndTemplates(roomCount: 4);
 
-        // Assert
-        _addedRooms.Should().Contain(r => r.Name == "Entry Hall");
+        // Act
+        await _generator.GenerateDungeonAsync("the_roots");
+
+        // Assert - Rooms should be arranged linearly (Y increases)
+        var sortedByY = _addedRooms.OrderBy(r => r.Position.Y).ToList();
+        for (int i = 0; i < sortedByY.Count; i++)
+        {
+            sortedByY[i].Position.Y.Should().Be(i);
+            sortedByY[i].Position.X.Should().Be(0); // All on same X axis
+            sortedByY[i].Position.Z.Should().Be(0); // All on same Z level
+        }
     }
 
     [Fact]
-    public async Task GenerateTestMapAsync_RustedCorridorIsNorthOfEntry()
+    public async Task GenerateDungeonAsync_FirstRoomIsStartingRoom()
     {
+        // Arrange
+        SetupValidBiomeAndTemplates();
+
         // Act
-        await _generator.GenerateTestMapAsync();
+        await _generator.GenerateDungeonAsync("the_roots");
 
         // Assert
-        var corridor = _addedRooms.FirstOrDefault(r => r.Name == "Rusted Corridor");
-        corridor.Should().NotBeNull();
-        corridor!.Position.Should().Be(new Coordinate(0, 1, 0));
+        var roomAtOrigin = _addedRooms.Single(r => r.Position == Coordinate.Origin);
+        roomAtOrigin.IsStartingRoom.Should().BeTrue();
     }
 
     [Fact]
-    public async Task GenerateTestMapAsync_ThePitIsBelowEntry()
+    public async Task GenerateDungeonAsync_RoomsConnectedNorthSouth()
     {
-        // Act
-        await _generator.GenerateTestMapAsync();
+        // Arrange
+        SetupValidBiomeAndTemplates(roomCount: 3);
 
-        // Assert
-        var pit = _addedRooms.FirstOrDefault(r => r.Name == "The Pit");
-        pit.Should().NotBeNull();
-        pit!.Position.Should().Be(new Coordinate(0, 0, -1));
+        // Act
+        await _generator.GenerateDungeonAsync("the_roots");
+
+        // Assert - Check north/south connectivity
+        var startRoom = _addedRooms.Single(r => r.IsStartingRoom);
+        startRoom.Exits.Should().ContainKey(Direction.North);
+
+        var middleRoom = _addedRooms.Single(r => r.Position.Y == 1);
+        middleRoom.Exits.Should().ContainKey(Direction.South);
+        middleRoom.Exits.Should().ContainKey(Direction.North);
+
+        var endRoom = _addedRooms.Single(r => r.Position.Y == 2);
+        endRoom.Exits.Should().ContainKey(Direction.South);
     }
 
     #endregion

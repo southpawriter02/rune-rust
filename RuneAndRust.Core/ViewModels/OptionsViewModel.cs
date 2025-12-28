@@ -53,6 +53,11 @@ public class OptionsViewModel
     public int MasterVolume { get; set; }
 
     /// <summary>
+    /// Gets or sets whether ambient soundscape is enabled (v0.3.19c).
+    /// </summary>
+    public bool AmbienceEnabled { get; set; }
+
+    /// <summary>
     /// Gets or sets the autosave interval in minutes (1-60).
     /// </summary>
     public int AutosaveIntervalMinutes { get; set; }

@@ -9,6 +9,7 @@ using RuneAndRust.Core.Models.Combat;
 using RuneAndRust.Core.ValueObjects;
 using RuneAndRust.Engine.Services;
 using Xunit;
+using Character = RuneAndRust.Core.Entities.Character;
 
 namespace RuneAndRust.Tests.Engine;
 
@@ -22,6 +23,7 @@ public class NavigationServiceTests
     private readonly Mock<IHazardService> _mockHazardService;
     private readonly Mock<IConditionService> _mockConditionService;
     private readonly Mock<IInputHandler> _mockInputHandler;
+    private readonly Mock<ISagaService> _mockSagaService;
     private readonly Mock<ILogger<NavigationService>> _mockLogger;
     private readonly GameState _gameState;
     private readonly NavigationService _navigationService;
@@ -32,6 +34,7 @@ public class NavigationServiceTests
         _mockHazardService = new Mock<IHazardService>();
         _mockConditionService = new Mock<IConditionService>();
         _mockInputHandler = new Mock<IInputHandler>();
+        _mockSagaService = new Mock<ISagaService>();
         _mockLogger = new Mock<ILogger<NavigationService>>();
         _gameState = new GameState();
         _navigationService = new NavigationService(
@@ -40,6 +43,7 @@ public class NavigationServiceTests
             _mockHazardService.Object,
             _mockConditionService.Object,
             _mockInputHandler.Object,
+            _mockSagaService.Object,
             _mockLogger.Object);
 
         // Default setup: no hazards trigger
@@ -413,6 +417,153 @@ public class NavigationServiceTests
         result.Should().Contain(Direction.North);
         result.Should().Contain(Direction.Down);
         result.Should().HaveCount(2);
+    }
+
+    #endregion
+
+    #region Room Discovery XP Tests (v0.4.0d)
+
+    [Fact]
+    public async Task MoveAsync_NewRoom_AwardsDiscoveryXP()
+    {
+        // Arrange
+        var currentRoomId = Guid.NewGuid();
+        var nextRoomId = Guid.NewGuid();
+
+        var currentRoom = new Room
+        {
+            Id = currentRoomId,
+            Exits = new Dictionary<Direction, Guid> { { Direction.North, nextRoomId } }
+        };
+        var nextRoom = new Room { Id = nextRoomId, Name = "Ancient Chamber" };
+
+        _gameState.CurrentRoomId = currentRoomId;
+        _gameState.CurrentCharacter = CreateTestCharacter();
+        _gameState.VisitedRoomIds.Clear();
+
+        _mockRoomRepo.Setup(r => r.GetByIdAsync(currentRoomId)).ReturnsAsync(currentRoom);
+        _mockRoomRepo.Setup(r => r.GetByIdAsync(nextRoomId)).ReturnsAsync(nextRoom);
+
+        // Act
+        await _navigationService.MoveAsync(Direction.North);
+
+        // Assert
+        _mockSagaService.Verify(
+            s => s.AddLegend(_gameState.CurrentCharacter, 10, "Discovered Ancient Chamber"),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task MoveAsync_VisitedRoom_DoesNotAwardXP()
+    {
+        // Arrange
+        var currentRoomId = Guid.NewGuid();
+        var nextRoomId = Guid.NewGuid();
+
+        var currentRoom = new Room
+        {
+            Id = currentRoomId,
+            Exits = new Dictionary<Direction, Guid> { { Direction.North, nextRoomId } }
+        };
+        var nextRoom = new Room { Id = nextRoomId, Name = "Ancient Chamber" };
+
+        _gameState.CurrentRoomId = currentRoomId;
+        _gameState.CurrentCharacter = CreateTestCharacter();
+        _gameState.VisitedRoomIds.Add(nextRoomId); // Already visited
+
+        _mockRoomRepo.Setup(r => r.GetByIdAsync(currentRoomId)).ReturnsAsync(currentRoom);
+        _mockRoomRepo.Setup(r => r.GetByIdAsync(nextRoomId)).ReturnsAsync(nextRoom);
+
+        // Act
+        await _navigationService.MoveAsync(Direction.North);
+
+        // Assert
+        _mockSagaService.Verify(
+            s => s.AddLegend(It.IsAny<Character>(), It.IsAny<int>(), It.IsAny<string>()),
+            Times.Never,
+            "Should not award XP for already-visited rooms");
+    }
+
+    [Fact]
+    public async Task MoveAsync_NoCharacter_DoesNotAwardXP()
+    {
+        // Arrange
+        var currentRoomId = Guid.NewGuid();
+        var nextRoomId = Guid.NewGuid();
+
+        var currentRoom = new Room
+        {
+            Id = currentRoomId,
+            Exits = new Dictionary<Direction, Guid> { { Direction.North, nextRoomId } }
+        };
+        var nextRoom = new Room { Id = nextRoomId, Name = "Ancient Chamber" };
+
+        _gameState.CurrentRoomId = currentRoomId;
+        _gameState.CurrentCharacter = null; // No character
+        _gameState.VisitedRoomIds.Clear();
+
+        _mockRoomRepo.Setup(r => r.GetByIdAsync(currentRoomId)).ReturnsAsync(currentRoom);
+        _mockRoomRepo.Setup(r => r.GetByIdAsync(nextRoomId)).ReturnsAsync(nextRoom);
+
+        // Act
+        await _navigationService.MoveAsync(Direction.North);
+
+        // Assert
+        _mockSagaService.Verify(
+            s => s.AddLegend(It.IsAny<Character>(), It.IsAny<int>(), It.IsAny<string>()),
+            Times.Never,
+            "Should not award XP when no character exists");
+    }
+
+    [Fact]
+    public async Task MoveAsync_MultipleNewRooms_AwardsXPForEach()
+    {
+        // Arrange
+        var room1Id = Guid.NewGuid();
+        var room2Id = Guid.NewGuid();
+        var room3Id = Guid.NewGuid();
+
+        var room1 = new Room
+        {
+            Id = room1Id,
+            Exits = new Dictionary<Direction, Guid> { { Direction.North, room2Id } }
+        };
+        var room2 = new Room
+        {
+            Id = room2Id,
+            Name = "Corridor",
+            Exits = new Dictionary<Direction, Guid> { { Direction.North, room3Id } }
+        };
+        var room3 = new Room { Id = room3Id, Name = "Vault" };
+
+        _gameState.CurrentRoomId = room1Id;
+        _gameState.CurrentCharacter = CreateTestCharacter();
+        _gameState.VisitedRoomIds.Clear();
+
+        _mockRoomRepo.Setup(r => r.GetByIdAsync(room1Id)).ReturnsAsync(room1);
+        _mockRoomRepo.Setup(r => r.GetByIdAsync(room2Id)).ReturnsAsync(room2);
+        _mockRoomRepo.Setup(r => r.GetByIdAsync(room3Id)).ReturnsAsync(room3);
+
+        // Act
+        await _navigationService.MoveAsync(Direction.North); // To room2
+        await _navigationService.MoveAsync(Direction.North); // To room3
+
+        // Assert
+        _mockSagaService.Verify(
+            s => s.AddLegend(_gameState.CurrentCharacter, 10, It.IsAny<string>()),
+            Times.Exactly(2),
+            "Should award 10 XP for each new room discovered");
+    }
+
+    private static Character CreateTestCharacter(string name = "TestPlayer")
+    {
+        return new Character
+        {
+            Id = Guid.NewGuid(),
+            Name = name,
+            CurrentHP = 100,
+            MaxHP = 100
+        };
     }
 
     #endregion

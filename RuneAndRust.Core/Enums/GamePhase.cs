@@ -25,5 +25,12 @@ public enum GamePhase
     /// <summary>
     /// The quit phase. Signals the game loop to terminate.
     /// </summary>
-    Quit = 3
+    Quit = 3,
+
+    /// <summary>
+    /// The Saga progression menu ("The Shrine").
+    /// Allows players to view Legend progress and spend PP on attribute upgrades.
+    /// </summary>
+    /// <remarks>See: v0.4.0c (The Shrine) for Saga UI implementation.</remarks>
+    SagaMenu = 4
 }

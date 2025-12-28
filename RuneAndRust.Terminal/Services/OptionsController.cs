@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using RuneAndRust.Core.Constants;
 using RuneAndRust.Core.Enums;
 using RuneAndRust.Core.Interfaces;
+using RuneAndRust.Core.Models.Input;
 using RuneAndRust.Core.Settings;
 using RuneAndRust.Core.ViewModels;
 using RuneAndRust.Terminal.Rendering;
@@ -13,12 +14,16 @@ namespace RuneAndRust.Terminal.Services;
 /// Handles input navigation, setting modification, key rebinding, and persistence on exit.
 /// Uses localized strings via ILocalizationService.
 /// </summary>
-/// <remarks>See: SPEC-LOC-001 for Localization System design.</remarks>
+/// <remarks>
+/// See: SPEC-LOC-001 for Localization System design.
+/// v0.3.23a: Refactored to use IInputService for standardized input handling.
+/// </remarks>
 public class OptionsController
 {
     private readonly IOptionsScreenRenderer _renderer;
     private readonly ISettingsService _settingsService;
     private readonly IInputConfigurationService _inputConfigService;
+    private readonly IInputService _inputService;
     private readonly ILocalizationService _loc;
     private readonly OptionsViewHelperService _viewHelper;
     private readonly ILogger<OptionsController> _logger;
@@ -29,6 +34,7 @@ public class OptionsController
     /// <param name="renderer">The options screen renderer.</param>
     /// <param name="settingsService">The settings service for persistence.</param>
     /// <param name="inputConfigService">The input configuration service for key rebinding.</param>
+    /// <param name="inputService">The input service for standardized input handling.</param>
     /// <param name="localizationService">The localization service for string lookup.</param>
     /// <param name="viewHelper">The options view helper service.</param>
     /// <param name="logger">The logger for traceability.</param>
@@ -36,6 +42,7 @@ public class OptionsController
         IOptionsScreenRenderer renderer,
         ISettingsService settingsService,
         IInputConfigurationService inputConfigService,
+        IInputService inputService,
         ILocalizationService localizationService,
         OptionsViewHelperService viewHelper,
         ILogger<OptionsController> logger)
@@ -43,6 +50,7 @@ public class OptionsController
         _renderer = renderer;
         _settingsService = settingsService;
         _inputConfigService = inputConfigService;
+        _inputService = inputService;
         _loc = localizationService;
         _viewHelper = viewHelper;
         _logger = logger;
@@ -63,26 +71,21 @@ public class OptionsController
         {
             _renderer.Render(vm);
 
-            var key = Console.ReadKey(intercept: true);
+            var inputEvent = _inputService.ReadNext();
 
-            switch (key.Key)
+            // Handle input based on event type (v0.3.23a)
+            switch (inputEvent)
             {
-                case ConsoleKey.Tab:
-                    CycleTab(vm, key.Modifiers.HasFlag(ConsoleModifiers.Shift));
-                    break;
-
-                case ConsoleKey.UpArrow:
-                case ConsoleKey.K:
+                // Navigation via GameAction
+                case ActionEvent { Action: GameAction.MoveNorth }:
                     NavigateUp(vm);
                     break;
 
-                case ConsoleKey.DownArrow:
-                case ConsoleKey.J:
+                case ActionEvent { Action: GameAction.MoveSouth }:
                     NavigateDown(vm);
                     break;
 
-                case ConsoleKey.LeftArrow:
-                case ConsoleKey.H:
+                case ActionEvent { Action: GameAction.MoveWest }:
                     if (vm.ActiveTab != OptionsTab.Controls)
                     {
                         ModifySetting(vm, -1);
@@ -91,8 +94,7 @@ public class OptionsController
                     }
                     break;
 
-                case ConsoleKey.RightArrow:
-                case ConsoleKey.L:
+                case ActionEvent { Action: GameAction.MoveEast }:
                     if (vm.ActiveTab != OptionsTab.Controls)
                     {
                         ModifySetting(vm, +1);
@@ -101,14 +103,55 @@ public class OptionsController
                     }
                     break;
 
-                case ConsoleKey.Enter:
-                case ConsoleKey.Spacebar:
+                case ActionEvent { Action: GameAction.Confirm }:
                     await HandleActionOrToggleAsync(vm);
                     RefreshItems(vm);
                     break;
 
-                case ConsoleKey.Escape:
-                case ConsoleKey.Q:
+                case ActionEvent { Action: GameAction.Cancel }:
+                case ActionEvent { Action: GameAction.Menu }:
+                    await _settingsService.SaveAsync();
+                    _inputConfigService.SaveBindings();
+                    _logger.LogInformation("[Options] Options menu closed. Settings and bindings saved.");
+                    return;
+
+                // Raw key fallback for vim-style navigation and Tab
+                case RawKeyEvent { KeyInfo.Key: ConsoleKey.Tab } rawKey:
+                    CycleTab(vm, rawKey.KeyInfo.Modifiers.HasFlag(ConsoleModifiers.Shift));
+                    break;
+
+                case RawKeyEvent { KeyInfo.Key: ConsoleKey.UpArrow or ConsoleKey.K }:
+                    NavigateUp(vm);
+                    break;
+
+                case RawKeyEvent { KeyInfo.Key: ConsoleKey.DownArrow or ConsoleKey.J }:
+                    NavigateDown(vm);
+                    break;
+
+                case RawKeyEvent { KeyInfo.Key: ConsoleKey.LeftArrow or ConsoleKey.H }:
+                    if (vm.ActiveTab != OptionsTab.Controls)
+                    {
+                        ModifySetting(vm, -1);
+                        ApplyToGameSettings(vm);
+                        RefreshItems(vm);
+                    }
+                    break;
+
+                case RawKeyEvent { KeyInfo.Key: ConsoleKey.RightArrow or ConsoleKey.L }:
+                    if (vm.ActiveTab != OptionsTab.Controls)
+                    {
+                        ModifySetting(vm, +1);
+                        ApplyToGameSettings(vm);
+                        RefreshItems(vm);
+                    }
+                    break;
+
+                case RawKeyEvent { KeyInfo.Key: ConsoleKey.Enter or ConsoleKey.Spacebar }:
+                    await HandleActionOrToggleAsync(vm);
+                    RefreshItems(vm);
+                    break;
+
+                case RawKeyEvent { KeyInfo.Key: ConsoleKey.Escape or ConsoleKey.Q }:
                     await _settingsService.SaveAsync();
                     _inputConfigService.SaveBindings();
                     _logger.LogInformation("[Options] Options menu closed. Settings and bindings saved.");
@@ -130,6 +173,7 @@ public class OptionsController
             Theme = (int)GameSettings.Theme,
             TextSpeed = GameSettings.TextSpeed,
             MasterVolume = GameSettings.MasterVolume,
+            AmbienceEnabled = GameSettings.AmbienceEnabled,
             AutosaveIntervalMinutes = GameSettings.AutosaveIntervalMinutes,
             Language = GameSettings.Language
         };
@@ -245,6 +289,13 @@ public class OptionsController
                     MaxValue: 100,
                     Step: 5,
                     PropertyName: "MasterVolume"
+                ));
+                vm.CurrentItems.Add(new SettingItemView(
+                    Name: _loc.Get(LocKeys.UI_Options_Setting_AmbienceEnabled),
+                    ValueDisplay: _viewHelper.FormatToggle(vm.AmbienceEnabled),
+                    Type: SettingType.Toggle,
+                    IsSelected: index++ == vm.SelectedIndex,
+                    PropertyName: "AmbienceEnabled"
                 ));
                 break;
         }
@@ -420,6 +471,7 @@ public class OptionsController
     /// Handles key rebinding in listening mode.
     /// Captures the next key press and assigns it to the selected action.
     /// </summary>
+    /// <remarks>v0.3.23a: Refactored to use IInputService with RawKeyEvent.</remarks>
     private void HandleRebind(OptionsViewModel vm)
     {
         var binding = vm.Bindings[vm.SelectedIndex];
@@ -455,8 +507,31 @@ public class OptionsController
         };
         _renderer.Render(tempVm);
 
-        // Wait for key press
-        var keyInfo = Console.ReadKey(intercept: true);
+        // Wait for key press - use ReadNext and extract raw key info
+        var inputEvent = _inputService.ReadNext();
+
+        // Extract the key info from the event
+        ConsoleKeyInfo keyInfo;
+        switch (inputEvent)
+        {
+            case RawKeyEvent rawKey:
+                keyInfo = rawKey.KeyInfo;
+                break;
+            case ActionEvent actionEvent when actionEvent.SourceKey.HasValue:
+                // Reconstruct minimal key info from ActionEvent
+                keyInfo = new ConsoleKeyInfo('\0', actionEvent.SourceKey.Value, false, false, false);
+                break;
+            case ActionEvent { Action: GameAction.Cancel }:
+                // Cancel action means user wants to abort rebind
+                _logger.LogDebug("[Options] Rebind cancelled for {Command}", binding.Command);
+                RefreshBindings(vm);
+                return;
+            default:
+                // For other events (SystemEvent, etc.), cancel the rebind
+                _logger.LogDebug("[Options] Rebind cancelled for {Command} (non-key event)", binding.Command);
+                RefreshBindings(vm);
+                return;
+        }
 
         if (keyInfo.Key == ConsoleKey.Escape)
         {
@@ -498,6 +573,11 @@ public class OptionsController
                 vm.ReduceMotion = !vm.ReduceMotion;
                 _logger.LogDebug("[Options] ReduceMotion changed to {Value}", vm.ReduceMotion);
                 break;
+
+            case "AmbienceEnabled":
+                vm.AmbienceEnabled = !vm.AmbienceEnabled;
+                _logger.LogDebug("[Options] AmbienceEnabled changed to {Value}", vm.AmbienceEnabled);
+                break;
         }
     }
 
@@ -513,6 +593,7 @@ public class OptionsController
         vm.Theme = (int)GameSettings.Theme;
         vm.TextSpeed = GameSettings.TextSpeed;
         vm.MasterVolume = GameSettings.MasterVolume;
+        vm.AmbienceEnabled = GameSettings.AmbienceEnabled;
         vm.AutosaveIntervalMinutes = GameSettings.AutosaveIntervalMinutes;
         vm.Language = GameSettings.Language;
 
@@ -532,6 +613,7 @@ public class OptionsController
         GameSettings.Theme = (ThemeType)vm.Theme;
         GameSettings.TextSpeed = vm.TextSpeed;
         GameSettings.MasterVolume = vm.MasterVolume;
+        GameSettings.AmbienceEnabled = vm.AmbienceEnabled;
         GameSettings.AutosaveIntervalMinutes = vm.AutosaveIntervalMinutes;
         GameSettings.Language = vm.Language;
     }

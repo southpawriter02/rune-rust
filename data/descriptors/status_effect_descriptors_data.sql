@@ -139,7 +139,7 @@ VALUES
 INSERT INTO Status_Effect_Descriptors (effect_type, application_context, severity, source_type, source_detail, target_type, descriptor_text, weight, tags)
 VALUES
 ('Weakened', 'OnApply', NULL, 'EnemyAttack', 'Drain', 'Player', 'Your strength drains away—you feel weakened!', 1.0, '["Dramatic"]'),
-('Weakened', 'OnApply', NULL, 'EnemyAttack', 'Curse', 'Player', 'Dark energy saps your vitality!', 1.0, '["Dramatic", "Magical"]'),
+('Weakened', 'OnApply', NULL, 'EnemyAttack', 'Curse', 'Player', 'Shadow-blight saps your vitality!', 1.0, '["Dramatic", "Magical"]'),
 ('Weakened', 'OnApply', NULL, 'EnemyAttack', 'Drain', 'Enemy', 'The {Enemy} looks weakened!', 1.0, '["Concise"]');
 
 -- ============================================================

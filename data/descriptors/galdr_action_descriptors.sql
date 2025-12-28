@@ -18,7 +18,7 @@ VALUES
 ('GaldrCasting', 'Invocation', 'Fehu', 'FlameBolt', 'MinorSuccess', 'Your Galdr falters. The Fehu rune flickers in the air, and weak flames dance toward the {Target}.', 1.0, '["Dramatic"]'),
 
 -- Solid Success (3-4 successes)
-('GaldrCasting', 'Invocation', 'Fehu', 'FlameBolt', 'SolidSuccess', 'You sing the Fehu rune, its ancient power igniting the air. A bolt of flame streaks toward the {Target}, trailing embers.', 1.0, '["Verbose", "Descriptive"]'),
+('GaldrCasting', 'Invocation', 'Fehu', 'FlameBolt', 'SolidSuccess', 'You sing the Fehu rune, its ancient will igniting the air. A bolt of flame streaks toward the {Target}, trailing embers.', 1.0, '["Verbose", "Descriptive"]'),
 ('GaldrCasting', 'Invocation', 'Fehu', 'FlameBolt', 'SolidSuccess', '"Fehu! Fehu! Fehu!" The chant builds—fire erupts from your outstretched hand in a roaring lance!', 1.0, '["Dramatic"]'),
 ('GaldrCasting', 'Invocation', 'Fehu', 'FlameBolt', 'SolidSuccess', 'You invoke Fehu with steady voice. The rune blazes crimson, and fire answers your call!', 1.0, '["Concise"]'),
 ('GaldrCasting', 'Invocation', 'Fehu', 'FlameBolt', 'SolidSuccess', 'Your Galdr resonates with primal heat. Fehu manifests in burning light, and flame leaps toward the {Target}!', 1.0, '["Mystical"]'),
@@ -36,7 +36,7 @@ INSERT INTO Galdr_Action_Descriptors (category, action_type, rune_school, abilit
 VALUES
 ('GaldrCasting', 'Activation', 'Fehu', 'InfernoWard', 'SolidSuccess', 'You trace Fehu in the air, chanting its protective aspects. Fire coalesces into a whirling barrier around you.', 1.0, '["Defensive"]'),
 ('GaldrCasting', 'Activation', 'Fehu', 'InfernoWard', 'SolidSuccess', 'Your Galdr weaves Fehu into a shield—flames dance across your skin without burning.', 1.0, '["Mystical"]'),
-('GaldrCasting', 'Activation', 'Fehu', 'InfernoWard', 'ExceptionalSuccess', 'You invoke Fehu''s warding power! A corona of protective flame erupts around you, pulsing with defensive fury!', 1.0, '["Epic"]'),
+('GaldrCasting', 'Activation', 'Fehu', 'InfernoWard', 'ExceptionalSuccess', 'You invoke Fehu''s warding strength! A corona of protective flame erupts around you, pulsing with defensive fury!', 1.0, '["Epic"]'),
 ('GaldrCasting', 'EffectTrigger', 'Fehu', 'InfernoWard', NULL, 'The Inferno Ward flares as the {Enemy} strikes, flames licking outward to punish the assault!', 1.0, '["Active", "Reactive"]'),
 ('GaldrCasting', 'EffectTrigger', 'Fehu', 'InfernoWard', NULL, 'Your fiery barrier pulses with each attack, the {Enemy} recoiling from the heat!', 1.0, '["Dramatic"]');
 
@@ -75,8 +75,8 @@ VALUES
 ('GaldrCasting', 'Invocation', 'Ansuz', 'LightningBolt', 'SolidSuccess', 'You shout Ansuz! The air splits—lightning answers, brilliant and deadly!', 1.0, '["Concise"]'),
 
 -- Exceptional Success
-('GaldrCasting', 'Invocation', 'Ansuz', 'LightningBolt', 'ExceptionalSuccess', 'You shout Ansuz with divine authority! The rune blazes white-hot—lightning chains between targets, reality itself shocked by the power!', 1.0, '["Epic"]'),
-('GaldrCasting', 'Invocation', 'Ansuz', 'LightningBolt', 'ExceptionalSuccess', 'Your Galdr becomes thunder itself! Ansuz manifests as pure electric fury, arcing through the {Target} and beyond!', 1.0, '["Powerful", "Dramatic"]');
+('GaldrCasting', 'Invocation', 'Ansuz', 'LightningBolt', 'ExceptionalSuccess', 'You shout Ansuz with divine authority! The rune blazes white-hot—lightning chains between targets, reality itself shocked by the strike!', 1.0, '["Epic"]'),
+('GaldrCasting', 'Invocation', 'Ansuz', 'LightningBolt', 'ExceptionalSuccess', 'Your Galdr becomes thunder itself! Ansuz manifests as pure storm-fury, arcing through the {Target} and beyond!', 1.0, '["Powerful", "Dramatic"]');
 
 -- ==============================================================================
 -- BERKANAN (Healing) - HealingChant
@@ -90,8 +90,8 @@ VALUES
 
 -- Solid Success
 ('GaldrCasting', 'Invocation', 'Berkanan', 'HealingChant', 'SolidSuccess', 'You sing Berkanan''s gentle syllables, the growth-rune. Warmth flows through you as flesh begins to knit.', 1.0, '["Descriptive"]'),
-('GaldrCasting', 'Invocation', 'Berkanan', 'HealingChant', 'SolidSuccess', 'Your Galdr resonates with Berkanan''s nurturing power. Green light bathes your wounds—skin closes, bones realign.', 1.0, '["Mystical"]'),
-('GaldrCasting', 'Invocation', 'Berkanan', 'HealingChant', 'SolidSuccess', 'You chant Berkanan with reverence. Life itself answers—healing energy floods through you!', 1.0, '["Reverent"]'),
+('GaldrCasting', 'Invocation', 'Berkanan', 'HealingChant', 'SolidSuccess', 'Your Galdr resonates with Berkanan''s nurturing light. Green light bathes your wounds—skin closes, bones realign.', 1.0, '["Mystical"]'),
+('GaldrCasting', 'Invocation', 'Berkanan', 'HealingChant', 'SolidSuccess', 'You chant Berkanan with reverence. Life itself answers—healing light floods through you!', 1.0, '["Reverent"]'),
 
 -- Exceptional Success
 ('GaldrCasting', 'Invocation', 'Berkanan', 'HealingChant', 'ExceptionalSuccess', 'You invoke Berkanan with perfect pitch. The rune manifests as a flowering tree—life itself pours into you, mending even grievous injuries!', 1.0, '["Epic", "Beautiful"]'),
@@ -117,7 +117,7 @@ INSERT INTO Galdr_Action_Descriptors (category, action_type, rune_school, abilit
 VALUES
 ('GaldrCasting', 'Invocation', 'Hagalaz', 'Hailstorm', 'MinorSuccess', 'You chant Hagalaz, the hail-rune. Small ice shards form, pelting the {Target} weakly.', 1.0, '["Concise"]'),
 ('GaldrCasting', 'Invocation', 'Hagalaz', 'Hailstorm', 'SolidSuccess', 'Your Galdr summons Hagalaz''s fury! Ice shards erupt in a deadly storm, battering the {Target}!', 1.0, '["Dramatic"]'),
-('GaldrCasting', 'Invocation', 'Hagalaz', 'Hailstorm', 'ExceptionalSuccess', 'You invoke Hagalaz with destructive power! The rune manifests as a blizzard of razor ice—chaos incarnate!', 1.0, '["Epic", "Violent"]');
+('GaldrCasting', 'Invocation', 'Hagalaz', 'Hailstorm', 'ExceptionalSuccess', 'You invoke Hagalaz with destructive might! The rune manifests as a blizzard of razor ice—chaos incarnate!', 1.0, '["Epic", "Violent"]');
 
 -- ==============================================================================
 -- NAUDIZ (Draining/Weakening) - DrainLife
@@ -153,8 +153,8 @@ VALUES
 
 INSERT INTO Galdr_Action_Descriptors (category, action_type, rune_school, ability_name, success_level, descriptor_text, weight, tags)
 VALUES
-('GaldrCasting', 'Activation', 'Mannaz', 'Empower', 'SolidSuccess', 'You invoke Mannaz, the human-rune. Violet energy flows through you—your capabilities surge!', 1.0, '["Enhancement"]'),
-('GaldrCasting', 'Activation', 'Mannaz', 'Empower', 'ExceptionalSuccess', 'Your Galdr resonates with Mannaz perfectly! The rune blazes—human potential unlocked, power flooding every fiber!', 1.0, '["Epic", "Empowering"]');
+('GaldrCasting', 'Activation', 'Mannaz', 'Empower', 'SolidSuccess', 'You invoke Mannaz, the human-rune. Violet fire flows through you—your capabilities surge!', 1.0, '["Enhancement"]'),
+('GaldrCasting', 'Activation', 'Mannaz', 'Empower', 'ExceptionalSuccess', 'Your Galdr resonates with Mannaz perfectly! The rune blazes—human potential unlocked, strength flooding every fiber!', 1.0, '["Epic", "Empowering"]');
 
 -- ==============================================================================
 -- LAGUZ (Water/Purification) - CleansingWave
@@ -163,7 +163,7 @@ VALUES
 INSERT INTO Galdr_Action_Descriptors (category, action_type, rune_school, ability_name, success_level, descriptor_text, weight, tags)
 VALUES
 ('GaldrCasting', 'Invocation', 'Laguz', 'CleansingWave', 'SolidSuccess', 'You sing Laguz, the water-rune. Purifying waves wash over you, cleansing corruption and poison.', 1.0, '["Purifying"]'),
-('GaldrCasting', 'Invocation', 'Laguz', 'CleansingWave', 'ExceptionalSuccess', 'Your Galdr channels Laguz''s full purifying power! The rune manifests as cascading water—all corruption washes away!', 1.0, '["Epic", "Cleansing"]');
+('GaldrCasting', 'Invocation', 'Laguz', 'CleansingWave', 'ExceptionalSuccess', 'Your Galdr channels Laguz''s full purifying might! The rune manifests as cascading water—all corruption washes away!', 1.0, '["Epic", "Cleansing"]');
 
 -- ==============================================================================
 -- RAIDO (Movement/Speed) - Swift Journey
@@ -191,7 +191,7 @@ INSERT INTO Galdr_Action_Descriptors (category, action_type, rune_school, abilit
 VALUES
 ('GaldrCasting', 'Invocation', 'Fehu', 'FlameBolt', 'Muspelheim', 'SolidSuccess', 'Your flames seem pitiful compared to the ambient inferno—but fire answers fire! Your Galdr draws upon the volcanic fury all around!', 0.8, '["Biome-Specific", "Amplified"]'),
 ('GaldrCasting', 'Invocation', 'Thurisaz', 'FrostLance', 'Muspelheim', 'SolidSuccess', 'The Inferno fights your ice! Steam explodes as Thurisaz manifests—cold meeting heat in spectacular conflict!', 0.8, '["Biome-Specific", "Conflicting"]'),
-('GaldrCasting', 'Invocation', 'Thurisaz', 'FrostLance', 'Muspelheim', 'ExceptionalSuccess', 'Against all logic, frost manifests in this hellish place! Your Galdr proves stronger than the environment—a testament to your power!', 0.8, '["Biome-Specific", "Impressive"]');
+('GaldrCasting', 'Invocation', 'Thurisaz', 'FrostLance', 'Muspelheim', 'ExceptionalSuccess', 'Against all logic, frost manifests in this hellish place! Your Galdr proves stronger than the environment—a testament to your will!', 0.8, '["Biome-Specific", "Impressive"]');
 
 -- ==============================================================================
 -- BIOME-SPECIFIC GALDR (Alfheim - Reality Distortion)

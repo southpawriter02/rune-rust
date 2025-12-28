@@ -34,6 +34,8 @@ public class IntentSystemTests
     private readonly Mock<IDiceService> _mockDice;
     private readonly Mock<IVisualEffectService> _mockVisualEffectService;
     private readonly Mock<ISpatialHashGrid> _mockSpatialGrid;
+    private readonly Mock<IEventBus> _mockEventBus;
+    private readonly Mock<ISagaService> _mockSagaService;
     private readonly Mock<ILogger<CombatService>> _mockLogger;
     private readonly GameState _gameState;
     private readonly CombatService _sut;
@@ -56,6 +58,8 @@ public class IntentSystemTests
         _mockDice = new Mock<IDiceService>();
         _mockVisualEffectService = new Mock<IVisualEffectService>();
         _mockSpatialGrid = new Mock<ISpatialHashGrid>();
+        _mockEventBus = new Mock<IEventBus>();
+        _mockSagaService = new Mock<ISagaService>();
         _mockLogger = new Mock<ILogger<CombatService>>();
         _gameState = new GameState();
         _sut = new CombatService(
@@ -76,6 +80,8 @@ public class IntentSystemTests
             _mockDice.Object,
             _mockVisualEffectService.Object,
             _mockSpatialGrid.Object,
+            _mockEventBus.Object,
+            _mockSagaService.Object,
             _mockLogger.Object);
 
         // Default setup for initiative service

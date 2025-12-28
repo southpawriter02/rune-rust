@@ -441,6 +441,7 @@ public class RoomRendererTests
             PlayerPosition: Coordinate.Origin,
             LocalMapRooms: new List<Room>(),
             VisitedRoomIds: new HashSet<Guid>(),
+            UserNotes: new Dictionary<Guid, string>(),
             VisibleObjects: visibleObjects ?? new List<string> { "[gold1]Iron Chest[/]" },
             VisibleEnemies: visibleEnemies ?? new List<string>(),
             Exits: exits,

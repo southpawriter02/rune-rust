@@ -56,10 +56,15 @@ public class MainMenuController
     }
 
     /// <summary>
-    /// Gets the localized version string for display on the title screen.
+    /// Gets the version string for display on the title screen.
+    /// v0.3.24b: Uses BuildInfo for version data instead of localization.
     /// </summary>
-    /// <returns>The localized version string.</returns>
-    public string GetVersionString() => _loc.Get(LocKeys.UI_MainMenu_Version);
+    /// <returns>The version string with build configuration.</returns>
+    public string GetVersionString()
+    {
+        var config = BuildInfo.IsDebugBuild ? " [DEBUG]" : "";
+        return $"{BuildInfo.FullVersionString}{config}";
+    }
 
     /// <summary>
     /// Gets the localized "no saves found" message.

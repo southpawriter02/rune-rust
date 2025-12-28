@@ -18,15 +18,14 @@ This document provides a comprehensive overview of all implementation milestones
 | 4.5 | The Interface | v0.3.4 - v0.3.10 | Polish & UX | Complete |
 | 4.8 | The Polish | v0.3.11 - v0.3.14 | Documentation & Testing | Planned |
 | 4.9 | The Long Polish | v0.3.15 - v0.3.24 | Stability & Prep | Planned |
-| 5 | The Saga | v0.4.0 - v0.4.2 | Progression & Content | Planned |
-| 6 | The Weaver | v0.4.3 - v0.4.7 | Magic Systems | Planned |
-| 7 | The Architect | v0.5.0 - v0.5.4 | Settlements & Economy | Planned |
-| 8 | The Adversary | v0.6.0 - v0.6.4 | Advanced Combat | Planned |
-| 9 | The World | v0.7.0 - v0.7.4 | Biome Expansion | Planned |
-| 10 | The Deep | v0.8.0 - v0.8.4 | Deep Realms | Planned |
-| 11 | The Sky | v0.9.0 - v0.9.4 | Endgame | Planned |
-| 12 | The Interface | v1.0.0 - v1.0.4 | GUI Launch | Planned |
-| 13 | The Legacy | v1.1.0 - v1.1.4 | Post-Launch | Planned |
+| 5 | The Saga & The Weaver | v0.4.0 - v0.4.15 | Progression & Magic | Planned |
+| 6 | The Architect | v0.5.0 - v0.5.20 | Settlements & Economy | Planned |
+| 7 | The Adversary | v0.6.0 - v0.6.15 | Advanced Combat | Planned |
+| 8 | The World | v0.7.0 - v0.7.4 | Biome Expansion | Planned |
+| 9 | The Deep | v0.8.0 - v0.8.4 | Deep Realms | Planned |
+| 10 | The Sky | v0.9.0 - v0.9.4 | Endgame | Planned |
+| 11 | The Interface | v1.0.0 - v1.0.4 | GUI Launch | Planned |
+| 12 | The Legacy | v1.1.0 - v1.1.4 | Post-Launch | Planned |
 
 ---
 
@@ -146,37 +145,34 @@ This document provides a comprehensive overview of all implementation milestones
 
 ---
 
-## Milestone 5: The Saga (Progression & Content)
+## Milestone 5: The Saga & The Weaver (v0.4.x)
 
-**Goal:** Long-term playability, character advancement, and narrative context.
+**Goal:** Long-term playability through Progression and Magic systems.
 
 | Version | Codename | Scope |
 |---------|----------|-------|
 | v0.4.0 | Saga Progression | SagaService for Legend (XP), Milestone rewards, Progression Points (PP) |
 | v0.4.1 | Specializations | Specialization unlock system, Tiered ability trees (T1-T3-Capstone) |
 | v0.4.2 | Factions & Dialogue | FactionService with reputation, Node-based dialogue, Skill-gated options |
-
-**Status:** Planned
-
----
-
-## Milestone 6: The Weaver (Magic Systems)
-
-**Goal:** Implement Aetheric manipulation with risk-based casting mechanics.
-
-| Version | Codename | Scope |
-|---------|----------|-------|
 | v0.4.3 | Magic Core | AetherService for flux tracking, Spell entity, "Weaving" mechanic |
 | v0.4.4 | Spells & Chants | Cast command, Multi-turn chants, Initial Mystic spell lists |
 | v0.4.5 | Runic Inscription | Runeforging trade, Rune items, Equipment embossing with ItemProperty |
 | v0.4.6 | The Glitch | WildMagicService, Paradox events based on Corruption/Stress |
 | v0.4.7 | Magic UI | Grimoire tab, Chant progress bars, Rune effect indicators |
+| v0.4.8 | The Stabilizer | Balance tuning, XP curve adjustments, Spell cost audits |
+| v0.4.9 | The Resonance | Audio hooks for magic, VFX polish, particle grading |
+| v0.4.10 | The Convergence | Full integration tests, Settlement seeding, v0.5.0 prep |
+| v0.4.11 | The Library | Codex expansion, Research mechanics, Spell learning |
+| v0.4.12 | The Mentor | Legendary trainers, Duel challenges, Capstone unlocks |
+| v0.4.13 | The Artifact | Legendary items, Cursed relics, Purification rituals |
+| v0.4.14 | The Balance II | Sim-based tuning, Build saving, Level-up polish |
+| v0.4.15 | The Bridge | Pre-Settlement world events, Save migration prep |
 
 **Status:** Planned
 
 ---
 
-## Milestone 7: The Architect (Settlements & Economy)
+## Milestone 6: The Architect (v0.5.x)
 
 **Goal:** Establish safe zones, commerce, and political interaction.
 
@@ -184,31 +180,58 @@ This document provides a comprehensive overview of all implementation milestones
 |---------|----------|-------|
 | v0.5.0 | Settlement Engine | SettlementGenerator with districts, Enter/Exit commands |
 | v0.5.1 | Trade & Merchants | TradeService, Merchant entities, Dynamic stock, Currency (Scrip) |
-| v0.5.2 | Advanced Factions | Reputation tiers (Hated-Exalted), Faction-gated services |
-| v0.5.3 | Quest Chains | Multi-stage narratives, Branching outcomes, Delivery missions |
-| v0.5.4 | The World Map | WorldMapService, Fast travel, Journey Mode with encounters |
+| v0.5.2 | Services & Guilds | Inns, Hospitals, Bounty Boards, Guild Contracts |
+| v0.5.3 | The Workshop | Work orders, Bulk scrapping, Crafting commissions |
+| v0.5.4 | The Law | Theft mechanics, Jail system, Crime consequences |
+| v0.5.5 | Dynamic Population | NPC schedules, Day/Night cycles, Crowd density |
+| v0.5.6 | Faction Influence | District control, Dynamic skirmishes, Propaganda |
+| v0.5.7 | Advanced Reputation | Status perks, Favor currency, Social tiering |
+| v0.5.8 | Info Economy | Rumors, Secrets, Codex integration, Library research |
+| v0.5.9 | Political Events | Elections, Crisis events, Price fluctuations |
+| v0.5.10 | The World Map | Hex-grid atlas, Biomes, Fog of War UI |
+| v0.5.11 | The Journey | Travel supplies, Fatigue, Movement stances |
+| v0.5.12 | Road Encounters | Ambush generation, Roadside POIs, Mini-dungeons |
+| v0.5.13 | Trade Routes | Caravans, Supply lines, Interception missions |
+| v0.5.14 | The Frontier | Campsites, Outposts, Stashes, Wilderness survival |
+| v0.5.15 | The Festival | Seasonal events, Calendars, Minigames |
+| v0.5.16 | The Underworld | Black Markets, Smuggling missions, Hidden vendors |
+| v0.5.17 | The Diplomat | Alliances, Betrayals, State-level politics |
+| v0.5.18 | The Census | NPC names/lineage, Memory persistence, Greeting logic |
+| v0.5.19 | The Vault | Banking, Loans, Warehouse storage |
+| v0.5.20 | The Foundation II | Settlement defense, Siege previews, Final economy balance |
 
 **Status:** Planned
 
 ---
 
-## Milestone 8: The Adversary (Advanced Combat)
+## Milestone 7: The Adversary (v0.6.x)
 
 **Goal:** Deepen tactical complexity with advanced AI and boss mechanics.
 
 | Version | Codename | Scope |
 |---------|----------|-------|
-| v0.6.0 | Enemy Traits | CreatureTraitService for procedural Elite modifiers |
-| v0.6.1 | Advanced AI | BehaviorTree for squad tactics (healing, flanking, fleeing) |
-| v0.6.2 | Boss Mechanics | BossService for multi-phase encounters, Legendary Actions |
-| v0.6.3 | Stealth & Ambush | StealthService, Hide command, Surprise Round mechanics |
-| v0.6.4 | Companion System | Companion entities, Recruitment via Faction, Squad Command UI |
+| v0.6.0 | Enemy Traits | CreatureTraitService, Affixes, Dynamic resistance |
+| v0.6.1 | The Squad | Formations, Synergies, Combo attacks, Rally behavior |
+| v0.6.2 | Advanced AI | Behavior Trees, Archetypes (Controller/Support), State machines |
+| v0.6.3 | The Environment | Cover mechanics, Destructible terrain, Hazard usage |
+| v0.6.4 | The Hunter | Stalking AI, Ambush logic, Nemesis persistence |
+| v0.6.5 | The Legend | Boss UI, Legendary Actions, Phase indicators |
+| v0.6.6 | The Phase | Phase transitions, Model changes, Telegraphs |
+| v0.6.7 | The Minion | Summoning, Sacrifice mechanics, Command buffs |
+| v0.6.8 | The Arena | Lair Actions, Room hazards, Chase sequences |
+| v0.6.9 | The Loot | Boss specific drops, Trophies, Soul crafting |
+| v0.6.10 | The Ally | Mercenary recruitment, Companion stats, Equipment |
+| v0.6.11 | The Command | Squad UI, Tactics, Formations, Breach orders |
+| v0.6.12 | The Bond | Loyalty tracking, Banter, Desertion risk |
+| v0.6.13 | The Shadow | Stealth mechanics, Hide action, Sneak attacks |
+| v0.6.14 | The Bounty | Bounty contracts, Tracking, Non-lethal capture |
+| v0.6.15 | The Warlord | Commander auras, Mass combat morale, Battle sim |
 
 **Status:** Planned
 
 ---
 
-## Milestone 9: The World (Biome Expansion)
+## Milestone 8: The World (Biome Expansion)
 
 **Goal:** Implement unique environmental mechanics for major realms.
 
@@ -224,7 +247,7 @@ This document provides a comprehensive overview of all implementation milestones
 
 ---
 
-## Milestone 10: The Forge & The Abyss (Deep Realms)
+## Milestone 9: The Deep (Deep Realms)
 
 **Goal:** Implement complex industrial and toxic underground realms.
 
@@ -240,7 +263,7 @@ This document provides a comprehensive overview of all implementation milestones
 
 ---
 
-## Milestone 11: The Shattered Sky (Endgame)
+## Milestone 10: The Sky (Endgame)
 
 **Goal:** The orbital realm of Asgard and resolution of the Trauma Economy.
 
@@ -256,7 +279,7 @@ This document provides a comprehensive overview of all implementation milestones
 
 ---
 
-## Milestone 12: The Interface (1.0 Launch)
+## Milestone 11: The Interface (1.0 Launch)
 
 **Goal:** Transition from Terminal to full Avalonia GUI.
 
@@ -272,7 +295,7 @@ This document provides a comprehensive overview of all implementation milestones
 
 ---
 
-## Milestone 13: The Legacy (Post-Launch)
+## Milestone 12: The Legacy (Post-Launch)
 
 **Goal:** Replayability and systems extending beyond a single campaign.
 

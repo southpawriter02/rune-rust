@@ -24,6 +24,13 @@ public class CombatState
     public int RoundNumber { get; set; } = 1;
 
     /// <summary>
+    /// Accumulated XP pool from defeated enemies during this combat.
+    /// Awarded to the player character on victory via SagaService.
+    /// </summary>
+    /// <remarks>See: v0.4.0d (The Reward) for XP Integration.</remarks>
+    public int XpPool { get; set; } = 0;
+
+    /// <summary>
     /// The index of the currently active combatant in the TurnOrder list.
     /// </summary>
     public int TurnIndex { get; set; } = 0;

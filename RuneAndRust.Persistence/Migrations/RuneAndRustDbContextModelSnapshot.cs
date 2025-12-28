@@ -256,14 +256,14 @@ namespace RuneAndRust.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("jsonb");
 
-                    b.Property<int>("ExperiencePoints")
-                        .HasColumnType("integer");
-
                     b.Property<int>("Finesse")
                         .HasColumnType("integer");
 
                     b.Property<DateTime>("LastModified")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Legend")
+                        .HasColumnType("integer");
 
                     b.Property<int>("Level")
                         .HasColumnType("integer");
@@ -288,11 +288,18 @@ namespace RuneAndRust.Persistence.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
+                    b.Property<int>("ProgressionPoints")
+                        .HasColumnType("integer");
+
                     b.Property<int>("PsychicStress")
                         .HasColumnType("integer");
 
                     b.Property<int>("Sturdiness")
                         .HasColumnType("integer");
+
+                    b.Property<string>("UnlockedSpecializationIds")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
 
                     b.Property<int>("Will")
                         .HasColumnType("integer");
@@ -306,6 +313,26 @@ namespace RuneAndRust.Persistence.Migrations
                         .IsUnique();
 
                     b.ToTable("Characters", (string)null);
+                });
+
+            modelBuilder.Entity("RuneAndRust.Core.Entities.CharacterSpecializationProgress", b =>
+                {
+                    b.Property<Guid>("CharacterId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("NodeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("UnlockedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("CharacterId", "NodeId");
+
+                    b.HasIndex("CharacterId");
+
+                    b.HasIndex("NodeId");
+
+                    b.ToTable("CharacterSpecializationProgress", (string)null);
                 });
 
             modelBuilder.Entity("RuneAndRust.Core.Entities.CodexEntry", b =>
@@ -739,6 +766,9 @@ namespace RuneAndRust.Persistence.Migrations
                     b.Property<DateTime>("LastPlayed")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("Metadata")
+                        .HasColumnType("jsonb");
+
                     b.Property<string>("SerializedState")
                         .IsRequired()
                         .HasColumnType("jsonb");
@@ -752,6 +782,87 @@ namespace RuneAndRust.Persistence.Migrations
                         .IsUnique();
 
                     b.ToTable("SaveGames", (string)null);
+                });
+
+            modelBuilder.Entity("RuneAndRust.Core.Entities.Specialization", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<int>("RequiredArchetype")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("RequiredLevel")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RequiredArchetype");
+
+                    b.HasIndex("Type")
+                        .IsUnique();
+
+                    b.ToTable("Specializations", (string)null);
+                });
+
+            modelBuilder.Entity("RuneAndRust.Core.Entities.SpecializationNode", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("AbilityId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("CostPP")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("DisplayName")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("ParentNodeIds")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<int>("PositionX")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("PositionY")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("SpecializationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Tier")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AbilityId");
+
+                    b.HasIndex("SpecializationId");
+
+                    b.HasIndex("Tier");
+
+                    b.ToTable("SpecializationNodes", (string)null);
                 });
 
             modelBuilder.Entity("RuneAndRust.Core.Entities.Trauma", b =>
@@ -924,6 +1035,25 @@ namespace RuneAndRust.Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("RuneAndRust.Core.Entities.CharacterSpecializationProgress", b =>
+                {
+                    b.HasOne("RuneAndRust.Core.Entities.Character", "Character")
+                        .WithMany("SpecializationProgress")
+                        .HasForeignKey("CharacterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("RuneAndRust.Core.Entities.SpecializationNode", "Node")
+                        .WithMany()
+                        .HasForeignKey("NodeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Character");
+
+                    b.Navigation("Node");
+                });
+
             modelBuilder.Entity("RuneAndRust.Core.Entities.DataCapture", b =>
                 {
                     b.HasOne("RuneAndRust.Core.Entities.CodexEntry", "CodexEntry")
@@ -968,6 +1098,25 @@ namespace RuneAndRust.Persistence.Migrations
                         .HasForeignKey("ConditionId");
                 });
 
+            modelBuilder.Entity("RuneAndRust.Core.Entities.SpecializationNode", b =>
+                {
+                    b.HasOne("RuneAndRust.Core.Entities.ActiveAbility", "Ability")
+                        .WithMany()
+                        .HasForeignKey("AbilityId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("RuneAndRust.Core.Entities.Specialization", "Specialization")
+                        .WithMany("Nodes")
+                        .HasForeignKey("SpecializationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Ability");
+
+                    b.Navigation("Specialization");
+                });
+
             modelBuilder.Entity("RuneAndRust.Core.Entities.Trauma", b =>
                 {
                     b.HasOne("RuneAndRust.Core.Entities.Character", null)
@@ -989,6 +1138,8 @@ namespace RuneAndRust.Persistence.Migrations
                     b.Navigation("ActiveTraumas");
 
                     b.Navigation("Inventory");
+
+                    b.Navigation("SpecializationProgress");
                 });
 
             modelBuilder.Entity("RuneAndRust.Core.Entities.CodexEntry", b =>
@@ -1004,6 +1155,11 @@ namespace RuneAndRust.Persistence.Migrations
             modelBuilder.Entity("RuneAndRust.Core.Entities.Room", b =>
                 {
                     b.Navigation("Hazards");
+                });
+
+            modelBuilder.Entity("RuneAndRust.Core.Entities.Specialization", b =>
+                {
+                    b.Navigation("Nodes");
                 });
 #pragma warning restore 612, 618
         }

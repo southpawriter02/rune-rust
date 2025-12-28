@@ -1,10 +1,11 @@
 ---
 id: DATA-CODEX-SAMPLES
 title: "Sample Codex Entries & Data Captures"
-version: 1.0
+version: 1.1
 status: draft
-last-updated: 2025-12-15
+last-updated: 2025-12-27
 purpose: Reference material for writers and content generation
+related-specs: [SPEC-CODEX-001]
 ---
 
 # Sample Codex Entries & Data Captures
@@ -455,8 +456,212 @@ This document contains sample Codex entries broken into their constituent Data C
 
 ---
 
+## Codex Entry Structure
+
+### What Is a Codex Entry?
+
+A **Codex Entry** is the complete, assembled topic that players work toward unlocking. It consists of:
+
+| Component | Description | Example |
+|-----------|-------------|--------|
+| **Title** | Display name in Journal | "The Ginnungagap Glitch" |
+| **Category** | Tab/section for organization | BlightOrigin, Bestiary, Factions |
+| **TotalFragments** | How many Data Captures needed for 100% | 3-5 typical |
+| **FullText** | The complete assembled lore (revealed progressively) | See assembled examples below |
+| **UnlockThresholds** | What reveals at each % milestone | 25%, 50%, 75%, 100% |
+
+### Determining TotalFragments
+
+| Entry Complexity | Recommended Fragments | Rationale |
+|------------------|----------------------|----------|
+| **Simple** | 2-3 | Quick discovery, field guide entries |
+| **Standard** | 4-5 | Most entries (creatures, locations, factions) |
+| **Complex** | 6-8 | Major lore reveals, historical events |
+| **Epic** | 10+ | Central mysteries, campaign-spanning reveals |
+
+> **Rule of Thumb:** If you can't write 3+ distinct, meaningful fragments, the topic may be too narrow for its own entry. Consider merging with a related entry.
+
+---
+
+## Narrative Arc Design
+
+### The Fragment Story Structure
+
+Fragments should tell a **cohesive story** when assembled, following a narrative arc:
+
+```
+                    FRAGMENT NARRATIVE ARC
+    
+    Fragment 4-5: REVELATION
+         ▲        "The truth behind the mystery"
+        ╱│╲       (Weakness, origin, purpose)
+       ╱ │ ╲
+      ╱  │  ╲     Fragment 3: COMPLICATION
+     ╱   │   ╲    "It's more complex than we thought"
+    ╱    │    ╲   (Twist, deeper layer, stakes)
+   ╱     │     ╲
+  ╱ Fragment 2  ╲ DEVELOPMENT
+ ╱  "More context" ╲
+╱   (Behavior, history) ╲
+──────────────────────────────
+     Fragment 1: HOOK
+     "First encounter/hint"
+     (Name, appearance, rumor)
+```
+
+### Fragment Role by Position
+
+| Position | Narrative Role | Content Focus | Player Reaction |
+|----------|---------------|---------------|----------------|
+| **1 of N** | **Hook** | First encounter, rumor, surface observation | "What is this?" |
+| **2 of N** | **Development** | Context, behavior, history, commonality | "I see the pattern" |
+| **3 of N** | **Complication** | Twist, stakes, deeper truth, paradox | "It's not what I thought" |
+| **4 of N** | **Revelation** | Origin, weakness, purpose, connection | "Now I understand" |
+| **5+ of N** | **Mastery** | Expert knowledge, edge cases, secrets | "I know everything" |
+
+### Example: Narrative Arc Applied
+
+**Entry: "The Forlorn"** (4 fragments)
+
+| Fragment | Role | What It Reveals |
+|----------|------|----------------|
+| 1. "On the Weeping Ghosts" | Hook | Religious interpretation, surface appearance |
+| 2. "Pilot's Last Transmission" | Development | What actually happened, the horror |
+| 3. "Aetheric Imprint Analysis" | Complication | Not spirits—data echoes, Memory-Mirror effect |
+| 4. "The Scavenger's Warning" | Revelation | How Forlorn are created, practical danger |
+
+**Result:** Player goes from "holy martyrs" (Fragment 1) → "pilot ghosts" (Fragment 2) → "paradox echoes" (Fragment 3) → "they can make YOU one of them" (Fragment 4). Each fragment recontextualizes the previous.
+
+---
+
+## Unlock Threshold Design
+
+### What Are Unlock Thresholds?
+
+Unlock thresholds define what **gameplay information** reveals at each completion percentage:
+
+```json
+"UnlockThresholds": {
+    25: "NAME_REVEALED",
+    50: "BEHAVIOR_REVEALED", 
+    75: "WEAKNESS_REVEALED",
+    100: "FULL_ENTRY"
+}
+```
+
+### Standard Threshold Progression
+
+| Threshold | What Unlocks | Player Value | Example (Creature) |
+|-----------|--------------|--------------|-------------------|
+| **25%** | Name, basic visual | Identification | "Rusted Servitor" appears in combat log |
+| **50%** | Behavior, habitat, patterns | Prediction | "Attacks in pairs, triggered by sound" |
+| **75%** | Weakness, counter-tactics | Combat advantage | "Vulnerable to Eihwaz rune, Psychic damage" |
+| **100%** | Full lore, Legend reward | Completionism | Complete historical context, +15 Legend |
+
+### Category-Specific Thresholds
+
+| Category | 25% | 50% | 75% | 100% |
+|----------|-----|-----|-----|------|
+| **Bestiary** | Name, image | Behavior, habitat | Weakness, drops | Full biology/history |
+| **Factions** | Name, emblem | Goals, territory | Allies/enemies, leverage | Leadership, secrets |
+| **Technical** | Object name | Function | How to use/disable | Complete schematics |
+| **Geography** | Location name | General features | Hazards, resources | Routes, secrets |
+| **BlightOrigin** | Event name | Surface facts | Deeper truth | Full explanation |
+
+### Threshold Tag Convention
+
+| Tag | Meaning |
+|-----|--------|
+| `NAME_REVEALED` | Entry title visible in Journal |
+| `IMAGE_REVEALED` | Entry icon/art displayed |
+| `BEHAVIOR_REVEALED` | In-game combat/interaction hints |
+| `WEAKNESS_REVEALED` | Damage type, tactical counters |
+| `HABITAT_REVEALED` | Where entity is found |
+| `LOOT_REVEALED` | What drops/rewards available |
+| `FULL_ENTRY` | Complete FullText readable |
+
+---
+
+## Entry Categories
+
+### Standard Categories
+
+| Category | Description | Example Entries | Fragment Sources |
+|----------|-------------|-----------------|------------------|
+| **FieldGuide** | Game mechanics, tutorials | "Psychic Stress", "Combat Basics" | Tutorial triggers, help objects |
+| **BlightOrigin** | Ginnungagap, Corruption, Paradox | "The Ginnungagap Glitch", "Runic Blight" | Ancient sites, scholar NPCs |
+| **Bestiary** | Creatures, automata, enemies | "The Forlorn", "Rusted Servitor" | Examinations, corpse searches |
+| **Factions** | Groups, organizations, politics | "The Rust-Clans", "Iron-Bane" | NPC dialogue, documents |
+| **Technical** | Pre-Glitch tech, artifacts | "The Iron Heart", "Silver Cord" | Schematics, salvage analysis |
+| **Geography** | Locations, realms, settlements | "Utgard", "Knuckle-Bone Fields" | Maps, travel, exploration |
+
+### Category Selection Guide
+
+```
+IS IT ABOUT...?
+    │
+    ├─► A creature/enemy? ────────────► Bestiary
+    │
+    ├─► A group of people? ───────────► Factions
+    │
+    ├─► A location/place? ────────────► Geography
+    │
+    ├─► An object/technology? ────────► Technical
+    │
+    ├─► The Glitch/Corruption? ───────► BlightOrigin
+    │
+    └─► Game mechanics/tutorial? ─────► FieldGuide
+```
+
+---
+
+## Fragment-to-Entry Relationship
+
+### How Fragments Link to Entries
+
+Data Captures (fragments) link to Codex Entries via **keyword matching**:
+
+```
+┌─────────────────────────────┐
+│   Data Capture (Fragment)   │
+├─────────────────────────────┤
+│ matchKeywords: [            │
+│   "forlorn",                │──────┐
+│   "einherjar",              │      │
+│   "ghost"                   │      │
+│ ]                           │      │  TryAutoAssign()
+└─────────────────────────────┘      │  matches keywords
+                                     │  to entry titles
+┌─────────────────────────────┐      │
+│   Codex Entry               │◄─────┘
+├─────────────────────────────┤
+│ Title: "The Forlorn"        │
+│ TotalFragments: 4           │
+│ Fragments: [ cap-forlorn-*] │
+└─────────────────────────────┘
+```
+
+### Keyword Best Practices
+
+| Do | Don't |
+|----|-------|
+| Use entry title words: `["forlorn", "weeping"]` | Use generic words: `["thing", "stuff"]` |
+| Include synonyms: `["servitor", "automaton"]` | Rely on single keyword |
+| Match Codex Entry titles exactly | Use abbreviations |
+| Keep keywords lowercase | Use mixed case |
+
+### When Auto-Assignment Fails
+
+If `matchKeywords` don't match any entry, the fragment becomes **"unassigned"**:
+- Stored in player's Journal under "Unknown Fragments"
+- Can be manually assigned later (future feature)
+- May auto-assign when player discovers the matching entry
+
+---
+
 ## Changelog
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 1.1 | 2025-12-27 | Added Codex Entry Structure, Narrative Arc Design, Unlock Threshold Design, Entry Categories, Fragment-to-Entry Relationship sections |
 | 1.0 | 2025-12-15 | Initial sample entries |

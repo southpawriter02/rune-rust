@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using RuneAndRust.Core.Constants;
 using RuneAndRust.Core.Entities;
 using RuneAndRust.Core.Enums;
 using RuneAndRust.Core.Interfaces;
@@ -9,6 +11,7 @@ using RuneAndRust.Core.Settings;
 using RuneAndRust.Engine.Algorithms;
 using RuneAndRust.Engine.Factories;
 using RuneAndRust.Engine.Performance;
+using RuneAndRust.Engine.Repositories;
 using RuneAndRust.Engine.Services;
 using RuneAndRust.Persistence.Data;
 using RuneAndRust.Persistence.Repositories;
@@ -16,6 +19,7 @@ using RuneAndRust.Terminal.Controllers;
 using RuneAndRust.Terminal.Rendering;
 using RuneAndRust.Terminal.Services;
 using Serilog;
+using Serilog.Events;
 using Spectre.Console;
 using Character = RuneAndRust.Core.Entities.Character;
 
@@ -23,12 +27,29 @@ class Program
 {
     static void Main(string[] args)
     {
-        // 1. Configure Serilog
+        // 1. Configure Serilog (v0.3.24b: Environment-aware configuration)
+#if DEBUG
+        // Debug: Verbose logging to console and file
         Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Debug()
-            .WriteTo.Console()
-            .WriteTo.File("logs/runeandrust.log", rollingInterval: RollingInterval.Day)
+            .WriteTo.Console(restrictedToMinimumLevel: LogEventLevel.Debug)
+            .WriteTo.File("logs/runeandrust.log",
+                rollingInterval: RollingInterval.Day,
+                restrictedToMinimumLevel: LogEventLevel.Debug)
             .CreateLogger();
+#else
+        // Release: Minimal console output, info+ to file
+        Log.Logger = new LoggerConfiguration()
+            .MinimumLevel.Information()
+            .WriteTo.Console(restrictedToMinimumLevel: LogEventLevel.Warning)
+            .WriteTo.File("logs/runeandrust.log",
+                rollingInterval: RollingInterval.Day,
+                restrictedToMinimumLevel: LogEventLevel.Information)
+            .CreateLogger();
+#endif
+
+        Log.Information("[Startup] Rune & Rust {Version} ({Config}) starting...",
+            BuildInfo.FullVersionString, BuildInfo.Configuration);
 
         // Declare host outside try block for crash handler access (v0.3.16b)
         IHost? host = null;
@@ -64,6 +85,17 @@ class Program
                     services.AddScoped<IBiomeDefinitionRepository, BiomeDefinitionRepository>();
                     services.AddScoped<IBiomeElementRepository, BiomeElementRepository>();
 
+                    // Register Specialization Repository (v0.4.1a)
+                    services.AddScoped<ISpecializationRepository, SpecializationRepository>();
+
+                    // Register Capture Template Repository (v0.3.25b: JSON-based templates)
+                    services.AddSingleton<ICaptureTemplateRepository>(sp =>
+                    {
+                        var logger = sp.GetRequiredService<ILogger<JsonCaptureTemplateRepository>>();
+                        var basePath = Path.Combine(AppContext.BaseDirectory, "data", "capture-templates", "categories");
+                        return new JsonCaptureTemplateRepository(logger, basePath);
+                    });
+
                     // Register Core State (Singleton to persist across game loop)
                     services.AddSingleton<GameState>();
 
@@ -75,6 +107,8 @@ class Program
                     services.AddSingleton<IGameService, GameService>();
                     services.AddSingleton<IDiceService, DiceService>();
                     services.AddSingleton<IStatCalculationService, StatCalculationService>();
+                    services.AddScoped<ISagaService, SagaService>();
+                    services.AddScoped<IProgressionService, ProgressionService>();
                     services.AddScoped<SaveManager>();
 
                     // Register Spatial Services
@@ -131,6 +165,10 @@ class Program
                     // Register Exploration HUD (v0.3.5a)
                     services.AddSingleton<IExplorationScreenRenderer, ExplorationScreenRenderer>();
 
+                    // Register Saga UI (v0.4.0c - The Shrine)
+                    services.AddSingleton<ISagaScreenRenderer, SagaScreenRenderer>();
+                    services.AddScoped<SagaController>();
+
                     // Register Enemy Factory
                     services.AddScoped<IEnemyFactory, EnemyFactory>();
 
@@ -180,6 +218,15 @@ class Program
                     // Register Input Configuration Service (v0.3.9c)
                     services.AddSingleton<IInputConfigurationService, InputConfigurationService>();
 
+                    // Register Input Service (v0.3.23a - The Gatekeeper)
+                    services.AddSingleton<IInputService, InputService>();
+
+                    // Register Terminal Service (v0.3.23c - The Mouse)
+                    services.AddSingleton<ITerminalService, TerminalService>();
+
+                    // Register Hit Test Service (v0.3.23c - The Mouse)
+                    services.AddSingleton<IHitTestService, HitTestService>();
+
                     // Register Context Help Service (v0.3.9c)
                     services.AddSingleton<IContextHelpService, ContextHelpService>();
 
@@ -211,12 +258,16 @@ class Program
                     // Register Title Screen Service (v0.3.4a)
                     services.AddScoped<ITitleScreenService, TitleScreenService>();
 
+#if DEBUG
                     // Register Debug Console Services (v0.3.17a)
+                    // v0.3.24a: Wrapped in #if DEBUG to exclude from Release builds
                     services.AddSingleton<IDebugConsoleService, DebugConsoleService>();
                     services.AddScoped<IDebugConsoleRenderer, DebugConsoleRenderer>();
 
                     // Register Cheat Service (v0.3.17b)
+                    // v0.3.24a: Wrapped in #if DEBUG to exclude from Release builds
                     services.AddScoped<ICheatService, CheatService>();
+#endif
 
                     // Register Performance Pools (v0.3.18a - The Garbage Collector)
                     services.AddSingleton<ITextBufferPool, TextBufferPool>();
@@ -224,6 +275,24 @@ class Program
                     // Register Pathfinding Infrastructure (v0.3.18b - The Hot Path)
                     services.AddSingleton<ISpatialHashGrid, SpatialHashGrid>();
                     services.AddSingleton<IPathfindingService, AStarPathfinder>();
+
+                    // Register Audio Infrastructure (v0.3.19a - The Instrument)
+                    services.AddSingleton<IAudioProvider, ConsoleAudioProvider>();
+                    services.AddSingleton<IAudioService, AudioService>();
+
+                    // Register Event Bus and Audio Listener (v0.3.19b - The Score)
+                    services.AddSingleton<IEventBus, EventBus>();
+                    services.AddSingleton<AudioEventListener>();
+
+                    // Register Ambience Service (v0.3.19c - The Soundscape)
+                    services.AddSingleton<IAmbienceService, AmbienceService>();
+
+                    // Register Map Export Service (v0.3.20b - The Atlas)
+                    services.AddSingleton<IMapExportService, MapExportService>();
+
+                    // Register Fast Travel Services (v0.3.20c - The Pathfinder)
+                    services.AddScoped<IRoomPathfinderService, RoomPathfinderService>();
+                    services.AddScoped<IAutoTravelService, AutoTravelService>();
                 })
                 .UseSerilog() // Wire Serilog into ILogger
                 .Build();
@@ -235,6 +304,22 @@ class Program
             // 3b. Load locale (v0.3.15b - The Translator: uses GameSettings.Language)
             var locService = host.Services.GetRequiredService<ILocalizationService>();
             locService.LoadLocaleAsync(GameSettings.Language).GetAwaiter().GetResult();
+
+            // 3c. Initialize audio event listener (v0.3.19b - The Score)
+            var audioListener = host.Services.GetRequiredService<AudioEventListener>();
+            audioListener.SubscribeAll();
+
+            // 3d. Initialize terminal service for mouse mode (v0.3.23c)
+            var terminalService = host.Services.GetRequiredService<ITerminalService>();
+            if (terminalService.IsMouseSupported())
+            {
+                terminalService.EnableMouseMode();
+                Log.Information("[Startup] Mouse mode enabled (SGR Extended)");
+            }
+            else
+            {
+                Log.Debug("[Startup] Mouse mode not supported in this terminal");
+            }
 
             // 4. Seed data
             using (var scope = host.Services.CreateScope())
@@ -355,8 +440,8 @@ class Program
                 return;
             }
 
-            // 6. UI Handover
-            AnsiConsole.MarkupLine("[green]Rune & Rust v0.3.6c Booting...[/]");
+            // 6. UI Handover (v0.3.24b: Uses BuildInfo for version)
+            AnsiConsole.MarkupLine($"[green]Rune & Rust {BuildInfo.FullVersionString} Booting...[/]");
             AnsiConsole.WriteLine();
 
             // Show title screen and get menu selection (v0.3.4a)
@@ -391,11 +476,11 @@ class Program
                         gameState.Phase = GamePhase.Exploration;
                         Log.Debug("[Program] Character {Name} set to GameState", character.Name);
 
-                        // Generate starting dungeon
+                        // Generate starting dungeon (v0.3.24a: Uses template-based generation)
                         using (var scope = host.Services.CreateScope())
                         {
                             var dungeonGen = scope.ServiceProvider.GetRequiredService<DungeonGenerator>();
-                            var startRoomId = dungeonGen.GenerateTestMapAsync().GetAwaiter().GetResult();
+                            var startRoomId = dungeonGen.GenerateDungeonAsync("the_roots").GetAwaiter().GetResult();
                             gameState.CurrentRoomId = startRoomId;
                             gameState.VisitedRoomIds.Add(startRoomId);  // Mark starting room as visited (v0.3.5b)
                             Log.Information("[Program] World initialized: Starting room {RoomId}", startRoomId);
@@ -440,13 +525,56 @@ class Program
                     break;
             }
 
-            // Start the game loop
+            // v0.3.23b: Cancellation token for graceful shutdown
+            using var cts = new CancellationTokenSource();
+
+            // Handle Ctrl+C gracefully
+            Console.CancelKeyPress += (sender, e) =>
+            {
+                e.Cancel = true; // Prevent immediate termination
+                cts.Cancel();
+
+                // v0.3.23c: Disable mouse mode before exit
+                terminalService.DisableMouseMode();
+
+                Console.WriteLine("\n[System] Shutting down gracefully...");
+            };
+
+            // Handle SIGTERM (for containerized environments)
+            AppDomain.CurrentDomain.ProcessExit += (sender, e) =>
+            {
+                cts.Cancel();
+
+                // v0.3.23c: Disable mouse mode before exit
+                terminalService.DisableMouseMode();
+            };
+
+            // Start the game loop with cancellation support
             var game = host.Services.GetRequiredService<IGameService>();
-            game.StartAsync().GetAwaiter().GetResult();
+            game.StartAsync(cts.Token).GetAwaiter().GetResult();
+        }
+        catch (OperationCanceledException)
+        {
+            // v0.3.23b: Clean exit from cancellation
+            Console.WriteLine("Goodbye!");
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
             // v0.3.16a: The Safety Net - Global Exception Handler
+            // v0.3.23c: Attempt to disable mouse mode before crash screen
+            try
+            {
+                if (host != null)
+                {
+                    var terminalSvc = host.Services.GetService<ITerminalService>();
+                    terminalSvc?.DisableMouseMode();
+                }
+            }
+            catch
+            {
+                // Swallow - don't crash the crash handler
+            }
+
             // 1. Attempt to log crash details to file
             string? logPath = null;
             try

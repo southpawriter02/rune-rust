@@ -1,4 +1,5 @@
 using RuneAndRust.Core.Interfaces;
+using RuneAndRust.Core.Models.Input;
 using Spectre.Console;
 
 namespace RuneAndRust.Terminal.Rendering;
@@ -7,6 +8,7 @@ namespace RuneAndRust.Terminal.Rendering;
 /// Renders the Quake-style debug console overlay (v0.3.17a).
 /// Uses a modal input loop similar to OptionsController pattern.
 /// v0.3.17b: Added cheat command routing.
+/// v0.3.23a: Refactored to use IInputService.
 /// </summary>
 /// <remarks>
 /// See: SPEC-DEBUG-001 for Debug Console System design.
@@ -18,22 +20,29 @@ public class DebugConsoleRenderer : IDebugConsoleRenderer
 
     private readonly IDebugConsoleService _console;
     private readonly ICheatService _cheats;
+    private readonly IInputService _inputService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DebugConsoleRenderer"/> class.
     /// </summary>
     /// <param name="console">The debug console service.</param>
     /// <param name="cheats">The cheat service.</param>
-    public DebugConsoleRenderer(IDebugConsoleService console, ICheatService cheats)
+    /// <param name="inputService">The input service for standardized input handling.</param>
+    public DebugConsoleRenderer(
+        IDebugConsoleService console,
+        ICheatService cheats,
+        IInputService inputService)
     {
         _console = console;
         _cheats = cheats;
+        _inputService = inputService;
     }
 
     /// <summary>
     /// Runs the debug console in modal mode.
     /// Blocks until user exits with ~ or Escape.
     /// </summary>
+    /// <remarks>v0.3.23a: Refactored to use IInputService.</remarks>
     public void Run()
     {
         _console.Toggle();
@@ -46,57 +55,83 @@ public class DebugConsoleRenderer : IDebugConsoleRenderer
         {
             RenderConsoleScreen(inputBuffer);
 
-            var key = Console.ReadKey(intercept: true);
+            var inputEvent = _inputService.ReadNext();
 
-            switch (key.Key)
+            switch (inputEvent)
             {
-                case ConsoleKey.Oem3: // Tilde key
-                case ConsoleKey.Escape:
+                // System event: Toggle debug console (tilde key)
+                case SystemEvent { EventType: SystemEventType.ToggleDebugConsole }:
                     _console.WriteLog("Debug Console closed.");
                     _console.Toggle();
                     break;
 
-                case ConsoleKey.Enter:
+                // Raw key handling for text input
+                case RawKeyEvent rawKey:
+                    switch (rawKey.KeyInfo.Key)
+                    {
+                        case ConsoleKey.Escape:
+                            _console.WriteLog("Debug Console closed.");
+                            _console.Toggle();
+                            break;
+
+                        case ConsoleKey.Enter:
+                            if (!string.IsNullOrEmpty(inputBuffer))
+                            {
+                                ProcessCommand(inputBuffer);
+                                inputBuffer = "";
+                                historyIndex = -1;
+                            }
+                            break;
+
+                        case ConsoleKey.Backspace:
+                            if (inputBuffer.Length > 0)
+                            {
+                                inputBuffer = inputBuffer[..^1];
+                            }
+                            break;
+
+                        case ConsoleKey.UpArrow:
+                            if (_console.CommandHistory.Count > 0)
+                            {
+                                historyIndex = Math.Min(historyIndex + 1, _console.CommandHistory.Count - 1);
+                                inputBuffer = _console.CommandHistory[^(historyIndex + 1)];
+                            }
+                            break;
+
+                        case ConsoleKey.DownArrow:
+                            if (historyIndex > 0)
+                            {
+                                historyIndex--;
+                                inputBuffer = _console.CommandHistory[^(historyIndex + 1)];
+                            }
+                            else
+                            {
+                                historyIndex = -1;
+                                inputBuffer = "";
+                            }
+                            break;
+
+                        default:
+                            if (rawKey.IsPrintable)
+                            {
+                                inputBuffer += rawKey.Character;
+                            }
+                            break;
+                    }
+                    break;
+
+                // Action events - map to behavior
+                case ActionEvent { Action: Core.Enums.GameAction.Cancel }:
+                    _console.WriteLog("Debug Console closed.");
+                    _console.Toggle();
+                    break;
+
+                case ActionEvent { Action: Core.Enums.GameAction.Confirm }:
                     if (!string.IsNullOrEmpty(inputBuffer))
                     {
                         ProcessCommand(inputBuffer);
                         inputBuffer = "";
                         historyIndex = -1;
-                    }
-                    break;
-
-                case ConsoleKey.Backspace:
-                    if (inputBuffer.Length > 0)
-                    {
-                        inputBuffer = inputBuffer[..^1];
-                    }
-                    break;
-
-                case ConsoleKey.UpArrow:
-                    if (_console.CommandHistory.Count > 0)
-                    {
-                        historyIndex = Math.Min(historyIndex + 1, _console.CommandHistory.Count - 1);
-                        inputBuffer = _console.CommandHistory[^(historyIndex + 1)];
-                    }
-                    break;
-
-                case ConsoleKey.DownArrow:
-                    if (historyIndex > 0)
-                    {
-                        historyIndex--;
-                        inputBuffer = _console.CommandHistory[^(historyIndex + 1)];
-                    }
-                    else
-                    {
-                        historyIndex = -1;
-                        inputBuffer = "";
-                    }
-                    break;
-
-                default:
-                    if (!char.IsControl(key.KeyChar))
-                    {
-                        inputBuffer += key.KeyChar;
                     }
                     break;
             }

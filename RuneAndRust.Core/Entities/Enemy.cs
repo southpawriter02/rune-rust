@@ -17,9 +17,10 @@ public class Enemy
     public Guid Id { get; set; } = Guid.NewGuid();
 
     /// <summary>
-    /// The enemy's display name.
+    /// Display name of the enemy. Defaults to "Unknown Enemy" for safety.
+    /// v0.3.24a: Changed from "Training Dummy" for Release builds.
     /// </summary>
-    public string Name { get; set; } = "Training Dummy";
+    public string Name { get; set; } = "Unknown Enemy";
 
     /// <summary>
     /// The enemy's attributes. Keys are attribute types, values are attribute scores.
@@ -86,6 +87,13 @@ public class Enemy
     /// Null for legacy enemies or those created without a template.
     /// </summary>
     public string? TemplateId { get; set; }
+
+    /// <summary>
+    /// The threat tier of this enemy for XP calculation and encounter balancing.
+    /// Defaults to Standard for legacy enemies without explicit tier assignment.
+    /// </summary>
+    /// <remarks>See: v0.4.0d (The Reward) for XP Integration.</remarks>
+    public ThreatTier Tier { get; set; } = ThreatTier.Standard;
 
     /// <summary>
     /// Combat archetype for AI behavior selection in v0.2.2b.

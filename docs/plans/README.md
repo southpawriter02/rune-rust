@@ -26,7 +26,8 @@ This directory contains all implementation plans for Rune & Rust, organized by v
 | [4.13 Audio](#milestone-413-audio) | v0.3.19 | Sound Effects, Ambience | Planned |
 | [4.14 Map Enhancement](#milestone-414-map-enhancement) | v0.3.20-v0.3.21 | Annotations, Export, Fast Travel, Saves | Planned |
 | [4.15 Advanced Systems](#milestone-415-advanced-systems) | v0.3.22-v0.3.24 | Intel, Input, Alpha Prep | Planned |
-| [5-13. Future](#milestones-5-13-future) | v0.4.0+ | Saga, Magic, Settlements, Endgame | Planned |
+| [5. The Saga](#milestone-5-the-saga) | v0.4.0+ | Progression, Specializations | Planned |
+| [5-13. Future](#milestones-5-13-future) | v0.4.0+ | Magic, Settlements, Endgame | Planned |
 
 ---
 
@@ -209,8 +210,24 @@ This directory contains all implementation plans for Rune & Rust, organized by v
 | Version | Codename | Focus | Status |
 |---------|----------|-------|--------|
 | [v0.3.22](v0.3.x/v0.3.22.md) | The Oracle | Enemy intel, Predictive UI | Planned |
+| └ [v0.3.22a](v0.3.x/v0.3.22a.md) | The Filter | Log Filtering | Planned |
+| └ [v0.3.22b](v0.3.x/v0.3.22b.md) | The Inspector | Inspect Overlay & Intel | Planned |
 | [v0.3.23](v0.3.x/v0.3.23.md) | The Controller | Input abstraction, Game loop, Mouse support | Planned |
+| └ [v0.3.23a](v0.3.x/v0.3.23a.md) | The Abstraction | Input Service & Mapping | Planned |
+| └ [v0.3.23b](v0.3.x/v0.3.23b.md) | The Loop | Event-Driven Architecture | Planned |
 | [v0.3.24](v0.3.x/v0.3.24.md) | The Golden Master | Deprecation cleanup, Alpha packaging | Planned |
+| └ [v0.3.24a](v0.3.x/v0.3.24a.md) | The Broom | Cleanup & Debug Locking | Planned |
+
+---
+
+## Milestone 5: The Saga
+
+*The Saga - Progression and Character Growth*
+
+| Version | Codename | Focus | Status |
+|---------|----------|-------|--------|
+| [v0.4.0](v0.4.x/v0.4.0.md) | The Saga | XP, Leveling, Attribute Upgrades | Planned |
+| └ [v0.4.0a](v0.4.x/v0.4.0a.md) | The Legend | Saga Backend & XP Tracking | Planned |
 
 ---
 
@@ -220,7 +237,6 @@ This directory contains all implementation plans for Rune & Rust, organized by v
 
 | Milestone | Theme | Key Features |
 |-----------|-------|--------------|
-| 5. Saga | Progression | Leveling, Specializations, Factions |
 | 6. Weaver | Magic | Spells, Chants, Wild Magic, Runeforging |
 | 7. Architect | Settlements | Safe Zones, Trade, Quest Chains |
 | 8. Adversary | Advanced Combat | Traits, Squad AI, Bosses, Stealth |

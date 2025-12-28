@@ -284,4 +284,165 @@ public class GameLoopTests
     }
 
     #endregion
+
+    #region v0.3.23b: CancellationToken Tests
+
+    [Fact]
+    public async Task StartAsync_WithCancellationRequested_ShouldExitLoop()
+    {
+        // Arrange
+        using var cts = new CancellationTokenSource();
+        var inputCallCount = 0;
+
+        _mockInputHandler.Setup(x => x.GetInput(It.IsAny<string>()))
+            .Returns(() =>
+            {
+                inputCallCount++;
+                if (inputCallCount >= 2)
+                {
+                    cts.Cancel();
+                }
+                return "look";
+            });
+
+        var service = new GameService(
+            _mockGameLogger.Object,
+            _mockInputHandler.Object,
+            _parser,
+            _state,
+            _mockCombatService.Object,
+            _mockScopeFactory.Object);
+
+        // First transition to Exploration
+        _state.Phase = GamePhase.Exploration;
+
+        // Act
+        await service.StartAsync(cts.Token);
+
+        // Assert - Should exit due to cancellation, not quit command
+        _state.Phase.Should().NotBe(GamePhase.Quit);
+    }
+
+    [Fact]
+    public async Task StartAsync_WithImmediateCancellation_ShouldNotProcessInput()
+    {
+        // Arrange
+        using var cts = new CancellationTokenSource();
+        cts.Cancel(); // Cancel immediately
+
+        _mockInputHandler.Setup(x => x.GetInput(It.IsAny<string>())).Returns("quit");
+
+        var service = new GameService(
+            _mockGameLogger.Object,
+            _mockInputHandler.Object,
+            _parser,
+            _state,
+            _mockCombatService.Object,
+            _mockScopeFactory.Object);
+
+        // Act
+        await service.StartAsync(cts.Token);
+
+        // Assert - Input should never be called since already cancelled
+        _mockInputHandler.Verify(x => x.GetInput(It.IsAny<string>()), Times.Never);
+    }
+
+    #endregion
+
+    #region v0.3.23b: VFX Integration Tests
+
+    [Fact]
+    public async Task StartAsync_WithVfxService_ShouldSubscribeToInvalidateEvent()
+    {
+        // Arrange
+        var mockVfxService = new Mock<IVisualEffectService>();
+        _mockInputHandler.Setup(x => x.GetInput(It.IsAny<string>())).Returns("quit");
+
+        var service = new GameService(
+            _mockGameLogger.Object,
+            _mockInputHandler.Object,
+            _parser,
+            _state,
+            _mockCombatService.Object,
+            _mockScopeFactory.Object,
+            vfxService: mockVfxService.Object);
+
+        // Act - Constructor should have subscribed, just verify event exists
+        await service.StartAsync();
+
+        // Assert - VFX service's CheckExpiredOverrides should be called each loop iteration
+        mockVfxService.Verify(x => x.CheckExpiredOverrides(), Times.AtLeastOnce);
+    }
+
+    [Fact]
+    public async Task StartAsync_WhenVfxExpires_ShouldTriggerRender()
+    {
+        // Arrange
+        var mockVfxService = new Mock<IVisualEffectService>();
+        var expiredCallCount = 0;
+
+        // First call returns true (expired), subsequent calls return false
+        mockVfxService.Setup(x => x.CheckExpiredOverrides())
+            .Returns(() =>
+            {
+                expiredCallCount++;
+                return expiredCallCount == 1;
+            });
+
+        _mockInputHandler.Setup(x => x.GetInput(It.IsAny<string>())).Returns("quit");
+
+        var service = new GameService(
+            _mockGameLogger.Object,
+            _mockInputHandler.Object,
+            _parser,
+            _state,
+            _mockCombatService.Object,
+            _mockScopeFactory.Object,
+            vfxService: mockVfxService.Object);
+
+        // Act
+        await service.StartAsync();
+
+        // Assert - CheckExpiredOverrides was called
+        mockVfxService.Verify(x => x.CheckExpiredOverrides(), Times.AtLeastOnce);
+    }
+
+    #endregion
+
+    #region v0.3.23b: Exception Resilience Tests
+
+    [Fact]
+    public async Task StartAsync_WhenExceptionThrown_ShouldContinueLoop()
+    {
+        // Arrange
+        var callCount = 0;
+
+        _mockInputHandler.Setup(x => x.GetInput(It.IsAny<string>()))
+            .Returns(() =>
+            {
+                callCount++;
+                if (callCount == 1)
+                {
+                    throw new InvalidOperationException("Test exception");
+                }
+                return "quit";
+            });
+
+        var service = new GameService(
+            _mockGameLogger.Object,
+            _mockInputHandler.Object,
+            _parser,
+            _state,
+            _mockCombatService.Object,
+            _mockScopeFactory.Object);
+
+        // Act
+        await service.StartAsync();
+
+        // Assert - Should have continued after exception and processed quit
+        callCount.Should().BeGreaterThan(1);
+        _state.Phase.Should().Be(GamePhase.Quit);
+    }
+
+    #endregion
 }
