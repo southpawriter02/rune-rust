@@ -162,6 +162,10 @@ class Program
                     // Register Exploration HUD (v0.3.5a)
                     services.AddSingleton<IExplorationScreenRenderer, ExplorationScreenRenderer>();
 
+                    // Register Saga UI (v0.4.0c - The Shrine)
+                    services.AddSingleton<ISagaScreenRenderer, SagaScreenRenderer>();
+                    services.AddScoped<SagaController>();
+
                     // Register Enemy Factory
                     services.AddScoped<IEnemyFactory, EnemyFactory>();
 

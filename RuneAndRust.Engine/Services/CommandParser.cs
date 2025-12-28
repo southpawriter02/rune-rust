@@ -193,6 +193,11 @@ public class ParseResult
     /// </summary>
     public bool RequiresOptionsScreen { get; set; }
 
+    /// <summary>
+    /// Gets or sets whether the saga screen (The Shrine) should be opened (v0.4.0c).
+    /// </summary>
+    public bool RequiresSagaScreen { get; set; }
+
     #region Travel Commands (v0.3.20c)
 
     /// <summary>
@@ -887,6 +892,14 @@ public class CommandParser
             case "o":
                 _logger.LogDebug("Options screen requested (v0.3.10b).");
                 return new ParseResult { RequiresOptionsScreen = true };
+
+            case "saga":
+            case "shrine":
+            case "legend":
+            case "progression":
+                _logger.LogDebug("Saga screen (The Shrine) requested (v0.4.0c).");
+                state.Phase = GamePhase.SagaMenu;
+                return ParseResult.None;
 
             case "equipment":
             case "gear":

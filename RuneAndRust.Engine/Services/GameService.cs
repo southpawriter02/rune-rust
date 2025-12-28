@@ -7,6 +7,8 @@ using RuneAndRust.Core.Models;
 using RuneAndRust.Core.ValueObjects;
 using RuneAndRust.Core.ViewModels;
 using RuneAndRust.Engine.Helpers;
+using RuneAndRust.Core.Models.Input;
+using CharacterAttribute = RuneAndRust.Core.Enums.Attribute;
 
 namespace RuneAndRust.Engine.Services;
 
@@ -31,6 +33,10 @@ public class GameService : IGameService
     private readonly IScreenTransitionService? _transitionService;
     private readonly IAmbienceService? _ambienceService;
     private readonly IVisualEffectService? _vfxService;
+    private readonly ISagaScreenRenderer? _sagaRenderer;
+    private readonly ISagaService? _sagaService;
+    private readonly IProgressionService? _progressionService;
+    private readonly IInputService? _inputService;
 
     private GamePhase _previousPhase = GamePhase.MainMenu;
     private bool _renderRequired = true;
@@ -49,6 +55,10 @@ public class GameService : IGameService
     /// <param name="transitionService">The screen transition service (v0.3.14b, optional for testing).</param>
     /// <param name="ambienceService">The ambient soundscape service (v0.3.19c, optional for testing).</param>
     /// <param name="vfxService">The visual effect service for VFX invalidation (v0.3.23b, optional for testing).</param>
+    /// <param name="sagaRenderer">The Saga screen renderer for The Shrine UI (v0.4.0c, optional for testing).</param>
+    /// <param name="sagaService">The Saga service for Legend progression (v0.4.0c, optional for testing).</param>
+    /// <param name="progressionService">The progression service for attribute upgrades (v0.4.0c, optional for testing).</param>
+    /// <param name="inputService">The input service for key-based modal UIs (v0.4.0c, optional for testing).</param>
     public GameService(
         ILogger<GameService> logger,
         IInputHandler inputHandler,
@@ -60,7 +70,11 @@ public class GameService : IGameService
         IExplorationScreenRenderer? explorationRenderer = null,
         IScreenTransitionService? transitionService = null,
         IAmbienceService? ambienceService = null,
-        IVisualEffectService? vfxService = null)
+        IVisualEffectService? vfxService = null,
+        ISagaScreenRenderer? sagaRenderer = null,
+        ISagaService? sagaService = null,
+        IProgressionService? progressionService = null,
+        IInputService? inputService = null)
     {
         _logger = logger;
         _inputHandler = inputHandler;
@@ -73,6 +87,10 @@ public class GameService : IGameService
         _transitionService = transitionService;
         _ambienceService = ambienceService;
         _vfxService = vfxService;
+        _sagaRenderer = sagaRenderer;
+        _sagaService = sagaService;
+        _progressionService = progressionService;
+        _inputService = inputService;
 
         // v0.3.23b: Subscribe to VFX invalidation events
         if (_vfxService != null)
@@ -118,20 +136,38 @@ public class GameService : IGameService
                     _renderRequired = false;
                 }
 
-                // 4. Determine prompt based on current phase
-                string prompt = GetPhasePrompt();
-
-                // 5. Get input from the user (abstracted for testability)
-                string input = _inputHandler.GetInput(prompt);
-
-                // 6. Process the input through the command parser
-                await _parser.ParseAndExecuteAsync(input, _state);
-                _renderRequired = true;
-
-                // 7. Tick ambient soundscape after exploration commands (v0.3.19c)
-                if (_state.Phase == GamePhase.Exploration && _state.CurrentRoomId.HasValue && _ambienceService != null)
+                // 4. Handle phase-specific input (v0.4.0c: SagaMenu uses key-based input)
+                if (_state.Phase == GamePhase.SagaMenu && _inputService != null)
                 {
-                    await _ambienceService.UpdateAsync(_state.CurrentRoomId.Value);
+                    // SagaMenu uses key-based modal input (v0.4.0c)
+                    var inputEvent = _inputService.ReadNextFiltered();
+                    var key = inputEvent switch
+                    {
+                        RawKeyEvent rawKey => rawKey.KeyInfo.Key,
+                        ActionEvent actionEvent when actionEvent.SourceKey.HasValue => actionEvent.SourceKey.Value,
+                        _ => ConsoleKey.NoName
+                    };
+
+                    _state.Phase = HandleSagaInput(key);
+                    _renderRequired = true;
+                }
+                else
+                {
+                    // Standard text-based input for other phases
+                    string prompt = GetPhasePrompt();
+
+                    // 5. Get input from the user (abstracted for testability)
+                    string input = _inputHandler.GetInput(prompt);
+
+                    // 6. Process the input through the command parser
+                    await _parser.ParseAndExecuteAsync(input, _state);
+                    _renderRequired = true;
+
+                    // 7. Tick ambient soundscape after exploration commands (v0.3.19c)
+                    if (_state.Phase == GamePhase.Exploration && _state.CurrentRoomId.HasValue && _ambienceService != null)
+                    {
+                        await _ambienceService.UpdateAsync(_state.CurrentRoomId.Value);
+                    }
                 }
             }
             catch (OperationCanceledException)
@@ -180,6 +216,14 @@ public class GameService : IGameService
                 _explorationRenderer.Render(viewModel);
             }
         }
+        else if (_state.Phase == GamePhase.SagaMenu && _sagaRenderer != null)
+        {
+            var viewModel = BuildSagaViewModel();
+            if (viewModel != null)
+            {
+                _sagaRenderer.Render(viewModel);
+            }
+        }
     }
 
     /// <summary>
@@ -192,6 +236,7 @@ public class GameService : IGameService
             GamePhase.MainMenu => "[MENU]",
             GamePhase.Exploration => "[EXPLORE]",
             GamePhase.Combat => "[COMBAT]",
+            GamePhase.SagaMenu => "[SHRINE]",
             _ => "[???]"
         };
     }
@@ -318,5 +363,149 @@ public class GameService : IGameService
             Exits: exits,
             BiomeColor: biomeColor
         );
+    }
+
+    /// <summary>
+    /// The currently selected attribute index in the Saga UI (0-4).
+    /// Persisted in GameService to survive scoped controller recreation.
+    /// </summary>
+    /// <remarks>See: v0.4.0c (The Shrine) for Saga UI implementation.</remarks>
+    private int _sagaSelectedIndex;
+
+    /// <summary>
+    /// Builds the Saga view model from current game state (v0.4.0c).
+    /// Creates attribute rows with upgrade cost and status information.
+    /// </summary>
+    private SagaViewModel? BuildSagaViewModel()
+    {
+        if (_state.CurrentCharacter == null)
+        {
+            _logger.LogWarning("[Saga UI] Cannot build ViewModel: No current character");
+            return null;
+        }
+
+        if (_sagaService == null || _progressionService == null)
+        {
+            _logger.LogWarning("[Saga UI] Cannot build ViewModel: Missing Saga/Progression service");
+            return null;
+        }
+
+        var character = _state.CurrentCharacter;
+        var attributes = new List<AttributeRowViewModel>();
+
+        // Build attribute rows in the canonical order: Might, Finesse, Sturdiness, Wits, Will
+        CharacterAttribute[] attributeOrder =
+        {
+            CharacterAttribute.Might,
+            CharacterAttribute.Finesse,
+            CharacterAttribute.Sturdiness,
+            CharacterAttribute.Wits,
+            CharacterAttribute.Will
+        };
+
+        foreach (var attrType in attributeOrder)
+        {
+            int currentValue = character.GetAttribute(attrType);
+            int upgradeCost = _progressionService.GetUpgradeCost(character, attrType);
+            bool canUpgrade = _progressionService.CanUpgrade(character, attrType);
+
+            AttributeStatus status;
+            if (upgradeCost == int.MaxValue)
+            {
+                status = AttributeStatus.Maxed;
+            }
+            else if (!canUpgrade)
+            {
+                status = AttributeStatus.Locked;
+            }
+            else
+            {
+                status = AttributeStatus.Upgrade;
+            }
+
+            attributes.Add(new AttributeRowViewModel(attrType, currentValue, upgradeCost, status));
+        }
+
+        int legendForNext = _sagaService.GetLegendForNextLevel(character.Level);
+
+        _logger.LogDebug(
+            "[Saga UI] Building ViewModel for {Name}: Level {Level}, Legend {Current}/{Next}, PP {PP}, Selected {Index}",
+            character.Name, character.Level, character.Legend, legendForNext, character.ProgressionPoints, _sagaSelectedIndex);
+
+        return new SagaViewModel(
+            CharacterName: character.Name,
+            Level: character.Level,
+            CurrentLegend: character.Legend,
+            LegendForNextLevel: legendForNext,
+            ProgressionPoints: character.ProgressionPoints,
+            SelectedIndex: _sagaSelectedIndex,
+            Attributes: attributes
+        );
+    }
+
+    /// <summary>
+    /// Handles input while in the SagaMenu phase (v0.4.0c).
+    /// Processes navigation and upgrade commands, returns new phase.
+    /// </summary>
+    /// <param name="key">The key that was pressed.</param>
+    /// <returns>The game phase to transition to.</returns>
+    public GamePhase HandleSagaInput(ConsoleKey key)
+    {
+        if (_state.CurrentCharacter == null || _progressionService == null)
+        {
+            return GamePhase.Exploration;
+        }
+
+        CharacterAttribute[] attributeOrder =
+        {
+            CharacterAttribute.Might,
+            CharacterAttribute.Finesse,
+            CharacterAttribute.Sturdiness,
+            CharacterAttribute.Wits,
+            CharacterAttribute.Will
+        };
+
+        switch (key)
+        {
+            case ConsoleKey.UpArrow:
+            case ConsoleKey.W:
+                if (_sagaSelectedIndex > 0)
+                {
+                    _sagaSelectedIndex--;
+                    _logger.LogTrace("[Saga UI] Selection moved up to index {Index}", _sagaSelectedIndex);
+                }
+                break;
+
+            case ConsoleKey.DownArrow:
+            case ConsoleKey.S:
+                if (_sagaSelectedIndex < attributeOrder.Length - 1)
+                {
+                    _sagaSelectedIndex++;
+                    _logger.LogTrace("[Saga UI] Selection moved down to index {Index}", _sagaSelectedIndex);
+                }
+                break;
+
+            case ConsoleKey.Enter:
+            case ConsoleKey.Spacebar:
+                var attribute = attributeOrder[_sagaSelectedIndex];
+                var result = _progressionService.UpgradeAttribute(_state.CurrentCharacter, attribute);
+                if (result.Success)
+                {
+                    _logger.LogInformation("[Saga UI] Successfully upgraded {Attribute}", attribute);
+                }
+                else
+                {
+                    _logger.LogDebug("[Saga UI] Upgrade failed: {Message}", result.Message);
+                }
+                break;
+
+            case ConsoleKey.Escape:
+            case ConsoleKey.Q:
+                _logger.LogInformation("[Saga UI] Exiting Shrine, returning to Exploration");
+                _sagaSelectedIndex = 0; // Reset for next entry
+                return GamePhase.Exploration;
+        }
+
+        return GamePhase.SagaMenu; // Stay in menu
     }
 }
