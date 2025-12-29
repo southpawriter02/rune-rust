@@ -145,6 +145,10 @@ class Program
                     services.AddSingleton<ICreatureTraitService, CreatureTraitService>();
                     services.AddSingleton<IResourceService, ResourceService>();
                     services.AddSingleton<IAbilityService, AbilityService>();
+                    // Register Magic Services (v0.4.4a)
+                    services.AddScoped<IMagicService, MagicService>();
+                    services.AddSingleton<SpellRegistry>();
+
                     services.AddScoped<ILootService, LootService>();
                     services.AddScoped<ICombatService, CombatService>();
                     services.AddSingleton<ICombatScreenRenderer, CombatScreenRenderer>();

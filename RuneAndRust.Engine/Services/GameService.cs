@@ -8,6 +8,7 @@ using RuneAndRust.Core.ValueObjects;
 using RuneAndRust.Core.ViewModels;
 using RuneAndRust.Engine.Helpers;
 using RuneAndRust.Core.Models.Input;
+using RuneAndRust.Core.Models.Magic;
 using CharacterAttribute = RuneAndRust.Core.Enums.Attribute;
 
 namespace RuneAndRust.Engine.Services;
@@ -160,7 +161,46 @@ public class GameService : IGameService
                     string input = _inputHandler.GetInput(prompt);
 
                     // 6. Process the input through the command parser
-                    await _parser.ParseAndExecuteAsync(input, _state);
+                var parseResult = await _parser.ParseAndExecuteAsync(input, _state);
+
+                // v0.4.4a: Handle Magic Cast Command
+                if (parseResult.RequiresCast && parseResult.CastSpell != null)
+                {
+                    _logger.LogTrace("[Magic] Processing cast command: {Spell}", parseResult.CastSpell);
+
+                    if (_state.CurrentCharacter != null)
+                    {
+                        using var scope = _scopeFactory.CreateScope();
+                        var magicService = scope.ServiceProvider.GetRequiredService<IMagicService>();
+                        var spellRegistry = scope.ServiceProvider.GetRequiredService<SpellRegistry>();
+
+                        var spell = spellRegistry.GetSpell(parseResult.CastSpell);
+                        if (spell != null)
+                        {
+                            var result = magicService.Cast(_state.CurrentCharacter, spell, parseResult.CastTarget ?? "Unspecified");
+
+                            // Visual feedback
+                            switch (result)
+                            {
+                                case Core.Models.Magic.CastResult.Success:
+                                    _inputHandler.DisplayMessage($"[mediumpurple]You cast {spell.Name}![/]");
+                                    break;
+                                case Core.Models.Magic.CastResult.InsufficientAether:
+                                    _inputHandler.DisplayMessage($"[red]Not enough Aether to cast {spell.Name}.[/]");
+                                    break;
+                                case Core.Models.Magic.CastResult.StartedChant:
+                                    _inputHandler.DisplayMessage($"[mediumpurple]You begin to chant {spell.Name}...[/]");
+                                    break;
+                            }
+                        }
+                        else
+                        {
+                            _logger.LogDebug("Cast aborted: Spell {SpellName} not found or not learned.", parseResult.CastSpell);
+                            _inputHandler.DisplayMessage($"[grey]You do not know the Galdr for '{parseResult.CastSpell}'.[/]");
+                        }
+                    }
+                }
+
                     _renderRequired = true;
 
                     // 7. Tick ambient soundscape after exploration commands (v0.3.19c)
