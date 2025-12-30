@@ -42,6 +42,11 @@ public class GameService : IGameService
     private readonly ISpecializationGridRenderer? _specGridRenderer;
     private readonly ISpecializationController? _specController;
 
+    // Dialogue UI (v0.4.2d)
+    private readonly IDialogueService? _dialogueService;
+    private readonly IDialogueScreenRenderer? _dialogueRenderer;
+    private readonly IDialogueController? _dialogueController;
+
     private GamePhase _previousPhase = GamePhase.MainMenu;
     private bool _renderRequired = true;
 
@@ -65,6 +70,9 @@ public class GameService : IGameService
     /// <param name="inputService">The input service for key-based modal UIs (v0.4.0c, optional for testing).</param>
     /// <param name="specGridRenderer">The specialization grid renderer for Tree of Runes UI (v0.4.1d, optional for testing).</param>
     /// <param name="specController">The specialization controller for grid navigation (v0.4.1d, optional for testing).</param>
+    /// <param name="dialogueService">The dialogue service for conversation flow (v0.4.2d, optional for testing).</param>
+    /// <param name="dialogueRenderer">The dialogue screen renderer for dialogue UI (v0.4.2d, optional for testing).</param>
+    /// <param name="dialogueController">The dialogue controller for input handling (v0.4.2d, optional for testing).</param>
     public GameService(
         ILogger<GameService> logger,
         IInputHandler inputHandler,
@@ -82,7 +90,10 @@ public class GameService : IGameService
         IProgressionService? progressionService = null,
         IInputService? inputService = null,
         ISpecializationGridRenderer? specGridRenderer = null,
-        ISpecializationController? specController = null)
+        ISpecializationController? specController = null,
+        IDialogueService? dialogueService = null,
+        IDialogueScreenRenderer? dialogueRenderer = null,
+        IDialogueController? dialogueController = null)
     {
         _logger = logger;
         _inputHandler = inputHandler;
@@ -101,6 +112,9 @@ public class GameService : IGameService
         _inputService = inputService;
         _specGridRenderer = specGridRenderer;
         _specController = specController;
+        _dialogueService = dialogueService;
+        _dialogueRenderer = dialogueRenderer;
+        _dialogueController = dialogueController;
 
         // v0.3.23b: Subscribe to VFX invalidation events
         if (_vfxService != null)
@@ -185,6 +199,28 @@ public class GameService : IGameService
                     _state.Phase = await _specController.HandleInputAsync(key);
                     _renderRequired = true;
                 }
+                else if (_state.Phase == GamePhase.Dialogue && _inputService != null && _dialogueController != null)
+                {
+                    // v0.4.2d: Dialogue uses key-based modal input
+                    var inputEvent = _inputService.ReadNextFiltered();
+                    var key = inputEvent switch
+                    {
+                        RawKeyEvent rawKey => rawKey.KeyInfo.Key,
+                        ActionEvent actionEvent when actionEvent.SourceKey.HasValue => actionEvent.SourceKey.Value,
+                        _ => ConsoleKey.NoName
+                    };
+
+                    if (_state.CurrentCharacter != null)
+                    {
+                        _state.Phase = await _dialogueController.HandleInputAsync(key, _state.CurrentCharacter, _state);
+                    }
+                    else
+                    {
+                        _logger.LogWarning("[GameLoop] Dialogue phase but no current character");
+                        _state.Phase = GamePhase.Exploration;
+                    }
+                    _renderRequired = true;
+                }
                 else
                 {
                     // Standard text-based input for other phases
@@ -194,10 +230,16 @@ public class GameService : IGameService
                     string input = _inputHandler.GetInput(prompt);
 
                     // 6. Process the input through the command parser
-                    await _parser.ParseAndExecuteAsync(input, _state);
+                    var result = await _parser.ParseAndExecuteAsync(input, _state);
                     _renderRequired = true;
 
-                    // 7. Tick ambient soundscape after exploration commands (v0.3.19c)
+                    // 7. Handle dialogue initiation (v0.4.2d)
+                    if (result.RequiresDialogue && !string.IsNullOrEmpty(result.DialogueTarget))
+                    {
+                        await HandleDialogueInitiationAsync(result.DialogueTarget);
+                    }
+
+                    // 8. Tick ambient soundscape after exploration commands (v0.3.19c)
                     if (_state.Phase == GamePhase.Exploration && _state.CurrentRoomId.HasValue && _ambienceService != null)
                     {
                         await _ambienceService.UpdateAsync(_state.CurrentRoomId.Value);
@@ -267,6 +309,22 @@ public class GameService : IGameService
                 _specGridRenderer.Render(viewModel);
             }
         }
+        else if (_state.Phase == GamePhase.Dialogue && _dialogueRenderer != null && _dialogueController != null)
+        {
+            // v0.4.2d: Render dialogue using controller's ViewModel
+            if (_state.CurrentCharacter != null)
+            {
+                var viewModel = await _dialogueController.BuildTuiViewModelAsync(_state.CurrentCharacter, _state);
+                if (viewModel != null)
+                {
+                    _dialogueRenderer.Render(viewModel);
+                }
+                else
+                {
+                    _logger.LogWarning("[GameLoop] Dialogue phase but no viewModel available");
+                }
+            }
+        }
     }
 
     /// <summary>
@@ -281,6 +339,7 @@ public class GameService : IGameService
             GamePhase.Combat => "[COMBAT]",
             GamePhase.SagaMenu => "[SHRINE]",
             GamePhase.SpecializationMenu => "[RUNES]",
+            GamePhase.Dialogue => "[DIALOGUE]",  // v0.4.2d
             _ => "[???]"
         };
     }
@@ -551,5 +610,64 @@ public class GameService : IGameService
         }
 
         return GamePhase.SagaMenu; // Stay in menu
+    }
+
+    /// <summary>
+    /// Handles initiating dialogue with an NPC (v0.4.2d).
+    /// Resolves NPC target and starts dialogue if available.
+    /// </summary>
+    /// <param name="targetName">The name of the NPC to talk to.</param>
+    private async Task HandleDialogueInitiationAsync(string targetName)
+    {
+        if (_state.CurrentCharacter == null || _state.CurrentRoomId == null || _dialogueService == null)
+        {
+            _inputHandler.DisplayError("Cannot initiate dialogue without an active character.");
+            return;
+        }
+
+        // Resolve NPC dialogue tree from target name
+        var treeId = await ResolveNpcDialogueTreeAsync(targetName, _state.CurrentRoomId.Value);
+        if (string.IsNullOrEmpty(treeId))
+        {
+            _inputHandler.DisplayMessage($"There is no one named '{targetName}' here to talk to.");
+            return;
+        }
+
+        // Start dialogue
+        var result = await _dialogueService.StartDialogueAsync(_state.CurrentCharacter, treeId, _state);
+        if (result.Success)
+        {
+            _logger.LogInformation("[GameLoop] Entering Dialogue phase with {NpcTree}", treeId);
+            _state.Phase = GamePhase.Dialogue;
+            _dialogueController?.ResetSelection();
+            _renderRequired = true;
+        }
+        else
+        {
+            _inputHandler.DisplayMessage(result.ErrorMessage ?? "Cannot speak with that character.");
+        }
+    }
+
+    /// <summary>
+    /// Resolves an NPC target name to a dialogue tree ID (v0.4.2d).
+    /// Matches against NPCs in the current room.
+    /// </summary>
+    /// <remarks>
+    /// Note: NPC entities not yet implemented. This is a placeholder that uses
+    /// the target name directly as a tree ID for testing purposes.
+    /// Will be updated when NPC entity is added in v0.4.2e.
+    /// </remarks>
+    private Task<string?> ResolveNpcDialogueTreeAsync(string targetName, Guid roomId)
+    {
+        // TODO v0.4.2e: Implement NPC entity lookup
+        // For now, use the target name as a potential tree ID prefix
+        // Convention: "talk <npc_name>" maps to tree ID "npc_<npc_name>"
+        var normalizedName = targetName.ToLowerInvariant().Replace(" ", "_");
+        var treeId = $"npc_{normalizedName}";
+
+        _logger.LogDebug("[GameLoop] Resolved target '{Target}' to tree ID '{TreeId}' (placeholder resolution)",
+            targetName, treeId);
+
+        return Task.FromResult<string?>(treeId);
     }
 }

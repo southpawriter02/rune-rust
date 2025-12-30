@@ -198,6 +198,16 @@ public class ParseResult
     /// </summary>
     public bool RequiresSagaScreen { get; set; }
 
+    /// <summary>
+    /// Gets or sets whether a dialogue initiation is required (v0.4.2d).
+    /// </summary>
+    public bool RequiresDialogue { get; set; }
+
+    /// <summary>
+    /// Gets or sets the target NPC name for dialogue commands (v0.4.2d).
+    /// </summary>
+    public string? DialogueTarget { get; set; }
+
     #region Travel Commands (v0.3.20c)
 
     /// <summary>
@@ -467,6 +477,34 @@ public class CommandParser
                     ExamineTarget = target
                 };
             }
+        }
+
+        // Check for talk command with target (v0.4.2d)
+        if (command.StartsWith("talk ") || command.StartsWith("speak ") || command.StartsWith("converse "))
+        {
+            var target = ExtractTarget(command, new[] { "talk ", "speak ", "converse " });
+            if (!string.IsNullOrWhiteSpace(target))
+            {
+                state.TurnCount++;
+                _logger.LogDebug("[CommandParser] Talk command for NPC: {Target}", target);
+                return new ParseResult
+                {
+                    RequiresDialogue = true,
+                    DialogueTarget = target
+                };
+            }
+            else
+            {
+                _inputHandler.DisplayError("Talk to whom? Specify an NPC name.");
+                return ParseResult.None;
+            }
+        }
+
+        // Handle standalone "talk" without target (v0.4.2d)
+        if (command == "talk" || command == "speak" || command == "converse")
+        {
+            _inputHandler.DisplayError("Talk to whom? Usage: talk <npc name>");
+            return ParseResult.None;
         }
 
         // Check for open command with target

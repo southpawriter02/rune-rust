@@ -186,6 +186,10 @@ class Program
                     services.AddScoped<ISpecializationGridViewModelBuilder, SpecializationGridViewModelBuilder>();
                     services.AddScoped<ISpecializationController, SpecializationController>();
 
+                    // Register Dialogue UI (v0.4.2d - The Parley)
+                    services.AddSingleton<IDialogueScreenRenderer, DialogueScreenRenderer>();
+                    services.AddScoped<IDialogueController, DialogueController>();
+
                     // Register Enemy Factory
                     services.AddScoped<IEnemyFactory, EnemyFactory>();
 

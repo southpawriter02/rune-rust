@@ -39,5 +39,12 @@ public enum GamePhase
     /// Allows players to view specialization paths and unlock ability nodes.
     /// </summary>
     /// <remarks>See: v0.4.1c (The Tree of Runes) for implementation.</remarks>
-    SpecializationMenu = 5
+    SpecializationMenu = 5,
+
+    /// <summary>
+    /// The dialogue phase. Player engages in conversation with NPC.
+    /// Uses key-based modal input for navigation and selection.
+    /// </summary>
+    /// <remarks>See: v0.4.2d (The Parley) for Dialogue TUI implementation.</remarks>
+    Dialogue = 6
 }
