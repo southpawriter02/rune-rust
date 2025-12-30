@@ -18,7 +18,7 @@
 INSERT OR IGNORE INTO Ambient_Sound_Descriptors (biome, sound_category, sound_subcategory, time_of_day, intensity, location_context, descriptor_text, weight, tags)
 VALUES
 ('The_Roots', 'Mechanical', 'ActiveMachinery', NULL, 'Moderate', NULL, 'The distant thrum of still-functioning machinery echoes through the halls.', 1.0, '["Mechanical", "Background", "Functional"]'),
-('The_Roots', 'Mechanical', 'ActiveMachinery', NULL, 'Moderate', NULL, 'Hydraulic systems hiss and groan somewhere in the walls.', 1.0, '["Mechanical", "Hydraulic", "Stressed"]'),
+('The_Roots', 'Mechanical', 'ActiveMachinery', NULL, 'Moderate', NULL, 'Fluid-muscle systems hiss and groan somewhere in the walls.', 1.0, '["Mechanical", "Hydraulic", "Stressed"]'),
 ('The_Roots', 'Mechanical', 'ActiveMachinery', NULL, 'Subtle', NULL, 'A rhythmic clank-clank-clank of ancient pumps keeping the lower levels dry.', 1.0, '["Mechanical", "Rhythmic", "Pumps"]'),
 ('The_Roots', 'Mechanical', 'ActiveMachinery', NULL, 'Moderate', NULL, 'Steam vents periodically with a sharp hiss.', 1.0, '["Mechanical", "Steam", "Periodic"]'),
 ('The_Roots', 'Mechanical', 'ActiveMachinery', NULL, 'Subtle', NULL, 'You hear the whir of a Servitor passing through a distant corridor.', 1.0, '["Mechanical", "Servitor", "Distant"]');
@@ -150,8 +150,8 @@ VALUES
 INSERT OR IGNORE INTO Ambient_Sound_Descriptors (biome, sound_category, sound_subcategory, time_of_day, intensity, location_context, descriptor_text, weight, tags)
 VALUES
 ('Jötunheim', 'Industrial', 'TitanicMachinery', NULL, 'Oppressive', NULL, 'Somewhere, titanic gears still turn. CLUNK. CLUNK. CLUNK.', 1.0, '["Industrial", "Mechanical", "Titanic"]'),
-('Jötunheim', 'Industrial', 'TitanicMachinery', NULL, 'Moderate', NULL, 'The deep bass hum of a reactor that has run for 800 years without pause.', 1.0, '["Industrial", "Reactor", "Ancient"]'),
-('Jötunheim', 'Industrial', 'TitanicMachinery', NULL, 'Moderate', NULL, 'Massive hydraulics groan as ancient doors open and close automatically.', 1.0, '["Industrial", "Hydraulic", "Automatic"]'),
+('Jötunheim', 'Industrial', 'TitanicMachinery', NULL, 'Moderate', NULL, 'The deep bass hum of a Heart-Engine that has run for 800 years without pause.', 1.0, '["Industrial", "Reactor", "Ancient"]'),
+('Jötunheim', 'Industrial', 'TitanicMachinery', NULL, 'Moderate', NULL, 'Massive pistons groan as ancient doors open and close automatically.', 1.0, '["Industrial", "Hydraulic", "Automatic"]'),
 ('Jötunheim', 'Industrial', 'TitanicMachinery', NULL, 'Subtle', NULL, 'The whisper of air through ventilation systems sized for giants.', 1.0, '["Industrial", "Ventilation", "GiantScale"]');
 
 -- Jötunheim: Emptiness
@@ -175,7 +175,7 @@ VALUES
 ('The_Roots', 'Decay', 'Rust', 'Moderate', 'Pervasive', 'The smell of rust and corrosion, metallic and sharp.', 1.0, '["Decay", "Metallic", "Rust"]'),
 ('The_Roots', 'Decay', 'Mildew', 'Moderate', 'Pervasive', 'Mildew and rot. The humidity breeds decay.', 1.0, '["Decay", "Organic", "Mildew"]'),
 ('The_Roots', 'Decay', 'StagnantWater', 'Moderate', 'Nearby', 'Stagnant water and algae growth. The smell is thick.', 1.0, '["Decay", "Water", "Algae"]'),
-('The_Roots', 'Mechanical', 'Electrical', 'Moderate', 'Nearby', 'Ozone from arcing electrical systems mixed with the stench of burnt insulation.', 1.0, '["Mechanical", "Electrical", "Burnt"]');
+('The_Roots', 'Mechanical', 'Electrical', 'Moderate', 'Nearby', 'Storm-scorch from arcing lightning systems mixed with the stench of burnt resin.', 1.0, '["Mechanical", "Electrical", "Burnt"]');
 
 -- The Roots: Mechanical
 INSERT OR IGNORE INTO Ambient_Smell_Descriptors (biome, smell_category, smell_subcategory, intensity, proximity, descriptor_text, weight, tags)
@@ -220,7 +220,7 @@ INSERT OR IGNORE INTO Ambient_Smell_Descriptors (biome, smell_category, smell_su
 VALUES
 ('Niflheim', 'Cold', 'Sterile', 'Subtle', 'Pervasive', 'The air is so cold it has no smell. Everything is sterile.', 1.0, '["Cold", "Sterile", "Clean"]'),
 ('Niflheim', 'Cold', 'FrozenSnow', 'Subtle', 'Pervasive', 'You can smell snow. Clean, pure, deadly.', 1.0, '["Cold", "Snow", "Pure"]'),
-('Niflheim', 'Cold', 'FrozenOzone', 'Subtle', 'Pervasive', 'Ozone from the extreme cold.', 1.0, '["Cold", "Ozone", "Sharp"]');
+('Niflheim', 'Cold', 'FrozenOzone', 'Subtle', 'Pervasive', 'Storm-scorch from the extreme cold.', 1.0, '["Cold", "Ozone", "Sharp"]');
 
 -- Niflheim: Decay (Preserved)
 INSERT OR IGNORE INTO Ambient_Smell_Descriptors (biome, smell_category, smell_subcategory, intensity, proximity, descriptor_text, weight, tags)
@@ -255,8 +255,8 @@ VALUES
 INSERT OR IGNORE INTO Ambient_Smell_Descriptors (biome, smell_category, smell_subcategory, intensity, proximity, descriptor_text, weight, tags)
 VALUES
 ('Jötunheim', 'Industrial', 'MachineOil', 'Moderate', 'Pervasive', 'Machine oil on a massive scale.', 1.0, '["Industrial", "Oil", "Massive"]'),
-('Jötunheim', 'Industrial', 'Concrete', 'Subtle', 'Pervasive', 'Ancient concrete dust.', 1.0, '["Industrial", "Concrete", "Dust"]'),
-('Jötunheim', 'Industrial', 'Ozone', 'Moderate', 'Nearby', 'Ozone from high-voltage systems.', 1.0, '["Industrial", "Electrical", "Ozone"]'),
+('Jötunheim', 'Industrial', 'Concrete', 'Subtle', 'Pervasive', 'Ancient false-stone dust.', 1.0, '["Industrial", "Concrete", "Dust"]'),
+('Jötunheim', 'Industrial', 'Ozone', 'Moderate', 'Nearby', 'Storm-scorch from high-power systems.', 1.0, '["Industrial", "Electrical", "Ozone"]'),
 ('Jötunheim', 'Industrial', 'ForgedMetal', 'Moderate', 'Nearby', 'The metallic smell of worked steel and forged alloys.', 1.0, '["Industrial", "Metal", "Forged"]');
 
 -- Jötunheim: Emptiness
@@ -334,7 +334,7 @@ VALUES
 ('Generic', 'DistantCombat', 'Weapons', NULL, 'Far', 'Concerning', 'The clash of weapons echoes from somewhere distant.', 1.0, '["Combat", "Weapons", "Distant"]'),
 ('Generic', 'DistantCombat', 'Screams', NULL, 'Medium', 'Concerning', 'A scream, abruptly cut off. Someone didn''t make it.', 0.8, '["Combat", "Death", "Ominous"]'),
 ('Generic', 'DistantCombat', 'Magic', NULL, 'Far', 'Concerning', 'The roar of flames and the sounds of battle carry on the wind.', 1.0, '["Combat", "Magic", "Battle"]'),
-('Generic', 'DistantCombat', 'Weapons', NULL, 'Medium', 'Dangerous', 'Gunfire—rapid, then silence.', 0.8, '["Combat", "Gunfire", "Sudden"]');
+('Generic', 'DistantCombat', 'Weapons', NULL, 'Medium', 'Dangerous', 'Thunder-cracks—rapid, then silence.', 0.8, '["Combat", "Gunfire", "Sudden"]');
 
 -- ============================================================
 -- ENVIRONMENTAL EVENTS
