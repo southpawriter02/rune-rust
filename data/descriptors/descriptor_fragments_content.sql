@@ -128,7 +128,7 @@ INSERT INTO Descriptor_Fragments (category, subcategory, fragment_text, tags, we
 INSERT INTO Descriptor_Fragments (category, subcategory, fragment_text, tags, weight) VALUES
 ('Detail', 'Loot', 'Valuable salvage glints among the wreckage', '["Secret", "Loot", "Treasure"]', 1.0),
 ('Detail', 'Loot', 'This place was clearly used to store items of value', '["Secret", "Loot", "Storage"]', 1.0),
-('Detail', 'Loot', 'The air shimmers with the residual Aether of powerful artifacts', '["Secret", "Loot", "Magical"]', 1.2);
+('Detail', 'Loot', 'The air shimmers with the lingering ghost-heat of heavy artifacts', '["Secret", "Loot", "Magical"]', 1.2);
 
 -- =====================================================
 -- EXIT DESCRIPTIONS (3 fragments for Junctions)
