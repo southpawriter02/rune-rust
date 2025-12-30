@@ -170,6 +170,10 @@ class Program
                     services.AddSingleton<ISagaScreenRenderer, SagaScreenRenderer>();
                     services.AddScoped<SagaController>();
 
+                    // Register Specialization UI (v0.4.1c - The Tree of Runes)
+                    services.AddSingleton<ISpecializationScreenRenderer, SpecializationScreenRenderer>();
+                    services.AddScoped<SpecializationController>();
+
                     // Register Enemy Factory
                     services.AddScoped<IEnemyFactory, EnemyFactory>();
 

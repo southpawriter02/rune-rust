@@ -32,5 +32,12 @@ public enum GamePhase
     /// Allows players to view Legend progress and spend PP on attribute upgrades.
     /// </summary>
     /// <remarks>See: v0.4.0c (The Shrine) for Saga UI implementation.</remarks>
-    SagaMenu = 4
+    SagaMenu = 4,
+
+    /// <summary>
+    /// The specialization tree menu ("The Tree of Runes").
+    /// Allows players to view specialization paths and unlock ability nodes.
+    /// </summary>
+    /// <remarks>See: v0.4.1c (The Tree of Runes) for implementation.</remarks>
+    SpecializationMenu = 5
 }

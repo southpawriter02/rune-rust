@@ -11,13 +11,13 @@ namespace RuneAndRust.Tests.Core;
 public class GamePhaseTests
 {
     [Fact]
-    public void GamePhase_ShouldHaveExactlyFiveValues()
+    public void GamePhase_ShouldHaveExactlySixValues()
     {
         // Arrange
         var values = Enum.GetValues<GamePhase>();
 
         // Assert
-        values.Should().HaveCount(5, "GamePhase should have exactly 5 phases: MainMenu, Exploration, Combat, Quit, SagaMenu");
+        values.Should().HaveCount(6, "GamePhase should have exactly 6 phases: MainMenu, Exploration, Combat, Quit, SagaMenu, SpecializationMenu");
     }
 
     [Fact]
@@ -56,6 +56,13 @@ public class GamePhaseTests
     }
 
     [Fact]
+    public void GamePhase_ShouldContain_SpecializationMenu()
+    {
+        // Assert
+        Enum.IsDefined(typeof(GamePhase), GamePhase.SpecializationMenu).Should().BeTrue();
+    }
+
+    [Fact]
     public void GamePhase_EnumValues_ShouldBeSequential()
     {
         // Assert
@@ -64,6 +71,7 @@ public class GamePhaseTests
         ((int)GamePhase.Combat).Should().Be(2);
         ((int)GamePhase.Quit).Should().Be(3);
         ((int)GamePhase.SagaMenu).Should().Be(4);
+        ((int)GamePhase.SpecializationMenu).Should().Be(5);
     }
 
     [Theory]
@@ -72,6 +80,7 @@ public class GamePhaseTests
     [InlineData(GamePhase.Combat, "Combat")]
     [InlineData(GamePhase.Quit, "Quit")]
     [InlineData(GamePhase.SagaMenu, "SagaMenu")]
+    [InlineData(GamePhase.SpecializationMenu, "SpecializationMenu")]
     public void GamePhase_ToString_ReturnsExpectedName(GamePhase phase, string expectedName)
     {
         // Assert
@@ -84,6 +93,7 @@ public class GamePhaseTests
     [InlineData(2, GamePhase.Combat)]
     [InlineData(3, GamePhase.Quit)]
     [InlineData(4, GamePhase.SagaMenu)]
+    [InlineData(5, GamePhase.SpecializationMenu)]
     public void GamePhase_FromInt_ReturnsCorrectPhase(int value, GamePhase expected)
     {
         // Act
