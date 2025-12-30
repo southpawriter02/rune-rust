@@ -254,6 +254,29 @@ public class Character
 
     #endregion
 
+    #region Faction System (v0.4.2a)
+
+    /// <summary>
+    /// Navigation property: All faction standings for this character.
+    /// Tracks reputation with each faction the character has interacted with.
+    /// </summary>
+    /// <remarks>See: v0.4.2a (The Repute) for Faction System implementation.</remarks>
+    public ICollection<CharacterFactionStanding> FactionStandings { get; set; }
+        = new List<CharacterFactionStanding>();
+
+    /// <summary>
+    /// Gets the cached reputation value for a faction from loaded standings.
+    /// Returns null if the standing is not loaded (use IFactionService for database queries).
+    /// </summary>
+    /// <param name="faction">The faction to query.</param>
+    /// <returns>The reputation value if loaded, otherwise null.</returns>
+    public int? GetCachedReputation(FactionType faction)
+    {
+        return FactionStandings.FirstOrDefault(s => s.FactionType == faction)?.Reputation;
+    }
+
+    #endregion
+
     #region Attribute Methods
 
     /// <summary>

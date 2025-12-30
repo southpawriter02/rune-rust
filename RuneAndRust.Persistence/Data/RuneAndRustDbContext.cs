@@ -125,6 +125,16 @@ public class RuneAndRustDbContext : DbContext
     public DbSet<CharacterSpecializationProgress> CharacterSpecializationProgress { get; set; } = null!;
 
     /// <summary>
+    /// Gets or sets the Factions table (faction definitions, v0.4.2a).
+    /// </summary>
+    public DbSet<Faction> Factions { get; set; } = null!;
+
+    /// <summary>
+    /// Gets or sets the CharacterFactionStandings table (reputation tracking, v0.4.2a).
+    /// </summary>
+    public DbSet<CharacterFactionStanding> CharacterFactionStandings { get; set; } = null!;
+
+    /// <summary>
     /// Configures the entity mappings and relationships.
     /// </summary>
     /// <param name="modelBuilder">The model builder instance.</param>
@@ -1073,6 +1083,80 @@ public class RuneAndRustDbContext : DbContext
                     v => JsonSerializer.Deserialize<List<Guid>>(v, (JsonSerializerOptions?)null) ?? new List<Guid>()
                 )
                 .IsRequired();
+        });
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // Faction System (v0.4.2a - The Repute)
+        // ═══════════════════════════════════════════════════════════════════════
+
+        // Faction: Faction metadata definitions
+        modelBuilder.Entity<Faction>(entity =>
+        {
+            entity.ToTable("Factions");
+
+            // FactionType enum as primary key
+            entity.HasKey(f => f.Type);
+
+            entity.Property(f => f.Type)
+                .HasConversion<int>()
+                .IsRequired();
+
+            entity.Property(f => f.Name)
+                .HasMaxLength(100)
+                .IsRequired();
+
+            entity.Property(f => f.Description)
+                .HasMaxLength(1000)
+                .IsRequired();
+
+            entity.Property(f => f.DefaultReputation)
+                .IsRequired();
+
+            entity.Property(f => f.CreatedAt)
+                .IsRequired();
+
+            // Navigation to standings
+            entity.HasMany(f => f.CharacterStandings)
+                .WithOne(s => s.Faction)
+                .HasForeignKey(s => s.FactionType)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // CharacterFactionStanding: Join table for character-faction reputation
+        modelBuilder.Entity<CharacterFactionStanding>(entity =>
+        {
+            entity.ToTable("CharacterFactionStandings");
+
+            // Composite key: CharacterId + FactionType
+            entity.HasKey(s => new { s.CharacterId, s.FactionType });
+
+            entity.Property(s => s.CharacterId)
+                .IsRequired();
+
+            entity.Property(s => s.FactionType)
+                .HasConversion<int>()
+                .IsRequired();
+
+            entity.Property(s => s.Reputation)
+                .IsRequired();
+
+            entity.Property(s => s.CreatedAt)
+                .IsRequired();
+
+            entity.Property(s => s.LastModifiedAt)
+                .IsRequired();
+
+            // Relationship to Character
+            entity.HasOne(s => s.Character)
+                .WithMany(c => c.FactionStandings)
+                .HasForeignKey(s => s.CharacterId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Index for character-based queries
+            entity.HasIndex(s => s.CharacterId);
+
+            // Index for faction-based queries
+            entity.HasIndex(s => s.FactionType);
         });
     }
 }

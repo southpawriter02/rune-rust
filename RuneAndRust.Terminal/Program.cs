@@ -89,6 +89,9 @@ class Program
                     // Register Specialization Repository (v0.4.1a)
                     services.AddScoped<ISpecializationRepository, SpecializationRepository>();
 
+                    // Register Faction Repository (v0.4.2a - The Repute)
+                    services.AddScoped<IFactionRepository, FactionRepository>();
+
                     // Register Capture Template Repository (v0.3.25b: JSON-based templates)
                     services.AddSingleton<ICaptureTemplateRepository>(sp =>
                     {
@@ -111,6 +114,7 @@ class Program
                     services.AddScoped<ISagaService, SagaService>();
                     services.AddScoped<IProgressionService, ProgressionService>();
                     services.AddScoped<ISpecializationService, SpecializationService>();
+                    services.AddScoped<IFactionService, FactionService>();
                     services.AddScoped<SaveManager>();
 
                     // Register Spatial Services
