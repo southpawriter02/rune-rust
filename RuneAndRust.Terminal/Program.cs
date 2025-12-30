@@ -13,6 +13,7 @@ using RuneAndRust.Engine.Factories;
 using RuneAndRust.Engine.Performance;
 using RuneAndRust.Engine.Repositories;
 using RuneAndRust.Engine.Services;
+using RuneAndRust.Engine.ViewModels;
 using RuneAndRust.Persistence.Data;
 using RuneAndRust.Persistence.Repositories;
 using RuneAndRust.Terminal.Controllers;
@@ -170,9 +171,10 @@ class Program
                     services.AddSingleton<ISagaScreenRenderer, SagaScreenRenderer>();
                     services.AddScoped<SagaController>();
 
-                    // Register Specialization UI (v0.4.1c - The Tree of Runes)
-                    services.AddSingleton<ISpecializationScreenRenderer, SpecializationScreenRenderer>();
-                    services.AddScoped<SpecializationController>();
+                    // Register Specialization UI (v0.4.1d - The Grid)
+                    services.AddSingleton<ISpecializationGridRenderer, SpecializationGridRenderer>();
+                    services.AddScoped<ISpecializationGridViewModelBuilder, SpecializationGridViewModelBuilder>();
+                    services.AddScoped<ISpecializationController, SpecializationController>();
 
                     // Register Enemy Factory
                     services.AddScoped<IEnemyFactory, EnemyFactory>();

@@ -1,112 +1,122 @@
 using Microsoft.Extensions.Logging;
 using RuneAndRust.Core.Enums;
 using RuneAndRust.Core.Interfaces;
+using RuneAndRust.Core.ViewModels;
 using Character = RuneAndRust.Core.Entities.Character;
 
 namespace RuneAndRust.Terminal.Controllers;
 
 /// <summary>
-/// Handles input for the Specialization UI ("Tree of Runes").
-/// Manages navigation between specializations and nodes, and triggers unlock actions.
+/// Handles input for the Specialization Grid UI.
+/// Manages tier-based navigation and node unlock actions.
 /// </summary>
-/// <remarks>See: v0.4.1c (The Tree of Runes) for implementation.</remarks>
-public class SpecializationController
+/// <remarks>See: v0.4.1d (The Grid) for Specialization UI implementation.</remarks>
+public class SpecializationController : ISpecializationController
 {
     private readonly ISpecializationService _specService;
+    private readonly ISpecializationGridViewModelBuilder _vmBuilder;
     private readonly ILogger<SpecializationController> _logger;
 
-    private int _specCount;
-    private int _nodeCount;
+    private Character? _character;
+    private SpecializationGridViewModel? _currentVm;
 
     /// <summary>
-    /// Gets the current view mode (SpecList or TreeDetail).
+    /// Gets the current ViewModel for rendering.
     /// </summary>
-    public SpecializationViewMode ViewMode { get; private set; } = SpecializationViewMode.SpecList;
+    public SpecializationGridViewModel? CurrentViewModel => _currentVm;
 
     /// <summary>
-    /// Gets the currently selected specialization index.
+    /// Gets whether the controller has been initialized.
     /// </summary>
-    public int SelectedSpecIndex { get; private set; }
-
-    /// <summary>
-    /// Gets the currently selected node index within the tree.
-    /// </summary>
-    public int SelectedNodeIndex { get; private set; }
-
-    /// <summary>
-    /// Gets the last status message from an unlock attempt.
-    /// </summary>
-    public string? LastStatusMessage { get; private set; }
+    public bool IsInitialized => _currentVm != null && _character != null;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SpecializationController"/> class.
     /// </summary>
     /// <param name="specService">The specialization service for unlock operations.</param>
+    /// <param name="vmBuilder">The ViewModel builder for grid construction.</param>
     /// <param name="logger">The logger for traceability.</param>
     public SpecializationController(
         ISpecializationService specService,
+        ISpecializationGridViewModelBuilder vmBuilder,
         ILogger<SpecializationController> logger)
     {
         _specService = specService;
+        _vmBuilder = vmBuilder;
         _logger = logger;
     }
 
     /// <summary>
-    /// Updates internal counts for navigation bounds.
-    /// Call this before HandleInput when data changes.
+    /// Initializes the controller with a character and specialization.
     /// </summary>
-    /// <param name="specCount">Total number of specializations.</param>
-    /// <param name="nodeCount">Total number of nodes in current tree.</param>
-    public void UpdateCounts(int specCount, int nodeCount)
+    /// <param name="character">The character viewing the specialization.</param>
+    /// <param name="specializationId">The specialization to display.</param>
+    public async Task InitializeAsync(Character character, Guid specializationId)
     {
-        _specCount = specCount;
-        _nodeCount = nodeCount;
+        _logger.LogDebug("[SpecController] InitializeAsync: CharName={CharName}, SpecId={SpecId}",
+            character.Name, specializationId);
+
+        _character = character;
+        _currentVm = await _vmBuilder.BuildAsync(character, specializationId);
+
+        _logger.LogInformation("[SpecController] Initialized with {NodeCount} nodes for {SpecName}",
+            _currentVm.TotalNodes, _currentVm.SpecializationName);
     }
 
     /// <summary>
     /// Processes a key input and returns the resulting game phase.
     /// </summary>
     /// <param name="key">The key that was pressed.</param>
-    /// <param name="character">The character for unlock operations.</param>
-    /// <param name="specIds">List of specialization IDs in display order.</param>
-    /// <param name="nodeIds">List of node IDs in display order.</param>
     /// <returns>The game phase to transition to.</returns>
-    public async Task<GamePhase> HandleInputAsync(ConsoleKey key, Character character,
-        IReadOnlyList<Guid> specIds, IReadOnlyList<Guid> nodeIds)
+    public async Task<GamePhase> HandleInputAsync(ConsoleKey key)
     {
-        _logger.LogTrace("[SpecController] HandleInputAsync: Key={Key}, ViewMode={Mode}", key, ViewMode);
-        LastStatusMessage = null;
+        if (!IsInitialized)
+        {
+            _logger.LogWarning("[SpecController] HandleInputAsync called before initialization");
+            return GamePhase.Exploration;
+        }
+
+        _logger.LogTrace("[SpecController] HandleInputAsync: Key={Key}", key);
+
+        // Clear previous feedback
+        _currentVm!.FeedbackMessage = null;
+        _currentVm.FeedbackIsSuccess = false;
 
         switch (key)
         {
             case ConsoleKey.Escape:
             case ConsoleKey.Q:
                 _logger.LogDebug("[SpecController] Exit requested");
+                Reset();
                 return GamePhase.Exploration;
 
             case ConsoleKey.UpArrow:
             case ConsoleKey.W:
-                NavigateUp();
+                NavigateVertical(-1);
                 return GamePhase.SpecializationMenu;
 
             case ConsoleKey.DownArrow:
             case ConsoleKey.S:
-                NavigateDown();
+                NavigateVertical(1);
                 return GamePhase.SpecializationMenu;
 
             case ConsoleKey.LeftArrow:
             case ConsoleKey.A:
-                SwitchToSpecList();
+                NavigateHorizontal(-1);
                 return GamePhase.SpecializationMenu;
 
             case ConsoleKey.RightArrow:
             case ConsoleKey.D:
-                SwitchToTreeDetail();
+                NavigateHorizontal(1);
+                return GamePhase.SpecializationMenu;
+
+            case ConsoleKey.Tab:
+                await SwitchSpecializationAsync();
                 return GamePhase.SpecializationMenu;
 
             case ConsoleKey.Enter:
             case ConsoleKey.Spacebar:
-                await HandleUnlockAsync(character, specIds, nodeIds);
+                await HandleUnlockAsync();
                 return GamePhase.SpecializationMenu;
 
             default:
@@ -115,121 +125,189 @@ public class SpecializationController
     }
 
     /// <summary>
-    /// Navigates up in the current list (spec list or node list).
+    /// Navigates vertically within the current tier.
     /// </summary>
-    private void NavigateUp()
+    /// <param name="delta">Direction: -1 for up, +1 for down.</param>
+    private void NavigateVertical(int delta)
     {
-        if (ViewMode == SpecializationViewMode.SpecList)
+        if (_currentVm == null || _currentVm.AllNodes.Count == 0) return;
+
+        var currentNode = _currentVm.SelectedNode;
+        if (currentNode == null)
         {
-            if (SelectedSpecIndex > 0)
+            _currentVm.SelectedNodeIndex = 0;
+            return;
+        }
+
+        // Find nodes in the same tier
+        var currentTier = currentNode.Tier;
+        if (!_currentVm.NodesByTier.TryGetValue(currentTier, out var tierNodes) || tierNodes.Count == 0)
+            return;
+
+        // Find current position within tier
+        var tierIndex = tierNodes.ToList().FindIndex(n => n.NodeId == currentNode.NodeId);
+        if (tierIndex < 0) return;
+
+        // Calculate new position within tier
+        var newTierIndex = tierIndex + delta;
+        if (newTierIndex < 0 || newTierIndex >= tierNodes.Count) return;
+
+        // Find the global index for the new node
+        var targetNode = tierNodes[newTierIndex];
+        var globalIndex = _currentVm.AllNodes.ToList().FindIndex(n => n.NodeId == targetNode.NodeId);
+
+        if (globalIndex >= 0)
+        {
+            _currentVm.SelectedNodeIndex = globalIndex;
+            _logger.LogDebug("[SpecController] Navigate vertical: Tier={Tier}, TierIdx={TierIdx}",
+                currentTier, newTierIndex);
+        }
+    }
+
+    /// <summary>
+    /// Navigates horizontally between tiers.
+    /// </summary>
+    /// <param name="delta">Direction: -1 for left (lower tier), +1 for right (higher tier).</param>
+    private void NavigateHorizontal(int delta)
+    {
+        if (_currentVm == null || _currentVm.AllNodes.Count == 0) return;
+
+        var currentNode = _currentVm.SelectedNode;
+        if (currentNode == null)
+        {
+            _currentVm.SelectedNodeIndex = 0;
+            return;
+        }
+
+        var currentTier = currentNode.Tier;
+        var targetTier = currentTier + delta;
+
+        // Clamp to valid tier range (1-4)
+        if (targetTier < 1 || targetTier > 4) return;
+
+        // Check if target tier has nodes
+        if (!_currentVm.NodesByTier.TryGetValue(targetTier, out var targetTierNodes) || targetTierNodes.Count == 0)
+        {
+            // Try to find next tier with nodes
+            var searchDirection = delta > 0 ? 1 : -1;
+            for (var tier = targetTier + searchDirection; tier >= 1 && tier <= 4; tier += searchDirection)
             {
-                SelectedSpecIndex--;
-                SelectedNodeIndex = 0; // Reset node selection when changing spec
-                _logger.LogDebug("[SpecController] SpecList navigate up: Index={Idx}", SelectedSpecIndex);
+                if (_currentVm.NodesByTier.TryGetValue(tier, out targetTierNodes) && targetTierNodes.Count > 0)
+                {
+                    targetTier = tier;
+                    break;
+                }
             }
+
+            if (targetTierNodes == null || targetTierNodes.Count == 0) return;
+        }
+
+        // Find the same row position in the target tier, or clamp to available
+        var currentTierNodes = _currentVm.NodesByTier.GetValueOrDefault(currentTier);
+        var currentRowInTier = currentTierNodes?.ToList().FindIndex(n => n.NodeId == currentNode.NodeId) ?? 0;
+
+        var targetRowIndex = Math.Min(currentRowInTier, targetTierNodes.Count - 1);
+        var targetNode = targetTierNodes[targetRowIndex];
+
+        // Find global index
+        var globalIndex = _currentVm.AllNodes.ToList().FindIndex(n => n.NodeId == targetNode.NodeId);
+
+        if (globalIndex >= 0)
+        {
+            _currentVm.SelectedNodeIndex = globalIndex;
+            _logger.LogDebug("[SpecController] Navigate horizontal: FromTier={From}, ToTier={To}",
+                currentTier, targetTier);
+        }
+    }
+
+    /// <summary>
+    /// Switches to the next unlocked specialization (Tab key).
+    /// </summary>
+    private async Task SwitchSpecializationAsync()
+    {
+        if (_character == null || _currentVm == null) return;
+
+        var specIds = _character.UnlockedSpecializationIds;
+        if (specIds.Count <= 1)
+        {
+            _logger.LogTrace("[SpecController] SwitchSpec: Only one spec unlocked, no switch");
+            return;
+        }
+
+        // Find next spec
+        var currentIndex = _currentVm.CurrentSpecIndex;
+        var nextIndex = (currentIndex + 1) % specIds.Count;
+        var nextSpecId = specIds[nextIndex];
+
+        _logger.LogDebug("[SpecController] Switching spec: {From} -> {To}",
+            currentIndex, nextIndex);
+
+        // Rebuild ViewModel for new spec
+        _currentVm = await _vmBuilder.BuildAsync(_character, nextSpecId);
+    }
+
+    /// <summary>
+    /// Handles node unlock (Inscribe) action.
+    /// </summary>
+    private async Task HandleUnlockAsync()
+    {
+        if (_character == null || _currentVm == null) return;
+
+        var selectedNode = _currentVm.SelectedNode;
+        if (selectedNode == null)
+        {
+            _currentVm.FeedbackMessage = "No node selected";
+            _currentVm.FeedbackIsSuccess = false;
+            return;
+        }
+
+        // Check if already unlocked
+        if (selectedNode.Status == NodeStatus.Unlocked)
+        {
+            _currentVm.FeedbackMessage = $"{selectedNode.Name} is already inscribed";
+            _currentVm.FeedbackIsSuccess = false;
+            _logger.LogDebug("[SpecController] Node already unlocked: {Name}", selectedNode.Name);
+            return;
+        }
+
+        // Check if locked (prerequisites not met)
+        if (selectedNode.Status == NodeStatus.Locked)
+        {
+            _currentVm.FeedbackMessage = $"Prerequisites not met for {selectedNode.Name}";
+            _currentVm.FeedbackIsSuccess = false;
+            _logger.LogDebug("[SpecController] Node locked: {Name}", selectedNode.Name);
+            return;
+        }
+
+        // Check if affordable status (prereqs met but insufficient PP)
+        if (selectedNode.Status == NodeStatus.Affordable)
+        {
+            _currentVm.FeedbackMessage = $"Insufficient PP for {selectedNode.Name} (need {selectedNode.CostPP})";
+            _currentVm.FeedbackIsSuccess = false;
+            _logger.LogDebug("[SpecController] Insufficient PP for: {Name}", selectedNode.Name);
+            return;
+        }
+
+        // Attempt unlock
+        _logger.LogDebug("[SpecController] Attempting to unlock node: {NodeId}", selectedNode.NodeId);
+
+        var result = await _specService.UnlockNodeAsync(_character, selectedNode.NodeId);
+
+        if (result.Success)
+        {
+            _currentVm.FeedbackMessage = $"Inscribed {result.NodeName}! (-{result.PpSpent} PP)";
+            _currentVm.FeedbackIsSuccess = true;
+            _logger.LogInformation("[SpecController] Node inscribed: {Name} (Tier {Tier})",
+                result.NodeName, result.Tier);
+
+            // Refresh ViewModel to update statuses
+            _currentVm = await _vmBuilder.RefreshAsync(_currentVm, _character);
         }
         else
         {
-            if (SelectedNodeIndex > 0)
-            {
-                SelectedNodeIndex--;
-                _logger.LogDebug("[SpecController] TreeDetail navigate up: Index={Idx}", SelectedNodeIndex);
-            }
-        }
-    }
-
-    /// <summary>
-    /// Navigates down in the current list (spec list or node list).
-    /// </summary>
-    private void NavigateDown()
-    {
-        if (ViewMode == SpecializationViewMode.SpecList)
-        {
-            if (SelectedSpecIndex < _specCount - 1)
-            {
-                SelectedSpecIndex++;
-                SelectedNodeIndex = 0;
-                _logger.LogDebug("[SpecController] SpecList navigate down: Index={Idx}", SelectedSpecIndex);
-            }
-        }
-        else
-        {
-            if (SelectedNodeIndex < _nodeCount - 1)
-            {
-                SelectedNodeIndex++;
-                _logger.LogDebug("[SpecController] TreeDetail navigate down: Index={Idx}", SelectedNodeIndex);
-            }
-        }
-    }
-
-    /// <summary>
-    /// Switches focus to the specialization list (left panel).
-    /// </summary>
-    private void SwitchToSpecList()
-    {
-        ViewMode = SpecializationViewMode.SpecList;
-        _logger.LogDebug("[SpecController] Switched to SpecList view");
-    }
-
-    /// <summary>
-    /// Switches focus to the tree detail (right panel).
-    /// </summary>
-    private void SwitchToTreeDetail()
-    {
-        ViewMode = SpecializationViewMode.TreeDetail;
-        _logger.LogDebug("[SpecController] Switched to TreeDetail view");
-    }
-
-    /// <summary>
-    /// Handles unlock action based on current view mode.
-    /// </summary>
-    private async Task HandleUnlockAsync(Character character,
-        IReadOnlyList<Guid> specIds, IReadOnlyList<Guid> nodeIds)
-    {
-        if (ViewMode == SpecializationViewMode.SpecList)
-        {
-            // Unlock specialization
-            if (SelectedSpecIndex < specIds.Count)
-            {
-                var specId = specIds[SelectedSpecIndex];
-                _logger.LogDebug("[SpecController] Attempting to unlock specialization: {SpecId}", specId);
-
-                var result = await _specService.UnlockSpecializationAsync(character, specId);
-
-                if (result.Success)
-                {
-                    LastStatusMessage = $"Unlocked {result.SpecializationName}! (-{result.PpSpent} PP)";
-                    _logger.LogInformation("[SpecController] Specialization unlocked: {Name}", result.SpecializationName);
-                }
-                else
-                {
-                    LastStatusMessage = result.Message;
-                    _logger.LogWarning("[SpecController] Unlock failed: {Reason}", result.Message);
-                }
-            }
-        }
-        else
-        {
-            // Unlock node
-            if (SelectedNodeIndex < nodeIds.Count)
-            {
-                var nodeId = nodeIds[SelectedNodeIndex];
-                _logger.LogDebug("[SpecController] Attempting to unlock node: {NodeId}", nodeId);
-
-                var result = await _specService.UnlockNodeAsync(character, nodeId);
-
-                if (result.Success)
-                {
-                    LastStatusMessage = $"Unlocked {result.NodeName}! (-{result.PpSpent} PP)";
-                    _logger.LogInformation("[SpecController] Node unlocked: {Name} (Tier {Tier})",
-                        result.NodeName, result.Tier);
-                }
-                else
-                {
-                    LastStatusMessage = result.Message;
-                    _logger.LogWarning("[SpecController] Node unlock failed: {Reason}", result.Message);
-                }
-            }
+            _currentVm.FeedbackMessage = result.Message;
+            _currentVm.FeedbackIsSuccess = false;
+            _logger.LogWarning("[SpecController] Node unlock failed: {Reason}", result.Message);
         }
     }
 
@@ -238,10 +316,8 @@ public class SpecializationController
     /// </summary>
     public void Reset()
     {
-        ViewMode = SpecializationViewMode.SpecList;
-        SelectedSpecIndex = 0;
-        SelectedNodeIndex = 0;
-        LastStatusMessage = null;
+        _character = null;
+        _currentVm = null;
         _logger.LogDebug("[SpecController] State reset");
     }
 }

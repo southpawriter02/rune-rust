@@ -1,9 +1,10 @@
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
-using Moq;
+using NSubstitute;
 using RuneAndRust.Core.Enums;
 using RuneAndRust.Core.Interfaces;
 using RuneAndRust.Core.Models;
+using RuneAndRust.Core.ViewModels;
 using RuneAndRust.Terminal.Controllers;
 using Xunit;
 using Character = RuneAndRust.Core.Entities.Character;
@@ -11,443 +12,395 @@ using Character = RuneAndRust.Core.Entities.Character;
 namespace RuneAndRust.Tests.Terminal;
 
 /// <summary>
-/// Tests for the SpecializationController class.
-/// Validates navigation, input handling, and unlock operations.
+/// Tests for SpecializationController.
+/// Validates navigation, unlock, and input handling.
 /// </summary>
-/// <remarks>See: v0.4.1c (The Tree of Runes) for implementation.</remarks>
+/// <remarks>See: v0.4.1d (The Grid) for implementation.</remarks>
 public class SpecializationControllerTests
 {
-    private readonly Mock<ISpecializationService> _mockSpecService;
-    private readonly Mock<ILogger<SpecializationController>> _mockLogger;
+    private readonly ISpecializationService _specService;
+    private readonly ISpecializationGridViewModelBuilder _vmBuilder;
+    private readonly ILogger<SpecializationController> _logger;
     private readonly SpecializationController _controller;
-    private readonly Character _testCharacter;
 
     public SpecializationControllerTests()
     {
-        _mockSpecService = new Mock<ISpecializationService>();
-        _mockLogger = new Mock<ILogger<SpecializationController>>();
-        _controller = new SpecializationController(_mockSpecService.Object, _mockLogger.Object);
-        _testCharacter = new Character { Name = "TestHero", ProgressionPoints = 20 };
+        _specService = Substitute.For<ISpecializationService>();
+        _vmBuilder = Substitute.For<ISpecializationGridViewModelBuilder>();
+        _logger = Substitute.For<ILogger<SpecializationController>>();
+        _controller = new SpecializationController(_specService, _vmBuilder, _logger);
     }
 
-    #region Constructor Tests
+    private static Character CreateTestCharacter()
+    {
+        return new Character
+        {
+            Id = Guid.NewGuid(),
+            Name = "TestChar",
+            ProgressionPoints = 10,
+            UnlockedSpecializationIds = new List<Guid> { Guid.NewGuid() }
+        };
+    }
+
+    private static SpecializationGridViewModel CreateTestViewModel(int nodeCount = 4)
+    {
+        var nodes = new List<NodeViewModel>();
+        for (int i = 0; i < nodeCount; i++)
+        {
+            nodes.Add(new NodeViewModel(
+                NodeId: Guid.NewGuid(),
+                AbilityId: Guid.NewGuid(),
+                Name: $"Node{i + 1}",
+                Description: $"Description for node {i + 1}",
+                Tier: (i / 2) + 1,
+                CostPP: 1,
+                Status: i == 0 ? NodeStatus.Available : NodeStatus.Locked,
+                PositionX: i,
+                PositionY: 0,
+                IsCapstone: false,
+                ParentNodeIds: new List<Guid>()));
+        }
+
+        var nodesByTier = nodes
+            .GroupBy(n => n.Tier)
+            .ToDictionary(g => g.Key, g => (IReadOnlyList<NodeViewModel>)g.ToList());
+
+        return new SpecializationGridViewModel
+        {
+            SpecializationId = Guid.NewGuid(),
+            SpecializationName = "Test Spec",
+            SpecializationDescription = "Test Description",
+            ProgressionPoints = 10,
+            CharacterName = "TestChar",
+            NodesByTier = nodesByTier,
+            AllNodes = nodes,
+            SelectedNodeIndex = 0,
+            CurrentSpecIndex = 0,
+            TotalSpecCount = 1
+        };
+    }
+
+    #region Initialization Tests
 
     [Fact]
-    public void Constructor_ShouldInitializeWithDefaultValues()
+    public void IsInitialized_WhenNotInitialized_ReturnsFalse()
     {
         // Assert
-        _controller.ViewMode.Should().Be(SpecializationViewMode.SpecList);
-        _controller.SelectedSpecIndex.Should().Be(0);
-        _controller.SelectedNodeIndex.Should().Be(0);
-        _controller.LastStatusMessage.Should().BeNull();
+        _controller.IsInitialized.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task InitializeAsync_SetsIsInitializedToTrue()
+    {
+        // Arrange
+        var character = CreateTestCharacter();
+        var specId = character.UnlockedSpecializationIds[0];
+        var vm = CreateTestViewModel();
+
+        _vmBuilder.BuildAsync(character, specId).Returns(Task.FromResult(vm));
+
+        // Act
+        await _controller.InitializeAsync(character, specId);
+
+        // Assert
+        _controller.IsInitialized.Should().BeTrue();
+        _controller.CurrentViewModel.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task InitializeAsync_SetsCurrentViewModel()
+    {
+        // Arrange
+        var character = CreateTestCharacter();
+        var specId = character.UnlockedSpecializationIds[0];
+        var vm = CreateTestViewModel();
+
+        _vmBuilder.BuildAsync(character, specId).Returns(Task.FromResult(vm));
+
+        // Act
+        await _controller.InitializeAsync(character, specId);
+
+        // Assert
+        _controller.CurrentViewModel.Should().Be(vm);
     }
 
     #endregion
 
-    #region Navigation Tests - Escape/Quit
+    #region Exit Tests
 
     [Fact]
-    public async Task HandleInputAsync_Escape_ReturnsExplorationPhase()
+    public async Task HandleInputAsync_Escape_ReturnsExploration()
     {
         // Arrange
-        var specIds = new List<Guid> { Guid.NewGuid() };
-        var nodeIds = new List<Guid>();
+        var character = CreateTestCharacter();
+        var specId = character.UnlockedSpecializationIds[0];
+        var vm = CreateTestViewModel();
+        _vmBuilder.BuildAsync(character, specId).Returns(Task.FromResult(vm));
+        await _controller.InitializeAsync(character, specId);
 
         // Act
-        var result = await _controller.HandleInputAsync(ConsoleKey.Escape, _testCharacter, specIds, nodeIds);
+        var result = await _controller.HandleInputAsync(ConsoleKey.Escape);
 
         // Assert
         result.Should().Be(GamePhase.Exploration);
     }
 
     [Fact]
-    public async Task HandleInputAsync_Q_ReturnsExplorationPhase()
+    public async Task HandleInputAsync_Q_ReturnsExploration()
     {
         // Arrange
-        var specIds = new List<Guid> { Guid.NewGuid() };
-        var nodeIds = new List<Guid>();
+        var character = CreateTestCharacter();
+        var specId = character.UnlockedSpecializationIds[0];
+        var vm = CreateTestViewModel();
+        _vmBuilder.BuildAsync(character, specId).Returns(Task.FromResult(vm));
+        await _controller.InitializeAsync(character, specId);
 
         // Act
-        var result = await _controller.HandleInputAsync(ConsoleKey.Q, _testCharacter, specIds, nodeIds);
+        var result = await _controller.HandleInputAsync(ConsoleKey.Q);
 
         // Assert
         result.Should().Be(GamePhase.Exploration);
     }
 
-    #endregion
-
-    #region Navigation Tests - SpecList Mode
-
     [Fact]
-    public async Task HandleInputAsync_UpArrow_InSpecListMode_DecreasesSelectedSpecIndex()
+    public async Task HandleInputAsync_Escape_ResetsController()
     {
         // Arrange
-        _controller.UpdateCounts(3, 0);
-        // Navigate down first to have room to go up
-        var specIds = new List<Guid> { Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid() };
-        await _controller.HandleInputAsync(ConsoleKey.DownArrow, _testCharacter, specIds, new List<Guid>());
-        _controller.SelectedSpecIndex.Should().Be(1);
+        var character = CreateTestCharacter();
+        var specId = character.UnlockedSpecializationIds[0];
+        var vm = CreateTestViewModel();
+        _vmBuilder.BuildAsync(character, specId).Returns(Task.FromResult(vm));
+        await _controller.InitializeAsync(character, specId);
 
         // Act
-        await _controller.HandleInputAsync(ConsoleKey.UpArrow, _testCharacter, specIds, new List<Guid>());
+        await _controller.HandleInputAsync(ConsoleKey.Escape);
 
         // Assert
-        _controller.SelectedSpecIndex.Should().Be(0);
-    }
-
-    [Fact]
-    public async Task HandleInputAsync_UpArrow_AtIndexZero_DoesNotGoNegative()
-    {
-        // Arrange
-        _controller.UpdateCounts(3, 0);
-        var specIds = new List<Guid> { Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid() };
-
-        // Act
-        await _controller.HandleInputAsync(ConsoleKey.UpArrow, _testCharacter, specIds, new List<Guid>());
-
-        // Assert
-        _controller.SelectedSpecIndex.Should().Be(0);
-    }
-
-    [Fact]
-    public async Task HandleInputAsync_DownArrow_InSpecListMode_IncreasesSelectedSpecIndex()
-    {
-        // Arrange
-        _controller.UpdateCounts(3, 0);
-        var specIds = new List<Guid> { Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid() };
-
-        // Act
-        await _controller.HandleInputAsync(ConsoleKey.DownArrow, _testCharacter, specIds, new List<Guid>());
-
-        // Assert
-        _controller.SelectedSpecIndex.Should().Be(1);
-    }
-
-    [Fact]
-    public async Task HandleInputAsync_DownArrow_AtLastIndex_DoesNotExceedBounds()
-    {
-        // Arrange
-        _controller.UpdateCounts(3, 0);
-        var specIds = new List<Guid> { Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid() };
-
-        // Navigate to last item
-        await _controller.HandleInputAsync(ConsoleKey.DownArrow, _testCharacter, specIds, new List<Guid>());
-        await _controller.HandleInputAsync(ConsoleKey.DownArrow, _testCharacter, specIds, new List<Guid>());
-        _controller.SelectedSpecIndex.Should().Be(2);
-
-        // Act - try to go beyond
-        await _controller.HandleInputAsync(ConsoleKey.DownArrow, _testCharacter, specIds, new List<Guid>());
-
-        // Assert
-        _controller.SelectedSpecIndex.Should().Be(2);
-    }
-
-    [Fact]
-    public async Task HandleInputAsync_W_InSpecListMode_NavigatesUp()
-    {
-        // Arrange
-        _controller.UpdateCounts(3, 0);
-        var specIds = new List<Guid> { Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid() };
-        await _controller.HandleInputAsync(ConsoleKey.DownArrow, _testCharacter, specIds, new List<Guid>());
-
-        // Act
-        await _controller.HandleInputAsync(ConsoleKey.W, _testCharacter, specIds, new List<Guid>());
-
-        // Assert
-        _controller.SelectedSpecIndex.Should().Be(0);
-    }
-
-    [Fact]
-    public async Task HandleInputAsync_S_InSpecListMode_NavigatesDown()
-    {
-        // Arrange
-        _controller.UpdateCounts(3, 0);
-        var specIds = new List<Guid> { Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid() };
-
-        // Act
-        await _controller.HandleInputAsync(ConsoleKey.S, _testCharacter, specIds, new List<Guid>());
-
-        // Assert
-        _controller.SelectedSpecIndex.Should().Be(1);
-    }
-
-    [Fact]
-    public async Task HandleInputAsync_RightArrow_SwitchesToTreeDetailMode()
-    {
-        // Arrange
-        var specIds = new List<Guid> { Guid.NewGuid() };
-
-        // Act
-        await _controller.HandleInputAsync(ConsoleKey.RightArrow, _testCharacter, specIds, new List<Guid>());
-
-        // Assert
-        _controller.ViewMode.Should().Be(SpecializationViewMode.TreeDetail);
-    }
-
-    [Fact]
-    public async Task HandleInputAsync_D_SwitchesToTreeDetailMode()
-    {
-        // Arrange
-        var specIds = new List<Guid> { Guid.NewGuid() };
-
-        // Act
-        await _controller.HandleInputAsync(ConsoleKey.D, _testCharacter, specIds, new List<Guid>());
-
-        // Assert
-        _controller.ViewMode.Should().Be(SpecializationViewMode.TreeDetail);
+        _controller.IsInitialized.Should().BeFalse();
+        _controller.CurrentViewModel.Should().BeNull();
     }
 
     #endregion
 
-    #region Navigation Tests - TreeDetail Mode
+    #region Navigation Tests
 
     [Fact]
-    public async Task HandleInputAsync_LeftArrow_SwitchesToSpecListMode()
+    public async Task HandleInputAsync_DownArrow_StaysInSpecializationMenu()
     {
         // Arrange
-        var specIds = new List<Guid> { Guid.NewGuid() };
-        await _controller.HandleInputAsync(ConsoleKey.RightArrow, _testCharacter, specIds, new List<Guid>());
-        _controller.ViewMode.Should().Be(SpecializationViewMode.TreeDetail);
+        var character = CreateTestCharacter();
+        var specId = character.UnlockedSpecializationIds[0];
+        var vm = CreateTestViewModel();
+        _vmBuilder.BuildAsync(character, specId).Returns(Task.FromResult(vm));
+        await _controller.InitializeAsync(character, specId);
 
         // Act
-        await _controller.HandleInputAsync(ConsoleKey.LeftArrow, _testCharacter, specIds, new List<Guid>());
+        var result = await _controller.HandleInputAsync(ConsoleKey.DownArrow);
 
         // Assert
-        _controller.ViewMode.Should().Be(SpecializationViewMode.SpecList);
+        result.Should().Be(GamePhase.SpecializationMenu);
     }
 
     [Fact]
-    public async Task HandleInputAsync_A_SwitchesToSpecListMode()
+    public async Task HandleInputAsync_UpArrow_StaysInSpecializationMenu()
     {
         // Arrange
-        var specIds = new List<Guid> { Guid.NewGuid() };
-        await _controller.HandleInputAsync(ConsoleKey.D, _testCharacter, specIds, new List<Guid>());
+        var character = CreateTestCharacter();
+        var specId = character.UnlockedSpecializationIds[0];
+        var vm = CreateTestViewModel();
+        _vmBuilder.BuildAsync(character, specId).Returns(Task.FromResult(vm));
+        await _controller.InitializeAsync(character, specId);
 
         // Act
-        await _controller.HandleInputAsync(ConsoleKey.A, _testCharacter, specIds, new List<Guid>());
+        var result = await _controller.HandleInputAsync(ConsoleKey.UpArrow);
 
         // Assert
-        _controller.ViewMode.Should().Be(SpecializationViewMode.SpecList);
+        result.Should().Be(GamePhase.SpecializationMenu);
     }
 
     [Fact]
-    public async Task HandleInputAsync_UpArrow_InTreeDetailMode_DecreasesSelectedNodeIndex()
+    public async Task HandleInputAsync_LeftArrow_StaysInSpecializationMenu()
     {
         // Arrange
-        _controller.UpdateCounts(1, 5);
-        var specIds = new List<Guid> { Guid.NewGuid() };
-        var nodeIds = new List<Guid> { Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid() };
-
-        // Switch to tree mode and navigate down first
-        await _controller.HandleInputAsync(ConsoleKey.RightArrow, _testCharacter, specIds, nodeIds);
-        await _controller.HandleInputAsync(ConsoleKey.DownArrow, _testCharacter, specIds, nodeIds);
-        _controller.SelectedNodeIndex.Should().Be(1);
+        var character = CreateTestCharacter();
+        var specId = character.UnlockedSpecializationIds[0];
+        var vm = CreateTestViewModel();
+        _vmBuilder.BuildAsync(character, specId).Returns(Task.FromResult(vm));
+        await _controller.InitializeAsync(character, specId);
 
         // Act
-        await _controller.HandleInputAsync(ConsoleKey.UpArrow, _testCharacter, specIds, nodeIds);
+        var result = await _controller.HandleInputAsync(ConsoleKey.LeftArrow);
 
         // Assert
-        _controller.SelectedNodeIndex.Should().Be(0);
+        result.Should().Be(GamePhase.SpecializationMenu);
     }
 
     [Fact]
-    public async Task HandleInputAsync_DownArrow_InTreeDetailMode_IncreasesSelectedNodeIndex()
+    public async Task HandleInputAsync_RightArrow_StaysInSpecializationMenu()
     {
         // Arrange
-        _controller.UpdateCounts(1, 5);
-        var specIds = new List<Guid> { Guid.NewGuid() };
-        var nodeIds = new List<Guid> { Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid() };
-
-        // Switch to tree mode
-        await _controller.HandleInputAsync(ConsoleKey.RightArrow, _testCharacter, specIds, nodeIds);
+        var character = CreateTestCharacter();
+        var specId = character.UnlockedSpecializationIds[0];
+        var vm = CreateTestViewModel();
+        _vmBuilder.BuildAsync(character, specId).Returns(Task.FromResult(vm));
+        await _controller.InitializeAsync(character, specId);
 
         // Act
-        await _controller.HandleInputAsync(ConsoleKey.DownArrow, _testCharacter, specIds, nodeIds);
+        var result = await _controller.HandleInputAsync(ConsoleKey.RightArrow);
 
         // Assert
-        _controller.SelectedNodeIndex.Should().Be(1);
-    }
-
-    [Fact]
-    public async Task HandleInputAsync_ChangingSpec_ResetsNodeIndex()
-    {
-        // Arrange
-        _controller.UpdateCounts(3, 5);
-        var specIds = new List<Guid> { Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid() };
-        var nodeIds = new List<Guid> { Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid() };
-
-        // Switch to tree mode and navigate down
-        await _controller.HandleInputAsync(ConsoleKey.RightArrow, _testCharacter, specIds, nodeIds);
-        await _controller.HandleInputAsync(ConsoleKey.DownArrow, _testCharacter, specIds, nodeIds);
-        await _controller.HandleInputAsync(ConsoleKey.DownArrow, _testCharacter, specIds, nodeIds);
-        _controller.SelectedNodeIndex.Should().Be(2);
-
-        // Switch back to spec list
-        await _controller.HandleInputAsync(ConsoleKey.LeftArrow, _testCharacter, specIds, nodeIds);
-
-        // Act - change spec
-        await _controller.HandleInputAsync(ConsoleKey.DownArrow, _testCharacter, specIds, nodeIds);
-
-        // Assert - node index should be reset
-        _controller.SelectedNodeIndex.Should().Be(0);
+        result.Should().Be(GamePhase.SpecializationMenu);
     }
 
     #endregion
 
-    #region Unlock Tests - Specialization
+    #region Unlock Tests
 
     [Fact]
-    public async Task HandleInputAsync_Enter_InSpecListMode_CallsUnlockSpecialization()
+    public async Task HandleInputAsync_Enter_OnAvailableNode_CallsUnlockNodeAsync()
     {
         // Arrange
-        var specId = Guid.NewGuid();
-        var specIds = new List<Guid> { specId };
-        var nodeIds = new List<Guid>();
-
-        _mockSpecService
-            .Setup(s => s.UnlockSpecializationAsync(_testCharacter, specId))
-            .ReturnsAsync(SpecializationUnlockResult.Ok("Specialization unlocked", specId, "Iron Warden", 10));
+        var character = CreateTestCharacter();
+        var specId = character.UnlockedSpecializationIds[0];
+        var vm = CreateTestViewModel();
+        _vmBuilder.BuildAsync(character, specId).Returns(Task.FromResult(vm));
+        _vmBuilder.RefreshAsync(Arg.Any<SpecializationGridViewModel>(), character)
+            .Returns(Task.FromResult(vm));
+        _specService.UnlockNodeAsync(character, Arg.Any<Guid>())
+            .Returns(Task.FromResult(NodeUnlockResult.Ok("Unlocked!", Guid.NewGuid(), "Node1", Guid.NewGuid(), 1, 1)));
+        await _controller.InitializeAsync(character, specId);
 
         // Act
-        await _controller.HandleInputAsync(ConsoleKey.Enter, _testCharacter, specIds, nodeIds);
+        await _controller.HandleInputAsync(ConsoleKey.Enter);
 
         // Assert
-        _mockSpecService.Verify(s => s.UnlockSpecializationAsync(_testCharacter, specId), Times.Once);
+        await _specService.Received(1).UnlockNodeAsync(character, Arg.Any<Guid>());
     }
 
     [Fact]
-    public async Task HandleInputAsync_Enter_SuccessfulSpecUnlock_SetsStatusMessage()
+    public async Task HandleInputAsync_Spacebar_OnAvailableNode_CallsUnlockNodeAsync()
     {
         // Arrange
-        var specId = Guid.NewGuid();
-        var specIds = new List<Guid> { specId };
-        var nodeIds = new List<Guid>();
-
-        _mockSpecService
-            .Setup(s => s.UnlockSpecializationAsync(_testCharacter, specId))
-            .ReturnsAsync(SpecializationUnlockResult.Ok("Specialization unlocked", specId, "Iron Warden", 10));
+        var character = CreateTestCharacter();
+        var specId = character.UnlockedSpecializationIds[0];
+        var vm = CreateTestViewModel();
+        _vmBuilder.BuildAsync(character, specId).Returns(Task.FromResult(vm));
+        _vmBuilder.RefreshAsync(Arg.Any<SpecializationGridViewModel>(), character)
+            .Returns(Task.FromResult(vm));
+        _specService.UnlockNodeAsync(character, Arg.Any<Guid>())
+            .Returns(Task.FromResult(NodeUnlockResult.Ok("Unlocked!", Guid.NewGuid(), "Node1", Guid.NewGuid(), 1, 1)));
+        await _controller.InitializeAsync(character, specId);
 
         // Act
-        await _controller.HandleInputAsync(ConsoleKey.Enter, _testCharacter, specIds, nodeIds);
+        await _controller.HandleInputAsync(ConsoleKey.Spacebar);
 
         // Assert
-        _controller.LastStatusMessage.Should().Contain("Unlocked Iron Warden");
-        _controller.LastStatusMessage.Should().Contain("-10 PP");
+        await _specService.Received(1).UnlockNodeAsync(character, Arg.Any<Guid>());
     }
 
     [Fact]
-    public async Task HandleInputAsync_Enter_FailedSpecUnlock_SetsErrorMessage()
+    public async Task HandleInputAsync_Enter_OnLockedNode_DoesNotCallUnlockNodeAsync()
     {
         // Arrange
-        var specId = Guid.NewGuid();
-        var specIds = new List<Guid> { specId };
-        var nodeIds = new List<Guid>();
+        var character = CreateTestCharacter();
+        var specId = character.UnlockedSpecializationIds[0];
+        var nodes = new List<NodeViewModel>
+        {
+            new(Guid.NewGuid(), Guid.NewGuid(), "Node1", "Desc", 1, 1,
+                NodeStatus.Locked, 0, 0, false, new List<Guid>())
+        };
+        var vm = new SpecializationGridViewModel
+        {
+            SpecializationId = specId,
+            SpecializationName = "Test",
+            ProgressionPoints = 10,
+            CharacterName = "TestChar",
+            NodesByTier = new Dictionary<int, IReadOnlyList<NodeViewModel>> { { 1, nodes } },
+            AllNodes = nodes,
+            SelectedNodeIndex = 0,
+            CurrentSpecIndex = 0,
+            TotalSpecCount = 1
+        };
 
-        _mockSpecService
-            .Setup(s => s.UnlockSpecializationAsync(_testCharacter, specId))
-            .ReturnsAsync(SpecializationUnlockResult.Failure("Insufficient PP"));
+        _vmBuilder.BuildAsync(character, specId).Returns(Task.FromResult(vm));
+        await _controller.InitializeAsync(character, specId);
 
         // Act
-        await _controller.HandleInputAsync(ConsoleKey.Enter, _testCharacter, specIds, nodeIds);
+        await _controller.HandleInputAsync(ConsoleKey.Enter);
 
         // Assert
-        _controller.LastStatusMessage.Should().Be("Insufficient PP");
+        await _specService.DidNotReceive().UnlockNodeAsync(Arg.Any<Character>(), Arg.Any<Guid>());
+        _controller.CurrentViewModel!.FeedbackMessage.Should().Contain("Prerequisites not met");
     }
 
     [Fact]
-    public async Task HandleInputAsync_Spacebar_InSpecListMode_CallsUnlockSpecialization()
+    public async Task HandleInputAsync_Enter_OnUnlockedNode_DoesNotCallUnlockNodeAsync()
     {
         // Arrange
-        var specId = Guid.NewGuid();
-        var specIds = new List<Guid> { specId };
-        var nodeIds = new List<Guid>();
+        var character = CreateTestCharacter();
+        var specId = character.UnlockedSpecializationIds[0];
+        var nodes = new List<NodeViewModel>
+        {
+            new(Guid.NewGuid(), Guid.NewGuid(), "Node1", "Desc", 1, 1,
+                NodeStatus.Unlocked, 0, 0, false, new List<Guid>())
+        };
+        var vm = new SpecializationGridViewModel
+        {
+            SpecializationId = specId,
+            SpecializationName = "Test",
+            ProgressionPoints = 10,
+            CharacterName = "TestChar",
+            NodesByTier = new Dictionary<int, IReadOnlyList<NodeViewModel>> { { 1, nodes } },
+            AllNodes = nodes,
+            SelectedNodeIndex = 0,
+            CurrentSpecIndex = 0,
+            TotalSpecCount = 1
+        };
 
-        _mockSpecService
-            .Setup(s => s.UnlockSpecializationAsync(_testCharacter, specId))
-            .ReturnsAsync(SpecializationUnlockResult.Ok("Specialization unlocked", specId, "Iron Warden", 10));
-
-        // Act
-        await _controller.HandleInputAsync(ConsoleKey.Spacebar, _testCharacter, specIds, nodeIds);
-
-        // Assert
-        _mockSpecService.Verify(s => s.UnlockSpecializationAsync(_testCharacter, specId), Times.Once);
-    }
-
-    #endregion
-
-    #region Unlock Tests - Node
-
-    [Fact]
-    public async Task HandleInputAsync_Enter_InTreeDetailMode_CallsUnlockNode()
-    {
-        // Arrange
-        _controller.UpdateCounts(1, 3);
-        var specId = Guid.NewGuid();
-        var nodeId = Guid.NewGuid();
-        var specIds = new List<Guid> { specId };
-        var nodeIds = new List<Guid> { nodeId, Guid.NewGuid(), Guid.NewGuid() };
-
-        // Switch to tree detail mode
-        await _controller.HandleInputAsync(ConsoleKey.RightArrow, _testCharacter, specIds, nodeIds);
-
-        var abilityId = Guid.NewGuid();
-        _mockSpecService
-            .Setup(s => s.UnlockNodeAsync(_testCharacter, nodeId))
-            .ReturnsAsync(NodeUnlockResult.Ok("Node unlocked", nodeId, "Shield Bash", abilityId, 1, 2));
+        _vmBuilder.BuildAsync(character, specId).Returns(Task.FromResult(vm));
+        await _controller.InitializeAsync(character, specId);
 
         // Act
-        await _controller.HandleInputAsync(ConsoleKey.Enter, _testCharacter, specIds, nodeIds);
+        await _controller.HandleInputAsync(ConsoleKey.Enter);
 
         // Assert
-        _mockSpecService.Verify(s => s.UnlockNodeAsync(_testCharacter, nodeId), Times.Once);
+        await _specService.DidNotReceive().UnlockNodeAsync(Arg.Any<Character>(), Arg.Any<Guid>());
+        _controller.CurrentViewModel!.FeedbackMessage.Should().Contain("already inscribed");
     }
 
     [Fact]
-    public async Task HandleInputAsync_Enter_SuccessfulNodeUnlock_SetsStatusMessage()
+    public async Task HandleInputAsync_Enter_OnAffordableNode_ShowsInsufficientPP()
     {
         // Arrange
-        _controller.UpdateCounts(1, 3);
-        var specId = Guid.NewGuid();
-        var nodeId = Guid.NewGuid();
-        var abilityId = Guid.NewGuid();
-        var specIds = new List<Guid> { specId };
-        var nodeIds = new List<Guid> { nodeId, Guid.NewGuid(), Guid.NewGuid() };
+        var character = CreateTestCharacter();
+        var specId = character.UnlockedSpecializationIds[0];
+        var nodes = new List<NodeViewModel>
+        {
+            new(Guid.NewGuid(), Guid.NewGuid(), "Node1", "Desc", 1, 5,
+                NodeStatus.Affordable, 0, 0, false, new List<Guid>())
+        };
+        var vm = new SpecializationGridViewModel
+        {
+            SpecializationId = specId,
+            SpecializationName = "Test",
+            ProgressionPoints = 2,
+            CharacterName = "TestChar",
+            NodesByTier = new Dictionary<int, IReadOnlyList<NodeViewModel>> { { 1, nodes } },
+            AllNodes = nodes,
+            SelectedNodeIndex = 0,
+            CurrentSpecIndex = 0,
+            TotalSpecCount = 1
+        };
 
-        await _controller.HandleInputAsync(ConsoleKey.RightArrow, _testCharacter, specIds, nodeIds);
-
-        _mockSpecService
-            .Setup(s => s.UnlockNodeAsync(_testCharacter, nodeId))
-            .ReturnsAsync(NodeUnlockResult.Ok("Node unlocked", nodeId, "Shield Bash", abilityId, 2, 2));
-
-        // Act
-        await _controller.HandleInputAsync(ConsoleKey.Enter, _testCharacter, specIds, nodeIds);
-
-        // Assert
-        _controller.LastStatusMessage.Should().Contain("Unlocked Shield Bash");
-        _controller.LastStatusMessage.Should().Contain("-2 PP");
-    }
-
-    [Fact]
-    public async Task HandleInputAsync_Enter_FailedNodeUnlock_SetsErrorMessage()
-    {
-        // Arrange
-        _controller.UpdateCounts(1, 3);
-        var specId = Guid.NewGuid();
-        var nodeId = Guid.NewGuid();
-        var specIds = new List<Guid> { specId };
-        var nodeIds = new List<Guid> { nodeId, Guid.NewGuid(), Guid.NewGuid() };
-
-        await _controller.HandleInputAsync(ConsoleKey.RightArrow, _testCharacter, specIds, nodeIds);
-
-        _mockSpecService
-            .Setup(s => s.UnlockNodeAsync(_testCharacter, nodeId))
-            .ReturnsAsync(NodeUnlockResult.Failure("Prerequisites not met"));
+        _vmBuilder.BuildAsync(character, specId).Returns(Task.FromResult(vm));
+        await _controller.InitializeAsync(character, specId);
 
         // Act
-        await _controller.HandleInputAsync(ConsoleKey.Enter, _testCharacter, specIds, nodeIds);
+        await _controller.HandleInputAsync(ConsoleKey.Enter);
 
         // Assert
-        _controller.LastStatusMessage.Should().Be("Prerequisites not met");
+        await _specService.DidNotReceive().UnlockNodeAsync(Arg.Any<Character>(), Arg.Any<Guid>());
+        _controller.CurrentViewModel!.FeedbackMessage.Should().Contain("Insufficient PP");
     }
 
     #endregion
@@ -455,103 +408,28 @@ public class SpecializationControllerTests
     #region Reset Tests
 
     [Fact]
-    public void Reset_ResetsAllStateToDefaults()
+    public void Reset_ClearsCurrentViewModel()
     {
-        // Arrange - modify state
-        _controller.UpdateCounts(5, 10);
-
         // Act
         _controller.Reset();
 
         // Assert
-        _controller.ViewMode.Should().Be(SpecializationViewMode.SpecList);
-        _controller.SelectedSpecIndex.Should().Be(0);
-        _controller.SelectedNodeIndex.Should().Be(0);
-        _controller.LastStatusMessage.Should().BeNull();
+        _controller.CurrentViewModel.Should().BeNull();
+        _controller.IsInitialized.Should().BeFalse();
     }
 
     #endregion
 
-    #region UpdateCounts Tests
+    #region Not Initialized Tests
 
     [Fact]
-    public void UpdateCounts_SetsSpecAndNodeCounts()
+    public async Task HandleInputAsync_WhenNotInitialized_ReturnsExploration()
     {
-        // Arrange & Act
-        _controller.UpdateCounts(5, 12);
-
-        // Assert - verified by navigation bounds
-        // Navigate down 10 times in spec list - should stop at index 4 (5 specs, indices 0-4)
-        _controller.ViewMode.Should().Be(SpecializationViewMode.SpecList);
-    }
-
-    #endregion
-
-    #region Return Value Tests
-
-    [Fact]
-    public async Task HandleInputAsync_Navigation_ReturnsSpecializationMenuPhase()
-    {
-        // Arrange
-        var specIds = new List<Guid> { Guid.NewGuid() };
-
-        // Act & Assert
-        var result = await _controller.HandleInputAsync(ConsoleKey.UpArrow, _testCharacter, specIds, new List<Guid>());
-        result.Should().Be(GamePhase.SpecializationMenu);
-
-        result = await _controller.HandleInputAsync(ConsoleKey.DownArrow, _testCharacter, specIds, new List<Guid>());
-        result.Should().Be(GamePhase.SpecializationMenu);
-
-        result = await _controller.HandleInputAsync(ConsoleKey.LeftArrow, _testCharacter, specIds, new List<Guid>());
-        result.Should().Be(GamePhase.SpecializationMenu);
-
-        result = await _controller.HandleInputAsync(ConsoleKey.RightArrow, _testCharacter, specIds, new List<Guid>());
-        result.Should().Be(GamePhase.SpecializationMenu);
-    }
-
-    [Fact]
-    public async Task HandleInputAsync_UnknownKey_ReturnsSpecializationMenuPhase()
-    {
-        // Arrange
-        var specIds = new List<Guid> { Guid.NewGuid() };
-
         // Act
-        var result = await _controller.HandleInputAsync(ConsoleKey.F1, _testCharacter, specIds, new List<Guid>());
+        var result = await _controller.HandleInputAsync(ConsoleKey.Enter);
 
         // Assert
-        result.Should().Be(GamePhase.SpecializationMenu);
-    }
-
-    #endregion
-
-    #region Status Message Clearing Tests
-
-    [Fact]
-    public async Task HandleInputAsync_ClearsStatusMessageOnNewInput()
-    {
-        // Arrange
-        var specId = Guid.NewGuid();
-        var specIds = new List<Guid> { specId };
-        var nodeIds = new List<Guid>();
-
-        _mockSpecService
-            .Setup(s => s.UnlockSpecializationAsync(_testCharacter, specId))
-            .ReturnsAsync(SpecializationUnlockResult.Ok("Specialization unlocked", specId, "Iron Warden", 10));
-
-        // Set a status message
-        await _controller.HandleInputAsync(ConsoleKey.Enter, _testCharacter, specIds, nodeIds);
-        _controller.LastStatusMessage.Should().NotBeNull();
-
-        _mockSpecService.Reset();
-        _mockSpecService
-            .Setup(s => s.UnlockSpecializationAsync(It.IsAny<Character>(), It.IsAny<Guid>()))
-            .ReturnsAsync(SpecializationUnlockResult.Failure("Already unlocked"));
-
-        // Act - navigate (doesn't trigger unlock)
-        await _controller.HandleInputAsync(ConsoleKey.UpArrow, _testCharacter, specIds, nodeIds);
-
-        // Assert - status message should be cleared
-        _controller.LastStatusMessage.Should().BeNull();
+        result.Should().Be(GamePhase.Exploration);
     }
 
     #endregion

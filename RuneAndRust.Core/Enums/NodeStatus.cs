@@ -1,28 +1,28 @@
 namespace RuneAndRust.Core.Enums;
 
 /// <summary>
-/// Display status for a specialization node.
+/// Visual status of a specialization node in the UI.
 /// </summary>
-/// <remarks>See: v0.4.1c (The Tree of Runes) for implementation.</remarks>
+/// <remarks>See: v0.4.1d (The Grid) for Specialization UI implementation.</remarks>
 public enum NodeStatus
 {
     /// <summary>
-    /// Prerequisites not met - cannot unlock.
+    /// Node is locked - prerequisites not met.
     /// </summary>
-    Locked,
+    Locked = 0,
 
     /// <summary>
-    /// Prerequisites met but insufficient PP.
+    /// Node is available for purchase - has PP and prerequisites met.
     /// </summary>
-    InsufficientPP,
+    Available = 1,
 
     /// <summary>
-    /// Can be unlocked now (prerequisites met, PP available).
+    /// Node is unlocked - already purchased.
     /// </summary>
-    Available,
+    Unlocked = 2,
 
     /// <summary>
-    /// Already unlocked by character.
+    /// Node is affordable but insufficient PP (prerequisites met).
     /// </summary>
-    Unlocked
+    Affordable = 3
 }

@@ -38,18 +38,12 @@ public class GameService : IGameService
     private readonly IProgressionService? _progressionService;
     private readonly IInputService? _inputService;
 
-    // Specialization UI (v0.4.1c)
-    private readonly ISpecializationScreenRenderer? _specRenderer;
-    private readonly ISpecializationService? _specService;
+    // Specialization UI (v0.4.1d)
+    private readonly ISpecializationGridRenderer? _specGridRenderer;
+    private readonly ISpecializationController? _specController;
 
     private GamePhase _previousPhase = GamePhase.MainMenu;
     private bool _renderRequired = true;
-
-    // Specialization UI state (v0.4.1c)
-    private SpecializationViewMode _specViewMode = SpecializationViewMode.SpecList;
-    private int _specSelectedIndex;
-    private int _specNodeSelectedIndex;
-    private string? _specStatusMessage;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="GameService"/> class.
@@ -69,8 +63,8 @@ public class GameService : IGameService
     /// <param name="sagaService">The Saga service for Legend progression (v0.4.0c, optional for testing).</param>
     /// <param name="progressionService">The progression service for attribute upgrades (v0.4.0c, optional for testing).</param>
     /// <param name="inputService">The input service for key-based modal UIs (v0.4.0c, optional for testing).</param>
-    /// <param name="specRenderer">The specialization screen renderer for Tree of Runes UI (v0.4.1c, optional for testing).</param>
-    /// <param name="specService">The specialization service for unlocks (v0.4.1c, optional for testing).</param>
+    /// <param name="specGridRenderer">The specialization grid renderer for Tree of Runes UI (v0.4.1d, optional for testing).</param>
+    /// <param name="specController">The specialization controller for grid navigation (v0.4.1d, optional for testing).</param>
     public GameService(
         ILogger<GameService> logger,
         IInputHandler inputHandler,
@@ -87,8 +81,8 @@ public class GameService : IGameService
         ISagaService? sagaService = null,
         IProgressionService? progressionService = null,
         IInputService? inputService = null,
-        ISpecializationScreenRenderer? specRenderer = null,
-        ISpecializationService? specService = null)
+        ISpecializationGridRenderer? specGridRenderer = null,
+        ISpecializationController? specController = null)
     {
         _logger = logger;
         _inputHandler = inputHandler;
@@ -105,8 +99,8 @@ public class GameService : IGameService
         _sagaService = sagaService;
         _progressionService = progressionService;
         _inputService = inputService;
-        _specRenderer = specRenderer;
-        _specService = specService;
+        _specGridRenderer = specGridRenderer;
+        _specController = specController;
 
         // v0.3.23b: Subscribe to VFX invalidation events
         if (_vfxService != null)
@@ -167,9 +161,19 @@ public class GameService : IGameService
                     _state.Phase = HandleSagaInput(key);
                     _renderRequired = true;
                 }
-                else if (_state.Phase == GamePhase.SpecializationMenu && _inputService != null)
+                else if (_state.Phase == GamePhase.SpecializationMenu && _inputService != null && _specController != null)
                 {
-                    // SpecializationMenu uses key-based modal input (v0.4.1c)
+                    // SpecializationMenu uses key-based modal input (v0.4.1d)
+                    // Initialize controller if not already done
+                    if (!_specController.IsInitialized && _state.CurrentCharacter != null)
+                    {
+                        var specId = _state.CurrentCharacter.UnlockedSpecializationIds.FirstOrDefault();
+                        if (specId != Guid.Empty)
+                        {
+                            await _specController.InitializeAsync(_state.CurrentCharacter, specId);
+                        }
+                    }
+
                     var inputEvent = _inputService.ReadNextFiltered();
                     var key = inputEvent switch
                     {
@@ -178,7 +182,7 @@ public class GameService : IGameService
                         _ => ConsoleKey.NoName
                     };
 
-                    _state.Phase = await HandleSpecializationInputAsync(key);
+                    _state.Phase = await _specController.HandleInputAsync(key);
                     _renderRequired = true;
                 }
                 else
@@ -254,12 +258,13 @@ public class GameService : IGameService
                 _sagaRenderer.Render(viewModel);
             }
         }
-        else if (_state.Phase == GamePhase.SpecializationMenu && _specRenderer != null)
+        else if (_state.Phase == GamePhase.SpecializationMenu && _specGridRenderer != null && _specController != null)
         {
-            var viewModel = await BuildSpecializationViewModelAsync();
+            // v0.4.1d: Render using controller's ViewModel
+            var viewModel = _specController.CurrentViewModel;
             if (viewModel != null)
             {
-                _specRenderer.Render(viewModel);
+                _specGridRenderer.Render(viewModel);
             }
         }
     }
@@ -546,287 +551,5 @@ public class GameService : IGameService
         }
 
         return GamePhase.SagaMenu; // Stay in menu
-    }
-
-    /// <summary>
-    /// Builds the specialization view model from current game state (v0.4.1c).
-    /// Creates specialization list and node tree for the selected specialization.
-    /// </summary>
-    private async Task<SpecializationViewModel?> BuildSpecializationViewModelAsync()
-    {
-        if (_state.CurrentCharacter == null || _specService == null)
-        {
-            _logger.LogWarning("[SpecUI] Cannot build ViewModel: No character or service");
-            return null;
-        }
-
-        var character = _state.CurrentCharacter;
-
-        // Get available specializations for this character's archetype
-        var specs = (await _specService.GetAvailableSpecializationsAsync(character)).ToList();
-        var specList = new List<SpecializationListItem>();
-
-        foreach (var spec in specs)
-        {
-            var isUnlocked = character.UnlockedSpecializationIds.Contains(spec.Id);
-            var canUnlock = !isUnlocked && await _specService.CanUnlockSpecializationAsync(character, spec.Id);
-            var unlockedNodes = spec.Nodes.Count(n => character.HasNode(n.Id));
-
-            specList.Add(new SpecializationListItem(
-                spec.Id,
-                spec.Name,
-                spec.Description,
-                isUnlocked,
-                canUnlock,
-                _specService.GetSpecializationUnlockCost(),
-                unlockedNodes,
-                spec.Nodes.Count));
-        }
-
-        // Build tree view for selected spec
-        SpecializationTreeView? treeView = null;
-
-        if (_specSelectedIndex < specs.Count)
-        {
-            var selectedSpec = specs[_specSelectedIndex];
-            var nodes = (await _specService.GetNodesWithStatusAsync(character, selectedSpec.Id)).ToList();
-            var nodeItems = new List<NodeDisplayItem>();
-
-            foreach (var node in nodes)
-            {
-                var status = await DetermineNodeStatusAsync(node, character);
-                nodeItems.Add(new NodeDisplayItem(
-                    node.Id,
-                    node.GetDisplayName(),
-                    node.Ability?.Name ?? "Unknown",
-                    node.Ability?.Description ?? "",
-                    node.Tier,
-                    node.CostPP,
-                    status,
-                    node.PositionX,
-                    node.PositionY,
-                    node.IsCapstone,
-                    node.ParentNodeIds.ToList()));
-            }
-
-            treeView = new SpecializationTreeView(selectedSpec.Id, selectedSpec.Name, nodeItems);
-        }
-
-        _logger.LogDebug(
-            "[SpecUI] Building ViewModel: {SpecCount} specs, SelectedSpec={SelectedSpec}, SelectedNode={SelectedNode}, ViewMode={ViewMode}",
-            specList.Count, _specSelectedIndex, _specNodeSelectedIndex, _specViewMode);
-
-        return new SpecializationViewModel(
-            character.Name,
-            character.ProgressionPoints,
-            _specViewMode,
-            specList,
-            _specSelectedIndex,
-            treeView,
-            _specNodeSelectedIndex,
-            _specStatusMessage);
-    }
-
-    /// <summary>
-    /// Determines the display status of a specialization node (v0.4.1c).
-    /// </summary>
-    private async Task<NodeStatus> DetermineNodeStatusAsync(SpecializationNode node, RuneAndRust.Core.Entities.Character character)
-    {
-        if (character.HasNode(node.Id))
-            return NodeStatus.Unlocked;
-
-        var (prereqsMet, _) = await _specService!.ValidatePrerequisitesAsync(character, node);
-        if (!prereqsMet)
-            return NodeStatus.Locked;
-
-        if (character.ProgressionPoints < node.CostPP)
-            return NodeStatus.InsufficientPP;
-
-        return NodeStatus.Available;
-    }
-
-    /// <summary>
-    /// Handles input while in the SpecializationMenu phase (v0.4.1c).
-    /// Processes navigation and unlock commands, returns new phase.
-    /// </summary>
-    /// <param name="key">The key that was pressed.</param>
-    /// <returns>The game phase to transition to.</returns>
-    private async Task<GamePhase> HandleSpecializationInputAsync(ConsoleKey key)
-    {
-        if (_state.CurrentCharacter == null || _specService == null)
-        {
-            return GamePhase.Exploration;
-        }
-
-        _specStatusMessage = null;
-
-        // Get current data for bounds checking
-        var specs = (await _specService.GetAvailableSpecializationsAsync(_state.CurrentCharacter)).ToList();
-        var specCount = specs.Count;
-        var nodeCount = 0;
-        List<Guid> nodeIds = new();
-
-        if (_specSelectedIndex < specs.Count)
-        {
-            var selectedSpec = specs[_specSelectedIndex];
-            var nodes = (await _specService.GetNodesWithStatusAsync(_state.CurrentCharacter, selectedSpec.Id)).ToList();
-            nodeCount = nodes.Count;
-            nodeIds = nodes.Select(n => n.Id).ToList();
-        }
-
-        _logger.LogTrace("[SpecUI] HandleInput: Key={Key}, ViewMode={Mode}, SpecIdx={SpecIdx}, NodeIdx={NodeIdx}",
-            key, _specViewMode, _specSelectedIndex, _specNodeSelectedIndex);
-
-        switch (key)
-        {
-            case ConsoleKey.Escape:
-            case ConsoleKey.Q:
-                _logger.LogDebug("[SpecUI] Exit requested");
-                ResetSpecializationState();
-                return GamePhase.Exploration;
-
-            case ConsoleKey.UpArrow:
-            case ConsoleKey.W:
-                NavigateSpecUp(specCount, nodeCount);
-                break;
-
-            case ConsoleKey.DownArrow:
-            case ConsoleKey.S:
-                NavigateSpecDown(specCount, nodeCount);
-                break;
-
-            case ConsoleKey.LeftArrow:
-            case ConsoleKey.A:
-                _specViewMode = SpecializationViewMode.SpecList;
-                _logger.LogDebug("[SpecUI] Switched to SpecList view");
-                break;
-
-            case ConsoleKey.RightArrow:
-            case ConsoleKey.D:
-                _specViewMode = SpecializationViewMode.TreeDetail;
-                _logger.LogDebug("[SpecUI] Switched to TreeDetail view");
-                break;
-
-            case ConsoleKey.Enter:
-            case ConsoleKey.Spacebar:
-                await HandleSpecUnlockAsync(specs, nodeIds);
-                break;
-        }
-
-        return GamePhase.SpecializationMenu;
-    }
-
-    /// <summary>
-    /// Navigates up in the specialization or node list (v0.4.1c).
-    /// </summary>
-    private void NavigateSpecUp(int specCount, int nodeCount)
-    {
-        if (_specViewMode == SpecializationViewMode.SpecList)
-        {
-            if (_specSelectedIndex > 0)
-            {
-                _specSelectedIndex--;
-                _specNodeSelectedIndex = 0; // Reset node selection
-                _logger.LogDebug("[SpecUI] SpecList navigate up: Index={Idx}", _specSelectedIndex);
-            }
-        }
-        else
-        {
-            if (_specNodeSelectedIndex > 0)
-            {
-                _specNodeSelectedIndex--;
-                _logger.LogDebug("[SpecUI] TreeDetail navigate up: Index={Idx}", _specNodeSelectedIndex);
-            }
-        }
-    }
-
-    /// <summary>
-    /// Navigates down in the specialization or node list (v0.4.1c).
-    /// </summary>
-    private void NavigateSpecDown(int specCount, int nodeCount)
-    {
-        if (_specViewMode == SpecializationViewMode.SpecList)
-        {
-            if (_specSelectedIndex < specCount - 1)
-            {
-                _specSelectedIndex++;
-                _specNodeSelectedIndex = 0;
-                _logger.LogDebug("[SpecUI] SpecList navigate down: Index={Idx}", _specSelectedIndex);
-            }
-        }
-        else
-        {
-            if (_specNodeSelectedIndex < nodeCount - 1)
-            {
-                _specNodeSelectedIndex++;
-                _logger.LogDebug("[SpecUI] TreeDetail navigate down: Index={Idx}", _specNodeSelectedIndex);
-            }
-        }
-    }
-
-    /// <summary>
-    /// Handles unlock action for specialization or node (v0.4.1c).
-    /// </summary>
-    private async Task HandleSpecUnlockAsync(List<Specialization> specs, List<Guid> nodeIds)
-    {
-        var character = _state.CurrentCharacter!;
-
-        if (_specViewMode == SpecializationViewMode.SpecList)
-        {
-            // Unlock specialization
-            if (_specSelectedIndex < specs.Count)
-            {
-                var specId = specs[_specSelectedIndex].Id;
-                _logger.LogDebug("[SpecUI] Attempting to unlock specialization: {SpecId}", specId);
-
-                var result = await _specService!.UnlockSpecializationAsync(character, specId);
-
-                if (result.Success)
-                {
-                    _specStatusMessage = $"Unlocked {result.SpecializationName}! (-{result.PpSpent} PP)";
-                    _logger.LogInformation("[SpecUI] Specialization unlocked: {Name}", result.SpecializationName);
-                }
-                else
-                {
-                    _specStatusMessage = result.Message;
-                    _logger.LogWarning("[SpecUI] Unlock failed: {Reason}", result.Message);
-                }
-            }
-        }
-        else
-        {
-            // Unlock node
-            if (_specNodeSelectedIndex < nodeIds.Count)
-            {
-                var nodeId = nodeIds[_specNodeSelectedIndex];
-                _logger.LogDebug("[SpecUI] Attempting to unlock node: {NodeId}", nodeId);
-
-                var result = await _specService!.UnlockNodeAsync(character, nodeId);
-
-                if (result.Success)
-                {
-                    _specStatusMessage = $"Unlocked {result.NodeName}! (-{result.PpSpent} PP)";
-                    _logger.LogInformation("[SpecUI] Node unlocked: {Name} (Tier {Tier})",
-                        result.NodeName, result.Tier);
-                }
-                else
-                {
-                    _specStatusMessage = result.Message;
-                    _logger.LogWarning("[SpecUI] Node unlock failed: {Reason}", result.Message);
-                }
-            }
-        }
-    }
-
-    /// <summary>
-    /// Resets specialization UI state when exiting (v0.4.1c).
-    /// </summary>
-    private void ResetSpecializationState()
-    {
-        _specViewMode = SpecializationViewMode.SpecList;
-        _specSelectedIndex = 0;
-        _specNodeSelectedIndex = 0;
-        _specStatusMessage = null;
-        _logger.LogDebug("[SpecUI] State reset");
     }
 }
