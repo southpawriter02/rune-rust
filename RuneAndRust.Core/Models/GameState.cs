@@ -102,6 +102,14 @@ public class GameState
     public bool IsGodMode { get; set; } = false;
 
     /// <summary>
+    /// Gets or sets the current dialogue session (v0.4.2c).
+    /// Null when not in dialogue.
+    /// Not serialized to save files.
+    /// </summary>
+    [JsonIgnore]
+    public DialogueSession? CurrentDialogueSession { get; set; }
+
+    /// <summary>
     /// Resets the game state to initial values for a new session.
     /// </summary>
     public void Reset()
@@ -118,5 +126,6 @@ public class GameState
         CombatState = null;
         PendingEncounter = null;
         IsGodMode = false;
+        CurrentDialogueSession = null;
     }
 }

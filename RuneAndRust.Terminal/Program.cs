@@ -119,6 +119,8 @@ class Program
                     services.AddScoped<ISpecializationService, SpecializationService>();
                     services.AddScoped<IFactionService, FactionService>();
                     services.AddScoped<IDialogueConditionEvaluator, DialogueConditionEvaluator>();
+                    services.AddScoped<IDialogueEffectExecutor, DialogueEffectExecutor>();
+                    services.AddScoped<IDialogueService, DialogueService>();
                     services.AddScoped<SaveManager>();
 
                     // Register Spatial Services
