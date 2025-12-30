@@ -3,6 +3,7 @@ using RuneAndRust.Core.Entities;
 using RuneAndRust.Core.Events;
 using RuneAndRust.Core.Interfaces;
 using RuneAndRust.Core.Models;
+using Character = RuneAndRust.Core.Entities.Character;
 
 namespace RuneAndRust.Engine.Services;
 

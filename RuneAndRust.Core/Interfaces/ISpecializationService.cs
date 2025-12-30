@@ -21,7 +21,7 @@ public interface ISpecializationService
     /// <param name="character">The character attempting to unlock.</param>
     /// <param name="specId">The specialization ID to unlock.</param>
     /// <returns>Result indicating success/failure with details.</returns>
-    Task<SpecializationUnlockResult> UnlockSpecializationAsync(Character character, Guid specId);
+    Task<SpecializationUnlockResult> UnlockSpecializationAsync(Entities.Character character, Guid specId);
 
     /// <summary>
     /// Checks if a character can unlock a specific specialization.
@@ -30,7 +30,7 @@ public interface ISpecializationService
     /// <param name="character">The character to check.</param>
     /// <param name="specId">The specialization ID to check.</param>
     /// <returns>True if all requirements are met; otherwise false.</returns>
-    Task<bool> CanUnlockSpecializationAsync(Character character, Guid specId);
+    Task<bool> CanUnlockSpecializationAsync(Entities.Character character, Guid specId);
 
     /// <summary>
     /// Gets the PP cost to unlock a specialization (constant: 10).
@@ -49,7 +49,7 @@ public interface ISpecializationService
     /// <param name="character">The character attempting to unlock.</param>
     /// <param name="nodeId">The node ID to unlock.</param>
     /// <returns>Result indicating success/failure with details.</returns>
-    Task<NodeUnlockResult> UnlockNodeAsync(Character character, Guid nodeId);
+    Task<NodeUnlockResult> UnlockNodeAsync(Entities.Character character, Guid nodeId);
 
     /// <summary>
     /// Checks if a character can unlock a specific node.
@@ -58,7 +58,7 @@ public interface ISpecializationService
     /// <param name="character">The character to check.</param>
     /// <param name="nodeId">The node ID to check.</param>
     /// <returns>True if all requirements are met; otherwise false.</returns>
-    Task<bool> CanUnlockNodeAsync(Character character, Guid nodeId);
+    Task<bool> CanUnlockNodeAsync(Entities.Character character, Guid nodeId);
 
     /// <summary>
     /// Validates prerequisites for unlocking a node.
@@ -68,7 +68,7 @@ public interface ISpecializationService
     /// <param name="node">The node to validate prerequisites for.</param>
     /// <returns>Tuple of (IsValid, FailureReason if invalid).</returns>
     Task<(bool IsValid, string? FailureReason)> ValidatePrerequisitesAsync(
-        Character character, SpecializationNode node);
+        Entities.Character character, SpecializationNode node);
 
     // ═══════════════════════════════════════════════════════════════════════
     // Query Operations
@@ -79,7 +79,7 @@ public interface ISpecializationService
     /// </summary>
     /// <param name="character">The character to get specializations for.</param>
     /// <returns>All specializations matching the character's archetype.</returns>
-    Task<IEnumerable<Specialization>> GetAvailableSpecializationsAsync(Character character);
+    Task<IEnumerable<Specialization>> GetAvailableSpecializationsAsync(Entities.Character character);
 
     /// <summary>
     /// Gets all nodes for a specialization with unlock status.
@@ -87,5 +87,5 @@ public interface ISpecializationService
     /// <param name="character">The character to check unlock status against.</param>
     /// <param name="specId">The specialization ID to get nodes for.</param>
     /// <returns>All nodes in the specialization tree.</returns>
-    Task<IEnumerable<SpecializationNode>> GetNodesWithStatusAsync(Character character, Guid specId);
+    Task<IEnumerable<SpecializationNode>> GetNodesWithStatusAsync(Entities.Character character, Guid specId);
 }

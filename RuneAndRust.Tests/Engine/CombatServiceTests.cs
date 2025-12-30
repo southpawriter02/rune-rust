@@ -1375,17 +1375,32 @@ public class CombatServiceTests
     }
 
     [Fact]
-    public void NextTurn_RegeneratesStamina_ForAllCombatants()
+    public void NextTurn_RegeneratesStamina_ForActiveCombatant()
     {
-        // Arrange
+        // Arrange - Player is first (TurnIndex=0), so NextTurn advances to enemy (TurnIndex=1)
+        SetupActiveCombatWithPlayerAndEnemy(playerFirst: true);
+        var enemy = _gameState.CombatState!.TurnOrder.First(c => !c.IsPlayer);
+
+        // Act - Advance from player's turn to enemy's turn
+        _sut.NextTurn();
+
+        // Assert - Only the newly active combatant (enemy) should have regeneration called
+        _mockResourceService.Verify(r => r.RegenerateStamina(enemy), Times.Once);
+    }
+
+    [Fact]
+    public void NextTurn_FullRound_RegeneratesStamina_ForBothCombatants()
+    {
+        // Arrange - Player is first, so we need two NextTurn calls to regenerate both
         SetupActiveCombatWithPlayerAndEnemy(playerFirst: true);
         var player = _gameState.CombatState!.TurnOrder.First(c => c.IsPlayer);
         var enemy = _gameState.CombatState.TurnOrder.First(c => !c.IsPlayer);
 
-        // Act
-        _sut.NextTurn();
+        // Act - Advance through a full round (player -> enemy -> player)
+        _sut.NextTurn(); // Player -> Enemy (enemy regenerates)
+        _sut.NextTurn(); // Enemy -> Player (player regenerates, new round starts)
 
-        // Assert - Both combatants should have regeneration called
+        // Assert - Both combatants should have had regeneration called once each
         _mockResourceService.Verify(r => r.RegenerateStamina(player), Times.Once);
         _mockResourceService.Verify(r => r.RegenerateStamina(enemy), Times.Once);
     }

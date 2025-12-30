@@ -8,6 +8,7 @@ using RuneAndRust.Core.Interfaces;
 using RuneAndRust.Core.Models;
 using RuneAndRust.Engine.Services;
 using Xunit;
+using Character = RuneAndRust.Core.Entities.Character;
 
 namespace RuneAndRust.Tests.Engine;
 
@@ -1318,8 +1319,8 @@ public class SpecializationServiceTests
     public async Task GetAvailableSpecializationsAsync_ReturnsEmpty_WhenNoMatch()
     {
         // Arrange
-        var character = CreateTestCharacter(archetype: ArchetypeType.Ranger);
-        _mockRepo.Setup(r => r.GetByArchetypeAsync(ArchetypeType.Ranger))
+        var character = CreateTestCharacter(archetype: ArchetypeType.Skirmisher);
+        _mockRepo.Setup(r => r.GetByArchetypeAsync(ArchetypeType.Skirmisher))
             .ReturnsAsync(new List<Specialization>());
 
         // Act

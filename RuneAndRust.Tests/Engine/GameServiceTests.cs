@@ -36,7 +36,7 @@ public class GameServiceTests
     }
 
     [Fact]
-    public void Start_ShouldLogGameLoopInitializedMessage()
+    public void Start_ShouldLogGameLoopStartingMessage()
     {
         // Arrange - Input "quit" immediately to exit the loop
         _mockInputHandler.Setup(x => x.GetInput(It.IsAny<string>())).Returns("quit");
@@ -50,7 +50,7 @@ public class GameServiceTests
             x => x.Log(
                 LogLevel.Information,
                 It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Game Loop Initialized")),
+                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Starting game loop")),
                 null,
                 It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
             Times.Once);
@@ -71,7 +71,7 @@ public class GameServiceTests
             x => x.Log(
                 LogLevel.Information,
                 It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Game Loop Ended")),
+                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Game loop ended")),
                 null,
                 It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
             Times.Once);

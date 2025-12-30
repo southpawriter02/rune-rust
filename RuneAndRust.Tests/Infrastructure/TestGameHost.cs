@@ -7,7 +7,9 @@ using RuneAndRust.Core.Interfaces;
 using RuneAndRust.Core.Models;
 using RuneAndRust.Core.Settings;
 using RuneAndRust.Core.ValueObjects;
+using RuneAndRust.Engine.Algorithms;
 using RuneAndRust.Engine.Factories;
+using RuneAndRust.Engine.Performance;
 using RuneAndRust.Engine.Services;
 using RuneAndRust.Persistence.Data;
 using RuneAndRust.Persistence.Repositories;
@@ -104,6 +106,7 @@ public class TestGameHost : IDisposable
         services.AddScoped<IRoomTemplateRepository, RoomTemplateRepository>();
         services.AddScoped<IBiomeDefinitionRepository, BiomeDefinitionRepository>();
         services.AddScoped<IBiomeElementRepository, BiomeElementRepository>();
+        services.AddScoped<ISpecializationRepository, SpecializationRepository>();
 
         // Register Core State (Singleton)
         services.AddSingleton<GameState>();
@@ -130,11 +133,21 @@ public class TestGameHost : IDisposable
         services.AddSingleton<CommandParser>();
         services.AddSingleton<IGameService, GameService>();
         services.AddSingleton<IStatCalculationService, StatCalculationService>();
+        services.AddScoped<ISagaService, SagaService>();
+        services.AddScoped<IProgressionService, ProgressionService>();
+        services.AddScoped<ISpecializationService, SpecializationService>();
         services.AddScoped<SaveManager>();
 
         // Register Spatial Services
         services.AddScoped<DungeonGenerator>();
         services.AddScoped<INavigationService, NavigationService>();
+
+        // Register Pathfinding Services
+        services.AddSingleton<ISpatialHashGrid, SpatialHashGrid>();
+        services.AddSingleton<IPathfindingService, AStarPathfinder>();
+
+        // Register Event Bus (v0.3.19b)
+        services.AddSingleton<IEventBus, EventBus>();
 
         // Register Interaction Services
         services.AddScoped<IDescriptorEngine, DescriptorEngine>();
