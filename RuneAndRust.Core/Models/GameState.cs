@@ -58,6 +58,27 @@ public class GameState
     public Dictionary<Guid, string> UserNotes { get; set; } = new();
 
     /// <summary>
+    /// Game flags for tracking progress and state (v0.4.2b).
+    /// Used by dialogue conditions and quest tracking.
+    /// </summary>
+    public Dictionary<string, bool> Flags { get; set; } = new();
+
+    /// <summary>
+    /// Gets a game flag value (v0.4.2b).
+    /// Returns false if the flag doesn't exist.
+    /// </summary>
+    /// <param name="key">The flag key to check.</param>
+    /// <returns>The flag value, or false if not set.</returns>
+    public bool GetFlag(string key) => Flags.TryGetValue(key, out var val) && val;
+
+    /// <summary>
+    /// Sets a game flag value (v0.4.2b).
+    /// </summary>
+    /// <param name="key">The flag key to set.</param>
+    /// <param name="value">The value to set.</param>
+    public void SetFlag(string key, bool value) => Flags[key] = value;
+
+    /// <summary>
     /// Gets or sets the current combat state.
     /// Null when not in combat.
     /// </summary>
@@ -93,6 +114,7 @@ public class GameState
         CurrentRoomId = null;
         VisitedRoomIds.Clear();
         UserNotes.Clear();
+        Flags.Clear();
         CombatState = null;
         PendingEncounter = null;
         IsGodMode = false;

@@ -496,6 +496,38 @@ public class InventoryService : IInventoryService
     }
 
     /// <inheritdoc/>
+    public async Task<bool> HasItemAsync(Guid characterId, string itemId, int minQuantity = 1)
+    {
+        const string context = "HasItem";
+        _logger.LogTrace("[{Context}] Checking if character {CharacterId} has item '{ItemId}' with quantity >= {MinQuantity}",
+            context, characterId, itemId, minQuantity);
+
+        // Try to parse itemId as GUID first
+        if (Guid.TryParse(itemId, out var itemGuid))
+        {
+            var entry = await _inventoryRepository.GetByCharacterAndItemAsync(characterId, itemGuid);
+            if (entry != null && entry.Quantity >= minQuantity)
+            {
+                _logger.LogDebug("[{Context}] Found item by GUID: {ItemName} x{Quantity}",
+                    context, entry.Item.Name, entry.Quantity);
+                return true;
+            }
+        }
+
+        // Fall back to name-based search
+        var entryByName = await _inventoryRepository.FindByItemNameAsync(characterId, itemId);
+        if (entryByName != null && entryByName.Quantity >= minQuantity)
+        {
+            _logger.LogDebug("[{Context}] Found item by name: {ItemName} x{Quantity}",
+                context, entryByName.Item.Name, entryByName.Quantity);
+            return true;
+        }
+
+        _logger.LogDebug("[{Context}] Item '{ItemId}' not found or insufficient quantity", context, itemId);
+        return false;
+    }
+
+    /// <inheritdoc/>
     public async Task<InventoryViewModel> GetViewModelAsync(Character character, int selectedIndex = 0)
     {
         _logger.LogTrace("[GetViewModel] Building inventory snapshot for {CharacterName}", character.Name);

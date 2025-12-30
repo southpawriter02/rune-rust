@@ -92,6 +92,9 @@ class Program
                     // Register Faction Repository (v0.4.2a - The Repute)
                     services.AddScoped<IFactionRepository, FactionRepository>();
 
+                    // Register Dialogue Repository (v0.4.2b - The Lexicon)
+                    services.AddScoped<IDialogueRepository, DialogueRepository>();
+
                     // Register Capture Template Repository (v0.3.25b: JSON-based templates)
                     services.AddSingleton<ICaptureTemplateRepository>(sp =>
                     {
@@ -115,6 +118,7 @@ class Program
                     services.AddScoped<IProgressionService, ProgressionService>();
                     services.AddScoped<ISpecializationService, SpecializationService>();
                     services.AddScoped<IFactionService, FactionService>();
+                    services.AddScoped<IDialogueConditionEvaluator, DialogueConditionEvaluator>();
                     services.AddScoped<SaveManager>();
 
                     // Register Spatial Services

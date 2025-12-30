@@ -135,6 +135,21 @@ public class RuneAndRustDbContext : DbContext
     public DbSet<CharacterFactionStanding> CharacterFactionStandings { get; set; } = null!;
 
     /// <summary>
+    /// Gets or sets the DialogueTrees table (dialogue root containers, v0.4.2b).
+    /// </summary>
+    public DbSet<DialogueTree> DialogueTrees { get; set; } = null!;
+
+    /// <summary>
+    /// Gets or sets the DialogueNodes table (dialogue conversation nodes, v0.4.2b).
+    /// </summary>
+    public DbSet<DialogueNode> DialogueNodes { get; set; } = null!;
+
+    /// <summary>
+    /// Gets or sets the DialogueOptions table (player response choices, v0.4.2b).
+    /// </summary>
+    public DbSet<DialogueOption> DialogueOptions { get; set; } = null!;
+
+    /// <summary>
     /// Configures the entity mappings and relationships.
     /// </summary>
     /// <param name="modelBuilder">The model builder instance.</param>
@@ -1158,5 +1173,150 @@ public class RuneAndRustDbContext : DbContext
             // Index for faction-based queries
             entity.HasIndex(s => s.FactionType);
         });
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // Dialogue System (v0.4.2b - The Lexicon)
+        // ═══════════════════════════════════════════════════════════════════════
+
+        // DialogueTree: Root container for NPC conversations
+        modelBuilder.Entity<DialogueTree>(entity =>
+        {
+            entity.ToTable("DialogueTrees");
+
+            entity.HasKey(t => t.Id);
+
+            entity.HasIndex(t => t.TreeId)
+                .IsUnique();
+
+            entity.Property(t => t.TreeId)
+                .HasMaxLength(100)
+                .IsRequired();
+
+            entity.Property(t => t.NpcName)
+                .HasMaxLength(100)
+                .IsRequired();
+
+            entity.Property(t => t.RootNodeId)
+                .HasMaxLength(100)
+                .IsRequired();
+
+            entity.Property(t => t.AssociatedFaction)
+                .HasConversion<int?>();
+
+            entity.Property(t => t.CreatedAt)
+                .IsRequired();
+
+            entity.Property(t => t.LastModified)
+                .IsRequired();
+
+            // One-to-many: DialogueTree -> DialogueNodes
+            entity.HasMany(t => t.Nodes)
+                .WithOne(n => n.Tree)
+                .HasForeignKey(n => n.TreeId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Index for faction-based queries
+            entity.HasIndex(t => t.AssociatedFaction);
+        });
+
+        // DialogueNode: Individual conversation nodes
+        modelBuilder.Entity<DialogueNode>(entity =>
+        {
+            entity.ToTable("DialogueNodes");
+
+            entity.HasKey(n => n.Id);
+
+            entity.Property(n => n.TreeId)
+                .IsRequired();
+
+            entity.Property(n => n.NodeId)
+                .HasMaxLength(100)
+                .IsRequired();
+
+            entity.Property(n => n.SpeakerName)
+                .HasMaxLength(100)
+                .IsRequired();
+
+            entity.Property(n => n.Text)
+                .HasMaxLength(2000)
+                .IsRequired();
+
+            entity.Property(n => n.IsTerminal)
+                .IsRequired();
+
+            // One-to-many: DialogueNode -> DialogueOptions
+            entity.HasMany(n => n.Options)
+                .WithOne(o => o.Node)
+                .HasForeignKey(o => o.NodeId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Composite index for tree + nodeId lookups
+            entity.HasIndex(n => new { n.TreeId, n.NodeId })
+                .IsUnique();
+        });
+
+        // DialogueOption: Player response choices with conditions/effects stored as JSONB
+        modelBuilder.Entity<DialogueOption>(entity =>
+        {
+            entity.ToTable("DialogueOptions");
+
+            entity.HasKey(o => o.Id);
+
+            entity.Property(o => o.NodeId)
+                .IsRequired();
+
+            entity.Property(o => o.Text)
+                .HasMaxLength(500)
+                .IsRequired();
+
+            entity.Property(o => o.NextNodeId)
+                .HasMaxLength(100);
+
+            entity.Property(o => o.DisplayOrder)
+                .IsRequired();
+
+            entity.Property(o => o.VisibilityMode)
+                .HasConversion<int>()
+                .IsRequired();
+
+            // Conditions stored as JSONB with polymorphic serialization
+            entity.Property(o => o.Conditions)
+                .HasColumnType("jsonb")
+                .HasConversion(
+                    v => JsonSerializer.Serialize(v, JsonSerializerOptions),
+                    v => JsonSerializer.Deserialize<List<Core.Conditions.DialogueCondition>>(v, JsonSerializerOptions) ?? new List<Core.Conditions.DialogueCondition>()
+                )
+                .IsRequired();
+
+            // Effects stored as JSONB with polymorphic serialization
+            entity.Property(o => o.Effects)
+                .HasColumnType("jsonb")
+                .HasConversion(
+                    v => JsonSerializer.Serialize(v, JsonSerializerOptions),
+                    v => JsonSerializer.Deserialize<List<Core.Effects.DialogueEffect>>(v, JsonSerializerOptions) ?? new List<Core.Effects.DialogueEffect>()
+                )
+                .IsRequired();
+
+            // Ignore computed properties
+            entity.Ignore(o => o.HasConditions);
+            entity.Ignore(o => o.HasEffects);
+            entity.Ignore(o => o.IsTerminal);
+
+            // Index for ordering options within a node
+            entity.HasIndex(o => new { o.NodeId, o.DisplayOrder });
+        });
     }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // JSON Serializer Options (v0.4.2b - Polymorphic Dialogue Types)
+    // ═══════════════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// JSON serializer options configured for polymorphic dialogue condition/effect types.
+    /// </summary>
+    private static readonly JsonSerializerOptions JsonSerializerOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        WriteIndented = false
+    };
 }

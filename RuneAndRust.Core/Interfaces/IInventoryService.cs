@@ -148,4 +148,14 @@ public interface IInventoryService
     /// <param name="selectedIndex">Currently selected item index for navigation.</param>
     /// <returns>An InventoryViewModel for UI rendering.</returns>
     Task<InventoryViewModel> GetViewModelAsync(Character character, int selectedIndex = 0);
+
+    /// <summary>
+    /// Checks if a character has a specific item in their inventory (v0.4.2b).
+    /// Used by dialogue conditions to gate options on item possession.
+    /// </summary>
+    /// <param name="characterId">The character's ID.</param>
+    /// <param name="itemId">The item ID or name to check for.</param>
+    /// <param name="minQuantity">Minimum quantity required (default: 1).</param>
+    /// <returns>True if the character has the item in sufficient quantity.</returns>
+    Task<bool> HasItemAsync(Guid characterId, string itemId, int minQuantity = 1);
 }
