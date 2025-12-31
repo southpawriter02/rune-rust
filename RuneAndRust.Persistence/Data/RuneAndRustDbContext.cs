@@ -150,6 +150,11 @@ public class RuneAndRustDbContext : DbContext
     public DbSet<DialogueOption> DialogueOptions { get; set; } = null!;
 
     /// <summary>
+    /// Gets or sets the Npcs table (non-player characters, v0.4.2e).
+    /// </summary>
+    public DbSet<Npc> Npcs { get; set; } = null!;
+
+    /// <summary>
     /// Configures the entity mappings and relationships.
     /// </summary>
     /// <param name="modelBuilder">The model builder instance.</param>
@@ -1304,6 +1309,58 @@ public class RuneAndRustDbContext : DbContext
 
             // Index for ordering options within a node
             entity.HasIndex(o => new { o.NodeId, o.DisplayOrder });
+        });
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // NPC System (v0.4.2e - The Archive)
+        // ═══════════════════════════════════════════════════════════════════════
+
+        // Npc: Non-player characters with dialogue and faction associations
+        modelBuilder.Entity<Npc>(entity =>
+        {
+            entity.ToTable("Npcs");
+
+            entity.HasKey(n => n.Id);
+
+            entity.Property(n => n.Name)
+                .HasMaxLength(100)
+                .IsRequired();
+
+            entity.Property(n => n.Title)
+                .HasMaxLength(100);
+
+            entity.Property(n => n.Description)
+                .HasMaxLength(2000)
+                .IsRequired();
+
+            entity.Property(n => n.DialogueTreeId)
+                .HasMaxLength(100);
+
+            entity.Property(n => n.Faction)
+                .HasConversion<int?>();
+
+            entity.Property(n => n.IsHostile)
+                .IsRequired();
+
+            entity.Property(n => n.RoomId);
+
+            entity.Property(n => n.CreatedAt)
+                .IsRequired();
+
+            // Ignore computed properties
+            entity.Ignore(n => n.CanTalk);
+            entity.Ignore(n => n.DisplayName);
+
+            // Relationship to Room (many-to-one, optional)
+            entity.HasOne(n => n.Room)
+                .WithMany(r => r.Npcs)
+                .HasForeignKey(n => n.RoomId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            // Indexes for query optimization
+            entity.HasIndex(n => n.DialogueTreeId);
+            entity.HasIndex(n => n.Faction);
+            entity.HasIndex(n => n.RoomId);
         });
     }
 

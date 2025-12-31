@@ -89,6 +89,11 @@ public class Room
     public List<DynamicHazard> Hazards { get; set; } = new();
 
     /// <summary>
+    /// NPCs present in this room (v0.4.2e).
+    /// </summary>
+    public ICollection<Npc> Npcs { get; set; } = new List<Npc>();
+
+    /// <summary>
     /// The ambient condition affecting this room, if any (v0.3.3b).
     /// Null means no active condition.
     /// </summary>

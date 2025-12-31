@@ -355,6 +355,11 @@ class Program
 
                 // Seed Room Templates and Biome Definitions (v0.4.0)
                 RoomTemplateSeeder.SeedAsync(context, templateLoader, logger).GetAwaiter().GetResult();
+
+                // Seed Factions, Dialogues, and NPCs (v0.4.2e - The Archive)
+                FactionSeeder.SeedAsync(context, logger).GetAwaiter().GetResult();
+                DialogueSeeder.SeedAsync(context, logger).GetAwaiter().GetResult();
+                NpcSeeder.SeedAsync(context, logger).GetAwaiter().GetResult();
             }
 
             // 5. CLI Argument Handling (v0.3.11b - DocGen)

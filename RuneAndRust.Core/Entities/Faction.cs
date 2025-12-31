@@ -31,6 +31,17 @@ public class Faction
     public int DefaultReputation { get; set; } = 0;
 
     /// <summary>
+    /// Icon identifier for UI display (v0.4.2e).
+    /// </summary>
+    public string? IconName { get; set; }
+
+    /// <summary>
+    /// Hex color code for faction theming (v0.4.2e).
+    /// Example: "#8B4513" for Iron-Banes brown.
+    /// </summary>
+    public string? ColorHex { get; set; }
+
+    /// <summary>
     /// When the faction record was seeded/created.
     /// </summary>
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
