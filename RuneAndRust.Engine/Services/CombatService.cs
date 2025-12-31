@@ -6,6 +6,7 @@ using RuneAndRust.Core.Events;
 using RuneAndRust.Core.Interfaces;
 using RuneAndRust.Core.Models;
 using RuneAndRust.Core.Models.Combat;
+using RuneAndRust.Core.Models.Magic;
 using RuneAndRust.Core.ValueObjects;
 using RuneAndRust.Core.ViewModels;
 using CharacterAttribute = RuneAndRust.Core.Enums.Attribute;
@@ -41,6 +42,8 @@ public class CombatService : ICombatService
     private readonly IEventBus _eventBus;
     private readonly ISagaService _sagaService;
     private readonly IAetherService _aetherService;
+    private readonly IMagicService _magicService;
+    private readonly ISpellRepository _spellRepository;
     private readonly ILogger<CombatService> _logger;
 
     /// <summary>
@@ -437,6 +440,8 @@ public class CombatService : ICombatService
     /// <param name="eventBus">The event bus for publishing combat events (v0.3.19b).</param>
     /// <param name="sagaService">The saga service for awarding XP on victory (v0.4.0d).</param>
     /// <param name="aetherService">The aether service for flux management (v0.4.3a).</param>
+    /// <param name="magicService">The magic service for spell casting (v0.4.3c).</param>
+    /// <param name="spellRepository">The spell repository for spell lookup (v0.4.3c).</param>
     /// <param name="logger">The logger for traceability.</param>
     public CombatService(
         GameState gameState,
@@ -459,6 +464,8 @@ public class CombatService : ICombatService
         IEventBus eventBus,
         ISagaService sagaService,
         IAetherService aetherService,
+        IMagicService magicService,
+        ISpellRepository spellRepository,
         ILogger<CombatService> logger)
     {
         _gameState = gameState;
@@ -481,6 +488,8 @@ public class CombatService : ICombatService
         _eventBus = eventBus;
         _sagaService = sagaService;
         _aetherService = aetherService;
+        _magicService = magicService;
+        _spellRepository = spellRepository;
         _logger = logger;
     }
 
@@ -1765,6 +1774,183 @@ public class CombatService : ICombatService
             : "";
 
         return $"[cyan]{user.Name}[/] uses [yellow]{ability.Name}[/] on {targetText}!{effects}";
+    }
+
+    #endregion
+
+    #region Spell Casting System (v0.4.3c)
+
+    /// <summary>
+    /// Executes a player spell cast during combat (v0.4.3c).
+    /// Supports syntax: "cast spell_name [on target]".
+    /// </summary>
+    /// <param name="spellName">The name of the spell to cast.</param>
+    /// <param name="targetName">Optional explicit target name.</param>
+    /// <returns>A formatted result message for display.</returns>
+    public async Task<string> ExecutePlayerSpellAsync(string spellName, string? targetName = null)
+    {
+        _logger.LogDebug(
+            "[Spell] ExecutePlayerSpellAsync called: Spell='{Spell}', Target='{Target}'",
+            spellName, targetName ?? "auto");
+
+        // Validate combat state
+        var combatState = _gameState.CombatState;
+        if (combatState == null)
+        {
+            _logger.LogWarning("[Spell] Cast attempted outside combat");
+            return "[red]You can only cast spells during combat.[/]";
+        }
+
+        // Validate it's the player's turn
+        if (combatState.ActiveCombatant == null || !combatState.ActiveCombatant.IsPlayer)
+        {
+            _logger.LogWarning("[Spell] Cast attempted on enemy's turn");
+            return "[red]It's not your turn.[/]";
+        }
+
+        var caster = combatState.ActiveCombatant;
+
+        // Look up the spell by name
+        var spell = await _spellRepository.GetByNameAsync(spellName);
+        if (spell == null)
+        {
+            _logger.LogDebug("[Spell] Spell '{SpellName}' not found", spellName);
+            return $"[red]Unknown spell: '{spellName}'.[/]";
+        }
+
+        // Resolve target
+        var enemies = combatState.TurnOrder.Where(c => !c.IsPlayer && c.CurrentHp > 0).ToList();
+        var target = ResolveSpellTarget(spell, combatState, enemies, targetName);
+        if (target == null && spell.TargetType != SpellTargetType.Self)
+        {
+            return enemies.Count > 1
+                ? $"[red]Multiple enemies present. Specify target: cast {spellName} on <target>[/]"
+                : "[red]No valid target for this spell.[/]";
+        }
+
+        // Use self as target for self-targeting spells
+        target ??= caster;
+
+        // Cast the spell
+        var result = _magicService.CastSpell(caster, spell, target);
+
+        // Build display message
+        var message = BuildSpellLogMessage(spell, result, target, caster);
+        LogCombatEvent(message);
+
+        // Sync character state
+        if (caster.CharacterSource != null)
+        {
+            caster.CharacterSource.CurrentAp = caster.CurrentAp;
+        }
+
+        _logger.LogInformation(
+            "[Spell] {Caster} cast {Spell}. Success={Success}, Damage={Damage}, Healing={Healing}, Flux={Flux}",
+            caster.Name, spell.Name, result.Success, result.TotalDamage, result.TotalHealing, result.FluxGenerated);
+
+        return result.Message;
+    }
+
+    /// <summary>
+    /// Resolves the target combatant for a spell cast.
+    /// </summary>
+    private Combatant? ResolveSpellTarget(Spell spell, CombatState combatState, List<Combatant> enemies, string? targetName)
+    {
+        // Self-targeting spells always target the caster
+        if (spell.TargetType == SpellTargetType.Self)
+        {
+            return combatState.ActiveCombatant;
+        }
+
+        // If explicit target specified, find it
+        if (!string.IsNullOrWhiteSpace(targetName))
+        {
+            var target = enemies.FirstOrDefault(e =>
+                e.Name.Contains(targetName, StringComparison.OrdinalIgnoreCase));
+
+            if (target != null)
+            {
+                _logger.LogDebug("[Spell] Resolved explicit target: {Target}", target.Name);
+                return target;
+            }
+
+            _logger.LogDebug("[Spell] Explicit target '{Target}' not found", targetName);
+            return null;
+        }
+
+        // Auto-target for single enemy
+        if (enemies.Count == 1 &&
+            (spell.TargetType == SpellTargetType.SingleEnemy || spell.TargetType == SpellTargetType.SingleAny))
+        {
+            _logger.LogDebug("[Spell] Auto-targeting single enemy: {Target}", enemies[0].Name);
+            return enemies[0];
+        }
+
+        // Multiple enemies, need explicit target
+        _logger.LogDebug("[Spell] Multiple enemies ({Count}), no auto-target", enemies.Count);
+        return null;
+    }
+
+    /// <summary>
+    /// Builds a Spectre-markup formatted log message for spell casting.
+    /// </summary>
+    private static string BuildSpellLogMessage(
+        Spell spell,
+        MagicResult result,
+        Combatant target,
+        Combatant caster)
+    {
+        if (!result.Success)
+        {
+            return $"[red]{result.Message}[/]";
+        }
+
+        var targetText = target == caster
+            ? "[cyan]self[/]"
+            : $"[red]{target.Name}[/]";
+
+        var effectText = new List<string>();
+
+        if (result.TotalDamage > 0)
+        {
+            effectText.Add($"[red]{result.TotalDamage}[/] damage");
+        }
+
+        if (result.TotalHealing > 0)
+        {
+            effectText.Add($"[green]{result.TotalHealing}[/] HP healed");
+        }
+
+        if (result.StatusesApplied?.Count > 0)
+        {
+            var statusNames = result.StatusesApplied.Select(s => s.ToString());
+            effectText.Add($"[purple]{string.Join(", ", statusNames)}[/] applied");
+        }
+
+        if (result.FluxGenerated > 0)
+        {
+            effectText.Add($"[magenta]+{result.FluxGenerated} Flux[/]");
+        }
+
+        var effects = effectText.Count > 0
+            ? $" ({string.Join(", ", effectText)})"
+            : "";
+
+        var spellColor = spell.School switch
+        {
+            SpellSchool.Destruction => "red",
+            SpellSchool.Restoration => "green",
+            SpellSchool.Alteration => "yellow",
+            SpellSchool.Divination => "blue",
+            _ => "white"
+        };
+
+        if (result.IsChargeInitiation)
+        {
+            return $"[cyan]{caster.Name}[/] begins channeling [{spellColor}]{spell.Name}[/]...";
+        }
+
+        return $"[cyan]{caster.Name}[/] casts [{spellColor}]{spell.Name}[/] on {targetText}!{effects}";
     }
 
     #endregion

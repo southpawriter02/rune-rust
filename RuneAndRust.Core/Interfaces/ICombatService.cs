@@ -134,4 +134,13 @@ public interface ICombatService
     /// <param name="targetName">Optional target name for multi-enemy scenarios.</param>
     /// <returns>A narrative message describing the ability result.</returns>
     string ExecutePlayerAbility(string abilityName, string? targetName = null);
+
+    /// <summary>
+    /// Executes a player spell cast by name (v0.4.3c).
+    /// Auto-targets if only one valid target exists.
+    /// </summary>
+    /// <param name="spellName">The name of the spell to cast.</param>
+    /// <param name="targetName">Optional target name for multi-enemy scenarios.</param>
+    /// <returns>A narrative message describing the spell result.</returns>
+    Task<string> ExecutePlayerSpellAsync(string spellName, string? targetName = null);
 }

@@ -168,6 +168,9 @@ class Program
                     // Register Aether Service (v0.4.3a - The Aether)
                     services.AddSingleton<IAetherService, AetherService>();
 
+                    // Register Magic Service (v0.4.3c - The Incantation)
+                    services.AddSingleton<IMagicService, MagicService>();
+
                     // Register Character Creation Services
                     services.AddScoped<CharacterFactory>();
                     services.AddScoped<CharacterCreationController>();

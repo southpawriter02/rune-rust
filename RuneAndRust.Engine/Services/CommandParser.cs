@@ -1104,6 +1104,12 @@ public class CommandParser
             return ExecuteAbilityCommand(command.Substring(4).Trim());
         }
 
+        // Check for cast spell commands (v0.4.3c)
+        if (command.StartsWith("cast "))
+        {
+            return ExecuteCastCommandAsync(command.Substring(5).Trim()).GetAwaiter().GetResult();
+        }
+
         // Check for numbered hotkey shortcuts (1, 2, 3)
         if (int.TryParse(command, out var hotkey) && hotkey >= 1 && hotkey <= 9)
         {
@@ -1312,6 +1318,76 @@ public class CommandParser
     }
 
     /// <summary>
+    /// Executes a cast spell command (v0.4.3c).
+    /// Format: "cast spell_name [on target]" or "cast spell_name [at target]".
+    /// </summary>
+    /// <param name="args">The arguments after "cast ".</param>
+    /// <returns>A ParseResult for the command.</returns>
+    private async Task<ParseResult> ExecuteCastCommandAsync(string args)
+    {
+        if (_combatService == null)
+        {
+            _inputHandler.DisplayError("Combat system not available.");
+            return ParseResult.None;
+        }
+
+        if (string.IsNullOrWhiteSpace(args))
+        {
+            _inputHandler.DisplayError("Cast what? Specify a spell name.");
+            return ParseResult.None;
+        }
+
+        // Parse target specifier (cast spell on target or cast spell at target)
+        string? targetName = null;
+        var spellArg = args;
+
+        var onIndex = args.IndexOf(" on ", StringComparison.OrdinalIgnoreCase);
+        if (onIndex >= 0)
+        {
+            spellArg = args.Substring(0, onIndex).Trim();
+            targetName = args.Substring(onIndex + 4).Trim();
+        }
+        else
+        {
+            var atIndex = args.IndexOf(" at ", StringComparison.OrdinalIgnoreCase);
+            if (atIndex >= 0)
+            {
+                spellArg = args.Substring(0, atIndex).Trim();
+                targetName = args.Substring(atIndex + 4).Trim();
+            }
+        }
+
+        _logger.LogDebug("[Cast] Executing spell '{Spell}' on target '{Target}'", spellArg, targetName ?? "auto");
+
+        var result = await _combatService.ExecutePlayerSpellAsync(spellArg, targetName);
+        _inputHandler.DisplayMessage(result);
+
+        // Check if combat ended (victory)
+        if (_gameState.CombatState == null || _combatService.CheckVictoryCondition())
+        {
+            var combatResult = _combatService.EndCombat();
+
+            if (combatResult != null && combatResult.Victory && _victoryRenderer != null)
+            {
+                _victoryRenderer.Render(combatResult);
+            }
+            else
+            {
+                _inputHandler.DisplayMessage("");
+                _inputHandler.DisplayMessage("Combat has ended. Returning to exploration.");
+            }
+
+            return new ParseResult { RequiresLook = true };
+        }
+
+        // Advance to next turn after spell
+        _combatService.NextTurn();
+        DisplayCombatTurnInfo();
+
+        return ParseResult.None;
+    }
+
+    /// <summary>
     /// Displays the current combat status.
     /// </summary>
     private void DisplayCombatStatus()
@@ -1477,6 +1553,10 @@ public class CommandParser
         _inputHandler.DisplayMessage("  use 1, 2, 3...   - Use an ability by hotkey number");
         _inputHandler.DisplayMessage("  1, 2, 3...       - Shortcut for use <number>");
         _inputHandler.DisplayMessage("  use <name> on X  - Use ability targeting a specific enemy");
+        _inputHandler.DisplayMessage("");
+        _inputHandler.DisplayMessage("Spells (Adept/Mystic):");
+        _inputHandler.DisplayMessage("  cast <spell>     - Cast a spell (auto-target if single enemy)");
+        _inputHandler.DisplayMessage("  cast <spell> on X - Cast spell targeting a specific enemy");
         _inputHandler.DisplayMessage("");
         _inputHandler.DisplayMessage("Actions:");
         _inputHandler.DisplayMessage("  status           - View HP/Stamina for all combatants");

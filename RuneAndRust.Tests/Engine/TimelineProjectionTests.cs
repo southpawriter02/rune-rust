@@ -37,6 +37,8 @@ public class TimelineProjectionTests
     private readonly Mock<IEventBus> _mockEventBus;
     private readonly Mock<ISagaService> _mockSagaService;
     private readonly Mock<IAetherService> _mockAetherService;
+    private readonly Mock<IMagicService> _mockMagicService;
+    private readonly Mock<ISpellRepository> _mockSpellRepository;
     private readonly Mock<ILogger<CombatService>> _mockLogger;
     private readonly GameState _gameState;
     private readonly CombatService _sut;
@@ -62,6 +64,8 @@ public class TimelineProjectionTests
         _mockEventBus = new Mock<IEventBus>();
         _mockSagaService = new Mock<ISagaService>();
         _mockAetherService = new Mock<IAetherService>();
+        _mockMagicService = new Mock<IMagicService>();
+        _mockSpellRepository = new Mock<ISpellRepository>();
         _mockLogger = new Mock<ILogger<CombatService>>();
         _gameState = new GameState();
         _sut = new CombatService(
@@ -85,6 +89,8 @@ public class TimelineProjectionTests
             _mockEventBus.Object,
             _mockSagaService.Object,
             _mockAetherService.Object,
+            _mockMagicService.Object,
+            _mockSpellRepository.Object,
             _mockLogger.Object);
 
         // Default setup for initiative service

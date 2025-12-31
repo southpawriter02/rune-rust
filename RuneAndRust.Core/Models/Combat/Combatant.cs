@@ -172,6 +172,13 @@ public class Combatant
     /// </summary>
     public Guid? ChanneledAbilityId { get; set; }
 
+    /// <summary>
+    /// The spell being channeled during Chanting state (v0.4.3c).
+    /// Set when charge begins, cleared on release or interruption.
+    /// Null when not channeling a spell.
+    /// </summary>
+    public Guid? ChanneledSpellId { get; set; }
+
     #endregion
 
     #region Ambient Condition Modifiers (v0.3.3b)

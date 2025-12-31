@@ -88,6 +88,25 @@ public enum StatusEffectType
         "A preparatory state for powerful abilities. The entity focuses entirely on channeling, unable to change course. This concentration makes them susceptible to interruption through sufficient harm.")]
     Chanting = 7,
 
+    /// <summary>
+    /// Magical silence effect. Target cannot cast spells (v0.4.3c).
+    /// Does not stack; reapplication refreshes duration only.
+    /// </summary>
+    [GameDocument(
+        "Silenced",
+        "A suppression of magical ability. The afflicted's connection to the Aether is dampened, preventing spell casting. Physical abilities remain unaffected. Often caused by counter-magic or runic seals.")]
+    Silenced = 8,
+
+    /// <summary>
+    /// Active concentration state. Caster is maintaining a concentration spell (v0.4.3c).
+    /// Cannot cast other concentration spells while active.
+    /// Does not stack; ends when concentration is broken or spell expires.
+    /// </summary>
+    [GameDocument(
+        "Concentrating",
+        "A state of focused magical maintenance. The caster sustains an ongoing spell effect, unable to channel another similar working. Taking damage or casting another concentration spell breaks this focus.")]
+    Concentrating = 9,
+
     // ═══════════════════════════════════════════════════════════════════════
     // BUFFS (100+)
     // ═══════════════════════════════════════════════════════════════════════
