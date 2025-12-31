@@ -305,6 +305,11 @@ class Program
                     services.AddSingleton<IEventBus, EventBus>();
                     services.AddSingleton<AudioEventListener>();
 
+                    // Register Magic Services (v0.4.3)
+                    services.AddSingleton<IAetherService, AetherService>();
+                    services.AddSingleton<IBacklashService, BacklashService>();
+                    services.AddSingleton<IResonanceService, ResonanceService>();
+
                     // Register Ambience Service (v0.3.19c - The Soundscape)
                     services.AddSingleton<IAmbienceService, AmbienceService>();
 

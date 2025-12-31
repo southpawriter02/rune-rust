@@ -1,4 +1,5 @@
 using RuneAndRust.Core.Enums;
+using RuneAndRust.Core.Models.Magic;
 using CharacterAttribute = RuneAndRust.Core.Enums.Attribute;
 
 namespace RuneAndRust.Core.Entities;
@@ -129,6 +130,16 @@ public class Character
     /// Maximum corruption threshold. Fixed at 100 for all characters.
     /// </summary>
     public int MaxCorruption => 100;
+
+    /// <summary>
+    /// Resonance state for Mystic characters. Null for non-Mystics.
+    /// </summary>
+    public ResonanceState? ResonanceState { get; set; }
+
+    /// <summary>
+    /// Current resonance value (0 for non-Mystics).
+    /// </summary>
+    public int Resonance => ResonanceState?.CurrentValue ?? 0;
 
     /// <summary>
     /// Total accumulated Legend (Experience).
