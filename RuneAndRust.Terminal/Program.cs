@@ -157,6 +157,10 @@ class Program
                     services.AddSingleton<ICreatureTraitService, CreatureTraitService>();
                     services.AddSingleton<IResourceService, ResourceService>();
                     services.AddSingleton<IAbilityService, AbilityService>();
+
+                    // Register Magic Services (v0.4.3a - The Aether)
+                    services.AddSingleton<IAetherService, AetherService>();
+
                     services.AddScoped<ILootService, LootService>();
                     services.AddScoped<ICombatService, CombatService>();
                     services.AddSingleton<ICombatScreenRenderer, CombatScreenRenderer>();
