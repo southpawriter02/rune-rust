@@ -107,6 +107,16 @@ public enum StatusEffectType
         "A state of focused magical maintenance. The caster sustains an ongoing spell effect, unable to channel another similar working. Taking damage or casting another concentration spell breaks this focus.")]
     Concentrating = 9,
 
+    /// <summary>
+    /// Aether Sickness from magical backlash. -2 Will, -1 Wits, blocks concentration spells (v0.4.3d).
+    /// Applied by Major (2 turns) or Catastrophic (5 turns) backlash.
+    /// Does not stack; reapplication refreshes duration only.
+    /// </summary>
+    [GameDocument(
+        "Aether Sickness",
+        "A debilitating condition caused by arcane feedback. The afflicted's connection to the weave is disrupted, their mental faculties clouded. Concentration becomes impossible as the body struggles to process the magical trauma.")]
+    AetherSickness = 10,
+
     // ═══════════════════════════════════════════════════════════════════════
     // BUFFS (100+)
     // ═══════════════════════════════════════════════════════════════════════

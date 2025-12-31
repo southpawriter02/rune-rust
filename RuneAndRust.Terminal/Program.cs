@@ -168,6 +168,9 @@ class Program
                     // Register Aether Service (v0.4.3a - The Aether)
                     services.AddSingleton<IAetherService, AetherService>();
 
+                    // Register Backlash Service (v0.4.3d - The Backlash)
+                    services.AddSingleton<IBacklashService, BacklashService>();
+
                     // Register Magic Service (v0.4.3c - The Incantation)
                     services.AddSingleton<IMagicService, MagicService>();
 

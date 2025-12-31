@@ -73,5 +73,11 @@ public enum CastFailureReason
     /// <summary>
     /// Combat state is invalid for spell casting (e.g., not in combat, not player's turn).
     /// </summary>
-    InvalidCombatState = 10
+    InvalidCombatState = 10,
+
+    /// <summary>
+    /// The caster's soul has been consumed by corruption (75+ corruption).
+    /// Magic no longer answers. Added in v0.4.3d (The Backlash).
+    /// </summary>
+    SoulLost = 11
 }

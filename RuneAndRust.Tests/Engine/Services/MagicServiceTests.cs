@@ -22,6 +22,7 @@ public class MagicServiceTests
     private readonly Mock<IStatusEffectService> _mockStatus;
     private readonly Mock<EffectScriptExecutor> _mockExecutor;
     private readonly Mock<IEventBus> _mockEventBus;
+    private readonly Mock<IBacklashService> _mockBacklash;
     private readonly Mock<ILogger<MagicService>> _mockLogger;
     private readonly MagicService _sut;
 
@@ -30,7 +31,12 @@ public class MagicServiceTests
         _mockAether = new Mock<IAetherService>();
         _mockStatus = new Mock<IStatusEffectService>();
         _mockEventBus = new Mock<IEventBus>();
+        _mockBacklash = new Mock<IBacklashService>();
         _mockLogger = new Mock<ILogger<MagicService>>();
+
+        // Configure backlash service to not trigger by default
+        _mockBacklash.Setup(b => b.IsAtRisk()).Returns(false);
+        _mockBacklash.Setup(b => b.CanCastSpells(It.IsAny<Character>())).Returns(true);
 
         // Mock EffectScriptExecutor - requires mocking its dependencies
         var mockDice = new Mock<IDiceService>();
@@ -46,6 +52,7 @@ public class MagicServiceTests
             _mockStatus.Object,
             executor,
             _mockEventBus.Object,
+            _mockBacklash.Object,
             _mockLogger.Object);
     }
 

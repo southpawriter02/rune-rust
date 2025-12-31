@@ -182,6 +182,7 @@ public class TestGameHost : IDisposable
         services.AddSingleton<IAbilityService, AbilityService>();
         services.AddScoped<ILootService, LootService>();
         services.AddSingleton<IAetherService, AetherService>();
+        services.AddSingleton<IBacklashService, BacklashService>();
         services.AddSingleton<IMagicService, MagicService>();
         services.AddScoped<ISpellRepository, SpellRepository>();
         services.AddScoped<ICombatService, CombatService>();

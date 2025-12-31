@@ -15,15 +15,17 @@ namespace RuneAndRust.Engine.Services;
 /// </summary>
 /// <remarks>
 /// See: v0.4.3c (The Incantation) for implementation details.
+/// Updated in v0.4.3d (The Backlash) to add backlash mechanics and corruption checks.
 ///
-/// Validation Pipeline (7 checks in order):
-/// 1. Magic eligibility (Archetype: Adept or Mystic)
-/// 2. AP cost affordability
-/// 3. Target type compatibility
-/// 4. Range validation
-/// 5. Target alive check
-/// 6. Silenced status check
-/// 7. Concentration conflict check
+/// Validation Pipeline (8 checks in order):
+/// 1. Soul Lost check (75+ corruption) - v0.4.3d
+/// 2. Magic eligibility (Archetype: Adept or Mystic)
+/// 3. AP cost affordability
+/// 4. Target type compatibility
+/// 5. Range validation
+/// 6. Target alive check
+/// 7. Silenced status check
+/// 8. Concentration conflict check
 /// </remarks>
 public class MagicService : IMagicService
 {
@@ -31,6 +33,7 @@ public class MagicService : IMagicService
     private readonly IStatusEffectService _statusEffects;
     private readonly EffectScriptExecutor _scriptExecutor;
     private readonly IEventBus _eventBus;
+    private readonly IBacklashService _backlashService;
     private readonly ILogger<MagicService> _logger;
 
     /// <summary>
@@ -40,21 +43,24 @@ public class MagicService : IMagicService
     /// <param name="statusEffects">Service for status effect management.</param>
     /// <param name="scriptExecutor">Shared utility for effect script execution.</param>
     /// <param name="eventBus">Event bus for publishing SpellCastEvent.</param>
+    /// <param name="backlashService">Service for backlash and corruption checks (v0.4.3d).</param>
     /// <param name="logger">Logger for traceability.</param>
     public MagicService(
         IAetherService aetherService,
         IStatusEffectService statusEffects,
         EffectScriptExecutor scriptExecutor,
         IEventBus eventBus,
+        IBacklashService backlashService,
         ILogger<MagicService> logger)
     {
         _aetherService = aetherService;
         _statusEffects = statusEffects;
         _scriptExecutor = scriptExecutor;
         _eventBus = eventBus;
+        _backlashService = backlashService;
         _logger = logger;
 
-        _logger.LogInformation("[Magic] MagicService initialized");
+        _logger.LogInformation("[Magic] MagicService initialized with backlash integration");
     }
 
     /// <inheritdoc/>
@@ -71,7 +77,16 @@ public class MagicService : IMagicService
             "[Magic] {Caster} checking if can cast {Spell}",
             caster.Name, spell.Name);
 
-        // 1. Magic eligibility - must be Adept or Mystic
+        // 1. Soul Lost check - corruption >= 75 (v0.4.3d)
+        if (caster.CharacterSource != null && !_backlashService.CanCastSpells(caster.CharacterSource))
+        {
+            _logger.LogWarning(
+                "[Magic] {Caster} cannot cast: soul is Lost (Corruption: {Corruption})",
+                caster.Name, caster.CharacterSource.Corruption);
+            return CastFailureReason.SoulLost;
+        }
+
+        // 2. Magic eligibility - must be Adept or Mystic
         if (!IsMagicUser(caster))
         {
             _logger.LogDebug(
@@ -171,6 +186,36 @@ public class MagicService : IMagicService
             return ReleaseCharge(caster, spell, target);
         }
 
+        // ★ Backlash check - v0.4.3d: Check before executing spell
+        // If Flux > 50, there's a chance the spell fizzles and damages the caster
+        if (_backlashService.IsAtRisk())
+        {
+            var backlashResult = _backlashService.CheckBacklash(caster, spell.Name);
+            if (backlashResult.Triggered)
+            {
+                _logger.LogWarning(
+                    "[Magic] BACKLASH! {Caster}'s {Spell} fizzles. Severity: {Severity}",
+                    caster.Name, spell.Name, backlashResult.Severity);
+
+                // AP is still spent (committed to the action)
+                DeductApCost(caster, spell);
+
+                // Generate partial flux (half of spell cost)
+                var partialFlux = spell.FluxCost / 2;
+                if (partialFlux > 0)
+                {
+                    _aetherService.AddFlux(partialFlux);
+                    _logger.LogDebug("[Magic] Backlash generated {Flux} partial flux", partialFlux);
+                }
+
+                return MagicResult.Backlash(
+                    backlashResult.Message,
+                    backlashResult.DamageDealt,
+                    backlashResult.Severity,
+                    partialFlux);
+            }
+        }
+
         // Instant cast - deduct AP and generate flux
         DeductApCost(caster, spell);
         var fluxGenerated = GenerateFlux(spell);
@@ -197,6 +242,34 @@ public class MagicService : IMagicService
         _logger.LogInformation(
             "[Magic] {Caster} begins charging {Spell}",
             caster.Name, spell.Name);
+
+        // ★ Backlash check - v0.4.3d: Check before initiating charge
+        if (_backlashService.IsAtRisk())
+        {
+            var backlashResult = _backlashService.CheckBacklash(caster, spell.Name);
+            if (backlashResult.Triggered)
+            {
+                _logger.LogWarning(
+                    "[Magic] BACKLASH! {Caster}'s {Spell} charge fails. Severity: {Severity}",
+                    caster.Name, spell.Name, backlashResult.Severity);
+
+                // AP is still spent
+                DeductApCost(caster, spell);
+
+                // Generate partial flux
+                var partialFlux = spell.FluxCost / 2;
+                if (partialFlux > 0)
+                {
+                    _aetherService.AddFlux(partialFlux);
+                }
+
+                return MagicResult.Backlash(
+                    backlashResult.Message,
+                    backlashResult.DamageDealt,
+                    backlashResult.Severity,
+                    partialFlux);
+            }
+        }
 
         // Deduct AP immediately (committed to the action)
         DeductApCost(caster, spell);
@@ -231,9 +304,30 @@ public class MagicService : IMagicService
             "[Magic] {Caster} releases {Spell}!",
             caster.Name, spell.Name);
 
-        // Clear channeling state
+        // Clear channeling state first (spell is committed either way)
         caster.ChanneledSpellId = null;
         _statusEffects.RemoveEffect(caster, StatusEffectType.Chanting);
+
+        // ★ Backlash check - v0.4.3d: Check before releasing charged spell
+        if (_backlashService.IsAtRisk())
+        {
+            var backlashResult = _backlashService.CheckBacklash(caster, spell.Name);
+            if (backlashResult.Triggered)
+            {
+                _logger.LogWarning(
+                    "[Magic] BACKLASH! {Caster}'s {Spell} release fails. Severity: {Severity}",
+                    caster.Name, spell.Name, backlashResult.Severity);
+
+                // No AP cost (already paid on initiation)
+                // No additional flux (already generated on initiation)
+
+                return MagicResult.Backlash(
+                    $"{caster.Name}'s channeling unravels! {backlashResult.Message}",
+                    backlashResult.DamageDealt,
+                    backlashResult.Severity,
+                    0); // No flux - was generated on initiation
+            }
+        }
 
         // Apply concentration if required
         if (spell.RequiresConcentration)

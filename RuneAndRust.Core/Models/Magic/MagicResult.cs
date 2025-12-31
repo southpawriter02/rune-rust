@@ -53,6 +53,17 @@ public sealed record MagicResult
     public bool IsChargeInitiation { get; init; }
 
     /// <summary>
+    /// Gets whether this result indicates a backlash occurred (v0.4.3d).
+    /// Backlash means the spell fizzled but damage was dealt to the caster.
+    /// </summary>
+    public bool IsBacklash { get; init; }
+
+    /// <summary>
+    /// Gets the backlash severity if IsBacklash is true (v0.4.3d).
+    /// </summary>
+    public BacklashSeverity BacklashSeverity { get; init; } = BacklashSeverity.None;
+
+    /// <summary>
     /// Creates a successful spell cast result.
     /// </summary>
     /// <param name="message">The narrative message.</param>
@@ -77,7 +88,9 @@ public sealed record MagicResult
             TotalHealing = healing,
             StatusesApplied = statuses,
             FluxGenerated = flux,
-            IsChargeInitiation = false
+            IsChargeInitiation = false,
+            IsBacklash = false,
+            BacklashSeverity = BacklashSeverity.None
         };
     }
 
@@ -98,7 +111,9 @@ public sealed record MagicResult
             TotalHealing = 0,
             StatusesApplied = null,
             FluxGenerated = flux,
-            IsChargeInitiation = true
+            IsChargeInitiation = true,
+            IsBacklash = false,
+            BacklashSeverity = BacklashSeverity.None
         };
     }
 
@@ -122,6 +137,7 @@ public sealed record MagicResult
             CastFailureReason.OnCooldown => "That spell is on cooldown.",
             CastFailureReason.SpellNotKnown => "You do not know that spell.",
             CastFailureReason.InvalidCombatState => "You cannot cast spells right now.",
+            CastFailureReason.SoulLost => "Your soul has been consumed. Magic no longer answers.",
             _ => "Spell cast failed."
         };
 
@@ -134,7 +150,40 @@ public sealed record MagicResult
             TotalHealing = 0,
             StatusesApplied = null,
             FluxGenerated = 0,
-            IsChargeInitiation = false
+            IsChargeInitiation = false,
+            IsBacklash = false,
+            BacklashSeverity = BacklashSeverity.None
+        };
+    }
+
+    /// <summary>
+    /// Creates a backlash result where the spell fizzled and damaged the caster (v0.4.3d).
+    /// </summary>
+    /// <param name="message">The narrative message describing the backlash.</param>
+    /// <param name="damageToSelf">Damage dealt to the caster.</param>
+    /// <param name="severity">The backlash severity level.</param>
+    /// <param name="flux">Partial flux generated (half of spell cost).</param>
+    /// <returns>A backlash MagicResult.</returns>
+    public static MagicResult Backlash(
+        string message,
+        int damageToSelf,
+        BacklashSeverity severity,
+        int flux = 0)
+    {
+        return new MagicResult
+        {
+            Success = false,
+            Message = message,
+            FailureReason = CastFailureReason.None, // Not a validation failure
+            TotalDamage = damageToSelf, // Damage to caster (self-harm)
+            TotalHealing = 0,
+            StatusesApplied = severity >= BacklashSeverity.Major
+                ? new List<StatusEffectType> { StatusEffectType.AetherSickness }
+                : null,
+            FluxGenerated = flux,
+            IsChargeInitiation = false,
+            IsBacklash = true,
+            BacklashSeverity = severity
         };
     }
 }
