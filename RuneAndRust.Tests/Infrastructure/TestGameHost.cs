@@ -181,6 +181,7 @@ public class TestGameHost : IDisposable
         services.AddSingleton<IResourceService, ResourceService>();
         services.AddSingleton<IAbilityService, AbilityService>();
         services.AddScoped<ILootService, LootService>();
+        services.AddSingleton<IAetherService, AetherService>();
         services.AddScoped<ICombatService, CombatService>();
 
         // Skip TUI renderers for testing (they require Spectre.Console)

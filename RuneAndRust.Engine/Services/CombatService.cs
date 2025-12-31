@@ -40,6 +40,7 @@ public class CombatService : ICombatService
     private readonly ISpatialHashGrid _spatialGrid;
     private readonly IEventBus _eventBus;
     private readonly ISagaService _sagaService;
+    private readonly IAetherService _aetherService;
     private readonly ILogger<CombatService> _logger;
 
     /// <summary>
@@ -435,6 +436,7 @@ public class CombatService : ICombatService
     /// <param name="spatialGrid">The spatial hash grid for pathfinding (v0.3.18b).</param>
     /// <param name="eventBus">The event bus for publishing combat events (v0.3.19b).</param>
     /// <param name="sagaService">The saga service for awarding XP on victory (v0.4.0d).</param>
+    /// <param name="aetherService">The aether service for flux management (v0.4.3a).</param>
     /// <param name="logger">The logger for traceability.</param>
     public CombatService(
         GameState gameState,
@@ -456,6 +458,7 @@ public class CombatService : ICombatService
         ISpatialHashGrid spatialGrid,
         IEventBus eventBus,
         ISagaService sagaService,
+        IAetherService aetherService,
         ILogger<CombatService> logger)
     {
         _gameState = gameState;
@@ -477,6 +480,7 @@ public class CombatService : ICombatService
         _spatialGrid = spatialGrid;
         _eventBus = eventBus;
         _sagaService = sagaService;
+        _aetherService = aetherService;
         _logger = logger;
     }
 
@@ -555,6 +559,11 @@ public class CombatService : ICombatService
 
         // Clear previous combat log and add initial entry
         _combatLog.Clear();
+
+        // Reset environmental flux at combat start (v0.4.3a - The Aether)
+        _aetherService.ResetFlux();
+        _logger.LogDebug("[Aether] Flux reset at combat start");
+
         LogCombatEvent("[bold]Combat begins![/]");
         LogCombatEvent($"[cyan]{player.Name}[/] faces {string.Join(", ", enemies.Select(e => $"[red]{e.Name}[/]"))}.");
 
@@ -582,6 +591,15 @@ public class CombatService : ICombatService
             state.TurnIndex = 0;
             state.RoundNumber++;
             _logger.LogInformation("Round {Round} begins", state.RoundNumber);
+
+            // Dissipate environmental flux at round boundary (v0.4.3a - The Aether)
+            var fluxBefore = _aetherService.CurrentFlux;
+            var fluxAfter = _aetherService.DissipateFlux();
+            if (fluxBefore > 0)
+            {
+                _logger.LogDebug("[Aether] Flux dissipated at round boundary: {Before} -> {After}",
+                    fluxBefore, fluxAfter);
+            }
 
             // Replan enemy actions at round start (v0.3.6c)
             PlanEnemyActions();
@@ -721,6 +739,10 @@ public class CombatService : ICombatService
         {
             _logger.LogInformation("Combat Ended (non-victory)");
         }
+
+        // Reset environmental flux at combat end (v0.4.3a - The Aether)
+        _aetherService.ResetFlux();
+        _logger.LogDebug("[Aether] Flux reset at combat end");
 
         _gameState.Phase = GamePhase.Exploration;
         _gameState.CombatState = null;

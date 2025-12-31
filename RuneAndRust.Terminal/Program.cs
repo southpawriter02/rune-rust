@@ -162,6 +162,9 @@ class Program
                     services.AddSingleton<ICombatScreenRenderer, CombatScreenRenderer>();
                     services.AddSingleton<IVictoryScreenRenderer, VictoryScreenRenderer>();
 
+                    // Register Aether Service (v0.4.3a - The Aether)
+                    services.AddSingleton<IAetherService, AetherService>();
+
                     // Register Character Creation Services
                     services.AddScoped<CharacterFactory>();
                     services.AddScoped<CharacterCreationController>();

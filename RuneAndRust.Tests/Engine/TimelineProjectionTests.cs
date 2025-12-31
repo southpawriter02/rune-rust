@@ -36,6 +36,7 @@ public class TimelineProjectionTests
     private readonly Mock<ISpatialHashGrid> _mockSpatialGrid;
     private readonly Mock<IEventBus> _mockEventBus;
     private readonly Mock<ISagaService> _mockSagaService;
+    private readonly Mock<IAetherService> _mockAetherService;
     private readonly Mock<ILogger<CombatService>> _mockLogger;
     private readonly GameState _gameState;
     private readonly CombatService _sut;
@@ -60,6 +61,7 @@ public class TimelineProjectionTests
         _mockSpatialGrid = new Mock<ISpatialHashGrid>();
         _mockEventBus = new Mock<IEventBus>();
         _mockSagaService = new Mock<ISagaService>();
+        _mockAetherService = new Mock<IAetherService>();
         _mockLogger = new Mock<ILogger<CombatService>>();
         _gameState = new GameState();
         _sut = new CombatService(
@@ -82,6 +84,7 @@ public class TimelineProjectionTests
             _mockSpatialGrid.Object,
             _mockEventBus.Object,
             _mockSagaService.Object,
+            _mockAetherService.Object,
             _mockLogger.Object);
 
         // Default setup for initiative service
