@@ -155,6 +155,11 @@ public class RuneAndRustDbContext : DbContext
     public DbSet<Npc> Npcs { get; set; } = null!;
 
     /// <summary>
+    /// Gets or sets the Spells table (spell definitions, v0.4.3b).
+    /// </summary>
+    public DbSet<Spell> Spells { get; set; } = null!;
+
+    /// <summary>
     /// Configures the entity mappings and relationships.
     /// </summary>
     /// <param name="modelBuilder">The model builder instance.</param>
@@ -1361,6 +1366,93 @@ public class RuneAndRustDbContext : DbContext
             entity.HasIndex(n => n.DialogueTreeId);
             entity.HasIndex(n => n.Faction);
             entity.HasIndex(n => n.RoomId);
+        });
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // Magic System - Spell Entity (v0.4.3b - The Grimoire)
+        // ═══════════════════════════════════════════════════════════════════════
+
+        modelBuilder.Entity<Spell>(entity =>
+        {
+            entity.ToTable("Spells");
+
+            entity.HasKey(s => s.Id);
+
+            // Unique index on Name for fast lookups
+            entity.HasIndex(s => s.Name)
+                .IsUnique();
+
+            entity.Property(s => s.Name)
+                .HasMaxLength(100)
+                .IsRequired();
+
+            entity.Property(s => s.Description)
+                .HasMaxLength(2000)
+                .IsRequired();
+
+            // Classification
+            entity.Property(s => s.School)
+                .HasConversion<int>()
+                .IsRequired();
+
+            entity.Property(s => s.TargetType)
+                .HasConversion<int>()
+                .IsRequired();
+
+            entity.Property(s => s.Range)
+                .HasConversion<int>()
+                .IsRequired();
+
+            // Costs
+            entity.Property(s => s.ApCost)
+                .IsRequired();
+
+            entity.Property(s => s.FluxCost)
+                .IsRequired();
+
+            // Power
+            entity.Property(s => s.BasePower)
+                .IsRequired();
+
+            entity.Property(s => s.EffectScript)
+                .HasMaxLength(500);
+
+            // Casting Mechanics
+            entity.Property(s => s.ChargeTurns)
+                .IsRequired();
+
+            entity.Property(s => s.TelegraphMessage)
+                .HasMaxLength(500);
+
+            entity.Property(s => s.RequiresConcentration)
+                .IsRequired();
+
+            // Requirements
+            entity.Property(s => s.Tier)
+                .IsRequired();
+
+            entity.Property(s => s.Archetype)
+                .HasConversion<int?>();
+
+            // Timestamps
+            entity.Property(s => s.CreatedAt)
+                .IsRequired();
+
+            entity.Property(s => s.LastModified)
+                .IsRequired();
+
+            // Ignore computed properties
+            entity.Ignore(s => s.IsInstantCast);
+            entity.Ignore(s => s.IsChargedSpell);
+            entity.Ignore(s => s.IsArchetypeRestricted);
+            entity.Ignore(s => s.TotalCost);
+
+            // Indexes for query optimization
+            entity.HasIndex(s => s.School);
+            entity.HasIndex(s => s.TargetType);
+            entity.HasIndex(s => s.Range);
+            entity.HasIndex(s => s.Tier);
+            entity.HasIndex(s => s.Archetype);
         });
     }
 

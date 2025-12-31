@@ -95,6 +95,9 @@ class Program
                     // Register Dialogue Repository (v0.4.2b - The Lexicon)
                     services.AddScoped<IDialogueRepository, DialogueRepository>();
 
+                    // Register Spell Repository (v0.4.3b - The Grimoire)
+                    services.AddScoped<ISpellRepository, SpellRepository>();
+
                     // Register Capture Template Repository (v0.3.25b: JSON-based templates)
                     services.AddSingleton<ICaptureTemplateRepository>(sp =>
                     {
