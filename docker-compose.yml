@@ -1,4 +1,5 @@
 services:
+  # Main development PostgreSQL database
   postgres:
     image: postgres:16
     container_name: runeandrust-db
@@ -6,15 +7,55 @@ services:
       POSTGRES_DB: RuneAndRust
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
+      # Performance tuning for development
+      POSTGRES_INITDB_ARGS: "-E UTF8 --locale=en_US.UTF-8"
     ports:
       - "5433:5432"  # Using 5433 to avoid conflict with existing DB on 5432
     volumes:
       - runeandrust_pgdata:/var/lib/postgresql/data
+      # Optional: Mount initialization scripts
+      # - ./scripts/init-db:/docker-entrypoint-initdb.d
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d RuneAndRust"]
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - runeandrust-network
+    # Resource limits (adjust based on your system)
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 512M
+
+  # Separate PostgreSQL instance for integration tests (optional)
+  # Uncomment if you want isolation between dev and test databases
+  # postgres-test:
+  #   image: postgres:16
+  #   container_name: runeandrust-db-test
+  #   environment:
+  #     POSTGRES_DB: RuneAndRust_Test
+  #     POSTGRES_USER: postgres
+  #     POSTGRES_PASSWORD: password
+  #   ports:
+  #     - "5434:5432"
+  #   tmpfs:
+  #     - /var/lib/postgresql/data  # Use tmpfs for faster test execution
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "pg_isready -U postgres -d RuneAndRust_Test"]
+  #     interval: 3s
+  #     timeout: 3s
+  #     retries: 5
+  #   networks:
+  #     - runeandrust-network
+
+networks:
+  runeandrust-network:
+    driver: bridge
 
 volumes:
   runeandrust_pgdata:
