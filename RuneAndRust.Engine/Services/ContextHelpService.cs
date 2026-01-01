@@ -116,6 +116,90 @@ public class ContextHelpService : IContextHelpService
         return result;
     }
 
+    /// <inheritdoc/>
+    public List<HelpTip> AnalyzeMagic(CombatState combatState, IAetherService aetherService)
+    {
+        var tips = new List<HelpTip>();
+
+        if (combatState?.ActiveCombatant == null)
+        {
+            _logger.LogTrace("[Help] No active combatant for magic analysis");
+            return tips;
+        }
+
+        var caster = combatState.ActiveCombatant;
+        var flux = aetherService.CurrentFlux;
+        var risk = Math.Max(0, flux - 50);
+
+        // High risk warning (>=40%)
+        if (risk >= 40)
+        {
+            tips.Add(HelpTip.Critical("HIGH RISK",
+                $"Backlash chance is {risk}%! Consider physical attacks or waiting."));
+            _logger.LogTrace("[Help] Added tip: HIGH RISK ({Risk}%)", risk);
+        }
+        // Elevated risk (20-39%)
+        else if (risk >= 20)
+        {
+            tips.Add(HelpTip.Warning("Elevated Risk",
+                $"Backlash chance: {risk}%. Cast with caution."));
+            _logger.LogTrace("[Help] Added tip: Elevated Risk ({Risk}%)", risk);
+        }
+        // Rising flux (25-49, no risk yet)
+        else if (flux >= 25)
+        {
+            tips.Add(HelpTip.Info("Rising Flux",
+                "Flux is elevated. Powerful spells increase risk."));
+            _logger.LogTrace("[Help] Added tip: Rising Flux");
+        }
+
+        // AP warnings
+        if (caster.MaxAp > 0)
+        {
+            var apPct = (double)caster.CurrentAp / caster.MaxAp * 100;
+            if (apPct <= 20)
+            {
+                tips.Add(HelpTip.Warning("Low Aether",
+                    "AP nearly depleted. Use items or rest to recover."));
+                _logger.LogTrace("[Help] Added tip: Low Aether");
+            }
+            else if (apPct <= 40)
+            {
+                tips.Add(HelpTip.Info("Aether Reserves",
+                    "AP running low. Conserve for critical moments."));
+                _logger.LogTrace("[Help] Added tip: Aether Reserves");
+            }
+        }
+
+        // Aether Sickness warning
+        if (caster.StatusEffects.Any(e => e.Type == StatusEffectType.AetherSickness))
+        {
+            var sickness = caster.StatusEffects.First(e => e.Type == StatusEffectType.AetherSickness);
+            tips.Add(HelpTip.Warning("Aether Sickness",
+                $"-2 WILL, -1 WITS. Cannot concentrate. ({sickness.DurationRemaining} turns)"));
+            _logger.LogTrace("[Help] Added tip: Aether Sickness");
+        }
+
+        // Corruption warning
+        var corruption = caster.CharacterSource?.Corruption ?? 0;
+        if (corruption >= 50)
+        {
+            tips.Add(HelpTip.Critical("Soul Corruption",
+                $"Corruption at {corruption}. Seek purification."));
+            _logger.LogTrace("[Help] Added tip: Soul Corruption");
+        }
+        else if (corruption >= 25)
+        {
+            tips.Add(HelpTip.Warning("Corruption",
+                $"Corruption at {corruption}. Avoid Catastrophic backlash."));
+            _logger.LogTrace("[Help] Added tip: Corruption");
+        }
+
+        var result = tips.Take(MaxTips).ToList();
+        _logger.LogTrace("[Help] Generated {Count} magic tips", result.Count);
+        return result;
+    }
+
     /// <summary>
     /// Analyzes character status effects and adds relevant tips.
     /// </summary>

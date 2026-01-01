@@ -149,6 +149,49 @@ public static class StatusWidget
     }
 
     /// <summary>
+    /// Gets the color for AP (Aether Points) based on percentage thresholds using theme service.
+    /// </summary>
+    /// <remarks>
+    /// 4-tier system:
+    /// - ApFull (>60%): Healthy AP reserves
+    /// - ApMedium (40-60%): Mid-range
+    /// - ApLow (20-39%): Running low
+    /// - ApCritical (≤20%): Nearly depleted
+    /// </remarks>
+    public static Color GetApColor(int current, int max, IThemeService themeService)
+    {
+        if (max == 0) return ParseColor(themeService.GetColor("NeutralColor"));
+
+        var pct = (double)current / max * 100;
+        var role = pct switch
+        {
+            <= 20 => "ApCritical",   // Red - nearly depleted
+            <= 40 => "ApLow",        // Orange - running low
+            <= 60 => "ApMedium",     // Yellow - mid-range
+            _ => "ApFull"            // Cyan - healthy
+        };
+
+        return ParseColor(themeService.GetColor(role));
+    }
+
+    /// <summary>
+    /// Renders an AP bar with appropriate styling.
+    /// </summary>
+    /// <param name="current">Current AP value.</param>
+    /// <param name="max">Maximum AP value.</param>
+    /// <param name="themeService">Theme service for color lookup.</param>
+    /// <param name="width">Width of the bar in characters (default 10).</param>
+    /// <returns>Markup string with colored bar and value display.</returns>
+    public static string RenderApBar(int current, int max, IThemeService themeService, int width = 10)
+    {
+        var bar = RenderBar(current, max, width);
+        var color = GetApColor(current, max, themeService);
+        var dimColor = themeService.GetColor("DimColor");
+
+        return $"[{color.ToMarkup()}]{bar}[/] [{dimColor}]{current}/{max}[/]";
+    }
+
+    /// <summary>
     /// Parses a color string to a Spectre.Console Color object.
     /// Handles "bold " prefix by stripping it (boldness is a style, not a color).
     /// </summary>

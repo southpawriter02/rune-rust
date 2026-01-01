@@ -372,6 +372,9 @@ class Program
                 FactionSeeder.SeedAsync(context, logger).GetAwaiter().GetResult();
                 DialogueSeeder.SeedAsync(context, logger).GetAwaiter().GetResult();
                 NpcSeeder.SeedAsync(context, logger).GetAwaiter().GetResult();
+
+                // Seed Spells (v0.4.3e - The Resonance)
+                SpellSeeder.SeedAsync(context, logger).GetAwaiter().GetResult();
             }
 
             // 5. CLI Argument Handling (v0.3.11b - DocGen)

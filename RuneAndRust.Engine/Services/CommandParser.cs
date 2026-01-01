@@ -275,6 +275,8 @@ public class CommandParser
     private readonly IDebugConsoleRenderer? _debugConsoleRenderer;
     private readonly IMapExportService? _mapExportService;
     private readonly IAutoTravelService? _autoTravelService;
+    private readonly ISpellRepository? _spellRepository;
+    private readonly IAetherService? _aetherService;
     private readonly GameState _gameState;
 
     /// <summary>
@@ -292,6 +294,8 @@ public class CommandParser
     /// <param name="debugConsoleRenderer">The optional debug console renderer (v0.3.17a).</param>
     /// <param name="mapExportService">The optional map export service for atlas export (v0.3.20b).</param>
     /// <param name="autoTravelService">The optional auto-travel service for fast travel (v0.3.20c).</param>
+    /// <param name="spellRepository">The optional spell repository for spell list display (v0.4.3e).</param>
+    /// <param name="aetherService">The optional aether service for flux display (v0.4.3e).</param>
     public CommandParser(
         ILogger<CommandParser> logger,
         IInputHandler inputHandler,
@@ -304,7 +308,9 @@ public class CommandParser
         IRoomRepository? roomRepository = null,
         IDebugConsoleRenderer? debugConsoleRenderer = null,
         IMapExportService? mapExportService = null,
-        IAutoTravelService? autoTravelService = null)
+        IAutoTravelService? autoTravelService = null,
+        ISpellRepository? spellRepository = null,
+        IAetherService? aetherService = null)
     {
         _logger = logger;
         _inputHandler = inputHandler;
@@ -318,6 +324,8 @@ public class CommandParser
         _debugConsoleRenderer = debugConsoleRenderer;
         _mapExportService = mapExportService;
         _autoTravelService = autoTravelService;
+        _spellRepository = spellRepository;
+        _aetherService = aetherService;
     }
 
     /// <summary>
@@ -1110,6 +1118,12 @@ public class CommandParser
             return ExecuteCastCommandAsync(command.Substring(5).Trim()).GetAwaiter().GetResult();
         }
 
+        // Check for spell list commands (v0.4.3e)
+        if (command is "spells" or "magic" or "sp" or "grimoire")
+        {
+            return DisplaySpellListAsync(state).GetAwaiter().GetResult();
+        }
+
         // Check for numbered hotkey shortcuts (1, 2, 3)
         if (int.TryParse(command, out var hotkey) && hotkey >= 1 && hotkey <= 9)
         {
@@ -1388,6 +1402,115 @@ public class CommandParser
     }
 
     /// <summary>
+    /// Displays the available spell list for the current caster (v0.4.3e).
+    /// </summary>
+    private async Task<ParseResult> DisplaySpellListAsync(GameState state)
+    {
+        var combatState = state.CombatState;
+
+        if (combatState == null)
+        {
+            _inputHandler.DisplayMessage("Spells can only be viewed in combat.");
+            return ParseResult.None;
+        }
+
+        if (!combatState.IsPlayerTurn)
+        {
+            _inputHandler.DisplayMessage("Wait for your turn.");
+            return ParseResult.None;
+        }
+
+        if (_spellRepository == null || _aetherService == null)
+        {
+            _inputHandler.DisplayError("Magic system not available.");
+            return ParseResult.None;
+        }
+
+        var caster = combatState.ActiveCombatant!;
+
+        // Check archetype
+        var archetype = caster.CharacterSource?.Archetype ?? ArchetypeType.Warrior;
+        var tier = (caster.CharacterSource?.Level ?? 1) / 3 + 1;
+
+        // Get available spells (spells for this archetype at or below current tier)
+        var archetypeSpells = await _spellRepository.GetByArchetypeAsync(archetype);
+        var spellList = archetypeSpells.Where(s => s.Tier <= tier).ToList();
+
+        if (spellList.Count == 0)
+        {
+            if (archetype != ArchetypeType.Mystic && archetype != ArchetypeType.Adept)
+            {
+                _inputHandler.DisplayMessage("You have no magical training.");
+            }
+            else
+            {
+                _inputHandler.DisplayMessage("You know no spells.");
+            }
+            return ParseResult.None;
+        }
+
+        // Render spell list as text
+        _inputHandler.DisplayMessage("=== KNOWN SPELLS ===");
+
+        var grouped = spellList.GroupBy(s => s.School).OrderBy(g => (int)g.Key);
+        foreach (var group in grouped)
+        {
+            _inputHandler.DisplayMessage("");
+            _inputHandler.DisplayMessage($"-- {group.Key.ToString().ToUpper()} --");
+
+            foreach (var spell in group.OrderBy(s => s.ApCost))
+            {
+                var canAfford = caster.CurrentAp >= spell.ApCost;
+                var marker = canAfford ? " " : "*";
+                var effectSummary = GetSpellEffectSummary(spell);
+                _inputHandler.DisplayMessage($"{marker} {spell.Name,-16} {spell.ApCost,2} AP | {spell.FluxCost,2} Flux | {effectSummary}");
+            }
+        }
+
+        // Footer with resources
+        var flux = _aetherService.CurrentFlux;
+        var risk = Math.Max(0, flux - 50);
+        _inputHandler.DisplayMessage("");
+        _inputHandler.DisplayMessage($"AP: {caster.CurrentAp}/{caster.MaxAp} | Flux: {flux} | Risk: {risk}%");
+        _inputHandler.DisplayMessage("* = Cannot afford. Use 'cast <spell>' to cast.");
+
+        _logger.LogDebug("[Parser] Displayed {Count} spells for {Caster}", spellList.Count, caster.Name);
+
+        return ParseResult.None;
+    }
+
+    /// <summary>
+    /// Gets a brief summary of a spell's effect for display.
+    /// </summary>
+    private static string GetSpellEffectSummary(Spell spell)
+    {
+        if (string.IsNullOrEmpty(spell.EffectScript))
+            return "Special";
+
+        if (spell.EffectScript.StartsWith("DAMAGE:"))
+        {
+            var parts = spell.EffectScript.Split(':');
+            if (parts.Length >= 2)
+                return $"{parts[1]} damage";
+        }
+
+        if (spell.EffectScript.StartsWith("HEAL:"))
+            return "Healing";
+
+        if (spell.EffectScript.StartsWith("STATUS:"))
+        {
+            var parts = spell.EffectScript.Split(':');
+            if (parts.Length >= 2)
+                return $"{parts[1]} effect";
+        }
+
+        if (spell.EffectScript.Contains(';'))
+            return "Multiple effects";
+
+        return "Special";
+    }
+
+    /// <summary>
     /// Displays the current combat status.
     /// </summary>
     private void DisplayCombatStatus()
@@ -1555,6 +1678,7 @@ public class CommandParser
         _inputHandler.DisplayMessage("  use <name> on X  - Use ability targeting a specific enemy");
         _inputHandler.DisplayMessage("");
         _inputHandler.DisplayMessage("Spells (Adept/Mystic):");
+        _inputHandler.DisplayMessage("  spells, magic    - View known spells grouped by school");
         _inputHandler.DisplayMessage("  cast <spell>     - Cast a spell (auto-target if single enemy)");
         _inputHandler.DisplayMessage("  cast <spell> on X - Cast spell targeting a specific enemy");
         _inputHandler.DisplayMessage("");

@@ -27,6 +27,15 @@ public interface IContextHelpService
     List<HelpTip> AnalyzeCombat(CombatState combatState);
 
     /// <summary>
+    /// Analyzes magic-related state and generates tips about Flux risk,
+    /// AP levels, Aether Sickness, and Corruption (v0.4.3e).
+    /// </summary>
+    /// <param name="combatState">The current combat state.</param>
+    /// <param name="aetherService">The aether service for Flux state.</param>
+    /// <returns>A list of magic-related tips sorted by priority (highest first).</returns>
+    List<HelpTip> AnalyzeMagic(CombatState combatState, IAetherService aetherService);
+
+    /// <summary>
     /// Gets the WITS threshold required to reveal enemy tactical tips.
     /// </summary>
     int WitsThreshold { get; }
