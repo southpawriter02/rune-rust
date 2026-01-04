@@ -18,10 +18,10 @@
 INSERT OR IGNORE INTO Ambient_Sound_Descriptors (biome, sound_category, sound_subcategory, time_of_day, intensity, location_context, descriptor_text, weight, tags)
 VALUES
 ('The_Roots', 'Mechanical', 'ActiveMachinery', NULL, 'Moderate', NULL, 'The distant thrum of still-functioning machinery echoes through the halls.', 1.0, '["Mechanical", "Background", "Functional"]'),
-('The_Roots', 'Mechanical', 'ActiveMachinery', NULL, 'Moderate', NULL, 'Hydraulic systems hiss and groan somewhere in the walls.', 1.0, '["Mechanical", "Hydraulic", "Stressed"]'),
-('The_Roots', 'Mechanical', 'ActiveMachinery', NULL, 'Subtle', NULL, 'A rhythmic clank-clank-clank of ancient pumps keeping the lower levels dry.', 1.0, '["Mechanical", "Rhythmic", "Pumps"]'),
-('The_Roots', 'Mechanical', 'ActiveMachinery', NULL, 'Moderate', NULL, 'Steam vents periodically with a sharp hiss.', 1.0, '["Mechanical", "Steam", "Periodic"]'),
-('The_Roots', 'Mechanical', 'ActiveMachinery', NULL, 'Subtle', NULL, 'You hear the whir of a Servitor passing through a distant corridor.', 1.0, '["Mechanical", "Servitor", "Distant"]');
+('The_Roots', 'Mechanical', 'ActiveMachinery', NULL, 'Moderate', NULL, 'Fluid-muscles hiss and groan like dying beasts in the walls.', 1.0, '["Mechanical", "FluidMuscle", "Stressed"]'),
+('The_Roots', 'Mechanical', 'ActiveMachinery', NULL, 'Subtle', NULL, 'A rhythmic clank-clank-clank of heart-engines beating to keep the deep dry.', 1.0, '["Mechanical", "Rhythmic", "HeartEngine"]'),
+('The_Roots', 'Mechanical', 'ActiveMachinery', NULL, 'Moderate', NULL, 'White breath vents periodically from the pipes with a sharp hiss.', 1.0, '["Mechanical", "Steam", "Periodic"]'),
+('The_Roots', 'Mechanical', 'ActiveMachinery', NULL, 'Subtle', NULL, 'You hear the whir of an Iron-Husk passing through a distant corridor.', 1.0, '["Mechanical", "Servitor", "Distant"]');
 
 -- The Roots: Decay Sounds
 INSERT OR IGNORE INTO Ambient_Sound_Descriptors (biome, sound_category, sound_subcategory, time_of_day, intensity, location_context, descriptor_text, weight, tags)
@@ -43,14 +43,14 @@ VALUES
 INSERT OR IGNORE INTO Ambient_Sound_Descriptors (biome, sound_category, sound_subcategory, time_of_day, intensity, location_context, descriptor_text, weight, tags)
 VALUES
 ('The_Roots', 'Creature', 'SmallCreatures', NULL, 'Subtle', NULL, 'Tiny claws skitter across metal somewhere in the walls.', 1.0, '["Creature", "Rats", "Skittering"]'),
-('The_Roots', 'Creature', 'SmallCreatures', NULL, 'Subtle', NULL, 'The squeak of rats echoing from the ventilation system.', 1.0, '["Creature", "Rats", "Ventilation"]'),
+('The_Roots', 'Creature', 'SmallCreatures', NULL, 'Subtle', NULL, 'The squeak of rats echoing from the breath-tunnels.', 1.0, '["Creature", "Rats", "BreathTunnels"]'),
 ('The_Roots', 'Creature', 'SmallCreatures', NULL, 'Subtle', NULL, 'Something small and fast scrambles away as you approach.', 1.0, '["Creature", "Movement", "Fleeing"]');
 
 -- The Roots: Distant Threats
 INSERT OR IGNORE INTO Ambient_Sound_Descriptors (biome, sound_category, sound_subcategory, time_of_day, intensity, location_context, descriptor_text, weight, tags)
 VALUES
 ('The_Roots', 'Creature', 'DistantThreats', NULL, 'Moderate', NULL, 'A hollow moan echoes from somewhere deep below. Forlorn.', 0.8, '["Creature", "Forlorn", "Ominous"]'),
-('The_Roots', 'Creature', 'DistantThreats', NULL, 'Moderate', NULL, 'The metallic scrape of Servitor limbs on stone, far away but getting closer.', 0.7, '["Creature", "Servitor", "Approaching"]'),
+('The_Roots', 'Creature', 'DistantThreats', NULL, 'Moderate', NULL, 'The metallic scrape of Servitor limbs on false-stone, far away but getting closer.', 0.7, '["Creature", "Servitor", "Approaching"]'),
 ('The_Roots', 'Creature', 'DistantThreats', NULL, 'Oppressive', NULL, 'A scream cuts through the silence, distant but unmistakable. Then nothing.', 0.5, '["Creature", "Scream", "Chilling"]');
 
 -- ============================================================
@@ -68,10 +68,10 @@ VALUES
 -- Muspelheim: Structural Sounds
 INSERT OR IGNORE INTO Ambient_Sound_Descriptors (biome, sound_category, sound_subcategory, time_of_day, intensity, location_context, descriptor_text, weight, tags)
 VALUES
-('Muspelheim', 'Fire', 'ThermalStress', NULL, 'Moderate', NULL, 'Metal expands with loud crack sounds in the intense heat.', 1.0, '["Fire", "Metal", "ThermalExpansion"]'),
-('Muspelheim', 'Fire', 'ThermalStress', NULL, 'Moderate', NULL, 'Something melts and drips, hissing as it hits cooler surfaces.', 1.0, '["Fire", "Melting", "Hissing"]'),
-('Muspelheim', 'Fire', 'ThermalStress', NULL, 'Oppressive', NULL, 'The stone itself groans under thermal stress.', 1.0, '["Fire", "Stone", "Stressed"]'),
-('Muspelheim', 'Fire', 'ThermalStress', NULL, 'Moderate', NULL, 'A distant explosion as pocketed gas ignites.', 0.8, '["Fire", "Explosion", "Dangerous"]');
+('Muspelheim', 'Fire', 'ThermalStress', NULL, 'Moderate', NULL, 'Metal cries out with loud crack sounds in the blistering heat.', 1.0, '["Fire", "Metal", "Stressed"]'),
+('Muspelheim', 'Fire', 'ThermalStress', NULL, 'Moderate', NULL, 'Something weeps molten tears, hissing as it hits cooler surfaces.', 1.0, '["Fire", "Melting", "Hissing"]'),
+('Muspelheim', 'Fire', 'ThermalStress', NULL, 'Oppressive', NULL, 'The stone itself groans under the weight of the fire.', 1.0, '["Fire", "Stone", "Stressed"]'),
+('Muspelheim', 'Fire', 'ThermalStress', NULL, 'Moderate', NULL, 'A distant thunder-crack as trapped spirit-air ignites.', 0.8, '["Fire", "Explosion", "Dangerous"]');
 
 -- Muspelheim: Atmospheric
 INSERT OR IGNORE INTO Ambient_Sound_Descriptors (biome, sound_category, sound_subcategory, time_of_day, intensity, location_context, descriptor_text, weight, tags)
@@ -150,9 +150,9 @@ VALUES
 INSERT OR IGNORE INTO Ambient_Sound_Descriptors (biome, sound_category, sound_subcategory, time_of_day, intensity, location_context, descriptor_text, weight, tags)
 VALUES
 ('Jötunheim', 'Industrial', 'TitanicMachinery', NULL, 'Oppressive', NULL, 'Somewhere, titanic gears still turn. CLUNK. CLUNK. CLUNK.', 1.0, '["Industrial", "Mechanical", "Titanic"]'),
-('Jötunheim', 'Industrial', 'TitanicMachinery', NULL, 'Moderate', NULL, 'The deep bass hum of a reactor that has run for 800 years without pause.', 1.0, '["Industrial", "Reactor", "Ancient"]'),
-('Jötunheim', 'Industrial', 'TitanicMachinery', NULL, 'Moderate', NULL, 'Massive hydraulics groan as ancient doors open and close automatically.', 1.0, '["Industrial", "Hydraulic", "Automatic"]'),
-('Jötunheim', 'Industrial', 'TitanicMachinery', NULL, 'Subtle', NULL, 'The whisper of air through ventilation systems sized for giants.', 1.0, '["Industrial", "Ventilation", "GiantScale"]');
+('Jötunheim', 'Industrial', 'TitanicMachinery', NULL, 'Moderate', NULL, 'The deep bass chant of a Sun-Shard that has burned for 800 years without pause.', 1.0, '["Industrial", "SunShard", "Ancient"]'),
+('Jötunheim', 'Industrial', 'TitanicMachinery', NULL, 'Moderate', NULL, 'Massive fluid-muscles groan as ancient doors open and close by invisible hands.', 1.0, '["Industrial", "FluidMuscle", "Automatic"]'),
+('Jötunheim', 'Industrial', 'TitanicMachinery', NULL, 'Subtle', NULL, 'The whisper of wind through breath-tunnels sized for giants.', 1.0, '["Industrial", "BreathTunnels", "GiantScale"]');
 
 -- Jötunheim: Emptiness
 INSERT OR IGNORE INTO Ambient_Sound_Descriptors (biome, sound_category, sound_subcategory, time_of_day, intensity, location_context, descriptor_text, weight, tags)
@@ -175,15 +175,15 @@ VALUES
 ('The_Roots', 'Decay', 'Rust', 'Moderate', 'Pervasive', 'The smell of rust and corrosion, metallic and sharp.', 1.0, '["Decay", "Metallic", "Rust"]'),
 ('The_Roots', 'Decay', 'Mildew', 'Moderate', 'Pervasive', 'Mildew and rot. The humidity breeds decay.', 1.0, '["Decay", "Organic", "Mildew"]'),
 ('The_Roots', 'Decay', 'StagnantWater', 'Moderate', 'Nearby', 'Stagnant water and algae growth. The smell is thick.', 1.0, '["Decay", "Water", "Algae"]'),
-('The_Roots', 'Mechanical', 'Electrical', 'Moderate', 'Nearby', 'Ozone from arcing electrical systems mixed with the stench of burnt insulation.', 1.0, '["Mechanical", "Electrical", "Burnt"]');
+('The_Roots', 'Mechanical', 'Electrical', 'Moderate', 'Nearby', 'Storm-scorch from arcing lightning-veins mixed with the stench of burnt resin.', 1.0, '["Mechanical", "Lightning", "Burnt"]');
 
 -- The Roots: Mechanical
 INSERT OR IGNORE INTO Ambient_Smell_Descriptors (biome, smell_category, smell_subcategory, intensity, proximity, descriptor_text, weight, tags)
 VALUES
 ('The_Roots', 'Mechanical', 'MachineOil', 'Subtle', 'Nearby', 'Machine oil and lubricants, ancient but still functional.', 1.0, '["Mechanical", "Oil", "Functional"]'),
-('The_Roots', 'Mechanical', 'Chemical', 'Moderate', 'Nearby', 'The acrid smell of corroded batteries leaking chemicals.', 1.0, '["Mechanical", "Chemical", "Toxic"]'),
-('The_Roots', 'Mechanical', 'BurntMetal', 'Moderate', 'Nearby', 'Burnt metal from overheating machinery.', 1.0, '["Mechanical", "Metal", "Burnt"]'),
-('The_Roots', 'Mechanical', 'Coolant', 'Moderate', 'Nearby', 'Coolant, sharp and chemical.', 1.0, '["Mechanical", "Chemical", "Coolant"]');
+('The_Roots', 'Mechanical', 'Chemical', 'Moderate', 'Nearby', 'The acrid smell of corroded spark-vessels leaking poison-blood.', 1.0, '["Mechanical", "Poison", "Toxic"]'),
+('The_Roots', 'Mechanical', 'BurntMetal', 'Moderate', 'Nearby', 'Burnt metal from feverish machinery.', 1.0, '["Mechanical", "Metal", "Burnt"]'),
+('The_Roots', 'Mechanical', 'Coolant', 'Moderate', 'Nearby', 'Ice-blood, sharp and biting to the nose.', 1.0, '["Mechanical", "Chemical", "Coolant"]');
 
 -- The Roots: Organic
 INSERT OR IGNORE INTO Ambient_Smell_Descriptors (biome, smell_category, smell_subcategory, intensity, proximity, descriptor_text, weight, tags)
@@ -207,9 +207,9 @@ VALUES
 -- Muspelheim: Chemical
 INSERT OR IGNORE INTO Ambient_Smell_Descriptors (biome, smell_category, smell_subcategory, intensity, proximity, descriptor_text, weight, tags)
 VALUES
-('Muspelheim', 'Chemical', 'CausticFumes', 'Overwhelming', 'Nearby', 'Caustic fumes that make your eyes water.', 1.0, '["Chemical", "Toxic", "Caustic"]'),
-('Muspelheim', 'Chemical', 'MeltingMetal', 'Moderate', 'Nearby', 'The acrid tang of melting metal.', 1.0, '["Chemical", "Metal", "Melting"]'),
-('Muspelheim', 'Chemical', 'ToxicReactions', 'Moderate', 'Nearby', 'Chemical reactions in the extreme heat create toxic smells.', 1.0, '["Chemical", "Toxic", "Reactions"]');
+('Muspelheim', 'Chemical', 'CausticFumes', 'Overwhelming', 'Nearby', 'Blight-fumes that make your eyes weep.', 1.0, '["Chemical", "Toxic", "Caustic"]'),
+('Muspelheim', 'Chemical', 'MeltingMetal', 'Moderate', 'Nearby', 'The acrid tang of weeping iron.', 1.0, '["Chemical", "Metal", "Melting"]'),
+('Muspelheim', 'Chemical', 'ToxicReactions', 'Moderate', 'Nearby', 'Alchemical angers in the extreme heat create poison air.', 1.0, '["Chemical", "Toxic", "Reactions"]');
 
 -- ============================================================
 -- NIFLHEIM: Ambient Smells
@@ -220,7 +220,7 @@ INSERT OR IGNORE INTO Ambient_Smell_Descriptors (biome, smell_category, smell_su
 VALUES
 ('Niflheim', 'Cold', 'Sterile', 'Subtle', 'Pervasive', 'The air is so cold it has no smell. Everything is sterile.', 1.0, '["Cold", "Sterile", "Clean"]'),
 ('Niflheim', 'Cold', 'FrozenSnow', 'Subtle', 'Pervasive', 'You can smell snow. Clean, pure, deadly.', 1.0, '["Cold", "Snow", "Pure"]'),
-('Niflheim', 'Cold', 'FrozenOzone', 'Subtle', 'Pervasive', 'Ozone from the extreme cold.', 1.0, '["Cold", "Ozone", "Sharp"]');
+('Niflheim', 'Cold', 'FrozenOzone', 'Subtle', 'Pervasive', 'Storm-scorch preserved in the extreme cold.', 1.0, '["Cold", "StormScorch", "Sharp"]');
 
 -- Niflheim: Decay (Preserved)
 INSERT OR IGNORE INTO Ambient_Smell_Descriptors (biome, smell_category, smell_subcategory, intensity, proximity, descriptor_text, weight, tags)
@@ -255,9 +255,9 @@ VALUES
 INSERT OR IGNORE INTO Ambient_Smell_Descriptors (biome, smell_category, smell_subcategory, intensity, proximity, descriptor_text, weight, tags)
 VALUES
 ('Jötunheim', 'Industrial', 'MachineOil', 'Moderate', 'Pervasive', 'Machine oil on a massive scale.', 1.0, '["Industrial", "Oil", "Massive"]'),
-('Jötunheim', 'Industrial', 'Concrete', 'Subtle', 'Pervasive', 'Ancient concrete dust.', 1.0, '["Industrial", "Concrete", "Dust"]'),
-('Jötunheim', 'Industrial', 'Ozone', 'Moderate', 'Nearby', 'Ozone from high-voltage systems.', 1.0, '["Industrial", "Electrical", "Ozone"]'),
-('Jötunheim', 'Industrial', 'ForgedMetal', 'Moderate', 'Nearby', 'The metallic smell of worked steel and forged alloys.', 1.0, '["Industrial", "Metal", "Forged"]');
+('Jötunheim', 'Industrial', 'Concrete', 'Subtle', 'Pervasive', 'Ancient false-stone dust.', 1.0, '["Industrial", "FalseStone", "Dust"]'),
+('Jötunheim', 'Industrial', 'Ozone', 'Moderate', 'Nearby', 'Storm-scorch from lightning-force veins.', 1.0, '["Industrial", "Lightning", "StormScorch"]'),
+('Jötunheim', 'Industrial', 'ForgedMetal', 'Moderate', 'Nearby', 'The metallic smell of worked Pure Steel and forged iron.', 1.0, '["Industrial", "Metal", "Forged"]');
 
 -- Jötunheim: Emptiness
 INSERT OR IGNORE INTO Ambient_Smell_Descriptors (biome, smell_category, smell_subcategory, intensity, proximity, descriptor_text, weight, tags)
