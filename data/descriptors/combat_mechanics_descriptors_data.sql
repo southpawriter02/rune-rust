@@ -168,7 +168,7 @@ VALUES
 
 INSERT INTO Combat_Stance_Descriptors (stance_type, description_moment, previous_stance, situation_context, weapon_configuration, descriptor_text, weight, is_active, tags)
 VALUES
-('Balanced', 'Entering', NULL, NULL, NULL, 'You adopt a balanced stance, ready to attack or defend as needed.', 1.0, 1, '["Tactical", "Versatile"]'),
+('Balanced', 'Entering', NULL, NULL, NULL, 'You adopt a balanced stance, ready to attack or defend at will.', 1.0, 1, '["Tactical", "Versatile"]'),
 ('Balanced', 'Entering', NULL, NULL, NULL, 'You center yourself, finding equilibrium between offense and defense.', 1.0, 1, '["Tactical", "Centered"]'),
 ('Balanced', 'Entering', NULL, 'EvenMatch', NULL, 'Your stance is neutral, adaptable to any situation.', 1.0, 1, '["Tactical", "Adaptive"]');
 
@@ -277,7 +277,7 @@ VALUES
 
 INSERT INTO Combat_Critical_Hit_Descriptors (attack_category, damage_type, weapon_or_spell_type, target_type, special_effect, descriptor_text, weight, is_active, tags)
 VALUES
-('Magic', 'Ice', 'Ice', NULL, 'InstantKill', 'Your frost magic crystallizes them instantly! They shatter like glass! [Instant kill]', 1.7, 1, '["Lethal", "Spectacular"]'),
+('Magic', 'Ice', 'Ice', NULL, 'InstantKill', 'Your frost Galdr crystallizes them instantly! They shatter like glass! [Instant kill]', 1.7, 1, '["Lethal", "Spectacular"]'),
 ('Magic', 'Ice', 'Ice', NULL, 'Frozen', 'Perfect cold! Their body freezes solid! [Maximum damage + frozen status]', 1.5, 1, '["Devastating", "Control"]'),
 ('Magic', 'Ice', 'Ice', NULL, 'Frozen', 'Þurisaz''s wrath incarnate! They''re encased in ice!', 1.5, 1, '["Runic", "Powerful"]');
 
@@ -314,23 +314,23 @@ VALUES
 
 INSERT INTO Combat_Fumble_Descriptors (fumble_category, fumble_type, equipment_type, severity, environment_factor, descriptor_text, weight, is_active, tags)
 VALUES
-('MagicFumble', 'CorruptionSurge', 'Staff', 'Severe', NULL, 'Your Galdr falters—the Blight warps the spell! Paradoxical energy erupts! [+10 Psychic Stress, random effect]', 0.6, 1, '["Dangerous", "Corruption"]'),
-('MagicFumble', 'Backfire', NULL, 'Moderate', NULL, 'The rune inverts! The spell backfires catastrophically! [Take spell damage yourself]', 0.7, 1, '["Painful", "Embarrassing"]'),
-('MagicFumble', 'CorruptionSurge', 'Staff', 'Catastrophic', NULL, 'Reality rejects your magic! The All-Rune interferes! [+15 Psychic Stress, spell fails, Corruption +5]', 0.3, 1, '["Catastrophic", "Corruption"]');
+('MagicFumble', 'CorruptionSurge', 'Staff', 'Severe', NULL, 'Your Galdr falters—the Blight warps the weaving! Paradoxical energy erupts! [+10 Psychic Stress, random effect]', 0.6, 1, '["Dangerous", "Corruption"]'),
+('MagicFumble', 'Backfire', NULL, 'Moderate', NULL, 'The rune inverts! The weaving backfires catastrophically! [Take Galdr damage yourself]', 0.7, 1, '["Painful", "Embarrassing"]'),
+('MagicFumble', 'CorruptionSurge', 'Staff', 'Catastrophic', NULL, 'Reality rejects your Galdr! The All-Rune interferes! [+15 Psychic Stress, casting fails, Corruption +5]', 0.3, 1, '["Catastrophic", "Corruption"]');
 
 -- ==================== Wild Magic Surge (Alfheim) ====================
 
 INSERT INTO Combat_Fumble_Descriptors (fumble_category, fumble_type, equipment_type, severity, environment_factor, descriptor_text, weight, is_active, tags)
 VALUES
-('MagicFumble', 'WildSurge', NULL, 'Moderate', NULL, 'The spell goes wrong in impossible ways! [Random magical effect from table]', 0.7, 1, '["Chaotic", "Unpredictable"]'),
-('MagicFumble', 'WildSurge', NULL, 'Severe', NULL, 'Your Galdr succeeds... but also creates a Reality Tear! [Spell works + Glitch spawns]', 0.4, 1, '["Dangerous", "Corruption"]'),
-('MagicFumble', 'WildSurge', NULL, 'Severe', NULL, 'Magic spirals out of control! Everyone nearby is affected!', 0.5, 1, '["Area", "Chaotic"]');
+('MagicFumble', 'WildSurge', NULL, 'Moderate', NULL, 'The weaving goes wrong in impossible ways! [Random Galdr effect from table]', 0.7, 1, '["Chaotic", "Unpredictable"]'),
+('MagicFumble', 'WildSurge', NULL, 'Severe', NULL, 'Your Galdr succeeds... but also creates a Reality Tear! [Weaving works + Glitch spawns]', 0.4, 1, '["Dangerous", "Corruption"]'),
+('MagicFumble', 'WildSurge', NULL, 'Severe', NULL, 'Aether spirals out of control! Everyone nearby is affected!', 0.5, 1, '["Area", "Chaotic"]');
 
 -- ==================== Spell Burnout ====================
 
 INSERT INTO Combat_Fumble_Descriptors (fumble_category, fumble_type, equipment_type, severity, environment_factor, descriptor_text, weight, is_active, tags)
 VALUES
-('MagicFumble', 'Burnout', 'Staff', 'Severe', NULL, 'The magical strain is too much! Your mind reels! [Stunned 2 turns, +8 Psychic Stress]', 0.5, 1, '["Debilitating", "Psychic"]'),
+('MagicFumble', 'Burnout', 'Staff', 'Severe', NULL, 'The Aetheric strain is too much! Your mind reels! [Stunned 2 turns, +8 Psychic Stress]', 0.5, 1, '["Debilitating", "Psychic"]'),
 ('MagicFumble', 'Burnout', NULL, 'Catastrophic', NULL, 'You push too hard—the Galdr sears your consciousness! [Cannot cast for 3 turns, +12 Stress]', 0.3, 1, '["Catastrophic", "Debilitating"]');
 
 -- DEFENSIVE FUMBLES (7)

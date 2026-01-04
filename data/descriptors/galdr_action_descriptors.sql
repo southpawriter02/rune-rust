@@ -66,12 +66,12 @@ VALUES
 INSERT INTO Galdr_Action_Descriptors (category, action_type, rune_school, ability_name, success_level, descriptor_text, weight, tags)
 VALUES
 -- Minor Success
-('GaldrCasting', 'Invocation', 'Ansuz', 'LightningBolt', 'MinorSuccess', 'You invoke Ansuz, the breath of gods. Faint electricity crackles, barely touching the {Target}.', 1.0, '["Concise"]'),
+('GaldrCasting', 'Invocation', 'Ansuz', 'LightningBolt', 'MinorSuccess', 'You invoke Ansuz, the breath of gods. Faint lightning crackles, barely touching the {Target}.', 1.0, '["Concise"]'),
 ('GaldrCasting', 'Invocation', 'Ansuz', 'LightningBolt', 'MinorSuccess', 'Your Galdr calls upon Ansuz—weak sparks leap from your fingertips, more light than lightning.', 1.0, '["Descriptive"]'),
 
 -- Solid Success
 ('GaldrCasting', 'Invocation', 'Ansuz', 'LightningBolt', 'SolidSuccess', 'You invoke Ansuz, the breath of gods. Lightning arcs from your fingertips with a thunderous crack!', 1.0, '["Dramatic"]'),
-('GaldrCasting', 'Invocation', 'Ansuz', 'LightningBolt', 'SolidSuccess', 'Your Galdr calls upon Ansuz—electricity crackles through the air, coalescing into a bolt that strikes the {Target}!', 1.0, '["Descriptive"]'),
+('GaldrCasting', 'Invocation', 'Ansuz', 'LightningBolt', 'SolidSuccess', 'Your Galdr calls upon Ansuz—lightning crackles through the air, coalescing into a bolt that strikes the {Target}!', 1.0, '["Descriptive"]'),
 ('GaldrCasting', 'Invocation', 'Ansuz', 'LightningBolt', 'SolidSuccess', 'You shout Ansuz! The air splits—lightning answers, brilliant and deadly!', 1.0, '["Concise"]'),
 
 -- Exceptional Success
@@ -200,8 +200,8 @@ VALUES
 INSERT INTO Galdr_Action_Descriptors (category, action_type, rune_school, ability_name, biome_name, success_level, descriptor_text, weight, tags)
 VALUES
 ('GaldrCasting', 'Invocation', NULL, NULL, 'Alfheim', 'SolidSuccess', 'The Cursed Choir harmonizes with your Galdr—or does it corrupt it? Your rune flickers between states: was/is/will be!', 0.8, '["Biome-Specific", "Reality-Distortion", "Horrifying"]'),
-('GaldrCasting', 'Invocation', NULL, NULL, 'Alfheim', 'SolidSuccess', 'Your rune flickers between states—was that {Rune} or is it {Rune} or will it be {Rune}? Reality rebels against your magic—yet the spell works anyway!', 0.8, '["Biome-Specific", "Paradoxical"]'),
-('GaldrCasting', 'Invocation', NULL, NULL, 'Alfheim', 'ExceptionalSuccess', 'Reality itself rebels against your Galdr—but you prove stronger! The spell tears through Alfheim''s distortions with terrible clarity!', 0.8, '["Biome-Specific", "Triumphant"]');
+('GaldrCasting', 'Invocation', NULL, NULL, 'Alfheim', 'SolidSuccess', 'Your rune flickers between states—was that {Rune} or is it {Rune} or will it be {Rune}? Reality rebels against your Galdr—yet the weaving works anyway!', 0.8, '["Biome-Specific", "Paradoxical"]'),
+('GaldrCasting', 'Invocation', NULL, NULL, 'Alfheim', 'ExceptionalSuccess', 'Reality itself rebels against your Galdr—but you prove stronger! The weaving tears through Alfheim''s distortions with terrible clarity!', 0.8, '["Biome-Specific", "Triumphant"]');
 
 -- ==============================================================================
 -- Statistics Query

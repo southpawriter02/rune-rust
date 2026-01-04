@@ -104,7 +104,7 @@ VALUES
 INSERT OR IGNORE INTO Atmospheric_Descriptors (category, intensity, descriptor_text, biome_affinity, tags)
 VALUES
 ('Sound', 'Moderate', 'Power conduits arc and crackle intermittently.', NULL, '["Electrical", "Arcing"]'),
-('Sound', 'Moderate', 'The buzz of unstable electricity permeates everything.', NULL, '["Electrical", "Buzzing"]'),
+('Sound', 'Moderate', 'The buzz of unstable lightning permeates everything.', NULL, '["Electrical", "Buzzing"]'),
 ('Sound', 'Subtle', 'Static discharge pops and hisses.', NULL, '["Electrical", "Static"]');
 
 -- Generic Sound: Silence

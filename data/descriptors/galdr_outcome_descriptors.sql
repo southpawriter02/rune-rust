@@ -83,7 +83,7 @@ VALUES
 ('DrainLife', 'Hit', 3, 'Enemy', 'Debuff', 'Naudiz''s shadow tendrils sink into the {Target}! Life force flows from them into you—they wither as you strengthen! [Drained: {Damage}]', 1.0, '["Dark", "Draining"]'),
 ('DrainLife', 'Hit', 4, 'Enemy', 'Debuff', 'Your Galdr siphons vitality! The {Target} pales, weakening visibly as life-blood floods into you! [Drained: {Damage}]', 1.0, '["Vampiric"]'),
 ('DrainLife', 'CriticalHit', 5, 'Enemy', 'Debuff', 'Naudiz erupts! Shadow pours from the {Target}—their life force torn away completely! You feel invigorated! [Drained: {Damage}]', 1.0, '["Devastating"]'),
-('DrainLife', 'Resisted', 2, 'Enemy', 'Debuff', 'The {Target} resists your draining magic! Naudiz''s tendrils dissipate before taking hold.', 1.0, '["Ineffective"]');
+('DrainLife', 'Resisted', 2, 'Enemy', 'Debuff', 'The {Target} resists your draining Galdr! Naudiz''s tendrils dissipate before taking hold.', 1.0, '["Ineffective"]');
 
 -- ==============================================================================
 -- FROZEN TIME - Control Outcomes
@@ -126,7 +126,7 @@ VALUES
 
 -- Forlorn (undead)
 ('FlameBolt', 'Hit', 3, 'Enemy', 'Forlorn', 'Damage', 'Fire consumes the Forlorn''s desiccated flesh! It moans hollowly as flames spread across withered limbs!', 1.0, '["Undead"]'),
-('HealingChant', 'Resisted', 0, 'Enemy', 'Forlorn', 'Damage', 'Berkanan recoils from the Forlorn—healing magic has no purchase on the dead! Instead, it burns them!', 1.0, '["Reversed", "Undead"]'),
+('HealingChant', 'Resisted', 0, 'Enemy', 'Forlorn', 'Damage', 'Berkanan recoils from the Forlorn—healing Galdr has no purchase on the dead! Instead, it burns them!', 1.0, '["Reversed", "Undead"]'),
 
 -- Corrupted_Dvergr
 ('CleansingWave', 'Hit', 4, 'Enemy', 'Corrupted_Dvergr', 'Damage', 'Laguz''s purifying wave strikes the Corrupted Dvergr! Blight corruption screams as it''s torn away—the dvergr howls in agony!', 1.0, '["Effective", "Purification"]'),

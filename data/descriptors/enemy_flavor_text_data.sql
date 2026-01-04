@@ -71,7 +71,7 @@ VALUES
 -- Arc-Welder Unit (Industrial Robot)
 ('Creature', 'ArcWelderUnit', 'Cursory', NULL, 'Alive', 'A heavy machine with a crackling lightning-spear.', 1.0, '["Basic", "Machine"]'),
 ('Creature', 'ArcWelderUnit', 'Detailed', NULL, 'Alive', 'A massive industrial walker. One arm ends in a pincer, the other in a rod that spits blinding lightning. It moves with the weight of a collapsing wall.', 1.0, '["Lore", "Machine"]'),
-('Creature', 'ArcWelderUnit', 'Expert', NULL, 'Alive', 'Heavy Construction Frame. The arc-welder arm can melt plate armor in seconds. Its power core is exposed on the back—a potential weak point if you can flank it.', 1.0, '["Technical", "Machine", "Tactical"]'),
+('Creature', 'ArcWelderUnit', 'Expert', NULL, 'Alive', 'Heavy Construction Frame. The arc-welder arm can melt plate armor in moments. Its power core is exposed on the back—a potential weak point if you can flank it.', 1.0, '["Technical", "Machine", "Tactical"]'),
 
 -- Corrupted Engineer
 ('Creature', 'CorruptedEngineer', 'Cursory', NULL, 'Alive', 'A figure in a torn lab coat, surrounded by floating lights.', 1.0, '["Basic", "Humanoid"]'),
@@ -86,7 +86,7 @@ VALUES
 -- Forlorn Scholar
 ('Creature', 'ForlornScholar', 'Cursory', NULL, 'Alive', 'A robed figure clutching a glowing tome.', 1.0, '["Basic", "Humanoid"]'),
 ('Creature', 'ForlornScholar', 'Detailed', NULL, 'Alive', 'A seeker of knowledge who found only madness. They whisper forbidden runes that warp the air. They might speak to you, but do not listen.', 1.0, '["Lore", "Humanoid"]'),
-('Creature', 'ForlornScholar', 'Expert', NULL, 'Alive', 'A caster wielding corrupted Galdr. They can inflict heavy mental trauma. Their barrier is weak against physical force, but their mind-magics are potent.', 1.0, '["Technical", "Humanoid", "Tactical"]'),
+('Creature', 'ForlornScholar', 'Expert', NULL, 'Alive', 'A caster wielding corrupted Galdr. They can inflict heavy mental trauma. Their barrier is weak against physical force, but their mind-weaving is potent.', 1.0, '["Technical", "Humanoid", "Tactical"]'),
 
 -- Jötun-Reader Fragment (AI)
 ('Creature', 'JotunReaderFragment', 'Cursory', NULL, 'Alive', 'A hologram of a giant face, glitching and screaming.', 1.0, '["Basic", "Spirit"]'),
