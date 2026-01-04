@@ -13,23 +13,23 @@ public static class BuildInfo
     /// <summary>
     /// Semantic version string (Major.Minor.Patch[-prerelease]).
     /// </summary>
-    public const string Version = "0.4.0-alpha";
+    public const string Version = "0.4.3e";
 
     /// <summary>
     /// Human-readable release codename.
     /// </summary>
-    public const string Codename = "The Saga";
+    public const string Codename = "The Resonance";
 
     /// <summary>
     /// Build timestamp (ISO 8601 format).
     /// Updated by CI/CD pipeline or manually before release.
     /// </summary>
-    public const string BuildDate = "2025-12-27";
+    public const string BuildDate = "2026-01-01";
 
     /// <summary>
     /// Target .NET runtime version.
     /// </summary>
-    public const string RuntimeVersion = "net8.0";
+    public const string RuntimeVersion = "net9.0";
 
     /// <summary>
     /// Full version string for display (e.g., "v0.4.0-alpha \"The Saga\"").
