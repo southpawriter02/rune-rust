@@ -1,7 +1,7 @@
 {
   "BiomeId": "the_roots",
   "Name": "[The Roots]",
-  "Description": "The lower maintenance levels of Aethelgard, where 800 years of decay have transformed functional infrastructure into rusted, claustrophobic passages. Geothermal pumping stations hiss with escaping steam. Condensation drips from corroded pipes. The air tastes of ozone and rust.",
+  "Description": "The lower maintenance levels of Aethelgard, where centuries of decay have transformed functional infrastructure into rusted, claustrophobic passages. Geothermal pumping stations hiss with escaping steam. Condensation drips from corroded pipes. The air tastes of ozone and rust.",
   "AvailableTemplates": [
     "collapsed_entry_hall",
     "maintenance_access",
