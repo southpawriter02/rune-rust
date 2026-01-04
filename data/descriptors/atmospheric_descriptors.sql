@@ -12,28 +12,28 @@ INSERT OR IGNORE INTO Atmospheric_Descriptors (category, intensity, descriptor_t
 VALUES
 ('Lighting', 'Subtle', 'The light here is dim, barely enough to see by.', NULL, '["Dim", "Generic"]'),
 ('Lighting', 'Moderate', 'Shadows crowd the edges of your vision.', NULL, '["Dim", "Shadow"]'),
-('Lighting', 'Moderate', 'What little illumination exists seems to be fading.', NULL, '["Dim", "Failing"]');
+('Lighting', 'Moderate', 'What little illumination exists seems to be fading.', NULL, '["Dim", "Failing"]'),
 
 -- Generic Lighting: Flickering
 INSERT OR IGNORE INTO Atmospheric_Descriptors (category, intensity, descriptor_text, biome_affinity, tags)
 VALUES
 ('Lighting', 'Moderate', 'The runic light panels flicker erratically, casting unstable shadows.', NULL, '["Flickering", "Runic"]'),
 ('Lighting', 'Moderate', 'Light pulses in irregular intervals, never quite steady.', NULL, '["Flickering", "Unstable"]'),
-('Lighting', 'Oppressive', 'The illumination stutters like a failing circuit, plunging into darkness between pulses.', NULL, '["Flickering", "Extreme"]');
+('Lighting', 'Oppressive', 'The illumination stutters like a failing spark-path, plunging into darkness between pulses.', NULL, '["Flickering", "Extreme"]'),
 
 -- Generic Lighting: Harsh
 INSERT OR IGNORE INTO Atmospheric_Descriptors (category, intensity, descriptor_text, biome_affinity, tags)
 VALUES
 ('Lighting', 'Moderate', 'Harsh, unfiltered light glares from exposed fixtures.', NULL, '["Harsh", "Industrial"]'),
-('Lighting', 'Oppressive', 'The brightness is clinical and unforgiving, revealing every crack and stain.', NULL, '["Harsh", "Clinical"]'),
-('Lighting', 'Moderate', 'Light reflects harshly off metallic surfaces, creating painful glare.', NULL, '["Harsh", "Reflective"]');
+('Lighting', 'Oppressive', 'The brightness is sterile and unforgiving, revealing every crack and stain.', NULL, '["Harsh", "Clinical"]'),
+('Lighting', 'Moderate', 'Light reflects harshly off metallic surfaces, creating painful glare.', NULL, '["Harsh", "Reflective"]'),
 
 -- Generic Lighting: Darkness
 INSERT OR IGNORE INTO Atmospheric_Descriptors (category, intensity, descriptor_text, biome_affinity, tags)
 VALUES
 ('Lighting', 'Oppressive', 'True darkness reigns here, swallowing all light.', NULL, '["Darkness", "Extreme"]'),
 ('Lighting', 'Oppressive', 'The shadows are absolute and impenetrable.', NULL, '["Darkness", "Absolute"]'),
-('Lighting', 'Oppressive', 'Not even runic light penetrates this gloom.', NULL, '["Darkness", "Unnatural"]');
+('Lighting', 'Oppressive', 'Not even runic light penetrates this gloom.', NULL, '["Darkness", "Unnatural"]'),
 
 -- Biome-Specific Lighting: Muspelheim (Warm/Fire)
 INSERT OR IGNORE INTO Atmospheric_Descriptors (category, intensity, descriptor_text, biome_affinity, tags)
@@ -41,7 +41,7 @@ VALUES
 ('Lighting', 'Moderate', 'Everything is bathed in red-orange firelight.', 'Muspelheim', '["Warm", "Fire"]'),
 ('Lighting', 'Moderate', 'The light has a warm, almost molten quality.', 'Muspelheim', '["Warm", "Molten"]'),
 ('Lighting', 'Oppressive', 'Firelight flares and dims with the rhythm of flowing lava.', 'Muspelheim', '["Fire", "Lava"]'),
-('Lighting', 'Subtle', 'A faint red glow emanates from heated rock.', 'Muspelheim', '["Warm", "Subtle"]');
+('Lighting', 'Subtle', 'A faint red glow emanates from heated rock.', 'Muspelheim', '["Warm", "Subtle"]'),
 
 -- Biome-Specific Lighting: Niflheim (Cold/Ice)
 INSERT OR IGNORE INTO Atmospheric_Descriptors (category, intensity, descriptor_text, biome_affinity, tags)
@@ -49,7 +49,7 @@ VALUES
 ('Lighting', 'Moderate', 'Blue-white light gives everything a frozen appearance.', 'Niflheim', '["Cold", "Ice"]'),
 ('Lighting', 'Moderate', 'The illumination is pale and lifeless.', 'Niflheim', '["Cold", "Pale"]'),
 ('Lighting', 'Subtle', 'Wan light filters through layers of frost.', 'Niflheim', '["Cold", "Frost"]'),
-('Lighting', 'Oppressive', 'The light itself seems frozen, trapped in crystalline ice.', 'Niflheim', '["Cold", "Crystalline"]');
+('Lighting', 'Oppressive', 'The light itself seems frozen, trapped in crystalline ice.', 'Niflheim', '["Cold", "Crystalline"]'),
 
 -- Biome-Specific Lighting: The Roots (Sickly/Corrupt)
 INSERT OR IGNORE INTO Atmospheric_Descriptors (category, intensity, descriptor_text, biome_affinity, tags)
@@ -57,7 +57,7 @@ VALUES
 ('Lighting', 'Moderate', 'The light has a sickly, greenish tinge.', 'The_Roots', '["Sickly", "Green"]'),
 ('Lighting', 'Moderate', 'Illumination is the color of corroded copper.', 'The_Roots', '["Sickly", "Corroded"]'),
 ('Lighting', 'Moderate', 'Sickly light flickers from failing panels.', 'The_Roots', '["Sickly", "Failing"]'),
-('Lighting', 'Subtle', 'A faint greenish glow suggests bioluminescent mold.', 'The_Roots', '["Sickly", "Bioluminescent"]');
+('Lighting', 'Subtle', 'A faint greenish glow suggests bioluminescent mold.', 'The_Roots', '["Sickly", "Bioluminescent"]'),
 
 -- Biome-Specific Lighting: Alfheim (Prismatic/Reality-Warping)
 INSERT OR IGNORE INTO Atmospheric_Descriptors (category, intensity, descriptor_text, biome_affinity, tags)
@@ -65,14 +65,14 @@ VALUES
 ('Lighting', 'Oppressive', 'Light refracts into impossible colors.', 'Alfheim', '["Prismatic", "Impossible"]'),
 ('Lighting', 'Oppressive', 'The illumination shifts through the spectrum without pattern or reason.', 'Alfheim', '["Prismatic", "Chaotic"]'),
 ('Lighting', 'Oppressive', 'Light refracts impossibly through crystalline structures that shouldn''t exist.', 'Alfheim', '["Prismatic", "Crystal"]'),
-('Lighting', 'Moderate', 'Colors bleed and merge in ways that hurt to perceive.', 'Alfheim', '["Prismatic", "Painful"]');
+('Lighting', 'Moderate', 'Colors bleed and merge in ways that hurt to perceive.', 'Alfheim', '["Prismatic", "Painful"]'),
 
 -- Biome-Specific Lighting: Jötunheim (Industrial/Dim)
 INSERT OR IGNORE INTO Atmospheric_Descriptors (category, intensity, descriptor_text, biome_affinity, tags)
 VALUES
 ('Lighting', 'Moderate', 'Dim industrial lighting casts long shadows.', 'Jötunheim', '["Dim", "Industrial"]'),
 ('Lighting', 'Subtle', 'Emergency lighting provides minimal illumination.', 'Jötunheim', '["Dim", "Emergency"]'),
-('Lighting', 'Moderate', 'Ancient light strips struggle against the darkness.', 'Jötunheim', '["Dim", "Failing"]');
+('Lighting', 'Moderate', 'Ancient light strips struggle against the darkness.', 'Jötunheim', '["Dim", "Failing"]'),
 
 -- ============================================================
 -- CATEGORY 2: SOUND (40+ descriptors)
@@ -82,37 +82,37 @@ VALUES
 INSERT OR IGNORE INTO Atmospheric_Descriptors (category, intensity, descriptor_text, biome_affinity, tags)
 VALUES
 ('Sound', 'Moderate', 'Distant machinery groans and clanks rhythmically.', NULL, '["Mechanical", "Industrial"]'),
-('Sound', 'Subtle', 'The whir of failing servos echoes through the space.', NULL, '["Mechanical", "Servos"]'),
+('Sound', 'Subtle', 'The whir of failing iron-sinews echoes through the space.', NULL, '["Mechanical", "Servos"]'),
 ('Sound', 'Moderate', 'Grinding gears struggle against centuries of corrosion.', NULL, '["Mechanical", "Grinding"]'),
-('Sound', 'Oppressive', 'The cacophony of tortured machinery is overwhelming.', NULL, '["Mechanical", "Extreme"]');
+('Sound', 'Oppressive', 'The cacophony of tortured machinery is overwhelming.', NULL, '["Mechanical", "Extreme"]'),
 
 -- Generic Sound: Water
 INSERT OR IGNORE INTO Atmospheric_Descriptors (category, intensity, descriptor_text, biome_affinity, tags)
 VALUES
 ('Sound', 'Subtle', 'Water drips steadily from unseen sources.', NULL, '["Water", "Dripping"]'),
 ('Sound', 'Moderate', 'The sound of flowing water echoes from below.', NULL, '["Water", "Flowing"]'),
-('Sound', 'Subtle', 'Condensation falls in irregular patterns.', NULL, '["Water", "Condensation"]');
+('Sound', 'Subtle', 'Condensation falls in irregular patterns.', NULL, '["Water", "Condensation"]'),
 
 -- Generic Sound: Wind/Air
 INSERT OR IGNORE INTO Atmospheric_Descriptors (category, intensity, descriptor_text, biome_affinity, tags)
 VALUES
 ('Sound', 'Subtle', 'Air hisses through cracks in the walls.', NULL, '["Wind", "Hissing"]'),
 ('Sound', 'Moderate', 'A low moan of moving air fills the space.', NULL, '["Wind", "Moaning"]'),
-('Sound', 'Moderate', 'Ventilation systems wheeze and rattle.', NULL, '["Wind", "Ventilation"]');
+('Sound', 'Moderate', 'Ventilation systems wheeze and rattle.', NULL, '["Wind", "Ventilation"]'),
 
 -- Generic Sound: Electrical
 INSERT OR IGNORE INTO Atmospheric_Descriptors (category, intensity, descriptor_text, biome_affinity, tags)
 VALUES
 ('Sound', 'Moderate', 'Power conduits arc and crackle intermittently.', NULL, '["Electrical", "Arcing"]'),
-('Sound', 'Moderate', 'The buzz of unstable electricity permeates everything.', NULL, '["Electrical", "Buzzing"]'),
-('Sound', 'Subtle', 'Static discharge pops and hisses.', NULL, '["Electrical", "Static"]');
+('Sound', 'Moderate', 'The buzz of unstable lightning permeates everything.', NULL, '["Electrical", "Buzzing"]'),
+('Sound', 'Subtle', 'Static discharge pops and hisses.', NULL, '["Electrical", "Static"]'),
 
 -- Generic Sound: Silence
 INSERT OR IGNORE INTO Atmospheric_Descriptors (category, intensity, descriptor_text, biome_affinity, tags)
 VALUES
 ('Sound', 'Oppressive', 'The silence here is oppressive and unnatural.', NULL, '["Silence", "Unnatural"]'),
 ('Sound', 'Oppressive', 'Not even your footsteps seem to make sound.', NULL, '["Silence", "Absolute"]'),
-('Sound', 'Oppressive', 'The absence of noise is almost deafening.', NULL, '["Silence", "Deafening"]');
+('Sound', 'Oppressive', 'The absence of noise is almost deafening.', NULL, '["Silence", "Deafening"]'),
 
 -- Psychic/Metaphysical Sounds
 INSERT OR IGNORE INTO Atmospheric_Descriptors (category, intensity, descriptor_text, biome_affinity, tags)
@@ -121,7 +121,7 @@ VALUES
 ('Sound', 'Moderate', 'You hear fragments of conversation that aren''t there.', NULL, '["Psychic", "Echoes"]'),
 ('Sound', 'Oppressive', 'The air carries echoes of ancient screams.', NULL, '["Psychic", "Screams"]'),
 ('Sound', 'Oppressive', 'A high-pitched shriek underlies all other sounds.', 'Alfheim', '["Psychic", "Cursed_Choir"]'),
-('Sound', 'Oppressive', 'Reality itself seems to emit a painful frequency.', 'Alfheim', '["Psychic", "Reality_Break"]');
+('Sound', 'Oppressive', 'Reality itself seems to emit a painful frequency.', 'Alfheim', '["Psychic", "Reality_Break"]'),
 
 -- Biome-Specific Sound: Muspelheim (Fire/Lava)
 INSERT OR IGNORE INTO Atmospheric_Descriptors (category, intensity, descriptor_text, biome_affinity, tags)
@@ -129,7 +129,7 @@ VALUES
 ('Sound', 'Moderate', 'Lava rumbles distantly like approaching thunder.', 'Muspelheim', '["Fire", "Lava"]'),
 ('Sound', 'Moderate', 'Steam hisses from vents with violent force.', 'Muspelheim', '["Fire", "Steam"]'),
 ('Sound', 'Oppressive', 'Lava rumbles like distant thunder, and flames crackle constantly.', 'Muspelheim', '["Fire", "Overwhelming"]'),
-('Sound', 'Subtle', 'The crackle of flames provides an almost comforting background.', 'Muspelheim', '["Fire", "Subtle"]');
+('Sound', 'Subtle', 'The crackle of flames provides an almost comforting background.', 'Muspelheim', '["Fire", "Subtle"]'),
 
 -- Biome-Specific Sound: Niflheim (Ice/Wind)
 INSERT OR IGNORE INTO Atmospheric_Descriptors (category, intensity, descriptor_text, biome_affinity, tags)
@@ -137,21 +137,21 @@ VALUES
 ('Sound', 'Moderate', 'Ice creaks and groans under unknown stress.', 'Niflheim', '["Ice", "Creaking"]'),
 ('Sound', 'Oppressive', 'Wind howls with primal fury.', 'Niflheim', '["Ice", "Wind"]'),
 ('Sound', 'Subtle', 'The faint tinkle of ice crystals falling.', 'Niflheim', '["Ice", "Crystals"]'),
-('Sound', 'Moderate', 'Frozen structures contract with sharp cracks.', 'Niflheim', '["Ice", "Cracking"]');
+('Sound', 'Moderate', 'Frozen structures contract with sharp cracks.', 'Niflheim', '["Ice", "Cracking"]'),
 
 -- Biome-Specific Sound: The Roots (Water/Metal)
 INSERT OR IGNORE INTO Atmospheric_Descriptors (category, intensity, descriptor_text, biome_affinity, tags)
 VALUES
 ('Sound', 'Moderate', 'Water drips steadily, and metal groans under stress.', 'The_Roots', '["Water", "Metal"]'),
 ('Sound', 'Subtle', 'The hiss of leaking steam punctuates the silence.', 'The_Roots', '["Steam", "Leaking"]'),
-('Sound', 'Moderate', 'Corroded pipes rattle and clang.', 'The_Roots', '["Metal", "Corroded"]');
+('Sound', 'Moderate', 'Corroded pipes rattle and clang.', 'The_Roots', '["Metal", "Corroded"]'),
 
 -- Biome-Specific Sound: Jötunheim (Industrial/Echoing)
 INSERT OR IGNORE INTO Atmospheric_Descriptors (category, intensity, descriptor_text, biome_affinity, tags)
 VALUES
 ('Sound', 'Moderate', 'Machinery groans distantly in vast spaces.', 'Jötunheim', '["Mechanical", "Echoing"]'),
 ('Sound', 'Subtle', 'Your footsteps echo endlessly in the emptiness.', 'Jötunheim', '["Echoing", "Empty"]'),
-('Sound', 'Moderate', 'The sound of titanic industry long silenced lingers.', 'Jötunheim', '["Industrial", "Ghost"]');
+('Sound', 'Moderate', 'The sound of titanic industry long silenced lingers.', 'Jötunheim', '["Industrial", "Ghost"]'),
 
 -- ============================================================
 -- CATEGORY 3: SMELL (40+ descriptors)
@@ -163,34 +163,34 @@ VALUES
 ('Smell', 'Moderate', 'The metallic tang of rust is overwhelming.', NULL, '["Metal", "Rust"]'),
 ('Smell', 'Moderate', 'The air smells of oxidized iron and decay.', NULL, '["Metal", "Oxidized"]'),
 ('Smell', 'Oppressive', 'Everything reeks of corroded metal.', NULL, '["Metal", "Corroded"]'),
-('Smell', 'Subtle', 'A faint metallic scent hangs in the air.', NULL, '["Metal", "Subtle"]');
+('Smell', 'Subtle', 'A faint metallic scent hangs in the air.', NULL, '["Metal", "Subtle"]'),
 
 -- Industrial Scents: Oil/Chemical
 INSERT OR IGNORE INTO Atmospheric_Descriptors (category, intensity, descriptor_text, biome_affinity, tags)
 VALUES
 ('Smell', 'Moderate', 'The acrid smell of leaked lubricants hangs heavy.', NULL, '["Chemical", "Oil"]'),
 ('Smell', 'Oppressive', 'Chemical residue burns your nostrils.', NULL, '["Chemical", "Burning"]'),
-('Smell', 'Moderate', 'The air is thick with petroleum byproducts.', NULL, '["Chemical", "Petroleum"]');
+('Smell', 'Moderate', 'The air is thick with black-blood residue.', NULL, '["Chemical", "Petroleum"]'),
 
 -- Industrial Scents: Ozone
 INSERT OR IGNORE INTO Atmospheric_Descriptors (category, intensity, descriptor_text, biome_affinity, tags)
 VALUES
-('Smell', 'Subtle', 'The sharp scent of ozone marks electrical activity.', NULL, '["Ozone", "Electrical"]'),
-('Smell', 'Moderate', 'The air smells like a lightning strike.', NULL, '["Ozone", "Lightning"]');
+('Smell', 'Subtle', 'The sharp scent of storm-scorch marks electrical activity.', NULL, '["Ozone", "Electrical"]'),
+('Smell', 'Moderate', 'The air smells like a lightning strike.', NULL, '["Ozone", "Lightning"]'),
 
 -- Organic Scents: Decay
 INSERT OR IGNORE INTO Atmospheric_Descriptors (category, intensity, descriptor_text, biome_affinity, tags)
 VALUES
 ('Smell', 'Oppressive', 'The sweet stench of rot pervades everything.', NULL, '["Organic", "Decay"]'),
 ('Smell', 'Moderate', 'Decomposition fills your nose.', NULL, '["Organic", "Decomposition"]'),
-('Smell', 'Oppressive', 'The smell of death is inescapable.', NULL, '["Organic", "Death"]');
+('Smell', 'Oppressive', 'The smell of death is inescapable.', NULL, '["Organic", "Death"]'),
 
 -- Organic Scents: Mold/Mildew
 INSERT OR IGNORE INTO Atmospheric_Descriptors (category, intensity, descriptor_text, biome_affinity, tags)
 VALUES
 ('Smell', 'Moderate', 'Damp, musty air suggests fungal growth.', NULL, '["Organic", "Mold"]'),
 ('Smell', 'Moderate', 'The scent of mildew is pervasive.', NULL, '["Organic", "Mildew"]'),
-('Smell', 'Subtle', 'A faint mustiness indicates moisture.', NULL, '["Organic", "Musty"]');
+('Smell', 'Subtle', 'A faint mustiness indicates moisture.', NULL, '["Organic", "Musty"]'),
 
 -- Biome-Specific Smell: Muspelheim (Brimstone/Sulfur)
 INSERT OR IGNORE INTO Atmospheric_Descriptors (category, intensity, descriptor_text, biome_affinity, tags)
@@ -206,21 +206,21 @@ INSERT OR IGNORE INTO Atmospheric_Descriptors (category, intensity, descriptor_t
 VALUES
 ('Smell', 'Moderate', 'The scent is crisp and painfully cold.', 'Niflheim', '["Cold", "Crisp"]'),
 ('Smell', 'Subtle', 'Frozen moisture gives the air a clean, sterile smell.', 'Niflheim', '["Cold', 'Sterile"]'),
-('Smell', 'Moderate', 'The air smells of frozen ozone.', 'Niflheim', '["Cold", "Ozone"]');
+('Smell', 'Moderate', 'The air smells of frozen storm-scorch.', 'Niflheim', '["Cold", "Ozone"]'),
 
 -- Biome-Specific Smell: The Roots (Rust/Mildew)
 INSERT OR IGNORE INTO Atmospheric_Descriptors (category, intensity, descriptor_text, biome_affinity, tags)
 VALUES
 ('Smell', 'Moderate', 'The air smells of rust and mildew.', 'The_Roots', '["Rust", "Mildew"]'),
 ('Smell', 'Moderate', 'Damp corrosion and fungal growth dominate.', 'The_Roots', '["Rust", "Fungal"]'),
-('Smell', 'Oppressive', 'The stench of rust, mildew, and stagnant water is overpowering.', 'The_Roots', '["Rust", "Stagnant"]');
+('Smell', 'Oppressive', 'The stench of rust, mildew, and stagnant water is overpowering.', 'The_Roots', '["Rust", "Stagnant"]'),
 
 -- Biome-Specific Smell: Alfheim (Ozone/Burnt Reality)
 INSERT OR IGNORE INTO Atmospheric_Descriptors (category, intensity, descriptor_text, biome_affinity, tags)
 VALUES
-('Smell', 'Oppressive', 'The air smells of ozone and something burning that shouldn''t exist.', 'Alfheim', '["Ozone", "Reality_Burn"]'),
+('Smell', 'Oppressive', 'The air smells of storm-scorch and something burning that shouldn''t exist.', 'Alfheim', '["Ozone", "Reality_Burn"]'),
 ('Smell', 'Oppressive', 'An impossible scent—copper mixed with burnt sugar and despair.', 'Alfheim', '["Impossible", "Paradox"]'),
-('Smell', 'Moderate', 'Ozone mingles with an indescribable wrongness.', 'Alfheim', '["Ozone", "Wrong"]');
+('Smell', 'Moderate', 'Storm-scorch mingles with an indescribable wrongness.', 'Alfheim', '["Ozone", "Wrong"]'),
 
 -- Biome-Specific Smell: Jötunheim (Rust/Old Industry)
 INSERT OR IGNORE INTO Atmospheric_Descriptors (category, intensity, descriptor_text, biome_affinity, tags)
@@ -237,21 +237,21 @@ VALUES
 INSERT OR IGNORE INTO Atmospheric_Descriptors (category, intensity, descriptor_text, biome_affinity, tags)
 VALUES
 ('Temperature', 'Subtle', 'The air is pleasantly warm.', NULL, '["Heat", "Warm"]'),
-('Temperature', 'Subtle', 'Residual heat from machinery warms the space.', NULL, '["Heat", "Mechanical"]');
+('Temperature', 'Subtle', 'Residual heat from machinery warms the space.', NULL, '["Heat", "Mechanical"]'),
 
 -- Heat: Hot
 INSERT OR IGNORE INTO Atmospheric_Descriptors (category, intensity, descriptor_text, biome_affinity, tags)
 VALUES
 ('Temperature', 'Moderate', 'The temperature here is oppressively hot.', NULL, '["Heat", "Hot"]'),
 ('Temperature', 'Moderate', 'Heat radiates from every surface.', NULL, '["Heat", "Radiating"]'),
-('Temperature', 'Moderate', 'Sweat forms immediately in this sauna-like environment.', NULL, '["Heat", "Humid"]');
+('Temperature', 'Moderate', 'Sweat forms immediately in this sauna-like environment.', NULL, '["Heat", "Humid"]'),
 
 -- Heat: Scorching
 INSERT OR IGNORE INTO Atmospheric_Descriptors (category, intensity, descriptor_text, biome_affinity, tags)
 VALUES
 ('Temperature', 'Oppressive', 'The air burns your lungs with each breath.', NULL, '["Heat", "Scorching"]'),
 ('Temperature', 'Oppressive', 'Heat waves shimmer visibly in the air.', NULL, '["Heat", "Extreme"]'),
-('Temperature', 'Oppressive', 'It feels like standing next to an open furnace.', NULL, '["Heat", "Furnace"]');
+('Temperature', 'Oppressive', 'It feels like standing next to an open furnace.', NULL, '["Heat", "Furnace"]'),
 
 -- Cold: Cool
 INSERT OR IGNORE INTO Atmospheric_Descriptors (category, intensity, descriptor_text, biome_affinity, tags)
@@ -357,7 +357,7 @@ INSERT OR IGNORE INTO Atmospheric_Descriptors (category, intensity, descriptor_t
 VALUES
 ('PsychicPresence', 'Oppressive', 'Forlorn presence is unmistakable—the dead are close.', NULL, '["Forlorn", "Active"]'),
 ('PsychicPresence', 'Oppressive', 'The dead are too close, their anguish palpable.', NULL, '["Forlorn", "Active"]'),
-('PsychicPresence', 'Oppressive', 'Anguish from 800 years past bleeds through.', NULL, '["Forlorn", "Ancient"]');
+('PsychicPresence', 'Oppressive', 'Anguish from centuries past bleeds through.', NULL, '["Forlorn", "Ancient"]');
 
 -- Biome-Specific Psychic: Muspelheim (Diminished Blight)
 INSERT OR IGNORE INTO Atmospheric_Descriptors (category, intensity, descriptor_text, biome_affinity, tags)

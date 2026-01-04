@@ -24,17 +24,17 @@ VALUES
 -- Corrupted Servitor
 ('Creature', 'CorruptedServitor', 'Cursory', NULL, 'Alive', 'A hunched metal figure, twitching with erratic motion.', 1.0, '["Basic", "Machine"]'),
 ('Creature', 'CorruptedServitor', 'Detailed', NULL, 'Alive', 'A Labor-Husk from the Old World. Its motive-joints grind with rust, and its single eye-lens flickers with a maddened red light. It seeks to crush anything that lives.', 1.0, '["Lore", "Machine"]'),
-('Creature', 'CorruptedServitor', 'Expert', NULL, 'Alive', 'Model M-12 Labor Unit. The command runes on its chassis have been scored out and replaced with jagged scratches. It no longer obeys the Iron Law. It knows only violence.', 1.0, '["Technical", "Machine"]'),
+('Creature', 'CorruptedServitor', 'Expert', NULL, 'Alive', 'Pattern-12 Labor Husk. The command runes on its chassis have been scored out and replaced with jagged scratches. It no longer obeys the Iron Law. It knows only violence.', 1.0, '["Technical", "Machine"]'),
 
 -- Scrap-Hound
 ('Creature', 'ScrapHound', 'Cursory', NULL, 'Alive', 'A four-legged jagged metal beast, low to the ground.', 1.0, '["Basic", "Machine"]'),
 ('Creature', 'ScrapHound', 'Detailed', NULL, 'Alive', 'A scavenger-beast made of blades and wire. It moves with a clattering speed, hunting for metal to consume and flesh to rend.', 1.0, '["Lore", "Machine"]'),
-('Creature', 'ScrapHound', 'Expert', NULL, 'Alive', 'Designation: Pursuit Unit. Its jaws are hydraulic shears designed to cut through hull plating. Do not let it close the distance; its speed is its weapon.', 1.0, '["Technical", "Machine", "Tactical"]'),
+('Creature', 'ScrapHound', 'Expert', NULL, 'Alive', 'Designation: Pursuit Unit. Its jaws are piston-shears designed to cut through hull plating. Do not let it close the distance; its speed is its weapon.', 1.0, '["Technical", "Machine", "Tactical"]'),
 
 -- Sludge-Crawler
 ('Creature', 'SludgeCrawler', 'Cursory', NULL, 'Alive', 'A glistening mass of slime dragging itself forward.', 1.0, '["Basic", "Organic"]'),
 ('Creature', 'SludgeCrawler', 'Detailed', NULL, 'Alive', 'A bloat of alchemical waste given life. It leaves a trail of smoking acid. The smell is of rotten eggs and burning copper.', 1.0, '["Lore", "Bio"]'),
-('Creature', 'SludgeCrawler', 'Expert', NULL, 'Alive', 'A colony of industrial bacteria, mutated by the Blight. Do not touch it. Its very touch dissolves iron and flesh alike.', 1.0, '["Technical", "Bio", "Tactical"]'),
+('Creature', 'SludgeCrawler', 'Expert', NULL, 'Alive', 'A colony of rot-spirits, mutated by the Blight. Do not touch it. Its very touch dissolves iron and flesh alike.', 1.0, '["Technical", "Bio", "Tactical"]'),
 
 -- Corroded Sentry
 ('Creature', 'CorrodedSentry', 'Cursory', NULL, 'Alive', 'A floating metal eye, drifting aimlessly.', 1.0, '["Basic", "Machine"]'),
@@ -61,7 +61,7 @@ VALUES
 -- Test Subject
 ('Creature', 'TestSubject', 'Cursory', NULL, 'Alive', 'A pale, twitching humanoid with tubes in its flesh.', 1.0, '["Basic", "Mutant"]'),
 ('Creature', 'TestSubject', 'Detailed', NULL, 'Alive', 'A victim of the flesh-shapers. Its limbs are elongated, and its skin is translucent. It weeps as it attacks.', 1.0, '["Lore", "Mutant"]'),
-('Creature', 'TestSubject', 'Expert', NULL, 'Alive', 'Genetic experiment, likely from the Bio-Labs. Enhanced adrenal glands make it incredibly fast but fragile. Its unstable biology makes it prone to frenzy.', 1.0, '["Technical", "Mutant", "Tactical"]'),
+('Creature', 'TestSubject', 'Expert', NULL, 'Alive', 'Flesh-woven horror, likely from the Flesh-Halls. Enhanced rage-organs make it incredibly fast but fragile. Its unstable biology makes it prone to frenzy.', 1.0, '["Technical", "Mutant", "Tactical"]'),
 
 -- Blight-Drone
 ('Creature', 'BlightDrone', 'Cursory', NULL, 'Alive', 'A flying insect-machine, buzzing loudly like an angry spirit.', 1.0, '["Basic", "Machine"]'),
@@ -81,27 +81,27 @@ VALUES
 -- Shrieker
 ('Creature', 'Shrieker', 'Cursory', NULL, 'Alive', 'A mouthless face on a twisted body.', 1.0, '["Basic", "Horror"]'),
 ('Creature', 'Shrieker', 'Detailed', NULL, 'Alive', 'A horror of the deep dark. It has no eyes, only a gaping maw that screams a sound you feel in your teeth. Being near it clouds your mind.', 1.0, '["Lore", "Horror"]'),
-('Creature', 'Shrieker', 'Expert', NULL, 'Alive', 'Psionic anomaly. It projects a constant field of psychic interference (Stress). Its scream is a focused sonic attack. Silence it.', 1.0, '["Technical", "Horror", "Tactical"]'),
+('Creature', 'Shrieker', 'Expert', NULL, 'Alive', 'Mind-witch anomaly. It projects a constant field of psychic interference (Stress). Its scream is a focused sonic attack. Silence it.', 1.0, '["Technical", "Horror", "Tactical"]'),
 
 -- Forlorn Scholar
 ('Creature', 'ForlornScholar', 'Cursory', NULL, 'Alive', 'A robed figure clutching a glowing tome.', 1.0, '["Basic", "Humanoid"]'),
 ('Creature', 'ForlornScholar', 'Detailed', NULL, 'Alive', 'A seeker of knowledge who found only madness. They whisper forbidden runes that warp the air. They might speak to you, but do not listen.', 1.0, '["Lore", "Humanoid"]'),
-('Creature', 'ForlornScholar', 'Expert', NULL, 'Alive', 'A caster wielding corrupted Galdr. They can inflict heavy mental trauma. Their barrier is weak against physical force, but their mind-magics are potent.', 1.0, '["Technical", "Humanoid", "Tactical"]'),
+('Creature', 'ForlornScholar', 'Expert', NULL, 'Alive', 'A caster wielding corrupted Galdr. They can inflict heavy mental trauma. Their barrier is weak against physical force, but their mind-arts are potent.', 1.0, '["Technical", "Humanoid", "Tactical"]'),
 
 -- Jötun-Reader Fragment (AI)
-('Creature', 'JotunReaderFragment', 'Cursory', NULL, 'Alive', 'A hologram of a giant face, glitching and screaming.', 1.0, '["Basic", "Spirit"]'),
+('Creature', 'JotunReaderFragment', 'Cursory', NULL, 'Alive', 'A ghost-light of a giant face, glitching and screaming.', 1.0, '["Basic", "Spirit"]'),
 ('Creature', 'JotunReaderFragment', 'Detailed', NULL, 'Alive', 'A shard of a dead god''s mind, projected into the air. It speaks in a thousand voices, demanding credentials you do not have. It burns with cold light.', 1.0, '["Lore", "Spirit"]'),
-('Creature', 'JotunReaderFragment', 'Expert', NULL, 'Alive', 'Fragmented Artificial Intelligence avatar. Hard light projection. It attacks with data-spikes that bypass armor. It is anchored to a nearby projector—destroy the hardware to banish the spirit.', 1.0, '["Technical", "Spirit", "Tactical"]'),
+('Creature', 'JotunReaderFragment', 'Expert', NULL, 'Alive', 'Fragmented Machine-Spirit avatar. Hard light projection. It attacks with data-spikes that bypass armor. It is anchored to a nearby projector—destroy the hardware to banish the spirit.', 1.0, '["Technical", "Spirit", "Tactical"]'),
 
 -- Servitor Swarm
 ('Creature', 'ServitorSwarm', 'Cursory', NULL, 'Alive', 'A tide of small, broken machines.', 1.0, '["Basic", "Swarm"]'),
 ('Creature', 'ServitorSwarm', 'Detailed', NULL, 'Alive', 'Hundreds of tiny worker-bots moving as one. They strip flesh from bone like piranhas. Individually weak, but together they are a landslide of metal.', 1.0, '["Lore", "Swarm"]'),
-('Creature', 'ServitorSwarm', 'Expert', NULL, 'Alive', 'Nanite-maintenance cluster. Area of effect attacks are required. Single-target weapons are inefficient.', 1.0, '["Technical", "Swarm", "Tactical"]'),
+('Creature', 'ServitorSwarm', 'Expert', NULL, 'Alive', 'Dust-spirit swarm. Area of effect attacks are required. Single-target weapons are inefficient.', 1.0, '["Technical", "Swarm", "Tactical"]'),
 
 -- War-Frame
 ('Creature', 'WarFrame', 'Cursory', NULL, 'Alive', 'A humanoid suit of armor, empty but moving.', 1.0, '["Basic", "Machine"]'),
 ('Creature', 'WarFrame', 'Detailed', NULL, 'Alive', 'A suit of Jötun battle-plate, animated by a dark spirit. It wields a blade taller than a man. It fights with the skill of a veteran warrior.', 1.0, '["Lore", "Machine"]'),
-('Creature', 'WarFrame', 'Expert', NULL, 'Alive', 'Autonomous Infantry Exoskeleton. Heavy plating makes it resistant to small arms. It lacks ranged capability—kite it if possible.', 1.0, '["Technical", "Machine", "Tactical"]');
+('Creature', 'WarFrame', 'Expert', NULL, 'Alive', 'Autonomous Infantry War-Shell. Heavy plating makes it resistant to small arms. It lacks ranged capability—kite it if possible.', 1.0, '["Technical", "Machine", "Tactical"]');
 
 
 -- ============================================================
@@ -118,7 +118,7 @@ VALUES
 -- Vault Custodian
 ('Creature', 'VaultCustodian', 'Cursory', NULL, 'Alive', 'A floating sphere with heavy shield plates.', 1.0, '["Basic", "Machine"]'),
 ('Creature', 'VaultCustodian', 'Detailed', NULL, 'Alive', 'The Warden of the Deep. It blocks the way with walls of hard light. It will not pursue, but it will not let you pass.', 1.0, '["Lore", "Machine"]'),
-('Creature', 'VaultCustodian', 'Expert', NULL, 'Alive', 'Static Defense Unit. Projecting high-soak force fields. It has multiple phases; when the shield drops, it releases a repulsor wave.', 1.0, '["Technical", "Machine", "Tactical"]');
+('Creature', 'VaultCustodian', 'Expert', NULL, 'Alive', 'Static Defense Unit. Projecting high-soak force fields. It has multiple phases; when the shield drops, it releases a repulsor wave.', 1.0, '["Technical", "Machine", "Tactical"]'),
 
 
 -- ============================================================
@@ -135,12 +135,12 @@ VALUES
 -- Rust-Witch
 ('Creature', 'RustWitch', 'Cursory', NULL, 'Alive', 'A woman fused into a throne of cables.', 1.0, '["Basic", "Horror"]'),
 ('Creature', 'RustWitch', 'Detailed', NULL, 'Alive', 'She is the queen of the scrap heap. The machines whisper to her, and she screams back. The rust on the walls obeys her command.', 1.0, '["Lore", "Horror"]'),
-('Creature', 'RustWitch', 'Expert', NULL, 'Alive', 'Psionic-Cybernetic hybrid. She controls the battlefield environment. Can detonate nearby metal objects. High priority target.', 1.0, '["Technical", "Horror", "Tactical"]'),
+('Creature', 'RustWitch', 'Expert', NULL, 'Alive', 'Mind-Iron hybrid. She controls the battlefield environment. Can detonate nearby metal objects. High priority target.', 1.0, '["Technical", "Horror", "Tactical"]'),
 
 -- Sentinel Prime
 ('Creature', 'SentinelPrime', 'Cursory', NULL, 'Alive', 'A pristine, towering war-machine in white armor.', 1.0, '["Basic", "Machine"]'),
 ('Creature', 'SentinelPrime', 'Detailed', NULL, 'Alive', 'The Old World''s wrath incarnate. It shines with a terrible, clean light. Its weapons utilize the invisible fire. It does not speak; it judges.', 1.0, '["Lore", "Machine"]'),
-('Creature', 'SentinelPrime', 'Expert', NULL, 'Alive', 'Elite Combat Unit. Equipped with plasma weaponry and adaptive shielding. It learns your attack patterns. Vary your tactics.', 1.0, '["Technical", "Machine", "Tactical"]');
+('Creature', 'SentinelPrime', 'Expert', NULL, 'Alive', 'Elite Combat Unit. Equipped with star-fire weaponry and adaptive shielding. It learns your attack patterns. Vary your tactics.', 1.0, '["Technical", "Machine", "Tactical"]'),
 
 
 -- ============================================================
@@ -152,19 +152,19 @@ VALUES
 -- Ruin-Warden
 ('Creature', 'RuinWarden', 'Cursory', NULL, 'Alive', 'A giant in rusted plate, wielding a hammer made of an engine block.', 1.0, '["Basic", "Boss"]'),
 ('Creature', 'RuinWarden', 'Detailed', NULL, 'Alive', 'The King of the Scrap. He has ruled this sector for centuries. His armor is a patchwork of trophies. He fights with the desperation of a dying god.', 1.0, '["Lore", "Boss"]'),
-('Creature', 'RuinWarden', 'Expert', NULL, 'Alive', 'Sector Overseer. Physical damage output increases as his health drops (Berserk). Keep distance during Phase 2.', 1.0, '["Technical", "Boss", "Tactical"]'),
+('Creature', 'RuinWarden', 'Expert', NULL, 'Alive', 'Sector Overseer. Physical damage output increases as his health drops (Berserk). Keep distance during Second Form.', 1.0, '["Technical", "Boss", "Tactical"]'),
 
 -- Aetheric Aberration
 ('Creature', 'AethericAberration', 'Cursory', NULL, 'Alive', 'A swirling vortex of light and debris.', 1.0, '["Basic", "Boss"]'),
 ('Creature', 'AethericAberration', 'Detailed', NULL, 'Alive', 'A hole in the world. The laws of nature do not apply here. Looking at it makes your eyes bleed. It is the Blight given form.', 1.0, '["Lore", "Boss"]'),
-('Creature', 'AethericAberration', 'Expert', NULL, 'Alive', 'Dimensional Breach Entity. Immune to physical attacks during Phase 1. Use runic attacks or wait for it to solidify.', 1.0, '["Technical", "Boss", "Tactical"]'),
+('Creature', 'AethericAberration', 'Expert', NULL, 'Alive', 'Dimensional Breach Entity. Immune to physical attacks during First Form. Use runic attacks or wait for it to solidify.', 1.0, '["Technical", "Boss", "Tactical"]'),
 
 -- Forlorn Archivist
 ('Creature', 'ForlornArchivist', 'Cursory', NULL, 'Alive', 'A creature of robes and scrolls, floating above the ground.', 1.0, '["Basic", "Boss"]'),
 ('Creature', 'ForlornArchivist', 'Detailed', NULL, 'Alive', 'The Keeper of Forbidden Truths. It knows the name of the Glitch. It will unmake your mind with a word.', 1.0, '["Lore", "Boss"]'),
-('Creature', 'ForlornArchivist', 'Expert', NULL, 'Alive', 'Psionic entity. Summons minions in Phase 2. High mental resistance required.', 1.0, '["Technical", "Boss", "Tactical"]'),
+('Creature', 'ForlornArchivist', 'Expert', NULL, 'Alive', 'Mind-witch entity. Summons minions in Second Form. High mental resistance required.', 1.0, '["Technical", "Boss", "Tactical"]'),
 
 -- Omega Sentinel
 ('Creature', 'OmegaSentinel', 'Cursory', NULL, 'Alive', 'A walking fortress, bristling with cannons.', 1.0, '["Basic", "Boss"]'),
 ('Creature', 'OmegaSentinel', 'Detailed', NULL, 'Alive', 'The End of All Things. A weapon of the Last War, woken from its sleep. Its steps shake the citadel. It brings the thunder of the gods.', 1.0, '["Lore", "Boss"]'),
-('Creature', 'OmegaSentinel', 'Expert', NULL, 'Alive', 'Mobile Artillery Platform. Phase 1: Railgun (Line AoE). Phase 2: Missile Barrage (Area Denial). Phase 3: Overcharge (Self-Destruct Sequence). Run.', 1.0, '["Technical", "Boss", "Tactical"]');
+('Creature', 'OmegaSentinel', 'Expert', NULL, 'Alive', 'Mobile Siege-Engine. First Form: Thunder-caster (Line AoE). Second Form: Fire-rain (Area Denial). Third Form: Overcharge (Self-Destruct Sequence). Run.', 1.0, '["Technical", "Boss", "Tactical"]');
