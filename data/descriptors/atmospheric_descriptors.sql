@@ -19,7 +19,7 @@ INSERT OR IGNORE INTO Atmospheric_Descriptors (category, intensity, descriptor_t
 VALUES
 ('Lighting', 'Moderate', 'The runic light panels flicker erratically, casting unstable shadows.', NULL, '["Flickering", "Runic"]'),
 ('Lighting', 'Moderate', 'Light pulses in irregular intervals, never quite steady.', NULL, '["Flickering", "Unstable"]'),
-('Lighting', 'Oppressive', 'The illumination stutters like a failing circuit, plunging into darkness between pulses.', NULL, '["Flickering", "Extreme"]');
+('Lighting', 'Oppressive', 'The illumination stutters like a failing spark-path, plunging into darkness between pulses.', NULL, '["Flickering", "Extreme"]');
 
 -- Generic Lighting: Harsh
 INSERT OR IGNORE INTO Atmospheric_Descriptors (category, intensity, descriptor_text, biome_affinity, tags)
@@ -82,7 +82,7 @@ VALUES
 INSERT OR IGNORE INTO Atmospheric_Descriptors (category, intensity, descriptor_text, biome_affinity, tags)
 VALUES
 ('Sound', 'Moderate', 'Distant machinery groans and clanks rhythmically.', NULL, '["Mechanical", "Industrial"]'),
-('Sound', 'Subtle', 'The whir of failing servos echoes through the space.', NULL, '["Mechanical", "Servos"]'),
+('Sound', 'Subtle', 'The whir of failing limb-gears echoes through the space.', NULL, '["Mechanical", "Servos"]'),
 ('Sound', 'Moderate', 'Grinding gears struggle against centuries of corrosion.', NULL, '["Mechanical", "Grinding"]'),
 ('Sound', 'Oppressive', 'The cacophony of tortured machinery is overwhelming.', NULL, '["Mechanical", "Extreme"]');
 
@@ -103,8 +103,8 @@ VALUES
 -- Generic Sound: Electrical
 INSERT OR IGNORE INTO Atmospheric_Descriptors (category, intensity, descriptor_text, biome_affinity, tags)
 VALUES
-('Sound', 'Moderate', 'Power conduits arc and crackle intermittently.', NULL, '["Electrical", "Arcing"]'),
-('Sound', 'Moderate', 'The buzz of unstable electricity permeates everything.', NULL, '["Electrical", "Buzzing"]'),
+('Sound', 'Moderate', 'Power lines arc and crackle intermittently.', NULL, '["Electrical", "Arcing"]'),
+('Sound', 'Moderate', 'The buzz of unstable lightning permeates everything.', NULL, '["Electrical", "Buzzing"]'),
 ('Sound', 'Subtle', 'Static discharge pops and hisses.', NULL, '["Electrical", "Static"]');
 
 -- Generic Sound: Silence
@@ -170,12 +170,12 @@ INSERT OR IGNORE INTO Atmospheric_Descriptors (category, intensity, descriptor_t
 VALUES
 ('Smell', 'Moderate', 'The acrid smell of leaked lubricants hangs heavy.', NULL, '["Chemical", "Oil"]'),
 ('Smell', 'Oppressive', 'Chemical residue burns your nostrils.', NULL, '["Chemical", "Burning"]'),
-('Smell', 'Moderate', 'The air is thick with petroleum byproducts.', NULL, '["Chemical", "Petroleum"]');
+('Smell', 'Moderate', 'The air is thick with black-blood fumes.', NULL, '["Chemical", "Petroleum"]');
 
 -- Industrial Scents: Ozone
 INSERT OR IGNORE INTO Atmospheric_Descriptors (category, intensity, descriptor_text, biome_affinity, tags)
 VALUES
-('Smell', 'Subtle', 'The sharp scent of ozone marks electrical activity.', NULL, '["Ozone", "Electrical"]'),
+('Smell', 'Subtle', 'The sharp scent of storm-scorch marks lightning activity.', NULL, '["Ozone", "Electrical"]'),
 ('Smell', 'Moderate', 'The air smells like a lightning strike.', NULL, '["Ozone", "Lightning"]');
 
 -- Organic Scents: Decay
@@ -206,7 +206,7 @@ INSERT OR IGNORE INTO Atmospheric_Descriptors (category, intensity, descriptor_t
 VALUES
 ('Smell', 'Moderate', 'The scent is crisp and painfully cold.', 'Niflheim', '["Cold", "Crisp"]'),
 ('Smell', 'Subtle', 'Frozen moisture gives the air a clean, sterile smell.', 'Niflheim', '["Cold', 'Sterile"]'),
-('Smell', 'Moderate', 'The air smells of frozen ozone.', 'Niflheim', '["Cold", "Ozone"]');
+('Smell', 'Moderate', 'The air smells of frozen storm-scorch.', 'Niflheim', '["Cold", "Ozone"]');
 
 -- Biome-Specific Smell: The Roots (Rust/Mildew)
 INSERT OR IGNORE INTO Atmospheric_Descriptors (category, intensity, descriptor_text, biome_affinity, tags)
@@ -218,9 +218,9 @@ VALUES
 -- Biome-Specific Smell: Alfheim (Ozone/Burnt Reality)
 INSERT OR IGNORE INTO Atmospheric_Descriptors (category, intensity, descriptor_text, biome_affinity, tags)
 VALUES
-('Smell', 'Oppressive', 'The air smells of ozone and something burning that shouldn''t exist.', 'Alfheim', '["Ozone", "Reality_Burn"]'),
+('Smell', 'Oppressive', 'The air smells of storm-scorch and something burning that shouldn''t exist.', 'Alfheim', '["Ozone", "Reality_Burn"]'),
 ('Smell', 'Oppressive', 'An impossible scent—copper mixed with burnt sugar and despair.', 'Alfheim', '["Impossible", "Paradox"]'),
-('Smell', 'Moderate', 'Ozone mingles with an indescribable wrongness.', 'Alfheim', '["Ozone", "Wrong"]');
+('Smell', 'Moderate', 'Storm-scorch mingles with an indescribable wrongness.', 'Alfheim', '["Ozone", "Wrong"]');
 
 -- Biome-Specific Smell: Jötunheim (Rust/Old Industry)
 INSERT OR IGNORE INTO Atmospheric_Descriptors (category, intensity, descriptor_text, biome_affinity, tags)
