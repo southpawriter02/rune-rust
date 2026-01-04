@@ -39,6 +39,7 @@ related_specs: []
 ## Table of Contents
 
 - [Overview](#overview)
+- [Voice Guidance](#voice-guidance)
 - [Core Concepts](#core-concepts)
 - [Behaviors](#behaviors)
 - [Restrictions](#restrictions)
@@ -58,6 +59,17 @@ related_specs: []
 ## Overview
 
 [2-3 paragraphs describing what this system does, why it exists, and its role in the game.]
+
+---
+
+## Voice Guidance
+
+**Tone:** [e.g., Gritty, Clinical, Mythic, etc.]
+**Perspective:** [e.g., Layer 2: Diagnostic, Layer 3: Technical]
+**Key Constraints:**
+- [Constraint 1]
+- [Constraint 2]
+- [Constraint 3]
 
 ---
 
@@ -288,23 +300,24 @@ private const int [ConstantName] = [Value];
 
 ## Quick Reference
 
-### Required Sections (15)
+### Required Sections (16)
 
 1. Table of Contents
 2. Overview
-3. Core Concepts
-4. Behaviors
-5. Restrictions
-6. Limitations
-7. Use Cases
-8. Decision Trees
-9. Cross-Links
-10. Related Services
-11. Data Models
-12. Configuration
-13. Testing
-14. Design Rationale
-15. Changelog
+3. Voice Guidance
+4. Core Concepts
+5. Behaviors
+6. Restrictions
+7. Limitations
+8. Use Cases
+9. Decision Trees
+10. Cross-Links
+11. Related Services
+12. Data Models
+13. Configuration
+14. Testing
+15. Design Rationale
+16. Changelog
 
 ### Frontmatter Fields
 
