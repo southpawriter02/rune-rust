@@ -271,7 +271,7 @@ INSERT INTO Combat_Critical_Hit_Descriptors (attack_category, damage_type, weapo
 VALUES
 ('Magic', 'Fire', 'Fire', NULL, 'Burning', 'Your Galdr resonates perfectly! The target ignites like a torch! [Maximum damage + severe burning]', 1.5, 1, '["Magical", "Devastating"]'),
 ('Magic', 'Fire', 'Fire', NULL, 'InstantKill', 'The fire doesn''t just burn—it consumes! Nothing remains but ash!', 1.7, 1, '["Lethal", "Spectacular"]'),
-('Magic', 'Fire', 'Fire', NULL, 'Burning', 'Fehu answers with terrible power! Immolation is instant!', 1.5, 1, '["Runic", "Overwhelming"]');
+('Magic', 'Fire', 'Fire', NULL, 'Burning', 'Fehu answers with terrible wrath! Immolation is instant!', 1.5, 1, '["Runic", "Overwhelming"]');
 
 -- ==================== Ice Magic ====================
 
@@ -287,7 +287,7 @@ INSERT INTO Combat_Critical_Hit_Descriptors (attack_category, damage_type, weapo
 VALUES
 ('Magic', 'Lightning', 'Lightning', NULL, NULL, 'The lightning doesn''t just strike—it chains! Multiple targets convulse! [Damage to all nearby enemies]', 1.7, 1, '["Area", "Devastating"]'),
 ('Magic', 'Lightning', 'Lightning', 'Humanoid', 'Paralyzed', 'Ansuz''s fury courses through them! Their nervous system fries! [Maximum damage + paralyzed]', 1.5, 1, '["Runic", "Lethal"]'),
-('Magic', 'Lightning', 'Lightning', NULL, 'Dying', 'The electrical discharge is so powerful, their heart stops!', 1.5, 1, '["Lethal", "Brutal"]');
+('Magic', 'Lightning', 'Lightning', NULL, 'Dying', 'The lightning-bite is so deep, their heart stops!', 1.5, 1, '["Lethal", "Brutal"]');
 
 -- ==============================================================================
 -- CATEGORY 4: FUMBLE DESCRIPTORS (25 total)
@@ -314,7 +314,7 @@ VALUES
 
 INSERT INTO Combat_Fumble_Descriptors (fumble_category, fumble_type, equipment_type, severity, environment_factor, descriptor_text, weight, is_active, tags)
 VALUES
-('MagicFumble', 'CorruptionSurge', 'Staff', 'Severe', NULL, 'Your Galdr falters—the Blight warps the spell! Paradoxical energy erupts! [+10 Psychic Stress, random effect]', 0.6, 1, '["Dangerous", "Corruption"]'),
+('MagicFumble', 'CorruptionSurge', 'Staff', 'Severe', NULL, 'Your Galdr falters—the Blight warps the spell! Impossible fire erupts! [+10 Psychic Stress, random effect]', 0.6, 1, '["Dangerous", "Corruption"]'),
 ('MagicFumble', 'Backfire', NULL, 'Moderate', NULL, 'The rune inverts! The spell backfires catastrophically! [Take spell damage yourself]', 0.7, 1, '["Painful", "Embarrassing"]'),
 ('MagicFumble', 'CorruptionSurge', 'Staff', 'Catastrophic', NULL, 'Reality rejects your magic! The All-Rune interferes! [+15 Psychic Stress, spell fails, Corruption +5]', 0.3, 1, '["Catastrophic", "Corruption"]');
 

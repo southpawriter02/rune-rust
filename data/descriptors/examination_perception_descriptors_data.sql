@@ -40,8 +40,8 @@ VALUES
 ('Door', 'BlastDoor', 'Detailed', NULL, 'Sealed', 'This blast door is Jötun-grade protection, designed to contain catastrophic failures. The seals show signs of emergency activation. Whatever happened beyond this door was considered deadly.', 1.0, '["Historical", "Ominous"]'),
 
 -- Expert (DC 18)
-('Door', 'BlastDoor', 'Expert', NULL, 'Sealed', 'A Jötun-class emergency blast door. The containment rites sealed this ward 800 years ago during the evacuation. The door can only be opened from the inside or with citadel-level command keys. However, diagnostics reveal the power conduits feeding the door have degraded—severing the flow might disengage the magnetic seals.', 1.0, '["Historical", "Technical", "Tactical"]'),
-('Door', 'BlastDoor', 'Expert', NULL, 'Sealed', 'Designation BD-9900 Emergency Containment Door, designed for reactor breaches and Blight quarantine. The activation time-mark is burned into the interface: Day 1 of the Evacuation. This door sealed automatically when the citadel''s safety rites triggered. The magnetic seals appear to draw only a trickle of power—you could bypass them by severing the conduit, though doing so might trigger alerts in any connected systems.', 1.0, '["Historical", "Technical", "Lore"]');
+('Door', 'BlastDoor', 'Expert', NULL, 'Sealed', 'A Jötun-class emergency blast door. The containment rites sealed this ward 800 years ago during the evacuation. The door can only be opened from the inside or with citadel-level command keys. However, the omens reveal the blood-lines of the machine feeding the door have degraded—severing the flow might disengage the invisible locks.', 1.0, '["Historical", "Technical", "Tactical"]'),
+('Door', 'BlastDoor', 'Expert', NULL, 'Sealed', 'Designation BD-9900 Emergency Containment Door, designed for Heart-Engine breaches and Blight quarantine. The activation time-mark is burned into the interface: Day 1 of the Evacuation. This door sealed automatically when the citadel''s safety rites triggered. The invisible locks appear to draw only a trickle of lightning—you could bypass them by severing the conduit, though doing so might trigger alerts in any connected spirits.', 1.0, '["Historical", "Technical", "Lore"]');
 
 -- ============================================================
 -- CATEGORY: MACHINERY
@@ -52,7 +52,7 @@ INSERT INTO Examination_Descriptors (object_category, object_type, detail_level,
 VALUES
 -- Cursory
 ('Machinery', 'ServitorCorpse', 'Cursory', NULL, 'Destroyed', 'A destroyed Servitor, its chassis crumpled.', 1.0, '["Basic"]'),
-('Machinery', 'ServitorCorpse', 'Cursory', NULL, 'Destroyed', 'The wreckage of a Servitor lies here, power core dark.', 1.0, '["Basic"]'),
+('Machinery', 'ServitorCorpse', 'Cursory', NULL, 'Destroyed', 'The wreckage of a Servitor lies here, heart-stone dark.', 1.0, '["Basic"]'),
 
 -- Detailed (DC 12)
 ('Machinery', 'ServitorCorpse', 'Detailed', NULL, 'Destroyed', 'A destroyed Servitor, Model M-12 labor unit. Its chassis shows signs of corrupted rune-light—the Blight turned it hostile. Death was recent; the heart-stone is still warm. Salvageable parts include damaged motive-joints and a partially intact memory-gem.', 1.0, '["Technical", "Salvage", "Lore"]'),
@@ -60,7 +60,7 @@ VALUES
 
 -- Expert (DC 18)
 ('Machinery', 'ServitorCorpse', 'Expert', NULL, 'Destroyed', 'A destroyed Servitor, Model M-12; markings suggest manufacture centuries before the Blight. The corruption pattern is unusual—this unit was exposed to concentrated Blight-flow, likely from Alfheim''s expansion. The memory-gem, if recoverable, might contain pre-corruption memories showing what it witnessed. The motive-joints could be mended with proper tools.', 1.0, '["Technical", "Historical", "Salvage", "Lore"]'),
-('Machinery', 'ServitorCorpse', 'Expert', NULL, 'Destroyed', 'Model M-12 Maintenance Servitor, one of thousands deployed throughout the citadel. This unit''s maker-stamp indicates Clan Ironforge construction—pre-Blight craftsmanship at its finest. The Blight corrupted its command-runes approximately a fortnight ago based on decay patterns. The memory-gem is intact; extracting it could provide valuable intelligence about recent Servitor activity. The death occurred recently—something powerful destroyed it with a single, devastating strike to the heart-stone.', 1.0, '["Technical", "Historical", "Combat", "Intelligence"]');
+('Machinery', 'ServitorCorpse', 'Expert', NULL, 'Destroyed', 'Model M-12 Maintenance Servitor, one of thousands deployed throughout the citadel. This unit''s maker-stamp indicates Clan Ironforge construction—pre-Blight craftsmanship at its finest. The Blight corrupted its command-runes approximately a fortnight ago based on decay patterns. The memory-gem is intact; extracting it could provide valuable intelligence about recent Servitor activity. The death occurred recently—something possessing impossible strength destroyed it with a single, devastating strike to the heart-stone.', 1.0, '["Technical", "Historical", "Combat", "Intelligence"]');
 
 -- Ancient Console Descriptors
 INSERT INTO Examination_Descriptors (object_category, object_type, detail_level, biome_name, object_state, descriptor_text, weight, tags)
@@ -212,7 +212,7 @@ INSERT INTO Perception_Check_Descriptors (detection_type, success_level, difficu
 VALUES
 ('RunicInscription', 'Success', 16, NULL, 'You spot faint runic symbols etched into the surface. They''re old but still visible.', NULL, 1.0, '["Lore", "Discovery"]'),
 ('RunicInscription', 'Success', 18, NULL, 'Hidden among the decorative patterns, you find actual runic script. Someone concealed a message here.', NULL, 1.0, '["Lore", "Discovery"]'),
-('RunicInscription', 'ExpertSuccess', 20, NULL, 'You identify the hidden runes and read their meaning.', 'This is a ward inscription, designed to protect against Blight corruption. The ward failed—the runes are cracked and powerless now. But the formula itself is valuable. With proper study, you might be able to recreate functional wards.', 1.0, '["Lore", "Magical", "Valuable"]'),
+('RunicInscription', 'ExpertSuccess', 20, NULL, 'You identify the hidden runes and read their meaning.', 'This is a ward inscription, designed to protect against Blight corruption. The ward failed—the runes are cracked and empty of spark now. But the formula itself is valuable. With proper study, you might be able to recreate functional wards.', 1.0, '["Lore", "Magical", "Valuable"]'),
 ('RunicInscription', 'ExpertSuccess', 22, NULL, 'The concealed runic text reveals itself to your expert eye.', 'This inscription is in the forbidden script of the Seiðkona—Galdr deemed too dangerous for common use. The runes describe a ritual for "perceiving the threads of fate." This knowledge is priceless and dangerous in equal measure.', 1.0, '["Lore", "Forbidden", "Dangerous"]');
 
 -- Recent Activity Detection
@@ -302,7 +302,7 @@ INSERT INTO Flora_Descriptors (flora_name, flora_type, detail_level, biome_name,
 VALUES
 ('Ice Flower', 'Flower', 'Cursory', 'Niflheim', 1, 0, NULL, 'Delicate crystalline flowers that seem to be made of ice itself.', 1.0, '["Ice", "Beautiful"]'),
 ('Ice Flower', 'Flower', 'Detailed', 'Niflheim', 1, 0, 'frost Galdr, preservation', 'Ice Flowers are actual plants, not ice formations, though they''re hard to tell apart. They draw water from the frozen ground and crystallize it into petal structures. When touched, they''re cold enough to cause frostbite. Used in frost Galdr and preservation potions.', 1.0, '["Ice", "Magical"]'),
-('Ice Flower', 'Flower', 'Expert', 'Niflheim', 1, 0, 'powerful frost Galdr, time-stasis effects', 'Ice Flowers, Crystallis flos. These plants defy conventional botany—they drink reflected light from the ice, growing in perpetual winter. The crystalline structure isn''t ice but a living lattice that mimics ice''s properties while remaining flexible at freezing temperatures. Master alchemists prize them for powerful frost Galdr and experimental time-stasis effects. The flowers bloom once every 10 years; you''re fortunate to find one in bloom now.', 1.0, '["Ice", "Magical", "Rare"]');
+('Ice Flower', 'Flower', 'Expert', 'Niflheim', 1, 0, 'deep frost Galdr, time-stasis effects', 'Ice Flowers, Crystallis flos. These plants defy conventional botany—they drink reflected light from the ice, growing in perpetual winter. The crystalline structure isn''t ice but a living lattice that mimics ice''s properties while remaining flexible at freezing temperatures. Master alchemists prize them for deep frost Galdr and experimental time-stasis effects. The flowers bloom once every 10 years; you''re fortunate to find one in bloom now.', 1.0, '["Ice", "Magical", "Rare"]');
 
 -- ============================================================
 -- ALFHEIM - Flora
@@ -313,13 +313,13 @@ INSERT INTO Flora_Descriptors (flora_name, flora_type, detail_level, biome_name,
 VALUES
 ('Paradox Spore Cluster', 'Spore', 'Cursory', 'Alfheim', 1, 1, NULL, 'Strange crystalline growths that seem to shift when you look away.', 1.0, '["Blight", "Weird"]'),
 ('Paradox Spore Cluster', 'Spore', 'Detailed', 'Alfheim', 1, 1, NULL, 'Paradox Spore Clusters—if they can even be called organic. They exist in multiple states simultaneously, both fungus and crystal, living and not. The Blight created them. Approach with extreme caution; they''re unpredictable.', 1.0, '["Blight", "Dangerous"]'),
-('Paradox Spore Cluster', 'Spore', 'Expert', 'Alfheim', 1, 1, 'reality-bending Galdr, experimental runecraft', 'Paradox Spore Clusters, a true impossibility made manifest by the Blight. They violate natural laws—reproducing backward through time, existing as both spore and mature colony. Harvesting them is dangerous; they may infect the harvester with Blight Corruption. However, they''re the most potent source of paradoxical power known—essential for reality-bending Galdr and experimental runecraft. Handle only with proper containment rites.', 1.0, '["Blight", "Forbidden", "Powerful"]');
+('Paradox Spore Cluster', 'Spore', 'Expert', 'Alfheim', 1, 1, 'reality-bending Galdr, experimental runecraft', 'Paradox Spore Clusters, a true impossibility made manifest by the Blight. They violate natural laws—reproducing backward through time, existing as both spore and mature colony. Harvesting them is dangerous; they may infect the harvester with Blight Corruption. However, they''re the most potent source of impossible fire known—essential for reality-bending Galdr and experimental runecraft. Handle only with proper containment rites.', 1.0, '["Blight", "Forbidden", "Powerful"]');
 
 -- Reality Moss
 INSERT INTO Flora_Descriptors (flora_name, flora_type, detail_level, biome_name, is_harvestable, is_dangerous, alchemy_use, descriptor_text, weight, tags)
 VALUES
 ('Reality Moss', 'Moss', 'Cursory', 'Alfheim', 1, 1, NULL, 'Moss that seems to exist in multiple locations at once.', 1.0, '["Blight", "Weird"]'),
-('Reality Moss', 'Moss', 'Detailed', 'Alfheim', 1, 1, 'perception-altering compounds', 'Reality Moss defies spatial logic—it grows in places it shouldn''t be able to reach, spreading through dimensions. Touching it causes brief disorientation as your mind tries to process its impossible existence. Alchemically, it''s used in powerful perception-altering compounds.', 1.0, '["Blight", "Dangerous", "Alchemy"]'),
+('Reality Moss', 'Moss', 'Detailed', 'Alfheim', 1, 1, 'perception-altering compounds', 'Reality Moss defies spatial logic—it grows in places it shouldn''t be able to reach, spreading through dimensions. Touching it causes brief disorientation as your mind tries to process its impossible existence. Alchemically, it''s used in potent perception-altering compounds.', 1.0, '["Blight", "Dangerous", "Alchemy"]'),
 ('Reality Moss', 'Moss', 'Expert', 'Alfheim', 1, 1, 'dimensional Galdr, teleportation effects', 'Reality Moss, Paradoxus muscus—named by desperate scientists trying to catalog the uncatalogable. This organism exists partially out of phase with baseline reality, anchoring itself across multiple dimensions simultaneously. It feeds on spatial distortions. Harvesting it requires extreme care and Blight-resistant equipment. Used in experimental dimensional Galdr and teleportation effects. Warning: prolonged exposure increases Blight Corruption risk.', 1.0, '["Blight", "Experimental", "Forbidden"]');
 
 -- ============================================================
