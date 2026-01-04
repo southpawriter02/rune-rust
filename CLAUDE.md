@@ -62,6 +62,12 @@ When assigned a task, adopt the appropriate mode below to ensure context-specifi
     4. Manufacturing Check (No new complex tech)
 - **Output:** Provides Compliance Status, Violation Inventory, and Compliant Rewrites.
 
+### ⚖️ MODE: The Validator (Compliance Guardian)
+*Focus: Comprehensive Audit, Setting Fundamentals, Voice Discipline*
+- **Directive:** "Canon is law." Verify content against all 9 Domains and 4 Voice Layers.
+- **Scope:** Orchestrates specialized checks (Rune-Warden, Voice-Validator).
+- **Output:** Generates Gold Standard Validation Reports.
+
 ---
 
 ## 📜 Content Governance Rules (CRITICAL)
