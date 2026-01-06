@@ -15,7 +15,7 @@ public static class BaseDescriptorTemplateSeeder
         yield return new BaseDescriptorTemplate(
             "Corridor_Base",
             "The {Modifier} Corridor",
-            "{Article_Cap} {Modifier_Adj} corridor stretches {Direction_Descriptor}. {Architectural_Feature}. {Spatial_Descriptor}. {Detail_1}. {Modifier_Detail}.",
+            "{Article_Cap} {Modifier_Adj} corridor stretches {Direction_Descriptor}. {Architectural_Feature}. {Spatial_Descriptor}. {Detail_1}. Everything here {Modifier_Detail}.",
             RoomArchetype.Corridor,
             RoomSize.Small,
             minExits: 2,
@@ -26,7 +26,7 @@ public static class BaseDescriptorTemplateSeeder
         yield return new BaseDescriptorTemplate(
             "Corridor_Narrow",
             "The Narrow {Modifier} Passage",
-            "A narrow, {Modifier_Adj} passage winds {Direction_Descriptor}. {Spatial_Descriptor}. {Architectural_Feature}. {Atmospheric_Detail}. {Modifier_Detail}.",
+            "A narrow, {Modifier_Adj} passage winds {Direction_Descriptor}. {Spatial_Descriptor}. {Architectural_Feature}. {Atmospheric_Detail}. The walls {Modifier_Detail}.",
             RoomArchetype.Corridor,
             RoomSize.Small,
             minExits: 2,
@@ -60,7 +60,7 @@ public static class BaseDescriptorTemplateSeeder
         yield return new BaseDescriptorTemplate(
             "Chamber_Storage",
             "The {Modifier} Storage Bay",
-            "{Article_Cap} {Modifier_Adj} storage area sprawls around you. {Spatial_Descriptor}. Containers and crates line the walls. {Detail_1}. {Modifier_Detail}.",
+            "{Article_Cap} {Modifier_Adj} storage area sprawls around you. {Spatial_Descriptor}. Containers and crates line the walls. {Detail_1}. The space {Modifier_Detail}.",
             RoomArchetype.Chamber,
             RoomSize.Large,
             minExits: 1,
@@ -95,7 +95,7 @@ public static class BaseDescriptorTemplateSeeder
         yield return new BaseDescriptorTemplate(
             "DeadEnd_Base",
             "The {Modifier} Alcove",
-            "{Article_Cap} {Modifier_Adj} alcove terminates abruptly. {Spatial_Descriptor}. {Detail_1}. {Modifier_Detail}. {Atmospheric_Detail}.",
+            "{Article_Cap} {Modifier_Adj} alcove terminates abruptly. {Spatial_Descriptor}. {Detail_1}. The chamber {Modifier_Detail}. {Atmospheric_Detail}.",
             RoomArchetype.DeadEnd,
             RoomSize.Small,
             minExits: 1,
@@ -106,7 +106,7 @@ public static class BaseDescriptorTemplateSeeder
         yield return new BaseDescriptorTemplate(
             "DeadEnd_Secret",
             "The Hidden {Modifier} Nook",
-            "A concealed, {Modifier_Adj} nook opens before you. {Spatial_Descriptor}. {Detail_1}. This place seems forgotten. {Modifier_Detail}.",
+            "A concealed, {Modifier_Adj} nook opens before you. {Spatial_Descriptor}. {Detail_1}. This place seems forgotten, and {Modifier_Detail}.",
             RoomArchetype.DeadEnd,
             RoomSize.Small,
             minExits: 1,
@@ -118,7 +118,7 @@ public static class BaseDescriptorTemplateSeeder
         yield return new BaseDescriptorTemplate(
             "Stairwell_Base",
             "The {Modifier} Stairwell",
-            "{Article_Cap} {Modifier_Adj} stairwell spirals {Direction_Descriptor}. {Architectural_Feature}. {Spatial_Descriptor}. {Atmospheric_Detail}. {Modifier_Detail}.",
+            "{Article_Cap} {Modifier_Adj} stairwell spirals {Direction_Descriptor}. {Architectural_Feature}. {Spatial_Descriptor}. {Atmospheric_Detail}. The steps {Modifier_Detail}.",
             RoomArchetype.Stairwell,
             RoomSize.Medium,
             minExits: 2,
@@ -129,7 +129,7 @@ public static class BaseDescriptorTemplateSeeder
         yield return new BaseDescriptorTemplate(
             "Stairwell_Shaft",
             "The Vertical {Modifier} Shaft",
-            "A vertical, {Modifier_Adj} shaft extends {Direction_Descriptor}. {Spatial_Descriptor}. {Architectural_Feature}. Climbing here would be perilous. {Modifier_Detail}.",
+            "A vertical, {Modifier_Adj} shaft extends {Direction_Descriptor}. {Spatial_Descriptor}. {Architectural_Feature}. Climbing here would be perilous, as the surfaces {Modifier_Detail}.",
             RoomArchetype.Stairwell,
             RoomSize.Medium,
             minExits: 2,
@@ -141,7 +141,7 @@ public static class BaseDescriptorTemplateSeeder
         yield return new BaseDescriptorTemplate(
             "BossArena_Base",
             "The {Modifier} Sanctum",
-            "{Article_Cap} {Modifier_Adj} arena of terrible purpose spreads before you. {Spatial_Descriptor}. {Architectural_Feature}. The air feels {Atmospheric_Detail}. {Modifier_Detail}. Something awaits.",
+            "{Article_Cap} {Modifier_Adj} arena of terrible purpose spreads before you. {Spatial_Descriptor}. {Architectural_Feature}. The air feels {Atmospheric_Detail}. The entire space {Modifier_Detail}. Something awaits.",
             RoomArchetype.BossArena,
             RoomSize.XLarge,
             minExits: 1,
@@ -152,7 +152,7 @@ public static class BaseDescriptorTemplateSeeder
         yield return new BaseDescriptorTemplate(
             "BossArena_Throne",
             "The {Modifier} Throne Room",
-            "{Article_Cap} vast, {Modifier_Adj} throne room dominates this level. {Spatial_Descriptor}. A throne of impossible design commands attention. {Architectural_Feature}. {Modifier_Detail}.",
+            "{Article_Cap} vast, {Modifier_Adj} throne room dominates this level. {Spatial_Descriptor}. A throne of impossible design commands attention. {Architectural_Feature}. The hall {Modifier_Detail}.",
             RoomArchetype.BossArena,
             RoomSize.XLarge,
             minExits: 1,
@@ -164,7 +164,7 @@ public static class BaseDescriptorTemplateSeeder
         yield return new BaseDescriptorTemplate(
             "Chamber_Lab",
             "The {Modifier} Laboratory",
-            "{Article_Cap} {Modifier_Adj} laboratory clutters the space. {Spatial_Descriptor}. Equipment and apparatus fill every surface. {Detail_1}. {Modifier_Detail}.",
+            "{Article_Cap} {Modifier_Adj} laboratory clutters the space. {Spatial_Descriptor}. Equipment and apparatus fill every surface. {Detail_1}. The equipment {Modifier_Detail}.",
             RoomArchetype.Chamber,
             RoomSize.Medium,
             minExits: 1,
@@ -175,7 +175,7 @@ public static class BaseDescriptorTemplateSeeder
         yield return new BaseDescriptorTemplate(
             "Chamber_Forge",
             "The {Modifier} Forge",
-            "{Article_Cap} {Modifier_Adj} forge dominates this chamber. {Spatial_Descriptor}. {Architectural_Feature}. Heat emanates from dormant furnaces. {Modifier_Detail}.",
+            "{Article_Cap} {Modifier_Adj} forge dominates this chamber. {Spatial_Descriptor}. {Architectural_Feature}. Heat emanates from dormant furnaces that {Modifier_Detail}.",
             RoomArchetype.Chamber,
             RoomSize.Large,
             minExits: 1,
@@ -186,7 +186,7 @@ public static class BaseDescriptorTemplateSeeder
         yield return new BaseDescriptorTemplate(
             "Chamber_Barracks",
             "The {Modifier} Barracks",
-            "{Article_Cap} {Modifier_Adj} barracks stretches before you. {Spatial_Descriptor}. Rows of bunks line the walls. {Detail_1}. {Modifier_Detail}.",
+            "{Article_Cap} {Modifier_Adj} barracks stretches before you. {Spatial_Descriptor}. Rows of bunks line the walls. {Detail_1}. The quarters {Modifier_Detail}.",
             RoomArchetype.Chamber,
             RoomSize.Medium,
             minExits: 1,
@@ -197,7 +197,7 @@ public static class BaseDescriptorTemplateSeeder
         yield return new BaseDescriptorTemplate(
             "Junction_Operations",
             "The {Modifier} Operations Center",
-            "{Article_Cap} {Modifier_Adj} operations center serves as a nerve hub. {Spatial_Descriptor}. Consoles and displays surround you. {Architectural_Feature}. {Modifier_Detail}.",
+            "{Article_Cap} {Modifier_Adj} operations center serves as a nerve hub. {Spatial_Descriptor}. Consoles and displays surround you. {Architectural_Feature}. The machinery {Modifier_Detail}.",
             RoomArchetype.Junction,
             RoomSize.Medium,
             minExits: 3,
@@ -208,7 +208,7 @@ public static class BaseDescriptorTemplateSeeder
         yield return new BaseDescriptorTemplate(
             "Chamber_Observation",
             "The {Modifier} Observation Platform",
-            "{Article_Cap} {Modifier_Adj} observation platform offers a vantage point. {Spatial_Descriptor}. {Architectural_Feature}. {Atmospheric_Detail}. {Modifier_Detail}.",
+            "{Article_Cap} {Modifier_Adj} observation platform offers a vantage point. {Spatial_Descriptor}. {Architectural_Feature}. {Atmospheric_Detail}. The platform {Modifier_Detail}.",
             RoomArchetype.Chamber,
             RoomSize.Medium,
             minExits: 1,
