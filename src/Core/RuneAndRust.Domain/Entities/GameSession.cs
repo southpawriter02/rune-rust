@@ -49,6 +49,16 @@ public class GameSession : IEntity
     public DateTime LastPlayedAt { get; private set; }
 
     /// <summary>
+    /// Set of room IDs that the player has visited.
+    /// </summary>
+    private readonly HashSet<Guid> _visitedRooms = [];
+
+    /// <summary>
+    /// Gets a read-only set of visited room IDs.
+    /// </summary>
+    public IReadOnlySet<Guid> VisitedRooms => _visitedRooms;
+
+    /// <summary>
     /// Gets the current room the player is in, or null if the room cannot be found.
     /// </summary>
     public Room? CurrentRoom => Dungeon.GetRoom(CurrentRoomId);
@@ -77,6 +87,7 @@ public class GameSession : IEntity
         State = GameState.Playing;
         CreatedAt = DateTime.UtcNow;
         LastPlayedAt = DateTime.UtcNow;
+        _visitedRooms = [dungeon.StartingRoomId]; // Mark starting room as visited
     }
 
     /// <summary>
@@ -145,6 +156,22 @@ public class GameSession : IEntity
         UpdateLastPlayed();
         return true;
     }
+
+    /// <summary>
+    /// Marks a room as visited.
+    /// </summary>
+    /// <param name="roomId">The ID of the room to mark as visited.</param>
+    public void MarkRoomVisited(Guid roomId)
+    {
+        _visitedRooms.Add(roomId);
+    }
+
+    /// <summary>
+    /// Checks if a room has been visited before.
+    /// </summary>
+    /// <param name="roomId">The ID of the room to check.</param>
+    /// <returns>True if the room has been visited; otherwise, false.</returns>
+    public bool HasVisitedRoom(Guid roomId) => _visitedRooms.Contains(roomId);
 
     /// <summary>
     /// Sets the game state and updates the last played timestamp.

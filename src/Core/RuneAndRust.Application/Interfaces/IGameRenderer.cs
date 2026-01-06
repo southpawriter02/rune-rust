@@ -85,6 +85,20 @@ public interface IGameRenderer
     Task RenderCombatResultAsync(string combatDescription, CancellationToken ct = default);
 
     /// <summary>
+    /// Renders detailed examination information about a target.
+    /// </summary>
+    /// <param name="result">The examination result to display.</param>
+    /// <param name="ct">Cancellation token for async operation.</param>
+    Task RenderExamineResultAsync(ExamineResultDto result, CancellationToken ct = default);
+
+    /// <summary>
+    /// Renders comprehensive player statistics.
+    /// </summary>
+    /// <param name="stats">The player statistics to display.</param>
+    /// <param name="ct">Cancellation token for async operation.</param>
+    Task RenderPlayerStatsAsync(PlayerStatsDto stats, CancellationToken ct = default);
+
+    /// <summary>
     /// Clears the screen or display area.
     /// </summary>
     /// <param name="ct">Cancellation token for async operation.</param>

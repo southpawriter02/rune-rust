@@ -129,6 +129,65 @@ public class SpectreGameRenderer : IGameRenderer
     }
 
     /// <inheritdoc/>
+    public Task RenderExamineResultAsync(ExamineResultDto result, CancellationToken ct = default)
+    {
+        _logger.LogDebug("Rendering examine result for: {Name} (Type: {Type})", result.Name, result.Type);
+
+        var table = new Table()
+            .Border(TableBorder.Rounded)
+            .BorderColor(Color.Cyan1)
+            .Title($"[cyan]{Markup.Escape(result.Name)}[/] [grey]({result.Type})[/]")
+            .AddColumn(new TableColumn("[grey]Property[/]"))
+            .AddColumn(new TableColumn("[white]Value[/]"));
+
+        table.AddRow("[white]Description[/]", Markup.Escape(result.Description));
+
+        foreach (var prop in result.Properties)
+        {
+            table.AddRow($"[grey]{Markup.Escape(prop.Key)}[/]", Markup.Escape(prop.Value));
+        }
+
+        AnsiConsole.Write(table);
+        return Task.CompletedTask;
+    }
+
+    /// <inheritdoc/>
+    public Task RenderPlayerStatsAsync(PlayerStatsDto stats, CancellationToken ct = default)
+    {
+        _logger.LogDebug("Rendering player stats for: {Name}", stats.Name);
+
+        var healthColor = stats.HealthPercentage > 0.5 ? "green" :
+                          stats.HealthPercentage > 0.25 ? "yellow" : "red";
+
+        var barColor = stats.HealthPercentage > 0.5 ? Color.Green :
+                       stats.HealthPercentage > 0.25 ? Color.Yellow : Color.Red;
+
+        var healthBar = new BarChart()
+            .Width(30)
+            .AddItem("[white]HP[/]", (int)(stats.HealthPercentage * 100), barColor);
+
+        var panel = new Panel(
+            new Rows(
+                new Markup($"[bold yellow]{Markup.Escape(stats.Name)}[/]"),
+                new Text(""),
+                new Markup($"[{healthColor}]Health: {stats.Health}/{stats.MaxHealth}[/]"),
+                healthBar,
+                new Text(""),
+                new Markup($"[cyan]Attack: {stats.Attack}[/]"),
+                new Markup($"[blue]Defense: {stats.Defense}[/]"),
+                new Text(""),
+                new Markup($"[grey]Location: {Markup.Escape(stats.CurrentRoomName)} ({stats.PositionX},{stats.PositionY})[/]"),
+                new Markup($"[grey]Inventory: {stats.InventoryCount}/{stats.InventoryCapacity}[/]")
+            ))
+            .Header("[yellow]Character Status[/]")
+            .Border(BoxBorder.Rounded)
+            .BorderColor(Color.Yellow);
+
+        AnsiConsole.Write(panel);
+        return Task.CompletedTask;
+    }
+
+    /// <inheritdoc/>
     public Task ClearScreenAsync(CancellationToken ct = default)
     {
         _logger.LogDebug("Clearing screen");

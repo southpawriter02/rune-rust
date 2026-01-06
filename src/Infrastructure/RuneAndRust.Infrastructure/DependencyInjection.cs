@@ -56,6 +56,8 @@ public static class DependencyInjection
     /// <returns>The service collection for chaining.</returns>
     public static IServiceCollection AddApplicationServices(this IServiceCollection services)
     {
+        services.AddScoped<ItemEffectService>();
+        services.AddScoped<InputValidationService>();
         services.AddScoped<GameSessionService>();
         return services;
     }

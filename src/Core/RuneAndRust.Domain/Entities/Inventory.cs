@@ -96,6 +96,20 @@ public class Inventory
     }
 
     /// <summary>
+    /// Attempts to remove an item from the inventory.
+    /// </summary>
+    /// <param name="item">The item to remove.</param>
+    /// <returns><c>true</c> if the item was removed; otherwise, <c>false</c>.</returns>
+    /// <remarks>
+    /// Unlike <see cref="Remove"/>, this method does not throw when item is null.
+    /// </remarks>
+    public bool TryRemove(Item? item)
+    {
+        if (item == null) return false;
+        return _items.Remove(item);
+    }
+
+    /// <summary>
     /// Checks if the inventory contains the specified item.
     /// </summary>
     /// <param name="item">The item to check for.</param>

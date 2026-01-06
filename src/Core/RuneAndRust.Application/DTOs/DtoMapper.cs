@@ -80,6 +80,18 @@ public static class DtoMapper
     /// <exception cref="ArgumentNullException">Thrown when room is null.</exception>
     public static RoomDto ToDto(this Room room)
     {
+        return room.ToDto(isFirstVisit: true);
+    }
+
+    /// <summary>
+    /// Converts a Room entity to a RoomDto with the specified first visit status.
+    /// </summary>
+    /// <param name="room">The room entity to convert.</param>
+    /// <param name="isFirstVisit">Whether this is the player's first visit to this room.</param>
+    /// <returns>A new <see cref="RoomDto"/> containing the room's state.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when room is null.</exception>
+    public static RoomDto ToDto(this Room room, bool isFirstVisit)
+    {
         ArgumentNullException.ThrowIfNull(room);
 
         return new RoomDto(
@@ -88,7 +100,8 @@ public static class DtoMapper
             room.Description,
             room.Exits.Keys.ToList(),
             room.Items.Select(i => i.ToDto()).ToList(),
-            room.Monsters.Select(m => m.ToDto()).ToList()
+            room.Monsters.Select(m => m.ToDto()).ToList(),
+            isFirstVisit
         );
     }
 

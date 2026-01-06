@@ -33,6 +33,11 @@ public class GameSessionService
     private readonly CombatService _combatService;
 
     /// <summary>
+    /// Service for applying item effects.
+    /// </summary>
+    private readonly ItemEffectService _itemEffectService;
+
+    /// <summary>
     /// The currently active game session, or null if no session is active.
     /// </summary>
     private GameSession? _currentSession;
@@ -52,15 +57,18 @@ public class GameSessionService
     /// </summary>
     /// <param name="repository">The repository for persisting game sessions.</param>
     /// <param name="logger">The logger for service diagnostics.</param>
+    /// <param name="itemEffectService">The service for applying item effects.</param>
     /// <param name="combatLogger">Optional logger for combat service diagnostics.</param>
-    /// <exception cref="ArgumentNullException">Thrown when repository or logger is null.</exception>
+    /// <exception cref="ArgumentNullException">Thrown when repository, logger, or itemEffectService is null.</exception>
     public GameSessionService(
         IGameRepository repository,
         ILogger<GameSessionService> logger,
+        ItemEffectService itemEffectService,
         ILogger<CombatService>? combatLogger = null)
     {
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _itemEffectService = itemEffectService ?? throw new ArgumentNullException(nameof(itemEffectService));
         _combatService = new CombatService(combatLogger);
         _logger.LogDebug("GameSessionService initialized");
     }
@@ -397,14 +405,243 @@ public class GameSessionService
     }
 
     /// <summary>
+    /// Attempts to drop an item from the player's inventory into the current room.
+    /// </summary>
+    /// <param name="itemName">The name of the item to drop (case-insensitive).</param>
+    /// <returns>A tuple indicating success and a descriptive message.</returns>
+    public (bool Success, string Message) TryDropItem(string itemName)
+    {
+        _logger.LogDebug("TryDropItem called for item: {ItemName}", itemName);
+
+        if (_currentSession == null)
+        {
+            _logger.LogWarning("TryDropItem failed: No active game session");
+            return (false, "No active game session.");
+        }
+
+        var currentRoom = _currentSession.CurrentRoom;
+        if (currentRoom == null)
+        {
+            _logger.LogError("TryDropItem failed: Current room is null");
+            return (false, "Error: Current room not found.");
+        }
+
+        var item = _currentSession.Player.Inventory.GetByName(itemName);
+        if (item == null)
+        {
+            _logger.LogDebug("Item not found in inventory: {ItemName}", itemName);
+            return (false, $"You don't have '{itemName}' in your inventory.");
+        }
+
+        if (_currentSession.Player.Inventory.TryRemove(item))
+        {
+            currentRoom.AddItem(item);
+            _logger.LogInformation(
+                "Item dropped: {ItemName} in room {RoomName}. Inventory: {InventoryCount}/{Capacity}",
+                item.Name,
+                currentRoom.Name,
+                _currentSession.Player.Inventory.Count,
+                _currentSession.Player.Inventory.Capacity);
+            return (true, $"You drop the {item.Name}.");
+        }
+
+        _logger.LogWarning("TryDropItem failed unexpectedly for item: {ItemName}", itemName);
+        return (false, $"Could not drop '{itemName}'.");
+    }
+
+    /// <summary>
+    /// Attempts to use an item from the player's inventory.
+    /// </summary>
+    /// <param name="itemName">The name of the item to use (case-insensitive).</param>
+    /// <returns>A tuple indicating success and a descriptive message.</returns>
+    public (bool Success, string Message) TryUseItem(string itemName)
+    {
+        _logger.LogDebug("TryUseItem called for item: {ItemName}", itemName);
+
+        if (_currentSession == null)
+        {
+            _logger.LogWarning("TryUseItem failed: No active game session");
+            return (false, "No active game session.");
+        }
+
+        var item = _currentSession.Player.Inventory.GetByName(itemName);
+        if (item == null)
+        {
+            _logger.LogDebug("Item not found in inventory: {ItemName}", itemName);
+            return (false, $"You don't have '{itemName}' in your inventory.");
+        }
+
+        if (item.Type != ItemType.Consumable)
+        {
+            _logger.LogDebug("Item not usable: {ItemName} (Type: {ItemType})", itemName, item.Type);
+            return (false, $"You cannot use the {item.Name}.");
+        }
+
+        var effectResult = _itemEffectService.ApplyEffect(item, _currentSession.Player);
+
+        if (effectResult.Success)
+        {
+            _currentSession.Player.Inventory.TryRemove(item);
+            _logger.LogInformation(
+                "Item used: {ItemName}, Effect: {Effect}, Value: {Value}, Player HP: {Health}/{MaxHealth}",
+                item.Name,
+                item.Effect,
+                item.EffectValue,
+                _currentSession.Player.Health,
+                _currentSession.Player.Stats.MaxHealth);
+        }
+
+        return effectResult;
+    }
+
+    /// <summary>
+    /// Gets detailed examination information about a target.
+    /// </summary>
+    /// <param name="target">The name of the target to examine.</param>
+    /// <returns>Examination result DTO or null if target not found.</returns>
+    public ExamineResultDto? GetExamineInfo(string target)
+    {
+        _logger.LogDebug("GetExamineInfo called for target: {Target}", target);
+
+        if (_currentSession == null)
+        {
+            _logger.LogWarning("GetExamineInfo failed: No active game session");
+            return null;
+        }
+
+        var room = _currentSession.CurrentRoom;
+        if (room == null) return null;
+
+        // Check for "room" keyword
+        if (target.Equals("room", StringComparison.OrdinalIgnoreCase))
+        {
+            return CreateRoomExamineResult(room);
+        }
+
+        // Check room items
+        var roomItem = room.GetItemByName(target);
+        if (roomItem != null)
+        {
+            return CreateItemExamineResult(roomItem, "on the ground");
+        }
+
+        // Check inventory items
+        var invItem = _currentSession.Player.Inventory.GetByName(target);
+        if (invItem != null)
+        {
+            return CreateItemExamineResult(invItem, "in your inventory");
+        }
+
+        // Check monsters
+        var monster = room.GetAliveMonsters().FirstOrDefault(m =>
+            m.Name.Equals(target, StringComparison.OrdinalIgnoreCase));
+        if (monster != null)
+        {
+            return CreateMonsterExamineResult(monster);
+        }
+
+        _logger.LogDebug("Examine target not found: {Target}", target);
+        return null;
+    }
+
+    private ExamineResultDto CreateItemExamineResult(Item item, string location)
+    {
+        var properties = new Dictionary<string, string>
+        {
+            ["Location"] = location,
+            ["Value"] = item.Value.ToString()
+        };
+
+        if (item.Type == ItemType.Consumable && item.Effect != ItemEffect.None)
+        {
+            properties["Effect"] = $"{item.Effect} ({item.EffectValue})";
+        }
+
+        return new ExamineResultDto(item.Name, item.Type.ToString(), item.Description, properties);
+    }
+
+    private ExamineResultDto CreateMonsterExamineResult(Monster monster)
+    {
+        var healthPercent = (double)monster.Health / monster.Stats.MaxHealth;
+        var condition = healthPercent switch
+        {
+            > 0.75 => "healthy",
+            > 0.5 => "wounded",
+            > 0.25 => "badly wounded",
+            _ => "near death"
+        };
+
+        var properties = new Dictionary<string, string>
+        {
+            ["Condition"] = condition,
+            ["Health"] = $"{monster.Health}/{monster.Stats.MaxHealth}"
+        };
+
+        return new ExamineResultDto(monster.Name, "Monster", monster.Description, properties);
+    }
+
+    private ExamineResultDto CreateRoomExamineResult(Room room)
+    {
+        var properties = new Dictionary<string, string>
+        {
+            ["Items"] = room.HasItems ? string.Join(", ", room.Items.Select(i => i.Name)) : "None",
+            ["Monsters"] = room.HasMonsters ? string.Join(", ", room.GetAliveMonsters().Select(m => m.Name)) : "None",
+            ["Exits"] = string.Join(", ", room.Exits.Keys.Select(d => d.ToString()))
+        };
+
+        return new ExamineResultDto(room.Name, "Room", room.Description, properties);
+    }
+
+    /// <summary>
+    /// Gets comprehensive player statistics.
+    /// </summary>
+    /// <returns>Player stats DTO, or null if no active session.</returns>
+    public PlayerStatsDto? GetPlayerStats()
+    {
+        if (_currentSession == null)
+        {
+            _logger.LogWarning("GetPlayerStats failed: No active game session");
+            return null;
+        }
+
+        var player = _currentSession.Player;
+        var room = _currentSession.CurrentRoom;
+
+        _logger.LogDebug(
+            "GetPlayerStats - Player: {Name}, HP: {Health}/{MaxHealth}, ATK: {Attack}, DEF: {Defense}",
+            player.Name, player.Health, player.Stats.MaxHealth, player.Stats.Attack, player.Stats.Defense);
+
+        return new PlayerStatsDto(
+            player.Name,
+            player.Health,
+            player.Stats.MaxHealth,
+            player.Stats.Attack,
+            player.Stats.Defense,
+            player.Position.X,
+            player.Position.Y,
+            room?.Name ?? "Unknown",
+            player.Inventory.Count,
+            player.Inventory.Capacity
+        );
+    }
+
+    /// <summary>
     /// Gets the current room as a DTO.
     /// </summary>
     /// <returns>The current room DTO, or null if no session is active.</returns>
     public RoomDto? GetCurrentRoom()
     {
-        var room = _currentSession?.CurrentRoom?.ToDto();
-        _logger.LogDebug("GetCurrentRoom called, returning: {RoomName}", room?.Name ?? "null");
-        return room;
+        var room = _currentSession?.CurrentRoom;
+        if (room == null)
+        {
+            _logger.LogDebug("GetCurrentRoom called, returning: null");
+            return null;
+        }
+
+        var isFirstVisit = !_currentSession!.HasVisitedRoom(room.Id);
+        var dto = room.ToDto(isFirstVisit);
+        _logger.LogDebug("GetCurrentRoom called, returning: {RoomName}, IsFirstVisit: {IsFirstVisit}", dto.Name, isFirstVisit);
+        return dto;
     }
 
     /// <summary>

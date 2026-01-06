@@ -76,6 +76,16 @@ public class ConsoleInputHandler : IInputHandler
             "take" or "get" or "pick" => string.IsNullOrEmpty(argument)
                 ? LogAndReturn(new UnknownCommand(input), "Take command missing item argument")
                 : new TakeCommand(argument),
+            "drop" => string.IsNullOrEmpty(argument)
+                ? LogAndReturn(new UnknownCommand(input), "Drop command missing item argument")
+                : new DropCommand(argument),
+            "use" or "consume" or "drink" or "eat" => string.IsNullOrEmpty(argument)
+                ? LogAndReturn(new UnknownCommand(input), "Use command missing item argument")
+                : new UseCommand(argument),
+            "examine" or "inspect" or "x" => string.IsNullOrEmpty(argument)
+                ? LogAndReturn(new UnknownCommand(input), "Examine command missing target")
+                : new ExamineCommand(argument),
+            "status" or "stats" or "stat" => new StatusCommand(),
             "attack" or "fight" or "a" => new AttackCommand(),
             "save" => new SaveCommand(),
             "load" => new LoadCommand(),

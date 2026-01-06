@@ -13,6 +13,8 @@ public class GameSessionServiceTests
 {
     private Mock<IGameRepository> _repositoryMock = null!;
     private Mock<ILogger<GameSessionService>> _loggerMock = null!;
+    private Mock<ILogger<ItemEffectService>> _itemEffectLoggerMock = null!;
+    private ItemEffectService _itemEffectService = null!;
     private GameSessionService _service = null!;
 
     [SetUp]
@@ -20,7 +22,9 @@ public class GameSessionServiceTests
     {
         _repositoryMock = new Mock<IGameRepository>();
         _loggerMock = new Mock<ILogger<GameSessionService>>();
-        _service = new GameSessionService(_repositoryMock.Object, _loggerMock.Object);
+        _itemEffectLoggerMock = new Mock<ILogger<ItemEffectService>>();
+        _itemEffectService = new ItemEffectService(_itemEffectLoggerMock.Object);
+        _service = new GameSessionService(_repositoryMock.Object, _loggerMock.Object, _itemEffectService);
     }
 
     [Test]

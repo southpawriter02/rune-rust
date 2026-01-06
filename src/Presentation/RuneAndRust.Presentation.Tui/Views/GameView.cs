@@ -141,6 +141,31 @@ public class GameView
                 await HandleTakeAsync(take.ItemName, ct);
                 break;
 
+            case DropCommand drop:
+                _logger.LogDebug("Handling drop command: {ItemName}", drop.ItemName);
+                await HandleDropAsync(drop.ItemName, ct);
+                break;
+
+            case UseCommand use:
+                _logger.LogDebug("Handling use command: {ItemName}", use.ItemName);
+                await HandleUseAsync(use.ItemName, ct);
+                break;
+
+            case ExamineCommand examine:
+                _logger.LogDebug("Handling examine command: {Target}", examine.Target);
+                await HandleExamineAsync(examine.Target, ct);
+                break;
+
+            case StatusCommand:
+                _logger.LogDebug("Handling status command");
+                await HandleStatusAsync(ct);
+                break;
+
+            case LoadCommand:
+                _logger.LogDebug("Handling load command");
+                await HandleLoadAsync(ct);
+                break;
+
             case AttackCommand:
                 _logger.LogDebug("Handling attack command");
                 await HandleAttackAsync(ct);
@@ -238,6 +263,72 @@ public class GameView
         await _renderer.RenderMessageAsync(message, messageType, ct);
     }
 
+    private async Task HandleDropAsync(string itemName, CancellationToken ct)
+    {
+        var (success, message) = _gameService.TryDropItem(itemName);
+        var messageType = success ? MessageType.Success : MessageType.Warning;
+        _logger.LogDebug("Drop item result: {ItemName}, Success: {Success}", itemName, success);
+        await _renderer.RenderMessageAsync(message, messageType, ct);
+    }
+
+    private async Task HandleUseAsync(string itemName, CancellationToken ct)
+    {
+        var (success, message) = _gameService.TryUseItem(itemName);
+        var messageType = success ? MessageType.Success : MessageType.Warning;
+        _logger.LogDebug("Use item result: {ItemName}, Success: {Success}", itemName, success);
+        await _renderer.RenderMessageAsync(message, messageType, ct);
+    }
+
+    private async Task HandleExamineAsync(string target, CancellationToken ct)
+    {
+        var result = _gameService.GetExamineInfo(target);
+        if (result == null)
+        {
+            _logger.LogDebug("Examine failed: target not found: {Target}", target);
+            await _renderer.RenderMessageAsync($"You don't see '{target}' here.", MessageType.Warning, ct);
+            return;
+        }
+
+        _logger.LogDebug("Examining: {Target} (Type: {TargetType})", result.Name, result.Type);
+        await _renderer.RenderExamineResultAsync(result, ct);
+    }
+
+    private async Task HandleStatusAsync(CancellationToken ct)
+    {
+        var stats = _gameService.GetPlayerStats();
+        if (stats == null)
+        {
+            _logger.LogWarning("Status failed: no active session");
+            await _renderer.RenderMessageAsync("No active game session.", MessageType.Warning, ct);
+            return;
+        }
+
+        _logger.LogDebug("Displaying player status for: {PlayerName}", stats.Name);
+        await _renderer.RenderPlayerStatsAsync(stats, ct);
+    }
+
+    private async Task HandleLoadAsync(CancellationToken ct)
+    {
+        var savedGames = await _gameService.GetSavedGamesAsync(ct);
+        if (savedGames.Count == 0)
+        {
+            _logger.LogInformation("No saved games found");
+            await _renderer.RenderMessageAsync("No saved games found.", MessageType.Warning, ct);
+            return;
+        }
+
+        _logger.LogDebug("Found {Count} saved games", savedGames.Count);
+        var selected = await _inputHandler.GetSelectionAsync(
+            "Select a saved game to load:",
+            savedGames,
+            g => $"{g.PlayerName} - {g.LastPlayedAt:g}",
+            ct);
+
+        _logger.LogInformation("Loading game session: {SessionId}", selected.Id);
+        await _gameService.LoadGameAsync(selected.Id, ct);
+        await _renderer.RenderMessageAsync($"Loaded game: {selected.PlayerName}", MessageType.Success, ct);
+    }
+
     private async Task HandleAttackAsync(CancellationToken ct)
     {
         var (success, message) = _gameService.TryAttack();
@@ -289,8 +380,13 @@ public class GameView
         helpTable.AddRow("[cyan]look, l[/]", "Look around the current room");
         helpTable.AddRow("[cyan]inventory, i[/]", "View your inventory");
         helpTable.AddRow("[cyan]take <item>[/]", "Pick up an item");
+        helpTable.AddRow("[cyan]drop <item>[/]", "Drop an item");
+        helpTable.AddRow("[cyan]use <item>[/]", "Use/consume an item");
+        helpTable.AddRow("[cyan]examine <target>[/]", "Examine an item, monster, or room");
+        helpTable.AddRow("[cyan]status[/]", "View character stats");
         helpTable.AddRow("[cyan]attack, a[/]", "Attack an enemy");
         helpTable.AddRow("[cyan]save[/]", "Save your game");
+        helpTable.AddRow("[cyan]load[/]", "Load a saved game");
         helpTable.AddRow("[cyan]help, h, ?[/]", "Show this help");
         helpTable.AddRow("[cyan]quit, q[/]", "Quit the game");
 

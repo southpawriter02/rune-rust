@@ -38,6 +38,21 @@ public class Item : IEntity
     public int Value { get; private set; }
 
     /// <summary>
+    /// Gets the effect this item provides when used.
+    /// </summary>
+    public ItemEffect Effect { get; private set; }
+
+    /// <summary>
+    /// Gets the magnitude of the effect (healing amount, damage, buff value).
+    /// </summary>
+    public int EffectValue { get; private set; }
+
+    /// <summary>
+    /// Gets the duration of the effect in turns (0 for instant effects).
+    /// </summary>
+    public int EffectDuration { get; private set; }
+
+    /// <summary>
     /// Private parameterless constructor for Entity Framework Core.
     /// </summary>
     private Item()
@@ -53,14 +68,21 @@ public class Item : IEntity
     /// <param name="description">The description shown to players.</param>
     /// <param name="type">The type category of the item.</param>
     /// <param name="value">The value of the item (default is 0).</param>
+    /// <param name="effect">The effect this item provides when used (default is None).</param>
+    /// <param name="effectValue">The magnitude of the effect (default is 0).</param>
+    /// <param name="effectDuration">The duration of the effect in turns (default is 0).</param>
     /// <exception cref="ArgumentNullException">Thrown when name or description is null.</exception>
-    public Item(string name, string description, ItemType type, int value = 0)
+    public Item(string name, string description, ItemType type, int value = 0,
+                ItemEffect effect = ItemEffect.None, int effectValue = 0, int effectDuration = 0)
     {
         Id = Guid.NewGuid();
         Name = name ?? throw new ArgumentNullException(nameof(name));
         Description = description ?? throw new ArgumentNullException(nameof(description));
         Type = type;
         Value = value;
+        Effect = effect;
+        EffectValue = effectValue;
+        EffectDuration = effectDuration;
     }
 
     /// <summary>
@@ -93,7 +115,9 @@ public class Item : IEntity
         "Health Potion",
         "A vial of red liquid that restores health when consumed.",
         ItemType.Consumable,
-        25
+        value: 25,
+        effect: ItemEffect.Heal,
+        effectValue: 25
     );
 
     /// <summary>
