@@ -1,0 +1,70 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="RuneAndRust.Presentation.Gui.Views.MainWindow"
+        Title="Rune &amp; Rust"
+        Width="1024"
+        Height="768"
+        WindowStartupLocation="CenterScreen">
+
+    <Grid RowDefinitions="Auto,*,Auto">
+        <!-- Header -->
+        <Border Grid.Row="0"
+                Background="#1a1a2e"
+                Padding="20">
+            <StackPanel HorizontalAlignment="Center">
+                <TextBlock Text="Rune &amp; Rust"
+                           FontSize="48"
+                           FontWeight="Bold"
+                           Foreground="#eab308"
+                           HorizontalAlignment="Center"/>
+                <TextBlock Text="A Text-Based Dungeon Crawler"
+                           FontSize="16"
+                           Foreground="#6b7280"
+                           HorizontalAlignment="Center"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Main Content -->
+        <Border Grid.Row="1"
+                Background="#16213e"
+                Padding="40">
+            <StackPanel VerticalAlignment="Center"
+                        HorizontalAlignment="Center"
+                        Spacing="20">
+                <TextBlock Text="GUI Coming Soon"
+                           FontSize="32"
+                           Foreground="#9ca3af"
+                           HorizontalAlignment="Center"/>
+                <TextBlock Text="The graphical interface is under development."
+                           FontSize="16"
+                           Foreground="#6b7280"
+                           HorizontalAlignment="Center"
+                           TextWrapping="Wrap"/>
+                <TextBlock Text="For now, please use the TUI version:"
+                           FontSize="14"
+                           Foreground="#6b7280"
+                           HorizontalAlignment="Center"
+                           Margin="0,20,0,0"/>
+                <Border Background="#0f3460"
+                        CornerRadius="8"
+                        Padding="20">
+                    <TextBlock Text="dotnet run --project src/Presentation/RuneAndRust.Presentation.Tui"
+                               FontFamily="Consolas,Monaco,monospace"
+                               FontSize="14"
+                               Foreground="#22c55e"/>
+                </Border>
+            </StackPanel>
+        </Border>
+
+        <!-- Footer -->
+        <Border Grid.Row="2"
+                Background="#1a1a2e"
+                Padding="10">
+            <TextBlock Text="Built with Avalonia UI | Clean Architecture | .NET 8"
+                       FontSize="12"
+                       Foreground="#4b5563"
+                       HorizontalAlignment="Center"/>
+        </Border>
+    </Grid>
+
+</Window>

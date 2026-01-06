@@ -179,7 +179,7 @@ public class GameView
         await _renderer.RenderMessageAsync("Game saved successfully!", MessageType.Success, ct);
     }
 
-    private async Task HandleHelpAsync(CancellationToken ct)
+    private Task HandleHelpAsync(CancellationToken ct)
     {
         var helpTable = new Table()
             .Border(TableBorder.Rounded)
@@ -201,6 +201,7 @@ public class GameView
         helpTable.AddRow("[cyan]quit, q[/]", "Quit the game");
 
         AnsiConsole.Write(helpTable);
+        return Task.CompletedTask;
     }
 
     private async Task<bool> HandleQuitAsync(CancellationToken ct)

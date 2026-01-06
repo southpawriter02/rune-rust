@@ -15,7 +15,11 @@ public class Player : IEntity
     public bool IsAlive => Health > 0;
     public bool IsDead => Health <= 0;
 
-    private Player() { } // For EF Core
+    private Player()
+    {
+        Name = null!;
+        Inventory = null!;
+    } // For EF Core
 
     public Player(string name, Stats? stats = null)
     {

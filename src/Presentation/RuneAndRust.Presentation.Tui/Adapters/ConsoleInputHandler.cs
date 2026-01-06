@@ -54,7 +54,7 @@ public class ConsoleInputHandler : IInputHandler
         string prompt,
         IEnumerable<T> options,
         Func<T, string> displaySelector,
-        CancellationToken ct = default)
+        CancellationToken ct = default) where T : notnull
     {
         var selection = AnsiConsole.Prompt(
             new SelectionPrompt<T>()

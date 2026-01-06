@@ -15,7 +15,10 @@ public class Dungeon : IEntity
     public IReadOnlyDictionary<Guid, Room> Rooms => _rooms.AsReadOnly();
     public int RoomCount => _rooms.Count;
 
-    private Dungeon() { } // For EF Core
+    private Dungeon()
+    {
+        Name = null!;
+    } // For EF Core
 
     public Dungeon(string name)
     {

@@ -14,7 +14,11 @@ public class Monster : IEntity
     public bool IsDefeated => Health <= 0;
     public bool IsAlive => Health > 0;
 
-    private Monster() { } // For EF Core
+    private Monster()
+    {
+        Name = null!;
+        Description = null!;
+    } // For EF Core
 
     public Monster(string name, string description, int maxHealth, Stats stats)
     {

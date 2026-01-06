@@ -11,7 +11,11 @@ public class Item : IEntity
     public ItemType Type { get; private set; }
     public int Value { get; private set; }
 
-    private Item() { } // For EF Core
+    private Item()
+    {
+        Name = null!;
+        Description = null!;
+    } // For EF Core
 
     public Item(string name, string description, ItemType type, int value = 0)
     {

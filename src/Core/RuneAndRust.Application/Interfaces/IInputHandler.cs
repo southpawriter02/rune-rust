@@ -19,6 +19,6 @@ public interface IInputHandler
 {
     Task<GameCommand> GetNextCommandAsync(CancellationToken ct = default);
     Task<string> GetTextInputAsync(string prompt, CancellationToken ct = default);
-    Task<T> GetSelectionAsync<T>(string prompt, IEnumerable<T> options, Func<T, string> displaySelector, CancellationToken ct = default);
+    Task<T> GetSelectionAsync<T>(string prompt, IEnumerable<T> options, Func<T, string> displaySelector, CancellationToken ct = default) where T : notnull;
     Task<bool> GetConfirmationAsync(string prompt, CancellationToken ct = default);
 }

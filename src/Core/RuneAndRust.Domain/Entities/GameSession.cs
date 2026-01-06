@@ -15,7 +15,11 @@ public class GameSession : IEntity
 
     public Room? CurrentRoom => Dungeon.GetRoom(CurrentRoomId);
 
-    private GameSession() { } // For EF Core
+    private GameSession()
+    {
+        Player = null!;
+        Dungeon = null!;
+    } // For EF Core
 
     private GameSession(Player player, Dungeon dungeon)
     {

@@ -22,7 +22,11 @@ public class Room : IEntity
     public bool HasMonsters => _monsters.Any(m => m.IsAlive);
     public bool HasItems => _items.Count > 0;
 
-    private Room() { } // For EF Core
+    private Room()
+    {
+        Name = null!;
+        Description = null!;
+    } // For EF Core
 
     public Room(string name, string description, Position position)
     {
