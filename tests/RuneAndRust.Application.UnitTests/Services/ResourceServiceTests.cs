@@ -39,6 +39,8 @@ public class ResourceServiceTests
         _service = new ResourceService(_mockConfig.Object, _mockLogger.Object);
     }
 
+    private static Player CreateTestPlayer() => new("Hero", new Stats(100, 10, 5));
+
     [Test]
     public void GetAllResourceTypes_ReturnsAllTypes()
     {
@@ -50,7 +52,7 @@ public class ResourceServiceTests
     [Test]
     public void InitializePlayerResources_InitializesUniversalResources()
     {
-        var player = Player.Create("Hero", "human", "soldier", new PlayerAttributes(), new Stats(100, 10, 5));
+        var player = CreateTestPlayer();
         var classDef = ClassDefinition.Create("mage", "Mage", "Desc", "mystic",
             StatModifiers.None, StatModifiers.None, "mana");
 
@@ -63,7 +65,7 @@ public class ResourceServiceTests
     [Test]
     public void SpendResource_ReturnsTrueWhenSufficient()
     {
-        var player = Player.Create("Hero", "human", "soldier", new PlayerAttributes(), new Stats(100, 10, 5));
+        var player = CreateTestPlayer();
         player.InitializeResource("mana", 100);
 
         var result = _service.SpendResource(player, "mana", 30);
@@ -75,7 +77,7 @@ public class ResourceServiceTests
     [Test]
     public void SpendResource_ReturnsFalseWhenInsufficient()
     {
-        var player = Player.Create("Hero", "human", "soldier", new PlayerAttributes(), new Stats(100, 10, 5));
+        var player = CreateTestPlayer();
         player.InitializeResource("mana", 100);
         player.GetResource("mana")!.Spend(80);
 
@@ -87,7 +89,7 @@ public class ResourceServiceTests
     [Test]
     public void GainResource_IncreasesResourceCurrent()
     {
-        var player = Player.Create("Hero", "human", "soldier", new PlayerAttributes(), new Stats(100, 10, 5));
+        var player = CreateTestPlayer();
         player.InitializeResource("mana", 100);
         player.GetResource("mana")!.Spend(50);
 
@@ -100,7 +102,7 @@ public class ResourceServiceTests
     [Test]
     public void ProcessTurnEnd_AppliesRegeneration()
     {
-        var player = Player.Create("Hero", "human", "soldier", new PlayerAttributes(), new Stats(100, 10, 5));
+        var player = CreateTestPlayer();
         player.InitializeResource("mana", 100);
         player.GetResource("mana")!.Spend(30);
 
@@ -113,7 +115,7 @@ public class ResourceServiceTests
     [Test]
     public void ProcessTurnEnd_AppliesDecayOutOfCombat()
     {
-        var player = Player.Create("Hero", "human", "soldier", new PlayerAttributes(), new Stats(100, 10, 5));
+        var player = CreateTestPlayer();
         player.InitializeResource("rage", 100, startAtZero: false);
         player.GetResource("rage")!.SetCurrent(50);
 
@@ -126,7 +128,7 @@ public class ResourceServiceTests
     [Test]
     public void ProcessTurnEnd_SkipsDecayInCombat()
     {
-        var player = Player.Create("Hero", "human", "soldier", new PlayerAttributes(), new Stats(100, 10, 5));
+        var player = CreateTestPlayer();
         player.InitializeResource("rage", 100, startAtZero: false);
         player.GetResource("rage")!.SetCurrent(50);
 
@@ -138,7 +140,7 @@ public class ResourceServiceTests
     [Test]
     public void ProcessCombatHit_BuildsResourceOnDamage()
     {
-        var player = Player.Create("Hero", "human", "soldier", new PlayerAttributes(), new Stats(100, 10, 5));
+        var player = CreateTestPlayer();
         player.InitializeResource("rage", 100, startAtZero: true);
 
         var result = _service.ProcessCombatHit(player, damageDealt: 20, damageTaken: 10);
@@ -150,7 +152,7 @@ public class ResourceServiceTests
     [Test]
     public void ProcessSupportAction_BuildsResourceOnHeal()
     {
-        var player = Player.Create("Hero", "human", "soldier", new PlayerAttributes(), new Stats(100, 10, 5));
+        var player = CreateTestPlayer();
         player.InitializeResource("faith", 100);
         player.GetResource("faith")!.Spend(50);
 
