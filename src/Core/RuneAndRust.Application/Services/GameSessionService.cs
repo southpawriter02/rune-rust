@@ -400,6 +400,35 @@ public class GameSessionService
             return (true, result, null);
         }
 
+        // Try to find the target as a room feature
+        var feature = currentRoom.GetFeatureByName(target);
+        if (feature != null)
+        {
+            var category = feature.FeatureType switch
+            {
+                RoomFeatureType.Interactable => ObjectCategory.Machinery,
+                RoomFeatureType.Decoration => ObjectCategory.Decorative,
+                RoomFeatureType.LightSource => ObjectCategory.Decorative,
+                RoomFeatureType.Hazard => ObjectCategory.Machinery,
+                _ => ObjectCategory.Decorative
+            };
+
+            var result = await _examinationService.ExamineObjectAsync(
+                feature.Id, feature.FeatureId, category, witsValue, biome, ct);
+
+            feature.MarkExamined();
+            return (true, result, null);
+        }
+
+        // Check universal structural elements (walls, floor, ceiling)
+        if (IsUniversalStructuralElement(target))
+        {
+            var result = await _examinationService.ExamineObjectAsync(
+                Guid.NewGuid(), target.ToLower(), ObjectCategory.Structural, witsValue, biome, ct);
+
+            return (true, result, null);
+        }
+
         // Check if target is an exit direction
         var exitDirection = ParseDirection(target);
         if (exitDirection.HasValue && currentRoom.HasExit(exitDirection.Value))
@@ -568,5 +597,11 @@ public class GameSessionService
             "sw" or "southwest" => Direction.Southwest,
             _ => null
         };
+    }
+
+    private static bool IsUniversalStructuralElement(string target)
+    {
+        var structuralElements = new[] { "walls", "wall", "floor", "ceiling", "ground" };
+        return structuralElements.Contains(target.ToLowerInvariant());
     }
 }

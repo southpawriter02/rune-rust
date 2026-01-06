@@ -26,6 +26,10 @@ public class GameDbContext : DbContext
         modelBuilder.Entity<InteractionDescriptor>()
             .HasData(InteractionDescriptorSeeder.GetAllDescriptors());
 
+        // Seed examination descriptors for room features and structural elements
+        modelBuilder.Entity<ExaminationDescriptor>()
+            .HasData(RoomFeatureExaminationSeeder.GetAllDescriptors());
+
         base.OnModelCreating(modelBuilder);
     }
 }

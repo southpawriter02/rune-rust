@@ -112,6 +112,9 @@ public class RoomInstantiator : IRoomInstantiator
                 // Apply mechanical effects from modifier
                 ApplyModifierEffects(room, modifier);
 
+                // Spawn features from template
+                SpawnFeatures(room, template, random);
+
                 // Mark special rooms
                 if (node.IsStartNode)
                     room.AddTag("StartRoom");
@@ -138,6 +141,9 @@ public class RoomInstantiator : IRoomInstantiator
         // Add archetype tag
         legacyRoom.AddTag(node.Archetype.ToString());
 
+        // Spawn features from template
+        SpawnFeatures(legacyRoom, template, random);
+
         // Mark special rooms
         if (node.IsStartNode)
             legacyRoom.AddTag("StartRoom");
@@ -154,6 +160,34 @@ public class RoomInstantiator : IRoomInstantiator
         {
             room.AddTag(effectTag);
         }
+    }
+
+    private static void SpawnFeatures(Room room, RoomTemplate template, Random random)
+    {
+        foreach (var feature in template.Features)
+        {
+            if (feature.ShouldSpawn(random))
+            {
+                var instance = RoomFeatureInstance.Create(
+                    feature.Type,
+                    feature.FeatureId,
+                    GetFeatureDisplayName(feature.FeatureId),
+                    room.Id,
+                    feature.DescriptorOverride);
+                room.AddFeature(instance);
+            }
+        }
+    }
+
+    private static string GetFeatureDisplayName(string featureId)
+    {
+        // Convert snake_case to Title Case: "weapon_rack" -> "Weapon Rack"
+        if (string.IsNullOrWhiteSpace(featureId))
+            return featureId;
+
+        return string.Join(" ", featureId.Split('_')
+            .Where(w => !string.IsNullOrEmpty(w))
+            .Select(w => char.ToUpper(w[0]) + w[1..].ToLower()));
     }
 
     private static RoomFunction SelectWeightedFunction(IReadOnlyList<RoomFunction> functions, Random random)

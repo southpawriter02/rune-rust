@@ -16,18 +16,21 @@ public class Room : IEntity
     private readonly List<Item> _items = [];
     private readonly List<Monster> _monsters = [];
     private readonly List<HiddenElement> _hiddenElements = [];
+    private readonly List<RoomFeatureInstance> _features = [];
     private readonly HashSet<string> _tags = [];
 
     public IReadOnlyDictionary<Direction, Guid> Exits => _exits.AsReadOnly();
     public IReadOnlyList<Item> Items => _items.AsReadOnly();
     public IReadOnlyList<Monster> Monsters => _monsters.AsReadOnly();
     public IReadOnlyList<HiddenElement> HiddenElements => _hiddenElements.AsReadOnly();
+    public IReadOnlyList<RoomFeatureInstance> Features => _features.AsReadOnly();
     public IReadOnlySet<string> Tags => _tags;
 
     public bool HasMonsters => _monsters.Any(m => m.IsAlive);
     public bool HasItems => _items.Count > 0;
     public bool HasUnrevealedElements => _hiddenElements.Any(h => !h.IsRevealed);
     public bool HasRevealedElements => _hiddenElements.Any(h => h.IsRevealed);
+    public bool HasFeatures => _features.Count > 0;
 
     private Room()
     {
@@ -92,6 +95,16 @@ public class Room : IEntity
 
     public IEnumerable<HiddenElement> GetRevealedElements() =>
         _hiddenElements.Where(h => h.IsRevealed);
+
+    public void AddFeature(RoomFeatureInstance feature)
+    {
+        if (feature == null)
+            throw new ArgumentNullException(nameof(feature));
+        _features.Add(feature);
+    }
+
+    public RoomFeatureInstance? GetFeatureByName(string name) =>
+        _features.FirstOrDefault(f => f.MatchesName(name));
 
     public void AddTag(string tag)
     {

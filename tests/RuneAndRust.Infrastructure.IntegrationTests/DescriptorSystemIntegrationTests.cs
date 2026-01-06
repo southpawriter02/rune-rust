@@ -845,4 +845,137 @@ public class DescriptorSystemIntegrationTests
     }
 
     #endregion
+
+    #region Room Feature Examination Seeder Tests
+
+    [Test]
+    public void RoomFeatureExaminationSeeder_HasInteractableDescriptors()
+    {
+        var descriptors = Persistence.Seeders.RoomFeatureExaminationSeeder.GetAllDescriptors().ToList();
+
+        // Check for weapon_rack descriptors
+        descriptors.Should().Contain(d => d.ObjectType == "weapon_rack" && d.Layer == ExaminationLayer.Cursory);
+        descriptors.Should().Contain(d => d.ObjectType == "weapon_rack" && d.Layer == ExaminationLayer.Detailed);
+        descriptors.Should().Contain(d => d.ObjectType == "weapon_rack" && d.Layer == ExaminationLayer.Expert);
+
+        // Check for bookshelf descriptors
+        descriptors.Should().Contain(d => d.ObjectType == "bookshelf" && d.Layer == ExaminationLayer.Cursory);
+    }
+
+    [Test]
+    public void RoomFeatureExaminationSeeder_HasDecorationDescriptors()
+    {
+        var descriptors = Persistence.Seeders.RoomFeatureExaminationSeeder.GetAllDescriptors().ToList();
+
+        // Check for broken_fountain descriptors
+        descriptors.Should().Contain(d => d.ObjectType == "broken_fountain" && d.Layer == ExaminationLayer.Cursory);
+
+        // Check for throne descriptors
+        descriptors.Should().Contain(d => d.ObjectType == "throne" && d.Layer == ExaminationLayer.Cursory);
+    }
+
+    [Test]
+    public void RoomFeatureExaminationSeeder_HasLightSourceDescriptors()
+    {
+        var descriptors = Persistence.Seeders.RoomFeatureExaminationSeeder.GetAllDescriptors().ToList();
+
+        // Check for glowing_fungus descriptors
+        descriptors.Should().Contain(d => d.ObjectType == "glowing_fungus" && d.Layer == ExaminationLayer.Cursory);
+
+        // Check for brazier descriptors
+        descriptors.Should().Contain(d => d.ObjectType == "brazier" && d.Layer == ExaminationLayer.Cursory);
+    }
+
+    [Test]
+    public void RoomFeatureExaminationSeeder_HasHazardDescriptors()
+    {
+        var descriptors = Persistence.Seeders.RoomFeatureExaminationSeeder.GetAllDescriptors().ToList();
+
+        // Check for spore_cloud descriptors
+        descriptors.Should().Contain(d => d.ObjectType == "spore_cloud" && d.Layer == ExaminationLayer.Cursory);
+
+        // Check for lava_pool descriptors
+        descriptors.Should().Contain(d => d.ObjectType == "lava_pool" && d.Layer == ExaminationLayer.Cursory);
+    }
+
+    [Test]
+    public void RoomFeatureExaminationSeeder_HasUniversalStructuralDescriptors()
+    {
+        var descriptors = Persistence.Seeders.RoomFeatureExaminationSeeder.GetAllDescriptors().ToList();
+
+        // Check walls across different biomes
+        descriptors.Should().Contain(d => d.ObjectType == "walls" && d.BiomeAffinity == Biome.Citadel);
+        descriptors.Should().Contain(d => d.ObjectType == "walls" && d.BiomeAffinity == Biome.TheRoots);
+        descriptors.Should().Contain(d => d.ObjectType == "walls" && d.BiomeAffinity == Biome.Muspelheim);
+        descriptors.Should().Contain(d => d.ObjectType == "walls" && d.BiomeAffinity == Biome.Niflheim);
+        descriptors.Should().Contain(d => d.ObjectType == "walls" && d.BiomeAffinity == Biome.Jotunheim);
+
+        // Check floor across different biomes
+        descriptors.Should().Contain(d => d.ObjectType == "floor" && d.BiomeAffinity == Biome.Citadel);
+        descriptors.Should().Contain(d => d.ObjectType == "floor" && d.BiomeAffinity == Biome.Muspelheim);
+
+        // Check ceiling across different biomes
+        descriptors.Should().Contain(d => d.ObjectType == "ceiling" && d.BiomeAffinity == Biome.Citadel);
+        descriptors.Should().Contain(d => d.ObjectType == "ceiling" && d.BiomeAffinity == Biome.Niflheim);
+    }
+
+    [Test]
+    public void RoomFeatureExaminationSeeder_HasWallSingularVariant()
+    {
+        var descriptors = Persistence.Seeders.RoomFeatureExaminationSeeder.GetAllDescriptors().ToList();
+
+        // Check singular "wall" variant
+        descriptors.Should().Contain(d => d.ObjectType == "wall" && d.BiomeAffinity == Biome.Citadel);
+        descriptors.Should().Contain(d => d.ObjectType == "wall" && d.BiomeAffinity == Biome.TheRoots);
+    }
+
+    [Test]
+    public void RoomFeatureExaminationSeeder_HasGroundVariant()
+    {
+        var descriptors = Persistence.Seeders.RoomFeatureExaminationSeeder.GetAllDescriptors().ToList();
+
+        // Check "ground" variant (synonym for floor)
+        descriptors.Should().Contain(d => d.ObjectType == "ground" && d.BiomeAffinity == Biome.Citadel);
+        descriptors.Should().Contain(d => d.ObjectType == "ground" && d.BiomeAffinity == Biome.TheRoots);
+    }
+
+    [Test]
+    public void RoomFeatureExaminationSeeder_AllDescriptorsHaveValidText()
+    {
+        var descriptors = Persistence.Seeders.RoomFeatureExaminationSeeder.GetAllDescriptors().ToList();
+
+        foreach (var descriptor in descriptors)
+        {
+            descriptor.DescriptorText.Should().NotBeNullOrWhiteSpace(
+                $"Descriptor for {descriptor.ObjectType} layer {descriptor.Layer} should have text");
+            descriptor.DescriptorText.Length.Should().BeGreaterThan(10,
+                $"Descriptor for {descriptor.ObjectType} should have meaningful text");
+        }
+    }
+
+    [Test]
+    public void RoomFeatureExaminationSeeder_TotalDescriptorCount()
+    {
+        var descriptors = Persistence.Seeders.RoomFeatureExaminationSeeder.GetAllDescriptors().ToList();
+
+        // Should have a substantial number of descriptors
+        descriptors.Should().HaveCountGreaterOrEqualTo(70,
+            "Should have at least 70 examination descriptors for features and structural elements");
+    }
+
+    [Test]
+    public void RoomFeatureExaminationSeeder_HintsAreProperlyMarked()
+    {
+        var descriptors = Persistence.Seeders.RoomFeatureExaminationSeeder.GetAllDescriptors().ToList();
+
+        // Some expert-level descriptors should reveal hints
+        var hintsCount = descriptors.Count(d => d.RevealsHint);
+        hintsCount.Should().BeGreaterThan(5, "Should have some hint-revealing descriptors");
+
+        // Cursory descriptors should not reveal hints
+        var cursoryWithHints = descriptors.Where(d => d.Layer == ExaminationLayer.Cursory && d.RevealsHint);
+        cursoryWithHints.Should().BeEmpty("Cursory descriptors should not reveal hints");
+    }
+
+    #endregion
 }
