@@ -85,6 +85,10 @@ public class GameView
                 await HandleInvestigateAsync(investigate.Target, ct);
                 break;
 
+            case ExamineCommand examine:
+                await HandleExamineAsync(examine.Target, ct);
+                break;
+
             case TravelCommand travel:
                 await HandleTravelAsync(travel.Destination, ct);
                 break;
@@ -242,6 +246,69 @@ public class GameView
         }
     }
 
+    private async Task HandleExamineAsync(string target, CancellationToken ct)
+    {
+        var (success, result, errorMessage) = await _gameService.TryExamineAsync(target, ct);
+
+        if (!success || result == null)
+        {
+            await _renderer.RenderMessageAsync(errorMessage ?? $"Cannot examine '{target}'.", MessageType.Warning, ct);
+            return;
+        }
+
+        // Build the examination display
+        var panel = new Panel(new Markup($"[white]{EscapeMarkup(result.CompositeDescription)}[/]"))
+        {
+            Header = new PanelHeader($"[yellow]{result.ObjectName.ToUpper()}[/]"),
+            Border = BoxBorder.Rounded,
+            BorderStyle = new Style(Color.Grey)
+        };
+
+        AnsiConsole.Write(panel);
+
+        // Show WITS check result
+        var layerName = result.HighestLayerUnlocked switch
+        {
+            Domain.Enums.ExaminationLayer.Cursory => "Cursory",
+            Domain.Enums.ExaminationLayer.Detailed => "Detailed",
+            Domain.Enums.ExaminationLayer.Expert => "Expert",
+            _ => "Basic"
+        };
+
+        var checkColor = result.HighestLayerUnlocked switch
+        {
+            Domain.Enums.ExaminationLayer.Expert => "green",
+            Domain.Enums.ExaminationLayer.Detailed => "yellow",
+            _ => "grey"
+        };
+
+        await _renderer.RenderMessageAsync(
+            $"[WITS Check: {result.WitsRoll} + {result.WitsTotal - result.WitsRoll} = {result.WitsTotal}] [{layerName} examination]",
+            MessageType.Info, ct);
+
+        // Show hint notification if applicable
+        if (result.RevealedHint)
+        {
+            Console.WriteLine();
+            await _renderer.RenderMessageAsync("[Hint revealed!]", MessageType.Success, ct);
+        }
+
+        // Show solution notification if applicable
+        if (!string.IsNullOrWhiteSpace(result.RevealedSolutionId))
+        {
+            Console.WriteLine();
+            await _renderer.RenderMessageAsync("[New puzzle solution discovered!]", MessageType.Success, ct);
+        }
+    }
+
+    private static string EscapeMarkup(string text)
+    {
+        // Escape special Spectre.Console markup characters
+        return text
+            .Replace("[", "[[")
+            .Replace("]", "]]");
+    }
+
     private async Task HandleTravelAsync(string? destination, CancellationToken ct)
     {
         await _renderer.RenderMessageAsync(
@@ -279,8 +346,9 @@ public class GameView
         helpTable.AddRow("[cyan]u, up[/]", "Move up (stairs, ladders)");
         helpTable.AddRow("[cyan]d, down[/]", "Move down (stairs, ladders)");
         helpTable.AddRow("[cyan]ne, nw, se, sw[/]", "Move diagonally");
-        helpTable.AddRow("[cyan]look, l [target][/]", "Look around or examine target");
-        helpTable.AddRow("[cyan]search [container][/]", "Search for items");
+        helpTable.AddRow("[cyan]look, l [target][/]", "Look around or at target (brief)");
+        helpTable.AddRow("[cyan]examine, x <target>[/]", "Examine with WITS check (detailed)");
+        helpTable.AddRow("[cyan]search [container][/]", "Search for hidden elements");
         helpTable.AddRow("[cyan]investigate <target>[/]", "Investigate for secrets");
         helpTable.AddRow("[cyan]inventory, i[/]", "View your inventory");
         helpTable.AddRow("[cyan]take <item>[/]", "Pick up an item");

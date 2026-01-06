@@ -26,6 +26,7 @@ public class ConsoleInputHandler : IInputHandler
 
         return command switch
         {
+            // Movement commands
             "n" or "north" => new MoveCommand(Direction.North),
             "s" or "south" => new MoveCommand(Direction.South),
             "e" or "east" => new MoveCommand(Direction.East),
@@ -36,19 +37,36 @@ public class ConsoleInputHandler : IInputHandler
             "nw" or "northwest" => new MoveCommand(Direction.Northwest),
             "se" or "southeast" => new MoveCommand(Direction.Southeast),
             "sw" or "southwest" => new MoveCommand(Direction.Southwest),
-            "look" or "l" or "examine" or "x" or "inspect" => new LookCommand(string.IsNullOrEmpty(argument) ? null : argument),
+
+            // Look command (no argument = room description, with argument = brief look at target)
+            "look" or "l" => new LookCommand(string.IsNullOrEmpty(argument) ? null : argument),
+
+            // Examine command (detailed examination with WITS check)
+            "examine" or "x" or "inspect" => string.IsNullOrEmpty(argument)
+                ? new LookCommand() // No argument defaults to look
+                : new ExamineCommand(argument),
+
+            // Inventory and item commands
             "inventory" or "inv" or "i" => new InventoryCommand(),
             "take" or "get" or "pick" => string.IsNullOrEmpty(argument)
                 ? new UnknownCommand(input)
                 : new TakeCommand(argument),
+
+            // Combat
             "attack" or "fight" or "a" => new AttackCommand(),
+
+            // Search and investigation
             "search" or "find" or "loot" => new SearchCommand(string.IsNullOrEmpty(argument) ? null : argument),
             "investigate" or "study" => string.IsNullOrEmpty(argument)
                 ? new UnknownCommand(input)
                 : new InvestigateCommand(argument),
+
+            // Navigation
             "travel" or "journey" => new TravelCommand(string.IsNullOrEmpty(argument) ? null : argument),
             "enter" => new EnterCommand(string.IsNullOrEmpty(argument) ? null : argument),
             "leave" => new ExitCommand(string.IsNullOrEmpty(argument) ? null : argument),
+
+            // System commands
             "save" => new SaveCommand(),
             "load" => new LoadCommand(),
             "help" or "h" or "?" => new HelpCommand(),

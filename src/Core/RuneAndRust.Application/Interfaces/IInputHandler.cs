@@ -11,6 +11,7 @@ public record TakeCommand(string ItemName) : GameCommand;
 public record AttackCommand : GameCommand;
 public record SearchCommand(string? Target = null) : GameCommand;
 public record InvestigateCommand(string Target) : GameCommand;
+public record ExamineCommand(string Target) : GameCommand;
 public record TravelCommand(string? Destination = null) : GameCommand;
 public record EnterCommand(string? Location = null) : GameCommand;
 public record ExitCommand(string? Direction = null) : GameCommand;
