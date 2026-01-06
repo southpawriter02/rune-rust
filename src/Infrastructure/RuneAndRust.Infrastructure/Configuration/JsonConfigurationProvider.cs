@@ -4,6 +4,8 @@ using Microsoft.Extensions.Logging;
 using RuneAndRust.Application.Configuration;
 using RuneAndRust.Application.Interfaces;
 using RuneAndRust.Domain.Definitions;
+using RuneAndRust.Domain.Enums;
+using RuneAndRust.Domain.ValueObjects;
 
 namespace RuneAndRust.Infrastructure.Configuration;
 
@@ -23,6 +25,8 @@ public class JsonConfigurationProvider : IGameConfigurationProvider
     private LexiconConfiguration? _lexiconConfig;
     private ThemeConfiguration? _themeConfig;
     private IReadOnlyDictionary<string, DescriptorPool>? _descriptorPools;
+    private IReadOnlyList<ArchetypeDefinition>? _archetypes;
+    private IReadOnlyList<ClassDefinition>? _classes;
 
     private static readonly JsonSerializerOptions DefaultJsonOptions = new()
     {
@@ -171,6 +175,129 @@ public class JsonConfigurationProvider : IGameConfigurationProvider
         _logger.LogDebug("Loaded {Count} descriptor pools total", pools.Count);
         return _descriptorPools;
     }
+
+    /// <inheritdoc/>
+    public IReadOnlyList<ArchetypeDefinition> GetArchetypes()
+    {
+        if (_archetypes != null) return _archetypes;
+
+        var filePath = Path.Combine(_configPath, "archetypes.json");
+        var config = LoadJsonFile<ArchetypesJsonConfig>(filePath);
+        _archetypes = config?.Archetypes.Select(ToArchetypeDefinition).ToList()
+            ?? GetDefaultArchetypes();
+
+        _logger.LogDebug("Loaded {Count} archetypes", _archetypes.Count);
+        return _archetypes;
+    }
+
+    /// <inheritdoc/>
+    public ArchetypeDefinition? GetArchetypeById(string archetypeId)
+    {
+        return GetArchetypes().FirstOrDefault(a =>
+            a.Id.Equals(archetypeId, StringComparison.OrdinalIgnoreCase));
+    }
+
+    /// <inheritdoc/>
+    public IReadOnlyList<ClassDefinition> GetClasses()
+    {
+        if (_classes != null) return _classes;
+
+        var filePath = Path.Combine(_configPath, "classes.json");
+        var config = LoadJsonFile<ClassesJsonConfig>(filePath);
+        _classes = config?.Classes.Select(ToClassDefinition).ToList()
+            ?? GetDefaultClasses();
+
+        _logger.LogDebug("Loaded {Count} classes", _classes.Count);
+        return _classes;
+    }
+
+    /// <inheritdoc/>
+    public ClassDefinition? GetClassById(string classId)
+    {
+        return GetClasses().FirstOrDefault(c =>
+            c.Id.Equals(classId, StringComparison.OrdinalIgnoreCase));
+    }
+
+    /// <inheritdoc/>
+    public IReadOnlyList<ClassDefinition> GetClassesForArchetype(string archetypeId)
+    {
+        return GetClasses()
+            .Where(c => c.ArchetypeId.Equals(archetypeId, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+    }
+
+    private static ArchetypeDefinition ToArchetypeDefinition(ArchetypeJsonConfig config)
+    {
+        var tendency = Enum.TryParse<StatTendency>(config.StatTendency, true, out var t)
+            ? t : StatTendency.Balanced;
+
+        return ArchetypeDefinition.Create(
+            config.Id,
+            config.Name,
+            config.Description,
+            config.PlaystyleSummary,
+            tendency,
+            config.SortOrder);
+    }
+
+    private static ClassDefinition ToClassDefinition(ClassJsonConfig config)
+    {
+        var modifiers = config.StatModifiers ?? new StatModifiersJsonConfig();
+        var growth = config.GrowthRates ?? new StatModifiersJsonConfig();
+
+        ClassRequirements? requirements = null;
+        if (config.Requirements != null)
+        {
+            requirements = new ClassRequirements
+            {
+                AllowedRaceIds = config.Requirements.AllowedRaceIds,
+                MinimumAttributes = config.Requirements.MinimumAttributes
+            };
+        }
+
+        return ClassDefinition.Create(
+            config.Id,
+            config.Name,
+            config.Description,
+            config.ArchetypeId,
+            new StatModifiers
+            {
+                MaxHealth = modifiers.MaxHealth,
+                Attack = modifiers.Attack,
+                Defense = modifiers.Defense,
+                Might = modifiers.Might,
+                Fortitude = modifiers.Fortitude,
+                Will = modifiers.Will,
+                Wits = modifiers.Wits,
+                Finesse = modifiers.Finesse
+            },
+            new StatModifiers
+            {
+                MaxHealth = growth.MaxHealth,
+                Attack = growth.Attack,
+                Defense = growth.Defense,
+                Might = growth.Might,
+                Fortitude = growth.Fortitude,
+                Will = growth.Will,
+                Wits = growth.Wits,
+                Finesse = growth.Finesse
+            },
+            config.PrimaryResourceId,
+            config.StartingAbilityIds,
+            requirements,
+            config.SortOrder);
+    }
+
+    private static List<ArchetypeDefinition> GetDefaultArchetypes() =>
+    [
+        ArchetypeDefinition.Create("warrior", "Warrior", "Martial combatant.", "Frontline fighter", StatTendency.Defensive)
+    ];
+
+    private static List<ClassDefinition> GetDefaultClasses() =>
+    [
+        ClassDefinition.Create("shieldmaiden", "Shieldmaiden", "Stalwart defender.", "warrior", StatModifiers.None, StatModifiers.None, "rage")
+    ];
+
 
     private T? LoadJsonFile<T>(string filePath) where T : class
     {
@@ -324,5 +451,58 @@ public class JsonConfigurationProvider : IGameConfigurationProvider
         public List<string>? ExcludedTerms { get; set; }
         public List<string>? EmphasizedTerms { get; set; }
     }
-}
 
+    // Archetype JSON structure
+    private class ArchetypesJsonConfig
+    {
+        public List<ArchetypeJsonConfig> Archetypes { get; set; } = [];
+    }
+
+    private class ArchetypeJsonConfig
+    {
+        public string Id { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public string PlaystyleSummary { get; set; } = string.Empty;
+        public string StatTendency { get; set; } = "balanced";
+        public int SortOrder { get; set; } = 0;
+    }
+
+    // Class JSON structure
+    private class ClassesJsonConfig
+    {
+        public List<ClassJsonConfig> Classes { get; set; } = [];
+    }
+
+    private class ClassJsonConfig
+    {
+        public string Id { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public string ArchetypeId { get; set; } = string.Empty;
+        public StatModifiersJsonConfig? StatModifiers { get; set; }
+        public StatModifiersJsonConfig? GrowthRates { get; set; }
+        public string PrimaryResourceId { get; set; } = string.Empty;
+        public List<string>? StartingAbilityIds { get; set; }
+        public ClassRequirementsJsonConfig? Requirements { get; set; }
+        public int SortOrder { get; set; } = 0;
+    }
+
+    private class StatModifiersJsonConfig
+    {
+        public int MaxHealth { get; set; }
+        public int Attack { get; set; }
+        public int Defense { get; set; }
+        public int Might { get; set; }
+        public int Fortitude { get; set; }
+        public int Will { get; set; }
+        public int Wits { get; set; }
+        public int Finesse { get; set; }
+    }
+
+    private class ClassRequirementsJsonConfig
+    {
+        public List<string>? AllowedRaceIds { get; set; }
+        public Dictionary<string, int>? MinimumAttributes { get; set; }
+    }
+}

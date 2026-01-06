@@ -90,6 +90,9 @@ public static class DependencyInjection
             return new DescriptorService(pools, theme, logger);
         });
 
+        // Class system service
+        services.AddScoped<ClassService>();
+
         return services;
     }
 }

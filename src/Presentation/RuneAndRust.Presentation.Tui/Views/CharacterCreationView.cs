@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using RuneAndRust.Application.DTOs;
 using RuneAndRust.Application.Services;
 using RuneAndRust.Domain.Definitions;
 using RuneAndRust.Domain.Entities;
@@ -13,15 +14,18 @@ namespace RuneAndRust.Presentation.Tui.Views;
 public class CharacterCreationView
 {
     private readonly PlayerCreationService _creationService;
+    private readonly ClassService _classService;
     private readonly IAnsiConsole _console;
     private readonly ILogger<CharacterCreationView> _logger;
 
     public CharacterCreationView(
         PlayerCreationService creationService,
+        ClassService classService,
         IAnsiConsole console,
         ILogger<CharacterCreationView> logger)
     {
         _creationService = creationService ?? throw new ArgumentNullException(nameof(creationService));
+        _classService = classService ?? throw new ArgumentNullException(nameof(classService));
         _console = console ?? throw new ArgumentNullException(nameof(console));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
@@ -54,12 +58,20 @@ public class CharacterCreationView
         var attributes = await AllocateAttributesAsync(race, ct);
         if (attributes == null) return null;
 
-        // Step 5: Description (optional)
+        // Step 5: Archetype selection (NEW)
+        var archetype = await SelectArchetypeAsync(ct);
+        if (archetype == null) return null;
+
+        // Step 6: Class selection (NEW)
+        var selectedClass = await SelectClassAsync(archetype, race.Id, attributes.Value, ct);
+        if (selectedClass == null) return null;
+
+        // Step 7: Description (optional)
         var description = await GetDescriptionAsync(ct);
 
-        // Step 6: Summary and confirm
+        // Step 8: Summary and confirm
         var confirmed = await ShowSummaryAndConfirmAsync(
-            name, race, background, attributes.Value, description, ct);
+            name, race, background, attributes.Value, archetype, selectedClass, description, ct);
 
         if (!confirmed) return null;
 
@@ -69,7 +81,10 @@ public class CharacterCreationView
             var player = _creationService.CreateCharacter(
                 name, race.Id, background.Id, attributes.Value, description);
 
-            _logger.LogInformation("Character created: {Name}", player.Name);
+            // Apply class to player
+            _classService.ApplyClassToPlayer(selectedClass.Id, player);
+
+            _logger.LogInformation("Character created: {Name}, Class: {Class}", player.Name, selectedClass.Name);
             return player;
         }
         catch (Exception ex)
@@ -314,11 +329,114 @@ public class CharacterCreationView
         return Task.FromResult(description);
     }
 
+    private Task<ArchetypeDto?> SelectArchetypeAsync(CancellationToken ct)
+    {
+        _console.Clear();
+        _console.MarkupLine("[bold gold1]Step 5: Choose Your Path[/]");
+        _console.MarkupLine("[dim]Your archetype determines your fundamental approach to challenges.[/]\n");
+
+        var archetypes = _classService.GetAllArchetypes();
+
+        var table = new Table();
+        table.AddColumn("#");
+        table.AddColumn("Archetype");
+        table.AddColumn("Tendency");
+        table.AddColumn("Description");
+        table.AddColumn("Classes");
+
+        for (int i = 0; i < archetypes.Count; i++)
+        {
+            var a = archetypes[i];
+            table.AddRow(
+                $"[cyan]{i + 1}[/]",
+                $"[bold]{a.Name}[/]",
+                $"[dim]{a.StatTendency}[/]",
+                a.PlaystyleSummary,
+                string.Join(", ", a.ClassNames));
+        }
+
+        _console.Write(table);
+        _console.WriteLine();
+
+        var selection = _console.Prompt(
+            new SelectionPrompt<ArchetypeDto>()
+                .Title("Select your archetype:")
+                .PageSize(10)
+                .AddChoices(archetypes)
+                .UseConverter(a => $"{a.Name} - {a.PlaystyleSummary}"));
+
+        _logger.LogInformation("Player selected archetype: {ArchetypeId}", selection.Id);
+        return Task.FromResult<ArchetypeDto?>(selection);
+    }
+
+    private Task<ClassDto?> SelectClassAsync(
+        ArchetypeDto archetype,
+        string raceId,
+        PlayerAttributes attributes,
+        CancellationToken ct)
+    {
+        _console.Clear();
+        _console.MarkupLine($"[bold gold1]Step 6: Choose Your Class ({archetype.Name})[/]");
+        _console.MarkupLine("[dim]Your class determines your abilities, resource type, and stat modifiers.[/]\n");
+
+        var classes = _classService.GetClassesForArchetype(archetype.Id);
+        var attrDict = new Dictionary<string, int>
+        {
+            ["might"] = attributes.Might,
+            ["fortitude"] = attributes.Fortitude,
+            ["will"] = attributes.Will,
+            ["wits"] = attributes.Wits,
+            ["finesse"] = attributes.Finesse
+        };
+
+        foreach (var c in classes)
+        {
+            var validation = _classService.ValidateClassRequirements(c.Id, raceId, attrDict);
+            var available = validation.IsValid ? "[green]Available[/]" : $"[red]Locked: {string.Join(", ", validation.FailureReasons)}[/]";
+
+            var panel = new Panel(
+                $"{c.Description}\n\n" +
+                $"[bold]Stats:[/] {c.StatModifiers}\n" +
+                $"[bold]Resource:[/] {c.PrimaryResourceId.ToUpperInvariant()}\n" +
+                $"[bold]Starting Abilities:[/] {string.Join(", ", c.StartingAbilityIds)}\n" +
+                $"{available}")
+            {
+                Header = new PanelHeader($"[bold cyan]{c.Name}[/]"),
+                Border = BoxBorder.Rounded,
+                Padding = new Padding(1, 0)
+            };
+            _console.Write(panel);
+            _console.WriteLine();
+        }
+
+        // Only show available classes
+        var availableClasses = classes.Where(c =>
+            _classService.ValidateClassRequirements(c.Id, raceId, attrDict).IsValid).ToList();
+
+        if (availableClasses.Count == 0)
+        {
+            _console.MarkupLine("[red]No classes available for your race and attributes.[/]");
+            return Task.FromResult<ClassDto?>(null);
+        }
+
+        var selection = _console.Prompt(
+            new SelectionPrompt<ClassDto>()
+                .Title("Select your class:")
+                .PageSize(10)
+                .AddChoices(availableClasses)
+                .UseConverter(c => $"{c.Name} ({c.StatModifiers})"));
+
+        _logger.LogInformation("Player selected class: {ClassName} ({ClassId})", selection.Name, selection.Id);
+        return Task.FromResult<ClassDto?>(selection);
+    }
+
     private Task<bool> ShowSummaryAndConfirmAsync(
         string name,
         RaceDefinition race,
         BackgroundDefinition background,
         PlayerAttributes attributes,
+        ArchetypeDto archetype,
+        ClassDto selectedClass,
         string description,
         CancellationToken ct)
     {
@@ -330,13 +448,14 @@ public class CharacterCreationView
         var panel = new Panel(
             $"[bold]Name:[/] {name}\n" +
             $"[bold]Race:[/] {race.Name}\n" +
-            $"[bold]Background:[/] {background.Name}\n\n" +
+            $"[bold]Background:[/] {background.Name}\n" +
+            $"[bold]Archetype:[/] {archetype.Name}\n" +
+            $"[bold]Class:[/] {selectedClass.Name}\n\n" +
             $"[bold]Attributes:[/]\n" +
-            $"  Might: {finalAttrs.Might}\n" +
-            $"  Fortitude: {finalAttrs.Fortitude}\n" +
-            $"  Will: {finalAttrs.Will}\n" +
-            $"  Wits: {finalAttrs.Wits}\n" +
-            $"  Finesse: {finalAttrs.Finesse}\n\n" +
+            $"  Might: {finalAttrs.Might}  Fortitude: {finalAttrs.Fortitude}  Will: {finalAttrs.Will}\n" +
+            $"  Wits: {finalAttrs.Wits}  Finesse: {finalAttrs.Finesse}\n\n" +
+            $"[bold]Class Modifiers:[/] {selectedClass.StatModifiers}\n" +
+            $"[bold]Resource:[/] {selectedClass.PrimaryResourceId.ToUpperInvariant()}\n" +
             (race.TraitName != null ? $"[bold]Racial Trait:[/] {race.TraitName}\n" : "") +
             (background.StarterAbilityName != null ? $"[bold]Ability:[/] {background.StarterAbilityName}\n" : "") +
             (!string.IsNullOrWhiteSpace(description) ? $"\n[bold]Backstory:[/]\n{description}" : ""))
@@ -352,3 +471,4 @@ public class CharacterCreationView
         return Task.FromResult(_console.Confirm("[bold]Create this character?[/]"));
     }
 }
+

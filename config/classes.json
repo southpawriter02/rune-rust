@@ -1,0 +1,169 @@
+{
+    "classes": [
+        {
+            "id": "shieldmaiden",
+            "name": "Shieldmaiden",
+            "description": "Shieldmaidens are stalwart defenders who stand between their allies and danger. They wield heavy shields and armor, absorbing punishment that would fell lesser warriors. Their fury builds in battle, unleashing devastating counterattacks.",
+            "archetypeId": "warrior",
+            "statModifiers": {
+                "maxHealth": 20,
+                "attack": -2,
+                "defense": 5,
+                "might": 2,
+                "fortitude": 3,
+                "will": 0,
+                "wits": -1,
+                "finesse": -2
+            },
+            "growthRates": {
+                "maxHealth": 12,
+                "attack": 2,
+                "defense": 3,
+                "might": 2,
+                "fortitude": 2,
+                "will": 1,
+                "wits": 1,
+                "finesse": 1
+            },
+            "primaryResourceId": "rage",
+            "startingAbilityIds": [
+                "shield-bash",
+                "taunt"
+            ],
+            "requirements": null,
+            "sortOrder": 1
+        },
+        {
+            "id": "shadow-walker",
+            "name": "Shadow-Walker",
+            "description": "Shadow-Walkers are deadly assassins who strike from darkness. They excel at finding weak points and delivering devastating single attacks. Quick and elusive, they avoid direct confrontation in favor of precision strikes.",
+            "archetypeId": "skirmisher",
+            "statModifiers": {
+                "maxHealth": -10,
+                "attack": 5,
+                "defense": -2,
+                "might": -1,
+                "fortitude": -1,
+                "will": 0,
+                "wits": 2,
+                "finesse": 4
+            },
+            "growthRates": {
+                "maxHealth": 6,
+                "attack": 4,
+                "defense": 1,
+                "might": 1,
+                "fortitude": 1,
+                "will": 1,
+                "wits": 2,
+                "finesse": 3
+            },
+            "primaryResourceId": "energy",
+            "startingAbilityIds": [
+                "backstab",
+                "shadowstep"
+            ],
+            "requirements": null,
+            "sortOrder": 1
+        },
+        {
+            "id": "scrap-tinker",
+            "name": "Scrap-Tinker",
+            "description": "Scrap-Tinkers are ingenious inventors who create gadgets and contraptions from salvaged materials. They deploy turrets, traps, and devices to control the battlefield, making up for combat limitations with clever engineering.",
+            "archetypeId": "adept",
+            "statModifiers": {
+                "maxHealth": 0,
+                "attack": 0,
+                "defense": 0,
+                "might": -1,
+                "fortitude": 0,
+                "will": 1,
+                "wits": 4,
+                "finesse": 2
+            },
+            "growthRates": {
+                "maxHealth": 8,
+                "attack": 2,
+                "defense": 2,
+                "might": 1,
+                "fortitude": 1,
+                "will": 2,
+                "wits": 3,
+                "finesse": 2
+            },
+            "primaryResourceId": "focus",
+            "startingAbilityIds": [
+                "deploy-turret",
+                "repair-kit"
+            ],
+            "requirements": null,
+            "sortOrder": 1
+        },
+        {
+            "id": "galdr-caster",
+            "name": "Galdr-Caster",
+            "description": "Galdr-Casters wield the power of runic magic, channeling arcane energies through ancient incantations. They command devastating offensive spells but are physically frail, requiring protection from direct combat.",
+            "archetypeId": "mystic",
+            "statModifiers": {
+                "maxHealth": -15,
+                "attack": 8,
+                "defense": -3,
+                "might": -2,
+                "fortitude": -2,
+                "will": 5,
+                "wits": 3,
+                "finesse": 0
+            },
+            "growthRates": {
+                "maxHealth": 5,
+                "attack": 5,
+                "defense": 1,
+                "might": 1,
+                "fortitude": 1,
+                "will": 4,
+                "wits": 2,
+                "finesse": 1
+            },
+            "primaryResourceId": "mana",
+            "startingAbilityIds": [
+                "flame-bolt",
+                "arcane-shield"
+            ],
+            "requirements": null,
+            "sortOrder": 1
+        },
+        {
+            "id": "blood-priest",
+            "name": "Blood-Priest",
+            "description": "Blood-Priests serve dark powers, channeling divine energy through sacrifice and devotion. They can heal allies or smite enemies, drawing power from acts of faith. Their magic comes at a cost, but their versatility is unmatched.",
+            "archetypeId": "mystic",
+            "statModifiers": {
+                "maxHealth": 5,
+                "attack": 2,
+                "defense": 0,
+                "might": 0,
+                "fortitude": 1,
+                "will": 4,
+                "wits": 1,
+                "finesse": -1
+            },
+            "growthRates": {
+                "maxHealth": 8,
+                "attack": 2,
+                "defense": 2,
+                "might": 1,
+                "fortitude": 2,
+                "will": 3,
+                "wits": 2,
+                "finesse": 1
+            },
+            "primaryResourceId": "faith",
+            "startingAbilityIds": [
+                "healing-word",
+                "smite"
+            ],
+            "requirements": null,
+            "sortOrder": 2
+        }
+    ]
+}

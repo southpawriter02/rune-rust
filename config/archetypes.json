@@ -1,0 +1,36 @@
+{
+    "archetypes": [
+        {
+            "id": "warrior",
+            "name": "Warrior",
+            "description": "Warriors are masters of martial combat, trained in the art of weapons and armor. They excel at direct confrontation, using their strength and endurance to overpower foes.",
+            "playstyleSummary": "Frontline fighter with high survivability",
+            "statTendency": "defensive",
+            "sortOrder": 1
+        },
+        {
+            "id": "skirmisher",
+            "name": "Skirmisher",
+            "description": "Skirmishers are agile combatants who rely on speed, precision, and cunning rather than brute force. They strike from the shadows and exploit enemy weaknesses.",
+            "playstyleSummary": "High damage dealer with mobility focus",
+            "statTendency": "offensive",
+            "sortOrder": 2
+        },
+        {
+            "id": "adept",
+            "name": "Adept",
+            "description": "Adepts are versatile individuals who have honed practical skills and technical knowledge. They solve problems through ingenuity and resourcefulness.",
+            "playstyleSummary": "Versatile utility class with gadgets and tricks",
+            "statTendency": "balanced",
+            "sortOrder": 3
+        },
+        {
+            "id": "mystic",
+            "name": "Mystic",
+            "description": "Mystics channel supernatural forces, whether arcane magic, divine power, or primal energies. They wield abilities beyond the reach of mundane warriors.",
+            "playstyleSummary": "Spellcaster with powerful abilities",
+            "statTendency": "offensive",
+            "sortOrder": 4
+        }
+    ]
+}

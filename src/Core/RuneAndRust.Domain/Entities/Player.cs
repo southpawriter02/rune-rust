@@ -44,6 +44,27 @@ public class Player : IEntity
     public string Description { get; private set; } = string.Empty;
 
     /// <summary>
+    /// Gets the ID of the player's archetype.
+    /// </summary>
+    /// <remarks>
+    /// Set during character creation when a class is selected.
+    /// </remarks>
+    public string? ArchetypeId { get; private set; }
+
+    /// <summary>
+    /// Gets the ID of the player's class.
+    /// </summary>
+    /// <remarks>
+    /// Set during character creation. Determines resource type and abilities.
+    /// </remarks>
+    public string? ClassId { get; private set; }
+
+    /// <summary>
+    /// Gets whether the player has selected a class.
+    /// </summary>
+    public bool HasClass => !string.IsNullOrEmpty(ClassId);
+
+    /// <summary>
     /// Gets the player's current health points.
     /// </summary>
     /// <value>A non-negative integer representing current HP. Zero means the player is dead.</value>
@@ -145,6 +166,36 @@ public class Player : IEntity
             throw new ArgumentException("Description cannot have more than 5 line breaks");
 
         Description = description;
+    }
+
+    /// <summary>
+    /// Sets the player's class and archetype.
+    /// </summary>
+    /// <param name="archetypeId">The archetype ID.</param>
+    /// <param name="classId">The class ID.</param>
+    /// <exception cref="ArgumentException">Thrown if IDs are null or empty.</exception>
+    public void SetClass(string archetypeId, string classId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(archetypeId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(classId);
+
+        ArchetypeId = archetypeId.ToLowerInvariant();
+        ClassId = classId.ToLowerInvariant();
+    }
+
+    /// <summary>
+    /// Sets the player's stats directly (used when applying class modifiers).
+    /// </summary>
+    /// <param name="stats">The new stats.</param>
+    public void SetStats(Stats stats)
+    {
+        var wasFullHealth = Health == Stats.MaxHealth;
+        Stats = stats;
+        // Adjust current health if at full health before
+        if (wasFullHealth || Health > Stats.MaxHealth)
+        {
+            Health = Stats.MaxHealth;
+        }
     }
 
     /// <summary>

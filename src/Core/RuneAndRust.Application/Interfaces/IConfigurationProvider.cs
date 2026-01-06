@@ -63,6 +63,31 @@ public interface IGameConfigurationProvider
     /// </summary>
     /// <returns>Dictionary of descriptor pools.</returns>
     IReadOnlyDictionary<string, DescriptorPool> GetAllDescriptorPools();
+
+    /// <summary>
+    /// Gets all archetype definitions.
+    /// </summary>
+    IReadOnlyList<ArchetypeDefinition> GetArchetypes();
+
+    /// <summary>
+    /// Gets an archetype definition by ID.
+    /// </summary>
+    ArchetypeDefinition? GetArchetypeById(string archetypeId);
+
+    /// <summary>
+    /// Gets all class definitions.
+    /// </summary>
+    IReadOnlyList<ClassDefinition> GetClasses();
+
+    /// <summary>
+    /// Gets a class definition by ID.
+    /// </summary>
+    ClassDefinition? GetClassById(string classId);
+
+    /// <summary>
+    /// Gets all classes for a specific archetype.
+    /// </summary>
+    IReadOnlyList<ClassDefinition> GetClassesForArchetype(string archetypeId);
 }
 
 /// <summary>
