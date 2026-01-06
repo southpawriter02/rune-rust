@@ -61,8 +61,8 @@ public class GameView
                 await HandleMoveAsync(move.Direction, ct);
                 break;
 
-            case LookCommand:
-                await HandleLookAsync(ct);
+            case LookCommand look:
+                await HandleLookAsync(look.Target, ct);
                 break;
 
             case InventoryCommand:
@@ -75,6 +75,26 @@ public class GameView
 
             case AttackCommand:
                 await HandleAttackAsync(ct);
+                break;
+
+            case SearchCommand search:
+                await HandleSearchAsync(search.Target, ct);
+                break;
+
+            case InvestigateCommand investigate:
+                await HandleInvestigateAsync(investigate.Target, ct);
+                break;
+
+            case TravelCommand travel:
+                await HandleTravelAsync(travel.Destination, ct);
+                break;
+
+            case EnterCommand enter:
+                await HandleEnterAsync(enter.Location, ct);
+                break;
+
+            case ExitCommand exit:
+                await HandleExitAsync(exit.Direction, ct);
                 break;
 
             case SaveCommand:
@@ -126,12 +146,29 @@ public class GameView
         }
     }
 
-    private async Task HandleLookAsync(CancellationToken ct)
+    private async Task HandleLookAsync(string? target, CancellationToken ct)
     {
-        var room = _gameService.GetCurrentRoom();
-        if (room != null)
+        if (string.IsNullOrWhiteSpace(target))
         {
-            await _renderer.RenderRoomAsync(room, ct);
+            // Look at room
+            var room = _gameService.GetCurrentRoom();
+            if (room != null)
+            {
+                await _renderer.RenderRoomAsync(room, ct);
+            }
+        }
+        else
+        {
+            // Look at specific target
+            var lookResult = _gameService.TryLookAtTarget(target);
+            if (lookResult.Success)
+            {
+                await _renderer.RenderMessageAsync(lookResult.Description!, MessageType.Info, ct);
+            }
+            else
+            {
+                await _renderer.RenderMessageAsync(lookResult.ErrorMessage!, MessageType.Warning, ct);
+            }
         }
     }
 
@@ -179,6 +216,53 @@ public class GameView
         await _renderer.RenderMessageAsync("Game saved successfully!", MessageType.Success, ct);
     }
 
+    private async Task HandleSearchAsync(string? target, CancellationToken ct)
+    {
+        var searchResult = _gameService.TrySearch(target);
+        if (searchResult.Success)
+        {
+            await _renderer.RenderMessageAsync(searchResult.Message, MessageType.Success, ct);
+        }
+        else
+        {
+            await _renderer.RenderMessageAsync(searchResult.Message, MessageType.Warning, ct);
+        }
+    }
+
+    private async Task HandleInvestigateAsync(string target, CancellationToken ct)
+    {
+        var investigateResult = _gameService.TryInvestigate(target);
+        if (investigateResult.Success)
+        {
+            await _renderer.RenderMessageAsync(investigateResult.Message, MessageType.Success, ct);
+        }
+        else
+        {
+            await _renderer.RenderMessageAsync(investigateResult.Message, MessageType.Warning, ct);
+        }
+    }
+
+    private async Task HandleTravelAsync(string? destination, CancellationToken ct)
+    {
+        await _renderer.RenderMessageAsync(
+            "Travel system is not yet implemented. This feature will be available in a future update.",
+            MessageType.Info, ct);
+    }
+
+    private async Task HandleEnterAsync(string? location, CancellationToken ct)
+    {
+        await _renderer.RenderMessageAsync(
+            "Enter command is not yet implemented. This feature will be available in a future update.",
+            MessageType.Info, ct);
+    }
+
+    private async Task HandleExitAsync(string? direction, CancellationToken ct)
+    {
+        await _renderer.RenderMessageAsync(
+            "Exit command is not yet implemented. Use movement commands (n/s/e/w) to leave the current area.",
+            MessageType.Info, ct);
+    }
+
     private Task HandleHelpAsync(CancellationToken ct)
     {
         var helpTable = new Table()
@@ -192,7 +276,12 @@ public class GameView
         helpTable.AddRow("[cyan]s, south[/]", "Move south");
         helpTable.AddRow("[cyan]e, east[/]", "Move east");
         helpTable.AddRow("[cyan]w, west[/]", "Move west");
-        helpTable.AddRow("[cyan]look, l[/]", "Look around the current room");
+        helpTable.AddRow("[cyan]u, up[/]", "Move up (stairs, ladders)");
+        helpTable.AddRow("[cyan]d, down[/]", "Move down (stairs, ladders)");
+        helpTable.AddRow("[cyan]ne, nw, se, sw[/]", "Move diagonally");
+        helpTable.AddRow("[cyan]look, l [target][/]", "Look around or examine target");
+        helpTable.AddRow("[cyan]search [container][/]", "Search for items");
+        helpTable.AddRow("[cyan]investigate <target>[/]", "Investigate for secrets");
         helpTable.AddRow("[cyan]inventory, i[/]", "View your inventory");
         helpTable.AddRow("[cyan]take <item>[/]", "Pick up an item");
         helpTable.AddRow("[cyan]attack, a[/]", "Attack an enemy");

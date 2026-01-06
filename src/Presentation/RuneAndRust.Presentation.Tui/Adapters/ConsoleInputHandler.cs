@@ -30,12 +30,25 @@ public class ConsoleInputHandler : IInputHandler
             "s" or "south" => new MoveCommand(Direction.South),
             "e" or "east" => new MoveCommand(Direction.East),
             "w" or "west" => new MoveCommand(Direction.West),
-            "look" or "l" => new LookCommand(),
+            "u" or "up" => new MoveCommand(Direction.Up),
+            "d" or "down" => new MoveCommand(Direction.Down),
+            "ne" or "northeast" => new MoveCommand(Direction.Northeast),
+            "nw" or "northwest" => new MoveCommand(Direction.Northwest),
+            "se" or "southeast" => new MoveCommand(Direction.Southeast),
+            "sw" or "southwest" => new MoveCommand(Direction.Southwest),
+            "look" or "l" or "examine" or "x" or "inspect" => new LookCommand(string.IsNullOrEmpty(argument) ? null : argument),
             "inventory" or "inv" or "i" => new InventoryCommand(),
             "take" or "get" or "pick" => string.IsNullOrEmpty(argument)
                 ? new UnknownCommand(input)
                 : new TakeCommand(argument),
             "attack" or "fight" or "a" => new AttackCommand(),
+            "search" or "find" or "loot" => new SearchCommand(string.IsNullOrEmpty(argument) ? null : argument),
+            "investigate" or "study" => string.IsNullOrEmpty(argument)
+                ? new UnknownCommand(input)
+                : new InvestigateCommand(argument),
+            "travel" or "journey" => new TravelCommand(string.IsNullOrEmpty(argument) ? null : argument),
+            "enter" => new EnterCommand(string.IsNullOrEmpty(argument) ? null : argument),
+            "leave" => new ExitCommand(string.IsNullOrEmpty(argument) ? null : argument),
             "save" => new SaveCommand(),
             "load" => new LoadCommand(),
             "help" or "h" or "?" => new HelpCommand(),

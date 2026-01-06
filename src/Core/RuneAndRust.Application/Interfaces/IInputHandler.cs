@@ -5,10 +5,15 @@ namespace RuneAndRust.Application.Interfaces;
 public abstract record GameCommand;
 
 public record MoveCommand(Direction Direction) : GameCommand;
-public record LookCommand : GameCommand;
+public record LookCommand(string? Target = null) : GameCommand;
 public record InventoryCommand : GameCommand;
 public record TakeCommand(string ItemName) : GameCommand;
 public record AttackCommand : GameCommand;
+public record SearchCommand(string? Target = null) : GameCommand;
+public record InvestigateCommand(string Target) : GameCommand;
+public record TravelCommand(string? Destination = null) : GameCommand;
+public record EnterCommand(string? Location = null) : GameCommand;
+public record ExitCommand(string? Direction = null) : GameCommand;
 public record SaveCommand : GameCommand;
 public record LoadCommand : GameCommand;
 public record HelpCommand : GameCommand;
