@@ -4,6 +4,7 @@ using RuneAndRust.Application.Interfaces;
 using RuneAndRust.Domain.Entities;
 using RuneAndRust.Domain.Enums;
 using RuneAndRust.Domain.Services;
+using RuneAndRust.Domain.ValueObjects;
 
 namespace RuneAndRust.Application.Services;
 
@@ -14,6 +15,7 @@ public class GameSessionService
     private readonly CombatService _combatService;
     private readonly IExaminationService? _examinationService;
     private readonly SkillCheckService _skillCheckService;
+    private readonly IDungeonGenerator? _dungeonGenerator;
 
     private GameSession? _currentSession;
 
@@ -23,13 +25,15 @@ public class GameSessionService
     public GameSessionService(
         IGameRepository repository,
         ILogger<GameSessionService> logger,
-        IExaminationService? examinationService = null)
+        IExaminationService? examinationService = null,
+        IDungeonGenerator? dungeonGenerator = null)
     {
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _combatService = new CombatService();
         _examinationService = examinationService;
         _skillCheckService = new SkillCheckService();
+        _dungeonGenerator = dungeonGenerator;
     }
 
     public async Task<GameStateDto> StartNewGameAsync(string playerName, CancellationToken ct = default)
@@ -40,6 +44,56 @@ public class GameSessionService
         await _repository.SaveAsync(_currentSession, ct);
 
         _logger.LogInformation("New game session created: {SessionId}", _currentSession.Id);
+
+        return _currentSession.ToDto();
+    }
+
+    /// <summary>
+    /// Starts a new game with a procedurally generated dungeon.
+    /// </summary>
+    /// <param name="playerName">The player's name.</param>
+    /// <param name="biome">The biome for the dungeon.</param>
+    /// <param name="difficulty">The difficulty tier.</param>
+    /// <param name="roomCount">Target number of rooms (default 15).</param>
+    /// <param name="seed">Optional seed for reproducible generation.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>The initial game state.</returns>
+    public async Task<GameStateDto> StartGeneratedGameAsync(
+        string playerName,
+        Biome biome,
+        DifficultyTier difficulty,
+        int roomCount = 15,
+        int? seed = null,
+        CancellationToken ct = default)
+    {
+        _logger.LogInformation(
+            "Starting generated game for player: {PlayerName}, Biome: {Biome}, Difficulty: {Difficulty}",
+            playerName, biome, difficulty);
+
+        if (_dungeonGenerator == null)
+            throw new InvalidOperationException("Dungeon generator is required for generated games. Inject IDungeonGenerator into GameSessionService.");
+
+        var generator = _dungeonGenerator;
+
+        var dungeonName = biome switch
+        {
+            Biome.Citadel => "The Fallen Citadel",
+            Biome.TheRoots => "The Tangled Roots",
+            Biome.Muspelheim => "Muspelheim Depths",
+            Biome.Niflheim => "Niflheim's Frozen Halls",
+            Biome.Jotunheim => "Jotunheim Ruins",
+            _ => "The Unknown Depths"
+        };
+
+        var dungeon = await generator.GenerateDungeonAsync(
+            dungeonName, biome, difficulty, roomCount, seed, ct);
+
+        _currentSession = GameSession.CreateWithDungeon(playerName, dungeon);
+        await _repository.SaveAsync(_currentSession, ct);
+
+        _logger.LogInformation(
+            "Generated game session created: {SessionId}, Rooms: {RoomCount}",
+            _currentSession.Id, dungeon.RoomCount);
 
         return _currentSession.ToDto();
     }

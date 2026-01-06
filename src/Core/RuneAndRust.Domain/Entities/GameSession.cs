@@ -42,6 +42,15 @@ public class GameSession : IEntity
         return new GameSession(player, dungeon);
     }
 
+    /// <summary>
+    /// Creates a new game session with a procedurally generated dungeon.
+    /// </summary>
+    public static GameSession CreateWithDungeon(string playerName, Dungeon dungeon)
+    {
+        var player = new Player(playerName);
+        return new GameSession(player, dungeon);
+    }
+
     public bool TryMovePlayer(Direction direction)
     {
         var currentRoom = CurrentRoom;

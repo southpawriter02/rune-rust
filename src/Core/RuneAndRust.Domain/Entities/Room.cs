@@ -16,11 +16,13 @@ public class Room : IEntity
     private readonly List<Item> _items = [];
     private readonly List<Monster> _monsters = [];
     private readonly List<HiddenElement> _hiddenElements = [];
+    private readonly HashSet<string> _tags = [];
 
     public IReadOnlyDictionary<Direction, Guid> Exits => _exits.AsReadOnly();
     public IReadOnlyList<Item> Items => _items.AsReadOnly();
     public IReadOnlyList<Monster> Monsters => _monsters.AsReadOnly();
     public IReadOnlyList<HiddenElement> HiddenElements => _hiddenElements.AsReadOnly();
+    public IReadOnlySet<string> Tags => _tags;
 
     public bool HasMonsters => _monsters.Any(m => m.IsAlive);
     public bool HasItems => _items.Count > 0;
@@ -90,6 +92,22 @@ public class Room : IEntity
 
     public IEnumerable<HiddenElement> GetRevealedElements() =>
         _hiddenElements.Where(h => h.IsRevealed);
+
+    public void AddTag(string tag)
+    {
+        if (!string.IsNullOrWhiteSpace(tag))
+            _tags.Add(tag);
+    }
+
+    public void AddTags(IEnumerable<string> tags)
+    {
+        foreach (var tag in tags)
+            AddTag(tag);
+    }
+
+    public bool HasTag(string tag) => _tags.Contains(tag);
+
+    public bool RemoveTag(string tag) => _tags.Remove(tag);
 
     /// <summary>
     /// Checks passive perception against all unrevealed hidden elements

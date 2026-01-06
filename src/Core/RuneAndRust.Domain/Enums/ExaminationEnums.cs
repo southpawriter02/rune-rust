@@ -53,7 +53,10 @@ public enum Biome
     Citadel,
 
     /// <summary>Outside surface areas.</summary>
-    Surface
+    Surface,
+
+    /// <summary>Giant ruins with massive architecture and runic power.</summary>
+    Jotunheim
 }
 
 /// <summary>

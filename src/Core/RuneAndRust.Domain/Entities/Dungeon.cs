@@ -37,6 +37,14 @@ public class Dungeon : IEntity
             StartingRoomId = room.Id;
     }
 
+    public void SetStartingRoom(Guid roomId)
+    {
+        if (!_rooms.ContainsKey(roomId))
+            throw new ArgumentException($"Room {roomId} not found in dungeon", nameof(roomId));
+
+        StartingRoomId = roomId;
+    }
+
     public Room? GetRoom(Guid roomId) =>
         _rooms.TryGetValue(roomId, out var room) ? room : null;
 
@@ -65,6 +73,12 @@ public class Dungeon : IEntity
         Direction.South => Direction.North,
         Direction.East => Direction.West,
         Direction.West => Direction.East,
+        Direction.Up => Direction.Down,
+        Direction.Down => Direction.Up,
+        Direction.Northeast => Direction.Southwest,
+        Direction.Northwest => Direction.Southeast,
+        Direction.Southeast => Direction.Northwest,
+        Direction.Southwest => Direction.Northeast,
         _ => throw new ArgumentOutOfRangeException(nameof(direction))
     };
 
