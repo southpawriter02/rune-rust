@@ -88,6 +88,16 @@ public interface IGameConfigurationProvider
     /// Gets all classes for a specific archetype.
     /// </summary>
     IReadOnlyList<ClassDefinition> GetClassesForArchetype(string archetypeId);
+
+    /// <summary>
+    /// Gets all resource type definitions.
+    /// </summary>
+    IReadOnlyList<ResourceTypeDefinition> GetResourceTypes();
+
+    /// <summary>
+    /// Gets a resource type definition by ID.
+    /// </summary>
+    ResourceTypeDefinition? GetResourceTypeById(string resourceTypeId);
 }
 
 /// <summary>

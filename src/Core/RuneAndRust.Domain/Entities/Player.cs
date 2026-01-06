@@ -65,6 +65,46 @@ public class Player : IEntity
     public bool HasClass => !string.IsNullOrEmpty(ClassId);
 
     /// <summary>
+    /// Gets the player's resource pools keyed by resource type ID.
+    /// </summary>
+    public Dictionary<string, ResourcePool> Resources { get; private set; } = new();
+
+    /// <summary>
+    /// Gets a specific resource pool by type ID.
+    /// </summary>
+    /// <param name="resourceTypeId">The resource type ID (e.g., "mana").</param>
+    /// <returns>The resource pool, or null if the player doesn't have it.</returns>
+    public ResourcePool? GetResource(string resourceTypeId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(resourceTypeId);
+        return Resources.TryGetValue(resourceTypeId.ToLowerInvariant(), out var pool)
+            ? pool
+            : null;
+    }
+
+    /// <summary>
+    /// Checks whether the player has a specific resource type.
+    /// </summary>
+    public bool HasResource(string resourceTypeId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(resourceTypeId);
+        return Resources.ContainsKey(resourceTypeId.ToLowerInvariant());
+    }
+
+    /// <summary>
+    /// Initializes a resource pool for the player.
+    /// </summary>
+    /// <param name="resourceTypeId">The resource type ID.</param>
+    /// <param name="maximum">The maximum value.</param>
+    /// <param name="startAtZero">Whether to start at zero instead of max.</param>
+    public void InitializeResource(string resourceTypeId, int maximum, bool startAtZero = false)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(resourceTypeId);
+        var id = resourceTypeId.ToLowerInvariant();
+        Resources[id] = new ResourcePool(id, maximum, startAtZero);
+    }
+
+    /// <summary>
     /// Gets the player's current health points.
     /// </summary>
     /// <value>A non-negative integer representing current HP. Zero means the player is dead.</value>

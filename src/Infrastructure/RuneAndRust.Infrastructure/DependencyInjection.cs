@@ -93,6 +93,9 @@ public static class DependencyInjection
         // Class system service
         services.AddScoped<ClassService>();
 
+        // Resource system service
+        services.AddScoped<ResourceService>();
+
         return services;
     }
 }

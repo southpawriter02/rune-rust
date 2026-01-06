@@ -15,17 +15,20 @@ public class CharacterCreationView
 {
     private readonly PlayerCreationService _creationService;
     private readonly ClassService _classService;
+    private readonly ResourceService _resourceService;
     private readonly IAnsiConsole _console;
     private readonly ILogger<CharacterCreationView> _logger;
 
     public CharacterCreationView(
         PlayerCreationService creationService,
         ClassService classService,
+        ResourceService resourceService,
         IAnsiConsole console,
         ILogger<CharacterCreationView> logger)
     {
         _creationService = creationService ?? throw new ArgumentNullException(nameof(creationService));
         _classService = classService ?? throw new ArgumentNullException(nameof(classService));
+        _resourceService = resourceService ?? throw new ArgumentNullException(nameof(resourceService));
         _console = console ?? throw new ArgumentNullException(nameof(console));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
@@ -83,6 +86,16 @@ public class CharacterCreationView
 
             // Apply class to player
             _classService.ApplyClassToPlayer(selectedClass.Id, player);
+
+            // Initialize resources based on class
+            var classDef = _classService.GetClass(selectedClass.Id);
+            if (classDef != null)
+            {
+                _resourceService.InitializePlayerResources(player,
+                    ClassDefinition.Create(classDef.Id, classDef.Name, classDef.Description,
+                        classDef.ArchetypeId, classDef.StatModifiers, classDef.GrowthRates,
+                        classDef.PrimaryResourceId, classDef.StartingAbilityIds));
+            }
 
             _logger.LogInformation("Character created: {Name}, Class: {Class}", player.Name, selectedClass.Name);
             return player;

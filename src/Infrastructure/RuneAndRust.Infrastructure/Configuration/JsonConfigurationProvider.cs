@@ -27,6 +27,7 @@ public class JsonConfigurationProvider : IGameConfigurationProvider
     private IReadOnlyDictionary<string, DescriptorPool>? _descriptorPools;
     private IReadOnlyList<ArchetypeDefinition>? _archetypes;
     private IReadOnlyList<ClassDefinition>? _classes;
+    private IReadOnlyList<ResourceTypeDefinition>? _resourceTypes;
 
     private static readonly JsonSerializerOptions DefaultJsonOptions = new()
     {
@@ -225,6 +226,52 @@ public class JsonConfigurationProvider : IGameConfigurationProvider
             .Where(c => c.ArchetypeId.Equals(archetypeId, StringComparison.OrdinalIgnoreCase))
             .ToList();
     }
+
+    /// <inheritdoc/>
+    public IReadOnlyList<ResourceTypeDefinition> GetResourceTypes()
+    {
+        if (_resourceTypes != null) return _resourceTypes;
+
+        var filePath = Path.Combine(_configPath, "resources.json");
+        var config = LoadJsonFile<ResourceTypesJsonConfig>(filePath);
+        _resourceTypes = config?.ResourceTypes.Select(ToResourceTypeDefinition).ToList()
+            ?? GetDefaultResourceTypes();
+
+        _logger.LogDebug("Loaded {Count} resource types", _resourceTypes.Count);
+        return _resourceTypes;
+    }
+
+    /// <inheritdoc/>
+    public ResourceTypeDefinition? GetResourceTypeById(string resourceTypeId)
+    {
+        return GetResourceTypes().FirstOrDefault(r =>
+            r.Id.Equals(resourceTypeId, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static ResourceTypeDefinition ToResourceTypeDefinition(ResourceTypeJsonConfig config)
+    {
+        return ResourceTypeDefinition.Create(
+            config.Id,
+            config.DisplayName,
+            config.Abbreviation,
+            config.Description,
+            config.Color,
+            config.DefaultMax,
+            config.RegenPerTurn,
+            config.DecayPerTurn,
+            config.DecayOnlyOutOfCombat,
+            config.BuildOnDamageDealt,
+            config.BuildOnDamageTaken,
+            config.BuildOnHeal,
+            config.IsUniversal,
+            config.StartsAtZero,
+            config.SortOrder);
+    }
+
+    private static List<ResourceTypeDefinition> GetDefaultResourceTypes() =>
+    [
+        ResourceTypeDefinition.Create("health", "Vitality", "HP", "Life force", "#FF0000", 100, isUniversal: true)
+    ];
 
     private static ArchetypeDefinition ToArchetypeDefinition(ArchetypeJsonConfig config)
     {
@@ -504,5 +551,30 @@ public class JsonConfigurationProvider : IGameConfigurationProvider
     {
         public List<string>? AllowedRaceIds { get; set; }
         public Dictionary<string, int>? MinimumAttributes { get; set; }
+    }
+
+    // Resource Type JSON structure
+    private class ResourceTypesJsonConfig
+    {
+        public List<ResourceTypeJsonConfig> ResourceTypes { get; set; } = [];
+    }
+
+    private class ResourceTypeJsonConfig
+    {
+        public string Id { get; set; } = string.Empty;
+        public string DisplayName { get; set; } = string.Empty;
+        public string Abbreviation { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public string Color { get; set; } = "#FFFFFF";
+        public int DefaultMax { get; set; } = 100;
+        public int RegenPerTurn { get; set; } = 0;
+        public int DecayPerTurn { get; set; } = 0;
+        public bool DecayOnlyOutOfCombat { get; set; } = true;
+        public int BuildOnDamageDealt { get; set; } = 0;
+        public int BuildOnDamageTaken { get; set; } = 0;
+        public int BuildOnHeal { get; set; } = 0;
+        public bool IsUniversal { get; set; } = false;
+        public bool StartsAtZero { get; set; } = false;
+        public int SortOrder { get; set; } = 0;
     }
 }
