@@ -1,0 +1,121 @@
+{
+    "category": "objects",
+    "pools": {
+        "containers": {
+            "id": "containers",
+            "name": "Containers",
+            "descriptors": [
+                {
+                    "id": "weathered_chest",
+                    "text": "a weathered wooden chest, its iron bands rusted with age",
+                    "weight": 20
+                },
+                {
+                    "id": "ornate_coffer",
+                    "text": "an ornate coffer inlaid with faded gold filigree",
+                    "weight": 15
+                },
+                {
+                    "id": "rusted_lockbox",
+                    "text": "a rusted lockbox, its mechanism long seized",
+                    "weight": 20
+                },
+                {
+                    "id": "ancient_urn",
+                    "text": "an ancient urn covered in mysterious symbols",
+                    "weight": 15
+                },
+                {
+                    "id": "rotting_crate",
+                    "text": "a rotting wooden crate, its contents long since decayed",
+                    "weight": 15
+                },
+                {
+                    "id": "stone_sarcophagus",
+                    "text": "a stone sarcophagus, its lid slightly ajar",
+                    "weight": 15,
+                    "tags": [
+                        "tomb",
+                        "danger"
+                    ]
+                }
+            ]
+        },
+        "furniture": {
+            "id": "furniture",
+            "name": "Furniture",
+            "descriptors": [
+                {
+                    "id": "rickety_table",
+                    "text": "a rickety table that groans under its own weight",
+                    "weight": 20
+                },
+                {
+                    "id": "collapsed_throne",
+                    "text": "the remains of a collapsed throne, once majestic",
+                    "weight": 15
+                },
+                {
+                    "id": "rotting_bookshelf",
+                    "text": "a rotting bookshelf, its contents turned to pulp",
+                    "weight": 20
+                },
+                {
+                    "id": "overturned_cart",
+                    "text": "an overturned cart, its wheel still slowly spinning",
+                    "weight": 15
+                },
+                {
+                    "id": "broken_altar",
+                    "text": "a broken altar stained with dark residue",
+                    "weight": 15,
+                    "tags": [
+                        "religious",
+                        "danger"
+                    ]
+                },
+                {
+                    "id": "dusty_workbench",
+                    "text": "a dusty workbench covered with abandoned tools",
+                    "weight": 15
+                }
+            ]
+        },
+        "architectural": {
+            "id": "architectural",
+            "name": "Architectural",
+            "descriptors": [
+                {
+                    "id": "crumbling_pillar",
+                    "text": "a crumbling pillar that somehow still supports the ceiling",
+                    "weight": 20
+                },
+                {
+                    "id": "iron_door",
+                    "text": "an iron-banded door, scarred by countless attempts to breach it",
+                    "weight": 20
+                },
+                {
+                    "id": "spiral_staircase",
+                    "text": "a spiral staircase descending into darkness",
+                    "weight": 15
+                },
+                {
+                    "id": "collapsed_archway",
+                    "text": "a collapsed archway, rubble blocking all but a narrow passage",
+                    "weight": 20
+                },
+                {
+                    "id": "grand_fireplace",
+                    "text": "a grand fireplace, cold ashes hinting at past warmth",
+                    "weight": 15
+                },
+                {
+                    "id": "barred_window",
+                    "text": "a barred window offering a glimpse of nothing but stone",
+                    "weight": 10
+                }
+            ]
+        }
+    }
+}

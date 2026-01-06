@@ -1,0 +1,64 @@
+{
+    "$schema": "./schemas/themes.schema.json",
+    "version": "1.0",
+    "activeTheme": "dark_fantasy",
+    "themes": {
+        "dark_fantasy": {
+            "id": "dark_fantasy",
+            "name": "Dark Fantasy",
+            "description": "Grim, atmospheric fantasy with horror elements.",
+            "descriptorOverrides": {
+                "environmental.lighting": "environmental.lighting.dark",
+                "combat.death": "combat.death.grim"
+            },
+            "excludedTerms": [
+                "cheerful",
+                "bright",
+                "sunny"
+            ],
+            "emphasizedTerms": [
+                "shadows",
+                "darkness",
+                "dread",
+                "ancient"
+            ]
+        },
+        "high_fantasy": {
+            "id": "high_fantasy",
+            "name": "High Fantasy",
+            "description": "Epic, heroic fantasy with wonder and magic.",
+            "descriptorOverrides": {
+                "environmental.lighting": "environmental.lighting.bright"
+            },
+            "excludedTerms": [
+                "gore",
+                "viscera",
+                "rotting"
+            ],
+            "emphasizedTerms": [
+                "magnificent",
+                "wondrous",
+                "glorious"
+            ]
+        },
+        "horror": {
+            "id": "horror",
+            "name": "Horror",
+            "description": "Terrifying, suspenseful horror atmosphere.",
+            "descriptorOverrides": {
+                "environmental.sounds": "environmental.sounds.horror"
+            },
+            "excludedTerms": [
+                "peaceful",
+                "calm",
+                "serene"
+            ],
+            "emphasizedTerms": [
+                "dread",
+                "terror",
+                "unspeakable",
+                "crawling"
+            ]
+        }
+    }
+}

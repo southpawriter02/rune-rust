@@ -1,8 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using RuneAndRust.Application.Configuration;
 using RuneAndRust.Application.Interfaces;
 using RuneAndRust.Application.Services;
+using RuneAndRust.Infrastructure.Configuration;
 using RuneAndRust.Infrastructure.Persistence;
 using RuneAndRust.Infrastructure.Repositories;
 
@@ -19,6 +22,7 @@ public static class DependencyInjection
     /// <param name="services">The service collection to configure.</param>
     /// <param name="configuration">The application configuration for connection strings.</param>
     /// <param name="useInMemoryDatabase">If true, uses in-memory storage; otherwise, configures PostgreSQL.</param>
+    /// <param name="configPath">Path to configuration files directory.</param>
     /// <returns>The service collection for chaining.</returns>
     /// <remarks>
     /// When <paramref name="useInMemoryDatabase"/> is false, this method configures Entity Framework Core
@@ -28,7 +32,8 @@ public static class DependencyInjection
     public static IServiceCollection AddInfrastructure(
         this IServiceCollection services,
         IConfiguration configuration,
-        bool useInMemoryDatabase = false)
+        bool useInMemoryDatabase = false,
+        string configPath = "config")
     {
         if (useInMemoryDatabase)
         {
@@ -46,6 +51,19 @@ public static class DependencyInjection
             services.AddSingleton<IGameRepository, InMemoryGameRepository>();
         }
 
+        // Register configuration provider
+        services.AddSingleton<IGameConfigurationProvider>(sp =>
+        {
+            var logger = sp.GetRequiredService<ILogger<JsonConfigurationProvider>>();
+            return new JsonConfigurationProvider(configPath, logger);
+        });
+
+        // Register configuration objects from the provider
+        services.AddSingleton(sp =>
+            sp.GetRequiredService<IGameConfigurationProvider>().GetLexiconConfiguration());
+        services.AddSingleton(sp =>
+            sp.GetRequiredService<IGameConfigurationProvider>().GetThemeConfiguration());
+
         return services;
     }
 
@@ -58,7 +76,21 @@ public static class DependencyInjection
     {
         services.AddScoped<ItemEffectService>();
         services.AddScoped<InputValidationService>();
+        services.AddScoped<PlayerCreationService>();
         services.AddScoped<GameSessionService>();
+
+        // Text variety services
+        services.AddScoped<LexiconService>();
+        services.AddScoped(sp =>
+        {
+            var configProvider = sp.GetRequiredService<IGameConfigurationProvider>();
+            var pools = configProvider.GetAllDescriptorPools();
+            var theme = configProvider.GetThemeConfiguration();
+            var logger = sp.GetRequiredService<ILogger<DescriptorService>>();
+            return new DescriptorService(pools, theme, logger);
+        });
+
         return services;
     }
 }
+

@@ -1,0 +1,270 @@
+{
+    "category": "environmental",
+    "pools": {
+        "lighting": {
+            "id": "lighting",
+            "name": "Lighting",
+            "descriptors": [
+                {
+                    "id": "dim_torch",
+                    "text": "dimly lit by flickering torches",
+                    "weight": 20,
+                    "tags": [
+                        "indoor",
+                        "dungeon"
+                    ],
+                    "themes": [
+                        "dark_fantasy",
+                        "horror"
+                    ]
+                },
+                {
+                    "id": "bathed_torchlight",
+                    "text": "bathed in warm torchlight",
+                    "weight": 15,
+                    "tags": [
+                        "indoor",
+                        "safe"
+                    ],
+                    "themes": [
+                        "high_fantasy"
+                    ]
+                },
+                {
+                    "id": "shrouded_darkness",
+                    "text": "shrouded in impenetrable darkness",
+                    "weight": 25,
+                    "tags": [
+                        "danger",
+                        "dungeon"
+                    ],
+                    "themes": [
+                        "dark_fantasy",
+                        "horror"
+                    ]
+                },
+                {
+                    "id": "pale_light",
+                    "text": "where pale light filters through cracks above",
+                    "weight": 15,
+                    "tags": [
+                        "underground",
+                        "atmospheric"
+                    ]
+                },
+                {
+                    "id": "eerie_glow",
+                    "text": "illuminated by an eerie phosphorescent glow",
+                    "weight": 10,
+                    "tags": [
+                        "magic",
+                        "cave"
+                    ],
+                    "themes": [
+                        "dark_fantasy",
+                        "horror"
+                    ]
+                },
+                {
+                    "id": "shadows_dance",
+                    "text": "where shadows dance at the edge of your vision",
+                    "weight": 15,
+                    "tags": [
+                        "atmospheric",
+                        "danger"
+                    ]
+                }
+            ]
+        },
+        "sounds": {
+            "id": "sounds",
+            "name": "Ambient Sounds",
+            "descriptors": [
+                {
+                    "id": "dripping_water",
+                    "text": "The sound of dripping water echoes in the distance",
+                    "weight": 25,
+                    "tags": [
+                        "cave",
+                        "dungeon"
+                    ]
+                },
+                {
+                    "id": "distant_rumbling",
+                    "text": "A distant rumbling vibrates through the stone",
+                    "weight": 15,
+                    "tags": [
+                        "underground",
+                        "danger"
+                    ]
+                },
+                {
+                    "id": "eerie_silence",
+                    "text": "An eerie silence hangs in the air",
+                    "weight": 20,
+                    "tags": [
+                        "atmospheric",
+                        "danger"
+                    ],
+                    "themes": [
+                        "horror"
+                    ]
+                },
+                {
+                    "id": "scratching_walls",
+                    "text": "Something scratches within the walls",
+                    "weight": 15,
+                    "tags": [
+                        "danger",
+                        "creature"
+                    ],
+                    "themes": [
+                        "horror"
+                    ]
+                },
+                {
+                    "id": "wind_moaning",
+                    "text": "A mournful wind moans through unseen passages",
+                    "weight": 15,
+                    "tags": [
+                        "atmospheric"
+                    ]
+                },
+                {
+                    "id": "chains_rattling",
+                    "text": "The distant rattling of chains sends shivers down your spine",
+                    "weight": 10,
+                    "tags": [
+                        "dungeon",
+                        "danger"
+                    ],
+                    "themes": [
+                        "dark_fantasy",
+                        "horror"
+                    ]
+                }
+            ]
+        },
+        "smells": {
+            "id": "smells",
+            "name": "Ambient Smells",
+            "descriptors": [
+                {
+                    "id": "musty_air",
+                    "text": "The air is thick and musty",
+                    "weight": 25,
+                    "tags": [
+                        "indoor",
+                        "old"
+                    ]
+                },
+                {
+                    "id": "damp_stone",
+                    "text": "The smell of damp stone fills your nostrils",
+                    "weight": 20,
+                    "tags": [
+                        "cave",
+                        "dungeon"
+                    ]
+                },
+                {
+                    "id": "rotting_vegetation",
+                    "text": "The stench of rotting vegetation assaults your senses",
+                    "weight": 15,
+                    "tags": [
+                        "swamp",
+                        "decay"
+                    ],
+                    "themes": [
+                        "horror"
+                    ]
+                },
+                {
+                    "id": "sulfurous_fumes",
+                    "text": "Sulfurous fumes sting your eyes and throat",
+                    "weight": 10,
+                    "tags": [
+                        "volcanic",
+                        "danger"
+                    ]
+                },
+                {
+                    "id": "ancient_dust",
+                    "text": "Ancient dust coats your tongue with each breath",
+                    "weight": 15,
+                    "tags": [
+                        "ruin",
+                        "old"
+                    ]
+                },
+                {
+                    "id": "copper_blood",
+                    "text": "The metallic tang of blood hangs in the air",
+                    "weight": 15,
+                    "tags": [
+                        "combat",
+                        "danger"
+                    ],
+                    "themes": [
+                        "dark_fantasy",
+                        "horror"
+                    ]
+                }
+            ]
+        },
+        "temperature": {
+            "id": "temperature",
+            "name": "Temperature Sensations",
+            "descriptors": [
+                {
+                    "id": "bone_chilling",
+                    "text": "A bone-chilling cold seeps into your very soul",
+                    "weight": 20,
+                    "tags": [
+                        "cold",
+                        "supernatural"
+                    ]
+                },
+                {
+                    "id": "oppressive_heat",
+                    "text": "Oppressive heat radiates from the stone walls",
+                    "weight": 15,
+                    "tags": [
+                        "volcanic",
+                        "forge"
+                    ]
+                },
+                {
+                    "id": "damp_chill",
+                    "text": "A damp chill clings to your skin",
+                    "weight": 25,
+                    "tags": [
+                        "cave",
+                        "dungeon"
+                    ]
+                },
+                {
+                    "id": "stale_warmth",
+                    "text": "Stale warmth hangs heavy in the still air",
+                    "weight": 20,
+                    "tags": [
+                        "indoor",
+                        "enclosed"
+                    ]
+                },
+                {
+                    "id": "unnatural_cold",
+                    "text": "An unnatural cold presence makes your breath visible",
+                    "weight": 10,
+                    "tags": [
+                        "supernatural",
+                        "undead"
+                    ],
+                    "themes": [
+                        "horror"
+                    ]
+                }
+            ]
+        }
+    }
+}

@@ -1,0 +1,154 @@
+{
+    "$schema": "./schemas/backgrounds.schema.json",
+    "version": "1.0",
+    "backgrounds": [
+        {
+            "id": "soldier",
+            "name": "Soldier",
+            "category": "Profession",
+            "description": "You served in an army or militia, learning the ways of combat.",
+            "lore": "Years of drilling, marching, and fighting have hardened your body and mind. You've seen comrades fall and enemies routed, and you carry those experiences with you.",
+            "attributeBonuses": {
+                "might": 2
+            },
+            "starterAbilityId": "shield_bash",
+            "starterAbilityName": "Shield Bash",
+            "starterAbilityDescription": "Stun an enemy for one turn using your shield.",
+            "startingItems": [
+                "iron_shield"
+            ],
+            "isPlayable": true,
+            "sortOrder": 1
+        },
+        {
+            "id": "scholar",
+            "name": "Scholar",
+            "category": "Profession",
+            "description": "You spent years studying ancient texts and accumulating knowledge.",
+            "lore": "The musty halls of libraries and academies were your home. You learned that knowledge is power, and you've accumulated quite a bit of both.",
+            "attributeBonuses": {
+                "wits": 2
+            },
+            "starterAbilityId": "lore_recall",
+            "starterAbilityName": "Lore Recall",
+            "starterAbilityDescription": "Identify items and gain insight into monster weaknesses.",
+            "startingItems": [
+                "ancient_tome"
+            ],
+            "isPlayable": true,
+            "sortOrder": 2
+        },
+        {
+            "id": "thief",
+            "name": "Thief",
+            "category": "Profession",
+            "description": "You lived by your wits and nimble fingers in the city's shadows.",
+            "lore": "The streets taught you that the wealthy rarely deserve their fortune, and that a quick hand and quicker feet can level the playing field.",
+            "attributeBonuses": {
+                "finesse": 2
+            },
+            "starterAbilityId": "sneak_attack",
+            "starterAbilityName": "Sneak Attack",
+            "starterAbilityDescription": "Deal double damage when attacking from stealth.",
+            "startingItems": [
+                "lockpicks"
+            ],
+            "isPlayable": true,
+            "sortOrder": 3
+        },
+        {
+            "id": "healer",
+            "name": "Healer",
+            "category": "Profession",
+            "description": "You dedicated yourself to tending the sick and wounded.",
+            "lore": "Whether in a temple infirmary or a battlefield medical tent, you learned the art of mending flesh and soothing pain. Life is precious, and you've sworn to preserve it.",
+            "attributeBonuses": {
+                "will": 2
+            },
+            "starterAbilityId": "minor_heal",
+            "starterAbilityName": "Minor Heal",
+            "starterAbilityDescription": "Restore a small amount of health to yourself or an ally.",
+            "startingItems": [
+                "healing_herbs"
+            ],
+            "isPlayable": true,
+            "sortOrder": 4
+        },
+        {
+            "id": "mountainborn",
+            "name": "Mountainborn",
+            "category": "Lineage",
+            "description": "You were raised in the harsh mountain peaks, building endurance.",
+            "lore": "The thin air and treacherous terrain of the high peaks forged you into someone who can endure hardships that would break others.",
+            "attributeBonuses": {
+                "fortitude": 1,
+                "might": 1
+            },
+            "starterAbilityId": "endurance",
+            "starterAbilityName": "Endurance",
+            "starterAbilityDescription": "Resist exhaustion and recover faster from exertion.",
+            "startingItems": [
+                "climbing_gear"
+            ],
+            "isPlayable": true,
+            "sortOrder": 10
+        },
+        {
+            "id": "coastlander",
+            "name": "Coastlander",
+            "category": "Lineage",
+            "description": "You grew up along the shores, at home on both land and sea.",
+            "lore": "Salt water runs in your veins. The rhythm of the tides taught you patience, and the unpredictable seas made you adaptable.",
+            "attributeBonuses": {
+                "finesse": 1,
+                "wits": 1
+            },
+            "starterAbilityId": "swim",
+            "starterAbilityName": "Strong Swimmer",
+            "starterAbilityDescription": "Move freely through water without penalty.",
+            "startingItems": [
+                "fishing_net"
+            ],
+            "isPlayable": true,
+            "sortOrder": 11
+        },
+        {
+            "id": "forestkin",
+            "name": "Forestkin",
+            "category": "Lineage",
+            "description": "The deep woods were your home, teaching you to track and survive.",
+            "lore": "Where others see an impenetrable tangle of growth, you see paths, signs, and sanctuary. The forest's secrets are yours to know.",
+            "attributeBonuses": {
+                "wits": 1,
+                "finesse": 1
+            },
+            "starterAbilityId": "track",
+            "starterAbilityName": "Tracker",
+            "starterAbilityDescription": "Follow trails and detect nearby creatures.",
+            "startingItems": [
+                "hunters_bow"
+            ],
+            "isPlayable": true,
+            "sortOrder": 12
+        },
+        {
+            "id": "cityfolk",
+            "name": "Cityfolk",
+            "category": "Lineage",
+            "description": "You were raised in a bustling city, learning to navigate crowds and politics.",
+            "lore": "The city never sleeps, and neither did you. You learned to read people as easily as street signs, and to find opportunity in every crowded corner.",
+            "attributeBonuses": {
+                "will": 1,
+                "wits": 1
+            },
+            "starterAbilityId": "streetwise",
+            "starterAbilityName": "Streetwise",
+            "starterAbilityDescription": "Gain advantage on social interactions and finding information.",
+            "startingItems": [
+                "city_map"
+            ],
+            "isPlayable": true,
+            "sortOrder": 13
+        }
+    ]
+}

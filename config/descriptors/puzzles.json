@@ -1,0 +1,96 @@
+{
+    "category": "puzzles",
+    "pools": {
+        "mechanisms": {
+            "id": "mechanisms",
+            "name": "Mechanisms",
+            "descriptors": [
+                {
+                    "id": "gears_grind",
+                    "text": "Ancient gears grind to life with a deafening screech",
+                    "weight": 20
+                },
+                {
+                    "id": "runes_flicker",
+                    "text": "Mystical runes flicker with an inner light",
+                    "weight": 20
+                },
+                {
+                    "id": "pressure_plate",
+                    "text": "A pressure plate clicks beneath your weight",
+                    "weight": 25
+                },
+                {
+                    "id": "crystal_resonates",
+                    "text": "The crystal resonates with a pure, clear tone",
+                    "weight": 15
+                },
+                {
+                    "id": "chains_rattle",
+                    "text": "Hidden chains rattle somewhere within the walls",
+                    "weight": 20
+                }
+            ]
+        },
+        "clues": {
+            "id": "clues",
+            "name": "Clues",
+            "descriptors": [
+                {
+                    "id": "faded_inscription",
+                    "text": "A faded inscription reads",
+                    "weight": 25
+                },
+                {
+                    "id": "symbols_pattern",
+                    "text": "Symbols are arranged in a deliberate pattern",
+                    "weight": 20
+                },
+                {
+                    "id": "dust_disturbed",
+                    "text": "The dust here has been disturbed recently",
+                    "weight": 20
+                },
+                {
+                    "id": "scratches_floor",
+                    "text": "Scratches on the floor suggest something was dragged",
+                    "weight": 15
+                },
+                {
+                    "id": "portrait_eyes",
+                    "text": "The portrait's eyes seem to follow your movement",
+                    "weight": 15,
+                    "themes": [
+                        "horror"
+                    ]
+                }
+            ]
+        },
+        "states": {
+            "id": "states",
+            "name": "Puzzle States",
+            "descriptors": [
+                {
+                    "id": "partially_solved",
+                    "text": "The mechanism appears partially solved",
+                    "weight": 30
+                },
+                {
+                    "id": "reset_position",
+                    "text": "Everything has reset to its original position",
+                    "weight": 25
+                },
+                {
+                    "id": "mechanism_jammed",
+                    "text": "The mechanism has jammed in place",
+                    "weight": 20
+                },
+                {
+                    "id": "awaiting_input",
+                    "text": "The device hums softly, awaiting input",
+                    "weight": 25
+                }
+            ]
+        }
+    }
+}

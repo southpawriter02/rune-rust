@@ -24,6 +24,26 @@ public class Player : IEntity
     public string Name { get; private set; }
 
     /// <summary>
+    /// Gets the player's race definition ID.
+    /// </summary>
+    public string RaceId { get; private set; } = "human";
+
+    /// <summary>
+    /// Gets the player's background definition ID.
+    /// </summary>
+    public string BackgroundId { get; private set; } = "soldier";
+
+    /// <summary>
+    /// Gets the player's core attributes (Might, Fortitude, Will, Wits, Finesse).
+    /// </summary>
+    public PlayerAttributes Attributes { get; private set; } = PlayerAttributes.Default;
+
+    /// <summary>
+    /// Gets the player's optional description/backstory.
+    /// </summary>
+    public string Description { get; private set; } = string.Empty;
+
+    /// <summary>
     /// Gets the player's current health points.
     /// </summary>
     /// <value>A non-negative integer representing current HP. Zero means the player is dead.</value>
@@ -77,6 +97,69 @@ public class Player : IEntity
         Health = Stats.MaxHealth;
         Position = Position.Origin;
         Inventory = new Inventory();
+    }
+
+    /// <summary>
+    /// Creates a new player with full character creation options.
+    /// </summary>
+    /// <param name="name">The player's display name.</param>
+    /// <param name="raceId">The race definition ID.</param>
+    /// <param name="backgroundId">The background definition ID.</param>
+    /// <param name="attributes">The player's core attributes.</param>
+    /// <param name="description">Optional character description/backstory.</param>
+    /// <param name="stats">Optional custom stats. If null, stats are derived from attributes.</param>
+    public Player(
+        string name,
+        string raceId,
+        string backgroundId,
+        PlayerAttributes attributes,
+        string description = "",
+        Stats? stats = null)
+    {
+        Id = Guid.NewGuid();
+        Name = name ?? throw new ArgumentNullException(nameof(name));
+        RaceId = raceId ?? throw new ArgumentNullException(nameof(raceId));
+        BackgroundId = backgroundId ?? throw new ArgumentNullException(nameof(backgroundId));
+        Attributes = attributes;
+        Description = description ?? string.Empty;
+
+        // Derive stats from attributes if not provided
+        Stats = stats ?? DeriveStatsFromAttributes(attributes);
+        Health = Stats.MaxHealth;
+        Position = Position.Origin;
+        Inventory = new Inventory();
+    }
+
+    /// <summary>
+    /// Sets the player's description (max 500 characters).
+    /// </summary>
+    /// <param name="description">The description text.</param>
+    /// <exception cref="ArgumentException">Thrown if description exceeds limits.</exception>
+    public void SetDescription(string description)
+    {
+        if (description.Length > 500)
+            throw new ArgumentException("Description cannot exceed 500 characters");
+
+        var lineBreaks = description.Count(c => c == '\n');
+        if (lineBreaks > 5)
+            throw new ArgumentException("Description cannot have more than 5 line breaks");
+
+        Description = description;
+    }
+
+    /// <summary>
+    /// Derives combat stats from player attributes.
+    /// </summary>
+    private static Stats DeriveStatsFromAttributes(PlayerAttributes attributes)
+    {
+        // MaxHealth = 100 + (Fortitude - 10) * 5
+        // Attack = Might
+        // Defense = Finesse / 2
+        var maxHealth = 100 + (attributes.Fortitude - 10) * 5;
+        var attack = attributes.Might;
+        var defense = attributes.Finesse / 2;
+
+        return new Stats(maxHealth, attack, defense);
     }
 
     /// <summary>

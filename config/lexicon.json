@@ -1,0 +1,244 @@
+{
+    "$schema": "./schemas/lexicon.schema.json",
+    "version": "1.0",
+    "contexts": [
+        {
+            "id": "combat",
+            "name": "Combat"
+        },
+        {
+            "id": "exploration",
+            "name": "Exploration"
+        },
+        {
+            "id": "dialogue",
+            "name": "Dialogue"
+        },
+        {
+            "id": "formal",
+            "name": "Formal"
+        },
+        {
+            "id": "casual",
+            "name": "Casual"
+        }
+    ],
+    "terms": {
+        "attack": {
+            "default": "attack",
+            "synonyms": [
+                "strike",
+                "swing",
+                "slash",
+                "thrust",
+                "lunge"
+            ],
+            "contextual": {
+                "combat": [
+                    "strike",
+                    "slash",
+                    "thrust"
+                ],
+                "formal": [
+                    "engage",
+                    "assail"
+                ],
+                "casual": [
+                    "hit",
+                    "whack",
+                    "smack"
+                ]
+            },
+            "weights": {
+                "strike": 30,
+                "slash": 25,
+                "swing": 20,
+                "thrust": 15,
+                "lunge": 10
+            }
+        },
+        "hit": {
+            "default": "hits",
+            "synonyms": [
+                "connects",
+                "lands",
+                "strikes true",
+                "finds its mark"
+            ],
+            "contextual": {
+                "combat": [
+                    "connects",
+                    "lands a blow",
+                    "strikes true"
+                ],
+                "formal": [
+                    "finds its mark",
+                    "successfully engages"
+                ]
+            },
+            "weights": {
+                "hits": 25,
+                "connects": 25,
+                "lands": 20,
+                "strikes true": 15,
+                "finds its mark": 15
+            }
+        },
+        "miss": {
+            "default": "misses",
+            "synonyms": [
+                "swings wide",
+                "goes wide",
+                "whiffs",
+                "fails to connect"
+            ],
+            "contextual": {
+                "combat": [
+                    "swings wide",
+                    "fails to connect",
+                    "is deflected"
+                ],
+                "casual": [
+                    "whiffs",
+                    "misses completely",
+                    "swings at air"
+                ]
+            }
+        },
+        "damage": {
+            "default": "damage",
+            "synonyms": [
+                "wound",
+                "injure",
+                "hurt",
+                "harm"
+            ],
+            "severity": {
+                "light": [
+                    "graze",
+                    "scratch",
+                    "nick"
+                ],
+                "moderate": [
+                    "wound",
+                    "injure",
+                    "hurt"
+                ],
+                "heavy": [
+                    "devastate",
+                    "ravage",
+                    "grievously wound"
+                ],
+                "critical": [
+                    "obliterate",
+                    "annihilate",
+                    "utterly destroy"
+                ]
+            }
+        },
+        "kill": {
+            "default": "defeats",
+            "synonyms": [
+                "slays",
+                "vanquishes",
+                "destroys",
+                "fells"
+            ],
+            "contextual": {
+                "combat": [
+                    "slays",
+                    "defeats",
+                    "vanquishes"
+                ],
+                "formal": [
+                    "vanquishes",
+                    "fells",
+                    "brings low"
+                ]
+            }
+        },
+        "move": {
+            "default": "move",
+            "synonyms": [
+                "walk",
+                "stride",
+                "venture",
+                "proceed",
+                "travel"
+            ],
+            "contextual": {
+                "exploration": [
+                    "venture",
+                    "proceed",
+                    "make your way"
+                ],
+                "casual": [
+                    "head",
+                    "go",
+                    "walk"
+                ]
+            }
+        },
+        "quantities": {
+            "default": "some",
+            "severity": {
+                "none": [
+                    "none",
+                    "no",
+                    "zero",
+                    "not any"
+                ],
+                "one": [
+                    "a",
+                    "one",
+                    "a single",
+                    "a lone"
+                ],
+                "few": [
+                    "a few",
+                    "some",
+                    "a handful of",
+                    "several"
+                ],
+                "many": [
+                    "many",
+                    "numerous",
+                    "a multitude of",
+                    "countless"
+                ],
+                "horde": [
+                    "a horde of",
+                    "an army of",
+                    "swarms of",
+                    "legions of"
+                ]
+            }
+        },
+        "conditions": {
+            "default": "wounded",
+            "severity": {
+                "healthy": [
+                    "unharmed",
+                    "in good health",
+                    "at full strength"
+                ],
+                "wounded": [
+                    "wounded",
+                    "injured",
+                    "hurt"
+                ],
+                "bloodied": [
+                    "bloodied",
+                    "badly wounded",
+                    "bleeding heavily"
+                ],
+                "nearDeath": [
+                    "near death",
+                    "barely standing",
+                    "clinging to life",
+                    "at death's door"
+                ]
+            }
+        }
+    }
+}

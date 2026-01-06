@@ -1,0 +1,136 @@
+{
+    "category": "abilities",
+    "pools": {
+        "casting": {
+            "id": "casting",
+            "name": "Casting",
+            "descriptors": [
+                {
+                    "id": "channels_energy",
+                    "text": "channels arcane energy",
+                    "weight": 25
+                },
+                {
+                    "id": "incants_words",
+                    "text": "incants ancient words of power",
+                    "weight": 20
+                },
+                {
+                    "id": "focuses_power",
+                    "text": "focuses inner power",
+                    "weight": 25
+                },
+                {
+                    "id": "draws_upon",
+                    "text": "draws upon mystical forces",
+                    "weight": 20
+                },
+                {
+                    "id": "gestures_arcane",
+                    "text": "traces arcane gestures in the air",
+                    "weight": 10
+                }
+            ]
+        },
+        "effects_fire": {
+            "id": "effects_fire",
+            "name": "Fire Effects",
+            "descriptors": [
+                {
+                    "id": "flames_erupt",
+                    "text": "Flames erupt with searing intensity",
+                    "weight": 30
+                },
+                {
+                    "id": "fire_engulfs",
+                    "text": "Fire engulfs the target",
+                    "weight": 25
+                },
+                {
+                    "id": "inferno_roars",
+                    "text": "An inferno roars to life",
+                    "weight": 20
+                }
+            ]
+        },
+        "effects_ice": {
+            "id": "effects_ice",
+            "name": "Ice Effects",
+            "descriptors": [
+                {
+                    "id": "frost_spreads",
+                    "text": "Frost spreads with crystalline precision",
+                    "weight": 30
+                },
+                {
+                    "id": "cold_bites",
+                    "text": "Bitter cold bites deep",
+                    "weight": 25
+                },
+                {
+                    "id": "ice_encases",
+                    "text": "Ice encases the target",
+                    "weight": 20
+                }
+            ]
+        },
+        "effects_shadow": {
+            "id": "effects_shadow",
+            "name": "Shadow Effects",
+            "descriptors": [
+                {
+                    "id": "shadows_coalesce",
+                    "text": "Shadows coalesce into darkness",
+                    "weight": 30
+                },
+                {
+                    "id": "darkness_consumes",
+                    "text": "Darkness consumes all light",
+                    "weight": 25
+                }
+            ]
+        },
+        "effects_light": {
+            "id": "effects_light",
+            "name": "Light Effects",
+            "descriptors": [
+                {
+                    "id": "light_blazes",
+                    "text": "Brilliant light blazes forth",
+                    "weight": 30
+                },
+                {
+                    "id": "radiance_burns",
+                    "text": "Holy radiance burns the unholy",
+                    "weight": 25
+                }
+            ]
+        },
+        "duration": {
+            "id": "duration",
+            "name": "Duration",
+            "descriptors": [
+                {
+                    "id": "fades_gradually",
+                    "text": "The effect fades gradually",
+                    "weight": 25
+                },
+                {
+                    "id": "dissipates",
+                    "text": "The energy dissipates",
+                    "weight": 25
+                },
+                {
+                    "id": "lingers",
+                    "text": "The effect lingers in the air",
+                    "weight": 25
+                },
+                {
+                    "id": "intensifies",
+                    "text": "The power intensifies momentarily before fading",
+                    "weight": 15
+                }
+            ]
+        }
+    }
+}
