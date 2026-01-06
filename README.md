@@ -1,6 +1,6 @@
 # Rune & Rust
 
-A text-based dungeon crawler video game built with .NET 8, featuring both TUI (Terminal User Interface) and GUI options.
+A text-based dungeon crawler video game built with .NET 9, featuring both TUI (Terminal User Interface) and GUI options.
 
 ## Features
 
@@ -12,7 +12,7 @@ A text-based dungeon crawler video game built with .NET 8, featuring both TUI (T
 
 ## Technology Stack
 
-- **.NET 8** - Runtime platform
+- **.NET 9** - Runtime platform
 - **Spectre.Console** - Terminal UI rendering
 - **AvaloniaUI** - Cross-platform GUI framework
 - **PostgreSQL** - Database persistence (with in-memory option for development)
@@ -39,7 +39,7 @@ src/
 
 ## Prerequisites
 
-- [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
+- [.NET 9 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)
 - [Docker](https://www.docker.com/) (optional, for PostgreSQL)
 
 ## Getting Started
