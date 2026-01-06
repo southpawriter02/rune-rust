@@ -4,8 +4,20 @@ using RuneAndRust.Domain.Entities;
 
 namespace RuneAndRust.Infrastructure.Persistence.Configurations;
 
+/// <summary>
+/// Entity Framework Core configuration for the <see cref="GameSession"/> entity.
+/// </summary>
+/// <remarks>
+/// This configuration defines the database mapping for game sessions, including
+/// table name, primary key, and column constraints. Complex navigation properties
+/// (Player, Dungeon, CurrentRoom) are currently ignored pending full implementation.
+/// </remarks>
 public class GameSessionConfiguration : IEntityTypeConfiguration<GameSession>
 {
+    /// <summary>
+    /// Configures the GameSession entity mapping.
+    /// </summary>
+    /// <param name="builder">The entity type builder for GameSession.</param>
     public void Configure(EntityTypeBuilder<GameSession> builder)
     {
         builder.ToTable("GameSessions");

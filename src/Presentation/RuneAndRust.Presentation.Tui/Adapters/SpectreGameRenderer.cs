@@ -1,13 +1,45 @@
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using RuneAndRust.Application.DTOs;
 using RuneAndRust.Application.Interfaces;
 using Spectre.Console;
 
 namespace RuneAndRust.Presentation.Tui.Adapters;
 
+/// <summary>
+/// Spectre.Console-based implementation of <see cref="IGameRenderer"/> for TUI output.
+/// </summary>
+/// <remarks>
+/// SpectreGameRenderer uses Spectre.Console's rich formatting capabilities to render
+/// colorful, styled game output including status bars, room descriptions, inventory
+/// tables, and combat results.
+/// </remarks>
 public class SpectreGameRenderer : IGameRenderer
 {
+    /// <summary>
+    /// Logger for rendering operations and diagnostics.
+    /// </summary>
+    private readonly ILogger<SpectreGameRenderer> _logger;
+
+    /// <summary>
+    /// Creates a new Spectre game renderer instance.
+    /// </summary>
+    /// <param name="logger">Optional logger for diagnostics. If null, a no-op logger is used.</param>
+    public SpectreGameRenderer(ILogger<SpectreGameRenderer>? logger = null)
+    {
+        _logger = logger ?? NullLogger<SpectreGameRenderer>.Instance;
+        _logger.LogDebug("SpectreGameRenderer initialized");
+    }
+
+    /// <inheritdoc/>
     public Task RenderGameStateAsync(GameStateDto gameState, CancellationToken ct = default)
     {
+        _logger.LogDebug(
+            "Rendering game state - Player: {PlayerName}, Room: {RoomName}, State: {GameState}",
+            gameState.Player.Name,
+            gameState.CurrentRoom.Name,
+            gameState.State);
+
         RenderStatusBar(gameState.Player);
         Console.WriteLine();
         RenderRoomInternal(gameState.CurrentRoom);
@@ -15,8 +47,11 @@ public class SpectreGameRenderer : IGameRenderer
         return Task.CompletedTask;
     }
 
+    /// <inheritdoc/>
     public Task RenderMessageAsync(string message, MessageType type = MessageType.Info, CancellationToken ct = default)
     {
+        _logger.LogDebug("Rendering message - Type: {MessageType}, Message: {Message}", type, message);
+
         var color = type switch
         {
             MessageType.Warning => "yellow",
@@ -31,14 +66,25 @@ public class SpectreGameRenderer : IGameRenderer
         return Task.CompletedTask;
     }
 
+    /// <inheritdoc/>
     public Task RenderRoomAsync(RoomDto room, CancellationToken ct = default)
     {
+        _logger.LogDebug(
+            "Rendering room: {RoomName}, Items: {ItemCount}, Monsters: {MonsterCount}, Exits: {ExitCount}",
+            room.Name,
+            room.Items.Count,
+            room.Monsters.Count,
+            room.Exits.Count);
+
         RenderRoomInternal(room);
         return Task.CompletedTask;
     }
 
+    /// <inheritdoc/>
     public Task RenderInventoryAsync(InventoryDto inventory, CancellationToken ct = default)
     {
+        _logger.LogDebug("Rendering inventory: {ItemCount}/{Capacity} items", inventory.Count, inventory.Capacity);
+
         if (inventory.Items.Count == 0)
         {
             AnsiConsole.MarkupLine("[grey]Your inventory is empty.[/]");
@@ -68,8 +114,11 @@ public class SpectreGameRenderer : IGameRenderer
         return Task.CompletedTask;
     }
 
+    /// <inheritdoc/>
     public Task RenderCombatResultAsync(string combatDescription, CancellationToken ct = default)
     {
+        _logger.LogDebug("Rendering combat result");
+
         var panel = new Panel(combatDescription)
             .Header("[red]Combat[/]")
             .Border(BoxBorder.Heavy)
@@ -79,12 +128,18 @@ public class SpectreGameRenderer : IGameRenderer
         return Task.CompletedTask;
     }
 
+    /// <inheritdoc/>
     public Task ClearScreenAsync(CancellationToken ct = default)
     {
+        _logger.LogDebug("Clearing screen");
         AnsiConsole.Clear();
         return Task.CompletedTask;
     }
 
+    /// <summary>
+    /// Renders the player status bar showing name, health, attack, and defense.
+    /// </summary>
+    /// <param name="player">The player DTO to render.</param>
     private static void RenderStatusBar(PlayerDto player)
     {
         var healthColor = player.Health > player.MaxHealth * 0.5 ? "green" :
@@ -108,6 +163,10 @@ public class SpectreGameRenderer : IGameRenderer
         AnsiConsole.Write(statusTable);
     }
 
+    /// <summary>
+    /// Renders room details including name, description, monsters, items, and exits.
+    /// </summary>
+    /// <param name="room">The room DTO to render.</param>
     private static void RenderRoomInternal(RoomDto room)
     {
         // Room title

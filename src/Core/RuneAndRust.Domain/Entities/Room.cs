@@ -4,30 +4,92 @@ using RuneAndRust.Domain.ValueObjects;
 
 namespace RuneAndRust.Domain.Entities;
 
+/// <summary>
+/// Represents a room in the dungeon that can contain items, monsters, and exits to other rooms.
+/// </summary>
+/// <remarks>
+/// Rooms are the fundamental building blocks of the dungeon. Each room has a unique position,
+/// can be connected to other rooms via directional exits, and may contain items and monsters
+/// for the player to interact with.
+/// </remarks>
 public class Room : IEntity
 {
+    /// <summary>
+    /// Gets the unique identifier for this room.
+    /// </summary>
     public Guid Id { get; private set; }
+
+    /// <summary>
+    /// Gets the display name of this room.
+    /// </summary>
     public string Name { get; private set; }
+
+    /// <summary>
+    /// Gets the narrative description of this room shown to the player.
+    /// </summary>
     public string Description { get; private set; }
+
+    /// <summary>
+    /// Gets the position of this room in the dungeon grid.
+    /// </summary>
     public Position Position { get; private set; }
 
+    /// <summary>
+    /// Dictionary mapping directions to connected room IDs.
+    /// </summary>
     private readonly Dictionary<Direction, Guid> _exits = [];
+
+    /// <summary>
+    /// List of items present in this room.
+    /// </summary>
     private readonly List<Item> _items = [];
+
+    /// <summary>
+    /// List of monsters present in this room.
+    /// </summary>
     private readonly List<Monster> _monsters = [];
 
+    /// <summary>
+    /// Gets a read-only dictionary of exits from this room.
+    /// </summary>
     public IReadOnlyDictionary<Direction, Guid> Exits => _exits.AsReadOnly();
+
+    /// <summary>
+    /// Gets a read-only list of items in this room.
+    /// </summary>
     public IReadOnlyList<Item> Items => _items.AsReadOnly();
+
+    /// <summary>
+    /// Gets a read-only list of monsters in this room.
+    /// </summary>
     public IReadOnlyList<Monster> Monsters => _monsters.AsReadOnly();
 
+    /// <summary>
+    /// Gets a value indicating whether this room has any living monsters.
+    /// </summary>
     public bool HasMonsters => _monsters.Any(m => m.IsAlive);
+
+    /// <summary>
+    /// Gets a value indicating whether this room has any items.
+    /// </summary>
     public bool HasItems => _items.Count > 0;
 
+    /// <summary>
+    /// Private parameterless constructor for Entity Framework Core.
+    /// </summary>
     private Room()
     {
         Name = null!;
         Description = null!;
-    } // For EF Core
+    }
 
+    /// <summary>
+    /// Creates a new room with the specified name, description, and position.
+    /// </summary>
+    /// <param name="name">The display name of the room.</param>
+    /// <param name="description">The narrative description shown to players.</param>
+    /// <param name="position">The position of this room in the dungeon grid.</param>
+    /// <exception cref="ArgumentNullException">Thrown when name or description is null.</exception>
     public Room(string name, string description, Position position)
     {
         Id = Guid.NewGuid();
@@ -36,16 +98,36 @@ public class Room : IEntity
         Position = position;
     }
 
+    /// <summary>
+    /// Adds or updates an exit from this room in the specified direction.
+    /// </summary>
+    /// <param name="direction">The direction of the exit.</param>
+    /// <param name="roomId">The ID of the room this exit leads to.</param>
     public void AddExit(Direction direction, Guid roomId)
     {
         _exits[direction] = roomId;
     }
 
+    /// <summary>
+    /// Checks if there is an exit in the specified direction.
+    /// </summary>
+    /// <param name="direction">The direction to check.</param>
+    /// <returns><c>true</c> if an exit exists in that direction; otherwise, <c>false</c>.</returns>
     public bool HasExit(Direction direction) => _exits.ContainsKey(direction);
 
+    /// <summary>
+    /// Gets the room ID that the exit in the specified direction leads to.
+    /// </summary>
+    /// <param name="direction">The direction of the exit.</param>
+    /// <returns>The room ID if an exit exists; otherwise, <c>null</c>.</returns>
     public Guid? GetExit(Direction direction) =>
         _exits.TryGetValue(direction, out var roomId) ? roomId : null;
 
+    /// <summary>
+    /// Adds an item to this room.
+    /// </summary>
+    /// <param name="item">The item to add.</param>
+    /// <exception cref="ArgumentNullException">Thrown when item is null.</exception>
     public void AddItem(Item item)
     {
         if (item == null)
@@ -53,6 +135,12 @@ public class Room : IEntity
         _items.Add(item);
     }
 
+    /// <summary>
+    /// Removes an item from this room.
+    /// </summary>
+    /// <param name="item">The item to remove.</param>
+    /// <returns><c>true</c> if the item was found and removed; otherwise, <c>false</c>.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when item is null.</exception>
     public bool RemoveItem(Item item)
     {
         if (item == null)
@@ -60,9 +148,19 @@ public class Room : IEntity
         return _items.Remove(item);
     }
 
+    /// <summary>
+    /// Finds an item in this room by name (case-insensitive).
+    /// </summary>
+    /// <param name="name">The name of the item to find.</param>
+    /// <returns>The item if found; otherwise, <c>null</c>.</returns>
     public Item? GetItemByName(string name) =>
         _items.FirstOrDefault(i => i.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
 
+    /// <summary>
+    /// Adds a monster to this room.
+    /// </summary>
+    /// <param name="monster">The monster to add.</param>
+    /// <exception cref="ArgumentNullException">Thrown when monster is null.</exception>
     public void AddMonster(Monster monster)
     {
         if (monster == null)
@@ -70,8 +168,16 @@ public class Room : IEntity
         _monsters.Add(monster);
     }
 
+    /// <summary>
+    /// Gets all living monsters in this room.
+    /// </summary>
+    /// <returns>An enumerable of monsters that are still alive.</returns>
     public IEnumerable<Monster> GetAliveMonsters() => _monsters.Where(m => m.IsAlive);
 
+    /// <summary>
+    /// Gets a human-readable description of the exits from this room.
+    /// </summary>
+    /// <returns>A string describing available exits, or a message if no exits exist.</returns>
     public string GetExitsDescription()
     {
         if (_exits.Count == 0)
@@ -81,5 +187,9 @@ public class Room : IEntity
         return $"Exits: {string.Join(", ", directions)}";
     }
 
+    /// <summary>
+    /// Returns the name of this room.
+    /// </summary>
+    /// <returns>The room name.</returns>
     public override string ToString() => Name;
 }

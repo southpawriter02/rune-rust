@@ -8,8 +8,23 @@ using RuneAndRust.Infrastructure.Repositories;
 
 namespace RuneAndRust.Infrastructure;
 
+/// <summary>
+/// Extension methods for configuring dependency injection in the Infrastructure layer.
+/// </summary>
 public static class DependencyInjection
 {
+    /// <summary>
+    /// Adds infrastructure services to the dependency injection container.
+    /// </summary>
+    /// <param name="services">The service collection to configure.</param>
+    /// <param name="configuration">The application configuration for connection strings.</param>
+    /// <param name="useInMemoryDatabase">If true, uses in-memory storage; otherwise, configures PostgreSQL.</param>
+    /// <returns>The service collection for chaining.</returns>
+    /// <remarks>
+    /// When <paramref name="useInMemoryDatabase"/> is false, this method configures Entity Framework Core
+    /// with PostgreSQL using the "GameDatabase" connection string. However, the actual repository
+    /// implementation currently falls back to in-memory storage pending full EF Core repository implementation.
+    /// </remarks>
     public static IServiceCollection AddInfrastructure(
         this IServiceCollection services,
         IConfiguration configuration,
@@ -34,6 +49,11 @@ public static class DependencyInjection
         return services;
     }
 
+    /// <summary>
+    /// Adds application layer services to the dependency injection container.
+    /// </summary>
+    /// <param name="services">The service collection to configure.</param>
+    /// <returns>The service collection for chaining.</returns>
     public static IServiceCollection AddApplicationServices(this IServiceCollection services)
     {
         services.AddScoped<GameSessionService>();
