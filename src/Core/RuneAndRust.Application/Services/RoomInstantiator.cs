@@ -7,18 +7,37 @@ namespace RuneAndRust.Application.Services;
 
 /// <summary>
 /// Instantiates Room entities from DungeonNodes using weighted template selection.
+/// Supports both legacy placeholder system and new three-tier descriptor composition.
 /// </summary>
 public class RoomInstantiator : IRoomInstantiator
 {
     private readonly IReadOnlyList<RoomTemplate> _templates;
+    private readonly IRoomDescriptorService? _descriptorService;
+    private readonly IDescriptorRepository? _descriptorRepository;
     private readonly Dictionary<string, string[]> _sizeAdjectives;
     private readonly Dictionary<string, string[]> _conditionAdjectives;
     private readonly Dictionary<string, string[]> _atmosphereAdjectives;
 
+    /// <summary>
+    /// Creates a RoomInstantiator with legacy placeholder support only.
+    /// </summary>
     public RoomInstantiator(IRoomTemplateProvider templateProvider)
+        : this(templateProvider, null, null)
+    {
+    }
+
+    /// <summary>
+    /// Creates a RoomInstantiator with full three-tier descriptor support.
+    /// </summary>
+    public RoomInstantiator(
+        IRoomTemplateProvider templateProvider,
+        IRoomDescriptorService? descriptorService,
+        IDescriptorRepository? descriptorRepository)
     {
         _templates = templateProvider?.GetAllTemplates()
             ?? throw new ArgumentNullException(nameof(templateProvider));
+        _descriptorService = descriptorService;
+        _descriptorRepository = descriptorRepository;
 
         // Size adjectives based on archetype
         _sizeAdjectives = new Dictionary<string, string[]>
@@ -50,34 +69,106 @@ public class RoomInstantiator : IRoomInstantiator
 
     public Room InstantiateRoom(DungeonNode node, Biome biome, Random random)
     {
-        // Select matching template
+        // Select matching template from legacy system
         var template = SelectTemplate(node, biome, random);
 
-        // Generate placeholder values
-        var placeholders = GeneratePlaceholders(node, random);
+        string name;
+        string description;
 
-        // Process name and description
-        var name = template.ProcessName(placeholders);
-        var description = template.ProcessDescription(placeholders);
+        // Try three-tier descriptor system if available
+        if (_descriptorService != null && _descriptorRepository != null)
+        {
+            var baseTemplate = _descriptorRepository.GetBaseTemplate(node.Archetype);
+            if (baseTemplate != null)
+            {
+                var modifier = _descriptorRepository.GetModifier(biome);
+                var roomTags = template.Tags.Concat(node.Tags).ToList();
+
+                // Optionally select a room function for chambers
+                RoomFunction? roomFunction = null;
+                if (node.Archetype == RoomArchetype.Chamber && random.NextDouble() < 0.3)
+                {
+                    var functions = _descriptorRepository.GetFunctionsByBiome(biome);
+                    if (functions.Count > 0)
+                    {
+                        roomFunction = SelectWeightedFunction(functions, random);
+                    }
+                }
+
+                // Generate using three-tier system
+                name = _descriptorService.GenerateRoomName(baseTemplate, modifier, roomFunction);
+                description = _descriptorService.GenerateRoomDescription(
+                    baseTemplate, modifier, roomTags, random, roomFunction);
+
+                // Create room
+                var position = new Position(node.Coordinate.X, node.Coordinate.Y);
+                var room = new Room(name, description, position, biome);
+
+                // Propagate tags
+                room.AddTags(template.Tags);
+                room.AddTags(node.Tags);
+                room.AddTag(node.Archetype.ToString());
+
+                // Apply mechanical effects from modifier
+                ApplyModifierEffects(room, modifier);
+
+                // Mark special rooms
+                if (node.IsStartNode)
+                    room.AddTag("StartRoom");
+                if (node.IsBossArena)
+                    room.AddTag("BossRoom");
+
+                return room;
+            }
+        }
+
+        // Fallback to legacy placeholder system
+        var placeholders = GeneratePlaceholders(node, random);
+        name = template.ProcessName(placeholders);
+        description = template.ProcessDescription(placeholders);
 
         // Create room at node position (convert 3D to 2D for now)
-        var position = new Position(node.Coordinate.X, node.Coordinate.Y);
-        var room = new Room(name, description, position, biome);
+        var legacyPosition = new Position(node.Coordinate.X, node.Coordinate.Y);
+        var legacyRoom = new Room(name, description, legacyPosition, biome);
 
         // Propagate tags from template and node
-        room.AddTags(template.Tags);
-        room.AddTags(node.Tags);
+        legacyRoom.AddTags(template.Tags);
+        legacyRoom.AddTags(node.Tags);
 
         // Add archetype tag
-        room.AddTag(node.Archetype.ToString());
+        legacyRoom.AddTag(node.Archetype.ToString());
 
         // Mark special rooms
         if (node.IsStartNode)
-            room.AddTag("StartRoom");
+            legacyRoom.AddTag("StartRoom");
         if (node.IsBossArena)
-            room.AddTag("BossRoom");
+            legacyRoom.AddTag("BossRoom");
 
-        return room;
+        return legacyRoom;
+    }
+
+    private static void ApplyModifierEffects(Room room, ThematicModifier modifier)
+    {
+        // Add modifier-based tags for gameplay effects
+        foreach (var effectTag in modifier.GetEffectTags())
+        {
+            room.AddTag(effectTag);
+        }
+    }
+
+    private static RoomFunction SelectWeightedFunction(IReadOnlyList<RoomFunction> functions, Random random)
+    {
+        var totalWeight = functions.Sum(f => f.Weight);
+        var roll = random.NextDouble() * totalWeight;
+
+        foreach (var function in functions)
+        {
+            roll -= function.Weight;
+            if (roll <= 0)
+                return function;
+        }
+
+        return functions[^1];
     }
 
     public IReadOnlyDictionary<Guid, Room> InstantiateSector(Sector sector)

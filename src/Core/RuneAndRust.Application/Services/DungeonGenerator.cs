@@ -31,7 +31,8 @@ public class DungeonGenerator : IDungeonGenerator
     }
 
     /// <summary>
-    /// Creates a DungeonGenerator with default service implementations.
+    /// Creates a DungeonGenerator with default service implementations (legacy mode).
+    /// Uses the original placeholder system without three-tier descriptors.
     /// </summary>
     /// <param name="roomTemplateProvider">Provider for room templates.</param>
     /// <param name="entityTemplateProvider">Provider for entity templates.</param>
@@ -42,6 +43,27 @@ public class DungeonGenerator : IDungeonGenerator
         return new DungeonGenerator(
             new SproutingVineTopologyGenerator(),
             new RoomInstantiator(roomTemplateProvider),
+            new ThreatBudgetPopulator(entityTemplateProvider),
+            new CoherenceValidator());
+    }
+
+    /// <summary>
+    /// Creates a DungeonGenerator with full three-tier descriptor support.
+    /// Generates rich, procedural descriptions using templates, modifiers, and fragments.
+    /// </summary>
+    /// <param name="roomTemplateProvider">Provider for room templates.</param>
+    /// <param name="entityTemplateProvider">Provider for entity templates.</param>
+    /// <param name="descriptorRepository">Repository for descriptor data.</param>
+    public static DungeonGenerator CreateWithDescriptors(
+        IRoomTemplateProvider roomTemplateProvider,
+        IEntityTemplateProvider entityTemplateProvider,
+        IDescriptorRepository descriptorRepository)
+    {
+        var descriptorService = new RoomDescriptorService(descriptorRepository);
+
+        return new DungeonGenerator(
+            new SproutingVineTopologyGenerator(),
+            new RoomInstantiator(roomTemplateProvider, descriptorService, descriptorRepository),
             new ThreatBudgetPopulator(entityTemplateProvider),
             new CoherenceValidator());
     }
