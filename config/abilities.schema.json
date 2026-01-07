@@ -1,0 +1,139 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Abilities Configuration",
+  "description": "Schema for ability definitions in Rune & Rust",
+  "type": "object",
+  "required": ["abilities"],
+  "properties": {
+    "abilities": {
+      "type": "array",
+      "description": "List of ability definitions",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "description", "classIds", "targetType"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]*$",
+            "description": "Unique identifier for the ability (lowercase, kebab-case)"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Display name shown to players"
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Full description of the ability"
+          },
+          "classIds": {
+            "type": "array",
+            "items": { "type": "string" },
+            "minItems": 1,
+            "description": "Classes that can use this ability"
+          },
+          "costResource": {
+            "type": "string",
+            "description": "Resource type for the cost (e.g., mana, rage, energy)"
+          },
+          "costAmount": {
+            "type": "integer",
+            "minimum": 0,
+            "default": 0,
+            "description": "Amount of resource required"
+          },
+          "cooldown": {
+            "type": "integer",
+            "minimum": 0,
+            "default": 0,
+            "description": "Turns between uses (0 = no cooldown)"
+          },
+          "targetType": {
+            "type": "string",
+            "enum": ["Self", "SingleEnemy", "AllEnemies", "SingleAlly", "AllAllies", "Area", "None"],
+            "description": "Valid target type for this ability"
+          },
+          "unlockLevel": {
+            "type": "integer",
+            "minimum": 1,
+            "default": 1,
+            "description": "Level required to unlock this ability"
+          },
+          "tags": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Tags for categorization and filtering"
+          },
+          "effects": {
+            "type": "array",
+            "items": { "$ref": "#/definitions/effect" },
+            "description": "Effects applied when the ability is used"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "effect": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "Damage",
+            "Heal",
+            "Buff",
+            "Debuff",
+            "DamageOverTime",
+            "HealOverTime",
+            "Shield",
+            "ResourceGain",
+            "CooldownReset",
+            "Taunt",
+            "Stun",
+            "Summon",
+            "Teleport"
+          ],
+          "description": "The type of effect"
+        },
+        "value": {
+          "type": "integer",
+          "default": 0,
+          "description": "Base value for the effect (damage, heal amount, etc.)"
+        },
+        "duration": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 0,
+          "description": "Duration in turns (0 = instant)"
+        },
+        "statusEffect": {
+          "type": "string",
+          "description": "Status effect to apply (e.g., poison, stun, slow)"
+        },
+        "chance": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 1.0,
+          "description": "Success chance (0.0 to 1.0)"
+        },
+        "scalingStat": {
+          "type": "string",
+          "description": "Stat that scales the effect value"
+        },
+        "scalingMultiplier": {
+          "type": "number",
+          "default": 0,
+          "description": "Multiplier for stat scaling"
+        },
+        "description": {
+          "type": "string",
+          "description": "Override description for the effect"
+        }
+      }
+    }
+  }
+}

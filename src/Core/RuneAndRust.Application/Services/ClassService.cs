@@ -13,13 +13,16 @@ namespace RuneAndRust.Application.Services;
 public class ClassService
 {
     private readonly IGameConfigurationProvider _configProvider;
+    private readonly AbilityService _abilityService;
     private readonly ILogger<ClassService> _logger;
 
     public ClassService(
         IGameConfigurationProvider configProvider,
+        AbilityService abilityService,
         ILogger<ClassService> logger)
     {
         _configProvider = configProvider ?? throw new ArgumentNullException(nameof(configProvider));
+        _abilityService = abilityService ?? throw new ArgumentNullException(nameof(abilityService));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
         _logger.LogInformation(
@@ -131,7 +134,7 @@ public class ClassService
     }
 
     /// <summary>
-    /// Applies a class to a player, setting archetype/class IDs and applying stat modifiers.
+    /// Applies a class to a player, setting archetype/class IDs, applying stat modifiers, and initializing abilities.
     /// </summary>
     public void ApplyClassToPlayer(string classId, Player player)
     {
@@ -147,13 +150,17 @@ public class ClassService
         var modifiedStats = classDef.StatModifiers.ApplyTo(player.Stats);
         player.SetStats(modifiedStats);
 
+        // Initialize abilities for this class
+        _abilityService.InitializePlayerAbilities(player, classDef);
+
         _logger.LogInformation(
             "Applied class {ClassName} to {PlayerName}. " +
-            "Stats: HP {OldHP}->{NewHP}, ATK {OldATK}->{NewATK}, DEF {OldDEF}->{NewDEF}",
+            "Stats: HP {OldHP}->{NewHP}, ATK {OldATK}->{NewATK}, DEF {OldDEF}->{NewDEF}, Abilities: {AbilityCount}",
             classDef.Name, player.Name,
             player.Stats.MaxHealth - classDef.StatModifiers.MaxHealth, player.Stats.MaxHealth,
             player.Stats.Attack - classDef.StatModifiers.Attack, player.Stats.Attack,
-            player.Stats.Defense - classDef.StatModifiers.Defense, player.Stats.Defense);
+            player.Stats.Defense - classDef.StatModifiers.Defense, player.Stats.Defense,
+            player.Abilities.Count);
     }
 
     /// <summary>

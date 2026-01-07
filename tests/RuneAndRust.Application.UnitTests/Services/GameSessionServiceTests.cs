@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using RuneAndRust.Application.Interfaces;
 using RuneAndRust.Application.Services;
+using RuneAndRust.Domain.Definitions;
 using RuneAndRust.Domain.Entities;
 using RuneAndRust.Domain.Enums;
 
@@ -12,19 +13,33 @@ namespace RuneAndRust.Application.UnitTests.Services;
 public class GameSessionServiceTests
 {
     private Mock<IGameRepository> _repositoryMock = null!;
+    private Mock<IGameConfigurationProvider> _mockConfig = null!;
     private Mock<ILogger<GameSessionService>> _loggerMock = null!;
     private Mock<ILogger<ItemEffectService>> _itemEffectLoggerMock = null!;
     private ItemEffectService _itemEffectService = null!;
+    private AbilityService _abilityService = null!;
     private GameSessionService _service = null!;
 
     [SetUp]
     public void SetUp()
     {
         _repositoryMock = new Mock<IGameRepository>();
+        _mockConfig = new Mock<IGameConfigurationProvider>();
         _loggerMock = new Mock<ILogger<GameSessionService>>();
         _itemEffectLoggerMock = new Mock<ILogger<ItemEffectService>>();
         _itemEffectService = new ItemEffectService(_itemEffectLoggerMock.Object);
-        _service = new GameSessionService(_repositoryMock.Object, _loggerMock.Object, _itemEffectService);
+
+        // Setup minimal config for AbilityService
+        _mockConfig.Setup(c => c.GetAbilities()).Returns(new List<AbilityDefinition>());
+        _mockConfig.Setup(c => c.GetResourceTypes()).Returns(new List<ResourceTypeDefinition>());
+
+        var mockResourceLogger = new Mock<ILogger<ResourceService>>();
+        var resourceService = new ResourceService(_mockConfig.Object, mockResourceLogger.Object);
+
+        var mockAbilityLogger = new Mock<ILogger<AbilityService>>();
+        _abilityService = new AbilityService(_mockConfig.Object, resourceService, mockAbilityLogger.Object);
+
+        _service = new GameSessionService(_repositoryMock.Object, _loggerMock.Object, _itemEffectService, _abilityService);
     }
 
     [Test]

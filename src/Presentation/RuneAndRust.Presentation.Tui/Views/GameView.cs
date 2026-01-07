@@ -161,6 +161,16 @@ public class GameView
                 await HandleStatusAsync(ct);
                 break;
 
+            case AbilitiesCommand:
+                _logger.LogDebug("Handling abilities command");
+                await HandleAbilitiesAsync(ct);
+                break;
+
+            case UseAbilityCommand useAbility:
+                _logger.LogDebug("Handling use ability command: {AbilityName}", useAbility.AbilityName);
+                await HandleUseAbilityAsync(useAbility.AbilityName, ct);
+                break;
+
             case LoadCommand:
                 _logger.LogDebug("Handling load command");
                 await HandleLoadAsync(ct);
@@ -362,6 +372,38 @@ public class GameView
         await _renderer.RenderMessageAsync("Game saved successfully!", MessageType.Success, ct);
     }
 
+    private async Task HandleAbilitiesAsync(CancellationToken ct)
+    {
+        var abilities = _gameService.GetPlayerAbilities();
+        _logger.LogDebug("Displaying {Count} abilities", abilities.Count);
+        await _renderer.RenderAbilitiesAsync(abilities, ct);
+    }
+
+    private async Task HandleUseAbilityAsync(string abilityName, CancellationToken ct)
+    {
+        var (success, message) = _gameService.TryUseAbility(abilityName);
+
+        if (success)
+        {
+            _logger.LogDebug("Ability used successfully: {AbilityName}", abilityName);
+            await _renderer.RenderCombatResultAsync(message, ct);
+
+            // Refresh room display after combat ability
+            var room = _gameService.GetCurrentRoom();
+            if (room != null && room.Monsters.Any() && !room.Monsters.Any(m => m.IsAlive))
+            {
+                _logger.LogInformation("All monsters defeated in room: {RoomName}", room.Name);
+                Console.WriteLine();
+                await _renderer.RenderMessageAsync("The area is now clear.", MessageType.Success, ct);
+            }
+        }
+        else
+        {
+            _logger.LogDebug("Ability use failed: {AbilityName} - {Message}", abilityName, message);
+            await _renderer.RenderMessageAsync(message, MessageType.Warning, ct);
+        }
+    }
+
     private Task HandleHelpAsync(CancellationToken ct)
     {
         _logger.LogDebug("Displaying help menu");
@@ -384,6 +426,8 @@ public class GameView
         helpTable.AddRow("[cyan]use <item>[/]", "Use/consume an item");
         helpTable.AddRow("[cyan]examine <target>[/]", "Examine an item, monster, or room");
         helpTable.AddRow("[cyan]status[/]", "View character stats");
+        helpTable.AddRow("[cyan]abilities, ab[/]", "View your abilities");
+        helpTable.AddRow("[cyan]cast <ability>[/]", "Use an ability");
         helpTable.AddRow("[cyan]attack, a[/]", "Attack an enemy");
         helpTable.AddRow("[cyan]save[/]", "Save your game");
         helpTable.AddRow("[cyan]load[/]", "Load a saved game");

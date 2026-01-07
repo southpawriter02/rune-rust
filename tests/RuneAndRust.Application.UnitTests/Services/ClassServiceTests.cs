@@ -14,6 +14,7 @@ public class ClassServiceTests
     private ClassService _service = null!;
     private Mock<IGameConfigurationProvider> _mockConfig = null!;
     private Mock<ILogger<ClassService>> _mockLogger = null!;
+    private AbilityService _abilityService = null!;
 
     [SetUp]
     public void SetUp()
@@ -40,8 +41,17 @@ public class ClassServiceTests
         _mockConfig.Setup(c => c.GetArchetypeById("warrior")).Returns(archetypes[0]);
         _mockConfig.Setup(c => c.GetClassById("shieldmaiden")).Returns(classes[0]);
         _mockConfig.Setup(c => c.GetClassById("galdr-caster")).Returns(classes[1]);
+        _mockConfig.Setup(c => c.GetAbilities()).Returns(new List<AbilityDefinition>());
 
-        _service = new ClassService(_mockConfig.Object, _mockLogger.Object);
+        // Create ResourceService and AbilityService for ClassService dependency
+        var mockResourceLogger = new Mock<ILogger<ResourceService>>();
+        _mockConfig.Setup(c => c.GetResourceTypes()).Returns(new List<ResourceTypeDefinition>());
+        var resourceService = new ResourceService(_mockConfig.Object, mockResourceLogger.Object);
+
+        var mockAbilityLogger = new Mock<ILogger<AbilityService>>();
+        _abilityService = new AbilityService(_mockConfig.Object, resourceService, mockAbilityLogger.Object);
+
+        _service = new ClassService(_mockConfig.Object, _abilityService, _mockLogger.Object);
     }
 
     [Test]

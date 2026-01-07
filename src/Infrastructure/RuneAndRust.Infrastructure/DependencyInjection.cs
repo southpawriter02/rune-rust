@@ -90,11 +90,14 @@ public static class DependencyInjection
             return new DescriptorService(pools, theme, logger);
         });
 
-        // Class system service
-        services.AddScoped<ClassService>();
-
         // Resource system service
         services.AddScoped<ResourceService>();
+
+        // Ability system service
+        services.AddScoped<AbilityService>();
+
+        // Class system service (depends on AbilityService)
+        services.AddScoped<ClassService>();
 
         return services;
     }

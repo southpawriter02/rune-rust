@@ -84,6 +84,17 @@ public record ExamineCommand(string Target) : GameCommand;
 public record StatusCommand : GameCommand;
 
 /// <summary>
+/// Command to display the player's abilities.
+/// </summary>
+public record AbilitiesCommand : GameCommand;
+
+/// <summary>
+/// Command to use an ability.
+/// </summary>
+/// <param name="AbilityName">The name or ID of the ability to use.</param>
+public record UseAbilityCommand(string AbilityName) : GameCommand;
+
+/// <summary>
 /// Defines the contract for handling user input and converting it to game commands.
 /// </summary>
 /// <remarks>

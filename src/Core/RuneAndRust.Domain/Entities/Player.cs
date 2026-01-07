@@ -70,6 +70,16 @@ public class Player : IEntity
     public Dictionary<string, ResourcePool> Resources { get; private set; } = new();
 
     /// <summary>
+    /// Gets the player's abilities keyed by ability definition ID.
+    /// </summary>
+    public Dictionary<string, PlayerAbility> Abilities { get; private set; } = new();
+
+    /// <summary>
+    /// Gets the player's current level.
+    /// </summary>
+    public int Level { get; private set; } = 1;
+
+    /// <summary>
     /// Gets a specific resource pool by type ID.
     /// </summary>
     /// <param name="resourceTypeId">The resource type ID (e.g., "mana").</param>
@@ -102,6 +112,72 @@ public class Player : IEntity
         ArgumentException.ThrowIfNullOrWhiteSpace(resourceTypeId);
         var id = resourceTypeId.ToLowerInvariant();
         Resources[id] = new ResourcePool(id, maximum, startAtZero);
+    }
+
+    /// <summary>
+    /// Gets a specific ability by its definition ID.
+    /// </summary>
+    /// <param name="abilityId">The ability definition ID.</param>
+    /// <returns>The player ability, or null if the player doesn't have it.</returns>
+    public PlayerAbility? GetAbility(string abilityId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(abilityId);
+        return Abilities.TryGetValue(abilityId.ToLowerInvariant(), out var ability)
+            ? ability
+            : null;
+    }
+
+    /// <summary>
+    /// Checks whether the player has a specific ability.
+    /// </summary>
+    /// <param name="abilityId">The ability definition ID.</param>
+    /// <returns>True if the player has this ability.</returns>
+    public bool HasAbility(string abilityId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(abilityId);
+        return Abilities.ContainsKey(abilityId.ToLowerInvariant());
+    }
+
+    /// <summary>
+    /// Adds an ability to the player's ability collection.
+    /// </summary>
+    /// <param name="ability">The ability to add.</param>
+    /// <exception cref="ArgumentNullException">Thrown when ability is null.</exception>
+    public void AddAbility(PlayerAbility ability)
+    {
+        ArgumentNullException.ThrowIfNull(ability);
+        Abilities[ability.AbilityDefinitionId] = ability;
+    }
+
+    /// <summary>
+    /// Removes an ability from the player's collection.
+    /// </summary>
+    /// <param name="abilityId">The ability definition ID.</param>
+    /// <returns>True if the ability was removed.</returns>
+    public bool RemoveAbility(string abilityId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(abilityId);
+        return Abilities.Remove(abilityId.ToLowerInvariant());
+    }
+
+    /// <summary>
+    /// Gets all abilities that are ready to use (off cooldown and unlocked).
+    /// </summary>
+    /// <returns>An enumerable of ready abilities.</returns>
+    public IEnumerable<PlayerAbility> GetReadyAbilities()
+    {
+        return Abilities.Values.Where(a => a.IsReady);
+    }
+
+    /// <summary>
+    /// Sets the player's level.
+    /// </summary>
+    /// <param name="level">The new level (must be at least 1).</param>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when level is less than 1.</exception>
+    public void SetLevel(int level)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(level, 1);
+        Level = level;
     }
 
     /// <summary>

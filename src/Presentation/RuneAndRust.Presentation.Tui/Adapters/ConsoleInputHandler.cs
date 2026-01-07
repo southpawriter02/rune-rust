@@ -86,6 +86,10 @@ public class ConsoleInputHandler : IInputHandler
                 ? LogAndReturn(new UnknownCommand(input), "Examine command missing target")
                 : new ExamineCommand(argument),
             "status" or "stats" or "stat" => new StatusCommand(),
+            "abilities" or "ab" or "spells" or "skills" => new AbilitiesCommand(),
+            "cast" or "ability" => string.IsNullOrEmpty(argument)
+                ? LogAndReturn(new UnknownCommand(input), "Cast command missing ability argument")
+                : new UseAbilityCommand(argument),
             "attack" or "fight" or "a" => new AttackCommand(),
             "save" => new SaveCommand(),
             "load" => new LoadCommand(),

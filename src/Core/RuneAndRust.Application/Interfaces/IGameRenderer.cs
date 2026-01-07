@@ -99,6 +99,13 @@ public interface IGameRenderer
     Task RenderPlayerStatsAsync(PlayerStatsDto stats, CancellationToken ct = default);
 
     /// <summary>
+    /// Renders the player's abilities list.
+    /// </summary>
+    /// <param name="abilities">The list of player abilities to display.</param>
+    /// <param name="ct">Cancellation token for async operation.</param>
+    Task RenderAbilitiesAsync(IReadOnlyList<PlayerAbilityDto> abilities, CancellationToken ct = default);
+
+    /// <summary>
     /// Clears the screen or display area.
     /// </summary>
     /// <param name="ct">Cancellation token for async operation.</param>

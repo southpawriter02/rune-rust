@@ -38,6 +38,11 @@ public class GameSessionService
     private readonly ItemEffectService _itemEffectService;
 
     /// <summary>
+    /// Service for managing abilities.
+    /// </summary>
+    private readonly AbilityService _abilityService;
+
+    /// <summary>
     /// The currently active game session, or null if no session is active.
     /// </summary>
     private GameSession? _currentSession;
@@ -58,17 +63,20 @@ public class GameSessionService
     /// <param name="repository">The repository for persisting game sessions.</param>
     /// <param name="logger">The logger for service diagnostics.</param>
     /// <param name="itemEffectService">The service for applying item effects.</param>
+    /// <param name="abilityService">The service for managing abilities.</param>
     /// <param name="combatLogger">Optional logger for combat service diagnostics.</param>
-    /// <exception cref="ArgumentNullException">Thrown when repository, logger, or itemEffectService is null.</exception>
+    /// <exception cref="ArgumentNullException">Thrown when repository, logger, itemEffectService, or abilityService is null.</exception>
     public GameSessionService(
         IGameRepository repository,
         ILogger<GameSessionService> logger,
         ItemEffectService itemEffectService,
+        AbilityService abilityService,
         ILogger<CombatService>? combatLogger = null)
     {
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _itemEffectService = itemEffectService ?? throw new ArgumentNullException(nameof(itemEffectService));
+        _abilityService = abilityService ?? throw new ArgumentNullException(nameof(abilityService));
         _combatService = new CombatService(combatLogger);
         _logger.LogDebug("GameSessionService initialized");
     }
@@ -671,5 +679,80 @@ public class GameSessionService
         var playerName = _currentSession?.Player.Name;
         _currentSession = null;
         _logger.LogInformation("Game session ended: {SessionId}, Player: {PlayerName}", sessionId, playerName);
+    }
+
+    /// <summary>
+    /// Gets the player's abilities as DTOs.
+    /// </summary>
+    /// <returns>List of player abilities, or empty list if no active session.</returns>
+    public IReadOnlyList<PlayerAbilityDto> GetPlayerAbilities()
+    {
+        if (_currentSession == null)
+        {
+            _logger.LogWarning("GetPlayerAbilities failed: No active game session");
+            return [];
+        }
+
+        return _abilityService.GetPlayerAbilities(_currentSession.Player);
+    }
+
+    /// <summary>
+    /// Attempts to use an ability.
+    /// </summary>
+    /// <param name="abilityName">The name or ID of the ability to use.</param>
+    /// <returns>A tuple indicating success and a descriptive message.</returns>
+    public (bool Success, string Message) TryUseAbility(string abilityName)
+    {
+        _logger.LogDebug("TryUseAbility called for ability: {AbilityName}", abilityName);
+
+        if (_currentSession == null)
+        {
+            _logger.LogWarning("TryUseAbility failed: No active game session");
+            return (false, "No active game session.");
+        }
+
+        // Find the ability by name
+        var definition = _abilityService.FindAbilityByName(_currentSession.Player, abilityName);
+        if (definition == null)
+        {
+            _logger.LogDebug("Ability not found: {AbilityName}", abilityName);
+            return (false, $"Unknown ability: {abilityName}");
+        }
+
+        // Get target monster if ability targets enemies
+        Monster? target = null;
+        if (definition.TargetType == AbilityTargetType.SingleEnemy ||
+            definition.TargetType == AbilityTargetType.AllEnemies)
+        {
+            var room = _currentSession.CurrentRoom;
+            target = room?.GetAliveMonsters().FirstOrDefault();
+
+            if (target == null && definition.TargetType == AbilityTargetType.SingleEnemy)
+            {
+                _logger.LogDebug("No target available for ability: {AbilityName}", abilityName);
+                return (false, "There is no target to use this ability on.");
+            }
+        }
+
+        // Use the ability
+        var result = _abilityService.UseAbility(_currentSession.Player, definition.Id, target);
+
+        if (!result.Success)
+        {
+            _logger.LogDebug("Ability use failed: {Message}", result.Message);
+            return (false, result.Message);
+        }
+
+        _logger.LogInformation(
+            "Ability used: {PlayerName} used {AbilityName}. Result: {Message}",
+            _currentSession.Player.Name, definition.Name, result.Message);
+
+        // Check if monster was defeated
+        if (target != null && !target.IsAlive)
+        {
+            _logger.LogInformation("Monster defeated by ability: {MonsterName}", target.Name);
+        }
+
+        return (true, result.Message);
     }
 }

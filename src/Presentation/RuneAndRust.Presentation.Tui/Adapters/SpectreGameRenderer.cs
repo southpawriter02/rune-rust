@@ -188,6 +188,60 @@ public class SpectreGameRenderer : IGameRenderer
     }
 
     /// <inheritdoc/>
+    public Task RenderAbilitiesAsync(IReadOnlyList<PlayerAbilityDto> abilities, CancellationToken ct = default)
+    {
+        _logger.LogDebug("Rendering abilities: {AbilityCount} abilities", abilities.Count);
+
+        if (abilities.Count == 0)
+        {
+            AnsiConsole.MarkupLine("[grey]You have no abilities.[/]");
+            return Task.CompletedTask;
+        }
+
+        var table = new Table()
+            .Border(TableBorder.Rounded)
+            .BorderColor(Color.Purple)
+            .Title("[purple]Abilities[/]")
+            .AddColumn(new TableColumn("[cyan]Name[/]"))
+            .AddColumn(new TableColumn("[grey]Cost[/]"))
+            .AddColumn(new TableColumn("[grey]Cooldown[/]"))
+            .AddColumn(new TableColumn("[grey]Status[/]"))
+            .AddColumn(new TableColumn("[grey]Description[/]"));
+
+        foreach (var ability in abilities)
+        {
+            var statusColor = ability.IsReady ? "green" :
+                              ability.IsOnCooldown ? "yellow" :
+                              !ability.CanAfford ? "red" :
+                              !ability.IsUnlocked ? "grey" : "white";
+
+            var status = ability.IsReady ? "Ready" :
+                         ability.IsOnCooldown ? $"CD: {ability.CurrentCooldown}" :
+                         !ability.CanAfford ? "No resource" :
+                         !ability.IsUnlocked ? $"Lvl {ability.UnlockLevel}" : "Ready";
+
+            var cost = ability.CostAmount > 0
+                ? $"{ability.CostAmount} {ability.CostResourceTypeId}"
+                : "Free";
+
+            var cooldown = ability.Cooldown > 0 ? $"{ability.Cooldown} turns" : "None";
+
+            table.AddRow(
+                $"[white]{Markup.Escape(ability.Name)}[/]",
+                $"[cyan]{Markup.Escape(cost)}[/]",
+                $"[grey]{cooldown}[/]",
+                $"[{statusColor}]{status}[/]",
+                $"[grey]{Markup.Escape(ability.Description)}[/]"
+            );
+        }
+
+        AnsiConsole.Write(table);
+        AnsiConsole.MarkupLine("[grey]Use 'cast <ability name>' to use an ability.[/]");
+
+        return Task.CompletedTask;
+    }
+
+    /// <inheritdoc/>
     public Task ClearScreenAsync(CancellationToken ct = default)
     {
         _logger.LogDebug("Clearing screen");

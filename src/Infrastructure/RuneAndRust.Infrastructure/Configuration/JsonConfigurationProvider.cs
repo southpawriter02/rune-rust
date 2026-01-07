@@ -28,6 +28,7 @@ public class JsonConfigurationProvider : IGameConfigurationProvider
     private IReadOnlyList<ArchetypeDefinition>? _archetypes;
     private IReadOnlyList<ClassDefinition>? _classes;
     private IReadOnlyList<ResourceTypeDefinition>? _resourceTypes;
+    private IReadOnlyList<AbilityDefinition>? _abilities;
 
     private static readonly JsonSerializerOptions DefaultJsonOptions = new()
     {
@@ -246,6 +247,35 @@ public class JsonConfigurationProvider : IGameConfigurationProvider
     {
         return GetResourceTypes().FirstOrDefault(r =>
             r.Id.Equals(resourceTypeId, StringComparison.OrdinalIgnoreCase));
+    }
+
+    /// <inheritdoc/>
+    public IReadOnlyList<AbilityDefinition> GetAbilities()
+    {
+        if (_abilities != null) return _abilities;
+
+        var filePath = Path.Combine(_configPath, "abilities.json");
+        var config = LoadJsonFile<AbilitiesJsonConfig>(filePath);
+        _abilities = config?.Abilities?.Select(ToAbilityDefinition).ToList()
+            ?? GetDefaultAbilities();
+
+        _logger.LogDebug("Loaded {Count} abilities", _abilities.Count);
+        return _abilities;
+    }
+
+    /// <inheritdoc/>
+    public AbilityDefinition? GetAbilityById(string abilityId)
+    {
+        return GetAbilities().FirstOrDefault(a =>
+            a.Id.Equals(abilityId, StringComparison.OrdinalIgnoreCase));
+    }
+
+    /// <inheritdoc/>
+    public IReadOnlyList<AbilityDefinition> GetAbilitiesForClass(string classId)
+    {
+        return GetAbilities()
+            .Where(a => a.IsAvailableToClass(classId))
+            .ToList();
     }
 
     private static ResourceTypeDefinition ToResourceTypeDefinition(ResourceTypeJsonConfig config)
@@ -576,5 +606,95 @@ public class JsonConfigurationProvider : IGameConfigurationProvider
         public bool IsUniversal { get; set; } = false;
         public bool StartsAtZero { get; set; } = false;
         public int SortOrder { get; set; } = 0;
+    }
+
+    // Ability mapping function
+    private static AbilityDefinition ToAbilityDefinition(AbilityJsonConfig config)
+    {
+        var cost = string.IsNullOrEmpty(config.CostResource)
+            ? AbilityCost.None
+            : AbilityCost.Create(config.CostResource, config.CostAmount);
+
+        var effects = config.Effects?.Select(ToAbilityEffect).ToList()
+            ?? [];
+
+        var targetType = Enum.TryParse<AbilityTargetType>(config.TargetType, true, out var tt)
+            ? tt : AbilityTargetType.SingleEnemy;
+
+        return AbilityDefinition.Create(
+            config.Id,
+            config.Name,
+            config.Description,
+            config.ClassIds ?? [],
+            cost,
+            config.Cooldown,
+            effects,
+            targetType,
+            config.UnlockLevel,
+            config.Tags);
+    }
+
+    private static AbilityEffect ToAbilityEffect(AbilityEffectJsonConfig config)
+    {
+        var effectType = Enum.TryParse<AbilityEffectType>(config.Type, true, out var et)
+            ? et : AbilityEffectType.Damage;
+
+        return new AbilityEffect
+        {
+            EffectType = effectType,
+            Value = config.Value,
+            Duration = config.Duration,
+            StatusEffect = config.StatusEffect,
+            Chance = config.Chance,
+            ScalingStat = config.ScalingStat?.ToLowerInvariant(),
+            ScalingMultiplier = config.ScalingMultiplier,
+            Description = config.Description
+        };
+    }
+
+    private static List<AbilityDefinition> GetDefaultAbilities() =>
+    [
+        AbilityDefinition.Create(
+            "basic-attack",
+            "Basic Attack",
+            "A basic melee attack.",
+            ["shieldmaiden", "shadow-walker", "galdr-caster", "blood-priest", "scrap-tinker"],
+            AbilityCost.None,
+            cooldown: 0,
+            [AbilityEffect.Damage(10, "attack", 0.5f)],
+            AbilityTargetType.SingleEnemy)
+    ];
+
+    // Ability JSON structure
+    private class AbilitiesJsonConfig
+    {
+        public List<AbilityJsonConfig>? Abilities { get; set; }
+    }
+
+    private class AbilityJsonConfig
+    {
+        public string Id { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public List<string>? ClassIds { get; set; }
+        public string CostResource { get; set; } = string.Empty;
+        public int CostAmount { get; set; } = 0;
+        public int Cooldown { get; set; } = 0;
+        public string TargetType { get; set; } = "SingleEnemy";
+        public int UnlockLevel { get; set; } = 1;
+        public List<string>? Tags { get; set; }
+        public List<AbilityEffectJsonConfig>? Effects { get; set; }
+    }
+
+    private class AbilityEffectJsonConfig
+    {
+        public string Type { get; set; } = string.Empty;
+        public int Value { get; set; } = 0;
+        public int Duration { get; set; } = 0;
+        public string? StatusEffect { get; set; }
+        public float Chance { get; set; } = 1.0f;
+        public string? ScalingStat { get; set; }
+        public float ScalingMultiplier { get; set; } = 0f;
+        public string? Description { get; set; }
     }
 }

@@ -98,6 +98,25 @@ public interface IGameConfigurationProvider
     /// Gets a resource type definition by ID.
     /// </summary>
     ResourceTypeDefinition? GetResourceTypeById(string resourceTypeId);
+
+    /// <summary>
+    /// Gets all ability definitions.
+    /// </summary>
+    IReadOnlyList<AbilityDefinition> GetAbilities();
+
+    /// <summary>
+    /// Gets an ability definition by ID.
+    /// </summary>
+    /// <param name="abilityId">The ability identifier.</param>
+    /// <returns>The ability definition or null if not found.</returns>
+    AbilityDefinition? GetAbilityById(string abilityId);
+
+    /// <summary>
+    /// Gets all abilities available to a specific class.
+    /// </summary>
+    /// <param name="classId">The class identifier.</param>
+    /// <returns>List of ability definitions available to the class.</returns>
+    IReadOnlyList<AbilityDefinition> GetAbilitiesForClass(string classId);
 }
 
 /// <summary>
