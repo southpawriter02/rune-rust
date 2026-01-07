@@ -19,6 +19,16 @@ public record CombatResult(
 );
 
 /// <summary>
+/// Represents the outcome of a monster's attack on a player.
+/// </summary>
+/// <param name="Damage">The amount of damage dealt to the player.</param>
+/// <param name="PlayerDefeated">True if the player was defeated by this attack.</param>
+public record MonsterAttackResult(
+    int Damage,
+    bool PlayerDefeated
+);
+
+/// <summary>
 /// Handles combat resolution between players and monsters.
 /// </summary>
 /// <remarks>
@@ -152,6 +162,53 @@ public class CombatService
             finalDamage);
 
         return finalDamage;
+    }
+
+    /// <summary>
+    /// Resolves a monster's attack against a player.
+    /// </summary>
+    /// <param name="monster">The attacking monster.</param>
+    /// <param name="player">The player being attacked.</param>
+    /// <returns>A <see cref="MonsterAttackResult"/> containing the damage dealt.</returns>
+    public MonsterAttackResult MonsterAttack(Monster monster, Player player)
+    {
+        ArgumentNullException.ThrowIfNull(monster);
+        ArgumentNullException.ThrowIfNull(player);
+
+        if (!monster.IsAlive)
+        {
+            _logger.LogDebug("Monster is dead, cannot attack");
+            return new MonsterAttackResult(0, false);
+        }
+
+        var damage = CalculateDamage(monster.Stats.Attack, player.Stats.Defense);
+        var actualDamage = player.TakeDamage(damage);
+
+        _logger.LogDebug(
+            "Monster attack: {MonsterName} dealt {Damage} damage to {PlayerName}",
+            monster.Name, actualDamage, player.Name);
+
+        return new MonsterAttackResult(actualDamage, player.IsDead);
+    }
+
+    /// <summary>
+    /// Generates a description of a monster's attack.
+    /// </summary>
+    /// <param name="result">The attack result.</param>
+    /// <param name="monsterName">The name of the monster.</param>
+    /// <param name="playerName">The name of the player.</param>
+    /// <returns>A description of the attack.</returns>
+    public string GetMonsterAttackDescription(MonsterAttackResult result, string monsterName, string playerName)
+    {
+        if (result.Damage == 0)
+            return $"The {monsterName} misses!";
+
+        var description = $"The {monsterName} strikes back for {result.Damage} damage!";
+
+        if (result.PlayerDefeated)
+            description += $" {playerName} has fallen in battle...";
+
+        return description;
     }
 
     /// <summary>

@@ -242,6 +242,41 @@ public class SpectreGameRenderer : IGameRenderer
     }
 
     /// <inheritdoc/>
+    public Task RenderTurnEndChangesAsync(TurnEndResult changes, CancellationToken ct = default)
+    {
+        _logger.LogDebug(
+            "Rendering turn-end changes: {ResourceChanges} resource changes, {CooldownChanges} cooldown changes",
+            changes.ResourceChanges.Count, changes.CooldownChanges.Count);
+
+        if (!changes.HasChanges)
+        {
+            return Task.CompletedTask;
+        }
+
+        Console.WriteLine();
+
+        // Resource regeneration/decay messages
+        foreach (var resourceChange in changes.ResourceChanges)
+        {
+            var delta = resourceChange.Delta;
+            var sign = delta > 0 ? "+" : "";
+            var color = delta > 0 ? "green" : "yellow";
+            var changeTypeDesc = resourceChange.ChangeType.ToLower();
+
+            AnsiConsole.MarkupLine(
+                $"[{color}]{resourceChange.ResourceName} {changeTypeDesc}: {sign}{delta} ({resourceChange.NewValue}/{resourceChange.MaxValue})[/]");
+        }
+
+        // Abilities now ready notifications
+        foreach (var abilityName in changes.AbilitiesNowReady)
+        {
+            AnsiConsole.MarkupLine($"[cyan]{Markup.Escape(abilityName)} is now ready![/]");
+        }
+
+        return Task.CompletedTask;
+    }
+
+    /// <inheritdoc/>
     public Task ClearScreenAsync(CancellationToken ct = default)
     {
         _logger.LogDebug("Clearing screen");

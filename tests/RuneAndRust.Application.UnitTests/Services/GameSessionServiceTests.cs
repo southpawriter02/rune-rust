@@ -18,6 +18,7 @@ public class GameSessionServiceTests
     private Mock<ILogger<ItemEffectService>> _itemEffectLoggerMock = null!;
     private ItemEffectService _itemEffectService = null!;
     private AbilityService _abilityService = null!;
+    private ResourceService _resourceService = null!;
     private GameSessionService _service = null!;
 
     [SetUp]
@@ -34,12 +35,12 @@ public class GameSessionServiceTests
         _mockConfig.Setup(c => c.GetResourceTypes()).Returns(new List<ResourceTypeDefinition>());
 
         var mockResourceLogger = new Mock<ILogger<ResourceService>>();
-        var resourceService = new ResourceService(_mockConfig.Object, mockResourceLogger.Object);
+        _resourceService = new ResourceService(_mockConfig.Object, mockResourceLogger.Object);
 
         var mockAbilityLogger = new Mock<ILogger<AbilityService>>();
-        _abilityService = new AbilityService(_mockConfig.Object, resourceService, mockAbilityLogger.Object);
+        _abilityService = new AbilityService(_mockConfig.Object, _resourceService, mockAbilityLogger.Object);
 
-        _service = new GameSessionService(_repositoryMock.Object, _loggerMock.Object, _itemEffectService, _abilityService);
+        _service = new GameSessionService(_repositoryMock.Object, _loggerMock.Object, _itemEffectService, _abilityService, _resourceService);
     }
 
     [Test]

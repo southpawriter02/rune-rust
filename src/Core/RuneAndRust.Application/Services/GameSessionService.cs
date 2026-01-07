@@ -4,6 +4,7 @@ using RuneAndRust.Application.Interfaces;
 using RuneAndRust.Domain.Entities;
 using RuneAndRust.Domain.Enums;
 using RuneAndRust.Domain.Services;
+using RuneAndRust.Domain.ValueObjects;
 
 namespace RuneAndRust.Application.Services;
 
@@ -43,6 +44,11 @@ public class GameSessionService
     private readonly AbilityService _abilityService;
 
     /// <summary>
+    /// Service for managing resources.
+    /// </summary>
+    private readonly ResourceService _resourceService;
+
+    /// <summary>
     /// The currently active game session, or null if no session is active.
     /// </summary>
     private GameSession? _currentSession;
@@ -64,19 +70,22 @@ public class GameSessionService
     /// <param name="logger">The logger for service diagnostics.</param>
     /// <param name="itemEffectService">The service for applying item effects.</param>
     /// <param name="abilityService">The service for managing abilities.</param>
+    /// <param name="resourceService">The service for managing resources.</param>
     /// <param name="combatLogger">Optional logger for combat service diagnostics.</param>
-    /// <exception cref="ArgumentNullException">Thrown when repository, logger, itemEffectService, or abilityService is null.</exception>
+    /// <exception cref="ArgumentNullException">Thrown when repository, logger, itemEffectService, abilityService, or resourceService is null.</exception>
     public GameSessionService(
         IGameRepository repository,
         ILogger<GameSessionService> logger,
         ItemEffectService itemEffectService,
         AbilityService abilityService,
+        ResourceService resourceService,
         ILogger<CombatService>? combatLogger = null)
     {
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _itemEffectService = itemEffectService ?? throw new ArgumentNullException(nameof(itemEffectService));
         _abilityService = abilityService ?? throw new ArgumentNullException(nameof(abilityService));
+        _resourceService = resourceService ?? throw new ArgumentNullException(nameof(resourceService));
         _combatService = new CombatService(combatLogger);
         _logger.LogDebug("GameSessionService initialized");
     }
@@ -747,12 +756,98 @@ public class GameSessionService
             "Ability used: {PlayerName} used {AbilityName}. Result: {Message}",
             _currentSession.Player.Name, definition.Name, result.Message);
 
+        var messageBuilder = new System.Text.StringBuilder(result.Message);
+
         // Check if monster was defeated
         if (target != null && !target.IsAlive)
         {
             _logger.LogInformation("Monster defeated by ability: {MonsterName}", target.Name);
+            messageBuilder.AppendLine().Append($"{target.Name} has been defeated!");
+        }
+        // Monster counterattack if still alive after an offensive ability
+        else if (target != null && target.IsAlive)
+        {
+            var counterResult = _combatService.MonsterAttack(target, _currentSession.Player);
+            var counterDescription = _combatService.GetMonsterAttackDescription(
+                counterResult, target.Name, _currentSession.Player.Name);
+
+            _logger.LogInformation(
+                "Monster counterattack: {MonsterName} dealt {Damage} damage to {PlayerName}",
+                target.Name, counterResult.Damage, _currentSession.Player.Name);
+
+            messageBuilder.AppendLine().Append(counterDescription);
+
+            if (_currentSession.Player.Health <= 0)
+            {
+                _logger.LogWarning("Player defeated by monster counterattack!");
+                _currentSession.SetState(GameState.GameOver);
+            }
         }
 
-        return (true, result.Message);
+        return (true, messageBuilder.ToString());
+    }
+
+    /// <summary>
+    /// Checks whether the player is currently in combat (monsters present in current room).
+    /// </summary>
+    /// <returns>True if there are alive monsters in the current room; otherwise, false.</returns>
+    public bool IsInCombat()
+    {
+        if (_currentSession == null) return false;
+
+        var room = _currentSession.CurrentRoom;
+        return room?.GetAliveMonsters().Any() ?? false;
+    }
+
+    /// <summary>
+    /// Processes end-of-turn effects including resource regeneration/decay and cooldown reduction.
+    /// </summary>
+    /// <returns>A structured result containing all turn-end changes.</returns>
+    public TurnEndResult ProcessTurnEnd()
+    {
+        if (_currentSession == null)
+        {
+            _logger.LogWarning("ProcessTurnEnd called with no active session");
+            return TurnEndResult.Empty(0);
+        }
+
+        var player = _currentSession.Player;
+        var inCombat = IsInCombat();
+
+        // Advance turn counter
+        var newTurnCount = _currentSession.AdvanceTurn();
+        _logger.LogDebug("Turn advanced to {TurnCount}", newTurnCount);
+
+        // Process resource regeneration/decay
+        var resourceResult = _resourceService.ProcessTurnEnd(player, inCombat);
+        var resourceChanges = resourceResult.Changes
+            .Select(c => MapResourceChange(c))
+            .ToList();
+
+        // Process ability cooldowns
+        var cooldownChanges = _abilityService.ProcessTurnEnd(player);
+        var abilitiesNowReady = cooldownChanges
+            .Where(c => c.IsNowReady)
+            .Select(c => c.AbilityName)
+            .ToList();
+
+        _logger.LogInformation(
+            "Turn {Turn} ended: {ResourceChanges} resource changes, {CooldownChanges} cooldown changes, {AbilitiesReady} abilities now ready",
+            newTurnCount, resourceChanges.Count, cooldownChanges.Count, abilitiesNowReady.Count);
+
+        return new TurnEndResult(newTurnCount, resourceChanges, cooldownChanges.ToList(), abilitiesNowReady);
+    }
+
+    private TurnResourceChangeDto MapResourceChange(ResourceChange change)
+    {
+        var resourceType = _resourceService.GetResourceType(change.ResourceTypeId);
+        return new TurnResourceChangeDto(
+            resourceType?.DisplayName ?? change.ResourceTypeId,
+            resourceType?.Abbreviation ?? "??",
+            change.PreviousValue,
+            change.NewValue,
+            resourceType?.DefaultMax ?? 100,
+            change.ChangeType.ToString(),
+            resourceType?.Color ?? "#FFFFFF");
     }
 }

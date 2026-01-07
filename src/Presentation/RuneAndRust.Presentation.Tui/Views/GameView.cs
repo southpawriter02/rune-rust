@@ -348,6 +348,10 @@ public class GameView
             _logger.LogDebug("Attack executed successfully");
             await _renderer.RenderCombatResultAsync(message, ct);
 
+            // Process turn-end effects (resource regen/decay, cooldown reduction)
+            var turnEndResult = _gameService.ProcessTurnEnd();
+            await _renderer.RenderTurnEndChangesAsync(turnEndResult, ct);
+
             // Refresh room display after combat
             var room = _gameService.GetCurrentRoom();
             if (room != null && !room.Monsters.Any(m => m.IsAlive))
@@ -387,6 +391,10 @@ public class GameView
         {
             _logger.LogDebug("Ability used successfully: {AbilityName}", abilityName);
             await _renderer.RenderCombatResultAsync(message, ct);
+
+            // Process turn-end effects (resource regen/decay, cooldown reduction)
+            var turnEndResult = _gameService.ProcessTurnEnd();
+            await _renderer.RenderTurnEndChangesAsync(turnEndResult, ct);
 
             // Refresh room display after combat ability
             var room = _gameService.GetCurrentRoom();

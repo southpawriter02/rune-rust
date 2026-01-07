@@ -49,6 +49,11 @@ public class GameSession : IEntity
     public DateTime LastPlayedAt { get; private set; }
 
     /// <summary>
+    /// Gets the current turn number.
+    /// </summary>
+    public int TurnCount { get; private set; }
+
+    /// <summary>
     /// Set of room IDs that the player has visited.
     /// </summary>
     private readonly HashSet<Guid> _visitedRooms = [];
@@ -189,6 +194,17 @@ public class GameSession : IEntity
     public void UpdateLastPlayed()
     {
         LastPlayedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Advances the turn counter by one.
+    /// </summary>
+    /// <returns>The new turn count after advancing.</returns>
+    public int AdvanceTurn()
+    {
+        TurnCount++;
+        UpdateLastPlayed();
+        return TurnCount;
     }
 
     /// <summary>

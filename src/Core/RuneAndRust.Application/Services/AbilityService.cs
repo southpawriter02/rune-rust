@@ -257,31 +257,50 @@ public class AbilityService
     /// <summary>
     /// Processes end-of-turn cooldown reduction for all player abilities.
     /// </summary>
-    public void ProcessTurnEnd(Player player)
+    /// <param name="player">The player whose abilities to process.</param>
+    /// <returns>A list of cooldown changes that occurred.</returns>
+    public IReadOnlyList<CooldownChangeDto> ProcessTurnEnd(Player player)
     {
         _logger.LogDebug("ProcessTurnEnd for: {PlayerName}", player.Name);
 
-        var cooldownsReduced = 0;
+        var cooldownChanges = new List<CooldownChangeDto>();
 
         foreach (var ability in player.Abilities.Values)
         {
             if (ability.IsOnCooldown)
             {
+                var previousCooldown = ability.CurrentCooldown;
                 ability.ReduceCooldown();
-                cooldownsReduced++;
+
+                var definition = GetAbilityDefinition(ability.AbilityDefinitionId);
+                var abilityName = definition?.Name ?? ability.AbilityDefinitionId;
+
+                var isNowReady = ability.CurrentCooldown == 0;
+                cooldownChanges.Add(new CooldownChangeDto(
+                    abilityName,
+                    previousCooldown,
+                    ability.CurrentCooldown,
+                    isNowReady));
 
                 _logger.LogDebug(
                     "Cooldown reduced for {AbilityId}: {Remaining} turns remaining",
                     ability.AbilityDefinitionId, ability.CurrentCooldown);
+
+                if (isNowReady)
+                {
+                    _logger.LogInformation("{Ability} is now ready", abilityName);
+                }
             }
         }
 
-        if (cooldownsReduced > 0)
+        if (cooldownChanges.Count > 0)
         {
             _logger.LogInformation(
                 "Reduced cooldowns for {Count} abilities for {PlayerName}",
-                cooldownsReduced, player.Name);
+                cooldownChanges.Count, player.Name);
         }
+
+        return cooldownChanges;
     }
 
     /// <summary>

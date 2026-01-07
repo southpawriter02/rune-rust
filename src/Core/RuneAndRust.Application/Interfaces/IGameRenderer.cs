@@ -106,6 +106,13 @@ public interface IGameRenderer
     Task RenderAbilitiesAsync(IReadOnlyList<PlayerAbilityDto> abilities, CancellationToken ct = default);
 
     /// <summary>
+    /// Renders turn-end changes including resource regeneration/decay and cooldown reductions.
+    /// </summary>
+    /// <param name="changes">The turn-end result containing all changes.</param>
+    /// <param name="ct">Cancellation token for async operation.</param>
+    Task RenderTurnEndChangesAsync(TurnEndResult changes, CancellationToken ct = default);
+
+    /// <summary>
     /// Clears the screen or display area.
     /// </summary>
     /// <param name="ct">Cancellation token for async operation.</param>
