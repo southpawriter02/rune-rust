@@ -67,6 +67,15 @@ public record CombatRoundResult
     /// </summary>
     public bool PlayerDefeated { get; init; }
 
+    /// <summary>
+    /// Gets the experience points gained from defeating the monster.
+    /// </summary>
+    /// <remarks>
+    /// This is 0 if the monster was not defeated, otherwise it equals
+    /// the monster's ExperienceValue.
+    /// </remarks>
+    public int ExperienceGained { get; init; }
+
     // ===== Computed Properties =====
 
     /// <summary>
@@ -116,7 +125,8 @@ public record CombatRoundResult
         int damageDealt,
         MonsterCounterAttackResult? monsterCounterAttack,
         bool monsterDefeated,
-        bool playerDefeated)
+        bool playerDefeated,
+        int experienceGained = 0)
     {
         AttackRoll = attackRoll;
         AttackTotal = attackTotal;
@@ -128,6 +138,7 @@ public record CombatRoundResult
         MonsterCounterAttack = monsterCounterAttack;
         MonsterDefeated = monsterDefeated;
         PlayerDefeated = playerDefeated;
+        ExperienceGained = experienceGained;
     }
 
     /// <inheritdoc />

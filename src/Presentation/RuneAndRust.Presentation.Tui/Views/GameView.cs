@@ -341,12 +341,18 @@ public class GameView
 
     private async Task HandleAttackAsync(CancellationToken ct)
     {
-        var (success, message) = _gameService.TryAttack();
+        var (success, message, experienceGain) = _gameService.TryAttack();
 
         if (success)
         {
             _logger.LogDebug("Attack executed successfully");
             await _renderer.RenderCombatResultAsync(message, ct);
+
+            // Display experience gain if any (v0.0.8a)
+            if (experienceGain != null)
+            {
+                await _renderer.RenderExperienceGainAsync(experienceGain, ct);
+            }
 
             // Process turn-end effects (resource regen/decay, cooldown reduction)
             var turnEndResult = _gameService.ProcessTurnEnd();

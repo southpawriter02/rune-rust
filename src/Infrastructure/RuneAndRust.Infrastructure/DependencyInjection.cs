@@ -103,6 +103,9 @@ public static class DependencyInjection
         // Equipment system service (v0.0.7a)
         services.AddScoped<EquipmentService>();
 
+        // Experience system service (v0.0.8a)
+        services.AddScoped<ExperienceService>();
+
         return services;
     }
 }

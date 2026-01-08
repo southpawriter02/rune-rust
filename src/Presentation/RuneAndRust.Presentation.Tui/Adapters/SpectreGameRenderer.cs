@@ -607,7 +607,7 @@ public class SpectreGameRenderer : IGameRenderer
     }
 
     /// <summary>
-    /// Renders the player status bar showing name, health, attack, and defense.
+    /// Renders the player status bar showing name, health, XP, attack, and defense.
     /// </summary>
     /// <param name="player">The player DTO to render.</param>
     private static void RenderStatusBar(PlayerDto player)
@@ -621,11 +621,13 @@ public class SpectreGameRenderer : IGameRenderer
             .AddColumn("")
             .AddColumn("")
             .AddColumn("")
+            .AddColumn("")
             .AddColumn("");
 
         statusTable.AddRow(
-            $"[white]{Markup.Escape(player.Name)}[/]",
+            $"[white]{Markup.Escape(player.Name)} (Lv {player.Level})[/]",
             $"[{healthColor}]HP: {player.Health}/{player.MaxHealth}[/]",
+            $"[magenta]XP: {player.Experience}/{player.ExperienceToNextLevel}[/]",
             $"[cyan]ATK: {player.Attack}[/]",
             $"[blue]DEF: {player.Defense}[/]"
         );
@@ -740,6 +742,23 @@ public class SpectreGameRenderer : IGameRenderer
         }
 
         AnsiConsole.WriteLine();
+        return Task.CompletedTask;
+    }
+
+    // ===== Experience Display (v0.0.8a) =====
+
+    /// <inheritdoc/>
+    public Task RenderExperienceGainAsync(ExperienceGainDto experienceGain, CancellationToken ct = default)
+    {
+        _logger.LogDebug("Rendering experience gain: Amount={Amount}, NewTotal={NewTotal}",
+            experienceGain.AmountGained, experienceGain.NewTotal);
+
+        AnsiConsole.WriteLine();
+        AnsiConsole.MarkupLine($"[yellow]★[/] You gained [green]{experienceGain.AmountGained} XP[/]!");
+        AnsiConsole.MarkupLine(
+            $"[dim]XP: {experienceGain.NewTotal}/{experienceGain.ExperienceToNextLevel} ({experienceGain.ProgressPercent}%)[/]");
+        AnsiConsole.WriteLine();
+
         return Task.CompletedTask;
     }
 }

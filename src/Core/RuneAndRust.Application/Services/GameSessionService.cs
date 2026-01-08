@@ -60,6 +60,11 @@ public class GameSessionService
     private readonly EquipmentService _equipmentService;
 
     /// <summary>
+    /// Service for managing experience points (v0.0.8a).
+    /// </summary>
+    private readonly ExperienceService _experienceService;
+
+    /// <summary>
     /// The currently active game session, or null if no session is active.
     /// </summary>
     private GameSession? _currentSession;
@@ -84,6 +89,7 @@ public class GameSessionService
     /// <param name="resourceService">The service for managing resources.</param>
     /// <param name="diceService">The dice rolling service for combat.</param>
     /// <param name="equipmentService">The service for managing equipment.</param>
+    /// <param name="experienceService">The service for managing experience points.</param>
     /// <param name="combatLogger">Optional logger for combat service diagnostics.</param>
     /// <exception cref="ArgumentNullException">Thrown when required parameters are null.</exception>
     public GameSessionService(
@@ -94,6 +100,7 @@ public class GameSessionService
         ResourceService resourceService,
         IDiceService diceService,
         EquipmentService equipmentService,
+        ExperienceService experienceService,
         ILogger<CombatService>? combatLogger = null)
     {
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
@@ -103,6 +110,7 @@ public class GameSessionService
         _resourceService = resourceService ?? throw new ArgumentNullException(nameof(resourceService));
         _diceService = diceService ?? throw new ArgumentNullException(nameof(diceService));
         _equipmentService = equipmentService ?? throw new ArgumentNullException(nameof(equipmentService));
+        _experienceService = experienceService ?? throw new ArgumentNullException(nameof(experienceService));
         _combatService = new CombatService(combatLogger);
         _logger.LogDebug("GameSessionService initialized");
     }
@@ -359,34 +367,35 @@ public class GameSessionService
     /// <summary>
     /// Attempts to attack a monster in the current room.
     /// </summary>
-    /// <returns>A tuple indicating success and a combat description message.</returns>
+    /// <returns>A tuple indicating success, a combat description message, and optional XP gain info.</returns>
     /// <remarks>
     /// Attacks the first alive monster in the room using dice-based combat:
     /// Attack roll (1d10 + Finesse) vs Defense, damage roll (1d6 + Might) - armor.
     /// If the player is defeated, the game state is set to GameOver.
+    /// If the monster is defeated, experience points are awarded to the player.
     /// </remarks>
-    public (bool Success, string Message) TryAttack()
+    public (bool Success, string Message, ExperienceGainDto? ExperienceGain) TryAttack()
     {
         _logger.LogDebug("TryAttack called");
 
         if (_currentSession == null)
         {
             _logger.LogWarning("TryAttack failed: No active game session");
-            return (false, "No active game session.");
+            return (false, "No active game session.", null);
         }
 
         var currentRoom = _currentSession.CurrentRoom;
         if (currentRoom == null)
         {
             _logger.LogError("TryAttack failed: Current room is null for session {SessionId}", _currentSession.Id);
-            return (false, "Error: Current room not found.");
+            return (false, "Error: Current room not found.", null);
         }
 
         var monster = currentRoom.GetAliveMonsters().FirstOrDefault();
         if (monster == null)
         {
             _logger.LogDebug("No monsters to attack in room: {RoomName}", currentRoom.Name);
-            return (false, "There is nothing to attack here.");
+            return (false, "There is nothing to attack here.", null);
         }
 
         var playerHealthBefore = _currentSession.Player.Health;
@@ -426,9 +435,22 @@ public class GameSessionService
             monsterHealthBefore,
             monster.Health);
 
+        ExperienceGainDto? experienceGainDto = null;
+
         if (result.MonsterDefeated)
         {
             _logger.LogInformation("Monster defeated: {MonsterName}", monster.Name);
+
+            // Award experience points (v0.0.8a)
+            var xpResult = _experienceService.AwardExperienceFromMonster(_currentSession.Player, monster);
+            if (xpResult.DidGainExperience)
+            {
+                experienceGainDto = ExperienceGainDto.FromResult(
+                    xpResult,
+                    _currentSession.Player.Level,
+                    _currentSession.Player.ExperienceToNextLevel,
+                    _currentSession.Player.ExperienceProgressPercent);
+            }
         }
 
         if (result.PlayerDefeated)
@@ -440,7 +462,7 @@ public class GameSessionService
             _currentSession.SetState(GameState.GameOver);
         }
 
-        return (true, description);
+        return (true, description, experienceGainDto);
     }
 
     /// <summary>

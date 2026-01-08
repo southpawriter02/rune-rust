@@ -44,6 +44,15 @@ public class Monster : IEntity
     public Stats Stats { get; private set; }
 
     /// <summary>
+    /// Gets the experience points awarded when this monster is defeated.
+    /// </summary>
+    /// <remarks>
+    /// This value is added to the player's experience upon defeating the monster.
+    /// Higher-level or more difficult monsters award more experience.
+    /// </remarks>
+    public int ExperienceValue { get; private set; }
+
+    /// <summary>
     /// Gets the initiative modifier for combat turn order.
     /// </summary>
     /// <remarks>
@@ -111,6 +120,7 @@ public class Monster : IEntity
     /// <param name="stats">The combat statistics for the monster.</param>
     /// <param name="initiativeModifier">The initiative modifier (default 0).</param>
     /// <param name="monsterDefinitionId">The definition ID for grouping (optional).</param>
+    /// <param name="experienceValue">The XP awarded when defeated (default 0).</param>
     /// <exception cref="ArgumentNullException">Thrown when name or description is null.</exception>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when maxHealth is not positive.</exception>
     public Monster(
@@ -119,7 +129,8 @@ public class Monster : IEntity
         int maxHealth,
         Stats stats,
         int initiativeModifier = 0,
-        string? monsterDefinitionId = null)
+        string? monsterDefinitionId = null,
+        int experienceValue = 0)
     {
         Id = Guid.NewGuid();
         Name = name ?? throw new ArgumentNullException(nameof(name));
@@ -129,6 +140,7 @@ public class Monster : IEntity
         Stats = stats;
         InitiativeModifier = initiativeModifier;
         MonsterDefinitionId = monsterDefinitionId;
+        ExperienceValue = Math.Max(0, experienceValue);
     }
 
     /// <summary>
@@ -189,7 +201,7 @@ public class Monster : IEntity
     /// <summary>
     /// Factory method to create a basic goblin enemy with Cowardly behavior.
     /// </summary>
-    /// <returns>A new goblin monster.</returns>
+    /// <returns>A new goblin monster with 25 XP value.</returns>
     public static Monster CreateGoblin()
     {
         return new(
@@ -198,7 +210,8 @@ public class Monster : IEntity
             30,
             new Stats(30, 8, 2),
             initiativeModifier: 1,
-            monsterDefinitionId: "goblin")
+            monsterDefinitionId: "goblin",
+            experienceValue: 25)
         {
             Behavior = AIBehavior.Cowardly
         };
@@ -207,7 +220,7 @@ public class Monster : IEntity
     /// <summary>
     /// Factory method to create a skeleton enemy with Aggressive behavior.
     /// </summary>
-    /// <returns>A new skeleton monster.</returns>
+    /// <returns>A new skeleton monster with 20 XP value.</returns>
     public static Monster CreateSkeleton()
     {
         return new(
@@ -216,7 +229,8 @@ public class Monster : IEntity
             25,
             new Stats(25, 6, 3),
             initiativeModifier: 0,
-            monsterDefinitionId: "skeleton")
+            monsterDefinitionId: "skeleton",
+            experienceValue: 20)
         {
             Behavior = AIBehavior.Aggressive
         };
@@ -225,7 +239,7 @@ public class Monster : IEntity
     /// <summary>
     /// Factory method to create an orc enemy with Aggressive behavior.
     /// </summary>
-    /// <returns>A new orc monster.</returns>
+    /// <returns>A new orc monster with 40 XP value.</returns>
     public static Monster CreateOrc()
     {
         return new(
@@ -234,7 +248,8 @@ public class Monster : IEntity
             45,
             new Stats(45, 12, 4),
             initiativeModifier: -1,
-            monsterDefinitionId: "orc")
+            monsterDefinitionId: "orc",
+            experienceValue: 40)
         {
             Behavior = AIBehavior.Aggressive
         };
@@ -243,7 +258,7 @@ public class Monster : IEntity
     /// <summary>
     /// Factory method to create a goblin shaman with Support behavior.
     /// </summary>
-    /// <returns>A new goblin shaman monster.</returns>
+    /// <returns>A new goblin shaman monster with 30 XP value.</returns>
     public static Monster CreateGoblinShaman()
     {
         var shaman = new Monster(
@@ -252,7 +267,8 @@ public class Monster : IEntity
             25,
             new Stats(25, 6, 1),
             initiativeModifier: 2,
-            monsterDefinitionId: "goblin_shaman")
+            monsterDefinitionId: "goblin_shaman",
+            experienceValue: 30)
         {
             Behavior = AIBehavior.Support,
             CanHeal = true,
@@ -264,7 +280,7 @@ public class Monster : IEntity
     /// <summary>
     /// Factory method to create a slime enemy with Chaotic behavior.
     /// </summary>
-    /// <returns>A new slime monster.</returns>
+    /// <returns>A new slime monster with 15 XP value.</returns>
     public static Monster CreateSlime()
     {
         return new(
@@ -273,7 +289,8 @@ public class Monster : IEntity
             40,
             new Stats(40, 5, 5),
             initiativeModifier: -2,
-            monsterDefinitionId: "slime")
+            monsterDefinitionId: "slime",
+            experienceValue: 15)
         {
             Behavior = AIBehavior.Chaotic
         };

@@ -81,6 +81,40 @@ public class Player : IEntity
     public int Level { get; private set; } = 1;
 
     /// <summary>
+    /// Gets the player's current experience points.
+    /// </summary>
+    /// <remarks>
+    /// Experience is gained by defeating monsters. When enough XP is accumulated,
+    /// the player levels up (handled by ProgressionService in v0.0.8b).
+    /// </remarks>
+    public int Experience { get; private set; } = 0;
+
+    /// <summary>
+    /// Gets the experience points required to reach the next level.
+    /// </summary>
+    /// <remarks>
+    /// This uses a default formula. The actual calculation
+    /// will be configurable via ProgressionService in v0.0.8c.
+    /// </remarks>
+    public int ExperienceToNextLevel => GetDefaultXpForLevel(Level + 1);
+
+    /// <summary>
+    /// Gets the player's progress toward the next level as a percentage (0-100).
+    /// </summary>
+    /// <remarks>
+    /// Calculated as: (Experience / ExperienceToNextLevel) * 100, clamped to 0-100.
+    /// </remarks>
+    public int ExperienceProgressPercent
+    {
+        get
+        {
+            if (ExperienceToNextLevel <= 0) return 100;
+            var percent = (int)((double)Experience / ExperienceToNextLevel * 100);
+            return Math.Clamp(percent, 0, 100);
+        }
+    }
+
+    /// <summary>
     /// Gets a specific resource pool by type ID.
     /// </summary>
     /// <param name="resourceTypeId">The resource type ID (e.g., "mana").</param>
@@ -179,6 +213,38 @@ public class Player : IEntity
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(level, 1);
         Level = level;
+    }
+
+    /// <summary>
+    /// Adds experience points to the player.
+    /// </summary>
+    /// <param name="amount">The amount of experience to add.</param>
+    /// <returns>The new total experience points.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when amount is negative.</exception>
+    /// <remarks>
+    /// This method only adds XP. Level-up detection and stat increases are
+    /// handled by ProgressionService in v0.0.8b.
+    /// </remarks>
+    public int AddExperience(int amount)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(amount);
+        Experience += amount;
+        return Experience;
+    }
+
+    /// <summary>
+    /// Gets the default XP required to reach a specific level.
+    /// </summary>
+    /// <param name="level">The level to get XP for.</param>
+    /// <returns>The cumulative XP required.</returns>
+    /// <remarks>
+    /// Default formula: level * 100 (Level 2 = 200 XP, Level 3 = 300 XP, etc.)
+    /// This will be replaced with configurable curves in v0.0.8c.
+    /// </remarks>
+    private static int GetDefaultXpForLevel(int level)
+    {
+        if (level <= 1) return 0;
+        return level * 100;
     }
 
     /// <summary>

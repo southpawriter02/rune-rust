@@ -210,4 +210,19 @@ public interface IGameRenderer
     /// <param name="result">The equip result to display.</param>
     /// <param name="ct">Cancellation token for async operation.</param>
     Task RenderEquipResultAsync(EquipResultDto result, CancellationToken ct = default);
+
+    // ===== Experience Display (v0.0.8a) =====
+
+    /// <summary>
+    /// Renders experience gain after combat or other XP sources.
+    /// </summary>
+    /// <param name="experienceGain">The XP gain information to display.</param>
+    /// <param name="ct">Cancellation token for async operation.</param>
+    /// <remarks>
+    /// Display should include:
+    /// - XP amount gained with visual highlighting
+    /// - Current XP progress toward next level
+    /// - Progress percentage
+    /// </remarks>
+    Task RenderExperienceGainAsync(ExperienceGainDto experienceGain, CancellationToken ct = default);
 }

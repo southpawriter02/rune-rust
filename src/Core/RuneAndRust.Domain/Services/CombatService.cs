@@ -124,7 +124,8 @@ public class CombatService
             damageDealt: playerAttack.DamageDealt,
             monsterCounterAttack: monsterCounterAttack,
             monsterDefeated: monster.IsDefeated,
-            playerDefeated: player.IsDead);
+            playerDefeated: player.IsDead,
+            experienceGained: monster.IsDefeated ? monster.ExperienceValue : 0);
 
         LogCombatRoundResult(result, player.Name, monster.Name);
         return result;

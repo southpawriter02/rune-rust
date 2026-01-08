@@ -29,7 +29,11 @@ public static class DtoMapper
             player.Stats.Attack,
             player.Stats.Defense,
             player.Inventory.Count,
-            player.Inventory.Capacity
+            player.Inventory.Capacity,
+            player.Level,
+            player.Experience,
+            player.ExperienceToNextLevel,
+            player.ExperienceProgressPercent
         );
     }
 
