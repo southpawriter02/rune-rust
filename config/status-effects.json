@@ -1,0 +1,447 @@
+{
+    "$schema": "./status-effects.schema.json",
+    "effects": [
+        {
+            "id": "bleeding",
+            "name": "Bleeding",
+            "description": "Taking physical damage over time from an open wound.",
+            "category": "Debuff",
+            "durationType": "Turns",
+            "baseDuration": 3,
+            "stackingRule": "RefreshDuration",
+            "damagePerTurn": 3,
+            "damageType": "physical",
+            "iconId": "effect-bleeding"
+        },
+        {
+            "id": "poisoned",
+            "name": "Poisoned",
+            "description": "Taking poison damage over time as toxins course through your veins.",
+            "category": "Debuff",
+            "durationType": "Turns",
+            "baseDuration": 4,
+            "stackingRule": "RefreshDuration",
+            "damagePerTurn": 2,
+            "damageType": "poison",
+            "iconId": "effect-poisoned"
+        },
+        {
+            "id": "burning",
+            "name": "Burning",
+            "description": "Taking fire damage over time as flames consume you.",
+            "category": "Debuff",
+            "durationType": "Turns",
+            "baseDuration": 2,
+            "stackingRule": "RefreshDuration",
+            "damagePerTurn": 4,
+            "damageType": "fire",
+            "iconId": "effect-burning"
+        },
+        {
+            "id": "frozen",
+            "name": "Frozen",
+            "description": "Movement slowed and taking ice damage as cold seeps into your bones.",
+            "category": "Debuff",
+            "durationType": "Turns",
+            "baseDuration": 2,
+            "stackingRule": "RefreshDuration",
+            "damagePerTurn": 2,
+            "damageType": "ice",
+            "statModifiers": [
+                {
+                    "statId": "speed",
+                    "modifierType": "Percentage",
+                    "value": -0.3
+                }
+            ],
+            "iconId": "effect-frozen"
+        },
+        {
+            "id": "stunned",
+            "name": "Stunned",
+            "description": "Unable to take any actions.",
+            "category": "Debuff",
+            "durationType": "Turns",
+            "baseDuration": 1,
+            "stackingRule": "Block",
+            "preventsActions": true,
+            "iconId": "effect-stunned"
+        },
+        {
+            "id": "blinded",
+            "name": "Blinded",
+            "description": "Unable to see, reducing attack accuracy significantly.",
+            "category": "Debuff",
+            "durationType": "Turns",
+            "baseDuration": 2,
+            "stackingRule": "Block",
+            "statModifiers": [
+                {
+                    "statId": "attack",
+                    "modifierType": "Percentage",
+                    "value": -0.5
+                }
+            ],
+            "iconId": "effect-blinded"
+        },
+        {
+            "id": "weakened",
+            "name": "Weakened",
+            "description": "Physical strength reduced, dealing less damage.",
+            "category": "Debuff",
+            "durationType": "Turns",
+            "baseDuration": 3,
+            "stackingRule": "RefreshDuration",
+            "statModifiers": [
+                {
+                    "statId": "attack",
+                    "modifierType": "Percentage",
+                    "value": -0.25
+                }
+            ],
+            "iconId": "effect-weakened"
+        },
+        {
+            "id": "slowed",
+            "name": "Slowed",
+            "description": "Movement speed drastically reduced.",
+            "category": "Debuff",
+            "durationType": "Turns",
+            "baseDuration": 2,
+            "stackingRule": "RefreshDuration",
+            "statModifiers": [
+                {
+                    "statId": "speed",
+                    "modifierType": "Percentage",
+                    "value": -0.5
+                }
+            ],
+            "preventsMovement": true,
+            "iconId": "effect-slowed"
+        },
+        {
+            "id": "feared",
+            "name": "Feared",
+            "description": "Overcome with fear, unable to attack.",
+            "category": "Debuff",
+            "durationType": "Turns",
+            "baseDuration": 2,
+            "stackingRule": "Block",
+            "preventsAttacking": true,
+            "iconId": "effect-feared"
+        },
+        {
+            "id": "silenced",
+            "name": "Silenced",
+            "description": "Unable to use abilities or spells.",
+            "category": "Debuff",
+            "durationType": "Turns",
+            "baseDuration": 2,
+            "stackingRule": "Block",
+            "preventsAbilities": true,
+            "iconId": "effect-silenced"
+        },
+        {
+            "id": "cursed",
+            "name": "Cursed",
+            "description": "A dark curse reduces all your stats.",
+            "category": "Debuff",
+            "durationType": "Turns",
+            "baseDuration": 4,
+            "stackingRule": "Block",
+            "statModifiers": [
+                {
+                    "statId": "attack",
+                    "modifierType": "Flat",
+                    "value": -2
+                },
+                {
+                    "statId": "defense",
+                    "modifierType": "Flat",
+                    "value": -2
+                }
+            ],
+            "iconId": "effect-cursed"
+        },
+        {
+            "id": "exhausted",
+            "name": "Exhausted",
+            "description": "Fatigued and weakened from overexertion.",
+            "category": "Debuff",
+            "durationType": "Turns",
+            "baseDuration": 3,
+            "stackingRule": "RefreshDuration",
+            "statModifiers": [
+                {
+                    "statId": "attack",
+                    "modifierType": "Percentage",
+                    "value": -0.15
+                },
+                {
+                    "statId": "defense",
+                    "modifierType": "Percentage",
+                    "value": -0.15
+                }
+            ],
+            "iconId": "effect-exhausted"
+        },
+        {
+            "id": "disarmed",
+            "name": "Disarmed",
+            "description": "Unable to use your weapon effectively.",
+            "category": "Debuff",
+            "durationType": "Turns",
+            "baseDuration": 2,
+            "stackingRule": "Block",
+            "statModifiers": [
+                {
+                    "statId": "attack",
+                    "modifierType": "Percentage",
+                    "value": -0.75
+                }
+            ],
+            "iconId": "effect-disarmed"
+        },
+        {
+            "id": "vulnerable",
+            "name": "Vulnerable",
+            "description": "Taking increased damage from all sources.",
+            "category": "Debuff",
+            "durationType": "Turns",
+            "baseDuration": 3,
+            "stackingRule": "RefreshDuration",
+            "statModifiers": [
+                {
+                    "statId": "defense",
+                    "modifierType": "Percentage",
+                    "value": -0.25
+                }
+            ],
+            "iconId": "effect-vulnerable"
+        },
+        {
+            "id": "hasted",
+            "name": "Hasted",
+            "description": "Moving with supernatural speed.",
+            "category": "Buff",
+            "durationType": "Turns",
+            "baseDuration": 3,
+            "stackingRule": "Block",
+            "statModifiers": [
+                {
+                    "statId": "speed",
+                    "modifierType": "Percentage",
+                    "value": 0.5
+                }
+            ],
+            "iconId": "effect-hasted"
+        },
+        {
+            "id": "strengthened",
+            "name": "Strengthened",
+            "description": "Enhanced physical power.",
+            "category": "Buff",
+            "durationType": "Turns",
+            "baseDuration": 3,
+            "stackingRule": "Block",
+            "statModifiers": [
+                {
+                    "statId": "attack",
+                    "modifierType": "Percentage",
+                    "value": 0.25
+                }
+            ],
+            "iconId": "effect-strengthened"
+        },
+        {
+            "id": "fortified",
+            "name": "Fortified",
+            "description": "Enhanced defensive capabilities.",
+            "category": "Buff",
+            "durationType": "Turns",
+            "baseDuration": 3,
+            "stackingRule": "Block",
+            "statModifiers": [
+                {
+                    "statId": "defense",
+                    "modifierType": "Percentage",
+                    "value": 0.25
+                }
+            ],
+            "iconId": "effect-fortified"
+        },
+        {
+            "id": "regenerating",
+            "name": "Regenerating",
+            "description": "Healing over time as wounds close.",
+            "category": "Buff",
+            "durationType": "Turns",
+            "baseDuration": 3,
+            "stackingRule": "Block",
+            "healingPerTurn": 5,
+            "iconId": "effect-regenerating"
+        },
+        {
+            "id": "shielded",
+            "name": "Shielded",
+            "description": "Protected by a magical barrier that absorbs damage.",
+            "category": "Buff",
+            "durationType": "ResourceBased",
+            "resourcePool": 20,
+            "stackingRule": "Block",
+            "iconId": "effect-shielded"
+        },
+        {
+            "id": "focused",
+            "name": "Focused",
+            "description": "Enhanced mental clarity and precision.",
+            "category": "Buff",
+            "durationType": "Turns",
+            "baseDuration": 3,
+            "stackingRule": "Block",
+            "statModifiers": [
+                {
+                    "statId": "attack",
+                    "modifierType": "Flat",
+                    "value": 3
+                }
+            ],
+            "iconId": "effect-focused"
+        },
+        {
+            "id": "blessed",
+            "name": "Blessed",
+            "description": "Divine protection enhances all attributes.",
+            "category": "Buff",
+            "durationType": "Turns",
+            "baseDuration": 4,
+            "stackingRule": "Block",
+            "statModifiers": [
+                {
+                    "statId": "attack",
+                    "modifierType": "Flat",
+                    "value": 2
+                },
+                {
+                    "statId": "defense",
+                    "modifierType": "Flat",
+                    "value": 2
+                }
+            ],
+            "iconId": "effect-blessed"
+        },
+        {
+            "id": "invisible",
+            "name": "Invisible",
+            "description": "Hidden from sight, harder to hit.",
+            "category": "Buff",
+            "durationType": "Triggered",
+            "removalTrigger": "attack",
+            "stackingRule": "Block",
+            "statModifiers": [
+                {
+                    "statId": "defense",
+                    "modifierType": "Percentage",
+                    "value": 0.5
+                }
+            ],
+            "iconId": "effect-invisible"
+        },
+        {
+            "id": "enraged",
+            "name": "Enraged",
+            "description": "Fury increases attack but decreases defense.",
+            "category": "Buff",
+            "durationType": "Turns",
+            "baseDuration": 3,
+            "stackingRule": "Block",
+            "statModifiers": [
+                {
+                    "statId": "attack",
+                    "modifierType": "Percentage",
+                    "value": 0.5
+                },
+                {
+                    "statId": "defense",
+                    "modifierType": "Percentage",
+                    "value": -0.25
+                }
+            ],
+            "iconId": "effect-enraged"
+        },
+        {
+            "id": "protected",
+            "name": "Protected",
+            "description": "Damage is reduced significantly.",
+            "category": "Buff",
+            "durationType": "Turns",
+            "baseDuration": 2,
+            "stackingRule": "Block",
+            "statModifiers": [
+                {
+                    "statId": "defense",
+                    "modifierType": "Percentage",
+                    "value": 0.5
+                }
+            ],
+            "iconId": "effect-protected"
+        },
+        {
+            "id": "wet",
+            "name": "Wet",
+            "description": "Soaked with water, vulnerable to lightning, resistant to fire.",
+            "category": "Environmental",
+            "durationType": "Turns",
+            "baseDuration": 3,
+            "stackingRule": "RefreshDuration",
+            "vulnerableToDamageTypes": [
+                "lightning"
+            ],
+            "resistsDamageTypes": [
+                "fire"
+            ],
+            "iconId": "effect-wet"
+        },
+        {
+            "id": "chilled",
+            "name": "Chilled",
+            "description": "Cold is slowing your movements.",
+            "category": "Environmental",
+            "durationType": "Turns",
+            "baseDuration": 2,
+            "stackingRule": "RefreshDuration",
+            "statModifiers": [
+                {
+                    "statId": "speed",
+                    "modifierType": "Percentage",
+                    "value": -0.2
+                }
+            ],
+            "iconId": "effect-chilled"
+        },
+        {
+            "id": "on-fire",
+            "name": "On Fire",
+            "description": "Engulfed in flames, taking continuous fire damage.",
+            "category": "Environmental",
+            "durationType": "Permanent",
+            "stackingRule": "Block",
+            "damagePerTurn": 5,
+            "damageType": "fire",
+            "removalTrigger": "water",
+            "iconId": "effect-on-fire"
+        },
+        {
+            "id": "electrified",
+            "name": "Electrified",
+            "description": "Crackling with electricity, dangerous to touch.",
+            "category": "Environmental",
+            "durationType": "Turns",
+            "baseDuration": 2,
+            "stackingRule": "Block",
+            "damagePerTurn": 3,
+            "damageType": "lightning",
+            "iconId": "effect-electrified"
+        }
+    ]
+}
