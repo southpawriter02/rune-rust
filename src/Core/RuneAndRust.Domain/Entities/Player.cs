@@ -1,3 +1,4 @@
+using RuneAndRust.Domain.Enums;
 using RuneAndRust.Domain.Interfaces;
 using RuneAndRust.Domain.ValueObjects;
 
@@ -202,6 +203,20 @@ public class Player : IEntity
     public Inventory Inventory { get; private set; }
 
     /// <summary>
+    /// Gets the player's currently equipped items, keyed by equipment slot.
+    /// </summary>
+    /// <remarks>
+    /// Equipped items are separate from inventory. When an item is equipped,
+    /// it is removed from inventory. When unequipped, it returns to inventory.
+    /// </remarks>
+    public Dictionary<EquipmentSlot, Item> Equipment { get; private set; } = new();
+
+    /// <summary>
+    /// Gets the number of equipped items.
+    /// </summary>
+    public int EquippedItemCount => Equipment.Count;
+
+    /// <summary>
     /// Gets a value indicating whether the player is alive (health greater than zero).
     /// </summary>
     public bool IsAlive => Health > 0;
@@ -234,6 +249,7 @@ public class Player : IEntity
         Health = Stats.MaxHealth;
         Position = Position.Origin;
         Inventory = new Inventory();
+        Equipment = new Dictionary<EquipmentSlot, Item>();
     }
 
     /// <summary>
@@ -265,6 +281,7 @@ public class Player : IEntity
         Health = Stats.MaxHealth;
         Position = Position.Origin;
         Inventory = new Inventory();
+        Equipment = new Dictionary<EquipmentSlot, Item>();
     }
 
     /// <summary>
@@ -386,6 +403,78 @@ public class Player : IEntity
             throw new ArgumentNullException(nameof(item));
 
         return Inventory.TryAdd(item);
+    }
+
+    /// <summary>
+    /// Gets the item equipped in the specified slot, or null if empty.
+    /// </summary>
+    /// <param name="slot">The equipment slot to check.</param>
+    /// <returns>The equipped item, or null if the slot is empty.</returns>
+    public Item? GetEquippedItem(EquipmentSlot slot)
+    {
+        return Equipment.TryGetValue(slot, out var item) ? item : null;
+    }
+
+    /// <summary>
+    /// Checks whether the specified equipment slot is occupied.
+    /// </summary>
+    /// <param name="slot">The equipment slot to check.</param>
+    /// <returns>True if an item is equipped in the slot.</returns>
+    public bool IsSlotOccupied(EquipmentSlot slot)
+    {
+        return Equipment.ContainsKey(slot);
+    }
+
+    /// <summary>
+    /// Equips an item to its designated slot.
+    /// </summary>
+    /// <param name="item">The item to equip.</param>
+    /// <returns>True if the item was equipped successfully.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when item is null.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when item has no equipment slot.</exception>
+    /// <remarks>
+    /// The item must have an EquipmentSlot defined. If the slot is already occupied,
+    /// this method returns false. Use EquipmentService for swap logic.
+    /// </remarks>
+    public bool TryEquip(Item item)
+    {
+        ArgumentNullException.ThrowIfNull(item);
+
+        if (!item.EquipmentSlot.HasValue)
+            throw new InvalidOperationException($"Item '{item.Name}' cannot be equipped (no equipment slot).");
+
+        var slot = item.EquipmentSlot.Value;
+
+        // If slot is occupied, return false (use EquipmentService for swap logic)
+        if (IsSlotOccupied(slot))
+            return false;
+
+        Equipment[slot] = item;
+        return true;
+    }
+
+    /// <summary>
+    /// Unequips the item from the specified slot.
+    /// </summary>
+    /// <param name="slot">The slot to unequip from.</param>
+    /// <returns>The unequipped item, or null if the slot was empty.</returns>
+    public Item? Unequip(EquipmentSlot slot)
+    {
+        if (Equipment.TryGetValue(slot, out var item))
+        {
+            Equipment.Remove(slot);
+            return item;
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// Gets all currently equipped items.
+    /// </summary>
+    /// <returns>A read-only collection of equipped items.</returns>
+    public IReadOnlyCollection<Item> GetAllEquippedItems()
+    {
+        return Equipment.Values.ToList().AsReadOnly();
     }
 
     /// <summary>

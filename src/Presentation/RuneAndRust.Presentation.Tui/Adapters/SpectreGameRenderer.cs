@@ -687,4 +687,59 @@ public class SpectreGameRenderer : IGameRenderer
             AnsiConsole.MarkupLine("[grey]There are no visible exits.[/]");
         }
     }
+
+    // ===== Equipment Display (v0.0.7a) =====
+
+    /// <inheritdoc/>
+    public Task RenderEquipmentAsync(EquipmentSlotsDto equipment, CancellationToken ct = default)
+    {
+        _logger.LogDebug("Rendering equipment: {OccupiedSlots}/{TotalSlots} slots",
+            equipment.OccupiedSlotCount, equipment.TotalSlotCount);
+
+        var table = new Table()
+            .Border(TableBorder.Rounded)
+            .BorderColor(Color.Grey)
+            .Title("[yellow]Equipment[/]")
+            .AddColumn(new TableColumn("[bold]Slot[/]").Width(12))
+            .AddColumn(new TableColumn("[bold]Item[/]"));
+
+        foreach (var slot in equipment.Slots)
+        {
+            var slotName = slot.SlotDisplayName;
+            var itemDisplay = slot.IsOccupied
+                ? $"[green]{Markup.Escape(slot.ItemName!)}[/]"
+                : "[dim](empty)[/]";
+
+            table.AddRow(slotName, itemDisplay);
+        }
+
+        AnsiConsole.Write(table);
+        AnsiConsole.WriteLine();
+
+        return Task.CompletedTask;
+    }
+
+    /// <inheritdoc/>
+    public Task RenderEquipResultAsync(EquipResultDto result, CancellationToken ct = default)
+    {
+        _logger.LogDebug("Rendering equip result: Success={Success}, Swapped={Swapped}",
+            result.Success, result.WasSwapped);
+
+        if (result.Success)
+        {
+            AnsiConsole.MarkupLine($"[green]{Markup.Escape(result.Message)}[/]");
+
+            if (result.WasSwapped)
+            {
+                AnsiConsole.MarkupLine($"[dim]({Markup.Escape(result.ReplacedItemName!)} returned to inventory)[/]");
+            }
+        }
+        else
+        {
+            AnsiConsole.MarkupLine($"[red]{Markup.Escape(result.Message)}[/]");
+        }
+
+        AnsiConsole.WriteLine();
+        return Task.CompletedTask;
+    }
 }

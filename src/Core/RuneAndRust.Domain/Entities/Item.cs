@@ -53,6 +53,20 @@ public class Item : IEntity
     public int EffectDuration { get; private set; }
 
     /// <summary>
+    /// Gets the equipment slot this item can be equipped to, or null if not equippable.
+    /// </summary>
+    /// <remarks>
+    /// Items without an equipment slot (consumables, quest items, misc) cannot be equipped.
+    /// The slot determines which equipment position the item occupies when equipped.
+    /// </remarks>
+    public EquipmentSlot? EquipmentSlot { get; private set; }
+
+    /// <summary>
+    /// Gets whether this item can be equipped.
+    /// </summary>
+    public bool IsEquippable => EquipmentSlot.HasValue;
+
+    /// <summary>
     /// Private parameterless constructor for Entity Framework Core.
     /// </summary>
     private Item()
@@ -71,9 +85,11 @@ public class Item : IEntity
     /// <param name="effect">The effect this item provides when used (default is None).</param>
     /// <param name="effectValue">The magnitude of the effect (default is 0).</param>
     /// <param name="effectDuration">The duration of the effect in turns (default is 0).</param>
+    /// <param name="equipmentSlot">The equipment slot this item can be equipped to, or null if not equippable.</param>
     /// <exception cref="ArgumentNullException">Thrown when name or description is null.</exception>
     public Item(string name, string description, ItemType type, int value = 0,
-                ItemEffect effect = ItemEffect.None, int effectValue = 0, int effectDuration = 0)
+                ItemEffect effect = ItemEffect.None, int effectValue = 0, int effectDuration = 0,
+                EquipmentSlot? equipmentSlot = null)
     {
         Id = Guid.NewGuid();
         Name = name ?? throw new ArgumentNullException(nameof(name));
@@ -83,6 +99,7 @@ public class Item : IEntity
         Effect = effect;
         EffectValue = effectValue;
         EffectDuration = effectDuration;
+        EquipmentSlot = equipmentSlot;
     }
 
     /// <summary>
@@ -93,7 +110,8 @@ public class Item : IEntity
         "Rusty Sword",
         "An old sword covered in rust. Still sharp enough to cut.",
         ItemType.Weapon,
-        5
+        value: 5,
+        equipmentSlot: Enums.EquipmentSlot.Weapon
     );
 
     /// <summary>
@@ -118,6 +136,42 @@ public class Item : IEntity
         value: 25,
         effect: ItemEffect.Heal,
         effectValue: 25
+    );
+
+    /// <summary>
+    /// Factory method to create basic leather armor.
+    /// </summary>
+    /// <returns>A new armor item.</returns>
+    public static Item CreateLeatherArmor() => new(
+        "Leather Armor",
+        "Simple armor made of tanned leather. Provides basic protection.",
+        ItemType.Armor,
+        value: 15,
+        equipmentSlot: Enums.EquipmentSlot.Armor
+    );
+
+    /// <summary>
+    /// Factory method to create a basic wooden shield.
+    /// </summary>
+    /// <returns>A new shield item.</returns>
+    public static Item CreateWoodenShield() => new(
+        "Wooden Shield",
+        "A basic wooden shield. Better than nothing.",
+        ItemType.Armor,
+        value: 10,
+        equipmentSlot: Enums.EquipmentSlot.Shield
+    );
+
+    /// <summary>
+    /// Factory method to create a basic iron helmet.
+    /// </summary>
+    /// <returns>A new helmet item.</returns>
+    public static Item CreateIronHelmet() => new(
+        "Iron Helmet",
+        "A sturdy iron helmet that protects your head.",
+        ItemType.Armor,
+        value: 20,
+        equipmentSlot: Enums.EquipmentSlot.Helmet
     );
 
     /// <summary>

@@ -123,6 +123,29 @@ public record SkillCheckCommand(
     AdvantageType Advantage = AdvantageType.Normal) : GameCommand;
 
 /// <summary>
+/// Command to equip an item from inventory.
+/// </summary>
+/// <param name="ItemName">The name of the item to equip.</param>
+public record EquipCommand(string ItemName) : GameCommand;
+
+/// <summary>
+/// Command to unequip an item from a specific equipment slot.
+/// </summary>
+/// <param name="Slot">The equipment slot to unequip from.</param>
+public record UnequipCommand(EquipmentSlot Slot) : GameCommand;
+
+/// <summary>
+/// Command to display the player's current equipment.
+/// </summary>
+public record EquipmentCommand : GameCommand;
+
+/// <summary>
+/// Represents an invalid command with an error message.
+/// </summary>
+/// <param name="Message">The error message explaining why the command was invalid.</param>
+public record InvalidCommand(string Message) : GameCommand;
+
+/// <summary>
 /// Defines the contract for handling user input and converting it to game commands.
 /// </summary>
 /// <remarks>

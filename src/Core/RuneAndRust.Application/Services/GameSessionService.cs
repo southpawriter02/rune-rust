@@ -55,6 +55,11 @@ public class GameSessionService
     private readonly IDiceService _diceService;
 
     /// <summary>
+    /// Service for managing equipment operations.
+    /// </summary>
+    private readonly EquipmentService _equipmentService;
+
+    /// <summary>
     /// The currently active game session, or null if no session is active.
     /// </summary>
     private GameSession? _currentSession;
@@ -78,8 +83,9 @@ public class GameSessionService
     /// <param name="abilityService">The service for managing abilities.</param>
     /// <param name="resourceService">The service for managing resources.</param>
     /// <param name="diceService">The dice rolling service for combat.</param>
+    /// <param name="equipmentService">The service for managing equipment.</param>
     /// <param name="combatLogger">Optional logger for combat service diagnostics.</param>
-    /// <exception cref="ArgumentNullException">Thrown when repository, logger, itemEffectService, abilityService, resourceService, or diceService is null.</exception>
+    /// <exception cref="ArgumentNullException">Thrown when required parameters are null.</exception>
     public GameSessionService(
         IGameRepository repository,
         ILogger<GameSessionService> logger,
@@ -87,6 +93,7 @@ public class GameSessionService
         AbilityService abilityService,
         ResourceService resourceService,
         IDiceService diceService,
+        EquipmentService equipmentService,
         ILogger<CombatService>? combatLogger = null)
     {
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
@@ -95,6 +102,7 @@ public class GameSessionService
         _abilityService = abilityService ?? throw new ArgumentNullException(nameof(abilityService));
         _resourceService = resourceService ?? throw new ArgumentNullException(nameof(resourceService));
         _diceService = diceService ?? throw new ArgumentNullException(nameof(diceService));
+        _equipmentService = equipmentService ?? throw new ArgumentNullException(nameof(equipmentService));
         _combatService = new CombatService(combatLogger);
         _logger.LogDebug("GameSessionService initialized");
     }
@@ -888,5 +896,60 @@ public class GameSessionService
             resourceType?.DefaultMax ?? 100,
             change.ChangeType.ToString(),
             resourceType?.Color ?? "#FFFFFF");
+    }
+
+    // ===== Equipment Methods (v0.0.7a) =====
+
+    /// <summary>
+    /// Attempts to equip an item from the player's inventory.
+    /// </summary>
+    /// <param name="itemName">The name of the item to equip.</param>
+    /// <returns>The result of the equip operation as a DTO.</returns>
+    public EquipResultDto TryEquipItem(string itemName)
+    {
+        _logger.LogDebug("TryEquipItem called for item: {ItemName}", itemName);
+
+        if (_currentSession == null)
+        {
+            _logger.LogWarning("TryEquipItem failed: No active game session");
+            return new EquipResultDto(false, "No active game session.");
+        }
+
+        var result = _equipmentService.TryEquipByName(_currentSession.Player, itemName);
+        return EquipResultDto.FromResult(result);
+    }
+
+    /// <summary>
+    /// Attempts to unequip an item from the specified equipment slot.
+    /// </summary>
+    /// <param name="slot">The equipment slot to unequip from.</param>
+    /// <returns>The result of the unequip operation as a DTO.</returns>
+    public EquipResultDto TryUnequipItem(EquipmentSlot slot)
+    {
+        _logger.LogDebug("TryUnequipItem called for slot: {Slot}", slot);
+
+        if (_currentSession == null)
+        {
+            _logger.LogWarning("TryUnequipItem failed: No active game session");
+            return new EquipResultDto(false, "No active game session.");
+        }
+
+        var result = _equipmentService.TryUnequip(_currentSession.Player, slot);
+        return EquipResultDto.FromResult(result);
+    }
+
+    /// <summary>
+    /// Gets the player's current equipment.
+    /// </summary>
+    /// <returns>Equipment slots DTO, or null if no active session.</returns>
+    public EquipmentSlotsDto? GetEquipment()
+    {
+        if (_currentSession == null)
+        {
+            _logger.LogWarning("GetEquipment failed: No active game session");
+            return null;
+        }
+
+        return EquipmentSlotsDto.FromPlayer(_currentSession.Player);
     }
 }

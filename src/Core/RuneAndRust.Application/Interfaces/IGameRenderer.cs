@@ -194,4 +194,20 @@ public interface IGameRenderer
     /// </summary>
     /// <param name="ct">Cancellation token for async operation.</param>
     Task ClearScreenAsync(CancellationToken ct = default);
+
+    // ===== Equipment Display (v0.0.7a) =====
+
+    /// <summary>
+    /// Renders the player's current equipment.
+    /// </summary>
+    /// <param name="equipment">The equipment data to display.</param>
+    /// <param name="ct">Cancellation token for async operation.</param>
+    Task RenderEquipmentAsync(EquipmentSlotsDto equipment, CancellationToken ct = default);
+
+    /// <summary>
+    /// Renders the result of an equip or unequip operation.
+    /// </summary>
+    /// <param name="result">The equip result to display.</param>
+    /// <param name="ct">Cancellation token for async operation.</param>
+    Task RenderEquipResultAsync(EquipResultDto result, CancellationToken ct = default);
 }

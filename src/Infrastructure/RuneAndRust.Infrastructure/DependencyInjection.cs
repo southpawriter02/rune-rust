@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using RuneAndRust.Application.Configuration;
 using RuneAndRust.Application.Interfaces;
 using RuneAndRust.Application.Services;
+using RuneAndRust.Domain.Services;
 using RuneAndRust.Infrastructure.Configuration;
 using RuneAndRust.Infrastructure.Persistence;
 using RuneAndRust.Infrastructure.Repositories;
@@ -98,6 +99,9 @@ public static class DependencyInjection
 
         // Class system service (depends on AbilityService)
         services.AddScoped<ClassService>();
+
+        // Equipment system service (v0.0.7a)
+        services.AddScoped<EquipmentService>();
 
         return services;
     }

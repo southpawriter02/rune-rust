@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using RuneAndRust.Application.Interfaces;
 using RuneAndRust.Domain.Enums;
+using RuneAndRust.Domain.Services;
 using Spectre.Console;
 
 namespace RuneAndRust.Presentation.Tui.Adapters;
@@ -93,6 +94,9 @@ public class ConsoleInputHandler : IInputHandler
             "attack" or "fight" or "a" => new AttackCommand(),
             "roll" or "r" => ParseRollCommand(argument, input),
             "check" or "ch" => ParseSkillCheckCommand(argument, input),
+            "equip" => ParseEquipCommand(argument),
+            "unequip" => ParseUnequipCommand(argument),
+            "equipment" or "eq" or "gear" => new EquipmentCommand(),
             "save" => new SaveCommand(),
             "load" => new LoadCommand(),
             "help" or "h" or "?" => new HelpCommand(),
@@ -173,6 +177,39 @@ public class ConsoleInputHandler : IInputHandler
             skillId, difficultyId ?? "default", advantage);
 
         return new SkillCheckCommand(skillId, difficultyId, advantage);
+    }
+
+    /// <summary>
+    /// Parses an equip command from user input.
+    /// </summary>
+    private GameCommand ParseEquipCommand(string? argument)
+    {
+        if (string.IsNullOrWhiteSpace(argument))
+        {
+            _logger.LogDebug("Equip command missing item name");
+            return new InvalidCommand("Usage: equip <item name>");
+        }
+
+        return new EquipCommand(argument.Trim());
+    }
+
+    /// <summary>
+    /// Parses an unequip command from user input.
+    /// </summary>
+    private GameCommand ParseUnequipCommand(string? argument)
+    {
+        if (string.IsNullOrWhiteSpace(argument))
+        {
+            _logger.LogDebug("Unequip command missing slot name");
+            return new InvalidCommand($"Usage: unequip <slot>\nSlots: {EquipmentService.GetValidSlotNames()}");
+        }
+
+        if (EquipmentService.TryParseSlot(argument.Trim(), out var slot))
+        {
+            return new UnequipCommand(slot);
+        }
+
+        return new InvalidCommand($"Unknown slot '{argument}'. Valid slots: {EquipmentService.GetValidSlotNames()}");
     }
 
     /// <summary>

@@ -6,6 +6,7 @@ using RuneAndRust.Application.Services;
 using RuneAndRust.Domain.Definitions;
 using RuneAndRust.Domain.Entities;
 using RuneAndRust.Domain.Interfaces;
+using RuneAndRust.Domain.Services;
 
 namespace RuneAndRust.Application.UnitTests.Services;
 
@@ -19,6 +20,7 @@ public class TurnProcessingTests
     private ItemEffectService _itemEffectService = null!;
     private AbilityService _abilityService = null!;
     private ResourceService _resourceService = null!;
+    private EquipmentService _equipmentService = null!;
     private GameSessionService _service = null!;
 
     [SetUp]
@@ -42,13 +44,17 @@ public class TurnProcessingTests
         var mockAbilityLogger = new Mock<ILogger<AbilityService>>();
         _abilityService = new AbilityService(_mockConfig.Object, _resourceService, mockAbilityLogger.Object);
 
+        var mockEquipmentLogger = new Mock<ILogger<EquipmentService>>();
+        _equipmentService = new EquipmentService(mockEquipmentLogger.Object);
+
         _service = new GameSessionService(
             _repositoryMock.Object,
             _loggerMock.Object,
             _itemEffectService,
             _abilityService,
             _resourceService,
-            _diceServiceMock.Object);
+            _diceServiceMock.Object,
+            _equipmentService);
     }
 
     [Test]
