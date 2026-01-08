@@ -1,0 +1,36 @@
+{
+  "experienceTerminology": "XP",
+  "levelTerminology": "Level",
+  "maxLevel": 20,
+  "curveType": "Linear",
+  "baseXpRequirement": 100,
+  "xpMultiplier": 1.5,
+  "healOnLevelUp": true,
+  "defaultStatBonuses": {
+    "maxHealth": 5,
+    "attack": 1,
+    "defense": 1
+  },
+  "levels": [
+    {
+      "level": 5,
+      "title": "Veteran",
+      "customRewards": ["Unlock: Advanced Training"]
+    },
+    {
+      "level": 10,
+      "title": "Elite",
+      "customRewards": ["Unlock: Mastery Skills"]
+    },
+    {
+      "level": 15,
+      "title": "Champion",
+      "customRewards": ["Unlock: Legendary Abilities"]
+    },
+    {
+      "level": 20,
+      "title": "Legend",
+      "customRewards": ["Maximum Level Reached!"]
+    }
+  ]
+}

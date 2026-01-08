@@ -32,6 +32,7 @@ public class JsonConfigurationProvider : IGameConfigurationProvider
     private IReadOnlyList<SkillDefinition>? _skills;
     private IReadOnlyList<DifficultyClassDefinition>? _difficultyClasses;
     private IReadOnlyDictionary<string, IReadOnlyList<string>>? _diceDescriptors;
+    private ProgressionDefinition? _progression;
 
     private static readonly JsonSerializerOptions DefaultJsonOptions = new()
     {
@@ -389,6 +390,60 @@ public class JsonConfigurationProvider : IGameConfigurationProvider
             _diceDescriptors = new Dictionary<string, IReadOnlyList<string>>();
             return _diceDescriptors;
         }
+    }
+
+    /// <inheritdoc/>
+    public ProgressionDefinition GetProgressionConfiguration()
+    {
+        if (_progression != null) return _progression;
+
+        var filePath = Path.Combine(_configPath, "progression.json");
+        var config = LoadJsonFile<ProgressionJsonConfig>(filePath);
+
+        if (config == null)
+        {
+            _logger.LogInformation("No progression.json found, using default progression configuration");
+            _progression = ProgressionDefinition.Default;
+            return _progression;
+        }
+
+        _progression = ToProgressionDefinition(config);
+        _logger.LogDebug("Loaded progression configuration: MaxLevel={MaxLevel}, Curve={Curve}",
+            _progression.MaxLevel, _progression.CurveType);
+        return _progression;
+    }
+
+    private static ProgressionDefinition ToProgressionDefinition(ProgressionJsonConfig config)
+    {
+        var curveType = Enum.TryParse<ProgressionCurve>(config.CurveType, true, out var ct)
+            ? ct : ProgressionCurve.Exponential;
+
+        var levelOverrides = config.Levels?
+            .Where(l => l.Level > 0)
+            .ToDictionary(
+                l => l.Level,
+                l => new LevelDefinition
+                {
+                    Level = l.Level,
+                    XpRequired = l.XpRequired,
+                    StatBonuses = l.StatBonuses,
+                    CustomRewards = l.CustomRewards ?? [],
+                    Title = l.Title
+                })
+            ?? new Dictionary<int, LevelDefinition>();
+
+        return new ProgressionDefinition
+        {
+            ExperienceTerminology = config.ExperienceTerminology ?? "XP",
+            LevelTerminology = config.LevelTerminology ?? "Level",
+            MaxLevel = config.MaxLevel ?? 20,
+            CurveType = curveType,
+            BaseXpRequirement = config.BaseXpRequirement ?? 100,
+            XpMultiplier = config.XpMultiplier ?? 1.5f,
+            DefaultStatBonuses = config.DefaultStatBonuses ?? new StatBonusConfig(),
+            LevelOverrides = levelOverrides,
+            HealOnLevelUp = config.HealOnLevelUp ?? true
+        };
     }
 
     private SkillDefinition? ToSkillDefinition(SkillJsonEntry entry)
@@ -910,5 +965,28 @@ public class JsonConfigurationProvider : IGameConfigurationProvider
     private class DiceDescriptorsJsonConfig
     {
         public Dictionary<string, List<string>> Descriptors { get; set; } = new();
+    }
+
+    // Progression JSON structure
+    private class ProgressionJsonConfig
+    {
+        public string? ExperienceTerminology { get; set; }
+        public string? LevelTerminology { get; set; }
+        public int? MaxLevel { get; set; }
+        public string? CurveType { get; set; }
+        public int? BaseXpRequirement { get; set; }
+        public float? XpMultiplier { get; set; }
+        public bool? HealOnLevelUp { get; set; }
+        public StatBonusConfig? DefaultStatBonuses { get; set; }
+        public List<LevelDefinitionJsonConfig>? Levels { get; set; }
+    }
+
+    private class LevelDefinitionJsonConfig
+    {
+        public int Level { get; set; }
+        public int? XpRequired { get; set; }
+        public StatBonusConfig? StatBonuses { get; set; }
+        public List<string>? CustomRewards { get; set; }
+        public string? Title { get; set; }
     }
 }

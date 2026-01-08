@@ -149,6 +149,12 @@ public interface IGameConfigurationProvider
     /// </summary>
     /// <returns>Dictionary mapping category names to lists of descriptors.</returns>
     IReadOnlyDictionary<string, IReadOnlyList<string>> GetDiceDescriptors();
+
+    /// <summary>
+    /// Gets the progression configuration.
+    /// </summary>
+    /// <returns>The progression definition, or default if not configured.</returns>
+    ProgressionDefinition GetProgressionConfiguration();
 }
 
 /// <summary>

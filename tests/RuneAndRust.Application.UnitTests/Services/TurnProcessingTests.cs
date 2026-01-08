@@ -22,6 +22,7 @@ public class TurnProcessingTests
     private ResourceService _resourceService = null!;
     private EquipmentService _equipmentService = null!;
     private ExperienceService _experienceService = null!;
+    private ProgressionService _progressionService = null!;
     private GameSessionService _service = null!;
 
     [SetUp]
@@ -51,6 +52,9 @@ public class TurnProcessingTests
         var mockExperienceLogger = new Mock<ILogger<ExperienceService>>();
         _experienceService = new ExperienceService(mockExperienceLogger.Object);
 
+        var mockProgressionLogger = new Mock<ILogger<ProgressionService>>();
+        _progressionService = new ProgressionService(mockProgressionLogger.Object);
+
         _service = new GameSessionService(
             _repositoryMock.Object,
             _loggerMock.Object,
@@ -59,7 +63,8 @@ public class TurnProcessingTests
             _resourceService,
             _diceServiceMock.Object,
             _equipmentService,
-            _experienceService);
+            _experienceService,
+            _progressionService);
     }
 
     [Test]

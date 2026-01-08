@@ -341,7 +341,7 @@ public class GameView
 
     private async Task HandleAttackAsync(CancellationToken ct)
     {
-        var (success, message, experienceGain) = _gameService.TryAttack();
+        var (success, message, experienceGain, levelUp) = _gameService.TryAttack();
 
         if (success)
         {
@@ -352,6 +352,12 @@ public class GameView
             if (experienceGain != null)
             {
                 await _renderer.RenderExperienceGainAsync(experienceGain, ct);
+            }
+
+            // Display level-up if any (v0.0.8b)
+            if (levelUp != null)
+            {
+                await _renderer.RenderLevelUpAsync(levelUp, ct);
             }
 
             // Process turn-end effects (resource regen/decay, cooldown reduction)

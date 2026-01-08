@@ -745,7 +745,7 @@ public class SpectreGameRenderer : IGameRenderer
         return Task.CompletedTask;
     }
 
-    // ===== Experience Display (v0.0.8a) =====
+    // ===== Experience Display (v0.0.8a/c) =====
 
     /// <inheritdoc/>
     public Task RenderExperienceGainAsync(ExperienceGainDto experienceGain, CancellationToken ct = default)
@@ -753,12 +753,99 @@ public class SpectreGameRenderer : IGameRenderer
         _logger.LogDebug("Rendering experience gain: Amount={Amount}, NewTotal={NewTotal}",
             experienceGain.AmountGained, experienceGain.NewTotal);
 
+        var xpTerm = experienceGain.ExperienceTerminology;
+
         AnsiConsole.WriteLine();
-        AnsiConsole.MarkupLine($"[yellow]★[/] You gained [green]{experienceGain.AmountGained} XP[/]!");
+        AnsiConsole.MarkupLine($"[yellow]★[/] You gained [green]{experienceGain.AmountGained} {Markup.Escape(xpTerm)}[/]!");
         AnsiConsole.MarkupLine(
-            $"[dim]XP: {experienceGain.NewTotal}/{experienceGain.ExperienceToNextLevel} ({experienceGain.ProgressPercent}%)[/]");
+            $"[dim]{Markup.Escape(xpTerm)}: {experienceGain.NewTotal}/{experienceGain.ExperienceToNextLevel} ({experienceGain.ProgressPercent}%)[/]");
         AnsiConsole.WriteLine();
 
         return Task.CompletedTask;
+    }
+
+    // ===== Level-Up Display (v0.0.8b/c) =====
+
+    /// <inheritdoc/>
+    public Task RenderLevelUpAsync(LevelUpDto levelUp, CancellationToken ct = default)
+    {
+        _logger.LogDebug("Rendering level-up: {OldLevel} -> {NewLevel}",
+            levelUp.OldLevel, levelUp.NewLevel);
+
+        var content = BuildLevelUpContent(levelUp);
+
+        var panel = new Panel(content)
+            .Header($"[bold yellow]★ {Markup.Escape(levelUp.LevelTerminology.ToUpperInvariant())} UP! ★[/]", Justify.Center)
+            .Border(BoxBorder.Double)
+            .BorderColor(Color.Yellow)
+            .Padding(1, 0);
+
+        AnsiConsole.WriteLine();
+        AnsiConsole.Write(panel);
+        AnsiConsole.WriteLine();
+
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Builds the content for the level-up panel.
+    /// </summary>
+    private static string BuildLevelUpContent(LevelUpDto levelUp)
+    {
+        var lines = new List<string>();
+        var levelTerm = levelUp.LevelTerminology;
+        var xpTerm = levelUp.ExperienceTerminology;
+
+        // Title display (if earned)
+        if (levelUp.HasTitle)
+        {
+            lines.Add($"[yellow bold]★ {Markup.Escape(levelUp.Title!)} ★[/]");
+            lines.Add("");
+        }
+
+        // Level message
+        if (levelUp.IsMultiLevel)
+        {
+            lines.Add($"[white]You gained [yellow bold]{levelUp.LevelsGained}[/] {Markup.Escape(levelTerm.ToLower())}s![/]");
+            lines.Add($"[dim]{Markup.Escape(levelTerm)} {levelUp.OldLevel} → {Markup.Escape(levelTerm)} {levelUp.NewLevel}[/]");
+        }
+        else
+        {
+            lines.Add($"[white]You have reached [yellow bold]{Markup.Escape(levelTerm)} {levelUp.NewLevel}[/]![/]");
+        }
+
+        lines.Add("");
+        lines.Add("[cyan]Stat Increases:[/]");
+        lines.Add($"  Max Health: [dim]{levelUp.OldMaxHealth}[/] → [green]{levelUp.NewMaxHealth}[/] [dim](+{levelUp.HealthIncrease})[/]");
+        lines.Add($"  Attack: [dim]{levelUp.OldAttack}[/] → [green]{levelUp.NewAttack}[/] [dim](+{levelUp.AttackIncrease})[/]");
+        lines.Add($"  Defense: [dim]{levelUp.OldDefense}[/] → [green]{levelUp.NewDefense}[/] [dim](+{levelUp.DefenseIncrease})[/]");
+
+        // Unlocked abilities
+        if (levelUp.HasUnlockedAbilities)
+        {
+            lines.Add("");
+            lines.Add("[magenta]New Abilities Unlocked:[/]");
+            foreach (var ability in levelUp.UnlockedAbilityNames)
+            {
+                lines.Add($"  [magenta]•[/] [white]{Markup.Escape(ability)}[/]");
+            }
+        }
+
+        // Custom rewards
+        if (levelUp.HasCustomRewards)
+        {
+            lines.Add("");
+            lines.Add("[green]Rewards:[/]");
+            foreach (var reward in levelUp.CustomRewards)
+            {
+                lines.Add($"  [green]•[/] [white]{Markup.Escape(reward)}[/]");
+            }
+        }
+
+        // Next level XP
+        lines.Add("");
+        lines.Add($"[dim]Next {Markup.Escape(levelTerm)}: {levelUp.XpToNextLevel} {Markup.Escape(xpTerm)} needed ({Markup.Escape(levelTerm)} {levelUp.NewLevel + 1})[/]");
+
+        return string.Join("\n", lines);
     }
 }

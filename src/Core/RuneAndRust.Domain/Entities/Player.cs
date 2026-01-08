@@ -1,3 +1,4 @@
+using RuneAndRust.Domain.Definitions;
 using RuneAndRust.Domain.Enums;
 using RuneAndRust.Domain.Interfaces;
 using RuneAndRust.Domain.ValueObjects;
@@ -90,13 +91,29 @@ public class Player : IEntity
     public int Experience { get; private set; } = 0;
 
     /// <summary>
-    /// Gets the experience points required to reach the next level.
+    /// Gets the experience points required to reach the next level using default progression.
     /// </summary>
     /// <remarks>
-    /// This uses a default formula. The actual calculation
-    /// will be configurable via ProgressionService in v0.0.8c.
+    /// Use <see cref="GetExperienceToNextLevel"/> for configurable progression.
     /// </remarks>
-    public int ExperienceToNextLevel => GetDefaultXpForLevel(Level + 1);
+    public int ExperienceToNextLevel => GetExperienceToNextLevel(null);
+
+    /// <summary>
+    /// Gets the experience points required to reach the next level.
+    /// </summary>
+    /// <param name="progression">The progression configuration to use, or null for defaults.</param>
+    /// <returns>XP needed for next level, or 0 if at max level.</returns>
+    public int GetExperienceToNextLevel(ProgressionDefinition? progression)
+    {
+        progression ??= ProgressionDefinition.Default;
+
+        if (progression.MaxLevel > 0 && Level >= progression.MaxLevel)
+        {
+            return 0; // At max level
+        }
+
+        return progression.GetExperienceForLevel(Level + 1);
+    }
 
     /// <summary>
     /// Gets the player's progress toward the next level as a percentage (0-100).
@@ -233,18 +250,55 @@ public class Player : IEntity
     }
 
     /// <summary>
-    /// Gets the default XP required to reach a specific level.
+    /// Gets the cumulative XP required to reach the specified level.
     /// </summary>
-    /// <param name="level">The level to get XP for.</param>
+    /// <param name="level">The target level.</param>
+    /// <param name="progression">The progression configuration to use, or null for defaults.</param>
     /// <returns>The cumulative XP required.</returns>
-    /// <remarks>
-    /// Default formula: level * 100 (Level 2 = 200 XP, Level 3 = 300 XP, etc.)
-    /// This will be replaced with configurable curves in v0.0.8c.
-    /// </remarks>
-    private static int GetDefaultXpForLevel(int level)
+    public static int GetExperienceForLevel(int level, ProgressionDefinition? progression = null)
     {
-        if (level <= 1) return 0;
-        return level * 100;
+        progression ??= ProgressionDefinition.Default;
+        return progression.GetExperienceForLevel(level);
+    }
+
+    /// <summary>
+    /// Gets what level the player should be at for a given XP amount.
+    /// </summary>
+    /// <param name="experience">The experience amount.</param>
+    /// <param name="progression">The progression configuration to use, or null for defaults.</param>
+    /// <returns>The level corresponding to that experience.</returns>
+    public static int GetLevelForExperience(int experience, ProgressionDefinition? progression = null)
+    {
+        progression ??= ProgressionDefinition.Default;
+        return progression.GetLevelForExperience(experience);
+    }
+
+    /// <summary>
+    /// Applies stat modifications from leveling up.
+    /// </summary>
+    /// <param name="modifiers">The stat modifiers to apply.</param>
+    /// <param name="healToNewMax">If true, restores health to new maximum after applying modifiers.</param>
+    /// <remarks>
+    /// Used by ProgressionService when the player levels up.
+    /// </remarks>
+    public void ApplyLevelStatModifiers(LevelStatModifiers modifiers, bool healToNewMax = false)
+    {
+        var newStats = new Stats(
+            Stats.MaxHealth + modifiers.MaxHealth,
+            Stats.Attack + modifiers.Attack,
+            Stats.Defense + modifiers.Defense);
+
+        Stats = newStats;
+
+        if (healToNewMax)
+        {
+            Health = Stats.MaxHealth;
+        }
+        else if (Health > Stats.MaxHealth)
+        {
+            // Cap health at new maximum (shouldn't happen with positive modifiers)
+            Health = Stats.MaxHealth;
+        }
     }
 
     /// <summary>

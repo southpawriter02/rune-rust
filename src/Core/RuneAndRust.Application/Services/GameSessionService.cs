@@ -65,6 +65,11 @@ public class GameSessionService
     private readonly ExperienceService _experienceService;
 
     /// <summary>
+    /// Service for managing level-up progression (v0.0.8b).
+    /// </summary>
+    private readonly ProgressionService _progressionService;
+
+    /// <summary>
     /// The currently active game session, or null if no session is active.
     /// </summary>
     private GameSession? _currentSession;
@@ -90,6 +95,7 @@ public class GameSessionService
     /// <param name="diceService">The dice rolling service for combat.</param>
     /// <param name="equipmentService">The service for managing equipment.</param>
     /// <param name="experienceService">The service for managing experience points.</param>
+    /// <param name="progressionService">The service for managing level-up progression.</param>
     /// <param name="combatLogger">Optional logger for combat service diagnostics.</param>
     /// <exception cref="ArgumentNullException">Thrown when required parameters are null.</exception>
     public GameSessionService(
@@ -101,6 +107,7 @@ public class GameSessionService
         IDiceService diceService,
         EquipmentService equipmentService,
         ExperienceService experienceService,
+        ProgressionService progressionService,
         ILogger<CombatService>? combatLogger = null)
     {
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
@@ -111,6 +118,7 @@ public class GameSessionService
         _diceService = diceService ?? throw new ArgumentNullException(nameof(diceService));
         _equipmentService = equipmentService ?? throw new ArgumentNullException(nameof(equipmentService));
         _experienceService = experienceService ?? throw new ArgumentNullException(nameof(experienceService));
+        _progressionService = progressionService ?? throw new ArgumentNullException(nameof(progressionService));
         _combatService = new CombatService(combatLogger);
         _logger.LogDebug("GameSessionService initialized");
     }
@@ -367,35 +375,36 @@ public class GameSessionService
     /// <summary>
     /// Attempts to attack a monster in the current room.
     /// </summary>
-    /// <returns>A tuple indicating success, a combat description message, and optional XP gain info.</returns>
+    /// <returns>A tuple indicating success, a combat description message, optional XP gain info, and optional level-up info.</returns>
     /// <remarks>
     /// Attacks the first alive monster in the room using dice-based combat:
     /// Attack roll (1d10 + Finesse) vs Defense, damage roll (1d6 + Might) - armor.
     /// If the player is defeated, the game state is set to GameOver.
     /// If the monster is defeated, experience points are awarded to the player.
+    /// If the player gains enough XP to level up, level-up is applied automatically.
     /// </remarks>
-    public (bool Success, string Message, ExperienceGainDto? ExperienceGain) TryAttack()
+    public (bool Success, string Message, ExperienceGainDto? ExperienceGain, LevelUpDto? LevelUp) TryAttack()
     {
         _logger.LogDebug("TryAttack called");
 
         if (_currentSession == null)
         {
             _logger.LogWarning("TryAttack failed: No active game session");
-            return (false, "No active game session.", null);
+            return (false, "No active game session.", null, null);
         }
 
         var currentRoom = _currentSession.CurrentRoom;
         if (currentRoom == null)
         {
             _logger.LogError("TryAttack failed: Current room is null for session {SessionId}", _currentSession.Id);
-            return (false, "Error: Current room not found.", null);
+            return (false, "Error: Current room not found.", null, null);
         }
 
         var monster = currentRoom.GetAliveMonsters().FirstOrDefault();
         if (monster == null)
         {
             _logger.LogDebug("No monsters to attack in room: {RoomName}", currentRoom.Name);
-            return (false, "There is nothing to attack here.", null);
+            return (false, "There is nothing to attack here.", null, null);
         }
 
         var playerHealthBefore = _currentSession.Player.Health;
@@ -436,6 +445,7 @@ public class GameSessionService
             monster.Health);
 
         ExperienceGainDto? experienceGainDto = null;
+        LevelUpDto? levelUpDto = null;
 
         if (result.MonsterDefeated)
         {
@@ -445,11 +455,19 @@ public class GameSessionService
             var xpResult = _experienceService.AwardExperienceFromMonster(_currentSession.Player, monster);
             if (xpResult.DidGainExperience)
             {
+                // Get terminology from progression config (v0.0.8c)
+                var progression = _progressionService.Progression;
+
                 experienceGainDto = ExperienceGainDto.FromResult(
                     xpResult,
                     _currentSession.Player.Level,
-                    _currentSession.Player.ExperienceToNextLevel,
-                    _currentSession.Player.ExperienceProgressPercent);
+                    _currentSession.Player.GetExperienceToNextLevel(progression),
+                    _currentSession.Player.ExperienceProgressPercent,
+                    progression.ExperienceTerminology,
+                    progression.LevelTerminology);
+
+                // Check for level-up after XP gain (v0.0.8b)
+                levelUpDto = CheckAndHandleLevelUp();
             }
         }
 
@@ -462,7 +480,69 @@ public class GameSessionService
             _currentSession.SetState(GameState.GameOver);
         }
 
-        return (true, description, experienceGainDto);
+        return (true, description, experienceGainDto, levelUpDto);
+    }
+
+    /// <summary>
+    /// Checks if the player has enough XP to level up and applies it if so.
+    /// </summary>
+    /// <returns>A LevelUpDto if leveling occurred, null otherwise.</returns>
+    private LevelUpDto? CheckAndHandleLevelUp()
+    {
+        if (_currentSession == null) return null;
+
+        var player = _currentSession.Player;
+        var oldStats = player.Stats;
+        var progression = _progressionService.Progression;
+
+        // Get unlocked abilities callback using ability service
+        IReadOnlyList<string> GetAbilitiesAtLevel(int level)
+        {
+            if (string.IsNullOrEmpty(player.ClassId)) return [];
+
+            var abilities = _abilityService.GetUnlockedAbilitiesAtLevel(player.ClassId, level);
+            return abilities.Select(a => a.Name).ToList();
+        }
+
+        var levelUpResult = _progressionService.CheckAndApplyLevelUp(player, null, GetAbilitiesAtLevel);
+
+        if (!levelUpResult.DidLevelUp)
+        {
+            return null;
+        }
+
+        // Get ability names for display
+        var abilityNames = levelUpResult.NewAbilities.ToList();
+
+        // Get custom rewards and title for the new level (v0.0.8c)
+        var customRewards = _progressionService.GetCustomRewardsForLevel(levelUpResult.NewLevel);
+        var title = _progressionService.GetTitleForLevel(levelUpResult.NewLevel);
+
+        // Create DTO for display with terminology (v0.0.8c)
+        var levelUpDto = LevelUpDto.FromResult(
+            levelUpResult,
+            oldStats,
+            player.Stats,
+            abilityNames,
+            player.GetExperienceToNextLevel(progression),
+            customRewards,
+            title,
+            progression.ExperienceTerminology,
+            progression.LevelTerminology);
+
+        _logger.LogInformation(
+            "Player {Name} leveled up: {OldLevel} -> {NewLevel}. Stats: HP {OldHP}->{NewHP}, ATK {OldATK}->{NewATK}, DEF {OldDEF}->{NewDEF}",
+            player.Name,
+            levelUpResult.OldLevel,
+            levelUpResult.NewLevel,
+            oldStats.MaxHealth,
+            player.Stats.MaxHealth,
+            oldStats.Attack,
+            player.Stats.Attack,
+            oldStats.Defense,
+            player.Stats.Defense);
+
+        return levelUpDto;
     }
 
     /// <summary>

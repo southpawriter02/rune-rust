@@ -225,4 +225,20 @@ public interface IGameRenderer
     /// - Progress percentage
     /// </remarks>
     Task RenderExperienceGainAsync(ExperienceGainDto experienceGain, CancellationToken ct = default);
+
+    // ===== Level-Up Display (v0.0.8b) =====
+
+    /// <summary>
+    /// Renders a level-up notification with stat increases.
+    /// </summary>
+    /// <param name="levelUp">The level-up information to display.</param>
+    /// <param name="ct">Cancellation token for async operation.</param>
+    /// <remarks>
+    /// Display should include:
+    /// - Old level -> New level (with multi-level support)
+    /// - Stat increases (HP, Attack, Defense)
+    /// - Newly unlocked abilities (if any)
+    /// - XP needed for next level
+    /// </remarks>
+    Task RenderLevelUpAsync(LevelUpDto levelUp, CancellationToken ct = default);
 }

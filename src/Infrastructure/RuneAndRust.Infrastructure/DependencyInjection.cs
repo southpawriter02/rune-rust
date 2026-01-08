@@ -106,6 +106,9 @@ public static class DependencyInjection
         // Experience system service (v0.0.8a)
         services.AddScoped<ExperienceService>();
 
+        // Progression system service (v0.0.8b)
+        services.AddScoped<ProgressionService>();
+
         return services;
     }
 }
