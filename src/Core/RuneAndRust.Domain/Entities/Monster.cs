@@ -1,3 +1,4 @@
+using RuneAndRust.Domain.Enums;
 using RuneAndRust.Domain.Interfaces;
 using RuneAndRust.Domain.ValueObjects;
 
@@ -43,6 +44,25 @@ public class Monster : IEntity
     public Stats Stats { get; private set; }
 
     /// <summary>
+    /// Gets the initiative modifier for combat turn order.
+    /// </summary>
+    /// <remarks>
+    /// Higher values mean the monster acts earlier in combat.
+    /// Typically based on creature agility/reflexes.
+    /// Default is 0 for average creatures.
+    /// </remarks>
+    public int InitiativeModifier { get; private set; } = 0;
+
+    /// <summary>
+    /// Gets the definition ID this monster was created from.
+    /// </summary>
+    /// <remarks>
+    /// Used for grouping duplicate monsters and loading configuration.
+    /// Null for dynamically created monsters.
+    /// </remarks>
+    public string? MonsterDefinitionId { get; private set; }
+
+    /// <summary>
     /// Gets a value indicating whether this monster has been defeated (health is zero or less).
     /// </summary>
     public bool IsDefeated => Health <= 0;
@@ -51,6 +71,27 @@ public class Monster : IEntity
     /// Gets a value indicating whether this monster is still alive (health greater than zero).
     /// </summary>
     public bool IsAlive => Health > 0;
+
+    // ===== AI Behavior Properties (v0.0.6b) =====
+
+    /// <summary>
+    /// Gets the AI behavior pattern for this monster.
+    /// </summary>
+    /// <remarks>
+    /// Determines how the monster makes decisions during combat.
+    /// Defaults to <see cref="AIBehavior.Aggressive"/> if not set.
+    /// </remarks>
+    public AIBehavior Behavior { get; private set; } = AIBehavior.Aggressive;
+
+    /// <summary>
+    /// Gets whether this monster can heal itself or allies.
+    /// </summary>
+    public bool CanHeal { get; private set; }
+
+    /// <summary>
+    /// Gets the heal amount if the monster can heal.
+    /// </summary>
+    public int? HealAmount { get; private set; }
 
     /// <summary>
     /// Private parameterless constructor for Entity Framework Core.
@@ -68,9 +109,17 @@ public class Monster : IEntity
     /// <param name="description">The description shown to players.</param>
     /// <param name="maxHealth">The maximum health points of the monster.</param>
     /// <param name="stats">The combat statistics for the monster.</param>
+    /// <param name="initiativeModifier">The initiative modifier (default 0).</param>
+    /// <param name="monsterDefinitionId">The definition ID for grouping (optional).</param>
     /// <exception cref="ArgumentNullException">Thrown when name or description is null.</exception>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when maxHealth is not positive.</exception>
-    public Monster(string name, string description, int maxHealth, Stats stats)
+    public Monster(
+        string name,
+        string description,
+        int maxHealth,
+        Stats stats,
+        int initiativeModifier = 0,
+        string? monsterDefinitionId = null)
     {
         Id = Guid.NewGuid();
         Name = name ?? throw new ArgumentNullException(nameof(name));
@@ -78,6 +127,8 @@ public class Monster : IEntity
         MaxHealth = maxHealth > 0 ? maxHealth : throw new ArgumentOutOfRangeException(nameof(maxHealth));
         Health = maxHealth;
         Stats = stats;
+        InitiativeModifier = initiativeModifier;
+        MonsterDefinitionId = monsterDefinitionId;
     }
 
     /// <summary>
@@ -100,16 +151,133 @@ public class Monster : IEntity
         return actualDamage;
     }
 
+    // ===== AI Behavior Methods (v0.0.6b) =====
+
     /// <summary>
-    /// Factory method to create a basic goblin enemy.
+    /// Sets the AI behavior for this monster.
+    /// </summary>
+    /// <param name="behavior">The behavior pattern to use.</param>
+    public void SetBehavior(AIBehavior behavior)
+    {
+        Behavior = behavior;
+    }
+
+    /// <summary>
+    /// Enables healing capability for this monster.
+    /// </summary>
+    /// <param name="healAmount">The amount of HP restored per heal action.</param>
+    public void EnableHealing(int healAmount)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(healAmount);
+        CanHeal = true;
+        HealAmount = healAmount;
+    }
+
+    /// <summary>
+    /// Restores health to this monster (used for healing).
+    /// </summary>
+    /// <param name="amount">The amount of health to restore.</param>
+    /// <returns>The actual amount healed (capped at MaxHealth).</returns>
+    public int Heal(int amount)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(amount);
+        var actualHeal = Math.Min(amount, MaxHealth - Health);
+        Health += actualHeal;
+        return actualHeal;
+    }
+
+    /// <summary>
+    /// Factory method to create a basic goblin enemy with Cowardly behavior.
     /// </summary>
     /// <returns>A new goblin monster.</returns>
-    public static Monster CreateGoblin() => new(
-        "Goblin",
-        "A small, green creature with sharp teeth and beady eyes. It looks hostile.",
-        30,
-        new Stats(30, 8, 2)
-    );
+    public static Monster CreateGoblin()
+    {
+        return new(
+            "Goblin",
+            "A small, green creature with sharp teeth and beady eyes. It looks hostile.",
+            30,
+            new Stats(30, 8, 2),
+            initiativeModifier: 1,
+            monsterDefinitionId: "goblin")
+        {
+            Behavior = AIBehavior.Cowardly
+        };
+    }
+
+    /// <summary>
+    /// Factory method to create a skeleton enemy with Aggressive behavior.
+    /// </summary>
+    /// <returns>A new skeleton monster.</returns>
+    public static Monster CreateSkeleton()
+    {
+        return new(
+            "Skeleton",
+            "An animated pile of bones held together by dark magic.",
+            25,
+            new Stats(25, 6, 3),
+            initiativeModifier: 0,
+            monsterDefinitionId: "skeleton")
+        {
+            Behavior = AIBehavior.Aggressive
+        };
+    }
+
+    /// <summary>
+    /// Factory method to create an orc enemy with Aggressive behavior.
+    /// </summary>
+    /// <returns>A new orc monster.</returns>
+    public static Monster CreateOrc()
+    {
+        return new(
+            "Orc",
+            "A large, brutish creature with green skin and tusks. It wields a crude axe.",
+            45,
+            new Stats(45, 12, 4),
+            initiativeModifier: -1,
+            monsterDefinitionId: "orc")
+        {
+            Behavior = AIBehavior.Aggressive
+        };
+    }
+
+    /// <summary>
+    /// Factory method to create a goblin shaman with Support behavior.
+    /// </summary>
+    /// <returns>A new goblin shaman monster.</returns>
+    public static Monster CreateGoblinShaman()
+    {
+        var shaman = new Monster(
+            "Goblin Shaman",
+            "A goblin adorned with crude fetishes and glowing runes.",
+            25,
+            new Stats(25, 6, 1),
+            initiativeModifier: 2,
+            monsterDefinitionId: "goblin_shaman")
+        {
+            Behavior = AIBehavior.Support,
+            CanHeal = true,
+            HealAmount = 10
+        };
+        return shaman;
+    }
+
+    /// <summary>
+    /// Factory method to create a slime enemy with Chaotic behavior.
+    /// </summary>
+    /// <returns>A new slime monster.</returns>
+    public static Monster CreateSlime()
+    {
+        return new(
+            "Slime",
+            "A gelatinous blob that oozes across the floor.",
+            40,
+            new Stats(40, 5, 5),
+            initiativeModifier: -2,
+            monsterDefinitionId: "slime")
+        {
+            Behavior = AIBehavior.Chaotic
+        };
+    }
 
     /// <summary>
     /// Returns a string representation of this monster.

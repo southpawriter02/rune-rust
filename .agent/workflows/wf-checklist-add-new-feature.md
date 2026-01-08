@@ -10,3 +10,4 @@ description: Checklist for adding new game features.
 - [ ] Add terminology entries to `terminology.json`
 - [ ] Add descriptor pools if applicable
 - [ ] Document extensibility in design spec
+- [ ] Document added functionality and changes in a version changelog (using the template)

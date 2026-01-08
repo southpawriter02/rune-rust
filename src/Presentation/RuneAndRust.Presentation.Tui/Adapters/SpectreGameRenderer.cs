@@ -448,6 +448,164 @@ public class SpectreGameRenderer : IGameRenderer
         return Task.CompletedTask;
     }
 
+    // ===== Multi-Monster Combat Display (v0.0.6a) =====
+
+    /// <inheritdoc/>
+    public Task RenderCombatStartAsync(int monsterCount, CancellationToken ct = default)
+    {
+        _logger.LogDebug("Rendering combat start: {MonsterCount} monsters", monsterCount);
+
+        var enemyText = monsterCount == 1 ? "enemy" : "enemies";
+        var panel = new Panel($"[white]You are ambushed by {monsterCount} {enemyText}![/]")
+            .Header("[red bold]⚔ COMBAT INITIATED ⚔[/]")
+            .Border(BoxBorder.Double)
+            .BorderColor(Color.Red);
+
+        AnsiConsole.Write(panel);
+        Console.WriteLine();
+
+        return Task.CompletedTask;
+    }
+
+    /// <inheritdoc/>
+    public Task RenderInitiativeAsync(IReadOnlyList<CombatantInitiativeDto> initiatives, CancellationToken ct = default)
+    {
+        _logger.LogDebug("Rendering initiative for {Count} combatants", initiatives.Count);
+
+        var table = new Table()
+            .Border(TableBorder.Rounded)
+            .BorderColor(Color.Cyan1)
+            .Title("[cyan]⚡ Initiative Order ⚡[/]")
+            .AddColumn(new TableColumn("[grey]#[/]").Centered())
+            .AddColumn(new TableColumn("[white]Combatant[/]"))
+            .AddColumn(new TableColumn("[grey]Roll[/]").Centered())
+            .AddColumn(new TableColumn("[grey]Mod[/]").Centered())
+            .AddColumn(new TableColumn("[cyan]Total[/]").Centered());
+
+        var position = 1;
+        foreach (var init in initiatives)
+        {
+            var nameColor = init.IsPlayer ? "yellow" : "red";
+            var modStr = init.Modifier >= 0 ? $"+{init.Modifier}" : init.Modifier.ToString();
+
+            table.AddRow(
+                $"[grey]{position}[/]",
+                $"[{nameColor}]{Markup.Escape(init.Name)}[/]",
+                $"[white]{init.RollValue}[/]",
+                $"[grey]{modStr}[/]",
+                $"[cyan bold]{init.Total}[/]"
+            );
+            position++;
+        }
+
+        AnsiConsole.Write(table);
+        Console.WriteLine();
+
+        return Task.CompletedTask;
+    }
+
+    /// <inheritdoc/>
+    public Task RenderCombatStateAsync(CombatStateDisplayDto combatState, CancellationToken ct = default)
+    {
+        _logger.LogDebug("Rendering combat state: Round {Round}", combatState.RoundNumber);
+
+        // Round header
+        AnsiConsole.MarkupLine($"[grey]═══[/] [yellow bold]Round {combatState.RoundNumber}[/] [grey]═══[/]");
+        Console.WriteLine();
+
+        // Turn order panel
+        var turnOrderRows = new List<IRenderable>();
+        for (var i = 0; i < combatState.TurnOrder.Count; i++)
+        {
+            var entry = combatState.TurnOrder[i];
+            var marker = entry.IsCurrentTurn ? "►" : " ";
+            var nameColor = entry.IsDefeated ? "grey strikethrough" :
+                            entry.IsPlayer ? "yellow" : "red";
+            var initText = $"[grey]({entry.Initiative})[/]";
+            turnOrderRows.Add(new Markup($"[cyan]{marker}[/] [{nameColor}]{Markup.Escape(entry.Name)}[/] {initText}"));
+        }
+
+        var turnPanel = new Panel(new Rows(turnOrderRows))
+            .Header("[cyan]Turn Order[/]")
+            .Border(BoxBorder.Rounded)
+            .BorderColor(Color.Cyan1);
+
+        // Enemy status panel
+        var enemyRows = new List<IRenderable>();
+        foreach (var enemy in combatState.Enemies)
+        {
+            var healthPct = enemy.MaxHealth > 0 ? (float)enemy.CurrentHealth / enemy.MaxHealth : 0;
+            var healthColor = healthPct > 0.5 ? "green" : healthPct > 0.25 ? "yellow" : "red";
+            var statusText = enemy.IsDefeated ? "[grey strikethrough]Defeated[/]" :
+                $"[{healthColor}]{enemy.CurrentHealth}/{enemy.MaxHealth}[/]";
+
+            enemyRows.Add(new Markup($"[grey][[{enemy.Number}]][/] [red]{Markup.Escape(enemy.DisplayName)}[/] {statusText}"));
+        }
+
+        var enemyPanel = new Panel(new Rows(enemyRows))
+            .Header("[red]Enemies[/]")
+            .Border(BoxBorder.Rounded)
+            .BorderColor(Color.Red);
+
+        // Render side by side
+        var columns = new Columns(turnPanel, enemyPanel);
+        AnsiConsole.Write(columns);
+
+        // Current turn indicator
+        if (combatState.IsPlayerTurn)
+        {
+            AnsiConsole.MarkupLine("[yellow]It's your turn! Choose your action.[/]");
+        }
+        else
+        {
+            var currentName = combatState.TurnOrder[combatState.CurrentTurnIndex].Name;
+            AnsiConsole.MarkupLine($"[red]{Markup.Escape(currentName)}'s turn...[/]");
+        }
+
+        return Task.CompletedTask;
+    }
+
+    /// <inheritdoc/>
+    public Task RenderCombatEndAsync(CombatEndResultDto result, CancellationToken ct = default)
+    {
+        _logger.LogDebug("Rendering combat end: {State}, Rounds: {Rounds}", result.EndState, result.RoundsElapsed);
+
+        var (headerText, borderColor, messageText) = result.EndState switch
+        {
+            Domain.Enums.CombatState.Victory => (
+                "[green bold]⚔ VICTORY ⚔[/]",
+                Color.Green,
+                $"[green]You defeated {result.MonstersDefeated} enemies in {result.RoundsElapsed} rounds![/]"
+            ),
+            Domain.Enums.CombatState.PlayerDefeated => (
+                "[red bold]☠ DEFEATED ☠[/]",
+                Color.Red,
+                "[red]You have fallen in combat...[/]"
+            ),
+            Domain.Enums.CombatState.Fled => (
+                "[yellow bold]🏃 FLED 🏃[/]",
+                Color.Yellow,
+                "[yellow]You fled from combat, returning to the previous room.[/]"
+            ),
+            _ => (
+                "[grey]Combat Ended[/]",
+                Color.Grey,
+                "[grey]Combat has ended.[/]"
+            )
+        };
+
+        var panel = new Panel(messageText)
+            .Header(headerText)
+            .Border(BoxBorder.Double)
+            .BorderColor(borderColor);
+
+        Console.WriteLine();
+        AnsiConsole.Write(panel);
+        Console.WriteLine();
+
+        return Task.CompletedTask;
+    }
+
     /// <summary>
     /// Renders the player status bar showing name, health, attack, and defense.
     /// </summary>

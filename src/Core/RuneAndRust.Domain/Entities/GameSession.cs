@@ -54,6 +54,24 @@ public class GameSession : IEntity
     public int TurnCount { get; private set; }
 
     /// <summary>
+    /// Gets the currently active combat encounter, if any.
+    /// </summary>
+    public CombatEncounter? ActiveEncounter { get; private set; }
+
+    /// <summary>
+    /// Gets whether the player is currently in combat.
+    /// </summary>
+    public bool IsInCombat => ActiveEncounter?.State == CombatState.Active;
+
+    /// <summary>
+    /// Gets the ID of the room the player was in before entering the current room.
+    /// </summary>
+    /// <remarks>
+    /// Used for flee destination in combat.
+    /// </remarks>
+    public Guid? PreviousRoomId { get; private set; }
+
+    /// <summary>
     /// Set of room IDs that the player has visited.
     /// </summary>
     private readonly HashSet<Guid> _visitedRooms = [];
@@ -108,6 +126,33 @@ public class GameSession : IEntity
     }
 
     /// <summary>
+    /// Starts a combat encounter.
+    /// </summary>
+    /// <param name="encounter">The encounter to start.</param>
+    /// <exception cref="InvalidOperationException">Thrown if already in combat.</exception>
+    /// <exception cref="ArgumentNullException">Thrown if encounter is null.</exception>
+    public void StartCombat(CombatEncounter encounter)
+    {
+        ArgumentNullException.ThrowIfNull(encounter);
+
+        if (ActiveEncounter?.State == CombatState.Active)
+            throw new InvalidOperationException("Already in combat.");
+
+        ActiveEncounter = encounter;
+    }
+
+    /// <summary>
+    /// Ends the current combat encounter.
+    /// </summary>
+    /// <remarks>
+    /// Call this after combat resolves (victory, defeat, or flee).
+    /// </remarks>
+    public void EndCombat()
+    {
+        ActiveEncounter = null;
+    }
+
+    /// <summary>
     /// Attempts to move the player in the specified direction.
     /// </summary>
     /// <param name="direction">The direction to move (North, South, East, or West).</param>
@@ -124,6 +169,9 @@ public class GameSession : IEntity
         var nextRoomId = currentRoom.GetExit(direction);
         if (nextRoomId == null)
             return false;
+
+        // Track previous room for flee mechanic
+        PreviousRoomId = CurrentRoomId;
 
         CurrentRoomId = nextRoomId.Value;
         var nextRoom = CurrentRoom;

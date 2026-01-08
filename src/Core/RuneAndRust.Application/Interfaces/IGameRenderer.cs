@@ -159,6 +159,36 @@ public interface IGameRenderer
     /// </remarks>
     Task RenderCombatRoundAsync(CombatRoundResultDto result, CancellationToken ct = default);
 
+    // ===== Multi-Monster Combat Display (v0.0.6a) =====
+
+    /// <summary>
+    /// Renders combat start notification.
+    /// </summary>
+    /// <param name="monsterCount">Number of monsters in the encounter.</param>
+    /// <param name="ct">Cancellation token for async operation.</param>
+    Task RenderCombatStartAsync(int monsterCount, CancellationToken ct = default);
+
+    /// <summary>
+    /// Renders initiative roll results for all combatants.
+    /// </summary>
+    /// <param name="initiatives">The initiative rolls in order.</param>
+    /// <param name="ct">Cancellation token for async operation.</param>
+    Task RenderInitiativeAsync(IReadOnlyList<CombatantInitiativeDto> initiatives, CancellationToken ct = default);
+
+    /// <summary>
+    /// Renders current combat state including turn order and enemy status.
+    /// </summary>
+    /// <param name="combatState">The current combat state.</param>
+    /// <param name="ct">Cancellation token for async operation.</param>
+    Task RenderCombatStateAsync(CombatStateDisplayDto combatState, CancellationToken ct = default);
+
+    /// <summary>
+    /// Renders combat end result.
+    /// </summary>
+    /// <param name="result">The combat resolution result.</param>
+    /// <param name="ct">Cancellation token for async operation.</param>
+    Task RenderCombatEndAsync(CombatEndResultDto result, CancellationToken ct = default);
+
     /// <summary>
     /// Clears the screen or display area.
     /// </summary>
