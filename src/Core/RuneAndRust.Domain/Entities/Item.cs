@@ -99,6 +99,61 @@ public class Item : IEntity
     public bool IsWeapon => WeaponType.HasValue && EquipmentSlot == Enums.EquipmentSlot.Weapon;
 
     /// <summary>
+    /// Gets the type of armor this item is, or null if not armor.
+    /// </summary>
+    /// <remarks>
+    /// Armor type affects defense bonus amounts and any associated penalties.
+    /// Items with ArmorType should have appropriate EquipmentSlot (Armor, Shield, Helmet, Boots).
+    /// </remarks>
+    public ArmorType? ArmorType { get; private set; }
+
+    /// <summary>
+    /// Gets the defense bonus provided by this item when equipped.
+    /// </summary>
+    /// <remarks>
+    /// Defense bonus is added to the player's base defense. Stacks with other
+    /// equipped items' defense bonuses.
+    /// </remarks>
+    public int DefenseBonus { get; private set; }
+
+    /// <summary>
+    /// Gets the stat modifiers provided by this item when equipped.
+    /// </summary>
+    /// <remarks>
+    /// General-purpose stat modifiers that apply while equipped.
+    /// Separate from weapon-specific bonuses (WeaponBonuses).
+    /// </remarks>
+    public StatModifiers StatModifiers { get; private set; } = StatModifiers.None;
+
+    /// <summary>
+    /// Gets the initiative penalty from this item (typically heavy armor).
+    /// </summary>
+    /// <remarks>
+    /// Penalty is subtracted from initiative rolls, making the wearer act later in combat.
+    /// Should be 0 or negative.
+    /// </remarks>
+    public int InitiativePenalty { get; private set; }
+
+    /// <summary>
+    /// Gets the requirements to equip this item.
+    /// </summary>
+    /// <remarks>
+    /// If requirements are set, player must meet all conditions to equip the item.
+    /// Null or empty requirements mean anyone can equip.
+    /// </remarks>
+    public EquipmentRequirements Requirements { get; private set; } = EquipmentRequirements.None;
+
+    /// <summary>
+    /// Gets whether this item is armor.
+    /// </summary>
+    public bool IsArmor => ArmorType.HasValue;
+
+    /// <summary>
+    /// Gets whether this item has any requirements.
+    /// </summary>
+    public bool HasRequirements => Requirements.HasRequirements;
+
+    /// <summary>
     /// Gets the parsed damage dice pool for combat calculations.
     /// </summary>
     /// <returns>The DicePool for this weapon, or null if not a weapon or no damage dice.</returns>
@@ -133,13 +188,23 @@ public class Item : IEntity
     /// <param name="damageDice">The damage dice notation for weapons (e.g., "1d8").</param>
     /// <param name="weaponType">The type of weapon, or null if not a weapon.</param>
     /// <param name="weaponBonuses">The stat bonuses provided by this weapon.</param>
+    /// <param name="armorType">The type of armor, or null if not armor.</param>
+    /// <param name="defenseBonus">Defense bonus when equipped.</param>
+    /// <param name="statModifiers">Stat modifiers when equipped.</param>
+    /// <param name="initiativePenalty">Initiative penalty when equipped.</param>
+    /// <param name="requirements">Requirements to equip this item.</param>
     /// <exception cref="ArgumentNullException">Thrown when name or description is null.</exception>
     public Item(string name, string description, ItemType type, int value = 0,
                 ItemEffect effect = ItemEffect.None, int effectValue = 0, int effectDuration = 0,
                 EquipmentSlot? equipmentSlot = null,
                 string? damageDice = null,
                 WeaponType? weaponType = null,
-                WeaponBonuses? weaponBonuses = null)
+                WeaponBonuses? weaponBonuses = null,
+                ArmorType? armorType = null,
+                int defenseBonus = 0,
+                StatModifiers? statModifiers = null,
+                int initiativePenalty = 0,
+                EquipmentRequirements? requirements = null)
     {
         Id = Guid.NewGuid();
         Name = name ?? throw new ArgumentNullException(nameof(name));
@@ -153,6 +218,11 @@ public class Item : IEntity
         DamageDice = damageDice;
         WeaponType = weaponType;
         WeaponBonuses = weaponBonuses ?? WeaponBonuses.None;
+        ArmorType = armorType;
+        DefenseBonus = defenseBonus;
+        StatModifiers = statModifiers ?? StatModifiers.None;
+        InitiativePenalty = initiativePenalty;
+        Requirements = requirements ?? EquipmentRequirements.None;
     }
 
     /// <summary>
@@ -255,37 +325,101 @@ public class Item : IEntity
     /// <summary>
     /// Factory method to create basic leather armor.
     /// </summary>
-    /// <returns>A new armor item.</returns>
+    /// <returns>A new light armor item with defense bonus.</returns>
     public static Item CreateLeatherArmor() => new(
         "Leather Armor",
         "Simple armor made of tanned leather. Provides basic protection.",
         ItemType.Armor,
-        value: 15,
-        equipmentSlot: Enums.EquipmentSlot.Armor
+        value: 30,
+        equipmentSlot: Enums.EquipmentSlot.Armor,
+        armorType: Enums.ArmorType.Light,
+        defenseBonus: 2
+    );
+
+    /// <summary>
+    /// Factory method to create chain mail armor.
+    /// </summary>
+    /// <returns>A new medium armor item with defense bonus and initiative penalty.</returns>
+    public static Item CreateChainMail() => new(
+        "Chain Mail",
+        "Interlocking metal rings providing solid protection.",
+        ItemType.Armor,
+        value: 100,
+        equipmentSlot: Enums.EquipmentSlot.Armor,
+        armorType: Enums.ArmorType.Medium,
+        defenseBonus: 4,
+        initiativePenalty: -1,
+        requirements: EquipmentRequirements.ForFortitude(12)
+    );
+
+    /// <summary>
+    /// Factory method to create plate armor.
+    /// </summary>
+    /// <returns>A new heavy armor item with high defense and requirements.</returns>
+    public static Item CreatePlateArmor() => new(
+        "Plate Armor",
+        "Full plate armor offering maximum protection at the cost of mobility.",
+        ItemType.Armor,
+        value: 500,
+        equipmentSlot: Enums.EquipmentSlot.Armor,
+        armorType: Enums.ArmorType.Heavy,
+        defenseBonus: 6,
+        initiativePenalty: -3,
+        requirements: new EquipmentRequirements { MinFortitude = 14, MinMight = 12 }
     );
 
     /// <summary>
     /// Factory method to create a basic wooden shield.
     /// </summary>
-    /// <returns>A new shield item.</returns>
+    /// <returns>A new shield item with defense bonus.</returns>
     public static Item CreateWoodenShield() => new(
         "Wooden Shield",
         "A basic wooden shield. Better than nothing.",
         ItemType.Armor,
-        value: 10,
-        equipmentSlot: Enums.EquipmentSlot.Shield
+        value: 15,
+        equipmentSlot: Enums.EquipmentSlot.Shield,
+        armorType: Enums.ArmorType.Light,
+        defenseBonus: 1
     );
 
     /// <summary>
     /// Factory method to create a basic iron helmet.
     /// </summary>
-    /// <returns>A new helmet item.</returns>
+    /// <returns>A new helmet item with defense bonus.</returns>
     public static Item CreateIronHelmet() => new(
         "Iron Helmet",
         "A sturdy iron helmet that protects your head.",
         ItemType.Armor,
-        value: 20,
-        equipmentSlot: Enums.EquipmentSlot.Helmet
+        value: 40,
+        equipmentSlot: Enums.EquipmentSlot.Helmet,
+        armorType: Enums.ArmorType.Medium,
+        defenseBonus: 2
+    );
+
+    /// <summary>
+    /// Factory method to create a ring of strength.
+    /// </summary>
+    /// <returns>A new ring item with Might bonus.</returns>
+    public static Item CreateRingOfStrength() => new(
+        "Ring of Strength",
+        "A silver ring that enhances the wearer's physical power.",
+        ItemType.Misc,
+        value: 200,
+        equipmentSlot: Enums.EquipmentSlot.Ring,
+        statModifiers: new StatModifiers { Might = 2 }
+    );
+
+    /// <summary>
+    /// Factory method to create an amulet of vitality.
+    /// </summary>
+    /// <returns>A new amulet item with Fortitude and MaxHealth bonus.</returns>
+    public static Item CreateAmuletOfVitality() => new(
+        "Amulet of Vitality",
+        "A ruby amulet that bolsters the wearer's constitution.",
+        ItemType.Misc,
+        value: 250,
+        equipmentSlot: Enums.EquipmentSlot.Amulet,
+        statModifiers: new StatModifiers { Fortitude = 2, MaxHealth = 10 }
     );
 
     /// <summary>

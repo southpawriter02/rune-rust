@@ -34,6 +34,39 @@ public class EquipmentService
     }
 
     /// <summary>
+    /// Checks if a player can equip an item, considering requirements.
+    /// </summary>
+    /// <param name="player">The player attempting to equip.</param>
+    /// <param name="item">The item to equip.</param>
+    /// <returns>A tuple of (canEquip, unmetRequirements).</returns>
+    public (bool CanEquip, IReadOnlyList<string> UnmetRequirements) CanEquip(Player player, Item item)
+    {
+        ArgumentNullException.ThrowIfNull(player);
+        ArgumentNullException.ThrowIfNull(item);
+
+        // Check if item is equippable
+        if (!item.IsEquippable)
+        {
+            return (false, new[] { $"The {item.Name} cannot be equipped." });
+        }
+
+        // Check requirements
+        if (item.HasRequirements)
+        {
+            var unmet = item.Requirements.GetUnmetRequirements(player);
+            if (unmet.Count > 0)
+            {
+                _logger.LogDebug(
+                    "Player {Player} does not meet requirements for {Item}: {Requirements}",
+                    player.Name, item.Name, string.Join(", ", unmet));
+                return (false, unmet);
+            }
+        }
+
+        return (true, Array.Empty<string>());
+    }
+
+    /// <summary>
     /// Attempts to equip an item from the player's inventory by name.
     /// </summary>
     /// <param name="player">The player equipping the item.</param>
@@ -81,6 +114,16 @@ public class EquipmentService
         {
             _logger.LogDebug("Item '{ItemName}' is not equippable", item.Name);
             return EquipResult.NotEquippable(item);
+        }
+
+        // Check requirements
+        var (canEquip, unmetRequirements) = CanEquip(player, item);
+        if (!canEquip)
+        {
+            _logger.LogDebug(
+                "Player {Player} cannot equip {Item}: {Requirements}",
+                player.Name, item.Name, string.Join(", ", unmetRequirements));
+            return EquipResult.RequirementsNotMet(item, unmetRequirements);
         }
 
         var slot = item.EquipmentSlot!.Value;

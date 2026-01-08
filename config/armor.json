@@ -1,0 +1,177 @@
+{
+  "$schema": "armor.schema.json",
+  "armor": [
+    {
+      "id": "cloth_robes",
+      "name": "Cloth Robes",
+      "description": "Simple cloth robes offering minimal protection.",
+      "slot": "Armor",
+      "armorType": "Light",
+      "defenseBonus": 1,
+      "value": 10
+    },
+    {
+      "id": "leather_armor",
+      "name": "Leather Armor",
+      "description": "Simple armor made of tanned leather. Provides basic protection.",
+      "slot": "Armor",
+      "armorType": "Light",
+      "defenseBonus": 2,
+      "value": 30
+    },
+    {
+      "id": "studded_leather",
+      "name": "Studded Leather",
+      "description": "Leather armor reinforced with metal studs.",
+      "slot": "Armor",
+      "armorType": "Light",
+      "defenseBonus": 3,
+      "value": 60
+    },
+    {
+      "id": "chain_mail",
+      "name": "Chain Mail",
+      "description": "Interlocking metal rings providing solid protection.",
+      "slot": "Armor",
+      "armorType": "Medium",
+      "defenseBonus": 4,
+      "initiativePenalty": -1,
+      "requirements": { "minFortitude": 12 },
+      "value": 100
+    },
+    {
+      "id": "scale_mail",
+      "name": "Scale Mail",
+      "description": "Overlapping metal scales offering excellent protection.",
+      "slot": "Armor",
+      "armorType": "Medium",
+      "defenseBonus": 5,
+      "initiativePenalty": -2,
+      "requirements": { "minFortitude": 13 },
+      "value": 200
+    },
+    {
+      "id": "plate_armor",
+      "name": "Plate Armor",
+      "description": "Full plate armor offering maximum protection at the cost of mobility.",
+      "slot": "Armor",
+      "armorType": "Heavy",
+      "defenseBonus": 6,
+      "initiativePenalty": -3,
+      "requirements": { "minFortitude": 14, "minMight": 12 },
+      "value": 500
+    },
+    {
+      "id": "wooden_shield",
+      "name": "Wooden Shield",
+      "description": "A basic wooden shield. Better than nothing.",
+      "slot": "Shield",
+      "armorType": "Light",
+      "defenseBonus": 1,
+      "value": 15
+    },
+    {
+      "id": "iron_shield",
+      "name": "Iron Shield",
+      "description": "A sturdy iron shield for reliable defense.",
+      "slot": "Shield",
+      "armorType": "Medium",
+      "defenseBonus": 2,
+      "value": 50
+    },
+    {
+      "id": "tower_shield",
+      "name": "Tower Shield",
+      "description": "A massive shield providing exceptional coverage.",
+      "slot": "Shield",
+      "armorType": "Heavy",
+      "defenseBonus": 3,
+      "initiativePenalty": -1,
+      "requirements": { "minMight": 12 },
+      "value": 150
+    },
+    {
+      "id": "leather_cap",
+      "name": "Leather Cap",
+      "description": "A simple leather cap for head protection.",
+      "slot": "Helmet",
+      "armorType": "Light",
+      "defenseBonus": 1,
+      "value": 15
+    },
+    {
+      "id": "iron_helmet",
+      "name": "Iron Helmet",
+      "description": "A sturdy iron helmet that protects your head.",
+      "slot": "Helmet",
+      "armorType": "Medium",
+      "defenseBonus": 2,
+      "value": 40
+    },
+    {
+      "id": "great_helm",
+      "name": "Great Helm",
+      "description": "A full helm providing excellent head protection.",
+      "slot": "Helmet",
+      "armorType": "Heavy",
+      "defenseBonus": 3,
+      "initiativePenalty": -1,
+      "requirements": { "minFortitude": 12 },
+      "value": 100
+    },
+    {
+      "id": "leather_boots",
+      "name": "Leather Boots",
+      "description": "Sturdy leather boots for all terrain.",
+      "slot": "Boots",
+      "armorType": "Light",
+      "defenseBonus": 1,
+      "value": 20
+    },
+    {
+      "id": "iron_boots",
+      "name": "Iron Boots",
+      "description": "Heavy iron boots that protect the feet.",
+      "slot": "Boots",
+      "armorType": "Heavy",
+      "defenseBonus": 2,
+      "initiativePenalty": -1,
+      "requirements": { "minFortitude": 11 },
+      "value": 60
+    }
+  ],
+  "accessories": [
+    {
+      "id": "ring_of_strength",
+      "name": "Ring of Strength",
+      "description": "A silver ring that enhances the wearer's physical power.",
+      "slot": "Ring",
+      "statBonuses": { "might": 2 },
+      "value": 200
+    },
+    {
+      "id": "ring_of_precision",
+      "name": "Ring of Precision",
+      "description": "A gold ring that sharpens the wearer's reflexes.",
+      "slot": "Ring",
+      "statBonuses": { "finesse": 2 },
+      "value": 200
+    },
+    {
+      "id": "amulet_of_vitality",
+      "name": "Amulet of Vitality",
+      "description": "A ruby amulet that bolsters the wearer's constitution.",
+      "slot": "Amulet",
+      "statBonuses": { "fortitude": 2, "maxHealth": 10 },
+      "value": 250
+    },
+    {
+      "id": "amulet_of_wisdom",
+      "name": "Amulet of Wisdom",
+      "description": "An emerald amulet that enhances mental fortitude.",
+      "slot": "Amulet",
+      "statBonuses": { "will": 2, "wits": 1 },
+      "value": 250
+    }
+  ]
+}

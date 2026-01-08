@@ -39,6 +39,13 @@ public readonly record struct StatModifiers
     public static StatModifiers None => new();
 
     /// <summary>
+    /// Returns true if any modifier is non-zero.
+    /// </summary>
+    public bool HasModifiers => MaxHealth != 0 || Attack != 0 || Defense != 0 ||
+                                Might != 0 || Fortitude != 0 || Will != 0 ||
+                                Wits != 0 || Finesse != 0;
+
+    /// <summary>
     /// Applies these modifiers to a base Stats value.
     /// </summary>
     /// <param name="baseStats">The base stats to modify.</param>

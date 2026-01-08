@@ -84,4 +84,17 @@ public readonly record struct EquipResult(
     /// <returns>A failure result.</returns>
     public static EquipResult InventoryFull() =>
         Failure("Your inventory is full. Cannot unequip.");
+
+    /// <summary>
+    /// Creates a failure for unmet requirements.
+    /// </summary>
+    /// <param name="item">The item that couldn't be equipped.</param>
+    /// <param name="unmetRequirements">List of requirement descriptions.</param>
+    /// <returns>A failure result with detailed requirements message.</returns>
+    public static EquipResult RequirementsNotMet(Item item, IReadOnlyList<string> unmetRequirements)
+    {
+        var message = $"You cannot equip {item.Name}.\nRequirements not met:\n" +
+                      string.Join("\n", unmetRequirements.Select(r => $"  - {r}"));
+        return new(false, message, null, null);
+    }
 }

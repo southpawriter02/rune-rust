@@ -478,6 +478,95 @@ public class Player : IEntity
     }
 
     /// <summary>
+    /// Calculates the player's effective stats including equipment bonuses.
+    /// </summary>
+    /// <returns>Stats with all equipment bonuses applied.</returns>
+    /// <remarks>
+    /// Defense is calculated as: Base Defense + Sum of all DefenseBonus from equipment + StatModifiers.Defense
+    /// MaxHealth is calculated as: Base MaxHealth + Sum of all StatModifiers.MaxHealth
+    /// </remarks>
+    public Stats GetEffectiveStats()
+    {
+        var totalDefenseBonus = 0;
+        var totalStatModifiers = StatModifiers.None;
+
+        foreach (var (slot, item) in Equipment)
+        {
+            totalDefenseBonus += item.DefenseBonus;
+            totalStatModifiers += item.StatModifiers;
+        }
+
+        return new Stats(
+            maxHealth: Stats.MaxHealth + totalStatModifiers.MaxHealth,
+            attack: Stats.Attack + totalStatModifiers.Attack,
+            defense: Stats.Defense + totalDefenseBonus + totalStatModifiers.Defense
+        );
+    }
+
+    /// <summary>
+    /// Calculates the player's effective attributes including equipment bonuses.
+    /// </summary>
+    /// <returns>Attributes with all equipment bonuses applied.</returns>
+    /// <remarks>
+    /// Combines base attributes with:
+    /// - WeaponBonuses from equipped weapon
+    /// - StatModifiers from all equipped items
+    /// </remarks>
+    public PlayerAttributes GetEffectiveAttributes()
+    {
+        var totalStatModifiers = StatModifiers.None;
+        var weaponBonuses = WeaponBonuses.None;
+
+        foreach (var (slot, item) in Equipment)
+        {
+            totalStatModifiers += item.StatModifiers;
+
+            if (slot == EquipmentSlot.Weapon && item.IsWeapon)
+            {
+                weaponBonuses = item.WeaponBonuses;
+            }
+        }
+
+        // Clamp values to valid range (1-30)
+        return new PlayerAttributes(
+            Math.Clamp(Attributes.Might + totalStatModifiers.Might + weaponBonuses.Might, 1, 30),
+            Math.Clamp(Attributes.Fortitude + totalStatModifiers.Fortitude + weaponBonuses.Fortitude, 1, 30),
+            Math.Clamp(Attributes.Will + totalStatModifiers.Will + weaponBonuses.Will, 1, 30),
+            Math.Clamp(Attributes.Wits + totalStatModifiers.Wits + weaponBonuses.Wits, 1, 30),
+            Math.Clamp(Attributes.Finesse + totalStatModifiers.Finesse + weaponBonuses.Finesse, 1, 30)
+        );
+    }
+
+    /// <summary>
+    /// Gets the total initiative penalty from all equipped items.
+    /// </summary>
+    /// <returns>Total initiative penalty (should be 0 or negative).</returns>
+    public int GetTotalInitiativePenalty()
+    {
+        var penalty = 0;
+        foreach (var (_, item) in Equipment)
+        {
+            penalty += item.InitiativePenalty;
+        }
+        return penalty;
+    }
+
+    /// <summary>
+    /// Gets the total defense bonus from all equipped armor and items.
+    /// </summary>
+    /// <returns>Sum of all defense bonuses.</returns>
+    public int GetTotalDefenseBonus()
+    {
+        var bonus = 0;
+        foreach (var (_, item) in Equipment)
+        {
+            bonus += item.DefenseBonus;
+            bonus += item.StatModifiers.Defense;
+        }
+        return bonus;
+    }
+
+    /// <summary>
     /// Returns a string representation of this player.
     /// </summary>
     /// <returns>A string containing the player name and current/max health.</returns>

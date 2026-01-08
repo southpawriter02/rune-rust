@@ -65,4 +65,39 @@ public class StatModifiersTests
         Assert.That(result.Might, Is.EqualTo(2));
         Assert.That(result.Will, Is.EqualTo(3));
     }
+
+    [Test]
+    public void HasModifiers_WithNonZeroValue_ReturnsTrue()
+    {
+        var modifiers = new StatModifiers { Might = 2 };
+
+        Assert.That(modifiers.HasModifiers, Is.True);
+    }
+
+    [Test]
+    public void HasModifiers_WithAllZeros_ReturnsFalse()
+    {
+        var modifiers = StatModifiers.None;
+
+        Assert.That(modifiers.HasModifiers, Is.False);
+    }
+
+    [Test]
+    public void ToString_WithModifiers_FormatsCorrectly()
+    {
+        var modifiers = new StatModifiers { Might = 2, Defense = -1 };
+
+        var result = modifiers.ToString();
+
+        Assert.That(result, Does.Contain("MIG:+2"));
+        Assert.That(result, Does.Contain("DEF:-1"));
+    }
+
+    [Test]
+    public void ToString_WithNoModifiers_ReturnsNone()
+    {
+        var modifiers = StatModifiers.None;
+
+        Assert.That(modifiers.ToString(), Is.EqualTo("None"));
+    }
 }
