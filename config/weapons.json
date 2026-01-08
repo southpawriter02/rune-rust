@@ -1,0 +1,83 @@
+{
+  "$schema": "weapons.schema.json",
+  "weapons": [
+    {
+      "id": "rusty_sword",
+      "name": "Rusty Sword",
+      "description": "An old sword covered in rust. Still sharp enough to cut.",
+      "weaponType": "Sword",
+      "damageDice": "1d8",
+      "value": 5
+    },
+    {
+      "id": "iron_sword",
+      "name": "Iron Sword",
+      "description": "A standard iron sword. Reliable and balanced.",
+      "weaponType": "Sword",
+      "damageDice": "1d8",
+      "value": 50
+    },
+    {
+      "id": "steel_sword",
+      "name": "Steel Sword",
+      "description": "A finely crafted steel sword with excellent balance.",
+      "weaponType": "Sword",
+      "damageDice": "1d8+1",
+      "value": 150
+    },
+    {
+      "id": "battle_axe",
+      "name": "Battle Axe",
+      "description": "A heavy two-handed axe. Hits hard but swings slow.",
+      "weaponType": "Axe",
+      "damageDice": "1d10",
+      "attackModifier": -1,
+      "value": 75
+    },
+    {
+      "id": "great_axe",
+      "name": "Great Axe",
+      "description": "An enormous axe capable of devastating blows.",
+      "weaponType": "Axe",
+      "damageDice": "2d6",
+      "attackModifier": -2,
+      "value": 200
+    },
+    {
+      "id": "steel_dagger",
+      "name": "Steel Dagger",
+      "description": "A quick, precise blade favored by rogues.",
+      "weaponType": "Dagger",
+      "damageDice": "1d4",
+      "statBonuses": { "finesse": 2 },
+      "value": 40
+    },
+    {
+      "id": "assassins_blade",
+      "name": "Assassin's Blade",
+      "description": "A wickedly sharp dagger perfect for striking vital points.",
+      "weaponType": "Dagger",
+      "damageDice": "1d4+2",
+      "statBonuses": { "finesse": 3 },
+      "value": 250
+    },
+    {
+      "id": "oak_staff",
+      "name": "Oak Staff",
+      "description": "A sturdy wooden staff imbued with minor magic.",
+      "weaponType": "Staff",
+      "damageDice": "1d6",
+      "statBonuses": { "will": 2 },
+      "value": 45
+    },
+    {
+      "id": "arcane_staff",
+      "name": "Arcane Staff",
+      "description": "A staff crackling with magical energy.",
+      "weaponType": "Staff",
+      "damageDice": "1d6+1",
+      "statBonuses": { "will": 4 },
+      "value": 300
+    }
+  ]
+}

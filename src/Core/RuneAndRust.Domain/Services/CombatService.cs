@@ -44,6 +44,16 @@ public record MonsterAttackResult(
 /// </remarks>
 public class CombatService
 {
+    /// <summary>
+    /// Default damage dice for unarmed combat.
+    /// </summary>
+    public static readonly DicePool UnarmedDamageDice = DicePool.D4();
+
+    /// <summary>
+    /// Default damage dice when no weapon system is active (fallback).
+    /// </summary>
+    public static readonly DicePool DefaultWeaponDice = DicePool.D6();
+
     private readonly Random _random = new();
     private readonly ILogger<CombatService> _logger;
 
@@ -123,17 +133,23 @@ public class CombatService
     private (DiceRollResult AttackRoll, int AttackTotal, bool IsHit, bool IsCriticalHit, bool IsCriticalMiss, DiceRollResult? DamageRoll, int DamageDealt)
         ResolvePlayerAttack(Player player, Monster monster, IDiceService diceService)
     {
+        // Get weapon bonuses
+        var weaponBonuses = GetWeaponBonuses(player);
+        var weaponAttackMod = weaponBonuses.AttackModifier;
+
+        // Calculate effective Finesse (base + weapon bonus)
+        var effectiveFinesse = player.Attributes.Finesse + weaponBonuses.Finesse;
+
         var attackRoll = diceService.Roll(DicePool.D10());
-        var attackModifier = player.Attributes.Finesse;
-        var attackTotal = attackRoll.Total + attackModifier;
+        var attackTotal = attackRoll.Total + effectiveFinesse + weaponAttackMod;
 
         var isCriticalHit = attackRoll.IsNaturalMax;
         var isCriticalMiss = attackRoll.IsNaturalOne;
         var isHit = !isCriticalMiss && (attackTotal >= monster.Stats.Defense || isCriticalHit);
 
         _logger.LogDebug(
-            "Player attack: [{Roll}] + {Mod} = {Total} vs DEF {Def} -> {Result}",
-            attackRoll.Rolls[0], attackModifier, attackTotal, monster.Stats.Defense,
+            "Player attack: [{Roll}] + {Finesse} + {WeaponMod} = {Total} vs DEF {Def} -> {Result}",
+            attackRoll.Rolls[0], effectiveFinesse, weaponAttackMod, attackTotal, monster.Stats.Defense,
             isCriticalHit ? "CRITICAL HIT!" : isCriticalMiss ? "CRITICAL MISS!" : isHit ? "Hit" : "Miss");
 
         DiceRollResult? damageRoll = null;
@@ -149,13 +165,15 @@ public class CombatService
             }
 
             damageRoll = diceService.Roll(damagePool);
-            var mightBonus = player.Attributes.Might;
-            var rawDamage = damageRoll.Value.Total + mightBonus;
+
+            // Calculate effective Might (base + weapon bonus)
+            var effectiveMight = player.Attributes.Might + weaponBonuses.Might;
+            var rawDamage = damageRoll.Value.Total + effectiveMight;
             var armorReduction = monster.Stats.Defense / 2;
             damageDealt = Math.Max(1, rawDamage - armorReduction);
 
             _logger.LogDebug("Player damage: [{Rolls}] + {Might} = {Raw} - {Armor} = {Final}",
-                string.Join(",", damageRoll.Value.Rolls), mightBonus, rawDamage, armorReduction, damageDealt);
+                string.Join(",", damageRoll.Value.Rolls), effectiveMight, rawDamage, armorReduction, damageDealt);
         }
 
         return (attackRoll, attackTotal, isHit, isCriticalHit, isCriticalMiss, damageRoll, damageDealt);
@@ -201,7 +219,84 @@ public class CombatService
             damageRoll, damageDealt, player.IsDead);
     }
 
-    private DicePool GetPlayerDamagePool(Player player) => DefaultPlayerDamagePool;
+    /// <summary>
+    /// Gets the damage dice pool for a player based on their equipped weapon.
+    /// </summary>
+    /// <param name="player">The player to get damage dice for.</param>
+    /// <returns>The appropriate DicePool for the player's attack.</returns>
+    /// <remarks>
+    /// Priority:
+    /// 1. Equipped weapon's DamageDice
+    /// 2. UnarmedDamageDice (1d4) if no weapon equipped
+    /// </remarks>
+    public DicePool GetPlayerDamageDice(Player player)
+    {
+        ArgumentNullException.ThrowIfNull(player);
+
+        var equippedWeapon = player.GetEquippedItem(EquipmentSlot.Weapon);
+
+        if (equippedWeapon == null)
+        {
+            _logger.LogDebug("Player {Player} has no weapon equipped, using unarmed dice: {Dice}",
+                player.Name, UnarmedDamageDice);
+            return UnarmedDamageDice;
+        }
+
+        var weaponDice = equippedWeapon.GetDamageDicePool();
+        if (weaponDice == null)
+        {
+            _logger.LogWarning(
+                "Equipped weapon {Weapon} has no damage dice, using default: {Dice}",
+                equippedWeapon.Name, DefaultWeaponDice);
+            return DefaultWeaponDice;
+        }
+
+        _logger.LogDebug("Player {Player} using weapon {Weapon} with dice: {Dice}",
+            player.Name, equippedWeapon.Name, weaponDice);
+
+        return weaponDice.Value;
+    }
+
+    /// <summary>
+    /// Gets the equipped weapon's name for combat messages.
+    /// </summary>
+    /// <param name="player">The player to check.</param>
+    /// <returns>The weapon name, or "fists" if unarmed.</returns>
+    public string GetPlayerWeaponName(Player player)
+    {
+        ArgumentNullException.ThrowIfNull(player);
+
+        var weapon = player.GetEquippedItem(EquipmentSlot.Weapon);
+        return weapon?.Name ?? "fists";
+    }
+
+    /// <summary>
+    /// Gets the attack roll modifier from the player's equipped weapon.
+    /// </summary>
+    /// <param name="player">The player to check.</param>
+    /// <returns>The attack modifier from weapon bonuses.</returns>
+    public int GetWeaponAttackModifier(Player player)
+    {
+        ArgumentNullException.ThrowIfNull(player);
+
+        var weapon = player.GetEquippedItem(EquipmentSlot.Weapon);
+        return weapon?.WeaponBonuses.AttackModifier ?? 0;
+    }
+
+    /// <summary>
+    /// Gets total attribute bonuses from the player's equipped weapon.
+    /// </summary>
+    /// <param name="player">The player to check.</param>
+    /// <returns>The weapon bonuses, or None if no weapon equipped.</returns>
+    public WeaponBonuses GetWeaponBonuses(Player player)
+    {
+        ArgumentNullException.ThrowIfNull(player);
+
+        var weapon = player.GetEquippedItem(EquipmentSlot.Weapon);
+        return weapon?.WeaponBonuses ?? WeaponBonuses.None;
+    }
+
+    private DicePool GetPlayerDamagePool(Player player) => GetPlayerDamageDice(player);
     private DicePool GetMonsterDamagePool(Monster monster) => DefaultMonsterDamagePool;
 
     private void LogCombatRoundResult(CombatRoundResult result, string playerName, string monsterName)

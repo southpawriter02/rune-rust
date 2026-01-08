@@ -1,5 +1,6 @@
 using RuneAndRust.Domain.Enums;
 using RuneAndRust.Domain.Interfaces;
+using RuneAndRust.Domain.ValueObjects;
 
 namespace RuneAndRust.Domain.Entities;
 
@@ -67,6 +68,49 @@ public class Item : IEntity
     public bool IsEquippable => EquipmentSlot.HasValue;
 
     /// <summary>
+    /// Gets the damage dice notation for this weapon (e.g., "1d8", "2d6").
+    /// </summary>
+    /// <remarks>
+    /// Only applicable to weapon items. Uses the DicePool.Parse() format from v0.0.5.
+    /// Returns null for non-weapon items.
+    /// </remarks>
+    public string? DamageDice { get; private set; }
+
+    /// <summary>
+    /// Gets the type of weapon this item is, or null if not a weapon.
+    /// </summary>
+    /// <remarks>
+    /// Weapon type affects combat characteristics and available bonuses.
+    /// Items with WeaponType must also have EquipmentSlot.Weapon.
+    /// </remarks>
+    public WeaponType? WeaponType { get; private set; }
+
+    /// <summary>
+    /// Gets the stat bonuses provided by this weapon when equipped.
+    /// </summary>
+    /// <remarks>
+    /// Bonuses are applied while the weapon is equipped and removed when unequipped.
+    /// </remarks>
+    public WeaponBonuses WeaponBonuses { get; private set; } = WeaponBonuses.None;
+
+    /// <summary>
+    /// Gets whether this item is a weapon.
+    /// </summary>
+    public bool IsWeapon => WeaponType.HasValue && EquipmentSlot == Enums.EquipmentSlot.Weapon;
+
+    /// <summary>
+    /// Gets the parsed damage dice pool for combat calculations.
+    /// </summary>
+    /// <returns>The DicePool for this weapon, or null if not a weapon or no damage dice.</returns>
+    public DicePool? GetDamageDicePool()
+    {
+        if (string.IsNullOrWhiteSpace(DamageDice))
+            return null;
+
+        return DicePool.Parse(DamageDice);
+    }
+
+    /// <summary>
     /// Private parameterless constructor for Entity Framework Core.
     /// </summary>
     private Item()
@@ -86,10 +130,16 @@ public class Item : IEntity
     /// <param name="effectValue">The magnitude of the effect (default is 0).</param>
     /// <param name="effectDuration">The duration of the effect in turns (default is 0).</param>
     /// <param name="equipmentSlot">The equipment slot this item can be equipped to, or null if not equippable.</param>
+    /// <param name="damageDice">The damage dice notation for weapons (e.g., "1d8").</param>
+    /// <param name="weaponType">The type of weapon, or null if not a weapon.</param>
+    /// <param name="weaponBonuses">The stat bonuses provided by this weapon.</param>
     /// <exception cref="ArgumentNullException">Thrown when name or description is null.</exception>
     public Item(string name, string description, ItemType type, int value = 0,
                 ItemEffect effect = ItemEffect.None, int effectValue = 0, int effectDuration = 0,
-                EquipmentSlot? equipmentSlot = null)
+                EquipmentSlot? equipmentSlot = null,
+                string? damageDice = null,
+                WeaponType? weaponType = null,
+                WeaponBonuses? weaponBonuses = null)
     {
         Id = Guid.NewGuid();
         Name = name ?? throw new ArgumentNullException(nameof(name));
@@ -100,6 +150,9 @@ public class Item : IEntity
         EffectValue = effectValue;
         EffectDuration = effectDuration;
         EquipmentSlot = equipmentSlot;
+        DamageDice = damageDice;
+        WeaponType = weaponType;
+        WeaponBonuses = weaponBonuses ?? WeaponBonuses.None;
     }
 
     /// <summary>
@@ -111,7 +164,68 @@ public class Item : IEntity
         "An old sword covered in rust. Still sharp enough to cut.",
         ItemType.Weapon,
         value: 5,
-        equipmentSlot: Enums.EquipmentSlot.Weapon
+        equipmentSlot: Enums.EquipmentSlot.Weapon,
+        damageDice: "1d8",
+        weaponType: Enums.WeaponType.Sword
+    );
+
+    /// <summary>
+    /// Factory method to create an iron sword weapon.
+    /// </summary>
+    /// <returns>A new iron sword item.</returns>
+    public static Item CreateIronSword() => new(
+        "Iron Sword",
+        "A standard iron sword. Reliable and balanced.",
+        ItemType.Weapon,
+        value: 50,
+        equipmentSlot: Enums.EquipmentSlot.Weapon,
+        damageDice: "1d8",
+        weaponType: Enums.WeaponType.Sword
+    );
+
+    /// <summary>
+    /// Factory method to create a battle axe weapon.
+    /// </summary>
+    /// <returns>A new battle axe item with attack penalty.</returns>
+    public static Item CreateBattleAxe() => new(
+        "Battle Axe",
+        "A heavy two-handed axe. Hits hard but swings slow.",
+        ItemType.Weapon,
+        value: 75,
+        equipmentSlot: Enums.EquipmentSlot.Weapon,
+        damageDice: "1d10",
+        weaponType: Enums.WeaponType.Axe,
+        weaponBonuses: WeaponBonuses.ForAttack(-1)
+    );
+
+    /// <summary>
+    /// Factory method to create a steel dagger weapon.
+    /// </summary>
+    /// <returns>A new steel dagger item with Finesse bonus.</returns>
+    public static Item CreateSteelDagger() => new(
+        "Steel Dagger",
+        "A quick, precise blade favored by rogues.",
+        ItemType.Weapon,
+        value: 40,
+        equipmentSlot: Enums.EquipmentSlot.Weapon,
+        damageDice: "1d4",
+        weaponType: Enums.WeaponType.Dagger,
+        weaponBonuses: WeaponBonuses.ForFinesse(2)
+    );
+
+    /// <summary>
+    /// Factory method to create an oak staff weapon.
+    /// </summary>
+    /// <returns>A new oak staff item with Will bonus.</returns>
+    public static Item CreateOakStaff() => new(
+        "Oak Staff",
+        "A sturdy wooden staff imbued with minor magic.",
+        ItemType.Weapon,
+        value: 45,
+        equipmentSlot: Enums.EquipmentSlot.Weapon,
+        damageDice: "1d6",
+        weaponType: Enums.WeaponType.Staff,
+        weaponBonuses: WeaponBonuses.ForWill(2)
     );
 
     /// <summary>
