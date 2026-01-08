@@ -113,6 +113,53 @@ public interface IGameRenderer
     Task RenderTurnEndChangesAsync(TurnEndResult changes, CancellationToken ct = default);
 
     /// <summary>
+    /// Renders a dice roll result with visual formatting.
+    /// </summary>
+    /// <param name="roll">The dice roll result to display.</param>
+    /// <param name="ct">Cancellation token for async operation.</param>
+    /// <remarks>
+    /// Display should include:
+    /// - Dice notation used
+    /// - Individual die results (color-coded)
+    /// - Explosions if any occurred
+    /// - Modifier and final total
+    /// - Descriptor flavor text if applicable
+    /// </remarks>
+    Task RenderDiceRollAsync(DiceRollDto roll, CancellationToken ct = default);
+
+    /// <summary>
+    /// Renders a skill check result with full breakdown.
+    /// </summary>
+    /// <param name="result">The skill check result to display.</param>
+    /// <param name="ct">Cancellation token for async operation.</param>
+    /// <remarks>
+    /// Display should include:
+    /// - Skill name and linked attribute
+    /// - Dice roll breakdown
+    /// - Attribute bonus calculation
+    /// - Total vs Difficulty Class
+    /// - Success/Failure with margin
+    /// - Critical result highlighting
+    /// </remarks>
+    Task RenderSkillCheckAsync(SkillCheckResultDto result, CancellationToken ct = default);
+
+    /// <summary>
+    /// Renders a full combat round result with dice breakdown.
+    /// </summary>
+    /// <param name="result">The combat round result to display.</param>
+    /// <param name="ct">Cancellation token for async operation.</param>
+    /// <remarks>
+    /// Display should include:
+    /// - Attack roll: dice + modifier vs defense
+    /// - Hit/Miss determination with critical highlighting
+    /// - Damage roll (if hit): weapon dice + modifier
+    /// - Actual damage dealt after armor
+    /// - Monster counterattack (same format)
+    /// - Round summary (HP changes)
+    /// </remarks>
+    Task RenderCombatRoundAsync(CombatRoundResultDto result, CancellationToken ct = default);
+
+    /// <summary>
     /// Clears the screen or display area.
     /// </summary>
     /// <param name="ct">Cancellation token for async operation.</param>

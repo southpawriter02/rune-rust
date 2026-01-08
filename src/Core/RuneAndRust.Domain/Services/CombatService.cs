@@ -1,16 +1,19 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using RuneAndRust.Domain.Interfaces;
 using RuneAndRust.Domain.Entities;
+using RuneAndRust.Domain.Enums;
+using RuneAndRust.Domain.ValueObjects;
 
 namespace RuneAndRust.Domain.Services;
 
 /// <summary>
-/// Represents the outcome of a single round of combat.
+/// Represents the outcome of a single round of combat (legacy simple result).
 /// </summary>
-/// <param name="DamageDealt">The amount of damage the player dealt to the monster.</param>
-/// <param name="DamageReceived">The amount of damage the player received from the monster.</param>
-/// <param name="MonsterDefeated">True if the monster was defeated this round.</param>
-/// <param name="PlayerDefeated">True if the player was defeated this round.</param>
+/// <remarks>
+/// Maintained for backwards compatibility. Consider using <see cref="CombatRoundResult"/>
+/// for detailed dice breakdown.
+/// </remarks>
 public record CombatResult(
     int DamageDealt,
     int DamageReceived,
@@ -19,232 +22,344 @@ public record CombatResult(
 );
 
 /// <summary>
-/// Represents the outcome of a monster's attack on a player.
+/// Represents the outcome of a monster's attack on a player (legacy simple result).
 /// </summary>
-/// <param name="Damage">The amount of damage dealt to the player.</param>
-/// <param name="PlayerDefeated">True if the player was defeated by this attack.</param>
 public record MonsterAttackResult(
     int Damage,
     bool PlayerDefeated
 );
 
 /// <summary>
-/// Handles combat resolution between players and monsters.
+/// Handles combat resolution between players and monsters using dice-based mechanics.
 /// </summary>
 /// <remarks>
-/// The CombatService implements a turn-based combat system where the player
-/// always attacks first. Damage is calculated based on attacker's attack stat
-/// versus defender's defense stat, with some random variance applied.
+/// <para>The CombatService implements a turn-based combat system where the player
+/// always attacks first. Attack and damage are determined by dice rolls:</para>
+/// <list type="bullet">
+///   <item><description>Attack: 1d10 + Finesse vs target Defense</description></item>
+///   <item><description>Damage: weapon dice (default 1d6) + Might - armor</description></item>
+///   <item><description>Critical hit on natural 10: always hits, double damage dice</description></item>
+///   <item><description>Critical miss on natural 1: always misses</description></item>
+/// </list>
 /// </remarks>
 public class CombatService
 {
-    /// <summary>
-    /// Random number generator for damage variance calculations.
-    /// </summary>
     private readonly Random _random = new();
-
-    /// <summary>
-    /// Logger instance for combat diagnostics.
-    /// </summary>
     private readonly ILogger<CombatService> _logger;
+
+    private static readonly DicePool DefaultPlayerDamagePool = DicePool.D6();
+    private static readonly DicePool DefaultMonsterDamagePool = DicePool.D6();
 
     /// <summary>
     /// Creates a new combat service instance.
     /// </summary>
-    /// <param name="logger">Optional logger for combat diagnostics. If null, a no-op logger is used.</param>
     public CombatService(ILogger<CombatService>? logger = null)
     {
         _logger = logger ?? NullLogger<CombatService>.Instance;
         _logger.LogDebug("CombatService initialized");
     }
 
+    // ===== DICE-BASED COMBAT (NEW) =====
+
     /// <summary>
-    /// Resolves a single round of combat between a player and a monster.
+    /// Resolves a single round of combat using dice-based mechanics.
     /// </summary>
     /// <param name="player">The player engaging in combat.</param>
     /// <param name="monster">The monster being fought.</param>
-    /// <returns>A <see cref="CombatResult"/> containing the outcome of the combat round.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when player or monster is null.</exception>
-    /// <remarks>
-    /// Combat proceeds as follows:
-    /// <list type="number">
-    /// <item>Player attacks the monster, dealing damage based on attack vs defense.</item>
-    /// <item>If the monster survives, it counterattacks the player.</item>
-    /// <item>The result indicates damage dealt/received and whether either combatant was defeated.</item>
-    /// </list>
-    /// </remarks>
-    public CombatResult ResolveCombatRound(Player player, Monster monster)
+    /// <param name="diceService">The dice rolling service.</param>
+    /// <returns>A <see cref="CombatRoundResult"/> with detailed dice breakdown.</returns>
+    public CombatRoundResult ResolveCombatRound(Player player, Monster monster, IDiceService diceService)
     {
         ArgumentNullException.ThrowIfNull(player);
         ArgumentNullException.ThrowIfNull(monster);
+        ArgumentNullException.ThrowIfNull(diceService);
 
         _logger.LogDebug(
-            "Resolving combat round - Player: {PlayerName} (HP:{PlayerHP}, ATK:{PlayerATK}, DEF:{PlayerDEF}) vs " +
-            "Monster: {MonsterName} (HP:{MonsterHP}, ATK:{MonsterATK}, DEF:{MonsterDEF})",
-            player.Name,
-            player.Health,
-            player.Stats.Attack,
-            player.Stats.Defense,
-            monster.Name,
-            monster.Health,
-            monster.Stats.Attack,
-            monster.Stats.Defense);
+            "Resolving dice-based combat - Player: {PlayerName} (HP:{HP}, Finesse:{Fin}, Might:{Might}) vs " +
+            "Monster: {MonsterName} (HP:{MHP}, ATK:{ATK}, DEF:{DEF})",
+            player.Name, player.Health, player.Attributes.Finesse, player.Attributes.Might,
+            monster.Name, monster.Health, monster.Stats.Attack, monster.Stats.Defense);
 
-        // Player attacks first
-        var playerDamage = CalculateDamage(player.Stats.Attack, monster.Stats.Defense);
-        var actualPlayerDamage = monster.TakeDamage(playerDamage);
-        _logger.LogDebug(
-            "Player attack: Calculated {CalculatedDamage}, Actual {ActualDamage} (Monster DEF: {MonsterDef})",
-            playerDamage,
-            actualPlayerDamage,
-            monster.Stats.Defense);
+        // Player Attack Phase
+        var playerAttack = ResolvePlayerAttack(player, monster, diceService);
 
-        var monsterDamage = 0;
-        var actualMonsterDamage = 0;
+        // Apply player damage
+        if (playerAttack.IsHit && playerAttack.DamageDealt > 0)
+        {
+            monster.TakeDamage(playerAttack.DamageDealt);
+            _logger.LogDebug("Player dealt {Damage} to {Monster} (HP: {HP})",
+                playerAttack.DamageDealt, monster.Name, monster.Health);
+        }
 
-        // Monster attacks if still alive
+        // Monster Counterattack Phase
+        MonsterCounterAttackResult? monsterCounterAttack = null;
         if (monster.IsAlive)
         {
-            monsterDamage = CalculateDamage(monster.Stats.Attack, player.Stats.Defense);
-            actualMonsterDamage = player.TakeDamage(monsterDamage);
-            _logger.LogDebug(
-                "Monster counterattack: Calculated {CalculatedDamage}, Actual {ActualDamage} (Player DEF: {PlayerDef})",
-                monsterDamage,
-                actualMonsterDamage,
-                player.Stats.Defense);
-        }
-        else
-        {
-            _logger.LogDebug("Monster defeated before counterattack");
+            monsterCounterAttack = ResolveMonsterCounterAttack(monster, player, diceService);
+            if (monsterCounterAttack.IsHit && monsterCounterAttack.DamageDealt > 0)
+            {
+                player.TakeDamage(monsterCounterAttack.DamageDealt);
+                _logger.LogDebug("{Monster} dealt {Damage} to {Player} (HP: {HP})",
+                    monster.Name, monsterCounterAttack.DamageDealt, player.Name, player.Health);
+            }
         }
 
-        var result = new CombatResult(
-            DamageDealt: actualPlayerDamage,
-            DamageReceived: actualMonsterDamage,
-            MonsterDefeated: monster.IsDefeated,
-            PlayerDefeated: player.IsDead
-        );
+        var result = new CombatRoundResult(
+            attackRoll: playerAttack.AttackRoll,
+            attackTotal: playerAttack.AttackTotal,
+            isHit: playerAttack.IsHit,
+            isCriticalHit: playerAttack.IsCriticalHit,
+            isCriticalMiss: playerAttack.IsCriticalMiss,
+            damageRoll: playerAttack.DamageRoll,
+            damageDealt: playerAttack.DamageDealt,
+            monsterCounterAttack: monsterCounterAttack,
+            monsterDefeated: monster.IsDefeated,
+            playerDefeated: player.IsDead);
 
-        _logger.LogInformation(
-            "Combat round complete - Dealt: {DamageDealt}, Received: {DamageReceived}, " +
-            "MonsterDefeated: {MonsterDefeated}, PlayerDefeated: {PlayerDefeated}",
-            result.DamageDealt,
-            result.DamageReceived,
-            result.MonsterDefeated,
-            result.PlayerDefeated);
-
+        LogCombatRoundResult(result, player.Name, monster.Name);
         return result;
     }
 
-    /// <summary>
-    /// Calculates the damage dealt based on attack and defense values.
-    /// </summary>
-    /// <param name="attack">The attacker's attack stat.</param>
-    /// <param name="defense">The defender's defense stat.</param>
-    /// <returns>The final damage amount (minimum 1).</returns>
-    /// <remarks>
-    /// Damage formula: max(1, attack - defense) + random(-2 to +2).
-    /// The final result is always at least 1 damage.
-    /// </remarks>
-    private int CalculateDamage(int attack, int defense)
+    private (DiceRollResult AttackRoll, int AttackTotal, bool IsHit, bool IsCriticalHit, bool IsCriticalMiss, DiceRollResult? DamageRoll, int DamageDealt)
+        ResolvePlayerAttack(Player player, Monster monster, IDiceService diceService)
     {
-        // Simple damage calculation with some randomness
-        var baseDamage = Math.Max(1, attack - defense);
-        var variance = _random.Next(-2, 3); // -2 to +2 variance
-        var finalDamage = Math.Max(1, baseDamage + variance);
+        var attackRoll = diceService.Roll(DicePool.D10());
+        var attackModifier = player.Attributes.Finesse;
+        var attackTotal = attackRoll.Total + attackModifier;
+
+        var isCriticalHit = attackRoll.IsNaturalMax;
+        var isCriticalMiss = attackRoll.IsNaturalOne;
+        var isHit = !isCriticalMiss && (attackTotal >= monster.Stats.Defense || isCriticalHit);
 
         _logger.LogDebug(
-            "Damage calculation: ATK {Attack} - DEF {Defense} = Base {BaseDamage}, Variance {Variance}, Final {FinalDamage}",
-            attack,
-            defense,
-            baseDamage,
-            variance,
-            finalDamage);
+            "Player attack: [{Roll}] + {Mod} = {Total} vs DEF {Def} -> {Result}",
+            attackRoll.Rolls[0], attackModifier, attackTotal, monster.Stats.Defense,
+            isCriticalHit ? "CRITICAL HIT!" : isCriticalMiss ? "CRITICAL MISS!" : isHit ? "Hit" : "Miss");
 
-        return finalDamage;
-    }
+        DiceRollResult? damageRoll = null;
+        int damageDealt = 0;
 
-    /// <summary>
-    /// Resolves a monster's attack against a player.
-    /// </summary>
-    /// <param name="monster">The attacking monster.</param>
-    /// <param name="player">The player being attacked.</param>
-    /// <returns>A <see cref="MonsterAttackResult"/> containing the damage dealt.</returns>
-    public MonsterAttackResult MonsterAttack(Monster monster, Player player)
-    {
-        ArgumentNullException.ThrowIfNull(monster);
-        ArgumentNullException.ThrowIfNull(player);
-
-        if (!monster.IsAlive)
+        if (isHit)
         {
-            _logger.LogDebug("Monster is dead, cannot attack");
-            return new MonsterAttackResult(0, false);
+            var damagePool = GetPlayerDamagePool(player);
+            if (isCriticalHit)
+            {
+                damagePool = damagePool with { Count = damagePool.Count * 2 };
+                _logger.LogDebug("Critical hit! Damage dice doubled to {Pool}", damagePool);
+            }
+
+            damageRoll = diceService.Roll(damagePool);
+            var mightBonus = player.Attributes.Might;
+            var rawDamage = damageRoll.Value.Total + mightBonus;
+            var armorReduction = monster.Stats.Defense / 2;
+            damageDealt = Math.Max(1, rawDamage - armorReduction);
+
+            _logger.LogDebug("Player damage: [{Rolls}] + {Might} = {Raw} - {Armor} = {Final}",
+                string.Join(",", damageRoll.Value.Rolls), mightBonus, rawDamage, armorReduction, damageDealt);
         }
 
-        var damage = CalculateDamage(monster.Stats.Attack, player.Stats.Defense);
-        var actualDamage = player.TakeDamage(damage);
+        return (attackRoll, attackTotal, isHit, isCriticalHit, isCriticalMiss, damageRoll, damageDealt);
+    }
+
+    private MonsterCounterAttackResult ResolveMonsterCounterAttack(Monster monster, Player player, IDiceService diceService)
+    {
+        var attackRoll = diceService.Roll(DicePool.D10());
+        var attackModifier = monster.Stats.Attack;
+        var attackTotal = attackRoll.Total + attackModifier;
+
+        var isCriticalHit = attackRoll.IsNaturalMax;
+        var isCriticalMiss = attackRoll.IsNaturalOne;
+        var isHit = !isCriticalMiss && (attackTotal >= player.Stats.Defense || isCriticalHit);
 
         _logger.LogDebug(
-            "Monster attack: {MonsterName} dealt {Damage} damage to {PlayerName}",
-            monster.Name, actualDamage, player.Name);
+            "Monster attack: [{Roll}] + {Mod} = {Total} vs DEF {Def} -> {Result}",
+            attackRoll.Rolls[0], attackModifier, attackTotal, player.Stats.Defense,
+            isCriticalHit ? "CRITICAL HIT!" : isCriticalMiss ? "CRITICAL MISS!" : isHit ? "Hit" : "Miss");
 
-        return new MonsterAttackResult(actualDamage, player.IsDead);
+        DiceRollResult? damageRoll = null;
+        int damageDealt = 0;
+
+        if (isHit)
+        {
+            var damagePool = GetMonsterDamagePool(monster);
+            if (isCriticalHit)
+            {
+                damagePool = damagePool with { Count = damagePool.Count * 2 };
+            }
+
+            damageRoll = diceService.Roll(damagePool);
+            var rawDamage = damageRoll.Value.Total;
+            var armorReduction = player.Stats.Defense / 2;
+            damageDealt = Math.Max(1, rawDamage - armorReduction);
+
+            _logger.LogDebug("Monster damage: [{Rolls}] = {Raw} - {Armor} = {Final}",
+                string.Join(",", damageRoll.Value.Rolls), rawDamage, armorReduction, damageDealt);
+        }
+
+        return new MonsterCounterAttackResult(
+            attackRoll, attackTotal, isHit, isCriticalHit, isCriticalMiss,
+            damageRoll, damageDealt, player.IsDead);
+    }
+
+    private DicePool GetPlayerDamagePool(Player player) => DefaultPlayerDamagePool;
+    private DicePool GetMonsterDamagePool(Monster monster) => DefaultMonsterDamagePool;
+
+    private void LogCombatRoundResult(CombatRoundResult result, string playerName, string monsterName)
+    {
+        var attackResult = result.IsCriticalHit ? "Critical Hit" :
+                          result.IsCriticalMiss ? "Critical Miss" :
+                          result.IsHit ? "Hit" : "Miss";
+
+        _logger.LogInformation(
+            "Combat: {Player} {Result} [{Roll}]+{Mod}={Total}, Dealt:{Dealt}, Received:{Recv}, MonsterDef:{MD}, PlayerDef:{PD}",
+            playerName, attackResult, result.AttackRoll.Rolls[0],
+            result.AttackTotal - result.AttackRoll.Total, result.AttackTotal,
+            result.DamageDealt, result.DamageReceived, result.MonsterDefeated, result.PlayerDefeated);
     }
 
     /// <summary>
-    /// Generates a description of a monster's attack.
+    /// Generates a description of a dice-based combat round.
     /// </summary>
-    /// <param name="result">The attack result.</param>
-    /// <param name="monsterName">The name of the monster.</param>
-    /// <param name="playerName">The name of the player.</param>
-    /// <returns>A description of the attack.</returns>
-    public string GetMonsterAttackDescription(MonsterAttackResult result, string monsterName, string playerName)
+    public string GetCombatDescription(CombatRoundResult result, string playerName, string monsterName)
     {
-        if (result.Damage == 0)
-            return $"The {monsterName} misses!";
-
-        var description = $"The {monsterName} strikes back for {result.Damage} damage!";
-
-        if (result.PlayerDefeated)
-            description += $" {playerName} has fallen in battle...";
-
-        return description;
-    }
-
-    /// <summary>
-    /// Generates a human-readable description of a combat round's outcome.
-    /// </summary>
-    /// <param name="result">The combat result to describe.</param>
-    /// <param name="playerName">The name of the player for the description.</param>
-    /// <param name="monsterName">The name of the monster for the description.</param>
-    /// <returns>A multi-line string describing what happened during combat.</returns>
-    public string GetCombatDescription(CombatResult result, string playerName, string monsterName)
-    {
-        _logger.LogDebug(
-            "Generating combat description for {PlayerName} vs {MonsterName}",
-            playerName,
-            monsterName);
-
         var lines = new List<string>();
 
-        if (result.DamageDealt > 0)
+        if (result.IsCriticalHit)
         {
-            lines.Add($"{playerName} attacks the {monsterName} for {result.DamageDealt} damage!");
+            lines.Add($"{playerName} lands a CRITICAL HIT on the {monsterName}!");
+            if (result.DamageDealt > 0)
+                lines.Add($"Rolling double damage dice: {result.DamageDealt} damage!");
+        }
+        else if (result.IsCriticalMiss)
+        {
+            lines.Add($"{playerName} fumbles! The attack goes wide.");
+        }
+        else if (result.IsHit)
+        {
+            lines.Add($"{playerName} hits the {monsterName} for {result.DamageDealt} damage!");
+        }
+        else
+        {
+            lines.Add($"{playerName} swings at the {monsterName} but misses!");
         }
 
         if (result.MonsterDefeated)
         {
             lines.Add($"The {monsterName} has been defeated!");
         }
-        else if (result.DamageReceived > 0)
+        else if (result.MonsterCounterAttack != null)
         {
-            lines.Add($"The {monsterName} strikes back for {result.DamageReceived} damage!");
+            var counter = result.MonsterCounterAttack;
+            if (counter.IsCriticalHit)
+            {
+                lines.Add($"The {monsterName} lands a CRITICAL HIT!");
+                lines.Add($"Rolling double damage dice: {counter.DamageDealt} damage!");
+            }
+            else if (counter.IsCriticalMiss)
+            {
+                lines.Add($"The {monsterName} stumbles and misses!");
+            }
+            else if (counter.IsHit)
+            {
+                lines.Add($"The {monsterName} strikes back for {counter.DamageDealt} damage!");
+            }
+            else
+            {
+                lines.Add($"The {monsterName} attacks but {playerName} dodges!");
+            }
         }
 
         if (result.PlayerDefeated)
         {
             lines.Add($"{playerName} has fallen in battle...");
         }
+
+        return string.Join(Environment.NewLine, lines);
+    }
+
+    // ===== LEGACY METHODS (Backwards Compatibility) =====
+
+    /// <summary>
+    /// Resolves a single round of combat using legacy static calculations.
+    /// </summary>
+    [Obsolete("Use ResolveCombatRound(Player, Monster, IDiceService) for dice-based combat")]
+    public CombatResult ResolveCombatRound(Player player, Monster monster)
+    {
+        ArgumentNullException.ThrowIfNull(player);
+        ArgumentNullException.ThrowIfNull(monster);
+
+        _logger.LogDebug("Resolving legacy combat round - {Player} vs {Monster}", player.Name, monster.Name);
+
+        var playerDamage = CalculateDamage(player.Stats.Attack, monster.Stats.Defense);
+        var actualPlayerDamage = monster.TakeDamage(playerDamage);
+
+        var actualMonsterDamage = 0;
+        if (monster.IsAlive)
+        {
+            var monsterDamage = CalculateDamage(monster.Stats.Attack, player.Stats.Defense);
+            actualMonsterDamage = player.TakeDamage(monsterDamage);
+        }
+
+        return new CombatResult(actualPlayerDamage, actualMonsterDamage, monster.IsDefeated, player.IsDead);
+    }
+
+    private int CalculateDamage(int attack, int defense)
+    {
+        var baseDamage = Math.Max(1, attack - defense);
+        var variance = _random.Next(-2, 3);
+        return Math.Max(1, baseDamage + variance);
+    }
+
+    /// <summary>
+    /// Resolves a monster's attack against a player (legacy).
+    /// </summary>
+    [Obsolete("Use dice-based combat resolution")]
+    public MonsterAttackResult MonsterAttack(Monster monster, Player player)
+    {
+        ArgumentNullException.ThrowIfNull(monster);
+        ArgumentNullException.ThrowIfNull(player);
+
+        if (!monster.IsAlive)
+            return new MonsterAttackResult(0, false);
+
+        var damage = CalculateDamage(monster.Stats.Attack, player.Stats.Defense);
+        var actualDamage = player.TakeDamage(damage);
+        return new MonsterAttackResult(actualDamage, player.IsDead);
+    }
+
+    /// <summary>
+    /// Generates a description of a monster's attack (legacy).
+    /// </summary>
+    [Obsolete("Use GetCombatDescription with CombatRoundResult")]
+    public string GetMonsterAttackDescription(MonsterAttackResult result, string monsterName, string playerName)
+    {
+        if (result.Damage == 0)
+            return $"The {monsterName} misses!";
+
+        var description = $"The {monsterName} strikes back for {result.Damage} damage!";
+        if (result.PlayerDefeated)
+            description += $" {playerName} has fallen in battle...";
+        return description;
+    }
+
+    /// <summary>
+    /// Generates a description of a combat round (legacy).
+    /// </summary>
+    [Obsolete("Use GetCombatDescription with CombatRoundResult")]
+    public string GetCombatDescription(CombatResult result, string playerName, string monsterName)
+    {
+        var lines = new List<string>();
+
+        if (result.DamageDealt > 0)
+            lines.Add($"{playerName} attacks the {monsterName} for {result.DamageDealt} damage!");
+
+        if (result.MonsterDefeated)
+            lines.Add($"The {monsterName} has been defeated!");
+        else if (result.DamageReceived > 0)
+            lines.Add($"The {monsterName} strikes back for {result.DamageReceived} damage!");
+
+        if (result.PlayerDefeated)
+            lines.Add($"{playerName} has fallen in battle...");
 
         return string.Join(Environment.NewLine, lines);
     }

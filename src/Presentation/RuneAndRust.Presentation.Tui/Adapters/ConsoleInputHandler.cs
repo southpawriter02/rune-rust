@@ -91,12 +91,88 @@ public class ConsoleInputHandler : IInputHandler
                 ? LogAndReturn(new UnknownCommand(input), "Cast command missing ability argument")
                 : new UseAbilityCommand(argument),
             "attack" or "fight" or "a" => new AttackCommand(),
+            "roll" or "r" => ParseRollCommand(argument, input),
+            "check" or "ch" => ParseSkillCheckCommand(argument, input),
             "save" => new SaveCommand(),
             "load" => new LoadCommand(),
             "help" or "h" or "?" => new HelpCommand(),
             "quit" or "exit" or "q" => new QuitCommand(),
             _ => LogAndReturn(new UnknownCommand(input), $"Unrecognized command: '{command}'")
         };
+    }
+
+    /// <summary>
+    /// Parses a roll command from user input.
+    /// </summary>
+    private GameCommand ParseRollCommand(string? argument, string fullInput)
+    {
+        if (string.IsNullOrWhiteSpace(argument))
+        {
+            _logger.LogDebug("Roll command missing notation");
+            return LogAndReturn(new UnknownCommand(fullInput),
+                "Roll command requires dice notation (e.g., 'roll 3d6+5')");
+        }
+
+        // Check for advantage/disadvantage flags
+        var advantage = AdvantageType.Normal;
+        var notation = argument;
+
+        if (argument.EndsWith(" adv", StringComparison.OrdinalIgnoreCase) ||
+            argument.EndsWith(" advantage", StringComparison.OrdinalIgnoreCase))
+        {
+            advantage = AdvantageType.Advantage;
+            notation = argument[..argument.LastIndexOf(' ')].Trim();
+        }
+        else if (argument.EndsWith(" dis", StringComparison.OrdinalIgnoreCase) ||
+                 argument.EndsWith(" disadvantage", StringComparison.OrdinalIgnoreCase))
+        {
+            advantage = AdvantageType.Disadvantage;
+            notation = argument[..argument.LastIndexOf(' ')].Trim();
+        }
+
+        _logger.LogDebug("Parsed roll command: {Notation}, Advantage: {Advantage}", notation, advantage);
+        return new RollCommand(notation, advantage);
+    }
+
+    /// <summary>
+    /// Parses a skill check command from user input.
+    /// </summary>
+    private GameCommand ParseSkillCheckCommand(string? argument, string fullInput)
+    {
+        if (string.IsNullOrWhiteSpace(argument))
+        {
+            _logger.LogDebug("Check command missing skill name");
+            return LogAndReturn(new UnknownCommand(fullInput),
+                "Check command requires skill name (e.g., 'check perception', 'check stealth moderate')");
+        }
+
+        var cmdParts = argument.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        var skillId = cmdParts[0].ToLowerInvariant();
+        string? difficultyId = null;
+        var advantage = AdvantageType.Normal;
+
+        // Parse remaining parts for DC and advantage
+        for (int i = 1; i < cmdParts.Length; i++)
+        {
+            var part = cmdParts[i].ToLowerInvariant();
+            if (part == "adv" || part == "advantage")
+            {
+                advantage = AdvantageType.Advantage;
+            }
+            else if (part == "dis" || part == "disadvantage")
+            {
+                advantage = AdvantageType.Disadvantage;
+            }
+            else if (difficultyId == null)
+            {
+                difficultyId = part;
+            }
+        }
+
+        _logger.LogDebug("Parsed check command: Skill={Skill}, DC={DC}, Advantage={Advantage}",
+            skillId, difficultyId ?? "default", advantage);
+
+        return new SkillCheckCommand(skillId, difficultyId, advantage);
     }
 
     /// <summary>

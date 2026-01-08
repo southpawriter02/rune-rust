@@ -6,6 +6,7 @@ using RuneAndRust.Application.Services;
 using RuneAndRust.Domain.Definitions;
 using RuneAndRust.Domain.Entities;
 using RuneAndRust.Domain.Enums;
+using RuneAndRust.Domain.Interfaces;
 
 namespace RuneAndRust.Application.UnitTests.Services;
 
@@ -16,6 +17,7 @@ public class GameSessionServiceTests
     private Mock<IGameConfigurationProvider> _mockConfig = null!;
     private Mock<ILogger<GameSessionService>> _loggerMock = null!;
     private Mock<ILogger<ItemEffectService>> _itemEffectLoggerMock = null!;
+    private Mock<IDiceService> _diceServiceMock = null!;
     private ItemEffectService _itemEffectService = null!;
     private AbilityService _abilityService = null!;
     private ResourceService _resourceService = null!;
@@ -28,6 +30,7 @@ public class GameSessionServiceTests
         _mockConfig = new Mock<IGameConfigurationProvider>();
         _loggerMock = new Mock<ILogger<GameSessionService>>();
         _itemEffectLoggerMock = new Mock<ILogger<ItemEffectService>>();
+        _diceServiceMock = new Mock<IDiceService>();
         _itemEffectService = new ItemEffectService(_itemEffectLoggerMock.Object);
 
         // Setup minimal config for AbilityService
@@ -40,7 +43,13 @@ public class GameSessionServiceTests
         var mockAbilityLogger = new Mock<ILogger<AbilityService>>();
         _abilityService = new AbilityService(_mockConfig.Object, _resourceService, mockAbilityLogger.Object);
 
-        _service = new GameSessionService(_repositoryMock.Object, _loggerMock.Object, _itemEffectService, _abilityService, _resourceService);
+        _service = new GameSessionService(
+            _repositoryMock.Object,
+            _loggerMock.Object,
+            _itemEffectService,
+            _abilityService,
+            _resourceService,
+            _diceServiceMock.Object);
     }
 
     [Test]

@@ -117,6 +117,38 @@ public interface IGameConfigurationProvider
     /// <param name="classId">The class identifier.</param>
     /// <returns>List of ability definitions available to the class.</returns>
     IReadOnlyList<AbilityDefinition> GetAbilitiesForClass(string classId);
+
+    /// <summary>
+    /// Gets all skill definitions.
+    /// </summary>
+    /// <returns>Read-only list of all skills.</returns>
+    IReadOnlyList<SkillDefinition> GetSkills();
+
+    /// <summary>
+    /// Gets a skill definition by ID.
+    /// </summary>
+    /// <param name="id">The skill ID.</param>
+    /// <returns>The skill definition, or null if not found.</returns>
+    SkillDefinition? GetSkillById(string id);
+
+    /// <summary>
+    /// Gets all difficulty class definitions.
+    /// </summary>
+    /// <returns>Read-only list of all difficulty classes.</returns>
+    IReadOnlyList<DifficultyClassDefinition> GetDifficultyClasses();
+
+    /// <summary>
+    /// Gets a difficulty class definition by ID.
+    /// </summary>
+    /// <param name="id">The difficulty class ID.</param>
+    /// <returns>The difficulty class definition, or null if not found.</returns>
+    DifficultyClassDefinition? GetDifficultyClassById(string id);
+
+    /// <summary>
+    /// Gets all dice descriptors organized by category.
+    /// </summary>
+    /// <returns>Dictionary mapping category names to lists of descriptors.</returns>
+    IReadOnlyDictionary<string, IReadOnlyList<string>> GetDiceDescriptors();
 }
 
 /// <summary>

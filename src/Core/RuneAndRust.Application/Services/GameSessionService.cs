@@ -3,6 +3,7 @@ using RuneAndRust.Application.DTOs;
 using RuneAndRust.Application.Interfaces;
 using RuneAndRust.Domain.Entities;
 using RuneAndRust.Domain.Enums;
+using RuneAndRust.Domain.Interfaces;
 using RuneAndRust.Domain.Services;
 using RuneAndRust.Domain.ValueObjects;
 
@@ -49,6 +50,11 @@ public class GameSessionService
     private readonly ResourceService _resourceService;
 
     /// <summary>
+    /// Dice service for combat rolls.
+    /// </summary>
+    private readonly IDiceService _diceService;
+
+    /// <summary>
     /// The currently active game session, or null if no session is active.
     /// </summary>
     private GameSession? _currentSession;
@@ -71,14 +77,16 @@ public class GameSessionService
     /// <param name="itemEffectService">The service for applying item effects.</param>
     /// <param name="abilityService">The service for managing abilities.</param>
     /// <param name="resourceService">The service for managing resources.</param>
+    /// <param name="diceService">The dice rolling service for combat.</param>
     /// <param name="combatLogger">Optional logger for combat service diagnostics.</param>
-    /// <exception cref="ArgumentNullException">Thrown when repository, logger, itemEffectService, abilityService, or resourceService is null.</exception>
+    /// <exception cref="ArgumentNullException">Thrown when repository, logger, itemEffectService, abilityService, resourceService, or diceService is null.</exception>
     public GameSessionService(
         IGameRepository repository,
         ILogger<GameSessionService> logger,
         ItemEffectService itemEffectService,
         AbilityService abilityService,
         ResourceService resourceService,
+        IDiceService diceService,
         ILogger<CombatService>? combatLogger = null)
     {
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
@@ -86,6 +94,7 @@ public class GameSessionService
         _itemEffectService = itemEffectService ?? throw new ArgumentNullException(nameof(itemEffectService));
         _abilityService = abilityService ?? throw new ArgumentNullException(nameof(abilityService));
         _resourceService = resourceService ?? throw new ArgumentNullException(nameof(resourceService));
+        _diceService = diceService ?? throw new ArgumentNullException(nameof(diceService));
         _combatService = new CombatService(combatLogger);
         _logger.LogDebug("GameSessionService initialized");
     }
@@ -344,9 +353,9 @@ public class GameSessionService
     /// </summary>
     /// <returns>A tuple indicating success and a combat description message.</returns>
     /// <remarks>
-    /// Attacks the first alive monster in the room. If the player is defeated,
-    /// the game state is set to GameOver. Returns failure if there is no active
-    /// session or no monsters are present.
+    /// Attacks the first alive monster in the room using dice-based combat:
+    /// Attack roll (1d10 + Finesse) vs Defense, damage roll (1d6 + Might) - armor.
+    /// If the player is defeated, the game state is set to GameOver.
     /// </remarks>
     public (bool Success, string Message) TryAttack()
     {
@@ -376,18 +385,19 @@ public class GameSessionService
         var monsterHealthBefore = monster.Health;
 
         _logger.LogDebug(
-            "Combat initiated - Player: {PlayerName} (HP:{PlayerHealth}, ATK:{PlayerAtk}, DEF:{PlayerDef}) vs " +
+            "Combat initiated - Player: {PlayerName} (HP:{PlayerHealth}, Finesse:{Finesse}, Might:{Might}) vs " +
             "Monster: {MonsterName} (HP:{MonsterHealth}, ATK:{MonsterAtk}, DEF:{MonsterDef})",
             _currentSession.Player.Name,
             playerHealthBefore,
-            _currentSession.Player.Stats.Attack,
-            _currentSession.Player.Stats.Defense,
+            _currentSession.Player.Attributes.Finesse,
+            _currentSession.Player.Attributes.Might,
             monster.Name,
             monsterHealthBefore,
             monster.Stats.Attack,
             monster.Stats.Defense);
 
-        var result = _combatService.ResolveCombatRound(_currentSession.Player, monster);
+        // Use dice-based combat
+        var result = _combatService.ResolveCombatRound(_currentSession.Player, monster, _diceService);
         var description = _combatService.GetCombatDescription(
             result,
             _currentSession.Player.Name,
@@ -395,8 +405,12 @@ public class GameSessionService
         );
 
         _logger.LogInformation(
-            "Combat result - Damage dealt: {DamageDealt}, Damage received: {DamageReceived}, " +
+            "Combat result - Attack: [{Roll}]+{Mod}={Total} ({AttackResult}), Damage dealt: {DamageDealt}, Received: {DamageReceived}, " +
             "Player HP: {PlayerBefore} -> {PlayerAfter}, Monster HP: {MonsterBefore} -> {MonsterAfter}",
+            result.AttackRoll.Rolls[0],
+            result.AttackTotal - result.AttackRoll.Total,
+            result.AttackTotal,
+            result.IsCriticalHit ? "CRIT" : result.IsCriticalMiss ? "MISS" : result.IsHit ? "Hit" : "Miss",
             result.DamageDealt,
             result.DamageReceived,
             playerHealthBefore,
@@ -767,15 +781,40 @@ public class GameSessionService
         // Monster counterattack if still alive after an offensive ability
         else if (target != null && target.IsAlive)
         {
-            var counterResult = _combatService.MonsterAttack(target, _currentSession.Player);
-            var counterDescription = _combatService.GetMonsterAttackDescription(
-                counterResult, target.Name, _currentSession.Player.Name);
+            // Use full dice-based combat round for monster counterattack
+            var combatResult = _combatService.ResolveCombatRound(_currentSession.Player, target, _diceService);
 
-            _logger.LogInformation(
-                "Monster counterattack: {MonsterName} dealt {Damage} damage to {PlayerName}",
-                target.Name, counterResult.Damage, _currentSession.Player.Name);
+            // For ability counterattack, we only care about monster's counterattack portion
+            if (combatResult.MonsterCounterAttack != null)
+            {
+                var counter = combatResult.MonsterCounterAttack;
+                string counterDescription;
 
-            messageBuilder.AppendLine().Append(counterDescription);
+                if (counter.IsCriticalHit)
+                {
+                    counterDescription = $"The {target.Name} lands a CRITICAL HIT for {counter.DamageDealt} damage!";
+                }
+                else if (counter.IsCriticalMiss)
+                {
+                    counterDescription = $"The {target.Name} stumbles and misses!";
+                }
+                else if (counter.IsHit)
+                {
+                    counterDescription = $"The {target.Name} strikes back for {counter.DamageDealt} damage!";
+                }
+                else
+                {
+                    counterDescription = $"The {target.Name} attacks but {_currentSession.Player.Name} dodges!";
+                }
+
+                _logger.LogInformation(
+                    "Monster counterattack: {MonsterName} [{Roll}]+{Mod}={Total} -> {Damage} damage to {PlayerName}",
+                    target.Name, counter.AttackRoll.Rolls[0],
+                    counter.AttackTotal - counter.AttackRoll.Total, counter.AttackTotal,
+                    counter.DamageDealt, _currentSession.Player.Name);
+
+                messageBuilder.AppendLine().Append(counterDescription);
+            }
 
             if (_currentSession.Player.Health <= 0)
             {

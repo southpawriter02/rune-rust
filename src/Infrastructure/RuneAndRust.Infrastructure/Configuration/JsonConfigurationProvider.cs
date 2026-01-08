@@ -29,6 +29,9 @@ public class JsonConfigurationProvider : IGameConfigurationProvider
     private IReadOnlyList<ClassDefinition>? _classes;
     private IReadOnlyList<ResourceTypeDefinition>? _resourceTypes;
     private IReadOnlyList<AbilityDefinition>? _abilities;
+    private IReadOnlyList<SkillDefinition>? _skills;
+    private IReadOnlyList<DifficultyClassDefinition>? _difficultyClasses;
+    private IReadOnlyDictionary<string, IReadOnlyList<string>>? _diceDescriptors;
 
     private static readonly JsonSerializerOptions DefaultJsonOptions = new()
     {
@@ -277,6 +280,174 @@ public class JsonConfigurationProvider : IGameConfigurationProvider
             .Where(a => a.IsAvailableToClass(classId))
             .ToList();
     }
+
+    /// <inheritdoc/>
+    public IReadOnlyList<SkillDefinition> GetSkills()
+    {
+        if (_skills != null) return _skills;
+
+        var filePath = Path.Combine(_configPath, "skills.json");
+        var config = LoadJsonFile<SkillsJsonConfig>(filePath);
+        
+        if (config?.Skills == null || config.Skills.Count == 0)
+        {
+            _logger.LogWarning("No skills found in configuration, using defaults");
+            _skills = GetDefaultSkills();
+            return _skills;
+        }
+
+        _skills = config.Skills
+            .Select(ToSkillDefinition)
+            .Where(s => s != null)
+            .Cast<SkillDefinition>()
+            .OrderBy(s => s.SortOrder)
+            .ThenBy(s => s.Name)
+            .ToList();
+
+        _logger.LogDebug("Loaded {Count} skills", _skills.Count);
+        return _skills;
+    }
+
+    /// <inheritdoc/>
+    public SkillDefinition? GetSkillById(string id)
+    {
+        if (string.IsNullOrWhiteSpace(id)) return null;
+        return GetSkills().FirstOrDefault(s =>
+            s.Id.Equals(id, StringComparison.OrdinalIgnoreCase));
+    }
+
+    /// <inheritdoc/>
+    public IReadOnlyList<DifficultyClassDefinition> GetDifficultyClasses()
+    {
+        if (_difficultyClasses != null) return _difficultyClasses;
+
+        var filePath = Path.Combine(_configPath, "difficulty.json");
+        var config = LoadJsonFile<DifficultyJsonConfig>(filePath);
+        
+        if (config?.DifficultyClasses == null || config.DifficultyClasses.Count == 0)
+        {
+            _logger.LogWarning("No difficulty classes found in configuration, using defaults");
+            _difficultyClasses = GetDefaultDifficultyClasses();
+            return _difficultyClasses;
+        }
+
+        _difficultyClasses = config.DifficultyClasses
+            .Select(ToDifficultyClassDefinition)
+            .Where(dc => dc != null)
+            .Cast<DifficultyClassDefinition>()
+            .OrderBy(dc => dc.SortOrder)
+            .ToList();
+
+        _logger.LogDebug("Loaded {Count} difficulty classes", _difficultyClasses.Count);
+        return _difficultyClasses;
+    }
+
+    /// <inheritdoc/>
+    public DifficultyClassDefinition? GetDifficultyClassById(string id)
+    {
+        if (string.IsNullOrWhiteSpace(id)) return null;
+        return GetDifficultyClasses().FirstOrDefault(dc =>
+            dc.Id.Equals(id, StringComparison.OrdinalIgnoreCase));
+    }
+
+    /// <inheritdoc/>
+    public IReadOnlyDictionary<string, IReadOnlyList<string>> GetDiceDescriptors()
+    {
+        if (_diceDescriptors != null) return _diceDescriptors;
+
+        try
+        {
+            var filePath = Path.Combine(_configPath, "dice-descriptors.json");
+
+            if (!File.Exists(filePath))
+            {
+                _logger.LogWarning("Dice descriptors configuration not found at {Path}", filePath);
+                _diceDescriptors = new Dictionary<string, IReadOnlyList<string>>();
+                return _diceDescriptors;
+            }
+
+            var json = File.ReadAllText(filePath);
+            var config = JsonSerializer.Deserialize<DiceDescriptorsJsonConfig>(json, _jsonOptions);
+
+            if (config?.Descriptors == null)
+            {
+                _diceDescriptors = new Dictionary<string, IReadOnlyList<string>>();
+                return _diceDescriptors;
+            }
+
+            _diceDescriptors = config.Descriptors
+                .ToDictionary(
+                    kvp => kvp.Key,
+                    kvp => (IReadOnlyList<string>)kvp.Value.AsReadOnly());
+
+            _logger.LogInformation("Loaded {Count} dice descriptor categories", _diceDescriptors.Count);
+            return _diceDescriptors;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to load dice descriptors configuration");
+            _diceDescriptors = new Dictionary<string, IReadOnlyList<string>>();
+            return _diceDescriptors;
+        }
+    }
+
+    private SkillDefinition? ToSkillDefinition(SkillJsonEntry entry)
+    {
+        try
+        {
+            return SkillDefinition.Create(
+                id: entry.Id,
+                name: entry.Name,
+                description: entry.Description,
+                primaryAttribute: entry.PrimaryAttribute,
+                secondaryAttribute: entry.SecondaryAttribute,
+                baseDicePool: entry.BaseDicePool,
+                allowUntrained: entry.AllowUntrained,
+                untrainedPenalty: entry.UntrainedPenalty,
+                category: entry.Category,
+                tags: entry.Tags,
+                sortOrder: entry.SortOrder);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to create skill definition for {Id}", entry.Id);
+            return null;
+        }
+    }
+
+    private DifficultyClassDefinition? ToDifficultyClassDefinition(DifficultyClassJsonEntry entry)
+    {
+        try
+        {
+            return DifficultyClassDefinition.Create(
+                id: entry.Id,
+                name: entry.Name,
+                description: entry.Description,
+                targetNumber: entry.TargetNumber,
+                color: entry.Color,
+                sortOrder: entry.SortOrder);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to create difficulty class for {Id}", entry.Id);
+            return null;
+        }
+    }
+
+    private static List<SkillDefinition> GetDefaultSkills() =>
+    [
+        SkillDefinition.Create("athletics", "Athletics", "Physical feats of strength.", "might", "fortitude", "1d10", true, 0, "Physical", ["physical", "strength"], 1),
+        SkillDefinition.Create("perception", "Perception", "Noticing hidden things.", "wits", null, "1d10", true, 0, "Mental", ["mental", "awareness"], 2),
+        SkillDefinition.Create("stealth", "Stealth", "Moving silently.", "finesse", "wits", "1d10", true, 0, "Physical", ["physical", "sneaking"], 3),
+    ];
+
+    private static List<DifficultyClassDefinition> GetDefaultDifficultyClasses() =>
+    [
+        DifficultyClassDefinition.Create("trivial", "Trivial", "Almost anyone can do this.", 5, "#88FF88", 1),
+        DifficultyClassDefinition.Create("easy", "Easy", "A simple task.", 8, "#44DD44", 2),
+        DifficultyClassDefinition.Create("moderate", "Moderate", "Requires some skill.", 12, "#FFFF44", 3),
+        DifficultyClassDefinition.Create("hard", "Hard", "Difficult for most.", 18, "#FF6644", 4),
+    ];
 
     private static ResourceTypeDefinition ToResourceTypeDefinition(ResourceTypeJsonConfig config)
     {
@@ -696,5 +867,48 @@ public class JsonConfigurationProvider : IGameConfigurationProvider
         public string? ScalingStat { get; set; }
         public float ScalingMultiplier { get; set; } = 0f;
         public string? Description { get; set; }
+    }
+
+    // Skill JSON structure
+    private class SkillsJsonConfig
+    {
+        public List<SkillJsonEntry> Skills { get; set; } = [];
+    }
+
+    private class SkillJsonEntry
+    {
+        public string Id { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public string PrimaryAttribute { get; set; } = string.Empty;
+        public string? SecondaryAttribute { get; set; }
+        public string BaseDicePool { get; set; } = "1d10";
+        public bool AllowUntrained { get; set; } = true;
+        public int UntrainedPenalty { get; set; } = 0;
+        public string Category { get; set; } = "General";
+        public List<string> Tags { get; set; } = [];
+        public int SortOrder { get; set; } = 0;
+    }
+
+    // Difficulty JSON structure
+    private class DifficultyJsonConfig
+    {
+        public List<DifficultyClassJsonEntry> DifficultyClasses { get; set; } = [];
+    }
+
+    private class DifficultyClassJsonEntry
+    {
+        public string Id { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public int TargetNumber { get; set; }
+        public string Color { get; set; } = "#FFFFFF";
+        public int SortOrder { get; set; } = 0;
+    }
+
+    // Dice descriptors JSON structure
+    private class DiceDescriptorsJsonConfig
+    {
+        public Dictionary<string, List<string>> Descriptors { get; set; } = new();
     }
 }

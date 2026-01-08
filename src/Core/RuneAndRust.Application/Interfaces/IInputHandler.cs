@@ -95,6 +95,34 @@ public record AbilitiesCommand : GameCommand;
 public record UseAbilityCommand(string AbilityName) : GameCommand;
 
 /// <summary>
+/// Command to roll dice directly using dice notation.
+/// </summary>
+/// <param name="Notation">The dice notation to roll (e.g., "3d6+5", "1d20!", "2d8").</param>
+/// <param name="Advantage">Optional advantage/disadvantage modifier.</param>
+/// <remarks>
+/// Supports standard dice notation including:
+/// - Basic rolls: "1d20", "3d6", "2d8"
+/// - Modifiers: "1d20+5", "3d6-2"
+/// - Exploding dice: "1d6!" (reroll on max)
+/// </remarks>
+public record RollCommand(string Notation, AdvantageType Advantage = AdvantageType.Normal) : GameCommand;
+
+/// <summary>
+/// Command to perform a skill check.
+/// </summary>
+/// <param name="SkillId">The skill to check (e.g., "perception", "stealth").</param>
+/// <param name="DifficultyId">Optional difficulty class ID. If omitted, defaults to "moderate".</param>
+/// <param name="Advantage">Optional advantage/disadvantage modifier.</param>
+/// <remarks>
+/// If the skill ID is not found, displays available skills.
+/// If the difficulty ID is not found, displays available difficulty classes.
+/// </remarks>
+public record SkillCheckCommand(
+    string SkillId,
+    string? DifficultyId = null,
+    AdvantageType Advantage = AdvantageType.Normal) : GameCommand;
+
+/// <summary>
 /// Defines the contract for handling user input and converting it to game commands.
 /// </summary>
 /// <remarks>

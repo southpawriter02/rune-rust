@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using RuneAndRust.Domain.Interfaces;
 using RuneAndRust.Domain.Enums;
 using RuneAndRust.Domain.ValueObjects;
 
@@ -11,7 +12,7 @@ namespace RuneAndRust.Application.Services;
 /// Supports standard dice pools, exploding dice, and advantage/disadvantage rolls.
 /// Accepts an optional Random instance for deterministic testing.
 /// </remarks>
-public class DiceService
+public class DiceService : IDiceService
 {
     private readonly Random _random;
     private readonly ILogger<DiceService> _logger;

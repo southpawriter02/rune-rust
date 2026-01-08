@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using RuneAndRust.Application.DTOs;
 using RuneAndRust.Application.Interfaces;
 using Spectre.Console;
+using Spectre.Console.Rendering;
 
 namespace RuneAndRust.Presentation.Tui.Adapters;
 
@@ -271,6 +272,169 @@ public class SpectreGameRenderer : IGameRenderer
         foreach (var abilityName in changes.AbilitiesNowReady)
         {
             AnsiConsole.MarkupLine($"[cyan]{Markup.Escape(abilityName)} is now ready![/]");
+        }
+
+        return Task.CompletedTask;
+    }
+
+    /// <inheritdoc/>
+    public Task RenderDiceRollAsync(DiceRollDto roll, CancellationToken ct = default)
+    {
+        _logger.LogDebug("Rendering dice roll: {Notation}, Total: {Total}", roll.Notation, roll.Total);
+
+        // Build roll visualization
+        var rollsStr = string.Join(", ", roll.Rolls.Select(r =>
+        {
+            if (roll.Rolls.Count == 1 && roll.IsNaturalMax) return $"[bold green]{r}[/]";
+            if (roll.Rolls.Count == 1 && roll.IsNaturalOne) return $"[bold red]{r}[/]";
+            return r.ToString();
+        }));
+
+        var explosionsStr = roll.HadExplosions && roll.ExplosionRolls.Count > 0
+            ? $" + [yellow]💥{string.Join(", ", roll.ExplosionRolls)}[/]"
+            : "";
+
+        var modifierStr = roll.Modifier != 0
+            ? $" [grey]{(roll.Modifier > 0 ? "+" : "")}{roll.Modifier}[/]"
+            : "";
+
+        var advantageStr = roll.AdvantageType != "Normal"
+            ? $" [cyan]({roll.AdvantageType})[/]"
+            : "";
+
+        var totalColor = roll.IsNaturalMax ? "bold green" :
+                         roll.IsNaturalOne ? "bold red" : "white";
+
+        var content = new Rows(
+            new Markup($"[grey]Dice:[/] [cyan]{Markup.Escape(roll.Notation)}[/]{advantageStr}"),
+            new Markup($"[grey]Roll:[/] [{rollsStr}]{explosionsStr}{modifierStr}"),
+            new Markup($"[grey]Total:[/] [{totalColor}]{roll.Total}[/]")
+        );
+
+        var panel = new Panel(content)
+            .Header("[cyan]Dice Roll[/]")
+            .Border(BoxBorder.Rounded)
+            .BorderColor(roll.IsNaturalMax ? Color.Green : roll.IsNaturalOne ? Color.Red : Color.Cyan1);
+
+        AnsiConsole.Write(panel);
+
+        if (!string.IsNullOrEmpty(roll.Descriptor))
+        {
+            AnsiConsole.MarkupLine($"[italic grey]{Markup.Escape(roll.Descriptor)}[/]");
+        }
+
+        return Task.CompletedTask;
+    }
+
+    /// <inheritdoc/>
+    public Task RenderSkillCheckAsync(SkillCheckResultDto result, CancellationToken ct = default)
+    {
+        _logger.LogDebug("Rendering skill check: {Skill} - {SuccessLevel}", result.SkillName, result.SuccessLevel);
+
+        var resultColor = result.IsSuccess ? "green" : "red";
+        var critColor = result.IsCritical ? (result.IsSuccess ? "bold green" : "bold red") : resultColor;
+
+        var rollStr = string.Join(", ", result.DiceRoll.Rolls);
+        var bonusStr = result.AttributeBonus >= 0 ? $"+{result.AttributeBonus}" : result.AttributeBonus.ToString();
+        var otherBonusStr = result.OtherBonus != 0
+            ? (result.OtherBonus > 0 ? $"+{result.OtherBonus}" : result.OtherBonus.ToString())
+            : "";
+
+        var marginSign = result.Margin >= 0 ? "+" : "";
+        var marginStr = $"({marginSign}{result.Margin})";
+
+        var content = new Rows(
+            new Markup($"[grey]Skill:[/] [cyan]{Markup.Escape(result.SkillName)}[/]"),
+            new Markup($"[grey]Roll:[/] [{rollStr}] {bonusStr}{otherBonusStr} = [white]{result.TotalResult}[/]"),
+            new Markup($"[grey]DC:[/] [yellow]{result.DifficultyClass}[/] ({Markup.Escape(result.DifficultyName)})"),
+            new Markup($"[grey]Result:[/] [{critColor}]{result.SuccessLevel}[/] [{resultColor}]{marginStr}[/]")
+        );
+
+        var borderColor = result.IsCritical
+            ? (result.IsSuccess ? Color.Green : Color.Red)
+            : (result.IsSuccess ? Color.Cyan1 : Color.Orange1);
+
+        var panel = new Panel(content)
+            .Header($"[{(result.IsSuccess ? "green" : "red")}]Skill Check[/]")
+            .Border(BoxBorder.Rounded)
+            .BorderColor(borderColor);
+
+        AnsiConsole.Write(panel);
+
+        if (!string.IsNullOrEmpty(result.Descriptor))
+        {
+            AnsiConsole.MarkupLine($"[italic grey]{Markup.Escape(result.Descriptor)}[/]");
+        }
+
+        return Task.CompletedTask;
+    }
+
+    /// <inheritdoc/>
+    public Task RenderCombatRoundAsync(CombatRoundResultDto result, CancellationToken ct = default)
+    {
+        _logger.LogDebug("Rendering combat round: Hit={IsHit}, Critical={IsCrit}", result.IsHit, result.IsCriticalHit);
+
+        // Player attack section
+        var attackRollStr = string.Join(", ", result.AttackRoll.Rolls);
+        var attackColor = result.IsCriticalHit ? "bold green" :
+                          result.IsCriticalMiss ? "bold red" :
+                          result.IsHit ? "green" : "red";
+
+        var rows = new List<IRenderable>
+        {
+            new Markup($"[bold cyan]Your Attack[/]"),
+            new Markup($"[grey]Roll:[/] [{attackRollStr}] = [white]{result.AttackTotal}[/]"),
+            new Markup($"[grey]Result:[/] [{attackColor}]{result.AttackSuccessLevel}[/]")
+        };
+
+        if (result.IsHit && result.DamageRoll != null)
+        {
+            var damageRollStr = string.Join(", ", result.DamageRoll.Rolls);
+            rows.Add(new Markup($"[grey]Damage:[/] [{damageRollStr}] = [orange1]{result.DamageDealt}[/]"));
+        }
+
+        // Monster counterattack section
+        if (result.MonsterCounterAttack != null)
+        {
+            var counter = result.MonsterCounterAttack;
+            var counterRollStr = string.Join(", ", counter.AttackRoll.Rolls);
+            var counterColor = counter.IsCriticalHit ? "bold red" :
+                               counter.IsCriticalMiss ? "bold green" :
+                               counter.IsHit ? "red" : "green";
+
+            rows.Add(new Text(""));
+            rows.Add(new Markup($"[bold red]Enemy Counterattack[/]"));
+            rows.Add(new Markup($"[grey]Roll:[/] [{counterRollStr}] = [white]{counter.AttackTotal}[/]"));
+            rows.Add(new Markup($"[grey]Result:[/] [{counterColor}]{counter.AttackSuccessLevel}[/]"));
+
+            if (counter.IsHit && counter.DamageRoll != null)
+            {
+                var counterDamageStr = string.Join(", ", counter.DamageRoll.Rolls);
+                rows.Add(new Markup($"[grey]Damage:[/] [{counterDamageStr}] = [red]{counter.DamageDealt}[/]"));
+            }
+        }
+
+        // Round summary
+        rows.Add(new Text(""));
+        if (result.MonsterDefeated)
+        {
+            rows.Add(new Markup("[bold green]Enemy defeated![/]"));
+        }
+        else if (result.PlayerDefeated)
+        {
+            rows.Add(new Markup("[bold red]You have been defeated![/]"));
+        }
+
+        var panel = new Panel(new Rows(rows))
+            .Header("[red]Combat Round[/]")
+            .Border(BoxBorder.Heavy)
+            .BorderColor(Color.Red);
+
+        AnsiConsole.Write(panel);
+
+        if (!string.IsNullOrEmpty(result.Descriptor))
+        {
+            AnsiConsole.MarkupLine($"[italic grey]{Markup.Escape(result.Descriptor)}[/]");
         }
 
         return Task.CompletedTask;
