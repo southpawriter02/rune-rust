@@ -33,6 +33,8 @@ public class JsonConfigurationProvider : IGameConfigurationProvider
     private IReadOnlyList<DifficultyClassDefinition>? _difficultyClasses;
     private IReadOnlyDictionary<string, IReadOnlyList<string>>? _diceDescriptors;
     private ProgressionDefinition? _progression;
+    private IReadOnlyList<MonsterDefinition>? _monsters;
+    private IReadOnlyList<DamageTypeDefinition>? _damageTypes;
 
     private static readonly JsonSerializerOptions DefaultJsonOptions = new()
     {
@@ -412,6 +414,149 @@ public class JsonConfigurationProvider : IGameConfigurationProvider
             _progression.MaxLevel, _progression.CurveType);
         return _progression;
     }
+
+    /// <inheritdoc/>
+    public IReadOnlyList<MonsterDefinition> GetMonsters()
+    {
+        if (_monsters != null) return _monsters;
+
+        var filePath = Path.Combine(_configPath, "monsters.json");
+        var config = LoadJsonFile<MonstersJsonConfig>(filePath);
+
+        if (config?.Monsters == null || config.Monsters.Count == 0)
+        {
+            _logger.LogWarning("No monsters found in configuration, using defaults");
+            _monsters = GetDefaultMonsters();
+            return _monsters;
+        }
+
+        _monsters = config.Monsters
+            .Select(ToMonsterDefinition)
+            .Where(m => m != null)
+            .Cast<MonsterDefinition>()
+            .ToList();
+
+        _logger.LogDebug("Loaded {Count} monsters", _monsters.Count);
+        return _monsters;
+    }
+
+    /// <inheritdoc/>
+    public MonsterDefinition? GetMonsterById(string monsterId)
+    {
+        if (string.IsNullOrWhiteSpace(monsterId)) return null;
+        return GetMonsters().FirstOrDefault(m =>
+            m.Id.Equals(monsterId, StringComparison.OrdinalIgnoreCase));
+    }
+
+    /// <inheritdoc/>
+    public IReadOnlyList<DamageTypeDefinition> GetDamageTypes()
+    {
+        if (_damageTypes != null) return _damageTypes;
+
+        var filePath = Path.Combine(_configPath, "damage-types.json");
+        var config = LoadJsonFile<DamageTypesJsonConfig>(filePath);
+
+        if (config?.DamageTypes == null || config.DamageTypes.Count == 0)
+        {
+            _logger.LogWarning("No damage types found in configuration, using defaults");
+            _damageTypes = GetDefaultDamageTypes();
+            return _damageTypes;
+        }
+
+        _damageTypes = config.DamageTypes
+            .Select(ToDamageTypeDefinition)
+            .Where(d => d != null)
+            .Cast<DamageTypeDefinition>()
+            .OrderBy(d => d.SortOrder)
+            .ToList();
+
+        _logger.LogDebug("Loaded {Count} damage types", _damageTypes.Count);
+        return _damageTypes;
+    }
+
+    /// <inheritdoc/>
+    public DamageTypeDefinition? GetDamageTypeById(string damageTypeId)
+    {
+        if (string.IsNullOrWhiteSpace(damageTypeId)) return null;
+        return GetDamageTypes().FirstOrDefault(d =>
+            d.Id.Equals(damageTypeId, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private DamageTypeDefinition? ToDamageTypeDefinition(DamageTypeJsonConfig config)
+    {
+        try
+        {
+            return DamageTypeDefinition.Create(
+                id: config.Id,
+                name: config.Name,
+                description: config.Description ?? string.Empty,
+                color: config.Color ?? "white",
+                icon: config.Icon,
+                sortOrder: config.SortOrder);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to create damage type definition for {Id}", config.Id);
+            return null;
+        }
+    }
+
+    private static List<DamageTypeDefinition> GetDefaultDamageTypes() =>
+    [
+        DamageTypeDefinition.Create("physical", "Physical", "Standard physical damage from weapons and natural attacks.", "white", null, 0),
+        DamageTypeDefinition.Create("fire", "Fire", "Burning damage from flames and heat.", "red", null, 1),
+        DamageTypeDefinition.Create("ice", "Ice", "Freezing damage from cold and frost.", "cyan", null, 2),
+        DamageTypeDefinition.Create("lightning", "Lightning", "Electrical damage from storms and magic.", "yellow", null, 3),
+        DamageTypeDefinition.Create("poison", "Poison", "Toxic damage from venoms and chemicals.", "green", null, 4),
+        DamageTypeDefinition.Create("holy", "Holy", "Radiant damage from divine sources.", "gold1", null, 5),
+        DamageTypeDefinition.Create("dark", "Dark", "Necrotic damage from shadow and death magic.", "purple", null, 6)
+    ];
+
+    private MonsterDefinition? ToMonsterDefinition(MonsterDefinitionJsonConfig config)
+    {
+        try
+        {
+            var behavior = Enum.TryParse<AIBehavior>(config.Behavior, true, out var b)
+                ? b : AIBehavior.Aggressive;
+
+            // Parse resistances from dictionary
+            DamageResistances? resistances = null;
+            if (config.BaseResistances != null && config.BaseResistances.Count > 0)
+            {
+                resistances = new DamageResistances(config.BaseResistances);
+            }
+
+            return MonsterDefinition.Create(
+                id: config.Id,
+                name: config.Name,
+                description: config.Description,
+                baseHealth: config.BaseHealth,
+                baseAttack: config.BaseAttack,
+                baseDefense: config.BaseDefense,
+                experienceValue: config.ExperienceValue,
+                behavior: behavior,
+                tags: config.Tags ?? [],
+                canHeal: config.CanHeal,
+                healAmount: config.HealAmount,
+                spawnWeight: config.SpawnWeight,
+                initiativeModifier: config.InitiativeModifier,
+                baseResistances: resistances);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to create monster definition for {Id}", config.Id);
+            return null;
+        }
+    }
+
+    private static List<MonsterDefinition> GetDefaultMonsters() =>
+    [
+        MonsterDefinition.Create("goblin", "Goblin", "A small, green creature with sharp teeth and beady eyes. It looks hostile.", 30, 8, 2, 25, AIBehavior.Cowardly, ["humanoid"], spawnWeight: 100, initiativeModifier: 1),
+        MonsterDefinition.Create("skeleton", "Skeleton", "An animated pile of bones held together by dark magic.", 25, 6, 3, 20, AIBehavior.Aggressive, ["undead"], spawnWeight: 80),
+        MonsterDefinition.Create("orc", "Orc", "A large, brutish creature with green skin and tusks. It wields a crude axe.", 45, 12, 4, 40, AIBehavior.Aggressive, ["humanoid"], spawnWeight: 50, initiativeModifier: -1),
+        MonsterDefinition.Create("goblin_shaman", "Goblin Shaman", "A goblin adorned with crude fetishes and glowing runes.", 25, 6, 1, 30, AIBehavior.Support, ["humanoid", "magic"], true, 10, 30, 2),
+        MonsterDefinition.Create("slime", "Slime", "A gelatinous blob that oozes across the floor.", 40, 5, 5, 15, AIBehavior.Chaotic, ["ooze"], spawnWeight: 90, initiativeModifier: -2)
+    ];
 
     private static ProgressionDefinition ToProgressionDefinition(ProgressionJsonConfig config)
     {
@@ -988,5 +1133,45 @@ public class JsonConfigurationProvider : IGameConfigurationProvider
         public StatBonusConfig? StatBonuses { get; set; }
         public List<string>? CustomRewards { get; set; }
         public string? Title { get; set; }
+    }
+
+    // Monster JSON structure
+    private class MonstersJsonConfig
+    {
+        public List<MonsterDefinitionJsonConfig> Monsters { get; set; } = [];
+    }
+
+    private class MonsterDefinitionJsonConfig
+    {
+        public string Id { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public int BaseHealth { get; set; }
+        public int BaseAttack { get; set; }
+        public int BaseDefense { get; set; }
+        public int ExperienceValue { get; set; }
+        public string Behavior { get; set; } = "Aggressive";
+        public List<string>? Tags { get; set; }
+        public bool CanHeal { get; set; }
+        public int? HealAmount { get; set; }
+        public int SpawnWeight { get; set; } = 100;
+        public int InitiativeModifier { get; set; }
+        public Dictionary<string, int>? BaseResistances { get; set; }
+    }
+
+    // Damage Type JSON structure
+    private class DamageTypesJsonConfig
+    {
+        public List<DamageTypeJsonConfig> DamageTypes { get; set; } = [];
+    }
+
+    private class DamageTypeJsonConfig
+    {
+        public string Id { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
+        public string? Description { get; set; }
+        public string? Color { get; set; }
+        public string? Icon { get; set; }
+        public int SortOrder { get; set; }
     }
 }

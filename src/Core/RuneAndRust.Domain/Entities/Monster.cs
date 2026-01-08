@@ -103,6 +103,15 @@ public class Monster : IEntity
     public int? HealAmount { get; private set; }
 
     /// <summary>
+    /// Gets the damage resistances for this monster instance.
+    /// </summary>
+    /// <remarks>
+    /// Copied from MonsterDefinition.BaseResistances on spawn.
+    /// May be modified by traits or temporary effects.
+    /// </remarks>
+    public DamageResistances Resistances { get; private set; } = DamageResistances.None;
+
+    /// <summary>
     /// Private parameterless constructor for Entity Framework Core.
     /// </summary>
     private Monster()
@@ -121,6 +130,7 @@ public class Monster : IEntity
     /// <param name="initiativeModifier">The initiative modifier (default 0).</param>
     /// <param name="monsterDefinitionId">The definition ID for grouping (optional).</param>
     /// <param name="experienceValue">The XP awarded when defeated (default 0).</param>
+    /// <param name="resistances">The damage resistances for this monster (optional).</param>
     /// <exception cref="ArgumentNullException">Thrown when name or description is null.</exception>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when maxHealth is not positive.</exception>
     public Monster(
@@ -130,7 +140,8 @@ public class Monster : IEntity
         Stats stats,
         int initiativeModifier = 0,
         string? monsterDefinitionId = null,
-        int experienceValue = 0)
+        int experienceValue = 0,
+        DamageResistances? resistances = null)
     {
         Id = Guid.NewGuid();
         Name = name ?? throw new ArgumentNullException(nameof(name));
@@ -141,6 +152,7 @@ public class Monster : IEntity
         InitiativeModifier = initiativeModifier;
         MonsterDefinitionId = monsterDefinitionId;
         ExperienceValue = Math.Max(0, experienceValue);
+        Resistances = resistances ?? DamageResistances.None;
     }
 
     /// <summary>
@@ -202,6 +214,7 @@ public class Monster : IEntity
     /// Factory method to create a basic goblin enemy with Cowardly behavior.
     /// </summary>
     /// <returns>A new goblin monster with 25 XP value.</returns>
+    [Obsolete("Use IMonsterService.SpawnMonster(\"goblin\") instead. This method will be removed in a future version.")]
     public static Monster CreateGoblin()
     {
         return new(
@@ -221,6 +234,7 @@ public class Monster : IEntity
     /// Factory method to create a skeleton enemy with Aggressive behavior.
     /// </summary>
     /// <returns>A new skeleton monster with 20 XP value.</returns>
+    [Obsolete("Use IMonsterService.SpawnMonster(\"skeleton\") instead. This method will be removed in a future version.")]
     public static Monster CreateSkeleton()
     {
         return new(
@@ -240,6 +254,7 @@ public class Monster : IEntity
     /// Factory method to create an orc enemy with Aggressive behavior.
     /// </summary>
     /// <returns>A new orc monster with 40 XP value.</returns>
+    [Obsolete("Use IMonsterService.SpawnMonster(\"orc\") instead. This method will be removed in a future version.")]
     public static Monster CreateOrc()
     {
         return new(
@@ -259,6 +274,7 @@ public class Monster : IEntity
     /// Factory method to create a goblin shaman with Support behavior.
     /// </summary>
     /// <returns>A new goblin shaman monster with 30 XP value.</returns>
+    [Obsolete("Use IMonsterService.SpawnMonster(\"goblin_shaman\") instead. This method will be removed in a future version.")]
     public static Monster CreateGoblinShaman()
     {
         var shaman = new Monster(
@@ -281,6 +297,7 @@ public class Monster : IEntity
     /// Factory method to create a slime enemy with Chaotic behavior.
     /// </summary>
     /// <returns>A new slime monster with 15 XP value.</returns>
+    [Obsolete("Use IMonsterService.SpawnMonster(\"slime\") instead. This method will be removed in a future version.")]
     public static Monster CreateSlime()
     {
         return new(

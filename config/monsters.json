@@ -1,0 +1,92 @@
+{
+  "monsters": [
+    {
+      "id": "goblin",
+      "name": "Goblin",
+      "description": "A small, green creature with sharp teeth and beady eyes. It looks hostile.",
+      "baseHealth": 30,
+      "baseAttack": 8,
+      "baseDefense": 2,
+      "experienceValue": 25,
+      "behavior": "Cowardly",
+      "tags": ["humanoid"],
+      "canHeal": false,
+      "spawnWeight": 100,
+      "initiativeModifier": 1,
+      "baseResistances": {}
+    },
+    {
+      "id": "skeleton",
+      "name": "Skeleton",
+      "description": "An animated pile of bones held together by dark magic.",
+      "baseHealth": 25,
+      "baseAttack": 6,
+      "baseDefense": 3,
+      "experienceValue": 20,
+      "behavior": "Aggressive",
+      "tags": ["undead"],
+      "canHeal": false,
+      "spawnWeight": 80,
+      "initiativeModifier": 0,
+      "baseResistances": {
+        "physical": 25,
+        "fire": -50,
+        "poison": 100,
+        "holy": -50,
+        "dark": 50
+      }
+    },
+    {
+      "id": "orc",
+      "name": "Orc",
+      "description": "A large, brutish creature with green skin and tusks. It wields a crude axe.",
+      "baseHealth": 45,
+      "baseAttack": 12,
+      "baseDefense": 4,
+      "experienceValue": 40,
+      "behavior": "Aggressive",
+      "tags": ["humanoid"],
+      "canHeal": false,
+      "spawnWeight": 50,
+      "initiativeModifier": -1,
+      "baseResistances": {}
+    },
+    {
+      "id": "goblin_shaman",
+      "name": "Goblin Shaman",
+      "description": "A goblin adorned with crude fetishes and glowing runes.",
+      "baseHealth": 25,
+      "baseAttack": 6,
+      "baseDefense": 1,
+      "experienceValue": 30,
+      "behavior": "Support",
+      "tags": ["humanoid", "magic"],
+      "canHeal": true,
+      "healAmount": 10,
+      "spawnWeight": 30,
+      "initiativeModifier": 2,
+      "baseResistances": {}
+    },
+    {
+      "id": "slime",
+      "name": "Slime",
+      "description": "A gelatinous blob that oozes across the floor.",
+      "baseHealth": 40,
+      "baseAttack": 5,
+      "baseDefense": 5,
+      "experienceValue": 15,
+      "behavior": "Chaotic",
+      "tags": ["ooze"],
+      "canHeal": false,
+      "spawnWeight": 90,
+      "initiativeModifier": -2,
+      "baseResistances": {
+        "physical": 50,
+        "fire": -25,
+        "ice": -25,
+        "lightning": -50,
+        "poison": 100
+      }
+    }
+  ]
+}

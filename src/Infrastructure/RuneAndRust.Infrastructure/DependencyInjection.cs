@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using RuneAndRust.Application.Configuration;
 using RuneAndRust.Application.Interfaces;
 using RuneAndRust.Application.Services;
+using RuneAndRust.Domain.Interfaces;
 using RuneAndRust.Domain.Services;
 using RuneAndRust.Infrastructure.Configuration;
 using RuneAndRust.Infrastructure.Persistence;
@@ -108,6 +109,20 @@ public static class DependencyInjection
 
         // Progression system service (v0.0.8b)
         services.AddScoped<ProgressionService>();
+
+        // Monster system service (v0.0.9a)
+        services.AddScoped<IMonsterService>(sp =>
+        {
+            var configProvider = sp.GetRequiredService<IGameConfigurationProvider>();
+            var logger = sp.GetRequiredService<ILogger<MonsterService>>();
+            return new MonsterService(
+                configProvider.GetMonsters,
+                configProvider.GetMonsterById,
+                logger);
+        });
+
+        // Damage calculation service (v0.0.9b)
+        services.AddScoped<IDamageCalculationService, DamageCalculationService>();
 
         return services;
     }

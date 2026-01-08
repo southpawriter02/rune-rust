@@ -323,6 +323,14 @@ public class Player : IEntity
     public Inventory Inventory { get; private set; }
 
     /// <summary>
+    /// Gets the player's damage resistances.
+    /// </summary>
+    /// <remarks>
+    /// Can be modified by equipment, buffs, or class abilities.
+    /// </remarks>
+    public DamageResistances Resistances { get; private set; } = DamageResistances.None;
+
+    /// <summary>
     /// Gets the player's currently equipped items, keyed by equipment slot.
     /// </summary>
     /// <remarks>
@@ -473,6 +481,19 @@ public class Player : IEntity
     public void MoveTo(Position newPosition)
     {
         Position = newPosition;
+    }
+
+    /// <summary>
+    /// Sets the player's damage resistances.
+    /// </summary>
+    /// <param name="resistances">The new resistances to apply.</param>
+    /// <remarks>
+    /// This replaces the current resistances entirely.
+    /// Use for equipment changes or buff applications.
+    /// </remarks>
+    public void SetResistances(DamageResistances resistances)
+    {
+        Resistances = resistances;
     }
 
     /// <summary>

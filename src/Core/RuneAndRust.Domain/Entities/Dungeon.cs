@@ -199,7 +199,10 @@ public class Dungeon : IEntity
             "A narrow corridor stretches into darkness. Strange scratching sounds echo from deeper within. The walls are covered in mysterious runes that seem to pulse with faint light.",
             new Position(0, 2)
         );
+        // TODO: Refactor to use IMonsterService when DI is available in factory methods
+#pragma warning disable CS0618 // Type or member is obsolete
         passage.AddMonster(Monster.CreateGoblin());
+#pragma warning restore CS0618
 
         // Add rooms to dungeon
         dungeon.AddRoom(entrance, isStartingRoom: true);

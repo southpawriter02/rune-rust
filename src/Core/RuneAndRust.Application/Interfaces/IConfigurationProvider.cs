@@ -155,6 +155,32 @@ public interface IGameConfigurationProvider
     /// </summary>
     /// <returns>The progression definition, or default if not configured.</returns>
     ProgressionDefinition GetProgressionConfiguration();
+
+    /// <summary>
+    /// Gets all monster definitions.
+    /// </summary>
+    /// <returns>Read-only list of monster definitions.</returns>
+    IReadOnlyList<MonsterDefinition> GetMonsters();
+
+    /// <summary>
+    /// Gets a monster definition by ID.
+    /// </summary>
+    /// <param name="monsterId">The monster identifier.</param>
+    /// <returns>The monster definition or null if not found.</returns>
+    MonsterDefinition? GetMonsterById(string monsterId);
+
+    /// <summary>
+    /// Gets all damage type definitions.
+    /// </summary>
+    /// <returns>Read-only list of damage type definitions.</returns>
+    IReadOnlyList<DamageTypeDefinition> GetDamageTypes();
+
+    /// <summary>
+    /// Gets a damage type definition by ID.
+    /// </summary>
+    /// <param name="damageTypeId">The damage type identifier.</param>
+    /// <returns>The damage type definition or null if not found.</returns>
+    DamageTypeDefinition? GetDamageTypeById(string damageTypeId);
 }
 
 /// <summary>
