@@ -23,6 +23,7 @@ public class TurnProcessingTests
     private EquipmentService _equipmentService = null!;
     private ExperienceService _experienceService = null!;
     private ProgressionService _progressionService = null!;
+    private Mock<ILootService> _lootServiceMock = null!;
     private GameSessionService _service = null!;
 
     [SetUp]
@@ -55,6 +56,8 @@ public class TurnProcessingTests
         var mockProgressionLogger = new Mock<ILogger<ProgressionService>>();
         _progressionService = new ProgressionService(mockProgressionLogger.Object);
 
+        _lootServiceMock = new Mock<ILootService>();
+
         _service = new GameSessionService(
             _repositoryMock.Object,
             _loggerMock.Object,
@@ -64,7 +67,8 @@ public class TurnProcessingTests
             _diceServiceMock.Object,
             _equipmentService,
             _experienceService,
-            _progressionService);
+            _progressionService,
+            _lootServiceMock.Object);
     }
 
     [Test]

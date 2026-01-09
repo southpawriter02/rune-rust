@@ -241,4 +241,18 @@ public interface IGameRenderer
     /// - XP needed for next level
     /// </remarks>
     Task RenderLevelUpAsync(LevelUpDto levelUp, CancellationToken ct = default);
+
+    // ===== Loot Display (v0.0.9d) =====
+
+    /// <summary>
+    /// Renders loot dropped from a defeated monster.
+    /// </summary>
+    /// <param name="lootDrop">The loot drop information to display.</param>
+    /// <param name="ct">Cancellation token for async operation.</param>
+    /// <remarks>
+    /// Display should include:
+    /// - Items dropped with quantities
+    /// - Currency amounts with color
+    /// </remarks>
+    Task RenderLootDropAsync(LootDropDto lootDrop, CancellationToken ct = default);
 }

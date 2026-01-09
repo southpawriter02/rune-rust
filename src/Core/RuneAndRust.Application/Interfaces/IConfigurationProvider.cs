@@ -209,6 +209,21 @@ public interface IGameConfigurationProvider
     /// <param name="traitId">The trait identifier.</param>
     /// <returns>The monster trait definition or null if not found.</returns>
     MonsterTrait? GetTraitById(string traitId);
+
+    // ===== Currency Definitions (v0.0.9d) =====
+
+    /// <summary>
+    /// Gets all currency definitions.
+    /// </summary>
+    /// <returns>Read-only list of currency definitions.</returns>
+    IReadOnlyList<CurrencyDefinition> GetCurrencies();
+
+    /// <summary>
+    /// Gets a currency definition by ID.
+    /// </summary>
+    /// <param name="currencyId">The currency identifier.</param>
+    /// <returns>The currency definition or null if not found.</returns>
+    CurrencyDefinition? GetCurrencyById(string currencyId);
 }
 
 /// <summary>

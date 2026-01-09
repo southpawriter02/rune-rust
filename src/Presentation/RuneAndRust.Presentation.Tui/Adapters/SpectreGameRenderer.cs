@@ -848,4 +848,40 @@ public class SpectreGameRenderer : IGameRenderer
 
         return string.Join("\n", lines);
     }
+
+    // ===== Loot Display (v0.0.9d) =====
+
+    /// <inheritdoc/>
+    public Task RenderLootDropAsync(LootDropDto lootDrop, CancellationToken ct = default)
+    {
+        if (lootDrop.IsEmpty)
+        {
+            return Task.CompletedTask;
+        }
+
+        _logger.LogDebug("Rendering loot drop: {ItemCount} items, {CurrencyCount} currency types",
+            lootDrop.Items.Count, lootDrop.Currency.Count);
+
+        AnsiConsole.WriteLine();
+        AnsiConsole.MarkupLine("[yellow]✦ Loot Dropped![/]");
+
+        // Render currency
+        foreach (var currency in lootDrop.Currency)
+        {
+            var color = currency.CurrencyId.Equals("gold", StringComparison.OrdinalIgnoreCase) ? "yellow" : "white";
+            AnsiConsole.MarkupLine($"  [{color}]•[/] [{color}]{currency.Amount} {Markup.Escape(currency.CurrencyId.ToUpperInvariant())}[/]");
+        }
+
+        // Render items
+        foreach (var item in lootDrop.Items)
+        {
+            var quantityText = item.Quantity > 1 ? $" x{item.Quantity}" : "";
+            AnsiConsole.MarkupLine($"  [green]•[/] [white]{Markup.Escape(item.Name)}{quantityText}[/]");
+        }
+
+        AnsiConsole.MarkupLine("[dim](Use 'loot' or 'take all' to collect)[/]");
+        AnsiConsole.WriteLine();
+
+        return Task.CompletedTask;
+    }
 }

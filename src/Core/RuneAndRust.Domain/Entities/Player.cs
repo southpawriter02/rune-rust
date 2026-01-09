@@ -330,6 +330,18 @@ public class Player : IEntity
     /// </remarks>
     public DamageResistances Resistances { get; private set; } = DamageResistances.None;
 
+    // ===== Currency Properties (v0.0.9d) =====
+
+    /// <summary>
+    /// Dictionary of currency amounts owned by the player.
+    /// </summary>
+    private readonly Dictionary<string, int> _currency = new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// Gets a read-only view of the player's currency.
+    /// </summary>
+    public IReadOnlyDictionary<string, int> Currency => _currency.AsReadOnly();
+
     /// <summary>
     /// Gets the player's currently equipped items, keyed by equipment slot.
     /// </summary>
@@ -705,6 +717,84 @@ public class Player : IEntity
             bonus += item.StatModifiers.Defense;
         }
         return bonus;
+    }
+
+    // ===== Currency Methods (v0.0.9d) =====
+
+    /// <summary>
+    /// Gets the amount of a specific currency the player has.
+    /// </summary>
+    /// <param name="currencyId">The currency ID.</param>
+    /// <returns>The amount, or 0 if the player has none.</returns>
+    public int GetCurrency(string currencyId)
+    {
+        if (string.IsNullOrWhiteSpace(currencyId))
+            return 0;
+
+        return _currency.TryGetValue(currencyId.ToLowerInvariant(), out var amount)
+            ? amount
+            : 0;
+    }
+
+    /// <summary>
+    /// Adds currency to the player.
+    /// </summary>
+    /// <param name="currencyId">The currency ID.</param>
+    /// <param name="amount">The amount to add.</param>
+    /// <exception cref="ArgumentException">Thrown when currencyId is null or whitespace.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when amount is negative.</exception>
+    public void AddCurrency(string currencyId, int amount)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(currencyId);
+        ArgumentOutOfRangeException.ThrowIfNegative(amount);
+
+        if (amount == 0) return;
+
+        var id = currencyId.ToLowerInvariant();
+        if (_currency.TryGetValue(id, out var current))
+        {
+            _currency[id] = current + amount;
+        }
+        else
+        {
+            _currency[id] = amount;
+        }
+    }
+
+    /// <summary>
+    /// Removes currency from the player.
+    /// </summary>
+    /// <param name="currencyId">The currency ID.</param>
+    /// <param name="amount">The amount to remove.</param>
+    /// <returns>True if the player had enough currency; false otherwise.</returns>
+    /// <exception cref="ArgumentException">Thrown when currencyId is null or whitespace.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when amount is negative.</exception>
+    public bool RemoveCurrency(string currencyId, int amount)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(currencyId);
+        ArgumentOutOfRangeException.ThrowIfNegative(amount);
+
+        if (amount == 0) return true;
+
+        var id = currencyId.ToLowerInvariant();
+        var current = GetCurrency(id);
+
+        if (current < amount)
+            return false;
+
+        _currency[id] = current - amount;
+        return true;
+    }
+
+    /// <summary>
+    /// Checks if the player can afford a specific amount of currency.
+    /// </summary>
+    /// <param name="currencyId">The currency ID.</param>
+    /// <param name="amount">The amount needed.</param>
+    /// <returns>True if the player has enough.</returns>
+    public bool CanAfford(string currencyId, int amount)
+    {
+        return GetCurrency(currencyId) >= amount;
     }
 
     /// <summary>

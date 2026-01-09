@@ -37,6 +37,7 @@ public class JsonConfigurationProvider : IGameConfigurationProvider
     private IReadOnlyList<DamageTypeDefinition>? _damageTypes;
     private IReadOnlyList<TierDefinition>? _tiers;
     private IReadOnlyList<MonsterTrait>? _traits;
+    private IReadOnlyList<CurrencyDefinition>? _currencies;
 
     private static readonly JsonSerializerOptions DefaultJsonOptions = new()
     {
@@ -554,6 +555,91 @@ public class JsonConfigurationProvider : IGameConfigurationProvider
             t.Id.Equals(traitId, StringComparison.OrdinalIgnoreCase));
     }
 
+    // ===== Currency Methods (v0.0.9d) =====
+
+    /// <inheritdoc/>
+    public IReadOnlyList<CurrencyDefinition> GetCurrencies()
+    {
+        if (_currencies != null) return _currencies;
+
+        var filePath = Path.Combine(_configPath, "currency.json");
+        var config = LoadJsonFile<CurrencyJsonConfig>(filePath);
+
+        if (config?.Currencies == null || config.Currencies.Count == 0)
+        {
+            _logger.LogWarning("No currencies found in configuration, using defaults");
+            _currencies = GetDefaultCurrencies();
+            return _currencies;
+        }
+
+        _currencies = config.Currencies
+            .Select(ToCurrencyDefinition)
+            .Where(c => c != null)
+            .Cast<CurrencyDefinition>()
+            .OrderBy(c => c.SortOrder)
+            .ToList();
+
+        _logger.LogDebug("Loaded {Count} currencies", _currencies.Count);
+        return _currencies;
+    }
+
+    /// <inheritdoc/>
+    public CurrencyDefinition? GetCurrencyById(string currencyId)
+    {
+        if (string.IsNullOrWhiteSpace(currencyId)) return null;
+        return GetCurrencies().FirstOrDefault(c =>
+            c.Id.Equals(currencyId, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private CurrencyDefinition? ToCurrencyDefinition(CurrencyConfigJsonEntry config)
+    {
+        try
+        {
+            return CurrencyDefinition.Create(
+                id: config.Id,
+                name: config.Name,
+                pluralName: config.PluralName ?? config.Name,
+                symbol: config.Symbol ?? config.Id[..1].ToUpper(),
+                color: config.Color ?? "yellow",
+                sortOrder: config.SortOrder);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to create currency definition for {Id}", config.Id);
+            return null;
+        }
+    }
+
+    private static List<CurrencyDefinition> GetDefaultCurrencies() =>
+    [
+        CurrencyDefinition.Gold
+    ];
+
+    private static LootTable? ToLootTable(LootTableJsonConfig? config)
+    {
+        if (config == null)
+            return null;
+
+        var entries = config.Entries?
+            .Select(e => LootEntry.Create(
+                e.ItemId,
+                e.Weight,
+                e.MinQuantity,
+                e.MaxQuantity,
+                e.DropChance))
+            .ToList() ?? [];
+
+        var currencyDrops = config.CurrencyDrops?
+            .Select(c => CurrencyDrop.Create(
+                c.CurrencyId,
+                c.MinAmount,
+                c.MaxAmount,
+                c.DropChance))
+            .ToList() ?? [];
+
+        return LootTable.Create(entries, currencyDrops);
+    }
+
     private TierDefinition? ToTierDefinition(TierJsonConfig config)
     {
         try
@@ -677,6 +763,13 @@ public class JsonConfigurationProvider : IGameConfigurationProvider
                 };
             }
 
+            // Parse loot table (v0.0.9d)
+            LootTable? lootTable = null;
+            if (config.LootTable != null)
+            {
+                lootTable = ToLootTable(config.LootTable);
+            }
+
             return MonsterDefinition.Create(
                 id: config.Id,
                 name: config.Name,
@@ -694,7 +787,8 @@ public class JsonConfigurationProvider : IGameConfigurationProvider
                 baseResistances: resistances,
                 possibleTiers: config.PossibleTiers ?? ["common"],
                 possibleTraits: config.PossibleTraits ?? [],
-                nameGenerator: nameGenerator);
+                nameGenerator: nameGenerator,
+                lootTable: lootTable);
         }
         catch (Exception ex)
         {
@@ -1315,6 +1409,8 @@ public class JsonConfigurationProvider : IGameConfigurationProvider
         public List<string>? PossibleTiers { get; set; }
         public List<string>? PossibleTraits { get; set; }
         public NameGeneratorJsonConfig? NameGenerator { get; set; }
+        // v0.0.9d additions
+        public LootTableJsonConfig? LootTable { get; set; }
     }
 
     private class NameGeneratorJsonConfig
@@ -1379,5 +1475,45 @@ public class JsonConfigurationProvider : IGameConfigurationProvider
         public List<string>? Tags { get; set; }
         public string? Color { get; set; }
         public int SortOrder { get; set; } = 0;
+    }
+
+    // Currency JSON structure (v0.0.9d)
+    private class CurrencyJsonConfig
+    {
+        public List<CurrencyConfigJsonEntry> Currencies { get; set; } = [];
+    }
+
+    private class CurrencyConfigJsonEntry
+    {
+        public string Id { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
+        public string? PluralName { get; set; }
+        public string? Symbol { get; set; }
+        public string? Color { get; set; }
+        public int SortOrder { get; set; } = 0;
+    }
+
+    // Loot Table JSON structure (v0.0.9d)
+    private class LootTableJsonConfig
+    {
+        public List<LootEntryJsonConfig>? Entries { get; set; }
+        public List<CurrencyDropJsonConfig>? CurrencyDrops { get; set; }
+    }
+
+    private class LootEntryJsonConfig
+    {
+        public string ItemId { get; set; } = string.Empty;
+        public int Weight { get; set; } = 100;
+        public int MinQuantity { get; set; } = 1;
+        public int MaxQuantity { get; set; } = 1;
+        public float DropChance { get; set; } = 1.0f;
+    }
+
+    private class CurrencyDropJsonConfig
+    {
+        public string CurrencyId { get; set; } = "gold";
+        public int MinAmount { get; set; } = 0;
+        public int MaxAmount { get; set; } = 0;
+        public float DropChance { get; set; } = 1.0f;
     }
 }

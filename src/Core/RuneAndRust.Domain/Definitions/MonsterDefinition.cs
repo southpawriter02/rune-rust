@@ -129,6 +129,17 @@ public class MonsterDefinition
     /// </remarks>
     public NameGeneratorConfig? NameGenerator { get; init; }
 
+    // ===== Loot Properties (v0.0.9d) =====
+
+    /// <summary>
+    /// Gets the loot table for this monster type.
+    /// </summary>
+    /// <remarks>
+    /// Defines what items and currency drop when this monster is defeated.
+    /// Null means no loot drops.
+    /// </remarks>
+    public LootTable? LootTable { get; init; }
+
     /// <summary>
     /// Private parameterless constructor for JSON deserialization.
     /// </summary>
@@ -156,6 +167,7 @@ public class MonsterDefinition
     /// <param name="possibleTiers">The tier IDs this monster can spawn as.</param>
     /// <param name="possibleTraits">The trait IDs this monster can have.</param>
     /// <param name="nameGenerator">Custom name generator configuration.</param>
+    /// <param name="lootTable">The loot table defining drops on defeat.</param>
     /// <returns>A new validated MonsterDefinition.</returns>
     /// <exception cref="ArgumentException">Thrown when id, name, or description is null or empty.</exception>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when baseHealth is not positive.</exception>
@@ -176,7 +188,8 @@ public class MonsterDefinition
         DamageResistances? baseResistances = null,
         IEnumerable<string>? possibleTiers = null,
         IEnumerable<string>? possibleTraits = null,
-        NameGeneratorConfig? nameGenerator = null)
+        NameGeneratorConfig? nameGenerator = null,
+        LootTable? lootTable = null)
     {
         if (string.IsNullOrWhiteSpace(id))
             throw new ArgumentException("Monster definition ID cannot be null or empty.", nameof(id));
@@ -205,7 +218,8 @@ public class MonsterDefinition
             BaseResistances = baseResistances ?? DamageResistances.None,
             PossibleTiers = possibleTiers?.ToList() ?? ["common"],
             PossibleTraits = possibleTraits?.ToList() ?? [],
-            NameGenerator = nameGenerator
+            NameGenerator = nameGenerator,
+            LootTable = lootTable
         };
     }
 

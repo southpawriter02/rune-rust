@@ -137,6 +137,9 @@ public static class DependencyInjection
         // Damage calculation service (v0.0.9b)
         services.AddScoped<IDamageCalculationService, DamageCalculationService>();
 
+        // Loot system service (v0.0.9d)
+        services.AddScoped<ILootService, LootService>();
+
         return services;
     }
 }

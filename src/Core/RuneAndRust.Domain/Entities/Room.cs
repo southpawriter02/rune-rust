@@ -49,6 +49,18 @@ public class Room : IEntity
     /// </summary>
     private readonly List<Monster> _monsters = [];
 
+    // ===== Dropped Loot Fields (v0.0.9d) =====
+
+    /// <summary>
+    /// List of items dropped as loot in this room.
+    /// </summary>
+    private readonly List<DroppedItem> _droppedItems = [];
+
+    /// <summary>
+    /// Dictionary of currency dropped in this room.
+    /// </summary>
+    private readonly Dictionary<string, int> _droppedCurrency = new(StringComparer.OrdinalIgnoreCase);
+
     /// <summary>
     /// Gets a read-only dictionary of exits from this room.
     /// </summary>
@@ -73,6 +85,23 @@ public class Room : IEntity
     /// Gets a value indicating whether this room has any items.
     /// </summary>
     public bool HasItems => _items.Count > 0;
+
+    // ===== Dropped Loot Properties (v0.0.9d) =====
+
+    /// <summary>
+    /// Gets a read-only list of dropped items in this room.
+    /// </summary>
+    public IReadOnlyList<DroppedItem> DroppedItems => _droppedItems.AsReadOnly();
+
+    /// <summary>
+    /// Gets a read-only dictionary of dropped currency in this room.
+    /// </summary>
+    public IReadOnlyDictionary<string, int> DroppedCurrency => _droppedCurrency.AsReadOnly();
+
+    /// <summary>
+    /// Gets a value indicating whether this room has any dropped loot.
+    /// </summary>
+    public bool HasDroppedLoot => _droppedItems.Count > 0 || _droppedCurrency.Count > 0;
 
     /// <summary>
     /// Private parameterless constructor for Entity Framework Core.
@@ -185,6 +214,68 @@ public class Room : IEntity
 
         var directions = _exits.Keys.Select(d => d.ToString().ToLower());
         return $"Exits: {string.Join(", ", directions)}";
+    }
+
+    // ===== Dropped Loot Methods (v0.0.9d) =====
+
+    /// <summary>
+    /// Adds loot to this room from a loot drop.
+    /// </summary>
+    /// <param name="loot">The loot drop to add.</param>
+    public void AddLoot(LootDrop loot)
+    {
+        if (loot.IsEmpty) return;
+
+        if (loot.HasItems)
+        {
+            foreach (var item in loot.Items)
+            {
+                _droppedItems.Add(item);
+            }
+        }
+
+        if (loot.HasCurrency)
+        {
+            foreach (var kvp in loot.Currency)
+            {
+                if (_droppedCurrency.TryGetValue(kvp.Key, out var existing))
+                {
+                    _droppedCurrency[kvp.Key] = existing + kvp.Value;
+                }
+                else
+                {
+                    _droppedCurrency[kvp.Key] = kvp.Value;
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Collects all dropped loot from this room.
+    /// </summary>
+    /// <returns>A LootDrop containing all collected loot.</returns>
+    public LootDrop CollectAllLoot()
+    {
+        if (!HasDroppedLoot)
+        {
+            return LootDrop.Empty;
+        }
+
+        var items = _droppedItems.ToList();
+        var currency = new Dictionary<string, int>(_droppedCurrency, StringComparer.OrdinalIgnoreCase);
+
+        ClearDroppedLoot();
+
+        return LootDrop.Create(items, currency);
+    }
+
+    /// <summary>
+    /// Clears all dropped loot from this room.
+    /// </summary>
+    public void ClearDroppedLoot()
+    {
+        _droppedItems.Clear();
+        _droppedCurrency.Clear();
     }
 
     /// <summary>

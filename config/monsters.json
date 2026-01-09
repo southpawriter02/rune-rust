@@ -20,6 +20,15 @@
         "prefixes": ["Gn", "Sn", "Gr", "Kr", "Zn"],
         "suffixes": ["ik", "ob", "ax", "ek", "uk"],
         "titleFormat": "{0} the {1}"
+      },
+      "lootTable": {
+        "entries": [
+          { "itemId": "health_potion", "weight": 100, "minQuantity": 1, "maxQuantity": 1, "dropChance": 0.15 },
+          { "itemId": "rusty_dagger", "weight": 50, "minQuantity": 1, "maxQuantity": 1, "dropChance": 0.05 }
+        ],
+        "currencyDrops": [
+          { "currencyId": "gold", "minAmount": 5, "maxAmount": 15, "dropChance": 0.80 }
+        ]
       }
     },
     {
@@ -48,6 +57,15 @@
         "prefixes": ["Sk", "Bl", "Dr", "Vr", "Th"],
         "suffixes": ["ull", "ax", "or", "im", "us"],
         "titleFormat": "{0} the Bone {1}"
+      },
+      "lootTable": {
+        "entries": [
+          { "itemId": "bone_dust", "weight": 100, "minQuantity": 1, "maxQuantity": 3, "dropChance": 0.30 },
+          { "itemId": "ancient_coin", "weight": 50, "minQuantity": 1, "maxQuantity": 1, "dropChance": 0.10 }
+        ],
+        "currencyDrops": [
+          { "currencyId": "gold", "minAmount": 8, "maxAmount": 20, "dropChance": 0.90 }
+        ]
       }
     },
     {
@@ -70,6 +88,16 @@
         "prefixes": ["Gr", "Kr", "Th", "Br", "Dr"],
         "suffixes": ["ok", "ag", "ul", "ax", "or"],
         "titleFormat": "{0} the {1}"
+      },
+      "lootTable": {
+        "entries": [
+          { "itemId": "health_potion", "weight": 100, "minQuantity": 1, "maxQuantity": 1, "dropChance": 0.25 },
+          { "itemId": "iron_sword", "weight": 50, "minQuantity": 1, "maxQuantity": 1, "dropChance": 0.10 },
+          { "itemId": "orcish_helm", "weight": 30, "minQuantity": 1, "maxQuantity": 1, "dropChance": 0.05 }
+        ],
+        "currencyDrops": [
+          { "currencyId": "gold", "minAmount": 15, "maxAmount": 35, "dropChance": 1.0 }
+        ]
       }
     },
     {
@@ -93,6 +121,15 @@
         "prefixes": ["Zn", "Xr", "Wr", "Qz", "Vx"],
         "suffixes": ["ik", "ax", "um", "ek", "oz"],
         "titleFormat": "{0} the Shaman"
+      },
+      "lootTable": {
+        "entries": [
+          { "itemId": "mana_potion", "weight": 100, "minQuantity": 1, "maxQuantity": 1, "dropChance": 0.20 },
+          { "itemId": "fetish_charm", "weight": 50, "minQuantity": 1, "maxQuantity": 1, "dropChance": 0.10 }
+        ],
+        "currencyDrops": [
+          { "currencyId": "gold", "minAmount": 10, "maxAmount": 25, "dropChance": 0.85 }
+        ]
       }
     },
     {
@@ -121,6 +158,14 @@
         "prefixes": ["Bl", "Gl", "Sl", "Sp", "Sq"],
         "suffixes": ["ob", "ub", "op", "ip", "oop"],
         "titleFormat": "{0} the {1}"
+      },
+      "lootTable": {
+        "entries": [
+          { "itemId": "slime_residue", "weight": 100, "minQuantity": 1, "maxQuantity": 3, "dropChance": 0.50 }
+        ],
+        "currencyDrops": [
+          { "currencyId": "gold", "minAmount": 1, "maxAmount": 5, "dropChance": 0.30 }
+        ]
       }
     }
   ]

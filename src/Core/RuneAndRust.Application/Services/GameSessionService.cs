@@ -70,6 +70,11 @@ public class GameSessionService
     private readonly ProgressionService _progressionService;
 
     /// <summary>
+    /// Service for generating and collecting loot (v0.0.9d).
+    /// </summary>
+    private readonly ILootService _lootService;
+
+    /// <summary>
     /// The currently active game session, or null if no session is active.
     /// </summary>
     private GameSession? _currentSession;
@@ -96,6 +101,7 @@ public class GameSessionService
     /// <param name="equipmentService">The service for managing equipment.</param>
     /// <param name="experienceService">The service for managing experience points.</param>
     /// <param name="progressionService">The service for managing level-up progression.</param>
+    /// <param name="lootService">The service for generating and collecting loot.</param>
     /// <param name="combatLogger">Optional logger for combat service diagnostics.</param>
     /// <exception cref="ArgumentNullException">Thrown when required parameters are null.</exception>
     public GameSessionService(
@@ -108,6 +114,7 @@ public class GameSessionService
         EquipmentService equipmentService,
         ExperienceService experienceService,
         ProgressionService progressionService,
+        ILootService lootService,
         ILogger<CombatService>? combatLogger = null)
     {
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
@@ -119,6 +126,7 @@ public class GameSessionService
         _equipmentService = equipmentService ?? throw new ArgumentNullException(nameof(equipmentService));
         _experienceService = experienceService ?? throw new ArgumentNullException(nameof(experienceService));
         _progressionService = progressionService ?? throw new ArgumentNullException(nameof(progressionService));
+        _lootService = lootService ?? throw new ArgumentNullException(nameof(lootService));
         _combatService = new CombatService(combatLogger);
         _logger.LogDebug("GameSessionService initialized");
     }
@@ -375,36 +383,36 @@ public class GameSessionService
     /// <summary>
     /// Attempts to attack a monster in the current room.
     /// </summary>
-    /// <returns>A tuple indicating success, a combat description message, optional XP gain info, and optional level-up info.</returns>
+    /// <returns>A tuple indicating success, a combat description message, optional XP gain info, optional level-up info, and optional loot info.</returns>
     /// <remarks>
     /// Attacks the first alive monster in the room using dice-based combat:
     /// Attack roll (1d10 + Finesse) vs Defense, damage roll (1d6 + Might) - armor.
     /// If the player is defeated, the game state is set to GameOver.
-    /// If the monster is defeated, experience points are awarded to the player.
+    /// If the monster is defeated, experience points are awarded to the player and loot is generated.
     /// If the player gains enough XP to level up, level-up is applied automatically.
     /// </remarks>
-    public (bool Success, string Message, ExperienceGainDto? ExperienceGain, LevelUpDto? LevelUp) TryAttack()
+    public (bool Success, string Message, ExperienceGainDto? ExperienceGain, LevelUpDto? LevelUp, LootDropDto? LootDrop) TryAttack()
     {
         _logger.LogDebug("TryAttack called");
 
         if (_currentSession == null)
         {
             _logger.LogWarning("TryAttack failed: No active game session");
-            return (false, "No active game session.", null, null);
+            return (false, "No active game session.", null, null, null);
         }
 
         var currentRoom = _currentSession.CurrentRoom;
         if (currentRoom == null)
         {
             _logger.LogError("TryAttack failed: Current room is null for session {SessionId}", _currentSession.Id);
-            return (false, "Error: Current room not found.", null, null);
+            return (false, "Error: Current room not found.", null, null, null);
         }
 
         var monster = currentRoom.GetAliveMonsters().FirstOrDefault();
         if (monster == null)
         {
             _logger.LogDebug("No monsters to attack in room: {RoomName}", currentRoom.Name);
-            return (false, "There is nothing to attack here.", null, null);
+            return (false, "There is nothing to attack here.", null, null, null);
         }
 
         var playerHealthBefore = _currentSession.Player.Health;
@@ -446,6 +454,7 @@ public class GameSessionService
 
         ExperienceGainDto? experienceGainDto = null;
         LevelUpDto? levelUpDto = null;
+        LootDropDto? lootDropDto = null;
 
         if (result.MonsterDefeated)
         {
@@ -469,6 +478,18 @@ public class GameSessionService
                 // Check for level-up after XP gain (v0.0.8b)
                 levelUpDto = CheckAndHandleLevelUp();
             }
+
+            // Generate and drop loot (v0.0.9d)
+            var loot = _lootService.GenerateLoot(monster);
+            if (!loot.IsEmpty)
+            {
+                currentRoom.AddLoot(loot);
+                lootDropDto = LootDropDto.FromDomain(loot);
+                _logger.LogInformation("Loot generated for {MonsterName}: {ItemCount} items, {CurrencyTypes} currency types",
+                    monster.Name,
+                    loot.Items?.Count ?? 0,
+                    loot.Currency?.Count ?? 0);
+            }
         }
 
         if (result.PlayerDefeated)
@@ -480,7 +501,7 @@ public class GameSessionService
             _currentSession.SetState(GameState.GameOver);
         }
 
-        return (true, description, experienceGainDto, levelUpDto);
+        return (true, description, experienceGainDto, levelUpDto, lootDropDto);
     }
 
     /// <summary>

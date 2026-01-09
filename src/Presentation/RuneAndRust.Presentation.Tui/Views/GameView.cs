@@ -341,7 +341,7 @@ public class GameView
 
     private async Task HandleAttackAsync(CancellationToken ct)
     {
-        var (success, message, experienceGain, levelUp) = _gameService.TryAttack();
+        var (success, message, experienceGain, levelUp, lootDrop) = _gameService.TryAttack();
 
         if (success)
         {
@@ -358,6 +358,12 @@ public class GameView
             if (levelUp != null)
             {
                 await _renderer.RenderLevelUpAsync(levelUp, ct);
+            }
+
+            // Display loot drop if any (v0.0.9d)
+            if (lootDrop != null && !lootDrop.IsEmpty)
+            {
+                await _renderer.RenderLootDropAsync(lootDrop, ct);
             }
 
             // Process turn-end effects (resource regen/decay, cooldown reduction)
