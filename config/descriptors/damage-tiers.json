@@ -1,0 +1,65 @@
+{
+  "category": "damage-tiers",
+  "pools": {
+    "damage_tier_glancing": {
+      "id": "damage_tier_glancing",
+      "name": "Glancing Blow (0-15%)",
+      "descriptors": [
+        { "id": "barely_scratches", "text": "barely scratching", "weight": 25 },
+        { "id": "grazes", "text": "grazing", "weight": 25 },
+        { "id": "deflects_off", "text": "deflecting off armor", "weight": 25 },
+        { "id": "nicks", "text": "nicking", "weight": 25 }
+      ]
+    },
+    "damage_tier_light": {
+      "id": "damage_tier_light",
+      "name": "Light Hit (15-30%)",
+      "descriptors": [
+        { "id": "finds_purchase", "text": "finding purchase", "weight": 25 },
+        { "id": "connects", "text": "connecting solidly", "weight": 25 },
+        { "id": "lands_blow", "text": "landing a blow", "weight": 25 },
+        { "id": "wounds", "text": "wounding", "weight": 25 }
+      ]
+    },
+    "damage_tier_solid": {
+      "id": "damage_tier_solid",
+      "name": "Solid Hit (30-50%)",
+      "descriptors": [
+        { "id": "strikes_true", "text": "striking true", "weight": 25 },
+        { "id": "lands_solidly", "text": "landing solidly", "weight": 25 },
+        { "id": "bites_deep", "text": "biting deep", "weight": 25 },
+        { "id": "connects_force", "text": "connecting with force", "weight": 25 }
+      ]
+    },
+    "damage_tier_heavy": {
+      "id": "damage_tier_heavy",
+      "name": "Heavy Hit (50-75%)",
+      "descriptors": [
+        { "id": "crashes_into", "text": "crashing into", "weight": 25 },
+        { "id": "smashes_against", "text": "smashing against", "weight": 25 },
+        { "id": "strikes_hard", "text": "striking hard", "weight": 25 },
+        { "id": "rends", "text": "rending", "weight": 25 }
+      ]
+    },
+    "damage_tier_devastating": {
+      "id": "damage_tier_devastating",
+      "name": "Devastating Hit (75-90%)",
+      "descriptors": [
+        { "id": "devastates", "text": "devastating", "weight": 25 },
+        { "id": "shatters_defenses", "text": "shattering defenses", "weight": 25 },
+        { "id": "tears_through", "text": "tearing through", "weight": 25 },
+        { "id": "crushes", "text": "crushing", "weight": 25 }
+      ]
+    },
+    "damage_tier_lethal": {
+      "id": "damage_tier_lethal",
+      "name": "Lethal Blow (90-100%+)",
+      "descriptors": [
+        { "id": "cleaves_through", "text": "cleaving through", "weight": 25 },
+        { "id": "destroys", "text": "utterly destroying", "weight": 25 },
+        { "id": "annihilates", "text": "annihilating", "weight": 25 },
+        { "id": "ends", "text": "ending", "weight": 25 }
+      ]
+    }
+  }
+}

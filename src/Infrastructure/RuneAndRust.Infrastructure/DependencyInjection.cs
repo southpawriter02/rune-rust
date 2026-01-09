@@ -105,6 +105,22 @@ public static class DependencyInjection
             return new DescriptorService(pools, theme, logger, coherenceService);
         });
 
+        // Combat descriptor service (v0.0.11b)
+        services.AddScoped(sp =>
+        {
+            var descriptorService = sp.GetRequiredService<DescriptorService>();
+            var logger = sp.GetRequiredService<ILogger<CombatDescriptorService>>();
+            return new CombatDescriptorService(descriptorService, logger);
+        });
+
+        // Ability descriptor service (v0.0.11b)
+        services.AddScoped(sp =>
+        {
+            var descriptorService = sp.GetRequiredService<DescriptorService>();
+            var logger = sp.GetRequiredService<ILogger<AbilityDescriptorService>>();
+            return new AbilityDescriptorService(descriptorService, logger);
+        });
+
         // Resource system service
         services.AddScoped<ResourceService>();
 

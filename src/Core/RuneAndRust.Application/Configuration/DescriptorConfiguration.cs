@@ -83,4 +83,34 @@ public class Descriptor
     /// Effective weight after theme adjustments (runtime only).
     /// </summary>
     public int? EffectiveWeight { get; set; }
+
+    // ===== v0.0.11b additions =====
+
+    /// <summary>
+    /// Weapon types this descriptor applies to (e.g., "sword", "axe", "bow").
+    /// Empty list means all weapon types.
+    /// </summary>
+    public IReadOnlyList<string> WeaponTypes { get; init; } = [];
+
+    /// <summary>
+    /// Damage types this descriptor applies to (e.g., "fire", "ice", "physical").
+    /// Empty list means all damage types.
+    /// </summary>
+    public IReadOnlyList<string> DamageTypes { get; init; } = [];
+
+    /// <summary>
+    /// Creature categories this descriptor applies to (e.g., "humanoid", "undead").
+    /// Empty list means all categories.
+    /// </summary>
+    public IReadOnlyList<string> CreatureCategories { get; init; } = [];
+
+    /// <summary>
+    /// Whether this descriptor is for critical hits only.
+    /// </summary>
+    public bool CriticalOnly { get; init; }
+
+    /// <summary>
+    /// Whether this descriptor is for misses/fumbles only.
+    /// </summary>
+    public bool MissOnly { get; init; }
 }
