@@ -103,6 +103,17 @@ public class Room : IEntity
     /// </summary>
     public bool HasDroppedLoot => _droppedItems.Count > 0 || _droppedCurrency.Count > 0;
 
+    // ===== Environment Context (v0.0.11a) =====
+
+    /// <summary>
+    /// Gets the environment context for this room.
+    /// </summary>
+    /// <remarks>
+    /// Environment context controls which descriptors are selected for
+    /// atmosphere generation and ensures environmental coherence.
+    /// </remarks>
+    public EnvironmentContext? Environment { get; private set; }
+
     /// <summary>
     /// Private parameterless constructor for Entity Framework Core.
     /// </summary>
@@ -276,6 +287,25 @@ public class Room : IEntity
     {
         _droppedItems.Clear();
         _droppedCurrency.Clear();
+    }
+
+    // ===== Environment Context Methods (v0.0.11a) =====
+
+    /// <summary>
+    /// Sets the environment context for this room.
+    /// </summary>
+    /// <param name="environment">The environment context to set.</param>
+    public void SetEnvironment(EnvironmentContext environment)
+    {
+        Environment = environment;
+    }
+
+    /// <summary>
+    /// Clears the environment context for this room.
+    /// </summary>
+    public void ClearEnvironment()
+    {
+        Environment = null;
     }
 
     /// <summary>

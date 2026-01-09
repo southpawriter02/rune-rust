@@ -83,13 +83,26 @@ public static class DependencyInjection
 
         // Text variety services
         services.AddScoped<LexiconService>();
+
+        // Environment coherence service (v0.0.11a)
+        services.AddScoped(sp =>
+        {
+            var configProvider = sp.GetRequiredService<IGameConfigurationProvider>();
+            var categoryConfig = configProvider.GetEnvironmentCategories();
+            var biomeConfig = configProvider.GetBiomeConfiguration();
+            var logger = sp.GetRequiredService<ILogger<EnvironmentCoherenceService>>();
+            return new EnvironmentCoherenceService(categoryConfig, biomeConfig, logger);
+        });
+
+        // Descriptor service (updated v0.0.11a with optional coherence service)
         services.AddScoped(sp =>
         {
             var configProvider = sp.GetRequiredService<IGameConfigurationProvider>();
             var pools = configProvider.GetAllDescriptorPools();
             var theme = configProvider.GetThemeConfiguration();
             var logger = sp.GetRequiredService<ILogger<DescriptorService>>();
-            return new DescriptorService(pools, theme, logger);
+            var coherenceService = sp.GetService<EnvironmentCoherenceService>();
+            return new DescriptorService(pools, theme, logger, coherenceService);
         });
 
         // Resource system service

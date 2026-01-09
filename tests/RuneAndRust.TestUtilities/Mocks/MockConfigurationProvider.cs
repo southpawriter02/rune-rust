@@ -271,4 +271,30 @@ public class MockConfigurationProvider : IGameConfigurationProvider
     public IReadOnlyList<CurrencyDefinition> GetCurrencies() => _currencies;
     public CurrencyDefinition? GetCurrencyById(string currencyId) =>
         _currencies.FirstOrDefault(c => c.Id.Equals(currencyId, StringComparison.OrdinalIgnoreCase));
+
+    // ===== Environment Configuration (v0.0.11a) =====
+
+    private EnvironmentCategoryConfiguration _environmentCategories = new();
+    private BiomeConfiguration _biomeConfiguration = new();
+
+    public EnvironmentCategoryConfiguration GetEnvironmentCategories() => _environmentCategories;
+    public BiomeConfiguration GetBiomeConfiguration() => _biomeConfiguration;
+
+    /// <summary>
+    /// Sets the environment category configuration.
+    /// </summary>
+    public MockConfigurationProvider WithEnvironmentCategories(EnvironmentCategoryConfiguration config)
+    {
+        _environmentCategories = config;
+        return this;
+    }
+
+    /// <summary>
+    /// Sets the biome configuration.
+    /// </summary>
+    public MockConfigurationProvider WithBiomeConfiguration(BiomeConfiguration config)
+    {
+        _biomeConfiguration = config;
+        return this;
+    }
 }

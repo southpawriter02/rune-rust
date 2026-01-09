@@ -1,0 +1,135 @@
+{
+  "version": "1.0",
+  "biomes": {
+    "cave": {
+      "id": "cave",
+      "name": "Cave",
+      "description": "Natural underground cavern system",
+      "defaultCategoryValues": {
+        "climate": "cold",
+        "lighting": "dim",
+        "era": "ancient"
+      },
+      "impliedTags": ["underground", "natural", "stone", "cave"],
+      "descriptorPoolOverrides": {
+        "environmental.lighting": "environmental.lighting.cave",
+        "environmental.sounds": "environmental.sounds.cave"
+      },
+      "emphasizedTerms": ["dripping", "echo", "stone", "stalactite"],
+      "excludedTerms": ["sunlight", "breeze", "grass"]
+    },
+    "dungeon": {
+      "id": "dungeon",
+      "name": "Dungeon",
+      "description": "Constructed underground passages and chambers",
+      "defaultCategoryValues": {
+        "climate": "cold",
+        "lighting": "dim",
+        "era": "medieval"
+      },
+      "impliedTags": ["underground", "constructed", "stone", "dungeon"],
+      "descriptorPoolOverrides": {
+        "environmental.lighting": "environmental.lighting.dungeon"
+      },
+      "emphasizedTerms": ["torch", "chains", "iron", "stone"],
+      "excludedTerms": ["sunlight", "trees", "grass"]
+    },
+    "volcanic": {
+      "id": "volcanic",
+      "name": "Volcanic",
+      "description": "Areas of active or dormant volcanic activity",
+      "defaultCategoryValues": {
+        "climate": "scorching",
+        "lighting": "dim"
+      },
+      "impliedTags": ["volcanic", "heat", "danger", "fire"],
+      "descriptorPoolOverrides": {
+        "environmental.lighting": "environmental.lighting.volcanic",
+        "environmental.temperature": "environmental.temperature.volcanic",
+        "environmental.smells": "environmental.smells.volcanic"
+      },
+      "emphasizedTerms": ["lava", "sulfur", "heat", "glow", "magma"],
+      "excludedTerms": ["cold", "ice", "frost", "chill", "freezing"]
+    },
+    "frozen": {
+      "id": "frozen",
+      "name": "Frozen",
+      "description": "Ice-covered or extremely cold regions",
+      "defaultCategoryValues": {
+        "climate": "freezing",
+        "lighting": "bright"
+      },
+      "impliedTags": ["frozen", "ice", "cold", "snow"],
+      "descriptorPoolOverrides": {
+        "environmental.temperature": "environmental.temperature.frozen",
+        "environmental.sounds": "environmental.sounds.frozen"
+      },
+      "emphasizedTerms": ["ice", "frost", "frozen", "cold", "chill"],
+      "excludedTerms": ["warm", "heat", "fire", "lava", "sweat"]
+    },
+    "swamp": {
+      "id": "swamp",
+      "name": "Swamp",
+      "description": "Waterlogged wetlands with decaying vegetation",
+      "defaultCategoryValues": {
+        "climate": "warm",
+        "lighting": "dim",
+        "condition": "flooded"
+      },
+      "impliedTags": ["swamp", "wet", "decay", "water", "muck"],
+      "descriptorPoolOverrides": {
+        "environmental.smells": "environmental.smells.swamp",
+        "environmental.sounds": "environmental.sounds.swamp"
+      },
+      "emphasizedTerms": ["murky", "rotting", "mud", "stagnant", "squelch"],
+      "excludedTerms": ["dry", "arid", "dusty", "clean"]
+    },
+    "ruins": {
+      "id": "ruins",
+      "name": "Ruins",
+      "description": "Crumbling remains of ancient structures",
+      "defaultCategoryValues": {
+        "climate": "temperate",
+        "lighting": "normal",
+        "era": "ancient",
+        "condition": "collapsed"
+      },
+      "impliedTags": ["ruins", "ancient", "stone", "decay"],
+      "descriptorPoolOverrides": {},
+      "emphasizedTerms": ["crumbling", "ancient", "worn", "faded", "forgotten"],
+      "excludedTerms": ["new", "pristine", "polished"]
+    },
+    "forest": {
+      "id": "forest",
+      "name": "Forest",
+      "description": "Dense woodland area",
+      "defaultCategoryValues": {
+        "climate": "temperate",
+        "lighting": "dim",
+        "condition": "overgrown"
+      },
+      "impliedTags": ["forest", "outdoor", "natural", "trees"],
+      "descriptorPoolOverrides": {
+        "environmental.sounds": "environmental.sounds.forest",
+        "environmental.smells": "environmental.smells.forest"
+      },
+      "emphasizedTerms": ["leaves", "bark", "branches", "canopy", "undergrowth"],
+      "excludedTerms": ["stone", "dungeon", "torch"]
+    },
+    "desert": {
+      "id": "desert",
+      "name": "Desert",
+      "description": "Arid wasteland or sandy expanse",
+      "defaultCategoryValues": {
+        "climate": "hot",
+        "lighting": "bright"
+      },
+      "impliedTags": ["desert", "outdoor", "dry", "sand"],
+      "descriptorPoolOverrides": {
+        "environmental.temperature": "environmental.temperature.desert"
+      },
+      "emphasizedTerms": ["sand", "sun", "dry", "parched", "dune"],
+      "excludedTerms": ["wet", "damp", "moist", "water"]
+    }
+  }
+}

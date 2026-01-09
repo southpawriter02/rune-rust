@@ -38,6 +38,8 @@ public class JsonConfigurationProvider : IGameConfigurationProvider
     private IReadOnlyList<TierDefinition>? _tiers;
     private IReadOnlyList<MonsterTrait>? _traits;
     private IReadOnlyList<CurrencyDefinition>? _currencies;
+    private EnvironmentCategoryConfiguration? _environmentCategories;
+    private BiomeConfiguration? _biomeConfig;
 
     private static readonly JsonSerializerOptions DefaultJsonOptions = new()
     {
@@ -614,6 +616,171 @@ public class JsonConfigurationProvider : IGameConfigurationProvider
     [
         CurrencyDefinition.Gold
     ];
+
+    // ===== Environment Configuration Methods (v0.0.11a) =====
+
+    /// <inheritdoc/>
+    public EnvironmentCategoryConfiguration GetEnvironmentCategories()
+    {
+        if (_environmentCategories != null) return _environmentCategories;
+
+        var filePath = Path.Combine(_configPath, "environment-categories.json");
+        var config = LoadJsonFile<EnvironmentCategoryJsonConfig>(filePath);
+
+        if (config == null)
+        {
+            _logger.LogWarning("No environment categories found, using defaults");
+            _environmentCategories = GetDefaultEnvironmentCategories();
+            return _environmentCategories;
+        }
+
+        _environmentCategories = ToEnvironmentCategoryConfiguration(config);
+        _logger.LogDebug("Loaded {CategoryCount} environment categories with {RuleCount} exclusion rules",
+            _environmentCategories.Categories.Count,
+            _environmentCategories.ExclusionRules.Count);
+        return _environmentCategories;
+    }
+
+    /// <inheritdoc/>
+    public BiomeConfiguration GetBiomeConfiguration()
+    {
+        if (_biomeConfig != null) return _biomeConfig;
+
+        var filePath = Path.Combine(_configPath, "biomes.json");
+        var config = LoadJsonFile<BiomeJsonConfig>(filePath);
+
+        if (config == null)
+        {
+            _logger.LogWarning("No biomes found, using defaults");
+            _biomeConfig = GetDefaultBiomeConfiguration();
+            return _biomeConfig;
+        }
+
+        _biomeConfig = ToBiomeConfiguration(config);
+        _logger.LogDebug("Loaded {BiomeCount} biomes", _biomeConfig.Biomes.Count);
+        return _biomeConfig;
+    }
+
+    private static EnvironmentCategoryConfiguration ToEnvironmentCategoryConfiguration(EnvironmentCategoryJsonConfig config)
+    {
+        var categories = config.Categories?.ToDictionary(
+            kvp => kvp.Key,
+            kvp => new EnvironmentCategory
+            {
+                Id = kvp.Value.Id ?? kvp.Key,
+                Name = kvp.Value.Name ?? kvp.Key,
+                Description = kvp.Value.Description ?? string.Empty,
+                IsRequired = kvp.Value.IsRequired,
+                DefaultValue = kvp.Value.DefaultValue,
+                Values = kvp.Value.Values?.Select(v => new CategoryValue
+                {
+                    Id = v.Id ?? string.Empty,
+                    Name = v.Name ?? string.Empty,
+                    Description = v.Description ?? string.Empty,
+                    ImpliedTags = v.ImpliedTags ?? []
+                }).ToList() ?? []
+            }) ?? new Dictionary<string, EnvironmentCategory>();
+
+        var exclusionRules = config.ExclusionRules?.Select(r => new CategoryExclusionRule
+        {
+            Id = r.Id ?? string.Empty,
+            Reason = r.Reason ?? string.Empty,
+            Category1 = r.Category1 ?? string.Empty,
+            Values1 = r.Values1 ?? [],
+            Category2 = r.Category2 ?? string.Empty,
+            Values2 = r.Values2 ?? [],
+            IsHardRule = r.IsHardRule
+        }).ToList() ?? [];
+
+        return new EnvironmentCategoryConfiguration
+        {
+            Version = config.Version ?? "1.0",
+            Categories = categories,
+            ExclusionRules = exclusionRules
+        };
+    }
+
+    private static BiomeConfiguration ToBiomeConfiguration(BiomeJsonConfig config)
+    {
+        var biomes = config.Biomes?.ToDictionary(
+            kvp => kvp.Key,
+            kvp => new BiomeDefinition
+            {
+                Id = kvp.Value.Id ?? kvp.Key,
+                Name = kvp.Value.Name ?? kvp.Key,
+                Description = kvp.Value.Description ?? string.Empty,
+                DefaultCategoryValues = kvp.Value.DefaultCategoryValues ?? new Dictionary<string, string>(),
+                ImpliedTags = kvp.Value.ImpliedTags ?? [],
+                DescriptorPoolOverrides = kvp.Value.DescriptorPoolOverrides ?? new Dictionary<string, string>(),
+                EmphasizedTerms = kvp.Value.EmphasizedTerms ?? [],
+                ExcludedTerms = kvp.Value.ExcludedTerms ?? []
+            }) ?? new Dictionary<string, BiomeDefinition>();
+
+        return new BiomeConfiguration
+        {
+            Version = config.Version ?? "1.0",
+            Biomes = biomes
+        };
+    }
+
+    private static EnvironmentCategoryConfiguration GetDefaultEnvironmentCategories()
+    {
+        return new EnvironmentCategoryConfiguration
+        {
+            Version = "1.0",
+            Categories = new Dictionary<string, EnvironmentCategory>
+            {
+                ["biome"] = new EnvironmentCategory
+                {
+                    Id = "biome",
+                    Name = "Biome",
+                    Description = "The fundamental environment type",
+                    IsRequired = true,
+                    DefaultValue = "dungeon",
+                    Values =
+                    [
+                        new CategoryValue { Id = "dungeon", Name = "Dungeon", ImpliedTags = ["underground", "dungeon"] }
+                    ]
+                },
+                ["lighting"] = new EnvironmentCategory
+                {
+                    Id = "lighting",
+                    Name = "Lighting",
+                    Description = "Illumination level",
+                    IsRequired = true,
+                    DefaultValue = "dim",
+                    Values =
+                    [
+                        new CategoryValue { Id = "dim", Name = "Dim", ImpliedTags = ["dim"] }
+                    ]
+                }
+            },
+            ExclusionRules = []
+        };
+    }
+
+    private static BiomeConfiguration GetDefaultBiomeConfiguration()
+    {
+        return new BiomeConfiguration
+        {
+            Version = "1.0",
+            Biomes = new Dictionary<string, BiomeDefinition>
+            {
+                ["dungeon"] = new BiomeDefinition
+                {
+                    Id = "dungeon",
+                    Name = "Dungeon",
+                    Description = "Constructed underground passages",
+                    DefaultCategoryValues = new Dictionary<string, string>
+                    {
+                        ["climate"] = "cold",
+                        ["lighting"] = "dim"
+                    },
+                    ImpliedTags = ["underground", "dungeon"]
+                }
+            }
+        };
+    }
 
     private static LootTable? ToLootTable(LootTableJsonConfig? config)
     {
@@ -1515,5 +1682,61 @@ public class JsonConfigurationProvider : IGameConfigurationProvider
         public int MinAmount { get; set; } = 0;
         public int MaxAmount { get; set; } = 0;
         public float DropChance { get; set; } = 1.0f;
+    }
+
+    // Environment Category JSON structure (v0.0.11a)
+    private class EnvironmentCategoryJsonConfig
+    {
+        public string? Version { get; set; }
+        public Dictionary<string, EnvironmentCategoryEntryJson>? Categories { get; set; }
+        public List<ExclusionRuleJson>? ExclusionRules { get; set; }
+    }
+
+    private class EnvironmentCategoryEntryJson
+    {
+        public string? Id { get; set; }
+        public string? Name { get; set; }
+        public string? Description { get; set; }
+        public bool IsRequired { get; set; }
+        public string? DefaultValue { get; set; }
+        public List<CategoryValueJson>? Values { get; set; }
+    }
+
+    private class CategoryValueJson
+    {
+        public string? Id { get; set; }
+        public string? Name { get; set; }
+        public string? Description { get; set; }
+        public List<string>? ImpliedTags { get; set; }
+    }
+
+    private class ExclusionRuleJson
+    {
+        public string? Id { get; set; }
+        public string? Reason { get; set; }
+        public string? Category1 { get; set; }
+        public List<string>? Values1 { get; set; }
+        public string? Category2 { get; set; }
+        public List<string>? Values2 { get; set; }
+        public bool IsHardRule { get; set; } = true;
+    }
+
+    // Biome JSON structure (v0.0.11a)
+    private class BiomeJsonConfig
+    {
+        public string? Version { get; set; }
+        public Dictionary<string, BiomeDefinitionJson>? Biomes { get; set; }
+    }
+
+    private class BiomeDefinitionJson
+    {
+        public string? Id { get; set; }
+        public string? Name { get; set; }
+        public string? Description { get; set; }
+        public Dictionary<string, string>? DefaultCategoryValues { get; set; }
+        public List<string>? ImpliedTags { get; set; }
+        public Dictionary<string, string>? DescriptorPoolOverrides { get; set; }
+        public List<string>? EmphasizedTerms { get; set; }
+        public List<string>? ExcludedTerms { get; set; }
     }
 }

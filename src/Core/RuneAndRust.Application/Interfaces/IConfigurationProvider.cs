@@ -224,6 +224,20 @@ public interface IGameConfigurationProvider
     /// <param name="currencyId">The currency identifier.</param>
     /// <returns>The currency definition or null if not found.</returns>
     CurrencyDefinition? GetCurrencyById(string currencyId);
+
+    // ===== Environment Configuration (v0.0.11a) =====
+
+    /// <summary>
+    /// Gets the environment category configuration.
+    /// </summary>
+    /// <returns>Environment category configuration with categories and exclusion rules.</returns>
+    EnvironmentCategoryConfiguration GetEnvironmentCategories();
+
+    /// <summary>
+    /// Gets the biome configuration.
+    /// </summary>
+    /// <returns>Biome configuration with biome definitions.</returns>
+    BiomeConfiguration GetBiomeConfiguration();
 }
 
 /// <summary>
