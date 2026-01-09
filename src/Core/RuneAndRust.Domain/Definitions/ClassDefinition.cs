@@ -47,7 +47,7 @@ public class ClassDefinition
     /// </summary>
     /// <remarks>
     /// These values determine how much each stat increases on level up.
-    /// Used in v0.0.8 (Experience & Leveling).
+    /// Used in v0.0.8 (Experience and Leveling).
     /// </remarks>
     public StatModifiers GrowthRates { get; init; }
 

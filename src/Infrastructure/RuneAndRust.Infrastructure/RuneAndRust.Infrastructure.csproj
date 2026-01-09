@@ -2,6 +2,8 @@
 
   <PropertyGroup>
     <RootNamespace>RuneAndRust.Infrastructure</RootNamespace>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);1591</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

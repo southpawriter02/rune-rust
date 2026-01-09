@@ -16,14 +16,14 @@ public enum AIBehavior
     Aggressive,
 
     /// <summary>
-    /// Attacks when HP > 50%, otherwise heals/defends.
+    /// Attacks when HP is above 50%, otherwise heals or defends.
     /// Balanced between offense and self-preservation.
     /// </summary>
     Defensive,
 
     /// <summary>
-    /// Attempts to flee when HP < 30%.
-    /// Otherwise attacks weakest target.
+    /// Attempts to flee when HP drops below 30%.
+    /// Otherwise attacks the weakest target.
     /// </summary>
     Cowardly,
 
