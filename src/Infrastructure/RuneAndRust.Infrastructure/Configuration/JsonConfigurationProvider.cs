@@ -40,6 +40,9 @@ public class JsonConfigurationProvider : IGameConfigurationProvider
     private IReadOnlyList<CurrencyDefinition>? _currencies;
     private EnvironmentCategoryConfiguration? _environmentCategories;
     private BiomeConfiguration? _biomeConfig;
+    private SensoryConfiguration? _sensoryConfig;
+    private ObjectDescriptorConfiguration? _objectDescriptorConfig;
+    private AmbientEventConfiguration? _ambientEventConfig;
 
     private static readonly JsonSerializerOptions DefaultJsonOptions = new()
     {
@@ -659,6 +662,247 @@ public class JsonConfigurationProvider : IGameConfigurationProvider
         _biomeConfig = ToBiomeConfiguration(config);
         _logger.LogDebug("Loaded {BiomeCount} biomes", _biomeConfig.Biomes.Count);
         return _biomeConfig;
+    }
+
+    // ===== Sensory Configuration Methods (v0.0.11c) =====
+
+    /// <inheritdoc/>
+    public SensoryConfiguration GetSensoryConfiguration()
+    {
+        if (_sensoryConfig != null) return _sensoryConfig;
+
+        // Build sensory configuration from default definitions
+        // These define how the SensoryDescriptorService maps light sources, weather, etc.
+        // to descriptor pools
+        _sensoryConfig = GetDefaultSensoryConfiguration();
+        _logger.LogDebug("Loaded sensory configuration with {LightSources} light sources, {Weather} weather conditions",
+            _sensoryConfig.LightSources.Count,
+            _sensoryConfig.WeatherConditions.Count);
+        return _sensoryConfig;
+    }
+
+    /// <inheritdoc/>
+    public ObjectDescriptorConfiguration GetObjectDescriptorConfiguration()
+    {
+        if (_objectDescriptorConfig != null) return _objectDescriptorConfig;
+
+        // Build object descriptor configuration from default definitions
+        _objectDescriptorConfig = GetDefaultObjectDescriptorConfiguration();
+        _logger.LogDebug("Loaded object descriptor configuration with {ObjectTypes} object types",
+            _objectDescriptorConfig.ObjectTypes.Count);
+        return _objectDescriptorConfig;
+    }
+
+    /// <inheritdoc/>
+    public AmbientEventConfiguration GetAmbientEventConfiguration()
+    {
+        if (_ambientEventConfig != null) return _ambientEventConfig;
+
+        // Build ambient event configuration from default definitions
+        _ambientEventConfig = GetDefaultAmbientEventConfiguration();
+        _logger.LogDebug("Loaded ambient event configuration with {EventPools} event pools",
+            _ambientEventConfig.EventPools.Count);
+        return _ambientEventConfig;
+    }
+
+    private static SensoryConfiguration GetDefaultSensoryConfiguration()
+    {
+        return new SensoryConfiguration
+        {
+            Version = "1.0",
+            LightSources = new Dictionary<string, LightSourceDefinition>
+            {
+                ["torch"] = new LightSourceDefinition
+                {
+                    Id = "torch",
+                    Name = "Torch",
+                    LightQuality = "warm orange",
+                    DescriptorPool = "lighting.lighting_torch",
+                    Atmosphere = "flickering",
+                    CommonBiomes = ["dungeon", "cave", "ruins"],
+                    IsFlickering = true
+                },
+                ["crystal"] = new LightSourceDefinition
+                {
+                    Id = "crystal",
+                    Name = "Crystal",
+                    LightQuality = "cold blue",
+                    DescriptorPool = "lighting.lighting_crystal",
+                    Atmosphere = "ethereal",
+                    CommonBiomes = ["cave", "frozen"],
+                    IsFlickering = false
+                },
+                ["bioluminescence"] = new LightSourceDefinition
+                {
+                    Id = "bioluminescence",
+                    Name = "Bioluminescence",
+                    LightQuality = "eerie green",
+                    DescriptorPool = "lighting.lighting_bioluminescence",
+                    Atmosphere = "organic",
+                    CommonBiomes = ["cave", "swamp"],
+                    IsFlickering = false
+                },
+                ["magical"] = new LightSourceDefinition
+                {
+                    Id = "magical",
+                    Name = "Magical",
+                    LightQuality = "arcane",
+                    DescriptorPool = "lighting.lighting_magical",
+                    Atmosphere = "mystical",
+                    CommonBiomes = ["ruins", "dungeon"],
+                    IsFlickering = false
+                },
+                ["sunlight"] = new LightSourceDefinition
+                {
+                    Id = "sunlight",
+                    Name = "Sunlight",
+                    LightQuality = "warm golden",
+                    DescriptorPool = "lighting.lighting_sunlight",
+                    Atmosphere = "natural",
+                    CommonBiomes = ["forest"],
+                    IsFlickering = false
+                },
+                ["moonlight"] = new LightSourceDefinition
+                {
+                    Id = "moonlight",
+                    Name = "Moonlight",
+                    LightQuality = "pale silver",
+                    DescriptorPool = "lighting.lighting_moonlight",
+                    Atmosphere = "nocturnal",
+                    CommonBiomes = ["forest"],
+                    IsFlickering = false
+                },
+                ["lava_glow"] = new LightSourceDefinition
+                {
+                    Id = "lava_glow",
+                    Name = "Lava Glow",
+                    LightQuality = "hellish orange",
+                    DescriptorPool = "lighting.lighting_lava_glow",
+                    Atmosphere = "infernal",
+                    CommonBiomes = ["volcanic"],
+                    IsFlickering = true
+                }
+            },
+            DarknessLevels = new Dictionary<string, DarknessLevelDefinition>
+            {
+                ["pitch_black"] = new DarknessLevelDefinition
+                {
+                    Id = "pitch_black",
+                    Name = "Pitch Black",
+                    VisibilityLevel = 0,
+                    DescriptorPool = "lighting.lighting_pitch_black",
+                    ImpliedTags = ["dark", "blind"]
+                },
+                ["dim"] = new DarknessLevelDefinition
+                {
+                    Id = "dim",
+                    Name = "Dim",
+                    VisibilityLevel = 30,
+                    DescriptorPool = "lighting.lighting_dim",
+                    ImpliedTags = ["dim"]
+                },
+                ["bright"] = new DarknessLevelDefinition
+                {
+                    Id = "bright",
+                    Name = "Bright",
+                    VisibilityLevel = 100,
+                    DescriptorPool = "lighting.lighting_bright",
+                    ImpliedTags = ["bright"]
+                }
+            },
+            WeatherConditions = new Dictionary<string, WeatherDefinition>
+            {
+                ["rain"] = new WeatherDefinition
+                {
+                    Id = "rain",
+                    Name = "Rain",
+                    IndoorPool = "weather.weather_rain_indoor",
+                    OutdoorPool = "weather.weather_rain_outdoor",
+                    ValidClimates = ["temperate", "tropical"],
+                    AffectsVisibility = true,
+                    AffectsSound = true
+                },
+                ["storm"] = new WeatherDefinition
+                {
+                    Id = "storm",
+                    Name = "Storm",
+                    IndoorPool = "weather.weather_storm_indoor",
+                    OutdoorPool = "weather.weather_storm_outdoor",
+                    ValidClimates = ["temperate", "tropical"],
+                    AffectsVisibility = true,
+                    AffectsSound = true
+                },
+                ["snow"] = new WeatherDefinition
+                {
+                    Id = "snow",
+                    Name = "Snow",
+                    IndoorPool = "weather.weather_snow_indoor",
+                    OutdoorPool = "weather.weather_snow_outdoor",
+                    ValidClimates = ["cold", "frozen"],
+                    AffectsVisibility = true,
+                    AffectsSound = true
+                },
+                ["fog"] = new WeatherDefinition
+                {
+                    Id = "fog",
+                    Name = "Fog",
+                    IndoorPool = "weather.weather_fog_indoor",
+                    OutdoorPool = "weather.weather_fog_outdoor",
+                    ValidClimates = ["temperate", "swamp"],
+                    AffectsVisibility = true,
+                    AffectsSound = false
+                },
+                ["wind"] = new WeatherDefinition
+                {
+                    Id = "wind",
+                    Name = "Wind",
+                    IndoorPool = "weather.weather_wind_indoor",
+                    OutdoorPool = "weather.weather_wind_outdoor",
+                    ValidClimates = [],
+                    AffectsVisibility = false,
+                    AffectsSound = true
+                }
+            },
+            TimesOfDay = new Dictionary<string, TimeOfDayDefinition>
+            {
+                ["dawn"] = new TimeOfDayDefinition
+                {
+                    Id = "dawn",
+                    Name = "Dawn",
+                    OutdoorPool = "environmental.time_dawn",
+                    LightQuality = "pale pink",
+                    DefaultDarknessLevel = "dim",
+                    ImpliedTags = ["dawn", "morning"]
+                },
+                ["day"] = new TimeOfDayDefinition
+                {
+                    Id = "day",
+                    Name = "Day",
+                    OutdoorPool = "environmental.time_day",
+                    LightQuality = "bright",
+                    DefaultDarknessLevel = "bright",
+                    ImpliedTags = ["day", "daytime"]
+                },
+                ["dusk"] = new TimeOfDayDefinition
+                {
+                    Id = "dusk",
+                    Name = "Dusk",
+                    OutdoorPool = "environmental.time_dusk",
+                    LightQuality = "orange",
+                    DefaultDarknessLevel = "dim",
+                    ImpliedTags = ["dusk", "evening"]
+                },
+                ["night"] = new TimeOfDayDefinition
+                {
+                    Id = "night",
+                    Name = "Night",
+                    OutdoorPool = "environmental.time_night",
+                    LightQuality = "dark",
+                    DefaultDarknessLevel = "pitch_black",
+                    ImpliedTags = ["night", "nighttime"]
+                }
+            }
+        };
     }
 
     private static EnvironmentCategoryConfiguration ToEnvironmentCategoryConfiguration(EnvironmentCategoryJsonConfig config)
@@ -1738,5 +1982,156 @@ public class JsonConfigurationProvider : IGameConfigurationProvider
         public Dictionary<string, string>? DescriptorPoolOverrides { get; set; }
         public List<string>? EmphasizedTerms { get; set; }
         public List<string>? ExcludedTerms { get; set; }
+    }
+
+    // ===== Default Configuration Methods (v0.0.11d) =====
+
+    private static ObjectDescriptorConfiguration GetDefaultObjectDescriptorConfiguration()
+    {
+        return new ObjectDescriptorConfiguration
+        {
+            ObjectTypes = new Dictionary<string, ObjectTypeDefinition>
+            {
+                ["door"] = new ObjectTypeDefinition
+                {
+                    Id = "door",
+                    Name = "Door",
+                    ValidStates = ["normal", "closed", "open", "locked", "barred", "broken", "destroyed"],
+                    DefaultState = "closed",
+                    IsInteractable = true
+                },
+                ["chest"] = new ObjectTypeDefinition
+                {
+                    Id = "chest",
+                    Name = "Chest",
+                    ValidStates = ["normal", "closed", "open", "locked", "empty", "trapped", "broken"],
+                    DefaultState = "closed",
+                    IsInteractable = true
+                },
+                ["lever"] = new ObjectTypeDefinition
+                {
+                    Id = "lever",
+                    Name = "Lever",
+                    ValidStates = ["normal", "up", "down", "stuck", "broken"],
+                    DefaultState = "up",
+                    IsInteractable = true
+                },
+                ["statue"] = new ObjectTypeDefinition
+                {
+                    Id = "statue",
+                    Name = "Statue",
+                    ValidStates = ["normal", "damaged", "destroyed", "active", "inactive", "defaced"],
+                    DefaultState = "normal",
+                    IsInteractable = false
+                },
+                ["altar"] = new ObjectTypeDefinition
+                {
+                    Id = "altar",
+                    Name = "Altar",
+                    ValidStates = ["normal", "active", "inactive", "desecrated", "blessed", "destroyed"],
+                    DefaultState = "inactive",
+                    IsInteractable = true
+                },
+                ["lightsource"] = new ObjectTypeDefinition
+                {
+                    Id = "lightsource",
+                    Name = "Light Source",
+                    ValidStates = ["normal", "lit", "unlit", "flickering", "broken"],
+                    DefaultState = "lit",
+                    IsInteractable = true
+                },
+                ["inscription"] = new ObjectTypeDefinition
+                {
+                    Id = "inscription",
+                    Name = "Inscription",
+                    ValidStates = ["normal", "damaged", "destroyed"],
+                    DefaultState = "normal",
+                    IsInteractable = false
+                },
+                ["waterfeature"] = new ObjectTypeDefinition
+                {
+                    Id = "waterfeature",
+                    Name = "Water Feature",
+                    ValidStates = ["normal", "active", "inactive", "broken"],
+                    DefaultState = "active",
+                    IsInteractable = false
+                }
+            }
+        };
+    }
+
+    private static AmbientEventConfiguration GetDefaultAmbientEventConfiguration()
+    {
+        return new AmbientEventConfiguration
+        {
+            BaseProbability = 0.15f,
+            CooldownSeconds = 30,
+            EventPools = new Dictionary<string, AmbientEventPool>
+            {
+                ["sound"] = new AmbientEventPool
+                {
+                    Id = "sound",
+                    Name = "Sound Events",
+                    ValidBiomes = [],
+                    ValidTriggers = ["exploration", "periodic", "room_entry"]
+                },
+                ["sound_cave"] = new AmbientEventPool
+                {
+                    Id = "sound_cave",
+                    Name = "Cave Sound Events",
+                    ValidBiomes = ["cave"],
+                    ValidTriggers = ["exploration", "periodic", "room_entry"]
+                },
+                ["sound_dungeon"] = new AmbientEventPool
+                {
+                    Id = "sound_dungeon",
+                    Name = "Dungeon Sound Events",
+                    ValidBiomes = ["dungeon"],
+                    ValidTriggers = ["exploration", "periodic", "room_entry"]
+                },
+                ["visual"] = new AmbientEventPool
+                {
+                    Id = "visual",
+                    Name = "Visual Events",
+                    ValidBiomes = [],
+                    ValidTriggers = ["exploration", "periodic"]
+                },
+                ["visual_volcanic"] = new AmbientEventPool
+                {
+                    Id = "visual_volcanic",
+                    Name = "Volcanic Visual Events",
+                    ValidBiomes = ["volcanic"],
+                    ValidTriggers = ["exploration", "periodic"]
+                },
+                ["creature"] = new AmbientEventPool
+                {
+                    Id = "creature",
+                    Name = "Creature Events",
+                    ValidBiomes = [],
+                    ValidTriggers = ["exploration", "room_entry"]
+                },
+                ["creature_swamp"] = new AmbientEventPool
+                {
+                    Id = "creature_swamp",
+                    Name = "Swamp Creature Events",
+                    ValidBiomes = ["swamp"],
+                    ValidTriggers = ["exploration", "room_entry"]
+                },
+                ["environmental"] = new AmbientEventPool
+                {
+                    Id = "environmental",
+                    Name = "Environmental Events",
+                    ValidBiomes = [],
+                    ValidTriggers = ["exploration", "periodic", "player_action"]
+                },
+                ["environmental_frozen"] = new AmbientEventPool
+                {
+                    Id = "environmental_frozen",
+                    Name = "Frozen Environmental Events",
+                    ValidBiomes = ["frozen"],
+                    ValidTriggers = ["exploration", "periodic", "player_action"]
+                }
+            }
+        };
     }
 }

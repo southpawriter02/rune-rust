@@ -238,6 +238,28 @@ public interface IGameConfigurationProvider
     /// </summary>
     /// <returns>Biome configuration with biome definitions.</returns>
     BiomeConfiguration GetBiomeConfiguration();
+
+    // ===== Sensory Configuration (v0.0.11c) =====
+
+    /// <summary>
+    /// Gets the sensory configuration for environmental descriptors.
+    /// </summary>
+    /// <returns>Sensory configuration with light sources, weather, and time of day definitions.</returns>
+    SensoryConfiguration GetSensoryConfiguration();
+
+    // ===== Interactive Object & Ambient Event Configuration (v0.0.11d) =====
+
+    /// <summary>
+    /// Gets the object descriptor configuration for interactive objects.
+    /// </summary>
+    /// <returns>Object descriptor configuration with object type definitions.</returns>
+    ObjectDescriptorConfiguration GetObjectDescriptorConfiguration();
+
+    /// <summary>
+    /// Gets the ambient event configuration for atmospheric events.
+    /// </summary>
+    /// <returns>Ambient event configuration with event pools and settings.</returns>
+    AmbientEventConfiguration GetAmbientEventConfiguration();
 }
 
 /// <summary>

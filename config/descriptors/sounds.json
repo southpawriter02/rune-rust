@@ -1,0 +1,120 @@
+{
+  "category": "sounds",
+  "pools": {
+    "sounds_distant": {
+      "id": "sounds_distant",
+      "name": "Distant Sounds (Generic)",
+      "descriptors": [
+        { "id": "distant_echo", "text": "Distant echoes reverberate through unseen passages", "weight": 25 },
+        { "id": "far_rumble", "text": "A far-off rumbling vibrates through the stone", "weight": 20 },
+        { "id": "wind_howl", "text": "Wind howls through distant openings", "weight": 20 },
+        { "id": "distant_drip", "text": "The steady drip of water echoes from somewhere far away", "weight": 20 },
+        { "id": "thunder_roll", "text": "Thunder rolls in the distance", "weight": 15, "tags": ["outdoor", "storm"] }
+      ]
+    },
+    "sounds_distant_cave": {
+      "id": "sounds_distant_cave",
+      "name": "Distant Sounds (Cave)",
+      "descriptors": [
+        { "id": "deep_drip", "text": "Deep within the caverns, water drips into underground pools", "weight": 30 },
+        { "id": "cave_wind", "text": "A mournful wind moans through distant tunnels", "weight": 25 },
+        { "id": "bat_flutter", "text": "The distant flutter of bat wings echoes through the darkness", "weight": 20 },
+        { "id": "rock_settling", "text": "Rocks settle and shift in the deep places", "weight": 25 }
+      ]
+    },
+    "sounds_distant_volcanic": {
+      "id": "sounds_distant_volcanic",
+      "name": "Distant Sounds (Volcanic)",
+      "descriptors": [
+        { "id": "lava_rumble", "text": "The constant rumble of flowing lava vibrates through your feet", "weight": 30 },
+        { "id": "steam_hiss", "text": "Distant steam vents hiss and roar", "weight": 25 },
+        { "id": "rock_crack", "text": "Rocks crack and groan under thermal stress", "weight": 25 },
+        { "id": "deep_roar", "text": "A deep, ominous roar emanates from below", "weight": 20 }
+      ]
+    },
+    "sounds_distant_dungeon": {
+      "id": "sounds_distant_dungeon",
+      "name": "Distant Sounds (Dungeon)",
+      "descriptors": [
+        { "id": "chains_rattle", "text": "The distant rattle of chains echoes through the corridors", "weight": 25 },
+        { "id": "echoing_footsteps", "text": "Echoing footsteps sound from somewhere far away", "weight": 25 },
+        { "id": "distant_scream", "text": "A distant scream cuts through the silence", "weight": 20, "tags": ["danger"] },
+        { "id": "grinding_stone", "text": "The grinding of stone on stone reverberates from below", "weight": 20 },
+        { "id": "deep_groaning", "text": "Deep groaning sounds emanate from the foundations", "weight": 10 }
+      ]
+    },
+    "sounds_distant_forest": {
+      "id": "sounds_distant_forest",
+      "name": "Distant Sounds (Forest)",
+      "descriptors": [
+        { "id": "wolf_howl", "text": "A wolf howls somewhere in the distant wilderness", "weight": 25 },
+        { "id": "owl_hoot", "text": "An owl's hoot echoes through the trees", "weight": 25, "tags": ["night"] },
+        { "id": "distant_thunder", "text": "Thunder rumbles over distant hills", "weight": 20 },
+        { "id": "stream_rush", "text": "The rush of a distant stream reaches your ears", "weight": 30 }
+      ]
+    },
+    "sounds_nearby": {
+      "id": "sounds_nearby",
+      "name": "Nearby Sounds (Generic)",
+      "descriptors": [
+        { "id": "water_drip", "text": "Water drips steadily from the ceiling", "weight": 25 },
+        { "id": "creak_groan", "text": "Something creaks and groans nearby", "weight": 20 },
+        { "id": "skitter", "text": "Something skitters in the shadows just out of sight", "weight": 20, "tags": ["danger"] },
+        { "id": "settling_dust", "text": "Dust settles with soft whispers", "weight": 20 },
+        { "id": "eerie_silence", "text": "An eerie silence hangs in the air", "weight": 15 }
+      ]
+    },
+    "sounds_nearby_cave": {
+      "id": "sounds_nearby_cave",
+      "name": "Nearby Sounds (Cave)",
+      "descriptors": [
+        { "id": "stalactite_drip", "text": "Water drips from stalactites into still pools", "weight": 30 },
+        { "id": "echo_breath", "text": "Your own breath echoes back from the walls", "weight": 25 },
+        { "id": "pebbles_shift", "text": "Pebbles shift and clatter underfoot", "weight": 25 },
+        { "id": "cave_insects", "text": "Cave insects chirp in hidden crevices", "weight": 20 }
+      ]
+    },
+    "sounds_nearby_forest": {
+      "id": "sounds_nearby_forest",
+      "name": "Nearby Sounds (Forest)",
+      "descriptors": [
+        { "id": "leaves_rustle", "text": "Leaves rustle in the gentle breeze", "weight": 30 },
+        { "id": "bird_song", "text": "Birds sing in the branches overhead", "weight": 25 },
+        { "id": "branches_creak", "text": "Tree branches creak and sway", "weight": 20 },
+        { "id": "undergrowth", "text": "Something moves through the undergrowth nearby", "weight": 15 },
+        { "id": "insect_buzz", "text": "Insects buzz and hum around you", "weight": 10 }
+      ]
+    },
+    "sounds_nearby_swamp": {
+      "id": "sounds_nearby_swamp",
+      "name": "Nearby Sounds (Swamp)",
+      "descriptors": [
+        { "id": "frog_chorus", "text": "A chorus of frogs fills the humid air", "weight": 25 },
+        { "id": "insect_drone", "text": "The constant drone of insects surrounds you", "weight": 25 },
+        { "id": "water_bubble", "text": "Stagnant water bubbles and gurgles", "weight": 20 },
+        { "id": "squelch", "text": "The ground squelches with every step", "weight": 20 },
+        { "id": "splash", "text": "Something splashes in the murky water nearby", "weight": 10 }
+      ]
+    },
+    "sounds_nearby_frozen": {
+      "id": "sounds_nearby_frozen",
+      "name": "Nearby Sounds (Frozen)",
+      "descriptors": [
+        { "id": "ice_creak", "text": "Ice creaks and groans beneath your feet", "weight": 30 },
+        { "id": "wind_whistle", "text": "Cold wind whistles through ice formations", "weight": 25 },
+        { "id": "snow_crunch", "text": "Snow crunches with each step you take", "weight": 25 },
+        { "id": "icicle_drip", "text": "Icicles drip slowly in the cold", "weight": 20 }
+      ]
+    },
+    "sounds_immediate_combat": {
+      "id": "sounds_immediate_combat",
+      "name": "Immediate Sounds (Combat)",
+      "descriptors": [
+        { "id": "heartbeat", "text": "Your heartbeat pounds in your ears", "weight": 30 },
+        { "id": "ragged_breath", "text": "Your ragged breathing fills the silence between blows", "weight": 30 },
+        { "id": "blood_rush", "text": "Blood rushes through your veins", "weight": 20 },
+        { "id": "enemy_snarl", "text": "Your enemy's snarling breath is close", "weight": 20 }
+      ]
+    }
+  }
+}

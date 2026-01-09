@@ -297,4 +297,45 @@ public class MockConfigurationProvider : IGameConfigurationProvider
         _biomeConfiguration = config;
         return this;
     }
+
+    // ===== Sensory Configuration (v0.0.11c) =====
+
+    private SensoryConfiguration _sensoryConfiguration = new();
+
+    public SensoryConfiguration GetSensoryConfiguration() => _sensoryConfiguration;
+
+    /// <summary>
+    /// Sets the sensory configuration.
+    /// </summary>
+    public MockConfigurationProvider WithSensoryConfiguration(SensoryConfiguration config)
+    {
+        _sensoryConfiguration = config;
+        return this;
+    }
+
+    // ===== Interactive Object & Ambient Event Configuration (v0.0.11d) =====
+
+    private ObjectDescriptorConfiguration _objectDescriptorConfiguration = new();
+    private AmbientEventConfiguration _ambientEventConfiguration = new();
+
+    public ObjectDescriptorConfiguration GetObjectDescriptorConfiguration() => _objectDescriptorConfiguration;
+    public AmbientEventConfiguration GetAmbientEventConfiguration() => _ambientEventConfiguration;
+
+    /// <summary>
+    /// Sets the object descriptor configuration.
+    /// </summary>
+    public MockConfigurationProvider WithObjectDescriptorConfiguration(ObjectDescriptorConfiguration config)
+    {
+        _objectDescriptorConfiguration = config;
+        return this;
+    }
+
+    /// <summary>
+    /// Sets the ambient event configuration.
+    /// </summary>
+    public MockConfigurationProvider WithAmbientEventConfiguration(AmbientEventConfiguration config)
+    {
+        _ambientEventConfiguration = config;
+        return this;
+    }
 }

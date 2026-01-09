@@ -121,6 +121,36 @@ public static class DependencyInjection
             return new AbilityDescriptorService(descriptorService, logger);
         });
 
+        // Sensory descriptor service (v0.0.11c)
+        services.AddScoped(sp =>
+        {
+            var descriptorService = sp.GetRequiredService<DescriptorService>();
+            var configProvider = sp.GetRequiredService<IGameConfigurationProvider>();
+            var sensoryConfig = configProvider.GetSensoryConfiguration();
+            var logger = sp.GetRequiredService<ILogger<SensoryDescriptorService>>();
+            return new SensoryDescriptorService(descriptorService, sensoryConfig, logger);
+        });
+
+        // Object descriptor service (v0.0.11d)
+        services.AddScoped(sp =>
+        {
+            var descriptorService = sp.GetRequiredService<DescriptorService>();
+            var configProvider = sp.GetRequiredService<IGameConfigurationProvider>();
+            var objectConfig = configProvider.GetObjectDescriptorConfiguration();
+            var logger = sp.GetRequiredService<ILogger<ObjectDescriptorService>>();
+            return new ObjectDescriptorService(descriptorService, objectConfig, logger);
+        });
+
+        // Ambient event service (v0.0.11d)
+        services.AddScoped(sp =>
+        {
+            var descriptorService = sp.GetRequiredService<DescriptorService>();
+            var configProvider = sp.GetRequiredService<IGameConfigurationProvider>();
+            var ambientConfig = configProvider.GetAmbientEventConfiguration();
+            var logger = sp.GetRequiredService<ILogger<AmbientEventService>>();
+            return new AmbientEventService(descriptorService, ambientConfig, logger);
+        });
+
         // Resource system service
         services.AddScoped<ResourceService>();
 

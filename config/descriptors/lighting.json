@@ -1,0 +1,275 @@
+{
+  "category": "lighting",
+  "pools": {
+    "lighting_torch": {
+      "id": "lighting_torch",
+      "name": "Torch Lighting",
+      "descriptors": [
+        {
+          "id": "flickering_torches",
+          "text": "Flickering torches cast dancing shadows across the walls",
+          "weight": 25
+        },
+        {
+          "id": "warm_torchlight",
+          "text": "Warm torchlight bathes the area in orange glow",
+          "weight": 25
+        },
+        {
+          "id": "guttering_flames",
+          "text": "Guttering torch flames threaten to plunge you into darkness",
+          "weight": 15,
+          "tags": ["danger"]
+        },
+        {
+          "id": "smoky_torches",
+          "text": "Smoky torches line the walls, their flames wavering",
+          "weight": 20
+        },
+        {
+          "id": "sparse_torchlight",
+          "text": "Sparse torchlight leaves pools of shadow between the sconces",
+          "weight": 15
+        }
+      ]
+    },
+    "lighting_crystal": {
+      "id": "lighting_crystal",
+      "name": "Crystal Lighting",
+      "descriptors": [
+        {
+          "id": "crystalline_glow",
+          "text": "Luminescent crystals emit a steady blue-white glow",
+          "weight": 30
+        },
+        {
+          "id": "prismatic_light",
+          "text": "Light refracts through crystal formations, painting rainbows on the stone",
+          "weight": 25
+        },
+        {
+          "id": "crystal_radiance",
+          "text": "Crystalline radiance illuminates every corner with ethereal light",
+          "weight": 25
+        },
+        {
+          "id": "pulsing_crystals",
+          "text": "The crystals pulse gently with inner light, like a slow heartbeat",
+          "weight": 20,
+          "tags": ["magical"]
+        }
+      ]
+    },
+    "lighting_bioluminescence": {
+      "id": "lighting_bioluminescence",
+      "name": "Bioluminescent Lighting",
+      "descriptors": [
+        {
+          "id": "phosphorescent_fungi",
+          "text": "Phosphorescent fungi cast an eerie green glow across the cavern",
+          "weight": 30
+        },
+        {
+          "id": "glowing_moss",
+          "text": "Patches of glowing moss cling to the walls, providing dim illumination",
+          "weight": 25
+        },
+        {
+          "id": "luminous_lichen",
+          "text": "Luminous lichen creates pools of pale blue light",
+          "weight": 25
+        },
+        {
+          "id": "fungal_glow",
+          "text": "The soft glow of bioluminescent life forms lights your path",
+          "weight": 20
+        }
+      ]
+    },
+    "lighting_magical": {
+      "id": "lighting_magical",
+      "name": "Magical Lighting",
+      "descriptors": [
+        {
+          "id": "arcane_glow",
+          "text": "A sourceless arcane glow illuminates the chamber",
+          "weight": 25
+        },
+        {
+          "id": "pulsing_runes",
+          "text": "Ancient runes pulse with eldritch light along the walls",
+          "weight": 25
+        },
+        {
+          "id": "floating_orbs",
+          "text": "Motes of magical light drift lazily through the air",
+          "weight": 25
+        },
+        {
+          "id": "ethereal_radiance",
+          "text": "Ethereal radiance fills the space with no visible source",
+          "weight": 25
+        }
+      ]
+    },
+    "lighting_sunlight": {
+      "id": "lighting_sunlight",
+      "name": "Sunlight",
+      "descriptors": [
+        {
+          "id": "warm_sunlight",
+          "text": "Warm sunlight streams through gaps in the canopy",
+          "weight": 30,
+          "tags": ["outdoor", "forest"]
+        },
+        {
+          "id": "golden_rays",
+          "text": "Golden rays of sunlight pierce the gloom",
+          "weight": 25
+        },
+        {
+          "id": "dappled_light",
+          "text": "Dappled sunlight creates a shifting pattern on the ground",
+          "weight": 25,
+          "tags": ["forest"]
+        },
+        {
+          "id": "harsh_sun",
+          "text": "The harsh sun beats down relentlessly",
+          "weight": 20,
+          "tags": ["desert"]
+        }
+      ]
+    },
+    "lighting_moonlight": {
+      "id": "lighting_moonlight",
+      "name": "Moonlight",
+      "descriptors": [
+        {
+          "id": "pale_moonlight",
+          "text": "Pale moonlight casts long shadows across the landscape",
+          "weight": 30
+        },
+        {
+          "id": "silvery_glow",
+          "text": "A silvery lunar glow bathes everything in ethereal light",
+          "weight": 30
+        },
+        {
+          "id": "moon_shadows",
+          "text": "The moon creates deep pools of shadow between its silver beams",
+          "weight": 20
+        },
+        {
+          "id": "full_moon",
+          "text": "The full moon illuminates the night with surprising clarity",
+          "weight": 20
+        }
+      ]
+    },
+    "lighting_lava_glow": {
+      "id": "lighting_lava_glow",
+      "name": "Lava/Volcanic Lighting",
+      "descriptors": [
+        {
+          "id": "hellish_glow",
+          "text": "A hellish orange glow emanates from cracks in the stone",
+          "weight": 30
+        },
+        {
+          "id": "lava_light",
+          "text": "Rivers of molten rock cast everything in crimson light",
+          "weight": 25
+        },
+        {
+          "id": "volcanic_radiance",
+          "text": "The volcanic glow makes the shadows dance like demons",
+          "weight": 25
+        },
+        {
+          "id": "ember_light",
+          "text": "Embers and flowing lava provide an ominous illumination",
+          "weight": 20
+        }
+      ]
+    },
+    "lighting_pitch_black": {
+      "id": "lighting_pitch_black",
+      "name": "Pitch Black",
+      "descriptors": [
+        {
+          "id": "impenetrable_darkness",
+          "text": "Impenetrable darkness surrounds you on all sides",
+          "weight": 30
+        },
+        {
+          "id": "absolute_black",
+          "text": "The darkness is absolute - you cannot see your hand before your face",
+          "weight": 30
+        },
+        {
+          "id": "void_darkness",
+          "text": "You stand in a void of complete darkness",
+          "weight": 20
+        },
+        {
+          "id": "blind_dark",
+          "text": "The darkness renders you completely blind",
+          "weight": 20
+        }
+      ]
+    },
+    "lighting_dim": {
+      "id": "lighting_dim",
+      "name": "Dim Lighting",
+      "descriptors": [
+        {
+          "id": "dim_shadows",
+          "text": "Dim light barely holds the pressing shadows at bay",
+          "weight": 25
+        },
+        {
+          "id": "murky_gloom",
+          "text": "Murky gloom makes it difficult to see clearly",
+          "weight": 25
+        },
+        {
+          "id": "faint_light",
+          "text": "Faint light struggles to illuminate the space",
+          "weight": 25
+        },
+        {
+          "id": "twilight_dim",
+          "text": "A perpetual twilight gloom hangs over the area",
+          "weight": 25
+        }
+      ]
+    },
+    "lighting_bright": {
+      "id": "lighting_bright",
+      "name": "Bright Lighting",
+      "descriptors": [
+        {
+          "id": "well_lit",
+          "text": "The area is well-lit, with no shadows to hide in",
+          "weight": 30
+        },
+        {
+          "id": "bright_illumination",
+          "text": "Bright light fills every corner of the space",
+          "weight": 30
+        },
+        {
+          "id": "clear_visibility",
+          "text": "Clear, bright light grants perfect visibility",
+          "weight": 20
+        },
+        {
+          "id": "brilliant_light",
+          "text": "Brilliant light banishes all shadows",
+          "weight": 20
+        }
+      ]
+    }
+  }
+}
