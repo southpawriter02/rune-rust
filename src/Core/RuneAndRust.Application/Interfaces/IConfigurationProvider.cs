@@ -181,6 +181,34 @@ public interface IGameConfigurationProvider
     /// <param name="damageTypeId">The damage type identifier.</param>
     /// <returns>The damage type definition or null if not found.</returns>
     DamageTypeDefinition? GetDamageTypeById(string damageTypeId);
+
+    // ===== Tier & Trait Definitions (v0.0.9c) =====
+
+    /// <summary>
+    /// Gets all tier definitions.
+    /// </summary>
+    /// <returns>Read-only list of tier definitions.</returns>
+    IReadOnlyList<TierDefinition> GetTiers();
+
+    /// <summary>
+    /// Gets a tier definition by ID.
+    /// </summary>
+    /// <param name="tierId">The tier identifier.</param>
+    /// <returns>The tier definition or null if not found.</returns>
+    TierDefinition? GetTierById(string tierId);
+
+    /// <summary>
+    /// Gets all monster trait definitions.
+    /// </summary>
+    /// <returns>Read-only list of monster trait definitions.</returns>
+    IReadOnlyList<MonsterTrait> GetTraits();
+
+    /// <summary>
+    /// Gets a monster trait definition by ID.
+    /// </summary>
+    /// <param name="traitId">The trait identifier.</param>
+    /// <returns>The monster trait definition or null if not found.</returns>
+    MonsterTrait? GetTraitById(string traitId);
 }
 
 /// <summary>

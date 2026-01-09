@@ -111,6 +111,58 @@ public class Monster : IEntity
     /// </remarks>
     public DamageResistances Resistances { get; private set; } = DamageResistances.None;
 
+    // ===== Tier & Trait Properties (v0.0.9c) =====
+
+    /// <summary>
+    /// Gets the tier ID this monster was spawned with.
+    /// </summary>
+    /// <remarks>
+    /// References a TierDefinition by ID (e.g., "common", "elite", "boss").
+    /// Determines stat multipliers and display properties.
+    /// </remarks>
+    public string TierId { get; private set; } = "common";
+
+    /// <summary>
+    /// Gets the list of trait IDs this monster has.
+    /// </summary>
+    /// <remarks>
+    /// References MonsterTrait definitions by ID.
+    /// Traits provide special abilities and behaviors.
+    /// </remarks>
+    public IReadOnlyList<string> TraitIds { get; private set; } = [];
+
+    /// <summary>
+    /// Gets the display name including tier prefix or generated name.
+    /// </summary>
+    /// <remarks>
+    /// For common monsters: "Goblin"
+    /// For elite monsters: "Elite Goblin"
+    /// For named monsters: "Grok the Goblin"
+    /// </remarks>
+    public string DisplayName { get; private set; } = string.Empty;
+
+    /// <summary>
+    /// Gets whether this monster is a Named tier with a unique name.
+    /// </summary>
+    public bool IsNamed { get; private set; } = false;
+
+    /// <summary>
+    /// Gets the color for displaying this monster (from tier).
+    /// </summary>
+    /// <remarks>
+    /// Should be a valid Spectre.Console color name.
+    /// Used by the renderer for colored monster names.
+    /// </remarks>
+    public string DisplayColor { get; private set; } = "white";
+
+    /// <summary>
+    /// Gets the loot multiplier from the monster's tier.
+    /// </summary>
+    /// <remarks>
+    /// Used by LootService in v0.0.9d to scale drops and currency.
+    /// </remarks>
+    public float LootMultiplier { get; private set; } = 1.0f;
+
     /// <summary>
     /// Private parameterless constructor for Entity Framework Core.
     /// </summary>
@@ -118,6 +170,7 @@ public class Monster : IEntity
     {
         Name = null!;
         Description = null!;
+        DisplayName = null!;
     }
 
     /// <summary>
@@ -153,6 +206,52 @@ public class Monster : IEntity
         MonsterDefinitionId = monsterDefinitionId;
         ExperienceValue = Math.Max(0, experienceValue);
         Resistances = resistances ?? DamageResistances.None;
+        DisplayName = name; // Default display name to base name for backwards compatibility
+    }
+
+    // ===== Tier & Trait Methods (v0.0.9c) =====
+
+    /// <summary>
+    /// Sets the tier information for this monster.
+    /// </summary>
+    /// <param name="tierId">The tier definition ID.</param>
+    /// <param name="displayName">The formatted display name (may include tier prefix or generated name).</param>
+    /// <param name="displayColor">The Spectre.Console color name for rendering.</param>
+    /// <param name="lootMultiplier">The loot drop multiplier from the tier.</param>
+    /// <param name="isNamed">Whether this monster has a unique generated name.</param>
+    internal void SetTierInfo(
+        string tierId,
+        string displayName,
+        string displayColor,
+        float lootMultiplier,
+        bool isNamed = false)
+    {
+        TierId = tierId ?? throw new ArgumentNullException(nameof(tierId));
+        DisplayName = displayName ?? throw new ArgumentNullException(nameof(displayName));
+        DisplayColor = displayColor ?? "white";
+        LootMultiplier = lootMultiplier > 0 ? lootMultiplier : 1.0f;
+        IsNamed = isNamed;
+    }
+
+    /// <summary>
+    /// Sets the traits for this monster.
+    /// </summary>
+    /// <param name="traitIds">The list of trait definition IDs.</param>
+    internal void SetTraits(IReadOnlyList<string> traitIds)
+    {
+        TraitIds = traitIds ?? [];
+    }
+
+    /// <summary>
+    /// Applies a defense bonus from traits (e.g., Armored trait).
+    /// </summary>
+    /// <param name="defenseBonus">The defense bonus to add.</param>
+    internal void ApplyDefenseBonus(int defenseBonus)
+    {
+        if (defenseBonus > 0)
+        {
+            Stats = new Stats(Stats.MaxHealth, Stats.Attack, Stats.Defense + defenseBonus);
+        }
     }
 
     /// <summary>

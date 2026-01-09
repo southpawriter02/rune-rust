@@ -99,6 +99,36 @@ public class MonsterDefinition
     /// </remarks>
     public DamageResistances BaseResistances { get; init; } = DamageResistances.None;
 
+    // ===== Tier & Trait Properties (v0.0.9c) =====
+
+    /// <summary>
+    /// Gets the list of tier IDs this monster can spawn as.
+    /// </summary>
+    /// <remarks>
+    /// If empty or null, defaults to ["common"].
+    /// Tier is selected using weighted random from available tiers.
+    /// </remarks>
+    public IReadOnlyList<string> PossibleTiers { get; init; } = ["common"];
+
+    /// <summary>
+    /// Gets the list of trait IDs this monster can spawn with.
+    /// </summary>
+    /// <remarks>
+    /// Traits are randomly selected based on tier.
+    /// Higher tiers may have more traits.
+    /// Empty list means no traits can be assigned.
+    /// </remarks>
+    public IReadOnlyList<string> PossibleTraits { get; init; } = [];
+
+    /// <summary>
+    /// Gets the name generator configuration for Named tier monsters.
+    /// </summary>
+    /// <remarks>
+    /// If null, uses the default name generator.
+    /// Only used when the selected tier has GeneratesUniqueName = true.
+    /// </remarks>
+    public NameGeneratorConfig? NameGenerator { get; init; }
+
     /// <summary>
     /// Private parameterless constructor for JSON deserialization.
     /// </summary>
@@ -123,6 +153,9 @@ public class MonsterDefinition
     /// <param name="spawnWeight">The spawn weight for random selection.</param>
     /// <param name="initiativeModifier">The initiative modifier.</param>
     /// <param name="baseResistances">The base damage resistances.</param>
+    /// <param name="possibleTiers">The tier IDs this monster can spawn as.</param>
+    /// <param name="possibleTraits">The trait IDs this monster can have.</param>
+    /// <param name="nameGenerator">Custom name generator configuration.</param>
     /// <returns>A new validated MonsterDefinition.</returns>
     /// <exception cref="ArgumentException">Thrown when id, name, or description is null or empty.</exception>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when baseHealth is not positive.</exception>
@@ -140,7 +173,10 @@ public class MonsterDefinition
         int? healAmount = null,
         int spawnWeight = 100,
         int initiativeModifier = 0,
-        DamageResistances? baseResistances = null)
+        DamageResistances? baseResistances = null,
+        IEnumerable<string>? possibleTiers = null,
+        IEnumerable<string>? possibleTraits = null,
+        NameGeneratorConfig? nameGenerator = null)
     {
         if (string.IsNullOrWhiteSpace(id))
             throw new ArgumentException("Monster definition ID cannot be null or empty.", nameof(id));
@@ -166,7 +202,10 @@ public class MonsterDefinition
             HealAmount = canHeal ? healAmount : null,
             SpawnWeight = Math.Max(1, spawnWeight),
             InitiativeModifier = initiativeModifier,
-            BaseResistances = baseResistances ?? DamageResistances.None
+            BaseResistances = baseResistances ?? DamageResistances.None,
+            PossibleTiers = possibleTiers?.ToList() ?? ["common"],
+            PossibleTraits = possibleTraits?.ToList() ?? [],
+            NameGenerator = nameGenerator
         };
     }
 

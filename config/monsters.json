@@ -13,7 +13,14 @@
       "canHeal": false,
       "spawnWeight": 100,
       "initiativeModifier": 1,
-      "baseResistances": {}
+      "baseResistances": {},
+      "possibleTiers": ["common", "named", "elite"],
+      "possibleTraits": ["venomous", "berserker"],
+      "nameGenerator": {
+        "prefixes": ["Gn", "Sn", "Gr", "Kr", "Zn"],
+        "suffixes": ["ik", "ob", "ax", "ek", "uk"],
+        "titleFormat": "{0} the {1}"
+      }
     },
     {
       "id": "skeleton",
@@ -34,6 +41,13 @@
         "poison": 100,
         "holy": -50,
         "dark": 50
+      },
+      "possibleTiers": ["common", "named", "elite", "boss"],
+      "possibleTraits": ["armored", "berserker"],
+      "nameGenerator": {
+        "prefixes": ["Sk", "Bl", "Dr", "Vr", "Th"],
+        "suffixes": ["ull", "ax", "or", "im", "us"],
+        "titleFormat": "{0} the Bone {1}"
       }
     },
     {
@@ -49,7 +63,14 @@
       "canHeal": false,
       "spawnWeight": 50,
       "initiativeModifier": -1,
-      "baseResistances": {}
+      "baseResistances": {},
+      "possibleTiers": ["common", "named", "elite", "boss"],
+      "possibleTraits": ["armored", "berserker", "regenerating"],
+      "nameGenerator": {
+        "prefixes": ["Gr", "Kr", "Th", "Br", "Dr"],
+        "suffixes": ["ok", "ag", "ul", "ax", "or"],
+        "titleFormat": "{0} the {1}"
+      }
     },
     {
       "id": "goblin_shaman",
@@ -65,7 +86,14 @@
       "healAmount": 10,
       "spawnWeight": 30,
       "initiativeModifier": 2,
-      "baseResistances": {}
+      "baseResistances": {},
+      "possibleTiers": ["common", "named", "elite"],
+      "possibleTraits": ["regenerating"],
+      "nameGenerator": {
+        "prefixes": ["Zn", "Xr", "Wr", "Qz", "Vx"],
+        "suffixes": ["ik", "ax", "um", "ek", "oz"],
+        "titleFormat": "{0} the Shaman"
+      }
     },
     {
       "id": "slime",
@@ -86,6 +114,13 @@
         "ice": -25,
         "lightning": -50,
         "poison": 100
+      },
+      "possibleTiers": ["common", "named", "elite"],
+      "possibleTraits": ["regenerating", "venomous"],
+      "nameGenerator": {
+        "prefixes": ["Bl", "Gl", "Sl", "Sp", "Sq"],
+        "suffixes": ["ob", "ub", "op", "ip", "oop"],
+        "titleFormat": "{0} the {1}"
       }
     }
   ]

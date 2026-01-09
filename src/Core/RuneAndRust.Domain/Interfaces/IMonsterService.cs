@@ -17,6 +17,19 @@ public interface IMonsterService
     Monster SpawnMonster(string definitionId);
 
     /// <summary>
+    /// Spawns a monster from the specified definition ID with a specific tier.
+    /// </summary>
+    /// <param name="definitionId">The monster definition ID.</param>
+    /// <param name="tierId">The tier ID to use, or null for random tier selection.</param>
+    /// <returns>A new Monster instance with tier and trait applied.</returns>
+    /// <exception cref="ArgumentException">Thrown when the definition ID is not found.</exception>
+    /// <remarks>
+    /// When tierId is null, a random tier is selected from the monster's possible tiers.
+    /// Traits are automatically selected based on the tier.
+    /// </remarks>
+    Monster SpawnMonster(string definitionId, string? tierId);
+
+    /// <summary>
     /// Spawns a random monster using weighted random selection.
     /// </summary>
     /// <returns>A new Monster instance.</returns>

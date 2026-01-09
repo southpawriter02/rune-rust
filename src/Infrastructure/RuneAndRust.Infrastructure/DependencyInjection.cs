@@ -110,14 +110,27 @@ public static class DependencyInjection
         // Progression system service (v0.0.8b)
         services.AddScoped<ProgressionService>();
 
-        // Monster system service (v0.0.9a)
+        // Tier system service (v0.0.9c)
+        services.AddScoped<ITierService, TierService>();
+
+        // Trait system service (v0.0.9c)
+        services.AddScoped<ITraitService, TraitService>();
+
+        // Monster system service (v0.0.9a, updated v0.0.9c with tier/trait support)
         services.AddScoped<IMonsterService>(sp =>
         {
             var configProvider = sp.GetRequiredService<IGameConfigurationProvider>();
+            var tierService = sp.GetRequiredService<ITierService>();
+            var traitService = sp.GetRequiredService<ITraitService>();
             var logger = sp.GetRequiredService<ILogger<MonsterService>>();
             return new MonsterService(
                 configProvider.GetMonsters,
                 configProvider.GetMonsterById,
+                tierService.SelectRandomTier,
+                tierService.GetTier,
+                tierService.GetDefaultTier,
+                traitService.SelectRandomTraits,
+                traitService.GetTraits,
                 logger);
         });
 

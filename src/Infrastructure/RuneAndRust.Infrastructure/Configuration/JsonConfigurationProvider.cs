@@ -35,6 +35,8 @@ public class JsonConfigurationProvider : IGameConfigurationProvider
     private ProgressionDefinition? _progression;
     private IReadOnlyList<MonsterDefinition>? _monsters;
     private IReadOnlyList<DamageTypeDefinition>? _damageTypes;
+    private IReadOnlyList<TierDefinition>? _tiers;
+    private IReadOnlyList<MonsterTrait>? _traits;
 
     private static readonly JsonSerializerOptions DefaultJsonOptions = new()
     {
@@ -482,6 +484,143 @@ public class JsonConfigurationProvider : IGameConfigurationProvider
             d.Id.Equals(damageTypeId, StringComparison.OrdinalIgnoreCase));
     }
 
+    // ===== Tier & Trait Methods (v0.0.9c) =====
+
+    /// <inheritdoc/>
+    public IReadOnlyList<TierDefinition> GetTiers()
+    {
+        if (_tiers != null) return _tiers;
+
+        var filePath = Path.Combine(_configPath, "tiers.json");
+        var config = LoadJsonFile<TiersJsonConfig>(filePath);
+
+        if (config?.Tiers == null || config.Tiers.Count == 0)
+        {
+            _logger.LogWarning("No tiers found in configuration, using defaults");
+            _tiers = GetDefaultTiers();
+            return _tiers;
+        }
+
+        _tiers = config.Tiers
+            .Select(ToTierDefinition)
+            .Where(t => t != null)
+            .Cast<TierDefinition>()
+            .OrderBy(t => t.SortOrder)
+            .ToList();
+
+        _logger.LogDebug("Loaded {Count} tiers", _tiers.Count);
+        return _tiers;
+    }
+
+    /// <inheritdoc/>
+    public TierDefinition? GetTierById(string tierId)
+    {
+        if (string.IsNullOrWhiteSpace(tierId)) return null;
+        return GetTiers().FirstOrDefault(t =>
+            t.Id.Equals(tierId, StringComparison.OrdinalIgnoreCase));
+    }
+
+    /// <inheritdoc/>
+    public IReadOnlyList<MonsterTrait> GetTraits()
+    {
+        if (_traits != null) return _traits;
+
+        var filePath = Path.Combine(_configPath, "traits.json");
+        var config = LoadJsonFile<TraitsJsonConfig>(filePath);
+
+        if (config?.Traits == null || config.Traits.Count == 0)
+        {
+            _logger.LogWarning("No traits found in configuration, using defaults");
+            _traits = GetDefaultTraits();
+            return _traits;
+        }
+
+        _traits = config.Traits
+            .Select(ToMonsterTrait)
+            .Where(t => t != null)
+            .Cast<MonsterTrait>()
+            .OrderBy(t => t.SortOrder)
+            .ToList();
+
+        _logger.LogDebug("Loaded {Count} traits", _traits.Count);
+        return _traits;
+    }
+
+    /// <inheritdoc/>
+    public MonsterTrait? GetTraitById(string traitId)
+    {
+        if (string.IsNullOrWhiteSpace(traitId)) return null;
+        return GetTraits().FirstOrDefault(t =>
+            t.Id.Equals(traitId, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private TierDefinition? ToTierDefinition(TierJsonConfig config)
+    {
+        try
+        {
+            return TierDefinition.Create(
+                id: config.Id,
+                name: config.Name,
+                namePrefix: config.NamePrefix,
+                healthMultiplier: config.HealthMultiplier,
+                attackMultiplier: config.AttackMultiplier,
+                defenseMultiplier: config.DefenseMultiplier,
+                experienceMultiplier: config.ExperienceMultiplier,
+                lootMultiplier: config.LootMultiplier,
+                color: config.Color ?? "white",
+                spawnWeight: config.SpawnWeight,
+                generatesUniqueName: config.GeneratesUniqueName,
+                sortOrder: config.SortOrder);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to create tier definition for {Id}", config.Id);
+            return null;
+        }
+    }
+
+    private MonsterTrait? ToMonsterTrait(TraitJsonConfig config)
+    {
+        try
+        {
+            var effect = Enum.TryParse<TraitEffect>(config.Effect, true, out var e)
+                ? e : TraitEffect.None;
+
+            return MonsterTrait.Create(
+                id: config.Id,
+                name: config.Name,
+                description: config.Description ?? string.Empty,
+                effect: effect,
+                effectValue: config.EffectValue,
+                triggerThreshold: config.TriggerThreshold,
+                tags: config.Tags ?? [],
+                color: config.Color ?? "white",
+                sortOrder: config.SortOrder);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to create monster trait for {Id}", config.Id);
+            return null;
+        }
+    }
+
+    private static List<TierDefinition> GetDefaultTiers() =>
+    [
+        TierDefinition.Create("common", "Common", null, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, "white", 70, false, 0),
+        TierDefinition.Create("named", "Named", null, 1.5f, 1.3f, 1.2f, 2.0f, 2.0f, "yellow", 20, true, 1),
+        TierDefinition.Create("elite", "Elite", "Elite", 2.0f, 1.5f, 1.5f, 3.0f, 3.0f, "orange3", 8, false, 2),
+        TierDefinition.Create("boss", "Boss", "Boss", 5.0f, 2.0f, 2.0f, 10.0f, 5.0f, "red", 2, false, 3)
+    ];
+
+    private static List<MonsterTrait> GetDefaultTraits() =>
+    [
+        MonsterTrait.Create("regenerating", "Regenerating", "Heals each turn.", TraitEffect.Regeneration, 5, null, ["healing"], "green", 0),
+        MonsterTrait.Create("flying", "Flying", "Harder to hit with melee.", TraitEffect.Flying, 3, null, ["mobility"], "cyan", 1),
+        MonsterTrait.Create("venomous", "Venomous", "Attacks may poison.", TraitEffect.Venomous, 3, null, ["poison"], "green", 2),
+        MonsterTrait.Create("armored", "Armored", "Extra defense.", TraitEffect.Armored, 3, null, ["defensive"], "grey", 3),
+        MonsterTrait.Create("berserker", "Berserker", "More damage when low HP.", TraitEffect.Berserker, 50, 30, ["offensive"], "red", 4)
+    ];
+
     private DamageTypeDefinition? ToDamageTypeDefinition(DamageTypeJsonConfig config)
     {
         try
@@ -526,6 +665,18 @@ public class JsonConfigurationProvider : IGameConfigurationProvider
                 resistances = new DamageResistances(config.BaseResistances);
             }
 
+            // Parse name generator config (v0.0.9c)
+            NameGeneratorConfig? nameGenerator = null;
+            if (config.NameGenerator != null)
+            {
+                nameGenerator = new NameGeneratorConfig
+                {
+                    Prefixes = config.NameGenerator.Prefixes ?? [],
+                    Suffixes = config.NameGenerator.Suffixes ?? [],
+                    TitleFormat = config.NameGenerator.TitleFormat ?? "{0} the {1}"
+                };
+            }
+
             return MonsterDefinition.Create(
                 id: config.Id,
                 name: config.Name,
@@ -540,7 +691,10 @@ public class JsonConfigurationProvider : IGameConfigurationProvider
                 healAmount: config.HealAmount,
                 spawnWeight: config.SpawnWeight,
                 initiativeModifier: config.InitiativeModifier,
-                baseResistances: resistances);
+                baseResistances: resistances,
+                possibleTiers: config.PossibleTiers ?? ["common"],
+                possibleTraits: config.PossibleTraits ?? [],
+                nameGenerator: nameGenerator);
         }
         catch (Exception ex)
         {
@@ -1157,6 +1311,17 @@ public class JsonConfigurationProvider : IGameConfigurationProvider
         public int SpawnWeight { get; set; } = 100;
         public int InitiativeModifier { get; set; }
         public Dictionary<string, int>? BaseResistances { get; set; }
+        // v0.0.9c additions
+        public List<string>? PossibleTiers { get; set; }
+        public List<string>? PossibleTraits { get; set; }
+        public NameGeneratorJsonConfig? NameGenerator { get; set; }
+    }
+
+    private class NameGeneratorJsonConfig
+    {
+        public List<string>? Prefixes { get; set; }
+        public List<string>? Suffixes { get; set; }
+        public string? TitleFormat { get; set; }
     }
 
     // Damage Type JSON structure
@@ -1173,5 +1338,46 @@ public class JsonConfigurationProvider : IGameConfigurationProvider
         public string? Color { get; set; }
         public string? Icon { get; set; }
         public int SortOrder { get; set; }
+    }
+
+    // Tier JSON structure (v0.0.9c)
+    private class TiersJsonConfig
+    {
+        public List<TierJsonConfig> Tiers { get; set; } = [];
+    }
+
+    private class TierJsonConfig
+    {
+        public string Id { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
+        public string? NamePrefix { get; set; }
+        public float HealthMultiplier { get; set; } = 1.0f;
+        public float AttackMultiplier { get; set; } = 1.0f;
+        public float DefenseMultiplier { get; set; } = 1.0f;
+        public float ExperienceMultiplier { get; set; } = 1.0f;
+        public float LootMultiplier { get; set; } = 1.0f;
+        public string? Color { get; set; }
+        public int SpawnWeight { get; set; } = 100;
+        public bool GeneratesUniqueName { get; set; } = false;
+        public int SortOrder { get; set; } = 0;
+    }
+
+    // Trait JSON structure (v0.0.9c)
+    private class TraitsJsonConfig
+    {
+        public List<TraitJsonConfig> Traits { get; set; } = [];
+    }
+
+    private class TraitJsonConfig
+    {
+        public string Id { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
+        public string? Description { get; set; }
+        public string Effect { get; set; } = "None";
+        public int EffectValue { get; set; } = 0;
+        public int? TriggerThreshold { get; set; }
+        public List<string>? Tags { get; set; }
+        public string? Color { get; set; }
+        public int SortOrder { get; set; } = 0;
     }
 }
