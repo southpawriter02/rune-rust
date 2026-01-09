@@ -9,5 +9,9 @@ description: Checklist for adding new game features.
 - [ ] Create loader in `IGameConfigurationProvider`
 - [ ] Add terminology entries to `terminology.json`
 - [ ] Add descriptor pools if applicable
+- [ ] Add comprehensive and highly-detailed logging
+- [ ] Add XML documentation throughout
+- [ ] Add unit tests and build/verify that they pass
 - [ ] Document extensibility in design spec
 - [ ] Document added functionality and changes in a version changelog (created under changelogs/)
+- [ ] Update version index and scope-breakdown files with checkboxes
