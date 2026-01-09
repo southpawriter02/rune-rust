@@ -140,6 +140,9 @@ public static class DependencyInjection
         // Loot system service (v0.0.9d)
         services.AddScoped<ILootService, LootService>();
 
+        // Operation scope for logging correlation (v0.0.10a)
+        services.AddScoped<IOperationScope, OperationScope>();
+
         return services;
     }
 }
