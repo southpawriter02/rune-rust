@@ -1,0 +1,20 @@
+{
+    "version": "1.0",
+    "playerSymbol": "@",
+    "unexploredSymbol": "?",
+    "roomTypeSymbols": {
+        "standard": "#",
+        "treasure": "$",
+        "trap": "!",
+        "boss": "B",
+        "safe": "+",
+        "shrine": "*"
+    },
+    "connectionSymbols": {
+        "horizontal": "─",
+        "vertical": "│",
+        "stairs_up": "↑",
+        "stairs_down": "↓",
+        "ladder": "≡"
+    }
+}

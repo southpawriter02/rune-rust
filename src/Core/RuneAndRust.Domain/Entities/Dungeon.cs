@@ -199,6 +199,69 @@ public class Dungeon : IEntity
     public int GetRoomCountAtLevel(int level) =>
         _rooms.Values.Count(r => r.Position.Z == level);
 
+    // ===== Level Query Methods (v0.1.0d) =====
+
+    /// <summary>
+    /// Gets all rooms on the specified Z level.
+    /// </summary>
+    /// <param name="z">The Z coordinate (depth level).</param>
+    /// <returns>Collection of rooms on that level.</returns>
+    public IReadOnlyList<Room> GetRoomsOnLevel(int z)
+    {
+        return _rooms.Values
+            .Where(r => r.Position.Z == z)
+            .ToList()
+            .AsReadOnly();
+    }
+
+    /// <summary>
+    /// Gets all Z levels that have at least one visited room.
+    /// </summary>
+    /// <returns>Sorted collection of explored Z levels.</returns>
+    public IReadOnlyList<int> GetExploredLevels()
+    {
+        return _rooms.Values
+            .Where(r => r.IsVisited)
+            .Select(r => r.Position.Z)
+            .Distinct()
+            .OrderBy(z => z)
+            .ToList()
+            .AsReadOnly();
+    }
+
+    /// <summary>
+    /// Gets the count of rooms by exploration state on a specific level.
+    /// </summary>
+    /// <param name="z">The Z coordinate.</param>
+    /// <returns>Dictionary of state to count.</returns>
+    public IReadOnlyDictionary<ExplorationState, int> GetExplorationStatsForLevel(int z)
+    {
+        return _rooms.Values
+            .Where(r => r.Position.Z == z)
+            .GroupBy(r => r.ExplorationState)
+            .ToDictionary(g => g.Key, g => g.Count())
+            .AsReadOnly();
+    }
+
+    /// <summary>
+    /// Gets the grid bounds for rooms on a specific level.
+    /// </summary>
+    /// <param name="z">The Z coordinate.</param>
+    /// <returns>Tuple of (minX, maxX, minY, maxY).</returns>
+    public (int minX, int maxX, int minY, int maxY) GetLevelBounds(int z)
+    {
+        var rooms = GetRoomsOnLevel(z);
+        if (rooms.Count == 0)
+            return (0, 0, 0, 0);
+
+        var minX = rooms.Min(r => r.Position.X);
+        var maxX = rooms.Max(r => r.Position.X);
+        var minY = rooms.Min(r => r.Position.Y);
+        var maxY = rooms.Max(r => r.Position.Y);
+
+        return (minX, maxX, minY, maxY);
+    }
+
 
     /// <summary>
     /// Creates bidirectional connections between two rooms.

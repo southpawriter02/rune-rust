@@ -117,8 +117,6 @@ public class Room : IEntity
     /// </summary>
     public bool HasDroppedLoot => _droppedItems.Count > 0 || _droppedCurrency.Count > 0;
 
-    // ===== Room Type (v0.1.0c) =====
-
     /// <summary>
     /// Gets the type of this room.
     /// </summary>
@@ -126,6 +124,42 @@ public class Room : IEntity
     /// Room type affects monster spawning, loot, and available interactions.
     /// </remarks>
     public RoomType RoomType { get; private set; } = RoomType.Standard;
+
+    // ===== Exploration State (v0.1.0d) =====
+
+    /// <summary>
+    /// Gets the current exploration state of this room.
+    /// </summary>
+    /// <remarks>
+    /// Exploration state tracks player progress through the dungeon
+    /// and affects how the room appears on the map.
+    /// </remarks>
+    public ExplorationState ExplorationState { get; private set; } = ExplorationState.Unexplored;
+
+    /// <summary>
+    /// Gets whether this room has been visited by the player.
+    /// </summary>
+    public bool IsVisited => ExplorationState >= ExplorationState.Visited;
+
+    /// <summary>
+    /// Gets whether this room has been fully cleared.
+    /// </summary>
+    public bool IsCleared => ExplorationState == ExplorationState.Cleared;
+
+    /// <summary>
+    /// Gets whether this room can be marked as cleared.
+    /// </summary>
+    /// <remarks>
+    /// A room can be cleared when:
+    /// - It has been visited
+    /// - No living monsters remain
+    /// - All hidden content has been discovered (or none exists)
+    /// </remarks>
+    public bool CanBeCleared =>
+        IsVisited &&
+        !HasMonsters &&
+        GetHiddenExits().Count == 0 &&
+        GetUndiscoveredHiddenItems().Count == 0;
 
     // ===== Environment Context (v0.0.11a) =====
 
@@ -183,6 +217,53 @@ public class Room : IEntity
     {
         RoomType = roomType;
     }
+
+    // ===== Exploration State Methods (v0.1.0d) =====
+
+    /// <summary>
+    /// Marks this room as visited by the player.
+    /// </summary>
+    /// <returns>True if state changed; false if already visited or cleared.</returns>
+    public bool MarkVisited()
+    {
+        if (ExplorationState >= ExplorationState.Visited)
+            return false;
+
+        ExplorationState = ExplorationState.Visited;
+        return true;
+    }
+
+    /// <summary>
+    /// Marks this room as fully cleared.
+    /// </summary>
+    /// <returns>True if state changed; false if already cleared or cannot be cleared.</returns>
+    public bool MarkCleared()
+    {
+        if (ExplorationState == ExplorationState.Cleared)
+            return false;
+
+        if (!CanBeCleared)
+            return false;
+
+        ExplorationState = ExplorationState.Cleared;
+        return true;
+    }
+
+    /// <summary>
+    /// Checks if clearing conditions are met and auto-clears if possible.
+    /// </summary>
+    /// <returns>True if the room was auto-cleared.</returns>
+    public bool TryAutoCleared()
+    {
+        if (CanBeCleared && ExplorationState == ExplorationState.Visited)
+        {
+            ExplorationState = ExplorationState.Cleared;
+            return true;
+        }
+        return false;
+    }
+
+    // ===== Exit Methods =====
 
     /// <summary>
     /// Adds or updates an exit from this room.
