@@ -52,6 +52,16 @@ public class Dungeon : IEntity
     public int RoomCount => _rooms.Count;
 
     /// <summary>
+    /// Gets the seed used to generate this dungeon.
+    /// </summary>
+    /// <remarks>
+    /// The same seed produces identical dungeon layouts, enabling
+    /// reproducible exploration and seed sharing between players.
+    /// A value of 0 indicates an unseeded (legacy) dungeon.
+    /// </remarks>
+    public int Seed { get; private set; }
+
+    /// <summary>
     /// Private parameterless constructor for Entity Framework Core.
     /// </summary>
     private Dungeon()
@@ -68,6 +78,28 @@ public class Dungeon : IEntity
     {
         Id = Guid.NewGuid();
         Name = name ?? throw new ArgumentNullException(nameof(name));
+    }
+
+    /// <summary>
+    /// Creates a new dungeon with the specified name and seed.
+    /// </summary>
+    /// <param name="name">The display name for the dungeon.</param>
+    /// <param name="seed">The generation seed for reproducibility.</param>
+    /// <exception cref="ArgumentNullException">Thrown when name is null.</exception>
+    public Dungeon(string name, int seed) : this(name)
+    {
+        Seed = seed;
+    }
+
+    /// <summary>
+    /// Creates a seeded starter dungeon for new games.
+    /// </summary>
+    /// <param name="name">The display name for the dungeon.</param>
+    /// <param name="seed">The generation seed.</param>
+    /// <returns>A new seeded dungeon ready for procedural generation.</returns>
+    public static Dungeon CreateSeeded(string name, int seed)
+    {
+        return new Dungeon(name, seed);
     }
 
     /// <summary>
