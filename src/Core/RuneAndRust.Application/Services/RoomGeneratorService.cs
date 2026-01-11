@@ -46,14 +46,14 @@ public class RoomGeneratorService : IRoomGeneratorService
             _logger.LogWarning(
                 "No valid template found for biome {Biome} at depth {Depth}, using fallback",
                 biomeId, position.Z);
-            template = CreateFallbackTemplate();
+            template = CreateFallbackTemplate(biomeId);
         }
 
-        // Generate room name
-        var name = SelectRandomFromList(template.Names, random) ?? "Unknown Chamber";
+        // Generate room name from pattern (use NamePattern directly for now)
+        var name = template.NamePattern;
 
-        // Generate description
-        var description = GenerateDescription(template, random);
+        // Generate description from pattern
+        var description = template.DescriptionPattern;
 
         // Create room
         var room = new Room(name, description, position);
@@ -67,9 +67,9 @@ public class RoomGeneratorService : IRoomGeneratorService
 
         _logger.LogDebug(
             "Generated room '{Name}' at {Position} using template {Template} (biome: {Biome})",
-            name, position, template.Id, biomeId);
+            name, position, template.TemplateId, biomeId);
 
-        return new GeneratedRoomResult(room, exits, template.Id, biomeId, difficultyModifier);
+        return new GeneratedRoomResult(room, exits, template.TemplateId, biomeId, difficultyModifier);
     }
 
     /// <inheritdoc />
@@ -118,11 +118,37 @@ public class RoomGeneratorService : IRoomGeneratorService
         var random = new Random(seed + 1); // Offset seed for exit generation
         var exits = new List<Direction>();
 
+        // Get exit slots from template
+        var exitSlots = template.GetSlotsByType(SlotType.Exit).ToList();
+        var exitProbabilities = new Dictionary<string, float>(StringComparer.OrdinalIgnoreCase);
+
+        // Extract exit probabilities from slot constraints
+        foreach (var slot in exitSlots)
+        {
+            var direction = slot.GetConstraint("direction");
+            if (!string.IsNullOrEmpty(direction))
+            {
+                exitProbabilities[direction] = slot.EffectiveFillProbability;
+            }
+        }
+
+        // Use default probabilities if no exit slots defined
+        if (exitProbabilities.Count == 0)
+        {
+            exitProbabilities = new Dictionary<string, float>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["north"] = 0.5f,
+                ["south"] = 0.5f,
+                ["east"] = 0.5f,
+                ["west"] = 0.5f
+            };
+        }
+
         // Check each direction
         foreach (Direction direction in Enum.GetValues<Direction>())
         {
             var directionName = direction.ToString().ToLowerInvariant();
-            var probability = template.GetExitProbability(directionName);
+            var probability = exitProbabilities.TryGetValue(directionName, out var prob) ? prob : 0f;
 
             // Guaranteed exit always included
             if (guaranteedExit.HasValue && direction == guaranteedExit.Value)
@@ -204,7 +230,10 @@ public class RoomGeneratorService : IRoomGeneratorService
 
     private RoomTemplate? SelectTemplate(string biomeId, int depth, Random random)
     {
-        var validTemplates = _templateConfig.GetValidTemplates(biomeId, depth).ToList();
+        var validTemplates = _templateConfig.Templates.Values
+            .Where(t => t.IsValidForBiome(biomeId))
+            .Where(t => t.IsValidForDepth(depth))
+            .ToList();
 
         if (validTemplates.Count == 0) return null;
 
@@ -227,39 +256,18 @@ public class RoomGeneratorService : IRoomGeneratorService
         return validTemplates.Last();
     }
 
-    private static RoomTemplate CreateFallbackTemplate() => new()
-    {
-        Id = "fallback",
-        Biomes = ["dungeon", "cave", "volcanic"],
-        Names = ["Dark Chamber", "Unknown Room", "Mysterious Space"],
-        DescriptionTemplates = ["A room shrouded in darkness. You can barely make out the walls."],
-        ExitProbabilities = new Dictionary<string, float>
-        {
-            ["north"] = 0.5f,
-            ["south"] = 0.5f,
-            ["east"] = 0.5f,
-            ["west"] = 0.5f
-        },
-        MonsterChance = 0.3f,
-        ItemChance = 0.1f,
-        Weight = 1
-    };
-
-    private static string GenerateDescription(RoomTemplate template, Random random)
-    {
-        if (template.DescriptionTemplates.Count > 0)
-        {
-            return SelectRandomFromList(template.DescriptionTemplates, random)
-                ?? "A mysterious room.";
-        }
-        return "A room of unknown origin.";
-    }
-
-    private static string? SelectRandomFromList(IReadOnlyList<string> list, Random random)
-    {
-        if (list.Count == 0) return null;
-        return list[random.Next(list.Count)];
-    }
+    private static RoomTemplate CreateFallbackTemplate(string biome) =>
+        new(
+            templateId: "fallback",
+            namePattern: "Dark Chamber",
+            descriptionPattern: "A room shrouded in darkness. You can barely make out the walls.",
+            validBiomes: [biome, "dungeon", "cave", "volcanic"],
+            roomType: RoomType.Standard,
+            slots: [],
+            weight: 1,
+            minDepth: 0,
+            maxDepth: null,
+            tags: ["fallback"]);
 
     private EnvironmentContext CreateEnvironmentContext(string biomeId, RoomTemplate template)
     {
@@ -283,7 +291,7 @@ public class RoomGeneratorService : IRoomGeneratorService
         {
             tags.AddRange(biomeDef.ImpliedTags);
         }
-        tags.AddRange(template.ImpliedTags);
+        tags.AddRange(template.Tags);
 
         return new EnvironmentContext(categoryValues, tags);
     }

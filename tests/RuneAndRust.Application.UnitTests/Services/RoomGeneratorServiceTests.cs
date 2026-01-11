@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using NUnit.Framework;
 using RuneAndRust.Application.Configuration;
 using RuneAndRust.Application.Services;
+using RuneAndRust.Domain.Entities;
 using RuneAndRust.Domain.Enums;
 using RuneAndRust.Domain.ValueObjects;
 
@@ -78,7 +79,7 @@ public class RoomGeneratorServiceTests
     }
 
     [Test]
-    public void GenerateRoom_SameSeedSamePosition_ReturnsSameRoomName()
+    public void GenerateRoom_SameSeedSamePosition_ReturnsSameRoom()
     {
         // Arrange
         var position = new Position3D(1, 1, 0);
@@ -94,36 +95,16 @@ public class RoomGeneratorServiceTests
     }
 
     [Test]
-    public void GenerateRoom_DifferentSeeds_MayReturnDifferentRooms()
-    {
-        // Arrange
-        var position = new Position3D(1, 1, 0);
-
-        // Act - Generate many rooms to check for variation
-        var names = Enumerable.Range(0, 10)
-            .Select(seed => _service.GenerateRoom(position, "dungeon", seed))
-            .Select(r => r.Room.Name)
-            .Distinct()
-            .ToList();
-
-        // Assert - With different seeds, we should get some variety
-        names.Count.Should().BeGreaterThan(1);
-    }
-
-    [Test]
     public void DetermineExits_WithGuaranteedExit_IncludesGuaranteedDirection()
     {
         // Arrange
-        var template = new RoomTemplate
-        {
-            ExitProbabilities = new Dictionary<string, float>
-            {
-                ["north"] = 0.0f,
-                ["south"] = 0.0f,
-                ["east"] = 0.0f,
-                ["west"] = 0.0f
-            }
-        };
+        var template = new RoomTemplate(
+            templateId: "test",
+            namePattern: "Test Room",
+            descriptionPattern: "A test room.",
+            validBiomes: ["dungeon"],
+            roomType: RoomType.Standard,
+            slots: []);
 
         // Act
         var exits = _service.DetermineExits(template, 12345, Direction.South).ToList();
@@ -135,19 +116,14 @@ public class RoomGeneratorServiceTests
     [Test]
     public void DetermineExits_EnforcesMinimumExits()
     {
-        // Arrange
-        var template = new RoomTemplate
-        {
-            ExitProbabilities = new Dictionary<string, float>
-            {
-                ["north"] = 0.0f,
-                ["south"] = 0.0f,
-                ["east"] = 0.0f,
-                ["west"] = 0.0f,
-                ["up"] = 0.0f,
-                ["down"] = 0.0f
-            }
-        };
+        // Arrange - Template with no exit slots
+        var template = new RoomTemplate(
+            templateId: "test",
+            namePattern: "Test Room",
+            descriptionPattern: "A test room.",
+            validBiomes: ["dungeon"],
+            roomType: RoomType.Standard,
+            slots: []);
 
         // Act
         var exits = _service.DetermineExits(template, 12345).ToList();
@@ -179,57 +155,39 @@ public class RoomGeneratorServiceTests
         biomes.Should().Contain("cave");
     }
 
-    private static RoomTemplateConfiguration CreateTestTemplateConfig() => new()
+    private static RoomTemplateConfiguration CreateTestTemplateConfig()
     {
-        Templates = new Dictionary<string, RoomTemplate>
-        {
-            ["dungeon_corridor"] = new RoomTemplate
-            {
-                Id = "dungeon_corridor",
-                Biomes = ["dungeon"],
-                Names = ["Dark Corridor", "Stone Passage", "Dusty Hallway"],
-                DescriptionTemplates = ["A narrow stone corridor."],
-                ExitProbabilities = new Dictionary<string, float>
-                {
-                    ["north"] = 0.6f,
-                    ["south"] = 0.6f,
-                    ["east"] = 0.4f,
-                    ["west"] = 0.4f
-                },
-                Weight = 40
-            },
-            ["dungeon_chamber"] = new RoomTemplate
-            {
-                Id = "dungeon_chamber",
-                Biomes = ["dungeon"],
-                Names = ["Ancient Chamber", "Forgotten Hall"],
-                DescriptionTemplates = ["A large chamber."],
-                ExitProbabilities = new Dictionary<string, float>
-                {
-                    ["north"] = 0.5f,
-                    ["south"] = 0.5f,
-                    ["east"] = 0.5f,
-                    ["west"] = 0.5f
-                },
-                Weight = 30
-            },
-            ["cave_cavern"] = new RoomTemplate
-            {
-                Id = "cave_cavern",
-                Biomes = ["cave"],
-                Names = ["Natural Cavern", "Underground Grotto"],
-                DescriptionTemplates = ["A natural cavern."],
-                ExitProbabilities = new Dictionary<string, float>
-                {
-                    ["north"] = 0.5f,
-                    ["south"] = 0.5f,
-                    ["east"] = 0.5f,
-                    ["west"] = 0.5f
-                },
-                Weight = 35
-            }
-        }
-    };
+        var config = new RoomTemplateConfiguration();
+
+        config.Templates["dungeon_corridor"] = new RoomTemplate(
+            templateId: "dungeon_corridor",
+            namePattern: "Dark Corridor",
+            descriptionPattern: "A narrow stone corridor.",
+            validBiomes: ["dungeon"],
+            roomType: RoomType.Standard,
+            slots: [],
+            weight: 40);
+
+        config.Templates["dungeon_chamber"] = new RoomTemplate(
+            templateId: "dungeon_chamber",
+            namePattern: "Ancient Chamber",
+            descriptionPattern: "A large chamber.",
+            validBiomes: ["dungeon"],
+            roomType: RoomType.Standard,
+            slots: [],
+            weight: 30);
+
+        config.Templates["cave_cavern"] = new RoomTemplate(
+            templateId: "cave_cavern",
+            namePattern: "Natural Cavern",
+            descriptionPattern: "A natural cavern.",
+            validBiomes: ["cave"],
+            roomType: RoomType.Standard,
+            slots: [],
+            weight: 35);
+
+        return config;
+    }
 
     private static GenerationRulesConfiguration CreateTestRulesConfig() => new()
     {

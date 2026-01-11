@@ -1,202 +1,243 @@
 {
-    "version": "1.0",
-    "templates": {
-        "dungeon_corridor": {
-            "id": "dungeon_corridor",
-            "biomes": [
+    "$schema": "schemas/room-templates.schema.json",
+    "version": "1.1",
+    "templates": [
+        {
+            "templateId": "dungeon-corridor-narrow",
+            "namePattern": "{adjective} Corridor",
+            "descriptionPattern": "A {width} {material} corridor stretches {direction}. {atmosphere}",
+            "validBiomes": [
                 "dungeon",
-                "ruins"
+                "ruins",
+                "cave"
             ],
-            "names": [
-                "Dark Corridor",
-                "Stone Passage",
-                "Dusty Hallway",
-                "Narrow Corridor",
-                "Winding Passage"
-            ],
-            "descriptionTemplates": [
-                "A narrow stone corridor stretches before you. Torches flicker on the walls, casting dancing shadows.",
-                "The passage winds through ancient stonework. Cobwebs hang from the low ceiling.",
-                "Worn flagstones line this corridor. The air is thick with dust and the smell of age."
-            ],
-            "exitProbabilities": {
-                "north": 0.6,
-                "south": 0.6,
-                "east": 0.4,
-                "west": 0.4,
-                "up": 0.05,
-                "down": 0.1
-            },
-            "monsterChance": 0.25,
-            "itemChance": 0.10,
+            "roomType": "Standard",
             "weight": 40,
-            "impliedTags": [
+            "minDepth": 0,
+            "maxDepth": null,
+            "tags": [
                 "corridor",
-                "narrow"
+                "passage"
+            ],
+            "slots": [
+                {
+                    "slotId": "adjective",
+                    "type": "Description",
+                    "isRequired": true,
+                    "descriptorPool": "room.adjectives.corridor"
+                },
+                {
+                    "slotId": "width",
+                    "type": "Description",
+                    "isRequired": true,
+                    "descriptorPool": "room.dimensions.width"
+                },
+                {
+                    "slotId": "material",
+                    "type": "Description",
+                    "isRequired": true,
+                    "descriptorPool": "room.materials.wall"
+                },
+                {
+                    "slotId": "direction",
+                    "type": "Description",
+                    "isRequired": true,
+                    "descriptorPool": "room.directions"
+                },
+                {
+                    "slotId": "atmosphere",
+                    "type": "Description",
+                    "isRequired": false,
+                    "fillProbability": 0.7,
+                    "descriptorPool": "environmental.atmosphere"
+                },
+                {
+                    "slotId": "monster_01",
+                    "type": "Monster",
+                    "isRequired": false,
+                    "fillProbability": 0.35,
+                    "minQuantity": 1,
+                    "maxQuantity": 2,
+                    "constraints": {
+                        "maxTier": "standard"
+                    }
+                }
             ]
         },
-        "dungeon_chamber": {
-            "id": "dungeon_chamber",
-            "biomes": [
-                "dungeon"
-            ],
-            "names": [
-                "Ancient Chamber",
-                "Forgotten Hall",
-                "Dusty Room",
-                "Stone Chamber",
-                "Dark Hall"
-            ],
-            "descriptionTemplates": [
-                "A large chamber opens before you. Pillars support the vaulted ceiling above.",
-                "This room was once grand, but time has taken its toll. Crumbling columns line the walls.",
-                "An echoing chamber filled with shadows. Faded murals cover the walls."
-            ],
-            "exitProbabilities": {
-                "north": 0.5,
-                "south": 0.5,
-                "east": 0.5,
-                "west": 0.5,
-                "up": 0.03,
-                "down": 0.08
-            },
-            "monsterChance": 0.40,
-            "itemChance": 0.25,
-            "weight": 30,
-            "impliedTags": [
-                "chamber",
-                "large"
-            ]
-        },
-        "dungeon_alcove": {
-            "id": "dungeon_alcove",
-            "biomes": [
+        {
+            "templateId": "dungeon-treasure-vault",
+            "namePattern": "{guardian}'s {container_type}",
+            "descriptionPattern": "A {size} chamber filled with {treasure_description}. {guardian_hint}",
+            "validBiomes": [
                 "dungeon",
                 "ruins"
             ],
-            "names": [
-                "Small Alcove",
-                "Hidden Nook",
-                "Cramped Space",
-                "Side Chamber"
+            "roomType": "Treasure",
+            "weight": 8,
+            "minDepth": 2,
+            "maxDepth": null,
+            "tags": [
+                "treasure",
+                "vault",
+                "guarded"
             ],
-            "descriptionTemplates": [
-                "A small alcove branches off from the main passage. It's cramped but might hold secrets.",
-                "This tiny space was perhaps a guard post or storage area long ago."
-            ],
-            "exitProbabilities": {
-                "north": 0.3,
-                "south": 0.3,
-                "east": 0.3,
-                "west": 0.3,
-                "up": 0.0,
-                "down": 0.0
-            },
-            "monsterChance": 0.15,
-            "itemChance": 0.35,
-            "weight": 15,
-            "impliedTags": [
-                "small",
-                "alcove"
+            "slots": [
+                {
+                    "slotId": "guardian",
+                    "type": "Description",
+                    "isRequired": true,
+                    "descriptorPool": "npcs.guardian_types"
+                },
+                {
+                    "slotId": "container_type",
+                    "type": "Description",
+                    "isRequired": true,
+                    "descriptorPool": "room.container_names"
+                },
+                {
+                    "slotId": "size",
+                    "type": "Description",
+                    "isRequired": true,
+                    "descriptorPool": "room.dimensions.size"
+                },
+                {
+                    "slotId": "treasure_description",
+                    "type": "Description",
+                    "isRequired": true,
+                    "descriptorPool": "room.treasure_descriptions"
+                },
+                {
+                    "slotId": "guardian_hint",
+                    "type": "Description",
+                    "isRequired": false,
+                    "fillProbability": 0.8,
+                    "descriptorPool": "room.guardian_hints"
+                },
+                {
+                    "slotId": "guardian_monster",
+                    "type": "Monster",
+                    "isRequired": true,
+                    "fillProbability": 1.0,
+                    "minQuantity": 1,
+                    "maxQuantity": 1,
+                    "constraints": {
+                        "minTier": "elite"
+                    }
+                },
+                {
+                    "slotId": "main_container",
+                    "type": "Container",
+                    "isRequired": true,
+                    "fillProbability": 1.0,
+                    "constraints": {
+                        "containerType": "chest",
+                        "lootQuality": "high"
+                    }
+                }
             ]
         },
-        "cave_cavern": {
-            "id": "cave_cavern",
-            "biomes": [
+        {
+            "templateId": "cave-crystal-chamber",
+            "namePattern": "Crystal {chamber_type}",
+            "descriptionPattern": "{crystal_description} {lighting_effect} {sound_description}",
+            "validBiomes": [
                 "cave"
             ],
-            "names": [
-                "Natural Cavern",
-                "Underground Grotto",
-                "Crystal Cave",
-                "Dripping Cavern"
-            ],
-            "descriptionTemplates": [
-                "A natural cavern opens around you. Water drips from stalactites above.",
-                "The cave walls shimmer with mineral deposits. An underground stream echoes in the distance.",
-                "Bioluminescent fungi cast an eerie blue glow across this underground space."
-            ],
-            "exitProbabilities": {
-                "north": 0.5,
-                "south": 0.5,
-                "east": 0.5,
-                "west": 0.5,
-                "up": 0.1,
-                "down": 0.15
-            },
-            "monsterChance": 0.35,
-            "itemChance": 0.20,
-            "weight": 35,
-            "impliedTags": [
-                "natural",
-                "cavern",
-                "wet"
-            ]
-        },
-        "cave_tunnel": {
-            "id": "cave_tunnel",
-            "biomes": [
-                "cave"
-            ],
-            "names": [
-                "Winding Tunnel",
-                "Natural Passage",
-                "Rock Tunnel",
-                "Underground Path"
-            ],
-            "descriptionTemplates": [
-                "A natural tunnel winds through the rock. The walls are rough and uneven.",
-                "This passage was carved by water over millennia. The stone is smooth and wet."
-            ],
-            "exitProbabilities": {
-                "north": 0.7,
-                "south": 0.7,
-                "east": 0.3,
-                "west": 0.3,
-                "up": 0.05,
-                "down": 0.1
-            },
-            "monsterChance": 0.20,
-            "itemChance": 0.10,
-            "weight": 40,
-            "impliedTags": [
-                "tunnel",
+            "roomType": "Standard",
+            "weight": 25,
+            "minDepth": 1,
+            "maxDepth": 5,
+            "tags": [
+                "crystal",
                 "natural"
+            ],
+            "slots": [
+                {
+                    "slotId": "chamber_type",
+                    "type": "Description",
+                    "isRequired": true,
+                    "descriptorPool": "room.cave_chamber_types"
+                },
+                {
+                    "slotId": "crystal_description",
+                    "type": "Description",
+                    "isRequired": true,
+                    "descriptorPool": "room.crystal_descriptions"
+                },
+                {
+                    "slotId": "lighting_effect",
+                    "type": "Description",
+                    "isRequired": true,
+                    "descriptorPool": "environmental.lighting.crystal"
+                },
+                {
+                    "slotId": "sound_description",
+                    "type": "Description",
+                    "isRequired": false,
+                    "fillProbability": 0.6,
+                    "descriptorPool": "environmental.sounds.cave"
+                }
             ]
         },
-        "volcanic_chamber": {
-            "id": "volcanic_chamber",
-            "biomes": [
+        {
+            "templateId": "volcanic-lava-bridge",
+            "namePattern": "{condition} Bridge",
+            "descriptionPattern": "A {material} bridge spans a {chasm_type}. {heat_description} {danger_warning}",
+            "validBiomes": [
                 "volcanic"
             ],
-            "names": [
-                "Magma Chamber",
-                "Volcanic Vent",
-                "Lava Cavern",
-                "Sulfurous Pit"
-            ],
-            "descriptionTemplates": [
-                "Intense heat washes over you. Rivers of molten rock flow through channels in the floor.",
-                "The air shimmers with heat. Cracks in the ground glow with molten rock below.",
-                "Sulfurous fumes sting your eyes. The rock here is blackened and sharp."
-            ],
-            "exitProbabilities": {
-                "north": 0.4,
-                "south": 0.4,
-                "east": 0.4,
-                "west": 0.4,
-                "up": 0.15,
-                "down": 0.05
-            },
-            "monsterChance": 0.50,
-            "itemChance": 0.30,
-            "weight": 30,
+            "roomType": "Standard",
+            "weight": 20,
             "minDepth": 4,
-            "impliedTags": [
-                "volcanic",
-                "hot",
-                "danger"
+            "maxDepth": null,
+            "tags": [
+                "bridge",
+                "dangerous",
+                "lava"
+            ],
+            "slots": [
+                {
+                    "slotId": "condition",
+                    "type": "Description",
+                    "isRequired": true,
+                    "descriptorPool": "room.conditions.structure"
+                },
+                {
+                    "slotId": "material",
+                    "type": "Description",
+                    "isRequired": true,
+                    "descriptorPool": "room.materials.volcanic"
+                },
+                {
+                    "slotId": "chasm_type",
+                    "type": "Description",
+                    "isRequired": true,
+                    "descriptorPool": "room.chasms.volcanic"
+                },
+                {
+                    "slotId": "heat_description",
+                    "type": "Description",
+                    "isRequired": true,
+                    "descriptorPool": "environmental.temperature.volcanic"
+                },
+                {
+                    "slotId": "danger_warning",
+                    "type": "Description",
+                    "isRequired": false,
+                    "fillProbability": 0.7,
+                    "descriptorPool": "room.danger_warnings"
+                },
+                {
+                    "slotId": "hazard_01",
+                    "type": "Hazard",
+                    "isRequired": false,
+                    "fillProbability": 0.4,
+                    "constraints": {
+                        "hazardType": "environmental",
+                        "element": "fire"
+                    }
+                }
             ]
         }
-    }
+    ]
 }
