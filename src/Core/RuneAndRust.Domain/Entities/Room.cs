@@ -169,6 +169,31 @@ public class Room : IEntity
     public bool HasExit(Direction direction) => _exits.ContainsKey(direction);
 
     /// <summary>
+    /// Adds a potential exit that may lead to a generated or existing room.
+    /// </summary>
+    /// <param name="direction">The direction of the potential exit.</param>
+    /// <remarks>
+    /// Potential exits use Guid.Empty as a placeholder indicating
+    /// the exit exists but leads to an unexplored (not yet generated) room.
+    /// </remarks>
+    public void AddPotentialExit(Direction direction)
+    {
+        if (!_exits.ContainsKey(direction))
+        {
+            _exits[direction] = Guid.Empty;
+        }
+    }
+
+    /// <summary>
+    /// Checks if an exit leads to an unexplored (not yet generated) room.
+    /// </summary>
+    /// <param name="direction">The direction to check.</param>
+    /// <returns>True if the exit is unexplored (Guid.Empty); false otherwise.</returns>
+    public bool IsExitUnexplored(Direction direction) =>
+        _exits.TryGetValue(direction, out var id) && id == Guid.Empty;
+
+
+    /// <summary>
     /// Gets the room ID that the exit in the specified direction leads to.
     /// </summary>
     /// <param name="direction">The direction of the exit.</param>

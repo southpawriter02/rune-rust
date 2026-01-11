@@ -135,6 +135,72 @@ public class Dungeon : IEntity
         _rooms.Values.Any(r => r.Position.Equals(position));
 
     /// <summary>
+    /// Maximum rooms allowed per dungeon level (Z).
+    /// Used by procedural generation to limit room count.
+    /// </summary>
+    public int MaxRoomsPerLevel { get; set; } = 50;
+
+    /// <summary>
+    /// Checks if generation is allowed at the specified position.
+    /// </summary>
+    /// <param name="position">The target position.</param>
+    /// <returns>True if room generation is allowed.</returns>
+    /// <remarks>
+    /// Returns false if a room already exists at the position or if
+    /// the room limit for that level has been reached.
+    /// </remarks>
+    public bool CanGenerateAt(Position3D position)
+    {
+        // Check if room already exists
+        if (HasRoomAt(position)) return false;
+
+        // Check max rooms per level
+        var roomsOnLevel = GetRoomCountAtLevel(position.Z);
+        return roomsOnLevel < MaxRoomsPerLevel;
+    }
+
+    /// <summary>
+    /// Gets or creates a room at the specified position.
+    /// </summary>
+    /// <param name="position">The 3D position for the room.</param>
+    /// <param name="roomFactory">Factory function to create the room if it doesn't exist.</param>
+    /// <returns>The existing or newly created room, or null if generation not allowed.</returns>
+    /// <remarks>
+    /// This method is called by the RoomGeneratorService during on-demand generation.
+    /// </remarks>
+    public Room? GetOrAddRoom(Position3D position, Func<Room> roomFactory)
+    {
+        ArgumentNullException.ThrowIfNull(roomFactory);
+
+        // Return existing room if present
+        var existingRoom = GetRoomByPosition(position);
+        if (existingRoom != null)
+        {
+            return existingRoom;
+        }
+
+        // Check if generation is allowed
+        if (!CanGenerateAt(position))
+        {
+            return null;
+        }
+
+        // Create and add the new room
+        var room = roomFactory();
+        AddRoom(room);
+        return room;
+    }
+
+    /// <summary>
+    /// Gets the count of rooms at a specific Z level.
+    /// </summary>
+    /// <param name="level">The Z-level to count rooms for.</param>
+    /// <returns>The number of rooms at the specified level.</returns>
+    public int GetRoomCountAtLevel(int level) =>
+        _rooms.Values.Count(r => r.Position.Z == level);
+
+
+    /// <summary>
     /// Creates bidirectional connections between two rooms.
     /// </summary>
     /// <param name="fromRoomId">The ID of the first room.</param>

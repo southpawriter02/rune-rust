@@ -1,0 +1,202 @@
+{
+    "version": "1.0",
+    "templates": {
+        "dungeon_corridor": {
+            "id": "dungeon_corridor",
+            "biomes": [
+                "dungeon",
+                "ruins"
+            ],
+            "names": [
+                "Dark Corridor",
+                "Stone Passage",
+                "Dusty Hallway",
+                "Narrow Corridor",
+                "Winding Passage"
+            ],
+            "descriptionTemplates": [
+                "A narrow stone corridor stretches before you. Torches flicker on the walls, casting dancing shadows.",
+                "The passage winds through ancient stonework. Cobwebs hang from the low ceiling.",
+                "Worn flagstones line this corridor. The air is thick with dust and the smell of age."
+            ],
+            "exitProbabilities": {
+                "north": 0.6,
+                "south": 0.6,
+                "east": 0.4,
+                "west": 0.4,
+                "up": 0.05,
+                "down": 0.1
+            },
+            "monsterChance": 0.25,
+            "itemChance": 0.10,
+            "weight": 40,
+            "impliedTags": [
+                "corridor",
+                "narrow"
+            ]
+        },
+        "dungeon_chamber": {
+            "id": "dungeon_chamber",
+            "biomes": [
+                "dungeon"
+            ],
+            "names": [
+                "Ancient Chamber",
+                "Forgotten Hall",
+                "Dusty Room",
+                "Stone Chamber",
+                "Dark Hall"
+            ],
+            "descriptionTemplates": [
+                "A large chamber opens before you. Pillars support the vaulted ceiling above.",
+                "This room was once grand, but time has taken its toll. Crumbling columns line the walls.",
+                "An echoing chamber filled with shadows. Faded murals cover the walls."
+            ],
+            "exitProbabilities": {
+                "north": 0.5,
+                "south": 0.5,
+                "east": 0.5,
+                "west": 0.5,
+                "up": 0.03,
+                "down": 0.08
+            },
+            "monsterChance": 0.40,
+            "itemChance": 0.25,
+            "weight": 30,
+            "impliedTags": [
+                "chamber",
+                "large"
+            ]
+        },
+        "dungeon_alcove": {
+            "id": "dungeon_alcove",
+            "biomes": [
+                "dungeon",
+                "ruins"
+            ],
+            "names": [
+                "Small Alcove",
+                "Hidden Nook",
+                "Cramped Space",
+                "Side Chamber"
+            ],
+            "descriptionTemplates": [
+                "A small alcove branches off from the main passage. It's cramped but might hold secrets.",
+                "This tiny space was perhaps a guard post or storage area long ago."
+            ],
+            "exitProbabilities": {
+                "north": 0.3,
+                "south": 0.3,
+                "east": 0.3,
+                "west": 0.3,
+                "up": 0.0,
+                "down": 0.0
+            },
+            "monsterChance": 0.15,
+            "itemChance": 0.35,
+            "weight": 15,
+            "impliedTags": [
+                "small",
+                "alcove"
+            ]
+        },
+        "cave_cavern": {
+            "id": "cave_cavern",
+            "biomes": [
+                "cave"
+            ],
+            "names": [
+                "Natural Cavern",
+                "Underground Grotto",
+                "Crystal Cave",
+                "Dripping Cavern"
+            ],
+            "descriptionTemplates": [
+                "A natural cavern opens around you. Water drips from stalactites above.",
+                "The cave walls shimmer with mineral deposits. An underground stream echoes in the distance.",
+                "Bioluminescent fungi cast an eerie blue glow across this underground space."
+            ],
+            "exitProbabilities": {
+                "north": 0.5,
+                "south": 0.5,
+                "east": 0.5,
+                "west": 0.5,
+                "up": 0.1,
+                "down": 0.15
+            },
+            "monsterChance": 0.35,
+            "itemChance": 0.20,
+            "weight": 35,
+            "impliedTags": [
+                "natural",
+                "cavern",
+                "wet"
+            ]
+        },
+        "cave_tunnel": {
+            "id": "cave_tunnel",
+            "biomes": [
+                "cave"
+            ],
+            "names": [
+                "Winding Tunnel",
+                "Natural Passage",
+                "Rock Tunnel",
+                "Underground Path"
+            ],
+            "descriptionTemplates": [
+                "A natural tunnel winds through the rock. The walls are rough and uneven.",
+                "This passage was carved by water over millennia. The stone is smooth and wet."
+            ],
+            "exitProbabilities": {
+                "north": 0.7,
+                "south": 0.7,
+                "east": 0.3,
+                "west": 0.3,
+                "up": 0.05,
+                "down": 0.1
+            },
+            "monsterChance": 0.20,
+            "itemChance": 0.10,
+            "weight": 40,
+            "impliedTags": [
+                "tunnel",
+                "natural"
+            ]
+        },
+        "volcanic_chamber": {
+            "id": "volcanic_chamber",
+            "biomes": [
+                "volcanic"
+            ],
+            "names": [
+                "Magma Chamber",
+                "Volcanic Vent",
+                "Lava Cavern",
+                "Sulfurous Pit"
+            ],
+            "descriptionTemplates": [
+                "Intense heat washes over you. Rivers of molten rock flow through channels in the floor.",
+                "The air shimmers with heat. Cracks in the ground glow with molten rock below.",
+                "Sulfurous fumes sting your eyes. The rock here is blackened and sharp."
+            ],
+            "exitProbabilities": {
+                "north": 0.4,
+                "south": 0.4,
+                "east": 0.4,
+                "west": 0.4,
+                "up": 0.15,
+                "down": 0.05
+            },
+            "monsterChance": 0.50,
+            "itemChance": 0.30,
+            "weight": 30,
+            "minDepth": 4,
+            "impliedTags": [
+                "volcanic",
+                "hot",
+                "danger"
+            ]
+        }
+    }
+}

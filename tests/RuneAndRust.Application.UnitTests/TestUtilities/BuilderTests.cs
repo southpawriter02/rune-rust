@@ -141,7 +141,7 @@ public class BuilderTests
         room.Should().NotBeNull();
         room.Name.Should().Be("Dungeon Entrance");
         room.Description.Should().Be("A dark entrance to the dungeon.");
-        room.Position.Should().Be(new Position(0, 0));
+        room.Position.Should().Be(new Position3D(0, 0, 0));
     }
 
     [Test]
