@@ -35,9 +35,14 @@ public class Room : IEntity
     public Position3D Position { get; private set; }
 
     /// <summary>
-    /// Dictionary mapping directions to connected room IDs.
+    /// Dictionary mapping directions to Exit value objects.
     /// </summary>
-    private readonly Dictionary<Direction, Guid> _exits = [];
+    private readonly Dictionary<Direction, Exit> _exits = [];
+
+    /// <summary>
+    /// List of hidden items that require discovery.
+    /// </summary>
+    private readonly List<HiddenItem> _hiddenItems = [];
 
     /// <summary>
     /// List of items present in this room.
@@ -62,9 +67,18 @@ public class Room : IEntity
     private readonly Dictionary<string, int> _droppedCurrency = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
-    /// Gets a read-only dictionary of exits from this room.
+    /// Gets a read-only dictionary of all exits from this room.
     /// </summary>
-    public IReadOnlyDictionary<Direction, Guid> Exits => _exits.AsReadOnly();
+    /// <remarks>
+    /// Includes both visible and hidden exits. Use GetVisibleExits()
+    /// to get only exits the player can currently see.
+    /// </remarks>
+    public IReadOnlyDictionary<Direction, Exit> Exits => _exits.AsReadOnly();
+
+    /// <summary>
+    /// Gets a read-only list of hidden items in this room.
+    /// </summary>
+    public IReadOnlyList<HiddenItem> HiddenItems => _hiddenItems.AsReadOnly();
 
     /// <summary>
     /// Gets a read-only list of items in this room.
@@ -102,6 +116,16 @@ public class Room : IEntity
     /// Gets a value indicating whether this room has any dropped loot.
     /// </summary>
     public bool HasDroppedLoot => _droppedItems.Count > 0 || _droppedCurrency.Count > 0;
+
+    // ===== Room Type (v0.1.0c) =====
+
+    /// <summary>
+    /// Gets the type of this room.
+    /// </summary>
+    /// <remarks>
+    /// Room type affects monster spawning, loot, and available interactions.
+    /// </remarks>
+    public RoomType RoomType { get; private set; } = RoomType.Standard;
 
     // ===== Environment Context (v0.0.11a) =====
 
@@ -152,21 +176,62 @@ public class Room : IEntity
     }
 
     /// <summary>
-    /// Adds or updates an exit from this room in the specified direction.
+    /// Sets the room type.
     /// </summary>
-    /// <param name="direction">The direction of the exit.</param>
-    /// <param name="roomId">The ID of the room this exit leads to.</param>
-    public void AddExit(Direction direction, Guid roomId)
+    /// <param name="roomType">The type to set.</param>
+    public void SetRoomType(RoomType roomType)
     {
-        _exits[direction] = roomId;
+        RoomType = roomType;
     }
 
     /// <summary>
-    /// Checks if there is an exit in the specified direction.
+    /// Adds or updates an exit from this room.
+    /// </summary>
+    /// <param name="direction">The direction of the exit.</param>
+    /// <param name="exit">The exit value object.</param>
+    public void AddExit(Direction direction, Exit exit)
+    {
+        _exits[direction] = exit;
+    }
+
+    /// <summary>
+    /// Adds a standard (non-hidden) exit to this room.
+    /// </summary>
+    /// <param name="direction">The direction of the exit.</param>
+    /// <param name="targetRoomId">The ID of the target room.</param>
+    public void AddExit(Direction direction, Guid targetRoomId)
+    {
+        _exits[direction] = Exit.Standard(targetRoomId);
+    }
+
+    /// <summary>
+    /// Adds a hidden exit that requires discovery.
+    /// </summary>
+    /// <param name="direction">The direction of the exit.</param>
+    /// <param name="targetRoomId">The ID of the target room.</param>
+    /// <param name="discoveryDC">The difficulty class for discovery.</param>
+    /// <param name="hint">Optional hint for the hidden passage.</param>
+    public void AddHiddenExit(Direction direction, Guid targetRoomId, int discoveryDC, string? hint = null)
+    {
+        _exits[direction] = Exit.Hidden(targetRoomId, discoveryDC, hint);
+    }
+
+    /// <summary>
+    /// Checks if there is any exit in the specified direction (visible or hidden).
     /// </summary>
     /// <param name="direction">The direction to check.</param>
     /// <returns><c>true</c> if an exit exists in that direction; otherwise, <c>false</c>.</returns>
     public bool HasExit(Direction direction) => _exits.ContainsKey(direction);
+
+    /// <summary>
+    /// Checks if there is a visible exit in the specified direction.
+    /// </summary>
+    /// <param name="direction">The direction to check.</param>
+    /// <returns>True if a visible exit exists in that direction.</returns>
+    public bool HasVisibleExit(Direction direction)
+    {
+        return _exits.TryGetValue(direction, out var exit) && exit.IsVisible;
+    }
 
     /// <summary>
     /// Adds a potential exit that may lead to a generated or existing room.
@@ -180,7 +245,7 @@ public class Room : IEntity
     {
         if (!_exits.ContainsKey(direction))
         {
-            _exits[direction] = Guid.Empty;
+            _exits[direction] = Exit.Standard(Guid.Empty);
         }
     }
 
@@ -188,18 +253,71 @@ public class Room : IEntity
     /// Checks if an exit leads to an unexplored (not yet generated) room.
     /// </summary>
     /// <param name="direction">The direction to check.</param>
-    /// <returns>True if the exit is unexplored (Guid.Empty); false otherwise.</returns>
+    /// <returns>True if the exit is unexplored (Guid.Empty target); false otherwise.</returns>
     public bool IsExitUnexplored(Direction direction) =>
-        _exits.TryGetValue(direction, out var id) && id == Guid.Empty;
+        _exits.TryGetValue(direction, out var exit) && exit.TargetRoomId == Guid.Empty;
 
 
     /// <summary>
-    /// Gets the room ID that the exit in the specified direction leads to.
+    /// Gets the room ID for a visible exit in the specified direction.
     /// </summary>
     /// <param name="direction">The direction of the exit.</param>
-    /// <returns>The room ID if an exit exists; otherwise, <c>null</c>.</returns>
-    public Guid? GetExit(Direction direction) =>
-        _exits.TryGetValue(direction, out var roomId) ? roomId : null;
+    /// <returns>The target room ID if a visible exit exists; otherwise, null.</returns>
+    public Guid? GetExit(Direction direction)
+    {
+        if (_exits.TryGetValue(direction, out var exit) && exit.IsVisible)
+            return exit.TargetRoomId;
+        return null;
+    }
+
+    /// <summary>
+    /// Gets the raw exit in the specified direction (visible or hidden).
+    /// </summary>
+    /// <param name="direction">The direction of the exit.</param>
+    /// <returns>The exit if one exists; otherwise, null.</returns>
+    public Exit? GetExitRaw(Direction direction) =>
+        _exits.TryGetValue(direction, out var exit) ? exit : null;
+
+    /// <summary>
+    /// Gets only exits that are visible to the player.
+    /// </summary>
+    /// <returns>Dictionary of visible exits (not hidden or already discovered).</returns>
+    public IReadOnlyDictionary<Direction, Exit> GetVisibleExits()
+    {
+        return _exits
+            .Where(kvp => kvp.Value.IsVisible)
+            .ToDictionary(kvp => kvp.Key, kvp => kvp.Value)
+            .AsReadOnly();
+    }
+
+    /// <summary>
+    /// Gets hidden exits that have not yet been discovered.
+    /// </summary>
+    /// <returns>Dictionary of undiscovered hidden exits.</returns>
+    public IReadOnlyDictionary<Direction, Exit> GetHiddenExits()
+    {
+        return _exits
+            .Where(kvp => kvp.Value.IsHidden && !kvp.Value.IsDiscovered)
+            .ToDictionary(kvp => kvp.Key, kvp => kvp.Value)
+            .AsReadOnly();
+    }
+
+    /// <summary>
+    /// Reveals a hidden exit, marking it as discovered.
+    /// </summary>
+    /// <param name="direction">The direction of the exit to reveal.</param>
+    /// <returns>True if the exit was revealed; false if not found or already visible.</returns>
+    public bool RevealExit(Direction direction)
+    {
+        if (!_exits.TryGetValue(direction, out var exit))
+            return false;
+
+        if (!exit.IsHidden || exit.IsDiscovered)
+            return false;
+
+        _exits[direction] = exit.AsDiscovered();
+        return true;
+    }
 
     /// <summary>
     /// Adds an item to this room.
@@ -253,25 +371,74 @@ public class Room : IEntity
     public IEnumerable<Monster> GetAliveMonsters() => _monsters.Where(m => m.IsAlive);
 
     /// <summary>
-    /// Gets a human-readable description of the exits from this room.
+    /// Gets a human-readable description of visible exits from this room.
     /// </summary>
     /// <returns>A string describing available exits, including vertical directions.</returns>
     public string GetExitsDescription()
     {
-        if (_exits.Count == 0)
+        var visibleExits = GetVisibleExits();
+
+        if (visibleExits.Count == 0)
             return "There are no visible exits.";
 
-        var horizontalExits = _exits.Keys
+        var horizontalExits = visibleExits.Keys
             .Where(d => d is Direction.North or Direction.South or Direction.East or Direction.West)
             .Select(d => d.ToString().ToLower());
 
-        var verticalExits = _exits.Keys
+        var verticalExits = visibleExits.Keys
             .Where(d => d is Direction.Up or Direction.Down)
             .Select(d => d == Direction.Up ? "up" : "down");
 
         var allExits = horizontalExits.Concat(verticalExits).ToList();
         return $"Exits: {string.Join(", ", allExits)}";
     }
+
+    /// <summary>
+    /// Gets a room type indicator for display.
+    /// </summary>
+    /// <returns>A short string indicating room type, or empty for Standard.</returns>
+    public string GetRoomTypeIndicator() => RoomType switch
+    {
+        RoomType.Treasure => "[Treasure Room]",
+        RoomType.Trap => "[Trap Room]",
+        RoomType.Boss => "[Boss Chamber]",
+        RoomType.Safe => "[Safe Haven]",
+        RoomType.Shrine => "[Shrine]",
+        _ => string.Empty
+    };
+
+    // ===== Hidden Item Methods (v0.1.0c) =====
+
+    /// <summary>
+    /// Adds a hidden item to this room.
+    /// </summary>
+    /// <param name="hiddenItem">The hidden item to add.</param>
+    public void AddHiddenItem(HiddenItem hiddenItem)
+    {
+        ArgumentNullException.ThrowIfNull(hiddenItem);
+        _hiddenItems.Add(hiddenItem);
+    }
+
+    /// <summary>
+    /// Reveals a hidden item, moving it to the regular items list.
+    /// </summary>
+    /// <param name="hiddenItemId">The ID of the hidden item to reveal.</param>
+    /// <returns>The revealed item, or null if not found.</returns>
+    public Item? RevealHiddenItem(Guid hiddenItemId)
+    {
+        var hiddenItem = _hiddenItems.FirstOrDefault(h => h.Id == hiddenItemId);
+        if (hiddenItem == null) return null;
+
+        _hiddenItems.Remove(hiddenItem);
+        _items.Add(hiddenItem.Item);
+        return hiddenItem.Item;
+    }
+
+    /// <summary>
+    /// Gets undiscovered hidden items.
+    /// </summary>
+    public IReadOnlyList<HiddenItem> GetUndiscoveredHiddenItems() =>
+        _hiddenItems.Where(h => !h.IsDiscovered).ToList().AsReadOnly();
 
     // ===== Dropped Loot Methods (v0.0.9d) =====
 

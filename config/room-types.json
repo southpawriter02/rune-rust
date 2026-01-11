@@ -1,0 +1,85 @@
+{
+    "version": "1.0",
+    "roomTypes": {
+        "standard": {
+            "id": "standard",
+            "name": "Standard Room",
+            "entryDescription": "",
+            "indicator": "",
+            "monsterSpawnMultiplier": 1.0,
+            "lootMultiplier": 1.0,
+            "allowsRest": false,
+            "descriptionPool": []
+        },
+        "treasure": {
+            "id": "treasure",
+            "name": "Treasure Room",
+            "entryDescription": "Glittering objects catch your eye among the shadows.",
+            "indicator": "[Treasure Room]",
+            "monsterSpawnMultiplier": 0.5,
+            "lootMultiplier": 2.0,
+            "allowsRest": false,
+            "descriptionPool": [
+                "Gold coins are scattered across the floor.",
+                "An ornate chest sits in the corner.",
+                "Precious gems glitter from a pile of treasure."
+            ]
+        },
+        "trap": {
+            "id": "trap",
+            "name": "Trap Room",
+            "entryDescription": "Something feels off about this place...",
+            "indicator": "[Trap Room]",
+            "monsterSpawnMultiplier": 1.2,
+            "lootMultiplier": 1.0,
+            "allowsRest": false,
+            "descriptionPool": [
+                "Suspicious pressure plates line the floor.",
+                "You notice thin wires stretched across the passage.",
+                "The walls have small holes that could hide dart traps."
+            ]
+        },
+        "boss": {
+            "id": "boss",
+            "name": "Boss Chamber",
+            "entryDescription": "An ominous presence fills the chamber.",
+            "indicator": "[Boss Chamber]",
+            "monsterSpawnMultiplier": 1.0,
+            "lootMultiplier": 3.0,
+            "allowsRest": false,
+            "descriptionPool": [
+                "The air crackles with dark energy.",
+                "Bones of previous challengers litter the ground.",
+                "A massive throne dominates the far end of the chamber."
+            ]
+        },
+        "safe": {
+            "id": "safe",
+            "name": "Safe Haven",
+            "entryDescription": "You feel safe here. The dangers of the dungeon seem distant.",
+            "indicator": "[Safe Haven]",
+            "monsterSpawnMultiplier": 0.0,
+            "lootMultiplier": 0.5,
+            "allowsRest": true,
+            "descriptionPool": [
+                "A warm fire crackles in a hearth.",
+                "Soft cushions and blankets offer a place to rest.",
+                "Clean water flows from a fountain."
+            ]
+        },
+        "shrine": {
+            "id": "shrine",
+            "name": "Shrine",
+            "entryDescription": "Ancient symbols glow softly on a weathered altar.",
+            "indicator": "[Shrine]",
+            "monsterSpawnMultiplier": 0.2,
+            "lootMultiplier": 1.5,
+            "allowsRest": false,
+            "descriptionPool": [
+                "Incense smoke curls around ancient statues.",
+                "Offerings of coin and food lie at the altar's base.",
+                "Faded murals depict forgotten gods."
+            ]
+        }
+    }
+}
