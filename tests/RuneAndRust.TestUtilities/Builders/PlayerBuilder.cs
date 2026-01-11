@@ -18,7 +18,7 @@ public class PlayerBuilder
     private string _raceId = "human";
     private string _backgroundId = "soldier";
     private int? _currentHealth;
-    private Position? _position;
+    private Position3D? _position;
     private readonly List<Item> _inventoryItems = [];
     private string? _classId;
     private string? _archetypeId;
@@ -105,11 +105,11 @@ public class PlayerBuilder
     }
 
     /// <summary>
-    /// Sets the player position.
+    /// Sets the player position (Z defaults to 0).
     /// </summary>
-    public PlayerBuilder AtPosition(int x, int y)
+    public PlayerBuilder AtPosition(int x, int y, int z = 0)
     {
-        _position = new Position(x, y);
+        _position = new Position3D(x, y, z);
         return this;
     }
 

@@ -30,9 +30,9 @@ public class Room : IEntity
     public string Description { get; private set; }
 
     /// <summary>
-    /// Gets the position of this room in the dungeon grid.
+    /// Gets the 3D position of this room in the dungeon grid.
     /// </summary>
-    public Position Position { get; private set; }
+    public Position3D Position { get; private set; }
 
     /// <summary>
     /// Dictionary mapping directions to connected room IDs.
@@ -124,18 +124,31 @@ public class Room : IEntity
     }
 
     /// <summary>
-    /// Creates a new room with the specified name, description, and position.
+    /// Creates a new room with the specified name, description, and 3D position.
     /// </summary>
     /// <param name="name">The display name of the room.</param>
     /// <param name="description">The narrative description shown to players.</param>
-    /// <param name="position">The position of this room in the dungeon grid.</param>
+    /// <param name="position">The 3D position of this room in the dungeon grid.</param>
     /// <exception cref="ArgumentNullException">Thrown when name or description is null.</exception>
-    public Room(string name, string description, Position position)
+    public Room(string name, string description, Position3D position)
     {
         Id = Guid.NewGuid();
         Name = name ?? throw new ArgumentNullException(nameof(name));
         Description = description ?? throw new ArgumentNullException(nameof(description));
         Position = position;
+    }
+
+    /// <summary>
+    /// Creates a new room with the specified name, description, and 2D position (Z defaults to 0).
+    /// </summary>
+    /// <remarks>
+    /// This constructor is provided for backwards compatibility with existing code
+    /// that uses 2D positions. The Z coordinate defaults to 0 (surface level).
+    /// </remarks>
+    [Obsolete("Use the Position3D constructor for new code. This exists for backwards compatibility.")]
+    public Room(string name, string description, Position position)
+        : this(name, description, Position3D.FromPosition2D(position))
+    {
     }
 
     /// <summary>
@@ -217,14 +230,22 @@ public class Room : IEntity
     /// <summary>
     /// Gets a human-readable description of the exits from this room.
     /// </summary>
-    /// <returns>A string describing available exits, or a message if no exits exist.</returns>
+    /// <returns>A string describing available exits, including vertical directions.</returns>
     public string GetExitsDescription()
     {
         if (_exits.Count == 0)
             return "There are no visible exits.";
 
-        var directions = _exits.Keys.Select(d => d.ToString().ToLower());
-        return $"Exits: {string.Join(", ", directions)}";
+        var horizontalExits = _exits.Keys
+            .Where(d => d is Direction.North or Direction.South or Direction.East or Direction.West)
+            .Select(d => d.ToString().ToLower());
+
+        var verticalExits = _exits.Keys
+            .Where(d => d is Direction.Up or Direction.Down)
+            .Select(d => d == Direction.Up ? "up" : "down");
+
+        var allExits = horizontalExits.Concat(verticalExits).ToList();
+        return $"Exits: {string.Join(", ", allExits)}";
     }
 
     // ===== Dropped Loot Methods (v0.0.9d) =====

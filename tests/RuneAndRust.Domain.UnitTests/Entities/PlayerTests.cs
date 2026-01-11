@@ -18,7 +18,7 @@ public class PlayerTests
         player.Name.Should().Be("TestHero");
         player.Health.Should().Be(player.Stats.MaxHealth);
         player.IsAlive.Should().BeTrue();
-        player.Position.Should().Be(Position.Origin);
+        player.Position.Should().Be(Position3D.Origin);
     }
 
     [Test]
@@ -126,7 +126,7 @@ public class PlayerTests
     {
         // Arrange
         var player = new Player("TestHero");
-        var newPosition = new Position(5, 10);
+        var newPosition = new Position3D(5, 10, 0);
 
         // Act
         player.MoveTo(newPosition);

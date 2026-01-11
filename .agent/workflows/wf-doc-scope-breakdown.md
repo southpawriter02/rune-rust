@@ -295,6 +295,7 @@ Before considering the implementation plan complete:
 - [ ] ID naming follows conventions (kebab-case)
 - [ ] Clean Architecture compliance
 - [ ] No hardcoded terminology (uses services)
+- [ ] No functionality is being made up and hasn't already been outlined in existing documentation
 
 ### Testability
 - [ ] Each acceptance criterion is testable

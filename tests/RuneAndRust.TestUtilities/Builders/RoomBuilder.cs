@@ -12,7 +12,7 @@ public class RoomBuilder
     private Guid? _id;
     private string _name = "Test Room";
     private string _description = "A room for testing.";
-    private Position _position = Position.Origin;
+    private Position3D _position = Position3D.Origin;
     private readonly Dictionary<Direction, Guid> _exits = new();
     private readonly List<Monster> _monsters = [];
     private readonly List<Item> _items = [];
@@ -50,11 +50,11 @@ public class RoomBuilder
     }
 
     /// <summary>
-    /// Sets the room position on the dungeon grid.
+    /// Sets the room position on the dungeon grid (Z defaults to 0).
     /// </summary>
-    public RoomBuilder AtPosition(int x, int y)
+    public RoomBuilder AtPosition(int x, int y, int z = 0)
     {
-        _position = new Position(x, y);
+        _position = new Position3D(x, y, z);
         return this;
     }
 

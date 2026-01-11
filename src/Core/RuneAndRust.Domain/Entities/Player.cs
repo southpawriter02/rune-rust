@@ -313,9 +313,9 @@ public class Player : IEntity
     public Stats Stats { get; private set; }
 
     /// <summary>
-    /// Gets the player's current position in the dungeon.
+    /// Gets the player's current 3D position in the dungeon.
     /// </summary>
-    public Position Position { get; private set; }
+    public Position3D Position { get; private set; }
 
     /// <summary>
     /// Gets the player's inventory containing collected items.
@@ -387,7 +387,7 @@ public class Player : IEntity
         Name = name ?? throw new ArgumentNullException(nameof(name));
         Stats = stats ?? Stats.Default;
         Health = Stats.MaxHealth;
-        Position = Position.Origin;
+        Position = Position3D.Origin;
         Inventory = new Inventory();
         Equipment = new Dictionary<EquipmentSlot, Item>();
     }
@@ -419,7 +419,7 @@ public class Player : IEntity
         // Derive stats from attributes if not provided
         Stats = stats ?? DeriveStatsFromAttributes(attributes);
         Health = Stats.MaxHealth;
-        Position = Position.Origin;
+        Position = Position3D.Origin;
         Inventory = new Inventory();
         Equipment = new Dictionary<EquipmentSlot, Item>();
     }
@@ -487,10 +487,10 @@ public class Player : IEntity
     }
 
     /// <summary>
-    /// Moves the player to a new position in the dungeon.
+    /// Moves the player to a new 3D position in the dungeon.
     /// </summary>
-    /// <param name="newPosition">The new position to move to.</param>
-    public void MoveTo(Position newPosition)
+    /// <param name="newPosition">The new 3D position to move to.</param>
+    public void MoveTo(Position3D newPosition)
     {
         Position = newPosition;
     }
