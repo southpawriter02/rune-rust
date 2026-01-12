@@ -177,6 +177,18 @@ public class GameEventLogger : IGameEventLogger
     }
 
     /// <inheritdoc/>
+    public void LogSession(string eventType, string message, Dictionary<string, object>? data = null)
+    {
+        Log(new GameEvent
+        {
+            Category = EventCategory.Session,
+            EventType = eventType,
+            Message = message,
+            Data = data
+        });
+    }
+
+    /// <inheritdoc/>
     public void LogSystem(string eventType, string message, EventSeverity severity = EventSeverity.Info, Dictionary<string, object>? data = null)
     {
         Log(new GameEvent

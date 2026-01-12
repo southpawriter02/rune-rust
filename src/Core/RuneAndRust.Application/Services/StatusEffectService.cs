@@ -19,18 +19,22 @@ public class StatusEffectService
 {
     private readonly IStatusEffectRepository _repository;
     private readonly ILogger<StatusEffectService> _logger;
+    private readonly IGameEventLogger? _eventLogger;
 
     /// <summary>
     /// Creates a new StatusEffectService instance.
     /// </summary>
     /// <param name="repository">Repository for effect definitions.</param>
     /// <param name="logger">Logger for diagnostics.</param>
+    /// <param name="eventLogger">Optional event logger for comprehensive tracking.</param>
     public StatusEffectService(
         IStatusEffectRepository repository,
-        ILogger<StatusEffectService> logger)
+        ILogger<StatusEffectService> logger,
+        IGameEventLogger? eventLogger = null)
     {
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _eventLogger = eventLogger;
     }
 
     /// <summary>
@@ -83,6 +87,18 @@ public class StatusEffectService
             definition.Name,
             target.Name,
             newEffect.RemainingDuration);
+
+        _eventLogger?.LogStatusEffect("Applied", $"{definition.Name} applied to {target.Name}",
+            data: new Dictionary<string, object>
+            {
+                ["effectId"] = normalizedId,
+                ["effectName"] = definition.Name,
+                ["targetName"] = target.Name,
+                ["duration"] = newEffect.RemainingDuration ?? 0,
+                ["stacks"] = newEffect.Stacks,
+                ["sourceId"] = sourceId?.ToString() ?? "none",
+                ["sourceName"] = sourceName ?? "unknown"
+            });
 
         return EffectApplicationResult.Success(
             normalizedId,
@@ -202,6 +218,14 @@ public class StatusEffectService
                 expiredEffects.Add(effect.Id);
                 _logger.LogDebug("{Effect} expired on {Target}",
                     effect.Definition.Name, target.Name);
+
+                _eventLogger?.LogStatusEffect("Expired", $"{effect.Definition.Name} expired on {target.Name}",
+                    data: new Dictionary<string, object>
+                    {
+                        ["effectId"] = effect.Definition.Id,
+                        ["effectName"] = effect.Definition.Name,
+                        ["targetName"] = target.Name
+                    });
             }
         }
 

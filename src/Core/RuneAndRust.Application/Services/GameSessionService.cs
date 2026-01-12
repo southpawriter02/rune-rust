@@ -75,6 +75,11 @@ public class GameSessionService
     private readonly ILootService _lootService;
 
     /// <summary>
+    /// Event logger for comprehensive game event tracking.
+    /// </summary>
+    private readonly IGameEventLogger? _eventLogger;
+
+    /// <summary>
     /// The currently active game session, or null if no session is active.
     /// </summary>
     private GameSession? _currentSession;
@@ -103,6 +108,7 @@ public class GameSessionService
     /// <param name="progressionService">The service for managing level-up progression.</param>
     /// <param name="lootService">The service for generating and collecting loot.</param>
     /// <param name="combatLogger">Optional logger for combat service diagnostics.</param>
+    /// <param name="eventLogger">Optional event logger for comprehensive game event tracking.</param>
     /// <exception cref="ArgumentNullException">Thrown when required parameters are null.</exception>
     public GameSessionService(
         IGameRepository repository,
@@ -115,7 +121,8 @@ public class GameSessionService
         ExperienceService experienceService,
         ProgressionService progressionService,
         ILootService lootService,
-        ILogger<CombatService>? combatLogger = null)
+        ILogger<CombatService>? combatLogger = null,
+        IGameEventLogger? eventLogger = null)
     {
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -127,6 +134,7 @@ public class GameSessionService
         _experienceService = experienceService ?? throw new ArgumentNullException(nameof(experienceService));
         _progressionService = progressionService ?? throw new ArgumentNullException(nameof(progressionService));
         _lootService = lootService ?? throw new ArgumentNullException(nameof(lootService));
+        _eventLogger = eventLogger;
         _combatService = new CombatService(combatLogger);
         _logger.LogDebug("GameSessionService initialized");
     }
@@ -145,6 +153,11 @@ public class GameSessionService
         await _repository.SaveAsync(_currentSession, ct);
 
         _logger.LogInformation("New game session created: {SessionId}", _currentSession.Id);
+
+        _eventLogger?.SetSession(_currentSession.Id, _currentSession.Player.Id);
+        _eventLogger?.LogSession("SessionStarted", $"New game started for {playerName}");
+        _eventLogger?.LogExploration("RoomEntered", $"Started in {_currentSession.CurrentRoom?.Name}", _currentSession.CurrentRoom?.Id);
+
         _logger.LogDebug(
             "Initial game state - Player: {PlayerName}, Health: {Health}/{MaxHealth}, " +
             "StartingRoom: {RoomName}, Position: ({X},{Y}), DungeonRooms: {RoomCount}",
@@ -289,6 +302,14 @@ public class GameSessionService
                 newRoom?.Name ?? "Unknown",
                 toPosition.X,
                 toPosition.Y);
+
+            _eventLogger?.LogExploration("Moved", $"Moved {direction} to {newRoom?.Name}", newRoom?.Id,
+                data: new Dictionary<string, object>
+                {
+                    ["direction"] = direction.ToString(),
+                    ["fromRoom"] = fromRoom,
+                    ["toRoom"] = newRoom?.Name ?? "Unknown"
+                });
 
             if (newRoom?.HasMonsters == true)
             {

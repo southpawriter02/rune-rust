@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using RuneAndRust.Application.Interfaces;
 
 namespace RuneAndRust.Application.Services;
 
@@ -8,14 +9,19 @@ namespace RuneAndRust.Application.Services;
 public class InputValidationService
 {
     private readonly ILogger<InputValidationService> _logger;
+    private readonly IGameEventLogger? _eventLogger;
 
     /// <summary>
     /// Creates a new InputValidationService instance.
     /// </summary>
     /// <param name="logger">The logger for service diagnostics.</param>
-    public InputValidationService(ILogger<InputValidationService> logger)
+    /// <param name="eventLogger">Optional event logger.</param>
+    public InputValidationService(
+        ILogger<InputValidationService> logger,
+        IGameEventLogger? eventLogger = null)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _eventLogger = eventLogger;
     }
 
     /// <summary>
@@ -44,6 +50,15 @@ public class InputValidationService
         }
 
         _logger.LogDebug("Player name validation passed: {Name}", name);
+
+        _eventLogger?.LogSession("InputValidated", $"Player name validated: {name}",
+            data: new Dictionary<string, object>
+            {
+                ["inputType"] = "playerName",
+                ["isValid"] = true,
+                ["inputLength"] = name.Length
+            });
+
         return (true, null);
     }
 

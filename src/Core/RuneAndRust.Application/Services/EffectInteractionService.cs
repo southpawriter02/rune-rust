@@ -13,15 +13,18 @@ public class EffectInteractionService
     private readonly IEffectInteractionRepository _repository;
     private readonly StatusEffectService _effectService;
     private readonly ILogger<EffectInteractionService> _logger;
+    private readonly IGameEventLogger? _eventLogger;
 
     public EffectInteractionService(
         IEffectInteractionRepository repository,
         StatusEffectService effectService,
-        ILogger<EffectInteractionService> logger)
+        ILogger<EffectInteractionService> logger,
+        IGameEventLogger? eventLogger = null)
     {
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         _effectService = effectService ?? throw new ArgumentNullException(nameof(effectService));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _eventLogger = eventLogger;
     }
 
     /// <summary>
@@ -48,6 +51,15 @@ public class EffectInteractionService
                 _logger.LogInformation(
                     "Effect interaction: {Effect} + {DamageType} on {Target} - {Message}",
                     effect.Definition.Name, damageType, target.Name, interaction.Value.Message);
+
+                _eventLogger?.LogStatusEffect("EffectInteraction", $"{effect.Definition.Name} interacted with {damageType}",
+                    data: new Dictionary<string, object>
+                    {
+                        ["effectName"] = effect.Definition.Name,
+                        ["damageType"] = damageType,
+                        ["targetName"] = target.Name,
+                        ["message"] = interaction.Value.Message
+                    });
             }
         }
 

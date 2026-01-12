@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using RuneAndRust.Application.Configuration;
+using RuneAndRust.Application.Interfaces;
 
 namespace RuneAndRust.Application.Services;
 
@@ -16,6 +17,7 @@ public class CachedDescriptorService : DescriptorService
 {
     private readonly IMemoryCache _cache;
     private readonly ILogger<CachedDescriptorService> _cachedLogger;
+    private readonly IGameEventLogger? _eventLogger;
 
     /// <summary>
     /// Default cache entry expiration time.
@@ -33,11 +35,13 @@ public class CachedDescriptorService : DescriptorService
         ILogger<DescriptorService> baseLogger,
         IMemoryCache cache,
         ILogger<CachedDescriptorService> cachedLogger,
-        EnvironmentCoherenceService? coherenceService = null)
-        : base(pools, theme, baseLogger, coherenceService)
+        EnvironmentCoherenceService? coherenceService = null,
+        IGameEventLogger? eventLogger = null)
+        : base(pools, theme, baseLogger, coherenceService, eventLogger)
     {
         _cache = cache ?? throw new ArgumentNullException(nameof(cache));
         _cachedLogger = cachedLogger ?? throw new ArgumentNullException(nameof(cachedLogger));
+        _eventLogger = eventLogger;
 
         _cachedLogger.LogDebug("CachedDescriptorService initialized with {Expiration} expiration",
             DefaultExpiration);
@@ -69,6 +73,14 @@ public class CachedDescriptorService : DescriptorService
         if (_cache.TryGetValue(cacheKey, out string? cached) && cached != null)
         {
             _cachedLogger.LogDebug("Cache hit for {PoolPath}", poolPath);
+
+            _eventLogger?.LogSystem("CacheHit", $"Cache hit for {poolPath}",
+                data: new Dictionary<string, object>
+                {
+                    ["poolPath"] = poolPath,
+                    ["cacheKey"] = cacheKey
+                });
+
             return cached;
         }
 

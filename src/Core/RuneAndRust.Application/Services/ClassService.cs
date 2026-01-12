@@ -15,15 +15,18 @@ public class ClassService
     private readonly IGameConfigurationProvider _configProvider;
     private readonly AbilityService _abilityService;
     private readonly ILogger<ClassService> _logger;
+    private readonly IGameEventLogger? _eventLogger;
 
     public ClassService(
         IGameConfigurationProvider configProvider,
         AbilityService abilityService,
-        ILogger<ClassService> logger)
+        ILogger<ClassService> logger,
+        IGameEventLogger? eventLogger = null)
     {
         _configProvider = configProvider ?? throw new ArgumentNullException(nameof(configProvider));
         _abilityService = abilityService ?? throw new ArgumentNullException(nameof(abilityService));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _eventLogger = eventLogger;
 
         _logger.LogInformation(
             "ClassService initialized with {ArchetypeCount} archetypes and {ClassCount} classes",
@@ -161,6 +164,19 @@ public class ClassService
             player.Stats.Attack - classDef.StatModifiers.Attack, player.Stats.Attack,
             player.Stats.Defense - classDef.StatModifiers.Defense, player.Stats.Defense,
             player.Abilities.Count);
+
+        _eventLogger?.LogCharacter("ClassApplied", $"{player.Name} became a {classDef.Name}",
+            data: new Dictionary<string, object>
+            {
+                ["playerName"] = player.Name,
+                ["archetypeId"] = classDef.ArchetypeId,
+                ["classId"] = classDef.Id,
+                ["className"] = classDef.Name,
+                ["abilityCount"] = player.Abilities.Count,
+                ["maxHealth"] = player.Stats.MaxHealth,
+                ["attack"] = player.Stats.Attack,
+                ["defense"] = player.Stats.Defense
+            });
     }
 
     /// <summary>

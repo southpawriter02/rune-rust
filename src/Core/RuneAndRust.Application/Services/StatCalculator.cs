@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Logging;
+using RuneAndRust.Application.Interfaces;
 using RuneAndRust.Domain.Enums;
 using RuneAndRust.Domain.Interfaces;
 using RuneAndRust.Domain.ValueObjects;
@@ -13,6 +15,19 @@ namespace RuneAndRust.Application.Services;
 /// </remarks>
 public class StatCalculator
 {
+    private readonly ILogger<StatCalculator>? _logger;
+    private readonly IGameEventLogger? _eventLogger;
+
+    /// <summary>
+    /// Creates a new StatCalculator with optional logging support.
+    /// </summary>
+    public StatCalculator(
+        ILogger<StatCalculator>? logger = null,
+        IGameEventLogger? eventLogger = null)
+    {
+        _logger = logger;
+        _eventLogger = eventLogger;
+    }
     /// <summary>
     /// Calculates the effective value of a stat after all modifiers.
     /// </summary>
@@ -42,7 +57,17 @@ public class StatCalculator
 
         if (overrideModifier.ModifierType == StatModifierType.Override)
         {
-            return Math.Max(0, (int)overrideModifier.Value);
+            var overrideValue = Math.Max(0, (int)overrideModifier.Value);
+
+            _eventLogger?.LogStatusEffect("StatOverride", $"{statId} overridden to {overrideValue}",
+                data: new Dictionary<string, object>
+                {
+                    ["statId"] = statId,
+                    ["baseValue"] = baseValue,
+                    ["overrideValue"] = overrideValue
+                });
+
+            return overrideValue;
         }
 
         // Apply flat modifiers

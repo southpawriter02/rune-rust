@@ -13,6 +13,7 @@ public class BiomeService : IBiomeService
     private readonly Dictionary<string, BiomeDefinition> _biomes = new(StringComparer.OrdinalIgnoreCase);
     private readonly ISeededRandomService _random;
     private readonly ILogger<BiomeService> _logger;
+    private readonly IGameEventLogger? _eventLogger;
 
     /// <summary>
     /// Default biome ID used when no valid biomes are found.
@@ -21,10 +22,12 @@ public class BiomeService : IBiomeService
 
     public BiomeService(
         ISeededRandomService random,
-        ILogger<BiomeService>? logger = null)
+        ILogger<BiomeService>? logger = null,
+        IGameEventLogger? eventLogger = null)
     {
         _random = random ?? throw new ArgumentNullException(nameof(random));
         _logger = logger ?? Microsoft.Extensions.Logging.Abstractions.NullLogger<BiomeService>.Instance;
+        _eventLogger = eventLogger;
 
         RegisterDefaultBiomes();
         _logger.LogDebug("BiomeService initialized with {Count} biomes", _biomes.Count);
@@ -74,6 +77,16 @@ public class BiomeService : IBiomeService
         _logger.LogDebug(
             "Selected biome {BiomeId} for position {Position} (depth={Depth})",
             selected.BiomeId, position, depth);
+
+        _eventLogger?.LogSystem("BiomeSelected", $"Selected biome {selected.Name}",
+            data: new Dictionary<string, object>
+            {
+                ["biomeId"] = selected.BiomeId,
+                ["biomeName"] = selected.Name,
+                ["position"] = position.ToString(),
+                ["depth"] = depth,
+                ["candidateCount"] = validBiomes.Count
+            });
 
         return selected;
     }

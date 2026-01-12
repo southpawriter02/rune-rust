@@ -17,6 +17,7 @@ public class RoomGeneratorService : IRoomGeneratorService
     private readonly GenerationRulesConfiguration _rulesConfig;
     private readonly BiomeConfiguration _biomeConfig;
     private readonly ILogger<RoomGeneratorService> _logger;
+    private readonly IGameEventLogger? _eventLogger;
 
     /// <summary>
     /// Creates a new RoomGeneratorService.
@@ -25,12 +26,14 @@ public class RoomGeneratorService : IRoomGeneratorService
         RoomTemplateConfiguration templateConfig,
         GenerationRulesConfiguration rulesConfig,
         BiomeConfiguration biomeConfig,
-        ILogger<RoomGeneratorService> logger)
+        ILogger<RoomGeneratorService> logger,
+        IGameEventLogger? eventLogger = null)
     {
         _templateConfig = templateConfig ?? throw new ArgumentNullException(nameof(templateConfig));
         _rulesConfig = rulesConfig ?? throw new ArgumentNullException(nameof(rulesConfig));
         _biomeConfig = biomeConfig ?? throw new ArgumentNullException(nameof(biomeConfig));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _eventLogger = eventLogger;
     }
 
     /// <inheritdoc />
@@ -68,6 +71,20 @@ public class RoomGeneratorService : IRoomGeneratorService
         _logger.LogDebug(
             "Generated room '{Name}' at {Position} using template {Template} (biome: {Biome})",
             name, position, template.TemplateId, biomeId);
+
+        _eventLogger?.LogSystem("RoomGenerated", $"Generated room '{name}' at {position}",
+            data: new Dictionary<string, object>
+            {
+                ["roomName"] = name,
+                ["position"] = position.ToString(),
+                ["x"] = position.X,
+                ["y"] = position.Y,
+                ["z"] = position.Z,
+                ["templateId"] = template.TemplateId,
+                ["biomeId"] = biomeId,
+                ["difficultyModifier"] = difficultyModifier,
+                ["seed"] = seed
+            });
 
         return new GeneratedRoomResult(room, exits, template.TemplateId, biomeId, difficultyModifier);
     }

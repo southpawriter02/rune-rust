@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using RuneAndRust.Application.Configuration;
+using RuneAndRust.Application.Interfaces;
 using RuneAndRust.Domain.Enums;
 using RuneAndRust.Domain.ValueObjects;
 
@@ -18,6 +19,7 @@ public class AmbientEventService
     private readonly DescriptorService _descriptorService;
     private readonly AmbientEventConfiguration _config;
     private readonly ILogger<AmbientEventService> _logger;
+    private readonly IGameEventLogger? _eventLogger;
     private readonly Random _random = new();
 
     /// <summary>
@@ -33,11 +35,13 @@ public class AmbientEventService
     public AmbientEventService(
         DescriptorService descriptorService,
         AmbientEventConfiguration config,
-        ILogger<AmbientEventService> logger)
+        ILogger<AmbientEventService> logger,
+        IGameEventLogger? eventLogger = null)
     {
         _descriptorService = descriptorService ?? throw new ArgumentNullException(nameof(descriptorService));
         _config = config ?? throw new ArgumentNullException(nameof(config));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _eventLogger = eventLogger;
 
         _logger.LogDebug(
             "AmbientEventService initialized with {EventPools} event pools",
@@ -115,13 +119,25 @@ public class AmbientEventService
             return AmbientEvent.None;
         }
 
-        return new AmbientEvent
+        var ambientEvent = new AmbientEvent
         {
             EventType = eventType,
             Description = description,
             Intensity = DetermineIntensity(eventType, context),
             IsInterruptive = ShouldInterrupt(eventType, context)
         };
+
+        _eventLogger?.LogEnvironment("AmbientEvent", description,
+            data: new Dictionary<string, object>
+            {
+                ["eventType"] = eventType.ToString(),
+                ["biome"] = context.Environment.Biome ?? "unknown",
+                ["intensity"] = ambientEvent.Intensity,
+                ["isInterruptive"] = ambientEvent.IsInterruptive,
+                ["trigger"] = context.Trigger.ToString()
+            });
+
+        return ambientEvent;
     }
 
     private AmbientEvent GenerateEvent(AmbientEventContext context)

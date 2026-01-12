@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using RuneAndRust.Application.Interfaces;
 using RuneAndRust.Domain.Entities;
 using RuneAndRust.Domain.ValueObjects;
 
@@ -16,17 +17,19 @@ public class InitiativeService
 {
     private readonly DiceService _diceService;
     private readonly ILogger<InitiativeService> _logger;
+    private readonly IGameEventLogger? _eventLogger;
 
     /// <summary>
     /// Creates a new InitiativeService instance.
     /// </summary>
-    /// <param name="diceService">The dice service for rolling initiative.</param>
-    /// <param name="logger">The logger for diagnostics.</param>
-    /// <exception cref="ArgumentNullException">Thrown if diceService or logger is null.</exception>
-    public InitiativeService(DiceService diceService, ILogger<InitiativeService> logger)
+    public InitiativeService(
+        DiceService diceService,
+        ILogger<InitiativeService> logger,
+        IGameEventLogger? eventLogger = null)
     {
         _diceService = diceService ?? throw new ArgumentNullException(nameof(diceService));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _eventLogger = eventLogger;
         _logger.LogDebug("InitiativeService initialized");
     }
 
@@ -50,6 +53,15 @@ public class InitiativeService
             "Player {Name} rolls initiative: {Roll}",
             player.Name, initiative.ToDisplayString());
 
+        _eventLogger?.LogCombat("InitiativeRolled", $"{player.Name} rolled {initiative.Total}",
+            data: new Dictionary<string, object>
+            {
+                ["combatantName"] = player.Name,
+                ["roll"] = initiative.RollValue,
+                ["modifier"] = modifier,
+                ["total"] = initiative.Total
+            });
+
         return initiative;
     }
 
@@ -72,6 +84,15 @@ public class InitiativeService
         _logger.LogDebug(
             "Monster {Name} rolls initiative: {Roll}",
             monster.Name, initiative.ToDisplayString());
+
+        _eventLogger?.LogCombat("InitiativeRolled", $"{monster.Name} rolled {initiative.Total}",
+            data: new Dictionary<string, object>
+            {
+                ["combatantName"] = monster.Name,
+                ["roll"] = initiative.RollValue,
+                ["modifier"] = modifier,
+                ["total"] = initiative.Total
+            });
 
         return initiative;
     }

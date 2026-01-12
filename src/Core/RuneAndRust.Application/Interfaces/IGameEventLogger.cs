@@ -69,6 +69,11 @@ public interface IGameEventLogger
     void LogEnvironment(string eventType, string message, Dictionary<string, object>? data = null);
 
     /// <summary>
+    /// Logs a session event.
+    /// </summary>
+    void LogSession(string eventType, string message, Dictionary<string, object>? data = null);
+
+    /// <summary>
     /// Logs a system event.
     /// </summary>
     void LogSystem(string eventType, string message, EventSeverity severity = EventSeverity.Info, Dictionary<string, object>? data = null);

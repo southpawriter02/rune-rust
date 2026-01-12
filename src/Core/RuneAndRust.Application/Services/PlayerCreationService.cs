@@ -14,13 +14,16 @@ public class PlayerCreationService
 {
     private readonly IGameConfigurationProvider _configProvider;
     private readonly ILogger<PlayerCreationService> _logger;
+    private readonly IGameEventLogger? _eventLogger;
 
     public PlayerCreationService(
         IGameConfigurationProvider configProvider,
-        ILogger<PlayerCreationService> logger)
+        ILogger<PlayerCreationService> logger,
+        IGameEventLogger? eventLogger = null)
     {
         _configProvider = configProvider ?? throw new ArgumentNullException(nameof(configProvider));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _eventLogger = eventLogger;
         _logger.LogDebug("PlayerCreationService initialized");
     }
 
@@ -205,6 +208,21 @@ public class PlayerCreationService
         _logger.LogInformation(
             "Created character: {Name} ({Race} {Background}), Attributes: {Attributes}",
             normalizedName, race.Name, background.Name, finalAttributes);
+
+        _eventLogger?.LogCharacter("CharacterCreated", $"Created {normalizedName}",
+            data: new Dictionary<string, object>
+            {
+                ["name"] = normalizedName,
+                ["raceId"] = raceId,
+                ["raceName"] = race.Name,
+                ["backgroundId"] = backgroundId,
+                ["backgroundName"] = background.Name,
+                ["might"] = finalAttributes.Might,
+                ["fortitude"] = finalAttributes.Fortitude,
+                ["will"] = finalAttributes.Will,
+                ["wits"] = finalAttributes.Wits,
+                ["finesse"] = finalAttributes.Finesse
+            });
 
         return player;
     }

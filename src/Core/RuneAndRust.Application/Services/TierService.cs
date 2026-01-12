@@ -11,6 +11,7 @@ public class TierService : ITierService
 {
     private readonly IGameConfigurationProvider _configProvider;
     private readonly ILogger<TierService> _logger;
+    private readonly IGameEventLogger? _eventLogger;
     private readonly Random _random;
 
     /// <summary>
@@ -18,8 +19,12 @@ public class TierService : ITierService
     /// </summary>
     /// <param name="configProvider">Configuration provider for tier definitions.</param>
     /// <param name="logger">Logger for diagnostics.</param>
-    public TierService(IGameConfigurationProvider configProvider, ILogger<TierService> logger)
-        : this(configProvider, logger, Random.Shared)
+    /// <param name="eventLogger">Optional event logger.</param>
+    public TierService(
+        IGameConfigurationProvider configProvider,
+        ILogger<TierService> logger,
+        IGameEventLogger? eventLogger = null)
+        : this(configProvider, logger, eventLogger, Random.Shared)
     {
     }
 
@@ -28,11 +33,17 @@ public class TierService : ITierService
     /// </summary>
     /// <param name="configProvider">Configuration provider for tier definitions.</param>
     /// <param name="logger">Logger for diagnostics.</param>
+    /// <param name="eventLogger">Optional event logger.</param>
     /// <param name="random">Random number generator.</param>
-    internal TierService(IGameConfigurationProvider configProvider, ILogger<TierService> logger, Random random)
+    internal TierService(
+        IGameConfigurationProvider configProvider,
+        ILogger<TierService> logger,
+        IGameEventLogger? eventLogger,
+        Random random)
     {
         _configProvider = configProvider ?? throw new ArgumentNullException(nameof(configProvider));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _eventLogger = eventLogger;
         _random = random ?? throw new ArgumentNullException(nameof(random));
     }
 
@@ -101,6 +112,17 @@ public class TierService : ITierService
             {
                 _logger.LogDebug("Selected tier {TierId} (weight {Weight}/{Total}, roll {Roll})",
                     tier.Id, tier.SpawnWeight, totalWeight, roll);
+
+                _eventLogger?.LogAI("TierSelected", $"Selected {tier.Id} tier",
+                    data: new Dictionary<string, object>
+                    {
+                        ["tierId"] = tier.Id,
+                        ["tierName"] = tier.Name,
+                        ["spawnWeight"] = tier.SpawnWeight,
+                        ["totalWeight"] = totalWeight,
+                        ["roll"] = roll
+                    });
+
                 return tier;
             }
         }

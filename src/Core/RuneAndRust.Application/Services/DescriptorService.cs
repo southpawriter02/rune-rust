@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using RuneAndRust.Application.Configuration;
+using RuneAndRust.Application.Interfaces;
 using RuneAndRust.Domain.ValueObjects;
 
 namespace RuneAndRust.Application.Services;
@@ -12,6 +13,7 @@ public class DescriptorService
     private readonly IReadOnlyDictionary<string, DescriptorPool> _pools;
     private readonly ThemeConfiguration _theme;
     private readonly ILogger<DescriptorService> _logger;
+    private readonly IGameEventLogger? _eventLogger;
     private readonly EnvironmentCoherenceService? _coherenceService;
     private readonly Random _random = new();
 
@@ -23,11 +25,13 @@ public class DescriptorService
         IReadOnlyDictionary<string, DescriptorPool> pools,
         ThemeConfiguration theme,
         ILogger<DescriptorService> logger,
-        EnvironmentCoherenceService? coherenceService = null)
+        EnvironmentCoherenceService? coherenceService = null,
+        IGameEventLogger? eventLogger = null)
     {
         _pools = pools ?? throw new ArgumentNullException(nameof(pools));
         _theme = theme ?? throw new ArgumentNullException(nameof(theme));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _eventLogger = eventLogger;
         _coherenceService = coherenceService;
         _logger.LogDebug("DescriptorService initialized with {PoolCount} pools", pools.Count);
     }

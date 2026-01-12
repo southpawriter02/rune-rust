@@ -19,6 +19,7 @@ public class SkillCheckService
     private readonly DiceService _diceService;
     private readonly IGameConfigurationProvider _configProvider;
     private readonly ILogger<SkillCheckService> _logger;
+    private readonly IGameEventLogger? _eventLogger;
 
     /// <summary>
     /// Initializes a new instance of the SkillCheckService.
@@ -26,11 +27,13 @@ public class SkillCheckService
     public SkillCheckService(
         DiceService diceService,
         IGameConfigurationProvider configProvider,
-        ILogger<SkillCheckService> logger)
+        ILogger<SkillCheckService> logger,
+        IGameEventLogger? eventLogger = null)
     {
         _diceService = diceService ?? throw new ArgumentNullException(nameof(diceService));
         _configProvider = configProvider ?? throw new ArgumentNullException(nameof(configProvider));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _eventLogger = eventLogger;
         _logger.LogInformation("SkillCheckService initialized");
     }
 
@@ -223,6 +226,21 @@ public class SkillCheckService
             result.TotalResult,
             result.DifficultyClass,
             result.SuccessLevel);
+
+        _eventLogger?.LogDice("SkillCheck", $"{result.SkillName}: {result.SuccessLevel}",
+            data: new Dictionary<string, object>
+            {
+                ["skillId"] = result.SkillId,
+                ["skillName"] = result.SkillName,
+                ["roll"] = result.DiceResult.Total,
+                ["bonus"] = result.TotalBonus,
+                ["total"] = result.TotalResult,
+                ["dc"] = result.DifficultyClass,
+                ["dcName"] = result.DifficultyName,
+                ["success"] = result.IsSuccess,
+                ["critical"] = result.IsCritical,
+                ["successLevel"] = result.SuccessLevel.ToString()
+            });
 
         if (result.IsCriticalSuccess)
             _logger.LogInformation("Critical success on {Skill}!", result.SkillName);

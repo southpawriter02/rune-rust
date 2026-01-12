@@ -14,13 +14,16 @@ public class HazardService : IHazardService
     private readonly Dictionary<string, BiomeDamageModifier> _modifiers = new(StringComparer.OrdinalIgnoreCase);
     private readonly ISeededRandomService _random;
     private readonly ILogger<HazardService> _logger;
+    private readonly IGameEventLogger? _eventLogger;
 
     public HazardService(
         ISeededRandomService random,
-        ILogger<HazardService>? logger = null)
+        ILogger<HazardService>? logger = null,
+        IGameEventLogger? eventLogger = null)
     {
         _random = random ?? throw new ArgumentNullException(nameof(random));
         _logger = logger ?? Microsoft.Extensions.Logging.Abstractions.NullLogger<HazardService>.Instance;
+        _eventLogger = eventLogger;
 
         RegisterDefaultHazards();
         RegisterDefaultModifiers();
@@ -44,6 +47,16 @@ public class HazardService : IHazardService
         {
             _logger.LogInformation("Hazard {HazardId} avoided with roll {Roll} vs DC {DC}",
                 hazard.HazardId, avoidanceRoll, hazard.Trigger.AvoidanceDC);
+
+            _eventLogger?.LogEnvironment("HazardAvoided", $"Avoided {hazard.Name}",
+                data: new Dictionary<string, object>
+                {
+                    ["hazardId"] = hazard.HazardId,
+                    ["hazardName"] = hazard.Name,
+                    ["roll"] = avoidanceRoll,
+                    ["dc"] = hazard.Trigger.AvoidanceDC
+                });
+
             return new HazardResult(false, true, 0, hazard.DamageTypeId, []);
         }
 
@@ -53,6 +66,17 @@ public class HazardService : IHazardService
 
         _logger.LogInformation("Hazard {HazardId} triggered: {Damage} {DamageType} damage, effects: [{Effects}]",
             hazard.HazardId, damage, hazard.DamageTypeId, string.Join(", ", hazard.StatusEffects));
+
+        _eventLogger?.LogEnvironment("HazardTriggered", $"{hazard.Name} triggered",
+            data: new Dictionary<string, object>
+            {
+                ["hazardId"] = hazard.HazardId,
+                ["hazardName"] = hazard.Name,
+                ["damage"] = damage,
+                ["damageType"] = hazard.DamageTypeId,
+                ["biomeId"] = biomeId,
+                ["effects"] = hazard.StatusEffects.ToList()
+            });
 
         return new HazardResult(true, false, damage, hazard.DamageTypeId, hazard.StatusEffects);
     }
@@ -77,6 +101,16 @@ public class HazardService : IHazardService
         if (skillRoll >= hazard.DisarmDC)
         {
             _logger.LogInformation("Hazard {HazardId} successfully disarmed", hazard.HazardId);
+
+            _eventLogger?.LogEnvironment("HazardDisarmed", $"{hazard.Name} disarmed",
+                data: new Dictionary<string, object>
+                {
+                    ["hazardId"] = hazard.HazardId,
+                    ["hazardName"] = hazard.Name,
+                    ["roll"] = skillRoll,
+                    ["dc"] = hazard.DisarmDC
+                });
+
             return new DisarmResult(true, false, false, null);
         }
 

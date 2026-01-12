@@ -19,7 +19,7 @@ public class MonsterAIServiceTests
     {
         _logger = new TestLogger<MonsterAIService>();
         _fixedRandom = new Random(42); // Fixed seed for deterministic tests
-        _service = new MonsterAIService(_logger, _fixedRandom);
+        _service = new MonsterAIService(_logger, eventLogger: null, random: _fixedRandom);
     }
 
     [Test]
