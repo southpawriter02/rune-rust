@@ -90,4 +90,46 @@ public class InteractiveObjectDefinition
     /// Gets or sets the lock definition for this object.
     /// </summary>
     public LockDefinition? Lock { get; set; }
+
+    // ===== Effect Configuration (v0.4.0c) =====
+
+    /// <summary>
+    /// Gets or sets effects that trigger when this object changes state.
+    /// </summary>
+    /// <remarks>
+    /// Each effect specifies a target object and what happens when this object
+    /// enters a specific state (e.g., when lever is activated, unlock a door).
+    /// </remarks>
+    public List<ObjectEffect>? Effects { get; set; }
+
+    // ===== Destructible Configuration (v0.4.0c) =====
+
+    /// <summary>
+    /// Gets or sets the destructible properties for this object.
+    /// </summary>
+    /// <remarks>
+    /// If set, this object can be damaged and destroyed through attacks.
+    /// Null for indestructible objects.
+    /// </remarks>
+    public DestructibleProperties? Destructible { get; set; }
+
+    // ===== Button Configuration (v0.4.0c) =====
+
+    /// <summary>
+    /// Gets or sets whether this object is a button (auto-resets after activation).
+    /// </summary>
+    /// <remarks>
+    /// Buttons automatically return to Inactive state after ResetDelay turns.
+    /// Unlike levers, buttons cannot be manually deactivated.
+    /// </remarks>
+    public bool IsButton { get; set; }
+
+    /// <summary>
+    /// Gets or sets the reset delay in turns for buttons.
+    /// </summary>
+    /// <remarks>
+    /// Default is 3 turns. 0 means reset on the next turn tick.
+    /// Only applies when IsButton is true.
+    /// </remarks>
+    public int ResetDelay { get; set; } = 3;
 }

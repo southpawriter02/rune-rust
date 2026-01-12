@@ -118,4 +118,62 @@ public interface IInteractionService
     /// <param name="container">The container to describe.</param>
     /// <returns>The contents description.</returns>
     string GetContainerContents(InteractiveObject container);
+
+    // ===== Activation Methods (v0.4.0c) =====
+
+    /// <summary>
+    /// Activates an interactive object (lever, button).
+    /// </summary>
+    /// <param name="obj">The object to activate.</param>
+    /// <param name="room">The room containing the object (for effect resolution).</param>
+    /// <returns>The interaction result with triggered effects.</returns>
+    InteractionResult Activate(InteractiveObject obj, Room room);
+
+    /// <summary>
+    /// Deactivates an interactive object (lever only, buttons auto-reset).
+    /// </summary>
+    /// <param name="obj">The object to deactivate.</param>
+    /// <param name="room">The room containing the object (for effect resolution).</param>
+    /// <returns>The interaction result with triggered effects.</returns>
+    InteractionResult Deactivate(InteractiveObject obj, Room room);
+
+    // ===== Destruction Methods (v0.4.0c) =====
+
+    /// <summary>
+    /// Attacks a destructible object.
+    /// </summary>
+    /// <param name="obj">The object to attack.</param>
+    /// <param name="damage">The damage to deal.</param>
+    /// <param name="damageType">Optional damage type for vulnerability/resistance checks.</param>
+    /// <param name="room">The room containing the object.</param>
+    /// <returns>The damage result with destruction information.</returns>
+    ObjectDamageResult AttackObject(InteractiveObject obj, int damage, string? damageType, Room room);
+
+    // ===== Turn Processing Methods (v0.4.0c) =====
+
+    /// <summary>
+    /// Processes turn tick for all objects in a room (handles button resets).
+    /// </summary>
+    /// <param name="room">The room to process.</param>
+    /// <returns>List of messages for objects that reset this turn.</returns>
+    IEnumerable<string> ProcessRoomTurnTick(Room room);
+
+    // ===== Effect Methods (v0.4.0c) =====
+
+    /// <summary>
+    /// Gets effects that should trigger for a state change.
+    /// </summary>
+    /// <param name="obj">The object changing state.</param>
+    /// <param name="newState">The new state being entered.</param>
+    /// <returns>The effects that should trigger.</returns>
+    IEnumerable<ObjectEffect> GetPendingEffects(InteractiveObject obj, ObjectState newState);
+
+    /// <summary>
+    /// Resolves an effect on its target object.
+    /// </summary>
+    /// <param name="effect">The effect to resolve.</param>
+    /// <param name="room">The room containing target objects.</param>
+    /// <returns>The result of applying the effect.</returns>
+    EffectTriggerResult ResolveEffect(ObjectEffect effect, Room room);
 }
+

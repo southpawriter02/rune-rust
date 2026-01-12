@@ -226,6 +226,24 @@ public class InteractiveObject : IEntity
             obj.SetLock(definition.Lock.Value);
         }
 
+        // Set up effects if applicable (v0.4.0c)
+        if (definition.Effects != null && definition.Effects.Count > 0)
+        {
+            obj.SetEffects(definition.Effects);
+        }
+
+        // Set up destructible if applicable (v0.4.0c)
+        if (definition.Destructible != null)
+        {
+            obj.SetDestructible(definition.Destructible);
+        }
+
+        // Set up button behavior (v0.4.0c)
+        if (definition.IsButton)
+        {
+            obj.SetAsButton(definition.ResetDelay);
+        }
+
         return obj;
     }
 
@@ -368,4 +386,238 @@ public class InteractiveObject : IEntity
         State = ObjectState.Locked;
         return true;
     }
+
+    // ===== Effect Properties (v0.4.0c) =====
+
+    /// <summary>
+    /// Internal list of effects triggered by state changes.
+    /// </summary>
+    private readonly List<ObjectEffect> _effects = [];
+
+    /// <summary>
+    /// Gets the effects that trigger when this object changes state.
+    /// </summary>
+    public IReadOnlyList<ObjectEffect> Effects => _effects;
+
+    /// <summary>
+    /// Gets whether this object has any linked effects.
+    /// </summary>
+    public bool HasEffects => _effects.Count > 0;
+
+    // ===== Destructible Properties (v0.4.0c) =====
+
+    /// <summary>
+    /// Gets the destructible properties (null for indestructible objects).
+    /// </summary>
+    public DestructibleProperties? Destructible { get; private set; }
+
+    /// <summary>
+    /// Gets whether this object can be destroyed.
+    /// </summary>
+    public bool IsDestructible => Destructible != null;
+
+    /// <summary>
+    /// Gets whether this object is currently destroyed.
+    /// </summary>
+    public bool IsDestroyed =>
+        Destructible?.IsDestroyed == true ||
+        State == ObjectState.Destroyed ||
+        State == ObjectState.Broken;
+
+    // ===== Button Properties (v0.4.0c) =====
+
+    /// <summary>
+    /// Internal timer for button reset.
+    /// </summary>
+    private int _turnsUntilReset = -1;
+
+    /// <summary>
+    /// Gets whether this object is a button (auto-resets after activation).
+    /// </summary>
+    public bool IsButton { get; private set; }
+
+    /// <summary>
+    /// Gets the delay in turns before a button resets (0 = next turn).
+    /// </summary>
+    public int ResetDelay { get; private set; }
+
+    /// <summary>
+    /// Gets whether this object has a pending reset (for buttons).
+    /// </summary>
+    public bool HasPendingReset => _turnsUntilReset >= 0;
+
+    /// <summary>
+    /// Gets the turns remaining until reset.
+    /// </summary>
+    public int TurnsUntilReset => _turnsUntilReset;
+
+    // ===== Effect Methods (v0.4.0c) =====
+
+    /// <summary>
+    /// Adds an effect to this object.
+    /// </summary>
+    /// <param name="effect">The effect to add.</param>
+    public void AddEffect(ObjectEffect effect)
+    {
+        _effects.Add(effect);
+    }
+
+    /// <summary>
+    /// Sets up this object's effects (replaces existing).
+    /// </summary>
+    /// <param name="effects">The effects to add.</param>
+    public void SetEffects(IEnumerable<ObjectEffect> effects)
+    {
+        ArgumentNullException.ThrowIfNull(effects);
+        _effects.Clear();
+        _effects.AddRange(effects);
+    }
+
+    /// <summary>
+    /// Gets effects that trigger when this object enters the specified state.
+    /// </summary>
+    /// <param name="newState">The state being entered.</param>
+    /// <returns>Effects that trigger on this state.</returns>
+    public IEnumerable<ObjectEffect> GetTriggeredEffects(ObjectState newState)
+    {
+        return _effects.Where(e => e.TriggerOnState == newState);
+    }
+
+    // ===== Destructible Methods (v0.4.0c) =====
+
+    /// <summary>
+    /// Sets up this object as destructible.
+    /// </summary>
+    /// <param name="properties">The destructible properties.</param>
+    /// <exception cref="ArgumentNullException">Thrown when properties is null.</exception>
+    public void SetDestructible(DestructibleProperties properties)
+    {
+        Destructible = properties ?? throw new ArgumentNullException(nameof(properties));
+    }
+
+    /// <summary>
+    /// Applies damage to this object.
+    /// </summary>
+    /// <param name="amount">The damage amount.</param>
+    /// <param name="damageType">Optional damage type for modifier checks.</param>
+    /// <returns>The actual damage dealt.</returns>
+    public int TakeDamage(int amount, string? damageType = null)
+    {
+        if (!IsDestructible) return 0;
+        if (IsDestroyed) return 0;
+
+        var damage = Destructible!.TakeDamage(amount, damageType);
+
+        if (Destructible.IsDestroyed)
+        {
+            State = ObjectState.Destroyed;
+        }
+
+        return damage;
+    }
+
+    /// <summary>
+    /// Marks this object as destroyed (bypasses damage).
+    /// </summary>
+    public void Destroy()
+    {
+        State = ObjectState.Destroyed;
+    }
+
+    // ===== Button Methods (v0.4.0c) =====
+
+    /// <summary>
+    /// Sets up this object as a button with auto-reset.
+    /// </summary>
+    /// <param name="resetDelay">Turns until reset (0 = next turn tick).</param>
+    public void SetAsButton(int resetDelay = 3)
+    {
+        IsButton = true;
+        ResetDelay = Math.Max(0, resetDelay);
+    }
+
+    /// <summary>
+    /// Activates this object (for levers and buttons).
+    /// </summary>
+    /// <returns>True if activation succeeded.</returns>
+    public bool Activate()
+    {
+        if (!CanInteract) return false;
+        if (State == ObjectState.Active) return false;
+
+        State = ObjectState.Active;
+
+        // For buttons, start the reset timer
+        if (IsButton)
+        {
+            _turnsUntilReset = ResetDelay;
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Deactivates this object (for levers).
+    /// </summary>
+    /// <returns>True if deactivation succeeded.</returns>
+    /// <remarks>
+    /// Buttons cannot be manually deactivated - they auto-reset.
+    /// </remarks>
+    public bool Deactivate()
+    {
+        if (!CanInteract) return false;
+        if (State != ObjectState.Active) return false;
+        if (IsButton) return false; // Buttons auto-reset only
+
+        State = ObjectState.Inactive;
+        return true;
+    }
+
+    /// <summary>
+    /// Toggles this object between active and inactive states.
+    /// </summary>
+    /// <returns>The new state, or null if toggle failed.</returns>
+    public ObjectState? Toggle()
+    {
+        if (!CanInteract) return null;
+
+        if (State == ObjectState.Active)
+        {
+            if (IsButton) return null; // Buttons don't toggle
+            State = ObjectState.Inactive;
+            return ObjectState.Inactive;
+        }
+        else if (State == ObjectState.Inactive || State == ObjectState.Down)
+        {
+            State = ObjectState.Active;
+            if (IsButton)
+            {
+                _turnsUntilReset = ResetDelay;
+            }
+            return ObjectState.Active;
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Processes a turn tick for this object (handles button reset).
+    /// </summary>
+    /// <returns>True if the object reset this turn.</returns>
+    public bool ProcessTurnTick()
+    {
+        if (!HasPendingReset) return false;
+
+        _turnsUntilReset--;
+
+        if (_turnsUntilReset < 0)
+        {
+            _turnsUntilReset = -1;
+            State = ObjectState.Inactive;
+            return true;
+        }
+
+        return false;
+    }
 }
+
