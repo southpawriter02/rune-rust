@@ -13,6 +13,7 @@ public class LootService : ILootService
 {
     private readonly IGameConfigurationProvider _configProvider;
     private readonly ILogger<LootService> _logger;
+    private readonly IGameEventLogger? _eventLogger;
     private readonly Random _random;
 
     /// <summary>
@@ -20,8 +21,12 @@ public class LootService : ILootService
     /// </summary>
     /// <param name="configProvider">Configuration provider for loot and currency definitions.</param>
     /// <param name="logger">Logger for diagnostics.</param>
-    public LootService(IGameConfigurationProvider configProvider, ILogger<LootService> logger)
-        : this(configProvider, logger, Random.Shared)
+    /// <param name="eventLogger">Optional event logger for comprehensive tracking.</param>
+    public LootService(
+        IGameConfigurationProvider configProvider,
+        ILogger<LootService> logger,
+        IGameEventLogger? eventLogger = null)
+        : this(configProvider, logger, eventLogger, Random.Shared)
     {
     }
 
@@ -30,11 +35,17 @@ public class LootService : ILootService
     /// </summary>
     /// <param name="configProvider">Configuration provider for loot and currency definitions.</param>
     /// <param name="logger">Logger for diagnostics.</param>
+    /// <param name="eventLogger">Optional event logger for comprehensive tracking.</param>
     /// <param name="random">Random number generator.</param>
-    internal LootService(IGameConfigurationProvider configProvider, ILogger<LootService> logger, Random random)
+    internal LootService(
+        IGameConfigurationProvider configProvider,
+        ILogger<LootService> logger,
+        IGameEventLogger? eventLogger,
+        Random random)
     {
         _configProvider = configProvider ?? throw new ArgumentNullException(nameof(configProvider));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _eventLogger = eventLogger;
         _random = random ?? throw new ArgumentNullException(nameof(random));
     }
 
@@ -82,6 +93,17 @@ public class LootService : ILootService
         _logger.LogDebug("Generated loot for {MonsterName}: {ItemCount} items, {CurrencyTypes} currency types",
             definition.Name, items.Count, currency.Count);
 
+        _eventLogger?.LogInventory("LootGenerated", $"Loot dropped from {definition.Name}",
+            data: new Dictionary<string, object>
+            {
+                ["monsterName"] = definition.Name,
+                ["itemCount"] = items.Count,
+                ["currencyTypes"] = currency.Count,
+                ["items"] = items.Select(i => $"{i.Quantity}x {i.Name}").ToList(),
+                ["currency"] = currency.Select(c => $"{c.Value} {c.Key}").ToList(),
+                ["lootMultiplier"] = lootMultiplier
+            });
+
         return loot;
     }
 
@@ -115,6 +137,14 @@ public class LootService : ILootService
         _logger.LogInformation("Player collected loot: {ItemCount} items, {CurrencyCount} currency types",
             collectedLoot.Items?.Count ?? 0,
             collectedLoot.Currency?.Count ?? 0);
+
+        _eventLogger?.LogInventory("LootCollected", $"Player collected loot",
+            data: new Dictionary<string, object>
+            {
+                ["playerName"] = player.Name,
+                ["itemCount"] = collectedLoot.Items?.Count ?? 0,
+                ["currencyCount"] = collectedLoot.Currency?.Count ?? 0
+            });
 
         return collectedLoot;
     }

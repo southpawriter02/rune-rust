@@ -13,10 +13,14 @@ public class TransitionService : ITransitionService
 {
     private readonly List<BiomeTransition> _transitions = [];
     private readonly ILogger<TransitionService> _logger;
+    private readonly IGameEventLogger? _eventLogger;
 
-    public TransitionService(ILogger<TransitionService>? logger = null)
+    public TransitionService(
+        ILogger<TransitionService>? logger = null,
+        IGameEventLogger? eventLogger = null)
     {
         _logger = logger ?? Microsoft.Extensions.Logging.Abstractions.NullLogger<TransitionService>.Instance;
+        _eventLogger = eventLogger;
 
         RegisterDefaultTransitions();
         _logger.LogDebug("TransitionService initialized with {Count} transitions", _transitions.Count);
@@ -53,7 +57,19 @@ public class TransitionService : ITransitionService
             return TransitionBlend.Pure(targetBiomeId);
 
         var ratio = (float)roomIndex / (totalRooms - 1);
-        return TransitionBlend.ForPosition(sourceBiomeId, targetBiomeId, ratio);
+        var blend = TransitionBlend.ForPosition(sourceBiomeId, targetBiomeId, ratio);
+
+        _eventLogger?.LogExploration("BiomeTransition", $"Transitioning from {sourceBiomeId} to {targetBiomeId}",
+            data: new Dictionary<string, object>
+            {
+                ["sourceBiome"] = sourceBiomeId,
+                ["targetBiome"] = targetBiomeId,
+                ["roomIndex"] = roomIndex,
+                ["totalRooms"] = totalRooms,
+                ["blendRatio"] = ratio
+            });
+
+        return blend;
     }
 
     /// <inheritdoc/>

@@ -13,6 +13,7 @@ namespace RuneAndRust.Application.Services;
 public class MapRendererService : IMapRendererService
 {
     private readonly ILogger<MapRendererService> _logger;
+    private readonly IGameEventLogger? _eventLogger;
 
     /// <summary>
     /// Character used for the player position.
@@ -52,9 +53,12 @@ public class MapRendererService : IMapRendererService
     /// <summary>
     /// Creates a new MapRendererService.
     /// </summary>
-    public MapRendererService(ILogger<MapRendererService> logger)
+    public MapRendererService(
+        ILogger<MapRendererService> logger,
+        IGameEventLogger? eventLogger = null)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _eventLogger = eventLogger;
     }
 
     /// <inheritdoc />
@@ -124,6 +128,15 @@ public class MapRendererService : IMapRendererService
         sb.AppendLine($"Rooms explored: {visited}/{total} on this level");
 
         _logger.LogDebug("Rendered map for level {Z} with {Rooms} rooms", z, rooms.Count);
+
+        _eventLogger?.LogExploration("MapRendered", $"Rendered level {z + 1} map",
+            data: new Dictionary<string, object>
+            {
+                ["level"] = z + 1,
+                ["roomCount"] = rooms.Count,
+                ["exploredCount"] = visited,
+                ["playerPosition"] = playerPosition.ToString()
+            });
 
         return sb.ToString();
     }

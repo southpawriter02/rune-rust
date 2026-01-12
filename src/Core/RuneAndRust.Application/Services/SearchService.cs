@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using RuneAndRust.Application.Interfaces;
 using RuneAndRust.Application.ValueObjects;
 using RuneAndRust.Domain.Entities;
 using RuneAndRust.Domain.Enums;
@@ -13,6 +14,7 @@ public class SearchService
 {
     private readonly SkillCheckService _skillCheckService;
     private readonly ILogger<SearchService> _logger;
+    private readonly IGameEventLogger? _eventLogger;
 
     /// <summary>
     /// The default skill used for searching.
@@ -29,10 +31,12 @@ public class SearchService
     /// </summary>
     public SearchService(
         SkillCheckService skillCheckService,
-        ILogger<SearchService> logger)
+        ILogger<SearchService> logger,
+        IGameEventLogger? eventLogger = null)
     {
         _skillCheckService = skillCheckService ?? throw new ArgumentNullException(nameof(skillCheckService));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _eventLogger = eventLogger;
     }
 
     /// <summary>
@@ -124,6 +128,17 @@ public class SearchService
                 }
             }
         }
+
+        _eventLogger?.LogExploration("SearchCompleted", $"{player.Name} searched and found {discoveredExits.Count + discoveredItems.Count} items",
+            data: new Dictionary<string, object>
+            {
+                ["playerName"] = player.Name,
+                ["roomName"] = room.Name,
+                ["skill"] = skillId,
+                ["roll"] = checkResult.TotalResult,
+                ["exitsFound"] = discoveredExits.Select(d => d.ToString()).ToList(),
+                ["itemsFound"] = discoveredItems.Count
+            });
 
         return SearchResult.Success(checkResult, discoveredExits, discoveredItems);
     }

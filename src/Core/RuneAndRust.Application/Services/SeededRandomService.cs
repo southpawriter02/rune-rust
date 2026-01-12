@@ -19,6 +19,7 @@ public class SeededRandomService : ISeededRandomService
     private readonly int _masterSeed;
     private readonly Dictionary<int, Random> _subGenerators = new();
     private readonly ILogger<SeededRandomService> _logger;
+    private readonly IGameEventLogger? _eventLogger;
 
     /// <inheritdoc/>
     public int MasterSeed => _masterSeed;
@@ -28,14 +29,26 @@ public class SeededRandomService : ISeededRandomService
     /// </summary>
     /// <param name="seed">The master seed for this generator.</param>
     /// <param name="logger">Logger for seed events.</param>
-    public SeededRandomService(int seed, ILogger<SeededRandomService> logger)
+    /// <param name="eventLogger">Optional event logger.</param>
+    public SeededRandomService(
+        int seed,
+        ILogger<SeededRandomService> logger,
+        IGameEventLogger? eventLogger = null)
     {
         _masterSeed = seed;
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _eventLogger = eventLogger;
 
         _logger.LogInformation(
             "SeededRandomService initialized with seed {Seed} ({SeedString})",
             seed, SeedStringUtility.ToSeedString(seed));
+
+        _eventLogger?.LogSystem("SeedInitialized", $"RNG seed: {SeedStringUtility.ToSeedString(seed)}",
+            data: new Dictionary<string, object>
+            {
+                ["masterSeed"] = seed,
+                ["seedString"] = SeedStringUtility.ToSeedString(seed)
+            });
     }
 
     /// <inheritdoc/>

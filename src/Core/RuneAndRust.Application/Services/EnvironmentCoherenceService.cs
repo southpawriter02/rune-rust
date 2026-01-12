@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using RuneAndRust.Application.Configuration;
+using RuneAndRust.Application.Interfaces;
 using RuneAndRust.Domain.ValueObjects;
 
 namespace RuneAndRust.Application.Services;
@@ -12,15 +13,18 @@ public class EnvironmentCoherenceService
     private readonly EnvironmentCategoryConfiguration _categoryConfig;
     private readonly BiomeConfiguration _biomeConfig;
     private readonly ILogger<EnvironmentCoherenceService> _logger;
+    private readonly IGameEventLogger? _eventLogger;
 
     public EnvironmentCoherenceService(
         EnvironmentCategoryConfiguration categoryConfig,
         BiomeConfiguration biomeConfig,
-        ILogger<EnvironmentCoherenceService> logger)
+        ILogger<EnvironmentCoherenceService> logger,
+        IGameEventLogger? eventLogger = null)
     {
         _categoryConfig = categoryConfig ?? throw new ArgumentNullException(nameof(categoryConfig));
         _biomeConfig = biomeConfig ?? throw new ArgumentNullException(nameof(biomeConfig));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _eventLogger = eventLogger;
 
         _logger.LogDebug(
             "EnvironmentCoherenceService initialized with {CategoryCount} categories, {RuleCount} exclusion rules, {BiomeCount} biomes",
@@ -57,6 +61,17 @@ public class EnvironmentCoherenceService
                         rule.Id, rule.Reason);
                 }
             }
+        }
+
+        if (violations.Count > 0)
+        {
+            _eventLogger?.LogEnvironment("EnvironmentValidation", $"Found {violations.Count} violations",
+                data: new Dictionary<string, object>
+                {
+                    ["violationCount"] = violations.Count,
+                    ["hardViolations"] = violations.Count(v => v.IsHardRule),
+                    ["softViolations"] = violations.Count(v => !v.IsHardRule)
+                });
         }
 
         return new EnvironmentValidationResult(violations);

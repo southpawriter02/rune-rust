@@ -14,13 +14,16 @@ public class ResourceService
 {
     private readonly IGameConfigurationProvider _configProvider;
     private readonly ILogger<ResourceService> _logger;
+    private readonly IGameEventLogger? _eventLogger;
 
     public ResourceService(
         IGameConfigurationProvider configProvider,
-        ILogger<ResourceService> logger)
+        ILogger<ResourceService> logger,
+        IGameEventLogger? eventLogger = null)
     {
         _configProvider = configProvider ?? throw new ArgumentNullException(nameof(configProvider));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _eventLogger = eventLogger;
 
         _logger.LogInformation(
             "ResourceService initialized with {ResourceTypeCount} resource types",
@@ -151,6 +154,16 @@ public class ResourceService
             "Resource spent: {PlayerName} {ResourceId} {Previous} -> {Current} (-{Amount})",
             player.Name, resourceTypeId, previousValue, pool.Current, amount);
 
+        _eventLogger?.LogCharacter("ResourceSpent", $"{player.Name} spent {amount} {resourceTypeId}",
+            data: new Dictionary<string, object>
+            {
+                ["playerName"] = player.Name,
+                ["resourceId"] = resourceTypeId,
+                ["amount"] = amount,
+                ["before"] = previousValue,
+                ["after"] = pool.Current
+            });
+
         return true;
     }
 
@@ -180,6 +193,16 @@ public class ResourceService
             _logger.LogInformation(
                 "Resource gained: {PlayerName} {ResourceId} {Previous} -> {Current} (+{Actual})",
                 player.Name, resourceTypeId, previousValue, pool.Current, actualGain);
+
+            _eventLogger?.LogCharacter("ResourceGained", $"{player.Name} gained {actualGain} {resourceTypeId}",
+                data: new Dictionary<string, object>
+                {
+                    ["playerName"] = player.Name,
+                    ["resourceId"] = resourceTypeId,
+                    ["amount"] = actualGain,
+                    ["before"] = previousValue,
+                    ["after"] = pool.Current
+                });
         }
 
         return actualGain;

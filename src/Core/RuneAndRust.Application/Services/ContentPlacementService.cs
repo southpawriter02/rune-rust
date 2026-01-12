@@ -16,6 +16,7 @@ public class ContentPlacementService : IContentPlacementService
 {
     private readonly ISeededRandomService _random;
     private readonly ILogger<ContentPlacementService> _logger;
+    private readonly IGameEventLogger? _eventLogger;
 
     /// <summary>
     /// Base tier weights for monster selection.
@@ -68,10 +69,12 @@ public class ContentPlacementService : IContentPlacementService
     /// </summary>
     public ContentPlacementService(
         ISeededRandomService random,
-        ILogger<ContentPlacementService> logger)
+        ILogger<ContentPlacementService> logger,
+        IGameEventLogger? eventLogger = null)
     {
         _random = random ?? throw new ArgumentNullException(nameof(random));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _eventLogger = eventLogger;
 
         _logger.LogDebug("ContentPlacementService initialized");
     }
@@ -138,6 +141,14 @@ public class ContentPlacementService : IContentPlacementService
             "SelectMonsterTier: effectiveLevel={Level}, selected={Tier}",
             effectiveLevel, selected);
 
+        _eventLogger?.LogSystem("MonsterTierSelected", $"Selected {selected} tier monster",
+            data: new Dictionary<string, object>
+            {
+                ["tier"] = selected,
+                ["effectiveLevel"] = effectiveLevel,
+                ["position"] = position.ToString()
+            });
+
         return selected;
     }
 
@@ -198,6 +209,15 @@ public class ContentPlacementService : IContentPlacementService
         _logger.LogDebug(
             "SelectItemRarity: effectiveLevel={Level}, lootMultiplier={Mult:F2}, selected={Rarity}",
             effectiveLevel, difficulty.LootQualityMultiplier, selected);
+
+        _eventLogger?.LogInventory("ItemRaritySelected", $"Selected {selected} rarity item",
+            data: new Dictionary<string, object>
+            {
+                ["rarity"] = selected,
+                ["effectiveLevel"] = effectiveLevel,
+                ["lootMultiplier"] = difficulty.LootQualityMultiplier,
+                ["position"] = position.ToString()
+            });
 
         return selected;
     }

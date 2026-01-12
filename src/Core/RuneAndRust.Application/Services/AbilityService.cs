@@ -16,15 +16,18 @@ public class AbilityService
     private readonly IGameConfigurationProvider _configProvider;
     private readonly ResourceService _resourceService;
     private readonly ILogger<AbilityService> _logger;
+    private readonly IGameEventLogger? _eventLogger;
 
     public AbilityService(
         IGameConfigurationProvider configProvider,
         ResourceService resourceService,
-        ILogger<AbilityService> logger)
+        ILogger<AbilityService> logger,
+        IGameEventLogger? eventLogger = null)
     {
         _configProvider = configProvider ?? throw new ArgumentNullException(nameof(configProvider));
         _resourceService = resourceService ?? throw new ArgumentNullException(nameof(resourceService));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _eventLogger = eventLogger;
 
         _logger.LogInformation(
             "AbilityService initialized with {AbilityCount} abilities",
@@ -216,6 +219,16 @@ public class AbilityService
         _logger.LogInformation(
             "Ability used: {PlayerName} used {AbilityName}. {EffectCount} effects applied",
             player.Name, definition.Name, appliedEffects.Count);
+
+        _eventLogger?.LogAbility("AbilityUsed", $"{player.Name} used {definition.Name}",
+            data: new Dictionary<string, object>
+            {
+                ["playerId"] = player.Id,
+                ["abilityId"] = abilityId,
+                ["abilityName"] = definition.Name,
+                ["targetName"] = target?.Name ?? "none",
+                ["effectCount"] = appliedEffects.Count
+            });
 
         return new AbilityResult(true, message, appliedEffects, resourceSpent);
     }

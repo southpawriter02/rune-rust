@@ -13,13 +13,16 @@ public class ArchitecturalStyleService : IArchitecturalStyleService
     private readonly Dictionary<string, ArchitecturalStyle> _styles = new(StringComparer.OrdinalIgnoreCase);
     private readonly ISeededRandomService _random;
     private readonly ILogger<ArchitecturalStyleService> _logger;
+    private readonly IGameEventLogger? _eventLogger;
 
     public ArchitecturalStyleService(
         ISeededRandomService random,
-        ILogger<ArchitecturalStyleService>? logger = null)
+        ILogger<ArchitecturalStyleService>? logger = null,
+        IGameEventLogger? eventLogger = null)
     {
         _random = random ?? throw new ArgumentNullException(nameof(random));
         _logger = logger ?? Microsoft.Extensions.Logging.Abstractions.NullLogger<ArchitecturalStyleService>.Instance;
+        _eventLogger = eventLogger;
 
         RegisterDefaultStyles();
         _logger.LogDebug("ArchitecturalStyleService initialized with {Count} styles", _styles.Count);
@@ -53,7 +56,18 @@ public class ArchitecturalStyleService : IArchitecturalStyleService
         }
 
         var weighted = validStyles.Select(s => (s.StyleId, s.Rules.BaseWeight)).ToList();
-        return _random.SelectWeighted(position, weighted, "style_selection");
+        var selectedStyle = _random.SelectWeighted(position, weighted, "style_selection");
+
+        _eventLogger?.LogEnvironment("StyleSelected", $"Selected {selectedStyle} for position",
+            data: new Dictionary<string, object>
+            {
+                ["styleId"] = selectedStyle,
+                ["biomeId"] = biomeId,
+                ["depth"] = depth,
+                ["validStyleCount"] = validStyles.Count
+            });
+
+        return selectedStyle;
     }
 
     /// <inheritdoc/>

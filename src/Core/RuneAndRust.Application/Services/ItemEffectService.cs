@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using RuneAndRust.Application.Interfaces;
 using RuneAndRust.Domain.Entities;
 using RuneAndRust.Domain.Enums;
 
@@ -10,14 +11,19 @@ namespace RuneAndRust.Application.Services;
 public class ItemEffectService
 {
     private readonly ILogger<ItemEffectService> _logger;
+    private readonly IGameEventLogger? _eventLogger;
 
     /// <summary>
     /// Creates a new ItemEffectService instance.
     /// </summary>
     /// <param name="logger">The logger for service diagnostics.</param>
-    public ItemEffectService(ILogger<ItemEffectService> logger)
+    /// <param name="eventLogger">Optional event logger for comprehensive tracking.</param>
+    public ItemEffectService(
+        ILogger<ItemEffectService> logger,
+        IGameEventLogger? eventLogger = null)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _eventLogger = eventLogger;
     }
 
     /// <summary>
@@ -52,6 +58,17 @@ public class ItemEffectService
             "Heal applied: {PlayerName} healed {ActualHealed} HP ({PreviousHP} -> {CurrentHP}/{MaxHP})",
             player.Name, actualHealed, previousHealth, player.Health, player.Stats.MaxHealth);
 
+        _eventLogger?.LogInventory("ItemUsed", $"{player.Name} used {item.Name}",
+            data: new Dictionary<string, object>
+            {
+                ["playerName"] = player.Name,
+                ["itemName"] = item.Name,
+                ["effect"] = "Heal",
+                ["effectValue"] = actualHealed,
+                ["healthBefore"] = previousHealth,
+                ["healthAfter"] = player.Health
+            });
+
         var verb = item.Name.ToLower().Contains("potion") ? "drink" : "use";
         return (true, $"You {verb} the {item.Name}. Restored {actualHealed} HP. ({player.Health}/{player.Stats.MaxHealth})");
     }
@@ -64,6 +81,17 @@ public class ItemEffectService
         _logger.LogWarning(
             "Damage applied: {PlayerName} took {ActualDamage} damage ({PreviousHP} -> {CurrentHP}/{MaxHP})",
             player.Name, actualDamage, previousHealth, player.Health, player.Stats.MaxHealth);
+
+        _eventLogger?.LogInventory("ItemUsed", $"{player.Name} used {item.Name} (cursed!)",
+            data: new Dictionary<string, object>
+            {
+                ["playerName"] = player.Name,
+                ["itemName"] = item.Name,
+                ["effect"] = "Damage",
+                ["effectValue"] = actualDamage,
+                ["healthBefore"] = previousHealth,
+                ["healthAfter"] = player.Health
+            });
 
         return (true, $"The {item.Name} was cursed! You take {actualDamage} damage. ({player.Health}/{player.Stats.MaxHealth})");
     }

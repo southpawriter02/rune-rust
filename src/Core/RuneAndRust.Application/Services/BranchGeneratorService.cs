@@ -17,15 +17,18 @@ public class BranchGeneratorService : IBranchGeneratorService
     private readonly ISeededRandomService _random;
     private readonly BranchRules _rules;
     private readonly ILogger<BranchGeneratorService> _logger;
+    private readonly IGameEventLogger? _eventLogger;
 
     public BranchGeneratorService(
         ISeededRandomService random,
         BranchRules? rules = null,
-        ILogger<BranchGeneratorService>? logger = null)
+        ILogger<BranchGeneratorService>? logger = null,
+        IGameEventLogger? eventLogger = null)
     {
         _random = random ?? throw new ArgumentNullException(nameof(random));
         _rules = rules ?? BranchRules.Default;
         _logger = logger ?? Microsoft.Extensions.Logging.Abstractions.NullLogger<BranchGeneratorService>.Instance;
+        _eventLogger = eventLogger;
 
         _logger.LogDebug(
             "BranchGeneratorService initialized: mainPath={MainPath}, sidePath={SidePath}, deadEnd={DeadEnd}, loop={Loop}",
@@ -129,6 +132,14 @@ public class BranchGeneratorService : IBranchGeneratorService
         _logger.LogDebug(
             "Dead end at {Position} contains {Content} (roll={Roll:F2})",
             position, content, roll);
+
+        _eventLogger?.LogSystem("DeadEndGenerated", $"Dead end with {content} at {position}",
+            data: new Dictionary<string, object>
+            {
+                ["position"] = position.ToString(),
+                ["content"] = content.ToString(),
+                ["difficulty"] = difficulty.ToString()
+            });
 
         return content;
     }

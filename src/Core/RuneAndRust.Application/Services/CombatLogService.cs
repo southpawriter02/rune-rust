@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using RuneAndRust.Application.Interfaces;
 using RuneAndRust.Domain.Entities;
 using RuneAndRust.Domain.Enums;
 
@@ -14,14 +15,19 @@ namespace RuneAndRust.Application.Services;
 public class CombatLogService
 {
     private readonly ILogger<CombatLogService> _logger;
+    private readonly IGameEventLogger? _eventLogger;
 
     /// <summary>
     /// Creates a new CombatLogService instance.
     /// </summary>
     /// <param name="logger">Logger for service diagnostics.</param>
-    public CombatLogService(ILogger<CombatLogService> logger)
+    /// <param name="eventLogger">Optional event logger for comprehensive tracking.</param>
+    public CombatLogService(
+        ILogger<CombatLogService> logger,
+        IGameEventLogger? eventLogger = null)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _eventLogger = eventLogger;
     }
 
     /// <summary>
@@ -36,6 +42,13 @@ public class CombatLogService
 
         encounter.AddLogEntry(entry);
         _logger.LogDebug("Combat log: {Message}", entry.Message);
+
+        _eventLogger?.LogCombat("CombatStart", entry.Message,
+            data: new Dictionary<string, object>
+            {
+                ["round"] = encounter.RoundNumber,
+                ["enemyCount"] = enemyCount
+            });
     }
 
     /// <summary>
@@ -76,6 +89,17 @@ public class CombatLogService
 
         encounter.AddLogEntry(entry);
         _logger.LogDebug("Combat log: {Message}", entry.Message);
+
+        _eventLogger?.LogCombat("Attack", entry.Message,
+            data: new Dictionary<string, object>
+            {
+                ["round"] = encounter.RoundNumber,
+                ["actor"] = actorName,
+                ["target"] = targetName,
+                ["damage"] = damage,
+                ["isCritical"] = isCritical,
+                ["isMiss"] = isMiss
+            });
     }
 
     /// <summary>
@@ -151,6 +175,14 @@ public class CombatLogService
 
         encounter.AddLogEntry(entry);
         _logger.LogDebug("Combat log: {Message}", entry.Message);
+
+        _eventLogger?.LogCombat("Defeat", entry.Message,
+            data: new Dictionary<string, object>
+            {
+                ["round"] = encounter.RoundNumber,
+                ["actor"] = actorName,
+                ["defeated"] = defeatedName
+            });
     }
 
     /// <summary>

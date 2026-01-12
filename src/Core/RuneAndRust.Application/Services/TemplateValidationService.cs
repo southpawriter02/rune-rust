@@ -17,17 +17,20 @@ public class TemplateValidationService : ITemplateValidationService
     private readonly IReadOnlySet<string> _validBiomes;
     private readonly IReadOnlySet<string> _validDescriptorPools;
     private readonly ILogger<TemplateValidationService> _logger;
+    private readonly IGameEventLogger? _eventLogger;
 
     public TemplateValidationService(
         RoomTemplateConfiguration configuration,
         ILogger<TemplateValidationService> logger,
         IReadOnlySet<string>? validBiomes = null,
-        IReadOnlySet<string>? validDescriptorPools = null)
+        IReadOnlySet<string>? validDescriptorPools = null,
+        IGameEventLogger? eventLogger = null)
     {
         _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _validBiomes = validBiomes ?? new HashSet<string> { "dungeon", "cave", "ruins", "volcanic" };
         _validDescriptorPools = validDescriptorPools ?? new HashSet<string>();
+        _eventLogger = eventLogger;
     }
 
     /// <inheritdoc/>
@@ -125,6 +128,14 @@ public class TemplateValidationService : ITemplateValidationService
         _logger.LogInformation(
             "Validated {Count} templates: {ErrorCount} with errors",
             results.Count, errorCount);
+
+        _eventLogger?.LogSystem("TemplatesValidated", $"Validated {results.Count} templates",
+            data: new Dictionary<string, object>
+            {
+                ["templateCount"] = results.Count,
+                ["errorCount"] = errorCount,
+                ["validCount"] = results.Count - errorCount
+            });
 
         return results;
     }

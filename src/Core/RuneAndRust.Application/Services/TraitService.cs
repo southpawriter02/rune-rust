@@ -11,6 +11,7 @@ public class TraitService : ITraitService
 {
     private readonly IGameConfigurationProvider _configProvider;
     private readonly ILogger<TraitService> _logger;
+    private readonly IGameEventLogger? _eventLogger;
     private readonly Random _random;
 
     /// <summary>
@@ -18,8 +19,12 @@ public class TraitService : ITraitService
     /// </summary>
     /// <param name="configProvider">Configuration provider for trait definitions.</param>
     /// <param name="logger">Logger for diagnostics.</param>
-    public TraitService(IGameConfigurationProvider configProvider, ILogger<TraitService> logger)
-        : this(configProvider, logger, Random.Shared)
+    /// <param name="eventLogger">Optional event logger.</param>
+    public TraitService(
+        IGameConfigurationProvider configProvider,
+        ILogger<TraitService> logger,
+        IGameEventLogger? eventLogger = null)
+        : this(configProvider, logger, eventLogger, Random.Shared)
     {
     }
 
@@ -28,11 +33,17 @@ public class TraitService : ITraitService
     /// </summary>
     /// <param name="configProvider">Configuration provider for trait definitions.</param>
     /// <param name="logger">Logger for diagnostics.</param>
+    /// <param name="eventLogger">Optional event logger.</param>
     /// <param name="random">Random number generator.</param>
-    internal TraitService(IGameConfigurationProvider configProvider, ILogger<TraitService> logger, Random random)
+    internal TraitService(
+        IGameConfigurationProvider configProvider,
+        ILogger<TraitService> logger,
+        IGameEventLogger? eventLogger,
+        Random random)
     {
         _configProvider = configProvider ?? throw new ArgumentNullException(nameof(configProvider));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _eventLogger = eventLogger;
         _random = random ?? throw new ArgumentNullException(nameof(random));
     }
 
@@ -113,6 +124,14 @@ public class TraitService : ITraitService
 
         _logger.LogDebug("Selected {Count} traits for tier {TierId}: [{Traits}]",
             actualCount, tier.Id, string.Join(", ", selectedTraits));
+
+        _eventLogger?.LogAI("TraitsSelected", $"Selected {actualCount} traits for {tier.Id} monster",
+            data: new Dictionary<string, object>
+            {
+                ["tierId"] = tier.Id,
+                ["traitCount"] = actualCount,
+                ["traits"] = selectedTraits
+            });
 
         return selectedTraits;
     }

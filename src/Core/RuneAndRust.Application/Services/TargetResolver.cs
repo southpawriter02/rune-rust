@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using RuneAndRust.Application.Interfaces;
 using RuneAndRust.Domain.Entities;
 
 namespace RuneAndRust.Application.Services;
@@ -18,14 +19,19 @@ namespace RuneAndRust.Application.Services;
 public class TargetResolver
 {
     private readonly ILogger<TargetResolver> _logger;
+    private readonly IGameEventLogger? _eventLogger;
 
     /// <summary>
     /// Creates a new TargetResolver instance.
     /// </summary>
     /// <param name="logger">The logger for diagnostics.</param>
-    public TargetResolver(ILogger<TargetResolver> logger)
+    /// <param name="eventLogger">Optional event logger.</param>
+    public TargetResolver(
+        ILogger<TargetResolver> logger,
+        IGameEventLogger? eventLogger = null)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _eventLogger = eventLogger;
     }
 
     /// <summary>
@@ -142,6 +148,16 @@ public class TargetResolver
             // Ambiguous - return first match but mark as ambiguous
             _logger.LogDebug("Ambiguous target '{Name}' matched {Count} monsters, using first",
                 targetSpec, byName.Count);
+
+            _eventLogger?.LogCombat("TargetResolved", $"Resolved ambiguous target {byName[0].DisplayName}",
+                data: new Dictionary<string, object>
+                {
+                    ["targetSpec"] = targetSpec,
+                    ["targetName"] = byName[0].DisplayName,
+                    ["isAmbiguous"] = true,
+                    ["matchCount"] = byName.Count
+                });
+
             return TargetResolutionResult.Found(byName[0], isAmbiguous: true);
         }
 

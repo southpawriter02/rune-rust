@@ -11,10 +11,14 @@ namespace RuneAndRust.Application.Services;
 public class QuestFailureService : IQuestFailureService
 {
     private readonly ILogger<QuestFailureService> _logger;
+    private readonly IGameEventLogger? _eventLogger;
 
-    public QuestFailureService(ILogger<QuestFailureService>? logger = null)
+    public QuestFailureService(
+        ILogger<QuestFailureService>? logger = null,
+        IGameEventLogger? eventLogger = null)
     {
         _logger = logger ?? Microsoft.Extensions.Logging.Abstractions.NullLogger<QuestFailureService>.Instance;
+        _eventLogger = eventLogger;
     }
 
     /// <inheritdoc/>
@@ -27,6 +31,14 @@ public class QuestFailureService : IQuestFailureService
             if (quest.IsExpired)
             {
                 _logger.LogInformation("Quest {QuestId} expired", quest.QuestId);
+
+                _eventLogger?.LogQuest("QuestExpired", $"Quest '{quest.QuestName}' expired",
+                    data: new Dictionary<string, object>
+                    {
+                        ["questId"] = quest.QuestId,
+                        ["questName"] = quest.QuestName
+                    });
+
                 failures.Add(QuestFailureResult.TimeExpired(quest.QuestId, quest.QuestName));
             }
         }
@@ -44,6 +56,14 @@ public class QuestFailureService : IQuestFailureService
             if (EvaluateCondition(condition, context))
             {
                 _logger.LogDebug("Failure condition triggered: {Type}", condition.Type);
+
+                _eventLogger?.LogQuest("FailureCondition", $"Quest failure condition triggered: {condition.Type}",
+                    data: new Dictionary<string, object>
+                    {
+                        ["conditionType"] = condition.Type.ToString(),
+                        ["targetId"] = condition.TargetId ?? "none"
+                    });
+
                 return condition;
             }
         }

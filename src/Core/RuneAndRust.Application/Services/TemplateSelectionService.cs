@@ -13,14 +13,17 @@ public class TemplateSelectionService : ITemplateSelectionService
 {
     private readonly RoomTemplateConfiguration _configuration;
     private readonly ILogger<TemplateSelectionService> _logger;
+    private readonly IGameEventLogger? _eventLogger;
     private readonly Random _random = new();
 
     public TemplateSelectionService(
         RoomTemplateConfiguration configuration,
-        ILogger<TemplateSelectionService> logger)
+        ILogger<TemplateSelectionService> logger,
+        IGameEventLogger? eventLogger = null)
     {
         _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _eventLogger = eventLogger;
         _logger.LogDebug("TemplateSelectionService initialized with {Count} templates",
             _configuration.Templates.Count);
     }
@@ -45,6 +48,15 @@ public class TemplateSelectionService : ITemplateSelectionService
         _logger.LogDebug(
             "Selected template {TemplateId} from {Count} valid templates",
             selected.TemplateId, validTemplates.Count);
+
+        _eventLogger?.LogSystem("TemplateSelected", $"Selected template {selected.TemplateId}",
+            data: new Dictionary<string, object>
+            {
+                ["templateId"] = selected.TemplateId,
+                ["biome"] = context.Biome ?? "any",
+                ["depth"] = context.Depth,
+                ["candidateCount"] = validTemplates.Count
+            });
 
         return selected;
     }

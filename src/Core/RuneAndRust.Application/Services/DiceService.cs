@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using RuneAndRust.Application.Interfaces;
 using RuneAndRust.Domain.Interfaces;
 using RuneAndRust.Domain.Enums;
 using RuneAndRust.Domain.ValueObjects;
@@ -16,16 +17,19 @@ public class DiceService : IDiceService
 {
     private readonly Random _random;
     private readonly ILogger<DiceService> _logger;
+    private readonly IGameEventLogger? _eventLogger;
 
     /// <summary>
     /// Creates a new DiceService.
     /// </summary>
-    /// <param name="logger">Logger for roll events.</param>
-    /// <param name="random">Optional Random instance for testing (default: new Random()).</param>
-    public DiceService(ILogger<DiceService> logger, Random? random = null)
+    public DiceService(
+        ILogger<DiceService> logger,
+        Random? random = null,
+        IGameEventLogger? eventLogger = null)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _random = random ?? new Random();
+        _eventLogger = eventLogger;
         _logger.LogInformation("DiceService initialized");
     }
 
@@ -67,6 +71,14 @@ public class DiceService : IDiceService
         _logger.LogInformation(
             "Roll {Pool} ({AdvantageType}): [{Roll1}, {Roll2}] -> {Selected}",
             pool, advantageType, roll1.Total, roll2.Total, result.Total);
+
+        _eventLogger?.LogDice("DiceRolled", $"{pool} = {result.Total}",
+            data: new Dictionary<string, object>
+            {
+                ["pool"] = pool.ToString(),
+                ["total"] = result.Total,
+                ["advantageType"] = advantageType.ToString()
+            });
 
         return result;
     }

@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using RuneAndRust.Application.Configuration;
+using RuneAndRust.Application.Interfaces;
 
 namespace RuneAndRust.Application.Services;
 
@@ -10,12 +11,17 @@ public class LexiconService
 {
     private readonly LexiconConfiguration _config;
     private readonly ILogger<LexiconService> _logger;
+    private readonly IGameEventLogger? _eventLogger;
     private readonly Random _random = new();
 
-    public LexiconService(LexiconConfiguration config, ILogger<LexiconService> logger)
+    public LexiconService(
+        LexiconConfiguration config,
+        ILogger<LexiconService> logger,
+        IGameEventLogger? eventLogger = null)
     {
         _config = config ?? throw new ArgumentNullException(nameof(config));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _eventLogger = eventLogger;
         _logger.LogDebug("LexiconService initialized with {TermCount} terms", _config.Terms.Count);
     }
 

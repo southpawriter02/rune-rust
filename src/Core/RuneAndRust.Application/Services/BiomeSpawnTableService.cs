@@ -13,13 +13,16 @@ public class BiomeSpawnTableService : IBiomeSpawnTableService
     private readonly Dictionary<string, BiomeSpawnTable> _tables = new(StringComparer.OrdinalIgnoreCase);
     private readonly ISeededRandomService _random;
     private readonly ILogger<BiomeSpawnTableService> _logger;
+    private readonly IGameEventLogger? _eventLogger;
 
     public BiomeSpawnTableService(
         ISeededRandomService random,
-        ILogger<BiomeSpawnTableService>? logger = null)
+        ILogger<BiomeSpawnTableService>? logger = null,
+        IGameEventLogger? eventLogger = null)
     {
         _random = random ?? throw new ArgumentNullException(nameof(random));
         _logger = logger ?? Microsoft.Extensions.Logging.Abstractions.NullLogger<BiomeSpawnTableService>.Instance;
+        _eventLogger = eventLogger;
 
         RegisterDefaultTables();
         _logger.LogDebug("BiomeSpawnTableService initialized with {Count} tables", _tables.Count);
@@ -50,7 +53,18 @@ public class BiomeSpawnTableService : IBiomeSpawnTableService
             return null;
 
         var weightedItems = validMonsters.Select(e => (e.EntityId, e.Weight)).ToList();
-        return _random.SelectWeighted(position, weightedItems, "monster_selection");
+        var selected = _random.SelectWeighted(position, weightedItems, "monster_selection");
+
+        _eventLogger?.LogAI("MonsterSelected", $"Selected {selected} for {biomeId}",
+            data: new Dictionary<string, object>
+            {
+                ["monsterId"] = selected,
+                ["biomeId"] = biomeId,
+                ["depth"] = depth,
+                ["position"] = position.ToString()
+            });
+
+        return selected;
     }
 
     /// <inheritdoc/>
@@ -67,7 +81,18 @@ public class BiomeSpawnTableService : IBiomeSpawnTableService
             return null;
 
         var weightedItems = validItems.Select(e => (e.EntityId, e.Weight)).ToList();
-        return _random.SelectWeighted(position, weightedItems, "item_selection");
+        var selected = _random.SelectWeighted(position, weightedItems, "item_selection");
+
+        _eventLogger?.LogInventory("ItemSelected", $"Selected {selected} for {biomeId}",
+            data: new Dictionary<string, object>
+            {
+                ["itemId"] = selected,
+                ["biomeId"] = biomeId,
+                ["depth"] = depth,
+                ["position"] = position.ToString()
+            });
+
+        return selected;
     }
 
     /// <inheritdoc/>

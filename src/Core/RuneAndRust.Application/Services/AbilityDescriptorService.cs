@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using RuneAndRust.Application.Interfaces;
 using RuneAndRust.Domain.ValueObjects;
 
 namespace RuneAndRust.Application.Services;
@@ -56,13 +57,16 @@ public class AbilityDescriptorService
 {
     private readonly DescriptorService _descriptorService;
     private readonly ILogger<AbilityDescriptorService> _logger;
+    private readonly IGameEventLogger? _eventLogger;
 
     public AbilityDescriptorService(
         DescriptorService descriptorService,
-        ILogger<AbilityDescriptorService> logger)
+        ILogger<AbilityDescriptorService> logger,
+        IGameEventLogger? eventLogger = null)
     {
         _descriptorService = descriptorService ?? throw new ArgumentNullException(nameof(descriptorService));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _eventLogger = eventLogger;
 
         _logger.LogDebug("AbilityDescriptorService initialized");
     }
@@ -161,7 +165,18 @@ public class AbilityDescriptorService
         if (!string.IsNullOrEmpty(aftermath))
             parts.Add(aftermath);
 
-        return string.Join(" ", parts);
+        var description = string.Join(" ", parts);
+
+        _eventLogger?.LogAbility("AbilityNarrative", $"Generated narrative for {context.AbilityId}",
+            data: new Dictionary<string, object>
+            {
+                ["abilityId"] = context.AbilityId,
+                ["caster"] = context.CasterName,
+                ["target"] = context.TargetName ?? "none",
+                ["partCount"] = parts.Count
+            });
+
+        return description;
     }
 
     /// <summary>

@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using RuneAndRust.Application.Interfaces;
 using RuneAndRust.Domain.Entities;
 using RuneAndRust.Domain.Enums;
 using RuneAndRust.Domain.ValueObjects;
@@ -16,16 +17,22 @@ namespace RuneAndRust.Application.Services;
 public class MonsterAIService
 {
     private readonly ILogger<MonsterAIService> _logger;
+    private readonly IGameEventLogger? _eventLogger;
     private readonly Random _random;
 
     /// <summary>
     /// Creates a new MonsterAIService instance.
     /// </summary>
     /// <param name="logger">Logger for AI decision diagnostics.</param>
+    /// <param name="eventLogger">Optional event logger for comprehensive tracking.</param>
     /// <param name="random">Optional random source for testability. If null, uses default Random.</param>
-    public MonsterAIService(ILogger<MonsterAIService> logger, Random? random = null)
+    public MonsterAIService(
+        ILogger<MonsterAIService> logger,
+        IGameEventLogger? eventLogger = null,
+        Random? random = null)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _eventLogger = eventLogger;
         _random = random ?? new Random();
     }
 
@@ -59,6 +66,18 @@ public class MonsterAIService
             context.Self.DisplayName,
             decision.Action,
             decision.Reasoning);
+
+        _eventLogger?.LogAI("Decision", $"{context.Self.DisplayName} chose {decision.Action}",
+            data: new Dictionary<string, object>
+            {
+                ["monster"] = context.Self.DisplayName,
+                ["behavior"] = behavior.ToString(),
+                ["action"] = decision.Action.ToString(),
+                ["reasoning"] = decision.Reasoning,
+                ["healthPercent"] = context.HealthPercentage * 100,
+                ["targetName"] = decision.Target?.DisplayName ?? "none",
+                ["round"] = context.RoundNumber
+            });
 
         return decision;
     }

@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using RuneAndRust.Application.Configuration;
+using RuneAndRust.Application.Interfaces;
 using RuneAndRust.Domain.ValueObjects;
 
 namespace RuneAndRust.Application.Services;
@@ -89,16 +90,19 @@ public class SensoryDescriptorService
     private readonly DescriptorService _descriptorService;
     private readonly SensoryConfiguration _config;
     private readonly ILogger<SensoryDescriptorService> _logger;
+    private readonly IGameEventLogger? _eventLogger;
     private readonly Random _random = new();
 
     public SensoryDescriptorService(
         DescriptorService descriptorService,
         SensoryConfiguration config,
-        ILogger<SensoryDescriptorService> logger)
+        ILogger<SensoryDescriptorService> logger,
+        IGameEventLogger? eventLogger = null)
     {
         _descriptorService = descriptorService ?? throw new ArgumentNullException(nameof(descriptorService));
         _config = config ?? throw new ArgumentNullException(nameof(config));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _eventLogger = eventLogger;
 
         _logger.LogDebug(
             "SensoryDescriptorService initialized with {LightSources} light sources, {WeatherConditions} weather types",
@@ -116,7 +120,7 @@ public class SensoryDescriptorService
             "Generating sensory description for biome={Biome}, climate={Climate}",
             context.Environment.Biome, context.Environment.Climate);
 
-        return new SensoryDescription
+        var description = new SensoryDescription
         {
             Lighting = GetLightingDescription(context),
             Sounds = GetSoundDescription(context),
@@ -125,6 +129,17 @@ public class SensoryDescriptorService
             Weather = GetWeatherDescription(context),
             TimeOfDay = GetTimeOfDayDescription(context)
         };
+
+        _eventLogger?.LogEnvironment("SensoryDescription", $"Generated sensory description for {context.Environment.Biome}",
+            data: new Dictionary<string, object>
+            {
+                ["biome"] = context.Environment.Biome ?? "unknown",
+                ["climate"] = context.Environment.Climate ?? "unknown",
+                ["isIndoor"] = context.IsIndoor,
+                ["inCombat"] = context.InCombat
+            });
+
+        return description;
     }
 
     /// <summary>

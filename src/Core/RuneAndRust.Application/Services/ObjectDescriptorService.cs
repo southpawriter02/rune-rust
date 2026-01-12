@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using RuneAndRust.Application.Configuration;
+using RuneAndRust.Application.Interfaces;
 using RuneAndRust.Domain.Enums;
 using RuneAndRust.Domain.ValueObjects;
 
@@ -18,15 +19,18 @@ public class ObjectDescriptorService
     private readonly DescriptorService _descriptorService;
     private readonly ObjectDescriptorConfiguration _config;
     private readonly ILogger<ObjectDescriptorService> _logger;
+    private readonly IGameEventLogger? _eventLogger;
 
     public ObjectDescriptorService(
         DescriptorService descriptorService,
         ObjectDescriptorConfiguration config,
-        ILogger<ObjectDescriptorService> logger)
+        ILogger<ObjectDescriptorService> logger,
+        IGameEventLogger? eventLogger = null)
     {
         _descriptorService = descriptorService ?? throw new ArgumentNullException(nameof(descriptorService));
         _config = config ?? throw new ArgumentNullException(nameof(config));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _eventLogger = eventLogger;
 
         _logger.LogDebug(
             "ObjectDescriptorService initialized with {ObjectTypes} object types",
@@ -48,7 +52,7 @@ public class ObjectDescriptorService
         var objectTypeName = context.ObjectType.ToString().ToLowerInvariant();
         var stateName = context.State.ToString().ToLowerInvariant();
 
-        return new InteractiveObjectDescriptor
+        var descriptor = new InteractiveObjectDescriptor
         {
             ObjectType = context.ObjectType,
             State = context.State,
@@ -57,6 +61,16 @@ public class ObjectDescriptorService
             ExamineDescription = GetExamineDescription(objectTypeName, stateName, context, tags),
             InteractionHint = GetInteractionHint(context.ObjectType, context.State)
         };
+
+        _eventLogger?.LogInteraction("DescriptorGenerated", $"Generated descriptor for {context.ObjectType}",
+            data: new Dictionary<string, object>
+            {
+                ["objectType"] = context.ObjectType.ToString(),
+                ["state"] = context.State.ToString(),
+                ["depth"] = context.Depth
+            });
+
+        return descriptor;
     }
 
     /// <summary>

@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using RuneAndRust.Application.Interfaces;
 using RuneAndRust.Domain.Entities;
 using RuneAndRust.Domain.Enums;
 using RuneAndRust.Domain.Interfaces;
@@ -22,6 +23,7 @@ public class FleeService
 {
     private readonly IDiceService _diceService;
     private readonly ILogger<FleeService> _logger;
+    private readonly IGameEventLogger? _eventLogger;
 
     /// <summary>
     /// Base difficulty class for flee attempts.
@@ -43,10 +45,15 @@ public class FleeService
     /// </summary>
     /// <param name="diceService">The dice service for skill checks.</param>
     /// <param name="logger">Logger for flee attempt diagnostics.</param>
-    public FleeService(IDiceService diceService, ILogger<FleeService> logger)
+    /// <param name="eventLogger">Optional event logger for comprehensive tracking.</param>
+    public FleeService(
+        IDiceService diceService,
+        ILogger<FleeService> logger,
+        IGameEventLogger? eventLogger = null)
     {
         _diceService = diceService ?? throw new ArgumentNullException(nameof(diceService));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _eventLogger = eventLogger;
     }
 
     /// <summary>
@@ -103,6 +110,17 @@ public class FleeService
             _logger.LogInformation("Flee successful! Returning to previous room {RoomId}",
                 encounter.PreviousRoomId);
 
+            _eventLogger?.LogCombat("FleeSuccess", $"{player.Name} fled combat",
+                data: new Dictionary<string, object>
+                {
+                    ["playerName"] = player.Name,
+                    ["roll"] = roll.Total,
+                    ["modifier"] = modifier,
+                    ["total"] = total,
+                    ["dc"] = dc,
+                    ["previousRoomId"] = encounter.PreviousRoomId?.ToString() ?? "unknown"
+                });
+
             // End combat by flee
             encounter.EndByFlee();
 
@@ -119,6 +137,18 @@ public class FleeService
         _logger.LogInformation(
             "Flee failed! Player takes {Damage} damage from {Count} opportunity attacks",
             totalDamage, opportunityAttacks.Count);
+
+        _eventLogger?.LogCombat("FleeFailed", $"{player.Name} failed to flee",
+            data: new Dictionary<string, object>
+            {
+                ["playerName"] = player.Name,
+                ["roll"] = roll.Total,
+                ["modifier"] = modifier,
+                ["total"] = total,
+                ["dc"] = dc,
+                ["opportunityAttacks"] = opportunityAttacks.Count,
+                ["totalDamage"] = totalDamage
+            });
 
         return FleeAttemptResult.Failed(
             skillCheck,

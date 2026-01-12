@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using RuneAndRust.Application.Interfaces;
 using RuneAndRust.Domain.ValueObjects;
 
 namespace RuneAndRust.Application.Services;
@@ -155,13 +156,16 @@ public class CombatDescriptorService
 {
     private readonly DescriptorService _descriptorService;
     private readonly ILogger<CombatDescriptorService> _logger;
+    private readonly IGameEventLogger? _eventLogger;
 
     public CombatDescriptorService(
         DescriptorService descriptorService,
-        ILogger<CombatDescriptorService> logger)
+        ILogger<CombatDescriptorService> logger,
+        IGameEventLogger? eventLogger = null)
     {
         _descriptorService = descriptorService ?? throw new ArgumentNullException(nameof(descriptorService));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _eventLogger = eventLogger;
 
         _logger.LogDebug("CombatDescriptorService initialized");
     }
@@ -281,12 +285,23 @@ public class CombatDescriptorService
 
         if (string.IsNullOrEmpty(description))
         {
-            return $"{playerName} has fallen in battle against the {killerName}...";
+            description = $"{playerName} has fallen in battle against the {killerName}...";
+        }
+        else
+        {
+            description = description
+                .Replace("{player}", playerName)
+                .Replace("{killer}", killerName);
         }
 
-        return description
-            .Replace("{player}", playerName)
-            .Replace("{killer}", killerName);
+        _eventLogger?.LogCombat("PlayerDeath", $"{playerName} killed by {killerName}",
+            data: new Dictionary<string, object>
+            {
+                ["playerName"] = playerName,
+                ["killerName"] = killerName
+            });
+
+        return description;
     }
 
     /// <summary>

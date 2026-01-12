@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using RuneAndRust.Application.Interfaces;
+using RuneAndRust.Domain.Enums;
 using RuneAndRust.Domain.ValueObjects;
 
 namespace RuneAndRust.Application.Services;
@@ -10,14 +11,17 @@ namespace RuneAndRust.Application.Services;
 public class DamageCalculationService : IDamageCalculationService
 {
     private readonly ILogger<DamageCalculationService> _logger;
+    private readonly IGameEventLogger? _eventLogger;
 
     /// <summary>
     /// Creates a new damage calculation service.
     /// </summary>
-    /// <param name="logger">Logger for diagnostics.</param>
-    public DamageCalculationService(ILogger<DamageCalculationService> logger)
+    public DamageCalculationService(
+        ILogger<DamageCalculationService> logger,
+        IGameEventLogger? eventLogger = null)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _eventLogger = eventLogger;
     }
 
     /// <inheritdoc/>
@@ -55,6 +59,17 @@ public class DamageCalculationService : IDamageCalculationService
         _logger.LogDebug(
             "Damage calculation: {BaseDamage} {DamageType} x {Multiplier:F2} = {FinalDamage} (resistance: {Resistance}%)",
             baseDamage, effectiveDamageType, multiplier, finalDamage, resistance);
+
+        _eventLogger?.LogCombat("DamageCalculated", $"{baseDamage} {effectiveDamageType} → {finalDamage}",
+            data: new Dictionary<string, object>
+            {
+                ["baseDamage"] = baseDamage,
+                ["damageType"] = effectiveDamageType,
+                ["finalDamage"] = finalDamage,
+                ["resistance"] = resistance,
+                ["wasResisted"] = wasResisted,
+                ["wasVulnerable"] = wasVulnerable
+            });
 
         return new DamageInstance(
             baseDamage,

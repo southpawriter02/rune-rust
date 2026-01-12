@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using RuneAndRust.Application.Interfaces;
 using RuneAndRust.Domain.Entities;
 using RuneAndRust.Domain.Enums;
 using RuneAndRust.Domain.Interfaces;
@@ -13,6 +14,7 @@ public class CleanseService
 {
     private readonly StatusEffectService _effectService;
     private readonly ILogger<CleanseService> _logger;
+    private readonly IGameEventLogger? _eventLogger;
 
     private static readonly HashSet<string> PhysicalEffects = new()
     {
@@ -31,10 +33,12 @@ public class CleanseService
 
     public CleanseService(
         StatusEffectService effectService,
-        ILogger<CleanseService> logger)
+        ILogger<CleanseService> logger,
+        IGameEventLogger? eventLogger = null)
     {
         _effectService = effectService ?? throw new ArgumentNullException(nameof(effectService));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _eventLogger = eventLogger;
     }
 
     /// <summary>
@@ -79,6 +83,15 @@ public class CleanseService
             _logger.LogInformation(
                 "Cleansed {Count} effects from {Target}: {Effects}",
                 removedEffects.Count, target.Name, string.Join(", ", removedEffects));
+
+            _eventLogger?.LogStatusEffect("Cleansed", $"Cleansed {removedEffects.Count} effects from {target.Name}",
+                data: new Dictionary<string, object>
+                {
+                    ["targetName"] = target.Name,
+                    ["cleanseType"] = cleanseType.ToString(),
+                    ["effectsRemoved"] = removedEffects,
+                    ["count"] = removedEffects.Count
+                });
         }
 
         return removedEffects.Count > 0

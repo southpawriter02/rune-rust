@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using RuneAndRust.Application.Interfaces;
 using RuneAndRust.Domain.Entities;
 using RuneAndRust.Domain.Enums;
+using RuneAndRust.Domain.Events;
 using RuneAndRust.Domain.ValueObjects;
 
 namespace RuneAndRust.Application.Services;
@@ -12,10 +13,14 @@ namespace RuneAndRust.Application.Services;
 public class InteractionService : IInteractionService
 {
     private readonly ILogger<InteractionService> _logger;
+    private readonly IGameEventLogger? _eventLogger;
 
-    public InteractionService(ILogger<InteractionService>? logger = null)
+    public InteractionService(
+        ILogger<InteractionService>? logger = null,
+        IGameEventLogger? eventLogger = null)
     {
         _logger = logger ?? Microsoft.Extensions.Logging.Abstractions.NullLogger<InteractionService>.Instance;
+        _eventLogger = eventLogger;
     }
 
     /// <inheritdoc/>
@@ -66,6 +71,7 @@ public class InteractionService : IInteractionService
             return InteractionResult.Failed($"The {obj.Name} cannot be opened.", InteractionType.Open);
 
         _logger.LogDebug("Opened {Object}", obj.Name);
+        _eventLogger?.Log(InteractionEvent.Interacted(obj.Id, obj.Name, InteractionType.Open, ObjectState.Open));
         return InteractionResult.Opened(obj.Name);
     }
 
@@ -81,6 +87,7 @@ public class InteractionService : IInteractionService
             return InteractionResult.Failed($"The {obj.Name} cannot be closed.", InteractionType.Close);
 
         _logger.LogDebug("Closed {Object}", obj.Name);
+        _eventLogger?.Log(InteractionEvent.Interacted(obj.Id, obj.Name, InteractionType.Close, ObjectState.Closed));
         return InteractionResult.Closed(obj.Name);
     }
 

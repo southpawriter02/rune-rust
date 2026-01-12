@@ -17,6 +17,7 @@ public class DiceDescriptorService
 {
     private readonly IGameConfigurationProvider _configProvider;
     private readonly ILogger<DiceDescriptorService> _logger;
+    private readonly IGameEventLogger? _eventLogger;
     private readonly Random _random;
     private IReadOnlyDictionary<string, IReadOnlyList<string>>? _descriptors;
 
@@ -26,13 +27,16 @@ public class DiceDescriptorService
     /// <param name="configProvider">Provider for loading descriptor configuration.</param>
     /// <param name="logger">Logger instance.</param>
     /// <param name="random">Optional random instance for testing. If null, creates new Random.</param>
+    /// <param name="eventLogger">Optional event logger.</param>
     public DiceDescriptorService(
         IGameConfigurationProvider configProvider,
         ILogger<DiceDescriptorService> logger,
-        Random? random = null)
+        Random? random = null,
+        IGameEventLogger? eventLogger = null)
     {
         _configProvider = configProvider ?? throw new ArgumentNullException(nameof(configProvider));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _eventLogger = eventLogger;
         _random = random ?? new Random();
         _logger.LogDebug("DiceDescriptorService initialized");
     }
