@@ -66,6 +66,13 @@ public class Room : IEntity
     /// </summary>
     private readonly Dictionary<string, int> _droppedCurrency = new(StringComparer.OrdinalIgnoreCase);
 
+    // ===== Interactive Objects (v0.4.0a) =====
+
+    /// <summary>
+    /// List of interactive objects in this room.
+    /// </summary>
+    private readonly List<InteractiveObject> _interactables = [];
+
     /// <summary>
     /// Gets a read-only dictionary of all exits from this room.
     /// </summary>
@@ -116,6 +123,18 @@ public class Room : IEntity
     /// Gets a value indicating whether this room has any dropped loot.
     /// </summary>
     public bool HasDroppedLoot => _droppedItems.Count > 0 || _droppedCurrency.Count > 0;
+
+    // ===== Interactive Object Properties (v0.4.0a) =====
+
+    /// <summary>
+    /// Gets a read-only list of interactive objects in this room.
+    /// </summary>
+    public IReadOnlyList<InteractiveObject> Interactables => _interactables.AsReadOnly();
+
+    /// <summary>
+    /// Gets a value indicating whether this room has any interactive objects.
+    /// </summary>
+    public bool HasInteractables => _interactables.Count > 0;
 
     /// <summary>
     /// Gets the type of this room.
@@ -600,6 +619,71 @@ public class Room : IEntity
     public void ClearEnvironment()
     {
         Environment = null;
+    }
+
+    // ===== Interactive Object Methods (v0.4.0a) =====
+
+    /// <summary>
+    /// Adds an interactive object to this room.
+    /// </summary>
+    /// <param name="interactable">The object to add.</param>
+    /// <exception cref="ArgumentNullException">Thrown when interactable is null.</exception>
+    public void AddInteractable(InteractiveObject interactable)
+    {
+        ArgumentNullException.ThrowIfNull(interactable);
+        _interactables.Add(interactable);
+    }
+
+    /// <summary>
+    /// Removes an interactive object from this room.
+    /// </summary>
+    /// <param name="interactable">The object to remove.</param>
+    /// <returns>True if the object was removed; false if not found.</returns>
+    public bool RemoveInteractable(InteractiveObject interactable)
+    {
+        return _interactables.Remove(interactable);
+    }
+
+    /// <summary>
+    /// Gets an interactive object by keyword.
+    /// </summary>
+    /// <param name="keyword">The keyword to search for.</param>
+    /// <returns>The matching object, or null if not found.</returns>
+    public InteractiveObject? GetInteractableByKeyword(string keyword)
+    {
+        if (string.IsNullOrWhiteSpace(keyword)) return null;
+        return _interactables.FirstOrDefault(i => i.MatchesKeyword(keyword));
+    }
+
+    /// <summary>
+    /// Gets the object blocking a specific direction.
+    /// </summary>
+    /// <param name="direction">The direction to check.</param>
+    /// <returns>The blocking object, or null if no object is blocking.</returns>
+    public InteractiveObject? GetBlockingObject(Direction direction)
+    {
+        return _interactables.FirstOrDefault(i =>
+            i.IsCurrentlyBlocking &&
+            i.BlockedDirection == direction);
+    }
+
+    /// <summary>
+    /// Gets all visible interactive objects in this room.
+    /// </summary>
+    /// <returns>Enumerable of visible interactive objects.</returns>
+    public IEnumerable<InteractiveObject> GetVisibleInteractables()
+    {
+        return _interactables.Where(i => i.IsVisible);
+    }
+
+    /// <summary>
+    /// Checks if movement in a direction is blocked by an interactive object.
+    /// </summary>
+    /// <param name="direction">The direction to check.</param>
+    /// <returns>True if an object is blocking that direction.</returns>
+    public bool IsDirectionBlocked(Direction direction)
+    {
+        return GetBlockingObject(direction) != null;
     }
 
     /// <summary>

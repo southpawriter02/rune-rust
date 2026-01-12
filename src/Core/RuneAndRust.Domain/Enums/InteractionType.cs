@@ -43,5 +43,37 @@ public enum InteractionType
     /// <summary>
     /// Use the object (generic interaction).
     /// </summary>
-    Use
+    Use,
+
+    // v0.4.0a additions:
+
+    /// <summary>
+    /// Unlock a locked object with a key.
+    /// </summary>
+    Unlock,
+
+    /// <summary>
+    /// Lock an unlocked object with a key.
+    /// </summary>
+    Lock,
+
+    /// <summary>
+    /// Break/destroy the object.
+    /// </summary>
+    Break,
+
+    /// <summary>
+    /// Search the object for hidden items or secrets.
+    /// </summary>
+    Search,
+
+    /// <summary>
+    /// Take items from a container.
+    /// </summary>
+    Take,
+
+    /// <summary>
+    /// Put items into a container.
+    /// </summary>
+    Put
 }

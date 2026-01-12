@@ -28,5 +28,10 @@ public enum ItemType
     /// <summary>
     /// Miscellaneous items without a specific category.
     /// </summary>
-    Misc
+    Misc,
+
+    /// <summary>
+    /// Items used to unlock locked objects.
+    /// </summary>
+    Key
 }

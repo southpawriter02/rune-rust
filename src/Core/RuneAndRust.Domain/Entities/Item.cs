@@ -153,6 +153,31 @@ public class Item : IEntity
     /// </summary>
     public bool HasRequirements => Requirements.HasRequirements;
 
+    // ===== Key Properties (v0.4.0b) =====
+
+    /// <summary>
+    /// Gets the lock ID this key opens (for key items only).
+    /// </summary>
+    /// <remarks>
+    /// Only applicable when Type is ItemType.Key.
+    /// The KeyId must match a LockDefinition.RequiredKeyId to unlock.
+    /// </remarks>
+    public string? KeyId { get; private set; }
+
+    /// <summary>
+    /// Gets whether this item is a key.
+    /// </summary>
+    public bool IsKey => Type == ItemType.Key;
+
+    /// <summary>
+    /// Gets whether this key is consumed when used.
+    /// </summary>
+    /// <remarks>
+    /// Single-use keys are removed from inventory after unlocking.
+    /// Only applicable when Type is ItemType.Key.
+    /// </remarks>
+    public bool IsKeyConsumedOnUse { get; private set; }
+
     /// <summary>
     /// Gets the parsed damage dice pool for combat calculations.
     /// </summary>
@@ -193,6 +218,8 @@ public class Item : IEntity
     /// <param name="statModifiers">Stat modifiers when equipped.</param>
     /// <param name="initiativePenalty">Initiative penalty when equipped.</param>
     /// <param name="requirements">Requirements to equip this item.</param>
+    /// <param name="keyId">The lock ID this key opens (for key items only).</param>
+    /// <param name="isKeyConsumedOnUse">Whether the key is consumed when used.</param>
     /// <exception cref="ArgumentNullException">Thrown when name or description is null.</exception>
     public Item(string name, string description, ItemType type, int value = 0,
                 ItemEffect effect = ItemEffect.None, int effectValue = 0, int effectDuration = 0,
@@ -204,7 +231,9 @@ public class Item : IEntity
                 int defenseBonus = 0,
                 StatModifiers? statModifiers = null,
                 int initiativePenalty = 0,
-                EquipmentRequirements? requirements = null)
+                EquipmentRequirements? requirements = null,
+                string? keyId = null,
+                bool isKeyConsumedOnUse = false)
     {
         Id = Guid.NewGuid();
         Name = name ?? throw new ArgumentNullException(nameof(name));
@@ -223,6 +252,8 @@ public class Item : IEntity
         StatModifiers = statModifiers ?? StatModifiers.None;
         InitiativePenalty = initiativePenalty;
         Requirements = requirements ?? EquipmentRequirements.None;
+        KeyId = keyId;
+        IsKeyConsumedOnUse = isKeyConsumedOnUse;
     }
 
     /// <summary>
@@ -420,6 +451,51 @@ public class Item : IEntity
         value: 250,
         equipmentSlot: Enums.EquipmentSlot.Amulet,
         statModifiers: new StatModifiers { Fortitude = 2, MaxHealth = 10 }
+    );
+
+    // ===== Key Factory Methods (v0.4.0b) =====
+
+    /// <summary>
+    /// Factory method to create a key item.
+    /// </summary>
+    /// <param name="name">The display name of the key.</param>
+    /// <param name="description">The description of the key.</param>
+    /// <param name="keyId">The lock ID this key opens.</param>
+    /// <param name="consumeOnUse">Whether the key is consumed when used.</param>
+    /// <returns>A new key item.</returns>
+    public static Item CreateKey(
+        string name,
+        string description,
+        string keyId,
+        bool consumeOnUse = false) => new(
+        name,
+        description,
+        ItemType.Key,
+        value: 0,
+        keyId: keyId,
+        isKeyConsumedOnUse: consumeOnUse
+    );
+
+    /// <summary>
+    /// Factory method to create a basic iron key.
+    /// </summary>
+    /// <param name="keyId">The lock ID this key opens.</param>
+    /// <returns>A new iron key item.</returns>
+    public static Item CreateIronKey(string keyId) => CreateKey(
+        "Iron Key",
+        "A simple iron key. It must open something.",
+        keyId
+    );
+
+    /// <summary>
+    /// Factory method to create an ornate key.
+    /// </summary>
+    /// <param name="keyId">The lock ID this key opens.</param>
+    /// <returns>A new ornate key item.</returns>
+    public static Item CreateOrnateKey(string keyId) => CreateKey(
+        "Ornate Key",
+        "An elaborate key decorated with intricate patterns.",
+        keyId
     );
 
     /// <summary>
