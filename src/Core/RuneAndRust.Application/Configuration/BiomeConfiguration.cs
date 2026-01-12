@@ -13,18 +13,18 @@ public class BiomeConfiguration
     /// <summary>
     /// Available biome definitions keyed by biome ID.
     /// </summary>
-    public IReadOnlyDictionary<string, BiomeDefinition> Biomes { get; init; } =
-        new Dictionary<string, BiomeDefinition>();
+    public IReadOnlyDictionary<string, BiomeConfigurationDto> Biomes { get; init; } =
+        new Dictionary<string, BiomeConfigurationDto>();
 }
 
 /// <summary>
-/// Defines a biome with default environment values and descriptor preferences.
+/// DTO for biome definition loaded from configuration.
 /// </summary>
 /// <remarks>
 /// Biomes provide sensible defaults for environment categories and specify
 /// which descriptor pools should be preferred for atmosphere generation.
 /// </remarks>
-public class BiomeDefinition
+public class BiomeConfigurationDto
 {
     /// <summary>
     /// Biome identifier (e.g., "cave", "dungeon", "volcanic").

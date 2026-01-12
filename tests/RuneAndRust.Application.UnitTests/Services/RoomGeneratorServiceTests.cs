@@ -205,15 +205,15 @@ public class RoomGeneratorServiceTests
 
     private static BiomeConfiguration CreateTestBiomeConfig() => new()
     {
-        Biomes = new Dictionary<string, BiomeDefinition>
+        Biomes = new Dictionary<string, BiomeConfigurationDto>
         {
-            ["dungeon"] = new BiomeDefinition
+            ["dungeon"] = new BiomeConfigurationDto
             {
                 Id = "dungeon",
                 Name = "Dungeon",
                 ImpliedTags = ["stone", "dark"]
             },
-            ["cave"] = new BiomeDefinition
+            ["cave"] = new BiomeConfigurationDto
             {
                 Id = "cave",
                 Name = "Cave",

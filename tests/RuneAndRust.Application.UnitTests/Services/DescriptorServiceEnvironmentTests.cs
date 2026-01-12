@@ -306,9 +306,9 @@ public class DescriptorServiceEnvironmentTests
         return new BiomeConfiguration
         {
             Version = "1.0",
-            Biomes = new Dictionary<string, BiomeDefinition>
+            Biomes = new Dictionary<string, BiomeConfigurationDto>
             {
-                ["cave"] = new BiomeDefinition
+                ["cave"] = new BiomeConfigurationDto
                 {
                     Id = "cave",
                     Name = "Cave",

@@ -161,7 +161,7 @@ public class EnvironmentCoherenceService
     /// </summary>
     /// <param name="biomeId">The biome identifier.</param>
     /// <returns>The biome definition if found, otherwise null.</returns>
-    public BiomeDefinition? GetBiome(string biomeId)
+    public BiomeConfigurationDto? GetBiome(string biomeId)
     {
         return _biomeConfig.Biomes.TryGetValue(biomeId, out var biome) ? biome : null;
     }
@@ -169,7 +169,7 @@ public class EnvironmentCoherenceService
     /// <summary>
     /// Gets all available biome definitions.
     /// </summary>
-    public IEnumerable<BiomeDefinition> GetAllBiomes() => _biomeConfig.Biomes.Values;
+    public IEnumerable<BiomeConfigurationDto> GetAllBiomes() => _biomeConfig.Biomes.Values;
 
     /// <summary>
     /// Gets all environment categories.
@@ -212,7 +212,7 @@ public class EnvironmentCoherenceService
 
     private List<string> CollectDerivedTags(
         Dictionary<string, string> categoryValues,
-        BiomeDefinition biome)
+        BiomeConfigurationDto biome)
     {
         var tags = new List<string>();
 

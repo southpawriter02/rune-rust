@@ -948,7 +948,7 @@ public class JsonConfigurationProvider : IGameConfigurationProvider
     {
         var biomes = config.Biomes?.ToDictionary(
             kvp => kvp.Key,
-            kvp => new BiomeDefinition
+            kvp => new BiomeConfigurationDto
             {
                 Id = kvp.Value.Id ?? kvp.Key,
                 Name = kvp.Value.Name ?? kvp.Key,
@@ -958,7 +958,7 @@ public class JsonConfigurationProvider : IGameConfigurationProvider
                 DescriptorPoolOverrides = kvp.Value.DescriptorPoolOverrides ?? new Dictionary<string, string>(),
                 EmphasizedTerms = kvp.Value.EmphasizedTerms ?? [],
                 ExcludedTerms = kvp.Value.ExcludedTerms ?? []
-            }) ?? new Dictionary<string, BiomeDefinition>();
+            }) ?? new Dictionary<string, BiomeConfigurationDto>();
 
         return new BiomeConfiguration
         {
@@ -1008,9 +1008,9 @@ public class JsonConfigurationProvider : IGameConfigurationProvider
         return new BiomeConfiguration
         {
             Version = "1.0",
-            Biomes = new Dictionary<string, BiomeDefinition>
+            Biomes = new Dictionary<string, BiomeConfigurationDto>
             {
-                ["dungeon"] = new BiomeDefinition
+                ["dungeon"] = new BiomeConfigurationDto
                 {
                     Id = "dungeon",
                     Name = "Dungeon",
