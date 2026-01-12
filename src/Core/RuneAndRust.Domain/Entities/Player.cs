@@ -797,9 +797,114 @@ public class Player : IEntity
         return GetCurrency(currencyId) >= amount;
     }
 
+    // ===== Quest Properties (v0.3.2c) =====
+
+    private readonly List<Quest> _activeQuests = [];
+    private readonly List<Quest> _completedQuests = [];
+    private readonly List<Quest> _failedQuests = [];
+    private readonly List<string> _abandonedQuestIds = [];
+
+    /// <summary>Gets the player's active quests.</summary>
+    public IReadOnlyList<Quest> ActiveQuests => _activeQuests;
+
+    /// <summary>Gets the player's completed quests.</summary>
+    public IReadOnlyList<Quest> CompletedQuests => _completedQuests;
+
+    /// <summary>Gets the player's failed quests.</summary>
+    public IReadOnlyList<Quest> FailedQuests => _failedQuests;
+
+    /// <summary>Gets quests that have been abandoned by the player.</summary>
+    public IReadOnlyList<string> AbandonedQuestIds => _abandonedQuestIds;
+
+    /// <summary>Gets the count of abandoned quests.</summary>
+    public int AbandonedQuestCount => _abandonedQuestIds.Count;
+
+    // ===== Quest Methods (v0.3.2c) =====
+
+    /// <summary>Adds a quest to active quests.</summary>
+    public void AddQuest(Quest quest)
+    {
+        ArgumentNullException.ThrowIfNull(quest);
+        if (!_activeQuests.Contains(quest))
+            _activeQuests.Add(quest);
+    }
+
+    /// <summary>Moves a quest to completed.</summary>
+    public void CompleteQuest(Quest quest)
+    {
+        ArgumentNullException.ThrowIfNull(quest);
+        if (_activeQuests.Remove(quest))
+            _completedQuests.Add(quest);
+    }
+
+    /// <summary>Moves a quest to failed.</summary>
+    public void FailQuest(Quest quest)
+    {
+        ArgumentNullException.ThrowIfNull(quest);
+        if (_activeQuests.Remove(quest))
+            _failedQuests.Add(quest);
+    }
+
+    /// <summary>Abandons a quest.</summary>
+    public void AbandonQuest(Quest quest)
+    {
+        ArgumentNullException.ThrowIfNull(quest);
+
+        if (_activeQuests.Remove(quest))
+        {
+            quest.Abandon();
+            _abandonedQuestIds.Add(quest.DefinitionId);
+        }
+    }
+
+    /// <summary>Gets whether a specific quest has been abandoned.</summary>
+    public bool HasAbandonedQuest(string questDefinitionId)
+    {
+        if (string.IsNullOrWhiteSpace(questDefinitionId))
+            return false;
+
+        return _abandonedQuestIds.Any(id =>
+            id.Equals(questDefinitionId, StringComparison.OrdinalIgnoreCase));
+    }
+
+    /// <summary>Gets active quests filtered by category.</summary>
+    public IEnumerable<Quest> GetQuestsByCategory(QuestCategory category)
+    {
+        return _activeQuests.Where(q => q.Category == category);
+    }
+
+    /// <summary>Gets all quests (active, completed, failed) filtered by category.</summary>
+    public IEnumerable<Quest> GetAllQuestsByCategory(QuestCategory category)
+    {
+        var results = new List<Quest>();
+        results.AddRange(_activeQuests.Where(q => q.Category == category));
+        results.AddRange(_completedQuests.Where(q => q.Category == category));
+        results.AddRange(_failedQuests.Where(q => q.Category == category));
+        return results;
+    }
+
+    /// <summary>Gets all main quests.</summary>
+    public IEnumerable<Quest> GetMainQuests()
+    {
+        return GetAllQuestsByCategory(QuestCategory.Main);
+    }
+
+    /// <summary>Gets all daily quests.</summary>
+    public IEnumerable<Quest> GetDailyQuests()
+    {
+        return GetAllQuestsByCategory(QuestCategory.Daily);
+    }
+
+    /// <summary>Gets completed daily quests that need to be reset.</summary>
+    public IEnumerable<Quest> GetCompletedDailyQuests()
+    {
+        return _completedQuests.Where(q => q.Category == QuestCategory.Daily);
+    }
+
     /// <summary>
     /// Returns a string representation of this player.
     /// </summary>
     /// <returns>A string containing the player name and current/max health.</returns>
     public override string ToString() => $"{Name} (HP: {Health}/{Stats.MaxHealth})";
 }
+
