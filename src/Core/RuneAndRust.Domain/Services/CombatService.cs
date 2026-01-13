@@ -373,6 +373,68 @@ public class CombatService
         return string.Join(Environment.NewLine, lines);
     }
 
+    // ===== LIGHT PENALTY METHODS (v0.4.3a) =====
+
+    /// <summary>
+    /// Gets the accuracy penalty for the current light level.
+    /// </summary>
+    /// <param name="room">The room where combat is occurring.</param>
+    /// <returns>The accuracy penalty (0 or negative).</returns>
+    /// <remarks>
+    /// In v0.4.3a, this returns the penalty based on room light level.
+    /// In v0.4.3b, this will consider attacker's vision type.
+    /// </remarks>
+    public int GetLightPenalty(Room room)
+    {
+        ArgumentNullException.ThrowIfNull(room);
+
+        var lightLevel = room.CurrentLightLevel;
+        var penalty = Constants.LightPenalties.GetAccuracyPenalty(lightLevel);
+
+        if (penalty < 0)
+        {
+            _logger.LogDebug(
+                "Light penalty of {Penalty} for {LightLevel} conditions in room {Room}",
+                penalty, lightLevel, room.Name);
+        }
+
+        return penalty;
+    }
+
+    /// <summary>
+    /// Gets the accuracy penalty for a player attacker based on light and vision.
+    /// </summary>
+    /// <param name="room">The room where combat is occurring.</param>
+    /// <param name="attacker">The attacking player.</param>
+    /// <returns>The accuracy penalty after vision modifiers.</returns>
+    /// <remarks>
+    /// Placeholder signature for v0.4.3b vision type integration.
+    /// In v0.4.3a, this ignores the attacker parameter.
+    /// </remarks>
+    public int GetLightPenalty(Room room, Player attacker)
+    {
+        // v0.4.3a: Ignore attacker's vision type
+        // v0.4.3b: Will check attacker.VisionType to mitigate penalties
+        return GetLightPenalty(room);
+    }
+
+    /// <summary>
+    /// Gets the accuracy penalty for a monster attacker based on light and vision.
+    /// </summary>
+    /// <param name="room">The room where combat is occurring.</param>
+    /// <param name="attacker">The attacking monster.</param>
+    /// <returns>The accuracy penalty after vision modifiers.</returns>
+    /// <remarks>
+    /// Placeholder signature for v0.4.3b vision type integration.
+    /// In v0.4.3a, this ignores the attacker parameter.
+    /// </remarks>
+    public int GetLightPenalty(Room room, Monster attacker)
+    {
+        // v0.4.3a: Ignore attacker's vision type
+        // v0.4.3b: Will check monster.VisionType and LightSensitivity
+        return GetLightPenalty(room);
+    }
+
     // ===== LEGACY METHODS (Backwards Compatibility) =====
 
     /// <summary>

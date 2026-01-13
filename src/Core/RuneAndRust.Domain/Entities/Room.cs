@@ -208,6 +208,44 @@ public class Room : IEntity
     /// </summary>
     public bool HasUnsolvedRiddleNpcs => _riddleNpcs.Any(n => !n.RiddleSolved);
 
+    // ===== Light Level Properties (v0.4.3a) =====
+
+    /// <summary>
+    /// Gets the base light level of this room (from configuration).
+    /// </summary>
+    /// <remarks>
+    /// This is the room's natural light level without active light sources.
+    /// Active light sources (v0.4.3b) can raise this level.
+    /// </remarks>
+    public LightLevel BaseLightLevel { get; private set; } = LightLevel.Dim;
+
+    /// <summary>
+    /// Gets the current effective light level.
+    /// </summary>
+    /// <remarks>
+    /// Computed from base level and any active light sources.
+    /// In v0.4.3a, this returns BaseLightLevel.
+    /// In v0.4.3b, this considers active light sources.
+    /// </remarks>
+    public LightLevel CurrentLightLevel => CalculateCurrentLightLevel();
+
+    /// <summary>
+    /// Gets whether this room is outdoors.
+    /// </summary>
+    /// <remarks>
+    /// Outdoor rooms are affected by the day/night cycle (v0.4.3d).
+    /// Indoor rooms use only their configured BaseLightLevel.
+    /// </remarks>
+    public bool IsOutdoor { get; private set; }
+
+    /// <summary>
+    /// Gets whether there are active light sources in this room.
+    /// </summary>
+    /// <remarks>
+    /// Placeholder for v0.4.3b. Returns false in v0.4.3a.
+    /// </remarks>
+    public bool HasActiveLightSources => false; // Updated in v0.4.3b
+
     /// <summary>
     /// Gets the type of this room.
     /// </summary>
@@ -936,6 +974,42 @@ public class Room : IEntity
     public RiddleNpc? GetBlockingNpc(Direction direction)
     {
         return _riddleNpcs.FirstOrDefault(n => n.IsPassageBlocked(direction));
+    }
+
+    // ===== Light Level Methods (v0.4.3a) =====
+
+    /// <summary>
+    /// Sets the base light level for this room.
+    /// </summary>
+    /// <param name="level">The new base light level.</param>
+    public void SetBaseLightLevel(LightLevel level)
+    {
+        BaseLightLevel = level;
+    }
+
+    /// <summary>
+    /// Sets whether this room is outdoors.
+    /// </summary>
+    /// <param name="isOutdoor">True if the room is outdoors.</param>
+    public void SetIsOutdoor(bool isOutdoor)
+    {
+        IsOutdoor = isOutdoor;
+    }
+
+    /// <summary>
+    /// Calculates the current effective light level.
+    /// </summary>
+    /// <returns>The effective light level.</returns>
+    /// <remarks>
+    /// In v0.4.3a, this returns BaseLightLevel.
+    /// In v0.4.3b, active light sources can raise the level.
+    /// Light sources cannot make a room darker, only brighter.
+    /// </remarks>
+    public LightLevel CalculateCurrentLightLevel()
+    {
+        // v0.4.3a: Simple implementation - returns base level
+        // v0.4.3b will add logic for active light sources
+        return BaseLightLevel;
     }
 
     /// <summary>
