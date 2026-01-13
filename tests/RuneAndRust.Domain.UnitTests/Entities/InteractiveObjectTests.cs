@@ -1,6 +1,5 @@
 using FluentAssertions;
 using NUnit.Framework;
-using RuneAndRust.Domain.Definitions;
 using RuneAndRust.Domain.Entities;
 using RuneAndRust.Domain.Enums;
 
@@ -116,89 +115,10 @@ public class InteractiveObjectTests
         // Arrange
         var obj = InteractiveObject.Create("door", "Door", "",
             InteractiveObjectType.Door, ObjectState.Closed,
-            blocksPassage: true, blockedDirection: Direction.North);
+            blocksDirection: Direction.North);
 
         // Act & Assert
         obj.IsCurrentlyBlocking.Should().BeTrue();
-        obj.BlockedDirection.Should().Be(Direction.North);
-    }
-
-    [Test]
-    public void Create_WithBlocksPassage_SetsBlockingProperties()
-    {
-        // Arrange & Act
-        var obj = InteractiveObject.Create(
-            "door", "Door", "", InteractiveObjectType.Door,
-            blocksPassage: true, blockedDirection: Direction.North);
-
-        // Assert
-        obj.BlocksPassage.Should().BeTrue();
-        obj.BlockedDirection.Should().Be(Direction.North);
-    }
-
-    [Test]
-    public void IsCurrentlyBlocking_WhenLockedAndBlocks_ReturnsTrue()
-    {
-        // Arrange
-        var obj = InteractiveObject.Create(
-            "door", "Door", "", InteractiveObjectType.Door,
-            ObjectState.Locked, blocksPassage: true, blockedDirection: Direction.North);
-
-        // Assert
-        obj.IsCurrentlyBlocking.Should().BeTrue();
-    }
-
-    [Test]
-    public void Reset_WhenNotBroken_RestoresDefaultState()
-    {
-        // Arrange
-        var obj = InteractiveObject.Create(
-            "door", "Door", "", InteractiveObjectType.Door, ObjectState.Closed);
-        obj.TrySetState(ObjectState.Open);
-
-        // Act
-        var result = obj.Reset();
-
-        // Assert
-        result.Should().BeTrue();
-        obj.State.Should().Be(ObjectState.Closed);
-    }
-
-    [Test]
-    public void FromDefinition_CreatesCorrectObject()
-    {
-        // Arrange
-        var definition = new InteractiveObjectDefinition
-        {
-            Id = "test-door",
-            Name = "Test Door",
-            ObjectType = InteractiveObjectType.Door,
-            DefaultState = ObjectState.Closed,
-            BlocksPassage = true
-        };
-
-        // Act
-        var obj = InteractiveObject.FromDefinition(definition);
-
-        // Assert
-        obj.DefinitionId.Should().Be("test-door");
-        obj.Name.Should().Be("Test Door");
-        obj.ObjectType.Should().Be(InteractiveObjectType.Door);
-        obj.BlocksPassage.Should().BeTrue();
-    }
-
-    [Test]
-    public void CanPerformInteraction_WhenBroken_ReturnsFalse()
-    {
-        // Arrange
-        var obj = InteractiveObject.Create(
-            "door", "Door", "", InteractiveObjectType.Door,
-            allowedInteractions: [InteractionType.Open]);
-        obj.TrySetState(ObjectState.Broken);
-
-        // Assert
-        obj.CanPerformInteraction(InteractionType.Open).Should().BeFalse();
-        obj.CanInteract.Should().BeFalse();
+        obj.BlocksDirection.Should().Be(Direction.North);
     }
 }
-

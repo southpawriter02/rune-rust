@@ -27,22 +27,5 @@ public enum InteractiveObjectType
     Inscription,
 
     /// <summary>A water feature (fountain, pool, well).</summary>
-    WaterFeature,
-
-    // v0.4.0a additions:
-
-    /// <summary>A breakable wooden crate.</summary>
-    Crate,
-
-    /// <summary>A storage barrel.</summary>
-    Barrel,
-
-    /// <summary>A momentary push button.</summary>
-    Button,
-
-    /// <summary>A spider web or similar barrier.</summary>
-    Web,
-
-    /// <summary>A generic destructible barrier.</summary>
-    Barrier
+    WaterFeature
 }
