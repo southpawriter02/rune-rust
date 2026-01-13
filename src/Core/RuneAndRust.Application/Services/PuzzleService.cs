@@ -17,7 +17,7 @@ namespace RuneAndRust.Application.Services;
 /// <list type="bullet">
 ///   <item><description>Attempt tracking via in-memory dictionary</description></item>
 ///   <item><description>State validation and transitions</description></item>
-///   <item><description>Placeholder solution validation (extended in v0.4.2b)</description></item>
+///   <item><description>Type-specific validation for Sequence, Combination, Pattern puzzles (v0.4.2b)</description></item>
 ///   <item><description>Reset processing and prerequisite management</description></item>
 /// </list>
 /// </remarks>
@@ -138,29 +138,16 @@ public class PuzzleService : IPuzzleService
         }
 
         _logger.LogInformation(
-            "AttemptSolve: Player {PlayerId} attempting puzzle {PuzzleId} with input length {InputLength}",
-            player.Id, puzzle.Id, input?.Length ?? 0);
+            "AttemptSolve: Player {PlayerId} attempting {PuzzleType} puzzle {PuzzleId}",
+            player.Id, puzzle.Type, puzzle.Id);
 
-        // Type-specific validation will be implemented in v0.4.2b
-        // For now, this is a placeholder that always fails
-        // TODO: Implement type-specific validators for Sequence, Combination, Pattern, Riddle, Logic
-        puzzle.RecordFailedAttempt();
-
-        if (puzzle.IsFailed)
+        // Delegate to type-specific validation (v0.4.2b)
+        return puzzle.Type switch
         {
-            _logger.LogInformation(
-                "AttemptSolve: Player {PlayerId} failed puzzle {PuzzleId} - max attempts reached",
-                player.Id, puzzle.Id);
-            return PuzzleSolveResult.Failure(puzzle);
-        }
-
-        var remaining = puzzle.MaxAttempts < 0 ? -1 : puzzle.MaxAttempts - puzzle.AttemptCount;
-
-        _logger.LogDebug(
-            "AttemptSolve: Incorrect solution for puzzle {PuzzleId}, {Remaining} attempts remaining",
-            puzzle.Id, remaining < 0 ? "unlimited" : remaining.ToString());
-
-        return PuzzleSolveResult.Incorrect(puzzle, remaining);
+            PuzzleType.Combination => ValidateCombination(puzzle, input),
+            PuzzleType.Pattern => ValidatePattern(puzzle, input),
+            _ => ValidateGeneric(puzzle, input)
+        };
     }
 
     /// <inheritdoc/>
@@ -169,12 +156,250 @@ public class PuzzleService : IPuzzleService
         ArgumentNullException.ThrowIfNull(puzzle);
         ArgumentNullException.ThrowIfNull(attempt);
 
-        // Implementation deferred to v0.4.2b (SequencePuzzle)
-        _logger.LogDebug(
-            "ValidateStep: Puzzle {PuzzleId}, Step {StepId} (implementation deferred to v0.4.2b)",
-            puzzle.Id, stepId);
+        // Delegate to ValidateSequenceStep for sequence puzzles
+        return ValidateSequenceStep(puzzle, attempt, stepId);
+    }
 
-        return PuzzleStepResult.WrongStep(puzzle, stepId, false);
+    // ===== Type-Specific Validation Methods (v0.4.2b) =====
+
+    /// <inheritdoc/>
+    public PuzzleStepResult ValidateSequenceStep(Puzzle puzzle, PuzzleAttempt attempt, string stepId)
+    {
+        ArgumentNullException.ThrowIfNull(puzzle);
+        ArgumentNullException.ThrowIfNull(attempt);
+
+        // Validate puzzle type
+        if (puzzle.Type != PuzzleType.Sequence || puzzle.SequenceData == null)
+        {
+            _logger.LogWarning(
+                "ValidateSequenceStep: Called on non-sequence puzzle {PuzzleId} (Type={PuzzleType})",
+                puzzle.Id, puzzle.Type);
+            return PuzzleStepResult.WrongStep(puzzle, stepId, false);
+        }
+
+        var sequenceData = puzzle.SequenceData;
+
+        // Check if this is the correct next step
+        if (sequenceData.IsCorrectNextStep(attempt.CompletedSteps, stepId))
+        {
+            attempt.AddStep(stepId);
+            var remaining = sequenceData.GetRemainingSteps(attempt.CompletedSteps);
+            var description = sequenceData.GetStepDescription(stepId);
+
+            // Check if sequence is complete
+            if (sequenceData.IsComplete(attempt.CompletedSteps))
+            {
+                puzzle.Solve();
+                attempt.Complete(true);
+
+                _logger.LogInformation(
+                    "ValidateSequenceStep: Puzzle {PuzzleId} ({PuzzleName}) solved via sequence completion",
+                    puzzle.Id, puzzle.Name);
+
+                return PuzzleStepResult.SequenceCompleted(puzzle, stepId);
+            }
+
+            _logger.LogDebug(
+                "ValidateSequenceStep: Step {StepId} correct for puzzle {PuzzleId}, {Remaining} steps remaining",
+                stepId, puzzle.Id, remaining);
+
+            return PuzzleStepResult.CorrectStep(puzzle, stepId, remaining);
+        }
+        else
+        {
+            // Wrong step - check if we should reset
+            var shouldReset = sequenceData.ResetOnWrongStep;
+
+            if (shouldReset)
+            {
+                attempt.ClearSteps();
+                _logger.LogDebug(
+                    "ValidateSequenceStep: Sequence reset for puzzle {PuzzleId} due to wrong step {StepId}",
+                    puzzle.Id, stepId);
+            }
+            else
+            {
+                _logger.LogDebug(
+                    "ValidateSequenceStep: Wrong step {StepId} for puzzle {PuzzleId}, no reset",
+                    stepId, puzzle.Id);
+            }
+
+            return PuzzleStepResult.WrongStep(puzzle, stepId, shouldReset);
+        }
+    }
+
+    /// <inheritdoc/>
+    public PuzzleSolveResult ValidateCombination(Puzzle puzzle, string input)
+    {
+        ArgumentNullException.ThrowIfNull(puzzle);
+
+        // Validate puzzle type
+        if (puzzle.Type != PuzzleType.Combination || puzzle.CombinationData == null)
+        {
+            _logger.LogWarning(
+                "ValidateCombination: Called on non-combination puzzle {PuzzleId} (Type={PuzzleType})",
+                puzzle.Id, puzzle.Type);
+            return PuzzleSolveResult.NotSolvable(puzzle);
+        }
+
+        var combinationData = puzzle.CombinationData;
+
+        // Validate input characters
+        if (!string.IsNullOrEmpty(input) && !combinationData.IsValidInput(input))
+        {
+            _logger.LogDebug(
+                "ValidateCombination: Invalid input characters for puzzle {PuzzleId}",
+                puzzle.Id);
+            return PuzzleSolveResult.Incorrect(puzzle, GetRemainingAttempts(puzzle), "Invalid characters in input.");
+        }
+
+        // Check solution
+        if (combinationData.Validate(input ?? string.Empty))
+        {
+            puzzle.Solve();
+
+            _logger.LogInformation(
+                "ValidateCombination: Puzzle {PuzzleId} ({PuzzleName}) solved",
+                puzzle.Id, puzzle.Name);
+
+            return PuzzleSolveResult.Success(puzzle);
+        }
+        else
+        {
+            puzzle.RecordFailedAttempt();
+
+            if (puzzle.IsFailed)
+            {
+                _logger.LogInformation(
+                    "ValidateCombination: Puzzle {PuzzleId} failed - max attempts reached",
+                    puzzle.Id);
+                return PuzzleSolveResult.Failure(puzzle);
+            }
+
+            var remaining = GetRemainingAttempts(puzzle);
+            var feedback = combinationData.GetFeedback(input ?? string.Empty);
+
+            // Build feedback message
+            var message = combinationData.ShowPartialFeedback && feedback.HasCorrectChars
+                ? $"Incorrect. {feedback.CorrectPositions} correct position(s), {feedback.CorrectCharacters} correct character(s) in wrong position."
+                : "Incorrect solution.";
+
+            _logger.LogDebug(
+                "ValidateCombination: Attempt failed for puzzle {PuzzleId}, {Remaining} attempts remaining",
+                puzzle.Id, remaining);
+
+            return PuzzleSolveResult.Incorrect(puzzle, remaining, message);
+        }
+    }
+
+    /// <inheritdoc/>
+    public PuzzleSolveResult ValidatePattern(Puzzle puzzle, string input)
+    {
+        ArgumentNullException.ThrowIfNull(puzzle);
+
+        // Validate puzzle type
+        if (puzzle.Type != PuzzleType.Pattern || puzzle.PatternData == null)
+        {
+            _logger.LogWarning(
+                "ValidatePattern: Called on non-pattern puzzle {PuzzleId} (Type={PuzzleType})",
+                puzzle.Id, puzzle.Type);
+            return PuzzleSolveResult.NotSolvable(puzzle);
+        }
+
+        var patternData = puzzle.PatternData;
+
+        // Validate input elements
+        if (!string.IsNullOrEmpty(input) && !patternData.IsValidInput(input))
+        {
+            _logger.LogDebug(
+                "ValidatePattern: Invalid pattern elements for puzzle {PuzzleId}",
+                puzzle.Id);
+            return PuzzleSolveResult.Incorrect(puzzle, GetRemainingAttempts(puzzle), "Invalid pattern elements.");
+        }
+
+        // Check pattern
+        if (patternData.Validate(input ?? string.Empty))
+        {
+            puzzle.Solve();
+
+            _logger.LogInformation(
+                "ValidatePattern: Puzzle {PuzzleId} ({PuzzleName}) solved",
+                puzzle.Id, puzzle.Name);
+
+            return PuzzleSolveResult.Success(puzzle);
+        }
+        else
+        {
+            puzzle.RecordFailedAttempt();
+
+            if (puzzle.IsFailed)
+            {
+                _logger.LogInformation(
+                    "ValidatePattern: Puzzle {PuzzleId} failed - max attempts reached",
+                    puzzle.Id);
+                return PuzzleSolveResult.Failure(puzzle);
+            }
+
+            var remaining = GetRemainingAttempts(puzzle);
+
+            _logger.LogDebug(
+                "ValidatePattern: Attempt failed for puzzle {PuzzleId}, {Remaining} attempts remaining",
+                puzzle.Id, remaining);
+
+            return PuzzleSolveResult.Incorrect(puzzle, remaining, "Pattern does not match.");
+        }
+    }
+
+    /// <inheritdoc/>
+    public SequenceProgress GetSequenceProgress(Puzzle puzzle, PuzzleAttempt attempt)
+    {
+        ArgumentNullException.ThrowIfNull(puzzle);
+        ArgumentNullException.ThrowIfNull(attempt);
+
+        if (puzzle.Type != PuzzleType.Sequence || puzzle.SequenceData == null)
+        {
+            return new SequenceProgress
+            {
+                TotalSteps = 0,
+                CompletedSteps = 0,
+                StepsRemaining = 0
+            };
+        }
+
+        var sequenceData = puzzle.SequenceData;
+        return new SequenceProgress
+        {
+            TotalSteps = sequenceData.TotalSteps,
+            CompletedSteps = attempt.CompletedSteps.Count,
+            StepsRemaining = sequenceData.GetRemainingSteps(attempt.CompletedSteps)
+        };
+    }
+
+    // ===== Private Validation Helpers =====
+
+    private PuzzleSolveResult ValidateGeneric(Puzzle puzzle, string input)
+    {
+        // Generic validation for Logic type or types without specific validators
+        _logger.LogDebug(
+            "ValidateGeneric: Generic validation for {PuzzleType} puzzle {PuzzleId}",
+            puzzle.Type, puzzle.Id);
+
+        puzzle.RecordFailedAttempt();
+
+        if (puzzle.IsFailed)
+        {
+            return PuzzleSolveResult.Failure(puzzle);
+        }
+
+        return PuzzleSolveResult.Incorrect(puzzle, GetRemainingAttempts(puzzle));
+    }
+
+    private int GetRemainingAttempts(Puzzle puzzle)
+    {
+        if (puzzle.MaxAttempts < 0)
+            return -1; // Unlimited
+
+        return Math.Max(0, puzzle.MaxAttempts - puzzle.AttemptCount);
     }
 
     /// <inheritdoc/>

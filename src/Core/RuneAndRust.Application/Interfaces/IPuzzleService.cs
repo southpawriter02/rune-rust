@@ -121,6 +121,41 @@ public interface IPuzzleService
     /// <param name="puzzle">The puzzle to examine.</param>
     /// <returns>A detailed description.</returns>
     string ExaminePuzzle(Puzzle puzzle);
+
+    // ===== Type-Specific Validation Methods (v0.4.2b) =====
+
+    /// <summary>
+    /// Validates a sequence puzzle step.
+    /// </summary>
+    /// <param name="puzzle">The sequence puzzle.</param>
+    /// <param name="attempt">The current attempt.</param>
+    /// <param name="stepId">The step being activated.</param>
+    /// <returns>Result of the step validation.</returns>
+    PuzzleStepResult ValidateSequenceStep(Puzzle puzzle, PuzzleAttempt attempt, string stepId);
+
+    /// <summary>
+    /// Validates a combination puzzle input.
+    /// </summary>
+    /// <param name="puzzle">The combination puzzle.</param>
+    /// <param name="input">The player's input.</param>
+    /// <returns>Result of the validation.</returns>
+    PuzzleSolveResult ValidateCombination(Puzzle puzzle, string input);
+
+    /// <summary>
+    /// Validates a pattern puzzle input.
+    /// </summary>
+    /// <param name="puzzle">The pattern puzzle.</param>
+    /// <param name="input">The player's pattern input.</param>
+    /// <returns>Result of the validation.</returns>
+    PuzzleSolveResult ValidatePattern(Puzzle puzzle, string input);
+
+    /// <summary>
+    /// Gets the progress for a sequence puzzle.
+    /// </summary>
+    /// <param name="puzzle">The sequence puzzle.</param>
+    /// <param name="attempt">The current attempt.</param>
+    /// <returns>Progress information.</returns>
+    SequenceProgress GetSequenceProgress(Puzzle puzzle, PuzzleAttempt attempt);
 }
 
 // ===== Result Types =====
@@ -198,6 +233,10 @@ public readonly record struct PuzzleSolveResult
     /// <summary>Creates a not-solvable result.</summary>
     public static PuzzleSolveResult NotSolvable(Puzzle puzzle) =>
         new() { Puzzle = puzzle, Solved = false, Failed = false, AttemptsRemaining = 0, Message = "This puzzle cannot be solved in its current state." };
+
+    /// <summary>Creates an incorrect result with custom message.</summary>
+    public static PuzzleSolveResult Incorrect(Puzzle puzzle, int remaining, string message) =>
+        new() { Puzzle = puzzle, Solved = false, Failed = false, AttemptsRemaining = remaining, Message = message };
 }
 
 /// <summary>
@@ -300,4 +339,25 @@ public readonly record struct PuzzleRewardResult
     /// <summary>Creates a not-solved result.</summary>
     public static PuzzleRewardResult NotSolved(Puzzle puzzle) =>
         new() { Puzzle = puzzle, Success = false, RewardId = null, Message = "Puzzle must be solved first." };
+}
+
+/// <summary>
+/// Progress information for a sequence puzzle.
+/// </summary>
+public readonly record struct SequenceProgress
+{
+    /// <summary>Gets the total steps in the sequence.</summary>
+    public int TotalSteps { get; init; }
+
+    /// <summary>Gets the number of completed steps.</summary>
+    public int CompletedSteps { get; init; }
+
+    /// <summary>Gets the number of steps remaining.</summary>
+    public int StepsRemaining { get; init; }
+
+    /// <summary>Gets whether the sequence is complete.</summary>
+    public bool IsComplete => StepsRemaining == 0 && TotalSteps > 0;
+
+    /// <summary>Gets the progress percentage (0-100).</summary>
+    public int ProgressPercent => TotalSteps > 0 ? (CompletedSteps * 100) / TotalSteps : 0;
 }

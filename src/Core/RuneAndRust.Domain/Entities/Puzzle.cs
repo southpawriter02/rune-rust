@@ -1,5 +1,6 @@
 using RuneAndRust.Domain.Enums;
 using RuneAndRust.Domain.Interfaces;
+using RuneAndRust.Domain.ValueObjects;
 
 namespace RuneAndRust.Domain.Entities;
 
@@ -122,6 +123,23 @@ public class Puzzle : IEntity
     /// Gets keywords for identifying this puzzle in commands.
     /// </summary>
     public IReadOnlyList<string> Keywords { get; private set; } = Array.Empty<string>();
+
+    // ===== Type-Specific Data Properties (v0.4.2b) =====
+
+    /// <summary>
+    /// Gets the sequence puzzle configuration (for Sequence type puzzles).
+    /// </summary>
+    public SequencePuzzle? SequenceData { get; private set; }
+
+    /// <summary>
+    /// Gets the combination puzzle configuration (for Combination type puzzles).
+    /// </summary>
+    public CombinationPuzzle? CombinationData { get; private set; }
+
+    /// <summary>
+    /// Gets the pattern puzzle configuration (for Pattern type puzzles).
+    /// </summary>
+    public PatternPuzzle? PatternData { get; private set; }
 
     // ===== Computed Properties =====
 
@@ -338,6 +356,47 @@ public class Puzzle : IEntity
     {
         if (State == PuzzleState.Locked)
             State = PuzzleState.Unsolved;
+    }
+
+    // ===== Type-Specific Data Setters (v0.4.2b) =====
+
+    /// <summary>
+    /// Sets the sequence data for a Sequence type puzzle.
+    /// </summary>
+    /// <param name="sequenceData">The sequence configuration.</param>
+    /// <exception cref="InvalidOperationException">If puzzle type is not Sequence.</exception>
+    public void SetSequenceData(SequencePuzzle sequenceData)
+    {
+        if (Type != PuzzleType.Sequence)
+            throw new InvalidOperationException($"Cannot set sequence data on {Type} puzzle.");
+
+        SequenceData = sequenceData ?? throw new ArgumentNullException(nameof(sequenceData));
+    }
+
+    /// <summary>
+    /// Sets the combination data for a Combination type puzzle.
+    /// </summary>
+    /// <param name="combinationData">The combination configuration.</param>
+    /// <exception cref="InvalidOperationException">If puzzle type is not Combination.</exception>
+    public void SetCombinationData(CombinationPuzzle combinationData)
+    {
+        if (Type != PuzzleType.Combination)
+            throw new InvalidOperationException($"Cannot set combination data on {Type} puzzle.");
+
+        CombinationData = combinationData ?? throw new ArgumentNullException(nameof(combinationData));
+    }
+
+    /// <summary>
+    /// Sets the pattern data for a Pattern type puzzle.
+    /// </summary>
+    /// <param name="patternData">The pattern configuration.</param>
+    /// <exception cref="InvalidOperationException">If puzzle type is not Pattern.</exception>
+    public void SetPatternData(PatternPuzzle patternData)
+    {
+        if (Type != PuzzleType.Pattern)
+            throw new InvalidOperationException($"Cannot set pattern data on {Type} puzzle.");
+
+        PatternData = patternData ?? throw new ArgumentNullException(nameof(patternData));
     }
 
     // ===== Keyword Matching =====
