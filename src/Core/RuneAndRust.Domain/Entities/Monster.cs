@@ -412,6 +412,70 @@ public class Monster : IEntity
         };
     }
 
+    // ===== Vision & Light Properties (v0.4.3b) =====
+
+    /// <summary>
+    /// Gets the type of vision this monster has.
+    /// </summary>
+    /// <remarks>
+    /// Affects how the monster perceives light levels.
+    /// DarkVision allows seeing in darkness as dim light.
+    /// </remarks>
+    public VisionType VisionType { get; private set; } = VisionType.Normal;
+
+    /// <summary>
+    /// Gets whether this monster is sensitive to bright light.
+    /// </summary>
+    /// <remarks>
+    /// Light-sensitive creatures suffer penalties in bright conditions.
+    /// Common for underground or nocturnal creatures.
+    /// </remarks>
+    public bool LightSensitivity { get; private set; }
+
+    /// <summary>
+    /// Gets the accuracy penalty when in bright light (for light-sensitive creatures).
+    /// </summary>
+    public int LightSensitivityPenalty { get; private set; } = -2;
+
+    /// <summary>
+    /// Sets the vision type for this monster.
+    /// </summary>
+    /// <param name="visionType">The vision type to set.</param>
+    public void SetVisionType(VisionType visionType) => VisionType = visionType;
+
+    /// <summary>
+    /// Configures light sensitivity for this monster.
+    /// </summary>
+    /// <param name="sensitive">Whether the creature is light-sensitive.</param>
+    /// <param name="penalty">The accuracy penalty in bright light (default -2).</param>
+    public void SetLightSensitivity(bool sensitive, int penalty = -2)
+    {
+        LightSensitivity = sensitive;
+        LightSensitivityPenalty = penalty;
+    }
+
+    /// <summary>
+    /// Gets the effective light level considering vision type.
+    /// </summary>
+    /// <param name="room">The room containing this monster.</param>
+    /// <returns>The perceived light level.</returns>
+    /// <remarks>
+    /// DarkVision: Dark → Dim
+    /// TrueSight: All → Bright
+    /// </remarks>
+    public LightLevel GetEffectiveLightLevel(Room room)
+    {
+        ArgumentNullException.ThrowIfNull(room);
+        var roomLight = room.CurrentLightLevel;
+
+        return VisionType switch
+        {
+            VisionType.TrueSight => LightLevel.Bright,
+            VisionType.DarkVision when roomLight == LightLevel.Dark => LightLevel.Dim,
+            _ => roomLight
+        };
+    }
+
     /// <summary>
     /// Returns a string representation of this monster.
     /// </summary>

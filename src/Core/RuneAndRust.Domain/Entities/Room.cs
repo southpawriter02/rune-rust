@@ -94,6 +94,13 @@ public class Room : IEntity
     /// </summary>
     private readonly List<RiddleNpc> _riddleNpcs = [];
 
+    // ===== Light Sources (v0.4.3b) =====
+
+    /// <summary>
+    /// List of active light sources in this room.
+    /// </summary>
+    private readonly List<LightSource> _lightSources = [];
+
     /// <summary>
     /// Gets a read-only dictionary of all exits from this room.
     /// </summary>
@@ -239,12 +246,14 @@ public class Room : IEntity
     public bool IsOutdoor { get; private set; }
 
     /// <summary>
+    /// Gets a read-only list of light sources in this room.
+    /// </summary>
+    public IReadOnlyList<LightSource> LightSources => _lightSources.AsReadOnly();
+
+    /// <summary>
     /// Gets whether there are active light sources in this room.
     /// </summary>
-    /// <remarks>
-    /// Placeholder for v0.4.3b. Returns false in v0.4.3a.
-    /// </remarks>
-    public bool HasActiveLightSources => false; // Updated in v0.4.3b
+    public bool HasActiveLightSources => _lightSources.Any(ls => ls.IsActive);
 
     /// <summary>
     /// Gets the type of this room.
@@ -1001,15 +1010,58 @@ public class Room : IEntity
     /// </summary>
     /// <returns>The effective light level.</returns>
     /// <remarks>
-    /// In v0.4.3a, this returns BaseLightLevel.
-    /// In v0.4.3b, active light sources can raise the level.
-    /// Light sources cannot make a room darker, only brighter.
+    /// Considers active light sources. Light sources can only
+    /// make rooms brighter, never darker.
     /// </remarks>
     public LightLevel CalculateCurrentLightLevel()
     {
-        // v0.4.3a: Simple implementation - returns base level
-        // v0.4.3b will add logic for active light sources
-        return BaseLightLevel;
+        if (!HasActiveLightSources)
+            return BaseLightLevel;
+
+        // Get the brightest active light source (lower enum = brighter)
+        var brightestSource = _lightSources
+            .Where(ls => ls.IsActive)
+            .OrderBy(ls => ls.ProvidedLight)
+            .FirstOrDefault();
+
+        if (brightestSource == null)
+            return BaseLightLevel;
+
+        // Light can only make rooms brighter, not darker
+        return brightestSource.ProvidedLight < BaseLightLevel
+            ? brightestSource.ProvidedLight
+            : BaseLightLevel;
+    }
+
+    // ===== Light Source Methods (v0.4.3b) =====
+
+    /// <summary>
+    /// Adds a light source to this room.
+    /// </summary>
+    /// <param name="lightSource">The light source to add.</param>
+    public void AddLightSource(LightSource lightSource)
+    {
+        ArgumentNullException.ThrowIfNull(lightSource);
+        _lightSources.Add(lightSource);
+    }
+
+    /// <summary>
+    /// Removes a light source from this room.
+    /// </summary>
+    /// <param name="lightSource">The light source to remove.</param>
+    /// <returns>True if removed, false if not found.</returns>
+    public bool RemoveLightSource(LightSource lightSource)
+    {
+        return _lightSources.Remove(lightSource);
+    }
+
+    /// <summary>
+    /// Gets all active light sources in this room.
+    /// </summary>
+    /// <returns>Enumerable of active light sources.</returns>
+    public IEnumerable<LightSource> GetActiveLightSources()
+    {
+        return _lightSources.Where(ls => ls.IsActive);
     }
 
     /// <summary>

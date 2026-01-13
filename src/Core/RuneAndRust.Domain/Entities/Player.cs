@@ -901,6 +901,57 @@ public class Player : IEntity
         return _completedQuests.Where(q => q.Category == QuestCategory.Daily);
     }
 
+    // ===== Vision & Light Properties (v0.4.3b) =====
+
+    /// <summary>
+    /// Gets the type of vision this player has.
+    /// </summary>
+    /// <remarks>
+    /// Affects how the player perceives light levels.
+    /// DarkVision allows seeing in darkness as if it were dim light.
+    /// TrueSight penetrates all darkness including magical.
+    /// </remarks>
+    public VisionType VisionType { get; private set; } = VisionType.Normal;
+
+    /// <summary>
+    /// Gets the player's currently active light source (if any).
+    /// </summary>
+    public LightSource? ActiveLightSource { get; private set; }
+
+    /// <summary>
+    /// Sets the vision type for this player.
+    /// </summary>
+    /// <param name="visionType">The vision type to set.</param>
+    public void SetVisionType(VisionType visionType) => VisionType = visionType;
+
+    /// <summary>
+    /// Sets the player's active light source.
+    /// </summary>
+    /// <param name="lightSource">The light source to set as active, or null to clear.</param>
+    public void SetActiveLightSource(LightSource? lightSource) => ActiveLightSource = lightSource;
+
+    /// <summary>
+    /// Gets the effective light level considering vision type.
+    /// </summary>
+    /// <param name="room">The room the player is in.</param>
+    /// <returns>The perceived light level.</returns>
+    /// <remarks>
+    /// DarkVision: Dark → Dim
+    /// TrueSight: All → Bright
+    /// </remarks>
+    public LightLevel GetEffectiveLightLevel(Room room)
+    {
+        ArgumentNullException.ThrowIfNull(room);
+        var roomLight = room.CurrentLightLevel;
+
+        return VisionType switch
+        {
+            VisionType.TrueSight => LightLevel.Bright,
+            VisionType.DarkVision when roomLight == LightLevel.Dark => LightLevel.Dim,
+            _ => roomLight
+        };
+    }
+
     /// <summary>
     /// Returns a string representation of this player.
     /// </summary>
