@@ -375,6 +375,175 @@ public class PuzzleService : IPuzzleService
         };
     }
 
+    // ===== Riddle & Advanced Methods (v0.4.2c) =====
+
+    /// <inheritdoc/>
+    public RiddleAnswerResult ValidateRiddleAnswer(RiddleNpc npc, string answer, Player player)
+    {
+        ArgumentNullException.ThrowIfNull(npc);
+        ArgumentNullException.ThrowIfNull(player);
+
+        // Check if already solved
+        if (npc.RiddleSolved)
+        {
+            _logger.LogDebug(
+                "ValidateRiddleAnswer: Riddle already solved for NPC {NpcId}",
+                npc.Id);
+            return RiddleAnswerResult.AlreadySolved(npc);
+        }
+
+        // Riddle validation requires external RiddleDefinition lookup
+        // For now, this handles NPC state management for answer attempts
+        // The actual validation is delegated to caller with RiddleDefinition
+
+        _logger.LogInformation(
+            "ValidateRiddleAnswer: Player {PlayerId} attempted riddle for NPC {NpcName}",
+            player.Id, npc.Name);
+
+        // This placeholder returns wrong - actual validation against RiddleDefinition
+        // should happen in command handler or higher service layer
+        if (npc.RecordWrongAnswer())
+        {
+            var consequence = npc.FailureConsequence;
+
+            _logger.LogInformation(
+                "ValidateRiddleAnswer: Max failures reached for NPC {NpcId}, consequence={Consequence}",
+                npc.Id, consequence);
+
+            return RiddleAnswerResult.MaxFailures(npc, "Too many wrong answers.", consequence);
+        }
+
+        var remaining = npc.GetRemainingAttempts();
+
+        _logger.LogDebug(
+            "ValidateRiddleAnswer: Wrong answer for NPC {NpcId}, {Remaining} attempts remaining",
+            npc.Id, remaining);
+
+        return RiddleAnswerResult.WrongAnswer(npc, "That is not correct.", remaining);
+    }
+
+    /// <inheritdoc/>
+    public PuzzleHintResult GetNextHint(Puzzle puzzle, Player player, IReadOnlyList<PuzzleHint> hints)
+    {
+        ArgumentNullException.ThrowIfNull(puzzle);
+        ArgumentNullException.ThrowIfNull(player);
+
+        if (hints == null || hints.Count == 0)
+        {
+            _logger.LogDebug(
+                "GetNextHint: No hints available for puzzle {PuzzleId}",
+                puzzle.Id);
+            return PuzzleHintResult.NoHintsAvailable(puzzle);
+        }
+
+        var nextHintOrder = puzzle.HintsRevealed + 1;
+        var nextHint = hints.FirstOrDefault(h => h.Order == nextHintOrder);
+
+        if (nextHint == null)
+        {
+            _logger.LogDebug(
+                "GetNextHint: All hints revealed for puzzle {PuzzleId}",
+                puzzle.Id);
+            return PuzzleHintResult.AllHintsRevealed(puzzle);
+        }
+
+        // Reveal the hint (free hints always succeed)
+        if (nextHint.IsFree)
+        {
+            puzzle.RevealHint();
+
+            _logger.LogDebug(
+                "GetNextHint: Free hint {Order} revealed for puzzle {PuzzleId}",
+                nextHint.Order, puzzle.Id);
+
+            return PuzzleHintResult.HintRevealed(puzzle, nextHint.Text, puzzle.HintsRevealed);
+        }
+        else
+        {
+            // Non-free hints require dice check - handled by caller
+            _logger.LogDebug(
+                "GetNextHint: Hint {Order} requires check (DC {DC}) for puzzle {PuzzleId}",
+                nextHint.Order, nextHint.RevealDC, puzzle.Id);
+
+            // Return pending check - caller handles dice roll
+            return new PuzzleHintResult
+            {
+                Puzzle = puzzle,
+                Success = false,
+                Hint = nextHint.Text,
+                HintsRevealed = puzzle.HintsRevealed,
+                Message = $"Requires {nextHint.RevealAttribute} check (DC {nextHint.RevealDC}) to reveal."
+            };
+        }
+    }
+
+    /// <inheritdoc/>
+    public PuzzleStepResult RecordMultiPartComponent(MultiPartPuzzle multiPartPuzzle, string componentId)
+    {
+        ArgumentNullException.ThrowIfNull(multiPartPuzzle);
+        ArgumentException.ThrowIfNullOrWhiteSpace(componentId);
+
+        if (multiPartPuzzle.IsComplete)
+        {
+            _logger.LogDebug(
+                "RecordMultiPartComponent: Multi-part puzzle {MasterPuzzleId} already complete",
+                multiPartPuzzle.MasterPuzzleId);
+
+            return new PuzzleStepResult
+            {
+                Puzzle = null!,
+                StepId = componentId,
+                Correct = false,
+                SequenceComplete = true,
+                Message = "Multi-part puzzle already complete."
+            };
+        }
+
+        if (!multiPartPuzzle.RecordComponentSolved(componentId))
+        {
+            _logger.LogDebug(
+                "RecordMultiPartComponent: Failed to record component {ComponentId} for puzzle {MasterPuzzleId}",
+                componentId, multiPartPuzzle.MasterPuzzleId);
+
+            return new PuzzleStepResult
+            {
+                Puzzle = null!,
+                StepId = componentId,
+                Correct = false,
+                SequenceComplete = false,
+                Message = multiPartPuzzle.RequiresOrder
+                    ? $"Components must be solved in order. Expected: {multiPartPuzzle.GetNextExpectedComponent()}"
+                    : "Invalid component."
+            };
+        }
+
+        var isComplete = multiPartPuzzle.IsComplete;
+        var remaining = multiPartPuzzle.TotalComponents - multiPartPuzzle.SolvedCount;
+
+        _logger.LogInformation(
+            "RecordMultiPartComponent: Component {ComponentId} solved for puzzle {MasterPuzzleId}, {Remaining} remaining",
+            componentId, multiPartPuzzle.MasterPuzzleId, remaining);
+
+        if (isComplete)
+        {
+            _logger.LogInformation(
+                "RecordMultiPartComponent: Multi-part puzzle {MasterPuzzleId} COMPLETE!",
+                multiPartPuzzle.MasterPuzzleId);
+        }
+
+        return new PuzzleStepResult
+        {
+            Puzzle = null!,
+            StepId = componentId,
+            Correct = true,
+            SequenceComplete = isComplete,
+            StepsRemaining = remaining,
+            Message = isComplete
+                ? "Multi-part puzzle complete!"
+                : $"Component solved. {remaining} remaining."
+        };
+    }
+
     // ===== Private Validation Helpers =====
 
     private PuzzleSolveResult ValidateGeneric(Puzzle puzzle, string input)

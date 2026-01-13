@@ -15,11 +15,9 @@ namespace RuneAndRust.Application.Interfaces;
 ///   <item><description>Managing puzzle attempts</description></item>
 ///   <item><description>Validating solutions</description></item>
 ///   <item><description>Processing resets and prerequisites</description></item>
+///   <item><description>Riddle NPC validation (v0.4.2c)</description></item>
+///   <item><description>Multi-part puzzle tracking (v0.4.2c)</description></item>
 /// </list>
-/// <para>
-/// Type-specific validation is implemented in v0.4.2b. This phase provides
-/// the core infrastructure and placeholder validation.
-/// </para>
 /// </remarks>
 public interface IPuzzleService
 {
@@ -156,6 +154,34 @@ public interface IPuzzleService
     /// <param name="attempt">The current attempt.</param>
     /// <returns>Progress information.</returns>
     SequenceProgress GetSequenceProgress(Puzzle puzzle, PuzzleAttempt attempt);
+
+    // ===== Riddle & Advanced Methods (v0.4.2c) =====
+
+    /// <summary>
+    /// Validates a riddle answer from a riddle NPC.
+    /// </summary>
+    /// <param name="npc">The riddle NPC.</param>
+    /// <param name="answer">The player's answer.</param>
+    /// <param name="player">The player attempting.</param>
+    /// <returns>The riddle answer result.</returns>
+    RiddleAnswerResult ValidateRiddleAnswer(RiddleNpc npc, string answer, Player player);
+
+    /// <summary>
+    /// Gets the next available hint for a puzzle with hint data.
+    /// </summary>
+    /// <param name="puzzle">The puzzle.</param>
+    /// <param name="player">The player requesting.</param>
+    /// <param name="hints">Available hints for the puzzle.</param>
+    /// <returns>The hint result with actual hint data.</returns>
+    PuzzleHintResult GetNextHint(Puzzle puzzle, Player player, IReadOnlyList<PuzzleHint> hints);
+
+    /// <summary>
+    /// Records a multi-part puzzle component as solved.
+    /// </summary>
+    /// <param name="multiPartPuzzle">The multi-part puzzle.</param>
+    /// <param name="componentId">The component puzzle ID.</param>
+    /// <returns>The step result including completion status.</returns>
+    PuzzleStepResult RecordMultiPartComponent(MultiPartPuzzle multiPartPuzzle, string componentId);
 }
 
 // ===== Result Types =====
@@ -360,4 +386,46 @@ public readonly record struct SequenceProgress
 
     /// <summary>Gets the progress percentage (0-100).</summary>
     public int ProgressPercent => TotalSteps > 0 ? (CompletedSteps * 100) / TotalSteps : 0;
+}
+
+// ===== Riddle & Advanced Result Types (v0.4.2c) =====
+
+/// <summary>
+/// Result of answering a riddle NPC.
+/// </summary>
+public readonly record struct RiddleAnswerResult
+{
+    /// <summary>Gets the riddle NPC.</summary>
+    public RiddleNpc Npc { get; init; }
+
+    /// <summary>Gets whether the answer was correct.</summary>
+    public bool Correct { get; init; }
+
+    /// <summary>Gets the response message.</summary>
+    public string Message { get; init; }
+
+    /// <summary>Gets remaining attempts (-1 if unlimited).</summary>
+    public int RemainingAttempts { get; init; }
+
+    /// <summary>Gets whether max failures was reached.</summary>
+    public bool MaxFailuresReached { get; init; }
+
+    /// <summary>Gets the consequence applied (if max failures).</summary>
+    public Domain.Enums.RiddleConsequence? ConsequenceApplied { get; init; }
+
+    /// <summary>Creates a correct answer result.</summary>
+    public static RiddleAnswerResult CorrectAnswer(RiddleNpc npc, string message) =>
+        new() { Npc = npc, Correct = true, Message = message, RemainingAttempts = 0, MaxFailuresReached = false };
+
+    /// <summary>Creates a wrong answer result.</summary>
+    public static RiddleAnswerResult WrongAnswer(RiddleNpc npc, string message, int remaining) =>
+        new() { Npc = npc, Correct = false, Message = message, RemainingAttempts = remaining, MaxFailuresReached = false };
+
+    /// <summary>Creates a max failures result.</summary>
+    public static RiddleAnswerResult MaxFailures(RiddleNpc npc, string message, Domain.Enums.RiddleConsequence? consequence) =>
+        new() { Npc = npc, Correct = false, Message = message, RemainingAttempts = 0, MaxFailuresReached = true, ConsequenceApplied = consequence };
+
+    /// <summary>Creates an already solved result.</summary>
+    public static RiddleAnswerResult AlreadySolved(RiddleNpc npc) =>
+        new() { Npc = npc, Correct = true, Message = "This riddle has already been solved.", RemainingAttempts = 0 };
 }

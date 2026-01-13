@@ -87,6 +87,13 @@ public class Room : IEntity
     /// </summary>
     private readonly List<Puzzle> _puzzles = [];
 
+    // ===== Riddle NPCs (v0.4.2c) =====
+
+    /// <summary>
+    /// List of riddle NPCs in this room.
+    /// </summary>
+    private readonly List<RiddleNpc> _riddleNpcs = [];
+
     /// <summary>
     /// Gets a read-only dictionary of all exits from this room.
     /// </summary>
@@ -183,6 +190,23 @@ public class Room : IEntity
     /// Gets a value indicating whether this room has any unsolved puzzles.
     /// </summary>
     public bool HasUnsolvedPuzzles => _puzzles.Any(p => p.IsSolvable);
+
+    // ===== Riddle NPC Properties (v0.4.2c) =====
+
+    /// <summary>
+    /// Gets a read-only list of riddle NPCs in this room.
+    /// </summary>
+    public IReadOnlyList<RiddleNpc> RiddleNpcs => _riddleNpcs.AsReadOnly();
+
+    /// <summary>
+    /// Gets a value indicating whether this room has any riddle NPCs.
+    /// </summary>
+    public bool HasRiddleNpcs => _riddleNpcs.Count > 0;
+
+    /// <summary>
+    /// Gets a value indicating whether this room has any unsolved riddle NPCs.
+    /// </summary>
+    public bool HasUnsolvedRiddleNpcs => _riddleNpcs.Any(n => !n.RiddleSolved);
 
     /// <summary>
     /// Gets the type of this room.
@@ -852,6 +876,66 @@ public class Room : IEntity
                 resetCount++;
         }
         return resetCount;
+    }
+
+    // ===== Riddle NPC Methods (v0.4.2c) =====
+
+    /// <summary>
+    /// Adds a riddle NPC to this room.
+    /// </summary>
+    /// <param name="npc">The riddle NPC to add.</param>
+    public void AddRiddleNpc(RiddleNpc npc)
+    {
+        ArgumentNullException.ThrowIfNull(npc);
+        if (!_riddleNpcs.Any(n => n.Id == npc.Id))
+        {
+            _riddleNpcs.Add(npc);
+        }
+    }
+
+    /// <summary>
+    /// Removes a riddle NPC from this room.
+    /// </summary>
+    /// <param name="npc">The riddle NPC to remove.</param>
+    /// <returns>True if removed, false if not found.</returns>
+    public bool RemoveRiddleNpc(RiddleNpc npc)
+    {
+        ArgumentNullException.ThrowIfNull(npc);
+        return _riddleNpcs.Remove(npc);
+    }
+
+    /// <summary>
+    /// Gets a riddle NPC by keyword (name match).
+    /// </summary>
+    /// <param name="keyword">The keyword to search for.</param>
+    /// <returns>The matching RiddleNpc, or null.</returns>
+    public RiddleNpc? GetRiddleNpcByKeyword(string keyword)
+    {
+        if (string.IsNullOrWhiteSpace(keyword))
+            return null;
+
+        return _riddleNpcs.FirstOrDefault(n =>
+            n.Name.Contains(keyword, StringComparison.OrdinalIgnoreCase));
+    }
+
+    /// <summary>
+    /// Checks if any riddle NPC blocks passage in a direction.
+    /// </summary>
+    /// <param name="direction">The direction to check.</param>
+    /// <returns>True if blocked by an unsolved riddle NPC.</returns>
+    public bool IsDirectionBlockedByNpc(Direction direction)
+    {
+        return _riddleNpcs.Any(n => n.IsPassageBlocked(direction));
+    }
+
+    /// <summary>
+    /// Gets the NPC blocking a specific direction.
+    /// </summary>
+    /// <param name="direction">The direction to check.</param>
+    /// <returns>The blocking RiddleNpc, or null.</returns>
+    public RiddleNpc? GetBlockingNpc(Direction direction)
+    {
+        return _riddleNpcs.FirstOrDefault(n => n.IsPassageBlocked(direction));
     }
 
     /// <summary>
