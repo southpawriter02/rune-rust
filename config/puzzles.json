@@ -1,0 +1,136 @@
+{
+    "puzzles": [
+        {
+            "id": "stone-altar-sequence",
+            "name": "Stone Altar Puzzle",
+            "description": "A circular stone altar with four carved symbols around its edge. The symbols appear to represent the four elements: fire, water, earth, and air. They seem to need activation in a specific order.",
+            "type": "Sequence",
+            "difficulty": 3,
+            "maxAttempts": 5,
+            "canReset": true,
+            "resetDelay": 3,
+            "hasHints": true,
+            "keywords": [
+                "altar",
+                "stone",
+                "elements",
+                "sequence"
+            ]
+        },
+        {
+            "id": "combination-lock",
+            "name": "Ancient Combination Lock",
+            "description": "A heavy iron lock embedded in the wall bears four rotating dials, each marked with strange symbols from 1 to 9. A correct combination must be entered to proceed.",
+            "type": "Combination",
+            "difficulty": 2,
+            "maxAttempts": 3,
+            "canReset": true,
+            "resetDelay": 5,
+            "hasHints": false,
+            "keywords": [
+                "lock",
+                "combination",
+                "dials"
+            ]
+        },
+        {
+            "id": "pressure-plate-pattern",
+            "name": "Pressure Plate Pattern",
+            "description": "The floor is covered with a grid of pressure plates. Some glow faintly, suggesting a pattern that must be followed. Step on the wrong plate, and the sequence resets.",
+            "type": "Pattern",
+            "difficulty": 4,
+            "maxAttempts": -1,
+            "canReset": true,
+            "resetDelay": -1,
+            "hasHints": true,
+            "keywords": [
+                "plates",
+                "pressure",
+                "pattern",
+                "floor"
+            ]
+        },
+        {
+            "id": "sphinx-riddle",
+            "name": "The Sphinx's Riddle",
+            "description": "A weathered stone sphinx blocks your path, its eyes glowing with ancient magic. It speaks: 'Answer my riddle, or forever remain.'",
+            "type": "Riddle",
+            "difficulty": 3,
+            "maxAttempts": 3,
+            "canReset": false,
+            "hasHints": true,
+            "rewardId": "sphinx-treasure",
+            "keywords": [
+                "sphinx",
+                "riddle"
+            ]
+        },
+        {
+            "id": "crystal-alignment",
+            "name": "Crystal Alignment Puzzle",
+            "description": "Three crystals float in alcoves around the room, each glowing a different color. Rotating them seems to affect beams of light that crisscross the chamber.",
+            "type": "Logic",
+            "difficulty": 5,
+            "maxAttempts": -1,
+            "canReset": true,
+            "resetDelay": -1,
+            "hasHints": true,
+            "keywords": [
+                "crystal",
+                "crystals",
+                "light",
+                "alignment"
+            ]
+        },
+        {
+            "id": "chained-puzzle-1",
+            "name": "First Lock",
+            "description": "The first of three locks securing the vault door. A simple sliding tile puzzle.",
+            "type": "Logic",
+            "difficulty": 1,
+            "maxAttempts": -1,
+            "canReset": true,
+            "hasHints": false,
+            "keywords": [
+                "lock",
+                "first",
+                "vault"
+            ]
+        },
+        {
+            "id": "chained-puzzle-2",
+            "name": "Second Lock",
+            "description": "The second lock is more complex, requiring a specific sequence of lever pulls.",
+            "type": "Sequence",
+            "difficulty": 2,
+            "maxAttempts": 5,
+            "canReset": true,
+            "resetDelay": 2,
+            "hasHints": true,
+            "prerequisiteId": "chained-puzzle-1",
+            "keywords": [
+                "lock",
+                "second",
+                "vault"
+            ]
+        },
+        {
+            "id": "chained-puzzle-3",
+            "name": "Final Lock",
+            "description": "The final lock requires solving a combination using clues from the previous two puzzles.",
+            "type": "Combination",
+            "difficulty": 4,
+            "maxAttempts": 3,
+            "canReset": true,
+            "resetDelay": 5,
+            "hasHints": true,
+            "prerequisiteId": "chained-puzzle-2",
+            "rewardId": "vault-treasure",
+            "keywords": [
+                "lock",
+                "final",
+                "vault"
+            ]
+        }
+    ]
+}

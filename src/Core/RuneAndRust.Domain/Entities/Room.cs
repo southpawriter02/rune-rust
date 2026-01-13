@@ -80,6 +80,13 @@ public class Room : IEntity
     /// </summary>
     private readonly List<HazardZone> _hazardZones = [];
 
+    // ===== Puzzles (v0.4.2a) =====
+
+    /// <summary>
+    /// List of puzzles in this room.
+    /// </summary>
+    private readonly List<Puzzle> _puzzles = [];
+
     /// <summary>
     /// Gets a read-only dictionary of all exits from this room.
     /// </summary>
@@ -159,6 +166,23 @@ public class Room : IEntity
     /// Gets a value indicating whether this room has any active hazard zones.
     /// </summary>
     public bool HasActiveHazards => _hazardZones.Any(h => h.IsActive);
+
+    // ===== Puzzle Properties (v0.4.2a) =====
+
+    /// <summary>
+    /// Gets a read-only list of puzzles in this room.
+    /// </summary>
+    public IReadOnlyList<Puzzle> Puzzles => _puzzles.AsReadOnly();
+
+    /// <summary>
+    /// Gets a value indicating whether this room has any puzzles.
+    /// </summary>
+    public bool HasPuzzles => _puzzles.Count > 0;
+
+    /// <summary>
+    /// Gets a value indicating whether this room has any unsolved puzzles.
+    /// </summary>
+    public bool HasUnsolvedPuzzles => _puzzles.Any(p => p.IsSolvable);
 
     /// <summary>
     /// Gets the type of this room.
@@ -765,6 +789,70 @@ public class Room : IEntity
     /// <returns>The number of hazards removed.</returns>
     public int RemoveExpiredHazards() =>
         _hazardZones.RemoveAll(h => !h.IsActive && h.IsExpired);
+
+    // ===== Puzzle Methods (v0.4.2a) =====
+
+    /// <summary>
+    /// Adds a puzzle to this room.
+    /// </summary>
+    /// <param name="puzzle">The puzzle to add.</param>
+    /// <exception cref="ArgumentNullException">Thrown when puzzle is null.</exception>
+    public void AddPuzzle(Puzzle puzzle)
+    {
+        ArgumentNullException.ThrowIfNull(puzzle);
+        _puzzles.Add(puzzle);
+    }
+
+    /// <summary>
+    /// Removes a puzzle from this room.
+    /// </summary>
+    /// <param name="puzzle">The puzzle to remove.</param>
+    /// <returns>True if the puzzle was removed; false if not found.</returns>
+    public bool RemovePuzzle(Puzzle puzzle)
+    {
+        return _puzzles.Remove(puzzle);
+    }
+
+    /// <summary>
+    /// Gets a puzzle by keyword (case-insensitive).
+    /// </summary>
+    /// <param name="keyword">The keyword to search for.</param>
+    /// <returns>The matching puzzle, or null if not found.</returns>
+    public Puzzle? GetPuzzleByKeyword(string keyword)
+    {
+        if (string.IsNullOrWhiteSpace(keyword)) return null;
+        return _puzzles.FirstOrDefault(p => p.MatchesKeyword(keyword));
+    }
+
+    /// <summary>
+    /// Gets all unsolved puzzles in this room.
+    /// </summary>
+    /// <returns>An enumerable of unsolved puzzles.</returns>
+    public IEnumerable<Puzzle> GetUnsolvedPuzzles() =>
+        _puzzles.Where(p => p.IsSolvable);
+
+    /// <summary>
+    /// Gets puzzles by type.
+    /// </summary>
+    /// <param name="puzzleType">The type of puzzle to filter by.</param>
+    /// <returns>An enumerable of matching puzzles.</returns>
+    public IEnumerable<Puzzle> GetPuzzlesByType(Enums.PuzzleType puzzleType) =>
+        _puzzles.Where(p => p.Type == puzzleType);
+
+    /// <summary>
+    /// Processes puzzle reset ticks for all failed puzzles.
+    /// </summary>
+    /// <returns>The number of puzzles that were reset.</returns>
+    public int ProcessPuzzleResetTicks()
+    {
+        var resetCount = 0;
+        foreach (var puzzle in _puzzles.Where(p => p.IsFailed && p.TurnsUntilReset.HasValue))
+        {
+            if (puzzle.TickReset())
+                resetCount++;
+        }
+        return resetCount;
+    }
 
     /// <summary>
     /// Returns the name of this room.
