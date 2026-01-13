@@ -73,6 +73,13 @@ public class Room : IEntity
     /// </summary>
     private readonly List<InteractiveObject> _interactables = [];
 
+    // ===== Hazard Zones (v0.4.1c) =====
+
+    /// <summary>
+    /// List of environmental hazard zones in this room.
+    /// </summary>
+    private readonly List<HazardZone> _hazardZones = [];
+
     /// <summary>
     /// Gets a read-only dictionary of all exits from this room.
     /// </summary>
@@ -135,6 +142,23 @@ public class Room : IEntity
     /// Gets a value indicating whether this room has any interactive objects.
     /// </summary>
     public bool HasInteractables => _interactables.Count > 0;
+
+    // ===== Hazard Zone Properties (v0.4.1c) =====
+
+    /// <summary>
+    /// Gets a read-only list of hazard zones in this room.
+    /// </summary>
+    public IReadOnlyList<HazardZone> HazardZones => _hazardZones.AsReadOnly();
+
+    /// <summary>
+    /// Gets a value indicating whether this room has any hazard zones.
+    /// </summary>
+    public bool HasHazards => _hazardZones.Count > 0;
+
+    /// <summary>
+    /// Gets a value indicating whether this room has any active hazard zones.
+    /// </summary>
+    public bool HasActiveHazards => _hazardZones.Any(h => h.IsActive);
 
     /// <summary>
     /// Gets the type of this room.
@@ -685,6 +709,62 @@ public class Room : IEntity
     {
         return GetBlockingObject(direction) != null;
     }
+
+    // ===== Hazard Zone Methods (v0.4.1c) =====
+
+    /// <summary>
+    /// Adds a hazard zone to this room.
+    /// </summary>
+    /// <param name="hazard">The hazard zone to add.</param>
+    /// <exception cref="ArgumentNullException">Thrown when hazard is null.</exception>
+    public void AddHazardZone(HazardZone hazard)
+    {
+        ArgumentNullException.ThrowIfNull(hazard);
+        _hazardZones.Add(hazard);
+    }
+
+    /// <summary>
+    /// Removes a hazard zone from this room.
+    /// </summary>
+    /// <param name="hazard">The hazard zone to remove.</param>
+    /// <returns>True if the hazard was removed; false if not found.</returns>
+    public bool RemoveHazardZone(HazardZone hazard)
+    {
+        return _hazardZones.Remove(hazard);
+    }
+
+    /// <summary>
+    /// Gets all active hazard zones in this room.
+    /// </summary>
+    /// <returns>An enumerable of active hazard zones.</returns>
+    public IEnumerable<HazardZone> GetActiveHazards() =>
+        _hazardZones.Where(h => h.IsActive);
+
+    /// <summary>
+    /// Gets a hazard zone by keyword (case-insensitive).
+    /// </summary>
+    /// <param name="keyword">The keyword to search for.</param>
+    /// <returns>The matching hazard zone, or null if not found.</returns>
+    public HazardZone? GetHazardByKeyword(string keyword)
+    {
+        if (string.IsNullOrWhiteSpace(keyword)) return null;
+        return _hazardZones.FirstOrDefault(h => h.IsActive && h.MatchesKeyword(keyword));
+    }
+
+    /// <summary>
+    /// Gets hazard zones by type.
+    /// </summary>
+    /// <param name="hazardType">The type of hazard to filter by.</param>
+    /// <returns>An enumerable of matching hazard zones.</returns>
+    public IEnumerable<HazardZone> GetHazardsByType(Enums.HazardType hazardType) =>
+        _hazardZones.Where(h => h.IsActive && h.HazardType == hazardType);
+
+    /// <summary>
+    /// Removes all expired hazard zones from this room.
+    /// </summary>
+    /// <returns>The number of hazards removed.</returns>
+    public int RemoveExpiredHazards() =>
+        _hazardZones.RemoveAll(h => !h.IsActive && h.IsExpired);
 
     /// <summary>
     /// Returns the name of this room.

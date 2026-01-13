@@ -1,0 +1,171 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "hazards.schema.json",
+    "title": "Hazard Configuration Schema",
+    "description": "Schema for environmental hazard definition configuration in Rune & Rust",
+    "type": "object",
+    "required": [
+        "hazards"
+    ],
+    "additionalProperties": false,
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "Reference to this schema"
+        },
+        "hazards": {
+            "type": "array",
+            "description": "List of hazard definitions",
+            "items": {
+                "$ref": "#/$defs/hazardDefinition"
+            }
+        }
+    },
+    "$defs": {
+        "hazardDefinition": {
+            "type": "object",
+            "description": "Definition for an environmental hazard type",
+            "required": [
+                "id",
+                "name",
+                "hazardType"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Unique identifier for this hazard (kebab-case)",
+                    "pattern": "^[a-z][a-z0-9-]*$"
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Display name shown to players"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Narrative description of the hazard"
+                },
+                "hazardType": {
+                    "type": "string",
+                    "description": "The type of hazard",
+                    "enum": [
+                        "PoisonGas",
+                        "Fire",
+                        "Ice",
+                        "Spikes",
+                        "AcidPool",
+                        "Darkness",
+                        "Electricity",
+                        "Radiant",
+                        "Necrotic"
+                    ]
+                },
+                "damagePerTurn": {
+                    "$ref": "#/$defs/damageDefinition",
+                    "description": "Damage dealt at the end of each turn while in the hazard"
+                },
+                "entryDamage": {
+                    "$ref": "#/$defs/damageDefinition",
+                    "description": "Damage dealt when first entering the hazard"
+                },
+                "statusEffects": {
+                    "type": "array",
+                    "description": "Status effects applied while in the hazard",
+                    "items": {
+                        "type": "string"
+                    },
+                    "default": []
+                },
+                "statusDuration": {
+                    "type": "integer",
+                    "description": "Duration in turns for applied status effects",
+                    "minimum": 1,
+                    "default": 3
+                },
+                "save": {
+                    "$ref": "#/$defs/saveDefinition",
+                    "description": "Saving throw configuration to reduce or avoid effects"
+                },
+                "affectsWholeRoom": {
+                    "type": "boolean",
+                    "description": "Whether the hazard affects the entire room",
+                    "default": true
+                },
+                "duration": {
+                    "type": "integer",
+                    "description": "Duration in turns (-1 for permanent)",
+                    "default": -1
+                },
+                "keywords": {
+                    "type": "array",
+                    "description": "Keywords for player commands to reference this hazard",
+                    "items": {
+                        "type": "string"
+                    },
+                    "default": []
+                },
+                "effectMessage": {
+                    "type": "string",
+                    "description": "Custom message displayed when the hazard affects a player"
+                }
+            }
+        },
+        "damageDefinition": {
+            "type": "object",
+            "description": "Configuration for damage dealt by a hazard",
+            "required": [
+                "dice",
+                "damageType"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "dice": {
+                    "type": "string",
+                    "description": "Dice expression for damage (e.g., '1d6', '2d4+2')",
+                    "pattern": "^\\d+d\\d+(\\+\\d+)?$"
+                },
+                "damageType": {
+                    "type": "string",
+                    "description": "Type of damage (e.g., 'fire', 'poison', 'piercing')"
+                },
+                "bonus": {
+                    "type": "integer",
+                    "description": "Flat bonus damage added after dice rolls",
+                    "default": 0
+                }
+            }
+        },
+        "saveDefinition": {
+            "type": "object",
+            "description": "Configuration for saving throw against hazard effects",
+            "required": [
+                "attribute",
+                "dc"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "attribute": {
+                    "type": "string",
+                    "description": "Attribute used for the saving throw",
+                    "enum": [
+                        "Fortitude",
+                        "Agility",
+                        "Will",
+                        "Wits"
+                    ]
+                },
+                "dc": {
+                    "type": "integer",
+                    "description": "Difficulty Class to beat for success",
+                    "minimum": 1,
+                    "maximum": 30
+                },
+                "negates": {
+                    "type": "boolean",
+                    "description": "If true, successful save negates effect; if false, halves damage",
+                    "default": false
+                }
+            }
+        }
+    }
+}
