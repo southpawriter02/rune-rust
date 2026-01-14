@@ -162,4 +162,105 @@ public class CombatGridService : ICombatGridService
     /// <inheritdoc/>
     public bool AreAdjacent(Guid entityId1, Guid entityId2) =>
         _activeGrid?.AreAdjacent(entityId1, entityId2) ?? false;
+
+    // ===== Room Initialization Methods (v0.5.2c) =====
+
+    /// <inheritdoc/>
+    public CombatGrid InitializeFromRoom(
+        Room room,
+        IEnumerable<DTOs.TerrainLayoutEntry>? terrainLayout = null,
+        IEnumerable<DTOs.CoverLayoutEntry>? coverLayout = null)
+    {
+        var grid = CreateGrid(room);
+        SetActiveGrid(grid);
+
+        if (terrainLayout != null)
+            ApplyRoomTerrain(terrainLayout);
+
+        if (coverLayout != null)
+            ApplyRoomCover(coverLayout);
+
+        _logger.LogInformation(
+            "Initialized grid from room {Room}: {W}x{H} with terrain/cover",
+            room.Name, grid.Width, grid.Height);
+
+        return grid;
+    }
+
+    /// <inheritdoc/>
+    public void ApplyRoomTerrain(IEnumerable<DTOs.TerrainLayoutEntry> terrainLayout)
+    {
+        if (_activeGrid == null)
+        {
+            _logger.LogWarning("Cannot apply terrain: no active grid");
+            return;
+        }
+
+        foreach (var entry in terrainLayout)
+        {
+            var terrainDef = _config.GetTerrainDefinitionById(entry.TerrainId);
+            if (terrainDef == null)
+            {
+                _logger.LogWarning("Unknown terrain '{Id}' in room configuration", entry.TerrainId);
+                continue;
+            }
+
+            foreach (var posStr in entry.Positions)
+            {
+                if (GridPosition.TryParse(posStr, out var pos) && _activeGrid.IsInBounds(pos))
+                {
+                    var cell = _activeGrid.GetCell(pos);
+                    cell?.SetTerrainDefinition(entry.TerrainId);
+                    cell?.SetTerrain(terrainDef.Type);
+
+                    _logger.LogDebug("Applied terrain '{Terrain}' at {Position}", entry.TerrainId, pos);
+                }
+                else
+                {
+                    _logger.LogWarning("Invalid or out-of-bounds position '{Pos}' for terrain", posStr);
+                }
+            }
+        }
+    }
+
+    /// <inheritdoc/>
+    public void ApplyRoomCover(IEnumerable<DTOs.CoverLayoutEntry> coverLayout)
+    {
+        if (_activeGrid == null)
+        {
+            _logger.LogWarning("Cannot apply cover: no active grid");
+            return;
+        }
+
+        foreach (var entry in coverLayout)
+        {
+            var coverDef = _config.GetCoverDefinitionById(entry.CoverId);
+            if (coverDef == null)
+            {
+                _logger.LogWarning("Unknown cover '{Id}' in room configuration", entry.CoverId);
+                continue;
+            }
+
+            foreach (var posStr in entry.GetAllPositions())
+            {
+                if (GridPosition.TryParse(posStr, out var pos) && _activeGrid.IsInBounds(pos))
+                {
+                    var coverObject = CoverObject.Create(coverDef, pos);
+                    if (_activeGrid.AddCover(coverObject))
+                    {
+                        _logger.LogDebug("Added cover '{Cover}' at {Position}", entry.CoverId, pos);
+                    }
+                    else
+                    {
+                        _logger.LogWarning("Failed to add cover '{Cover}' at {Position} (occupied?)", entry.CoverId, pos);
+                    }
+                }
+                else
+                {
+                    _logger.LogWarning("Invalid or out-of-bounds position '{Pos}' for cover", posStr);
+                }
+            }
+        }
+    }
 }
+

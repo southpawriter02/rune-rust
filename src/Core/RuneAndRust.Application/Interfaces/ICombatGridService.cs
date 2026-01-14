@@ -78,6 +78,32 @@ public interface ICombatGridService
     /// <param name="entityId2">Second entity's ID.</param>
     /// <returns><c>true</c> if adjacent; otherwise, <c>false</c>.</returns>
     bool AreAdjacent(Guid entityId1, Guid entityId2);
+
+    // ===== Room Initialization Methods (v0.5.2c) =====
+
+    /// <summary>
+    /// Initializes a grid from room configuration including terrain and cover.
+    /// </summary>
+    /// <param name="room">The room to initialize from.</param>
+    /// <param name="terrainLayout">Terrain layout entries from room configuration.</param>
+    /// <param name="coverLayout">Cover layout entries from room configuration.</param>
+    /// <returns>The initialized grid.</returns>
+    CombatGrid InitializeFromRoom(
+        Room room,
+        IEnumerable<DTOs.TerrainLayoutEntry>? terrainLayout = null,
+        IEnumerable<DTOs.CoverLayoutEntry>? coverLayout = null);
+
+    /// <summary>
+    /// Applies terrain configuration to the active grid.
+    /// </summary>
+    /// <param name="terrainLayout">Terrain layout entries to apply.</param>
+    void ApplyRoomTerrain(IEnumerable<DTOs.TerrainLayoutEntry> terrainLayout);
+
+    /// <summary>
+    /// Applies cover configuration to the active grid.
+    /// </summary>
+    /// <param name="coverLayout">Cover layout entries to apply.</param>
+    void ApplyRoomCover(IEnumerable<DTOs.CoverLayoutEntry> coverLayout);
 }
 
 /// <summary>

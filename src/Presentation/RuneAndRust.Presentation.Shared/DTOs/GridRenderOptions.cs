@@ -31,6 +31,16 @@ public class GridRenderOptions
     public bool Compact { get; init; } = false;
 
     /// <summary>
+    /// Whether to display terrain features on the grid.
+    /// </summary>
+    public bool ShowTerrain { get; init; } = true;
+
+    /// <summary>
+    /// Whether to display cover objects on the grid.
+    /// </summary>
+    public bool ShowCover { get; init; } = true;
+
+    /// <summary>
     /// Current turn number for display (optional).
     /// </summary>
     public int? TurnNumber { get; init; }
