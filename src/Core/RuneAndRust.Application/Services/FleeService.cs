@@ -175,9 +175,14 @@ public class FleeService
             var actualDamage = player.TakeDamage(rawDamage);
 
             attacks.Add(new OpportunityAttackResult(
-                monster.DisplayName,
-                actualDamage,
-                Hit: true));
+                AttackerId: monster.Monster.Id,
+                AttackerName: monster.DisplayName,
+                Hit: true,
+                Damage: actualDamage,
+                AttackRoll: "Opportunity attack (auto-hit)",
+                TargetRemainingHp: player.Health,
+                TargetDied: !player.IsAlive,
+                Message: $"{monster.DisplayName} strikes as you flee! {actualDamage} damage."));
 
             _logger.LogDebug(
                 "Opportunity attack from {Monster}: {Damage} damage",
@@ -186,4 +191,5 @@ public class FleeService
 
         return attacks.AsReadOnly();
     }
+
 }

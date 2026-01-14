@@ -306,6 +306,14 @@ public interface IGameConfigurationProvider
     /// </summary>
     /// <returns>Flanking configuration with bonus values, or null if not configured.</returns>
     FlankingConfiguration? GetFlankingConfiguration();
+
+    // ===== Opportunity Attack Configuration (v0.5.3b) =====
+
+    /// <summary>
+    /// Gets the opportunity attack configuration settings.
+    /// </summary>
+    /// <returns>Opportunity attack configuration, or null if not configured.</returns>
+    OpportunityAttackConfiguration? GetOpportunityAttackConfiguration();
 }
 
 /// <summary>
@@ -428,4 +436,52 @@ public record FlankingConfiguration
     public int BehindDamageBonus { get; init; } = 2;
 }
 
+/// <summary>
+/// Configuration for opportunity attack mechanics.
+/// </summary>
+/// <remarks>
+/// Controls when and how opportunity attacks trigger:
+/// <list type="bullet">
+///   <item><description>Triggered when leaving a threatened square</description></item>
+///   <item><description>Each entity gets one reaction per round</description></item>
+///   <item><description>Disengage action allows safe movement</description></item>
+/// </list>
+/// </remarks>
+public record OpportunityAttackConfiguration
+{
+    /// <summary>
+    /// Whether opportunity attacks are enabled.
+    /// </summary>
+    public bool Enabled { get; init; } = true;
 
+    /// <summary>
+    /// Whether only melee weapons can make opportunity attacks.
+    /// </summary>
+    public bool RequiresMeleeWeapon { get; init; } = true;
+
+    /// <summary>
+    /// Whether each entity is limited to one reaction per round.
+    /// </summary>
+    public bool OneReactionPerRound { get; init; } = true;
+
+    /// <summary>
+    /// Configuration for the disengage action.
+    /// </summary>
+    public DisengageConfiguration Disengage { get; init; } = new();
+}
+
+/// <summary>
+/// Configuration for the disengage action.
+/// </summary>
+public record DisengageConfiguration
+{
+    /// <summary>
+    /// Whether the disengage action is available.
+    /// </summary>
+    public bool Enabled { get; init; } = true;
+
+    /// <summary>
+    /// Whether disengage consumes the entity's action for the turn.
+    /// </summary>
+    public bool ConsumesAction { get; init; } = true;
+}

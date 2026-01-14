@@ -5,5 +5,14 @@
         "damageBonus": 0,
         "behindAttackBonus": 2,
         "behindDamageBonus": 2
+    },
+    "opportunityAttacks": {
+        "enabled": true,
+        "requiresMeleeWeapon": true,
+        "oneReactionPerRound": true,
+        "disengage": {
+            "enabled": true,
+            "consumesAction": true
+        }
     }
 }

@@ -441,5 +441,28 @@ public class MockConfigurationProvider : IGameConfigurationProvider
         _flankingConfiguration = new FlankingConfiguration();
         return this;
     }
-}
 
+    // ===== Opportunity Attack Configuration (v0.5.3b) =====
+
+    private OpportunityAttackConfiguration? _opportunityAttackConfiguration;
+
+    public OpportunityAttackConfiguration? GetOpportunityAttackConfiguration() => _opportunityAttackConfiguration;
+
+    /// <summary>
+    /// Sets the opportunity attack configuration.
+    /// </summary>
+    public MockConfigurationProvider WithOpportunityAttackConfiguration(OpportunityAttackConfiguration config)
+    {
+        _opportunityAttackConfiguration = config;
+        return this;
+    }
+
+    /// <summary>
+    /// Sets default opportunity attack configuration for testing.
+    /// </summary>
+    public MockConfigurationProvider WithDefaultOpportunityAttackConfiguration()
+    {
+        _opportunityAttackConfiguration = new OpportunityAttackConfiguration();
+        return this;
+    }
+}

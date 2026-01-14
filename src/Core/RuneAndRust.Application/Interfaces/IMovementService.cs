@@ -70,6 +70,7 @@ public interface IMovementService
 /// <param name="Message">Human-readable result message.</param>
 /// <param name="FailureReason">The reason for failure (null if successful).</param>
 /// <param name="TerrainDamage">Damage taken from hazardous terrain (v0.5.2a).</param>
+/// <param name="OpportunityAttacks">Opportunity attacks triggered by this move (v0.5.3b).</param>
 public readonly record struct MovementResult(
     bool Success,
     GridPosition? OldPosition,
@@ -78,8 +79,10 @@ public readonly record struct MovementResult(
     int MovementPointsRemaining,
     string Message,
     MovementFailureReason? FailureReason,
-    TerrainDamageResult? TerrainDamage = null)
+    TerrainDamageResult? TerrainDamage = null,
+    IReadOnlyList<OpportunityAttackResult>? OpportunityAttacks = null)
 {
+
     /// <summary>
     /// Creates a success result.
     /// </summary>

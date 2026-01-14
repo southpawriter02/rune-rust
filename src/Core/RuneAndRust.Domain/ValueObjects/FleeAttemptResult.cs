@@ -1,15 +1,27 @@
 namespace RuneAndRust.Domain.ValueObjects;
 
 /// <summary>
-/// Result of an opportunity attack made during a failed flee attempt.
+/// Result of an opportunity attack made during movement or failed flee attempt.
 /// </summary>
-/// <param name="AttackerName">The name of the attacking monster.</param>
-/// <param name="Damage">The amount of damage dealt.</param>
-/// <param name="Hit">Whether the attack hit (always true for opportunity attacks).</param>
+/// <param name="AttackerId">The unique identifier of the attacking entity.</param>
+
+/// <param name="AttackerName">The display name of the attacking entity.</param>
+/// <param name="Hit">Whether the attack hit.</param>
+/// <param name="Damage">The amount of damage dealt (0 if miss).</param>
+/// <param name="AttackRoll">Details of the attack roll for display.</param>
+/// <param name="TargetRemainingHp">Target's HP after the attack.</param>
+/// <param name="TargetDied">Whether the target died from this attack.</param>
+/// <param name="Message">Human-readable message describing the attack.</param>
 public readonly record struct OpportunityAttackResult(
+    Guid AttackerId,
     string AttackerName,
+    bool Hit,
     int Damage,
-    bool Hit);
+    string AttackRoll = "",
+    int TargetRemainingHp = 0,
+    bool TargetDied = false,
+    string Message = "");
+
 
 /// <summary>
 /// Result of an attempt to flee combat.

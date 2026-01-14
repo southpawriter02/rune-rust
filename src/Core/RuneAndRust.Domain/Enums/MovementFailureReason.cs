@@ -38,5 +38,10 @@ public enum MovementFailureReason
     /// <summary>
     /// The entity is not currently in combat.
     /// </summary>
-    NotInCombat
+    NotInCombat,
+
+    /// <summary>
+    /// The entity died from an opportunity attack while attempting to move.
+    /// </summary>
+    EntityDied
 }

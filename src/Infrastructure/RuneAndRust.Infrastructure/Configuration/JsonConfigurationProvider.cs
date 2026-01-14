@@ -2414,6 +2414,7 @@ public class JsonConfigurationProvider : IGameConfigurationProvider
     private class CombatJsonConfig
     {
         public FlankingJsonEntry? Flanking { get; set; }
+        public OpportunityAttacksJsonEntry? OpportunityAttacks { get; set; }
     }
 
     private class FlankingJsonEntry
@@ -2424,4 +2425,53 @@ public class JsonConfigurationProvider : IGameConfigurationProvider
         public int? BehindAttackBonus { get; set; }
         public int? BehindDamageBonus { get; set; }
     }
+
+    // ===== Opportunity Attack Configuration (v0.5.3b) =====
+
+    private OpportunityAttackConfiguration? _opportunityAttackConfig;
+
+    /// <inheritdoc/>
+    public OpportunityAttackConfiguration? GetOpportunityAttackConfiguration()
+    {
+        if (_opportunityAttackConfig != null) return _opportunityAttackConfig;
+
+        var filePath = Path.Combine(_configPath, "combat.json");
+        var config = LoadJsonFile<CombatJsonConfig>(filePath);
+
+        if (config?.OpportunityAttacks == null)
+        {
+            _logger.LogDebug("No opportunity attack configuration found, using defaults");
+            return null;
+        }
+
+        _opportunityAttackConfig = new OpportunityAttackConfiguration
+        {
+            Enabled = config.OpportunityAttacks.Enabled ?? true,
+            RequiresMeleeWeapon = config.OpportunityAttacks.RequiresMeleeWeapon ?? true,
+            OneReactionPerRound = config.OpportunityAttacks.OneReactionPerRound ?? true,
+            Disengage = new DisengageConfiguration
+            {
+                Enabled = config.OpportunityAttacks.Disengage?.Enabled ?? true,
+                ConsumesAction = config.OpportunityAttacks.Disengage?.ConsumesAction ?? true
+            }
+        };
+
+        _logger.LogDebug("Loaded opportunity attack configuration: Enabled={Enabled}", _opportunityAttackConfig.Enabled);
+        return _opportunityAttackConfig;
+    }
+
+    private class OpportunityAttacksJsonEntry
+    {
+        public bool? Enabled { get; set; }
+        public bool? RequiresMeleeWeapon { get; set; }
+        public bool? OneReactionPerRound { get; set; }
+        public DisengageJsonEntry? Disengage { get; set; }
+    }
+
+    private class DisengageJsonEntry
+    {
+        public bool? Enabled { get; set; }
+        public bool? ConsumesAction { get; set; }
+    }
 }
+
