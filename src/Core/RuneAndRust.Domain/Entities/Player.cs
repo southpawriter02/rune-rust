@@ -1,3 +1,4 @@
+using RuneAndRust.Domain.Constants;
 using RuneAndRust.Domain.Definitions;
 using RuneAndRust.Domain.Enums;
 using RuneAndRust.Domain.Interfaces;
@@ -1011,10 +1012,84 @@ public class Player : IEntity
         };
     }
 
+    // ===== Combat Grid Movement Properties (v0.5.0b) =====
+
+    /// <summary>
+    /// Gets or sets the base movement speed (from configuration/class).
+    /// </summary>
+    /// <remarks>
+    /// Speed 4 = 8 movement points per turn (4 cardinal moves).
+    /// </remarks>
+    public int BaseMovementSpeed { get; private set; } = 4;
+
+    /// <summary>
+    /// Gets the current movement speed (with modifiers applied).
+    /// </summary>
+    /// <remarks>
+    /// Future: Will include modifiers from equipment, buffs, etc.
+    /// </remarks>
+    public int MovementSpeed => BaseMovementSpeed;
+
+    /// <summary>
+    /// Gets the current combat grid position (null if not in combat).
+    /// </summary>
+    public GridPosition? CombatGridPosition { get; private set; }
+
+    /// <summary>
+    /// Gets remaining movement points this turn.
+    /// </summary>
+    public int MovementPointsRemaining { get; private set; }
+
+    /// <summary>
+    /// Sets the base movement speed.
+    /// </summary>
+    /// <param name="speed">The new base movement speed (minimum 1).</param>
+    public void SetMovementSpeed(int speed)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(speed, 1);
+        BaseMovementSpeed = speed;
+    }
+
+    /// <summary>
+    /// Sets the combat grid position.
+    /// </summary>
+    /// <param name="position">The grid position, or null to clear.</param>
+    public void SetCombatGridPosition(GridPosition? position)
+    {
+        CombatGridPosition = position;
+    }
+
+    /// <summary>
+    /// Resets movement points to full (called at start of turn).
+    /// </summary>
+    public void ResetMovementPoints()
+    {
+        MovementPointsRemaining = MovementCosts.SpeedToPoints(MovementSpeed);
+    }
+
+    /// <summary>
+    /// Uses movement points for a move action.
+    /// </summary>
+    /// <param name="cost">The movement point cost.</param>
+    /// <returns><c>true</c> if successful; <c>false</c> if insufficient points.</returns>
+    public bool UseMovementPoints(int cost)
+    {
+        if (cost > MovementPointsRemaining)
+            return false;
+        MovementPointsRemaining -= cost;
+        return true;
+    }
+
+    /// <summary>
+    /// Gets movement points remaining as a display-friendly value.
+    /// </summary>
+    /// <returns>Movement points converted to display speed (points / 2).</returns>
+    public float GetDisplayMovementRemaining() =>
+        MovementPointsRemaining / (float)MovementCosts.PointMultiplier;
+
     /// <summary>
     /// Returns a string representation of this player.
     /// </summary>
     /// <returns>A string containing the player name and current/max health.</returns>
     public override string ToString() => $"{Name} (HP: {Health}/{Stats.MaxHealth})";
 }
-

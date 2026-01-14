@@ -1,3 +1,4 @@
+using RuneAndRust.Domain.Constants;
 using RuneAndRust.Domain.Enums;
 using RuneAndRust.Domain.Interfaces;
 using RuneAndRust.Domain.ValueObjects;
@@ -474,6 +475,66 @@ public class Monster : IEntity
             VisionType.DarkVision when roomLight == LightLevel.Dark => LightLevel.Dim,
             _ => roomLight
         };
+    }
+
+    // ===== Combat Grid Movement Properties (v0.5.0b) =====
+
+    /// <summary>
+    /// Gets the movement speed (from definition, default 3).
+    /// </summary>
+    /// <remarks>
+    /// Speed 3 = 6 movement points per turn.
+    /// </remarks>
+    public int MovementSpeed { get; private set; } = 3;
+
+    /// <summary>
+    /// Gets the current combat grid position (null if not in combat).
+    /// </summary>
+    public GridPosition? CombatGridPosition { get; private set; }
+
+    /// <summary>
+    /// Gets remaining movement points this turn.
+    /// </summary>
+    public int MovementPointsRemaining { get; private set; }
+
+    /// <summary>
+    /// Sets the movement speed from definition.
+    /// </summary>
+    /// <param name="speed">The movement speed (minimum 1).</param>
+    public void SetMovementSpeed(int speed)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(speed, 1);
+        MovementSpeed = speed;
+    }
+
+    /// <summary>
+    /// Sets the combat grid position.
+    /// </summary>
+    /// <param name="position">The grid position, or null to clear.</param>
+    public void SetCombatGridPosition(GridPosition? position)
+    {
+        CombatGridPosition = position;
+    }
+
+    /// <summary>
+    /// Resets movement points to full (called at start of turn).
+    /// </summary>
+    public void ResetMovementPoints()
+    {
+        MovementPointsRemaining = MovementCosts.SpeedToPoints(MovementSpeed);
+    }
+
+    /// <summary>
+    /// Uses movement points for a move action.
+    /// </summary>
+    /// <param name="cost">The movement point cost.</param>
+    /// <returns><c>true</c> if successful; <c>false</c> if insufficient points.</returns>
+    public bool UseMovementPoints(int cost)
+    {
+        if (cost > MovementPointsRemaining)
+            return false;
+        MovementPointsRemaining -= cost;
+        return true;
     }
 
     /// <summary>

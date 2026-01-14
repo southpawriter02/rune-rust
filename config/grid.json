@@ -10,6 +10,12 @@
         "playerStartPosition": "center-south",
         "monsterSpawnZone": "north"
     },
+    "movementSettings": {
+        "defaultPlayerSpeed": 4,
+        "defaultMonsterSpeed": 3,
+        "diagonalCostMultiplier": 1.5,
+        "allowDiagonalMovement": true
+    },
     "roomGridOverrides": [
         {
             "roomId": "boss-chamber",
