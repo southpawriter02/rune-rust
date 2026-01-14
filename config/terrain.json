@@ -1,0 +1,92 @@
+{
+    "$schema": "./schemas/terrain.schema.json",
+    "terrainDefinitions": [
+        {
+            "id": "normal-floor",
+            "name": "Stone Floor",
+            "type": "Normal",
+            "movementCostMultiplier": 1.0,
+            "displayChar": ".",
+            "description": "Normal stone floor"
+        },
+        {
+            "id": "rubble",
+            "name": "Rubble",
+            "type": "Difficult",
+            "movementCostMultiplier": 2.0,
+            "displayChar": "~",
+            "description": "Difficult terrain - 2x movement cost"
+        },
+        {
+            "id": "shallow-water",
+            "name": "Shallow Water",
+            "type": "Difficult",
+            "movementCostMultiplier": 2.0,
+            "displayChar": "≈",
+            "description": "Shallow water - 2x movement cost"
+        },
+        {
+            "id": "mud",
+            "name": "Thick Mud",
+            "type": "Difficult",
+            "movementCostMultiplier": 2.0,
+            "displayChar": "~",
+            "description": "Thick mud - 2x movement cost"
+        },
+        {
+            "id": "pit",
+            "name": "Pit",
+            "type": "Impassable",
+            "displayChar": "○",
+            "description": "Deep pit - impassable"
+        },
+        {
+            "id": "wall",
+            "name": "Wall",
+            "type": "Impassable",
+            "blocksLOS": true,
+            "displayChar": "#",
+            "description": "Solid wall - impassable, blocks LOS"
+        },
+        {
+            "id": "fire",
+            "name": "Fire",
+            "type": "Hazardous",
+            "movementCostMultiplier": 1.0,
+            "damageOnEntry": "1d6",
+            "damageType": "fire",
+            "displayChar": "▲",
+            "description": "Flames - 1d6 fire damage on entry"
+        },
+        {
+            "id": "acid-pool",
+            "name": "Acid Pool",
+            "type": "Hazardous",
+            "movementCostMultiplier": 1.5,
+            "damageOnEntry": "1d4",
+            "damageType": "acid",
+            "displayChar": "●",
+            "description": "Acid pool - 1d4 acid damage on entry"
+        },
+        {
+            "id": "spike-trap",
+            "name": "Spike Trap",
+            "type": "Hazardous",
+            "movementCostMultiplier": 1.0,
+            "damageOnEntry": "1d8",
+            "damageType": "piercing",
+            "displayChar": "^",
+            "description": "Spike trap - 1d8 piercing damage on entry"
+        },
+        {
+            "id": "lava",
+            "name": "Lava",
+            "type": "Hazardous",
+            "movementCostMultiplier": 1.0,
+            "damageOnEntry": "2d6",
+            "damageType": "fire",
+            "displayChar": "▓",
+            "description": "Molten lava - 2d6 fire damage on entry"
+        }
+    ]
+}

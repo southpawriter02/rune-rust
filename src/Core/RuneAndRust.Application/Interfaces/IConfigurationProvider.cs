@@ -268,6 +268,21 @@ public interface IGameConfigurationProvider
     /// </summary>
     /// <returns>Grid settings with default dimensions and spawn zones.</returns>
     GridSettings GetGridSettings();
+
+    // ===== Terrain Configuration (v0.5.2a) =====
+
+    /// <summary>
+    /// Gets all terrain definitions.
+    /// </summary>
+    /// <returns>Read-only list of terrain definitions.</returns>
+    IReadOnlyList<TerrainDefinition> GetTerrainDefinitions();
+
+    /// <summary>
+    /// Gets a terrain definition by ID.
+    /// </summary>
+    /// <param name="terrainId">The terrain identifier.</param>
+    /// <returns>The terrain definition or null if not found.</returns>
+    TerrainDefinition? GetTerrainDefinitionById(string terrainId);
 }
 
 /// <summary>

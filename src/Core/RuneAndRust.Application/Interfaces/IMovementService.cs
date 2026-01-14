@@ -1,3 +1,4 @@
+using RuneAndRust.Application.DTOs;
 using RuneAndRust.Domain.Entities;
 using RuneAndRust.Domain.Enums;
 using RuneAndRust.Domain.ValueObjects;
@@ -68,6 +69,7 @@ public interface IMovementService
 /// <param name="MovementPointsRemaining">Remaining points after move.</param>
 /// <param name="Message">Human-readable result message.</param>
 /// <param name="FailureReason">The reason for failure (null if successful).</param>
+/// <param name="TerrainDamage">Damage taken from hazardous terrain (v0.5.2a).</param>
 public readonly record struct MovementResult(
     bool Success,
     GridPosition? OldPosition,
@@ -75,7 +77,8 @@ public readonly record struct MovementResult(
     int MovementPointsUsed,
     int MovementPointsRemaining,
     string Message,
-    MovementFailureReason? FailureReason)
+    MovementFailureReason? FailureReason,
+    TerrainDamageResult? TerrainDamage = null)
 {
     /// <summary>
     /// Creates a success result.
@@ -85,12 +88,13 @@ public readonly record struct MovementResult(
         GridPosition newPos,
         int pointsUsed,
         int pointsRemaining,
-        string message) =>
-        new(true, oldPos, newPos, pointsUsed, pointsRemaining, message, null);
+        string message,
+        TerrainDamageResult? terrainDamage = null) =>
+        new(true, oldPos, newPos, pointsUsed, pointsRemaining, message, null, terrainDamage);
 
     /// <summary>
     /// Creates a failure result.
     /// </summary>
     public static MovementResult Fail(MovementFailureReason reason, string message) =>
-        new(false, null, null, 0, 0, message, reason);
+        new(false, null, null, 0, 0, message, reason, null);
 }

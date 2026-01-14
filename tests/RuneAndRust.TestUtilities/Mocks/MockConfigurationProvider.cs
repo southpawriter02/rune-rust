@@ -353,5 +353,37 @@ public class MockConfigurationProvider : IGameConfigurationProvider
         _gridSettings = settings;
         return this;
     }
+
+    // ===== Terrain Configuration (v0.5.2a) =====
+
+    private readonly List<TerrainDefinition> _terrainDefinitions = [];
+
+    public IReadOnlyList<TerrainDefinition> GetTerrainDefinitions() => _terrainDefinitions;
+
+    public TerrainDefinition? GetTerrainDefinitionById(string terrainId) =>
+        _terrainDefinitions.FirstOrDefault(t => t.Id.Equals(terrainId, StringComparison.OrdinalIgnoreCase));
+
+    /// <summary>
+    /// Adds a terrain definition.
+    /// </summary>
+    public MockConfigurationProvider WithTerrainDefinition(TerrainDefinition terrain)
+    {
+        _terrainDefinitions.Add(terrain);
+        return this;
+    }
+
+    /// <summary>
+    /// Adds default terrain definitions for testing.
+    /// </summary>
+    public MockConfigurationProvider WithDefaultTerrainDefinitions()
+    {
+        _terrainDefinitions.AddRange([
+            TerrainDefinition.Create("normal-floor", "Stone Floor", Domain.Enums.TerrainType.Normal),
+            TerrainDefinition.Create("rubble", "Rubble", Domain.Enums.TerrainType.Difficult, movementCostMultiplier: 2.0f),
+            TerrainDefinition.Create("wall", "Wall", Domain.Enums.TerrainType.Impassable, blocksLOS: true, displayChar: '#'),
+            TerrainDefinition.Create("fire", "Fire", Domain.Enums.TerrainType.Hazardous, damageOnEntry: "1d6", damageType: "fire", displayChar: '▲')
+        ]);
+        return this;
+    }
 }
 

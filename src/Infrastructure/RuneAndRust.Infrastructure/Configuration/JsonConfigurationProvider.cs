@@ -44,6 +44,7 @@ public class JsonConfigurationProvider : IGameConfigurationProvider
     private ObjectDescriptorConfiguration? _objectDescriptorConfig;
     private AmbientEventConfiguration? _ambientEventConfig;
     private GridSettings? _gridSettings;
+    private IReadOnlyList<TerrainDefinition>? _terrainDefinitions;
 
     private static readonly JsonSerializerOptions DefaultJsonOptions = new()
     {
@@ -2195,6 +2196,96 @@ public class JsonConfigurationProvider : IGameConfigurationProvider
         public string? RoomId { get; set; }
         public int Width { get; set; }
         public int Height { get; set; }
+    }
+
+    // ===== Terrain Configuration (v0.5.2a) =====
+
+    /// <inheritdoc/>
+    public IReadOnlyList<TerrainDefinition> GetTerrainDefinitions()
+    {
+        if (_terrainDefinitions != null) return _terrainDefinitions;
+
+        var filePath = Path.Combine(_configPath, "terrain.json");
+        var config = LoadJsonFile<TerrainJsonConfig>(filePath);
+
+        if (config?.TerrainDefinitions == null || config.TerrainDefinitions.Count == 0)
+        {
+            _logger.LogInformation("No terrain definitions found, using defaults");
+            _terrainDefinitions = GetDefaultTerrainDefinitions();
+            return _terrainDefinitions;
+        }
+
+        _terrainDefinitions = config.TerrainDefinitions
+            .Select(ToTerrainDefinition)
+            .Where(t => t != null)
+            .Cast<TerrainDefinition>()
+            .ToList();
+
+        _logger.LogDebug("Loaded {Count} terrain definitions", _terrainDefinitions.Count);
+        return _terrainDefinitions;
+    }
+
+    /// <inheritdoc/>
+    public TerrainDefinition? GetTerrainDefinitionById(string terrainId)
+    {
+        if (string.IsNullOrWhiteSpace(terrainId)) return null;
+        return GetTerrainDefinitions().FirstOrDefault(t =>
+            t.Id.Equals(terrainId, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private TerrainDefinition? ToTerrainDefinition(TerrainJsonEntry entry)
+    {
+        try
+        {
+            if (!Enum.TryParse<TerrainType>(entry.Type, ignoreCase: true, out var terrainType))
+            {
+                _logger.LogWarning("Unknown terrain type '{Type}' for terrain '{Id}', defaulting to Normal",
+                    entry.Type, entry.Id);
+                terrainType = TerrainType.Normal;
+            }
+
+            return TerrainDefinition.Create(
+                id: entry.Id ?? "",
+                name: entry.Name ?? entry.Id ?? "Unknown",
+                type: terrainType,
+                movementCostMultiplier: entry.MovementCostMultiplier ?? 1.0f,
+                damageOnEntry: entry.DamageOnEntry,
+                damageType: entry.DamageType,
+                blocksLOS: entry.BlocksLOS ?? false,
+                displayChar: string.IsNullOrEmpty(entry.DisplayChar) ? '.' : entry.DisplayChar[0],
+                description: entry.Description ?? "");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to create terrain definition for {Id}", entry.Id);
+            return null;
+        }
+    }
+
+    private static List<TerrainDefinition> GetDefaultTerrainDefinitions() =>
+    [
+        TerrainDefinition.Create("normal-floor", "Stone Floor", TerrainType.Normal),
+        TerrainDefinition.Create("rubble", "Rubble", TerrainType.Difficult, movementCostMultiplier: 2.0f, displayChar: '~'),
+        TerrainDefinition.Create("wall", "Wall", TerrainType.Impassable, blocksLOS: true, displayChar: '#'),
+        TerrainDefinition.Create("fire", "Fire", TerrainType.Hazardous, damageOnEntry: "1d6", damageType: "fire", displayChar: '▲')
+    ];
+
+    private class TerrainJsonConfig
+    {
+        public List<TerrainJsonEntry> TerrainDefinitions { get; set; } = [];
+    }
+
+    private class TerrainJsonEntry
+    {
+        public string? Id { get; set; }
+        public string? Name { get; set; }
+        public string? Type { get; set; }
+        public float? MovementCostMultiplier { get; set; }
+        public string? DamageOnEntry { get; set; }
+        public string? DamageType { get; set; }
+        public bool? BlocksLOS { get; set; }
+        public string? DisplayChar { get; set; }
+        public string? Description { get; set; }
     }
 }
 

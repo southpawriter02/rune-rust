@@ -1,3 +1,5 @@
+using RuneAndRust.Domain.Enums;
+
 namespace RuneAndRust.Domain.ValueObjects;
 
 /// <summary>
@@ -43,7 +45,16 @@ public class GridCell
     /// <summary>
     /// Gets a value indicating whether entities can move through this cell.
     /// </summary>
-    public bool IsPassable { get; private set; } = true;
+    /// <remarks>
+    /// Considers both explicit passability setting and terrain type.
+    /// Impassable terrain (walls, pits) always returns <c>false</c>.
+    /// </remarks>
+    public bool IsPassable => _isPassable && TerrainType != TerrainType.Impassable;
+
+    /// <summary>
+    /// Backing field for passability.
+    /// </summary>
+    private bool _isPassable = true;
 
     // ===== Line of Sight Properties (v0.5.1c) =====
 
@@ -60,10 +71,75 @@ public class GridCell
     /// Gets whether this cell blocks line of sight (computed).
     /// </summary>
     /// <remarks>
-    /// Returns true if BlocksLOS is explicitly set or if the cell is impassable.
+    /// Returns true if BlocksLOS is explicitly set, if the cell is impassable,
+    /// or if the terrain type is Impassable.
     /// Walls and obstacles block LOS, but occupied cells do not.
     /// </remarks>
-    public bool EffectivelyBlocksLOS => BlocksLOS || !IsPassable;
+    public bool EffectivelyBlocksLOS => BlocksLOS || !IsPassable || TerrainType == TerrainType.Impassable;
+
+    // ===== Terrain Properties (v0.5.2a) =====
+
+    /// <summary>
+    /// Gets the terrain type of this cell.
+    /// </summary>
+    /// <remarks>
+    /// Defaults to <see cref="Enums.TerrainType.Normal"/>.
+    /// Affects movement costs and passability.
+    /// </remarks>
+    public TerrainType TerrainType { get; private set; } = TerrainType.Normal;
+
+    /// <summary>
+    /// Gets the terrain definition ID for custom terrain configuration.
+    /// </summary>
+    /// <remarks>
+    /// References a terrain definition from <c>config/terrain.json</c>.
+    /// When set, the terrain service uses the definition's properties.
+    /// </remarks>
+    public string? TerrainDefinitionId { get; private set; }
+
+    /// <summary>
+    /// Sets the terrain type for this cell.
+    /// </summary>
+    /// <param name="type">The terrain type to set.</param>
+    /// <remarks>
+    /// Clears any custom terrain definition ID when setting base type.
+    /// </remarks>
+    public void SetTerrain(TerrainType type)
+    {
+        TerrainType = type;
+        TerrainDefinitionId = null;
+    }
+
+    /// <summary>
+    /// Sets the terrain by definition ID.
+    /// </summary>
+    /// <param name="definitionId">The terrain definition ID (normalized to lowercase).</param>
+    /// <remarks>
+    /// The terrain service will look up the definition to get properties.
+    /// </remarks>
+    public void SetTerrainDefinition(string definitionId)
+    {
+        TerrainDefinitionId = definitionId?.ToLowerInvariant();
+    }
+
+    /// <summary>
+    /// Gets the movement cost multiplier based on terrain type.
+    /// </summary>
+    /// <returns>
+    /// 1.0 for Normal/Hazardous, 2.0 for Difficult, <see cref="float.MaxValue"/> for Impassable.
+    /// </returns>
+    /// <remarks>
+    /// For cells with a <see cref="TerrainDefinitionId"/>, the terrain service
+    /// should use the definition's multiplier instead of this base value.
+    /// </remarks>
+    public float GetMovementCostMultiplier() => TerrainType switch
+    {
+        TerrainType.Normal => 1.0f,
+        TerrainType.Difficult => 2.0f,
+        TerrainType.Hazardous => 1.0f,
+        TerrainType.Impassable => float.MaxValue,
+        _ => 1.0f
+    };
 
     /// <summary>
     /// Sets whether this cell blocks line of sight.
@@ -134,7 +210,7 @@ public class GridCell
     /// Sets whether this cell is passable for movement.
     /// </summary>
     /// <param name="passable">Whether entities can enter this cell.</param>
-    public void SetPassable(bool passable) => IsPassable = passable;
+    public void SetPassable(bool passable) => _isPassable = passable;
 
     /// <summary>
     /// Gets the ASCII character for displaying this cell.
