@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Core\RuneAndRust.Application\RuneAndRust.Application.csproj" />
+    <ProjectReference Include="..\..\src\Presentation\RuneAndRust.Presentation.Shared\RuneAndRust.Presentation.Shared.csproj" />
     <ProjectReference Include="..\RuneAndRust.TestUtilities\RuneAndRust.TestUtilities.csproj" />
   </ItemGroup>
 
