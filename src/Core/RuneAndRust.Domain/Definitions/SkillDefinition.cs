@@ -166,6 +166,60 @@ public class SkillDefinition
     /// </summary>
     public bool RequiresTraining => !AllowUntrained || UntrainedPenalty > 0;
 
+    // ===== Proficiency System (v0.4.3c) =====
+
+    /// <summary>
+    /// Gets the bonus granted per proficiency level.
+    /// </summary>
+    public int BonusPerLevel { get; init; } = 1;
+
+    /// <summary>
+    /// Gets the experience thresholds for each proficiency level.
+    /// </summary>
+    public IReadOnlyDictionary<Enums.SkillProficiency, int> ExperienceThresholds { get; init; }
+        = GetDefaultThresholds();
+
+    /// <summary>
+    /// Gets the default experience thresholds for skill progression.
+    /// </summary>
+    private static Dictionary<Enums.SkillProficiency, int> GetDefaultThresholds() => new()
+    {
+        { Enums.SkillProficiency.Novice, 0 },
+        { Enums.SkillProficiency.Apprentice, 50 },
+        { Enums.SkillProficiency.Journeyman, 150 },
+        { Enums.SkillProficiency.Expert, 350 },
+        { Enums.SkillProficiency.Master, 700 }
+    };
+
+    /// <summary>
+    /// Gets the bonus for a given proficiency level.
+    /// </summary>
+    /// <param name="proficiency">The proficiency level.</param>
+    /// <returns>The skill bonus.</returns>
+    public int GetProficiencyBonus(Enums.SkillProficiency proficiency) =>
+        (int)proficiency * BonusPerLevel;
+
+    /// <summary>
+    /// Gets the proficiency level for a given experience amount.
+    /// </summary>
+    /// <param name="experience">The experience amount.</param>
+    /// <returns>The proficiency level earned.</returns>
+    public Enums.SkillProficiency GetProficiencyForExperience(int experience)
+    {
+        var result = Enums.SkillProficiency.Untrained;
+
+        foreach (var kvp in ExperienceThresholds.OrderBy(k => k.Value))
+        {
+            if (experience >= kvp.Value)
+                result = kvp.Key;
+            else
+                break;
+        }
+
+        return result;
+    }
+
     /// <inheritdoc />
     public override string ToString() => $"{Name} ({PrimaryAttribute})";
 }
+

@@ -901,6 +901,65 @@ public class Player : IEntity
         return _completedQuests.Where(q => q.Category == QuestCategory.Daily);
     }
 
+    // ===== Skills (v0.4.3c) =====
+
+    /// <summary>
+    /// Dictionary of player skills keyed by skill ID.
+    /// </summary>
+    private readonly Dictionary<string, PlayerSkill> _skills = new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// Gets the player's skills collection.
+    /// </summary>
+    public IReadOnlyDictionary<string, PlayerSkill> Skills => _skills;
+
+    /// <summary>
+    /// Gets a skill by ID.
+    /// </summary>
+    /// <param name="skillId">The skill ID.</param>
+    /// <returns>The player skill, or null if not found.</returns>
+    public PlayerSkill? GetSkill(string skillId)
+    {
+        if (string.IsNullOrWhiteSpace(skillId))
+            return null;
+
+        return _skills.TryGetValue(skillId, out var skill) ? skill : null;
+    }
+
+    /// <summary>
+    /// Adds or updates a skill.
+    /// </summary>
+    /// <param name="skill">The skill to add.</param>
+    public void AddSkill(PlayerSkill skill)
+    {
+        ArgumentNullException.ThrowIfNull(skill);
+        _skills[skill.SkillId] = skill;
+    }
+
+    /// <summary>
+    /// Checks if the player has a skill.
+    /// </summary>
+    /// <param name="skillId">The skill ID.</param>
+    /// <returns>True if the skill exists.</returns>
+    public bool HasSkill(string skillId)
+    {
+        if (string.IsNullOrWhiteSpace(skillId))
+            return false;
+
+        return _skills.ContainsKey(skillId);
+    }
+
+    /// <summary>
+    /// Gets the proficiency level for a skill.
+    /// </summary>
+    /// <param name="skillId">The skill ID.</param>
+    /// <returns>The proficiency, or Untrained if not found.</returns>
+    public SkillProficiency GetSkillProficiency(string skillId)
+    {
+        var skill = GetSkill(skillId);
+        return skill?.Proficiency ?? SkillProficiency.Untrained;
+    }
+
     // ===== Vision & Light Properties (v0.4.3b) =====
 
     /// <summary>
