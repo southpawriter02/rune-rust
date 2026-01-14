@@ -283,6 +283,21 @@ public interface IGameConfigurationProvider
     /// <param name="terrainId">The terrain identifier.</param>
     /// <returns>The terrain definition or null if not found.</returns>
     TerrainDefinition? GetTerrainDefinitionById(string terrainId);
+
+    // ===== Cover Configuration (v0.5.2b) =====
+
+    /// <summary>
+    /// Gets all cover definitions.
+    /// </summary>
+    /// <returns>Read-only list of cover definitions.</returns>
+    IReadOnlyList<CoverDefinition> GetCoverDefinitions();
+
+    /// <summary>
+    /// Gets a cover definition by ID.
+    /// </summary>
+    /// <param name="coverId">The cover identifier.</param>
+    /// <returns>The cover definition or null if not found.</returns>
+    CoverDefinition? GetCoverDefinitionById(string coverId);
 }
 
 /// <summary>

@@ -45,6 +45,7 @@ public class JsonConfigurationProvider : IGameConfigurationProvider
     private AmbientEventConfiguration? _ambientEventConfig;
     private GridSettings? _gridSettings;
     private IReadOnlyList<TerrainDefinition>? _terrainDefinitions;
+    private IReadOnlyList<CoverDefinition>? _coverDefinitions;
 
     private static readonly JsonSerializerOptions DefaultJsonOptions = new()
     {
@@ -2287,5 +2288,96 @@ public class JsonConfigurationProvider : IGameConfigurationProvider
         public string? DisplayChar { get; set; }
         public string? Description { get; set; }
     }
-}
 
+    // ===== Cover Configuration (v0.5.2b) =====
+
+    /// <inheritdoc/>
+    public IReadOnlyList<CoverDefinition> GetCoverDefinitions()
+    {
+        if (_coverDefinitions != null) return _coverDefinitions;
+
+        var filePath = Path.Combine(_configPath, "cover.json");
+        var config = LoadJsonFile<CoverJsonConfig>(filePath);
+
+        if (config?.CoverDefinitions == null || config.CoverDefinitions.Count == 0)
+        {
+            _logger.LogInformation("No cover definitions found, using defaults");
+            _coverDefinitions = GetDefaultCoverDefinitions();
+            return _coverDefinitions;
+        }
+
+        _coverDefinitions = config.CoverDefinitions
+            .Select(ToCoverDefinition)
+            .Where(c => c != null)
+            .Cast<CoverDefinition>()
+            .ToList();
+
+        _logger.LogDebug("Loaded {Count} cover definitions", _coverDefinitions.Count);
+        return _coverDefinitions;
+    }
+
+    /// <inheritdoc/>
+    public CoverDefinition? GetCoverDefinitionById(string coverId)
+    {
+        if (string.IsNullOrWhiteSpace(coverId)) return null;
+        return GetCoverDefinitions().FirstOrDefault(c =>
+            c.Id.Equals(coverId, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private CoverDefinition? ToCoverDefinition(CoverJsonEntry entry)
+    {
+        try
+        {
+            if (!Enum.TryParse<CoverType>(entry.CoverType, ignoreCase: true, out var coverType))
+            {
+                _logger.LogWarning("Unknown cover type '{Type}' for cover '{Id}', defaulting to Partial",
+                    entry.CoverType, entry.Id);
+                coverType = CoverType.Partial;
+            }
+
+            return CoverDefinition.Create(
+                id: entry.Id ?? "",
+                name: entry.Name ?? entry.Id ?? "Unknown",
+                coverType: coverType,
+                defenseBonus: entry.DefenseBonus ?? 2,
+                isDestructible: entry.IsDestructible ?? false,
+                maxHitPoints: entry.MaxHitPoints ?? 10,
+                blocksMovement: entry.BlocksMovement ?? true,
+                blocksLOS: entry.BlocksLOS ?? false,
+                displayChar: string.IsNullOrEmpty(entry.DisplayChar) ? '▪' : entry.DisplayChar[0],
+                description: entry.Description ?? "");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to create cover definition for {Id}", entry.Id);
+            return null;
+        }
+    }
+
+    private static List<CoverDefinition> GetDefaultCoverDefinitions() =>
+    [
+        CoverDefinition.Create("wooden-crate", "Wooden Crate", CoverType.Partial, defenseBonus: 2, isDestructible: true, maxHitPoints: 10, displayChar: '□'),
+        CoverDefinition.Create("stone-pillar", "Stone Pillar", CoverType.Full, blocksLOS: true, displayChar: '█'),
+        CoverDefinition.Create("low-wall", "Low Wall", CoverType.Partial, defenseBonus: 2, blocksMovement: false, displayChar: '▄'),
+        CoverDefinition.Create("barrel", "Barrel", CoverType.Partial, defenseBonus: 1, isDestructible: true, maxHitPoints: 5, displayChar: '○')
+    ];
+
+    private class CoverJsonConfig
+    {
+        public List<CoverJsonEntry> CoverDefinitions { get; set; } = [];
+    }
+
+    private class CoverJsonEntry
+    {
+        public string? Id { get; set; }
+        public string? Name { get; set; }
+        public string? CoverType { get; set; }
+        public int? DefenseBonus { get; set; }
+        public bool? IsDestructible { get; set; }
+        public int? MaxHitPoints { get; set; }
+        public bool? BlocksMovement { get; set; }
+        public bool? BlocksLOS { get; set; }
+        public string? DisplayChar { get; set; }
+        public string? Description { get; set; }
+    }
+}

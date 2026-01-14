@@ -385,5 +385,36 @@ public class MockConfigurationProvider : IGameConfigurationProvider
         ]);
         return this;
     }
-}
 
+    // ===== Cover Configuration (v0.5.2b) =====
+
+    private readonly List<CoverDefinition> _coverDefinitions = [];
+
+    public IReadOnlyList<CoverDefinition> GetCoverDefinitions() => _coverDefinitions;
+
+    public CoverDefinition? GetCoverDefinitionById(string coverId) =>
+        _coverDefinitions.FirstOrDefault(c => c.Id.Equals(coverId, StringComparison.OrdinalIgnoreCase));
+
+    /// <summary>
+    /// Adds a cover definition.
+    /// </summary>
+    public MockConfigurationProvider WithCoverDefinition(CoverDefinition cover)
+    {
+        _coverDefinitions.Add(cover);
+        return this;
+    }
+
+    /// <summary>
+    /// Adds default cover definitions for testing.
+    /// </summary>
+    public MockConfigurationProvider WithDefaultCoverDefinitions()
+    {
+        _coverDefinitions.AddRange([
+            CoverDefinition.Create("wooden-crate", "Wooden Crate", Domain.Enums.CoverType.Partial, defenseBonus: 2, isDestructible: true, maxHitPoints: 10, displayChar: '□'),
+            CoverDefinition.Create("stone-pillar", "Stone Pillar", Domain.Enums.CoverType.Full, blocksLOS: true, displayChar: '█'),
+            CoverDefinition.Create("low-wall", "Low Wall", Domain.Enums.CoverType.Partial, defenseBonus: 2, blocksMovement: false, displayChar: '▄'),
+            CoverDefinition.Create("barrel", "Barrel", Domain.Enums.CoverType.Partial, defenseBonus: 1, isDestructible: true, maxHitPoints: 5, displayChar: '○')
+        ]);
+        return this;
+    }
+}

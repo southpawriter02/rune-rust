@@ -312,4 +312,64 @@ public class CombatGrid : IEntity
             }
         }
     }
+
+    #region Cover
+
+    private readonly Dictionary<GridPosition, CoverObject> _coverObjects = new();
+
+    /// <summary>
+    /// Gets all cover objects on the grid, keyed by position.
+    /// </summary>
+    public IReadOnlyDictionary<GridPosition, CoverObject> CoverObjects => _coverObjects;
+
+    /// <summary>
+    /// Adds a cover object to the grid.
+    /// </summary>
+    /// <param name="cover">The cover object to add.</param>
+    /// <returns><c>true</c> if the cover was added; <c>false</c> if position is invalid or occupied.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when cover is null.</exception>
+    public bool AddCover(CoverObject cover)
+    {
+        ArgumentNullException.ThrowIfNull(cover);
+
+        if (!IsInBounds(cover.Position))
+            return false;
+
+        if (_coverObjects.ContainsKey(cover.Position))
+            return false;
+
+        _coverObjects[cover.Position] = cover;
+        return true;
+    }
+
+    /// <summary>
+    /// Removes cover from a position.
+    /// </summary>
+    /// <param name="position">The position to clear.</param>
+    /// <returns><c>true</c> if cover was removed; <c>false</c> if no cover at that position.</returns>
+    public bool RemoveCover(GridPosition position) =>
+        _coverObjects.Remove(position);
+
+    /// <summary>
+    /// Gets the cover object at a position.
+    /// </summary>
+    /// <param name="position">The position to query.</param>
+    /// <returns>The CoverObject at the position, or null if none.</returns>
+    public CoverObject? GetCover(GridPosition position) =>
+        _coverObjects.TryGetValue(position, out var cover) ? cover : null;
+
+    /// <summary>
+    /// Checks if there is cover at a position.
+    /// </summary>
+    /// <param name="position">The position to check.</param>
+    /// <returns><c>true</c> if cover exists at this position; otherwise, <c>false</c>.</returns>
+    public bool HasCover(GridPosition position) =>
+        _coverObjects.ContainsKey(position);
+
+    /// <summary>
+    /// Clears all cover from the grid.
+    /// </summary>
+    public void ClearCover() => _coverObjects.Clear();
+
+    #endregion
 }

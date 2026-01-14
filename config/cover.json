@@ -1,0 +1,101 @@
+{
+    "$schema": "./schemas/cover.schema.json",
+    "coverDefinitions": [
+        {
+            "id": "wooden-crate",
+            "name": "Wooden Crate",
+            "coverType": "Partial",
+            "defenseBonus": 2,
+            "isDestructible": true,
+            "maxHitPoints": 10,
+            "blocksMovement": true,
+            "blocksLOS": false,
+            "displayChar": "□",
+            "description": "Wooden crate providing partial cover"
+        },
+        {
+            "id": "stone-pillar",
+            "name": "Stone Pillar",
+            "coverType": "Full",
+            "defenseBonus": 0,
+            "isDestructible": false,
+            "maxHitPoints": 0,
+            "blocksMovement": true,
+            "blocksLOS": true,
+            "displayChar": "█",
+            "description": "Stone pillar providing full cover"
+        },
+        {
+            "id": "low-wall",
+            "name": "Low Wall",
+            "coverType": "Partial",
+            "defenseBonus": 2,
+            "isDestructible": false,
+            "maxHitPoints": 0,
+            "blocksMovement": false,
+            "blocksLOS": false,
+            "displayChar": "▄",
+            "description": "Low wall providing partial cover (can move over)"
+        },
+        {
+            "id": "barrel",
+            "name": "Barrel",
+            "coverType": "Partial",
+            "defenseBonus": 1,
+            "isDestructible": true,
+            "maxHitPoints": 5,
+            "blocksMovement": true,
+            "blocksLOS": false,
+            "displayChar": "○",
+            "description": "Barrel providing light cover"
+        },
+        {
+            "id": "overturned-table",
+            "name": "Overturned Table",
+            "coverType": "Partial",
+            "defenseBonus": 2,
+            "isDestructible": true,
+            "maxHitPoints": 8,
+            "blocksMovement": false,
+            "blocksLOS": false,
+            "displayChar": "═",
+            "description": "Overturned table providing partial cover"
+        },
+        {
+            "id": "rock-formation",
+            "name": "Rock Formation",
+            "coverType": "Full",
+            "defenseBonus": 0,
+            "isDestructible": false,
+            "maxHitPoints": 0,
+            "blocksMovement": true,
+            "blocksLOS": true,
+            "displayChar": "◆",
+            "description": "Natural rock formation providing full cover"
+        },
+        {
+            "id": "sandbags",
+            "name": "Sandbags",
+            "coverType": "Partial",
+            "defenseBonus": 3,
+            "isDestructible": true,
+            "maxHitPoints": 15,
+            "blocksMovement": false,
+            "blocksLOS": false,
+            "displayChar": "▒",
+            "description": "Sandbag barrier providing strong partial cover"
+        },
+        {
+            "id": "cart",
+            "name": "Overturned Cart",
+            "coverType": "Partial",
+            "defenseBonus": 2,
+            "isDestructible": true,
+            "maxHitPoints": 12,
+            "blocksMovement": true,
+            "blocksLOS": false,
+            "displayChar": "◇",
+            "description": "Overturned cart providing partial cover"
+        }
+    ]
+}
