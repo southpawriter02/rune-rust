@@ -54,6 +54,18 @@ public class AbilityDefinition
     /// </summary>
     public AbilityTargetType TargetType { get; init; }
 
+    // ===== Area Effect Properties (v0.5.3c) =====
+
+    /// <summary>
+    /// Gets the area effect configuration (null for single-target abilities).
+    /// </summary>
+    public AreaEffect? AreaEffect { get; init; }
+
+    /// <summary>
+    /// Gets whether this ability has an area effect.
+    /// </summary>
+    public bool IsAreaEffect => AreaEffect.HasValue && AreaEffect.Value.Shape != Enums.AreaEffectShape.None;
+
     // ===== Range Properties (v0.5.1a) =====
 
     /// <summary>
