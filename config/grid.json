@@ -1,0 +1,25 @@
+{
+    "$schema": "./schemas/grid.schema.json",
+    "gridSettings": {
+        "defaultWidth": 8,
+        "defaultHeight": 8,
+        "minWidth": 3,
+        "maxWidth": 20,
+        "minHeight": 3,
+        "maxHeight": 20,
+        "playerStartPosition": "center-south",
+        "monsterSpawnZone": "north"
+    },
+    "roomGridOverrides": [
+        {
+            "roomId": "boss-chamber",
+            "width": 12,
+            "height": 12
+        },
+        {
+            "roomId": "narrow-corridor",
+            "width": 3,
+            "height": 10
+        }
+    ]
+}

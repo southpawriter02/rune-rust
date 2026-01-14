@@ -260,6 +260,14 @@ public interface IGameConfigurationProvider
     /// </summary>
     /// <returns>Ambient event configuration with event pools and settings.</returns>
     AmbientEventConfiguration GetAmbientEventConfiguration();
+
+    // ===== Combat Grid Configuration (v0.5.0a) =====
+
+    /// <summary>
+    /// Gets the combat grid configuration settings.
+    /// </summary>
+    /// <returns>Grid settings with default dimensions and spawn zones.</returns>
+    GridSettings GetGridSettings();
 }
 
 /// <summary>
@@ -292,3 +300,55 @@ public class PointBuyRules
     /// </summary>
     public int MaximumAfterRacial { get; init; } = 18;
 }
+
+/// <summary>
+/// Configuration for combat grid dimensions and spawn settings.
+/// </summary>
+/// <remarks>
+/// Grid dimensions are constrained between MinWidth/MinHeight and MaxWidth/MaxHeight.
+/// Player starts at the configured start position (default: center-south).
+/// Monsters spawn in the configured zone (default: north).
+/// </remarks>
+public record GridSettings
+{
+    /// <summary>
+    /// Default grid width when not overridden.
+    /// </summary>
+    public int DefaultWidth { get; init; } = 8;
+
+    /// <summary>
+    /// Default grid height when not overridden.
+    /// </summary>
+    public int DefaultHeight { get; init; } = 8;
+
+    /// <summary>
+    /// Minimum allowed grid width.
+    /// </summary>
+    public int MinWidth { get; init; } = 3;
+
+    /// <summary>
+    /// Maximum allowed grid width.
+    /// </summary>
+    public int MaxWidth { get; init; } = 20;
+
+    /// <summary>
+    /// Minimum allowed grid height.
+    /// </summary>
+    public int MinHeight { get; init; } = 3;
+
+    /// <summary>
+    /// Maximum allowed grid height.
+    /// </summary>
+    public int MaxHeight { get; init; } = 20;
+
+    /// <summary>
+    /// Player starting position descriptor (e.g., "center-south").
+    /// </summary>
+    public string PlayerStartPosition { get; init; } = "center-south";
+
+    /// <summary>
+    /// Monster spawning zone descriptor (e.g., "north").
+    /// </summary>
+    public string MonsterSpawnZone { get; init; } = "north";
+}
+

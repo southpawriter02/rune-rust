@@ -338,4 +338,20 @@ public class MockConfigurationProvider : IGameConfigurationProvider
         _ambientEventConfiguration = config;
         return this;
     }
+
+    // ===== Combat Grid Configuration (v0.5.0a) =====
+
+    private GridSettings _gridSettings = new();
+
+    public GridSettings GetGridSettings() => _gridSettings;
+
+    /// <summary>
+    /// Sets the grid settings.
+    /// </summary>
+    public MockConfigurationProvider WithGridSettings(GridSettings settings)
+    {
+        _gridSettings = settings;
+        return this;
+    }
 }
+

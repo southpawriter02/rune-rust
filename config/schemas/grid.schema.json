@@ -1,0 +1,108 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "grid.schema.json",
+    "title": "Combat Grid Configuration",
+    "description": "Configuration for combat grid dimensions and entity placement",
+    "type": "object",
+    "properties": {
+        "$schema": {
+            "type": "string"
+        },
+        "gridSettings": {
+            "type": "object",
+            "description": "Default grid settings",
+            "properties": {
+                "defaultWidth": {
+                    "type": "integer",
+                    "minimum": 3,
+                    "maximum": 20,
+                    "default": 8,
+                    "description": "Default grid width (columns)"
+                },
+                "defaultHeight": {
+                    "type": "integer",
+                    "minimum": 3,
+                    "maximum": 20,
+                    "default": 8,
+                    "description": "Default grid height (rows)"
+                },
+                "minWidth": {
+                    "type": "integer",
+                    "minimum": 3,
+                    "default": 3,
+                    "description": "Minimum allowed width"
+                },
+                "maxWidth": {
+                    "type": "integer",
+                    "maximum": 20,
+                    "default": 20,
+                    "description": "Maximum allowed width"
+                },
+                "minHeight": {
+                    "type": "integer",
+                    "minimum": 3,
+                    "default": 3,
+                    "description": "Minimum allowed height"
+                },
+                "maxHeight": {
+                    "type": "integer",
+                    "maximum": 20,
+                    "default": 20,
+                    "description": "Maximum allowed height"
+                },
+                "playerStartPosition": {
+                    "type": "string",
+                    "enum": [
+                        "center-south",
+                        "center",
+                        "south",
+                        "random"
+                    ],
+                    "default": "center-south",
+                    "description": "Where to place the player when combat starts"
+                },
+                "monsterSpawnZone": {
+                    "type": "string",
+                    "enum": [
+                        "north",
+                        "center",
+                        "random",
+                        "spread"
+                    ],
+                    "default": "north",
+                    "description": "Zone where monsters spawn"
+                }
+            }
+        },
+        "roomGridOverrides": {
+            "type": "array",
+            "description": "Room-specific grid dimension overrides",
+            "items": {
+                "type": "object",
+                "required": [
+                    "roomId",
+                    "width",
+                    "height"
+                ],
+                "properties": {
+                    "roomId": {
+                        "type": "string",
+                        "description": "The room identifier"
+                    },
+                    "width": {
+                        "type": "integer",
+                        "minimum": 3,
+                        "maximum": 20,
+                        "description": "Custom width for this room"
+                    },
+                    "height": {
+                        "type": "integer",
+                        "minimum": 3,
+                        "maximum": 20,
+                        "description": "Custom height for this room"
+                    }
+                }
+            }
+        }
+    }
+}

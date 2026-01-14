@@ -43,6 +43,7 @@ public class JsonConfigurationProvider : IGameConfigurationProvider
     private SensoryConfiguration? _sensoryConfig;
     private ObjectDescriptorConfiguration? _objectDescriptorConfig;
     private AmbientEventConfiguration? _ambientEventConfig;
+    private GridSettings? _gridSettings;
 
     private static readonly JsonSerializerOptions DefaultJsonOptions = new()
     {
@@ -703,6 +704,40 @@ public class JsonConfigurationProvider : IGameConfigurationProvider
         _logger.LogDebug("Loaded ambient event configuration with {EventPools} event pools",
             _ambientEventConfig.EventPools.Count);
         return _ambientEventConfig;
+    }
+
+    // ===== Combat Grid Configuration (v0.5.0a) =====
+
+    /// <inheritdoc/>
+    public GridSettings GetGridSettings()
+    {
+        if (_gridSettings != null) return _gridSettings;
+
+        var filePath = Path.Combine(_configPath, "grid.json");
+        var config = LoadJsonFile<GridJsonConfig>(filePath);
+
+        if (config?.GridSettings == null)
+        {
+            _logger.LogInformation("No grid.json found, using default grid settings");
+            _gridSettings = new GridSettings();
+            return _gridSettings;
+        }
+
+        _gridSettings = new GridSettings
+        {
+            DefaultWidth = config.GridSettings.DefaultWidth ?? 8,
+            DefaultHeight = config.GridSettings.DefaultHeight ?? 8,
+            MinWidth = config.GridSettings.MinWidth ?? 3,
+            MaxWidth = config.GridSettings.MaxWidth ?? 20,
+            MinHeight = config.GridSettings.MinHeight ?? 3,
+            MaxHeight = config.GridSettings.MaxHeight ?? 20,
+            PlayerStartPosition = config.GridSettings.PlayerStartPosition ?? "center-south",
+            MonsterSpawnZone = config.GridSettings.MonsterSpawnZone ?? "north"
+        };
+
+        _logger.LogDebug("Loaded grid settings: {Width}x{Height} default",
+            _gridSettings.DefaultWidth, _gridSettings.DefaultHeight);
+        return _gridSettings;
     }
 
     private static SensoryConfiguration GetDefaultSensoryConfiguration()
@@ -2134,4 +2169,32 @@ public class JsonConfigurationProvider : IGameConfigurationProvider
             }
         };
     }
+
+    // ===== Grid Configuration JSON Structures (v0.5.0a) =====
+
+    private class GridJsonConfig
+    {
+        public GridSettingsJsonConfig? GridSettings { get; set; }
+        public List<RoomGridOverrideJsonConfig>? RoomGridOverrides { get; set; }
+    }
+
+    private class GridSettingsJsonConfig
+    {
+        public int? DefaultWidth { get; set; }
+        public int? DefaultHeight { get; set; }
+        public int? MinWidth { get; set; }
+        public int? MaxWidth { get; set; }
+        public int? MinHeight { get; set; }
+        public int? MaxHeight { get; set; }
+        public string? PlayerStartPosition { get; set; }
+        public string? MonsterSpawnZone { get; set; }
+    }
+
+    private class RoomGridOverrideJsonConfig
+    {
+        public string? RoomId { get; set; }
+        public int Width { get; set; }
+        public int Height { get; set; }
+    }
 }
+
