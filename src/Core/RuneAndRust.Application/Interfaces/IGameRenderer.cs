@@ -7,35 +7,84 @@ namespace RuneAndRust.Application.Interfaces;
 /// </summary>
 public enum MessageType
 {
-    /// <summary>
-    /// General informational messages (default styling).
-    /// </summary>
+    // ──────────────────────────────────────────
+    // SYSTEM MESSAGES
+    // ──────────────────────────────────────────
+    
+    /// <summary>Default text color.</summary>
+    Default,
+    
+    /// <summary>General informational messages.</summary>
     Info,
 
-    /// <summary>
-    /// Warning messages that require attention but are not errors.
-    /// </summary>
+    /// <summary>Warning messages that require attention but are not errors.</summary>
     Warning,
 
-    /// <summary>
-    /// Error messages indicating something went wrong.
-    /// </summary>
+    /// <summary>Error messages indicating something went wrong.</summary>
     Error,
 
-    /// <summary>
-    /// Success messages confirming a positive outcome.
-    /// </summary>
+    /// <summary>Success messages confirming a positive outcome.</summary>
     Success,
 
-    /// <summary>
-    /// Combat-related messages describing attacks and damage.
-    /// </summary>
-    Combat,
+    /// <summary>Failure messages.</summary>
+    Failure,
+    
+    // ──────────────────────────────────────────
+    // COMBAT MESSAGES
+    // ──────────────────────────────────────────
 
-    /// <summary>
-    /// Story/narrative messages for immersion and atmosphere.
-    /// </summary>
-    Narrative
+    /// <summary>Combat-related messages describing attacks and damage.</summary>
+    Combat,
+    
+    /// <summary>Successful attack hits.</summary>
+    CombatHit,
+    
+    /// <summary>Missed attacks.</summary>
+    CombatMiss,
+    
+    /// <summary>Healing effects.</summary>
+    CombatHeal,
+    
+    /// <summary>Damage dealt/received.</summary>
+    CombatDamage,
+    
+    /// <summary>Critical hits.</summary>
+    CombatCritical,
+    
+    // ──────────────────────────────────────────
+    // LOOT/ITEM RARITY
+    // ──────────────────────────────────────────
+    
+    /// <summary>Common quality items.</summary>
+    LootCommon,
+    
+    /// <summary>Uncommon quality items.</summary>
+    LootUncommon,
+    
+    /// <summary>Rare quality items.</summary>
+    LootRare,
+    
+    /// <summary>Epic quality items.</summary>
+    LootEpic,
+    
+    /// <summary>Legendary quality items.</summary>
+    LootLegendary,
+    
+    // ──────────────────────────────────────────
+    // OTHER
+    // ──────────────────────────────────────────
+
+    /// <summary>Story/narrative messages for immersion and atmosphere.</summary>
+    Narrative,
+    
+    /// <summary>NPC dialogue.</summary>
+    Dialogue,
+    
+    /// <summary>Descriptive/environmental text.</summary>
+    Description,
+    
+    /// <summary>Command echo/prompts.</summary>
+    Command
 }
 
 /// <summary>
