@@ -54,6 +54,46 @@ public class AbilityDefinition
     /// </summary>
     public AbilityTargetType TargetType { get; init; }
 
+    // ===== Range Properties (v0.5.1a) =====
+
+    /// <summary>
+    /// Gets the range of this ability.
+    /// </summary>
+    /// <remarks>
+    /// Default is 1 for melee abilities. Ranged abilities can have configurable range.
+    /// </remarks>
+    public int Range { get; init; } = 1;
+
+    /// <summary>
+    /// Gets the range type of this ability.
+    /// </summary>
+    public RangeType RangeType { get; init; } = RangeType.Melee;
+
+    /// <summary>
+    /// Gets the effective range based on range type.
+    /// </summary>
+    /// <returns>1 for Melee, 2 for Reach, or Range for Ranged.</returns>
+    public int GetEffectiveRange() => RangeType switch
+    {
+        RangeType.Melee => 1,
+        RangeType.Reach => 2,
+        RangeType.Ranged => Range,
+        _ => 1
+    };
+
+    /// <summary>
+    /// Checks if a target at the given distance is in range.
+    /// </summary>
+    /// <param name="distance">The distance to the target.</param>
+    /// <returns>True if the target is in range.</returns>
+    public bool IsInRange(int distance) => RangeType switch
+    {
+        RangeType.Melee => distance == 1,
+        RangeType.Reach => distance >= 1 && distance <= 2,
+        RangeType.Ranged => distance >= 1 && distance <= Range,
+        _ => distance == 1
+    };
+
     /// <summary>
     /// Gets the level required to unlock this ability (default 1).
     /// </summary>

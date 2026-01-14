@@ -178,6 +178,59 @@ public class Item : IEntity
     /// </remarks>
     public bool IsKeyConsumedOnUse { get; private set; }
 
+    // ===== Range Properties (v0.5.1a) =====
+
+    /// <summary>
+    /// Gets the attack range of this weapon.
+    /// </summary>
+    /// <remarks>
+    /// Default is 1 for melee weapons. Reach weapons have range 2,
+    /// ranged weapons have configurable range (e.g., bow range 12).
+    /// </remarks>
+    public int Range { get; private set; } = 1;
+
+    /// <summary>
+    /// Gets the range type of this weapon.
+    /// </summary>
+    public RangeType RangeType { get; private set; } = RangeType.Melee;
+
+    /// <summary>
+    /// Sets the range properties for this weapon.
+    /// </summary>
+    /// <param name="range">The maximum attack range.</param>
+    /// <param name="rangeType">The type of range validation.</param>
+    public void SetRange(int range, RangeType rangeType)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(range, 1);
+        Range = range;
+        RangeType = rangeType;
+    }
+
+    /// <summary>
+    /// Gets the effective range based on range type.
+    /// </summary>
+    /// <returns>1 for Melee, 2 for Reach, or Range for Ranged.</returns>
+    public int GetEffectiveRange() => RangeType switch
+    {
+        RangeType.Melee => 1,
+        RangeType.Reach => 2,
+        RangeType.Ranged => Range,
+        _ => 1
+    };
+
+    /// <summary>
+    /// Checks if a target at the given distance is in range.
+    /// </summary>
+    /// <param name="distance">The distance to the target.</param>
+    /// <returns>True if the target is in range.</returns>
+    public bool IsInRange(int distance) => RangeType switch
+    {
+        RangeType.Melee => distance == 1,
+        RangeType.Reach => distance >= 1 && distance <= 2,
+        RangeType.Ranged => distance >= 1 && distance <= Range,
+        _ => distance == 1
+    };
+
     /// <summary>
     /// Gets the parsed damage dice pool for combat calculations.
     /// </summary>
