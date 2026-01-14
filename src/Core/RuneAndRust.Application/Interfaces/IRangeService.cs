@@ -66,37 +66,92 @@ public interface IRangeService
     /// <param name="ability">The ability definition.</param>
     /// <returns>The effective ability range.</returns>
     int GetEffectiveRange(AbilityDefinition ability);
+
+    // ===== Extended Range Methods (v0.5.1b) =====
+
+    /// <summary>
+    /// Checks full range including min range and calculates penalty.
+    /// </summary>
+    /// <param name="attackerId">The attacking entity's ID.</param>
+    /// <param name="targetId">The target entity's ID.</param>
+    /// <param name="weapon">The weapon being used.</param>
+    /// <returns>Full range check result with penalty.</returns>
+    RangeCheckResult CheckFullRange(Guid attackerId, Guid targetId, Item weapon);
+
+    /// <summary>
+    /// Gets the range penalty for a given distance and weapon.
+    /// </summary>
+    /// <param name="distance">The distance to target.</param>
+    /// <param name="weapon">The weapon being used.</param>
+    /// <returns>Accuracy penalty (0 if in optimal range).</returns>
+    int GetRangePenalty(int distance, Item weapon);
+
+    /// <summary>
+    /// Gets the range penalty for an ability at a given distance.
+    /// </summary>
+    /// <param name="distance">The distance to target.</param>
+    /// <param name="ability">The ability being used.</param>
+    /// <returns>Accuracy penalty (0 if no penalty configured).</returns>
+    int GetAbilityRangePenalty(int distance, AbilityDefinition ability);
+
+    /// <summary>
+    /// Checks if target is too close (within min range).
+    /// </summary>
+    /// <param name="attackerId">The attacking entity's ID.</param>
+    /// <param name="targetId">The target entity's ID.</param>
+    /// <param name="weapon">The weapon being used.</param>
+    /// <returns>True if target is within minimum range.</returns>
+    bool IsTooClose(Guid attackerId, Guid targetId, Item weapon);
 }
 
 /// <summary>
 /// Result of a range check operation.
 /// </summary>
-/// <param name="InRange">Whether the target is in range.</param>
-/// <param name="Distance">The distance to the target.</param>
-/// <param name="WeaponRange">The weapon's effective range.</param>
-/// <param name="RangeType">The range type used for validation.</param>
-/// <param name="Message">Human-readable result message.</param>
-/// <param name="FailureReason">The reason for failure, if any.</param>
-public readonly record struct RangeCheckResult(
-    bool InRange,
-    int Distance,
-    int WeaponRange,
-    RangeType RangeType,
-    string Message,
-    RangeFailureReason? FailureReason)
+public readonly record struct RangeCheckResult
 {
+    /// <summary>Whether the target is in range.</summary>
+    public bool InRange { get; init; }
+
+    /// <summary>The distance to the target.</summary>
+    public int Distance { get; init; }
+
+    /// <summary>The weapon's configured range.</summary>
+    public int WeaponRange { get; init; }
+
+    /// <summary>The range type used for validation.</summary>
+    public RangeType RangeType { get; init; }
+
+    /// <summary>Human-readable result message.</summary>
+    public string Message { get; init; }
+
+    /// <summary>The reason for failure, if any.</summary>
+    public RangeFailureReason? FailureReason { get; init; }
+
+    // ===== Extended Properties (v0.5.1b) =====
+
+    /// <summary>Accuracy penalty for long-range shots.</summary>
+    public int Penalty { get; init; }
+
+    /// <summary>True if within optimal range (no penalty).</summary>
+    public bool IsOptimal { get; init; }
+
+    /// <summary>True if target is within minimum range.</summary>
+    public bool TooClose { get; init; }
+
     /// <summary>Creates a success result.</summary>
     public static RangeCheckResult Success(int distance, int weaponRange, RangeType rangeType) =>
-        new(true, distance, weaponRange, rangeType, "Target is in range.", null);
+        new() { InRange = true, Distance = distance, WeaponRange = weaponRange, RangeType = rangeType, 
+                Message = "Target is in range.", IsOptimal = true };
 
     /// <summary>Creates a failure result.</summary>
     public static RangeCheckResult Fail(RangeFailureReason reason, string message) =>
-        new(false, 0, 0, RangeType.Melee, message, reason);
+        new() { InRange = false, Message = message, FailureReason = reason };
 
     /// <summary>Creates an out-of-range failure result.</summary>
     public static RangeCheckResult OutOfRange(int distance, int weaponRange, RangeType rangeType, string message) =>
-        new(false, distance, weaponRange, rangeType, message, 
-            rangeType == RangeType.Melee ? RangeFailureReason.NotAdjacent : RangeFailureReason.OutOfRange);
+        new() { InRange = false, Distance = distance, WeaponRange = weaponRange, RangeType = rangeType, 
+                Message = message, FailureReason = rangeType == RangeType.Melee 
+                    ? RangeFailureReason.NotAdjacent : RangeFailureReason.OutOfRange };
 }
 
 /// <summary>

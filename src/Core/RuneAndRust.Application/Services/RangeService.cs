@@ -167,4 +167,105 @@ public class RangeService : IRangeService
         ArgumentNullException.ThrowIfNull(ability);
         return ability.GetEffectiveRange();
     }
+
+    // ===== Extended Range Methods (v0.5.1b) =====
+
+    /// <inheritdoc/>
+    public RangeCheckResult CheckFullRange(Guid attackerId, Guid targetId, Item weapon)
+    {
+        ArgumentNullException.ThrowIfNull(weapon);
+
+        _logger.LogDebug("Full range check: attacker {Attacker}, target {Target}, weapon {Weapon}",
+            attackerId, targetId, weapon.Name);
+
+        // Get distance
+        var distance = GetDistance(attackerId, targetId);
+        if (!distance.HasValue)
+        {
+            return RangeCheckResult.Fail(RangeFailureReason.AttackerNotOnGrid, "Entity not on grid.");
+        }
+
+        var dist = distance.Value;
+
+        // Check minimum range (too close)
+        if (weapon.HasMinRange && dist < weapon.MinRange)
+        {
+            _logger.LogDebug("Full range check failed: too close (dist {Dist}, minRange {Min})",
+                dist, weapon.MinRange);
+
+            return new RangeCheckResult
+            {
+                InRange = false,
+                Distance = dist,
+                WeaponRange = weapon.Range,
+                RangeType = weapon.RangeType,
+                FailureReason = RangeFailureReason.TooClose,
+                TooClose = true,
+                Message = $"Target is too close! Minimum range: {weapon.MinRange} cells."
+            };
+        }
+
+        // Check maximum range
+        if (dist > weapon.Range)
+        {
+            _logger.LogDebug("Full range check failed: out of range (dist {Dist}, range {Range})",
+                dist, weapon.Range);
+
+            return new RangeCheckResult
+            {
+                InRange = false,
+                Distance = dist,
+                WeaponRange = weapon.Range,
+                RangeType = weapon.RangeType,
+                FailureReason = RangeFailureReason.OutOfRange,
+                Message = $"Target is out of range (distance: {dist}, range: {weapon.Range})."
+            };
+        }
+
+        // Calculate penalty
+        var penalty = weapon.GetPenaltyAtDistance(dist);
+        var isOptimal = weapon.IsInOptimalRange(dist);
+
+        _logger.LogDebug(
+            "Full range check passed: dist {Dist}, range {Range}, minRange {Min}, optimal {Opt}, penalty {Pen}",
+            dist, weapon.Range, weapon.MinRange, weapon.GetOptimalRange(), penalty);
+
+        return new RangeCheckResult
+        {
+            InRange = true,
+            Distance = dist,
+            WeaponRange = weapon.Range,
+            RangeType = weapon.RangeType,
+            Penalty = penalty,
+            IsOptimal = isOptimal,
+            Message = isOptimal
+                ? "Target is in optimal range."
+                : $"Target is at long range (penalty: -{penalty})."
+        };
+    }
+
+    /// <inheritdoc/>
+    public int GetRangePenalty(int distance, Item weapon)
+    {
+        ArgumentNullException.ThrowIfNull(weapon);
+        return weapon.GetPenaltyAtDistance(distance);
+    }
+
+    /// <inheritdoc/>
+    public int GetAbilityRangePenalty(int distance, AbilityDefinition ability)
+    {
+        ArgumentNullException.ThrowIfNull(ability);
+        return ability.GetPenaltyAtDistance(distance);
+    }
+
+    /// <inheritdoc/>
+    public bool IsTooClose(Guid attackerId, Guid targetId, Item weapon)
+    {
+        ArgumentNullException.ThrowIfNull(weapon);
+
+        if (!weapon.HasMinRange) return false;
+
+        var distance = GetDistance(attackerId, targetId);
+        return distance.HasValue && distance.Value < weapon.MinRange;
+    }
 }

@@ -231,6 +231,102 @@ public class Item : IEntity
         _ => distance == 1
     };
 
+    // ===== Extended Range Properties (v0.5.1b) =====
+
+    /// <summary>
+    /// Gets the minimum attack range (0 = no minimum).
+    /// </summary>
+    /// <remarks>
+    /// Bows typically have minRange 2 (can't shoot adjacent enemies).
+    /// Crossbows have minRange 1. Thrown weapons have minRange 0.
+    /// </remarks>
+    public int MinRange { get; private set; }
+
+    /// <summary>
+    /// Gets the optimal range (no penalty zone). Null = Range / 2.
+    /// </summary>
+    public int? OptimalRange { get; private set; }
+
+    /// <summary>
+    /// Gets the accuracy penalty per cell beyond optimal range.
+    /// </summary>
+    public int RangePenalty { get; private set; } = 1;
+
+    /// <summary>
+    /// Gets whether this weapon can be thrown.
+    /// </summary>
+    public bool Thrown { get; private set; }
+
+    /// <summary>
+    /// Gets whether this weapon requires both hands.
+    /// </summary>
+    public bool TwoHanded { get; private set; }
+
+    /// <summary>
+    /// Gets whether this thrown weapon can be used in melee.
+    /// </summary>
+    public bool MeleeCapable { get; private set; }
+
+    /// <summary>
+    /// Gets whether this weapon requires ammunition.
+    /// </summary>
+    public bool RequiresAmmunition { get; private set; }
+
+    /// <summary>
+    /// Returns true if weapon has a minimum range.
+    /// </summary>
+    public bool HasMinRange => MinRange > 0;
+
+    /// <summary>
+    /// Gets the effective optimal range.
+    /// </summary>
+    /// <returns>OptimalRange if set, otherwise Range / 2.</returns>
+    public int GetOptimalRange() => OptimalRange ?? Range / 2;
+
+    /// <summary>
+    /// Checks if a distance is within optimal range.
+    /// </summary>
+    /// <param name="distance">The distance to check.</param>
+    /// <returns>True if within optimal range.</returns>
+    public bool IsInOptimalRange(int distance) => distance <= GetOptimalRange();
+
+    /// <summary>
+    /// Gets the accuracy penalty at a given distance.
+    /// </summary>
+    /// <param name="distance">The distance to the target.</param>
+    /// <returns>0 if in optimal range, penalty per cell beyond optimal otherwise.</returns>
+    public int GetPenaltyAtDistance(int distance)
+    {
+        // Non-ranged weapons don't have penalties
+        if (RangeType != RangeType.Ranged) return 0;
+
+        // Too close or out of range = max penalty (invalid shot)
+        if (distance < MinRange) return int.MaxValue;
+        if (distance > Range) return int.MaxValue;
+
+        var optimal = GetOptimalRange();
+        if (distance <= optimal) return 0;
+
+        return (distance - optimal) * RangePenalty;
+    }
+
+    /// <summary>
+    /// Sets extended range properties from definition.
+    /// </summary>
+    public void SetExtendedRangeProperties(
+        int minRange, int? optimalRange, int rangePenalty,
+        bool thrown, bool twoHanded, bool meleeCapable, bool requiresAmmunition)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(minRange);
+        MinRange = minRange;
+        OptimalRange = optimalRange;
+        RangePenalty = rangePenalty;
+        Thrown = thrown;
+        TwoHanded = twoHanded;
+        MeleeCapable = meleeCapable;
+        RequiresAmmunition = requiresAmmunition;
+    }
+
     /// <summary>
     /// Gets the parsed damage dice pool for combat calculations.
     /// </summary>

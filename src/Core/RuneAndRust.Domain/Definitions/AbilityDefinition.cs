@@ -94,6 +94,49 @@ public class AbilityDefinition
         _ => distance == 1
     };
 
+    // ===== Extended Range Properties (v0.5.1b) =====
+
+    /// <summary>
+    /// Gets the minimum range for this ability (0 = no minimum).
+    /// </summary>
+    public int MinRange { get; init; }
+
+    /// <summary>
+    /// Gets the optimal range (no penalty zone). Null = Range.
+    /// </summary>
+    public int? OptimalRange { get; init; }
+
+    /// <summary>
+    /// Gets the accuracy penalty per cell beyond optimal (0 = no penalty).
+    /// </summary>
+    public int RangePenalty { get; init; }
+
+    /// <summary>
+    /// Gets the effective optimal range.
+    /// </summary>
+    /// <returns>OptimalRange if set, otherwise Range (most spells have no penalty).</returns>
+    public int GetOptimalRange() => OptimalRange ?? Range;
+
+    /// <summary>
+    /// Gets the accuracy penalty at a given distance.
+    /// </summary>
+    /// <param name="distance">The distance to the target.</param>
+    /// <returns>0 if no penalty or in optimal range, penalty per cell beyond optimal otherwise.</returns>
+    public int GetPenaltyAtDistance(int distance)
+    {
+        // No penalty if RangePenalty is 0
+        if (RangePenalty == 0) return 0;
+
+        // Min range / out of range check
+        if (distance < MinRange) return int.MaxValue;
+        if (distance > Range) return int.MaxValue;
+
+        var optimal = GetOptimalRange();
+        if (distance <= optimal) return 0;
+
+        return (distance - optimal) * RangePenalty;
+    }
+
     /// <summary>
     /// Gets the level required to unlock this ability (default 1).
     /// </summary>

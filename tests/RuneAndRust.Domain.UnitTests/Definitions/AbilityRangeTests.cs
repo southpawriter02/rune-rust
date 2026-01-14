@@ -20,7 +20,7 @@ public class AbilityRangeTests
             cost: AbilityCost.None,
             cooldown: 0,
             effects: [],
-            targetType: AbilityTargetType.Enemy,
+            targetType: AbilityTargetType.SingleEnemy,
             unlockLevel: 1);
 
     [Test]
