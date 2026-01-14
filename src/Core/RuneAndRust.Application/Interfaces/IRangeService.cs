@@ -1,6 +1,7 @@
 using RuneAndRust.Domain.Definitions;
 using RuneAndRust.Domain.Entities;
 using RuneAndRust.Domain.Enums;
+using RuneAndRust.Domain.ValueObjects;
 
 namespace RuneAndRust.Application.Interfaces;
 
@@ -137,6 +138,11 @@ public readonly record struct RangeCheckResult
 
     /// <summary>True if target is within minimum range.</summary>
     public bool TooClose { get; init; }
+
+    // ===== Line of Sight Properties (v0.5.1c) =====
+
+    /// <summary>Position that blocks line of sight, if any.</summary>
+    public GridPosition? BlockedBy { get; init; }
 
     /// <summary>Creates a success result.</summary>
     public static RangeCheckResult Success(int distance, int weaponRange, RangeType rangeType) =>

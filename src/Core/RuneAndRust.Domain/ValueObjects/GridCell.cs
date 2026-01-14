@@ -45,6 +45,32 @@ public class GridCell
     /// </summary>
     public bool IsPassable { get; private set; } = true;
 
+    // ===== Line of Sight Properties (v0.5.1c) =====
+
+    /// <summary>
+    /// Gets whether this cell explicitly blocks line of sight.
+    /// </summary>
+    /// <remarks>
+    /// Set to true for pillars and obstacles that block LOS.
+    /// Walls (impassable cells) automatically block LOS via EffectivelyBlocksLOS.
+    /// </remarks>
+    public bool BlocksLOS { get; private set; }
+
+    /// <summary>
+    /// Gets whether this cell blocks line of sight (computed).
+    /// </summary>
+    /// <remarks>
+    /// Returns true if BlocksLOS is explicitly set or if the cell is impassable.
+    /// Walls and obstacles block LOS, but occupied cells do not.
+    /// </remarks>
+    public bool EffectivelyBlocksLOS => BlocksLOS || !IsPassable;
+
+    /// <summary>
+    /// Sets whether this cell blocks line of sight.
+    /// </summary>
+    /// <param name="blocksLOS">Whether this cell should block LOS.</param>
+    public void SetBlocksLOS(bool blocksLOS) => BlocksLOS = blocksLOS;
+
     /// <summary>
     /// Private constructor for factory pattern.
     /// </summary>

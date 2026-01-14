@@ -14,11 +14,12 @@ namespace RuneAndRust.Application.Services;
 /// Range types:
 /// - Melee: Must be adjacent (distance 1)
 /// - Reach: Distance 1-2
-/// - Ranged: Configurable max distance
+/// - Ranged: Configurable max distance + LOS check (v0.5.1c)
 /// </remarks>
 public class RangeService : IRangeService
 {
     private readonly ICombatGridService _gridService;
+    private readonly ILineOfSightService? _losService;
     private readonly ILogger<RangeService> _logger;
 
     /// <summary>
@@ -26,10 +27,15 @@ public class RangeService : IRangeService
     /// </summary>
     /// <param name="gridService">The combat grid service.</param>
     /// <param name="logger">The logger.</param>
-    public RangeService(ICombatGridService gridService, ILogger<RangeService> logger)
+    /// <param name="losService">Optional LOS service for ranged attack validation.</param>
+    public RangeService(
+        ICombatGridService gridService, 
+        ILogger<RangeService> logger,
+        ILineOfSightService? losService = null)
     {
         _gridService = gridService ?? throw new ArgumentNullException(nameof(gridService));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _losService = losService;
     }
 
     /// <inheritdoc/>
@@ -83,6 +89,26 @@ public class RangeService : IRangeService
 
             _logger.LogDebug("Range check failed: {Message}", message);
             return RangeCheckResult.OutOfRange(distance, weaponRange, rangeType, message);
+        }
+
+        // v0.5.1c: Check line of sight for ranged attacks
+        if (rangeType == RangeType.Ranged && _losService != null)
+        {
+            var losResult = _losService.HasLineOfSight(attackerId, targetId);
+            if (!losResult.HasLOS)
+            {
+                _logger.LogDebug("LOS check failed: {Message}", losResult.Message);
+                return new RangeCheckResult
+                {
+                    InRange = false,
+                    Distance = distance,
+                    WeaponRange = weaponRange,
+                    RangeType = rangeType,
+                    FailureReason = RangeFailureReason.NoLineOfSight,
+                    Message = losResult.Message,
+                    BlockedBy = losResult.BlockedBy
+                };
+            }
         }
 
         _logger.LogDebug("Range check passed: distance {Dist}, range {Range}, type {Type}",
