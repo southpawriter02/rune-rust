@@ -46,6 +46,7 @@ public class JsonConfigurationProvider : IGameConfigurationProvider
     private GridSettings? _gridSettings;
     private IReadOnlyList<TerrainDefinition>? _terrainDefinitions;
     private IReadOnlyList<CoverDefinition>? _coverDefinitions;
+    private FlankingConfiguration? _flankingConfig;
 
     private static readonly JsonSerializerOptions DefaultJsonOptions = new()
     {
@@ -2379,5 +2380,48 @@ public class JsonConfigurationProvider : IGameConfigurationProvider
         public bool? BlocksLOS { get; set; }
         public string? DisplayChar { get; set; }
         public string? Description { get; set; }
+    }
+
+    // ===== Flanking Configuration (v0.5.3a) =====
+
+    /// <inheritdoc/>
+    public FlankingConfiguration? GetFlankingConfiguration()
+    {
+        if (_flankingConfig != null) return _flankingConfig;
+
+        var filePath = Path.Combine(_configPath, "combat.json");
+        var config = LoadJsonFile<CombatJsonConfig>(filePath);
+
+        if (config?.Flanking == null)
+        {
+            _logger.LogDebug("No flanking configuration found, using defaults");
+            return null;
+        }
+
+        _flankingConfig = new FlankingConfiguration
+        {
+            Enabled = config.Flanking.Enabled ?? true,
+            AttackBonus = config.Flanking.AttackBonus ?? 2,
+            DamageBonus = config.Flanking.DamageBonus ?? 0,
+            BehindAttackBonus = config.Flanking.BehindAttackBonus ?? 2,
+            BehindDamageBonus = config.Flanking.BehindDamageBonus ?? 2
+        };
+
+        _logger.LogDebug("Loaded flanking configuration: Enabled={Enabled}", _flankingConfig.Enabled);
+        return _flankingConfig;
+    }
+
+    private class CombatJsonConfig
+    {
+        public FlankingJsonEntry? Flanking { get; set; }
+    }
+
+    private class FlankingJsonEntry
+    {
+        public bool? Enabled { get; set; }
+        public int? AttackBonus { get; set; }
+        public int? DamageBonus { get; set; }
+        public int? BehindAttackBonus { get; set; }
+        public int? BehindDamageBonus { get; set; }
     }
 }

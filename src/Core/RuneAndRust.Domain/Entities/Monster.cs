@@ -542,4 +542,42 @@ public class Monster : IEntity
     /// </summary>
     /// <returns>A string containing the monster name and current/max health.</returns>
     public override string ToString() => $"{Name} (HP: {Health}/{MaxHealth})";
+
+    // ===== Facing Properties (v0.5.3a) =====
+
+    /// <summary>
+    /// Gets the direction this monster is facing.
+    /// </summary>
+    /// <remarks>
+    /// Facing affects flanking calculations and opportunity attacks.
+    /// Monsters default to facing North.
+    /// </remarks>
+    public FacingDirection Facing { get; private set; } = FacingDirection.North;
+
+    /// <summary>
+    /// Sets the monster's facing direction.
+    /// </summary>
+    /// <param name="direction">The direction to face.</param>
+    public void SetFacing(FacingDirection direction)
+    {
+        Facing = direction;
+    }
+
+    /// <summary>
+    /// Faces the monster toward a target position.
+    /// </summary>
+    /// <param name="targetPosition">The target position to face toward.</param>
+    /// <param name="currentPosition">The monster's current grid position.</param>
+    /// <remarks>
+    /// Calculates the direction from current position to target and sets facing.
+    /// If positions are identical, facing remains unchanged.
+    /// </remarks>
+    public void FaceToward(GridPosition targetPosition, GridPosition currentPosition)
+    {
+        if (targetPosition == currentPosition)
+            return;
+
+        Facing = Extensions.FacingDirectionExtensions.GetDirectionTo(currentPosition, targetPosition);
+    }
 }
+

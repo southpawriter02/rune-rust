@@ -298,6 +298,14 @@ public interface IGameConfigurationProvider
     /// <param name="coverId">The cover identifier.</param>
     /// <returns>The cover definition or null if not found.</returns>
     CoverDefinition? GetCoverDefinitionById(string coverId);
+
+    // ===== Flanking Configuration (v0.5.3a) =====
+
+    /// <summary>
+    /// Gets the flanking configuration settings.
+    /// </summary>
+    /// <returns>Flanking configuration with bonus values, or null if not configured.</returns>
+    FlankingConfiguration? GetFlankingConfiguration();
 }
 
 /// <summary>
@@ -381,4 +389,43 @@ public record GridSettings
     /// </summary>
     public string MonsterSpawnZone { get; init; } = "north";
 }
+
+/// <summary>
+/// Configuration for flanking mechanics in tactical combat.
+/// </summary>
+/// <remarks>
+/// Flanking bonuses apply when attacking with positional advantage:
+/// <list type="bullet">
+///   <item><description>Standard flanking: ally on opposite side of target</description></item>
+///   <item><description>Backstab: attacking from behind the target's facing</description></item>
+/// </list>
+/// </remarks>
+public record FlankingConfiguration
+{
+    /// <summary>
+    /// Whether flanking mechanics are enabled.
+    /// </summary>
+    public bool Enabled { get; init; } = true;
+
+    /// <summary>
+    /// Attack bonus when flanking with an ally.
+    /// </summary>
+    public int AttackBonus { get; init; } = 2;
+
+    /// <summary>
+    /// Damage bonus when flanking with an ally.
+    /// </summary>
+    public int DamageBonus { get; init; } = 0;
+
+    /// <summary>
+    /// Attack bonus when attacking from behind.
+    /// </summary>
+    public int BehindAttackBonus { get; init; } = 2;
+
+    /// <summary>
+    /// Damage bonus when attacking from behind.
+    /// </summary>
+    public int BehindDamageBonus { get; init; } = 2;
+}
+
 

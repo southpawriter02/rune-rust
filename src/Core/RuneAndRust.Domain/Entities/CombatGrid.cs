@@ -1,4 +1,5 @@
 using RuneAndRust.Domain.Enums;
+using RuneAndRust.Domain.Extensions;
 using RuneAndRust.Domain.Interfaces;
 using RuneAndRust.Domain.ValueObjects;
 
@@ -370,6 +371,58 @@ public class CombatGrid : IEntity
     /// Clears all cover from the grid.
     /// </summary>
     public void ClearCover() => _coverObjects.Clear();
+
+    #endregion
+
+    #region Facing
+
+    private readonly Dictionary<Guid, FacingDirection> _entityFacings = new();
+
+    /// <summary>
+    /// Gets an entity's facing direction.
+    /// </summary>
+    /// <param name="entityId">The entity's unique identifier.</param>
+    /// <returns>The entity's facing direction, or null if not tracked.</returns>
+    public FacingDirection? GetEntityFacing(Guid entityId) =>
+        _entityFacings.TryGetValue(entityId, out var facing) ? facing : null;
+
+    /// <summary>
+    /// Sets an entity's facing direction.
+    /// </summary>
+    /// <param name="entityId">The entity's unique identifier.</param>
+    /// <param name="direction">The facing direction to set.</param>
+    public void SetEntityFacing(Guid entityId, FacingDirection direction)
+    {
+        _entityFacings[entityId] = direction;
+    }
+
+    /// <summary>
+    /// Faces an entity toward a target position.
+    /// </summary>
+    /// <param name="entityId">The entity's unique identifier.</param>
+    /// <param name="targetPosition">The target position to face toward.</param>
+    /// <remarks>
+    /// Calculates the direction from the entity's current position to the target
+    /// and updates the entity's facing. Does nothing if the entity is not on the grid.
+    /// </remarks>
+    public void FaceEntityToward(Guid entityId, GridPosition targetPosition)
+    {
+        var currentPos = GetEntityPosition(entityId);
+        if (!currentPos.HasValue || currentPos.Value == targetPosition)
+            return;
+
+        var direction = Extensions.FacingDirectionExtensions.GetDirectionTo(currentPos.Value, targetPosition);
+        SetEntityFacing(entityId, direction);
+    }
+
+    /// <summary>
+    /// Removes facing tracking for an entity (called when entity is removed from grid).
+    /// </summary>
+    /// <param name="entityId">The entity's unique identifier.</param>
+    internal void RemoveEntityFacing(Guid entityId)
+    {
+        _entityFacings.Remove(entityId);
+    }
 
     #endregion
 }

@@ -1,0 +1,9 @@
+{
+    "flanking": {
+        "enabled": true,
+        "attackBonus": 2,
+        "damageBonus": 0,
+        "behindAttackBonus": 2,
+        "behindDamageBonus": 2
+    }
+}

@@ -417,4 +417,29 @@ public class MockConfigurationProvider : IGameConfigurationProvider
         ]);
         return this;
     }
+
+    // ===== Flanking Configuration (v0.5.3a) =====
+
+    private FlankingConfiguration? _flankingConfiguration;
+
+    public FlankingConfiguration? GetFlankingConfiguration() => _flankingConfiguration;
+
+    /// <summary>
+    /// Sets the flanking configuration.
+    /// </summary>
+    public MockConfigurationProvider WithFlankingConfiguration(FlankingConfiguration config)
+    {
+        _flankingConfiguration = config;
+        return this;
+    }
+
+    /// <summary>
+    /// Sets default flanking configuration for testing.
+    /// </summary>
+    public MockConfigurationProvider WithDefaultFlankingConfiguration()
+    {
+        _flankingConfiguration = new FlankingConfiguration();
+        return this;
+    }
 }
+
