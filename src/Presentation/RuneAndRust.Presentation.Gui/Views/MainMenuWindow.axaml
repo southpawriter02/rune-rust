@@ -1,0 +1,63 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:RuneAndRust.Presentation.Gui.ViewModels"
+        x:Class="RuneAndRust.Presentation.Gui.Views.MainMenuWindow"
+        x:DataType="vm:MainMenuViewModel"
+        Title="Rune and Rust"
+        Width="1280" Height="720"
+        MinWidth="800" MinHeight="600"
+        WindowStartupLocation="CenterScreen"
+        Background="{StaticResource BackgroundBrush}">
+    
+    <Design.DataContext>
+        <vm:MainMenuViewModel />
+    </Design.DataContext>
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        
+        <!-- Main Content -->
+        <StackPanel Grid.Row="0"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Spacing="16">
+            
+            <!-- Game Title -->
+            <Border Classes="card"
+                    Padding="32,24"
+                    Margin="0,0,0,32">
+                <TextBlock Text="RUNE AND RUST"
+                           Classes="title"
+                           HorizontalAlignment="Center" />
+            </Border>
+            
+            <!-- Menu Buttons -->
+            <Button Classes="menu-button"
+                    Content="New Game"
+                    Command="{Binding NewGameCommand}" />
+            
+            <Button Classes="menu-button"
+                    Content="Load Game"
+                    Command="{Binding LoadGameCommand}" />
+            
+            <Button Classes="menu-button"
+                    Content="Settings"
+                    Command="{Binding OpenSettingsCommand}" />
+            
+            <Button Classes="menu-button"
+                    Content="Quit"
+                    Command="{Binding QuitCommand}" />
+            
+        </StackPanel>
+        
+        <!-- Version Footer -->
+        <TextBlock Grid.Row="1"
+                   Text="{Binding Version}"
+                   Classes="muted"
+                   HorizontalAlignment="Center"
+                   Margin="0,0,0,16" />
+    </Grid>
+</Window>

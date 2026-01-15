@@ -1,0 +1,54 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    
+    <!-- Primary Colors (Brown/Leather) -->
+    <Color x:Key="PrimaryColor">#8B4513</Color>
+    <Color x:Key="PrimaryLightColor">#A0522D</Color>
+    <Color x:Key="PrimaryDarkColor">#654321</Color>
+    
+    <!-- Accent Colors (Gold/Bronze) -->
+    <Color x:Key="AccentColor">#DAA520</Color>
+    <Color x:Key="AccentLightColor">#FFD700</Color>
+    <Color x:Key="AccentDarkColor">#B8860B</Color>
+    
+    <!-- Background Colors -->
+    <Color x:Key="BackgroundColor">#1E1E1E</Color>
+    <Color x:Key="SurfaceColor">#2D2D2D</Color>
+    <Color x:Key="PanelColor">#252525</Color>
+    <Color x:Key="CardColor">#333333</Color>
+    
+    <!-- Text Colors -->
+    <Color x:Key="TextPrimaryColor">#E0E0E0</Color>
+    <Color x:Key="TextSecondaryColor">#A0A0A0</Color>
+    <Color x:Key="TextMutedColor">#707070</Color>
+    <Color x:Key="TextAccentColor">#DAA520</Color>
+    
+    <!-- Status Colors -->
+    <Color x:Key="HealthColor">#228B22</Color>
+    <Color x:Key="HealthLowColor">#FF4500</Color>
+    <Color x:Key="HealthCriticalColor">#8B0000</Color>
+    <Color x:Key="ManaColor">#4169E1</Color>
+    <Color x:Key="EnergyColor">#FFD700</Color>
+    <Color x:Key="RageColor">#DC143C</Color>
+    <Color x:Key="XPColor">#9932CC</Color>
+    
+    <!-- Combat Colors -->
+    <Color x:Key="DamageColor">#FF4444</Color>
+    <Color x:Key="HealColor">#44FF44</Color>
+    <Color x:Key="CriticalColor">#FF00FF</Color>
+    <Color x:Key="MissColor">#888888</Color>
+    
+    <!-- Brushes -->
+    <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource PrimaryColor}" />
+    <SolidColorBrush x:Key="PrimaryLightBrush" Color="{StaticResource PrimaryLightColor}" />
+    <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource AccentColor}" />
+    <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource BackgroundColor}" />
+    <SolidColorBrush x:Key="SurfaceBrush" Color="{StaticResource SurfaceColor}" />
+    <SolidColorBrush x:Key="PanelBrush" Color="{StaticResource PanelColor}" />
+    <SolidColorBrush x:Key="CardBrush" Color="{StaticResource CardColor}" />
+    <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimaryColor}" />
+    <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource TextSecondaryColor}" />
+    <SolidColorBrush x:Key="TextMutedBrush" Color="{StaticResource TextMutedColor}" />
+    <SolidColorBrush x:Key="TextAccentBrush" Color="{StaticResource TextAccentColor}" />
+    
+</ResourceDictionary>

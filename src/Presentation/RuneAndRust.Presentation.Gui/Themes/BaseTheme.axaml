@@ -1,0 +1,12 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    
+    <!-- Override FluentTheme accent colors -->
+    <SolidColorBrush x:Key="SystemAccentColor" Color="#DAA520" />
+    <SolidColorBrush x:Key="SystemAccentColorDark1" Color="#B8860B" />
+    <SolidColorBrush x:Key="SystemAccentColorLight1" Color="#FFD700" />
+    
+    <!-- Window defaults -->
+    <SolidColorBrush x:Key="WindowBackgroundBrush" Color="#1E1E1E" />
+    
+</ResourceDictionary>
