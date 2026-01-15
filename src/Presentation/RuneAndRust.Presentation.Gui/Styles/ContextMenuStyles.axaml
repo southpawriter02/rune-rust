@@ -1,0 +1,43 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    
+    <!-- Context Menu Base -->
+    <Style Selector="ContextMenu">
+        <Setter Property="Background" Value="{StaticResource BackgroundDeepBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="4" />
+        <Setter Property="Padding" Value="4" />
+        <Setter Property="MinWidth" Value="150" />
+    </Style>
+    
+    <!-- Menu Item Base -->
+    <Style Selector="ContextMenu > MenuItem">
+        <Setter Property="Padding" Value="8,6" />
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+    </Style>
+    
+    <!-- Menu Item Hover -->
+    <Style Selector="ContextMenu > MenuItem:pointerover /template/ Border">
+        <Setter Property="Background" Value="{StaticResource PrimaryBrush}" />
+    </Style>
+    
+    <!-- Menu Header (disabled, styled differently) -->
+    <Style Selector="MenuItem.menu-header">
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}" />
+        <Setter Property="IsHitTestVisible" Value="False" />
+    </Style>
+    
+    <Style Selector="MenuItem.menu-header:disabled /template/ ContentPresenter">
+        <Setter Property="Opacity" Value="1" />
+    </Style>
+    
+    <!-- Separator -->
+    <Style Selector="ContextMenu > Separator">
+        <Setter Property="Background" Value="{StaticResource BorderBrush}" />
+        <Setter Property="Height" Value="1" />
+        <Setter Property="Margin" Value="4,4" />
+    </Style>
+    
+</Styles>

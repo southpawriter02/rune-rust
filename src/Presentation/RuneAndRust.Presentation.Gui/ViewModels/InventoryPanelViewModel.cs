@@ -215,4 +215,20 @@ public partial class InventoryPanelViewModel : ViewModelBase
             value: 50
         );
     }
+
+    /// <summary>
+    /// Checks whether an item is currently equipped.
+    /// </summary>
+    /// <param name="item">The item to check.</param>
+    /// <returns>True if the item is equipped.</returns>
+    /// <remarks>
+    /// Currently returns false as equipment tracking is not yet implemented.
+    /// Will be updated in v0.7.3 to check actual equipment state.
+    /// </remarks>
+    public bool IsItemEquipped(Item item)
+    {
+        // TODO: Integrate with equipment service when available
+        return false;
+    }
 }
+
