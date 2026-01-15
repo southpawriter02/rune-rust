@@ -1,0 +1,38 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    
+    <!-- Exit Button Style -->
+    <Style Selector="Button.exit-button">
+        <Setter Property="Background" Value="{StaticResource PrimaryBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+        <Setter Property="FontSize" Value="{StaticResource FontSizeBody}" />
+        <Setter Property="Padding" Value="12,6" />
+        <Setter Property="MinWidth" Value="80" />
+        <Setter Property="CornerRadius" Value="4" />
+        <Setter Property="Cursor" Value="Hand" />
+    </Style>
+    
+    <Style Selector="Button.exit-button:pointerover">
+        <Setter Property="Background" Value="{StaticResource PrimaryLightBrush}" />
+    </Style>
+    
+    <Style Selector="Button.exit-button:pressed">
+        <Setter Property="Background" Value="{StaticResource AccentBrush}" />
+    </Style>
+    
+    <!-- ASCII Art Text Style -->
+    <Style Selector="TextBlock.ascii-art">
+        <Setter Property="FontFamily" Value="Consolas, Courier New, monospace" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+        <Setter Property="TextAlignment" Value="Left" />
+    </Style>
+    
+    <!-- Room Title Style -->
+    <Style Selector="TextBlock.room-title">
+        <Setter Property="FontSize" Value="{StaticResource FontSizeXLarge}" />
+        <Setter Property="FontWeight" Value="{StaticResource FontWeightBold}" />
+        <Setter Property="Foreground" Value="{StaticResource AccentBrush}" />
+    </Style>
+    
+</Styles>

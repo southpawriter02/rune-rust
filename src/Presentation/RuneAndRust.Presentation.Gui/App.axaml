@@ -8,6 +8,7 @@
         <StyleInclude Source="avares://RuneAndRust.Presentation.Gui/Styles/ButtonStyles.axaml" />
         <StyleInclude Source="avares://RuneAndRust.Presentation.Gui/Styles/TextBlockStyles.axaml" />
         <StyleInclude Source="avares://RuneAndRust.Presentation.Gui/Styles/PanelStyles.axaml" />
+        <StyleInclude Source="avares://RuneAndRust.Presentation.Gui/Styles/RoomDisplayStyles.axaml" />
     </Application.Styles>
     
     <Application.Resources>
