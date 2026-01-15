@@ -1,0 +1,55 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ctrl="using:RuneAndRust.Presentation.Gui.Controls">
+    
+    <!-- ItemSlotControl Base Style -->
+    <Style Selector="ctrl|ItemSlotControl">
+        <Setter Property="Width" Value="52" />
+        <Setter Property="Height" Value="52" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Name="SlotBorder"
+                        Background="#2A2A2A"
+                        BorderBrush="#444444"
+                        BorderThickness="1"
+                        CornerRadius="4">
+                    <Grid RowDefinitions="*,Auto">
+                        <!-- Icon -->
+                        <TextBlock Grid.Row="0"
+                                   Text="{TemplateBinding Icon}"
+                                   FontSize="18"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center" />
+                        
+                        <!-- Short Name -->
+                        <TextBlock Grid.Row="1"
+                                   Text="{TemplateBinding ShortName}"
+                                   FontSize="9"
+                                   Foreground="#888888"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,0,0,2" />
+                    </Grid>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+    
+    <!-- Empty slot -->
+    <Style Selector="ctrl|ItemSlotControl.empty">
+        <Setter Property="Opacity" Value="0.5" />
+    </Style>
+    
+    <!-- Filled slot hover -->
+    <Style Selector="ctrl|ItemSlotControl.filled:pointerover /template/ Border#SlotBorder">
+        <Setter Property="BorderBrush" Value="#666666" />
+    </Style>
+    
+    <!-- Selected slot -->
+    <Style Selector="ctrl|ItemSlotControl.selected /template/ Border#SlotBorder">
+        <Setter Property="BorderBrush" Value="#6EBF6E" />
+        <Setter Property="BorderThickness" Value="2" />
+        <Setter Property="Background" Value="#3A3A3A" />
+    </Style>
+    
+</Styles>
