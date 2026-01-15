@@ -1,0 +1,128 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:RuneAndRust.Presentation.Gui.ViewModels"
+        x:Class="RuneAndRust.Presentation.Gui.Views.GameWindow"
+        x:DataType="vm:GameWindowViewModel"
+        Title="{Binding WindowTitle}"
+        Width="1280" Height="720"
+        MinWidth="1024" MinHeight="600"
+        WindowStartupLocation="CenterScreen"
+        Background="{StaticResource BackgroundBrush}">
+    
+    <Design.DataContext>
+        <vm:GameWindowViewModel />
+    </Design.DataContext>
+    
+    <DockPanel>
+        <!-- Menu Bar -->
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="_File">
+                <MenuItem Header="_New Game" Command="{Binding NewGameCommand}" />
+                <MenuItem Header="_Load Game..." Command="{Binding LoadGameCommand}" />
+                <MenuItem Header="_Save Game..." Command="{Binding SaveGameCommand}" />
+                <Separator />
+                <MenuItem Header="_Settings" Command="{Binding OpenSettingsCommand}" />
+                <Separator />
+                <MenuItem Header="_Return to Menu" Command="{Binding ReturnToMainMenuCommand}" />
+                <MenuItem Header="E_xit" Command="{Binding QuitCommand}" />
+            </MenuItem>
+            <MenuItem Header="_Game">
+                <MenuItem Header="_Character" IsEnabled="False" />
+                <MenuItem Header="_Map" IsEnabled="False" />
+                <MenuItem Header="_Quest Log" IsEnabled="False" />
+                <Separator />
+                <MenuItem Header="_Pause" IsEnabled="False" />
+            </MenuItem>
+            <MenuItem Header="_Help">
+                <MenuItem Header="_How to Play" IsEnabled="False" />
+                <MenuItem Header="_Controls" IsEnabled="False" />
+                <Separator />
+                <MenuItem Header="_About" Command="{Binding ShowAboutCommand}" />
+            </MenuItem>
+        </Menu>
+        
+        <!-- Main Layout Grid -->
+        <Grid Margin="8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" MinWidth="400" />
+                <ColumnDefinition Width="8" />
+                <ColumnDefinition Width="280" MinWidth="200" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            
+            <!-- Left Column: Main + Bottom Content -->
+            <Grid Grid.Column="0" Grid.Row="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="2*" MinHeight="200" />
+                    <RowDefinition Height="8" />
+                    <RowDefinition Height="*" MinHeight="100" />
+                </Grid.RowDefinitions>
+                
+                <!-- Main Content Region -->
+                <Border Grid.Row="0" Classes="panel" Name="MainContentRegion">
+                    <TextBlock Text="Main Content Region (v0.7.1)"
+                               Classes="muted"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center" />
+                </Border>
+                
+                <!-- Bottom Content Region -->
+                <Border Grid.Row="2" Classes="panel" Name="BottomContentRegion">
+                    <TextBlock Text="Bottom Content Region (v0.7.1)"
+                               Classes="muted"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center" />
+                </Border>
+            </Grid>
+            
+            <!-- Right Sidebar -->
+            <Grid Grid.Column="2" Grid.Row="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="8" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                
+                <!-- Right Sidebar Top (Player Status) -->
+                <Border Grid.Row="0" Classes="panel" Name="RightSidebarTopRegion">
+                    <TextBlock Text="Player Status (v0.7.1)"
+                               Classes="muted"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center" />
+                </Border>
+                
+                <!-- Right Sidebar Bottom (Inventory) -->
+                <Border Grid.Row="2" Classes="panel" Name="RightSidebarBottomRegion">
+                    <TextBlock Text="Inventory (v0.7.2)"
+                               Classes="muted"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center" />
+                </Border>
+            </Grid>
+            
+            <!-- Input Region -->
+            <Border Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="1"
+                    Classes="panel" Name="InputRegion" Margin="0,8,0,0">
+                <TextBlock Text="Input Region (v0.7.2)"
+                           Classes="muted"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           Margin="8" />
+            </Border>
+            
+            <!-- Combat Overlay (hidden by default) -->
+            <Border Grid.Column="0" Grid.Row="0"
+                    Classes="card" Name="CombatOverlayRegion"
+                    IsVisible="{Binding IsInCombat}"
+                    Background="#CC1E1E1E">
+                <TextBlock Text="Combat Overlay (v0.7.3)"
+                           Classes="heading"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center" />
+            </Border>
+        </Grid>
+    </DockPanel>
+</Window>

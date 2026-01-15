@@ -1,9 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Platform.Storage;
+using RuneAndRust.Presentation.Gui.Services;
+using RuneAndRust.Presentation.Gui.Views;
 using Serilog;
 
 namespace RuneAndRust.Presentation.Gui.ViewModels;
@@ -11,8 +9,14 @@ namespace RuneAndRust.Presentation.Gui.ViewModels;
 /// <summary>
 /// View model for the main menu window.
 /// </summary>
+/// <remarks>
+/// Provides commands for starting a new game, loading existing games,
+/// opening settings, and quitting the application.
+/// </remarks>
 public partial class MainMenuViewModel : ViewModelBase
 {
+    private readonly INavigationService? _navigation;
+
     /// <summary>
     /// Gets the application version string.
     /// </summary>
@@ -20,13 +24,31 @@ public partial class MainMenuViewModel : ViewModelBase
     private string _version = "v0.7.0 - GUI Foundation";
 
     /// <summary>
-    /// Starts a new game session.
+    /// Initializes a new instance of the <see cref="MainMenuViewModel"/> class.
+    /// </summary>
+    /// <param name="navigation">The navigation service for window management.</param>
+    public MainMenuViewModel(INavigationService navigation)
+    {
+        _navigation = navigation;
+        Log.Debug("MainMenuViewModel initialized with NavigationService");
+    }
+
+    /// <summary>
+    /// Design-time constructor.
+    /// </summary>
+    public MainMenuViewModel()
+    {
+        _navigation = null;
+    }
+
+    /// <summary>
+    /// Starts a new game session and navigates to the game window.
     /// </summary>
     [RelayCommand]
     private void NewGame()
     {
         Log.Information("Starting new game");
-        // GameWindow navigation will be implemented in v0.7.0c
+        _navigation?.NavigateTo<GameWindow>();
     }
 
     /// <summary>
@@ -37,25 +59,12 @@ public partial class MainMenuViewModel : ViewModelBase
     {
         Log.Information("Opening load game dialog");
         
-        var window = GetCurrentWindow();
-        if (window is null) return;
-
-        var files = await window.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+        var path = await _navigation!.ShowLoadDialogAsync();
+        if (path is not null)
         {
-            Title = "Load Game",
-            AllowMultiple = false,
-            FileTypeFilter = new[]
-            {
-                new FilePickerFileType("Save Files") { Patterns = new[] { "*.json" } },
-                new FilePickerFileType("All Files") { Patterns = new[] { "*" } }
-            }
-        });
-
-        if (files.Count > 0)
-        {
-            var path = files[0].Path.LocalPath;
             Log.Information("Selected save file: {Path}", path);
-            // Game loading will be implemented in v0.7.0c
+            // Navigate to game window after loading
+            _navigation.NavigateTo<GameWindow>();
         }
     }
 
@@ -63,19 +72,10 @@ public partial class MainMenuViewModel : ViewModelBase
     /// Opens the settings dialog.
     /// </summary>
     [RelayCommand]
-    private async Task OpenSettingsAsync()
+    private void OpenSettings()
     {
         Log.Information("Opening settings dialog");
-        
-        var window = GetCurrentWindow();
-        if (window is null) return;
-
-        var settingsWindow = new Views.SettingsWindow
-        {
-            DataContext = new SettingsViewModel()
-        };
-        
-        await settingsWindow.ShowDialog(window);
+        _navigation?.ShowDialog<SettingsWindow>();
     }
 
     /// <summary>
@@ -85,19 +85,6 @@ public partial class MainMenuViewModel : ViewModelBase
     private void Quit()
     {
         Log.Information("Quitting application");
-        
-        if (Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
-        {
-            desktop.Shutdown();
-        }
-    }
-
-    private static Window? GetCurrentWindow()
-    {
-        if (Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
-        {
-            return desktop.MainWindow;
-        }
-        return null;
+        _navigation?.Quit();
     }
 }
