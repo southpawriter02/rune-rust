@@ -1,0 +1,67 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:RuneAndRust.Presentation.Gui.ViewModels"
+             xmlns:models="using:RuneAndRust.Presentation.Gui.Models"
+             x:Class="RuneAndRust.Presentation.Gui.Controls.TooltipPanel"
+             x:DataType="vm:TooltipViewModel"
+             IsVisible="{Binding IsVisible}"
+             MaxWidth="350">
+    
+    <Border Background="#1A1A1A" BorderBrush="#444444" BorderThickness="1"
+            CornerRadius="4" Padding="12" BoxShadow="4 4 8 0 #40000000">
+        <StackPanel>
+            
+            <!-- Title -->
+            <TextBlock Text="{Binding Title}" FontWeight="Bold" FontSize="14" />
+            
+            <!-- Separator -->
+            <Border Height="1" Background="#444444" Margin="0,6,0,8" />
+            
+            <!-- Subtitle -->
+            <TextBlock Text="{Binding Subtitle}" Foreground="#888888" FontSize="11"
+                       IsVisible="{Binding Subtitle, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                       Margin="0,0,0,8" />
+            
+            <!-- Sections -->
+            <ItemsControl ItemsSource="{Binding Sections}" Margin="0,0,0,8">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="models:TooltipSection">
+                        <Border Background="#252526" CornerRadius="4" Padding="8" Margin="0,0,0,4">
+                            <StackPanel>
+                                <!-- Section Header -->
+                                <TextBlock Text="{Binding Header}" FontWeight="SemiBold" FontSize="11"
+                                           Foreground="#888888"
+                                           IsVisible="{Binding Header, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                                           Margin="0,0,0,4" />
+                                
+                                <!-- Section Lines -->
+                                <ItemsControl ItemsSource="{Binding Lines}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="models:TooltipLine">
+                                            <Grid ColumnDefinitions="Auto,*" Margin="0,2">
+                                                <TextBlock Grid.Column="0" Text="{Binding Label}"
+                                                           Foreground="#888888" Margin="0,0,12,0" />
+                                                <TextBlock Grid.Column="1" Text="{Binding Value}"
+                                                           HorizontalAlignment="Right" />
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            
+            <!-- Description -->
+            <TextBlock Text="{Binding Description}" TextWrapping="Wrap" Foreground="#CCCCCC"
+                       IsVisible="{Binding Description, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                       Margin="0,0,0,8" />
+            
+            <!-- Footer -->
+            <TextBlock Text="{Binding Footer}" FontStyle="Italic" Foreground="#666666" FontSize="11"
+                       IsVisible="{Binding Footer, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+            
+        </StackPanel>
+    </Border>
+</UserControl>

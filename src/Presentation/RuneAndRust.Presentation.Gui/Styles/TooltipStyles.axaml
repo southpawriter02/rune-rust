@@ -1,0 +1,60 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    
+    <!-- Tooltip Container -->
+    <Style Selector="Border.tooltip-container">
+        <Setter Property="Background" Value="#1A1A1A" />
+        <Setter Property="BorderBrush" Value="#444444" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="4" />
+        <Setter Property="BoxShadow" Value="4 4 8 0 #40000000" />
+    </Style>
+    
+    <!-- Tooltip Title -->
+    <Style Selector="TextBlock.tooltip-title">
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="FontSize" Value="14" />
+    </Style>
+    
+    <!-- Tooltip Subtitle -->
+    <Style Selector="TextBlock.tooltip-subtitle">
+        <Setter Property="Foreground" Value="#888888" />
+        <Setter Property="FontSize" Value="11" />
+    </Style>
+    
+    <!-- Tooltip Separator -->
+    <Style Selector="Border.tooltip-separator">
+        <Setter Property="Height" Value="1" />
+        <Setter Property="Background" Value="#444444" />
+    </Style>
+    
+    <!-- Tooltip Section -->
+    <Style Selector="Border.tooltip-section">
+        <Setter Property="Background" Value="#252526" />
+        <Setter Property="CornerRadius" Value="4" />
+    </Style>
+    
+    <!-- Tooltip Label -->
+    <Style Selector="TextBlock.tooltip-label">
+        <Setter Property="Foreground" Value="#888888" />
+    </Style>
+    
+    <!-- Tooltip Value -->
+    <Style Selector="TextBlock.tooltip-value">
+        <Setter Property="HorizontalAlignment" Value="Right" />
+    </Style>
+    
+    <!-- Tooltip Description -->
+    <Style Selector="TextBlock.tooltip-description">
+        <Setter Property="Foreground" Value="#CCCCCC" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+    
+    <!-- Tooltip Footer -->
+    <Style Selector="TextBlock.tooltip-footer">
+        <Setter Property="FontStyle" Value="Italic" />
+        <Setter Property="Foreground" Value="#666666" />
+        <Setter Property="FontSize" Value="11" />
+    </Style>
+    
+</Styles>
