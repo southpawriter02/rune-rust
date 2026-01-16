@@ -1,0 +1,106 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:RuneAndRust.Presentation.Gui.ViewModels"
+        x:Class="RuneAndRust.Presentation.Gui.Views.PuzzleWindow"
+        x:DataType="vm:PuzzleWindowViewModel"
+        Title="Puzzle"
+        Width="650" Height="500"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False"
+        ShowInTaskbar="False"
+        Background="#1E1E1E">
+    
+    <Design.DataContext>
+        <vm:PuzzleWindowViewModel />
+    </Design.DataContext>
+    
+    <Grid RowDefinitions="Auto,*,Auto,Auto">
+        
+        <!-- Header -->
+        <Border Grid.Row="0" Background="#2D2D2D" Padding="16">
+            <TextBlock Text="{Binding Title}" FontSize="18" FontWeight="Bold"
+                       HorizontalAlignment="Center" />
+        </Border>
+        
+        <!-- Main Puzzle Area -->
+        <Border Grid.Row="1" Background="#252526" Padding="20">
+            <StackPanel>
+                
+                <!-- Instructions -->
+                <TextBlock Text="{Binding Instructions}" FontStyle="Italic"
+                           TextWrapping="Wrap" HorizontalAlignment="Center" Margin="0,0,0,20" />
+                
+                <!-- Puzzle Elements -->
+                <ItemsControl ItemsSource="{Binding Elements}" HorizontalAlignment="Center">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal" Spacing="12" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Width="80" Height="80" CornerRadius="4" Cursor="Hand"
+                                    Background="#1A1A1A" BorderBrush="#444444" BorderThickness="2"
+                                    PointerPressed="OnElementPressed">
+                                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                    <TextBlock Text="{Binding Symbol}" FontSize="24" HorizontalAlignment="Center" />
+                                    <TextBlock Text="{Binding DisplaySymbol}" FontSize="18" HorizontalAlignment="Center"
+                                               Foreground="#4CAF50" />
+                                    <TextBlock Text="{Binding SelectionOrder}" FontSize="12" HorizontalAlignment="Center"
+                                               Foreground="#888888" IsVisible="{Binding IsSelected}" />
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                
+                <!-- Current Input -->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,20,0,0">
+                    <TextBlock Text="Current: " Foreground="#888888" />
+                    <TextBlock Text="{Binding CurrentInput}" FontWeight="SemiBold" />
+                </StackPanel>
+                
+                <!-- Hint Display -->
+                <TextBlock Text="{Binding CurrentHint}" Foreground="Gold" FontStyle="Italic"
+                           HorizontalAlignment="Center" Margin="0,12,0,0"
+                           IsVisible="{Binding CurrentHint, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                
+            </StackPanel>
+        </Border>
+        
+        <!-- Status Bar -->
+        <Border Grid.Row="2" Background="#1A1A1A" Padding="16,8">
+            <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Text="{Binding AttemptsText}" />
+                <TextBlock Grid.Column="1" Text="{Binding ResultMessage}" Foreground="#FF9800" />
+            </Grid>
+        </Border>
+        
+        <!-- Action Buttons -->
+        <Border Grid.Row="3" Background="#2D2D2D" Padding="16">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="12">
+                <Button Content="Reset" Command="{Binding ResetCommand}" Padding="16,8" />
+                <Button Content="{Binding HintButtonText}" Command="{Binding UseHintCommand}"
+                        IsEnabled="{Binding CanUseHint}" Padding="16,8" />
+                <Button Content="Solve" Command="{Binding SolveCommand}"
+                        Background="#4CAF50" Foreground="White" Padding="16,8" />
+                <Button Content="Give Up" Command="{Binding GiveUpCommand}"
+                        Background="#F44336" Foreground="White" Padding="16,8" />
+            </StackPanel>
+        </Border>
+        
+        <!-- Result Overlay -->
+        <Border Grid.RowSpan="4" Background="#CC000000" IsVisible="{Binding ShowResult}">
+            <Border Background="#2D2D2D" CornerRadius="8" Padding="32"
+                    HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="400">
+                <StackPanel>
+                    <TextBlock Text="{Binding ResultMessage}" TextWrapping="Wrap"
+                               FontSize="16" HorizontalAlignment="Center" />
+                    <Button Content="Continue" Command="{Binding CloseCommand}"
+                            HorizontalAlignment="Center" Margin="0,20,0,0" Padding="24,8" />
+                </StackPanel>
+            </Border>
+        </Border>
+        
+    </Grid>
+</Window>
