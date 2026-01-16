@@ -2,8 +2,11 @@ namespace RuneAndRust.Presentation.Gui.ViewModels;
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using RuneAndRust.Domain.Entities;
+using RuneAndRust.Domain.Enums;
 using RuneAndRust.Domain.ValueObjects;
 using RuneAndRust.Presentation.Gui.Enums;
+using RuneAndRust.Presentation.Gui.Models;
+using RuneAndRust.Presentation.Gui.Services;
 using Serilog;
 using System.Collections.ObjectModel;
 
@@ -47,6 +50,23 @@ public partial class CombatGridPanelViewModel : ViewModelBase
     /// </summary>
     [ObservableProperty]
     private bool _isInCombat;
+
+    /// <summary>
+    /// Gets or sets whether targeting is currently active.
+    /// </summary>
+    [ObservableProperty]
+    private bool _isTargeting;
+
+    /// <summary>
+    /// Gets or sets the targeting hint message.
+    /// </summary>
+    [ObservableProperty]
+    private string _targetingHint = string.Empty;
+
+    /// <summary>
+    /// Gets the interaction service for grid targeting.
+    /// </summary>
+    public IGridInteractionService? InteractionService { get; private set; }
 
     /// <summary>
     /// Row labels for coordinate display (A-H).
@@ -205,8 +225,86 @@ public partial class CombatGridPanelViewModel : ViewModelBase
         {
             FlatCells.Clear();
             Tokens.Clear();
+            InteractionService?.CancelTargeting();
+            IsTargeting = false;
+            TargetingHint = string.Empty;
             Log.Information("Combat ended, grid cleared");
         }
+    }
+
+    /// <summary>
+    /// Sets the interaction service and subscribes to events.
+    /// </summary>
+    /// <param name="service">The interaction service.</param>
+    public void SetInteractionService(IGridInteractionService service)
+    {
+        // Unsubscribe from previous service
+        if (InteractionService is not null)
+        {
+            InteractionService.OnHighlightsChanged -= RefreshHighlights;
+            InteractionService.OnTargetingComplete -= HandleTargetingComplete;
+        }
+
+        InteractionService = service;
+        InteractionService.OnHighlightsChanged += RefreshHighlights;
+        InteractionService.OnTargetingComplete += HandleTargetingComplete;
+        Log.Debug("Interaction service set");
+    }
+
+    /// <summary>
+    /// Refreshes cell highlights from the interaction service.
+    /// </summary>
+    public void RefreshHighlights()
+    {
+        if (InteractionService is null)
+            return;
+
+        // Clear all highlights
+        foreach (var cell in FlatCells)
+        {
+            cell.IsHighlighted = false;
+            cell.HighlightType = HighlightType.Movement;
+        }
+
+        // Apply current highlights
+        var highlights = InteractionService.GetHighlightedCells();
+        foreach (var highlight in highlights)
+        {
+            var cell = GetCellAt(highlight.Position);
+            if (cell is not null)
+            {
+                cell.IsHighlighted = true;
+                cell.HighlightType = highlight.Type;
+            }
+        }
+
+        // Update targeting state
+        IsTargeting = InteractionService.IsTargeting;
+        TargetingHint = InteractionService.CurrentMode switch
+        {
+            GridInteractionMode.Movement => "Click to move • Right-click to cancel",
+            GridInteractionMode.Attack => "Click enemy to attack • Right-click to cancel",
+            GridInteractionMode.Ability => "Click target • Right-click to cancel",
+            _ => string.Empty
+        };
+    }
+
+    /// <summary>
+    /// Gets the cell ViewModel at the specified position.
+    /// </summary>
+    /// <param name="position">The grid position.</param>
+    /// <returns>The cell ViewModel, or null if not found.</returns>
+    public GridCellViewModel? GetCellAt(GridPosition position)
+    {
+        var index = position.Y * GridWidth + position.X;
+        return index >= 0 && index < FlatCells.Count ? FlatCells[index] : null;
+    }
+
+    private void HandleTargetingComplete(TargetingResult result)
+    {
+        Log.Debug("Targeting complete: {Mode} at {Position}, Success: {Success}",
+            result.Mode, result.Target, result.Success);
+        RefreshHighlights();
     }
 
     private void InitializeSampleGrid()
