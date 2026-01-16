@@ -90,4 +90,40 @@ public interface IBuffDebuffService
     /// <param name="effectId">The effect definition ID.</param>
     /// <returns>Remaining turns, or null if not found.</returns>
     int? GetRemainingDuration(IEffectTarget target, string effectId);
+
+    // ═══════════════════════════════════════════════════════════════
+    // v0.10.0c: Effect Triggers & Cleanse
+    // ═══════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// Ticks all effects on a target for a given timing.
+    /// </summary>
+    /// <param name="target">The target to tick effects for.</param>
+    /// <param name="timing">When the tick is occurring.</param>
+    /// <returns>Result of the tick processing.</returns>
+    TickResult TickEffects(IEffectTarget target, TriggerTiming timing);
+
+    /// <summary>
+    /// Checks if a target is immune to an effect.
+    /// </summary>
+    /// <param name="target">The target to check.</param>
+    /// <param name="effectId">The effect to check immunity for.</param>
+    /// <returns>True if target is immune.</returns>
+    bool IsImmune(IEffectTarget target, string effectId);
+
+    /// <summary>
+    /// Cleanses debuffs from a target.
+    /// </summary>
+    /// <param name="target">The target to cleanse.</param>
+    /// <param name="count">Number of debuffs to remove (null = all).</param>
+    /// <returns>Number of debuffs removed.</returns>
+    int Cleanse(IEffectTarget target, int? count = null);
+
+    /// <summary>
+    /// Dispels buffs from a target (for use on enemies).
+    /// </summary>
+    /// <param name="target">The target to dispel.</param>
+    /// <param name="count">Number of buffs to remove (null = all).</param>
+    /// <returns>Number of buffs removed.</returns>
+    int Dispel(IEffectTarget target, int? count = null);
 }

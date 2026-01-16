@@ -172,4 +172,143 @@ public class BuffDebuffService : IBuffDebuffService
     /// <inheritdoc />
     public int? GetRemainingDuration(IEffectTarget target, string effectId)
         => target.GetEffect(effectId)?.RemainingDuration;
+
+    // ═══════════════════════════════════════════════════════════════
+    // v0.10.0c: Effect Triggers & Cleanse
+    // ═══════════════════════════════════════════════════════════════
+
+    /// <inheritdoc />
+    public TickResult TickEffects(IEffectTarget target, TriggerTiming timing)
+    {
+        var result = new TickResult();
+        var effectsToRemove = new List<ActiveStatusEffect>();
+
+        foreach (var effect in target.ActiveEffects.ToList())
+        {
+            var definition = effect.Definition;
+
+            // Process DoT on turn start
+            if ((timing == TriggerTiming.OnTurnStart || timing == TriggerTiming.OnTick)
+                && definition.DamagePerTurn.HasValue)
+            {
+                var damage = effect.CalculateDamagePerTurn();
+                target.TakeDamage(damage);
+                result.DamageDealt += damage;
+                result.DamageByEffect[definition.Id] =
+                    result.DamageByEffect.GetValueOrDefault(definition.Id) + damage;
+                result.TriggeredEffects.Add(definition.Id);
+
+                _logger.LogDebug("{Effect} dealt {Damage} damage to {Target}",
+                    definition.Id, damage, target.Name);
+            }
+
+            // Process HoT on turn start
+            if ((timing == TriggerTiming.OnTurnStart || timing == TriggerTiming.OnTick)
+                && definition.HealingPerTurn.HasValue)
+            {
+                var healing = effect.CalculateHealingPerTurn();
+                target.Heal(healing);
+                result.HealingDone += healing;
+                result.HealingByEffect[definition.Id] =
+                    result.HealingByEffect.GetValueOrDefault(definition.Id) + healing;
+                result.TriggeredEffects.Add(definition.Id);
+
+                _logger.LogDebug("{Effect} healed {Target} for {Amount}",
+                    definition.Id, target.Name, healing);
+            }
+
+            // Tick duration on turn start
+            if (timing == TriggerTiming.OnTurnStart)
+            {
+                if (!effect.TickDuration())
+                {
+                    // Effect expired
+                    effectsToRemove.Add(effect);
+                    result.ExpiredEffects.Add(definition.Id);
+                }
+            }
+        }
+
+        // Remove expired effects
+        foreach (var effect in effectsToRemove)
+        {
+            target.RemoveEffect(effect.Id);
+            _logger.LogDebug("Effect {Effect} expired on {Target}", effect.Definition.Id, target.Name);
+        }
+
+        _logger.LogDebug("Ticked effects on {Target}: {Damage} damage, {Healing} healing, {Expired} expired",
+            target.Name, result.DamageDealt, result.HealingDone, result.ExpiredEffects.Count);
+
+        return result;
+    }
+
+    /// <inheritdoc />
+    public bool IsImmune(IEffectTarget target, string effectId)
+    {
+        // Check innate immunities on target
+        if (target.IsImmuneToEffect(effectId))
+        {
+            _logger.LogDebug("{Target} has innate immunity to {Effect}", target.Name, effectId);
+            return true;
+        }
+
+        // Check if any active effect grants immunity
+        foreach (var activeEffect in target.ActiveEffects)
+        {
+            if (activeEffect.Definition.GrantsImmunityTo.Contains(effectId))
+            {
+                _logger.LogDebug("{Target} is immune to {Effect} via {Source}",
+                    target.Name, effectId, activeEffect.Definition.Id);
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /// <inheritdoc />
+    public int Cleanse(IEffectTarget target, int? count = null)
+    {
+        var debuffs = target.ActiveEffects
+            .Where(e => e.Definition.Category == EffectCategory.Debuff)
+            .ToList();
+
+        if (count.HasValue)
+        {
+            debuffs = debuffs.Take(count.Value).ToList();
+        }
+
+        int removed = 0;
+        foreach (var debuff in debuffs)
+        {
+            if (target.RemoveEffect(debuff.Id))
+                removed++;
+        }
+
+        _logger.LogInformation("Cleansed {Count} debuffs from {Target}", removed, target.Name);
+        return removed;
+    }
+
+    /// <inheritdoc />
+    public int Dispel(IEffectTarget target, int? count = null)
+    {
+        var buffs = target.ActiveEffects
+            .Where(e => e.Definition.Category == EffectCategory.Buff)
+            .ToList();
+
+        if (count.HasValue)
+        {
+            buffs = buffs.Take(count.Value).ToList();
+        }
+
+        int removed = 0;
+        foreach (var buff in buffs)
+        {
+            if (target.RemoveEffect(buff.Id))
+                removed++;
+        }
+
+        _logger.LogInformation("Dispelled {Count} buffs from {Target}", removed, target.Name);
+        return removed;
+    }
 }
