@@ -266,6 +266,30 @@ public class SoundEffectConfig : ISoundEffectConfig
                         Files = new List<string> { "audio/sfx/ui/hover.ogg" },
                         Volume = 0.3f,
                         Randomize = false
+                    },
+                    ["menu-open"] = new()
+                    {
+                        Files = new List<string> { "audio/sfx/ui/menu_open.ogg" },
+                        Volume = 0.4f,
+                        Randomize = false
+                    },
+                    ["menu-close"] = new()
+                    {
+                        Files = new List<string> { "audio/sfx/ui/menu_close.ogg" },
+                        Volume = 0.4f,
+                        Randomize = false
+                    },
+                    ["notification"] = new()
+                    {
+                        Files = new List<string> { "audio/sfx/ui/notification.ogg" },
+                        Volume = 0.6f,
+                        Randomize = false
+                    },
+                    ["error"] = new()
+                    {
+                        Files = new List<string> { "audio/sfx/ui/error.ogg" },
+                        Volume = 0.7f,
+                        Randomize = false
                     }
                 }
             },
@@ -276,6 +300,137 @@ public class SoundEffectConfig : ISoundEffectConfig
                     ["item-pickup"] = new()
                     {
                         Files = new List<string> { "audio/sfx/items/pickup.ogg" },
+                        Volume = 0.7f,
+                        Randomize = false
+                    },
+                    ["item-drop"] = new()
+                    {
+                        Files = new List<string> { "audio/sfx/items/drop.ogg" },
+                        Volume = 0.6f,
+                        Randomize = false
+                    },
+                    ["item-equip"] = new()
+                    {
+                        Files = new List<string> { "audio/sfx/items/equip.ogg" },
+                        Volume = 0.7f,
+                        Randomize = false
+                    },
+                    ["item-use"] = new()
+                    {
+                        Files = new List<string> { "audio/sfx/items/use.ogg" },
+                        Volume = 0.7f,
+                        Randomize = false
+                    },
+                    ["gold-coins"] = new()
+                    {
+                        Files = new List<string> { "audio/sfx/items/coins.ogg" },
+                        Volume = 0.6f,
+                        Randomize = false
+                    }
+                }
+            },
+            ["puzzle"] = new()
+            {
+                Effects = new Dictionary<string, EffectFileConfig>
+                {
+                    ["puzzle-correct"] = new()
+                    {
+                        Files = new List<string> { "audio/sfx/puzzle/correct.ogg" },
+                        Volume = 0.8f,
+                        Randomize = false
+                    },
+                    ["puzzle-incorrect"] = new()
+                    {
+                        Files = new List<string> { "audio/sfx/puzzle/incorrect.ogg" },
+                        Volume = 0.7f,
+                        Randomize = false
+                    },
+                    ["puzzle-complete"] = new()
+                    {
+                        Files = new List<string> { "audio/sfx/puzzle/complete.ogg" },
+                        Volume = 1.0f,
+                        Randomize = false
+                    },
+                    ["lever-pull"] = new()
+                    {
+                        Files = new List<string> { "audio/sfx/puzzle/lever.ogg" },
+                        Volume = 0.7f,
+                        Randomize = false
+                    }
+                }
+            },
+            ["movement"] = new()
+            {
+                Effects = new Dictionary<string, EffectFileConfig>
+                {
+                    ["footstep-stone"] = new()
+                    {
+                        Files = new List<string>
+                        {
+                            "audio/sfx/movement/step_stone_01.ogg",
+                            "audio/sfx/movement/step_stone_02.ogg",
+                            "audio/sfx/movement/step_stone_03.ogg"
+                        },
+                        Volume = 0.4f,
+                        Randomize = true
+                    },
+                    ["footstep-wood"] = new()
+                    {
+                        Files = new List<string>
+                        {
+                            "audio/sfx/movement/step_wood_01.ogg",
+                            "audio/sfx/movement/step_wood_02.ogg"
+                        },
+                        Volume = 0.4f,
+                        Randomize = true
+                    },
+                    ["footstep-grass"] = new()
+                    {
+                        Files = new List<string>
+                        {
+                            "audio/sfx/movement/step_grass_01.ogg",
+                            "audio/sfx/movement/step_grass_02.ogg"
+                        },
+                        Volume = 0.3f,
+                        Randomize = true
+                    },
+                    ["footstep-water"] = new()
+                    {
+                        Files = new List<string>
+                        {
+                            "audio/sfx/movement/step_water_01.ogg",
+                            "audio/sfx/movement/step_water_02.ogg"
+                        },
+                        Volume = 0.5f,
+                        Randomize = true
+                    },
+                    ["footstep-metal"] = new()
+                    {
+                        Files = new List<string> { "audio/sfx/movement/step_metal.ogg" },
+                        Volume = 0.5f,
+                        Randomize = false
+                    },
+                    ["footstep-sand"] = new()
+                    {
+                        Files = new List<string> { "audio/sfx/movement/step_sand.ogg" },
+                        Volume = 0.3f,
+                        Randomize = false
+                    },
+                    ["door-open"] = new()
+                    {
+                        Files = new List<string> { "audio/sfx/movement/door_open.ogg" },
+                        Volume = 0.6f,
+                        Randomize = false
+                    },
+                    ["door-close"] = new()
+                    {
+                        Files = new List<string> { "audio/sfx/movement/door_close.ogg" },
+                        Volume = 0.5f,
+                        Randomize = false
+                    },
+                    ["chest-open"] = new()
+                    {
+                        Files = new List<string> { "audio/sfx/movement/chest_open.ogg" },
                         Volume = 0.7f,
                         Randomize = false
                     }
