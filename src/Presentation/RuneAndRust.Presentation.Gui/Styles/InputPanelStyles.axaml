@@ -1,0 +1,52 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    
+    <!-- Include CompletionPopupControl styles -->
+    <StyleInclude Source="avares://RuneAndRust.Presentation.Gui/Controls/CompletionPopupControl.axaml" />
+    
+    <!-- Input Panel Container -->
+    <Style Selector="Border.input-panel">
+        <Setter Property="Background" Value="{StaticResource SurfaceBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="4" />
+    </Style>
+    
+    <!-- Input Prompt -->
+    <Style Selector="TextBlock.input-prompt">
+        <Setter Property="Foreground" Value="{StaticResource AccentBrush}" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="FontSize" Value="{StaticResource FontSizeMedium}" />
+    </Style>
+    
+    <!-- Command Input TextBox -->
+    <Style Selector="TextBox.command-input">
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+        <Setter Property="CaretBrush" Value="{StaticResource AccentBrush}" />
+        <Setter Property="SelectionBrush" Value="{StaticResource PrimaryBrush}" />
+        <Setter Property="FontSize" Value="{StaticResource FontSizeMedium}" />
+        <Setter Property="Padding" Value="0" />
+    </Style>
+    
+    <Style Selector="TextBox.command-input:focus">
+        <Setter Property="BorderThickness" Value="0" />
+    </Style>
+    
+    <Style Selector="TextBox.command-input /template/ TextBlock#PART_Watermark">
+        <Setter Property="Foreground" Value="{StaticResource TextMutedBrush}" />
+        <Setter Property="Opacity" Value="0.6" />
+    </Style>
+    
+    <!-- History Indicator -->
+    <Style Selector="Border.history-indicator">
+        <Setter Property="Background" Value="{StaticResource SurfaceDarkBrush}" />
+        <Setter Property="CornerRadius" Value="2" />
+        <Setter Property="Padding" Value="4,2" />
+    </Style>
+    
+    <!-- Focus state for panel -->
+    <Style Selector="Border.input-panel:focus-within">
+        <Setter Property="BorderBrush" Value="{StaticResource AccentBrush}" />
+    </Style>
+    
+</Styles>

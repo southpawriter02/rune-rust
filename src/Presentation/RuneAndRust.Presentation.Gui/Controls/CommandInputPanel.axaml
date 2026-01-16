@@ -1,0 +1,62 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:RuneAndRust.Presentation.Gui.ViewModels"
+             xmlns:ctrl="using:RuneAndRust.Presentation.Gui.Controls"
+             x:Class="RuneAndRust.Presentation.Gui.Controls.CommandInputPanel"
+             x:DataType="vm:CommandInputViewModel"
+             Focusable="True">
+    
+    <Design.DataContext>
+        <vm:CommandInputViewModel />
+    </Design.DataContext>
+    
+    <Panel>
+        <!-- Main Input Area -->
+        <Border Classes="panel input-panel" Padding="8,6">
+            <DockPanel>
+                <!-- Prompt -->
+                <TextBlock DockPanel.Dock="Left" 
+                           Text="> " 
+                           Classes="input-prompt"
+                           FontFamily="{StaticResource MonoFont}"
+                           VerticalAlignment="Center"
+                           Margin="0,0,4,0" />
+                
+                <!-- History Indicator -->
+                <Border DockPanel.Dock="Right"
+                        Classes="history-indicator"
+                        IsVisible="{Binding IsNavigatingHistory}"
+                        Margin="4,0,0,0">
+                    <TextBlock Text="[History ▲]" 
+                               Classes="muted"
+                               FontSize="10" />
+                </Border>
+                
+                <!-- Input TextBox -->
+                <TextBox x:Name="InputBox"
+                         Text="{Binding InputText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                         Watermark="Enter command..."
+                         Classes="command-input"
+                         FontFamily="{StaticResource MonoFont}"
+                         BorderThickness="0"
+                         Background="Transparent"
+                         VerticalAlignment="Center"
+                         KeyDown="OnInputKeyDown" />
+            </DockPanel>
+        </Border>
+        
+        <!-- Completion Popup -->
+        <Popup x:Name="CompletionPopup"
+               IsOpen="{Binding IsCompletionVisible}"
+               PlacementTarget="{Binding ElementName=InputBox}"
+               Placement="Top"
+               IsLightDismissEnabled="False"
+               WindowManagerAddShadowHint="False">
+            
+            <ctrl:CompletionPopupControl 
+                Suggestions="{Binding Suggestions}"
+                SelectedIndex="{Binding SelectedSuggestionIndex, Mode=TwoWay}"
+                SuggestionAccepted="OnCompletionAccepted" />
+        </Popup>
+    </Panel>
+</UserControl>

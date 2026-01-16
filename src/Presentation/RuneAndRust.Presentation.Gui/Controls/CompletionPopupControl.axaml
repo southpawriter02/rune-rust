@@ -1,0 +1,43 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ctrl="using:RuneAndRust.Presentation.Gui.Controls">
+    
+    <!-- Completion Popup Control Template -->
+    <Style Selector="ctrl|CompletionPopupControl">
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Background="{StaticResource SurfaceBrush}"
+                        BorderBrush="{StaticResource BorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="4"
+                        Padding="2"
+                        MinWidth="180"
+                        MaxHeight="150">
+                    <ListBox x:Name="PART_SuggestionList"
+                             ItemsSource="{TemplateBinding Suggestions}"
+                             SelectedIndex="{TemplateBinding SelectedIndex, Mode=TwoWay}"
+                             Background="Transparent"
+                             BorderThickness="0">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding}"
+                                           FontFamily="{StaticResource MonoFont}"
+                                           Padding="8,4" />
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+    
+    <!-- Selected suggestion styling -->
+    <Style Selector="ctrl|CompletionPopupControl ListBoxItem:selected">
+        <Setter Property="Background" Value="{StaticResource PrimaryBrush}" />
+    </Style>
+    
+    <Style Selector="ctrl|CompletionPopupControl ListBoxItem:pointerover">
+        <Setter Property="Background" Value="{StaticResource PrimaryLightBrush}" />
+    </Style>
+    
+</Styles>
