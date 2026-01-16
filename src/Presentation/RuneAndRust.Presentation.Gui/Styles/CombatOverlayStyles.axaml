@@ -1,0 +1,100 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="using:RuneAndRust.Presentation.Gui.Controls">
+
+    <!-- ========================================== -->
+    <!-- Combat Overlay Styles v0.8.3b             -->
+    <!-- Quick-slot bar, overlays, keybind hints   -->
+    <!-- ========================================== -->
+
+    <!-- Quick-Slot Bar Container -->
+    <Style Selector="Border.quickslot-bar">
+        <Setter Property="Background" Value="#CC1E1E2E" />
+        <Setter Property="CornerRadius" Value="4" />
+        <Setter Property="BorderBrush" Value="#3E3E5E" />
+        <Setter Property="BorderThickness" Value="1" />
+    </Style>
+
+    <!-- Quick-Slot Control Base -->
+    <Style Selector="controls|QuickSlotControl">
+        <Setter Property="Width" Value="48" />
+        <Setter Property="Height" Value="48" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Background="#2E2E3E"
+                        BorderBrush="#4E4E6E"
+                        BorderThickness="1"
+                        CornerRadius="4"
+                        Padding="2">
+                    <Grid>
+                        <!-- Icon -->
+                        <TextBlock Text="{TemplateBinding Icon}"
+                                   FontSize="24"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   IsVisible="{TemplateBinding Icon, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                        
+                        <!-- Empty placeholder (visible when no icon) -->
+                        <Border Background="#1E1E2E"
+                                IsVisible="{TemplateBinding Icon, Converter={x:Static StringConverters.IsNullOrEmpty}}"
+                                CornerRadius="2" />
+                        
+                        <!-- Keybind hint -->
+                        <TextBlock Text="{TemplateBinding SlotNumber}"
+                                   Classes="keybind-hint"
+                                   HorizontalAlignment="Right"
+                                   VerticalAlignment="Bottom"
+                                   Margin="0,0,4,2" />
+                        
+                        <!-- Cooldown overlay -->
+                        <Border Background="#80000000"
+                                IsVisible="{TemplateBinding IsOnCooldown}"
+                                CornerRadius="2">
+                            <TextBlock Text="{TemplateBinding CooldownRemaining}"
+                                       Foreground="White"
+                                       FontSize="14"
+                                       FontWeight="Bold"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center" />
+                        </Border>
+                    </Grid>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+
+    <!-- Quick-Slot Disabled State -->
+    <Style Selector="controls|QuickSlotControl:disabled">
+        <Setter Property="Opacity" Value="0.5" />
+        <Setter Property="Cursor" Value="Arrow" />
+    </Style>
+
+    <!-- Quick-Slot Cooldown State -->
+    <Style Selector="controls|QuickSlotControl.cooldown">
+        <Setter Property="Opacity" Value="0.7" />
+    </Style>
+
+    <!-- Quick-Slot Hover -->
+    <Style Selector="controls|QuickSlotControl:pointerover">
+        <Setter Property="Background" Value="#3E3E5E" />
+    </Style>
+
+    <!-- Keybind Hint Text -->
+    <Style Selector="TextBlock.keybind-hint">
+        <Setter Property="FontSize" Value="10" />
+        <Setter Property="Foreground" Value="#808080" />
+        <Setter Property="FontWeight" Value="Medium" />
+    </Style>
+
+    <!-- Movement Range Overlay -->
+    <Style Selector="controls|MovementRangeOverlay">
+        <Setter Property="IsHitTestVisible" Value="False" />
+    </Style>
+
+    <!-- Path Preview Overlay -->
+    <Style Selector="controls|PathPreviewOverlay">
+        <Setter Property="IsHitTestVisible" Value="False" />
+    </Style>
+
+</Styles>
