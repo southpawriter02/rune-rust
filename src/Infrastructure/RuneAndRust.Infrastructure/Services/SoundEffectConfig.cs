@@ -124,6 +124,130 @@ public class SoundEffectConfig : ISoundEffectConfig
                         Files = new List<string> { "audio/sfx/combat/critical_hit.ogg" },
                         Volume = 1.0f,
                         Randomize = false
+                    },
+                    ["attack-blocked"] = new()
+                    {
+                        Files = new List<string> { "audio/sfx/combat/block.ogg" },
+                        Volume = 0.7f,
+                        Randomize = false
+                    },
+                    ["damage-fire"] = new()
+                    {
+                        Files = new List<string> { "audio/sfx/combat/fire_damage.ogg" },
+                        Volume = 0.8f,
+                        Randomize = false
+                    },
+                    ["damage-ice"] = new()
+                    {
+                        Files = new List<string> { "audio/sfx/combat/ice_damage.ogg" },
+                        Volume = 0.8f,
+                        Randomize = false
+                    },
+                    ["damage-lightning"] = new()
+                    {
+                        Files = new List<string> { "audio/sfx/combat/lightning_damage.ogg" },
+                        Volume = 0.9f,
+                        Randomize = false
+                    },
+                    ["damage-poison"] = new()
+                    {
+                        Files = new List<string> { "audio/sfx/combat/poison_damage.ogg" },
+                        Volume = 0.7f,
+                        Randomize = false
+                    },
+                    ["damage-holy"] = new()
+                    {
+                        Files = new List<string> { "audio/sfx/combat/holy_damage.ogg" },
+                        Volume = 0.8f,
+                        Randomize = false
+                    },
+                    ["damage-shadow"] = new()
+                    {
+                        Files = new List<string> { "audio/sfx/combat/shadow_damage.ogg" },
+                        Volume = 0.8f,
+                        Randomize = false
+                    },
+                    ["death-monster"] = new()
+                    {
+                        Files = new List<string>
+                        {
+                            "audio/sfx/combat/monster_death_01.ogg",
+                            "audio/sfx/combat/monster_death_02.ogg"
+                        },
+                        Volume = 0.9f,
+                        Randomize = true
+                    },
+                    ["death-player"] = new()
+                    {
+                        Files = new List<string> { "audio/sfx/combat/player_death.ogg" },
+                        Volume = 1.0f,
+                        Randomize = false
+                    }
+                }
+            },
+            ["ability"] = new()
+            {
+                Effects = new Dictionary<string, EffectFileConfig>
+                {
+                    ["ability-cast"] = new()
+                    {
+                        Files = new List<string> { "audio/sfx/ability/cast_generic.ogg" },
+                        Volume = 0.7f,
+                        Randomize = false
+                    },
+                    ["ability-fire"] = new()
+                    {
+                        Files = new List<string> { "audio/sfx/ability/fire_cast.ogg" },
+                        Volume = 0.8f,
+                        Randomize = false
+                    },
+                    ["ability-ice"] = new()
+                    {
+                        Files = new List<string> { "audio/sfx/ability/ice_cast.ogg" },
+                        Volume = 0.8f,
+                        Randomize = false
+                    },
+                    ["ability-lightning"] = new()
+                    {
+                        Files = new List<string> { "audio/sfx/ability/lightning_cast.ogg" },
+                        Volume = 0.9f,
+                        Randomize = false
+                    },
+                    ["ability-heal"] = new()
+                    {
+                        Files = new List<string> { "audio/sfx/ability/heal_cast.ogg" },
+                        Volume = 0.7f,
+                        Randomize = false
+                    },
+                    ["ability-buff"] = new()
+                    {
+                        Files = new List<string> { "audio/sfx/ability/buff_apply.ogg" },
+                        Volume = 0.6f,
+                        Randomize = false
+                    },
+                    ["ability-debuff"] = new()
+                    {
+                        Files = new List<string> { "audio/sfx/ability/debuff_apply.ogg" },
+                        Volume = 0.7f,
+                        Randomize = false
+                    },
+                    ["ability-shadow"] = new()
+                    {
+                        Files = new List<string> { "audio/sfx/ability/shadow_cast.ogg" },
+                        Volume = 0.8f,
+                        Randomize = false
+                    },
+                    ["ability-nature"] = new()
+                    {
+                        Files = new List<string> { "audio/sfx/ability/nature_cast.ogg" },
+                        Volume = 0.7f,
+                        Randomize = false
+                    },
+                    ["ability-expire"] = new()
+                    {
+                        Files = new List<string> { "audio/sfx/ability/effect_expire.ogg" },
+                        Volume = 0.5f,
+                        Randomize = false
                     }
                 }
             },
