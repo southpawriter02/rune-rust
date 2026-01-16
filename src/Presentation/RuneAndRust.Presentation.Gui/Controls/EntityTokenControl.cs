@@ -29,6 +29,18 @@ public class EntityTokenControl : TemplatedControl
         AvaloniaProperty.Register<EntityTokenControl, bool>(nameof(IsCurrentTurn));
 
     /// <summary>
+    /// Defines the ShowGlowEffect property for turn start animation.
+    /// </summary>
+    public static readonly StyledProperty<bool> ShowGlowEffectProperty =
+        AvaloniaProperty.Register<EntityTokenControl, bool>(nameof(ShowGlowEffect));
+
+    /// <summary>
+    /// Defines the GlowOpacity property for pulse animation.
+    /// </summary>
+    public static readonly StyledProperty<double> GlowOpacityProperty =
+        AvaloniaProperty.Register<EntityTokenControl, double>(nameof(GlowOpacity), 1.0);
+
+    /// <summary>
     /// Gets or sets the entity this token represents.
     /// </summary>
     public Combatant? Entity
@@ -53,6 +65,26 @@ public class EntityTokenControl : TemplatedControl
     {
         get => GetValue(IsCurrentTurnProperty);
         set => SetValue(IsCurrentTurnProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets whether the glow effect is visible.
+    /// </summary>
+    /// <remarks>Used for turn start highlight animation.</remarks>
+    public bool ShowGlowEffect
+    {
+        get => GetValue(ShowGlowEffectProperty);
+        set => SetValue(ShowGlowEffectProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the glow effect opacity for pulse animation.
+    /// </summary>
+    /// <value>Value between 0.0 and 1.0.</value>
+    public double GlowOpacity
+    {
+        get => GetValue(GlowOpacityProperty);
+        set => SetValue(GlowOpacityProperty, value);
     }
 
     /// <summary>
@@ -82,6 +114,7 @@ public class EntityTokenControl : TemplatedControl
     {
         EntityProperty.Changed.AddClassHandler<EntityTokenControl>((c, _) => c.OnEntityChanged());
         IsCurrentTurnProperty.Changed.AddClassHandler<EntityTokenControl>((c, _) => c.OnTurnChanged());
+        ShowGlowEffectProperty.Changed.AddClassHandler<EntityTokenControl>((c, _) => c.OnGlowChanged());
     }
 
     private void OnEntityChanged()
@@ -93,5 +126,10 @@ public class EntityTokenControl : TemplatedControl
     private void OnTurnChanged()
     {
         Classes.Set("current-turn", IsCurrentTurn);
+    }
+
+    private void OnGlowChanged()
+    {
+        Classes.Set("glow-active", ShowGlowEffect);
     }
 }
