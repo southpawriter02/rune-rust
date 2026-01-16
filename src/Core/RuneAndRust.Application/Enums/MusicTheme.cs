@@ -13,6 +13,8 @@ namespace RuneAndRust.Application.Enums;
 ///   <item><description><see cref="Combat"/> — Standard combat encounters</description></item>
 ///   <item><description><see cref="BossCombat"/> — Boss fight intensity</description></item>
 ///   <item><description><see cref="SafeArea"/> — Town/peaceful areas</description></item>
+///   <item><description><see cref="Victory"/> — Victory stinger (one-shot)</description></item>
+///   <item><description><see cref="Defeat"/> — Defeat stinger (one-shot)</description></item>
 /// </list>
 /// </para>
 /// </remarks>
@@ -46,5 +48,15 @@ public enum MusicTheme
     /// <summary>
     /// Town/safe area peaceful music.
     /// </summary>
-    SafeArea = 5
+    SafeArea = 5,
+
+    /// <summary>
+    /// Victory celebration stinger (one-shot, no loop).
+    /// </summary>
+    Victory = 6,
+
+    /// <summary>
+    /// Defeat/death stinger (one-shot, no loop).
+    /// </summary>
+    Defeat = 7
 }
