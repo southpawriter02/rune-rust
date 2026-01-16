@@ -233,3 +233,10 @@ public partial class RoomDisplayViewModel : ViewModelBase
         Log.Debug("Room display cleared");
     }
 }
+
+/// <summary>
+/// Legend item for ASCII art symbols.
+/// </summary>
+/// <param name="Symbol">The symbol character.</param>
+/// <param name="Description">The description text.</param>
+public record LegendItem(string Symbol, string Description);

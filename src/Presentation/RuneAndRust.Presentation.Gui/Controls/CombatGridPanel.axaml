@@ -1,0 +1,139 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:RuneAndRust.Presentation.Gui.ViewModels"
+             xmlns:ctrl="using:RuneAndRust.Presentation.Gui.Controls"
+             x:Class="RuneAndRust.Presentation.Gui.Controls.CombatGridPanel"
+             x:DataType="vm:CombatGridPanelViewModel"
+             IsVisible="{Binding IsInCombat}">
+    
+    <Design.DataContext>
+        <vm:CombatGridPanelViewModel />
+    </Design.DataContext>
+    
+    <Border Classes="panel" Padding="8">
+        <Grid RowDefinitions="Auto,*,Auto">
+            
+            <!-- Header -->
+            <TextBlock Grid.Row="0" 
+                       Text="COMBAT GRID"
+                       Classes="secondary"
+                       FontWeight="SemiBold"
+                       Margin="0,0,0,8" />
+            
+            <!-- Grid Area -->
+            <Grid Grid.Row="1" RowDefinitions="Auto,*" ColumnDefinitions="Auto,*">
+                
+                <!-- Empty corner -->
+                <Border Grid.Row="0" Grid.Column="0" Width="24" Height="24" />
+                
+                <!-- Column labels (1-8) -->
+                <ItemsControl Grid.Row="0" Grid.Column="1"
+                              ItemsSource="{Binding ColumnLabels}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <UniformGrid Columns="{Binding GridWidth}" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding}"
+                                       HorizontalAlignment="Center"
+                                       Classes="muted coord-label" />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                
+                <!-- Row labels (A-H) -->
+                <ItemsControl Grid.Row="1" Grid.Column="0"
+                              ItemsSource="{Binding RowLabels}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <UniformGrid Rows="{Binding GridHeight}" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding}"
+                                       VerticalAlignment="Center"
+                                       HorizontalAlignment="Center"
+                                       Width="24"
+                                       Classes="muted coord-label" />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                
+                <!-- Grid cells container -->
+                <Grid Grid.Row="1" Grid.Column="1" x:Name="GridContainer">
+                    <!-- Cells layer -->
+                    <ItemsControl ItemsSource="{Binding FlatCells}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <UniformGrid Rows="{Binding GridHeight}" 
+                                             Columns="{Binding GridWidth}" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="vm:GridCellViewModel">
+                                <ctrl:GridCellControl 
+                                    CellType="{Binding CellType}"
+                                    IsHighlighted="{Binding IsHighlighted}"
+                                    HighlightType="{Binding HighlightType}"
+                                    HasEntity="{Binding HasEntity}"
+                                    ToolTip.Tip="{Binding Tooltip}" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    
+                    <!-- Tokens layer (positioned on Canvas) -->
+                    <Canvas x:Name="TokenCanvas">
+                        <ItemsControl ItemsSource="{Binding Tokens}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <Canvas />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="vm:EntityTokenViewModel">
+                                    <ctrl:EntityTokenControl 
+                                        Canvas.Left="{Binding CanvasX}"
+                                        Canvas.Top="{Binding CanvasY}"
+                                        Entity="{Binding Combatant}"
+                                        IsSelected="{Binding IsSelected}"
+                                        IsCurrentTurn="{Binding IsCurrentTurn}"
+                                        ToolTip.Tip="{Binding Tooltip}" />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </Canvas>
+                </Grid>
+            </Grid>
+            
+            <!-- Legend -->
+            <Border Grid.Row="2" Classes="panel-footer" Margin="0,8,0,0" Padding="8">
+                <WrapPanel>
+                    <ItemsControl ItemsSource="{Binding LegendItems}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,16,0">
+                                    <TextBlock Text="{Binding Symbol}"
+                                               FontFamily="{StaticResource MonoFont}"
+                                               Foreground="{Binding Color}"
+                                               Margin="0,0,4,0" />
+                                    <TextBlock Text="{Binding Label}"
+                                               Classes="muted"
+                                               FontSize="11" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </WrapPanel>
+            </Border>
+            
+        </Grid>
+    </Border>
+</UserControl>

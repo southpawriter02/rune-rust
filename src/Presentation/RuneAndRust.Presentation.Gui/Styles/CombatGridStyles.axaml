@@ -1,0 +1,125 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ctrl="using:RuneAndRust.Presentation.Gui.Controls">
+    
+    <!-- Grid Cell Control Base Template -->
+    <Style Selector="ctrl|GridCellControl">
+        <Setter Property="Width" Value="40" />
+        <Setter Property="Height" Value="40" />
+        <Setter Property="Background" Value="#696969" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Background="{TemplateBinding Background}"
+                        BorderBrush="#3C3C3C"
+                        BorderThickness="0.5">
+                    <Panel>
+                        <!-- Cell symbol (shown via TextBlock in cell) -->
+                        <TextBlock x:Name="CellSymbol"
+                                   Text="░"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   FontFamily="Consolas, Courier New, monospace"
+                                   Foreground="#808080"
+                                   FontSize="16" />
+                        <!-- Highlight overlay -->
+                        <Border x:Name="HighlightOverlay"
+                                Background="Transparent"
+                                IsVisible="{TemplateBinding IsHighlighted}" />
+                    </Panel>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+    
+    <!-- Cell Type Styles -->
+    <Style Selector="ctrl|GridCellControl.wall">
+        <Setter Property="Background" Value="#2F4F4F" />
+    </Style>
+    <Style Selector="ctrl|GridCellControl.water">
+        <Setter Property="Background" Value="#00008B" />
+    </Style>
+    <Style Selector="ctrl|GridCellControl.hazard">
+        <Setter Property="Background" Value="#8B0000" />
+    </Style>
+    <Style Selector="ctrl|GridCellControl.cover">
+        <Setter Property="Background" Value="#8B4513" />
+    </Style>
+    
+    <!-- Highlight Styles -->
+    <Style Selector="ctrl|GridCellControl.movement-highlight">
+        <Setter Property="BorderBrush" Value="#0080FF" />
+        <Setter Property="BorderThickness" Value="2" />
+    </Style>
+    <Style Selector="ctrl|GridCellControl.attack-highlight">
+        <Setter Property="BorderBrush" Value="#FF0000" />
+        <Setter Property="BorderThickness" Value="2" />
+    </Style>
+    <Style Selector="ctrl|GridCellControl.ability-highlight">
+        <Setter Property="BorderBrush" Value="#8000FF" />
+        <Setter Property="BorderThickness" Value="2" />
+    </Style>
+    
+    <!-- Entity Token Control Template -->
+    <Style Selector="ctrl|EntityTokenControl">
+        <Setter Property="Width" Value="40" />
+        <Setter Property="Height" Value="40" />
+        <Setter Property="Foreground" Value="#FFFFFF" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Background="Transparent"
+                        CornerRadius="4">
+                    <TextBlock x:Name="TokenText"
+                               Text="?"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               FontFamily="Consolas, Courier New, monospace"
+                               Foreground="{TemplateBinding Foreground}"
+                               FontWeight="Bold"
+                               FontSize="24" />
+                </Border>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+    
+    <!-- Player token styling -->
+    <Style Selector="ctrl|EntityTokenControl.player">
+        <Setter Property="Foreground" Value="#32CD32" />
+    </Style>
+    
+    <!-- Enemy token styling -->
+    <Style Selector="ctrl|EntityTokenControl.enemy">
+        <Setter Property="Foreground" Value="#FF4500" />
+    </Style>
+    
+    <!-- Current turn indicator -->
+    <Style Selector="ctrl|EntityTokenControl.current-turn">
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Background="#2D2D2D"
+                        BorderBrush="#BB86FC"
+                        BorderThickness="2"
+                        CornerRadius="4">
+                    <TextBlock Text="?"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               FontFamily="Consolas, Courier New, monospace"
+                               Foreground="{TemplateBinding Foreground}"
+                               FontWeight="Bold"
+                               FontSize="24" />
+                </Border>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+    
+    <!-- Coordinate labels -->
+    <Style Selector="TextBlock.coord-label">
+        <Setter Property="FontFamily" Value="Consolas, Courier New, monospace" />
+        <Setter Property="FontSize" Value="12" />
+    </Style>
+    
+    <!-- Legend symbol styling -->
+    <Style Selector="Border.panel-footer TextBlock">
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    
+</Styles>
