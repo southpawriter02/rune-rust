@@ -1,0 +1,147 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:RuneAndRust.Presentation.Gui.ViewModels"
+        x:Class="RuneAndRust.Presentation.Gui.Views.CombatSummaryWindow"
+        x:DataType="vm:CombatSummaryViewModel"
+        Title="Combat Summary"
+        Width="550" Height="600"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False">
+
+    <Grid RowDefinitions="Auto,*,Auto">
+        <!-- Header: Victory/Defeat -->
+        <Border Grid.Row="0" Classes="summary-header" Padding="20">
+            <TextBlock Text="{Binding HeaderText}"
+                       Classes="header-title"
+                       HorizontalAlignment="Center" />
+        </Border>
+
+        <!-- Main Content -->
+        <ScrollViewer Grid.Row="1" Padding="20">
+            <StackPanel Spacing="16">
+                <!-- Enemies Defeated (Victory only) -->
+                <Border Classes="section"
+                        IsVisible="{Binding IsVictory}"
+                        Padding="12">
+                    <StackPanel>
+                        <TextBlock Text="ENEMIES DEFEATED" Classes="section-title" />
+                        <ItemsControl ItemsSource="{Binding DefeatedEnemies}" Margin="0,8,0,0">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding}" Classes="enemy-item" />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+
+                <!-- Rewards (Victory only) -->
+                <Border Classes="section"
+                        IsVisible="{Binding IsVictory}"
+                        Padding="12">
+                    <StackPanel>
+                        <TextBlock Text="REWARDS" Classes="section-title" />
+                        <StackPanel Margin="0,8,0,0" Spacing="4">
+                            <TextBlock Text="{Binding XpText}" Classes="reward-line" />
+
+                            <!-- Level Up Panel -->
+                            <Border Classes="level-up-panel"
+                                    IsVisible="{Binding DidLevelUp}"
+                                    Margin="0,8"
+                                    Padding="12">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding LevelUpText}" Classes="level-up-title" />
+                                    <ItemsControl ItemsSource="{Binding LevelUpBonuses}" Margin="0,8,0,0">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate DataType="vm:LevelUpBonusViewModel">
+                                                <TextBlock Text="{Binding DisplayText}" Classes="bonus-line" />
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </Border>
+
+                            <TextBlock Text="{Binding GoldText}" Classes="reward-line" />
+
+                            <!-- Loot -->
+                            <TextBlock Text="📦 LOOT:"
+                                       Classes="loot-header"
+                                       IsVisible="{Binding HasLoot}"
+                                       Margin="0,8,0,4" />
+                            <ItemsControl ItemsSource="{Binding Loot}" IsVisible="{Binding HasLoot}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="vm:LootItemViewModel">
+                                        <TextBlock Text="{Binding DisplayText}" Classes="loot-item" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- Defeat Message -->
+                <TextBlock Text="You have fallen in battle..."
+                           Classes="defeat-message"
+                           IsVisible="{Binding !IsVictory}"
+                           HorizontalAlignment="Center" />
+
+                <!-- Combat Statistics -->
+                <Border Classes="section" Padding="12">
+                    <StackPanel>
+                        <TextBlock Text="COMBAT STATISTICS" Classes="section-title" />
+                        <Grid ColumnDefinitions="*,*"
+                              Margin="0,8,0,0"
+                              RowDefinitions="Auto,Auto,Auto">
+                            <TextBlock Grid.Row="0" Grid.Column="0"
+                                       Text="{Binding Statistics.RoundsText}" />
+                            <TextBlock Grid.Row="0" Grid.Column="1"
+                                       Text="{Binding Statistics.DamageDealtText}" />
+                            <TextBlock Grid.Row="1" Grid.Column="0"
+                                       Text="{Binding Statistics.CriticalsText}" />
+                            <TextBlock Grid.Row="1" Grid.Column="1"
+                                       Text="{Binding Statistics.DamageTakenText}" />
+                            <TextBlock Grid.Row="2" Grid.Column="0"
+                                       Text="{Binding Statistics.AbilitiesText}" />
+                            <TextBlock Grid.Row="2" Grid.Column="1"
+                                       Text="{Binding Statistics.ItemsUsedText}" />
+                        </Grid>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Action Buttons -->
+        <Border Grid.Row="2" Classes="summary-footer" Padding="20">
+            <!-- Victory Buttons -->
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Center"
+                        Spacing="12"
+                        IsVisible="{Binding IsVictory}">
+                <Button Content="Collect All (C)"
+                        Command="{Binding CollectAllCommand}"
+                        IsVisible="{Binding HasLoot}" />
+                <Button Content="Continue"
+                        Command="{Binding ContinueCommand}"
+                        Classes="primary" />
+            </StackPanel>
+        </Border>
+
+        <!-- Defeat Buttons (separate panel for visibility) -->
+        <Border Grid.Row="2"
+                Classes="summary-footer"
+                Padding="20"
+                IsVisible="{Binding !IsVictory}">
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Center"
+                        Spacing="12">
+                <Button Content="Load Last Save"
+                        Command="{Binding LoadSaveCommand}" />
+                <Button Content="Return to Menu"
+                        Command="{Binding ReturnToMenuCommand}" />
+                <Button Content="Retry"
+                        Command="{Binding RetryCommand}"
+                        Classes="primary" />
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>
