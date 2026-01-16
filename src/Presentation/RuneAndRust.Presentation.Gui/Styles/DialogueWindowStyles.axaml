@@ -1,0 +1,71 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    
+    <!-- Dialogue Main Area -->
+    <Style Selector="Border.dialogue-main">
+        <Setter Property="Background" Value="#252526" />
+    </Style>
+    
+    <!-- NPC Portrait Frame -->
+    <Style Selector="Border.portrait-frame">
+        <Setter Property="Background" Value="#1A1A1A" />
+        <Setter Property="BorderBrush" Value="#444444" />
+        <Setter Property="BorderThickness" Value="2" />
+        <Setter Property="CornerRadius" Value="4" />
+    </Style>
+    
+    <!-- NPC Name -->
+    <Style Selector="TextBlock.npc-name">
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="FontSize" Value="18" />
+        <Setter Property="Foreground" Value="#4CAF50" />
+    </Style>
+    
+    <!-- Dialogue Text -->
+    <Style Selector="TextBlock.dialogue-text">
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="LineHeight" Value="22" />
+    </Style>
+    
+    <!-- Typing Cursor -->
+    <Style Selector="Run.typing-cursor">
+        <Setter Property="Foreground" Value="#4CAF50" />
+    </Style>
+    
+    <!-- Continue Hint -->
+    <Style Selector="TextBlock.dialogue-hint">
+        <Setter Property="Foreground" Value="#666666" />
+        <Setter Property="FontStyle" Value="Italic" />
+    </Style>
+    
+    <!-- Choices Panel -->
+    <Style Selector="Border.choices-panel">
+        <Setter Property="Background" Value="#1A1A1A" />
+    </Style>
+    
+    <!-- Choice Item -->
+    <Style Selector="Border.choice-item">
+        <Setter Property="Background" Value="#2D2D2D" />
+        <Setter Property="BorderBrush" Value="#444444" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="4" />
+        <Setter Property="Cursor" Value="Hand" />
+    </Style>
+    
+    <Style Selector="Border.choice-item:pointerover">
+        <Setter Property="Background" Value="#3D3D3D" />
+        <Setter Property="BorderBrush" Value="#4CAF50" />
+    </Style>
+    
+    <!-- Action Badge -->
+    <Style Selector="Border.action-badge">
+        <Setter Property="Background" Value="#4CAF50" />
+        <Setter Property="CornerRadius" Value="3" />
+    </Style>
+    
+    <Style Selector="TextBlock.action-badge-text">
+        <Setter Property="FontSize" Value="10" />
+        <Setter Property="FontWeight" Value="Bold" />
+    </Style>
+    
+</Styles>
