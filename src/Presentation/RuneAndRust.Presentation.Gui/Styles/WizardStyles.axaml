@@ -1,0 +1,50 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    
+    <!-- Wizard Header -->
+    <Style Selector="Border.wizard-header">
+        <Setter Property="Background" Value="#1E1E1E" />
+        <Setter Property="BorderThickness" Value="0,0,0,1" />
+        <Setter Property="BorderBrush" Value="#333333" />
+    </Style>
+    
+    <!-- Wizard Footer -->
+    <Style Selector="Border.wizard-footer">
+        <Setter Property="Background" Value="#2D2D2D" />
+        <Setter Property="BorderThickness" Value="0,1,0,0" />
+        <Setter Property="BorderBrush" Value="#333333" />
+    </Style>
+    
+    <!-- Title -->
+    <Style Selector="TextBlock.title">
+        <Setter Property="FontSize" Value="24" />
+        <Setter Property="FontWeight" Value="Bold" />
+    </Style>
+    
+    <!-- Subtitle -->
+    <Style Selector="TextBlock.subtitle">
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="Foreground" Value="#999999" />
+        <Setter Property="Margin" Value="0,4,0,0" />
+    </Style>
+    
+    <!-- Muted Text -->
+    <Style Selector="TextBlock.muted">
+        <Setter Property="Foreground" Value="#999999" />
+    </Style>
+    
+    <!-- Error Text -->
+    <Style Selector="TextBlock.error">
+        <Setter Property="Foreground" Value="#F44336" />
+    </Style>
+    
+    <!-- Primary Button -->
+    <Style Selector="Button.primary">
+        <Setter Property="Background" Value="#3F51B5" />
+    </Style>
+    
+    <Style Selector="Button.primary:pointerover">
+        <Setter Property="Background" Value="#5C6BC0" />
+    </Style>
+    
+</Styles>

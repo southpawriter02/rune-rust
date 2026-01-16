@@ -1,0 +1,193 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:RuneAndRust.Presentation.Gui.ViewModels.Wizard"
+        x:Class="RuneAndRust.Presentation.Gui.Views.CharacterCreationWizard"
+        x:DataType="vm:WizardViewModel"
+        Title="Character Creation"
+        Width="800" Height="600"
+        WindowStartupLocation="CenterScreen">
+    
+    <Design.DataContext>
+        <vm:WizardViewModel />
+    </Design.DataContext>
+    
+    <Window.DataTemplates>
+        <!-- Name Entry Step -->
+        <DataTemplate DataType="vm:NameEntryStepViewModel">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Width="400" Spacing="16">
+                <TextBlock Text="Enter your character's name:" />
+                <TextBox Text="{Binding CharacterName}" Watermark="Character Name" MaxLength="20" />
+                <StackPanel Spacing="4">
+                    <TextBlock Text="• Name must be 2-20 characters" Foreground="#999999" FontSize="12" />
+                    <TextBlock Text="• Letters, numbers, and spaces allowed" Foreground="#999999" FontSize="12" />
+                </StackPanel>
+                <TextBlock Text="{Binding ValidationMessage}" Foreground="#F44336" 
+                           IsVisible="{Binding ValidationMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+            </StackPanel>
+        </DataTemplate>
+        
+        <!-- Race Selection Step -->
+        <DataTemplate DataType="vm:RaceSelectionStepViewModel">
+            <Grid ColumnDefinitions="*,*" Margin="16">
+                <ListBox Grid.Column="0" ItemsSource="{Binding Races}" SelectedItem="{Binding SelectedRace}" Margin="0,0,8,0">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate><TextBlock Text="{Binding Name}" Padding="8,4" /></DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+                <Border Grid.Column="1" Padding="16" Margin="8,0,0,0" Background="#2D2D2D" CornerRadius="4"
+                        IsVisible="{Binding SelectedRace, Converter={x:Static ObjectConverters.IsNotNull}}">
+                    <StackPanel DataContext="{Binding SelectedRace}" Spacing="8">
+                        <TextBlock Text="{Binding Name}" FontSize="18" FontWeight="Bold" />
+                        <TextBlock Text="{Binding Description}" TextWrapping="Wrap" Foreground="#999999" />
+                        <TextBlock Text="Stat Bonuses:" FontWeight="Bold" Margin="0,8,0,4" />
+                        <ItemsControl ItemsSource="{Binding AttributeModifiers}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock><Run Text="  +"/><Run Text="{Binding Value}"/><Run Text=" "/><Run Text="{Binding Key}"/></TextBlock>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <TextBlock FontWeight="Bold" Margin="0,8,0,0"><Run Text="Trait: "/><Run Text="{Binding TraitName}"/></TextBlock>
+                        <TextBlock Text="{Binding TraitDescription}" TextWrapping="Wrap" Foreground="#999999" />
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </DataTemplate>
+        
+        <!-- Class Selection Step -->
+        <DataTemplate DataType="vm:ClassSelectionStepViewModel">
+            <Grid ColumnDefinitions="*,*" Margin="16">
+                <ListBox Grid.Column="0" ItemsSource="{Binding Classes}" SelectedItem="{Binding SelectedClass}" Margin="0,0,8,0">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate><TextBlock Text="{Binding Name}" Padding="8,4" /></DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+                <Border Grid.Column="1" Padding="16" Margin="8,0,0,0" Background="#2D2D2D" CornerRadius="4"
+                        IsVisible="{Binding SelectedClass, Converter={x:Static ObjectConverters.IsNotNull}}">
+                    <StackPanel DataContext="{Binding SelectedClass}" Spacing="8">
+                        <TextBlock Text="{Binding Name}" FontSize="18" FontWeight="Bold" />
+                        <TextBlock Text="{Binding Description}" TextWrapping="Wrap" Foreground="#999999" />
+                        <TextBlock FontWeight="Bold" Margin="0,8,0,0"><Run Text="Archetype: "/><Run Text="{Binding ArchetypeId}"/></TextBlock>
+                        <TextBlock><Run Text="Primary Resource: "/><Run Text="{Binding PrimaryResourceId}"/></TextBlock>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </DataTemplate>
+        
+        <!-- Stat Allocation Step -->
+        <DataTemplate DataType="vm:StatAllocationStepViewModel">
+            <StackPanel Margin="16" Spacing="16">
+                <TextBlock FontSize="16" FontWeight="Bold"><Run Text="Points Remaining: " /><Run Text="{Binding PointsRemaining}" /></TextBlock>
+                <Border Padding="16" Background="#2D2D2D" CornerRadius="4">
+                    <ItemsControl ItemsSource="{Binding Stats}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid ColumnDefinitions="120,Auto,60,Auto,60,80" Margin="0,4">
+                                    <TextBlock Grid.Column="0" Text="{Binding StatName}" VerticalAlignment="Center" />
+                                    <Button Grid.Column="1" Content="-" Command="{Binding DecrementCommand}" Width="30" />
+                                    <TextBlock Grid.Column="2" Text="{Binding BaseValue}" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" />
+                                    <Button Grid.Column="3" Content="+" Command="{Binding IncrementCommand}" Width="30" />
+                                    <TextBlock Grid.Column="4" Text="{Binding Total}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="5" Text="{Binding ModifierText}" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#999999" />
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </Border>
+                <TextBlock Text="Point Cost: 8=0, 9=1, 10=2, 11=3, 12=4, 13=5, 14=7, 15=9" Foreground="#999999" FontSize="12" />
+            </StackPanel>
+        </DataTemplate>
+        
+        <!-- Appearance Step -->
+        <DataTemplate DataType="vm:AppearanceStepViewModel">
+            <StackPanel Margin="16" Spacing="16" HorizontalAlignment="Center">
+                <TextBlock Text="Select a Portrait:" FontSize="16" FontWeight="Bold" />
+                <ListBox ItemsSource="{Binding Portraits}" SelectedItem="{Binding SelectedPortrait}" HorizontalAlignment="Center">
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate><WrapPanel Orientation="Horizontal" /></ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Border Width="80" Height="80" CornerRadius="4" Background="#2D2D2D" Margin="4">
+                                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                    <TextBlock Text="{Binding Icon}" FontSize="32" HorizontalAlignment="Center" />
+                                    <TextBlock Text="{Binding Name}" FontSize="10" HorizontalAlignment="Center" />
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </StackPanel>
+        </DataTemplate>
+        
+        <!-- Review Step -->
+        <DataTemplate DataType="vm:ReviewStepViewModel">
+            <Border Padding="24" Margin="16" HorizontalAlignment="Center" Width="500" Background="#2D2D2D" CornerRadius="4">
+                <StackPanel Spacing="16">
+                    <TextBlock Text="CHARACTER SUMMARY" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center" />
+                    <Grid ColumnDefinitions="100,*" RowDefinitions="Auto,Auto,Auto,Auto" Margin="0,16,0,0">
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Name:" FontWeight="Bold" />
+                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding CharacterName}" />
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Race:" FontWeight="Bold" Margin="0,8,0,0" />
+                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding RaceId}" Margin="0,8,0,0" />
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Class:" FontWeight="Bold" Margin="0,8,0,0" />
+                        <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding ClassId}" Margin="0,8,0,0" />
+                        <TextBlock Grid.Row="3" Grid.Column="0" Text="Portrait:" FontWeight="Bold" Margin="0,8,0,0" />
+                        <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding PortraitId}" Margin="0,8,0,0" />
+                    </Grid>
+                    <TextBlock Text="Stats:" FontWeight="Bold" Margin="0,16,0,0" />
+                    <ItemsControl ItemsSource="{Binding Stats}" Margin="16,0,0,0">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate><TextBlock><Run Text="{Binding Key}"/>: <Run Text="{Binding Value}"/></TextBlock></DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+    </Window.DataTemplates>
+    
+    <Grid RowDefinitions="Auto,*,Auto,Auto">
+        
+        <!-- Header -->
+        <Border Grid.Row="0" Background="#1E1E1E" BorderThickness="0,0,0,1" BorderBrush="#333333" Padding="16">
+            <StackPanel HorizontalAlignment="Center">
+                <TextBlock Text="CHARACTER CREATION" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center" />
+                <TextBlock Foreground="#999999" Margin="0,4,0,0" HorizontalAlignment="Center">
+                    <Run Text="Step " />
+                    <Run Text="{Binding CurrentStep}" />
+                    <Run Text=" of " />
+                    <Run Text="{Binding TotalSteps}" />
+                    <Run Text=": " />
+                    <Run Text="{Binding CurrentStepTitle}" />
+                </TextBlock>
+            </StackPanel>
+        </Border>
+        
+        <!-- Step Content -->
+        <ContentControl Grid.Row="1" Content="{Binding CurrentStepViewModel}" Margin="16" />
+        
+        <!-- Progress Indicator -->
+        <Border Grid.Row="2" Padding="16,8">
+            <ItemsControl ItemsSource="{Binding StepIndicators}" HorizontalAlignment="Center">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate><StackPanel Orientation="Horizontal" Spacing="8" /></ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="vm:StepIndicator">
+                        <Ellipse Width="12" Height="12" Fill="{Binding Fill}" Stroke="#666666" StrokeThickness="1" />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </Border>
+        
+        <!-- Navigation Buttons -->
+        <Border Grid.Row="3" Background="#2D2D2D" BorderThickness="0,1,0,0" BorderBrush="#333333" Padding="16">
+            <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+                <Button Grid.Column="0" Content="Cancel" Command="{Binding CancelCommand}" />
+                <Button Grid.Column="2" Content="‹ Back" Command="{Binding GoBackCommand}" IsVisible="{Binding CanGoBack}" Margin="0,0,8,0" />
+                <Button Grid.Column="3" Content="{Binding NextButtonText}" Command="{Binding GoNextCommand}" Background="#3F51B5" />
+            </Grid>
+        </Border>
+        
+    </Grid>
+</Window>
