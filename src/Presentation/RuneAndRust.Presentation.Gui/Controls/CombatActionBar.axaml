@@ -1,0 +1,150 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:RuneAndRust.Presentation.Gui.ViewModels"
+             x:Class="RuneAndRust.Presentation.Gui.Controls.CombatActionBar"
+             x:DataType="vm:CombatActionBarViewModel">
+    
+    <Design.DataContext>
+        <vm:CombatActionBarViewModel />
+    </Design.DataContext>
+    
+    <Border Classes="panel action-bar" Padding="12">
+        <Grid RowDefinitions="Auto,Auto,Auto">
+            
+            <!-- Turn Info Row -->
+            <Border Grid.Row="0" 
+                    Classes="turn-info-bar"
+                    Padding="8"
+                    Margin="0,0,0,8">
+                <StackPanel Orientation="Horizontal" Spacing="16">
+                    <!-- Round -->
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Round " Classes="muted" />
+                        <TextBlock Text="{Binding CurrentRound}" FontWeight="Bold" />
+                    </StackPanel>
+                    
+                    <Border Width="1" Background="#444444" />
+                    
+                    <!-- Turn Indicator -->
+                    <TextBlock Text="{Binding TurnText}"
+                               Classes="turn-indicator-text"
+                               Classes.player-turn="{Binding IsPlayerTurn}"
+                               FontWeight="Bold" />
+                    
+                    <Border Width="1" Background="#444444" />
+                    
+                    <!-- Action Point -->
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Action: " Classes="muted" />
+                        <TextBlock Text="{Binding ActionIndicator}"
+                                   Classes.available="{Binding HasAction}"
+                                   Classes.used="{Binding !HasAction}" />
+                    </StackPanel>
+                    
+                    <Border Width="1" Background="#444444" />
+                    
+                    <!-- Bonus Action -->
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Bonus: " Classes="muted" />
+                        <TextBlock Text="{Binding BonusIndicator}"
+                                   Classes.available="{Binding HasBonus}"
+                                   Classes.used="{Binding !HasBonus}" />
+                    </StackPanel>
+                    
+                    <Border Width="1" Background="#444444" />
+                    
+                    <!-- Movement -->
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Move: " Classes="muted" />
+                        <TextBlock FontWeight="SemiBold">
+                            <Run Text="{Binding RemainingMovement}" />
+                            <Run Text="/" />
+                            <Run Text="{Binding MaxMovement}" />
+                        </TextBlock>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+            
+            <!-- Action Buttons Row -->
+            <UniformGrid Grid.Row="1" 
+                         Columns="6" 
+                         Margin="0,0,0,8">
+                
+                <!-- Attack -->
+                <Button Command="{Binding AttackCommand}"
+                        Classes="action-button"
+                        IsEnabled="{Binding CanAttack}"
+                        ToolTip.Tip="Attack an enemy">
+                    <StackPanel HorizontalAlignment="Center">
+                        <TextBlock Text="⚔" FontSize="20" HorizontalAlignment="Center" />
+                        <TextBlock Text="Attack" FontSize="11" />
+                    </StackPanel>
+                </Button>
+                
+                <!-- Move -->
+                <Button Command="{Binding MoveCommand}"
+                        Classes="action-button"
+                        IsEnabled="{Binding CanMove}"
+                        ToolTip.Tip="Move to another cell">
+                    <StackPanel HorizontalAlignment="Center">
+                        <TextBlock Text="🏃" FontSize="20" HorizontalAlignment="Center" />
+                        <TextBlock Text="Move" FontSize="11" />
+                    </StackPanel>
+                </Button>
+                
+                <!-- Ability -->
+                <Button Command="{Binding AbilityCommand}"
+                        Classes="action-button"
+                        IsEnabled="{Binding CanUseAbility}"
+                        ToolTip.Tip="Use an ability">
+                    <StackPanel HorizontalAlignment="Center">
+                        <TextBlock Text="✨" FontSize="20" HorizontalAlignment="Center" />
+                        <TextBlock Text="Ability" FontSize="11" />
+                    </StackPanel>
+                </Button>
+                
+                <!-- Defend -->
+                <Button Command="{Binding DefendCommand}"
+                        Classes="action-button"
+                        IsEnabled="{Binding HasAction}"
+                        ToolTip.Tip="Take defensive stance">
+                    <StackPanel HorizontalAlignment="Center">
+                        <TextBlock Text="🛡" FontSize="20" HorizontalAlignment="Center" />
+                        <TextBlock Text="Defend" FontSize="11" />
+                    </StackPanel>
+                </Button>
+                
+                <!-- Item -->
+                <Button Command="{Binding UseItemCommand}"
+                        Classes="action-button"
+                        ToolTip.Tip="Use a consumable item">
+                    <StackPanel HorizontalAlignment="Center">
+                        <TextBlock Text="🎒" FontSize="20" HorizontalAlignment="Center" />
+                        <TextBlock Text="Item" FontSize="11" />
+                    </StackPanel>
+                </Button>
+                
+                <!-- Wait -->
+                <Button Command="{Binding WaitCommand}"
+                        Classes="action-button"
+                        ToolTip.Tip="Delay your turn">
+                    <StackPanel HorizontalAlignment="Center">
+                        <TextBlock Text="⏳" FontSize="20" HorizontalAlignment="Center" />
+                        <TextBlock Text="Wait" FontSize="11" />
+                    </StackPanel>
+                </Button>
+                
+            </UniformGrid>
+            
+            <!-- End Turn Button -->
+            <Button Grid.Row="2"
+                    Command="{Binding EndTurnCommand}"
+                    Classes="end-turn-button"
+                    HorizontalAlignment="Stretch"
+                    IsEnabled="{Binding IsPlayerTurn}">
+                <TextBlock Text="End Turn" FontWeight="SemiBold" />
+            </Button>
+            
+        </Grid>
+    </Border>
+</UserControl>

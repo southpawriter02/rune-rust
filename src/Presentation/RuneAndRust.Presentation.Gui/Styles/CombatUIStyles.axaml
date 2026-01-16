@@ -1,0 +1,91 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    
+    <!-- ===== Combatant List Panel ===== -->
+    
+    <!-- Combatant Entry -->
+    <Style Selector="Border.combatant-entry">
+        <Setter Property="Background" Value="#1E1E1E" />
+        <Setter Property="CornerRadius" Value="4" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="BorderBrush" Value="#333333" />
+    </Style>
+    
+    <Style Selector="Border.combatant-entry.current-turn">
+        <Setter Property="BorderBrush" Value="#F5A623" />
+        <Setter Property="BorderThickness" Value="2" />
+    </Style>
+    
+    <!-- Turn Indicator -->
+    <Style Selector="TextBlock.turn-indicator">
+        <Setter Property="Foreground" Value="#F5A623" />
+    </Style>
+    
+    <!-- Combatant Names -->
+    <Style Selector="TextBlock.combatant-name.player">
+        <Setter Property="Foreground" Value="#4CAF50" />
+    </Style>
+    
+    <Style Selector="TextBlock.combatant-name.enemy">
+        <Setter Property="Foreground" Value="#F44336" />
+    </Style>
+    
+    <!-- Status Effect Badge -->
+    <Style Selector="Border.status-effect-badge">
+        <Setter Property="Background" Value="#2D2D2D" />
+        <Setter Property="CornerRadius" Value="2" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="BorderBrush" Value="#444444" />
+    </Style>
+    
+    <!-- ===== Combat Action Bar ===== -->
+    
+    <!-- Action Bar -->
+    <Style Selector="Border.action-bar">
+        <Setter Property="Background" Value="#2D2D2D" />
+    </Style>
+    
+    <!-- Turn Info Bar -->
+    <Style Selector="Border.turn-info-bar">
+        <Setter Property="Background" Value="#1E1E1E" />
+        <Setter Property="CornerRadius" Value="4" />
+    </Style>
+    
+    <Style Selector="TextBlock.turn-indicator-text.player-turn">
+        <Setter Property="Foreground" Value="#4CAF50" />
+    </Style>
+    
+    <!-- Action/Bonus Indicators -->
+    <Style Selector="TextBlock.available">
+        <Setter Property="Foreground" Value="#4CAF50" />
+        <Setter Property="FontWeight" Value="Bold" />
+    </Style>
+    
+    <Style Selector="TextBlock.used">
+        <Setter Property="Foreground" Value="#F44336" />
+    </Style>
+    
+    <!-- Action Buttons -->
+    <Style Selector="Button.action-button">
+        <Setter Property="Margin" Value="4" />
+        <Setter Property="Padding" Value="12,8" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="MinWidth" Value="80" />
+    </Style>
+    
+    <Style Selector="Button.action-button:disabled">
+        <Setter Property="Opacity" Value="0.5" />
+    </Style>
+    
+    <!-- End Turn Button -->
+    <Style Selector="Button.end-turn-button">
+        <Setter Property="Padding" Value="16,12" />
+        <Setter Property="Background" Value="#3F51B5" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+    </Style>
+    
+    <Style Selector="Button.end-turn-button:pointerover">
+        <Setter Property="Background" Value="#5C6BC0" />
+    </Style>
+    
+</Styles>
