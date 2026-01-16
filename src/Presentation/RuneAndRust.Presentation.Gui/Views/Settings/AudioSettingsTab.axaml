@@ -1,0 +1,82 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:RuneAndRust.Presentation.Gui.ViewModels.Settings"
+             x:Class="RuneAndRust.Presentation.Gui.Views.Settings.AudioSettingsTab"
+             x:DataType="vm:AudioSettingsViewModel">
+
+    <StackPanel Spacing="16" Margin="20">
+        <!-- Header -->
+        <TextBlock Text="AUDIO SETTINGS" Classes="section-title" />
+        <Separator />
+
+        <!-- Enable Audio -->
+        <CheckBox Content="Enable Audio" IsChecked="{Binding IsAudioEnabled}" />
+
+        <!-- Volume Sliders -->
+        <Border Classes="settings-group" Padding="16" IsEnabled="{Binding IsAudioEnabled}">
+            <StackPanel Spacing="12">
+
+                <!-- Master Volume -->
+                <Grid ColumnDefinitions="150,*,50">
+                    <TextBlock Text="Master Volume" VerticalAlignment="Center" />
+                    <Slider Grid.Column="1"
+                            Minimum="0" Maximum="1"
+                            Value="{Binding MasterVolume}"
+                            TickFrequency="0.1"
+                            IsSnapToTickEnabled="False" />
+                    <TextBlock Grid.Column="2"
+                               Text="{Binding MasterVolumePercent}"
+                               HorizontalAlignment="Right"
+                               VerticalAlignment="Center" />
+                </Grid>
+
+                <!-- Music Volume -->
+                <Grid ColumnDefinitions="150,*,50">
+                    <TextBlock Text="Music Volume" VerticalAlignment="Center" />
+                    <Slider Grid.Column="1"
+                            Minimum="0" Maximum="1"
+                            Value="{Binding MusicVolume}" />
+                    <TextBlock Grid.Column="2"
+                               Text="{Binding MusicVolumePercent}"
+                               HorizontalAlignment="Right"
+                               VerticalAlignment="Center" />
+                </Grid>
+
+                <!-- Sound Effects -->
+                <Grid ColumnDefinitions="150,*,50">
+                    <TextBlock Text="Sound Effects" VerticalAlignment="Center" />
+                    <Slider Grid.Column="1"
+                            Minimum="0" Maximum="1"
+                            Value="{Binding EffectsVolume}" />
+                    <TextBlock Grid.Column="2"
+                               Text="{Binding EffectsVolumePercent}"
+                               HorizontalAlignment="Right"
+                               VerticalAlignment="Center" />
+                </Grid>
+
+                <!-- UI Sounds -->
+                <Grid ColumnDefinitions="150,*,50">
+                    <TextBlock Text="UI Sounds" VerticalAlignment="Center" />
+                    <Slider Grid.Column="1"
+                            Minimum="0" Maximum="1"
+                            Value="{Binding UiVolume}" />
+                    <TextBlock Grid.Column="2"
+                               Text="{Binding UiVolumePercent}"
+                               HorizontalAlignment="Right"
+                               VerticalAlignment="Center" />
+                </Grid>
+
+            </StackPanel>
+        </Border>
+
+        <!-- Mute All -->
+        <CheckBox Content="Mute All Audio" IsChecked="{Binding IsMuted}" />
+
+        <Separator Margin="0,8" />
+
+        <!-- TUI Options -->
+        <TextBlock Text="TUI OPTIONS (Console Mode)" Classes="subsection-title" />
+        <CheckBox Content="Enable Console Bells" IsChecked="{Binding TuiBellEnabled}" />
+
+    </StackPanel>
+</UserControl>
