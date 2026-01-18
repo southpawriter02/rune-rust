@@ -1,0 +1,197 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "ability-trees.schema.json",
+  "title": "Ability Trees Configuration",
+  "description": "Schema for ability tree definitions including branches and nodes",
+  "type": "object",
+  "required": ["abilityTrees"],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Reference to this schema file"
+    },
+    "abilityTrees": {
+      "type": "array",
+      "description": "List of ability tree definitions",
+      "items": {
+        "$ref": "#/definitions/abilityTree"
+      }
+    }
+  },
+  "definitions": {
+    "abilityTree": {
+      "type": "object",
+      "description": "An ability tree for a specific class",
+      "required": ["treeId", "classId", "name", "branches"],
+      "properties": {
+        "treeId": {
+          "type": "string",
+          "description": "Unique identifier for the tree (e.g., 'warrior-tree')",
+          "pattern": "^[a-z][a-z0-9-]*$"
+        },
+        "classId": {
+          "type": "string",
+          "description": "The class this tree belongs to (e.g., 'warrior')",
+          "pattern": "^[a-z][a-z0-9-]*$"
+        },
+        "name": {
+          "type": "string",
+          "description": "Display name of the tree",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of the tree's theme and capabilities"
+        },
+        "pointsPerLevel": {
+          "type": "integer",
+          "description": "Talent points awarded per level",
+          "minimum": 1,
+          "default": 1
+        },
+        "icon": {
+          "type": "string",
+          "description": "Path to the tree's icon asset"
+        },
+        "branches": {
+          "type": "array",
+          "description": "Specialization branches in this tree",
+          "items": {
+            "$ref": "#/definitions/branch"
+          },
+          "minItems": 1
+        }
+      }
+    },
+    "branch": {
+      "type": "object",
+      "description": "A specialization branch within an ability tree",
+      "required": ["branchId", "name", "nodes"],
+      "properties": {
+        "branchId": {
+          "type": "string",
+          "description": "Unique identifier for the branch within its tree",
+          "pattern": "^[a-z][a-z0-9-]*$"
+        },
+        "name": {
+          "type": "string",
+          "description": "Display name of the branch",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of this specialization path"
+        },
+        "icon": {
+          "type": "string",
+          "description": "Path to the branch's icon asset"
+        },
+        "nodes": {
+          "type": "array",
+          "description": "Talent nodes in this branch",
+          "items": {
+            "$ref": "#/definitions/node"
+          }
+        }
+      }
+    },
+    "node": {
+      "type": "object",
+      "description": "A single talent node in the ability tree",
+      "required": ["nodeId", "abilityId", "name", "tier"],
+      "properties": {
+        "nodeId": {
+          "type": "string",
+          "description": "Unique identifier for the node across all trees",
+          "pattern": "^[a-z][a-z0-9-]*$"
+        },
+        "abilityId": {
+          "type": "string",
+          "description": "The ability this node grants",
+          "pattern": "^[a-z][a-z0-9-]*$"
+        },
+        "name": {
+          "type": "string",
+          "description": "Display name of the talent",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of what this talent does"
+        },
+        "tier": {
+          "type": "integer",
+          "description": "Tier level (1 = base, 2 = advanced, etc.)",
+          "minimum": 1
+        },
+        "pointCost": {
+          "type": "integer",
+          "description": "Point cost per rank",
+          "minimum": 1,
+          "default": 1
+        },
+        "maxRank": {
+          "type": "integer",
+          "description": "Maximum ranks for this talent",
+          "minimum": 1,
+          "default": 1
+        },
+        "prerequisites": {
+          "type": "array",
+          "description": "Node IDs that must be unlocked before this node",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]*$"
+          }
+        },
+        "statPrerequisites": {
+          "type": "array",
+          "description": "Stat requirements for this node",
+          "items": {
+            "$ref": "#/definitions/statPrerequisite"
+          }
+        },
+        "position": {
+          "$ref": "#/definitions/position",
+          "description": "Position for UI layout"
+        },
+        "icon": {
+          "type": "string",
+          "description": "Path to the node's icon asset"
+        }
+      }
+    },
+    "statPrerequisite": {
+      "type": "object",
+      "description": "A stat requirement for unlocking a node",
+      "required": ["stat", "minValue"],
+      "properties": {
+        "stat": {
+          "type": "string",
+          "description": "The stat identifier (e.g., 'strength', 'charisma')",
+          "pattern": "^[a-z][a-z0-9-]*$"
+        },
+        "minValue": {
+          "type": "integer",
+          "description": "Minimum value required",
+          "minimum": 1
+        }
+      }
+    },
+    "position": {
+      "type": "object",
+      "description": "Position coordinates for UI layout",
+      "required": ["x", "y"],
+      "properties": {
+        "x": {
+          "type": "integer",
+          "description": "Horizontal position (column)"
+        },
+        "y": {
+          "type": "integer",
+          "description": "Vertical position (row/tier)"
+        }
+      }
+    }
+  }
+}

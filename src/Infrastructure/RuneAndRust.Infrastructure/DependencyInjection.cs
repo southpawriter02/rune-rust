@@ -83,6 +83,14 @@ public static class DependencyInjection
             return new JsonEnvironmentalHazardProvider(hazardsPath, logger);
         });
 
+        // Ability tree provider (v0.10.2a) - loads ability tree definitions from JSON config
+        services.AddSingleton<IAbilityTreeProvider>(sp =>
+        {
+            var treesPath = Path.Combine(configPath, "ability-trees.json");
+            var logger = sp.GetRequiredService<ILogger<JsonAbilityTreeProvider>>();
+            return new JsonAbilityTreeProvider(treesPath, logger);
+        });
+
         return services;
     }
 
