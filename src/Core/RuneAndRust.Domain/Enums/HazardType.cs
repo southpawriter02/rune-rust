@@ -74,5 +74,25 @@ public enum HazardType
     /// Necrotic energy that drains life force.
     /// Deals necrotic damage and may reduce maximum health temporarily.
     /// </summary>
-    Necrotic = 8
+    Necrotic = 8,
+
+    /// <summary>
+    /// A pit or chasm that creatures can fall into.
+    /// Deals bludgeoning damage from the fall and may apply the prone status effect.
+    /// Creatures must climb out to escape.
+    /// </summary>
+    /// <remarks>
+    /// Added in v0.10.1c for environmental combat push/knockback mechanics.
+    /// </remarks>
+    Pit = 9,
+
+    /// <summary>
+    /// Molten lava or magma that burns creatures within.
+    /// Deals heavy fire damage and applies the burning status effect.
+    /// Damage occurs on entry and each turn the creature remains in the lava.
+    /// </summary>
+    /// <remarks>
+    /// Added in v0.10.1c for environmental combat push/knockback mechanics.
+    /// </remarks>
+    Lava = 10
 }

@@ -1,0 +1,156 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "environmental-hazards.schema.json",
+    "title": "Environmental Hazards Configuration",
+    "description": "Configuration for environmental combat hazards including lava, spikes, pits, and acid pools. Hazards deal damage and apply status effects when combatants enter or remain in hazardous cells.",
+    "type": "object",
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "Reference to this schema file"
+        },
+        "hazards": {
+            "type": "array",
+            "description": "List of environmental hazard definitions",
+            "items": {
+                "$ref": "#/definitions/hazard"
+            }
+        },
+        "settings": {
+            "$ref": "#/definitions/hazardSettings"
+        }
+    },
+    "required": [
+        "hazards"
+    ],
+    "definitions": {
+        "hazard": {
+            "type": "object",
+            "description": "An environmental hazard definition with damage and effect properties",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "description": "The hazard type enum value (must match HazardType enum)",
+                    "enum": [
+                        "PoisonGas",
+                        "Fire",
+                        "Ice",
+                        "Spikes",
+                        "AcidPool",
+                        "Darkness",
+                        "Electricity",
+                        "Radiant",
+                        "Necrotic",
+                        "Pit",
+                        "Lava"
+                    ],
+                    "examples": ["Lava", "Spikes", "Pit", "AcidPool"]
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Display name of the hazard for UI and combat logs",
+                    "minLength": 1,
+                    "maxLength": 50,
+                    "examples": ["Lava", "Spike Trap", "Pit", "Acid Pool"]
+                },
+                "description": {
+                    "type": ["string", "null"],
+                    "description": "Detailed description of the hazard",
+                    "maxLength": 500
+                },
+                "damageDice": {
+                    "type": "string",
+                    "description": "Dice notation for hazard damage",
+                    "pattern": "^\\d+d\\d+([+-]\\d+)?$",
+                    "default": "1d6",
+                    "examples": ["3d6", "2d6", "2d4", "1d8+2"]
+                },
+                "damageType": {
+                    "type": "string",
+                    "description": "The type of damage dealt (for resistance/vulnerability calculations)",
+                    "enum": [
+                        "fire",
+                        "cold",
+                        "acid",
+                        "lightning",
+                        "poison",
+                        "piercing",
+                        "bludgeoning",
+                        "slashing",
+                        "radiant",
+                        "necrotic"
+                    ],
+                    "default": "fire",
+                    "examples": ["fire", "piercing", "bludgeoning", "acid"]
+                },
+                "statusEffectId": {
+                    "type": ["string", "null"],
+                    "description": "ID of the status effect to apply when dealing damage (e.g., 'burning', 'bleeding', 'prone')",
+                    "examples": ["burning", "bleeding", "prone", "poisoned", null]
+                },
+                "damageOnEnter": {
+                    "type": "boolean",
+                    "description": "Whether damage is dealt immediately when entering the hazard cell",
+                    "default": true
+                },
+                "damagePerTurn": {
+                    "type": "boolean",
+                    "description": "Whether damage is dealt each turn while remaining in the hazard",
+                    "default": false
+                },
+                "requiresClimbOut": {
+                    "type": "boolean",
+                    "description": "Whether the hazard traps combatants requiring a climb action to escape (e.g., pits)",
+                    "default": false
+                },
+                "degradesArmor": {
+                    "type": "boolean",
+                    "description": "Whether the hazard degrades armor over time (e.g., acid)",
+                    "default": false
+                },
+                "iconPath": {
+                    "type": ["string", "null"],
+                    "description": "Path to the hazard icon for UI display",
+                    "examples": ["icons/hazards/lava.png", "icons/hazards/spikes.png"]
+                }
+            },
+            "required": [
+                "type",
+                "damageDice",
+                "damageType"
+            ],
+            "additionalProperties": false
+        },
+        "hazardSettings": {
+            "type": "object",
+            "description": "Global settings for environmental hazards",
+            "properties": {
+                "tickDamageTiming": {
+                    "type": "string",
+                    "description": "When per-turn hazard damage is processed",
+                    "enum": ["roundStart", "turnStart", "turnEnd"],
+                    "default": "roundStart"
+                },
+                "allowResistanceReduction": {
+                    "type": "boolean",
+                    "description": "Whether damage type resistances reduce hazard damage",
+                    "default": true
+                },
+                "criticalKnockbackDistance": {
+                    "type": "integer",
+                    "description": "Number of cells knocked back on critical hit",
+                    "minimum": 0,
+                    "maximum": 5,
+                    "default": 1
+                },
+                "pushOpposedCheckAttribute": {
+                    "type": "string",
+                    "description": "The attribute used for opposed push checks",
+                    "enum": ["Might", "Fortitude"],
+                    "default": "Might"
+                }
+            },
+            "additionalProperties": false
+        }
+    }
+}

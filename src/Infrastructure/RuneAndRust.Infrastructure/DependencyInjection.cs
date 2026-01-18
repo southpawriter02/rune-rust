@@ -75,6 +75,14 @@ public static class DependencyInjection
             return new JsonStanceProvider(stancesPath, logger);
         });
 
+        // Environmental hazard provider (v0.10.1c) - loads hazard definitions from JSON config
+        services.AddSingleton<IEnvironmentalHazardProvider>(sp =>
+        {
+            var hazardsPath = Path.Combine(configPath, "environmental-hazards.json");
+            var logger = sp.GetRequiredService<ILogger<JsonEnvironmentalHazardProvider>>();
+            return new JsonEnvironmentalHazardProvider(hazardsPath, logger);
+        });
+
         return services;
     }
 
@@ -217,6 +225,10 @@ public static class DependencyInjection
         // Stance system (v0.10.1b)
         // Note: IStanceProvider is registered in AddInfrastructure as it loads from JSON config
         services.AddScoped<IStanceService, StanceService>();
+
+        // Environmental combat system (v0.10.1c)
+        // Note: IEnvironmentalHazardProvider is registered in AddInfrastructure as it loads from JSON config
+        services.AddScoped<IEnvironmentalCombatService, EnvironmentalCombatService>();
 
         return services;
     }
