@@ -74,6 +74,16 @@ public class Combatant : IEntity
     /// </summary>
     public bool HasActedThisRound { get; private set; }
 
+    /// <summary>
+    /// Gets whether this combatant has their reaction available for the current round.
+    /// </summary>
+    /// <remarks>
+    /// <para>Reactions are consumed when using certain defensive actions like
+    /// <see cref="Enums.DefenseActionType.Dodge"/> or <see cref="Enums.DefenseActionType.Parry"/>.</para>
+    /// <para>Reactions are reset at the start of the combatant's turn via <see cref="ResetReaction"/>.</para>
+    /// </remarks>
+    public bool HasReaction { get; private set; } = true;
+
     // ===== Computed Properties =====
 
     /// <summary>
@@ -242,9 +252,37 @@ public class Combatant : IEntity
     /// <summary>
     /// Clears temporary combat states (called at start of turn).
     /// </summary>
+    /// <remarks>
+    /// Resets defending state and restores the combatant's reaction.
+    /// </remarks>
     public void ResetTurnState()
     {
         IsDefending = false;
+        ResetReaction();
+    }
+
+    /// <summary>
+    /// Consumes the combatant's reaction for defensive actions.
+    /// </summary>
+    /// <remarks>
+    /// <para>Called when using reaction-based defensive actions such as
+    /// <see cref="Enums.DefenseActionType.Dodge"/> or <see cref="Enums.DefenseActionType.Parry"/>.</para>
+    /// <para>Once consumed, the reaction cannot be used again until reset at turn start.</para>
+    /// </remarks>
+    public void UseReaction()
+    {
+        HasReaction = false;
+    }
+
+    /// <summary>
+    /// Resets the combatant's reaction to available.
+    /// </summary>
+    /// <remarks>
+    /// Called at the start of the combatant's turn via <see cref="ResetTurnState"/>.
+    /// </remarks>
+    public void ResetReaction()
+    {
+        HasReaction = true;
     }
 
     /// <inheritdoc />

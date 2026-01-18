@@ -1,0 +1,55 @@
+{
+    "$schema": "./schemas/defense-actions.schema.json",
+    "defenseActions": [
+        {
+            "id": "block",
+            "name": "Block",
+            "description": "Raise your shield to reduce incoming damage by 50% plus your shield's defense bonus",
+            "actionType": "Block",
+            "requiresShield": true,
+            "requiresReaction": false,
+            "blockedByHeavyArmor": false,
+            "requiresMeleeWeapon": false,
+            "baseReduction": 0.5,
+            "dcBonus": 0,
+            "rollStat": null,
+            "canCounter": false,
+            "flavorText": "You brace behind your shield, absorbing the impact."
+        },
+        {
+            "id": "dodge",
+            "name": "Dodge",
+            "description": "Attempt to completely avoid an incoming attack using agility",
+            "actionType": "Dodge",
+            "requiresShield": false,
+            "requiresReaction": true,
+            "blockedByHeavyArmor": true,
+            "requiresMeleeWeapon": false,
+            "baseReduction": 0.0,
+            "dcBonus": 0,
+            "rollStat": "finesse",
+            "canCounter": false,
+            "flavorText": "You twist aside, letting the attack pass harmlessly by."
+        },
+        {
+            "id": "parry",
+            "name": "Parry",
+            "description": "Deflect an attack with your weapon and deliver a swift counter-attack",
+            "actionType": "Parry",
+            "requiresShield": false,
+            "requiresReaction": true,
+            "blockedByHeavyArmor": false,
+            "requiresMeleeWeapon": true,
+            "baseReduction": 0.0,
+            "dcBonus": 2,
+            "rollStat": "finesse",
+            "canCounter": true,
+            "flavorText": "You deftly deflect the blow and riposte with a swift counter."
+        }
+    ],
+    "settings": {
+        "defaultFinesseModifierDivisor": 2,
+        "counterAttackDamageMultiplier": 1.0,
+        "heavyArmorTypes": ["Heavy"]
+    }
+}
