@@ -1104,6 +1104,38 @@ public class Player : IEntity
     /// </remarks>
     public FacingDirection Facing { get; private set; } = FacingDirection.South;
 
+    // ===== Talent Point Properties (v0.10.2b) =====
+
+    /// <summary>
+    /// Gets the talent points available to spend.
+    /// </summary>
+    /// <remarks>
+    /// Points are earned on level-up and spent on talent tree nodes.
+    /// </remarks>
+    public int UnspentTalentPoints { get; private set; }
+
+    /// <summary>
+    /// Gets the total talent points ever earned by this player.
+    /// </summary>
+    /// <remarks>
+    /// This value only increases (never decreases, even when points are spent).
+    /// Used to track progression and validate consistency.
+    /// </remarks>
+    public int TotalTalentPointsEarned { get; private set; }
+
+    /// <summary>
+    /// Backing field for talent allocations.
+    /// </summary>
+    private readonly List<TalentAllocation> _talentAllocations = [];
+
+    /// <summary>
+    /// Gets the player's current talent allocations.
+    /// </summary>
+    /// <remarks>
+    /// Each allocation represents points invested in a talent tree node.
+    /// </remarks>
+    public IReadOnlyList<TalentAllocation> TalentAllocations => _talentAllocations;
+
     /// <summary>
     /// Sets the player's facing direction.
     /// </summary>
@@ -1128,5 +1160,109 @@ public class Player : IEntity
             return;
 
         Facing = Extensions.FacingDirectionExtensions.GetDirectionTo(currentPosition, targetPosition);
+    }
+
+    // ===== Talent Point Methods (v0.10.2b) =====
+
+    /// <summary>
+    /// Adds talent points to the player.
+    /// </summary>
+    /// <param name="count">The number of points to add (must be positive).</param>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when count is not positive.</exception>
+    /// <remarks>
+    /// Increases both UnspentTalentPoints and TotalTalentPointsEarned.
+    /// </remarks>
+    public void AddTalentPoints(int count)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(count, nameof(count));
+        UnspentTalentPoints += count;
+        TotalTalentPointsEarned += count;
+    }
+
+    /// <summary>
+    /// Spends talent points from the player's unspent pool.
+    /// </summary>
+    /// <param name="count">The number of points to spend (must be positive).</param>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when count is not positive.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when the player has insufficient points.</exception>
+    /// <remarks>
+    /// Only decreases UnspentTalentPoints (TotalTalentPointsEarned remains unchanged).
+    /// </remarks>
+    public void SpendTalentPoints(int count)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(count, nameof(count));
+        if (count > UnspentTalentPoints)
+        {
+            throw new InvalidOperationException(
+                $"Cannot spend {count} talent points, only have {UnspentTalentPoints}");
+        }
+        UnspentTalentPoints -= count;
+    }
+
+    /// <summary>
+    /// Adds a new talent allocation to the player.
+    /// </summary>
+    /// <param name="allocation">The allocation to add.</param>
+    /// <exception cref="ArgumentNullException">Thrown when allocation is null.</exception>
+    /// <remarks>
+    /// Does not validate for duplicates - caller should ensure the node
+    /// is not already allocated before calling this method.
+    /// </remarks>
+    public void AddTalentAllocation(TalentAllocation allocation)
+    {
+        ArgumentNullException.ThrowIfNull(allocation, nameof(allocation));
+        _talentAllocations.Add(allocation);
+    }
+
+    /// <summary>
+    /// Clears all talent allocations (used for respec operations).
+    /// </summary>
+    /// <remarks>
+    /// This only clears the allocations list. Call RefundAllTalentPoints()
+    /// before this method to restore spent points to UnspentTalentPoints.
+    /// </remarks>
+    public void ClearTalentAllocations()
+    {
+        _talentAllocations.Clear();
+    }
+
+    /// <summary>
+    /// Refunds all spent talent points back to the unspent pool.
+    /// </summary>
+    /// <remarks>
+    /// Calculates total spent from all allocations and adds it back to UnspentTalentPoints.
+    /// This should typically be called before ClearTalentAllocations() during a respec.
+    /// </remarks>
+    public void RefundAllTalentPoints()
+    {
+        var totalSpent = _talentAllocations.Sum(a => a.GetTotalPointsSpent());
+        UnspentTalentPoints += totalSpent;
+    }
+
+    /// <summary>
+    /// Gets the allocation for a specific node.
+    /// </summary>
+    /// <param name="nodeId">The node ID to look up.</param>
+    /// <returns>The TalentAllocation if found, null otherwise.</returns>
+    /// <remarks>
+    /// Lookup is case-insensitive.
+    /// </remarks>
+    public TalentAllocation? GetAllocation(string nodeId)
+    {
+        if (string.IsNullOrWhiteSpace(nodeId))
+            return null;
+
+        return _talentAllocations.FirstOrDefault(a =>
+            a.NodeId.Equals(nodeId, StringComparison.OrdinalIgnoreCase));
+    }
+
+    /// <summary>
+    /// Checks if the player has any allocation in a specific node.
+    /// </summary>
+    /// <param name="nodeId">The node ID to check.</param>
+    /// <returns>True if the player has invested at least 1 rank in the node.</returns>
+    public bool HasAllocation(string nodeId)
+    {
+        return GetAllocation(nodeId) != null;
     }
 }

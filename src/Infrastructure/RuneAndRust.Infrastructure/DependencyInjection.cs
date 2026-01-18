@@ -238,6 +238,12 @@ public static class DependencyInjection
         // Note: IEnvironmentalHazardProvider is registered in AddInfrastructure as it loads from JSON config
         services.AddScoped<IEnvironmentalCombatService, EnvironmentalCombatService>();
 
+        // Talent point system (v0.10.2b)
+        // Note: IAbilityTreeProvider is registered in AddInfrastructure as it loads from JSON config
+        // Stub prerequisite validator - full implementation in v0.10.2c
+        services.AddScoped<IPrerequisiteValidator, StubPrerequisiteValidator>();
+        services.AddScoped<ITalentPointService, TalentPointService>();
+
         return services;
     }
 }
