@@ -1,0 +1,128 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "stances.schema.json",
+    "title": "Combat Stances Configuration",
+    "description": "Configuration for combat stances (Balanced, Aggressive, Defensive) in tactical combat. Stances provide stat modifiers that affect attack, defense, damage, and saving throws.",
+    "type": "object",
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "Reference to this schema file"
+        },
+        "stances": {
+            "type": "array",
+            "description": "List of combat stance definitions",
+            "items": {
+                "$ref": "#/definitions/stance"
+            },
+            "minItems": 1
+        },
+        "settings": {
+            "$ref": "#/definitions/stanceSettings"
+        }
+    },
+    "required": [
+        "stances"
+    ],
+    "definitions": {
+        "stance": {
+            "type": "object",
+            "description": "A combat stance definition with associated stat modifiers",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Unique identifier (lowercase, must match CombatStance enum value)",
+                    "pattern": "^[a-z][a-z0-9]*$",
+                    "examples": ["balanced", "aggressive", "defensive"]
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Display name of the stance",
+                    "minLength": 1,
+                    "maxLength": 50,
+                    "examples": ["Balanced Stance", "Aggressive Stance", "Defensive Stance"]
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Detailed description of the stance and its effects",
+                    "minLength": 1,
+                    "maxLength": 500
+                },
+                "attackBonus": {
+                    "type": "integer",
+                    "description": "Modifier applied to attack rolls (positive = bonus, negative = penalty)",
+                    "minimum": -10,
+                    "maximum": 10,
+                    "default": 0,
+                    "examples": [0, 2, -2]
+                },
+                "damageBonus": {
+                    "type": ["string", "null"],
+                    "description": "Dice notation for bonus damage (e.g., '1d4', '-1d4'). Null means no damage modifier.",
+                    "pattern": "^-?\\d+d\\d+([+-]\\d+)?$|^null$",
+                    "examples": ["1d4", "-1d4", "2d6+1", null]
+                },
+                "defenseBonus": {
+                    "type": "integer",
+                    "description": "Modifier applied to defense/AC (positive = bonus, negative = penalty)",
+                    "minimum": -10,
+                    "maximum": 10,
+                    "default": 0,
+                    "examples": [0, 2, -2]
+                },
+                "saveBonus": {
+                    "type": "integer",
+                    "description": "Modifier applied to all saving throws (fortitude, reflex, will)",
+                    "minimum": -10,
+                    "maximum": 10,
+                    "default": 0,
+                    "examples": [0, 2, -1]
+                },
+                "isDefault": {
+                    "type": "boolean",
+                    "description": "Whether this stance is the default for new combatants. Only one stance should have isDefault: true.",
+                    "default": false
+                },
+                "icon": {
+                    "type": ["string", "null"],
+                    "description": "Path to the stance icon for UI display",
+                    "examples": ["icons/stances/balanced.png", "icons/stances/aggressive.png"]
+                }
+            },
+            "required": [
+                "id",
+                "name",
+                "description",
+                "attackBonus",
+                "defenseBonus",
+                "saveBonus"
+            ],
+            "additionalProperties": false
+        },
+        "stanceSettings": {
+            "type": "object",
+            "description": "Global settings for the stance system",
+            "properties": {
+                "stanceChangeLimit": {
+                    "type": "integer",
+                    "description": "Maximum number of stance changes allowed per round",
+                    "minimum": 1,
+                    "maximum": 5,
+                    "default": 1
+                },
+                "stanceChangeResetTrigger": {
+                    "type": "string",
+                    "description": "When stance change availability resets",
+                    "enum": ["roundStart", "turnStart"],
+                    "default": "roundStart"
+                },
+                "defaultStanceId": {
+                    "type": "string",
+                    "description": "The stance ID to use if no stance is marked as default",
+                    "default": "balanced"
+                }
+            },
+            "additionalProperties": false
+        }
+    }
+}

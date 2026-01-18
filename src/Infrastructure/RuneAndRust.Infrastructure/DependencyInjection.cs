@@ -9,6 +9,7 @@ using RuneAndRust.Domain.Interfaces;
 using RuneAndRust.Domain.Services;
 using RuneAndRust.Infrastructure.Configuration;
 using RuneAndRust.Infrastructure.Persistence;
+using RuneAndRust.Infrastructure.Providers;
 using RuneAndRust.Infrastructure.Repositories;
 
 namespace RuneAndRust.Infrastructure;
@@ -65,6 +66,14 @@ public static class DependencyInjection
             sp.GetRequiredService<IGameConfigurationProvider>().GetLexiconConfiguration());
         services.AddSingleton(sp =>
             sp.GetRequiredService<IGameConfigurationProvider>().GetThemeConfiguration());
+
+        // Stance provider (v0.10.1b) - loads stance definitions from JSON config
+        services.AddSingleton<IStanceProvider>(sp =>
+        {
+            var stancesPath = Path.Combine(configPath, "stances.json");
+            var logger = sp.GetRequiredService<ILogger<JsonStanceProvider>>();
+            return new JsonStanceProvider(stancesPath, logger);
+        });
 
         return services;
     }
@@ -201,6 +210,13 @@ public static class DependencyInjection
 
         // Operation scope for logging correlation (v0.0.10a)
         services.AddScoped<IOperationScope, OperationScope>();
+
+        // Game event logger (used by various services for combat logging)
+        services.AddScoped<IGameEventLogger, GameEventLogger>();
+
+        // Stance system (v0.10.1b)
+        // Note: IStanceProvider is registered in AddInfrastructure as it loads from JSON config
+        services.AddScoped<IStanceService, StanceService>();
 
         return services;
     }

@@ -150,6 +150,23 @@ public class Combatant : IEntity
     /// </remarks>
     public bool IsDefending { get; private set; }
 
+    // ===== Combat Stance Properties (v0.10.1b) =====
+
+    /// <summary>
+    /// Gets the combatant's current combat stance.
+    /// </summary>
+    /// <remarks>
+    /// <para>Combat stances modify attack, defense, and saving throw capabilities:</para>
+    /// <list type="bullet">
+    ///   <item><description><see cref="CombatStance.Balanced"/>: Default stance with no modifiers.</description></item>
+    ///   <item><description><see cref="CombatStance.Aggressive"/>: +2 ATK, +1d4 DMG, -2 DEF, -1 saves.</description></item>
+    ///   <item><description><see cref="CombatStance.Defensive"/>: -2 ATK, -1d4 DMG, +2 DEF, +2 saves.</description></item>
+    /// </list>
+    /// <para>Combatants can change stance once per round as a free action.</para>
+    /// <para>Stance is managed by IStanceService in the Application layer.</para>
+    /// </remarks>
+    public CombatStance CurrentStance { get; private set; } = CombatStance.Balanced;
+
     // ===== Constructors =====
 
     /// <summary>
@@ -283,6 +300,24 @@ public class Combatant : IEntity
     public void ResetReaction()
     {
         HasReaction = true;
+    }
+
+    // ===== Combat Stance Methods (v0.10.1b) =====
+
+    /// <summary>
+    /// Sets the combatant's combat stance.
+    /// </summary>
+    /// <param name="stance">The new combat stance to adopt.</param>
+    /// <remarks>
+    /// <para>This method is called by StanceService in the Application layer
+    /// after validating that the combatant can change stance this round.</para>
+    /// <para>The stance change limit (once per round) is enforced by the service,
+    /// not by this method. Direct calls should only be made through the service.</para>
+    /// <para>Stance modifiers are applied/removed by the service layer.</para>
+    /// </remarks>
+    public void SetStance(CombatStance stance)
+    {
+        CurrentStance = stance;
     }
 
     /// <inheritdoc />

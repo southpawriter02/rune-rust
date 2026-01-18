@@ -1,0 +1,43 @@
+{
+    "$schema": "./schemas/stances.schema.json",
+    "stances": [
+        {
+            "id": "balanced",
+            "name": "Balanced Stance",
+            "description": "A neutral combat stance with no modifiers. Suitable for most situations where neither offense nor defense needs emphasis.",
+            "attackBonus": 0,
+            "damageBonus": null,
+            "defenseBonus": 0,
+            "saveBonus": 0,
+            "isDefault": true,
+            "icon": "icons/stances/balanced.png"
+        },
+        {
+            "id": "aggressive",
+            "name": "Aggressive Stance",
+            "description": "An offensive stance that sacrifices defense for increased attack power. Grants +2 to attack rolls and +1d4 bonus damage, but suffers -2 defense and -1 to all saving throws.",
+            "attackBonus": 2,
+            "damageBonus": "1d4",
+            "defenseBonus": -2,
+            "saveBonus": -1,
+            "isDefault": false,
+            "icon": "icons/stances/aggressive.png"
+        },
+        {
+            "id": "defensive",
+            "name": "Defensive Stance",
+            "description": "A protective stance that sacrifices offense for increased survivability. Grants +2 defense and +2 to all saving throws, but suffers -2 to attack rolls and -1d4 damage penalty.",
+            "attackBonus": -2,
+            "damageBonus": "-1d4",
+            "defenseBonus": 2,
+            "saveBonus": 2,
+            "isDefault": false,
+            "icon": "icons/stances/defensive.png"
+        }
+    ],
+    "settings": {
+        "stanceChangeLimit": 1,
+        "stanceChangeResetTrigger": "roundStart",
+        "defaultStanceId": "balanced"
+    }
+}
