@@ -257,6 +257,10 @@ public static class DependencyInjection
         // Service for handling talent point reallocation operations
         services.AddScoped<IRespecService, RespecService>();
 
+        // Combo detection system (v0.10.3b)
+        // Note: IComboProvider is registered in AddInfrastructure as it loads from JSON config
+        services.AddScoped<IComboService, ComboService>();
+
         return services;
     }
 }
