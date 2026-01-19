@@ -91,6 +91,14 @@ public static class DependencyInjection
             return new JsonAbilityTreeProvider(treesPath, logger);
         });
 
+        // Combo provider (v0.10.3a) - loads combo definitions from JSON config
+        services.AddSingleton<IComboProvider>(sp =>
+        {
+            var combosPath = Path.Combine(configPath, "combos.json");
+            var logger = sp.GetRequiredService<ILogger<JsonComboProvider>>();
+            return new JsonComboProvider(combosPath, logger);
+        });
+
         return services;
     }
 

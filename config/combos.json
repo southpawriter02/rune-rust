@@ -1,0 +1,152 @@
+{
+    "$schema": "./schemas/combos.schema.json",
+    "combos": [
+        {
+            "comboId": "elemental-burst",
+            "name": "Elemental Burst",
+            "description": "Chain fire, ice, and lightning for explosive elemental damage. The combination of opposing elements creates a powerful surge that doubles your final spell's damage.",
+            "windowTurns": 3,
+            "requiredClassIds": ["mage", "sorcerer"],
+            "steps": [
+                {
+                    "stepNumber": 1,
+                    "abilityId": "fire-bolt",
+                    "targetRequirement": "any"
+                },
+                {
+                    "stepNumber": 2,
+                    "abilityId": "ice-shard",
+                    "targetRequirement": "sameTarget"
+                },
+                {
+                    "stepNumber": 3,
+                    "abilityId": "lightning",
+                    "targetRequirement": "sameTarget"
+                }
+            ],
+            "bonusEffects": [
+                {
+                    "effectType": "DamageMultiplier",
+                    "value": "2.0",
+                    "target": "lastTarget"
+                },
+                {
+                    "effectType": "ApplyStatus",
+                    "value": "",
+                    "statusEffectId": "elemental-overload",
+                    "target": "lastTarget"
+                }
+            ],
+            "icon": "icons/combos/elemental-burst.png"
+        },
+        {
+            "comboId": "warriors-onslaught",
+            "name": "Warrior's Onslaught",
+            "description": "Charge in, strike hard, finish them. A devastating melee combination that leaves enemies stunned and bleeding.",
+            "windowTurns": 2,
+            "requiredClassIds": ["warrior", "paladin"],
+            "steps": [
+                {
+                    "stepNumber": 1,
+                    "abilityId": "charge",
+                    "targetRequirement": "any"
+                },
+                {
+                    "stepNumber": 2,
+                    "abilityId": "power-strike",
+                    "targetRequirement": "sameTarget"
+                },
+                {
+                    "stepNumber": 3,
+                    "abilityId": "execute",
+                    "targetRequirement": "sameTarget"
+                }
+            ],
+            "bonusEffects": [
+                {
+                    "effectType": "ApplyStatus",
+                    "value": "",
+                    "statusEffectId": "stunned",
+                    "target": "lastTarget"
+                },
+                {
+                    "effectType": "ApplyStatus",
+                    "value": "",
+                    "statusEffectId": "bleeding",
+                    "target": "lastTarget"
+                }
+            ],
+            "icon": "icons/combos/warriors-onslaught.png"
+        },
+        {
+            "comboId": "assassins-dance",
+            "name": "Assassin's Dance",
+            "description": "Strike from shadow, vanish, strike again. A fluid sequence of attacks that rewards stealth play with devastating piercing damage.",
+            "windowTurns": 2,
+            "requiredClassIds": ["rogue", "assassin"],
+            "steps": [
+                {
+                    "stepNumber": 1,
+                    "abilityId": "backstab",
+                    "targetRequirement": "any"
+                },
+                {
+                    "stepNumber": 2,
+                    "abilityId": "vanish",
+                    "targetRequirement": "self"
+                },
+                {
+                    "stepNumber": 3,
+                    "abilityId": "ambush",
+                    "targetRequirement": "any"
+                }
+            ],
+            "bonusEffects": [
+                {
+                    "effectType": "ExtraDamage",
+                    "value": "4d6",
+                    "damageType": "piercing",
+                    "target": "lastTarget"
+                },
+                {
+                    "effectType": "ResetCooldown",
+                    "value": "vanish",
+                    "target": "self"
+                }
+            ],
+            "icon": "icons/combos/assassins-dance.png"
+        },
+        {
+            "comboId": "divine-judgment",
+            "name": "Divine Judgment",
+            "description": "Smite the wicked with holy power. A righteous combination that expands your holy light into an area effect while restoring your vitality.",
+            "windowTurns": 3,
+            "requiredClassIds": ["paladin", "cleric"],
+            "steps": [
+                {
+                    "stepNumber": 1,
+                    "abilityId": "smite",
+                    "targetRequirement": "any"
+                },
+                {
+                    "stepNumber": 2,
+                    "abilityId": "holy-light",
+                    "targetRequirement": "sameTarget"
+                }
+            ],
+            "bonusEffects": [
+                {
+                    "effectType": "AreaEffect",
+                    "value": "2",
+                    "target": "area"
+                },
+                {
+                    "effectType": "Heal",
+                    "value": "2d8",
+                    "target": "self"
+                }
+            ],
+            "icon": "icons/combos/divine-judgment.png"
+        }
+    ]
+}
