@@ -240,9 +240,14 @@ public static class DependencyInjection
 
         // Talent point system (v0.10.2b)
         // Note: IAbilityTreeProvider is registered in AddInfrastructure as it loads from JSON config
-        // Stub prerequisite validator - full implementation in v0.10.2c
-        services.AddScoped<IPrerequisiteValidator, StubPrerequisiteValidator>();
+        services.AddScoped<IPrerequisiteValidator, PrerequisiteValidator>();
         services.AddScoped<ITalentPointService, TalentPointService>();
+
+        // Respec system (v0.10.2c)
+        // Configuration for respec costs and eligibility
+        services.AddSingleton<IRespecConfiguration, RespecConfiguration>();
+        // Service for handling talent point reallocation operations
+        services.AddScoped<IRespecService, RespecService>();
 
         return services;
     }
