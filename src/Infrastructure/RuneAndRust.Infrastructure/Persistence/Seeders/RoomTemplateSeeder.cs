@@ -171,7 +171,7 @@ public static class RoomTemplateSeeder
             "Fungal Tunnel",
             RoomArchetype.Corridor,
             Biome.TheRoots,
-            "A {ADJ_SIZE} tunnel lined with bioluminescent fungi. Their pale glow pulses slowly, like breathing. The air is thick with spores.",
+            "A {ADJ_SIZE} tunnel lined with ghost-light fungi. Their pale glow pulses slowly, like breathing. The air is thick with spores.",
             minExits: 2, maxExits: 2, weight: 3);
         corridor1.AddTags(["Organic", "Wet", "Dim"]);
         corridor1.AddFeature(new RoomFeature(RoomFeatureType.LightSource, "glowing_fungus", 0.9));
@@ -201,13 +201,13 @@ public static class RoomTemplateSeeder
 
         var chamber2 = new RoomTemplate(
             "roots_chamber_02",
-            "Machine Graveyard",
+            "Iron-Husk Graveyard",
             RoomArchetype.Chamber,
             Biome.TheRoots,
             "Broken machines litter this {ADJ_SIZE} chamber, half-consumed by fungal growth. The roots have claimed the Ancients' devices, making them part of the living earth.",
             minExits: 2, maxExits: 3, weight: 2);
         chamber2.AddTags(["Salvage", "Organic", "Machine"]);
-        chamber2.AddFeature(new RoomFeature(RoomFeatureType.Interactable, "rusted_terminal", 0.4));
+        chamber2.AddFeature(new RoomFeature(RoomFeatureType.Interactable, "rusted_console", 0.4));
         chamber2.AddFeature(new RoomFeature(RoomFeatureType.Interactable, "salvage_pile", 0.7));
         yield return chamber2;
 
@@ -421,7 +421,7 @@ public static class RoomTemplateSeeder
         // Corridors
         var corridor1 = new RoomTemplate(
             "jotun_corridor_01",
-            "Giant's Passage",
+            "Jotun's Passage",
             RoomArchetype.Corridor,
             Biome.Jotunheim,
             "A {ADJ_SIZE} corridor built for beings far larger than humans. The ceiling soars overhead. Your footsteps echo in the vast space.",
@@ -434,19 +434,19 @@ public static class RoomTemplateSeeder
             "Rune Hall",
             RoomArchetype.Corridor,
             Biome.Jotunheim,
-            "Giant runes cover every surface of this {ADJ_SIZE} passage. Some still glow with fading power. The language of the Jotun remains incomprehensible.",
+            "Jotun runes cover every surface of this {ADJ_SIZE} passage. Some still glow with fading power. The language of the Jotun remains incomprehensible.",
             minExits: 2, maxExits: 2, weight: 2);
-        corridor2.AddTags(["Runic", "Ancient", "Magical"]);
+        corridor2.AddTags(["Runic", "Ancient", "Runic"]);
         corridor2.AddFeature(new RoomFeature(RoomFeatureType.Decoration, "glowing_runes", 0.7));
         yield return corridor2;
 
         // Chamber
         var chamber1 = new RoomTemplate(
             "jotun_chamber_01",
-            "Titan's Feast Hall",
+            "Jotun's Feast Hall",
             RoomArchetype.Chamber,
             Biome.Jotunheim,
-            "A {ADJ_SIZE} dining hall built for giants. Tables the size of houses line the room. Whatever feast was held here ended long ago.",
+            "A {ADJ_SIZE} dining hall built for Jotun. Tables the size of houses line the room. Whatever feast was held here ended long ago.",
             minExits: 2, maxExits: 3, weight: 2);
         chamber1.AddTags(["Massive", "Ancient", "Feast"]);
         chamber1.AddFeature(new RoomFeature(RoomFeatureType.Interactable, "giant_table", 0.6));
@@ -455,10 +455,10 @@ public static class RoomTemplateSeeder
         // Junction
         var junction1 = new RoomTemplate(
             "jotun_junction_01",
-            "Colossus Crossroads",
+            "Jotun-Lord Crossroads",
             RoomArchetype.Junction,
             Biome.Jotunheim,
-            "A {ADJ_SIZE} intersection where passages built for titans meet. Broken statues of the Jotun stand guard at each exit, their faces worn but still proud.",
+            "A {ADJ_SIZE} intersection where passages built for Jotun meet. Broken statues of the Jotun stand guard at each exit, their faces worn but still proud.",
             minExits: 3, maxExits: 4, weight: 2);
         junction1.AddTags(["Massive", "Central", "Statues"]);
         junction1.AddFeature(new RoomFeature(RoomFeatureType.Decoration, "broken_statue", 0.8));
@@ -470,22 +470,22 @@ public static class RoomTemplateSeeder
             "Reliquary",
             RoomArchetype.DeadEnd,
             Biome.Jotunheim,
-            "A {ADJ_CONDITION} chamber holding relics of the giants. Even the smallest artifacts here are enormous. Power still lingers in these ancient objects.",
+            "A {ADJ_CONDITION} chamber holding relics of the Jotun. Even the smallest artifacts here are enormous. Power still lingers in these ancient objects.",
             minExits: 1, maxExits: 1, weight: 2);
         deadend1.AddTags(["Massive", "Sacred", "Treasure"]);
-        deadend1.AddFeature(new RoomFeature(RoomFeatureType.Interactable, "giant_artifact", 0.6));
+        deadend1.AddFeature(new RoomFeature(RoomFeatureType.Interactable, "jotun_artifact", 0.6));
         yield return deadend1;
 
         // Boss Arena
         var boss1 = new RoomTemplate(
             "jotun_boss_01",
-            "The Titan's Rest",
+            "The Jotun's Rest",
             RoomArchetype.BossArena,
             Biome.Jotunheim,
             "A {ADJ_SIZE} burial chamber of impossible scale. At its heart lies a sarcophagus that could hold a mountain. The lid has been moved. Whatever slumbered within has awakened.",
             minExits: 1, maxExits: 2, weight: 1);
         boss1.AddTags(["Massive", "Tomb", "Ominous"]);
-        boss1.AddFeature(new RoomFeature(RoomFeatureType.Decoration, "giant_sarcophagus", 1.0));
+        boss1.AddFeature(new RoomFeature(RoomFeatureType.Decoration, "jotun_sarcophagus", 1.0));
         yield return boss1;
     }
 

@@ -46,7 +46,7 @@ public static class EntityTableSeeder
 
         // Swarm units (cost 1-5)
         var skeleton = EntityTemplate.CreateSwarm(
-            "skeleton_minion", "Skeleton Minion", factionId, Biome.Citadel,
+            "bone_minion", "Bone Minion", factionId, Biome.Citadel,
             cost: 3, new Stats(15, 5, 2, 5));
         skeleton.AddTags(["Undead", "Brittle", "Melee"]);
         yield return skeleton;
@@ -59,13 +59,13 @@ public static class EntityTableSeeder
 
         // Grunt units (cost 5-40)
         var skeletonWarrior = EntityTemplate.CreateGrunt(
-            "skeleton_warrior", "Skeleton Warrior", factionId, Biome.Citadel,
+            "bone_warrior", "Bone Warrior", factionId, Biome.Citadel,
             cost: 10, EntityRole.Melee, new Stats(30, 10, 5, 6));
         skeletonWarrior.AddTags(["Undead", "Armed", "Melee"]);
         yield return skeletonWarrior;
 
         var skeletonArcher = EntityTemplate.CreateGrunt(
-            "skeleton_archer", "Skeleton Archer", factionId, Biome.Citadel,
+            "bone_archer", "Bone Archer", factionId, Biome.Citadel,
             cost: 12, EntityRole.Ranged, new Stats(20, 12, 3, 8));
         skeletonArcher.AddTags(["Undead", "Armed", "Ranged"]);
         yield return skeletonArcher;
@@ -78,16 +78,16 @@ public static class EntityTableSeeder
 
         // Elite unit (cost 40+)
         var deathKnight = EntityTemplate.CreateElite(
-            "death_knight", "Death Knight", factionId, Biome.Citadel,
+            "draugr_champion", "Draugr Champion", factionId, Biome.Citadel,
             cost: 60, new Stats(80, 18, 15, 12));
         deathKnight.AddTags(["Undead", "Heavy", "Melee", "Commander"]);
         yield return deathKnight;
 
         // Boss unit (cost 100+)
         var lichLord = EntityTemplate.CreateBoss(
-            "lich_lord", "Lich Lord", factionId, Biome.Citadel,
+            "rune_lich", "Rune-Lich", factionId, Biome.Citadel,
             cost: 150, new Stats(120, 25, 12, 18));
-        lichLord.AddTags(["Undead", "Magical", "Ranged", "Commander"]);
+        lichLord.AddTags(["Undead", "Runic", "Ranged", "Commander"]);
         yield return lichLord;
     }
 
@@ -133,7 +133,7 @@ public static class EntityTableSeeder
 
         // Elite unit
         var heavyLoader = EntityTemplate.CreateElite(
-            "heavy_loader", "Heavy Loader Bot", factionId, Biome.TheRoots,
+            "heavy_loader", "Heavy Loader Servitor", factionId, Biome.TheRoots,
             cost: 55, new Stats(90, 20, 18, 6));
         heavyLoader.AddTags(["Mechanical", "Heavy", "Melee", "Armored"]);
         yield return heavyLoader;
@@ -156,7 +156,7 @@ public static class EntityTableSeeder
 
         // Swarm units
         var fireImp = EntityTemplate.CreateSwarm(
-            "fire_imp", "Fire Imp", factionId, Biome.Muspelheim,
+            "cinder_kin", "Cinder-Kin", factionId, Biome.Muspelheim,
             cost: 4, new Stats(12, 6, 2, 10));
         fireImp.AddTags(["Fire", "Small", "Ranged"]);
         yield return fireImp;
@@ -175,7 +175,7 @@ public static class EntityTableSeeder
         yield return flameCultist;
 
         var magmaElemental = EntityTemplate.CreateGrunt(
-            "magma_elemental", "Magma Elemental", factionId, Biome.Muspelheim,
+            "magma_walker", "Magma Walker", factionId, Biome.Muspelheim,
             cost: 30, EntityRole.Tank, new Stats(60, 15, 12, 6));
         magmaElemental.AddTags(["Elemental", "Fire", "Heavy", "Melee"]);
         yield return magmaElemental;
@@ -211,7 +211,7 @@ public static class EntityTableSeeder
 
         // Swarm units
         var iceSprite = EntityTemplate.CreateSwarm(
-            "ice_sprite", "Ice Sprite", factionId, Biome.Niflheim,
+            "frost_wisp", "Frost Wisp", factionId, Biome.Niflheim,
             cost: 3, new Stats(10, 4, 1, 12));
         iceSprite.AddTags(["Cold", "Small", "Flying", "Freezing"]);
         yield return iceSprite;
@@ -224,7 +224,7 @@ public static class EntityTableSeeder
 
         // Grunt units
         var frozenCorpse = EntityTemplate.CreateGrunt(
-            "frozen_corpse", "Frozen Corpse", factionId, Biome.Niflheim,
+            "frozen_husk", "Frozen Husk", factionId, Biome.Niflheim,
             cost: 14, EntityRole.Melee, new Stats(35, 10, 8, 5));
         frozenCorpse.AddTags(["Undead", "Cold", "Slow", "Melee"]);
         yield return frozenCorpse;
@@ -252,7 +252,7 @@ public static class EntityTableSeeder
         var frostQueen = EntityTemplate.CreateBoss(
             "frost_queen", "The Frost Queen", factionId, Biome.Niflheim,
             cost: 155, new Stats(130, 24, 16, 18));
-        frostQueen.AddTags(["Undead", "Cold", "Magical", "Ranged", "Commander"]);
+        frostQueen.AddTags(["Undead", "Cold", "Runic", "Ranged", "Commander"]);
         yield return frostQueen;
     }
 
@@ -266,7 +266,7 @@ public static class EntityTableSeeder
 
         // Swarm units
         var stoneSprite = EntityTemplate.CreateSwarm(
-            "stone_sprite", "Stone Sprite", factionId, Biome.Jotunheim,
+            "stone_shard", "Stone Shard", factionId, Biome.Jotunheim,
             cost: 4, new Stats(18, 5, 5, 6));
         stoneSprite.AddTags(["Elemental", "Stone", "Small"]);
         yield return stoneSprite;
@@ -274,40 +274,40 @@ public static class EntityTableSeeder
         var runeWisp = EntityTemplate.CreateSwarm(
             "rune_wisp", "Rune Wisp", factionId, Biome.Jotunheim,
             cost: 5, new Stats(12, 7, 0, 14));
-        runeWisp.AddTags(["Magical", "Flying", "Ranged"]);
+        runeWisp.AddTags(["Runic", "Flying", "Ranged"]);
         yield return runeWisp;
 
         // Grunt units
         var giantkin = EntityTemplate.CreateGrunt(
-            "giantkin", "Giantkin Warrior", factionId, Biome.Jotunheim,
+            "jotun_kin", "Jotun-Kin Warrior", factionId, Biome.Jotunheim,
             cost: 25, EntityRole.Melee, new Stats(55, 16, 10, 8));
-        giantkin.AddTags(["Giant", "Heavy", "Melee"]);
+        giantkin.AddTags(["Jotun", "Heavy", "Melee"]);
         yield return giantkin;
 
         var runeguard = EntityTemplate.CreateGrunt(
             "runeguard", "Rune Guardian", factionId, Biome.Jotunheim,
             cost: 30, EntityRole.Tank, new Stats(70, 12, 15, 10));
-        runeguard.AddTags(["Construct", "Magical", "Armored", "Melee"]);
+        runeguard.AddTags(["Construct", "Runic", "Armored", "Melee"]);
         yield return runeguard;
 
         var stormcaller = EntityTemplate.CreateGrunt(
             "stormcaller", "Storm Caller", factionId, Biome.Jotunheim,
             cost: 28, EntityRole.Ranged, new Stats(40, 18, 6, 14));
-        stormcaller.AddTags(["Giant", "Magical", "Ranged", "Lightning"]);
+        stormcaller.AddTags(["Jotun", "Runic", "Ranged", "Lightning"]);
         yield return stormcaller;
 
         // Elite unit
         var jotunChampion = EntityTemplate.CreateElite(
             "jotun_champion", "Jotun Champion", factionId, Biome.Jotunheim,
             cost: 80, new Stats(120, 24, 18, 10));
-        jotunChampion.AddTags(["Giant", "Heavy", "Melee", "Commander"]);
+        jotunChampion.AddTags(["Jotun", "Heavy", "Melee", "Commander"]);
         yield return jotunChampion;
 
         // Boss unit
         var titanAwakened = EntityTemplate.CreateBoss(
-            "titan_awakened", "Awakened Titan", factionId, Biome.Jotunheim,
+            "jotun_lord_awakened", "Awakened Jotun-Lord", factionId, Biome.Jotunheim,
             cost: 200, new Stats(200, 35, 25, 12));
-        titanAwakened.AddTags(["Giant", "Massive", "Ancient", "Commander"]);
+        titanAwakened.AddTags(["Jotun", "Massive", "Ancient", "Commander"]);
         yield return titanAwakened;
     }
 

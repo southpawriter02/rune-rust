@@ -20,7 +20,7 @@ public static class ThematicModifierSeeder
                 Name = "Rusted",
                 PrimaryBiome = Biome.TheRoots,
                 Adjective = "corroded",
-                DetailFragment = "shows centuries of oxidation and decay",
+                DetailFragment = "shows centuries of rust and decay",
                 ColorPalette = "rust-brown-grey",
                 AmbientSounds = ["creaking metal", "dripping water", "groaning pipes"],
                 HpMultiplier = 0.7,
@@ -57,7 +57,7 @@ public static class ThematicModifierSeeder
                 Name = "Crystalline",
                 PrimaryBiome = Biome.Alfheim,
                 Adjective = "crystalline",
-                DetailFragment = "defies physics with impossible formations",
+                DetailFragment = "defies natural law with impossible formations",
                 ColorPalette = "prismatic-iridescent",
                 AmbientSounds = ["harmonic resonance", "tinkling crystals", "ethereal whispers"],
                 IsLightSource = true,
@@ -92,7 +92,7 @@ public static class ThematicModifierSeeder
                 Adjective = "blighted",
                 DetailFragment = "shows signs of the Glitch's corruption",
                 ColorPalette = "sickly-green-purple",
-                AmbientSounds = ["static crackle", "warped sounds", "digital screech"],
+                AmbientSounds = ["ghost-light crackle", "warped sounds", "unnatural screech"],
                 DamagePerTurn = 1,
                 DamageType = "corruption"
             }
