@@ -1,0 +1,159 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "Status Effect Display Configuration",
+    "description": "Configuration for status effect icon and tooltip display in combat UI.",
+    "type": "object",
+    "properties": {
+        "icons": {
+            "type": "object",
+            "description": "Icon characters for each effect type.",
+            "properties": {
+                "statModifier": {
+                    "type": "string",
+                    "maxLength": 1,
+                    "description": "Icon for stat modifier effects."
+                },
+                "damageOverTime": {
+                    "type": "string",
+                    "maxLength": 1,
+                    "description": "Icon for damage over time effects."
+                },
+                "healOverTime": {
+                    "type": "string",
+                    "maxLength": 1,
+                    "description": "Icon for healing over time effects."
+                },
+                "actionPrevention": {
+                    "type": "string",
+                    "maxLength": 1,
+                    "description": "Icon for action prevention effects."
+                },
+                "movement": {
+                    "type": "string",
+                    "maxLength": 1,
+                    "description": "Icon for movement effects."
+                },
+                "special": {
+                    "type": "string",
+                    "maxLength": 1,
+                    "description": "Icon for special/custom effects."
+                }
+            },
+            "required": [
+                "statModifier",
+                "damageOverTime",
+                "healOverTime",
+                "actionPrevention",
+                "movement",
+                "special"
+            ]
+        },
+        "colors": {
+            "type": "object",
+            "description": "Console colors for effect categories.",
+            "properties": {
+                "buff": {
+                    "type": "string",
+                    "description": "Color for buff effects."
+                },
+                "debuff": {
+                    "type": "string",
+                    "description": "Color for debuff effects."
+                },
+                "environmental": {
+                    "type": "string",
+                    "description": "Color for environmental effects."
+                },
+                "expiringSoon": {
+                    "type": "string",
+                    "description": "Warning color for effects expiring soon."
+                },
+                "expiringUrgent": {
+                    "type": "string",
+                    "description": "Urgent color for effects about to expire."
+                }
+            },
+            "required": [
+                "buff",
+                "debuff",
+                "environmental",
+                "expiringSoon",
+                "expiringUrgent"
+            ]
+        },
+        "symbols": {
+            "type": "object",
+            "description": "Symbol characters for indicators.",
+            "properties": {
+                "immunityUnicode": {
+                    "type": "string",
+                    "description": "Unicode symbol for immunity indicator."
+                },
+                "immunityAscii": {
+                    "type": "string",
+                    "description": "ASCII fallback for immunity indicator."
+                },
+                "stackIndicator": {
+                    "type": "string",
+                    "maxLength": 1,
+                    "description": "Character between stack count and effect."
+                },
+                "maxStackIndicator": {
+                    "type": "string",
+                    "maxLength": 1,
+                    "description": "Character appended when at max stacks."
+                },
+                "turnSuffix": {
+                    "type": "string",
+                    "maxLength": 1,
+                    "description": "Suffix for turn-based durations."
+                }
+            },
+            "required": [
+                "immunityUnicode",
+                "immunityAscii",
+                "stackIndicator",
+                "maxStackIndicator",
+                "turnSuffix"
+            ]
+        },
+        "display": {
+            "type": "object",
+            "description": "Display behavior settings.",
+            "properties": {
+                "maxEffectsPerRow": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 10,
+                    "description": "Maximum effect icons per row."
+                },
+                "tooltipWidth": {
+                    "type": "integer",
+                    "minimum": 20,
+                    "maximum": 60,
+                    "description": "Tooltip panel width in characters."
+                },
+                "showSourceInTooltip": {
+                    "type": "boolean",
+                    "description": "Whether to show effect source in tooltip."
+                },
+                "showStacksWhenSingle": {
+                    "type": "boolean",
+                    "description": "Whether to show stack count when stacks = 1."
+                }
+            },
+            "required": [
+                "maxEffectsPerRow",
+                "tooltipWidth",
+                "showSourceInTooltip",
+                "showStacksWhenSingle"
+            ]
+        }
+    },
+    "required": [
+        "icons",
+        "colors",
+        "symbols",
+        "display"
+    ]
+}

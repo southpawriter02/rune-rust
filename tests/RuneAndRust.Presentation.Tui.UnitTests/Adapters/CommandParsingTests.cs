@@ -24,7 +24,7 @@ public class CommandParsingTests
     #region Roll Command Tests
 
     [Test]
-    public async Task GetNextCommandAsync_RollCommand_BasicNotation_ParsesCorrectly()
+    public void GetNextCommandAsync_RollCommand_BasicNotation_ParsesCorrectly()
     {
         // We can't easily test async readline, so we test via reflection
         // Instead, test the public behavior through a mock console

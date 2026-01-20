@@ -1,0 +1,31 @@
+{
+    "$schema": "./schemas/status-effect-display.schema.json",
+    "icons": {
+        "statModifier": "+",
+        "damageOverTime": "D",
+        "healOverTime": "H",
+        "actionPrevention": "!",
+        "movement": ">",
+        "special": "*"
+    },
+    "colors": {
+        "buff": "Green",
+        "debuff": "Red",
+        "environmental": "Cyan",
+        "expiringSoon": "Yellow",
+        "expiringUrgent": "DarkRed"
+    },
+    "symbols": {
+        "immunityUnicode": "🛡",
+        "immunityAscii": "[X]",
+        "stackIndicator": "x",
+        "maxStackIndicator": "!",
+        "turnSuffix": "t"
+    },
+    "display": {
+        "maxEffectsPerRow": 6,
+        "tooltipWidth": 36,
+        "showSourceInTooltip": true,
+        "showStacksWhenSingle": false
+    }
+}

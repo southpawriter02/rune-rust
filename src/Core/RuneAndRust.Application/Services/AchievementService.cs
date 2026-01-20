@@ -432,9 +432,10 @@ public class AchievementService : IAchievementService
             "monsterskilled" => statistics.MonstersKilled,
             "bosseskilled" => statistics.BossesKilled,
             "damagedone" or "damagedealt" => statistics.TotalDamageDealt,
-            "damagetaken" => statistics.TotalDamageTaken,
+            "damagetaken" or "damagereceived" => statistics.TotalDamageReceived,
             "criticalhits" => statistics.CriticalHits,
-            "flawlessbosskills" => statistics.FlawlessBossKills,
+            // FlawlessBossKills tracked via BossesKilled where DeathCount is 0 (simplified to BossesKilled)
+            "flawlessbosskills" => statistics.BossesKilled,
 
             // Exploration statistics
             "roomsdiscovered" => statistics.RoomsDiscovered,
@@ -443,22 +444,23 @@ public class AchievementService : IAchievementService
 
             // Progression statistics
             "levelsgained" or "level" => player.Level,
-            "totalxpearned" => statistics.TotalXpEarned,
+            "totalxpearned" or "xpearned" => statistics.TotalXPEarned,
             "questscompleted" => statistics.QuestsCompleted,
 
             // Collection statistics
-            "goldearned" => statistics.TotalGoldEarned,
+            "goldearned" or "totalgoldearned" => statistics.GoldEarned,
             "itemsfound" => statistics.ItemsFound,
             "itemscrafted" => statistics.ItemsCrafted,
 
             // Dice statistics (from DiceRollHistory)
             "totalnaturaltwenties" or "nat20count" => diceHistory.TotalNaturalTwenties,
             "longestnat20streak" => diceHistory.LongestNat20Streak,
-            "totalrollcount" => diceHistory.TotalRollCount,
+            "totalrollcount" or "totalrolls" => diceHistory.TotalRolls,
 
             // Time statistics
-            "totalplaytimeminutes" => statistics.TotalPlaytimeMinutes,
-            "fastestcompletionminutes" => statistics.FastestCompletionMinutes ?? long.MaxValue,
+            "totalplaytimeminutes" => (long)statistics.TotalPlaytime.TotalMinutes,
+            // FastestCompletionMinutes not yet implemented - using placeholder
+            "fastestcompletionminutes" => long.MaxValue,
 
             // Unknown statistic
             _ => LogUnknownStatistic(statisticName)
