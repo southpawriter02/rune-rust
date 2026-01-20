@@ -101,6 +101,13 @@ public class Room : IEntity
     /// </summary>
     private readonly List<LightSource> _lightSources = [];
 
+    // ===== Harvestable Features (v0.11.0b) =====
+
+    /// <summary>
+    /// List of harvestable features in this room.
+    /// </summary>
+    private readonly List<HarvestableFeature> _harvestableFeatures = [];
+
     /// <summary>
     /// Gets a read-only dictionary of all exits from this room.
     /// </summary>
@@ -254,6 +261,23 @@ public class Room : IEntity
     /// Gets whether there are active light sources in this room.
     /// </summary>
     public bool HasActiveLightSources => _lightSources.Any(ls => ls.IsActive);
+
+    // ===== Harvestable Feature Properties (v0.11.0b) =====
+
+    /// <summary>
+    /// Gets a read-only list of harvestable features in this room.
+    /// </summary>
+    public IReadOnlyList<HarvestableFeature> HarvestableFeatures => _harvestableFeatures.AsReadOnly();
+
+    /// <summary>
+    /// Gets a value indicating whether this room has any harvestable features.
+    /// </summary>
+    public bool HasHarvestableFeatures => _harvestableFeatures.Count > 0;
+
+    /// <summary>
+    /// Gets a value indicating whether this room has any non-depleted harvestable features.
+    /// </summary>
+    public bool HasAvailableHarvestableFeatures => _harvestableFeatures.Any(f => !f.IsDepleted);
 
     /// <summary>
     /// Gets the type of this room.
@@ -1062,6 +1086,175 @@ public class Room : IEntity
     public IEnumerable<LightSource> GetActiveLightSources()
     {
         return _lightSources.Where(ls => ls.IsActive);
+    }
+
+    // ===== Harvestable Feature Methods (v0.11.0b) =====
+
+    /// <summary>
+    /// Adds a harvestable feature to this room.
+    /// </summary>
+    /// <param name="feature">The harvestable feature to add.</param>
+    /// <exception cref="ArgumentNullException">Thrown when feature is null.</exception>
+    /// <remarks>
+    /// <para>
+    /// Harvestable features are environmental objects that yield resources
+    /// when gathered by the player (e.g., ore veins, herb patches).
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// var feature = featureProvider.CreateFeatureInstance("iron-ore-vein");
+    /// room.AddHarvestableFeature(feature);
+    /// </code>
+    /// </example>
+    public void AddHarvestableFeature(HarvestableFeature feature)
+    {
+        ArgumentNullException.ThrowIfNull(feature);
+        _harvestableFeatures.Add(feature);
+    }
+
+    /// <summary>
+    /// Removes a harvestable feature from this room.
+    /// </summary>
+    /// <param name="feature">The harvestable feature to remove.</param>
+    /// <returns>True if removed, false if not found.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when feature is null.</exception>
+    public bool RemoveHarvestableFeature(HarvestableFeature feature)
+    {
+        ArgumentNullException.ThrowIfNull(feature);
+        return _harvestableFeatures.Remove(feature);
+    }
+
+    /// <summary>
+    /// Gets all harvestable features in this room.
+    /// </summary>
+    /// <returns>A read-only list of harvestable features.</returns>
+    /// <remarks>
+    /// <para>
+    /// Returns all features regardless of depletion state.
+    /// Use <see cref="GetAvailableHarvestableFeatures"/> to get only
+    /// non-depleted features that can be harvested.
+    /// </para>
+    /// </remarks>
+    public IReadOnlyList<HarvestableFeature> GetHarvestableFeatures()
+    {
+        return _harvestableFeatures.ToList().AsReadOnly();
+    }
+
+    /// <summary>
+    /// Gets all non-depleted harvestable features in this room.
+    /// </summary>
+    /// <returns>A read-only list of available harvestable features.</returns>
+    /// <remarks>
+    /// <para>
+    /// Returns only features where <see cref="HarvestableFeature.IsDepleted"/>
+    /// is false. These are features that still have resources to harvest.
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// var available = room.GetAvailableHarvestableFeatures();
+    /// foreach (var feature in available)
+    /// {
+    ///     Console.WriteLine($"- {feature.Name} ({feature.RemainingQuantity} remaining)");
+    /// }
+    /// </code>
+    /// </example>
+    public IReadOnlyList<HarvestableFeature> GetAvailableHarvestableFeatures()
+    {
+        return _harvestableFeatures
+            .Where(f => !f.IsDepleted)
+            .ToList()
+            .AsReadOnly();
+    }
+
+    /// <summary>
+    /// Gets a harvestable feature by its definition ID.
+    /// </summary>
+    /// <param name="definitionId">The definition ID to search for (case-insensitive).</param>
+    /// <returns>The matching feature, or null if not found.</returns>
+    /// <remarks>
+    /// <para>
+    /// Searches for a feature with a matching <see cref="HarvestableFeature.DefinitionId"/>.
+    /// If multiple features of the same type exist, returns the first one found.
+    /// </para>
+    /// </remarks>
+    public HarvestableFeature? GetHarvestableFeatureByDefinitionId(string definitionId)
+    {
+        if (string.IsNullOrWhiteSpace(definitionId))
+            return null;
+
+        return _harvestableFeatures.FirstOrDefault(f =>
+            f.DefinitionId.Equals(definitionId, StringComparison.OrdinalIgnoreCase));
+    }
+
+    /// <summary>
+    /// Gets a harvestable feature by keyword (name match).
+    /// </summary>
+    /// <param name="keyword">The keyword to search for (case-insensitive).</param>
+    /// <returns>The matching feature, or null if not found.</returns>
+    /// <remarks>
+    /// <para>
+    /// Searches feature names for a match containing the keyword.
+    /// Useful for player commands like "gather ore" where "ore" is the keyword.
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// var feature = room.GetHarvestableFeatureByKeyword("ore");
+    /// if (feature is not null &amp;&amp; !feature.IsDepleted)
+    /// {
+    ///     // Player can gather from this feature
+    /// }
+    /// </code>
+    /// </example>
+    public HarvestableFeature? GetHarvestableFeatureByKeyword(string keyword)
+    {
+        if (string.IsNullOrWhiteSpace(keyword))
+            return null;
+
+        return _harvestableFeatures.FirstOrDefault(f =>
+            f.Name.Contains(keyword, StringComparison.OrdinalIgnoreCase));
+    }
+
+    /// <summary>
+    /// Processes replenishment for all harvestable features in this room.
+    /// </summary>
+    /// <param name="currentTurn">The current game turn.</param>
+    /// <returns>A list of features that were replenished.</returns>
+    /// <remarks>
+    /// <para>
+    /// Checks all harvestable features and calls <see cref="HarvestableFeature.Replenish()"/>
+    /// on any that have reached their replenishment turn.
+    /// </para>
+    /// <para>
+    /// Call this method during turn processing to enable renewable resources.
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// // During turn processing
+    /// var replenished = room.ProcessFeatureReplenishment(gameState.CurrentTurn);
+    /// foreach (var feature in replenished)
+    /// {
+    ///     Console.WriteLine($"{feature.Name} has regrown!");
+    /// }
+    /// </code>
+    /// </example>
+    public IReadOnlyList<HarvestableFeature> ProcessFeatureReplenishment(int currentTurn)
+    {
+        var replenished = new List<HarvestableFeature>();
+
+        foreach (var feature in _harvestableFeatures)
+        {
+            if (feature.ShouldReplenish(currentTurn))
+            {
+                feature.Replenish();
+                replenished.Add(feature);
+            }
+        }
+
+        return replenished.AsReadOnly();
     }
 
     /// <summary>

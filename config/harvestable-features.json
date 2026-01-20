@@ -1,0 +1,95 @@
+{
+  "$schema": "./schemas/harvestable-features.schema.json",
+  "harvestableFeatures": [
+    {
+      "id": "iron-ore-vein",
+      "name": "Iron Ore Vein",
+      "description": "A vein of iron ore embedded in the rock wall",
+      "resourceId": "iron-ore",
+      "minQuantity": 1,
+      "maxQuantity": 5,
+      "difficultyClass": 12,
+      "requiredTool": null,
+      "replenishTurns": 0,
+      "icon": "icons/features/ore_vein.png"
+    },
+    {
+      "id": "copper-ore-vein",
+      "name": "Copper Ore Vein",
+      "description": "A soft copper vein, easy to mine",
+      "resourceId": "copper-ore",
+      "minQuantity": 2,
+      "maxQuantity": 6,
+      "difficultyClass": 10,
+      "requiredTool": null,
+      "replenishTurns": 0
+    },
+    {
+      "id": "gold-ore-vein",
+      "name": "Gold Ore Vein",
+      "description": "A precious gold vein gleaming in the dark",
+      "resourceId": "gold-ore",
+      "minQuantity": 1,
+      "maxQuantity": 3,
+      "difficultyClass": 15,
+      "requiredTool": "pickaxe",
+      "replenishTurns": 0
+    },
+    {
+      "id": "herb-patch",
+      "name": "Herb Patch",
+      "description": "A patch of healing herbs growing in the shade",
+      "resourceId": "healing-herb",
+      "minQuantity": 2,
+      "maxQuantity": 6,
+      "difficultyClass": 10,
+      "requiredTool": null,
+      "replenishTurns": 100,
+      "icon": "icons/features/herb_patch.png"
+    },
+    {
+      "id": "mana-leaf-cluster",
+      "name": "Mana Leaf Cluster",
+      "description": "Glowing leaves infused with arcane power",
+      "resourceId": "mana-leaf",
+      "minQuantity": 1,
+      "maxQuantity": 4,
+      "difficultyClass": 13,
+      "requiredTool": null,
+      "replenishTurns": 150
+    },
+    {
+      "id": "leather-source",
+      "name": "Fallen Creature",
+      "description": "A creature's remains that can be harvested for leather",
+      "resourceId": "leather",
+      "minQuantity": 1,
+      "maxQuantity": 3,
+      "difficultyClass": 11,
+      "requiredTool": "skinning-knife",
+      "replenishTurns": 0
+    },
+    {
+      "id": "gem-cluster",
+      "name": "Gem Cluster",
+      "description": "Sparkling gems embedded in the rock",
+      "resourceId": "ruby",
+      "minQuantity": 1,
+      "maxQuantity": 2,
+      "difficultyClass": 16,
+      "requiredTool": "pickaxe",
+      "replenishTurns": 0
+    },
+    {
+      "id": "fallen-tree",
+      "name": "Fallen Tree",
+      "description": "A fallen oak tree that can be harvested for wood",
+      "resourceId": "oak-wood",
+      "minQuantity": 3,
+      "maxQuantity": 8,
+      "difficultyClass": 10,
+      "requiredTool": "axe",
+      "replenishTurns": 0
+    }
+  ]
+}
