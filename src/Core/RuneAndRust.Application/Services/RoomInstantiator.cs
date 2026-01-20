@@ -100,9 +100,11 @@ public class RoomInstantiator : IRoomInstantiator
                 description = _descriptorService.GenerateRoomDescription(
                     baseTemplate, modifier, roomTags, random, roomFunction);
 
-                // Create room
+                // Create room (using legacy Position for backward compatibility)
+#pragma warning disable CS0618 // Intentional use of obsolete Position constructor
                 var position = new Position(node.Coordinate.X, node.Coordinate.Y);
                 var room = new Room(name, description, position, biome);
+#pragma warning restore CS0618
 
                 // Propagate tags
                 room.AddTags(template.Tags);
@@ -131,8 +133,10 @@ public class RoomInstantiator : IRoomInstantiator
         description = template.ProcessDescription(placeholders);
 
         // Create room at node position (convert 3D to 2D for now)
+#pragma warning disable CS0618 // Intentional use of obsolete Position constructor
         var legacyPosition = new Position(node.Coordinate.X, node.Coordinate.Y);
         var legacyRoom = new Room(name, description, legacyPosition, biome);
+#pragma warning restore CS0618
 
         // Propagate tags from template and node
         legacyRoom.AddTags(template.Tags);

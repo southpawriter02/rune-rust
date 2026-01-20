@@ -116,15 +116,13 @@ public static class DependencyInjection
         });
 
         // Recipe scroll provider (v0.11.1c) - loads recipe scroll configurations from JSON config
-        // Binds from the "RecipeScrolls" section of appsettings or separate config file
-        services.Configure<RecipeScrollSettings>(
-            configuration.GetSection("RecipeScrolls"));
+        // Note: Uses default configuration; override via RecipeScrollProvider constructor if needed
+        services.AddSingleton<RecipeScrollSettings>(new RecipeScrollSettings());
         services.AddSingleton<IRecipeScrollProvider, RecipeScrollProvider>();
 
         // Crafting station provider (v0.11.2a) - loads station definitions from config
-        // Binds from the "CraftingStations" section of appsettings or separate config file
-        services.Configure<CraftingStationSettings>(
-            configuration.GetSection("CraftingStations"));
+        // Note: Uses default configuration; override via CraftingStationProvider constructor if needed
+        services.AddSingleton<CraftingStationSettings>(new CraftingStationSettings());
         services.AddSingleton<ICraftingStationProvider, CraftingStationProvider>();
 
         // Quality tier provider (v0.11.2c) - loads quality tier definitions from JSON config
@@ -136,9 +134,8 @@ public static class DependencyInjection
         });
 
         // Achievement provider (v0.12.1a) - loads achievement definitions from JSON config
-        // Binds from the "Achievements" section of appsettings or separate config file
-        services.Configure<AchievementOptions>(
-            configuration.GetSection(AchievementOptions.SectionName));
+        // Note: Uses default configuration; override via AchievementProvider constructor if needed
+        services.AddSingleton<AchievementOptions>(new AchievementOptions());
         services.AddSingleton<IAchievementProvider, AchievementProvider>();
 
         return services;

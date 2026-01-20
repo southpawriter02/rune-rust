@@ -257,8 +257,8 @@ public class LootServiceScrollTests
             _mockEventLogger.Object,
             deterministicRandom,
             _mockScrollProvider.Object,
-            recipeProvider: null,
-            recipeService: null);
+            null,  // recipeProvider
+            null); // recipeService
 
         var context = LootContext.Chest(5);
 
@@ -426,20 +426,14 @@ public class LootServiceScrollTests
     {
         private readonly double _doubleValue;
         private readonly int _intValue;
-        private bool _doubleReturned;
 
         public DeterministicRandom(double doubleValue, int intValue = 0)
         {
             _doubleValue = doubleValue;
             _intValue = intValue;
-            _doubleReturned = false;
         }
 
-        public override double NextDouble()
-        {
-            _doubleReturned = true;
-            return _doubleValue;
-        }
+        public override double NextDouble() => _doubleValue;
 
         public override int Next(int maxValue)
         {

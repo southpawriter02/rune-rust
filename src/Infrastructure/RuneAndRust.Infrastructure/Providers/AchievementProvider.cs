@@ -486,7 +486,7 @@ public sealed class AchievementProvider : IAchievementProvider
         }
 
         // Check for achievements without conditions
-        var noConditions = _achievements
+        var noConditions = _achievements!
             .Where(a => a.Conditions.Count == 0)
             .ToList();
 
@@ -498,7 +498,7 @@ public sealed class AchievementProvider : IAchievementProvider
         }
 
         // Log category distribution
-        var categoryStats = _achievements
+        var categoryStats = _achievements!
             .GroupBy(a => a.Category)
             .Select(g => $"{g.Key}: {g.Count()}")
             .ToList();
@@ -508,7 +508,7 @@ public sealed class AchievementProvider : IAchievementProvider
             string.Join(", ", categoryStats));
 
         // Log tier distribution
-        var tierStats = _achievements
+        var tierStats = _achievements!
             .GroupBy(a => a.Tier)
             .Select(g => $"{g.Key}: {g.Count()}")
             .ToList();

@@ -424,12 +424,8 @@ public class StatisticsView
         table.AddRow("[cyan]Total Playtime[/]", StatisticsFormatter.FormatDuration(stats.TotalPlaytime));
         table.AddRow("[cyan]Sessions[/]", StatisticsFormatter.FormatNumber(stats.SessionCount));
         table.AddRow("[cyan]Average Session[/]", metrics.AverageSessionLengthDisplay);
-        table.AddRow("[cyan]First Played[/]", stats.FirstPlayed.HasValue
-            ? StatisticsFormatter.FormatDate(stats.FirstPlayed.Value)
-            : "—");
-        table.AddRow("[cyan]Last Played[/]", stats.LastPlayed.HasValue
-            ? StatisticsFormatter.FormatDate(stats.LastPlayed.Value)
-            : "—");
+        table.AddRow("[cyan]First Played[/]", StatisticsFormatter.FormatDate(stats.FirstPlayed));
+        table.AddRow("[cyan]Last Played[/]", StatisticsFormatter.FormatDate(stats.LastPlayed));
 
         AnsiConsole.Write(table);
         AnsiConsole.WriteLine();

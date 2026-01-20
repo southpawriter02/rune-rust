@@ -34,53 +34,56 @@ public class GameSessionService
     /// </summary>
     private readonly CombatService _combatService;
     private readonly IExaminationService? _examinationService;
-    private readonly SkillCheckService _skillCheckService;
+    private readonly RuneAndRust.Domain.Services.SkillCheckService _skillCheckService;
     private readonly IDungeonGenerator? _dungeonGenerator;
 
+    // Optional service dependencies - intended to be null unless explicitly provided via DI
+#pragma warning disable CS0649 // Fields are intentionally unassigned - they're optional DI dependencies
     /// <summary>
     /// Service for applying item effects.
     /// </summary>
-    private readonly ItemEffectService _itemEffectService;
+    private readonly ItemEffectService? _itemEffectService;
 
     /// <summary>
     /// Service for managing abilities.
     /// </summary>
-    private readonly AbilityService _abilityService;
+    private readonly AbilityService? _abilityService;
 
     /// <summary>
     /// Service for managing resources.
     /// </summary>
-    private readonly ResourceService _resourceService;
+    private readonly ResourceService? _resourceService;
 
     /// <summary>
     /// Dice service for combat rolls.
     /// </summary>
-    private readonly IDiceService _diceService;
+    private readonly IDiceService? _diceService;
 
     /// <summary>
     /// Service for managing equipment operations.
     /// </summary>
-    private readonly EquipmentService _equipmentService;
+    private readonly EquipmentService? _equipmentService;
 
     /// <summary>
     /// Service for managing experience points (v0.0.8a).
     /// </summary>
-    private readonly ExperienceService _experienceService;
+    private readonly ExperienceService? _experienceService;
 
     /// <summary>
     /// Service for managing level-up progression (v0.0.8b).
     /// </summary>
-    private readonly ProgressionService _progressionService;
+    private readonly ProgressionService? _progressionService;
 
     /// <summary>
     /// Service for generating and collecting loot (v0.0.9d).
     /// </summary>
-    private readonly ILootService _lootService;
+    private readonly ILootService? _lootService;
 
     /// <summary>
     /// Event logger for comprehensive game event tracking.
     /// </summary>
     private readonly IGameEventLogger? _eventLogger;
+#pragma warning restore CS0649
 
     /// <summary>
     /// The currently active game session, or null if no session is active.
@@ -98,20 +101,21 @@ public class GameSessionService
     public GameStateDto? CurrentState => _currentSession?.ToDto();
 
     /// <summary>
+    /// Gets the current player entity, or null if no session is active.
+    /// </summary>
+    /// <remarks>
+    /// Use this for services that need the actual domain entity rather than a DTO.
+    /// Added in v0.12.0c for StatisticsService integration.
+    /// </remarks>
+    public Player? GetCurrentPlayer() => _currentSession?.Player;
+
+    /// <summary>
     /// Creates a new instance of the GameSessionService.
     /// </summary>
     /// <param name="repository">The repository for persisting game sessions.</param>
     /// <param name="logger">The logger for service diagnostics.</param>
-    /// <param name="itemEffectService">The service for applying item effects.</param>
-    /// <param name="abilityService">The service for managing abilities.</param>
-    /// <param name="resourceService">The service for managing resources.</param>
-    /// <param name="diceService">The dice rolling service for combat.</param>
-    /// <param name="equipmentService">The service for managing equipment.</param>
-    /// <param name="experienceService">The service for managing experience points.</param>
-    /// <param name="progressionService">The service for managing level-up progression.</param>
-    /// <param name="lootService">The service for generating and collecting loot.</param>
-    /// <param name="combatLogger">Optional logger for combat service diagnostics.</param>
-    /// <param name="eventLogger">Optional event logger for comprehensive game event tracking.</param>
+    /// <param name="examinationService">Optional examination service for advanced object inspection.</param>
+    /// <param name="dungeonGenerator">Optional dungeon generator for procedural level creation.</param>
     /// <exception cref="ArgumentNullException">Thrown when required parameters are null.</exception>
     public GameSessionService(
         IGameRepository repository,
@@ -123,7 +127,7 @@ public class GameSessionService
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _combatService = new CombatService();
         _examinationService = examinationService;
-        _skillCheckService = new SkillCheckService();
+        _skillCheckService = new RuneAndRust.Domain.Services.SkillCheckService();
         _dungeonGenerator = dungeonGenerator;
     }
 
@@ -484,7 +488,7 @@ public class GameSessionService
             monster.Stats.Defense);
 
         // Use dice-based combat
-        var result = _combatService.ResolveCombatRound(_currentSession.Player, monster, _diceService);
+        var result = _combatService.ResolveCombatRound(_currentSession.Player, monster, _diceService!);
         var description = _combatService.GetCombatDescription(
             result,
             _currentSession.Player.Name,
@@ -514,11 +518,11 @@ public class GameSessionService
             _logger.LogInformation("Monster defeated: {MonsterName}", monster.Name);
 
             // Award experience points (v0.0.8a)
-            var xpResult = _experienceService.AwardExperienceFromMonster(_currentSession.Player, monster);
+            var xpResult = _experienceService!.AwardExperienceFromMonster(_currentSession.Player, monster);
             if (xpResult.DidGainExperience)
             {
                 // Get terminology from progression config (v0.0.8c)
-                var progression = _progressionService.Progression;
+                var progression = _progressionService!.Progression;
 
                 experienceGainDto = ExperienceGainDto.FromResult(
                     xpResult,
@@ -533,7 +537,7 @@ public class GameSessionService
             }
 
             // Generate and drop loot (v0.0.9d)
-            var loot = _lootService.GenerateLoot(monster);
+            var loot = _lootService!.GenerateLoot(monster);
             if (!loot.IsEmpty)
             {
                 currentRoom.AddLoot(loot);
@@ -567,18 +571,18 @@ public class GameSessionService
 
         var player = _currentSession.Player;
         var oldStats = player.Stats;
-        var progression = _progressionService.Progression;
+        var progression = _progressionService!.Progression;
 
         // Get unlocked abilities callback using ability service
         IReadOnlyList<string> GetAbilitiesAtLevel(int level)
         {
             if (string.IsNullOrEmpty(player.ClassId)) return [];
 
-            var abilities = _abilityService.GetUnlockedAbilitiesAtLevel(player.ClassId, level);
+            var abilities = _abilityService!.GetUnlockedAbilitiesAtLevel(player.ClassId, level);
             return abilities.Select(a => a.Name).ToList();
         }
 
-        var levelUpResult = _progressionService.CheckAndApplyLevelUp(player, null, GetAbilitiesAtLevel);
+        var levelUpResult = _progressionService!.CheckAndApplyLevelUp(player, null, GetAbilitiesAtLevel);
 
         if (!levelUpResult.DidLevelUp)
         {
@@ -692,7 +696,7 @@ public class GameSessionService
             return (false, $"You cannot use the {item.Name}.");
         }
 
-        var effectResult = _itemEffectService.ApplyEffect(item, _currentSession.Player);
+        var effectResult = _itemEffectService!.ApplyEffect(item, _currentSession.Player);
 
         if (effectResult.Success)
         {
@@ -900,7 +904,7 @@ public class GameSessionService
             return [];
         }
 
-        return _abilityService.GetPlayerAbilities(_currentSession.Player);
+        return _abilityService!.GetPlayerAbilities(_currentSession.Player);
     }
 
     /// <summary>
@@ -919,7 +923,7 @@ public class GameSessionService
         }
 
         // Find the ability by name
-        var definition = _abilityService.FindAbilityByName(_currentSession.Player, abilityName);
+        var definition = _abilityService!.FindAbilityByName(_currentSession.Player, abilityName);
         if (definition == null)
         {
             _logger.LogDebug("Ability not found: {AbilityName}", abilityName);
@@ -966,7 +970,7 @@ public class GameSessionService
         else if (target != null && target.IsAlive)
         {
             // Use full dice-based combat round for monster counterattack
-            var combatResult = _combatService.ResolveCombatRound(_currentSession.Player, target, _diceService);
+            var combatResult = _combatService.ResolveCombatRound(_currentSession.Player, target, _diceService!);
 
             // For ability counterattack, we only care about monster's counterattack portion
             if (combatResult.MonsterCounterAttack != null)
@@ -1038,17 +1042,18 @@ public class GameSessionService
         var inCombat = IsInCombat();
 
         // Advance turn counter
-        var newTurnCount = _currentSession.AdvanceTurn();
+        _currentSession.AdvanceTurn();
+        var newTurnCount = _currentSession.TurnCount;
         _logger.LogDebug("Turn advanced to {TurnCount}", newTurnCount);
 
         // Process resource regeneration/decay
-        var resourceResult = _resourceService.ProcessTurnEnd(player, inCombat);
+        var resourceResult = _resourceService!.ProcessTurnEnd(player, inCombat);
         var resourceChanges = resourceResult.Changes
             .Select(c => MapResourceChange(c))
             .ToList();
 
         // Process ability cooldowns
-        var cooldownChanges = _abilityService.ProcessTurnEnd(player);
+        var cooldownChanges = _abilityService!.ProcessTurnEnd(player);
         var abilitiesNowReady = cooldownChanges
             .Where(c => c.IsNowReady)
             .Select(c => c.AbilityName)
@@ -1063,7 +1068,7 @@ public class GameSessionService
 
     private TurnResourceChangeDto MapResourceChange(ResourceChange change)
     {
-        var resourceType = _resourceService.GetResourceType(change.ResourceTypeId);
+        var resourceType = _resourceService!.GetResourceType(change.ResourceTypeId);
         return new TurnResourceChangeDto(
             resourceType?.DisplayName ?? change.ResourceTypeId,
             resourceType?.Abbreviation ?? "??",
@@ -1091,7 +1096,7 @@ public class GameSessionService
             return new EquipResultDto(false, "No active game session.");
         }
 
-        var result = _equipmentService.TryEquipByName(_currentSession.Player, itemName);
+        var result = _equipmentService!.TryEquipByName(_currentSession.Player, itemName);
         return EquipResultDto.FromResult(result);
     }
 
@@ -1110,7 +1115,7 @@ public class GameSessionService
             return new EquipResultDto(false, "No active game session.");
         }
 
-        var result = _equipmentService.TryUnequip(_currentSession.Player, slot);
+        var result = _equipmentService!.TryUnequip(_currentSession.Player, slot);
         return EquipResultDto.FromResult(result);
     }
 

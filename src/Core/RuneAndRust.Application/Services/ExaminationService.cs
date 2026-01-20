@@ -2,7 +2,7 @@ using RuneAndRust.Application.DTOs;
 using RuneAndRust.Application.Interfaces;
 using RuneAndRust.Domain.Entities;
 using RuneAndRust.Domain.Enums;
-using RuneAndRust.Domain.Services;
+using DomainServices = RuneAndRust.Domain.Services;
 
 namespace RuneAndRust.Application.Services;
 
@@ -14,20 +14,20 @@ public class ExaminationService : IExaminationService
     private readonly IExaminationRepository _examinationRepository;
     private readonly IPerceptionRepository _perceptionRepository;
     private readonly IFloraFaunaRepository _floraFaunaRepository;
-    private readonly SkillCheckService _skillCheckService;
+    private readonly DomainServices.SkillCheckService _skillCheckService;
     private readonly Random _random;
 
     public ExaminationService(
         IExaminationRepository examinationRepository,
         IPerceptionRepository perceptionRepository,
         IFloraFaunaRepository floraFaunaRepository,
-        SkillCheckService? skillCheckService = null,
+        DomainServices.SkillCheckService? skillCheckService = null,
         Random? random = null)
     {
         _examinationRepository = examinationRepository ?? throw new ArgumentNullException(nameof(examinationRepository));
         _perceptionRepository = perceptionRepository ?? throw new ArgumentNullException(nameof(perceptionRepository));
         _floraFaunaRepository = floraFaunaRepository ?? throw new ArgumentNullException(nameof(floraFaunaRepository));
-        _skillCheckService = skillCheckService ?? new SkillCheckService();
+        _skillCheckService = skillCheckService ?? new DomainServices.SkillCheckService();
         _random = random ?? new Random();
     }
 
