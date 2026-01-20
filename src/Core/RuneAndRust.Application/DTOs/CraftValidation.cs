@@ -130,6 +130,21 @@ public sealed record CraftValidation
     /// </remarks>
     public IReadOnlyList<MissingIngredient>? MissingIngredients { get; init; }
 
+    /// <summary>
+    /// Gets the crafting station where crafting will occur (v0.11.2b).
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Null when validation failed before station lookup, or when station
+    /// validation is not applicable to the validation failure type.
+    /// </para>
+    /// <para>
+    /// Contains the station definition for successful validations and
+    /// resource-based failures where the station was found.
+    /// </para>
+    /// </remarks>
+    public CraftingStationDefinition? Station { get; init; }
+
     // ═══════════════════════════════════════════════════════════════
     // COMPUTED PROPERTIES
     // ═══════════════════════════════════════════════════════════════
@@ -143,6 +158,15 @@ public sealed record CraftValidation
     /// </remarks>
     public bool IsMissingIngredients => MissingIngredients is { Count: > 0 };
 
+    /// <summary>
+    /// Gets whether a valid crafting station was found for the validation.
+    /// </summary>
+    /// <remarks>
+    /// True when <see cref="Station"/> is not null, indicating the player
+    /// is at a valid crafting station that supports the recipe category.
+    /// </remarks>
+    public bool HasStation => Station is not null;
+
     // ═══════════════════════════════════════════════════════════════
     // FACTORY METHODS
     // ═══════════════════════════════════════════════════════════════
@@ -154,11 +178,11 @@ public sealed record CraftValidation
     /// <returns>A success validation containing the recipe definition.</returns>
     /// <remarks>
     /// Use this factory when all validation checks pass and the player
-    /// can proceed with crafting.
+    /// can proceed with crafting. Station is not included in this overload.
     /// </remarks>
     /// <example>
     /// <code>
-    /// // After all checks pass
+    /// // After all checks pass (no station context)
     /// return CraftValidation.Success(recipe);
     /// </code>
     /// </example>
@@ -168,7 +192,34 @@ public sealed record CraftValidation
             IsValid = true,
             Recipe = recipe,
             FailureReason = null,
-            MissingIngredients = null
+            MissingIngredients = null,
+            Station = null
+        };
+
+    /// <summary>
+    /// Creates a successful validation result with station context.
+    /// </summary>
+    /// <param name="recipe">The recipe that can be crafted.</param>
+    /// <param name="station">The crafting station where crafting will occur.</param>
+    /// <returns>A success validation containing the recipe definition and station.</returns>
+    /// <remarks>
+    /// Use this factory when all validation checks pass (including station validation)
+    /// and the player can proceed with crafting.
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// // After all checks pass including station
+    /// return CraftValidation.Success(recipe, station);
+    /// </code>
+    /// </example>
+    public static CraftValidation Success(RecipeDefinition recipe, CraftingStationDefinition station)
+        => new()
+        {
+            IsValid = true,
+            Recipe = recipe,
+            FailureReason = null,
+            MissingIngredients = null,
+            Station = station
         };
 
     /// <summary>
@@ -262,6 +313,49 @@ public sealed record CraftValidation
             IsValid = false,
             Recipe = recipe,
             FailureReason = "Insufficient resources.",
-            MissingIngredients = missing
+            MissingIngredients = missing,
+            Station = null
+        };
+
+    /// <summary>
+    /// Creates a validation result indicating insufficient resources with station context.
+    /// </summary>
+    /// <param name="recipe">The recipe that requires more resources.</param>
+    /// <param name="missing">The list of missing ingredients.</param>
+    /// <param name="station">The crafting station where crafting was attempted.</param>
+    /// <returns>A validation result with the list of missing ingredients and station.</returns>
+    /// <remarks>
+    /// <para>
+    /// Use this factory when the player knows the recipe and is at the
+    /// correct station, but doesn't have enough of one or more ingredients.
+    /// Including the station allows callers to display station-specific information.
+    /// </para>
+    /// <para>
+    /// The missing ingredients list contains only those resources that are
+    /// insufficient or completely absent. Each entry shows how many MORE
+    /// of that resource are needed.
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// var missing = new List&lt;MissingIngredient&gt;
+    /// {
+    ///     new("iron-ore", "Iron Ore", 3),  // Need 3 more
+    ///     new("leather", "Leather", 1)      // Need 1 more
+    /// };
+    /// return CraftValidation.InsufficientResources(recipe, missing, station);
+    /// </code>
+    /// </example>
+    public static CraftValidation InsufficientResources(
+        RecipeDefinition recipe,
+        IReadOnlyList<MissingIngredient> missing,
+        CraftingStationDefinition station)
+        => new()
+        {
+            IsValid = false,
+            Recipe = recipe,
+            FailureReason = "Insufficient resources.",
+            MissingIngredients = missing,
+            Station = station
         };
 }

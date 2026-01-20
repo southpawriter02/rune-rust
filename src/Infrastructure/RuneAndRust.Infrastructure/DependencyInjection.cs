@@ -298,6 +298,12 @@ public static class DependencyInjection
         // Note: IRecipeScrollProvider is registered in AddInfrastructure as it loads from config
         services.AddScoped<IItemUseHandler, Application.Handlers.RecipeScrollUseHandler>();
 
+        // Crafting service (v0.11.2b)
+        // Handles crafting mechanics: validation, dice checks, resource consumption, item creation
+        // Dependencies: IRecipeProvider, IRecipeService, ICraftingStationProvider, IResourceProvider,
+        //               IDiceService, IGameEventLogger
+        services.AddScoped<ICraftingService, CraftingService>();
+
         return services;
     }
 }
