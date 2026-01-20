@@ -1,0 +1,45 @@
+{
+  "$schema": "./schemas/crafting-stations.schema.json",
+  "stations": [
+    {
+      "id": "anvil",
+      "name": "Anvil",
+      "description": "A sturdy iron anvil, its surface marked by countless hammer strikes. Perfect for forging weapons and tools.",
+      "supportedCategories": ["Weapon", "Tool", "Material"],
+      "craftingSkill": "smithing",
+      "icon": "icons/stations/anvil.png"
+    },
+    {
+      "id": "workbench",
+      "name": "Workbench",
+      "description": "A well-worn wooden workbench equipped with various tools for leatherworking and armor crafting.",
+      "supportedCategories": ["Armor", "Accessory"],
+      "craftingSkill": "leatherworking",
+      "icon": "icons/stations/workbench.png"
+    },
+    {
+      "id": "alchemy-table",
+      "name": "Alchemy Table",
+      "description": "A cluttered table covered with vials, burners, and mysterious substances. The air smells of strange chemicals.",
+      "supportedCategories": ["Potion", "Consumable"],
+      "craftingSkill": "alchemy",
+      "icon": "icons/stations/alchemy-table.png"
+    },
+    {
+      "id": "enchanting-altar",
+      "name": "Enchanting Altar",
+      "description": "An ancient stone altar inscribed with glowing runes. Magical energies pulse from its surface.",
+      "supportedCategories": ["Accessory", "Weapon", "Armor"],
+      "craftingSkill": "enchanting",
+      "icon": "icons/stations/enchanting-altar.png"
+    },
+    {
+      "id": "cooking-fire",
+      "name": "Cooking Fire",
+      "description": "A crackling fire pit with a sturdy iron grate. Perfect for preparing hearty meals.",
+      "supportedCategories": ["Consumable"],
+      "craftingSkill": "cooking",
+      "icon": "icons/stations/cooking-fire.png"
+    }
+  ]
+}

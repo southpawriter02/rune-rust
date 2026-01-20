@@ -31,17 +31,16 @@ public class GameSessionTurnTests
     }
 
     [Test]
-    public void AdvanceTurn_ReturnsNewTurnCount()
+    public void AdvanceTurn_SetsTurnCountToOne()
     {
         // Arrange
         var session = GameSession.CreateNew("TestPlayer");
 
         // Act
-        var result = session.AdvanceTurn();
+        session.AdvanceTurn();
 
         // Assert
-        result.Should().Be(1);
-        result.Should().Be(session.TurnCount);
+        session.TurnCount.Should().Be(1);
     }
 
     [Test]

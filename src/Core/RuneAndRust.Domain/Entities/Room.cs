@@ -116,6 +116,13 @@ public class Room : IEntity
     /// </summary>
     private readonly List<HarvestableFeature> _harvestableFeatures = [];
 
+    // ===== Crafting Stations (v0.11.2a) =====
+
+    /// <summary>
+    /// List of crafting stations in this room.
+    /// </summary>
+    private readonly List<CraftingStation> _craftingStations = [];
+
     /// <summary>
     /// Gets a read-only dictionary of all exits from this room.
     /// </summary>
@@ -292,6 +299,23 @@ public class Room : IEntity
     /// Gets a value indicating whether this room has any non-depleted harvestable features.
     /// </summary>
     public bool HasAvailableHarvestableFeatures => _harvestableFeatures.Any(f => !f.IsDepleted);
+
+    // ===== Crafting Station Properties (v0.11.2a) =====
+
+    /// <summary>
+    /// Gets a read-only list of crafting stations in this room.
+    /// </summary>
+    public IReadOnlyList<CraftingStation> CraftingStations => _craftingStations.AsReadOnly();
+
+    /// <summary>
+    /// Gets a value indicating whether this room has any crafting stations.
+    /// </summary>
+    public bool HasCraftingStations => _craftingStations.Count > 0;
+
+    /// <summary>
+    /// Gets a value indicating whether this room has any available crafting stations.
+    /// </summary>
+    public bool HasAvailableCraftingStations => _craftingStations.Any(s => s.IsAvailable);
 
     /// <summary>
     /// Gets the type of this room.
@@ -1336,6 +1360,141 @@ public class Room : IEntity
         }
 
         return replenished.AsReadOnly();
+    }
+
+    // ===== Crafting Station Methods (v0.11.2a) =====
+
+    /// <summary>
+    /// Adds a crafting station to this room.
+    /// </summary>
+    /// <param name="station">The crafting station to add.</param>
+    /// <exception cref="ArgumentNullException">Thrown when station is null.</exception>
+    /// <remarks>
+    /// <para>
+    /// Multiple stations of different types can be added to a room.
+    /// Duplicate stations of the same type are allowed (e.g., two anvils).
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// var station = stationProvider.GetStation("anvil").CreateInstance();
+    /// room.AddCraftingStation(station);
+    /// </code>
+    /// </example>
+    public void AddCraftingStation(CraftingStation station)
+    {
+        ArgumentNullException.ThrowIfNull(station);
+        _craftingStations.Add(station);
+    }
+
+    /// <summary>
+    /// Removes a crafting station from this room.
+    /// </summary>
+    /// <param name="station">The crafting station to remove.</param>
+    /// <returns>True if removed, false if not found.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when station is null.</exception>
+    public bool RemoveCraftingStation(CraftingStation station)
+    {
+        ArgumentNullException.ThrowIfNull(station);
+        return _craftingStations.Remove(station);
+    }
+
+    /// <summary>
+    /// Gets all crafting stations in this room.
+    /// </summary>
+    /// <returns>A read-only list of crafting stations.</returns>
+    /// <remarks>
+    /// Returns all stations regardless of availability state.
+    /// Use <see cref="GetAvailableCraftingStations"/> to get only
+    /// stations that are not currently in use.
+    /// </remarks>
+    public IReadOnlyList<CraftingStation> GetCraftingStations()
+    {
+        return _craftingStations.ToList().AsReadOnly();
+    }
+
+    /// <summary>
+    /// Gets all available (not in use) crafting stations in this room.
+    /// </summary>
+    /// <returns>A read-only list of available crafting stations.</returns>
+    /// <remarks>
+    /// Returns only stations where <see cref="CraftingStation.IsAvailable"/>
+    /// is true. These are stations that can be used for crafting.
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// var available = room.GetAvailableCraftingStations();
+    /// foreach (var station in available)
+    /// {
+    ///     Console.WriteLine($"- {station.Name} is ready for use");
+    /// }
+    /// </code>
+    /// </example>
+    public IReadOnlyList<CraftingStation> GetAvailableCraftingStations()
+    {
+        return _craftingStations
+            .Where(s => s.IsAvailable)
+            .ToList()
+            .AsReadOnly();
+    }
+
+    /// <summary>
+    /// Gets a crafting station by definition ID.
+    /// </summary>
+    /// <param name="definitionId">The definition ID to search for (case-insensitive).</param>
+    /// <returns>The matching station, or null if not found.</returns>
+    /// <remarks>
+    /// Searches for a station with a matching <see cref="CraftingStation.DefinitionId"/>.
+    /// If multiple stations of the same type exist, returns the first one found.
+    /// </remarks>
+    public CraftingStation? GetCraftingStationByDefinitionId(string definitionId)
+    {
+        if (string.IsNullOrWhiteSpace(definitionId))
+            return null;
+
+        return _craftingStations.FirstOrDefault(s =>
+            s.DefinitionId.Equals(definitionId, StringComparison.OrdinalIgnoreCase));
+    }
+
+    /// <summary>
+    /// Gets a crafting station by name or keyword.
+    /// </summary>
+    /// <param name="keyword">The keyword to search for (case-insensitive).</param>
+    /// <returns>The matching station, or null if not found.</returns>
+    /// <remarks>
+    /// Searches station names for a case-insensitive match or partial match.
+    /// Useful for player commands like "use anvil" where "anvil" is the keyword.
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// var station = room.GetCraftingStationByKeyword("anvil");
+    /// if (station is not null &amp;&amp; station.IsAvailable)
+    /// {
+    ///     // Player can use this station
+    /// }
+    /// </code>
+    /// </example>
+    public CraftingStation? GetCraftingStationByKeyword(string keyword)
+    {
+        if (string.IsNullOrWhiteSpace(keyword))
+            return null;
+
+        return _craftingStations.FirstOrDefault(s =>
+            s.Name.Contains(keyword, StringComparison.OrdinalIgnoreCase) ||
+            s.DefinitionId.Equals(keyword, StringComparison.OrdinalIgnoreCase));
+    }
+
+    /// <summary>
+    /// Gets the first available crafting station in this room.
+    /// </summary>
+    /// <returns>An available crafting station, or null if none available.</returns>
+    /// <remarks>
+    /// Convenience method for getting any available station when the specific
+    /// type doesn't matter. Returns the first station where IsAvailable is true.
+    /// </remarks>
+    public CraftingStation? GetFirstAvailableCraftingStation()
+    {
+        return _craftingStations.FirstOrDefault(s => s.IsAvailable);
     }
 
     /// <summary>

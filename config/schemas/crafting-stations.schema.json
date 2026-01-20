@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "crafting-stations.schema.json",
+  "title": "Crafting Station Configuration",
+  "description": "Schema for crafting station definitions in RuneAndRust. Defines station types, their supported recipe categories, and associated crafting skills.",
+  "type": "object",
+  "required": ["stations"],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Reference to this schema file for validation"
+    },
+    "stations": {
+      "type": "array",
+      "description": "Array of crafting station definitions",
+      "items": {
+        "$ref": "#/$defs/stationConfig"
+      },
+      "minItems": 1
+    }
+  },
+  "$defs": {
+    "stationConfig": {
+      "type": "object",
+      "description": "Configuration for a single crafting station type",
+      "required": ["id", "name", "description", "supportedCategories", "craftingSkill"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique station type identifier. Used for lookups and room spawning. Should use kebab-case.",
+          "pattern": "^[a-z][a-z0-9-]*$",
+          "minLength": 2,
+          "maxLength": 64,
+          "examples": ["anvil", "workbench", "alchemy-table", "enchanting-altar", "cooking-fire"]
+        },
+        "name": {
+          "type": "string",
+          "description": "Display name of the station shown in UI and room descriptions",
+          "minLength": 1,
+          "maxLength": 100,
+          "examples": ["Anvil", "Workbench", "Alchemy Table", "Enchanting Altar", "Cooking Fire"]
+        },
+        "description": {
+          "type": "string",
+          "description": "Flavor text shown when examining the station. Should be 1-2 sentences.",
+          "minLength": 10,
+          "maxLength": 500,
+          "examples": ["A sturdy iron anvil, its surface marked by countless hammer strikes."]
+        },
+        "supportedCategories": {
+          "type": "array",
+          "description": "Recipe categories this station can craft. Must have at least one.",
+          "items": {
+            "type": "string",
+            "enum": ["Weapon", "Armor", "Potion", "Consumable", "Accessory", "Tool", "Material"]
+          },
+          "minItems": 1,
+          "uniqueItems": true,
+          "examples": [["Weapon", "Tool", "Material"], ["Potion", "Consumable"]]
+        },
+        "craftingSkill": {
+          "type": "string",
+          "description": "Skill ID used for crafting checks at this station. Must match a skill in the skills system.",
+          "pattern": "^[a-z][a-z0-9-]*$",
+          "minLength": 2,
+          "maxLength": 64,
+          "examples": ["smithing", "leatherworking", "alchemy", "enchanting", "cooking"]
+        },
+        "icon": {
+          "type": ["string", "null"],
+          "description": "Optional path to icon file for UI display, relative to assets directory",
+          "maxLength": 256,
+          "examples": ["icons/stations/anvil.png", "icons/stations/workbench.png", null]
+        }
+      },
+      "additionalProperties": false
+    },
+    "recipeCategory": {
+      "type": "string",
+      "enum": ["Weapon", "Armor", "Potion", "Consumable", "Accessory", "Tool", "Material"],
+      "description": "Recipe category types that stations can support"
+    }
+  },
+  "examples": [
+    {
+      "stations": [
+        {
+          "id": "anvil",
+          "name": "Anvil",
+          "description": "A sturdy iron anvil for smithing metal items.",
+          "supportedCategories": ["Weapon", "Tool", "Material"],
+          "craftingSkill": "smithing",
+          "icon": "icons/stations/anvil.png"
+        }
+      ]
+    }
+  ]
+}

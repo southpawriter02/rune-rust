@@ -64,7 +64,10 @@ public enum RoomFeatureType
     Interactable,
 
     /// <summary>Light sources affecting visibility and mood.</summary>
-    LightSource
+    LightSource,
+
+    /// <summary>Crafting stations where players can craft items from recipes (v0.11.2a).</summary>
+    CraftingStation
 }
 
 /// <summary>

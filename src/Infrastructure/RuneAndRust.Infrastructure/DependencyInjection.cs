@@ -121,6 +121,12 @@ public static class DependencyInjection
             configuration.GetSection("RecipeScrolls"));
         services.AddSingleton<IRecipeScrollProvider, RecipeScrollProvider>();
 
+        // Crafting station provider (v0.11.2a) - loads station definitions from config
+        // Binds from the "CraftingStations" section of appsettings or separate config file
+        services.Configure<CraftingStationSettings>(
+            configuration.GetSection("CraftingStations"));
+        services.AddSingleton<ICraftingStationProvider, CraftingStationProvider>();
+
         return services;
     }
 
