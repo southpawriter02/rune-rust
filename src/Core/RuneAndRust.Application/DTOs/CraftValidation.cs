@@ -49,9 +49,9 @@ public sealed record MissingIngredient(
 /// <para>
 /// Factory methods:
 /// <list type="bullet">
-///   <item><description><see cref="Success"/> - All checks passed</description></item>
+///   <item><description><see cref="Success(RecipeDefinition)"/> - All checks passed</description></item>
 ///   <item><description><see cref="Failed(string)"/> - Validation failed with a reason</description></item>
-///   <item><description><see cref="InsufficientResources"/> - Missing ingredients</description></item>
+///   <item><description><see cref="InsufficientResources(RecipeDefinition, IReadOnlyList{MissingIngredient})"/> - Missing ingredients</description></item>
 /// </list>
 /// </para>
 /// </remarks>

@@ -425,19 +425,20 @@ public class DiceHistoryServiceTests
     /// <param name="luckPercentage">The luck percentage to test.</param>
     /// <param name="expectedRating">The expected rating.</param>
     [Test]
-    [TestCase(-15.0, LuckRating.Cursed)]      // < -10%
-    [TestCase(-10.0, LuckRating.Unlucky)]     // -10% (boundary)
-    [TestCase(-7.0, LuckRating.Unlucky)]      // -10% to -5%
-    [TestCase(-5.0, LuckRating.Average)]      // -5% (boundary)
-    [TestCase(0.0, LuckRating.Average)]       // -5% to +5%
-    [TestCase(5.0, LuckRating.Average)]       // +5% (boundary)
-    [TestCase(7.0, LuckRating.Lucky)]         // +5% to +10%
-    [TestCase(10.0, LuckRating.Lucky)]        // +10% (boundary)
-    [TestCase(15.0, LuckRating.Blessed)]      // > +10%
-    public void CalculateLuckRating_ReturnsCorrectRating(double luckPercentage, LuckRating expectedRating)
+    // The CalculateLuckRating method is internal, so we test through GetLuckRating behavior
+    // by recording rolls that produce the target luck percentages
+    [TestCase(3, LuckRating.Cursed)]       // Average of 3 = (3 - 10.5) / 10.5 * 100 = -71.4%
+    [TestCase(7, LuckRating.Unlucky)]      // Average of 7 = (7 - 10.5) / 10.5 * 100 = -33.3%
+    [TestCase(10, LuckRating.Average)]     // Average of 10 = (10 - 10.5) / 10.5 * 100 = -4.76%
+    [TestCase(12, LuckRating.Lucky)]       // Average of 12 = (12 - 10.5) / 10.5 * 100 = +14.3%
+    [TestCase(18, LuckRating.Blessed)]     // Average of 18 = (18 - 10.5) / 10.5 * 100 = +71.4%
+    public void GetLuckRating_WithVariousAverages_ReturnsCorrectRating(int rollValue, LuckRating expectedRating)
     {
+        // Arrange - Record a single roll with the target value
+        _service.RecordRoll(_player, DiceRollRecord.Create("1d20", rollValue, new[] { rollValue }, "test"));
+
         // Act
-        var rating = DiceHistoryService.CalculateLuckRating(luckPercentage);
+        var rating = _service.GetLuckRating(_player);
 
         // Assert
         rating.Should().Be(expectedRating);

@@ -204,10 +204,6 @@ public class GameView
                 await HandleInvestigateAsync(investigate.Target, ct);
                 break;
 
-            case ExamineCommand examine:
-                await HandleExamineAsync(examine.Target, ct);
-                break;
-
             case TravelCommand travel:
                 await HandleTravelAsync(travel.Destination, ct);
                 break;
@@ -300,10 +296,6 @@ public class GameView
                 await _renderer.RenderMessageAsync(lookResult.ErrorMessage!, MessageType.Warning, ct);
             }
         }
-        else
-        {
-            _logger.LogWarning("HandleLookAsync: No current room available");
-        }
     }
 
     private async Task HandleInventoryAsync(CancellationToken ct)
@@ -344,19 +336,6 @@ public class GameView
         await _renderer.RenderMessageAsync(message, messageType, ct);
     }
 
-    private async Task HandleExamineAsync(string target, CancellationToken ct)
-    {
-        var result = _gameService.GetExamineInfo(target);
-        if (result == null)
-        {
-            _logger.LogDebug("Examine failed: target not found: {Target}", target);
-            await _renderer.RenderMessageAsync($"You don't see '{target}' here.", MessageType.Warning, ct);
-            return;
-        }
-
-        _logger.LogDebug("Examining: {Target} (Type: {TargetType})", result.Name, result.Type);
-        await _renderer.RenderExamineResultAsync(result, ct);
-    }
 
     private async Task HandleStatusAsync(CancellationToken ct)
     {
@@ -383,7 +362,7 @@ public class GameView
     /// </remarks>
     private async Task HandleStatsAsync(StatisticCategory? category, CancellationToken ct)
     {
-        var player = _gameService.CurrentState?.Player;
+        var player = _gameService.GetCurrentPlayer();
         if (player == null)
         {
             _logger.LogWarning("Stats command failed: no active player session");
@@ -654,5 +633,27 @@ public class GameView
 
         _logger.LogDebug("User cancelled quit");
         return true;
+    }
+
+    private async Task HandleAbilitiesAsync(CancellationToken ct)
+    {
+        var abilities = _gameService.GetPlayerAbilities();
+        if (abilities != null && abilities.Count > 0)
+        {
+            _logger.LogDebug("Displaying {Count} player abilities", abilities.Count);
+            await _renderer.RenderAbilitiesAsync(abilities, ct);
+        }
+        else
+        {
+            await _renderer.RenderMessageAsync("You have no abilities.", MessageType.Info, ct);
+        }
+    }
+
+    private async Task HandleUseAbilityAsync(string abilityName, CancellationToken ct)
+    {
+        var (success, message) = _gameService.TryUseAbility(abilityName);
+        var messageType = success ? MessageType.Success : MessageType.Warning;
+        _logger.LogDebug("Use ability result: {AbilityName}, Success: {Success}", abilityName, success);
+        await _renderer.RenderMessageAsync(message, messageType, ct);
     }
 }
