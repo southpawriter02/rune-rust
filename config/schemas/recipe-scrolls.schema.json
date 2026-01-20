@@ -1,0 +1,132 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "recipe-scrolls.schema.json",
+  "title": "Recipe Scroll Configuration",
+  "description": "Schema for recipe scroll drop configurations in RuneAndRust. Defines which recipes can be found as scrolls, their drop weights, level requirements, and eligible loot sources.",
+  "type": "object",
+  "required": ["recipeScrolls", "scrollDropChances"],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Reference to this schema file for validation"
+    },
+    "recipeScrolls": {
+      "type": "array",
+      "description": "Array of recipe scroll configurations defining which recipes can drop as scrolls",
+      "items": {
+        "$ref": "#/$defs/scrollConfig"
+      },
+      "minItems": 0
+    },
+    "scrollDropChances": {
+      "type": "object",
+      "description": "Drop chances per loot source type as decimal values (0.0 to 1.0)",
+      "additionalProperties": false,
+      "properties": {
+        "Chest": {
+          "type": "number",
+          "description": "Base chance for scrolls to drop from chests (0.0-1.0)",
+          "minimum": 0,
+          "maximum": 1,
+          "examples": [0.15]
+        },
+        "Boss": {
+          "type": "number",
+          "description": "Base chance for scrolls to drop from boss enemies (0.0-1.0)",
+          "minimum": 0,
+          "maximum": 1,
+          "examples": [0.30]
+        },
+        "Monster": {
+          "type": "number",
+          "description": "Base chance for scrolls to drop from regular monsters (0.0-1.0)",
+          "minimum": 0,
+          "maximum": 1,
+          "examples": [0.02]
+        },
+        "Quest": {
+          "type": "number",
+          "description": "Base chance for scrolls to appear in quest rewards (0.0-1.0)",
+          "minimum": 0,
+          "maximum": 1,
+          "examples": [0.50]
+        },
+        "Shop": {
+          "type": "number",
+          "description": "Base chance for scrolls to appear in shops (0.0-1.0)",
+          "minimum": 0,
+          "maximum": 1,
+          "examples": [0.25]
+        },
+        "Crafting": {
+          "type": "number",
+          "description": "Base chance for scrolls from crafting-related sources (0.0-1.0)",
+          "minimum": 0,
+          "maximum": 1,
+          "examples": [0.10]
+        }
+      }
+    }
+  },
+  "$defs": {
+    "scrollConfig": {
+      "type": "object",
+      "description": "Configuration for a single recipe scroll defining how it can be obtained as loot",
+      "required": ["recipeId", "dropWeight", "minDungeonLevel", "lootSources"],
+      "properties": {
+        "recipeId": {
+          "type": "string",
+          "description": "The recipe ID this scroll teaches. Must match an existing recipe definition.",
+          "pattern": "^[a-z][a-z0-9-]*$",
+          "minLength": 2,
+          "maxLength": 64,
+          "examples": ["steel-sword", "mithril-blade", "fire-resistance-potion"]
+        },
+        "dropWeight": {
+          "type": "integer",
+          "description": "Relative weight for weighted random selection. Higher values = more common drops.",
+          "minimum": 1,
+          "maximum": 100,
+          "default": 10,
+          "examples": [5, 10, 15, 20]
+        },
+        "minDungeonLevel": {
+          "type": "integer",
+          "description": "Minimum dungeon level required for this scroll to appear in loot",
+          "minimum": 1,
+          "maximum": 100,
+          "default": 1,
+          "examples": [1, 3, 5, 8]
+        },
+        "maxDungeonLevel": {
+          "type": ["integer", "null"],
+          "description": "Maximum dungeon level where this scroll can appear. Null for no limit.",
+          "minimum": 1,
+          "maximum": 100,
+          "default": null,
+          "examples": [10, 15, null]
+        },
+        "lootSources": {
+          "type": "array",
+          "description": "Loot source types from which this scroll can drop",
+          "items": {
+            "type": "string",
+            "enum": ["Chest", "Boss", "Monster", "Quest", "Shop", "Crafting"]
+          },
+          "minItems": 0,
+          "uniqueItems": true,
+          "examples": [["Chest", "Boss"], ["Monster", "Quest"]]
+        },
+        "baseValue": {
+          "type": "integer",
+          "description": "Base gold value of the scroll item for pricing and vendor sales",
+          "minimum": 0,
+          "maximum": 10000,
+          "default": 100,
+          "examples": [50, 100, 250, 500]
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

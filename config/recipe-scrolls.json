@@ -1,0 +1,59 @@
+{
+  "$schema": "./schemas/recipe-scrolls.schema.json",
+  "recipeScrolls": [
+    {
+      "recipeId": "steel-sword",
+      "dropWeight": 10,
+      "minDungeonLevel": 3,
+      "maxDungeonLevel": null,
+      "lootSources": ["Chest", "Boss"],
+      "baseValue": 100
+    },
+    {
+      "recipeId": "steel-armor",
+      "dropWeight": 8,
+      "minDungeonLevel": 4,
+      "maxDungeonLevel": null,
+      "lootSources": ["Chest", "Boss"],
+      "baseValue": 150
+    },
+    {
+      "recipeId": "mithril-blade",
+      "dropWeight": 2,
+      "minDungeonLevel": 8,
+      "maxDungeonLevel": null,
+      "lootSources": ["Boss", "Quest"],
+      "baseValue": 500
+    },
+    {
+      "recipeId": "fire-resistance-potion",
+      "dropWeight": 8,
+      "minDungeonLevel": 5,
+      "maxDungeonLevel": null,
+      "lootSources": ["Chest", "Monster", "Boss"],
+      "baseValue": 75
+    },
+    {
+      "recipeId": "greater-healing-potion",
+      "dropWeight": 12,
+      "minDungeonLevel": 4,
+      "maxDungeonLevel": null,
+      "lootSources": ["Chest", "Monster", "Boss"],
+      "baseValue": 80
+    },
+    {
+      "recipeId": "silver-ring",
+      "dropWeight": 5,
+      "minDungeonLevel": 6,
+      "maxDungeonLevel": null,
+      "lootSources": ["Boss", "Quest"],
+      "baseValue": 200
+    }
+  ],
+  "scrollDropChances": {
+    "Chest": 0.15,
+    "Boss": 0.30,
+    "Monster": 0.02,
+    "Quest": 0.50
+  }
+}

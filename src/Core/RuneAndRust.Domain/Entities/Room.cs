@@ -28,7 +28,10 @@ public class Room : IEntity
     /// Gets the narrative description of this room shown to the player.
     /// </summary>
     public string Description { get; private set; }
-    public Position Position { get; private set; }
+
+    /// <summary>
+    /// Gets the biome type of this room.
+    /// </summary>
     public Biome Biome { get; private set; }
 
     /// <summary>
@@ -354,7 +357,14 @@ public class Room : IEntity
         Description = null!;
     }
 
-    public Room(string name, string description, Position position, Biome biome = Biome.Citadel)
+    /// <summary>
+    /// Creates a new room with the specified name, description, and 3D position.
+    /// </summary>
+    /// <param name="name">The display name of the room.</param>
+    /// <param name="description">The narrative description of the room.</param>
+    /// <param name="position">The 3D position of the room in the dungeon grid.</param>
+    /// <param name="biome">The biome type of the room.</param>
+    public Room(string name, string description, Position3D position, Biome biome = Biome.Citadel)
     {
         Id = Guid.NewGuid();
         Name = name ?? throw new ArgumentNullException(nameof(name));
@@ -371,8 +381,8 @@ public class Room : IEntity
     /// that uses 2D positions. The Z coordinate defaults to 0 (surface level).
     /// </remarks>
     [Obsolete("Use the Position3D constructor for new code. This exists for backwards compatibility.")]
-    public Room(string name, string description, Position position)
-        : this(name, description, Position3D.FromPosition2D(position))
+    public Room(string name, string description, Position position, Biome biome = Biome.Citadel)
+        : this(name, description, Position3D.FromPosition2D(position), biome)
     {
     }
 

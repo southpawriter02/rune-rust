@@ -178,6 +178,35 @@ public class Item : IEntity
     /// </remarks>
     public bool IsKeyConsumedOnUse { get; private set; }
 
+    // ===== Recipe Scroll Properties (v0.11.1c) =====
+
+    /// <summary>
+    /// Gets the recipe ID this scroll teaches (for recipe scroll items only).
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Only applicable when Effect is ItemEffect.LearnRecipe.
+    /// The RecipeId must match a RecipeDefinition.RecipeId to learn.
+    /// Recipe IDs are stored in lowercase for case-insensitive matching.
+    /// </para>
+    /// <para>
+    /// When this item is used by a player:
+    /// <list type="bullet">
+    ///   <item><description>If the player doesn't know the recipe, they learn it and the scroll is consumed</description></item>
+    ///   <item><description>If the player already knows the recipe, the scroll is preserved</description></item>
+    /// </list>
+    /// </para>
+    /// </remarks>
+    public string? RecipeId { get; private set; }
+
+    /// <summary>
+    /// Gets whether this item is a recipe scroll.
+    /// </summary>
+    /// <remarks>
+    /// Recipe scrolls have the LearnRecipe effect and a non-null RecipeId.
+    /// </remarks>
+    public bool IsRecipeScroll => Effect == ItemEffect.LearnRecipe && !string.IsNullOrWhiteSpace(RecipeId);
+
     // ===== Range Properties (v0.5.1a) =====
 
     /// <summary>
@@ -369,6 +398,7 @@ public class Item : IEntity
     /// <param name="requirements">Requirements to equip this item.</param>
     /// <param name="keyId">The lock ID this key opens (for key items only).</param>
     /// <param name="isKeyConsumedOnUse">Whether the key is consumed when used.</param>
+    /// <param name="recipeId">The recipe ID this scroll teaches (for recipe scroll items only).</param>
     /// <exception cref="ArgumentNullException">Thrown when name or description is null.</exception>
     public Item(string name, string description, ItemType type, int value = 0,
                 ItemEffect effect = ItemEffect.None, int effectValue = 0, int effectDuration = 0,
@@ -382,7 +412,8 @@ public class Item : IEntity
                 int initiativePenalty = 0,
                 EquipmentRequirements? requirements = null,
                 string? keyId = null,
-                bool isKeyConsumedOnUse = false)
+                bool isKeyConsumedOnUse = false,
+                string? recipeId = null)
     {
         Id = Guid.NewGuid();
         Name = name ?? throw new ArgumentNullException(nameof(name));
@@ -403,6 +434,7 @@ public class Item : IEntity
         Requirements = requirements ?? EquipmentRequirements.None;
         KeyId = keyId;
         IsKeyConsumedOnUse = isKeyConsumedOnUse;
+        RecipeId = recipeId;
     }
 
     /// <summary>
@@ -646,6 +678,58 @@ public class Item : IEntity
         "An elaborate key decorated with intricate patterns.",
         keyId
     );
+
+    // ===== Recipe Scroll Factory Methods (v0.11.1c) =====
+
+    /// <summary>
+    /// Factory method to create a recipe scroll item.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Creates a consumable item that teaches a crafting recipe when used.
+    /// The scroll has the LearnRecipe effect and stores the recipe ID in
+    /// lowercase for case-insensitive matching.
+    /// </para>
+    /// <para>
+    /// When used:
+    /// <list type="bullet">
+    ///   <item><description>If the player doesn't know the recipe, they learn it and the scroll is consumed</description></item>
+    ///   <item><description>If the player already knows the recipe, the scroll is preserved with an appropriate message</description></item>
+    /// </list>
+    /// </para>
+    /// </remarks>
+    /// <param name="recipeId">The unique identifier of the recipe this scroll teaches (will be normalized to lowercase).</param>
+    /// <param name="recipeName">The display name of the recipe (used in scroll name and description).</param>
+    /// <param name="baseValue">The base gold value of the scroll (default is 100).</param>
+    /// <returns>A new recipe scroll item configured to teach the specified recipe.</returns>
+    /// <exception cref="ArgumentException">Thrown when recipeId or recipeName is null, empty, or whitespace.</exception>
+    /// <example>
+    /// <code>
+    /// // Create a scroll that teaches the Steel Sword recipe
+    /// var steelSwordScroll = Item.CreateRecipeScroll("steel-sword", "Steel Sword", 150);
+    ///
+    /// // The scroll will be named "Recipe Scroll: Steel Sword"
+    /// // and will teach the "steel-sword" recipe when used
+    /// </code>
+    /// </example>
+    public static Item CreateRecipeScroll(
+        string recipeId,
+        string recipeName,
+        int baseValue = 100)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(recipeId, nameof(recipeId));
+        ArgumentException.ThrowIfNullOrWhiteSpace(recipeName, nameof(recipeName));
+
+        return new Item(
+            name: $"Recipe Scroll: {recipeName}",
+            description: $"An ancient scroll containing the recipe for {recipeName}. Use this item to learn the recipe.",
+            type: ItemType.Consumable,
+            value: baseValue,
+            effect: ItemEffect.LearnRecipe,
+            effectValue: 0,
+            recipeId: recipeId.ToLowerInvariant()
+        );
+    }
 
     /// <summary>
     /// Returns the name of this item.

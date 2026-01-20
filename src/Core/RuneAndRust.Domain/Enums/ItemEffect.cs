@@ -28,5 +28,16 @@ public enum ItemEffect
     /// <summary>
     /// Temporarily increases defense stat.
     /// </summary>
-    BuffDefense = 4
+    BuffDefense = 4,
+
+    /// <summary>
+    /// Learns a recipe from a recipe scroll when used.
+    /// </summary>
+    /// <remarks>
+    /// This effect is used by recipe scroll items. When an item with this effect
+    /// is used, it teaches the player the recipe specified by the item's RecipeId
+    /// property. The scroll is consumed on successful learning but preserved if
+    /// the player already knows the recipe.
+    /// </remarks>
+    LearnRecipe = 5
 }

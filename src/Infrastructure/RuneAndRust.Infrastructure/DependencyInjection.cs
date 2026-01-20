@@ -115,6 +115,12 @@ public static class DependencyInjection
             return new RecipeProvider(recipesPath, logger);
         });
 
+        // Recipe scroll provider (v0.11.1c) - loads recipe scroll configurations from JSON config
+        // Binds from the "RecipeScrolls" section of appsettings or separate config file
+        services.Configure<RecipeScrollSettings>(
+            configuration.GetSection("RecipeScrolls"));
+        services.AddSingleton<IRecipeScrollProvider, RecipeScrollProvider>();
+
         return services;
     }
 
@@ -280,6 +286,11 @@ public static class DependencyInjection
         // Recipe book system (v0.11.1b)
         // Note: IRecipeProvider and IResourceProvider are registered in AddInfrastructure as they load from JSON config
         services.AddScoped<IRecipeService, RecipeService>();
+
+        // Recipe scroll use handler (v0.11.1c)
+        // Handler for processing recipe scroll items when used by players
+        // Note: IRecipeScrollProvider is registered in AddInfrastructure as it loads from config
+        services.AddScoped<IItemUseHandler, Application.Handlers.RecipeScrollUseHandler>();
 
         return services;
     }
