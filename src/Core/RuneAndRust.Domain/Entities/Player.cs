@@ -1477,4 +1477,161 @@ public class Player : IEntity
     {
         DiceHistory ??= DiceRollHistory.Create(Id);
     }
+
+    // ===== Achievement Properties (v0.12.1b) =====
+
+    /// <summary>
+    /// Backing field for player achievements.
+    /// </summary>
+    /// <remarks>
+    /// Achievements are stored as a list and exposed as read-only externally.
+    /// Use <see cref="AddAchievement"/> to add new achievements.
+    /// </remarks>
+    private readonly List<PlayerAchievement> _achievements = new();
+
+    /// <summary>
+    /// Gets the achievements this player has unlocked.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This is a read-only view of the player's unlocked achievements.
+    /// Each <see cref="PlayerAchievement"/> contains the achievement ID,
+    /// unlock timestamp, and points awarded at unlock time.
+    /// </para>
+    /// <para>
+    /// To unlock a new achievement, use <see cref="AddAchievement"/>.
+    /// To check if an achievement is unlocked, use <see cref="HasAchievement"/>.
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// // Display all unlocked achievements
+    /// foreach (var achievement in player.Achievements)
+    /// {
+    ///     Console.WriteLine($"{achievement.AchievementId}: +{achievement.PointsAwarded} pts");
+    /// }
+    /// </code>
+    /// </example>
+    public IReadOnlyList<PlayerAchievement> Achievements => _achievements.AsReadOnly();
+
+    /// <summary>
+    /// Adds a new achievement to the player's collection.
+    /// </summary>
+    /// <param name="achievementId">
+    /// The achievement definition ID. Must not be null, empty, or whitespace.
+    /// Should correspond to a valid <see cref="AchievementDefinition.AchievementId"/>.
+    /// </param>
+    /// <param name="points">
+    /// The points to award. Must be non-negative.
+    /// Typically derived from the achievement's tier (Bronze=10, Silver=25, Gold=50, Platinum=100).
+    /// </param>
+    /// <exception cref="ArgumentException">
+    /// Thrown when <paramref name="achievementId"/> is null, empty, or whitespace.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when the achievement is already unlocked for this player.
+    /// Check with <see cref="HasAchievement"/> before calling.
+    /// </exception>
+    /// <remarks>
+    /// <para>
+    /// This method creates a new <see cref="PlayerAchievement"/> record with the
+    /// current UTC timestamp and adds it to the player's achievement collection.
+    /// </para>
+    /// <para>
+    /// The points are captured at unlock time to preserve historical accuracy,
+    /// even if the achievement definition's point value changes later.
+    /// </para>
+    /// <para>
+    /// This method is typically called by the AchievementService when all
+    /// conditions for an achievement have been met.
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// // Unlock an achievement (typically done by AchievementService)
+    /// if (!player.HasAchievement("first-blood"))
+    /// {
+    ///     player.AddAchievement("first-blood", 10);
+    /// }
+    /// </code>
+    /// </example>
+    public void AddAchievement(string achievementId, int points)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(achievementId, nameof(achievementId));
+
+        if (HasAchievement(achievementId))
+        {
+            throw new InvalidOperationException(
+                $"Achievement '{achievementId}' is already unlocked for this player.");
+        }
+
+        var achievement = PlayerAchievement.Create(achievementId, points);
+        _achievements.Add(achievement);
+    }
+
+    /// <summary>
+    /// Checks if the player has unlocked a specific achievement.
+    /// </summary>
+    /// <param name="achievementId">
+    /// The achievement ID to check. Must not be null, empty, or whitespace.
+    /// </param>
+    /// <returns>
+    /// <c>true</c> if the player has unlocked the achievement; otherwise, <c>false</c>.
+    /// </returns>
+    /// <exception cref="ArgumentException">
+    /// Thrown when <paramref name="achievementId"/> is null, empty, or whitespace.
+    /// </exception>
+    /// <remarks>
+    /// <para>
+    /// Use this method before calling <see cref="AddAchievement"/> to avoid
+    /// the <see cref="InvalidOperationException"/> for duplicate unlocks.
+    /// </para>
+    /// <para>
+    /// Achievement IDs are compared using ordinal case-sensitive comparison,
+    /// so ensure consistency with the IDs used in achievement definitions.
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// if (player.HasAchievement("monster-slayer"))
+    /// {
+    ///     Console.WriteLine("Already a Monster Slayer!");
+    /// }
+    /// </code>
+    /// </example>
+    public bool HasAchievement(string achievementId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(achievementId, nameof(achievementId));
+        return _achievements.Any(a => a.AchievementId == achievementId);
+    }
+
+    /// <summary>
+    /// Gets the total achievement points earned by this player.
+    /// </summary>
+    /// <returns>
+    /// The sum of all points from unlocked achievements.
+    /// Returns 0 if no achievements have been unlocked.
+    /// </returns>
+    /// <remarks>
+    /// <para>
+    /// This calculates the sum of <see cref="PlayerAchievement.PointsAwarded"/>
+    /// from all unlocked achievements. Points are captured at unlock time,
+    /// so this reflects historical accuracy.
+    /// </para>
+    /// <para>
+    /// Use this for displaying total achievement points in the UI or
+    /// for leaderboard calculations.
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// var totalPoints = player.GetTotalAchievementPoints();
+    /// Console.WriteLine($"Total Achievement Points: {totalPoints}");
+    /// </code>
+    /// </example>
+    public int GetTotalAchievementPoints()
+    {
+        return _achievements.Sum(a => a.PointsAwarded);
+    }
 }
+
