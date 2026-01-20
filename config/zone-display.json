@@ -1,0 +1,50 @@
+{
+    "$schema": "./schemas/zone-display.schema.json",
+    "symbols": {
+        "damage": "X",
+        "control": "!",
+        "debuff": "-",
+        "buff": "+",
+        "preview": "."
+    },
+    "damageTypeSymbols": {
+        "fire": "F",
+        "ice": "I",
+        "poison": "P",
+        "lightning": "L",
+        "acid": "A",
+        "necrotic": "N",
+        "holy": "H"
+    },
+    "colors": {
+        "damage": "Red",
+        "control": "Magenta",
+        "debuff": "DarkYellow",
+        "buff": "Green",
+        "preview": "DarkGray"
+    },
+    "damageTypeColors": {
+        "fire": "Red",
+        "ice": "Cyan",
+        "poison": "DarkGreen",
+        "lightning": "Yellow",
+        "acid": "DarkYellow",
+        "necrotic": "DarkMagenta",
+        "holy": "White"
+    },
+    "hazardIcons": {
+        "fire": "🔥",
+        "ice": "❄",
+        "poison": "☠",
+        "lightning": "⚡",
+        "acid": "💧",
+        "necrotic": "💀",
+        "holy": "✨",
+        "default": "⚠"
+    },
+    "display": {
+        "showLegend": true,
+        "showDuration": true,
+        "showDamagePerTurn": true
+    }
+}

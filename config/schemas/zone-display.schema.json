@@ -1,0 +1,124 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "Zone Display Configuration",
+    "description": "Configuration schema for AoE zone display visuals in the combat UI.",
+    "type": "object",
+    "properties": {
+        "symbols": {
+            "type": "object",
+            "description": "Single character symbols for each zone type.",
+            "properties": {
+                "damage": {
+                    "type": "string",
+                    "maxLength": 1,
+                    "description": "Symbol for damage zones (default: X)."
+                },
+                "control": {
+                    "type": "string",
+                    "maxLength": 1,
+                    "description": "Symbol for control zones (default: !)."
+                },
+                "debuff": {
+                    "type": "string",
+                    "maxLength": 1,
+                    "description": "Symbol for debuff zones (default: -)."
+                },
+                "buff": {
+                    "type": "string",
+                    "maxLength": 1,
+                    "description": "Symbol for buff zones (default: +)."
+                },
+                "preview": {
+                    "type": "string",
+                    "maxLength": 1,
+                    "description": "Symbol for targeting preview (default: .)."
+                }
+            },
+            "required": [
+                "damage",
+                "control",
+                "debuff",
+                "buff",
+                "preview"
+            ]
+        },
+        "damageTypeSymbols": {
+            "type": "object",
+            "description": "Maps damage type names to single character symbols.",
+            "additionalProperties": {
+                "type": "string",
+                "maxLength": 1
+            }
+        },
+        "colors": {
+            "type": "object",
+            "description": "Console colors for each zone type.",
+            "properties": {
+                "damage": {
+                    "type": "string",
+                    "description": "Color for damage zones (default: Red)."
+                },
+                "control": {
+                    "type": "string",
+                    "description": "Color for control zones (default: Magenta)."
+                },
+                "debuff": {
+                    "type": "string",
+                    "description": "Color for debuff zones (default: DarkYellow)."
+                },
+                "buff": {
+                    "type": "string",
+                    "description": "Color for buff zones (default: Green)."
+                },
+                "preview": {
+                    "type": "string",
+                    "description": "Color for targeting preview (default: DarkGray)."
+                }
+            },
+            "required": [
+                "damage",
+                "control",
+                "debuff",
+                "buff",
+                "preview"
+            ]
+        },
+        "damageTypeColors": {
+            "type": "object",
+            "description": "Maps damage type names to console colors.",
+            "additionalProperties": {
+                "type": "string"
+            }
+        },
+        "hazardIcons": {
+            "type": "object",
+            "description": "Unicode icons for hazard types.",
+            "additionalProperties": {
+                "type": "string"
+            }
+        },
+        "display": {
+            "type": "object",
+            "description": "Display behavior settings.",
+            "properties": {
+                "showLegend": {
+                    "type": "boolean",
+                    "description": "Whether to show the zone legend below the grid."
+                },
+                "showDuration": {
+                    "type": "boolean",
+                    "description": "Whether to show duration in the legend."
+                },
+                "showDamagePerTurn": {
+                    "type": "boolean",
+                    "description": "Whether to show damage per turn in the legend."
+                }
+            }
+        }
+    },
+    "required": [
+        "symbols",
+        "colors",
+        "display"
+    ]
+}
