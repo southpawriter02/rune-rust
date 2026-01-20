@@ -48,43 +48,10 @@ public class GameSession : IEntity
     /// </summary>
     public DateTime LastPlayedAt { get; private set; }
 
-    /// <summary>
-    /// Gets the current turn number.
-    /// </summary>
-    public int TurnCount { get; private set; }
+    private readonly HashSet<string> _revealedSolutionIds = [];
 
-    /// <summary>
-    /// Gets the currently active combat encounter, if any.
-    /// </summary>
-    public CombatEncounter? ActiveEncounter { get; private set; }
-
-    /// <summary>
-    /// Gets whether the player is currently in combat.
-    /// </summary>
-    public bool IsInCombat => ActiveEncounter?.State == CombatState.Active;
-
-    /// <summary>
-    /// Gets the ID of the room the player was in before entering the current room.
-    /// </summary>
-    /// <remarks>
-    /// Used for flee destination in combat.
-    /// </remarks>
-    public Guid? PreviousRoomId { get; private set; }
-
-    /// <summary>
-    /// Set of room IDs that the player has visited.
-    /// </summary>
-    private readonly HashSet<Guid> _visitedRooms = [];
-
-    /// <summary>
-    /// Gets a read-only set of visited room IDs.
-    /// </summary>
-    public IReadOnlySet<Guid> VisitedRooms => _visitedRooms;
-
-    /// <summary>
-    /// Gets the current room the player is in, or null if the room cannot be found.
-    /// </summary>
     public Room? CurrentRoom => Dungeon.GetRoom(CurrentRoomId);
+    public IReadOnlySet<string> RevealedSolutions => _revealedSolutionIds;
 
     /// <summary>
     /// Private parameterless constructor for Entity Framework Core.
@@ -126,40 +93,14 @@ public class GameSession : IEntity
     }
 
     /// <summary>
-    /// Starts a combat encounter.
+    /// Creates a new game session with a procedurally generated dungeon.
     /// </summary>
-    /// <param name="encounter">The encounter to start.</param>
-    /// <exception cref="InvalidOperationException">Thrown if already in combat.</exception>
-    /// <exception cref="ArgumentNullException">Thrown if encounter is null.</exception>
-    public void StartCombat(CombatEncounter encounter)
+    public static GameSession CreateWithDungeon(string playerName, Dungeon dungeon)
     {
-        ArgumentNullException.ThrowIfNull(encounter);
-
-        if (ActiveEncounter?.State == CombatState.Active)
-            throw new InvalidOperationException("Already in combat.");
-
-        ActiveEncounter = encounter;
+        var player = new Player(playerName);
+        return new GameSession(player, dungeon);
     }
 
-    /// <summary>
-    /// Ends the current combat encounter.
-    /// </summary>
-    /// <remarks>
-    /// Call this after combat resolves (victory, defeat, or flee).
-    /// </remarks>
-    public void EndCombat()
-    {
-        ActiveEncounter = null;
-    }
-
-    /// <summary>
-    /// Attempts to move the player in the specified direction.
-    /// </summary>
-    /// <param name="direction">The direction to move (North, South, East, or West).</param>
-    /// <returns>
-    /// <c>true</c> if the move was successful; <c>false</c> if there is no exit
-    /// in that direction or the current room cannot be found.
-    /// </returns>
     public bool TryMovePlayer(Direction direction)
     {
         var currentRoom = CurrentRoom;
@@ -245,19 +186,22 @@ public class GameSession : IEntity
     }
 
     /// <summary>
-    /// Advances the turn counter by one.
+    /// Records that a puzzle solution has been revealed to the player.
     /// </summary>
-    /// <returns>The new turn count after advancing.</returns>
-    public int AdvanceTurn()
+    public void RevealSolution(string solutionId)
     {
-        TurnCount++;
-        UpdateLastPlayed();
-        return TurnCount;
+        if (!string.IsNullOrWhiteSpace(solutionId))
+        {
+            _revealedSolutionIds.Add(solutionId);
+            UpdateLastPlayed();
+        }
     }
 
     /// <summary>
-    /// Returns a string representation of this game session.
+    /// Checks if a particular puzzle solution has been revealed.
     /// </summary>
-    /// <returns>A string containing the player name and game state.</returns>
+    public bool HasRevealedSolution(string solutionId) =>
+        !string.IsNullOrWhiteSpace(solutionId) && _revealedSolutionIds.Contains(solutionId);
+
     public override string ToString() => $"Session: {Player.Name} - {State}";
 }

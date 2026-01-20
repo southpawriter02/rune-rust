@@ -9,9 +9,12 @@ using RuneAndRust.Presentation.Tui.Views;
 using Serilog;
 using Spectre.Console;
 
-// Build configuration
+// Build configuration - use assembly location to find appsettings.json
+var assemblyLocation = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location)
+    ?? Directory.GetCurrentDirectory();
+
 var configuration = new ConfigurationBuilder()
-    .SetBasePath(Directory.GetCurrentDirectory())
+    .SetBasePath(assemblyLocation)
     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
     .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT") ?? "Production"}.json", optional: true)
     .AddEnvironmentVariables()

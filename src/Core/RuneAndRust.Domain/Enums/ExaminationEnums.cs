@@ -1,0 +1,337 @@
+namespace RuneAndRust.Domain.Enums;
+
+/// <summary>
+/// Examination depth layers requiring progressively higher WITS checks.
+/// </summary>
+public enum ExaminationLayer
+{
+    /// <summary>No check required - basic visual description.</summary>
+    Cursory = 1,
+
+    /// <summary>DC 12 - Functional details, condition, hints.</summary>
+    Detailed = 2,
+
+    /// <summary>DC 18 - Historical context, technical details, secrets.</summary>
+    Expert = 3
+}
+
+/// <summary>
+/// Categories of objects that can be examined.
+/// </summary>
+public enum ObjectCategory
+{
+    Door,
+    Machinery,
+    Decorative,
+    Container,
+    Structural,
+    Flora,
+    Fauna,
+    Corpse,
+    Inscription,
+    Item
+}
+
+/// <summary>
+/// Environmental biomes affecting flora, fauna, and descriptor selection.
+/// </summary>
+public enum Biome
+{
+    /// <summary>Lower levels with fungal growth and humid conditions.</summary>
+    TheRoots,
+
+    /// <summary>Volcanic areas with extreme heat.</summary>
+    Muspelheim,
+
+    /// <summary>Frozen regions with sub-zero temperatures.</summary>
+    Niflheim,
+
+    /// <summary>Blight-corrupted areas with paradoxical phenomena.</summary>
+    Alfheim,
+
+    /// <summary>Standard dungeon areas of the citadel.</summary>
+    Citadel,
+
+    /// <summary>Outside surface areas.</summary>
+    Surface,
+
+    /// <summary>Giant ruins with massive architecture and runic power.</summary>
+    Jotunheim
+}
+
+/// <summary>
+/// Types of hidden elements that can be detected via perception.
+/// </summary>
+public enum HiddenElementType
+{
+    Trap,
+    SecretDoor,
+    Cache
+}
+
+/// <summary>
+/// Success levels for perception checks.
+/// </summary>
+public enum PerceptionSuccessLevel
+{
+    /// <summary>Standard success - basic detection.</summary>
+    Standard,
+
+    /// <summary>Expert success - additional context and details.</summary>
+    Expert
+}
+
+/// <summary>
+/// Categories for flora and fauna descriptors.
+/// </summary>
+public enum FloraFaunaCategory
+{
+    Flora,
+    Fauna
+}
+
+/// <summary>
+/// Categories for interaction descriptors.
+/// </summary>
+public enum InteractionCategory
+{
+    MechanicalObject,
+    Container,
+    WitsSuccess,
+    WitsFailure,
+    Discovery,
+    ContainerInteraction,
+    SkillSpecific,
+    Environmental
+}
+
+/// <summary>
+/// Success margins for WITS checks.
+/// </summary>
+public enum WitsCheckMargin
+{
+    Low,
+    Medium,
+    High,
+    Critical
+}
+
+/// <summary>
+/// Failure severity for WITS checks.
+/// </summary>
+public enum WitsFailureMargin
+{
+    NearMiss,
+    Failure,
+    Bad,
+    CriticalFail
+}
+
+/// <summary>
+/// Quality tiers for loot discovery.
+/// </summary>
+public enum LootQuality
+{
+    Poor,
+    Average,
+    Good,
+    Excellent,
+    Jackpot
+}
+
+/// <summary>
+/// Age/state of corpses for examination.
+/// </summary>
+public enum CorpseAge
+{
+    Fresh,
+    Recent,
+    Old,
+    Ancient,
+    Forlorn,
+    Stripped
+}
+
+/// <summary>
+/// States for containers.
+/// </summary>
+public enum ContainerState
+{
+    Intact,
+    Damaged,
+    Opened,
+    Trapped
+}
+
+/// <summary>
+/// States for doors.
+/// </summary>
+public enum DoorState
+{
+    Open,
+    Closed,
+    Locked,
+    Destroyed,
+    Rusted
+}
+
+/// <summary>
+/// States for levers.
+/// </summary>
+public enum LeverState
+{
+    Active,
+    Inactive,
+    Stuck,
+    Unknown
+}
+
+/// <summary>
+/// States for terminals/oracle-boxes.
+/// </summary>
+public enum TerminalState
+{
+    Active,
+    Dormant,
+    Corrupted,
+    Dead,
+    Glitched
+}
+
+/// <summary>
+/// Crafting trade skills.
+/// </summary>
+public enum TradeSkill
+{
+    Bodging,
+    FieldMedicine,
+    Runeforging
+}
+
+/// <summary>
+/// Character specializations.
+/// </summary>
+public enum Specialization
+{
+    JotunReader,
+    RuinStalker
+}
+
+/// <summary>
+/// Types of discovery for perception checks.
+/// </summary>
+public enum DiscoveryType
+{
+    Secret,
+    Lore,
+    Danger
+}
+
+/// <summary>
+/// Intensity levels for secret discoveries.
+/// </summary>
+public enum SecretIntensity
+{
+    Minor,
+    Moderate,
+    Major
+}
+
+/// <summary>
+/// Types of lore discoveries.
+/// </summary>
+public enum LoreType
+{
+    DataSlate,
+    Inscription,
+    Art,
+    Note
+}
+
+/// <summary>
+/// Types of danger discoveries.
+/// </summary>
+public enum DangerType
+{
+    Trap,
+    Ambush,
+    Hazard
+}
+
+/// <summary>
+/// Types of container opening actions.
+/// </summary>
+public enum OpeningAction
+{
+    Unlock,
+    Force,
+    Bypass,
+    Fail,
+    TrapTrigger
+}
+
+/// <summary>
+/// Types of resource nodes.
+/// </summary>
+public enum ResourceNodeType
+{
+    OreVein,
+    SalvagePile,
+    ScrapCluster,
+    RareFind
+}
+
+/// <summary>
+/// Types of environmental traversal.
+/// </summary>
+public enum TraversalResult
+{
+    Easy,
+    Standard,
+    Difficult,
+    Fail
+}
+
+/// <summary>
+/// Types of repair/disable actions.
+/// </summary>
+public enum RepairAction
+{
+    DisableTrap,
+    Repair,
+    Sabotage,
+    Catastrophic
+}
+
+/// <summary>
+/// Types of object-specific examination discoveries.
+/// </summary>
+public enum TechExamination
+{
+    Function,
+    Status,
+    Origin,
+    Danger
+}
+
+/// <summary>
+/// Types of body examination discoveries.
+/// </summary>
+public enum BodyExamination
+{
+    Cause,
+    Identity,
+    Loot,
+    Warning
+}
+
+/// <summary>
+/// Types of environment examination discoveries.
+/// </summary>
+public enum EnvironmentExamination
+{
+    Hidden,
+    Trap,
+    Path,
+    Hazard
+}

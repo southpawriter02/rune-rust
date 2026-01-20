@@ -5,183 +5,153 @@ using RuneAndRust.Domain.ValueObjects;
 namespace RuneAndRust.Domain.Entities;
 
 /// <summary>
-/// Defines a reusable room pattern with variable content slots.
+/// A template for generating rooms. Contains placeholders and spawn rules.
 /// </summary>
-/// <remarks>
-/// Room templates specify the structure and possible content of generated rooms.
-/// They include name/description patterns with placeholder variables that are
-/// filled during room instantiation, along with typed slots for placing
-/// monsters, items, features, and other content.
-/// </remarks>
 public class RoomTemplate : IEntity
 {
-    /// <summary>
-    /// Gets the unique identifier for this template instance.
-    /// </summary>
     public Guid Id { get; private set; }
-
-    /// <summary>
-    /// Gets the template's configuration ID (e.g., "dungeon-corridor-01").
-    /// </summary>
     public string TemplateId { get; private set; }
-
-    /// <summary>
-    /// Gets the display name pattern (may contain {variables}).
-    /// </summary>
-    public string NamePattern { get; private set; }
-
-    /// <summary>
-    /// Gets the description pattern with descriptor pool references.
-    /// </summary>
-    public string DescriptionPattern { get; private set; }
-
-    /// <summary>
-    /// Gets the biomes this template can be used in.
-    /// </summary>
-    public IReadOnlyList<string> ValidBiomes { get; private set; }
-
-    /// <summary>
-    /// Gets the room type this template produces.
-    /// </summary>
-    public RoomType RoomType { get; private set; }
-
-    /// <summary>
-    /// Gets the content slots defined in this template.
-    /// </summary>
-    public IReadOnlyList<TemplateSlot> Slots { get; private set; }
-
-    /// <summary>
-    /// Gets the selection weight for random template selection.
-    /// </summary>
+    public string Name { get; private set; }
+    public RoomArchetype Archetype { get; private set; }
+    public Biome Biome { get; private set; }
+    public int MinExits { get; private set; }
+    public int MaxExits { get; private set; }
+    public string BaseDescription { get; private set; }
     public int Weight { get; private set; }
 
-    /// <summary>
-    /// Gets the minimum depth (Z-level) where this template can appear.
-    /// </summary>
-    public int MinDepth { get; private set; }
+    private readonly List<string> _tags = [];
+    private readonly List<RoomFeature> _features = [];
 
-    /// <summary>
-    /// Gets the maximum depth (Z-level) where this template can appear.
-    /// </summary>
-    public int? MaxDepth { get; private set; }
+    public IReadOnlyList<string> Tags => _tags.AsReadOnly();
+    public IReadOnlyList<RoomFeature> Features => _features.AsReadOnly();
 
-    /// <summary>
-    /// Gets tags for additional filtering during selection.
-    /// </summary>
-    public IReadOnlyList<string> Tags { get; private set; }
-
-    /// <summary>
-    /// Private parameterless constructor for Entity Framework Core.
-    /// </summary>
     private RoomTemplate()
     {
-        TemplateId = string.Empty;
-        NamePattern = string.Empty;
-        DescriptionPattern = string.Empty;
-        ValidBiomes = [];
-        Slots = [];
-        Tags = [];
-    }
+        TemplateId = null!;
+        Name = null!;
+        BaseDescription = null!;
+    } // For EF Core
 
-    /// <summary>
-    /// Creates a new room template with the specified properties.
-    /// </summary>
     public RoomTemplate(
         string templateId,
-        string namePattern,
-        string descriptionPattern,
-        IReadOnlyList<string> validBiomes,
-        RoomType roomType,
-        IReadOnlyList<TemplateSlot> slots,
-        int weight = 10,
-        int minDepth = 0,
-        int? maxDepth = null,
-        IReadOnlyList<string>? tags = null)
+        string name,
+        RoomArchetype archetype,
+        Biome biome,
+        string baseDescription,
+        int minExits = 1,
+        int maxExits = 4,
+        int weight = 1)
     {
         if (string.IsNullOrWhiteSpace(templateId))
-            throw new ArgumentException("Template ID cannot be empty.", nameof(templateId));
-
-        if (string.IsNullOrWhiteSpace(namePattern))
-            throw new ArgumentException("Name pattern cannot be empty.", nameof(namePattern));
-
-        if (validBiomes == null || validBiomes.Count == 0)
-            throw new ArgumentException("At least one valid biome is required.", nameof(validBiomes));
-
-        if (weight <= 0)
-            throw new ArgumentOutOfRangeException(nameof(weight), "Weight must be positive.");
-
-        if (minDepth < 0)
-            throw new ArgumentOutOfRangeException(nameof(minDepth), "Minimum depth cannot be negative.");
-
-        if (maxDepth.HasValue && maxDepth < minDepth)
-            throw new ArgumentException("Maximum depth cannot be less than minimum depth.", nameof(maxDepth));
+            throw new ArgumentException("Template ID cannot be empty", nameof(templateId));
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException("Name cannot be empty", nameof(name));
+        if (string.IsNullOrWhiteSpace(baseDescription))
+            throw new ArgumentException("Description cannot be empty", nameof(baseDescription));
+        if (minExits < 1)
+            throw new ArgumentOutOfRangeException(nameof(minExits), "Minimum exits must be at least 1");
+        if (maxExits < minExits)
+            throw new ArgumentOutOfRangeException(nameof(maxExits), "Maximum exits must be >= minimum exits");
+        if (weight < 1)
+            throw new ArgumentOutOfRangeException(nameof(weight), "Weight must be at least 1");
 
         Id = Guid.NewGuid();
         TemplateId = templateId;
-        NamePattern = namePattern;
-        DescriptionPattern = descriptionPattern;
-        ValidBiomes = validBiomes;
-        RoomType = roomType;
-        Slots = slots ?? [];
+        Name = name;
+        Archetype = archetype;
+        Biome = biome;
+        BaseDescription = baseDescription;
+        MinExits = minExits;
+        MaxExits = maxExits;
         Weight = weight;
-        MinDepth = minDepth;
-        MaxDepth = maxDepth;
-        Tags = tags ?? [];
     }
 
     /// <summary>
-    /// Checks if this template is valid for the specified biome.
+    /// Adds a tag to this template. Tags are inherited by instantiated rooms.
     /// </summary>
-    public bool IsValidForBiome(string biome) =>
-        ValidBiomes.Contains(biome, StringComparer.OrdinalIgnoreCase);
-
-    /// <summary>
-    /// Checks if this template is valid for the specified depth.
-    /// </summary>
-    public bool IsValidForDepth(int depth)
+    public void AddTag(string tag)
     {
-        if (depth < MinDepth) return false;
-        if (MaxDepth.HasValue && depth > MaxDepth.Value) return false;
-        return true;
+        if (!string.IsNullOrWhiteSpace(tag) && !_tags.Contains(tag))
+            _tags.Add(tag);
     }
 
     /// <summary>
-    /// Checks if this template has all the specified tags.
+    /// Adds multiple tags to this template.
     /// </summary>
-    public bool HasAllTags(IEnumerable<string> requiredTags) =>
-        requiredTags.All(tag => Tags.Contains(tag, StringComparer.OrdinalIgnoreCase));
+    public void AddTags(IEnumerable<string> tags)
+    {
+        foreach (var tag in tags)
+            AddTag(tag);
+    }
 
     /// <summary>
-    /// Checks if this template has none of the specified tags.
+    /// Adds a feature spawn rule to this template.
     /// </summary>
-    public bool HasNoTags(IEnumerable<string> excludedTags) =>
-        !excludedTags.Any(tag => Tags.Contains(tag, StringComparer.OrdinalIgnoreCase));
+    public void AddFeature(RoomFeature feature)
+    {
+        if (feature == null)
+            throw new ArgumentNullException(nameof(feature));
+        _features.Add(feature);
+    }
 
     /// <summary>
-    /// Gets all required slots in this template.
+    /// Adds multiple features to this template.
     /// </summary>
-    public IEnumerable<TemplateSlot> GetRequiredSlots() =>
-        Slots.Where(s => s.IsRequired);
+    public void AddFeatures(IEnumerable<RoomFeature> features)
+    {
+        foreach (var feature in features)
+            AddFeature(feature);
+    }
 
     /// <summary>
-    /// Gets all optional slots in this template.
+    /// Checks if this template is compatible with a node based on exit count.
     /// </summary>
-    public IEnumerable<TemplateSlot> GetOptionalSlots() =>
-        Slots.Where(s => !s.IsRequired);
+    public bool IsCompatibleWithExitCount(int exitCount) =>
+        exitCount >= MinExits && exitCount <= MaxExits;
 
     /// <summary>
-    /// Gets slots of a specific type.
+    /// Checks if this template is compatible with a node's archetype.
     /// </summary>
-    public IEnumerable<TemplateSlot> GetSlotsByType(SlotType type) =>
-        Slots.Where(s => s.Type == type);
+    public bool IsCompatibleWithArchetype(RoomArchetype archetype) =>
+        Archetype == archetype;
 
     /// <summary>
-    /// Gets a specific slot by its ID.
+    /// Checks if this template is compatible with a specific biome.
     /// </summary>
-    public TemplateSlot? GetSlot(string slotId) =>
-        Slots.FirstOrDefault(s => s.SlotId.Equals(slotId, StringComparison.OrdinalIgnoreCase));
+    public bool IsCompatibleWithBiome(Biome biome) => Biome == biome;
 
-    /// <inheritdoc/>
-    public override string ToString() =>
-        $"RoomTemplate[{TemplateId}]: {RoomType} ({ValidBiomes.Count} biomes, {Slots.Count} slots)";
+    /// <summary>
+    /// Creates a room name from this template, with optional placeholder replacement.
+    /// </summary>
+    public string ProcessName(Dictionary<string, string>? placeholders = null)
+    {
+        var result = Name;
+        if (placeholders != null)
+        {
+            foreach (var (key, value) in placeholders)
+            {
+                result = result.Replace($"{{{key}}}", value, StringComparison.OrdinalIgnoreCase);
+            }
+        }
+        return result;
+    }
+
+    /// <summary>
+    /// Creates a room description from this template, with placeholder replacement.
+    /// Supported placeholders: {ADJ_SIZE}, {ADJ_CONDITION}, {ADJ_ATMOSPHERE}
+    /// </summary>
+    public string ProcessDescription(Dictionary<string, string>? placeholders = null)
+    {
+        var result = BaseDescription;
+        if (placeholders != null)
+        {
+            foreach (var (key, value) in placeholders)
+            {
+                result = result.Replace($"{{{key}}}", value, StringComparison.OrdinalIgnoreCase);
+            }
+        }
+        return result;
+    }
+
+    public override string ToString() => $"{TemplateId} ({Archetype}, {Biome})";
 }

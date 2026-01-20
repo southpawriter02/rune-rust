@@ -23,17 +23,15 @@ public readonly record struct Stats
     /// Gets the defense value, used to reduce incoming damage.
     /// </summary>
     public int Defense { get; init; }
+    public int Wits { get; init; }
 
     /// <summary>
-    /// Creates a new Stats value with the specified attributes.
+    /// Passive perception is WITS / 2, rounded up.
+    /// Used for automatic detection of hidden elements on room entry.
     /// </summary>
-    /// <param name="maxHealth">The maximum health points (must be at least 1).</param>
-    /// <param name="attack">The attack power (cannot be negative).</param>
-    /// <param name="defense">The defense value (cannot be negative).</param>
-    /// <exception cref="ArgumentOutOfRangeException">
-    /// Thrown when maxHealth is less than 1, or attack/defense is negative.
-    /// </exception>
-    public Stats(int maxHealth, int attack, int defense)
+    public int PassivePerception => (Wits + 1) / 2;
+
+    public Stats(int maxHealth, int attack, int defense, int wits = 10)
     {
         if (maxHealth < 1)
             throw new ArgumentOutOfRangeException(nameof(maxHealth), "Max health must be at least 1");
@@ -41,20 +39,16 @@ public readonly record struct Stats
             throw new ArgumentOutOfRangeException(nameof(attack), "Attack cannot be negative");
         if (defense < 0)
             throw new ArgumentOutOfRangeException(nameof(defense), "Defense cannot be negative");
+        if (wits < 1 || wits > 20)
+            throw new ArgumentOutOfRangeException(nameof(wits), "Wits must be between 1 and 20");
 
         MaxHealth = maxHealth;
         Attack = attack;
         Defense = defense;
+        Wits = wits;
     }
 
-    /// <summary>
-    /// Gets the default stats for a new player character (100 HP, 10 ATK, 5 DEF).
-    /// </summary>
-    public static Stats Default => new(100, 10, 5);
+    public static Stats Default => new(100, 10, 5, 10);
 
-    /// <summary>
-    /// Returns a string representation of these stats.
-    /// </summary>
-    /// <returns>A formatted string showing HP, ATK, and DEF values.</returns>
-    public override string ToString() => $"HP: {MaxHealth}, ATK: {Attack}, DEF: {Defense}";
+    public override string ToString() => $"HP: {MaxHealth}, ATK: {Attack}, DEF: {Defense}, WITS: {Wits}";
 }
