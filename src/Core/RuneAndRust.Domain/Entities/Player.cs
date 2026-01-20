@@ -331,6 +331,24 @@ public class Player : IEntity
     /// </remarks>
     public DamageResistances Resistances { get; private set; } = DamageResistances.None;
 
+    // ===== Recipe Book Properties (v0.11.1b) =====
+
+    /// <summary>
+    /// Gets the player's recipe book containing known crafting recipes.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The recipe book is created automatically when a player is created
+    /// and tracks which recipes the player has learned.
+    /// </para>
+    /// <para>
+    /// Default recipes are initialized by the RecipeService during
+    /// player creation. Additional recipes can be learned through
+    /// discovery, scrolls, or quest rewards.
+    /// </para>
+    /// </remarks>
+    public RecipeBook RecipeBook { get; private set; } = null!;
+
     // ===== Currency Properties (v0.0.9d) =====
 
     /// <summary>
@@ -374,6 +392,7 @@ public class Player : IEntity
     {
         Name = null!;
         Inventory = null!;
+        RecipeBook = null!;
     }
 
     /// <summary>
@@ -391,6 +410,7 @@ public class Player : IEntity
         Position = Position3D.Origin;
         Inventory = new Inventory();
         Equipment = new Dictionary<EquipmentSlot, Item>();
+        RecipeBook = RecipeBook.Create(Id);
     }
 
     /// <summary>
@@ -423,6 +443,7 @@ public class Player : IEntity
         Position = Position3D.Origin;
         Inventory = new Inventory();
         Equipment = new Dictionary<EquipmentSlot, Item>();
+        RecipeBook = RecipeBook.Create(Id);
     }
 
     /// <summary>
@@ -1264,5 +1285,25 @@ public class Player : IEntity
     public bool HasAllocation(string nodeId)
     {
         return GetAllocation(nodeId) != null;
+    }
+
+    // ===== Recipe Book Methods (v0.11.1b) =====
+
+    /// <summary>
+    /// Ensures the player has a recipe book (for existing players loaded from database).
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This method is used to handle backwards compatibility with existing player
+    /// data that was created before the recipe book system was introduced.
+    /// </para>
+    /// <para>
+    /// If the player already has a recipe book, this method does nothing.
+    /// Otherwise, it creates a new empty recipe book for the player.
+    /// </para>
+    /// </remarks>
+    public void EnsureRecipeBook()
+    {
+        RecipeBook ??= RecipeBook.Create(Id);
     }
 }

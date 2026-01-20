@@ -99,6 +99,22 @@ public static class DependencyInjection
             return new JsonComboProvider(combosPath, logger);
         });
 
+        // Resource provider (v0.11.0a) - loads resource definitions from JSON config
+        services.AddSingleton<IResourceProvider>(sp =>
+        {
+            var resourcesPath = Path.Combine(configPath, "resources.json");
+            var logger = sp.GetRequiredService<ILogger<JsonResourceProvider>>();
+            return new JsonResourceProvider(resourcesPath, logger);
+        });
+
+        // Recipe provider (v0.11.1a) - loads recipe definitions from JSON config
+        services.AddSingleton<IRecipeProvider>(sp =>
+        {
+            var recipesPath = Path.Combine(configPath, "recipes.json");
+            var logger = sp.GetRequiredService<ILogger<RecipeProvider>>();
+            return new RecipeProvider(recipesPath, logger);
+        });
+
         return services;
     }
 
@@ -260,6 +276,10 @@ public static class DependencyInjection
         // Combo detection system (v0.10.3b)
         // Note: IComboProvider is registered in AddInfrastructure as it loads from JSON config
         services.AddScoped<IComboService, ComboService>();
+
+        // Recipe book system (v0.11.1b)
+        // Note: IRecipeProvider and IResourceProvider are registered in AddInfrastructure as they load from JSON config
+        services.AddScoped<IRecipeService, RecipeService>();
 
         return services;
     }
