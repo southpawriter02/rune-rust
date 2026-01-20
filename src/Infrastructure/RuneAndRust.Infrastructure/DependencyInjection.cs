@@ -317,6 +317,11 @@ public static class DependencyInjection
         // Note: IQualityTierProvider is registered in AddInfrastructure as it loads from JSON config
         services.AddScoped<IQualityDeterminationService, QualityDeterminationService>();
 
+        // Statistics service (v0.12.0a)
+        // Tracks and queries player statistics across combat, exploration, progression, and time categories
+        // Calculates derived metrics including combat rating, critical hit rate, and trap avoidance rate
+        services.AddScoped<IStatisticsService, StatisticsService>();
+
         return services;
     }
 }

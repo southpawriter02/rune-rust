@@ -1,0 +1,56 @@
+{
+  "$schema": "./schemas/statistics.schema.json",
+  "combatRating": {
+    "thresholds": [
+      { "rating": "Novice", "minScore": 0, "displayName": "Novice Fighter" },
+      { "rating": "Apprentice", "minScore": 15, "displayName": "Apprentice Warrior" },
+      { "rating": "Journeyman", "minScore": 30, "displayName": "Journeyman Combatant" },
+      { "rating": "Skilled", "minScore": 45, "displayName": "Skilled Warrior" },
+      { "rating": "Veteran", "minScore": 60, "displayName": "Veteran Fighter" },
+      { "rating": "Master", "minScore": 75, "displayName": "Master Combatant" },
+      { "rating": "Legend", "minScore": 90, "displayName": "Legendary Warrior" }
+    ],
+    "weights": {
+      "kdRatio": 40,
+      "critRate": 20,
+      "missRatePenalty": 20,
+      "bossKills": 20
+    }
+  },
+  "categories": {
+    "combat": [
+      "monstersKilled",
+      "bossesKilled",
+      "damageDealt",
+      "damageReceived",
+      "criticalHits",
+      "attacksMissed",
+      "abilitiesUsed",
+      "deathCount",
+      "totalAttacks"
+    ],
+    "exploration": [
+      "roomsDiscovered",
+      "secretsFound",
+      "trapsTriggered",
+      "trapsAvoided",
+      "doorsOpened",
+      "chestsOpened"
+    ],
+    "progression": [
+      "xpEarned",
+      "levelsGained",
+      "itemsFound",
+      "itemsCrafted",
+      "goldEarned",
+      "goldSpent",
+      "questsCompleted",
+      "puzzlesSolved",
+      "resourcesGathered"
+    ],
+    "time": [
+      "playtimeSeconds",
+      "sessionCount"
+    ]
+  }
+}

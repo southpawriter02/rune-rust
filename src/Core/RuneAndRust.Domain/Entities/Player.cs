@@ -349,6 +349,25 @@ public class Player : IEntity
     /// </remarks>
     public RecipeBook RecipeBook { get; private set; } = null!;
 
+    // ===== Statistics Properties (v0.12.0a) =====
+
+    /// <summary>
+    /// Gets the player's statistics tracking entity.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The statistics entity tracks comprehensive game statistics across combat,
+    /// exploration, progression, and time categories. It is created lazily
+    /// when first accessed via <see cref="InitializeStatistics"/> or when
+    /// the StatisticsService records a statistic.
+    /// </para>
+    /// <para>
+    /// For existing players loaded from database, use <see cref="EnsureStatistics"/>
+    /// to ensure the statistics entity exists.
+    /// </para>
+    /// </remarks>
+    public PlayerStatistics? Statistics { get; private set; }
+
     // ===== Currency Properties (v0.0.9d) =====
 
     /// <summary>
@@ -1305,5 +1324,73 @@ public class Player : IEntity
     public void EnsureRecipeBook()
     {
         RecipeBook ??= RecipeBook.Create(Id);
+    }
+
+    // ===== Statistics Methods (v0.12.0a) =====
+
+    /// <summary>
+    /// Initializes the player's statistics entity.
+    /// </summary>
+    /// <param name="statistics">The statistics entity to associate with this player.</param>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="statistics"/> is null.
+    /// </exception>
+    /// <exception cref="ArgumentException">
+    /// Thrown when the statistics entity's PlayerId doesn't match this player's Id.
+    /// </exception>
+    /// <remarks>
+    /// <para>
+    /// This method is typically called by the StatisticsService
+    /// when statistics are first recorded for a player. It should only be called once
+    /// per player instance.
+    /// </para>
+    /// <para>
+    /// The statistics entity must have been created for this specific player
+    /// (PlayerId must match).
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// var stats = PlayerStatistics.Create(player.Id);
+    /// player.InitializeStatistics(stats);
+    /// </code>
+    /// </example>
+    public void InitializeStatistics(PlayerStatistics statistics)
+    {
+        ArgumentNullException.ThrowIfNull(statistics, nameof(statistics));
+
+        if (statistics.PlayerId != Id)
+        {
+            throw new ArgumentException(
+                "Statistics PlayerId must match player Id",
+                nameof(statistics));
+        }
+
+        Statistics = statistics;
+    }
+
+    /// <summary>
+    /// Ensures the player has a statistics entity.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This method is used to handle backwards compatibility with existing player
+    /// data that was created before the statistics system was introduced (v0.12.0a).
+    /// </para>
+    /// <para>
+    /// If the player already has a statistics entity, this method does nothing.
+    /// Otherwise, it creates a new statistics entity for the player.
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// // When loading a player from database
+    /// var player = await repository.GetPlayerAsync(playerId);
+    /// player.EnsureStatistics();
+    /// </code>
+    /// </example>
+    public void EnsureStatistics()
+    {
+        Statistics ??= PlayerStatistics.Create(Id);
     }
 }

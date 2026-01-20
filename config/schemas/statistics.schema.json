@@ -1,0 +1,109 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "statistics.schema.json",
+  "title": "Statistics Configuration",
+  "description": "Schema for configuring statistics tracking and combat rating thresholds (v0.12.0a).",
+  "type": "object",
+  "required": ["combatRating", "categories"],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Reference to this schema file."
+    },
+    "combatRating": {
+      "type": "object",
+      "description": "Combat rating threshold configuration.",
+      "required": ["thresholds"],
+      "properties": {
+        "thresholds": {
+          "type": "array",
+          "description": "Score thresholds for each rating tier.",
+          "minItems": 7,
+          "maxItems": 7,
+          "items": {
+            "type": "object",
+            "required": ["rating", "minScore"],
+            "properties": {
+              "rating": {
+                "type": "string",
+                "enum": ["Novice", "Apprentice", "Journeyman", "Skilled", "Veteran", "Master", "Legend"],
+                "description": "The combat rating tier."
+              },
+              "minScore": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 100,
+                "description": "Minimum score required for this rating."
+              },
+              "displayName": {
+                "type": "string",
+                "description": "Display name for the rating tier."
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "weights": {
+          "type": "object",
+          "description": "Weights for score calculation components.",
+          "properties": {
+            "kdRatio": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100,
+              "description": "Weight for kill/death ratio (max points)."
+            },
+            "critRate": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100,
+              "description": "Weight for critical hit rate (max points)."
+            },
+            "missRatePenalty": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100,
+              "description": "Penalty for miss rate (max points subtracted)."
+            },
+            "bossKills": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100,
+              "description": "Weight for boss kills (max points)."
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "categories": {
+      "type": "object",
+      "description": "Statistics category definitions.",
+      "properties": {
+        "combat": {
+          "type": "array",
+          "description": "Combat category statistic names.",
+          "items": { "type": "string" }
+        },
+        "exploration": {
+          "type": "array",
+          "description": "Exploration category statistic names.",
+          "items": { "type": "string" }
+        },
+        "progression": {
+          "type": "array",
+          "description": "Progression category statistic names.",
+          "items": { "type": "string" }
+        },
+        "time": {
+          "type": "array",
+          "description": "Time category statistic names.",
+          "items": { "type": "string" }
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}
