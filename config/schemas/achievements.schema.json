@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "achievements.schema.json",
+  "title": "Achievement Definitions",
+  "description": "Schema for achievement configuration defining unlockable achievements with conditions, categories, and tiers.",
+  "type": "object",
+  "required": ["achievements"],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Reference to this schema file"
+    },
+    "achievements": {
+      "type": "array",
+      "description": "List of achievement definitions",
+      "items": {
+        "$ref": "#/$defs/achievement"
+      }
+    }
+  },
+  "$defs": {
+    "achievement": {
+      "type": "object",
+      "description": "A single achievement definition",
+      "required": ["id", "name", "description", "category", "tier", "conditions"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the achievement (lowercase with hyphens)",
+          "pattern": "^[a-z0-9-]+$",
+          "examples": ["first-blood", "monster-slayer", "lucky-streak"]
+        },
+        "name": {
+          "type": "string",
+          "description": "Display name of the achievement shown to players",
+          "minLength": 1,
+          "examples": ["First Blood", "Monster Slayer"]
+        },
+        "description": {
+          "type": "string",
+          "description": "Description explaining how to unlock the achievement",
+          "minLength": 1,
+          "examples": ["Defeat your first monster", "Defeat 100 monsters"]
+        },
+        "category": {
+          "type": "string",
+          "enum": ["Combat", "Exploration", "Progression", "Collection", "Challenge", "Secret"],
+          "description": "Category for organizing achievements in the UI"
+        },
+        "tier": {
+          "type": "string",
+          "enum": ["Bronze", "Silver", "Gold", "Platinum"],
+          "description": "Achievement tier determining point value (Bronze=10, Silver=25, Gold=50, Platinum=100)"
+        },
+        "conditions": {
+          "type": "array",
+          "description": "Conditions that must all be met to unlock (AND logic)",
+          "items": {
+            "$ref": "#/$defs/condition"
+          },
+          "minItems": 1
+        },
+        "isSecret": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether the achievement is hidden until unlocked"
+        },
+        "iconPath": {
+          "type": "string",
+          "description": "Optional path to the achievement icon asset"
+        }
+      },
+      "additionalProperties": false
+    },
+    "condition": {
+      "type": "object",
+      "description": "A condition that must be met to unlock the achievement",
+      "required": ["stat", "operator", "value"],
+      "properties": {
+        "stat": {
+          "type": "string",
+          "description": "The statistic name to check (matches PlayerStatistics or DiceRollHistory properties)",
+          "examples": [
+            "monstersKilled",
+            "bossesKilled",
+            "criticalHits",
+            "roomsDiscovered",
+            "secretsFound",
+            "chestsOpened",
+            "levelsGained",
+            "goldEarned",
+            "itemsFound",
+            "itemsCrafted",
+            "totalNaturalTwenties",
+            "longestNat20Streak",
+            "totalPlaytimeMinutes",
+            "flawlessBossKills",
+            "fastestCompletionMinutes"
+          ]
+        },
+        "operator": {
+          "type": "string",
+          "enum": [">=", "<=", "=="],
+          "description": "Comparison operator (>= most common for cumulative achievements)"
+        },
+        "value": {
+          "type": "integer",
+          "description": "Threshold value to compare against",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

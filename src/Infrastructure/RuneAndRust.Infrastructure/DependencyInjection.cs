@@ -135,6 +135,12 @@ public static class DependencyInjection
             return new QualityTierProvider(tiersPath, logger);
         });
 
+        // Achievement provider (v0.12.1a) - loads achievement definitions from JSON config
+        // Binds from the "Achievements" section of appsettings or separate config file
+        services.Configure<AchievementOptions>(
+            configuration.GetSection(AchievementOptions.SectionName));
+        services.AddSingleton<IAchievementProvider, AchievementProvider>();
+
         return services;
     }
 

@@ -1,0 +1,188 @@
+{
+  "$schema": "./schemas/achievements.schema.json",
+  "achievements": [
+    {
+      "id": "first-blood",
+      "name": "First Blood",
+      "description": "Defeat your first monster",
+      "category": "Combat",
+      "tier": "Bronze",
+      "conditions": [
+        { "stat": "monstersKilled", "operator": ">=", "value": 1 }
+      ]
+    },
+    {
+      "id": "monster-hunter",
+      "name": "Monster Hunter",
+      "description": "Defeat 50 monsters",
+      "category": "Combat",
+      "tier": "Silver",
+      "conditions": [
+        { "stat": "monstersKilled", "operator": ">=", "value": 50 }
+      ]
+    },
+    {
+      "id": "monster-slayer",
+      "name": "Monster Slayer",
+      "description": "Defeat 100 monsters",
+      "category": "Combat",
+      "tier": "Silver",
+      "conditions": [
+        { "stat": "monstersKilled", "operator": ">=", "value": 100 }
+      ]
+    },
+    {
+      "id": "boss-killer",
+      "name": "Boss Killer",
+      "description": "Defeat your first boss",
+      "category": "Combat",
+      "tier": "Silver",
+      "conditions": [
+        { "stat": "bossesKilled", "operator": ">=", "value": 1 }
+      ]
+    },
+    {
+      "id": "critical-striker",
+      "name": "Critical Striker",
+      "description": "Land 25 critical hits",
+      "category": "Combat",
+      "tier": "Silver",
+      "conditions": [
+        { "stat": "criticalHits", "operator": ">=", "value": 25 }
+      ]
+    },
+    {
+      "id": "room-explorer",
+      "name": "Room Explorer",
+      "description": "Discover 10 rooms",
+      "category": "Exploration",
+      "tier": "Bronze",
+      "conditions": [
+        { "stat": "roomsDiscovered", "operator": ">=", "value": 10 }
+      ]
+    },
+    {
+      "id": "secret-seeker",
+      "name": "Secret Seeker",
+      "description": "Find 5 secrets",
+      "category": "Exploration",
+      "tier": "Silver",
+      "conditions": [
+        { "stat": "secretsFound", "operator": ">=", "value": 5 }
+      ]
+    },
+    {
+      "id": "treasure-hunter",
+      "name": "Treasure Hunter",
+      "description": "Open 20 chests",
+      "category": "Exploration",
+      "tier": "Silver",
+      "conditions": [
+        { "stat": "chestsOpened", "operator": ">=", "value": 20 }
+      ]
+    },
+    {
+      "id": "level-up",
+      "name": "Level Up!",
+      "description": "Reach level 2",
+      "category": "Progression",
+      "tier": "Bronze",
+      "conditions": [
+        { "stat": "levelsGained", "operator": ">=", "value": 1 }
+      ]
+    },
+    {
+      "id": "veteran-adventurer",
+      "name": "Veteran Adventurer",
+      "description": "Reach level 10",
+      "category": "Progression",
+      "tier": "Gold",
+      "conditions": [
+        { "stat": "levelsGained", "operator": ">=", "value": 9 }
+      ]
+    },
+    {
+      "id": "gold-hoarder",
+      "name": "Gold Hoarder",
+      "description": "Earn 1000 gold total",
+      "category": "Collection",
+      "tier": "Silver",
+      "conditions": [
+        { "stat": "goldEarned", "operator": ">=", "value": 1000 }
+      ]
+    },
+    {
+      "id": "item-collector",
+      "name": "Item Collector",
+      "description": "Find 25 items",
+      "category": "Collection",
+      "tier": "Silver",
+      "conditions": [
+        { "stat": "itemsFound", "operator": ">=", "value": 25 }
+      ]
+    },
+    {
+      "id": "master-crafter",
+      "name": "Master Crafter",
+      "description": "Craft 10 items",
+      "category": "Collection",
+      "tier": "Silver",
+      "conditions": [
+        { "stat": "itemsCrafted", "operator": ">=", "value": 10 }
+      ]
+    },
+    {
+      "id": "nat-twenty",
+      "name": "Natural Twenty!",
+      "description": "Roll your first natural 20",
+      "category": "Challenge",
+      "tier": "Bronze",
+      "conditions": [
+        { "stat": "totalNaturalTwenties", "operator": ">=", "value": 1 }
+      ]
+    },
+    {
+      "id": "lucky-streak",
+      "name": "Lady Luck's Favorite",
+      "description": "Roll a natural 20 five times in a row",
+      "category": "Challenge",
+      "tier": "Platinum",
+      "conditions": [
+        { "stat": "longestNat20Streak", "operator": ">=", "value": 5 }
+      ],
+      "isSecret": true
+    },
+    {
+      "id": "flawless",
+      "name": "Flawless Victory",
+      "description": "Defeat a boss without taking damage",
+      "category": "Challenge",
+      "tier": "Gold",
+      "conditions": [
+        { "stat": "flawlessBossKills", "operator": ">=", "value": 1 }
+      ],
+      "isSecret": true
+    },
+    {
+      "id": "speedrunner",
+      "name": "Speedrunner",
+      "description": "Complete the game in under 30 minutes",
+      "category": "Challenge",
+      "tier": "Platinum",
+      "conditions": [
+        { "stat": "fastestCompletionMinutes", "operator": "<=", "value": 30 }
+      ],
+      "isSecret": true
+    },
+    {
+      "id": "dedicated-player",
+      "name": "Dedicated Player",
+      "description": "Play for 10 hours total",
+      "category": "Progression",
+      "tier": "Gold",
+      "conditions": [
+        { "stat": "totalPlaytimeMinutes", "operator": ">=", "value": 600 }
+      ]
+    }
+  ]
+}
