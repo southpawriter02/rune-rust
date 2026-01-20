@@ -28,6 +28,8 @@ public class Room : IEntity
     /// Gets the narrative description of this room shown to the player.
     /// </summary>
     public string Description { get; private set; }
+    public Position Position { get; private set; }
+    public Biome Biome { get; private set; }
 
     /// <summary>
     /// Gets the 3D position of this room in the dungeon grid.
@@ -53,6 +55,9 @@ public class Room : IEntity
     /// List of monsters present in this room.
     /// </summary>
     private readonly List<Monster> _monsters = [];
+    private readonly List<HiddenElement> _hiddenElements = [];
+    private readonly List<RoomFeatureInstance> _features = [];
+    private readonly HashSet<string> _tags = [];
 
     // ===== Dropped Loot Fields (v0.0.9d) =====
 
@@ -131,6 +136,9 @@ public class Room : IEntity
     /// Gets a read-only list of monsters in this room.
     /// </summary>
     public IReadOnlyList<Monster> Monsters => _monsters.AsReadOnly();
+    public IReadOnlyList<HiddenElement> HiddenElements => _hiddenElements.AsReadOnly();
+    public IReadOnlyList<RoomFeatureInstance> Features => _features.AsReadOnly();
+    public IReadOnlySet<string> Tags => _tags;
 
     /// <summary>
     /// Gets a value indicating whether this room has any living monsters.
@@ -141,6 +149,9 @@ public class Room : IEntity
     /// Gets a value indicating whether this room has any items.
     /// </summary>
     public bool HasItems => _items.Count > 0;
+    public bool HasUnrevealedElements => _hiddenElements.Any(h => !h.IsRevealed);
+    public bool HasRevealedElements => _hiddenElements.Any(h => h.IsRevealed);
+    public bool HasFeatures => _features.Count > 0;
 
     // ===== Dropped Loot Properties (v0.0.9d) =====
 
@@ -343,19 +354,13 @@ public class Room : IEntity
         Description = null!;
     }
 
-    /// <summary>
-    /// Creates a new room with the specified name, description, and 3D position.
-    /// </summary>
-    /// <param name="name">The display name of the room.</param>
-    /// <param name="description">The narrative description shown to players.</param>
-    /// <param name="position">The 3D position of this room in the dungeon grid.</param>
-    /// <exception cref="ArgumentNullException">Thrown when name or description is null.</exception>
-    public Room(string name, string description, Position3D position)
+    public Room(string name, string description, Position position, Biome biome = Biome.Citadel)
     {
         Id = Guid.NewGuid();
         Name = name ?? throw new ArgumentNullException(nameof(name));
         Description = description ?? throw new ArgumentNullException(nameof(description));
         Position = position;
+        Biome = biome;
     }
 
     /// <summary>
@@ -613,10 +618,76 @@ public class Room : IEntity
     /// <returns>An enumerable of monsters that are still alive.</returns>
     public IEnumerable<Monster> GetAliveMonsters() => _monsters.Where(m => m.IsAlive);
 
+    public void AddHiddenElement(HiddenElement element)
+    {
+        if (element == null)
+            throw new ArgumentNullException(nameof(element));
+        _hiddenElements.Add(element);
+    }
+
+    public IEnumerable<HiddenElement> GetUnrevealedElements() =>
+        _hiddenElements.Where(h => !h.IsRevealed);
+
+    public IEnumerable<HiddenElement> GetRevealedElements() =>
+        _hiddenElements.Where(h => h.IsRevealed);
+
+    public void AddFeature(RoomFeatureInstance feature)
+    {
+        if (feature == null)
+            throw new ArgumentNullException(nameof(feature));
+        _features.Add(feature);
+    }
+
+    public RoomFeatureInstance? GetFeatureByName(string name) =>
+        _features.FirstOrDefault(f => f.MatchesName(name));
+
+    public void AddTag(string tag)
+    {
+        if (!string.IsNullOrWhiteSpace(tag))
+            _tags.Add(tag);
+    }
+
+    public void AddTags(IEnumerable<string> tags)
+    {
+        foreach (var tag in tags)
+            AddTag(tag);
+    }
+
+    public bool HasTag(string tag) => _tags.Contains(tag);
+
+    public bool RemoveTag(string tag) => _tags.Remove(tag);
+
     /// <summary>
-    /// Gets a human-readable description of visible exits from this room.
+    /// Checks passive perception against all unrevealed hidden elements
+    /// and reveals any that the player can detect.
     /// </summary>
-    /// <returns>A string describing available exits, including vertical directions.</returns>
+    /// <param name="passivePerception">The player's passive perception value.</param>
+    /// <returns>List of newly revealed elements.</returns>
+    public IReadOnlyList<HiddenElement> CheckPassivePerception(int passivePerception)
+    {
+        var revealed = new List<HiddenElement>();
+        foreach (var element in _hiddenElements.Where(h => !h.IsRevealed))
+        {
+            if (element.CanBeDetectedBy(passivePerception))
+            {
+                element.Reveal();
+                revealed.Add(element);
+            }
+        }
+        return revealed;
+    }
+
+    /// <summary>
+    /// Performs an active search with a WITS check result to reveal hidden elements.
+    /// </summary>
+    /// <param name="searchCheckResult">The result of the active WITS check.</param>
+    /// <returns>List of newly revealed elements.</returns>
+    public IReadOnlyList<HiddenElement> PerformActiveSearch(int searchCheckResult)
+    {
+        // Active search uses the full check result, not passive perception
+        return CheckPassivePerception(searchCheckResult);
+    }
+
     public string GetExitsDescription()
     {
         var visibleExits = GetVisibleExits();

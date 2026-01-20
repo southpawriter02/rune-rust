@@ -12,15 +12,7 @@ public abstract record GameCommand;
 /// </summary>
 /// <param name="Direction">The direction to move (North, South, East, or West).</param>
 public record MoveCommand(Direction Direction) : GameCommand;
-
-/// <summary>
-/// Command to examine the current room in detail.
-/// </summary>
-public record LookCommand : GameCommand;
-
-/// <summary>
-/// Command to display the player's inventory contents.
-/// </summary>
+public record LookCommand(string? Target = null) : GameCommand;
 public record InventoryCommand : GameCommand;
 
 /// <summary>
@@ -33,10 +25,12 @@ public record TakeCommand(string ItemName) : GameCommand;
 /// Command to attack a monster in the current room.
 /// </summary>
 public record AttackCommand : GameCommand;
-
-/// <summary>
-/// Command to save the current game session.
-/// </summary>
+public record SearchCommand(string? Target = null) : GameCommand;
+public record InvestigateCommand(string Target) : GameCommand;
+public record ExamineCommand(string Target) : GameCommand;
+public record TravelCommand(string? Destination = null) : GameCommand;
+public record EnterCommand(string? Location = null) : GameCommand;
+public record ExitCommand(string? Direction = null) : GameCommand;
 public record SaveCommand : GameCommand;
 
 /// <summary>

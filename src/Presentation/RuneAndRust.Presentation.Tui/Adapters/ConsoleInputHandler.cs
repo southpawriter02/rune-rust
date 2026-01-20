@@ -68,35 +68,47 @@ public class ConsoleInputHandler : IInputHandler
 
         return command switch
         {
+            // Movement commands
             "n" or "north" => new MoveCommand(Direction.North),
             "s" or "south" => new MoveCommand(Direction.South),
             "e" or "east" => new MoveCommand(Direction.East),
             "w" or "west" => new MoveCommand(Direction.West),
-            "look" or "l" => new LookCommand(),
+            "u" or "up" => new MoveCommand(Direction.Up),
+            "d" or "down" => new MoveCommand(Direction.Down),
+            "ne" or "northeast" => new MoveCommand(Direction.Northeast),
+            "nw" or "northwest" => new MoveCommand(Direction.Northwest),
+            "se" or "southeast" => new MoveCommand(Direction.Southeast),
+            "sw" or "southwest" => new MoveCommand(Direction.Southwest),
+
+            // Look command (no argument = room description, with argument = brief look at target)
+            "look" or "l" => new LookCommand(string.IsNullOrEmpty(argument) ? null : argument),
+
+            // Examine command (detailed examination with WITS check)
+            "examine" or "x" or "inspect" => string.IsNullOrEmpty(argument)
+                ? new LookCommand() // No argument defaults to look
+                : new ExamineCommand(argument),
+
+            // Inventory and item commands
             "inventory" or "inv" or "i" => new InventoryCommand(),
             "take" or "get" or "pick" => string.IsNullOrEmpty(argument)
                 ? LogAndReturn(new UnknownCommand(input), "Take command missing item argument")
                 : new TakeCommand(argument),
-            "drop" => string.IsNullOrEmpty(argument)
-                ? LogAndReturn(new UnknownCommand(input), "Drop command missing item argument")
-                : new DropCommand(argument),
-            "use" or "consume" or "drink" or "eat" => string.IsNullOrEmpty(argument)
-                ? LogAndReturn(new UnknownCommand(input), "Use command missing item argument")
-                : new UseCommand(argument),
-            "examine" or "inspect" or "x" => string.IsNullOrEmpty(argument)
-                ? LogAndReturn(new UnknownCommand(input), "Examine command missing target")
-                : new ExamineCommand(argument),
-            "status" or "stats" or "stat" => new StatusCommand(),
-            "abilities" or "ab" or "spells" or "skills" => new AbilitiesCommand(),
-            "cast" or "ability" => string.IsNullOrEmpty(argument)
-                ? LogAndReturn(new UnknownCommand(input), "Cast command missing ability argument")
-                : new UseAbilityCommand(argument),
+
+            // Combat
             "attack" or "fight" or "a" => new AttackCommand(),
-            "roll" or "r" => ParseRollCommand(argument, input),
-            "check" or "ch" => ParseSkillCheckCommand(argument, input),
-            "equip" => ParseEquipCommand(argument),
-            "unequip" => ParseUnequipCommand(argument),
-            "equipment" or "eq" or "gear" => new EquipmentCommand(),
+
+            // Search and investigation
+            "search" or "find" or "loot" => new SearchCommand(string.IsNullOrEmpty(argument) ? null : argument),
+            "investigate" or "study" => string.IsNullOrEmpty(argument)
+                ? new UnknownCommand(input)
+                : new InvestigateCommand(argument),
+
+            // Navigation
+            "travel" or "journey" => new TravelCommand(string.IsNullOrEmpty(argument) ? null : argument),
+            "enter" => new EnterCommand(string.IsNullOrEmpty(argument) ? null : argument),
+            "leave" => new ExitCommand(string.IsNullOrEmpty(argument) ? null : argument),
+
+            // System commands
             "save" => new SaveCommand(),
             "load" => new LoadCommand(),
             "help" or "h" or "?" => new HelpCommand(),

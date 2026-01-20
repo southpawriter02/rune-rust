@@ -123,11 +123,14 @@ public class Dungeon : IEntity
             StartingRoomId = room.Id;
     }
 
-    /// <summary>
-    /// Retrieves a room by its unique identifier.
-    /// </summary>
-    /// <param name="roomId">The ID of the room to retrieve.</param>
-    /// <returns>The room if found; otherwise, <c>null</c>.</returns>
+    public void SetStartingRoom(Guid roomId)
+    {
+        if (!_rooms.ContainsKey(roomId))
+            throw new ArgumentException($"Room {roomId} not found in dungeon", nameof(roomId));
+
+        StartingRoomId = roomId;
+    }
+
     public Room? GetRoom(Guid roomId) =>
         _rooms.TryGetValue(roomId, out var room) ? room : null;
 
@@ -335,7 +338,11 @@ public class Dungeon : IEntity
         Direction.West => Direction.East,
         Direction.Up => Direction.Down,
         Direction.Down => Direction.Up,
-        _ => throw new ArgumentOutOfRangeException(nameof(direction), direction, "Invalid direction")
+        Direction.Northeast => Direction.Southwest,
+        Direction.Northwest => Direction.Southeast,
+        Direction.Southeast => Direction.Northwest,
+        Direction.Southwest => Direction.Northeast,
+        _ => throw new ArgumentOutOfRangeException(nameof(direction))
     };
 
     /// <summary>

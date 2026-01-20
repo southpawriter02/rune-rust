@@ -126,9 +126,8 @@ public class GameView
                 await HandleMoveAsync(move.Direction, ct);
                 break;
 
-            case LookCommand:
-                _logger.LogDebug("Handling look command");
-                await HandleLookAsync(ct);
+            case LookCommand look:
+                await HandleLookAsync(look.Target, ct);
                 break;
 
             case InventoryCommand:
@@ -179,6 +178,30 @@ public class GameView
             case AttackCommand:
                 _logger.LogDebug("Handling attack command");
                 await HandleAttackAsync(ct);
+                break;
+
+            case SearchCommand search:
+                await HandleSearchAsync(search.Target, ct);
+                break;
+
+            case InvestigateCommand investigate:
+                await HandleInvestigateAsync(investigate.Target, ct);
+                break;
+
+            case ExamineCommand examine:
+                await HandleExamineAsync(examine.Target, ct);
+                break;
+
+            case TravelCommand travel:
+                await HandleTravelAsync(travel.Destination, ct);
+                break;
+
+            case EnterCommand enter:
+                await HandleEnterAsync(enter.Location, ct);
+                break;
+
+            case ExitCommand exit:
+                await HandleExitAsync(exit.Direction, ct);
                 break;
 
             case SaveCommand:
@@ -237,13 +260,29 @@ public class GameView
         }
     }
 
-    private async Task HandleLookAsync(CancellationToken ct)
+    private async Task HandleLookAsync(string? target, CancellationToken ct)
     {
-        var room = _gameService.GetCurrentRoom();
-        if (room != null)
+        if (string.IsNullOrWhiteSpace(target))
         {
-            _logger.LogDebug("Looking at room: {RoomName}", room.Name);
-            await _renderer.RenderRoomAsync(room, ct);
+            // Look at room
+            var room = _gameService.GetCurrentRoom();
+            if (room != null)
+            {
+                await _renderer.RenderRoomAsync(room, ct);
+            }
+        }
+        else
+        {
+            // Look at specific target
+            var lookResult = _gameService.TryLookAtTarget(target);
+            if (lookResult.Success)
+            {
+                await _renderer.RenderMessageAsync(lookResult.Description!, MessageType.Info, ct);
+            }
+            else
+            {
+                await _renderer.RenderMessageAsync(lookResult.ErrorMessage!, MessageType.Warning, ct);
+            }
         }
         else
         {
@@ -394,40 +433,114 @@ public class GameView
         await _renderer.RenderMessageAsync("Game saved successfully!", MessageType.Success, ct);
     }
 
-    private async Task HandleAbilitiesAsync(CancellationToken ct)
+    private async Task HandleSearchAsync(string? target, CancellationToken ct)
     {
-        var abilities = _gameService.GetPlayerAbilities();
-        _logger.LogDebug("Displaying {Count} abilities", abilities.Count);
-        await _renderer.RenderAbilitiesAsync(abilities, ct);
-    }
-
-    private async Task HandleUseAbilityAsync(string abilityName, CancellationToken ct)
-    {
-        var (success, message) = _gameService.TryUseAbility(abilityName);
-
-        if (success)
+        var searchResult = _gameService.TrySearch(target);
+        if (searchResult.Success)
         {
-            _logger.LogDebug("Ability used successfully: {AbilityName}", abilityName);
-            await _renderer.RenderCombatResultAsync(message, ct);
-
-            // Process turn-end effects (resource regen/decay, cooldown reduction)
-            var turnEndResult = _gameService.ProcessTurnEnd();
-            await _renderer.RenderTurnEndChangesAsync(turnEndResult, ct);
-
-            // Refresh room display after combat ability
-            var room = _gameService.GetCurrentRoom();
-            if (room != null && room.Monsters.Any() && !room.Monsters.Any(m => m.IsAlive))
-            {
-                _logger.LogInformation("All monsters defeated in room: {RoomName}", room.Name);
-                Console.WriteLine();
-                await _renderer.RenderMessageAsync("The area is now clear.", MessageType.Success, ct);
-            }
+            await _renderer.RenderMessageAsync(searchResult.Message, MessageType.Success, ct);
         }
         else
         {
-            _logger.LogDebug("Ability use failed: {AbilityName} - {Message}", abilityName, message);
-            await _renderer.RenderMessageAsync(message, MessageType.Warning, ct);
+            await _renderer.RenderMessageAsync(searchResult.Message, MessageType.Warning, ct);
         }
+    }
+
+    private async Task HandleInvestigateAsync(string target, CancellationToken ct)
+    {
+        var investigateResult = _gameService.TryInvestigate(target);
+        if (investigateResult.Success)
+        {
+            await _renderer.RenderMessageAsync(investigateResult.Message, MessageType.Success, ct);
+        }
+        else
+        {
+            await _renderer.RenderMessageAsync(investigateResult.Message, MessageType.Warning, ct);
+        }
+    }
+
+    private async Task HandleExamineAsync(string target, CancellationToken ct)
+    {
+        var (success, result, errorMessage) = await _gameService.TryExamineAsync(target, ct);
+
+        if (!success || result == null)
+        {
+            await _renderer.RenderMessageAsync(errorMessage ?? $"Cannot examine '{target}'.", MessageType.Warning, ct);
+            return;
+        }
+
+        // Build the examination display
+        var panel = new Panel(new Markup($"[white]{EscapeMarkup(result.CompositeDescription)}[/]"))
+        {
+            Header = new PanelHeader($"[yellow]{result.ObjectName.ToUpper()}[/]"),
+            Border = BoxBorder.Rounded,
+            BorderStyle = new Style(Color.Grey)
+        };
+
+        AnsiConsole.Write(panel);
+
+        // Show WITS check result
+        var layerName = result.HighestLayerUnlocked switch
+        {
+            Domain.Enums.ExaminationLayer.Cursory => "Cursory",
+            Domain.Enums.ExaminationLayer.Detailed => "Detailed",
+            Domain.Enums.ExaminationLayer.Expert => "Expert",
+            _ => "Basic"
+        };
+
+        var checkColor = result.HighestLayerUnlocked switch
+        {
+            Domain.Enums.ExaminationLayer.Expert => "green",
+            Domain.Enums.ExaminationLayer.Detailed => "yellow",
+            _ => "grey"
+        };
+
+        await _renderer.RenderMessageAsync(
+            $"[WITS Check: {result.WitsRoll} + {result.WitsTotal - result.WitsRoll} = {result.WitsTotal}] [{layerName} examination]",
+            MessageType.Info, ct);
+
+        // Show hint notification if applicable
+        if (result.RevealedHint)
+        {
+            Console.WriteLine();
+            await _renderer.RenderMessageAsync("[Hint revealed!]", MessageType.Success, ct);
+        }
+
+        // Show solution notification if applicable
+        if (!string.IsNullOrWhiteSpace(result.RevealedSolutionId))
+        {
+            Console.WriteLine();
+            await _renderer.RenderMessageAsync("[New puzzle solution discovered!]", MessageType.Success, ct);
+        }
+    }
+
+    private static string EscapeMarkup(string text)
+    {
+        // Escape special Spectre.Console markup characters
+        return text
+            .Replace("[", "[[")
+            .Replace("]", "]]");
+    }
+
+    private async Task HandleTravelAsync(string? destination, CancellationToken ct)
+    {
+        await _renderer.RenderMessageAsync(
+            "Travel system is not yet implemented. This feature will be available in a future update.",
+            MessageType.Info, ct);
+    }
+
+    private async Task HandleEnterAsync(string? location, CancellationToken ct)
+    {
+        await _renderer.RenderMessageAsync(
+            "Enter command is not yet implemented. This feature will be available in a future update.",
+            MessageType.Info, ct);
+    }
+
+    private async Task HandleExitAsync(string? direction, CancellationToken ct)
+    {
+        await _renderer.RenderMessageAsync(
+            "Exit command is not yet implemented. Use movement commands (n/s/e/w) to leave the current area.",
+            MessageType.Info, ct);
     }
 
     private Task HandleHelpAsync(CancellationToken ct)
@@ -445,7 +558,13 @@ public class GameView
         helpTable.AddRow("[cyan]s, south[/]", "Move south");
         helpTable.AddRow("[cyan]e, east[/]", "Move east");
         helpTable.AddRow("[cyan]w, west[/]", "Move west");
-        helpTable.AddRow("[cyan]look, l[/]", "Look around the current room");
+        helpTable.AddRow("[cyan]u, up[/]", "Move up (stairs, ladders)");
+        helpTable.AddRow("[cyan]d, down[/]", "Move down (stairs, ladders)");
+        helpTable.AddRow("[cyan]ne, nw, se, sw[/]", "Move diagonally");
+        helpTable.AddRow("[cyan]look, l [target][/]", "Look around or at target (brief)");
+        helpTable.AddRow("[cyan]examine, x <target>[/]", "Examine with WITS check (detailed)");
+        helpTable.AddRow("[cyan]search [container][/]", "Search for hidden elements");
+        helpTable.AddRow("[cyan]investigate <target>[/]", "Investigate for secrets");
         helpTable.AddRow("[cyan]inventory, i[/]", "View your inventory");
         helpTable.AddRow("[cyan]take <item>[/]", "Pick up an item");
         helpTable.AddRow("[cyan]drop <item>[/]", "Drop an item");
