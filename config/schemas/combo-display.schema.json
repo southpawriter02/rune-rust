@@ -1,0 +1,155 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "Combo Display Configuration",
+    "description": "Configuration schema for combo chain indicator display.",
+    "type": "object",
+    "properties": {
+        "symbols": {
+            "type": "object",
+            "description": "Symbol characters for combo display.",
+            "properties": {
+                "completedStep": {
+                    "type": "string",
+                    "description": "Symbol for completed steps"
+                },
+                "currentStep": {
+                    "type": "string",
+                    "description": "Symbol for current step"
+                },
+                "pendingStep": {
+                    "type": "string",
+                    "description": "Symbol for pending steps"
+                },
+                "chainArrow": {
+                    "type": "string",
+                    "description": "Arrow between chain steps"
+                },
+                "completedStepAscii": {
+                    "type": "string",
+                    "description": "ASCII fallback for completed"
+                },
+                "currentStepAscii": {
+                    "type": "string",
+                    "description": "ASCII fallback for current"
+                },
+                "pendingStepAscii": {
+                    "type": "string",
+                    "description": "ASCII fallback for pending"
+                },
+                "chainArrowAscii": {
+                    "type": "string",
+                    "description": "ASCII fallback for arrow"
+                }
+            },
+            "required": [
+                "completedStep",
+                "currentStep",
+                "pendingStep",
+                "chainArrow"
+            ]
+        },
+        "colors": {
+            "type": "object",
+            "description": "Console colors for combo display elements.",
+            "properties": {
+                "completedStep": {
+                    "type": "string"
+                },
+                "currentStep": {
+                    "type": "string"
+                },
+                "pendingStep": {
+                    "type": "string"
+                },
+                "highBonus": {
+                    "type": "string"
+                },
+                "mediumBonus": {
+                    "type": "string"
+                },
+                "lowBonus": {
+                    "type": "string"
+                },
+                "noBonus": {
+                    "type": "string"
+                },
+                "urgentWindow": {
+                    "type": "string"
+                },
+                "warningWindow": {
+                    "type": "string"
+                },
+                "normalWindow": {
+                    "type": "string"
+                },
+                "comboBreak": {
+                    "type": "string"
+                },
+                "comboComplete": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "completedStep",
+                "currentStep",
+                "pendingStep"
+            ]
+        },
+        "display": {
+            "type": "object",
+            "description": "Display behavior settings.",
+            "properties": {
+                "bonusMultiplierPerStep": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 100
+                },
+                "urgentWindowThreshold": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 10
+                },
+                "showBonusPreview": {
+                    "type": "boolean"
+                },
+                "showTargetRequirements": {
+                    "type": "boolean"
+                },
+                "maxContinuationOptions": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 20
+                }
+            }
+        },
+        "messages": {
+            "type": "object",
+            "description": "Message templates.",
+            "properties": {
+                "comboBreak": {
+                    "type": "string"
+                },
+                "comboComplete": {
+                    "type": "string"
+                },
+                "windowExpired": {
+                    "type": "string"
+                },
+                "continuePrompt": {
+                    "type": "string"
+                },
+                "buildingCombo": {
+                    "type": "string"
+                },
+                "noActiveCombo": {
+                    "type": "string"
+                }
+            }
+        }
+    },
+    "required": [
+        "symbols",
+        "colors",
+        "display"
+    ]
+}

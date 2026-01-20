@@ -1,0 +1,42 @@
+{
+    "$schema": "./schemas/combo-display.schema.json",
+    "symbols": {
+        "completedStep": "✓",
+        "currentStep": ">",
+        "pendingStep": "?",
+        "chainArrow": " → ",
+        "completedStepAscii": "*",
+        "currentStepAscii": ">",
+        "pendingStepAscii": "?",
+        "chainArrowAscii": " -> "
+    },
+    "colors": {
+        "completedStep": "Green",
+        "currentStep": "Yellow",
+        "pendingStep": "DarkGray",
+        "highBonus": "Cyan",
+        "mediumBonus": "Green",
+        "lowBonus": "Yellow",
+        "noBonus": "Gray",
+        "urgentWindow": "Red",
+        "warningWindow": "Yellow",
+        "normalWindow": "White",
+        "comboBreak": "Red",
+        "comboComplete": "Cyan"
+    },
+    "display": {
+        "bonusMultiplierPerStep": 10,
+        "urgentWindowThreshold": 2,
+        "showBonusPreview": true,
+        "showTargetRequirements": false,
+        "maxContinuationOptions": 5
+    },
+    "messages": {
+        "comboBreak": "COMBO BROKEN!",
+        "comboComplete": "COMBO COMPLETE!",
+        "windowExpired": "Window expired",
+        "continuePrompt": "Continue combo:",
+        "buildingCombo": "Building combo...",
+        "noActiveCombo": ""
+    }
+}
