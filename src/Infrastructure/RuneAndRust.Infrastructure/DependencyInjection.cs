@@ -322,6 +322,11 @@ public static class DependencyInjection
         // Calculates derived metrics including combat rating, critical hit rate, and trap avoidance rate
         services.AddScoped<IStatisticsService, StatisticsService>();
 
+        // Dice history service (v0.12.0b)
+        // Tracks and queries dice roll history including streaks and luck ratings
+        // Provides statistics aggregation for the dice statistics view
+        services.AddScoped<IDiceHistoryService, DiceHistoryService>();
+
         return services;
     }
 }

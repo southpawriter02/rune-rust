@@ -1393,4 +1393,88 @@ public class Player : IEntity
     {
         Statistics ??= PlayerStatistics.Create(Id);
     }
+
+    // ===== Dice History Properties (v0.12.0b) =====
+
+    /// <summary>
+    /// Gets the player's dice roll history tracking entity.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The DiceRollHistory entity tracks all dice rolls made by the player,
+    /// including d20 averages, natural 20/1 counts, and streak information.
+    /// This property may be null if the player hasn't made any dice rolls yet.
+    /// </para>
+    /// <para>
+    /// Use <see cref="EnsureDiceHistory"/> or the DiceHistoryService
+    /// to ensure the dice history entity exists.
+    /// </para>
+    /// </remarks>
+    public DiceRollHistory? DiceHistory { get; private set; }
+
+    /// <summary>
+    /// Initializes the player's dice roll history entity.
+    /// </summary>
+    /// <param name="history">The dice history entity to associate with this player.</param>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="history"/> is null.
+    /// </exception>
+    /// <exception cref="ArgumentException">
+    /// Thrown when the history entity's PlayerId doesn't match this player's Id.
+    /// </exception>
+    /// <remarks>
+    /// <para>
+    /// This method is typically called by the DiceHistoryService
+    /// when dice rolls are first recorded for a player. It should only be called once
+    /// per player instance.
+    /// </para>
+    /// <para>
+    /// The dice history entity must have been created for this specific player
+    /// (PlayerId must match).
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// var history = DiceRollHistory.Create(player.Id);
+    /// player.InitializeDiceHistory(history);
+    /// </code>
+    /// </example>
+    public void InitializeDiceHistory(DiceRollHistory history)
+    {
+        ArgumentNullException.ThrowIfNull(history, nameof(history));
+
+        if (history.PlayerId != Id)
+        {
+            throw new ArgumentException(
+                "DiceHistory PlayerId must match player Id",
+                nameof(history));
+        }
+
+        DiceHistory = history;
+    }
+
+    /// <summary>
+    /// Ensures the player has a dice roll history entity.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This method is used to handle backwards compatibility with existing player
+    /// data that was created before the dice history system was introduced (v0.12.0b).
+    /// </para>
+    /// <para>
+    /// If the player already has a dice history entity, this method does nothing.
+    /// Otherwise, it creates a new dice history entity for the player.
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// // When loading a player from database
+    /// var player = await repository.GetPlayerAsync(playerId);
+    /// player.EnsureDiceHistory();
+    /// </code>
+    /// </example>
+    public void EnsureDiceHistory()
+    {
+        DiceHistory ??= DiceRollHistory.Create(Id);
+    }
 }
