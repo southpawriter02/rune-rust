@@ -1,0 +1,30 @@
+{
+    "$schema": "./schemas/defense-display.schema.json",
+    "actionKeys": {
+        "block": "B",
+        "dodge": "D",
+        "parry": "P",
+        "counter": "C"
+    },
+    "symbols": {
+        "timingBarFilled": "=",
+        "timingBarEmpty": ".",
+        "separator": "─"
+    },
+    "colors": {
+        "incomingAttack": "Red",
+        "timingNormal": "Green",
+        "timingWarning": "Yellow",
+        "timingCritical": "Red",
+        "defenseSuccess": "Green",
+        "defenseFailure": "Red",
+        "actionAvailable": "White",
+        "actionUnavailable": "DarkGray"
+    },
+    "display": {
+        "timingBarWidth": 10,
+        "showSuccessChance": true,
+        "showStaminaCost": true,
+        "showDamageReduction": true
+    }
+}

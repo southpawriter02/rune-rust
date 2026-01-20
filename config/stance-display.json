@@ -1,0 +1,32 @@
+{
+    "$schema": "./schemas/stance-display.schema.json",
+    "icons": {
+        "aggressive": "⚔",
+        "defensive": "🛡",
+        "balanced": "⚖",
+        "tactical": "🎯",
+        "special": "✦",
+        "default": "◆",
+        "aggressiveAscii": "[A]",
+        "defensiveAscii": "[D]",
+        "balancedAscii": "[B]",
+        "tacticalAscii": "[T]",
+        "specialAscii": "[S]",
+        "defaultAscii": "[?]"
+    },
+    "colors": {
+        "aggressive": "Red",
+        "defensive": "Blue",
+        "balanced": "Yellow",
+        "tactical": "Cyan",
+        "special": "Magenta",
+        "positiveModifier": "Green",
+        "negativeModifier": "Red",
+        "neutralModifier": "Gray"
+    },
+    "display": {
+        "showDescription": false,
+        "showAllModifiers": true,
+        "compactMode": true
+    }
+}
