@@ -72,6 +72,25 @@ public record UseCommand(string ItemName) : GameCommand;
 public record StatusCommand : GameCommand;
 
 /// <summary>
+/// Command to display player statistics view with category navigation.
+/// </summary>
+/// <param name="Category">
+/// Optional category to display. When null, defaults to Combat.
+/// Valid categories: Combat, Exploration, Progression, Dice, Time.
+/// </param>
+/// <remarks>
+/// <para>Provides access to the comprehensive statistics tracking system:</para>
+/// <list type="bullet">
+///   <item><description>Combat: Kills, damage, abilities, combat rating</description></item>
+///   <item><description>Exploration: Rooms, secrets, traps discovered</description></item>
+///   <item><description>Progression: XP, levels, items, gold</description></item>
+///   <item><description>Dice: Roll history, luck rating, streaks</description></item>
+///   <item><description>Time: Playtime, sessions, dates</description></item>
+/// </list>
+/// </remarks>
+public record StatsCommand(StatisticCategory? Category = null) : GameCommand;
+
+/// <summary>
 /// Command to display the player's abilities.
 /// </summary>
 public record AbilitiesCommand : GameCommand;

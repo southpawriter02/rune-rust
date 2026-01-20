@@ -108,6 +108,31 @@ public class ConsoleInputHandler : IInputHandler
             "enter" => new EnterCommand(string.IsNullOrEmpty(argument) ? null : argument),
             "leave" => new ExitCommand(string.IsNullOrEmpty(argument) ? null : argument),
 
+            // Player info commands
+            "status" => new StatusCommand(),
+            "stats" or "statistics" => ParseStatsCommand(argument),
+            "abilities" or "skills" => new AbilitiesCommand(),
+
+            // Equipment commands
+            "equip" or "wear" or "wield" => ParseEquipCommand(argument),
+            "unequip" or "remove" => ParseUnequipCommand(argument),
+            "equipment" or "gear" or "eq" => new EquipmentCommand(),
+
+            // Dice and skill check commands
+            "roll" or "dice" => ParseRollCommand(argument, input),
+            "check" => ParseSkillCheckCommand(argument, input),
+
+            // Item manipulation
+            "drop" => string.IsNullOrEmpty(argument)
+                ? LogAndReturn(new UnknownCommand(input), "Drop command missing item argument")
+                : new DropCommand(argument),
+            "use" => string.IsNullOrEmpty(argument)
+                ? LogAndReturn(new UnknownCommand(input), "Use command missing item argument")
+                : new UseCommand(argument),
+            "ability" => string.IsNullOrEmpty(argument)
+                ? LogAndReturn(new UnknownCommand(input), "Ability command missing ability name")
+                : new UseAbilityCommand(argument),
+
             // System commands
             "save" => new SaveCommand(),
             "load" => new LoadCommand(),
@@ -222,6 +247,51 @@ public class ConsoleInputHandler : IInputHandler
         }
 
         return new InvalidCommand($"Unknown slot '{argument}'. Valid slots: {EquipmentService.GetValidSlotNames()}");
+    }
+
+    /// <summary>
+    /// Parses a stats command from user input, optionally with a category.
+    /// </summary>
+    /// <param name="argument">The optional category argument (e.g., "combat", "dice").</param>
+    /// <returns>A StatsCommand with the parsed category, or null for default (Combat).</returns>
+    /// <remarks>
+    /// Supported categories (case-insensitive):
+    /// <list type="bullet">
+    ///   <item><description>combat, c - Combat statistics</description></item>
+    ///   <item><description>exploration, explore, e - Exploration statistics</description></item>
+    ///   <item><description>progression, progress, p - Progression statistics</description></item>
+    ///   <item><description>dice, d, rolls - Dice roll history and luck</description></item>
+    ///   <item><description>time, t, session - Time and session statistics</description></item>
+    /// </list>
+    /// </remarks>
+    private GameCommand ParseStatsCommand(string? argument)
+    {
+        if (string.IsNullOrWhiteSpace(argument))
+        {
+            _logger.LogDebug("Stats command with no category - defaulting to Combat");
+            return new StatsCommand(null);
+        }
+
+        var categoryArg = argument.Trim().ToLowerInvariant();
+        StatisticCategory? category = categoryArg switch
+        {
+            "combat" or "c" => StatisticCategory.Combat,
+            "exploration" or "explore" or "e" => StatisticCategory.Exploration,
+            "progression" or "progress" or "p" => StatisticCategory.Progression,
+            "dice" or "d" or "rolls" => StatisticCategory.Dice,
+            "time" or "t" or "session" => StatisticCategory.Time,
+            _ => null
+        };
+
+        if (category == null)
+        {
+            _logger.LogWarning("Unknown stats category: '{Category}'. Defaulting to Combat.", categoryArg);
+            // Return Combat as default for unrecognized categories
+            return new StatsCommand(StatisticCategory.Combat);
+        }
+
+        _logger.LogDebug("Parsed stats command with category: {Category}", category);
+        return new StatsCommand(category);
     }
 
     /// <summary>

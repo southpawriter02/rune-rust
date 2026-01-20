@@ -45,6 +45,8 @@ try
             services.AddSingleton<IGameRenderer, SpectreGameRenderer>();
             services.AddSingleton<IInputHandler, ConsoleInputHandler>();
             services.AddTransient<MainMenuView>();
+            // Statistics view (v0.12.0c) - must be registered before GameView
+            services.AddTransient<StatisticsView>();
             services.AddTransient<GameView>();
         })
         .Build();

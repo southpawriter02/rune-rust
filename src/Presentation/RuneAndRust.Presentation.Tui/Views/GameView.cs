@@ -32,6 +32,14 @@ public class GameView
     private readonly IInputHandler _inputHandler;
 
     /// <summary>
+    /// The statistics view for displaying player statistics.
+    /// </summary>
+    /// <remarks>
+    /// Added in v0.12.0c for the Statistics Display feature.
+    /// </remarks>
+    private readonly StatisticsView _statisticsView;
+
+    /// <summary>
     /// Logger for view operations and diagnostics.
     /// </summary>
     private readonly ILogger<GameView> _logger;
@@ -42,19 +50,22 @@ public class GameView
     /// <param name="gameService">The game session service.</param>
     /// <param name="renderer">The game renderer.</param>
     /// <param name="inputHandler">The input handler.</param>
+    /// <param name="statisticsView">The statistics view for displaying player stats (v0.12.0c).</param>
     /// <param name="logger">The logger for diagnostics.</param>
     /// <exception cref="ArgumentNullException">Thrown when any parameter is null.</exception>
     public GameView(
         GameSessionService gameService,
         IGameRenderer renderer,
         IInputHandler inputHandler,
+        StatisticsView statisticsView,
         ILogger<GameView> logger)
     {
         _gameService = gameService ?? throw new ArgumentNullException(nameof(gameService));
         _renderer = renderer ?? throw new ArgumentNullException(nameof(renderer));
         _inputHandler = inputHandler ?? throw new ArgumentNullException(nameof(inputHandler));
+        _statisticsView = statisticsView ?? throw new ArgumentNullException(nameof(statisticsView));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _logger.LogDebug("GameView initialized");
+        _logger.LogDebug("GameView initialized with StatisticsView support (v0.12.0c)");
     }
 
     /// <summary>
@@ -158,6 +169,11 @@ public class GameView
             case StatusCommand:
                 _logger.LogDebug("Handling status command");
                 await HandleStatusAsync(ct);
+                break;
+
+            case StatsCommand stats:
+                _logger.LogDebug("Handling stats command for category: {Category}", stats.Category?.ToString() ?? "default (Combat)");
+                await HandleStatsAsync(stats.Category, ct);
                 break;
 
             case AbilitiesCommand:
@@ -354,6 +370,32 @@ public class GameView
 
         _logger.LogDebug("Displaying player status for: {PlayerName}", stats.Name);
         await _renderer.RenderPlayerStatsAsync(stats, ct);
+    }
+
+    /// <summary>
+    /// Handles the stats command by displaying the statistics view.
+    /// </summary>
+    /// <param name="category">The statistics category to display, or null to default to Combat.</param>
+    /// <param name="ct">Cancellation token for async operation.</param>
+    /// <remarks>
+    /// Added in v0.12.0c as part of the Statistics Display feature.
+    /// Delegates to <see cref="StatisticsView"/> for rendering the statistics UI.
+    /// </remarks>
+    private async Task HandleStatsAsync(StatisticCategory? category, CancellationToken ct)
+    {
+        var player = _gameService.CurrentState?.Player;
+        if (player == null)
+        {
+            _logger.LogWarning("Stats command failed: no active player session");
+            await _renderer.RenderMessageAsync("No active game session.", MessageType.Warning, ct);
+            return;
+        }
+
+        var displayCategory = category ?? StatisticCategory.Combat;
+        _logger.LogDebug("Rendering statistics view for player {PlayerId}, category: {Category}",
+            player.Id, displayCategory);
+
+        await _statisticsView.RenderAsync(player, displayCategory, ct);
     }
 
     private async Task HandleLoadAsync(CancellationToken ct)
@@ -571,6 +613,7 @@ public class GameView
         helpTable.AddRow("[cyan]use <item>[/]", "Use/consume an item");
         helpTable.AddRow("[cyan]examine <target>[/]", "Examine an item, monster, or room");
         helpTable.AddRow("[cyan]status[/]", "View character stats");
+        helpTable.AddRow("[cyan]stats [category][/]", "View detailed statistics (combat/exploration/progression/dice/time)");
         helpTable.AddRow("[cyan]abilities, ab[/]", "View your abilities");
         helpTable.AddRow("[cyan]cast <ability>[/]", "Use an ability");
         helpTable.AddRow("[cyan]attack, a[/]", "Attack an enemy");
