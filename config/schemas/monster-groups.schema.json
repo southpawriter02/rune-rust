@@ -1,0 +1,220 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "monster-groups.schema.json",
+    "title": "Monster Group Definitions Configuration",
+    "description": "Configuration for coordinated monster groups with tactical behaviors, synergies, and role-based composition.",
+    "type": "object",
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "Reference to this schema file"
+        },
+        "groups": {
+            "type": "array",
+            "description": "List of monster group definitions",
+            "items": {
+                "$ref": "#/definitions/monsterGroup"
+            },
+            "minItems": 1
+        }
+    },
+    "required": [
+        "groups"
+    ],
+    "definitions": {
+        "monsterGroup": {
+            "type": "object",
+            "description": "A monster group definition with members, tactics, and synergies",
+            "properties": {
+                "groupId": {
+                    "type": "string",
+                    "description": "Unique identifier for the group (lowercase, kebab-case)",
+                    "pattern": "^[a-z][a-z0-9-]*$",
+                    "examples": ["goblin-warband", "skeleton-patrol", "bandit-ambush"]
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Display name of the group",
+                    "minLength": 1,
+                    "maxLength": 50,
+                    "examples": ["Goblin Warband", "Skeleton Patrol", "Bandit Ambush"]
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Background lore and flavor text for the group",
+                    "minLength": 1,
+                    "maxLength": 500
+                },
+                "leaderRole": {
+                    "type": ["string", "null"],
+                    "description": "The role designation for the group leader (default: 'leader')",
+                    "examples": ["leader", "chief", "captain"],
+                    "default": "leader"
+                },
+                "tags": {
+                    "type": "array",
+                    "description": "Tags for categorization and filtering",
+                    "items": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9-]*$"
+                    },
+                    "examples": [["undead", "patrol"], ["goblin", "warband"], ["humanoid", "ambush"]]
+                },
+                "members": {
+                    "type": "array",
+                    "description": "Group member definitions with roles and positions",
+                    "items": {
+                        "$ref": "#/definitions/groupMember"
+                    },
+                    "minItems": 1
+                },
+                "tactics": {
+                    "type": "array",
+                    "description": "Tactical behaviors in priority order (evaluated first to last)",
+                    "items": {
+                        "type": "string",
+                        "enum": ["Flank", "FocusFire", "ProtectLeader", "ProtectCaster", "Swarm", "Retreat", "Ambush", "HitAndRun"]
+                    },
+                    "examples": [["Flank", "FocusFire"], ["Ambush", "HitAndRun"], ["ProtectLeader", "Swarm"]]
+                },
+                "synergies": {
+                    "type": "array",
+                    "description": "Synergy effects that activate based on group conditions",
+                    "items": {
+                        "$ref": "#/definitions/groupSynergy"
+                    }
+                }
+            },
+            "required": [
+                "groupId",
+                "name",
+                "members"
+            ],
+            "additionalProperties": false
+        },
+        "groupMember": {
+            "type": "object",
+            "description": "A member slot within a monster group",
+            "properties": {
+                "monsterDefinitionId": {
+                    "type": "string",
+                    "description": "Reference to the monster definition",
+                    "pattern": "^[a-z][a-z0-9-]*$",
+                    "examples": ["goblin-warrior", "goblin-shaman", "skeleton-archer"]
+                },
+                "count": {
+                    "type": "integer",
+                    "description": "Number of this monster type in the group",
+                    "minimum": 1,
+                    "maximum": 10,
+                    "default": 1,
+                    "examples": [1, 2, 3, 4]
+                },
+                "role": {
+                    "type": ["string", "null"],
+                    "description": "Tactical role for this member (leader, melee, ranged, caster, striker)",
+                    "examples": ["leader", "melee", "ranged", "caster", "striker"]
+                },
+                "preferredPosition": {
+                    "$ref": "#/definitions/gridOffset",
+                    "description": "Optional spawn offset relative to group center"
+                }
+            },
+            "required": [
+                "monsterDefinitionId"
+            ],
+            "additionalProperties": false
+        },
+        "gridOffset": {
+            "type": "object",
+            "description": "A relative position offset for spawn positioning",
+            "properties": {
+                "deltaX": {
+                    "type": "integer",
+                    "description": "Horizontal offset (positive = East, negative = West)",
+                    "minimum": -10,
+                    "maximum": 10,
+                    "examples": [-1, 0, 1, 2]
+                },
+                "deltaY": {
+                    "type": "integer",
+                    "description": "Vertical offset (positive = South, negative = North)",
+                    "minimum": -10,
+                    "maximum": 10,
+                    "examples": [-1, 0, 1, 2]
+                }
+            },
+            "required": [
+                "deltaX",
+                "deltaY"
+            ],
+            "additionalProperties": false
+        },
+        "groupSynergy": {
+            "type": "object",
+            "description": "A synergy effect that provides bonuses under specific conditions",
+            "properties": {
+                "synergyId": {
+                    "type": "string",
+                    "description": "Unique identifier for the synergy (lowercase, kebab-case)",
+                    "pattern": "^[a-z][a-z0-9-]*$",
+                    "examples": ["pack-tactics", "protective-formation", "ambush-strike"]
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Display name of the synergy",
+                    "minLength": 1,
+                    "maxLength": 50,
+                    "examples": ["Pack Tactics", "Protective Formation", "Ambush Strike"]
+                },
+                "description": {
+                    "type": ["string", "null"],
+                    "description": "Flavor text describing the synergy effect",
+                    "maxLength": 200
+                },
+                "trigger": {
+                    "type": "string",
+                    "description": "Condition that activates the synergy",
+                    "enum": ["Always", "OnAllyHit", "OnAllyDamaged", "PerAdjacentAlly", "OnLeaderCommand"],
+                    "default": "Always"
+                },
+                "sourceRole": {
+                    "type": ["string", "null"],
+                    "description": "Role required to trigger or benefit from synergy (optional)",
+                    "examples": ["leader", "melee", "ranged", "caster", "striker"]
+                },
+                "statusEffectId": {
+                    "type": ["string", "null"],
+                    "description": "Status effect to apply when synergy activates",
+                    "pattern": "^[a-z][a-z0-9-]*$",
+                    "examples": ["fury", "protection", "haste"]
+                },
+                "attackBonus": {
+                    "type": ["integer", "null"],
+                    "description": "Flat bonus to attack rolls when synergy is active",
+                    "minimum": -10,
+                    "maximum": 10,
+                    "examples": [1, 2, 3]
+                },
+                "damageBonus": {
+                    "type": ["integer", "null"],
+                    "description": "Flat bonus to damage when synergy is active",
+                    "minimum": -10,
+                    "maximum": 20,
+                    "examples": [2, 5, 10]
+                },
+                "appliesToAllMembers": {
+                    "type": "boolean",
+                    "description": "Whether the synergy applies to all group members or just the source",
+                    "default": false
+                }
+            },
+            "required": [
+                "synergyId",
+                "name",
+                "trigger"
+            ],
+            "additionalProperties": false
+        }
+    }
+}

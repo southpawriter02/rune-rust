@@ -1,0 +1,111 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:RuneAndRust.Presentation.Gui.ViewModels"
+        x:Class="RuneAndRust.Presentation.Gui.Views.ShortcutOverlayWindow"
+        x:DataType="vm:ShortcutOverlayViewModel"
+        Title="Keyboard Shortcuts"
+        Width="550" Height="500"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False"
+        ShowInTaskbar="False"
+        KeyDown="OnKeyDown">
+    
+    <Design.DataContext>
+        <vm:ShortcutOverlayViewModel />
+    </Design.DataContext>
+    
+    <Grid RowDefinitions="Auto,*,Auto" Background="#1E1E1E">
+        
+        <!-- Header -->
+        <Border Grid.Row="0" Background="#2D2D2D" Padding="24,16">
+            <StackPanel HorizontalAlignment="Center">
+                <TextBlock Text="KEYBOARD SHORTCUTS" FontSize="18" FontWeight="Bold" />
+                <TextBlock Text="Press any key to close" 
+                           Foreground="#888888" FontSize="12"
+                           HorizontalAlignment="Center"
+                           Margin="0,4,0,0" />
+            </StackPanel>
+        </Border>
+        
+        <!-- Content -->
+        <ScrollViewer Grid.Row="1" Padding="24">
+            <StackPanel Spacing="24">
+                
+                <!-- Global Shortcuts -->
+                <StackPanel IsVisible="{Binding HasGlobalShortcuts}">
+                    <TextBlock Text="GLOBAL" FontWeight="SemiBold" Foreground="#3F51B5" />
+                    <Border Height="1" Background="#333333" Margin="0,8,0,0" />
+                    <ItemsControl ItemsSource="{Binding GlobalShortcuts}" Margin="0,8,0,0">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid ColumnDefinitions="80,*" Margin="0,4">
+                                    <Border Grid.Column="0" Background="#333333" 
+                                            CornerRadius="4" Padding="8,4">
+                                        <TextBlock Text="{Binding GestureText}" 
+                                                   FontFamily="Consolas"
+                                                   HorizontalAlignment="Center" />
+                                    </Border>
+                                    <TextBlock Grid.Column="1" Text="{Binding DisplayName}" 
+                                               VerticalAlignment="Center" Margin="12,0,0,0" />
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+                
+                <!-- Game Shortcuts -->
+                <StackPanel IsVisible="{Binding HasGameShortcuts}">
+                    <TextBlock Text="GAME" FontWeight="SemiBold" Foreground="#4CAF50" />
+                    <Border Height="1" Background="#333333" Margin="0,8,0,0" />
+                    <ItemsControl ItemsSource="{Binding GameShortcuts}" Margin="0,8,0,0">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid ColumnDefinitions="80,*" Margin="0,4">
+                                    <Border Grid.Column="0" Background="#333333" 
+                                            CornerRadius="4" Padding="8,4">
+                                        <TextBlock Text="{Binding GestureText}" 
+                                                   FontFamily="Consolas"
+                                                   HorizontalAlignment="Center" />
+                                    </Border>
+                                    <TextBlock Grid.Column="1" Text="{Binding DisplayName}" 
+                                               VerticalAlignment="Center" Margin="12,0,0,0" />
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+                
+                <!-- Combat Shortcuts -->
+                <StackPanel IsVisible="{Binding HasCombatShortcuts}">
+                    <TextBlock Text="COMBAT" FontWeight="SemiBold" Foreground="#FF5722" />
+                    <Border Height="1" Background="#333333" Margin="0,8,0,0" />
+                    <ItemsControl ItemsSource="{Binding CombatShortcuts}" Margin="0,8,0,0">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid ColumnDefinitions="80,*" Margin="0,4">
+                                    <Border Grid.Column="0" Background="#333333" 
+                                            CornerRadius="4" Padding="8,4">
+                                        <TextBlock Text="{Binding GestureText}" 
+                                                   FontFamily="Consolas"
+                                                   HorizontalAlignment="Center" />
+                                    </Border>
+                                    <TextBlock Grid.Column="1" Text="{Binding DisplayName}" 
+                                               VerticalAlignment="Center" Margin="12,0,0,0" />
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+                
+            </StackPanel>
+        </ScrollViewer>
+        
+        <!-- Footer hint -->
+        <Border Grid.Row="2" Background="#252526" Padding="16,12">
+            <TextBlock Text="Tip: Customize shortcuts in Settings → Controls"
+                       Foreground="#666666" FontSize="11"
+                       HorizontalAlignment="Center" />
+        </Border>
+        
+    </Grid>
+</Window>

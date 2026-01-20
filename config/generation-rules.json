@@ -1,0 +1,27 @@
+{
+    "version": "1.0",
+    "maxRoomsPerLevel": 50,
+    "minExitsPerRoom": 1,
+    "maxExitsPerRoom": 4,
+    "depthDifficultyMultiplier": 0.15,
+    "depthLootQualityMultiplier": 0.10,
+    "stairsDownChanceBase": 0.08,
+    "maxDungeonDepth": 10,
+    "biomeTransitionDepths": {
+        "dungeon": {
+            "minDepth": 0,
+            "maxDepth": 3,
+            "transitionProbability": 1.0
+        },
+        "cave": {
+            "minDepth": 2,
+            "maxDepth": 7,
+            "transitionProbability": 0.6
+        },
+        "volcanic": {
+            "minDepth": 5,
+            "maxDepth": -1,
+            "transitionProbability": 0.5
+        }
+    }
+}

@@ -1,0 +1,139 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:RuneAndRust.Presentation.Gui.ViewModels"
+             xmlns:controls="using:RuneAndRust.Presentation.Gui.Controls"
+             x:Class="RuneAndRust.Presentation.Gui.Controls.MapViewPanel"
+             x:DataType="vm:MapViewPanelViewModel"
+             IsVisible="{Binding IsVisible}">
+    
+    <Design.DataContext>
+        <vm:MapViewPanelViewModel />
+    </Design.DataContext>
+    
+    <Border Background="#1A1A1A" CornerRadius="4" BorderThickness="1" BorderBrush="#333333">
+        <Grid RowDefinitions="Auto,*,Auto">
+            
+            <!-- Title Bar -->
+            <Border Grid.Row="0" Background="#2D2D2D" Padding="12,8">
+                <Grid ColumnDefinitions="*,Auto">
+                    <TextBlock Grid.Column="0" 
+                               Text="DUNGEON MAP" 
+                               FontWeight="Bold" FontSize="14" />
+                    
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4">
+                        <Button Content="−" Command="{Binding ZoomOutCommand}"
+                                Width="28" Height="28" Padding="0"
+                                ToolTip.Tip="Zoom Out" />
+                        <TextBlock Text="{Binding ZoomLevel, StringFormat={}{0:P0}}" 
+                                   VerticalAlignment="Center" Width="40" TextAlignment="Center" />
+                        <Button Content="+" Command="{Binding ZoomInCommand}"
+                                Width="28" Height="28" Padding="0"
+                                ToolTip.Tip="Zoom In" />
+                        <Button Content="◎" Command="{Binding CenterOnPlayerCommand}"
+                                Width="28" Height="28" Padding="0"
+                                ToolTip.Tip="Center on Player" />
+                        <Button Content="⟲" Command="{Binding ResetZoomCommand}"
+                                Width="28" Height="28" Padding="0"
+                                ToolTip.Tip="Reset View" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+            
+            <!-- Map Canvas -->
+            <Border Grid.Row="1" ClipToBounds="True" Background="#0D0D0D" MinHeight="300">
+                <Canvas>
+                    <Canvas.RenderTransform>
+                        <TransformGroup>
+                            <ScaleTransform ScaleX="{Binding ZoomLevel}" ScaleY="{Binding ZoomLevel}" />
+                            <TranslateTransform X="{Binding PanOffset.X}" Y="{Binding PanOffset.Y}" />
+                        </TransformGroup>
+                    </Canvas.RenderTransform>
+                    
+                    <!-- Connection Lines -->
+                    <ItemsControl ItemsSource="{Binding Connections}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <Canvas />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <controls:ConnectionLineControl
+                                    StartPoint="{Binding StartPoint}"
+                                    EndPoint="{Binding EndPoint}"
+                                    IsLocked="{Binding IsLocked}" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    
+                    <!-- Room Nodes -->
+                    <ItemsControl ItemsSource="{Binding Rooms}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <Canvas />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Canvas.Left="{Binding X}" Canvas.Top="{Binding Y}"
+                                        Width="80" Height="50" CornerRadius="4"
+                                        Background="#252526" BorderThickness="2"
+                                        BorderBrush="{Binding IsCurrent, Converter={StaticResource BoolToBrushConverter}}"
+                                        Opacity="{Binding IsExplored, Converter={StaticResource BoolToOpacityConverter}}"
+                                        ToolTip.Tip="{Binding TooltipText}">
+                                    <Grid RowDefinitions="*,Auto">
+                                        <TextBlock Grid.Row="0" Text="{Binding DisplayName}"
+                                                   HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                   FontSize="10" TextTrimming="CharacterEllipsis"
+                                                   Margin="4" />
+                                        <TextBlock Grid.Row="1" Text="{Binding Icon}"
+                                                   HorizontalAlignment="Center" FontSize="12"
+                                                   IsVisible="{Binding IsExplored}"
+                                                   Margin="0,0,0,4" />
+                                        <TextBlock Grid.Row="0" Text="[@]"
+                                                   HorizontalAlignment="Left" VerticalAlignment="Top"
+                                                   FontSize="9" Foreground="Gold"
+                                                   IsVisible="{Binding IsCurrent}"
+                                                   Margin="2" />
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    
+                </Canvas>
+            </Border>
+            
+            <!-- Legend -->
+            <Border Grid.Row="2" Background="#1E1E1E" Padding="12,8">
+                <WrapPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <StackPanel Orientation="Horizontal" Margin="0,0,16,0">
+                        <TextBlock Text="[@]" Foreground="Gold" FontFamily="Consolas" Margin="0,0,4,0" />
+                        <TextBlock Text="You" Foreground="#888888" FontSize="11" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,16,0">
+                        <TextBlock Text="[???]" Foreground="#555555" FontFamily="Consolas" Margin="0,0,4,0" />
+                        <TextBlock Text="Unexplored" Foreground="#888888" FontSize="11" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,16,0">
+                        <TextBlock Text="══" Foreground="OrangeRed" FontFamily="Consolas" Margin="0,0,4,0" />
+                        <TextBlock Text="Locked" Foreground="#888888" FontSize="11" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,16,0">
+                        <TextBlock Text="💰" Margin="0,0,4,0" />
+                        <TextBlock Text="Shop" Foreground="#888888" FontSize="11" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,16,0">
+                        <TextBlock Text="🛡" Margin="0,0,4,0" />
+                        <TextBlock Text="Armory" Foreground="#888888" FontSize="11" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="☠" Foreground="Red" Margin="0,0,4,0" />
+                        <TextBlock Text="Boss" Foreground="#888888" FontSize="11" />
+                    </StackPanel>
+                </WrapPanel>
+            </Border>
+            
+        </Grid>
+    </Border>
+</UserControl>

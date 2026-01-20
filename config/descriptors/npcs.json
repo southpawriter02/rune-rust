@@ -1,0 +1,144 @@
+{
+    "category": "npcs",
+    "pools": {
+        "physical_features": {
+            "id": "physical_features",
+            "name": "Physical Features",
+            "descriptors": [
+                {
+                    "id": "weathered_face",
+                    "text": "a weathered face marked by years of hardship",
+                    "weight": 20
+                },
+                {
+                    "id": "keen_eyes",
+                    "text": "keen eyes that miss nothing",
+                    "weight": 20
+                },
+                {
+                    "id": "scarred_hands",
+                    "text": "scarred hands that speak of past battles",
+                    "weight": 15
+                },
+                {
+                    "id": "imposing_stature",
+                    "text": "an imposing stature that commands attention",
+                    "weight": 15
+                },
+                {
+                    "id": "gaunt_features",
+                    "text": "gaunt features stretched over sharp bones",
+                    "weight": 15
+                },
+                {
+                    "id": "warm_smile",
+                    "text": "a warm smile that puts you at ease",
+                    "weight": 15
+                }
+            ]
+        },
+        "clothing": {
+            "id": "clothing",
+            "name": "Clothing",
+            "descriptors": [
+                {
+                    "id": "tattered_robes",
+                    "text": "wearing tattered robes that have seen better days",
+                    "weight": 20
+                },
+                {
+                    "id": "gleaming_armor",
+                    "text": "clad in gleaming armor polished to a mirror shine",
+                    "weight": 15
+                },
+                {
+                    "id": "humble_garb",
+                    "text": "dressed in humble garb befitting a commoner",
+                    "weight": 25
+                },
+                {
+                    "id": "ornate_vestments",
+                    "text": "adorned in ornate vestments of office",
+                    "weight": 15
+                },
+                {
+                    "id": "practical_leather",
+                    "text": "wearing practical leather gear for travel",
+                    "weight": 25
+                }
+            ]
+        },
+        "demeanor": {
+            "id": "demeanor",
+            "name": "Demeanor",
+            "descriptors": [
+                {
+                    "id": "nervous_glance",
+                    "text": "with nervous glances darting about",
+                    "weight": 20
+                },
+                {
+                    "id": "confident_stance",
+                    "text": "standing with confident ease",
+                    "weight": 20
+                },
+                {
+                    "id": "weary_expression",
+                    "text": "bearing a weary expression",
+                    "weight": 20
+                },
+                {
+                    "id": "eager_smile",
+                    "text": "with an eager smile at your approach",
+                    "weight": 15
+                },
+                {
+                    "id": "suspicious_gaze",
+                    "text": "regarding you with a suspicious gaze",
+                    "weight": 15
+                },
+                {
+                    "id": "neutral_mask",
+                    "text": "face an unreadable mask",
+                    "weight": 10
+                }
+            ]
+        },
+        "voice": {
+            "id": "voice",
+            "name": "Voice",
+            "descriptors": [
+                {
+                    "id": "gravelly_tone",
+                    "text": "speaks in a gravelly tone",
+                    "weight": 20
+                },
+                {
+                    "id": "melodic_speech",
+                    "text": "speaks with melodic grace",
+                    "weight": 15
+                },
+                {
+                    "id": "hesitant_whisper",
+                    "text": "whispers hesitantly",
+                    "weight": 20
+                },
+                {
+                    "id": "booming_voice",
+                    "text": "booms with a commanding voice",
+                    "weight": 15
+                },
+                {
+                    "id": "soft_measured",
+                    "text": "speaks softly with measured words",
+                    "weight": 15
+                },
+                {
+                    "id": "rapid_excited",
+                    "text": "chatters rapidly with excitement",
+                    "weight": 15
+                }
+            ]
+        }
+    }
+}

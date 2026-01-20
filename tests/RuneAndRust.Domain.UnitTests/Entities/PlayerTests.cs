@@ -1,5 +1,6 @@
 using FluentAssertions;
 using RuneAndRust.Domain.Entities;
+using RuneAndRust.Domain.Enums;
 using RuneAndRust.Domain.ValueObjects;
 
 namespace RuneAndRust.Domain.UnitTests.Entities;
@@ -17,7 +18,7 @@ public class PlayerTests
         player.Name.Should().Be("TestHero");
         player.Health.Should().Be(player.Stats.MaxHealth);
         player.IsAlive.Should().BeTrue();
-        player.Position.Should().Be(Position.Origin);
+        player.Position.Should().Be(Position3D.Origin);
     }
 
     [Test]
@@ -125,12 +126,122 @@ public class PlayerTests
     {
         // Arrange
         var player = new Player("TestHero");
-        var newPosition = new Position(5, 10);
+        var newPosition = new Position3D(5, 10, 0);
 
         // Act
         player.MoveTo(newPosition);
 
         // Assert
         player.Position.Should().Be(newPosition);
+    }
+
+    // ===== Equipment Tests (v0.0.7a) =====
+
+    [Test]
+    public void Constructor_InitializesEmptyEquipment()
+    {
+        // Arrange & Act
+        var player = new Player("TestHero");
+
+        // Assert
+        player.Equipment.Should().NotBeNull();
+        player.EquippedItemCount.Should().Be(0);
+    }
+
+    [Test]
+    public void TryEquip_WithEquippableItem_ReturnsTrue()
+    {
+        // Arrange
+        var player = new Player("TestHero");
+        var sword = Item.CreateSword();
+
+        // Act
+        var result = player.TryEquip(sword);
+
+        // Assert
+        result.Should().BeTrue();
+        player.IsSlotOccupied(EquipmentSlot.Weapon).Should().BeTrue();
+        player.GetEquippedItem(EquipmentSlot.Weapon).Should().Be(sword);
+        player.EquippedItemCount.Should().Be(1);
+    }
+
+    [Test]
+    public void TryEquip_WithOccupiedSlot_ReturnsFalse()
+    {
+        // Arrange
+        var player = new Player("TestHero");
+        var sword1 = Item.CreateSword();
+        var sword2 = Item.CreateSword();
+        player.TryEquip(sword1);
+
+        // Act
+        var result = player.TryEquip(sword2);
+
+        // Assert
+        result.Should().BeFalse();
+        player.GetEquippedItem(EquipmentSlot.Weapon).Should().Be(sword1);
+    }
+
+    [Test]
+    public void TryEquip_WithNonEquippableItem_ThrowsInvalidOperationException()
+    {
+        // Arrange
+        var player = new Player("TestHero");
+        var potion = Item.CreateHealthPotion();
+
+        // Act
+        var act = () => player.TryEquip(potion);
+
+        // Assert
+        act.Should().Throw<InvalidOperationException>();
+    }
+
+    [Test]
+    public void Unequip_WithEquippedItem_ReturnsItem()
+    {
+        // Arrange
+        var player = new Player("TestHero");
+        var sword = Item.CreateSword();
+        player.TryEquip(sword);
+
+        // Act
+        var result = player.Unequip(EquipmentSlot.Weapon);
+
+        // Assert
+        result.Should().Be(sword);
+        player.IsSlotOccupied(EquipmentSlot.Weapon).Should().BeFalse();
+        player.EquippedItemCount.Should().Be(0);
+    }
+
+    [Test]
+    public void Unequip_WithEmptySlot_ReturnsNull()
+    {
+        // Arrange
+        var player = new Player("TestHero");
+
+        // Act
+        var result = player.Unequip(EquipmentSlot.Weapon);
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    [Test]
+    public void GetAllEquippedItems_ReturnsAllEquippedItems()
+    {
+        // Arrange
+        var player = new Player("TestHero");
+        var sword = Item.CreateSword();
+        var armor = Item.CreateLeatherArmor();
+        player.TryEquip(sword);
+        player.TryEquip(armor);
+
+        // Act
+        var items = player.GetAllEquippedItems();
+
+        // Assert
+        items.Should().HaveCount(2);
+        items.Should().Contain(sword);
+        items.Should().Contain(armor);
     }
 }

@@ -1,0 +1,115 @@
+{
+    "$schema": "./schemas/environmental-hazards.schema.json",
+    "hazards": [
+        {
+            "type": "Lava",
+            "name": "Lava",
+            "description": "Molten rock that burns intensely. Deals heavy fire damage on entry and each turn while remaining in contact.",
+            "damageDice": "3d6",
+            "damageType": "fire",
+            "statusEffectId": "burning",
+            "damageOnEnter": true,
+            "damagePerTurn": true,
+            "requiresClimbOut": false,
+            "degradesArmor": false,
+            "iconPath": "icons/hazards/lava.png"
+        },
+        {
+            "type": "Spikes",
+            "name": "Spike Trap",
+            "description": "Sharp metal spikes that pierce anyone who steps on them. Deals piercing damage on entry and may cause bleeding.",
+            "damageDice": "2d6",
+            "damageType": "piercing",
+            "statusEffectId": "bleeding",
+            "damageOnEnter": true,
+            "damagePerTurn": false,
+            "requiresClimbOut": false,
+            "degradesArmor": false,
+            "iconPath": "icons/hazards/spikes.png"
+        },
+        {
+            "type": "Pit",
+            "name": "Pit",
+            "description": "A deep pit that traps anyone who falls in. Deals bludgeoning damage from the fall and requires climbing to escape.",
+            "damageDice": "2d6",
+            "damageType": "bludgeoning",
+            "statusEffectId": "prone",
+            "damageOnEnter": true,
+            "damagePerTurn": false,
+            "requiresClimbOut": true,
+            "degradesArmor": false,
+            "iconPath": "icons/hazards/pit.png"
+        },
+        {
+            "type": "AcidPool",
+            "name": "Acid Pool",
+            "description": "A pool of corrosive acid that damages flesh and corrodes armor. Deals acid damage on entry and each turn.",
+            "damageDice": "2d4",
+            "damageType": "acid",
+            "statusEffectId": null,
+            "damageOnEnter": true,
+            "damagePerTurn": true,
+            "requiresClimbOut": false,
+            "degradesArmor": true,
+            "iconPath": "icons/hazards/acid.png"
+        },
+        {
+            "type": "Fire",
+            "name": "Fire",
+            "description": "Flames that burn anyone passing through. Deals fire damage on entry and may cause burning.",
+            "damageDice": "2d6",
+            "damageType": "fire",
+            "statusEffectId": "burning",
+            "damageOnEnter": true,
+            "damagePerTurn": true,
+            "requiresClimbOut": false,
+            "degradesArmor": false,
+            "iconPath": "icons/hazards/fire.png"
+        },
+        {
+            "type": "PoisonGas",
+            "name": "Poison Gas",
+            "description": "Toxic vapors that damage and poison anyone breathing them. Deals poison damage each turn while in the cloud.",
+            "damageDice": "1d6",
+            "damageType": "poison",
+            "statusEffectId": "poisoned",
+            "damageOnEnter": false,
+            "damagePerTurn": true,
+            "requiresClimbOut": false,
+            "degradesArmor": false,
+            "iconPath": "icons/hazards/poison_gas.png"
+        },
+        {
+            "type": "Ice",
+            "name": "Freezing Cold",
+            "description": "Extreme cold that chills to the bone. Deals cold damage on entry and may cause slowed movement.",
+            "damageDice": "1d8",
+            "damageType": "cold",
+            "statusEffectId": "slowed",
+            "damageOnEnter": true,
+            "damagePerTurn": false,
+            "requiresClimbOut": false,
+            "degradesArmor": false,
+            "iconPath": "icons/hazards/ice.png"
+        },
+        {
+            "type": "Electricity",
+            "name": "Electrical Field",
+            "description": "Crackling electricity that shocks anyone passing through. Deals lightning damage on entry.",
+            "damageDice": "2d8",
+            "damageType": "lightning",
+            "statusEffectId": null,
+            "damageOnEnter": true,
+            "damagePerTurn": false,
+            "requiresClimbOut": false,
+            "degradesArmor": false,
+            "iconPath": "icons/hazards/electricity.png"
+        }
+    ],
+    "settings": {
+        "tickDamageTiming": "roundStart",
+        "allowResistanceReduction": true,
+        "criticalKnockbackDistance": 1,
+        "pushOpposedCheckAttribute": "Might"
+    }
+}

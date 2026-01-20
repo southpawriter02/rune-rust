@@ -1,0 +1,698 @@
+{
+    "category": "objects",
+    "pools": {
+        "containers": {
+            "id": "containers",
+            "name": "Containers",
+            "descriptors": [
+                {
+                    "id": "weathered_chest",
+                    "text": "a weathered wooden chest, its iron bands rusted with age",
+                    "weight": 20
+                },
+                {
+                    "id": "ornate_coffer",
+                    "text": "an ornate coffer inlaid with faded gold filigree",
+                    "weight": 15
+                },
+                {
+                    "id": "rusted_lockbox",
+                    "text": "a rusted lockbox, its mechanism long seized",
+                    "weight": 20
+                },
+                {
+                    "id": "ancient_urn",
+                    "text": "an ancient urn covered in mysterious symbols",
+                    "weight": 15
+                },
+                {
+                    "id": "rotting_crate",
+                    "text": "a rotting wooden crate, its contents long since decayed",
+                    "weight": 15
+                },
+                {
+                    "id": "stone_sarcophagus",
+                    "text": "a stone sarcophagus, its lid slightly ajar",
+                    "weight": 15,
+                    "tags": [
+                        "tomb",
+                        "danger"
+                    ]
+                }
+            ]
+        },
+        "furniture": {
+            "id": "furniture",
+            "name": "Furniture",
+            "descriptors": [
+                {
+                    "id": "rickety_table",
+                    "text": "a rickety table that groans under its own weight",
+                    "weight": 20
+                },
+                {
+                    "id": "collapsed_throne",
+                    "text": "the remains of a collapsed throne, once majestic",
+                    "weight": 15
+                },
+                {
+                    "id": "rotting_bookshelf",
+                    "text": "a rotting bookshelf, its contents turned to pulp",
+                    "weight": 20
+                },
+                {
+                    "id": "overturned_cart",
+                    "text": "an overturned cart, its wheel still slowly spinning",
+                    "weight": 15
+                },
+                {
+                    "id": "broken_altar",
+                    "text": "a broken altar stained with dark residue",
+                    "weight": 15,
+                    "tags": [
+                        "religious",
+                        "danger"
+                    ]
+                },
+                {
+                    "id": "dusty_workbench",
+                    "text": "a dusty workbench covered with abandoned tools",
+                    "weight": 15
+                }
+            ]
+        },
+        "architectural": {
+            "id": "architectural",
+            "name": "Architectural",
+            "descriptors": [
+                {
+                    "id": "crumbling_pillar",
+                    "text": "a crumbling pillar that somehow still supports the ceiling",
+                    "weight": 20
+                },
+                {
+                    "id": "iron_door",
+                    "text": "an iron-banded door, scarred by countless attempts to breach it",
+                    "weight": 20
+                },
+                {
+                    "id": "spiral_staircase",
+                    "text": "a spiral staircase descending into darkness",
+                    "weight": 15
+                },
+                {
+                    "id": "collapsed_archway",
+                    "text": "a collapsed archway, rubble blocking all but a narrow passage",
+                    "weight": 20
+                },
+                {
+                    "id": "grand_fireplace",
+                    "text": "a grand fireplace, cold ashes hinting at past warmth",
+                    "weight": 15
+                },
+                {
+                    "id": "barred_window",
+                    "text": "a barred window offering a glimpse of nothing but stone",
+                    "weight": 10
+                }
+            ]
+        },
+        "door_closed_glance": {
+            "id": "door_closed_glance",
+            "name": "Door (Closed) - Glance",
+            "descriptors": [
+                { "id": "heavy_door", "text": "A heavy door bars the passage", "weight": 25 },
+                { "id": "wooden_door", "text": "A wooden door blocks the way", "weight": 25 },
+                { "id": "iron_door", "text": "An iron-bound door stands before you", "weight": 20, "tags": ["dungeon"] },
+                { "id": "stone_door", "text": "A massive stone door blocks the corridor", "weight": 15, "tags": ["ancient", "ruins"] },
+                { "id": "simple_door", "text": "A door leads onward", "weight": 15 }
+            ]
+        },
+        "door_locked_glance": {
+            "id": "door_locked_glance",
+            "name": "Door (Locked) - Glance",
+            "descriptors": [
+                { "id": "locked_door", "text": "A locked door bars your path", "weight": 30 },
+                { "id": "secured_door", "text": "A securely locked door blocks the way", "weight": 25 },
+                { "id": "reinforced_door", "text": "A reinforced door refuses to budge", "weight": 25 },
+                { "id": "sealed_door", "text": "A sealed door prevents passage", "weight": 20 }
+            ]
+        },
+        "door_open_glance": {
+            "id": "door_open_glance",
+            "name": "Door (Open) - Glance",
+            "descriptors": [
+                { "id": "open_door", "text": "An open door reveals the way forward", "weight": 30 },
+                { "id": "ajar_door", "text": "A door stands ajar", "weight": 25 },
+                { "id": "wide_door", "text": "A door has been thrown wide open", "weight": 20 },
+                { "id": "creaking_door", "text": "An open door creaks gently", "weight": 25 }
+            ]
+        },
+        "door_broken_glance": {
+            "id": "door_broken_glance",
+            "name": "Door (Broken) - Glance",
+            "descriptors": [
+                { "id": "splintered_door", "text": "A splintered door hangs askew on its hinges", "weight": 30 },
+                { "id": "shattered_door", "text": "The remains of a shattered door litter the floor", "weight": 25 },
+                { "id": "broken_door", "text": "A broken door offers no resistance", "weight": 25 },
+                { "id": "ruined_door", "text": "A ruined door barely clings to its frame", "weight": 20 }
+            ]
+        },
+        "door_look": {
+            "id": "door_look",
+            "name": "Door - Look",
+            "descriptors": [
+                { "id": "heavy_wooden", "text": "A heavy wooden door reinforced with iron bands. It looks sturdy", "weight": 25 },
+                { "id": "ancient_oak", "text": "An ancient oak door darkened by centuries of use. Deep scratches mar its surface", "weight": 20 },
+                { "id": "iron_bound", "text": "An iron-bound door that has clearly withstood many attempts to breach it", "weight": 20, "tags": ["dungeon"] },
+                { "id": "stone_slab", "text": "A massive stone slab serves as a door here. Ancient mechanisms likely control it", "weight": 15, "tags": ["ancient", "ruins"] },
+                { "id": "simple_plank", "text": "A simple door of rough-hewn planks. Functional but unremarkable", "weight": 20 }
+            ]
+        },
+        "door_examine": {
+            "id": "door_examine",
+            "name": "Door - Examine",
+            "descriptors": [
+                {
+                    "id": "iron_riveted",
+                    "text": "The door is a heavy slab of blackened iron, riveted with thick bolts that have rusted to a deep orange. The metal is cold to the touch",
+                    "weight": 20,
+                    "tags": ["dungeon", "iron"]
+                },
+                {
+                    "id": "oak_ancient",
+                    "text": "Ancient oak panels form this door, darkened by centuries of torch smoke. Iron bands reinforce the wood, though they show signs of rust",
+                    "weight": 20,
+                    "tags": ["ancient", "wooden"]
+                },
+                {
+                    "id": "stone_carved",
+                    "text": "This stone door is carved with weathered reliefs that have been worn smooth by time. The edges are precisely cut despite their age",
+                    "weight": 15,
+                    "tags": ["ruins", "stone"]
+                },
+                {
+                    "id": "simple_wooden",
+                    "text": "A simple wooden door of rough-hewn planks. The wood is warped from moisture, and the iron hinges are spotted with rust",
+                    "weight": 25,
+                    "tags": ["wooden"]
+                },
+                {
+                    "id": "ornate_carved",
+                    "text": "Ornate carvings decorate this door, depicting scenes now difficult to discern. The craftsmanship suggests this was once a place of importance",
+                    "weight": 20,
+                    "tags": ["ancient", "ornate"]
+                }
+            ]
+        },
+        "chest_closed_glance": {
+            "id": "chest_closed_glance",
+            "name": "Chest (Closed) - Glance",
+            "descriptors": [
+                { "id": "old_chest", "text": "An old chest sits against the wall", "weight": 25 },
+                { "id": "wooden_chest", "text": "A wooden chest rests in the corner", "weight": 25 },
+                { "id": "iron_chest", "text": "An iron-banded chest gleams dully", "weight": 20 },
+                { "id": "ornate_chest", "text": "An ornately carved chest catches your eye", "weight": 15 },
+                { "id": "small_chest", "text": "A small chest sits here", "weight": 15 }
+            ]
+        },
+        "chest_locked_glance": {
+            "id": "chest_locked_glance",
+            "name": "Chest (Locked) - Glance",
+            "descriptors": [
+                { "id": "locked_chest", "text": "A locked chest sits against the wall", "weight": 30 },
+                { "id": "secured_chest", "text": "A securely locked chest awaits", "weight": 25 },
+                { "id": "padlocked_chest", "text": "A heavy padlock secures this chest", "weight": 25 },
+                { "id": "sealed_chest", "text": "A sealed chest defies casual opening", "weight": 20 }
+            ]
+        },
+        "chest_open_glance": {
+            "id": "chest_open_glance",
+            "name": "Chest (Open) - Glance",
+            "descriptors": [
+                { "id": "open_chest", "text": "An open chest reveals its contents", "weight": 30 },
+                { "id": "opened_chest", "text": "A chest stands open", "weight": 25 },
+                { "id": "looted_chest", "text": "A recently opened chest sits here", "weight": 25 },
+                { "id": "gaping_chest", "text": "A chest lies open, lid thrown back", "weight": 20 }
+            ]
+        },
+        "chest_empty_glance": {
+            "id": "chest_empty_glance",
+            "name": "Chest (Empty) - Glance",
+            "descriptors": [
+                { "id": "empty_chest", "text": "An empty chest lies open, its treasures long gone", "weight": 30 },
+                { "id": "looted_chest", "text": "A looted chest sits abandoned", "weight": 25 },
+                { "id": "bare_chest", "text": "A bare chest offers nothing of value", "weight": 25 },
+                { "id": "ransacked_chest", "text": "A ransacked chest shows signs of hasty searching", "weight": 20 }
+            ]
+        },
+        "chest_trapped_glance": {
+            "id": "chest_trapped_glance",
+            "name": "Chest (Trapped) - Glance",
+            "descriptors": [
+                { "id": "suspicious_chest", "text": "A chest sits here. Something about it feels... wrong", "weight": 30 },
+                { "id": "ominous_chest", "text": "An ominous-looking chest awaits the unwary", "weight": 25 },
+                { "id": "peculiar_chest", "text": "A peculiarly positioned chest sits here", "weight": 25 },
+                { "id": "tempting_chest", "text": "A temptingly placed chest catches your eye", "weight": 20 }
+            ]
+        },
+        "chest_look": {
+            "id": "chest_look",
+            "name": "Chest - Look",
+            "descriptors": [
+                { "id": "iron_banded", "text": "A sturdy chest reinforced with iron bands. The wood is solid despite its age", "weight": 25 },
+                { "id": "simple_wooden", "text": "A simple wooden chest of pine planks. Functional but unremarkable", "weight": 25 },
+                { "id": "ornate_carved", "text": "An ornately carved chest decorated with intricate patterns. Clearly valuable", "weight": 20 },
+                { "id": "ancient_sealed", "text": "An ancient chest sealed with wax and bound with silver chains", "weight": 15, "tags": ["ancient", "magical"] },
+                { "id": "travel_worn", "text": "A travel-worn chest bearing the scars of a long journey", "weight": 15 }
+            ]
+        },
+        "chest_examine": {
+            "id": "chest_examine",
+            "name": "Chest - Examine",
+            "descriptors": [
+                {
+                    "id": "iron_banded",
+                    "text": "This sturdy chest is reinforced with iron bands that have begun to rust. The wood beneath is solid oak, darkened with age. The hinges are well-oiled despite the rust elsewhere",
+                    "weight": 25
+                },
+                {
+                    "id": "simple_wooden",
+                    "text": "A simple wooden chest of pine planks. The corners are worn smooth, and the lid shows scratches from countless openings",
+                    "weight": 25
+                },
+                {
+                    "id": "ornate_carved",
+                    "text": "Intricate carvings adorn every surface of this chest. The motifs suggest it once belonged to someone of considerable means. Gold leaf still clings to some of the deeper grooves",
+                    "weight": 20,
+                    "tags": ["ornate", "treasure"]
+                },
+                {
+                    "id": "ancient_sealed",
+                    "text": "This ancient chest is sealed with wax and bound with silver chains tarnished black. Whatever lies within has been locked away for a very long time",
+                    "weight": 15,
+                    "tags": ["ancient", "magical"]
+                },
+                {
+                    "id": "travel_worn",
+                    "text": "A travel-worn chest bears the scars of a long journey. Shipping labels in unknown languages are plastered across its sides",
+                    "weight": 15
+                }
+            ]
+        },
+        "lever_glance": {
+            "id": "lever_glance",
+            "name": "Lever - Glance",
+            "descriptors": [
+                { "id": "iron_lever", "text": "An iron lever protrudes from the wall", "weight": 30 },
+                { "id": "rusted_lever", "text": "A rusted lever juts from the stone", "weight": 25 },
+                { "id": "brass_lever", "text": "A brass lever gleams in the dim light", "weight": 20 },
+                { "id": "hidden_lever", "text": "A lever is partially concealed in an alcove", "weight": 15 },
+                { "id": "ornate_lever", "text": "An ornately crafted lever awaits pulling", "weight": 10 }
+            ]
+        },
+        "lever_up_glance": {
+            "id": "lever_up_glance",
+            "name": "Lever (Up) - Glance",
+            "descriptors": [
+                { "id": "raised_lever", "text": "A lever in the up position protrudes from the wall", "weight": 30 },
+                { "id": "upright_lever", "text": "An upright lever awaits interaction", "weight": 25 },
+                { "id": "engaged_lever", "text": "An engaged lever points upward", "weight": 25 },
+                { "id": "active_lever", "text": "A lever has been pulled to its active position", "weight": 20 }
+            ]
+        },
+        "lever_down_glance": {
+            "id": "lever_down_glance",
+            "name": "Lever (Down) - Glance",
+            "descriptors": [
+                { "id": "lowered_lever", "text": "A lever has been pulled to the down position", "weight": 30 },
+                { "id": "depressed_lever", "text": "A depressed lever rests in its lowered state", "weight": 25 },
+                { "id": "triggered_lever", "text": "A triggered lever remains in the down position", "weight": 25 },
+                { "id": "inactive_lever", "text": "A lever has been pulled down", "weight": 20 }
+            ]
+        },
+        "lever_stuck_glance": {
+            "id": "lever_stuck_glance",
+            "name": "Lever (Stuck) - Glance",
+            "descriptors": [
+                { "id": "frozen_lever", "text": "A rusted lever appears frozen in place", "weight": 30 },
+                { "id": "jammed_lever", "text": "A jammed lever refuses to move", "weight": 25 },
+                { "id": "stuck_lever", "text": "A stuck lever resists all efforts", "weight": 25 },
+                { "id": "seized_lever", "text": "A seized mechanism holds the lever fast", "weight": 20 }
+            ]
+        },
+        "lever_look": {
+            "id": "lever_look",
+            "name": "Lever - Look",
+            "descriptors": [
+                { "id": "mechanism_simple", "text": "A simple lever connected to some mechanism within the wall", "weight": 30 },
+                { "id": "mechanism_complex", "text": "A lever that connects to a complex series of gears and chains", "weight": 25 },
+                { "id": "mechanism_ancient", "text": "An ancient lever mechanism of remarkable craftsmanship", "weight": 20, "tags": ["ancient"] },
+                { "id": "mechanism_mysterious", "text": "A lever whose purpose remains unclear. Strange symbols surround its base", "weight": 25, "tags": ["magical"] }
+            ]
+        },
+        "lever_examine": {
+            "id": "lever_examine",
+            "name": "Lever - Examine",
+            "descriptors": [
+                {
+                    "id": "mechanism_visible",
+                    "text": "The lever connects to a complex mechanism hidden within the wall. Chains and gears are visible through gaps in the stonework",
+                    "weight": 25
+                },
+                {
+                    "id": "simple_switch",
+                    "text": "A simple lever mechanism. The pivot point shows wear from regular use, and the handle is smooth from many hands",
+                    "weight": 30
+                },
+                {
+                    "id": "mysterious_device",
+                    "text": "The lever's purpose is unclear. Strange symbols are carved around its base, and faint traces of magical residue cling to the metal",
+                    "weight": 20,
+                    "tags": ["magical"]
+                },
+                {
+                    "id": "ancient_mechanism",
+                    "text": "This ancient lever mechanism has somehow survived the ages. The engineering is remarkable - counterweights and pulleys in perfect balance despite the rust",
+                    "weight": 25,
+                    "tags": ["ancient"]
+                }
+            ]
+        },
+        "statue_glance": {
+            "id": "statue_glance",
+            "name": "Statue - Glance",
+            "descriptors": [
+                { "id": "stone_statue", "text": "A stone statue stands in silent vigil", "weight": 25 },
+                { "id": "worn_statue", "text": "A weathered statue watches over the room", "weight": 25 },
+                { "id": "armored_statue", "text": "A statue of an armored figure looms nearby", "weight": 20 },
+                { "id": "robed_statue", "text": "A robed figure immortalized in stone stands here", "weight": 20 },
+                { "id": "creature_statue", "text": "A statue of some strange creature crouches in the corner", "weight": 10 }
+            ]
+        },
+        "statue_damaged_glance": {
+            "id": "statue_damaged_glance",
+            "name": "Statue (Damaged) - Glance",
+            "descriptors": [
+                { "id": "broken_statue", "text": "A broken statue lies in pieces", "weight": 30 },
+                { "id": "crumbling_statue", "text": "A crumbling statue barely maintains its form", "weight": 25 },
+                { "id": "defaced_statue", "text": "A defaced statue has been deliberately vandalized", "weight": 25 },
+                { "id": "toppled_statue", "text": "A toppled statue lies on its side", "weight": 20 }
+            ]
+        },
+        "statue_active_glance": {
+            "id": "statue_active_glance",
+            "name": "Statue (Active) - Glance",
+            "descriptors": [
+                { "id": "glowing_statue", "text": "A statue glows with an inner light", "weight": 30, "tags": ["magical"] },
+                { "id": "animated_statue", "text": "A statue seems to shift when not directly observed", "weight": 25, "tags": ["magical"] },
+                { "id": "watchful_statue", "text": "A statue's eyes seem to follow your movements", "weight": 25 },
+                { "id": "humming_statue", "text": "A statue hums with barely contained power", "weight": 20, "tags": ["magical"] }
+            ]
+        },
+        "statue_look": {
+            "id": "statue_look",
+            "name": "Statue - Look",
+            "descriptors": [
+                { "id": "warrior_statue", "text": "A statue depicting a warrior in full battle dress. The pose is heroic", "weight": 25 },
+                { "id": "deity_statue", "text": "A statue representing some deity or powerful figure. The expression is serene", "weight": 20 },
+                { "id": "monster_statue", "text": "A statue of some terrible creature. Perhaps a warning to visitors", "weight": 20 },
+                { "id": "abstract_statue", "text": "An abstract statue whose meaning is lost to time", "weight": 20, "tags": ["ancient"] },
+                { "id": "guardian_statue", "text": "A guardian statue positioned to watch over this place", "weight": 15 }
+            ]
+        },
+        "statue_examine": {
+            "id": "statue_examine",
+            "name": "Statue - Examine",
+            "descriptors": [
+                {
+                    "id": "warrior_detail",
+                    "text": "The statue depicts a warrior in full battle dress. Every scale of armor, every link of chain is rendered in exacting detail. The face shows a stern determination",
+                    "weight": 25
+                },
+                {
+                    "id": "deity_figure",
+                    "text": "This statue represents a deity or powerful figure. The pose suggests benevolence, but the eyes seem to follow you. An inscription at the base has worn away",
+                    "weight": 20
+                },
+                {
+                    "id": "damaged_statue",
+                    "text": "Time and vandals have not been kind to this statue. The face has been deliberately defaced, and one arm lies shattered on the floor",
+                    "weight": 20,
+                    "tags": ["damaged", "defaced"]
+                },
+                {
+                    "id": "magical_statue",
+                    "text": "A faint glow emanates from within the stone. The statue's eyes seem almost alive, and you could swear it shifts slightly when you're not looking directly at it",
+                    "weight": 15,
+                    "tags": ["magical", "active"]
+                },
+                {
+                    "id": "ancient_figure",
+                    "text": "The statue's style is unfamiliar - perhaps from a civilization long forgotten. Despite its age, the stone remains unmarred, as if protected by some unseen force",
+                    "weight": 20,
+                    "tags": ["ancient"]
+                }
+            ]
+        },
+        "altar_glance": {
+            "id": "altar_glance",
+            "name": "Altar - Glance",
+            "descriptors": [
+                { "id": "stone_altar", "text": "A stone altar dominates the center of the room", "weight": 25 },
+                { "id": "dark_altar", "text": "A dark altar emanates an unsettling presence", "weight": 20, "tags": ["evil", "desecrated"] },
+                { "id": "blessed_altar", "text": "A holy altar radiates peaceful warmth", "weight": 20, "tags": ["blessed"] },
+                { "id": "ruined_altar", "text": "The remains of an altar lie scattered here", "weight": 20, "tags": ["destroyed"] },
+                { "id": "ancient_altar", "text": "An ancient altar stands undisturbed", "weight": 15, "tags": ["ancient"] }
+            ]
+        },
+        "altar_active_glance": {
+            "id": "altar_active_glance",
+            "name": "Altar (Active) - Glance",
+            "descriptors": [
+                { "id": "glowing_altar", "text": "An altar pulses with power", "weight": 30, "tags": ["magical"] },
+                { "id": "humming_altar", "text": "An altar hums with energy", "weight": 25, "tags": ["magical"] },
+                { "id": "radiant_altar", "text": "An altar radiates divine light", "weight": 25, "tags": ["blessed"] },
+                { "id": "thrumming_altar", "text": "Power thrums visibly through this altar", "weight": 20, "tags": ["magical"] }
+            ]
+        },
+        "altar_desecrated_glance": {
+            "id": "altar_desecrated_glance",
+            "name": "Altar (Desecrated) - Glance",
+            "descriptors": [
+                { "id": "defiled_altar", "text": "A defiled altar oozes malevolence", "weight": 30, "tags": ["evil"] },
+                { "id": "corrupted_altar", "text": "A corrupted altar spreads an aura of wrongness", "weight": 25, "tags": ["evil"] },
+                { "id": "dark_altar", "text": "Dark stains cover this profaned altar", "weight": 25, "tags": ["evil"] },
+                { "id": "twisted_altar", "text": "A twisted altar seems to warp reality around it", "weight": 20, "tags": ["evil", "magical"] }
+            ]
+        },
+        "altar_look": {
+            "id": "altar_look",
+            "name": "Altar - Look",
+            "descriptors": [
+                { "id": "sacrificial_altar", "text": "A stone altar with channels carved into its surface. Dark stains suggest its purpose", "weight": 20, "tags": ["evil"] },
+                { "id": "holy_altar", "text": "A holy altar surrounded by offerings. Candles still burn here", "weight": 25, "tags": ["blessed"] },
+                { "id": "forgotten_altar", "text": "An altar to some forgotten deity. The symbols are unfamiliar", "weight": 20, "tags": ["ancient"] },
+                { "id": "active_altar", "text": "An altar that thrums with barely contained power", "weight": 20, "tags": ["magical"] },
+                { "id": "simple_altar", "text": "A simple stone altar. Recent offerings suggest it still sees use", "weight": 15 }
+            ]
+        },
+        "altar_examine": {
+            "id": "altar_examine",
+            "name": "Altar - Examine",
+            "descriptors": [
+                {
+                    "id": "sacrificial",
+                    "text": "Dark stains mar the surface of this altar. Channels carved into the stone lead to a central basin. Whatever rituals were performed here, they were not pleasant",
+                    "weight": 20,
+                    "tags": ["evil", "desecrated"]
+                },
+                {
+                    "id": "holy_shrine",
+                    "text": "This altar is a place of worship. Candles (some still lit) surround offerings of flowers and coins. The air here feels cleaner, purer",
+                    "weight": 25,
+                    "tags": ["blessed"]
+                },
+                {
+                    "id": "forgotten_god",
+                    "text": "The symbols on this altar belong to no known deity. Perhaps the god it honored has been forgotten, or perhaps it was never meant to be remembered",
+                    "weight": 20,
+                    "tags": ["ancient"]
+                },
+                {
+                    "id": "active_power",
+                    "text": "Power thrums through this altar. The stone itself seems alive with energy, and touching it sends tingles up your arm. Something here awaits activation",
+                    "weight": 20,
+                    "tags": ["magical", "active"]
+                },
+                {
+                    "id": "simple_shrine",
+                    "text": "A simple altar of rough-hewn stone. Recent offerings suggest it still sees use. A peaceful atmosphere surrounds it",
+                    "weight": 15
+                }
+            ]
+        },
+        "lightsource_glance": {
+            "id": "lightsource_glance",
+            "name": "Light Source - Glance",
+            "descriptors": [
+                { "id": "torch_sconce", "text": "A torch burns in a wall sconce", "weight": 25 },
+                { "id": "brazier", "text": "A brazier provides flickering light", "weight": 25 },
+                { "id": "lantern", "text": "A lantern hangs from the ceiling", "weight": 20 },
+                { "id": "crystal", "text": "A glowing crystal provides illumination", "weight": 15, "tags": ["magical"] },
+                { "id": "candelabra", "text": "A candelabra holds several lit candles", "weight": 15 }
+            ]
+        },
+        "lightsource_lit_glance": {
+            "id": "lightsource_lit_glance",
+            "name": "Light Source (Lit) - Glance",
+            "descriptors": [
+                { "id": "burning_torch", "text": "A burning torch casts dancing shadows", "weight": 30 },
+                { "id": "blazing_brazier", "text": "A blazing brazier illuminates the area", "weight": 25 },
+                { "id": "glowing_lantern", "text": "A glowing lantern provides steady light", "weight": 25 },
+                { "id": "radiant_crystal", "text": "A radiant crystal fills the space with light", "weight": 20, "tags": ["magical"] }
+            ]
+        },
+        "lightsource_unlit_glance": {
+            "id": "lightsource_unlit_glance",
+            "name": "Light Source (Unlit) - Glance",
+            "descriptors": [
+                { "id": "dead_torch", "text": "A dead torch sits cold in its sconce", "weight": 30 },
+                { "id": "cold_brazier", "text": "A cold brazier holds only ashes", "weight": 25 },
+                { "id": "dark_lantern", "text": "A dark lantern hangs empty", "weight": 25 },
+                { "id": "dim_crystal", "text": "A dim crystal provides no light", "weight": 20, "tags": ["magical"] }
+            ]
+        },
+        "lightsource_flickering_glance": {
+            "id": "lightsource_flickering_glance",
+            "name": "Light Source (Flickering) - Glance",
+            "descriptors": [
+                { "id": "guttering_torch", "text": "A guttering torch threatens to die", "weight": 30 },
+                { "id": "sputtering_flame", "text": "A sputtering flame casts uncertain light", "weight": 25 },
+                { "id": "dying_lantern", "text": "A dying lantern flickers weakly", "weight": 25 },
+                { "id": "pulsing_crystal", "text": "A crystal pulses with unstable light", "weight": 20, "tags": ["magical"] }
+            ]
+        },
+        "lightsource_examine": {
+            "id": "lightsource_examine",
+            "name": "Light Source - Examine",
+            "descriptors": [
+                {
+                    "id": "torch_detail",
+                    "text": "A torch of pitch-soaked rags wrapped around a wooden shaft. The flames dance and crackle, casting orange light that makes shadows leap and dance",
+                    "weight": 25
+                },
+                {
+                    "id": "brazier_detail",
+                    "text": "An iron brazier filled with burning coals. Heat radiates from its surface, and sparks occasionally drift upward like fleeting stars",
+                    "weight": 25
+                },
+                {
+                    "id": "lantern_detail",
+                    "text": "A brass lantern with glass panels that focus the light within. Oil sloshes in its reservoir, suggesting hours of illumination remain",
+                    "weight": 20
+                },
+                {
+                    "id": "crystal_detail",
+                    "text": "A crystalline formation that glows with inner light. No heat emanates from it, yet the light it produces is steady and pure. Magical in origin",
+                    "weight": 15,
+                    "tags": ["magical"]
+                },
+                {
+                    "id": "candle_detail",
+                    "text": "Candles of varying heights burn at different rates, their wax pooling and dripping. The flames bob gently with unseen air currents",
+                    "weight": 15
+                }
+            ]
+        },
+        "inscription_glance": {
+            "id": "inscription_glance",
+            "name": "Inscription - Glance",
+            "descriptors": [
+                { "id": "carved_text", "text": "Carved text marks the wall", "weight": 25 },
+                { "id": "ancient_writing", "text": "Ancient writing covers the stone", "weight": 25 },
+                { "id": "faded_plaque", "text": "A faded plaque hangs here", "weight": 20 },
+                { "id": "mysterious_runes", "text": "Mysterious runes glow faintly", "weight": 15, "tags": ["magical"] },
+                { "id": "warning_sign", "text": "A warning sign marks this place", "weight": 15 }
+            ]
+        },
+        "inscription_examine": {
+            "id": "inscription_examine",
+            "name": "Inscription - Examine",
+            "descriptors": [
+                {
+                    "id": "ancient_script",
+                    "text": "The inscription is in an ancient script, barely legible after centuries of exposure. What can be read speaks of warnings and terrible consequences",
+                    "weight": 25,
+                    "tags": ["ancient"]
+                },
+                {
+                    "id": "memorial_plaque",
+                    "text": "A memorial plaque commemorates someone long dead. Names and dates are partially worn away, but the sentiment of loss remains",
+                    "weight": 25
+                },
+                {
+                    "id": "magical_runes",
+                    "text": "These runes pulse with magical energy. As you study them, their meaning becomes clear - a spell of protection, or perhaps containment",
+                    "weight": 20,
+                    "tags": ["magical"]
+                },
+                {
+                    "id": "crude_warning",
+                    "text": "Crude letters scratched hastily into the stone: a warning from some past traveler. The message is clear - danger lies ahead",
+                    "weight": 15
+                },
+                {
+                    "id": "religious_text",
+                    "text": "Religious text extols the virtues of some deity. The prose is flowery and archaic, speaking of divine judgment and eternal reward",
+                    "weight": 15,
+                    "tags": ["religious"]
+                }
+            ]
+        },
+        "waterfeature_glance": {
+            "id": "waterfeature_glance",
+            "name": "Water Feature - Glance",
+            "descriptors": [
+                { "id": "fountain", "text": "A fountain burbles in the center of the room", "weight": 25 },
+                { "id": "pool", "text": "A still pool reflects the ceiling", "weight": 25 },
+                { "id": "well", "text": "A stone well descends into darkness", "weight": 20 },
+                { "id": "stream", "text": "A small stream cuts through the floor", "weight": 15 },
+                { "id": "dripping_water", "text": "Water drips steadily from above", "weight": 15 }
+            ]
+        },
+        "waterfeature_examine": {
+            "id": "waterfeature_examine",
+            "name": "Water Feature - Examine",
+            "descriptors": [
+                {
+                    "id": "fountain_detail",
+                    "text": "Water spouts from a central sculpture and cascades down tiered basins. The water is surprisingly clear, and coins glint at the bottom - offerings to fortune",
+                    "weight": 25
+                },
+                {
+                    "id": "pool_detail",
+                    "text": "The pool is perfectly still, its surface like a mirror. Your reflection stares back at you, but something seems... off. The water is very deep",
+                    "weight": 25
+                },
+                {
+                    "id": "well_detail",
+                    "text": "The well descends into profound darkness. When you drop a pebble, you count several seconds before hearing a distant splash. A rope and bucket hang nearby",
+                    "weight": 20
+                },
+                {
+                    "id": "stream_detail",
+                    "text": "A natural stream has been channeled through this area, its water cold and clear. Small blind fish dart away from your shadow",
+                    "weight": 15,
+                    "tags": ["cave"]
+                },
+                {
+                    "id": "dripping_detail",
+                    "text": "Water seeps through cracks above, forming stalactites of mineral deposits. The constant dripping has worn grooves in the floor over countless years",
+                    "weight": 15,
+                    "tags": ["cave"]
+                }
+            ]
+        }
+    }
+}

@@ -1,0 +1,63 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="using:RuneAndRust.Presentation.Gui.Controls">
+
+    <!-- ========================================== -->
+    <!-- Combat Feedback Styles v0.8.3a            -->
+    <!-- Damage popups, turn glow, status effects  -->
+    <!-- ========================================== -->
+
+    <!-- Damage Popup Base Style -->
+    <Style Selector="controls|DamagePopupControl">
+        <Setter Property="IsHitTestVisible" Value="False" />
+    </Style>
+
+    <!-- Turn Glow Effect on Entity Token -->
+    <Style Selector="controls|EntityTokenControl.glow-active">
+        <Setter Property="Effect">
+            <DropShadowEffect BlurRadius="15"
+                              Color="Gold"
+                              Opacity="0.8"
+                              OffsetX="0"
+                              OffsetY="0" />
+        </Setter>
+    </Style>
+
+    <!-- Current Turn Style (static indicator) -->
+    <Style Selector="controls|EntityTokenControl.current-turn">
+        <Setter Property="Effect">
+            <DropShadowEffect BlurRadius="8"
+                              Color="DeepSkyBlue"
+                              Opacity="0.6"
+                              OffsetX="0"
+                              OffsetY="0" />
+        </Setter>
+    </Style>
+
+    <!-- Status Indicator Container -->
+    <Style Selector="Border.status-indicator">
+        <Setter Property="Background" Value="#CC1E1E2E" />
+        <Setter Property="Padding" Value="6,3" />
+        <Setter Property="CornerRadius" Value="4" />
+        <Setter Property="BorderBrush" Value="#3E3E5E" />
+        <Setter Property="BorderThickness" Value="1" />
+    </Style>
+
+    <!-- Status Indicator Text -->
+    <Style Selector="Border.status-indicator > TextBlock">
+        <Setter Property="Foreground" Value="White" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="FontWeight" Value="Medium" />
+    </Style>
+
+    <!-- Status Applied (positive) -->
+    <Style Selector="Border.status-indicator.applied > TextBlock">
+        <Setter Property="Foreground" Value="LimeGreen" />
+    </Style>
+
+    <!-- Status Expired (fading) -->
+    <Style Selector="Border.status-indicator.expired > TextBlock">
+        <Setter Property="Foreground" Value="Gray" />
+    </Style>
+
+</Styles>

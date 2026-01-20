@@ -1,0 +1,45 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    
+    <!-- Timestamp Style -->
+    <Style Selector="TextBlock.timestamp">
+        <Setter Property="FontFamily" Value="Consolas, Courier New, monospace" />
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="Foreground" Value="#888888" />
+    </Style>
+    
+    <!-- Auto-scroll Toggle -->
+    <Style Selector="ToggleButton.auto-scroll-toggle">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="#AAAAAA" />
+        <Setter Property="Padding" Value="8,4" />
+        <Setter Property="CornerRadius" Value="4" />
+    </Style>
+    
+    <Style Selector="ToggleButton.auto-scroll-toggle:checked">
+        <Setter Property="Foreground" Value="#6EBF6E" />
+    </Style>
+    
+    <!-- Filter Toggle -->
+    <Style Selector="ToggleButton.filter-toggle">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="#666666" />
+        <Setter Property="Width" Value="28" />
+        <Setter Property="Height" Value="28" />
+        <Setter Property="Padding" Value="4" />
+        <Setter Property="CornerRadius" Value="4" />
+    </Style>
+    
+    <Style Selector="ToggleButton.filter-toggle:checked">
+        <Setter Property="Foreground" Value="#FFFFFF" />
+        <Setter Property="Background" Value="#444444" />
+    </Style>
+    
+    <!-- Small Button -->
+    <Style Selector="Button.small-button">
+        <Setter Property="Padding" Value="8,4" />
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="CornerRadius" Value="4" />
+    </Style>
+    
+</Styles>

@@ -1,0 +1,99 @@
+{
+    "$schema": "./schemas/attributes.schema.json",
+    "version": "1.0",
+    "pointBuyRules": {
+        "startingPoints": 25,
+        "baseAttributeValue": 8,
+        "minimumAttribute": 6,
+        "maximumAttribute": 15,
+        "maximumAfterRacial": 18,
+        "costTable": [
+            {
+                "range": [
+                    6,
+                    14
+                ],
+                "costPerPoint": 1
+            },
+            {
+                "range": [
+                    15,
+                    15
+                ],
+                "costPerPoint": 2
+            }
+        ]
+    },
+    "attributes": [
+        {
+            "id": "might",
+            "name": "Might",
+            "abbreviation": "MIG",
+            "description": "Physical power and strength. Determines raw physical capability.",
+            "primaryEffects": [
+                "Melee weapon damage",
+                "Carrying capacity",
+                "Breaking objects",
+                "Intimidation"
+            ],
+            "sortOrder": 1,
+            "color": "#FF6B6B"
+        },
+        {
+            "id": "fortitude",
+            "name": "Fortitude",
+            "abbreviation": "FOR",
+            "description": "Endurance and constitution. Determines stamina and resilience.",
+            "primaryEffects": [
+                "Maximum health",
+                "Poison resistance",
+                "Disease resistance",
+                "Stamina regeneration"
+            ],
+            "sortOrder": 2,
+            "color": "#4ECDC4"
+        },
+        {
+            "id": "will",
+            "name": "Will",
+            "abbreviation": "WIL",
+            "description": "Mental fortitude and magical aptitude. Determines willpower.",
+            "primaryEffects": [
+                "Magic power",
+                "Mind effect resistance",
+                "Focus/concentration",
+                "Mana pool"
+            ],
+            "sortOrder": 3,
+            "color": "#9B59B6"
+        },
+        {
+            "id": "wits",
+            "name": "Wits",
+            "abbreviation": "WIT",
+            "description": "Intelligence and perception. Determines mental acuity.",
+            "primaryEffects": [
+                "Critical hit chance",
+                "Trap detection",
+                "Lore knowledge",
+                "Initiative bonus"
+            ],
+            "sortOrder": 4,
+            "color": "#F39C12"
+        },
+        {
+            "id": "finesse",
+            "name": "Finesse",
+            "abbreviation": "FIN",
+            "description": "Agility and precision. Determines physical coordination.",
+            "primaryEffects": [
+                "Attack accuracy",
+                "Dodge chance",
+                "Stealth",
+                "Lockpicking"
+            ],
+            "sortOrder": 5,
+            "color": "#1ABC9C"
+        }
+    ]
+}

@@ -1,0 +1,12 @@
+{
+  "currencies": [
+    {
+      "id": "gold",
+      "name": "Gold",
+      "pluralName": "Gold",
+      "symbol": "G",
+      "color": "yellow",
+      "sortOrder": 0
+    }
+  ]
+}

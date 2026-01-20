@@ -1,0 +1,34 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    
+    <!-- Menu Button Style -->
+    <Style Selector="Button.menu-button">
+        <Setter Property="Background" Value="{StaticResource PrimaryBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+        <Setter Property="FontSize" Value="{StaticResource FontSizeMedium}" />
+        <Setter Property="FontWeight" Value="{StaticResource FontWeightSemiBold}" />
+        <Setter Property="Padding" Value="24,12" />
+        <Setter Property="MinWidth" Value="200" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="CornerRadius" Value="4" />
+    </Style>
+    
+    <Style Selector="Button.menu-button:pointerover">
+        <Setter Property="Background" Value="{StaticResource PrimaryLightBrush}" />
+    </Style>
+    
+    <Style Selector="Button.menu-button:pressed">
+        <Setter Property="Background" Value="{StaticResource AccentBrush}" />
+    </Style>
+    
+    <!-- Action Button Style -->
+    <Style Selector="Button.action-button">
+        <Setter Property="Background" Value="{StaticResource AccentBrush}" />
+        <Setter Property="Foreground" Value="#1E1E1E" />
+        <Setter Property="FontSize" Value="{StaticResource FontSizeBody}" />
+        <Setter Property="FontWeight" Value="{StaticResource FontWeightBold}" />
+        <Setter Property="Padding" Value="16,8" />
+        <Setter Property="CornerRadius" Value="4" />
+    </Style>
+    
+</Styles>

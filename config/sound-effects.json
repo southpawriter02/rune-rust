@@ -1,0 +1,193 @@
+{
+    "$schema": "./schemas/sound-effects.schema.json",
+    "categories": {
+        "combat": {
+            "effects": {
+                "attack-hit": {
+                    "files": [
+                        "audio/sfx/combat/hit_01.ogg",
+                        "audio/sfx/combat/hit_02.ogg",
+                        "audio/sfx/combat/hit_03.ogg"
+                    ],
+                    "volume": 0.8,
+                    "randomize": true
+                },
+                "attack-miss": {
+                    "files": [
+                        "audio/sfx/combat/whoosh.ogg"
+                    ],
+                    "volume": 0.6,
+                    "randomize": false
+                },
+                "attack-critical": {
+                    "files": [
+                        "audio/sfx/combat/critical_hit.ogg"
+                    ],
+                    "volume": 1.0,
+                    "randomize": false
+                },
+                "attack-blocked": {
+                    "files": [
+                        "audio/sfx/combat/block_01.ogg",
+                        "audio/sfx/combat/block_02.ogg"
+                    ],
+                    "volume": 0.7,
+                    "randomize": true
+                },
+                "death-monster": {
+                    "files": [
+                        "audio/sfx/combat/monster_death_01.ogg",
+                        "audio/sfx/combat/monster_death_02.ogg"
+                    ],
+                    "volume": 0.9,
+                    "randomize": true
+                },
+                "death-player": {
+                    "files": [
+                        "audio/sfx/combat/player_death.ogg"
+                    ],
+                    "volume": 1.0,
+                    "randomize": false
+                }
+            }
+        },
+        "ability": {
+            "effects": {
+                "ability-cast": {
+                    "files": [
+                        "audio/sfx/ability/cast_generic.ogg"
+                    ],
+                    "volume": 0.7,
+                    "randomize": false
+                },
+                "ability-fire": {
+                    "files": [
+                        "audio/sfx/ability/fire_cast.ogg"
+                    ],
+                    "volume": 0.8,
+                    "randomize": false
+                },
+                "ability-heal": {
+                    "files": [
+                        "audio/sfx/ability/heal_cast.ogg"
+                    ],
+                    "volume": 0.7,
+                    "randomize": false
+                }
+            }
+        },
+        "ui": {
+            "effects": {
+                "button-click": {
+                    "files": [
+                        "audio/sfx/ui/click.ogg"
+                    ],
+                    "volume": 0.5,
+                    "randomize": false
+                },
+                "button-hover": {
+                    "files": [
+                        "audio/sfx/ui/hover.ogg"
+                    ],
+                    "volume": 0.3,
+                    "randomize": false
+                },
+                "menu-open": {
+                    "files": [
+                        "audio/sfx/ui/menu_open.ogg"
+                    ],
+                    "volume": 0.4,
+                    "randomize": false
+                },
+                "menu-close": {
+                    "files": [
+                        "audio/sfx/ui/menu_close.ogg"
+                    ],
+                    "volume": 0.4,
+                    "randomize": false
+                }
+            }
+        },
+        "items": {
+            "effects": {
+                "item-pickup": {
+                    "files": [
+                        "audio/sfx/items/pickup.ogg"
+                    ],
+                    "volume": 0.7,
+                    "randomize": false
+                },
+                "item-equip": {
+                    "files": [
+                        "audio/sfx/items/equip.ogg"
+                    ],
+                    "volume": 0.7,
+                    "randomize": false
+                },
+                "gold-coins": {
+                    "files": [
+                        "audio/sfx/items/coins.ogg"
+                    ],
+                    "volume": 0.6,
+                    "randomize": false
+                }
+            }
+        },
+        "puzzle": {
+            "effects": {
+                "puzzle-correct": {
+                    "files": [
+                        "audio/sfx/puzzle/correct.ogg"
+                    ],
+                    "volume": 0.8,
+                    "randomize": false
+                },
+                "puzzle-incorrect": {
+                    "files": [
+                        "audio/sfx/puzzle/incorrect.ogg"
+                    ],
+                    "volume": 0.7,
+                    "randomize": false
+                },
+                "puzzle-complete": {
+                    "files": [
+                        "audio/sfx/puzzle/fanfare.ogg"
+                    ],
+                    "volume": 1.0,
+                    "randomize": false
+                }
+            }
+        },
+        "movement": {
+            "effects": {
+                "footstep-stone": {
+                    "files": [
+                        "audio/sfx/movement/step_stone_01.ogg",
+                        "audio/sfx/movement/step_stone_02.ogg",
+                        "audio/sfx/movement/step_stone_03.ogg"
+                    ],
+                    "volume": 0.4,
+                    "randomize": true
+                },
+                "door-open": {
+                    "files": [
+                        "audio/sfx/movement/door_open.ogg"
+                    ],
+                    "volume": 0.6,
+                    "randomize": false
+                },
+                "chest-open": {
+                    "files": [
+                        "audio/sfx/movement/chest_open.ogg"
+                    ],
+                    "volume": 0.7,
+                    "randomize": false
+                }
+            }
+        }
+    },
+    "settings": {
+        "maxSimultaneous": 8,
+        "defaultVolume": 0.8
+    }
+}

@@ -1,0 +1,84 @@
+{
+    "$schema": "./schemas/music-themes.schema.json",
+    "themes": [
+        {
+            "theme": "MainMenu",
+            "tracks": [
+                "audio/music/menu_theme.ogg"
+            ],
+            "volume": 0.7,
+            "loop": true,
+            "shuffle": false
+        },
+        {
+            "theme": "Exploration",
+            "tracks": [
+                "audio/music/dungeon_ambient_01.ogg",
+                "audio/music/dungeon_ambient_02.ogg",
+                "audio/music/dungeon_ambient_03.ogg"
+            ],
+            "volume": 0.6,
+            "loop": true,
+            "shuffle": true
+        },
+        {
+            "theme": "Combat",
+            "tracks": [
+                "audio/music/combat_intense.ogg"
+            ],
+            "introTrack": "audio/music/combat_intro.ogg",
+            "volume": 0.8,
+            "loop": true,
+            "shuffle": false
+        },
+        {
+            "theme": "BossCombat",
+            "tracks": [
+                "audio/music/boss_epic.ogg",
+                "audio/music/boss_epic_phase2.ogg"
+            ],
+            "introTrack": "audio/music/boss_intro.ogg",
+            "volume": 0.9,
+            "loop": true,
+            "shuffle": false
+        },
+        {
+            "theme": "SafeArea",
+            "tracks": [
+                "audio/music/town_peaceful.ogg",
+                "audio/music/tavern_music.ogg"
+            ],
+            "volume": 0.5,
+            "loop": true,
+            "shuffle": true
+        }
+    ],
+    "stingers": [
+        {
+            "name": "victory",
+            "track": "audio/music/victory_fanfare.ogg",
+            "volume": 1.0
+        },
+        {
+            "name": "defeat",
+            "track": "audio/music/defeat_somber.ogg",
+            "volume": 0.8
+        },
+        {
+            "name": "level-up",
+            "track": "audio/music/levelup_jingle.ogg",
+            "volume": 1.0
+        },
+        {
+            "name": "quest-complete",
+            "track": "audio/music/quest_complete.ogg",
+            "volume": 0.9
+        }
+    ],
+    "transitions": {
+        "defaultCrossfade": 2.0,
+        "combatCrossfade": 0.5,
+        "stingerFadeOut": 1.0,
+        "stingerResumeDelay": 0.5
+    }
+}

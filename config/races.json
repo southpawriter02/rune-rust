@@ -1,0 +1,78 @@
+{
+    "$schema": "./schemas/races.schema.json",
+    "version": "1.0",
+    "races": [
+        {
+            "id": "human",
+            "name": "Human",
+            "description": "Versatile and adaptable, humans are found in every corner of the realm.",
+            "lore": "Humans are the most numerous of the civilized races, known for their ambition and diversity. Their relatively short lifespans drive them to achieve greatness in whatever time they have.",
+            "attributeModifiers": {
+                "might": 1,
+                "fortitude": 1,
+                "will": 1,
+                "wits": 1,
+                "finesse": 1
+            },
+            "traitId": "adaptable",
+            "traitName": "Adaptable",
+            "traitDescription": "Gain one additional skill point each level.",
+            "isPlayable": true,
+            "sortOrder": 1
+        },
+        {
+            "id": "elf",
+            "name": "Elf",
+            "description": "Graceful and long-lived, elves possess an innate connection to magic and nature.",
+            "lore": "The elves are an ancient people who witnessed the dawn of civilization. Their long lives grant them patience and perspective, though some say it also breeds a certain detachment from the concerns of shorter-lived races.",
+            "attributeModifiers": {
+                "might": 0,
+                "fortitude": -1,
+                "will": 0,
+                "wits": 1,
+                "finesse": 2
+            },
+            "traitId": "keen_senses",
+            "traitName": "Keen Senses",
+            "traitDescription": "Bonus to perception checks and cannot be surprised.",
+            "isPlayable": true,
+            "sortOrder": 2
+        },
+        {
+            "id": "dwarf",
+            "name": "Dwarf",
+            "description": "Stout and hardy, dwarves are master craftsmen who dwell in mountain strongholds.",
+            "lore": "Dwarves are renowned throughout the realm for their craftsmanship, their love of ale, and their stubbornness. Their underground kingdoms are marvels of engineering, carved over generations.",
+            "attributeModifiers": {
+                "might": 1,
+                "fortitude": 2,
+                "will": 0,
+                "wits": 0,
+                "finesse": -1
+            },
+            "traitId": "stout",
+            "traitName": "Stout Constitution",
+            "traitDescription": "Resistance to poison and advantage on saves against toxins.",
+            "isPlayable": true,
+            "sortOrder": 3
+        },
+        {
+            "id": "halfling",
+            "name": "Halfling",
+            "description": "Small in stature but big in heart, halflings are known for their luck and quick wits.",
+            "lore": "Halflings prefer the simple pleasures: good food, warm hearths, and peaceful communities. Yet when adventure calls, their natural luck and nimbleness serve them surprisingly well.",
+            "attributeModifiers": {
+                "might": -1,
+                "fortitude": 0,
+                "will": 0,
+                "wits": 2,
+                "finesse": 1
+            },
+            "traitId": "lucky",
+            "traitName": "Lucky",
+            "traitDescription": "Once per encounter, reroll a natural 1 on any check.",
+            "isPlayable": true,
+            "sortOrder": 4
+        }
+    ]
+}

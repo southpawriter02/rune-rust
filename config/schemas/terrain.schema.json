@@ -1,0 +1,83 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Terrain Configuration",
+    "description": "Configuration schema for terrain definitions",
+    "type": "object",
+    "properties": {
+        "$schema": {
+            "type": "string"
+        },
+        "terrainDefinitions": {
+            "type": "array",
+            "description": "List of terrain type definitions",
+            "items": {
+                "$ref": "#/definitions/TerrainDefinition"
+            }
+        }
+    },
+    "required": [
+        "terrainDefinitions"
+    ],
+    "definitions": {
+        "TerrainDefinition": {
+            "type": "object",
+            "description": "A single terrain type definition",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Unique identifier for this terrain (lowercase kebab-case)",
+                    "pattern": "^[a-z][a-z0-9-]*$"
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Display name for the terrain"
+                },
+                "type": {
+                    "type": "string",
+                    "description": "Base terrain category",
+                    "enum": [
+                        "Normal",
+                        "Difficult",
+                        "Impassable",
+                        "Hazardous"
+                    ]
+                },
+                "movementCostMultiplier": {
+                    "type": "number",
+                    "description": "Movement cost multiplier (1.0 = normal)",
+                    "minimum": 0,
+                    "default": 1.0
+                },
+                "damageOnEntry": {
+                    "type": "string",
+                    "description": "Dice expression for hazard damage (e.g., '1d6')"
+                },
+                "damageType": {
+                    "type": "string",
+                    "description": "Damage type ID for hazardous terrain"
+                },
+                "blocksLOS": {
+                    "type": "boolean",
+                    "description": "Whether this terrain blocks line of sight",
+                    "default": false
+                },
+                "displayChar": {
+                    "type": "string",
+                    "description": "ASCII character for grid display",
+                    "minLength": 1,
+                    "maxLength": 1,
+                    "default": "."
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Description for legends and tooltips"
+                }
+            },
+            "required": [
+                "id",
+                "name",
+                "type"
+            ]
+        }
+    }
+}

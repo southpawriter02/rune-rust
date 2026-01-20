@@ -1,0 +1,169 @@
+{
+  "$schema": "./schemas/ability-trees.schema.json",
+  "abilityTrees": [
+    {
+      "treeId": "warrior-tree",
+      "classId": "warrior",
+      "name": "Warrior Talents",
+      "description": "Master of arms and battlefield tactics",
+      "pointsPerLevel": 1,
+      "icon": "icons/trees/warrior.png",
+      "branches": [
+        {
+          "branchId": "berserker",
+          "name": "Berserker",
+          "description": "Fury and raw destructive power",
+          "icon": "icons/branches/berserker.png",
+          "nodes": [
+            {
+              "nodeId": "frenzy",
+              "abilityId": "frenzy",
+              "name": "Frenzy",
+              "description": "Enter a battle rage, increasing attack speed by 10% per rank",
+              "tier": 1,
+              "pointCost": 1,
+              "maxRank": 3,
+              "prerequisites": [],
+              "statPrerequisites": [],
+              "position": { "x": 0, "y": 1 },
+              "icon": "icons/abilities/frenzy.png"
+            },
+            {
+              "nodeId": "bloodlust",
+              "abilityId": "bloodlust",
+              "name": "Bloodlust",
+              "description": "Heal for 10% of damage dealt when killing enemies",
+              "tier": 1,
+              "pointCost": 1,
+              "maxRank": 1,
+              "prerequisites": [],
+              "statPrerequisites": [],
+              "position": { "x": 1, "y": 1 },
+              "icon": "icons/abilities/bloodlust.png"
+            },
+            {
+              "nodeId": "rage",
+              "abilityId": "rage",
+              "name": "Rage",
+              "description": "Massive damage boost (+50%) when below 25% health",
+              "tier": 2,
+              "pointCost": 2,
+              "maxRank": 1,
+              "prerequisites": ["frenzy"],
+              "statPrerequisites": [{ "stat": "strength", "minValue": 14 }],
+              "position": { "x": 0, "y": 2 },
+              "icon": "icons/abilities/rage.png"
+            }
+          ]
+        },
+        {
+          "branchId": "guardian",
+          "name": "Guardian",
+          "description": "Protection, resilience, and damage mitigation",
+          "icon": "icons/branches/guardian.png",
+          "nodes": [
+            {
+              "nodeId": "shield-wall",
+              "abilityId": "shield-wall",
+              "name": "Shield Wall",
+              "description": "Increase block chance by 10% per rank",
+              "tier": 1,
+              "pointCost": 1,
+              "maxRank": 3,
+              "prerequisites": [],
+              "statPrerequisites": [],
+              "position": { "x": 0, "y": 1 },
+              "icon": "icons/abilities/shield-wall.png"
+            },
+            {
+              "nodeId": "taunt",
+              "abilityId": "taunt",
+              "name": "Taunt",
+              "description": "Force enemies to attack you for 2 turns",
+              "tier": 1,
+              "pointCost": 1,
+              "maxRank": 1,
+              "prerequisites": [],
+              "statPrerequisites": [],
+              "position": { "x": 1, "y": 1 },
+              "icon": "icons/abilities/taunt.png"
+            },
+            {
+              "nodeId": "iron-skin",
+              "abilityId": "iron-skin",
+              "name": "Iron Skin",
+              "description": "Reduce all damage taken by 15%",
+              "tier": 2,
+              "pointCost": 2,
+              "maxRank": 1,
+              "prerequisites": ["shield-wall"],
+              "statPrerequisites": [],
+              "position": { "x": 0, "y": 2 },
+              "icon": "icons/abilities/iron-skin.png"
+            },
+            {
+              "nodeId": "aura-of-defense",
+              "abilityId": "aura-of-defense",
+              "name": "Aura of Defense",
+              "description": "Allies within 2 cells take 10% less damage",
+              "tier": 2,
+              "pointCost": 2,
+              "maxRank": 1,
+              "prerequisites": ["taunt"],
+              "statPrerequisites": [],
+              "position": { "x": 1, "y": 2 },
+              "icon": "icons/abilities/aura-of-defense.png"
+            }
+          ]
+        },
+        {
+          "branchId": "champion",
+          "name": "Champion",
+          "description": "Leadership, inspiration, and battlefield command",
+          "icon": "icons/branches/champion.png",
+          "nodes": [
+            {
+              "nodeId": "rallying-cry",
+              "abilityId": "rallying-cry",
+              "name": "Rallying Cry",
+              "description": "Boost ally attack by 2 per rank for 3 turns",
+              "tier": 1,
+              "pointCost": 1,
+              "maxRank": 3,
+              "prerequisites": [],
+              "statPrerequisites": [],
+              "position": { "x": 0, "y": 1 },
+              "icon": "icons/abilities/rallying-cry.png"
+            },
+            {
+              "nodeId": "battle-master",
+              "abilityId": "battle-master",
+              "name": "Battle Master",
+              "description": "Gain tactical maneuver options in combat",
+              "tier": 1,
+              "pointCost": 1,
+              "maxRank": 1,
+              "prerequisites": [],
+              "statPrerequisites": [],
+              "position": { "x": 1, "y": 1 },
+              "icon": "icons/abilities/battle-master.png"
+            },
+            {
+              "nodeId": "inspire",
+              "abilityId": "inspire",
+              "name": "Inspire",
+              "description": "Grant an ally an extra action this turn",
+              "tier": 2,
+              "pointCost": 2,
+              "maxRank": 1,
+              "prerequisites": ["rallying-cry"],
+              "statPrerequisites": [{ "stat": "charisma", "minValue": 12 }],
+              "position": { "x": 0, "y": 2 },
+              "icon": "icons/abilities/inspire.png"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

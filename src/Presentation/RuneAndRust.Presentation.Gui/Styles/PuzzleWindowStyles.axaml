@@ -1,0 +1,73 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    
+    <!-- Puzzle Header -->
+    <Style Selector="Border.puzzle-header">
+        <Setter Property="Background" Value="#2D2D2D" />
+    </Style>
+    
+    <!-- Puzzle Title -->
+    <Style Selector="TextBlock.puzzle-title">
+        <Setter Property="FontSize" Value="18" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="HorizontalAlignment" Value="Center" />
+    </Style>
+    
+    <!-- Instructions -->
+    <Style Selector="TextBlock.puzzle-instructions">
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="FontStyle" Value="Italic" />
+        <Setter Property="HorizontalAlignment" Value="Center" />
+    </Style>
+    
+    <!-- Current Input -->
+    <Style Selector="TextBlock.current-input">
+        <Setter Property="FontSize" Value="16" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+    
+    <!-- Hint Text -->
+    <Style Selector="TextBlock.hint-text">
+        <Setter Property="FontStyle" Value="Italic" />
+        <Setter Property="Foreground" Value="Gold" />
+    </Style>
+    
+    <!-- Puzzle Element -->
+    <Style Selector="Border.puzzle-element">
+        <Setter Property="Background" Value="#1A1A1A" />
+        <Setter Property="BorderBrush" Value="#444444" />
+        <Setter Property="BorderThickness" Value="2" />
+        <Setter Property="CornerRadius" Value="4" />
+        <Setter Property="Cursor" Value="Hand" />
+    </Style>
+    
+    <Style Selector="Border.puzzle-element:pointerover">
+        <Setter Property="BorderBrush" Value="#4CAF50" />
+    </Style>
+    
+    <!-- Result Panel -->
+    <Style Selector="Border.result-panel">
+        <Setter Property="Background" Value="#2D2D2D" />
+        <Setter Property="CornerRadius" Value="8" />
+    </Style>
+    
+    <!-- Result Title -->
+    <Style Selector="TextBlock.result-title">
+        <Setter Property="FontSize" Value="20" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="HorizontalAlignment" Value="Center" />
+    </Style>
+    
+    <!-- Solve Button -->
+    <Style Selector="Button.solve-button">
+        <Setter Property="Background" Value="#4CAF50" />
+        <Setter Property="Foreground" Value="White" />
+    </Style>
+    
+    <!-- Give Up Button -->
+    <Style Selector="Button.danger-button">
+        <Setter Property="Background" Value="#F44336" />
+        <Setter Property="Foreground" Value="White" />
+    </Style>
+    
+</Styles>

@@ -1,0 +1,87 @@
+{
+  "category": "smells",
+  "pools": {
+    "smells_cave": {
+      "id": "smells_cave",
+      "name": "Cave Smells",
+      "descriptors": [
+        { "id": "mineral", "text": "The sharp scent of minerals and wet stone", "weight": 30 },
+        { "id": "damp_earth", "text": "The earthy smell of damp soil", "weight": 25 },
+        { "id": "stale_air", "text": "Stale, ancient air that hasn't moved in centuries", "weight": 25 },
+        { "id": "guano", "text": "The acrid stench of bat guano", "weight": 20 }
+      ]
+    },
+    "smells_dungeon": {
+      "id": "smells_dungeon",
+      "name": "Dungeon Smells",
+      "descriptors": [
+        { "id": "musty", "text": "Musty air thick with age and neglect", "weight": 25 },
+        { "id": "torch_smoke", "text": "The acrid smell of torch smoke", "weight": 25 },
+        { "id": "rust_mold", "text": "The smell of rust and mold", "weight": 25 },
+        { "id": "death", "text": "A faint hint of death lingers in the air", "weight": 15, "tags": ["danger"] },
+        { "id": "damp_stone", "text": "The smell of damp stone permeates everything", "weight": 10 }
+      ]
+    },
+    "smells_volcanic": {
+      "id": "smells_volcanic",
+      "name": "Volcanic Smells",
+      "descriptors": [
+        { "id": "sulfur", "text": "Sulfurous fumes sting your eyes and throat", "weight": 35 },
+        { "id": "brimstone", "text": "The reek of brimstone fills the air", "weight": 30 },
+        { "id": "ash", "text": "The bitter taste of ash coats your tongue", "weight": 20 },
+        { "id": "burning_rock", "text": "The acrid smell of burning rock", "weight": 15 }
+      ]
+    },
+    "smells_frozen": {
+      "id": "smells_frozen",
+      "name": "Frozen Smells",
+      "descriptors": [
+        { "id": "crisp_cold", "text": "The crisp, clean scent of snow", "weight": 35 },
+        { "id": "no_smell", "text": "The cold suppresses all but the faintest smells", "weight": 30 },
+        { "id": "ice", "text": "A faint, sharp scent of ice crystals", "weight": 20 },
+        { "id": "frozen_earth", "text": "The subtle smell of frozen earth", "weight": 15 }
+      ]
+    },
+    "smells_swamp": {
+      "id": "smells_swamp",
+      "name": "Swamp Smells",
+      "descriptors": [
+        { "id": "decay", "text": "The stench of rotting vegetation assaults your senses", "weight": 30 },
+        { "id": "stagnant", "text": "Stagnant, fetid water fills the air with its reek", "weight": 25 },
+        { "id": "decomposition", "text": "The sweet-sick smell of decomposition", "weight": 25 },
+        { "id": "mud", "text": "Rich, organic mud mixed with decay", "weight": 20 }
+      ]
+    },
+    "smells_forest": {
+      "id": "smells_forest",
+      "name": "Forest Smells",
+      "descriptors": [
+        { "id": "pine", "text": "The fresh scent of pine needles", "weight": 25 },
+        { "id": "loam", "text": "Rich forest loam and fallen leaves", "weight": 25 },
+        { "id": "wildflowers", "text": "The delicate fragrance of wildflowers", "weight": 20 },
+        { "id": "bark_moss", "text": "The earthy smell of bark and moss", "weight": 20 },
+        { "id": "rain_forest", "text": "The clean scent of recent rain on leaves", "weight": 10 }
+      ]
+    },
+    "smells_ruins": {
+      "id": "smells_ruins",
+      "name": "Ruins Smells",
+      "descriptors": [
+        { "id": "ancient_dust", "text": "Ancient dust coats your tongue with each breath", "weight": 30 },
+        { "id": "crumbling_stone", "text": "The musty smell of crumbling stone", "weight": 25 },
+        { "id": "forgotten", "text": "The smell of places long forgotten", "weight": 25 },
+        { "id": "decay_age", "text": "The subtle decay of ages", "weight": 20 }
+      ]
+    },
+    "smells": {
+      "id": "smells",
+      "name": "Generic Smells",
+      "descriptors": [
+        { "id": "dust", "text": "Dust hangs in the still air", "weight": 30 },
+        { "id": "stale", "text": "The air smells stale and old", "weight": 30 },
+        { "id": "damp", "text": "A faint dampness permeates the air", "weight": 25 },
+        { "id": "earth", "text": "The smell of earth surrounds you", "weight": 15 }
+      ]
+    }
+  }
+}

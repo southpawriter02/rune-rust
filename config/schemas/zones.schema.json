@@ -1,0 +1,217 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "zones.schema.json",
+    "title": "Zone Effects Configuration",
+    "description": "Configuration for persistent zone effects in tactical combat. Zones are area-of-effect abilities that persist on the combat grid and apply effects each turn to entities within their area.",
+    "type": "object",
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "Reference to this schema file"
+        },
+        "zones": {
+            "type": "array",
+            "description": "List of zone effect definitions",
+            "items": {
+                "$ref": "#/definitions/zone"
+            },
+            "minItems": 1
+        },
+        "settings": {
+            "$ref": "#/definitions/zoneSettings"
+        }
+    },
+    "required": [
+        "zones"
+    ],
+    "definitions": {
+        "zone": {
+            "type": "object",
+            "description": "A zone effect definition describing a persistent area effect",
+            "properties": {
+                "zoneId": {
+                    "type": "string",
+                    "description": "Unique identifier (lowercase, kebab-case)",
+                    "pattern": "^[a-z][a-z0-9-]*$",
+                    "minLength": 1,
+                    "maxLength": 50,
+                    "examples": ["wall-of-fire", "healing-circle", "slow-field"]
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Display name of the zone",
+                    "minLength": 1,
+                    "maxLength": 50,
+                    "examples": ["Wall of Fire", "Healing Circle", "Slow Field"]
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Detailed description of the zone's effects",
+                    "minLength": 1,
+                    "maxLength": 500
+                },
+                "effectType": {
+                    "type": "string",
+                    "description": "The primary type of effect this zone applies",
+                    "enum": ["Damage", "Healing", "Buff", "Debuff", "Terrain", "Mixed"],
+                    "examples": ["Damage", "Healing", "Debuff"]
+                },
+                "shape": {
+                    "type": "string",
+                    "description": "The shape of the zone on the combat grid. Circle uses Euclidean distance, Square uses Manhattan, Line/Cone require direction.",
+                    "enum": ["Circle", "Square", "Line", "Cone", "Ring"],
+                    "examples": ["Circle", "Line", "Cone"]
+                },
+                "radius": {
+                    "type": "integer",
+                    "description": "Radius of the zone in cells. Interpretation varies by shape.",
+                    "minimum": 1,
+                    "maximum": 10,
+                    "examples": [2, 3, 4]
+                },
+                "duration": {
+                    "type": "integer",
+                    "description": "Duration of the zone in turns before it expires",
+                    "minimum": 1,
+                    "maximum": 20,
+                    "examples": [3, 5, 10]
+                },
+                "damageValue": {
+                    "type": ["string", "null"],
+                    "description": "Dice notation for damage dealt each tick (e.g., '2d6', '1d8+2'). Required for Damage and Mixed types.",
+                    "pattern": "^\\d+d(4|6|8|10)([+-]\\d+)?$",
+                    "examples": ["2d6", "1d8+2", "1d10"]
+                },
+                "damageType": {
+                    "type": ["string", "null"],
+                    "description": "Type of damage dealt (fire, cold, lightning, acid, poison, radiant, necrotic, physical, magic)",
+                    "pattern": "^[a-z]+$",
+                    "examples": ["fire", "cold", "radiant", "necrotic"]
+                },
+                "healValue": {
+                    "type": ["string", "null"],
+                    "description": "Dice notation for healing done each tick (e.g., '1d6+2'). Required for Healing and Mixed types.",
+                    "pattern": "^\\d+d(4|6|8|10)([+-]\\d+)?$",
+                    "examples": ["1d6+2", "2d4", "1d8"]
+                },
+                "statusEffectId": {
+                    "type": ["string", "null"],
+                    "description": "Status effect definition ID to apply (references status-effects.json). Required for Buff, Debuff, Terrain types.",
+                    "pattern": "^[a-z][a-z0-9-]*$",
+                    "examples": ["slowed", "entangled", "blessed", "burning"]
+                },
+                "terrainModifier": {
+                    "type": ["string", "null"],
+                    "description": "Terrain modification for Terrain type zones",
+                    "enum": ["DifficultTerrain", "BlockingTerrain", "DangerousTerrain", "ObscuredTerrain", null],
+                    "examples": ["DifficultTerrain", "BlockingTerrain"]
+                },
+                "affectsFriendly": {
+                    "type": "boolean",
+                    "description": "Whether the zone affects friendly entities (allies of the caster)",
+                    "default": false,
+                    "examples": [true, false]
+                },
+                "affectsEnemy": {
+                    "type": "boolean",
+                    "description": "Whether the zone affects enemy entities (opponents of the caster)",
+                    "default": true,
+                    "examples": [true, false]
+                },
+                "monsterTypes": {
+                    "type": ["array", "null"],
+                    "description": "Monster types specifically affected by this zone (empty or null means all types). Used for type-specific zones like Consecration affecting undead.",
+                    "items": {
+                        "type": "string",
+                        "pattern": "^[a-z]+$"
+                    },
+                    "examples": [["undead", "demon"], ["beast"], null]
+                },
+                "icon": {
+                    "type": ["string", "null"],
+                    "description": "Path to the zone icon for UI display",
+                    "examples": ["icons/zones/wall-of-fire.png", "icons/zones/healing-circle.png"]
+                }
+            },
+            "required": [
+                "zoneId",
+                "name",
+                "description",
+                "effectType",
+                "shape",
+                "radius",
+                "duration",
+                "affectsFriendly",
+                "affectsEnemy"
+            ],
+            "allOf": [
+                {
+                    "if": {
+                        "properties": {
+                            "effectType": { "const": "Damage" }
+                        }
+                    },
+                    "then": {
+                        "required": ["damageValue", "damageType"]
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "effectType": { "const": "Healing" }
+                        }
+                    },
+                    "then": {
+                        "required": ["healValue"]
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "effectType": { "enum": ["Buff", "Debuff"] }
+                        }
+                    },
+                    "then": {
+                        "required": ["statusEffectId"]
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "effectType": { "const": "Terrain" }
+                        }
+                    },
+                    "then": {
+                        "required": ["terrainModifier"]
+                    }
+                }
+            ],
+            "additionalProperties": false
+        },
+        "zoneSettings": {
+            "type": "object",
+            "description": "Global settings for the zone system",
+            "properties": {
+                "maxZonesPerCaster": {
+                    "type": "integer",
+                    "description": "Maximum number of zones a single caster can have active simultaneously",
+                    "minimum": 1,
+                    "maximum": 20,
+                    "default": 10
+                },
+                "tickTiming": {
+                    "type": "string",
+                    "description": "When zone effects are applied during combat",
+                    "enum": ["roundStart", "turnStart", "turnEnd", "roundEnd"],
+                    "default": "roundStart"
+                },
+                "defaultDamageType": {
+                    "type": "string",
+                    "description": "Default damage type for zones that don't specify one",
+                    "default": "magic"
+                }
+            },
+            "additionalProperties": false
+        }
+    }
+}

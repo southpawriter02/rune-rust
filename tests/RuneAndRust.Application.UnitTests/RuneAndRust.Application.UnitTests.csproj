@@ -3,6 +3,8 @@
   <PropertyGroup>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
+    <!-- Allow obsolete method usage in tests during transition period -->
+    <NoWarn>$(NoWarn);CS0618</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,6 +19,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Core\RuneAndRust.Application\RuneAndRust.Application.csproj" />
+    <ProjectReference Include="..\..\src\Presentation\RuneAndRust.Presentation.Shared\RuneAndRust.Presentation.Shared.csproj" />
+    <ProjectReference Include="..\..\src\Presentation\RuneAndRust.Presentation.Tui\RuneAndRust.Presentation.Tui.csproj" />
+    <ProjectReference Include="..\..\src\Presentation\RuneAndRust.Presentation.Gui\RuneAndRust.Presentation.Gui.csproj" />
+    <ProjectReference Include="..\RuneAndRust.TestUtilities\RuneAndRust.TestUtilities.csproj" />
   </ItemGroup>
 
   <ItemGroup>

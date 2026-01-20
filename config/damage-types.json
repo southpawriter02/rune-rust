@@ -1,0 +1,53 @@
+{
+  "damageTypes": [
+    {
+      "id": "physical",
+      "name": "Physical",
+      "description": "Standard physical damage from weapons and natural attacks.",
+      "color": "white",
+      "sortOrder": 0
+    },
+    {
+      "id": "fire",
+      "name": "Fire",
+      "description": "Burning damage from flames and heat.",
+      "color": "red",
+      "sortOrder": 1
+    },
+    {
+      "id": "ice",
+      "name": "Ice",
+      "description": "Freezing damage from cold and frost.",
+      "color": "cyan",
+      "sortOrder": 2
+    },
+    {
+      "id": "lightning",
+      "name": "Lightning",
+      "description": "Electrical damage from storms and magic.",
+      "color": "yellow",
+      "sortOrder": 3
+    },
+    {
+      "id": "poison",
+      "name": "Poison",
+      "description": "Toxic damage from venoms and chemicals.",
+      "color": "green",
+      "sortOrder": 4
+    },
+    {
+      "id": "holy",
+      "name": "Holy",
+      "description": "Radiant damage from divine sources.",
+      "color": "gold1",
+      "sortOrder": 5
+    },
+    {
+      "id": "dark",
+      "name": "Dark",
+      "description": "Necrotic damage from shadow and death magic.",
+      "color": "purple",
+      "sortOrder": 6
+    }
+  ]
+}

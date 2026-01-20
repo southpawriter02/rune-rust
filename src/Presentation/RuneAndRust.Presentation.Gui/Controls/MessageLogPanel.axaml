@@ -1,0 +1,95 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:RuneAndRust.Presentation.Gui.ViewModels"
+             xmlns:models="using:RuneAndRust.Presentation.Gui.Models"
+             xmlns:conv="using:RuneAndRust.Presentation.Gui.Converters"
+             x:Class="RuneAndRust.Presentation.Gui.Controls.MessageLogPanel"
+             x:DataType="vm:MessageLogViewModel">
+    
+    <UserControl.Resources>
+        <conv:MessageTypeToColorConverter x:Key="MessageTypeToColor" />
+    </UserControl.Resources>
+    
+    <Design.DataContext>
+        <vm:MessageLogViewModel />
+    </Design.DataContext>
+    
+    <Grid RowDefinitions="Auto,*,Auto">
+        
+        <!-- Header -->
+        <Border Grid.Row="0" Classes="panel" Padding="12,8">
+            <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Text="MESSAGE LOG"
+                           Classes="secondary"
+                           FontWeight="SemiBold"
+                           VerticalAlignment="Center" />
+                
+                <ToggleButton Grid.Column="1"
+                              IsChecked="{Binding AutoScrollEnabled}"
+                              Command="{Binding ToggleAutoScrollCommand}"
+                              Classes="auto-scroll-toggle"
+                              ToolTip.Tip="Toggle auto-scroll">
+                    <StackPanel Orientation="Horizontal" Spacing="4">
+                        <TextBlock Text="▼" />
+                        <TextBlock Text="Auto-scroll" />
+                    </StackPanel>
+                </ToggleButton>
+            </Grid>
+        </Border>
+        
+        <!-- Message List -->
+        <ScrollViewer Grid.Row="1"
+                      Name="MessageScrollViewer"
+                      VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled">
+            <ItemsControl ItemsSource="{Binding Messages}"
+                          Margin="8,4">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="models:GameMessage">
+                        <Grid ColumnDefinitions="70,*" Margin="0,2">
+                            <!-- Timestamp -->
+                            <TextBlock Grid.Column="0"
+                                       Text="{Binding FormattedTime, StringFormat='[{0}]'}"
+                                       Classes="timestamp" />
+                            
+                            <!-- Message Text -->
+                            <TextBlock Grid.Column="1"
+                                       Text="{Binding Text}"
+                                       TextWrapping="Wrap"
+                                       Foreground="{Binding Type, Converter={StaticResource MessageTypeToColor}}" />
+                        </Grid>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+        
+        <!-- Footer -->
+        <Border Grid.Row="2" Classes="panel" Padding="8">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <Button Content="Clear Log"
+                        Command="{Binding ClearLogCommand}"
+                        Classes="small-button" />
+                
+                <!-- Filter toggles -->
+                <ToggleButton IsChecked="{Binding ShowCombatMessages}"
+                              Classes="filter-toggle"
+                              ToolTip.Tip="Show combat messages">
+                    <TextBlock Text="⚔" />
+                </ToggleButton>
+                
+                <ToggleButton IsChecked="{Binding ShowLootMessages}"
+                              Classes="filter-toggle"
+                              ToolTip.Tip="Show loot messages">
+                    <TextBlock Text="💎" />
+                </ToggleButton>
+                
+                <ToggleButton IsChecked="{Binding ShowSystemMessages}"
+                              Classes="filter-toggle"
+                              ToolTip.Tip="Show system messages">
+                    <TextBlock Text="ℹ" />
+                </ToggleButton>
+            </StackPanel>
+        </Border>
+        
+    </Grid>
+</UserControl>

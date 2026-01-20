@@ -1,0 +1,55 @@
+{
+    "$schema": "./effect-interactions.schema.json",
+    "interactions": [
+        {
+            "id": "wet-lightning",
+            "triggerEffectId": "wet",
+            "withTrigger": "lightning",
+            "bonusDamagePercent": 50,
+            "bonusDamageType": "lightning",
+            "applyEffect": "stunned",
+            "removeEffect": null,
+            "message": "Electricity arcs through the water!"
+        },
+        {
+            "id": "wet-ice",
+            "triggerEffectId": "wet",
+            "withTrigger": "ice",
+            "bonusDamagePercent": 0,
+            "bonusDamageType": null,
+            "applyEffect": "frozen",
+            "removeEffect": "wet",
+            "message": "The water freezes solid!"
+        },
+        {
+            "id": "burning-wet",
+            "triggerEffectId": "burning",
+            "withTrigger": "wet",
+            "bonusDamagePercent": 0,
+            "bonusDamageType": null,
+            "applyEffect": null,
+            "removeEffect": "burning",
+            "message": "The flames are extinguished!"
+        },
+        {
+            "id": "chilled-ice",
+            "triggerEffectId": "chilled",
+            "withTrigger": "ice",
+            "bonusDamagePercent": 0,
+            "bonusDamageType": null,
+            "applyEffect": "frozen",
+            "removeEffect": "chilled",
+            "message": "The cold intensifies into ice!"
+        },
+        {
+            "id": "on-fire-wet",
+            "triggerEffectId": "on-fire",
+            "withTrigger": "wet",
+            "bonusDamagePercent": 0,
+            "bonusDamageType": null,
+            "applyEffect": null,
+            "removeEffect": "on-fire",
+            "message": "The fire is put out!"
+        }
+    ]
+}

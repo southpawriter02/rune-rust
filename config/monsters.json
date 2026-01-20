@@ -1,0 +1,172 @@
+{
+  "monsters": [
+    {
+      "id": "goblin",
+      "name": "Goblin",
+      "description": "A small, green creature with sharp teeth and beady eyes. It looks hostile.",
+      "baseHealth": 30,
+      "baseAttack": 8,
+      "baseDefense": 2,
+      "experienceValue": 25,
+      "behavior": "Cowardly",
+      "tags": ["humanoid"],
+      "canHeal": false,
+      "spawnWeight": 100,
+      "initiativeModifier": 1,
+      "baseResistances": {},
+      "possibleTiers": ["common", "named", "elite"],
+      "possibleTraits": ["venomous", "berserker"],
+      "nameGenerator": {
+        "prefixes": ["Gn", "Sn", "Gr", "Kr", "Zn"],
+        "suffixes": ["ik", "ob", "ax", "ek", "uk"],
+        "titleFormat": "{0} the {1}"
+      },
+      "lootTable": {
+        "entries": [
+          { "itemId": "health_potion", "weight": 100, "minQuantity": 1, "maxQuantity": 1, "dropChance": 0.15 },
+          { "itemId": "rusty_dagger", "weight": 50, "minQuantity": 1, "maxQuantity": 1, "dropChance": 0.05 }
+        ],
+        "currencyDrops": [
+          { "currencyId": "gold", "minAmount": 5, "maxAmount": 15, "dropChance": 0.80 }
+        ]
+      }
+    },
+    {
+      "id": "skeleton",
+      "name": "Skeleton",
+      "description": "An animated pile of bones held together by dark magic.",
+      "baseHealth": 25,
+      "baseAttack": 6,
+      "baseDefense": 3,
+      "experienceValue": 20,
+      "behavior": "Aggressive",
+      "tags": ["undead"],
+      "canHeal": false,
+      "spawnWeight": 80,
+      "initiativeModifier": 0,
+      "baseResistances": {
+        "physical": 25,
+        "fire": -50,
+        "poison": 100,
+        "holy": -50,
+        "dark": 50
+      },
+      "possibleTiers": ["common", "named", "elite", "boss"],
+      "possibleTraits": ["armored", "berserker"],
+      "nameGenerator": {
+        "prefixes": ["Sk", "Bl", "Dr", "Vr", "Th"],
+        "suffixes": ["ull", "ax", "or", "im", "us"],
+        "titleFormat": "{0} the Bone {1}"
+      },
+      "lootTable": {
+        "entries": [
+          { "itemId": "bone_dust", "weight": 100, "minQuantity": 1, "maxQuantity": 3, "dropChance": 0.30 },
+          { "itemId": "ancient_coin", "weight": 50, "minQuantity": 1, "maxQuantity": 1, "dropChance": 0.10 }
+        ],
+        "currencyDrops": [
+          { "currencyId": "gold", "minAmount": 8, "maxAmount": 20, "dropChance": 0.90 }
+        ]
+      }
+    },
+    {
+      "id": "orc",
+      "name": "Orc",
+      "description": "A large, brutish creature with green skin and tusks. It wields a crude axe.",
+      "baseHealth": 45,
+      "baseAttack": 12,
+      "baseDefense": 4,
+      "experienceValue": 40,
+      "behavior": "Aggressive",
+      "tags": ["humanoid"],
+      "canHeal": false,
+      "spawnWeight": 50,
+      "initiativeModifier": -1,
+      "baseResistances": {},
+      "possibleTiers": ["common", "named", "elite", "boss"],
+      "possibleTraits": ["armored", "berserker", "regenerating"],
+      "nameGenerator": {
+        "prefixes": ["Gr", "Kr", "Th", "Br", "Dr"],
+        "suffixes": ["ok", "ag", "ul", "ax", "or"],
+        "titleFormat": "{0} the {1}"
+      },
+      "lootTable": {
+        "entries": [
+          { "itemId": "health_potion", "weight": 100, "minQuantity": 1, "maxQuantity": 1, "dropChance": 0.25 },
+          { "itemId": "iron_sword", "weight": 50, "minQuantity": 1, "maxQuantity": 1, "dropChance": 0.10 },
+          { "itemId": "orcish_helm", "weight": 30, "minQuantity": 1, "maxQuantity": 1, "dropChance": 0.05 }
+        ],
+        "currencyDrops": [
+          { "currencyId": "gold", "minAmount": 15, "maxAmount": 35, "dropChance": 1.0 }
+        ]
+      }
+    },
+    {
+      "id": "goblin_shaman",
+      "name": "Goblin Shaman",
+      "description": "A goblin adorned with crude fetishes and glowing runes.",
+      "baseHealth": 25,
+      "baseAttack": 6,
+      "baseDefense": 1,
+      "experienceValue": 30,
+      "behavior": "Support",
+      "tags": ["humanoid", "magic"],
+      "canHeal": true,
+      "healAmount": 10,
+      "spawnWeight": 30,
+      "initiativeModifier": 2,
+      "baseResistances": {},
+      "possibleTiers": ["common", "named", "elite"],
+      "possibleTraits": ["regenerating"],
+      "nameGenerator": {
+        "prefixes": ["Zn", "Xr", "Wr", "Qz", "Vx"],
+        "suffixes": ["ik", "ax", "um", "ek", "oz"],
+        "titleFormat": "{0} the Shaman"
+      },
+      "lootTable": {
+        "entries": [
+          { "itemId": "mana_potion", "weight": 100, "minQuantity": 1, "maxQuantity": 1, "dropChance": 0.20 },
+          { "itemId": "fetish_charm", "weight": 50, "minQuantity": 1, "maxQuantity": 1, "dropChance": 0.10 }
+        ],
+        "currencyDrops": [
+          { "currencyId": "gold", "minAmount": 10, "maxAmount": 25, "dropChance": 0.85 }
+        ]
+      }
+    },
+    {
+      "id": "slime",
+      "name": "Slime",
+      "description": "A gelatinous blob that oozes across the floor.",
+      "baseHealth": 40,
+      "baseAttack": 5,
+      "baseDefense": 5,
+      "experienceValue": 15,
+      "behavior": "Chaotic",
+      "tags": ["ooze"],
+      "canHeal": false,
+      "spawnWeight": 90,
+      "initiativeModifier": -2,
+      "baseResistances": {
+        "physical": 50,
+        "fire": -25,
+        "ice": -25,
+        "lightning": -50,
+        "poison": 100
+      },
+      "possibleTiers": ["common", "named", "elite"],
+      "possibleTraits": ["regenerating", "venomous"],
+      "nameGenerator": {
+        "prefixes": ["Bl", "Gl", "Sl", "Sp", "Sq"],
+        "suffixes": ["ob", "ub", "op", "ip", "oop"],
+        "titleFormat": "{0} the {1}"
+      },
+      "lootTable": {
+        "entries": [
+          { "itemId": "slime_residue", "weight": 100, "minQuantity": 1, "maxQuantity": 3, "dropChance": 0.50 }
+        ],
+        "currencyDrops": [
+          { "currencyId": "gold", "minAmount": 1, "maxAmount": 5, "dropChance": 0.30 }
+        ]
+      }
+    }
+  ]
+}

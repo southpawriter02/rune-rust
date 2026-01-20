@@ -1,0 +1,144 @@
+{
+    "category": "combat",
+    "pools": {
+        "hit_descriptions": {
+            "id": "hit_descriptions",
+            "name": "Hit Descriptions",
+            "descriptors": [
+                {
+                    "id": "strikes_true",
+                    "text": "strikes true",
+                    "weight": 25
+                },
+                {
+                    "id": "slashes_deeply",
+                    "text": "slashes deeply",
+                    "weight": 20
+                },
+                {
+                    "id": "pierces_armor",
+                    "text": "pierces through armor",
+                    "weight": 15
+                },
+                {
+                    "id": "connects_solidly",
+                    "text": "connects with a solid blow",
+                    "weight": 25
+                },
+                {
+                    "id": "finds_gap",
+                    "text": "finds a gap in the defense",
+                    "weight": 15
+                },
+                {
+                    "id": "devastating_blow",
+                    "text": "lands a devastating blow",
+                    "weight": 10,
+                    "minDamagePercent": 0.25
+                }
+            ]
+        },
+        "miss_descriptions": {
+            "id": "miss_descriptions",
+            "name": "Miss Descriptions",
+            "descriptors": [
+                {
+                    "id": "swings_wide",
+                    "text": "swings wide",
+                    "weight": 25
+                },
+                {
+                    "id": "deflected_away",
+                    "text": "is deflected away",
+                    "weight": 20
+                },
+                {
+                    "id": "narrowly_dodged",
+                    "text": "is narrowly dodged",
+                    "weight": 20
+                },
+                {
+                    "id": "parried_expertly",
+                    "text": "is parried expertly",
+                    "weight": 15
+                },
+                {
+                    "id": "misses_completely",
+                    "text": "misses completely",
+                    "weight": 20
+                }
+            ]
+        },
+        "damage_severity": {
+            "id": "damage_severity",
+            "name": "Damage Severity",
+            "descriptors": [
+                {
+                    "id": "grazes",
+                    "text": "grazes",
+                    "weight": 100,
+                    "maxDamagePercent": 0.1
+                },
+                {
+                    "id": "wounds",
+                    "text": "wounds",
+                    "weight": 100,
+                    "minDamagePercent": 0.1,
+                    "maxDamagePercent": 0.25
+                },
+                {
+                    "id": "grievously_injures",
+                    "text": "grievously injures",
+                    "weight": 100,
+                    "minDamagePercent": 0.25,
+                    "maxDamagePercent": 0.5
+                },
+                {
+                    "id": "devastates",
+                    "text": "devastates",
+                    "weight": 100,
+                    "minDamagePercent": 0.5
+                }
+            ]
+        },
+        "death_descriptions": {
+            "id": "death_descriptions",
+            "name": "Death Descriptions",
+            "descriptors": [
+                {
+                    "id": "collapses",
+                    "text": "collapses to the ground",
+                    "weight": 25
+                },
+                {
+                    "id": "crumbles_dust",
+                    "text": "crumbles to dust",
+                    "weight": 15,
+                    "tags": [
+                        "undead",
+                        "construct"
+                    ]
+                },
+                {
+                    "id": "final_cry",
+                    "text": "lets out a final cry and falls",
+                    "weight": 25
+                },
+                {
+                    "id": "falls_silent",
+                    "text": "falls silent, never to rise again",
+                    "weight": 20
+                },
+                {
+                    "id": "dissolves_shadows",
+                    "text": "dissolves into shadows",
+                    "weight": 15,
+                    "tags": [
+                        "shadow",
+                        "demon"
+                    ]
+                }
+            ]
+        }
+    }
+}

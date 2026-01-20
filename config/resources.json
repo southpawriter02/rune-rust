@@ -1,0 +1,86 @@
+{
+    "resourceTypes": [
+        {
+            "id": "health",
+            "displayName": "Vitality",
+            "abbreviation": "HP",
+            "description": "Your life force. When it reaches zero, you are defeated.",
+            "color": "#FF0000",
+            "defaultMax": 100,
+            "regenPerTurn": 0,
+            "decayPerTurn": 0,
+            "isUniversal": true,
+            "startsAtZero": false,
+            "sortOrder": 0
+        },
+        {
+            "id": "mana",
+            "displayName": "Arcane Power",
+            "abbreviation": "MP",
+            "description": "Magical energy used to cast spells. Regenerates naturally over time.",
+            "color": "#0066FF",
+            "defaultMax": 100,
+            "regenPerTurn": 10,
+            "decayPerTurn": 0,
+            "isUniversal": false,
+            "startsAtZero": false,
+            "sortOrder": 1
+        },
+        {
+            "id": "rage",
+            "displayName": "Fury",
+            "abbreviation": "RG",
+            "description": "Battle fury that builds from combat. Decays when not fighting.",
+            "color": "#FF6600",
+            "defaultMax": 100,
+            "regenPerTurn": 0,
+            "decayPerTurn": 10,
+            "decayOnlyOutOfCombat": true,
+            "buildOnDamageDealt": 10,
+            "buildOnDamageTaken": 15,
+            "isUniversal": false,
+            "startsAtZero": true,
+            "sortOrder": 2
+        },
+        {
+            "id": "energy",
+            "displayName": "Stamina",
+            "abbreviation": "EN",
+            "description": "Physical energy for quick actions. Regenerates rapidly.",
+            "color": "#FFCC00",
+            "defaultMax": 100,
+            "regenPerTurn": 20,
+            "decayPerTurn": 0,
+            "isUniversal": false,
+            "startsAtZero": false,
+            "sortOrder": 3
+        },
+        {
+            "id": "faith",
+            "displayName": "Divine Favor",
+            "abbreviation": "FTH",
+            "description": "Spiritual power that builds through acts of devotion and healing.",
+            "color": "#FFDD88",
+            "defaultMax": 100,
+            "regenPerTurn": 5,
+            "decayPerTurn": 0,
+            "buildOnHeal": 15,
+            "isUniversal": false,
+            "startsAtZero": false,
+            "sortOrder": 4
+        },
+        {
+            "id": "focus",
+            "displayName": "Concentration",
+            "abbreviation": "FOC",
+            "description": "Mental focus used to power gadgets and devices. Steady regeneration.",
+            "color": "#00CCAA",
+            "defaultMax": 100,
+            "regenPerTurn": 8,
+            "decayPerTurn": 0,
+            "isUniversal": false,
+            "startsAtZero": false,
+            "sortOrder": 5
+        }
+    ]
+}

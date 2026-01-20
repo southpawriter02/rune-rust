@@ -1,0 +1,76 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    
+    <!-- Shop Header -->
+    <Style Selector="Border.shop-header">
+        <Setter Property="Background" Value="#2D2D2D" />
+    </Style>
+    
+    <!-- Inventory Panel -->
+    <Style Selector="Border.inventory-panel">
+        <Setter Property="Background" Value="#1A1A1A" />
+        <Setter Property="CornerRadius" Value="4" />
+    </Style>
+    
+    <!-- Panel Title -->
+    <Style Selector="TextBlock.panel-title">
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="FontSize" Value="12" />
+    </Style>
+    
+    <!-- Shop Item -->
+    <Style Selector="Border.shop-item">
+        <Setter Property="Padding" Value="8,6" />
+        <Setter Property="CornerRadius" Value="4" />
+        <Setter Property="Cursor" Value="Hand" />
+    </Style>
+    
+    <Style Selector="Border.shop-item:pointerover">
+        <Setter Property="Background" Value="#333333" />
+    </Style>
+    
+    <!-- Buy Button -->
+    <Style Selector="Button.buy-button">
+        <Setter Property="Background" Value="#4CAF50" />
+        <Setter Property="Foreground" Value="White" />
+        <Setter Property="Padding" Value="16,8" />
+    </Style>
+    
+    <Style Selector="Button.buy-button:pointerover">
+        <Setter Property="Background" Value="#66BB6A" />
+    </Style>
+    
+    <Style Selector="Button.buy-button:disabled">
+        <Setter Property="Background" Value="#333333" />
+        <Setter Property="Foreground" Value="#666666" />
+    </Style>
+    
+    <!-- Sell Button -->
+    <Style Selector="Button.sell-button">
+        <Setter Property="Background" Value="#FF9800" />
+        <Setter Property="Foreground" Value="White" />
+        <Setter Property="Padding" Value="16,8" />
+    </Style>
+    
+    <Style Selector="Button.sell-button:pointerover">
+        <Setter Property="Background" Value="#FFB74D" />
+    </Style>
+    
+    <Style Selector="Button.sell-button:disabled">
+        <Setter Property="Background" Value="#333333" />
+        <Setter Property="Foreground" Value="#666666" />
+    </Style>
+    
+    <!-- Gold Display -->
+    <Style Selector="TextBlock.gold-amount">
+        <Setter Property="Foreground" Value="Gold" />
+        <Setter Property="FontWeight" Value="Bold" />
+    </Style>
+    
+    <!-- Comparison Panel -->
+    <Style Selector="Border.comparison-panel">
+        <Setter Property="Background" Value="#1A1A1A" />
+        <Setter Property="CornerRadius" Value="4" />
+    </Style>
+    
+</Styles>

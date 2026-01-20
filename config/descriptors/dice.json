@@ -1,0 +1,119 @@
+{
+    "category": "dice",
+    "pools": {
+        "natural_one": {
+            "id": "natural_one",
+            "name": "Natural One",
+            "descriptors": [
+                {
+                    "id": "dice_betray",
+                    "text": "The dice betray you",
+                    "weight": 25
+                },
+                {
+                    "id": "fortune_turns",
+                    "text": "Fortune turns against you",
+                    "weight": 25
+                },
+                {
+                    "id": "cruel_twist",
+                    "text": "A cruel twist of fate",
+                    "weight": 25
+                },
+                {
+                    "id": "luck_abandons",
+                    "text": "Luck completely abandons you",
+                    "weight": 15
+                },
+                {
+                    "id": "cursed_roll",
+                    "text": "A cursed roll if ever there was one",
+                    "weight": 10
+                }
+            ]
+        },
+        "low_rolls": {
+            "id": "low_rolls",
+            "name": "Low Rolls",
+            "descriptors": [
+                {
+                    "id": "luck_not_side",
+                    "text": "Luck is not on your side",
+                    "weight": 30
+                },
+                {
+                    "id": "barely_missing",
+                    "text": "Barely missing the mark",
+                    "weight": 30
+                },
+                {
+                    "id": "unfavorable",
+                    "text": "An unfavorable result",
+                    "weight": 25
+                },
+                {
+                    "id": "could_be_worse",
+                    "text": "It could have been worse",
+                    "weight": 15
+                }
+            ]
+        },
+        "high_rolls": {
+            "id": "high_rolls",
+            "name": "High Rolls",
+            "descriptors": [
+                {
+                    "id": "fortune_favors",
+                    "text": "Fortune favors you",
+                    "weight": 30
+                },
+                {
+                    "id": "odds_align",
+                    "text": "The odds align in your favor",
+                    "weight": 25
+                },
+                {
+                    "id": "skillful_execution",
+                    "text": "Skillful execution",
+                    "weight": 25
+                },
+                {
+                    "id": "impressive_result",
+                    "text": "An impressive result",
+                    "weight": 20
+                }
+            ]
+        },
+        "natural_max": {
+            "id": "natural_max",
+            "name": "Natural Maximum",
+            "descriptors": [
+                {
+                    "id": "destiny_intervenes",
+                    "text": "Destiny itself intervenes",
+                    "weight": 25
+                },
+                {
+                    "id": "legendary_success",
+                    "text": "A legendary success",
+                    "weight": 25
+                },
+                {
+                    "id": "stars_align",
+                    "text": "The stars align perfectly",
+                    "weight": 20
+                },
+                {
+                    "id": "gods_smile",
+                    "text": "The gods smile upon you",
+                    "weight": 15
+                },
+                {
+                    "id": "perfect_moment",
+                    "text": "A perfect moment of triumph",
+                    "weight": 15
+                }
+            ]
+        }
+    }
+}

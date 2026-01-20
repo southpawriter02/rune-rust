@@ -1,0 +1,155 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "recipes.schema.json",
+  "title": "Recipe Definitions",
+  "description": "Schema for crafting recipe definitions in RuneAndRust. Recipes define what resources are consumed and what items are produced when crafting succeeds.",
+  "type": "object",
+  "required": ["recipes"],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Reference to this schema file for validation"
+    },
+    "recipes": {
+      "type": "array",
+      "description": "Array of recipe definitions",
+      "items": {
+        "$ref": "#/$defs/recipe"
+      },
+      "minItems": 1
+    }
+  },
+  "$defs": {
+    "recipe": {
+      "type": "object",
+      "description": "A single recipe definition specifying ingredients, output, and requirements",
+      "required": ["id", "name", "category", "requiredStation", "ingredients", "output", "difficultyClass"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique recipe identifier in kebab-case (lowercase with hyphens)",
+          "pattern": "^[a-z][a-z0-9-]*$",
+          "minLength": 2,
+          "maxLength": 64,
+          "examples": ["iron-sword", "healing-potion", "mithril-blade"]
+        },
+        "name": {
+          "type": "string",
+          "description": "Display name for the recipe shown in UI",
+          "minLength": 1,
+          "maxLength": 64,
+          "examples": ["Iron Sword", "Healing Potion", "Mithril Blade"]
+        },
+        "description": {
+          "type": "string",
+          "description": "Recipe description text shown in recipe book",
+          "maxLength": 256,
+          "examples": ["Forge a basic but reliable iron sword"]
+        },
+        "category": {
+          "type": "string",
+          "description": "Recipe category for UI filtering and organization",
+          "enum": ["Weapon", "Armor", "Potion", "Consumable", "Accessory", "Tool", "Material"]
+        },
+        "requiredStation": {
+          "type": "string",
+          "description": "ID of the crafting station required to craft this recipe",
+          "pattern": "^[a-z][a-z0-9-]*$",
+          "minLength": 2,
+          "examples": ["anvil", "alchemy-table", "workbench", "cooking-fire"]
+        },
+        "ingredients": {
+          "type": "array",
+          "description": "List of resources consumed when crafting",
+          "items": {
+            "$ref": "#/$defs/ingredient"
+          },
+          "minItems": 1,
+          "maxItems": 10
+        },
+        "output": {
+          "$ref": "#/$defs/output",
+          "description": "Item(s) produced when crafting succeeds"
+        },
+        "difficultyClass": {
+          "type": "integer",
+          "description": "Crafting skill check DC (1-30). Player must roll 2d6 + modifier >= DC to succeed.",
+          "minimum": 1,
+          "maximum": 30,
+          "examples": [8, 12, 15, 18]
+        },
+        "isDefault": {
+          "type": "boolean",
+          "description": "Whether this recipe is known by new players. Default recipes don't require discovery.",
+          "default": false
+        },
+        "craftingTimeSeconds": {
+          "type": "integer",
+          "description": "Time to craft in seconds, used for progress display",
+          "minimum": 0,
+          "maximum": 3600,
+          "default": 30
+        },
+        "icon": {
+          "type": "string",
+          "description": "Path to recipe icon image for UI display",
+          "examples": ["icons/recipes/iron_sword.png"]
+        }
+      },
+      "additionalProperties": false
+    },
+    "ingredient": {
+      "type": "object",
+      "description": "A recipe ingredient requirement specifying resource and quantity",
+      "required": ["resourceId", "quantity"],
+      "properties": {
+        "resourceId": {
+          "type": "string",
+          "description": "ID of the required resource (references ResourceDefinition)",
+          "pattern": "^[a-z][a-z0-9-]*$",
+          "minLength": 2,
+          "examples": ["iron-ore", "leather", "healing-herb"]
+        },
+        "quantity": {
+          "type": "integer",
+          "description": "Number of resources consumed when crafting",
+          "minimum": 1,
+          "maximum": 999,
+          "examples": [1, 3, 5, 10]
+        }
+      },
+      "additionalProperties": false
+    },
+    "output": {
+      "type": "object",
+      "description": "Recipe output specification defining what is produced",
+      "required": ["itemId", "quantity"],
+      "properties": {
+        "itemId": {
+          "type": "string",
+          "description": "ID of the item produced (references ItemDefinition)",
+          "pattern": "^[a-z][a-z0-9-]*$",
+          "minLength": 2,
+          "examples": ["iron-sword", "healing-potion", "iron-ingot"]
+        },
+        "quantity": {
+          "type": "integer",
+          "description": "Number of items produced on success",
+          "minimum": 1,
+          "maximum": 99,
+          "examples": [1, 2, 3]
+        },
+        "qualityFormula": {
+          "type": "string",
+          "description": "Optional formula for roll-based quality determination. Uses 'roll' variable representing the crafting check result.",
+          "maxLength": 256,
+          "examples": [
+            "roll >= 20 ? 'Legendary' : roll >= 15 ? 'Epic' : 'Rare'",
+            "roll >= 18 ? 'Fine' : 'Common'"
+          ]
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

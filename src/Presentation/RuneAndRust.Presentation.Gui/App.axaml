@@ -2,7 +2,22 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="RuneAndRust.Presentation.Gui.App"
              RequestedThemeVariant="Dark">
+    
     <Application.Styles>
         <FluentTheme />
+        <StyleInclude Source="avares://RuneAndRust.Presentation.Gui/Styles/ButtonStyles.axaml" />
+        <StyleInclude Source="avares://RuneAndRust.Presentation.Gui/Styles/TextBlockStyles.axaml" />
+        <StyleInclude Source="avares://RuneAndRust.Presentation.Gui/Styles/PanelStyles.axaml" />
+        <StyleInclude Source="avares://RuneAndRust.Presentation.Gui/Styles/RoomDisplayStyles.axaml" />
     </Application.Styles>
+    
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source="avares://RuneAndRust.Presentation.Gui/Themes/Colors.axaml" />
+                <ResourceInclude Source="avares://RuneAndRust.Presentation.Gui/Themes/Typography.axaml" />
+                <ResourceInclude Source="avares://RuneAndRust.Presentation.Gui/Themes/BaseTheme.axaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
 </Application>

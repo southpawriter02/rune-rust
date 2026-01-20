@@ -1,0 +1,218 @@
+{
+    "$schema": "./schemas/bosses.schema.json",
+    "bosses": [
+        {
+            "bossId": "skeleton-king",
+            "name": "The Skeleton King",
+            "description": "An ancient ruler who made a pact with dark forces, now risen from his tomb to reclaim his kingdom. His undying will commands legions of skeletal warriors.",
+            "baseMonsterDefinitionId": "skeleton-elite",
+            "titleText": "Lord of the Undead Crypt",
+            "phases": [
+                {
+                    "phaseNumber": 1,
+                    "name": "Awakened",
+                    "healthThreshold": 100,
+                    "behavior": "Tactical",
+                    "abilityIds": ["bone-strike", "shield-bash"],
+                    "transitionText": "The ancient king rises from his throne, bones creaking with dark power."
+                },
+                {
+                    "phaseNumber": 2,
+                    "name": "Commanding",
+                    "healthThreshold": 60,
+                    "behavior": "Summoner",
+                    "abilityIds": ["bone-strike", "raise-dead", "death-command"],
+                    "transitionText": "The Skeleton King raises his scepter. 'Rise, my servants!'",
+                    "summonConfig": {
+                        "monsterDefinitionId": "skeleton-minion",
+                        "count": 2,
+                        "intervalTurns": 3,
+                        "maxActive": 6
+                    }
+                },
+                {
+                    "phaseNumber": 3,
+                    "name": "Enraged",
+                    "healthThreshold": 25,
+                    "behavior": "Enraged",
+                    "abilityIds": ["bone-storm", "devastating-strike", "death-grip"],
+                    "statModifiers": [
+                        { "statId": "attack", "type": "Percentage", "value": 0.5 },
+                        { "statId": "defense", "type": "Percentage", "value": -0.25 }
+                    ],
+                    "transitionText": "The Skeleton King's eyes blaze with unholy fury! 'You will join my army!'",
+                    "transitionEffectId": "boss-enrage-aura"
+                }
+            ],
+            "loot": [
+                { "itemId": "gold", "amount": 500, "chance": 1.0 },
+                { "itemId": "bone-shard", "amount": 3, "chance": 1.0 },
+                { "itemId": "crown-of-bones", "amount": 1, "chance": 0.25 },
+                { "itemId": "scepter-of-undeath", "amount": 1, "chance": 0.10 }
+            ]
+        },
+        {
+            "bossId": "volcanic-wyrm",
+            "name": "Volcanic Wyrm",
+            "description": "A massive dragon that has made its lair within an active volcano. Its scales glow with molten heat, and its breath can melt stone.",
+            "baseMonsterDefinitionId": "dragon-base",
+            "titleText": "Ancient Guardian of the Flame",
+            "phases": [
+                {
+                    "phaseNumber": 1,
+                    "name": "Grounded",
+                    "healthThreshold": 100,
+                    "behavior": "Aggressive",
+                    "abilityIds": ["fire-breath", "tail-swipe", "claw-rake"],
+                    "transitionText": "The Volcanic Wyrm awakens from its slumber, smoke billowing from its nostrils."
+                },
+                {
+                    "phaseNumber": 2,
+                    "name": "Airborne",
+                    "healthThreshold": 50,
+                    "behavior": "Tactical",
+                    "abilityIds": ["fire-breath", "dive-bomb", "wing-buffet", "magma-rain"],
+                    "statModifiers": [
+                        { "statId": "defense", "type": "Flat", "value": 15 },
+                        { "statId": "evasion", "type": "Percentage", "value": 0.25 }
+                    ],
+                    "transitionText": "The wyrm spreads its massive wings and takes to the air!",
+                    "transitionEffectId": "boss-flight-aura"
+                },
+                {
+                    "phaseNumber": 3,
+                    "name": "Inferno",
+                    "healthThreshold": 20,
+                    "behavior": "Enraged",
+                    "abilityIds": ["inferno-breath", "volcanic-eruption", "desperate-charge"],
+                    "statModifiers": [
+                        { "statId": "attack", "type": "Percentage", "value": 0.75 },
+                        { "statId": "defense", "type": "Percentage", "value": -0.5 }
+                    ],
+                    "transitionText": "The Volcanic Wyrm's body erupts in flames! The very air burns!",
+                    "transitionEffectId": "volcanic-inferno"
+                }
+            ],
+            "loot": [
+                { "itemId": "gold", "amount": 750, "chance": 1.0 },
+                { "itemId": "dragon-scale", "amount": 5, "chance": 1.0 },
+                { "itemId": "molten-heart", "amount": 1, "chance": 0.50 },
+                { "itemId": "wyrm-fang-blade", "amount": 1, "chance": 0.15 },
+                { "itemId": "volcanic-ember", "amount": 1, "chance": 0.05 }
+            ]
+        },
+        {
+            "bossId": "shadow-lich",
+            "name": "Shadow Lich",
+            "description": "Once a powerful archmage, this lich sacrificed everything for immortality. Its mastery over shadow magic makes it nearly impossible to pin down.",
+            "baseMonsterDefinitionId": "lich-base",
+            "titleText": "Master of the Dark Arts",
+            "phases": [
+                {
+                    "phaseNumber": 1,
+                    "name": "Contemplative",
+                    "healthThreshold": 100,
+                    "behavior": "Tactical",
+                    "abilityIds": ["shadow-bolt", "drain-life", "dark-shield"],
+                    "transitionText": "The Shadow Lich materializes from the darkness. 'You dare disturb my studies?'"
+                },
+                {
+                    "phaseNumber": 2,
+                    "name": "Defensive",
+                    "healthThreshold": 70,
+                    "behavior": "Defensive",
+                    "abilityIds": ["shadow-bolt", "mirror-image", "soul-shield", "phase-shift"],
+                    "statModifiers": [
+                        { "statId": "defense", "type": "Percentage", "value": 0.5 },
+                        { "statId": "spell-resist", "type": "Flat", "value": 20 }
+                    ],
+                    "transitionText": "The lich's form flickers and splits. 'Catch me if you can!'",
+                    "transitionEffectId": "shadow-cloak"
+                },
+                {
+                    "phaseNumber": 3,
+                    "name": "Unleashed",
+                    "healthThreshold": 40,
+                    "behavior": "Aggressive",
+                    "abilityIds": ["void-blast", "mass-drain", "shadow-storm", "finger-of-death"],
+                    "statModifiers": [
+                        { "statId": "spell-power", "type": "Percentage", "value": 0.75 }
+                    ],
+                    "transitionText": "The Shadow Lich's eyes blaze with power. 'Enough games. Witness true magic!'",
+                    "transitionEffectId": "shadow-unleash"
+                },
+                {
+                    "phaseNumber": 4,
+                    "name": "Desperate",
+                    "healthThreshold": 15,
+                    "behavior": "Enraged",
+                    "abilityIds": ["void-blast", "soul-rend", "death-coil", "dark-apotheosis"],
+                    "statModifiers": [
+                        { "statId": "spell-power", "type": "Percentage", "value": 1.0 },
+                        { "statId": "defense", "type": "Percentage", "value": -0.5 }
+                    ],
+                    "transitionText": "The lich's phylactery pulses. 'You cannot destroy me! I am ETERNAL!'",
+                    "transitionEffectId": "phylactery-surge"
+                }
+            ],
+            "loot": [
+                { "itemId": "gold", "amount": 600, "chance": 1.0 },
+                { "itemId": "shadow-essence", "amount": 4, "chance": 1.0 },
+                { "itemId": "arcane-tome", "amount": 1, "chance": 0.75 },
+                { "itemId": "staff-of-shadows", "amount": 1, "chance": 0.20 },
+                { "itemId": "phylactery-shard", "amount": 1, "chance": 0.08 }
+            ]
+        },
+        {
+            "bossId": "orc-warlord",
+            "name": "Grok'thar the Unbroken",
+            "description": "The mightiest warlord the orc clans have ever known. His legendary strength is matched only by his tactical cunning on the battlefield.",
+            "baseMonsterDefinitionId": "orc-elite",
+            "titleText": "Warchief of the Blood Fang Clan",
+            "phases": [
+                {
+                    "phaseNumber": 1,
+                    "name": "Challenge",
+                    "healthThreshold": 100,
+                    "behavior": "Tactical",
+                    "abilityIds": ["cleave", "war-cry", "shield-slam"],
+                    "transitionText": "Grok'thar roars, 'Finally, worthy opponents! Let us see if you have the strength to face me!'"
+                },
+                {
+                    "phaseNumber": 2,
+                    "name": "Rallying",
+                    "healthThreshold": 50,
+                    "behavior": "Summoner",
+                    "abilityIds": ["cleave", "battle-command", "inspiring-shout"],
+                    "transitionText": "The warlord raises his banner. 'Warriors! To me!'",
+                    "summonConfig": {
+                        "monsterDefinitionId": "orc-warrior",
+                        "count": 1,
+                        "intervalTurns": 2,
+                        "maxActive": 3
+                    }
+                },
+                {
+                    "phaseNumber": 3,
+                    "name": "Bloodlust",
+                    "healthThreshold": 25,
+                    "behavior": "Enraged",
+                    "abilityIds": ["berserker-slam", "whirlwind", "execution-strike"],
+                    "statModifiers": [
+                        { "statId": "attack", "type": "Percentage", "value": 0.6 },
+                        { "statId": "speed", "type": "Flat", "value": 10 },
+                        { "statId": "defense", "type": "Percentage", "value": -0.3 }
+                    ],
+                    "transitionText": "Grok'thar's eyes turn red with bloodlust! 'BLOOD AND GLORY!'",
+                    "transitionEffectId": "bloodlust-frenzy"
+                }
+            ],
+            "loot": [
+                { "itemId": "gold", "amount": 400, "chance": 1.0 },
+                { "itemId": "war-trophy", "amount": 2, "chance": 1.0 },
+                { "itemId": "warlord-armor", "amount": 1, "chance": 0.35 },
+                { "itemId": "bloodfang-axe", "amount": 1, "chance": 0.12 }
+            ]
+        }
+    ]
+}

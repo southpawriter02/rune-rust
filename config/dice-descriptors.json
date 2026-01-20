@@ -1,0 +1,77 @@
+{
+    "$schema": "dice-descriptors.schema.json",
+    "descriptors": {
+        "dice.natural_max": [
+            "The dice shine with otherworldly luck!",
+            "Fortune smiles upon your roll!",
+            "A perfect cast!",
+            "The dice seem to glow with inner light.",
+            "Destiny favors you this moment."
+        ],
+        "dice.natural_one": [
+            "The dice tumble with ill fortune...",
+            "Fate turns against you.",
+            "A dismal result.",
+            "The dice seem to mock your efforts.",
+            "Even the stones conspire against you."
+        ],
+        "dice.high_roll": [
+            "A solid roll!",
+            "The dice favor you.",
+            "Well cast!"
+        ],
+        "dice.low_roll": [
+            "The dice are not kind.",
+            "A disappointing result.",
+            "The roll could have been better."
+        ],
+        "skill.critical_success": [
+            "Masterfully done!",
+            "A display of true expertise!",
+            "Perfection incarnate!",
+            "You exceed all expectations!",
+            "A legendary feat of skill!"
+        ],
+        "skill.critical_failure": [
+            "A catastrophic blunder!",
+            "Everything that could go wrong, did.",
+            "A moment best forgotten...",
+            "Embarrassingly poor execution.",
+            "You couldn't have done worse if you tried."
+        ],
+        "skill.narrow_success": [
+            "Just barely!",
+            "By the skin of your teeth!",
+            "A close call, but you made it."
+        ],
+        "skill.narrow_failure": [
+            "So close, yet so far.",
+            "Almost, but not quite.",
+            "You came up just short."
+        ],
+        "skill.overwhelming_success": [
+            "Child's play!",
+            "You make it look easy.",
+            "A triumphant success!"
+        ],
+        "skill.overwhelming_failure": [
+            "Not even close.",
+            "A complete disaster.",
+            "You need much more practice."
+        ],
+        "combat.critical_hit": [
+            "A devastating blow!",
+            "You strike true!",
+            "A mighty critical hit!",
+            "Your weapon finds its mark perfectly!",
+            "A blow that will be remembered!"
+        ],
+        "combat.critical_miss": [
+            "Your attack goes wildly astray!",
+            "A clumsy miss!",
+            "You stumble badly!",
+            "Your weapon swings through empty air.",
+            "An embarrassing whiff!"
+        ]
+    }
+}

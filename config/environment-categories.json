@@ -1,0 +1,283 @@
+{
+  "version": "1.0",
+  "categories": {
+    "biome": {
+      "id": "biome",
+      "name": "Biome",
+      "description": "The fundamental environment type of a location",
+      "isRequired": true,
+      "defaultValue": "dungeon",
+      "values": [
+        {
+          "id": "cave",
+          "name": "Cave",
+          "description": "Natural underground caverns",
+          "impliedTags": ["underground", "natural", "cave"]
+        },
+        {
+          "id": "dungeon",
+          "name": "Dungeon",
+          "description": "Constructed underground passages",
+          "impliedTags": ["underground", "constructed", "dungeon"]
+        },
+        {
+          "id": "volcanic",
+          "name": "Volcanic",
+          "description": "Areas of volcanic activity",
+          "impliedTags": ["volcanic", "danger", "heat"]
+        },
+        {
+          "id": "frozen",
+          "name": "Frozen",
+          "description": "Ice-covered or extremely cold areas",
+          "impliedTags": ["frozen", "cold", "ice"]
+        },
+        {
+          "id": "swamp",
+          "name": "Swamp",
+          "description": "Waterlogged, decaying wetlands",
+          "impliedTags": ["swamp", "wet", "decay"]
+        },
+        {
+          "id": "ruins",
+          "name": "Ruins",
+          "description": "Crumbling ancient structures",
+          "impliedTags": ["ruins", "ancient", "decay"]
+        },
+        {
+          "id": "forest",
+          "name": "Forest",
+          "description": "Dense woodland areas",
+          "impliedTags": ["forest", "natural", "outdoor"]
+        },
+        {
+          "id": "desert",
+          "name": "Desert",
+          "description": "Arid wasteland or sandy expanses",
+          "impliedTags": ["desert", "dry", "heat"]
+        }
+      ]
+    },
+    "climate": {
+      "id": "climate",
+      "name": "Climate",
+      "description": "The temperature and weather conditions",
+      "isRequired": false,
+      "defaultValue": "temperate",
+      "values": [
+        {
+          "id": "freezing",
+          "name": "Freezing",
+          "description": "Dangerously cold temperatures",
+          "impliedTags": ["freezing", "cold"]
+        },
+        {
+          "id": "cold",
+          "name": "Cold",
+          "description": "Uncomfortably cold",
+          "impliedTags": ["cold"]
+        },
+        {
+          "id": "temperate",
+          "name": "Temperate",
+          "description": "Moderate temperatures",
+          "impliedTags": []
+        },
+        {
+          "id": "warm",
+          "name": "Warm",
+          "description": "Pleasantly warm",
+          "impliedTags": ["warm"]
+        },
+        {
+          "id": "hot",
+          "name": "Hot",
+          "description": "Uncomfortably hot",
+          "impliedTags": ["hot"]
+        },
+        {
+          "id": "scorching",
+          "name": "Scorching",
+          "description": "Dangerously hot temperatures",
+          "impliedTags": ["scorching", "hot", "danger"]
+        }
+      ]
+    },
+    "lighting": {
+      "id": "lighting",
+      "name": "Lighting",
+      "description": "The illumination level of the area",
+      "isRequired": true,
+      "defaultValue": "dim",
+      "values": [
+        {
+          "id": "pitch_black",
+          "name": "Pitch Black",
+          "description": "Complete absence of light",
+          "impliedTags": ["dark", "blind"]
+        },
+        {
+          "id": "dim",
+          "name": "Dim",
+          "description": "Faint, flickering light",
+          "impliedTags": ["dim", "shadows"]
+        },
+        {
+          "id": "normal",
+          "name": "Normal",
+          "description": "Adequate lighting",
+          "impliedTags": []
+        },
+        {
+          "id": "bright",
+          "name": "Bright",
+          "description": "Well-lit area",
+          "impliedTags": ["bright", "visible"]
+        },
+        {
+          "id": "blinding",
+          "name": "Blinding",
+          "description": "Painfully bright light",
+          "impliedTags": ["blinding", "bright"]
+        }
+      ]
+    },
+    "era": {
+      "id": "era",
+      "name": "Era",
+      "description": "The age and condition of structures",
+      "isRequired": false,
+      "defaultValue": null,
+      "values": [
+        {
+          "id": "ancient",
+          "name": "Ancient",
+          "description": "Millennia-old construction",
+          "impliedTags": ["ancient", "old"]
+        },
+        {
+          "id": "medieval",
+          "name": "Medieval",
+          "description": "Historic but not ancient",
+          "impliedTags": ["medieval"]
+        },
+        {
+          "id": "decayed",
+          "name": "Decayed",
+          "description": "Crumbling, deteriorated",
+          "impliedTags": ["decayed", "ruined"]
+        },
+        {
+          "id": "pristine",
+          "name": "Pristine",
+          "description": "Well-maintained or new",
+          "impliedTags": ["pristine", "clean"]
+        }
+      ]
+    },
+    "condition": {
+      "id": "condition",
+      "name": "Condition",
+      "description": "Special environmental conditions",
+      "isRequired": false,
+      "defaultValue": null,
+      "values": [
+        {
+          "id": "flooded",
+          "name": "Flooded",
+          "description": "Partially or fully submerged",
+          "impliedTags": ["flooded", "wet", "water"]
+        },
+        {
+          "id": "burning",
+          "name": "Burning",
+          "description": "Active fires present",
+          "impliedTags": ["burning", "fire", "danger"]
+        },
+        {
+          "id": "collapsed",
+          "name": "Collapsed",
+          "description": "Structural damage, rubble",
+          "impliedTags": ["collapsed", "rubble", "danger"]
+        },
+        {
+          "id": "overgrown",
+          "name": "Overgrown",
+          "description": "Vegetation reclaiming the area",
+          "impliedTags": ["overgrown", "nature", "plants"]
+        },
+        {
+          "id": "infested",
+          "name": "Infested",
+          "description": "Overrun with creatures",
+          "impliedTags": ["infested", "creatures", "danger"]
+        }
+      ]
+    }
+  },
+  "exclusionRules": [
+    {
+      "id": "volcanic_freezing",
+      "reason": "Volcanic areas cannot have freezing temperatures",
+      "category1": "biome",
+      "values1": ["volcanic"],
+      "category2": "climate",
+      "values2": ["freezing", "cold"],
+      "isHardRule": true
+    },
+    {
+      "id": "frozen_hot",
+      "reason": "Frozen areas cannot have hot temperatures",
+      "category1": "biome",
+      "values1": ["frozen"],
+      "category2": "climate",
+      "values2": ["hot", "scorching"],
+      "isHardRule": true
+    },
+    {
+      "id": "flooded_burning",
+      "reason": "An area cannot be both flooded and burning",
+      "category1": "condition",
+      "values1": ["flooded"],
+      "category2": "condition",
+      "values2": ["burning"],
+      "isHardRule": true
+    },
+    {
+      "id": "desert_flooded",
+      "reason": "Desert areas cannot be flooded",
+      "category1": "biome",
+      "values1": ["desert"],
+      "category2": "condition",
+      "values2": ["flooded"],
+      "isHardRule": true
+    },
+    {
+      "id": "pitch_black_blinding",
+      "reason": "Cannot be both pitch black and blinding",
+      "category1": "lighting",
+      "values1": ["pitch_black"],
+      "category2": "lighting",
+      "values2": ["blinding", "bright"],
+      "isHardRule": true
+    },
+    {
+      "id": "ancient_pristine",
+      "reason": "Ancient structures are unlikely to be pristine",
+      "category1": "era",
+      "values1": ["ancient"],
+      "category2": "era",
+      "values2": ["pristine"],
+      "isHardRule": false
+    },
+    {
+      "id": "volcanic_overgrown",
+      "reason": "Active volcanic areas typically lack dense vegetation",
+      "category1": "biome",
+      "values1": ["volcanic"],
+      "category2": "condition",
+      "values2": ["overgrown"],
+      "isHardRule": false
+    }
+  ]
+}

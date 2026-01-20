@@ -1,0 +1,174 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "combos.schema.json",
+    "title": "Combo Definitions Configuration",
+    "description": "Configuration for ability combos in tactical combat. Combos are sequences of abilities that, when executed within a time window, grant bonus effects to the player.",
+    "type": "object",
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "Reference to this schema file"
+        },
+        "combos": {
+            "type": "array",
+            "description": "List of combo definitions",
+            "items": {
+                "$ref": "#/definitions/combo"
+            },
+            "minItems": 1
+        }
+    },
+    "required": [
+        "combos"
+    ],
+    "definitions": {
+        "combo": {
+            "type": "object",
+            "description": "A combo definition with steps and bonus effects",
+            "properties": {
+                "comboId": {
+                    "type": "string",
+                    "description": "Unique identifier for the combo (lowercase, kebab-case)",
+                    "pattern": "^[a-z][a-z0-9-]*$",
+                    "examples": ["elemental-burst", "warriors-onslaught", "assassins-dance"]
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Display name of the combo",
+                    "minLength": 1,
+                    "maxLength": 50,
+                    "examples": ["Elemental Burst", "Warrior's Onslaught", "Assassin's Dance"]
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Detailed description of the combo's theme and usage",
+                    "minLength": 1,
+                    "maxLength": 500
+                },
+                "windowTurns": {
+                    "type": "integer",
+                    "description": "Number of turns allowed to complete the combo",
+                    "minimum": 1,
+                    "maximum": 10,
+                    "examples": [2, 3]
+                },
+                "requiredClassIds": {
+                    "type": "array",
+                    "description": "Class IDs that can use this combo (empty = all classes)",
+                    "items": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9-]*$"
+                    },
+                    "examples": [["mage", "sorcerer"], ["warrior", "paladin"]]
+                },
+                "steps": {
+                    "type": "array",
+                    "description": "Ordered sequence of abilities to execute",
+                    "items": {
+                        "$ref": "#/definitions/comboStep"
+                    },
+                    "minItems": 2
+                },
+                "bonusEffects": {
+                    "type": "array",
+                    "description": "Rewards granted when the combo completes",
+                    "items": {
+                        "$ref": "#/definitions/bonusEffect"
+                    }
+                },
+                "icon": {
+                    "type": ["string", "null"],
+                    "description": "Path to the combo icon for UI display",
+                    "examples": ["icons/combos/elemental-burst.png"]
+                }
+            },
+            "required": [
+                "comboId",
+                "name",
+                "description",
+                "windowTurns",
+                "steps"
+            ],
+            "additionalProperties": false
+        },
+        "comboStep": {
+            "type": "object",
+            "description": "A single step in the combo sequence",
+            "properties": {
+                "stepNumber": {
+                    "type": "integer",
+                    "description": "Position in the sequence (1-indexed)",
+                    "minimum": 1,
+                    "examples": [1, 2, 3]
+                },
+                "abilityId": {
+                    "type": "string",
+                    "description": "The ability required for this step",
+                    "pattern": "^[a-z][a-z0-9-]*$",
+                    "examples": ["fire-bolt", "ice-shard", "lightning"]
+                },
+                "targetRequirement": {
+                    "type": "string",
+                    "description": "Target constraint relative to previous step",
+                    "enum": ["any", "sameTarget", "differentTarget", "self"],
+                    "default": "any"
+                },
+                "customRequirement": {
+                    "type": ["string", "null"],
+                    "description": "Optional custom validation expression (reserved for future use)"
+                }
+            },
+            "required": [
+                "stepNumber",
+                "abilityId"
+            ],
+            "additionalProperties": false
+        },
+        "bonusEffect": {
+            "type": "object",
+            "description": "A bonus effect applied when the combo completes",
+            "properties": {
+                "effectType": {
+                    "type": "string",
+                    "description": "Type of bonus effect",
+                    "enum": [
+                        "ExtraDamage",
+                        "DamageMultiplier",
+                        "ApplyStatus",
+                        "Heal",
+                        "ResetCooldown",
+                        "RefundResource",
+                        "AreaEffect"
+                    ]
+                },
+                "value": {
+                    "type": "string",
+                    "description": "Value for the effect (dice notation, multiplier, ability ID, etc.)",
+                    "examples": ["4d6", "2.0", "50", "vanish"]
+                },
+                "damageType": {
+                    "type": ["string", "null"],
+                    "description": "Damage type for ExtraDamage effects",
+                    "examples": ["physical", "fire", "ice", "lightning", "piercing"]
+                },
+                "statusEffectId": {
+                    "type": ["string", "null"],
+                    "description": "Status effect ID for ApplyStatus effects",
+                    "pattern": "^[a-z][a-z0-9-]*$",
+                    "examples": ["stunned", "bleeding", "elemental-overload"]
+                },
+                "target": {
+                    "type": "string",
+                    "description": "Who receives the bonus effect",
+                    "enum": ["lastTarget", "allHitTargets", "self", "area"],
+                    "default": "lastTarget"
+                }
+            },
+            "required": [
+                "effectType",
+                "value"
+            ],
+            "additionalProperties": false
+        }
+    }
+}

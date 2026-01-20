@@ -1,0 +1,165 @@
+{
+  "$schema": "./schemas/resources.schema.json",
+  "resources": [
+    {
+      "id": "iron-ore",
+      "name": "Iron Ore",
+      "description": "Raw iron ore, can be smelted into iron ingots",
+      "category": "Ore",
+      "quality": "Common",
+      "baseValue": 5,
+      "stackSize": 20,
+      "icon": "icons/resources/iron_ore.png"
+    },
+    {
+      "id": "copper-ore",
+      "name": "Copper Ore",
+      "description": "Soft copper ore, useful for basic crafting",
+      "category": "Ore",
+      "quality": "Common",
+      "baseValue": 3,
+      "stackSize": 20,
+      "icon": "icons/resources/copper_ore.png"
+    },
+    {
+      "id": "gold-ore",
+      "name": "Gold Ore",
+      "description": "Valuable gold ore for fine crafting",
+      "category": "Ore",
+      "quality": "Fine",
+      "baseValue": 25,
+      "stackSize": 20,
+      "icon": "icons/resources/gold_ore.png"
+    },
+    {
+      "id": "mithril-ore",
+      "name": "Mithril Ore",
+      "description": "Legendary metal of ancient origin",
+      "category": "Ore",
+      "quality": "Rare",
+      "baseValue": 100,
+      "stackSize": 10,
+      "icon": "icons/resources/mithril_ore.png"
+    },
+    {
+      "id": "healing-herb",
+      "name": "Healing Herb",
+      "description": "A herb with restorative properties",
+      "category": "Herb",
+      "quality": "Common",
+      "baseValue": 3,
+      "stackSize": 50,
+      "icon": "icons/resources/healing_herb.png"
+    },
+    {
+      "id": "mana-leaf",
+      "name": "Mana Leaf",
+      "description": "A leaf infused with arcane energy",
+      "category": "Herb",
+      "quality": "Fine",
+      "baseValue": 10,
+      "stackSize": 50,
+      "icon": "icons/resources/mana_leaf.png"
+    },
+    {
+      "id": "firebloom",
+      "name": "Firebloom",
+      "description": "A rare flower that radiates warmth",
+      "category": "Herb",
+      "quality": "Rare",
+      "baseValue": 40,
+      "stackSize": 30,
+      "icon": "icons/resources/firebloom.png"
+    },
+    {
+      "id": "leather",
+      "name": "Leather",
+      "description": "Tanned leather from common creatures",
+      "category": "Leather",
+      "quality": "Common",
+      "baseValue": 8,
+      "stackSize": 20,
+      "icon": "icons/resources/leather.png"
+    },
+    {
+      "id": "thick-hide",
+      "name": "Thick Hide",
+      "description": "Sturdy hide from tough creatures",
+      "category": "Leather",
+      "quality": "Fine",
+      "baseValue": 20,
+      "stackSize": 15,
+      "icon": "icons/resources/thick_hide.png"
+    },
+    {
+      "id": "dragon-scale",
+      "name": "Dragon Scale",
+      "description": "A scale from a mighty dragon",
+      "category": "Leather",
+      "quality": "Rare",
+      "baseValue": 150,
+      "stackSize": 5,
+      "icon": "icons/resources/dragon_scale.png"
+    },
+    {
+      "id": "ruby",
+      "name": "Ruby",
+      "description": "A brilliant red gemstone",
+      "category": "Gem",
+      "quality": "Rare",
+      "baseValue": 100,
+      "stackSize": 10,
+      "icon": "icons/resources/ruby.png"
+    },
+    {
+      "id": "sapphire",
+      "name": "Sapphire",
+      "description": "A deep blue gemstone",
+      "category": "Gem",
+      "quality": "Rare",
+      "baseValue": 100,
+      "stackSize": 10,
+      "icon": "icons/resources/sapphire.png"
+    },
+    {
+      "id": "oak-wood",
+      "name": "Oak Wood",
+      "description": "Sturdy oak wood for crafting",
+      "category": "Wood",
+      "quality": "Common",
+      "baseValue": 4,
+      "stackSize": 20,
+      "icon": "icons/resources/oak_wood.png"
+    },
+    {
+      "id": "ironwood",
+      "name": "Ironwood",
+      "description": "Incredibly dense and strong wood",
+      "category": "Wood",
+      "quality": "Fine",
+      "baseValue": 30,
+      "stackSize": 15,
+      "icon": "icons/resources/ironwood.png"
+    },
+    {
+      "id": "linen",
+      "name": "Linen",
+      "description": "Basic cloth material",
+      "category": "Cloth",
+      "quality": "Common",
+      "baseValue": 5,
+      "stackSize": 30,
+      "icon": "icons/resources/linen.png"
+    },
+    {
+      "id": "silk",
+      "name": "Silk",
+      "description": "Fine silk cloth",
+      "category": "Cloth",
+      "quality": "Fine",
+      "baseValue": 25,
+      "stackSize": 20,
+      "icon": "icons/resources/silk.png"
+    }
+  ]
+}

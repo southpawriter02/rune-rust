@@ -1,0 +1,93 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "cover.schema.json",
+    "title": "Cover Configuration",
+    "description": "Configuration for cover objects in tactical combat",
+    "type": "object",
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "Reference to this schema file"
+        },
+        "coverDefinitions": {
+            "type": "array",
+            "description": "List of cover definitions",
+            "items": {
+                "$ref": "#/definitions/coverDefinition"
+            }
+        }
+    },
+    "required": [
+        "coverDefinitions"
+    ],
+    "definitions": {
+        "coverDefinition": {
+            "type": "object",
+            "description": "A cover type definition",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Unique identifier (kebab-case)",
+                    "pattern": "^[a-z][a-z0-9-]*$"
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Display name"
+                },
+                "coverType": {
+                    "type": "string",
+                    "description": "Cover type category",
+                    "enum": [
+                        "None",
+                        "Partial",
+                        "Full"
+                    ]
+                },
+                "defenseBonus": {
+                    "type": "integer",
+                    "description": "Defense bonus for partial cover",
+                    "minimum": 0,
+                    "maximum": 10,
+                    "default": 2
+                },
+                "isDestructible": {
+                    "type": "boolean",
+                    "description": "Whether the cover can be destroyed",
+                    "default": false
+                },
+                "maxHitPoints": {
+                    "type": "integer",
+                    "description": "Maximum HP for destructible cover",
+                    "minimum": 0,
+                    "default": 10
+                },
+                "blocksMovement": {
+                    "type": "boolean",
+                    "description": "Whether cover blocks movement through its cell",
+                    "default": true
+                },
+                "blocksLOS": {
+                    "type": "boolean",
+                    "description": "Whether cover blocks line of sight",
+                    "default": false
+                },
+                "displayChar": {
+                    "type": "string",
+                    "description": "ASCII character for display",
+                    "minLength": 1,
+                    "maxLength": 1,
+                    "default": "▪"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Description text"
+                }
+            },
+            "required": [
+                "id",
+                "name",
+                "coverType"
+            ]
+        }
+    }
+}

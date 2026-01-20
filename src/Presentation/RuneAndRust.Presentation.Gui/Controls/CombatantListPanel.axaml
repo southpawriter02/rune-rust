@@ -1,0 +1,104 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:RuneAndRust.Presentation.Gui.ViewModels"
+             xmlns:ctrl="using:RuneAndRust.Presentation.Gui.Controls"
+             x:Class="RuneAndRust.Presentation.Gui.Controls.CombatantListPanel"
+             x:DataType="vm:CombatantListViewModel">
+    
+    <Design.DataContext>
+        <vm:CombatantListViewModel />
+    </Design.DataContext>
+    
+    <Border Classes="panel" Padding="8">
+        <Grid RowDefinitions="Auto,*">
+            
+            <!-- Header -->
+            <TextBlock Grid.Row="0" 
+                       Text="COMBATANTS"
+                       Classes="secondary"
+                       FontWeight="SemiBold"
+                       Margin="0,0,0,8" />
+            
+            <!-- Combatant List -->
+            <ScrollViewer Grid.Row="1" 
+                          VerticalScrollBarVisibility="Auto">
+                <ItemsControl ItemsSource="{Binding Combatants}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate DataType="vm:CombatantEntryViewModel">
+                            <Border Classes="combatant-entry"
+                                    Classes.current-turn="{Binding IsCurrentTurn}"
+                                    Margin="0,0,0,8"
+                                    Padding="8">
+                                <Grid RowDefinitions="Auto,Auto,Auto">
+                                    
+                                    <!-- Name Row -->
+                                    <StackPanel Grid.Row="0" Orientation="Horizontal">
+                                        <TextBlock Text="{Binding TurnIndicator}"
+                                                   Classes="turn-indicator"
+                                                   Width="16"
+                                                   FontWeight="Bold"
+                                                   VerticalAlignment="Center" />
+                                        <TextBlock Text="{Binding Name}"
+                                                   Classes="combatant-name"
+                                                   Classes.player="{Binding IsPlayer}"
+                                                   Classes.enemy="{Binding IsEnemy}"
+                                                   FontWeight="SemiBold" />
+                                    </StackPanel>
+                                    
+                                    <!-- HP Row -->
+                                    <Grid Grid.Row="1" 
+                                          ColumnDefinitions="*,Auto"
+                                          Margin="16,4,0,0">
+                                        <ctrl:HealthBarControl 
+                                            Grid.Column="0"
+                                            CurrentValue="{Binding CurrentHp}"
+                                            MaxValue="{Binding MaxHp}"
+                                            Height="8" />
+                                        <TextBlock Grid.Column="1"
+                                                   Margin="8,0,0,0"
+                                                   FontSize="11"
+                                                   Classes="muted">
+                                            <Run Text="{Binding CurrentHp}" />
+                                            <Run Text="/" />
+                                            <Run Text="{Binding MaxHp}" />
+                                        </TextBlock>
+                                    </Grid>
+                                    
+                                    <!-- Status Effects Row -->
+                                    <ItemsControl Grid.Row="2"
+                                                  ItemsSource="{Binding StatusEffects}"
+                                                  Margin="16,4,0,0"
+                                                  IsVisible="{Binding HasStatusEffects}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <WrapPanel />
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate DataType="vm:StatusEffectViewModel">
+                                                <Border Classes="status-effect-badge"
+                                                        ToolTip.Tip="{Binding Description}"
+                                                        Margin="0,0,4,0"
+                                                        Padding="4,2">
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <TextBlock Text="{Binding Icon}"
+                                                                   FontSize="10" />
+                                                        <TextBlock Text="{Binding Name}"
+                                                                   FontSize="10"
+                                                                   Margin="2,0,0,0" />
+                                                    </StackPanel>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                    
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+            
+        </Grid>
+    </Border>
+</UserControl>

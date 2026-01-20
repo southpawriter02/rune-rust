@@ -1,0 +1,250 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "bosses.schema.json",
+    "title": "Boss Definitions Configuration",
+    "description": "Configuration for boss encounters with multi-phase mechanics, summoning, and unique loot tables.",
+    "type": "object",
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "Reference to this schema file"
+        },
+        "bosses": {
+            "type": "array",
+            "description": "List of boss definitions",
+            "items": {
+                "$ref": "#/definitions/boss"
+            },
+            "minItems": 1
+        }
+    },
+    "required": [
+        "bosses"
+    ],
+    "definitions": {
+        "boss": {
+            "type": "object",
+            "description": "A boss definition with phases, loot, and unique mechanics",
+            "properties": {
+                "bossId": {
+                    "type": "string",
+                    "description": "Unique identifier for the boss (lowercase, kebab-case)",
+                    "pattern": "^[a-z][a-z0-9-]*$",
+                    "examples": ["skeleton-king", "volcanic-wyrm", "shadow-lich"]
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Display name of the boss",
+                    "minLength": 1,
+                    "maxLength": 50,
+                    "examples": ["The Skeleton King", "Volcanic Wyrm", "Shadow Lich"]
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Background lore and flavor text for the boss",
+                    "minLength": 1,
+                    "maxLength": 500
+                },
+                "baseMonsterDefinitionId": {
+                    "type": "string",
+                    "description": "Reference to the base monster definition for stats",
+                    "pattern": "^[a-z][a-z0-9-]*$",
+                    "examples": ["skeleton-elite", "dragon-base", "lich-base"]
+                },
+                "titleText": {
+                    "type": ["string", "null"],
+                    "description": "Dramatic subtitle shown during boss introduction",
+                    "maxLength": 100,
+                    "examples": ["Lord of the Undead Crypt", "Ancient Guardian of the Flame"]
+                },
+                "phases": {
+                    "type": "array",
+                    "description": "Combat phases with health thresholds and unique mechanics",
+                    "items": {
+                        "$ref": "#/definitions/bossPhase"
+                    },
+                    "minItems": 1
+                },
+                "loot": {
+                    "type": "array",
+                    "description": "Loot table entries with drop chances",
+                    "items": {
+                        "$ref": "#/definitions/lootEntry"
+                    }
+                }
+            },
+            "required": [
+                "bossId",
+                "name",
+                "baseMonsterDefinitionId",
+                "phases"
+            ],
+            "additionalProperties": false
+        },
+        "bossPhase": {
+            "type": "object",
+            "description": "A single combat phase with unique behavior and abilities",
+            "properties": {
+                "phaseNumber": {
+                    "type": "integer",
+                    "description": "Sequential phase number (1-based, phase 1 is starting phase)",
+                    "minimum": 1,
+                    "maximum": 10,
+                    "examples": [1, 2, 3]
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Display name for the phase",
+                    "minLength": 1,
+                    "maxLength": 30,
+                    "examples": ["Awakened", "Defensive Stance", "Enraged"]
+                },
+                "healthThreshold": {
+                    "type": "integer",
+                    "description": "Health percentage at which this phase activates (100 = starting phase)",
+                    "minimum": 0,
+                    "maximum": 100,
+                    "examples": [100, 75, 50, 25]
+                },
+                "behavior": {
+                    "type": "string",
+                    "description": "Combat behavior pattern for this phase",
+                    "enum": ["Aggressive", "Tactical", "Defensive", "Enraged", "Summoner"],
+                    "default": "Tactical"
+                },
+                "abilityIds": {
+                    "type": "array",
+                    "description": "Ability IDs available during this phase",
+                    "items": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9-]*$"
+                    },
+                    "examples": [["bone-strike", "raise-dead"], ["fire-breath", "tail-swipe"]]
+                },
+                "statModifiers": {
+                    "type": "array",
+                    "description": "Stat modifications active during this phase",
+                    "items": {
+                        "$ref": "#/definitions/statModifier"
+                    }
+                },
+                "transitionText": {
+                    "type": ["string", "null"],
+                    "description": "Text displayed when entering this phase",
+                    "maxLength": 200,
+                    "examples": ["The Skeleton King's eyes glow with fury!"]
+                },
+                "transitionEffectId": {
+                    "type": ["string", "null"],
+                    "description": "Effect ID triggered during phase transition",
+                    "pattern": "^[a-z][a-z0-9-]*$",
+                    "examples": ["boss-enrage-aura", "phase-transition-fire"]
+                },
+                "summonConfig": {
+                    "$ref": "#/definitions/summonConfig",
+                    "description": "Summoning configuration for this phase (optional)"
+                }
+            },
+            "required": [
+                "phaseNumber",
+                "name",
+                "healthThreshold"
+            ],
+            "additionalProperties": false
+        },
+        "statModifier": {
+            "type": "object",
+            "description": "A modification to a combat stat",
+            "properties": {
+                "statId": {
+                    "type": "string",
+                    "description": "The stat being modified",
+                    "examples": ["attack", "defense", "speed", "accuracy"]
+                },
+                "type": {
+                    "type": "string",
+                    "description": "How the modification is applied",
+                    "enum": ["Flat", "Percentage", "Override"],
+                    "default": "Flat"
+                },
+                "value": {
+                    "type": "number",
+                    "description": "The modification value. For Percentage, use decimal (0.3 = +30%)",
+                    "examples": [10, -5, 0.25, -0.5]
+                }
+            },
+            "required": [
+                "statId",
+                "value"
+            ],
+            "additionalProperties": false
+        },
+        "summonConfig": {
+            "type": "object",
+            "description": "Configuration for boss summoning behavior",
+            "properties": {
+                "monsterDefinitionId": {
+                    "type": "string",
+                    "description": "Monster definition ID to summon",
+                    "pattern": "^[a-z][a-z0-9-]*$",
+                    "examples": ["skeleton-minion", "fire-elemental"]
+                },
+                "count": {
+                    "type": "integer",
+                    "description": "Number of monsters to summon per action",
+                    "minimum": 1,
+                    "maximum": 10,
+                    "default": 1
+                },
+                "intervalTurns": {
+                    "type": "integer",
+                    "description": "Turns between summon actions",
+                    "minimum": 1,
+                    "maximum": 10,
+                    "default": 2
+                },
+                "maxActive": {
+                    "type": "integer",
+                    "description": "Maximum summoned monsters active at once",
+                    "minimum": 1,
+                    "maximum": 20,
+                    "default": 4
+                }
+            },
+            "required": [
+                "monsterDefinitionId"
+            ],
+            "additionalProperties": false
+        },
+        "lootEntry": {
+            "type": "object",
+            "description": "A potential loot drop from the boss",
+            "properties": {
+                "itemId": {
+                    "type": "string",
+                    "description": "Item definition ID",
+                    "pattern": "^[a-z][a-z0-9-]*$",
+                    "examples": ["gold", "crown-of-bones", "dragon-scale"]
+                },
+                "amount": {
+                    "type": "integer",
+                    "description": "Quantity of items to drop",
+                    "minimum": 1,
+                    "default": 1
+                },
+                "chance": {
+                    "type": "number",
+                    "description": "Drop probability (0.0-1.0, where 1.0 = guaranteed)",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "default": 1.0,
+                    "examples": [1.0, 0.5, 0.25, 0.10, 0.05]
+                }
+            },
+            "required": [
+                "itemId"
+            ],
+            "additionalProperties": false
+        }
+    }
+}

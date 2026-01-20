@@ -1,0 +1,313 @@
+{
+  "category": "combat-hits",
+  "pools": {
+    "hit_sword": {
+      "id": "hit_sword",
+      "name": "Sword Hit Descriptions",
+      "descriptors": [
+        {
+          "id": "slashes_across",
+          "text": "slashes across",
+          "weight": 25
+        },
+        {
+          "id": "drives_blade",
+          "text": "drives the blade into",
+          "weight": 20
+        },
+        {
+          "id": "cleaves_through",
+          "text": "cleaves through",
+          "weight": 15,
+          "minDamagePercent": 0.5
+        },
+        {
+          "id": "carves_wound",
+          "text": "carves a wound in",
+          "weight": 20
+        },
+        {
+          "id": "thrusts_at",
+          "text": "thrusts at",
+          "weight": 20
+        }
+      ]
+    },
+    "hit_axe": {
+      "id": "hit_axe",
+      "name": "Axe Hit Descriptions",
+      "descriptors": [
+        {
+          "id": "hews_into",
+          "text": "hews into",
+          "weight": 25
+        },
+        {
+          "id": "chops_at",
+          "text": "chops at",
+          "weight": 25
+        },
+        {
+          "id": "buries_axe",
+          "text": "buries the axe head in",
+          "weight": 15,
+          "minDamagePercent": 0.5
+        },
+        {
+          "id": "cleaves_into",
+          "text": "cleaves into",
+          "weight": 20
+        },
+        {
+          "id": "splits",
+          "text": "splits",
+          "weight": 15,
+          "minDamagePercent": 0.75
+        }
+      ]
+    },
+    "hit_bow": {
+      "id": "hit_bow",
+      "name": "Bow Hit Descriptions",
+      "descriptors": [
+        {
+          "id": "arrow_pierces",
+          "text": "'s arrow pierces",
+          "weight": 25
+        },
+        {
+          "id": "shaft_buries",
+          "text": "'s shaft buries itself in",
+          "weight": 20
+        },
+        {
+          "id": "arrow_finds_mark",
+          "text": "'s arrow finds its mark in",
+          "weight": 25
+        },
+        {
+          "id": "arrow_strikes",
+          "text": "'s arrow strikes",
+          "weight": 30
+        }
+      ]
+    },
+    "hit_staff": {
+      "id": "hit_staff",
+      "name": "Staff Hit Descriptions",
+      "descriptors": [
+        {
+          "id": "cracks_against",
+          "text": "cracks the staff against",
+          "weight": 25
+        },
+        {
+          "id": "sweeps_into",
+          "text": "sweeps the staff into",
+          "weight": 25
+        },
+        {
+          "id": "brings_down",
+          "text": "brings the staff down upon",
+          "weight": 25
+        },
+        {
+          "id": "jabs_at",
+          "text": "jabs the staff at",
+          "weight": 25
+        }
+      ]
+    },
+    "hit_dagger": {
+      "id": "hit_dagger",
+      "name": "Dagger Hit Descriptions",
+      "descriptors": [
+        {
+          "id": "stabs_into",
+          "text": "stabs into",
+          "weight": 25
+        },
+        {
+          "id": "slips_blade",
+          "text": "slips the blade between the ribs of",
+          "weight": 20,
+          "minDamagePercent": 0.5
+        },
+        {
+          "id": "opens_wound",
+          "text": "opens a wound in",
+          "weight": 25
+        },
+        {
+          "id": "slashes_quick",
+          "text": "slashes quickly at",
+          "weight": 30
+        }
+      ]
+    },
+    "hit_fist": {
+      "id": "hit_fist",
+      "name": "Unarmed Hit Descriptions",
+      "descriptors": [
+        {
+          "id": "hammers_into",
+          "text": "hammers a fist into",
+          "weight": 25
+        },
+        {
+          "id": "crashes_fist",
+          "text": "crashes a fist into",
+          "weight": 25
+        },
+        {
+          "id": "pummels",
+          "text": "pummels",
+          "weight": 25
+        },
+        {
+          "id": "strikes_hard",
+          "text": "strikes hard at",
+          "weight": 25
+        }
+      ]
+    },
+    "hit_mace": {
+      "id": "hit_mace",
+      "name": "Mace Hit Descriptions",
+      "descriptors": [
+        {
+          "id": "smashes_into",
+          "text": "smashes into",
+          "weight": 25
+        },
+        {
+          "id": "crushes",
+          "text": "crushes",
+          "weight": 20,
+          "minDamagePercent": 0.5
+        },
+        {
+          "id": "batters",
+          "text": "batters",
+          "weight": 25
+        },
+        {
+          "id": "slams_against",
+          "text": "slams the mace against",
+          "weight": 30
+        }
+      ]
+    },
+    "hit_spear": {
+      "id": "hit_spear",
+      "name": "Spear Hit Descriptions",
+      "descriptors": [
+        {
+          "id": "thrusts_into",
+          "text": "thrusts the spear into",
+          "weight": 25
+        },
+        {
+          "id": "impales",
+          "text": "impales",
+          "weight": 15,
+          "minDamagePercent": 0.5
+        },
+        {
+          "id": "jabs_spear",
+          "text": "jabs at",
+          "weight": 30
+        },
+        {
+          "id": "skewers",
+          "text": "skewers",
+          "weight": 15,
+          "minDamagePercent": 0.75
+        }
+      ]
+    },
+    "critical_hit": {
+      "id": "critical_hit",
+      "name": "Critical Hit Descriptions",
+      "descriptors": [
+        {
+          "id": "devastating_strike",
+          "text": "lands a devastating strike on",
+          "weight": 25
+        },
+        {
+          "id": "finds_weakness",
+          "text": "finds a critical weakness in",
+          "weight": 25
+        },
+        {
+          "id": "perfect_blow",
+          "text": "delivers a perfect blow to",
+          "weight": 25
+        },
+        {
+          "id": "strikes_vital",
+          "text": "strikes a vital point on",
+          "weight": 25
+        }
+      ]
+    },
+    "miss_descriptions": {
+      "id": "miss_descriptions",
+      "name": "Miss Descriptions",
+      "descriptors": [
+        {
+          "id": "swings_wide",
+          "text": "swings wide",
+          "weight": 20
+        },
+        {
+          "id": "is_deflected",
+          "text": "is deflected away",
+          "weight": 20
+        },
+        {
+          "id": "is_dodged",
+          "text": "is narrowly dodged",
+          "weight": 20
+        },
+        {
+          "id": "is_parried",
+          "text": "is parried expertly",
+          "weight": 20
+        },
+        {
+          "id": "misses_completely",
+          "text": "misses completely",
+          "weight": 20
+        }
+      ]
+    },
+    "fumble_descriptions": {
+      "id": "fumble_descriptions",
+      "name": "Fumble/Critical Miss Descriptions",
+      "descriptors": [
+        {
+          "id": "stumbles_badly",
+          "text": "stumbles badly, nearly dropping their weapon",
+          "weight": 25
+        },
+        {
+          "id": "overextends",
+          "text": "overextends and loses balance",
+          "weight": 25
+        },
+        {
+          "id": "weapon_slips",
+          "text": "weapon slips in their grip",
+          "weight": 25
+        },
+        {
+          "id": "mistimes",
+          "text": "completely mistimes the attack",
+          "weight": 25
+        }
+      ]
+    }
+  }
+}

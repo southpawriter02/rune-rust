@@ -1,0 +1,63 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    
+    <!-- Map Panel Container -->
+    <Style Selector="Border.map-panel">
+        <Setter Property="Background" Value="#1A1A1A" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="BorderBrush" Value="#333333" />
+    </Style>
+    
+    <!-- Map Header -->
+    <Style Selector="Border.map-header">
+        <Setter Property="Background" Value="#2D2D2D" />
+    </Style>
+    
+    <!-- Map Title -->
+    <Style Selector="TextBlock.map-title">
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="FontSize" Value="14" />
+    </Style>
+    
+    <!-- Zoom Buttons -->
+    <Style Selector="Button.zoom-button">
+        <Setter Property="Width" Value="28" />
+        <Setter Property="Height" Value="28" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Background" Value="#333333" />
+    </Style>
+    
+    <Style Selector="Button.zoom-button:pointerover">
+        <Setter Property="Background" Value="#444444" />
+    </Style>
+    
+    <!-- Map Legend -->
+    <Style Selector="Border.map-legend">
+        <Setter Property="Background" Value="#1E1E1E" />
+    </Style>
+    
+    <!-- Legend Symbol -->
+    <Style Selector="TextBlock.legend-symbol">
+        <Setter Property="FontFamily" Value="Consolas" />
+        <Setter Property="Margin" Value="0,0,4,0" />
+    </Style>
+    
+    <Style Selector="TextBlock.legend-symbol.current">
+        <Setter Property="Foreground" Value="Gold" />
+    </Style>
+    
+    <Style Selector="TextBlock.legend-symbol.locked">
+        <Setter Property="Foreground" Value="OrangeRed" />
+    </Style>
+    
+    <Style Selector="TextBlock.legend-symbol.danger">
+        <Setter Property="Foreground" Value="Red" />
+    </Style>
+    
+    <!-- Legend Label -->
+    <Style Selector="TextBlock.legend-label">
+        <Setter Property="Foreground" Value="#888888" />
+        <Setter Property="FontSize" Value="11" />
+    </Style>
+    
+</Styles>

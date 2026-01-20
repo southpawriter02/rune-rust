@@ -1,0 +1,47 @@
+{
+    "$schema": "./cleanse-items.schema.json",
+    "items": [
+        {
+            "id": "antidote",
+            "name": "Antidote",
+            "description": "Cures poison afflictions.",
+            "cleanseType": "Specific",
+            "specificEffect": "poisoned"
+        },
+        {
+            "id": "bandage",
+            "name": "Bandage",
+            "description": "Stops bleeding wounds.",
+            "cleanseType": "Specific",
+            "specificEffect": "bleeding"
+        },
+        {
+            "id": "panacea",
+            "name": "Panacea",
+            "description": "A miracle cure for all ailments.",
+            "cleanseType": "AllNegative",
+            "specificEffect": null
+        },
+        {
+            "id": "smelling_salts",
+            "name": "Smelling Salts",
+            "description": "Clears the mind of magical influences.",
+            "cleanseType": "Magical",
+            "specificEffect": null
+        },
+        {
+            "id": "fire_resistance_potion",
+            "name": "Fire Resistance Potion",
+            "description": "Extinguishes flames and grants fire resistance.",
+            "cleanseType": "Specific",
+            "specificEffect": "burning"
+        },
+        {
+            "id": "ice_salve",
+            "name": "Ice Salve",
+            "description": "Soothes frozen and chilled conditions.",
+            "cleanseType": "Elemental",
+            "specificEffect": null
+        }
+    ]
+}

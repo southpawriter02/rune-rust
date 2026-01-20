@@ -1,0 +1,321 @@
+{
+  "$schema": "abilities.schema.json",
+  "abilities": [
+    {
+      "id": "shield-bash",
+      "name": "Shield Bash",
+      "description": "Slam your shield into an enemy, dealing damage with a chance to stun.",
+      "classIds": ["shieldmaiden"],
+      "costResource": "rage",
+      "costAmount": 15,
+      "cooldown": 2,
+      "targetType": "SingleEnemy",
+      "unlockLevel": 1,
+      "tags": ["damage", "melee", "stun"],
+      "effects": [
+        {
+          "type": "Damage",
+          "value": 15,
+          "scalingStat": "attack",
+          "scalingMultiplier": 0.5
+        },
+        {
+          "type": "Stun",
+          "value": 1,
+          "duration": 1,
+          "chance": 0.3
+        }
+      ]
+    },
+    {
+      "id": "taunt",
+      "name": "Taunt",
+      "description": "Force an enemy to attack you instead of your allies.",
+      "classIds": ["shieldmaiden"],
+      "costResource": "rage",
+      "costAmount": 10,
+      "cooldown": 3,
+      "targetType": "SingleEnemy",
+      "unlockLevel": 1,
+      "tags": ["utility", "tank"],
+      "effects": [
+        {
+          "type": "Taunt",
+          "value": 0,
+          "duration": 2
+        }
+      ]
+    },
+    {
+      "id": "fortify",
+      "name": "Fortify",
+      "description": "Harden your defenses, increasing your defense for 3 turns.",
+      "classIds": ["shieldmaiden"],
+      "costResource": "rage",
+      "costAmount": 20,
+      "cooldown": 5,
+      "targetType": "Self",
+      "unlockLevel": 3,
+      "tags": ["buff", "defense", "tank"],
+      "effects": [
+        {
+          "type": "Buff",
+          "value": 5,
+          "duration": 3,
+          "description": "+5 Defense"
+        }
+      ]
+    },
+    {
+      "id": "backstab",
+      "name": "Backstab",
+      "description": "Strike from the shadows for massive damage. More effective when undetected.",
+      "classIds": ["shadow-walker"],
+      "costResource": "energy",
+      "costAmount": 25,
+      "cooldown": 3,
+      "targetType": "SingleEnemy",
+      "unlockLevel": 1,
+      "tags": ["damage", "melee", "stealth"],
+      "effects": [
+        {
+          "type": "Damage",
+          "value": 35,
+          "scalingStat": "attack",
+          "scalingMultiplier": 0.8
+        }
+      ]
+    },
+    {
+      "id": "shadowstep",
+      "name": "Shadowstep",
+      "description": "Teleport behind your target, gaining an advantageous position.",
+      "classIds": ["shadow-walker"],
+      "costResource": "energy",
+      "costAmount": 15,
+      "cooldown": 2,
+      "targetType": "SingleEnemy",
+      "unlockLevel": 1,
+      "tags": ["utility", "movement", "stealth"],
+      "effects": [
+        {
+          "type": "Buff",
+          "value": 0,
+          "duration": 1,
+          "description": "Behind target - next attack has +50% damage"
+        }
+      ]
+    },
+    {
+      "id": "poison-blade",
+      "name": "Poison Blade",
+      "description": "Coat your weapon in poison, causing damage over time.",
+      "classIds": ["shadow-walker"],
+      "costResource": "energy",
+      "costAmount": 20,
+      "cooldown": 4,
+      "targetType": "SingleEnemy",
+      "unlockLevel": 3,
+      "tags": ["damage", "dot", "poison"],
+      "effects": [
+        {
+          "type": "Damage",
+          "value": 10
+        },
+        {
+          "type": "DamageOverTime",
+          "value": 5,
+          "duration": 3,
+          "statusEffect": "poison"
+        }
+      ]
+    },
+    {
+      "id": "flame-bolt",
+      "name": "Flame Bolt",
+      "description": "Hurl a bolt of fire at your enemy, dealing fire damage.",
+      "classIds": ["galdr-caster"],
+      "costResource": "mana",
+      "costAmount": 15,
+      "cooldown": 0,
+      "targetType": "SingleEnemy",
+      "unlockLevel": 1,
+      "tags": ["damage", "ranged", "fire", "magic"],
+      "effects": [
+        {
+          "type": "Damage",
+          "value": 20,
+          "scalingStat": "will",
+          "scalingMultiplier": 0.6
+        }
+      ]
+    },
+    {
+      "id": "frost-nova",
+      "name": "Frost Nova",
+      "description": "Unleash a wave of frost, damaging and slowing all enemies.",
+      "classIds": ["galdr-caster"],
+      "costResource": "mana",
+      "costAmount": 25,
+      "cooldown": 4,
+      "targetType": "AllEnemies",
+      "unlockLevel": 2,
+      "tags": ["damage", "aoe", "ice", "magic", "slow"],
+      "effects": [
+        {
+          "type": "Damage",
+          "value": 12,
+          "scalingStat": "will",
+          "scalingMultiplier": 0.4
+        },
+        {
+          "type": "Debuff",
+          "value": 0,
+          "duration": 2,
+          "statusEffect": "slow"
+        }
+      ]
+    },
+    {
+      "id": "arcane-shield",
+      "name": "Arcane Shield",
+      "description": "Create a magical barrier that absorbs incoming damage.",
+      "classIds": ["galdr-caster"],
+      "costResource": "mana",
+      "costAmount": 20,
+      "cooldown": 5,
+      "targetType": "Self",
+      "unlockLevel": 1,
+      "tags": ["buff", "defense", "magic", "shield"],
+      "effects": [
+        {
+          "type": "Shield",
+          "value": 25,
+          "duration": 2,
+          "scalingStat": "will",
+          "scalingMultiplier": 0.5
+        }
+      ]
+    },
+    {
+      "id": "healing-word",
+      "name": "Healing Word",
+      "description": "Speak a word of power that restores health.",
+      "classIds": ["blood-priest"],
+      "costResource": "faith",
+      "costAmount": 20,
+      "cooldown": 2,
+      "targetType": "Self",
+      "unlockLevel": 1,
+      "tags": ["heal", "support", "holy"],
+      "effects": [
+        {
+          "type": "Heal",
+          "value": 25,
+          "scalingStat": "will",
+          "scalingMultiplier": 0.6
+        }
+      ]
+    },
+    {
+      "id": "smite",
+      "name": "Smite",
+      "description": "Call down holy wrath upon your enemy.",
+      "classIds": ["blood-priest"],
+      "costResource": "faith",
+      "costAmount": 15,
+      "cooldown": 1,
+      "targetType": "SingleEnemy",
+      "unlockLevel": 1,
+      "tags": ["damage", "ranged", "holy", "magic"],
+      "effects": [
+        {
+          "type": "Damage",
+          "value": 18,
+          "scalingStat": "will",
+          "scalingMultiplier": 0.5
+        }
+      ]
+    },
+    {
+      "id": "sanctuary",
+      "name": "Sanctuary",
+      "description": "Create a protective aura that reduces damage taken.",
+      "classIds": ["blood-priest"],
+      "costResource": "faith",
+      "costAmount": 30,
+      "cooldown": 6,
+      "targetType": "Self",
+      "unlockLevel": 3,
+      "tags": ["buff", "defense", "holy", "aura"],
+      "effects": [
+        {
+          "type": "Buff",
+          "value": 0,
+          "duration": 3,
+          "description": "50% damage reduction"
+        }
+      ]
+    },
+    {
+      "id": "deploy-turret",
+      "name": "Deploy Turret",
+      "description": "Deploy an automated turret that attacks enemies each turn.",
+      "classIds": ["scrap-tinker"],
+      "costResource": "focus",
+      "costAmount": 25,
+      "cooldown": 5,
+      "targetType": "None",
+      "unlockLevel": 1,
+      "tags": ["summon", "utility", "tech"],
+      "effects": [
+        {
+          "type": "Summon",
+          "value": 0,
+          "duration": 4,
+          "statusEffect": "turret"
+        }
+      ]
+    },
+    {
+      "id": "repair-kit",
+      "name": "Repair Kit",
+      "description": "Use a repair kit to heal over time.",
+      "classIds": ["scrap-tinker"],
+      "costResource": "focus",
+      "costAmount": 15,
+      "cooldown": 3,
+      "targetType": "Self",
+      "unlockLevel": 1,
+      "tags": ["heal", "hot", "tech"],
+      "effects": [
+        {
+          "type": "HealOverTime",
+          "value": 8,
+          "duration": 3
+        }
+      ]
+    },
+    {
+      "id": "smoke-bomb",
+      "name": "Smoke Bomb",
+      "description": "Throw a smoke bomb to blind enemies or escape combat.",
+      "classIds": ["scrap-tinker"],
+      "costResource": "focus",
+      "costAmount": 20,
+      "cooldown": 4,
+      "targetType": "AllEnemies",
+      "unlockLevel": 2,
+      "tags": ["debuff", "utility", "tech", "escape"],
+      "effects": [
+        {
+          "type": "Debuff",
+          "value": 0,
+          "duration": 2,
+          "statusEffect": "blind",
+          "chance": 0.8
+        }
+      ]
+    }
+  ]
+}

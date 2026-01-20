@@ -1,0 +1,119 @@
+{
+    "category": "skillchecks",
+    "pools": {
+        "critical_success": {
+            "id": "critical_success",
+            "name": "Critical Success",
+            "descriptors": [
+                {
+                    "id": "spectacular",
+                    "text": "A spectacular success!",
+                    "weight": 25
+                },
+                {
+                    "id": "masterful",
+                    "text": "Masterful execution!",
+                    "weight": 25
+                },
+                {
+                    "id": "beyond_expectations",
+                    "text": "The result exceeds all expectations!",
+                    "weight": 20
+                },
+                {
+                    "id": "perfect",
+                    "text": "Perfect! Absolutely flawless!",
+                    "weight": 15
+                },
+                {
+                    "id": "legendary",
+                    "text": "A legendary display of skill!",
+                    "weight": 15
+                }
+            ]
+        },
+        "success": {
+            "id": "success",
+            "name": "Success",
+            "descriptors": [
+                {
+                    "id": "accomplished",
+                    "text": "You accomplish the task",
+                    "weight": 30
+                },
+                {
+                    "id": "succeeded",
+                    "text": "You succeed",
+                    "weight": 30
+                },
+                {
+                    "id": "managed_to",
+                    "text": "You manage to complete it",
+                    "weight": 25
+                },
+                {
+                    "id": "pulled_off",
+                    "text": "You pull it off",
+                    "weight": 15
+                }
+            ]
+        },
+        "failure": {
+            "id": "failure",
+            "name": "Failure",
+            "descriptors": [
+                {
+                    "id": "fell_short",
+                    "text": "You fall just short",
+                    "weight": 30
+                },
+                {
+                    "id": "couldnt_quite",
+                    "text": "You couldn't quite manage it",
+                    "weight": 25
+                },
+                {
+                    "id": "fumbled",
+                    "text": "You fumble the attempt",
+                    "weight": 25
+                },
+                {
+                    "id": "failed_to",
+                    "text": "You fail to complete the task",
+                    "weight": 20
+                }
+            ]
+        },
+        "critical_failure": {
+            "id": "critical_failure",
+            "name": "Critical Failure",
+            "descriptors": [
+                {
+                    "id": "catastrophic",
+                    "text": "Catastrophic failure!",
+                    "weight": 25
+                },
+                {
+                    "id": "disastrous",
+                    "text": "A disastrous attempt!",
+                    "weight": 25
+                },
+                {
+                    "id": "spectacular_misfortune",
+                    "text": "Spectacular misfortune strikes!",
+                    "weight": 20
+                },
+                {
+                    "id": "worst_possible",
+                    "text": "The worst possible outcome!",
+                    "weight": 15
+                },
+                {
+                    "id": "everything_wrong",
+                    "text": "Everything that could go wrong, does.",
+                    "weight": 15
+                }
+            ]
+        }
+    }
+}

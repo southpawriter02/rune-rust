@@ -1,0 +1,143 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:RuneAndRust.Presentation.Gui.ViewModels"
+             xmlns:conv="using:RuneAndRust.Presentation.Gui.Converters"
+             x:Class="RuneAndRust.Presentation.Gui.Controls.RoomDisplayPanel"
+             x:DataType="vm:RoomDisplayViewModel">
+    
+    <UserControl.Resources>
+        <conv:DirectionToSymbolConverter x:Key="DirectionToSymbol" />
+        <conv:BoolToOpacityConverter x:Key="BoolToOpacity" />
+    </UserControl.Resources>
+    
+    <Design.DataContext>
+        <vm:RoomDisplayViewModel />
+    </Design.DataContext>
+    
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Spacing="12" Margin="8">
+            
+            <!-- Room Name Header -->
+            <TextBlock Text="{Binding RoomName}"
+                       Classes="title"
+                       HorizontalAlignment="Center"
+                       Margin="0,8,0,16" />
+            
+            <!-- ASCII Art Section (conditional) -->
+            <Border Classes="panel"
+                    IsVisible="{Binding HasAsciiArt}"
+                    Padding="16">
+                <StackPanel Spacing="8">
+                    <!-- Art Lines -->
+                    <ItemsControl ItemsSource="{Binding AsciiArt}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding}"
+                                           FontFamily="Consolas, Courier New, monospace"
+                                           FontSize="12"
+                                           Foreground="{StaticResource TextPrimaryBrush}" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    
+                    <!-- Legend -->
+                    <ItemsControl ItemsSource="{Binding ArtLegendItems}"
+                                  IsVisible="{Binding HasArtLegend}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel Orientation="Horizontal" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,16,0">
+                                    <TextBlock Text="{Binding Symbol}"
+                                               FontFamily="Consolas, Courier New, monospace"
+                                               Margin="0,0,4,0" />
+                                    <TextBlock Text="{Binding Description}"
+                                               Classes="muted" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+            
+            <!-- Room Description -->
+            <Border Classes="panel" Padding="16">
+                <TextBlock Text="{Binding RoomDescription}"
+                           Classes="body"
+                           TextWrapping="Wrap" />
+            </Border>
+            
+            <!-- Exits Section -->
+            <Border Classes="panel" Padding="12">
+                <StackPanel>
+                    <TextBlock Text="Exits:" Classes="secondary" Margin="0,0,0,8" />
+                    <ItemsControl ItemsSource="{Binding Exits}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel Orientation="Horizontal" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Button Classes="exit-button"
+                                        Content="{Binding Label}"
+                                        Command="{Binding $parent[UserControl].((vm:RoomDisplayViewModel)DataContext).MoveToExitCommand}"
+                                        CommandParameter="{Binding Direction}"
+                                        ToolTip.Tip="{Binding Tooltip}"
+                                        Margin="0,0,8,4"
+                                        Opacity="{Binding IsLocked, Converter={StaticResource BoolToOpacity}}" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    
+                    <!-- No exits message -->
+                    <TextBlock Text="No visible exits."
+                               Classes="muted"
+                               IsVisible="{Binding !Exits.Count}" />
+                </StackPanel>
+            </Border>
+            
+            <!-- Visible Entities Section -->
+            <Border Classes="panel" Padding="12"
+                    IsVisible="{Binding HasVisibleEntities}">
+                <StackPanel>
+                    <TextBlock Text="You see:" Classes="secondary" Margin="0,0,0,8" />
+                    
+                    <!-- Monsters -->
+                    <ItemsControl ItemsSource="{Binding VisibleMonsters}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" Margin="8,2">
+                                    <TextBlock Text="{Binding Symbol}"
+                                               Foreground="#E06666"
+                                               Margin="0,0,8,0" />
+                                    <TextBlock Text="{Binding DisplayText}"
+                                               Classes="body" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    
+                    <!-- Items -->
+                    <ItemsControl ItemsSource="{Binding VisibleItems}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" Margin="8,2">
+                                    <TextBlock Text="{Binding Symbol}"
+                                               Foreground="{StaticResource AccentBrush}"
+                                               Margin="0,0,8,0" />
+                                    <TextBlock Text="{Binding Name}"
+                                               Classes="body" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+            
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

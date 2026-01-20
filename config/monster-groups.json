@@ -1,0 +1,219 @@
+{
+    "$schema": "schemas/monster-groups.schema.json",
+    "groups": [
+        {
+            "groupId": "goblin-warband",
+            "name": "Goblin Warband",
+            "description": "A ragtag band of goblins led by a cunning shaman. They use flanking maneuvers and focus fire tactics to overwhelm isolated targets while protecting their leader.",
+            "leaderRole": "leader",
+            "tags": ["goblin", "warband", "organized"],
+            "members": [
+                {
+                    "monsterDefinitionId": "goblin-shaman",
+                    "count": 1,
+                    "role": "leader",
+                    "preferredPosition": { "deltaX": 0, "deltaY": 1 }
+                },
+                {
+                    "monsterDefinitionId": "goblin-warrior",
+                    "count": 3,
+                    "role": "melee",
+                    "preferredPosition": { "deltaX": 0, "deltaY": -1 }
+                }
+            ],
+            "tactics": ["Flank", "FocusFire", "ProtectLeader"],
+            "synergies": [
+                {
+                    "synergyId": "pack-tactics",
+                    "name": "Pack Tactics",
+                    "description": "Goblins gain attack bonuses when fighting together.",
+                    "trigger": "PerAdjacentAlly",
+                    "attackBonus": 1,
+                    "appliesToAllMembers": true
+                },
+                {
+                    "synergyId": "shaman-blessing",
+                    "name": "Shaman's Blessing",
+                    "description": "The shaman's presence bolsters the warband's resolve.",
+                    "trigger": "Always",
+                    "sourceRole": "leader",
+                    "statusEffectId": "minor-fortitude",
+                    "appliesToAllMembers": true
+                }
+            ]
+        },
+        {
+            "groupId": "skeleton-patrol",
+            "name": "Skeleton Patrol",
+            "description": "An undead patrol consisting of skeletal warriors and archers. The archers stay in the rear while warriors engage in melee, with all skeletons focusing their attacks on a single target.",
+            "leaderRole": "leader",
+            "tags": ["undead", "patrol", "skeleton"],
+            "members": [
+                {
+                    "monsterDefinitionId": "skeleton-warrior",
+                    "count": 2,
+                    "role": "melee",
+                    "preferredPosition": { "deltaX": 0, "deltaY": 0 }
+                },
+                {
+                    "monsterDefinitionId": "skeleton-archer",
+                    "count": 2,
+                    "role": "ranged",
+                    "preferredPosition": { "deltaX": 0, "deltaY": 2 }
+                }
+            ],
+            "tactics": ["FocusFire", "ProtectCaster"],
+            "synergies": [
+                {
+                    "synergyId": "undead-resilience",
+                    "name": "Undead Resilience",
+                    "description": "Skeletons fight harder when their allies fall.",
+                    "trigger": "OnAllyDamaged",
+                    "damageBonus": 2,
+                    "appliesToAllMembers": true
+                }
+            ]
+        },
+        {
+            "groupId": "bandit-ambush",
+            "name": "Bandit Ambush Party",
+            "description": "A cunning group of bandits specializing in ambush tactics. Led by a veteran captain, the rogues strike from the shadows while an archer provides covering fire.",
+            "leaderRole": "leader",
+            "tags": ["humanoid", "bandit", "ambush"],
+            "members": [
+                {
+                    "monsterDefinitionId": "bandit-captain",
+                    "count": 1,
+                    "role": "leader",
+                    "preferredPosition": { "deltaX": 0, "deltaY": 0 }
+                },
+                {
+                    "monsterDefinitionId": "bandit-rogue",
+                    "count": 2,
+                    "role": "striker",
+                    "preferredPosition": { "deltaX": -1, "deltaY": -1 }
+                },
+                {
+                    "monsterDefinitionId": "bandit-archer",
+                    "count": 1,
+                    "role": "ranged",
+                    "preferredPosition": { "deltaX": 0, "deltaY": 2 }
+                }
+            ],
+            "tactics": ["Ambush", "HitAndRun"],
+            "synergies": [
+                {
+                    "synergyId": "ambush-strike",
+                    "name": "Ambush Strike",
+                    "description": "The first strike from ambush deals extra damage.",
+                    "trigger": "Always",
+                    "damageBonus": 5,
+                    "appliesToAllMembers": true
+                },
+                {
+                    "synergyId": "coordinated-retreat",
+                    "name": "Coordinated Retreat",
+                    "description": "When an ally is hit, others gain speed to reposition.",
+                    "trigger": "OnAllyHit",
+                    "statusEffectId": "minor-haste",
+                    "appliesToAllMembers": false
+                }
+            ]
+        },
+        {
+            "groupId": "orc-raiding-party",
+            "name": "Orc Raiding Party",
+            "description": "A brutal orc war party that swarms enemies with overwhelming numbers. The chieftain commands from the center while berserkers charge headlong into combat.",
+            "leaderRole": "leader",
+            "tags": ["orc", "raid", "aggressive"],
+            "members": [
+                {
+                    "monsterDefinitionId": "orc-chieftain",
+                    "count": 1,
+                    "role": "leader",
+                    "preferredPosition": { "deltaX": 0, "deltaY": 0 }
+                },
+                {
+                    "monsterDefinitionId": "orc-berserker",
+                    "count": 2,
+                    "role": "melee",
+                    "preferredPosition": { "deltaX": 0, "deltaY": -2 }
+                },
+                {
+                    "monsterDefinitionId": "orc-warrior",
+                    "count": 3,
+                    "role": "melee",
+                    "preferredPosition": { "deltaX": 0, "deltaY": -1 }
+                }
+            ],
+            "tactics": ["Swarm", "FocusFire"],
+            "synergies": [
+                {
+                    "synergyId": "bloodlust",
+                    "name": "Bloodlust",
+                    "description": "Orcs enter a frenzy when allies are damaged.",
+                    "trigger": "OnAllyDamaged",
+                    "attackBonus": 2,
+                    "damageBonus": 3,
+                    "appliesToAllMembers": true
+                },
+                {
+                    "synergyId": "warlords-command",
+                    "name": "Warlord's Command",
+                    "description": "The chieftain's presence inspires greater ferocity.",
+                    "trigger": "OnLeaderCommand",
+                    "sourceRole": "leader",
+                    "statusEffectId": "battle-fury",
+                    "appliesToAllMembers": true
+                }
+            ]
+        },
+        {
+            "groupId": "cultist-ritual-circle",
+            "name": "Cultist Ritual Circle",
+            "description": "A group of dark cultists performing forbidden rituals. The high priest leads the ceremony while acolytes protect the casters from interruption.",
+            "leaderRole": "leader",
+            "tags": ["cultist", "caster", "ritual"],
+            "members": [
+                {
+                    "monsterDefinitionId": "cultist-high-priest",
+                    "count": 1,
+                    "role": "leader",
+                    "preferredPosition": { "deltaX": 0, "deltaY": 0 }
+                },
+                {
+                    "monsterDefinitionId": "cultist-mage",
+                    "count": 2,
+                    "role": "caster",
+                    "preferredPosition": { "deltaX": -1, "deltaY": 0 }
+                },
+                {
+                    "monsterDefinitionId": "cultist-acolyte",
+                    "count": 2,
+                    "role": "melee",
+                    "preferredPosition": { "deltaX": 0, "deltaY": -1 }
+                }
+            ],
+            "tactics": ["ProtectLeader", "ProtectCaster", "Retreat"],
+            "synergies": [
+                {
+                    "synergyId": "dark-ritual",
+                    "name": "Dark Ritual",
+                    "description": "Casters gain power while the ritual circle remains intact.",
+                    "trigger": "Always",
+                    "sourceRole": "caster",
+                    "damageBonus": 3,
+                    "appliesToAllMembers": false
+                },
+                {
+                    "synergyId": "sacrificial-link",
+                    "name": "Sacrificial Link",
+                    "description": "When a cultist is hit, nearby allies gain protective wards.",
+                    "trigger": "OnAllyHit",
+                    "statusEffectId": "dark-ward",
+                    "appliesToAllMembers": true
+                }
+            ]
+        }
+    ]
+}

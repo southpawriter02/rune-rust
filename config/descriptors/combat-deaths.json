@@ -1,0 +1,281 @@
+{
+  "category": "combat-deaths",
+  "pools": {
+    "death_humanoid": {
+      "id": "death_humanoid",
+      "name": "Humanoid Death Descriptions",
+      "descriptors": [
+        {
+          "id": "crumples",
+          "text": "crumples to the ground",
+          "weight": 25
+        },
+        {
+          "id": "falls_lifeless",
+          "text": "falls lifeless",
+          "weight": 25
+        },
+        {
+          "id": "final_gasp",
+          "text": "lets out a final gasp and collapses",
+          "weight": 20
+        },
+        {
+          "id": "slumps",
+          "text": "slumps forward, defeated",
+          "weight": 15
+        },
+        {
+          "id": "topples",
+          "text": "topples backward, eyes glazing over",
+          "weight": 15
+        }
+      ]
+    },
+    "death_undead": {
+      "id": "death_undead",
+      "name": "Undead Death Descriptions",
+      "descriptors": [
+        {
+          "id": "crumbles_bones",
+          "text": "collapses into a heap of bones",
+          "weight": 25
+        },
+        {
+          "id": "unholy_fades",
+          "text": "the unholy light fades from its hollow eyes as it crumbles",
+          "weight": 25
+        },
+        {
+          "id": "dissolves",
+          "text": "dissolves into dust and shadow",
+          "weight": 20
+        },
+        {
+          "id": "falls_still",
+          "text": "falls still, the dark magic animating it finally spent",
+          "weight": 20
+        },
+        {
+          "id": "rattles_apart",
+          "text": "rattles apart, bones scattering across the floor",
+          "weight": 10,
+          "tags": ["skeleton"]
+        }
+      ]
+    },
+    "death_beast": {
+      "id": "death_beast",
+      "name": "Beast Death Descriptions",
+      "descriptors": [
+        {
+          "id": "final_howl",
+          "text": "lets out a final howl and collapses",
+          "weight": 25
+        },
+        {
+          "id": "slumps_motionless",
+          "text": "slumps motionless to the ground",
+          "weight": 25
+        },
+        {
+          "id": "keening_shriek",
+          "text": "lets out a keening shriek and curls into itself",
+          "weight": 20
+        },
+        {
+          "id": "thrashes",
+          "text": "thrashes briefly before going still",
+          "weight": 15
+        },
+        {
+          "id": "whimpers",
+          "text": "whimpers once and breathes its last",
+          "weight": 15
+        }
+      ]
+    },
+    "death_construct": {
+      "id": "death_construct",
+      "name": "Construct Death Descriptions",
+      "descriptors": [
+        {
+          "id": "shatters",
+          "text": "shatters into fragments",
+          "weight": 25
+        },
+        {
+          "id": "grinds_halt",
+          "text": "grinds to a halt, gears clicking uselessly",
+          "weight": 25
+        },
+        {
+          "id": "crumbles_rubble",
+          "text": "crumbles into rubble",
+          "weight": 25
+        },
+        {
+          "id": "cracks_spread",
+          "text": "cracks spread through its form before it collapses",
+          "weight": 25
+        }
+      ]
+    },
+    "death_elemental": {
+      "id": "death_elemental",
+      "name": "Elemental Death Descriptions",
+      "descriptors": [
+        {
+          "id": "disperses",
+          "text": "disperses into wisps of energy",
+          "weight": 30
+        },
+        {
+          "id": "implodes",
+          "text": "implodes in a flash of elemental power",
+          "weight": 25
+        },
+        {
+          "id": "fades",
+          "text": "fades back into the ether from whence it came",
+          "weight": 25
+        },
+        {
+          "id": "dissipates",
+          "text": "dissipates with a final burst of energy",
+          "weight": 20
+        }
+      ]
+    },
+    "death_demon": {
+      "id": "death_demon",
+      "name": "Demon Death Descriptions",
+      "descriptors": [
+        {
+          "id": "dissolves_shadows",
+          "text": "dissolves into shadows with a terrible shriek",
+          "weight": 25
+        },
+        {
+          "id": "banished",
+          "text": "is banished back to the void, screaming in rage",
+          "weight": 25
+        },
+        {
+          "id": "bursts_flames",
+          "text": "bursts into unholy flames and is consumed",
+          "weight": 25
+        },
+        {
+          "id": "curses_dying",
+          "text": "curses you with its dying breath before fading",
+          "weight": 25
+        }
+      ]
+    },
+    "critical_kill": {
+      "id": "critical_kill",
+      "name": "Critical Kill Flair",
+      "descriptors": [
+        {
+          "id": "with_devastating",
+          "text": "With a devastating blow,",
+          "weight": 25
+        },
+        {
+          "id": "in_single_stroke",
+          "text": "In a single, brutal stroke,",
+          "weight": 25
+        },
+        {
+          "id": "with_lethal_precision",
+          "text": "With lethal precision,",
+          "weight": 25
+        },
+        {
+          "id": "finishing_blow",
+          "text": "Delivering the finishing blow,",
+          "weight": 25
+        }
+      ]
+    },
+    "player_death": {
+      "id": "player_death",
+      "name": "Player Death Descriptions",
+      "descriptors": [
+        {
+          "id": "falls_battle",
+          "text": "{player} has fallen in battle against the {killer}...",
+          "weight": 25
+        },
+        {
+          "id": "vision_fades",
+          "text": "{player}'s vision fades as the {killer} delivers the final blow...",
+          "weight": 25
+        },
+        {
+          "id": "darkness_claims",
+          "text": "Darkness claims {player} as they fall before the {killer}...",
+          "weight": 25
+        },
+        {
+          "id": "overwhelmed",
+          "text": "Overwhelmed by the {killer}, {player} collapses...",
+          "weight": 25
+        }
+      ]
+    },
+    "near_death_warning": {
+      "id": "near_death_warning",
+      "name": "Near Death Warnings (25% health)",
+      "descriptors": [
+        {
+          "id": "blood_loss",
+          "text": "Blood loss makes your vision swim.",
+          "weight": 25
+        },
+        {
+          "id": "wounds_severe",
+          "text": "Your wounds are becoming severe.",
+          "weight": 25
+        },
+        {
+          "id": "legs_weak",
+          "text": "Your legs feel weak beneath you.",
+          "weight": 25
+        },
+        {
+          "id": "breathing_ragged",
+          "text": "Your breathing grows ragged and painful.",
+          "weight": 25
+        }
+      ]
+    },
+    "near_death_critical": {
+      "id": "near_death_critical",
+      "name": "Critical Health Warnings (10% health)",
+      "descriptors": [
+        {
+          "id": "verge_collapse",
+          "text": "You are on the verge of collapse!",
+          "weight": 25
+        },
+        {
+          "id": "darkness_edges",
+          "text": "Darkness creeps at the edges of your vision!",
+          "weight": 25
+        },
+        {
+          "id": "one_more_blow",
+          "text": "One more blow may be your last!",
+          "weight": 25
+        },
+        {
+          "id": "barely_standing",
+          "text": "You're barely standing!",
+          "weight": 25
+        }
+      ]
+    }
+  }
+}

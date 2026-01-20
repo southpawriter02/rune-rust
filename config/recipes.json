@@ -1,0 +1,279 @@
+{
+  "$schema": "./schemas/recipes.schema.json",
+  "recipes": [
+    {
+      "id": "iron-sword",
+      "name": "Iron Sword",
+      "description": "Forge a basic but reliable iron sword",
+      "category": "Weapon",
+      "requiredStation": "anvil",
+      "ingredients": [
+        { "resourceId": "iron-ore", "quantity": 5 },
+        { "resourceId": "leather", "quantity": 2 }
+      ],
+      "output": {
+        "itemId": "iron-sword",
+        "quantity": 1
+      },
+      "difficultyClass": 12,
+      "isDefault": true,
+      "craftingTimeSeconds": 30,
+      "icon": "icons/recipes/iron_sword.png"
+    },
+    {
+      "id": "iron-helmet",
+      "name": "Iron Helmet",
+      "description": "Forge a protective iron helmet",
+      "category": "Armor",
+      "requiredStation": "anvil",
+      "ingredients": [
+        { "resourceId": "iron-ore", "quantity": 4 },
+        { "resourceId": "leather", "quantity": 1 }
+      ],
+      "output": {
+        "itemId": "iron-helmet",
+        "quantity": 1
+      },
+      "difficultyClass": 12,
+      "isDefault": true,
+      "craftingTimeSeconds": 25
+    },
+    {
+      "id": "iron-chestplate",
+      "name": "Iron Chestplate",
+      "description": "Forge a sturdy iron chestplate for protection",
+      "category": "Armor",
+      "requiredStation": "anvil",
+      "ingredients": [
+        { "resourceId": "iron-ore", "quantity": 8 },
+        { "resourceId": "leather", "quantity": 3 }
+      ],
+      "output": {
+        "itemId": "iron-chestplate",
+        "quantity": 1
+      },
+      "difficultyClass": 13,
+      "isDefault": true,
+      "craftingTimeSeconds": 45
+    },
+    {
+      "id": "healing-potion",
+      "name": "Healing Potion",
+      "description": "Brew a restorative potion that heals wounds",
+      "category": "Potion",
+      "requiredStation": "alchemy-table",
+      "ingredients": [
+        { "resourceId": "healing-herb", "quantity": 3 },
+        { "resourceId": "empty-vial", "quantity": 1 }
+      ],
+      "output": {
+        "itemId": "healing-potion",
+        "quantity": 1
+      },
+      "difficultyClass": 10,
+      "isDefault": true,
+      "craftingTimeSeconds": 20
+    },
+    {
+      "id": "mana-potion",
+      "name": "Mana Potion",
+      "description": "Brew a potion that restores magical energy",
+      "category": "Potion",
+      "requiredStation": "alchemy-table",
+      "ingredients": [
+        { "resourceId": "mana-leaf", "quantity": 3 },
+        { "resourceId": "empty-vial", "quantity": 1 }
+      ],
+      "output": {
+        "itemId": "mana-potion",
+        "quantity": 1
+      },
+      "difficultyClass": 12,
+      "isDefault": true,
+      "craftingTimeSeconds": 20
+    },
+    {
+      "id": "leather-armor",
+      "name": "Leather Armor",
+      "description": "Craft a suit of flexible leather armor",
+      "category": "Armor",
+      "requiredStation": "workbench",
+      "ingredients": [
+        { "resourceId": "leather", "quantity": 6 },
+        { "resourceId": "linen", "quantity": 2 }
+      ],
+      "output": {
+        "itemId": "leather-armor",
+        "quantity": 1
+      },
+      "difficultyClass": 11,
+      "isDefault": true,
+      "craftingTimeSeconds": 35
+    },
+    {
+      "id": "iron-pickaxe",
+      "name": "Iron Pickaxe",
+      "description": "Forge a sturdy pickaxe for mining ore",
+      "category": "Tool",
+      "requiredStation": "anvil",
+      "ingredients": [
+        { "resourceId": "iron-ore", "quantity": 4 },
+        { "resourceId": "oak-wood", "quantity": 2 }
+      ],
+      "output": {
+        "itemId": "iron-pickaxe",
+        "quantity": 1
+      },
+      "difficultyClass": 11,
+      "isDefault": true,
+      "craftingTimeSeconds": 25
+    },
+    {
+      "id": "iron-ingot",
+      "name": "Iron Ingot",
+      "description": "Smelt iron ore into a refined ingot",
+      "category": "Material",
+      "requiredStation": "anvil",
+      "ingredients": [
+        { "resourceId": "iron-ore", "quantity": 2 }
+      ],
+      "output": {
+        "itemId": "iron-ingot",
+        "quantity": 1
+      },
+      "difficultyClass": 8,
+      "isDefault": true,
+      "craftingTimeSeconds": 15
+    },
+    {
+      "id": "steel-sword",
+      "name": "Steel Sword",
+      "description": "Forge a superior steel blade with enhanced durability",
+      "category": "Weapon",
+      "requiredStation": "anvil",
+      "ingredients": [
+        { "resourceId": "iron-ore", "quantity": 8 },
+        { "resourceId": "coal", "quantity": 4 },
+        { "resourceId": "leather", "quantity": 2 }
+      ],
+      "output": {
+        "itemId": "steel-sword",
+        "quantity": 1
+      },
+      "difficultyClass": 14,
+      "isDefault": false,
+      "craftingTimeSeconds": 45
+    },
+    {
+      "id": "steel-armor",
+      "name": "Steel Armor",
+      "description": "Forge a full suit of reinforced steel armor",
+      "category": "Armor",
+      "requiredStation": "anvil",
+      "ingredients": [
+        { "resourceId": "iron-ore", "quantity": 12 },
+        { "resourceId": "coal", "quantity": 6 },
+        { "resourceId": "leather", "quantity": 4 }
+      ],
+      "output": {
+        "itemId": "steel-armor",
+        "quantity": 1
+      },
+      "difficultyClass": 15,
+      "isDefault": false,
+      "craftingTimeSeconds": 60
+    },
+    {
+      "id": "mithril-blade",
+      "name": "Mithril Blade",
+      "description": "Forge a legendary mithril weapon of incredible power",
+      "category": "Weapon",
+      "requiredStation": "anvil",
+      "ingredients": [
+        { "resourceId": "mithril-ore", "quantity": 10 },
+        { "resourceId": "dragon-scale", "quantity": 2 },
+        { "resourceId": "ruby", "quantity": 1 }
+      ],
+      "output": {
+        "itemId": "mithril-blade",
+        "quantity": 1,
+        "qualityFormula": "roll >= 20 ? 'Legendary' : roll >= 15 ? 'Epic' : 'Rare'"
+      },
+      "difficultyClass": 18,
+      "isDefault": false,
+      "craftingTimeSeconds": 120
+    },
+    {
+      "id": "fire-resistance-potion",
+      "name": "Fire Resistance Potion",
+      "description": "A potent potion that grants temporary fire resistance",
+      "category": "Potion",
+      "requiredStation": "alchemy-table",
+      "ingredients": [
+        { "resourceId": "firebloom", "quantity": 2 },
+        { "resourceId": "mana-leaf", "quantity": 1 },
+        { "resourceId": "empty-vial", "quantity": 1 }
+      ],
+      "output": {
+        "itemId": "fire-resistance-potion",
+        "quantity": 1
+      },
+      "difficultyClass": 15,
+      "isDefault": false,
+      "craftingTimeSeconds": 30
+    },
+    {
+      "id": "greater-healing-potion",
+      "name": "Greater Healing Potion",
+      "description": "A powerful potion that heals significant wounds",
+      "category": "Potion",
+      "requiredStation": "alchemy-table",
+      "ingredients": [
+        { "resourceId": "healing-herb", "quantity": 5 },
+        { "resourceId": "moonpetal", "quantity": 2 },
+        { "resourceId": "empty-vial", "quantity": 1 }
+      ],
+      "output": {
+        "itemId": "greater-healing-potion",
+        "quantity": 1
+      },
+      "difficultyClass": 14,
+      "isDefault": false,
+      "craftingTimeSeconds": 30
+    },
+    {
+      "id": "cooked-meat",
+      "name": "Cooked Meat",
+      "description": "Cook raw meat into a nourishing meal",
+      "category": "Consumable",
+      "requiredStation": "cooking-fire",
+      "ingredients": [
+        { "resourceId": "raw-meat", "quantity": 1 }
+      ],
+      "output": {
+        "itemId": "cooked-meat",
+        "quantity": 1
+      },
+      "difficultyClass": 8,
+      "isDefault": true,
+      "craftingTimeSeconds": 10
+    },
+    {
+      "id": "silver-ring",
+      "name": "Silver Ring",
+      "description": "Craft a silver ring that can be enchanted",
+      "category": "Accessory",
+      "requiredStation": "workbench",
+      "ingredients": [
+        { "resourceId": "silver-ore", "quantity": 2 }
+      ],
+      "output": {
+        "itemId": "silver-ring",
+        "quantity": 1
+      },
+      "difficultyClass": 12,
+      "isDefault": false,
+      "craftingTimeSeconds": 20
+    }
+  ]
+}

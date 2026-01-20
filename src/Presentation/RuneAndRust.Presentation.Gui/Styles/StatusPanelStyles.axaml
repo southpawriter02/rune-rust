@@ -1,0 +1,64 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ctrl="using:RuneAndRust.Presentation.Gui.Controls">
+    
+    <!-- Stat Modifier Style (shows +/- in muted color) -->
+    <Style Selector="TextBlock.stat-modifier">
+        <Setter Property="Foreground" Value="{StaticResource TextMutedBrush}" />
+        <Setter Property="FontSize" Value="11" />
+    </Style>
+    
+    <!-- Stat Bonus Style (green for positive bonuses) -->
+    <Style Selector="TextBlock.stat-bonus">
+        <Setter Property="Foreground" Value="#6EBF6E" />
+        <Setter Property="FontSize" Value="11" />
+    </Style>
+    
+    <!-- Gold Value Style -->
+    <Style Selector="TextBlock.gold-value">
+        <Setter Property="Foreground" Value="#FFD700" />
+    </Style>
+    
+    <!-- HealthBarControl Template -->
+    <Style Selector="ctrl|HealthBarControl">
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Grid ColumnDefinitions="32,*,60">
+                    <!-- Label -->
+                    <TextBlock Grid.Column="0"
+                               Text="{TemplateBinding Label}"
+                               VerticalAlignment="Center"
+                               Foreground="{StaticResource TextSecondaryBrush}" />
+                    
+                    <!-- Bar Background -->
+                    <Border Grid.Column="1"
+                            Background="{StaticResource SurfaceBrush}"
+                            CornerRadius="4"
+                            Height="16"
+                            Margin="4,0">
+                        <!-- Bar Fill -->
+                        <Border Background="{TemplateBinding FillBrush}"
+                                CornerRadius="4"
+                                HorizontalAlignment="Stretch"
+                                RenderTransformOrigin="0,0.5">
+                            <Border.RenderTransform>
+                                <ScaleTransform ScaleX="{TemplateBinding FillPercentage}" />
+                            </Border.RenderTransform>
+                        </Border>
+
+
+                    </Border>
+                    
+                    <!-- Value Display -->
+                    <TextBlock Grid.Column="2"
+                               Text="{TemplateBinding DisplayText}"
+                               VerticalAlignment="Center"
+                               HorizontalAlignment="Right"
+                               FontSize="11"
+                               Foreground="{StaticResource TextMutedBrush}" />
+                </Grid>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+    
+</Styles>

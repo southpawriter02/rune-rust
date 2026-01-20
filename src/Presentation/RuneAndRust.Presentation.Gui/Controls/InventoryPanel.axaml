@@ -1,0 +1,112 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:RuneAndRust.Presentation.Gui.ViewModels"
+             xmlns:ctrl="using:RuneAndRust.Presentation.Gui.Controls"
+             x:Class="RuneAndRust.Presentation.Gui.Controls.InventoryPanel"
+             x:DataType="vm:InventoryPanelViewModel"
+             Focusable="True">
+    
+    <Design.DataContext>
+        <vm:InventoryPanelViewModel />
+    </Design.DataContext>
+    
+    <Grid RowDefinitions="Auto,*,Auto,Auto">
+        
+        <!-- Header -->
+        <Border Grid.Row="0" Classes="panel" Padding="12,8">
+            <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Text="INVENTORY"
+                           Classes="secondary"
+                           FontWeight="SemiBold"
+                           VerticalAlignment="Center" />
+                <TextBlock Grid.Column="1" Classes="muted" VerticalAlignment="Center">
+                    <Run Text="{Binding CurrentCapacity}" />
+                    <Run Text="/" />
+                    <Run Text="{Binding MaxCapacity}" />
+                    <Run Text=" items" />
+                </TextBlock>
+            </Grid>
+        </Border>
+        
+        <!-- Item Grid -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <ItemsControl ItemsSource="{Binding Slots}" Margin="8">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <UniformGrid Columns="{Binding GridColumns}" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="vm:ItemSlotViewModel">
+                        <ctrl:ItemSlotControl Item="{Binding Item}"
+                                              IsSelected="{Binding IsSelected}"
+                                              Icon="{Binding Icon}"
+                                              ShortName="{Binding ShortName}"
+                                              ToolTip.Tip="{Binding Tooltip}"
+                                              Margin="2" />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+        
+        <!-- Details Section -->
+        <Border Grid.Row="2" Classes="panel" Padding="12"
+                IsVisible="{Binding SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}">
+            <StackPanel Spacing="8">
+                <!-- Item Header -->
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <TextBlock Text="{Binding SelectedItemIcon}"
+                               FontSize="18" />
+                    <TextBlock Text="{Binding SelectedItem.Name}"
+                               FontWeight="SemiBold"
+                               FontSize="14" />
+                </StackPanel>
+                
+                <!-- Description -->
+                <TextBlock Text="{Binding SelectedItem.Description}"
+                           TextWrapping="Wrap"
+                           MaxLines="3"
+                           Foreground="#AAAAAA" />
+                
+                <!-- Stats Grid -->
+                <Grid ColumnDefinitions="80,*" RowDefinitions="Auto,Auto">
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Type:" Foreground="#888888" />
+                    <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding SelectedItem.Type}" />
+                    
+                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Value:" Foreground="#888888" />
+                    <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal">
+                        <TextBlock Text="{Binding SelectedItem.Value}" />
+                        <TextBlock Text=" gold" Foreground="#888888" />
+                    </StackPanel>
+                </Grid>
+            </StackPanel>
+        </Border>
+        
+        <!-- Empty State -->
+        <Border Grid.Row="2" Classes="panel" Padding="12"
+                IsVisible="{Binding SelectedItem, Converter={x:Static ObjectConverters.IsNull}}">
+            <TextBlock Text="Select an item to view details"
+                       Foreground="#666666"
+                       HorizontalAlignment="Center" />
+        </Border>
+        
+        <!-- Footer -->
+        <Border Grid.Row="3" Classes="panel" Padding="8">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <TextBlock Text="Weight:" Foreground="#888888" />
+                <TextBlock>
+                    <Run Text="{Binding CurrentWeight, StringFormat='{}{0:F1}'}" />
+                    <Run Text="/" Foreground="#888888" />
+                    <Run Text="{Binding MaxWeight, StringFormat='{}{0:F1}'}" />
+                    <Run Text=" lbs" Foreground="#888888" />
+                </TextBlock>
+                
+                <!-- Weight warning -->
+                <TextBlock Text="⚠ Heavy"
+                           Foreground="#FFD700"
+                           IsVisible="{Binding IsOverweightWarning}" />
+            </StackPanel>
+        </Border>
+        
+    </Grid>
+</UserControl>

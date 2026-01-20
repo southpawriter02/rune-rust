@@ -1,0 +1,80 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:RuneAndRust.Presentation.Gui.ViewModels"
+        x:Class="RuneAndRust.Presentation.Gui.Views.DialogueWindow"
+        x:DataType="vm:DialogueWindowViewModel"
+        Title="Dialogue"
+        Width="700" Height="450"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False"
+        ShowInTaskbar="False"
+        Background="#1E1E1E">
+    
+    <Design.DataContext>
+        <vm:DialogueWindowViewModel />
+    </Design.DataContext>
+    
+    <Grid RowDefinitions="*,Auto">
+        
+        <!-- Main Dialogue Area -->
+        <Border Grid.Row="0" Background="#252526" Padding="20">
+            <Grid ColumnDefinitions="Auto,*">
+                
+                <!-- NPC Portrait -->
+                <Border Grid.Column="0" Background="#1A1A1A" BorderBrush="#444444" BorderThickness="2"
+                        Width="120" Height="120" CornerRadius="4" Margin="0,0,20,0" VerticalAlignment="Top">
+                    <TextBlock Text="{Binding NpcPortrait}" FontSize="48"
+                               HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Border>
+                
+                <!-- Dialogue Content -->
+                <StackPanel Grid.Column="1">
+                    
+                    <!-- NPC Name -->
+                    <TextBlock Text="{Binding NpcName}" FontWeight="Bold" FontSize="18" 
+                               Foreground="#4CAF50" Margin="0,0,0,4" />
+                    
+                    <Border Height="1" Background="#444444" Margin="0,0,0,12" />
+                    
+                    <!-- Dialogue Text (clickable) -->
+                    <Border Padding="0" Cursor="Hand" PointerPressed="OnDialogueTextPressed">
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{Binding DisplayedText}" TextWrapping="Wrap" FontSize="14" />
+                                <TextBlock Text="█" Foreground="#4CAF50" IsVisible="{Binding IsTyping}" />
+                            </StackPanel>
+                            
+                            <!-- Continue Hint -->
+                            <TextBlock Text="{Binding ContinueHint}" Foreground="#666666" FontStyle="Italic"
+                                       Margin="0,12,0,0" HorizontalAlignment="Right"
+                                       IsVisible="{Binding ShowContinueHint}" />
+                        </StackPanel>
+                    </Border>
+                    
+                </StackPanel>
+            </Grid>
+        </Border>
+        
+        <!-- Response Choices -->
+        <Border Grid.Row="1" Background="#1A1A1A" Padding="20,12" IsVisible="{Binding HasChoices}">
+            <ItemsControl ItemsSource="{Binding Choices}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Padding="12,8" Margin="0,4" CornerRadius="4" Cursor="Hand"
+                                Background="#2D2D2D" BorderBrush="#444444" BorderThickness="1"
+                                PointerPressed="OnChoicePressed">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Grid.Column="0" Text="{Binding DisplayText}" />
+                                <Border Grid.Column="1" Background="#4CAF50" CornerRadius="3" Padding="8,4"
+                                        IsVisible="{Binding HasActionBadge}" Margin="12,0,0,0">
+                                    <TextBlock Text="{Binding ActionBadge}" FontSize="10" FontWeight="Bold" />
+                                </Border>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </Border>
+        
+    </Grid>
+</Window>

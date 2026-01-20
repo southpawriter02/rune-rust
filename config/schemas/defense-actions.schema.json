@@ -1,0 +1,151 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "defense-actions.schema.json",
+    "title": "Defense Actions Configuration",
+    "description": "Configuration for defensive combat actions (Block, Dodge, Parry) in tactical combat",
+    "type": "object",
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "Reference to this schema file"
+        },
+        "defenseActions": {
+            "type": "array",
+            "description": "List of defense action definitions",
+            "items": {
+                "$ref": "#/definitions/defenseAction"
+            },
+            "minItems": 1
+        },
+        "settings": {
+            "$ref": "#/definitions/defenseSettings"
+        }
+    },
+    "required": [
+        "defenseActions"
+    ],
+    "definitions": {
+        "defenseAction": {
+            "type": "object",
+            "description": "A defense action type definition",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Unique identifier (kebab-case)",
+                    "pattern": "^[a-z][a-z0-9-]*$"
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Display name of the defense action"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Detailed description of how the defense action works"
+                },
+                "actionType": {
+                    "type": "string",
+                    "description": "The type of defense action",
+                    "enum": [
+                        "Block",
+                        "Dodge",
+                        "Parry"
+                    ]
+                },
+                "requiresShield": {
+                    "type": "boolean",
+                    "description": "Whether the action requires a shield to be equipped",
+                    "default": false
+                },
+                "requiresReaction": {
+                    "type": "boolean",
+                    "description": "Whether the action consumes the combatant's reaction",
+                    "default": false
+                },
+                "blockedByHeavyArmor": {
+                    "type": "boolean",
+                    "description": "Whether heavy armor prevents this action",
+                    "default": false
+                },
+                "requiresMeleeWeapon": {
+                    "type": "boolean",
+                    "description": "Whether the action requires a melee weapon to be equipped",
+                    "default": false
+                },
+                "baseReduction": {
+                    "type": "number",
+                    "description": "Base damage reduction multiplier (0.5 = 50% reduction)",
+                    "minimum": 0.0,
+                    "maximum": 1.0,
+                    "default": 0.0
+                },
+                "dcBonus": {
+                    "type": "integer",
+                    "description": "Bonus added to the DC when rolling against this action",
+                    "minimum": 0,
+                    "maximum": 10,
+                    "default": 0
+                },
+                "rollStat": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "description": "The attribute used for rolling (null if no roll required)",
+                    "enum": [
+                        "might",
+                        "fortitude",
+                        "will",
+                        "wits",
+                        "finesse",
+                        null
+                    ]
+                },
+                "canCounter": {
+                    "type": "boolean",
+                    "description": "Whether a successful defense triggers a counter-attack",
+                    "default": false
+                },
+                "flavorText": {
+                    "type": "string",
+                    "description": "Narrative description shown when the action succeeds"
+                }
+            },
+            "required": [
+                "id",
+                "name",
+                "description",
+                "actionType"
+            ]
+        },
+        "defenseSettings": {
+            "type": "object",
+            "description": "Global settings for defense actions",
+            "properties": {
+                "defaultFinesseModifierDivisor": {
+                    "type": "integer",
+                    "description": "Divisor applied to Finesse attribute for modifier calculation",
+                    "minimum": 1,
+                    "maximum": 4,
+                    "default": 2
+                },
+                "counterAttackDamageMultiplier": {
+                    "type": "number",
+                    "description": "Multiplier applied to counter-attack damage",
+                    "minimum": 0.1,
+                    "maximum": 2.0,
+                    "default": 1.0
+                },
+                "heavyArmorTypes": {
+                    "type": "array",
+                    "description": "Armor types that block dodge actions",
+                    "items": {
+                        "type": "string"
+                    },
+                    "default": [
+                        "Heavy"
+                    ]
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,32 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:RuneAndRust.Presentation.Gui.ViewModels"
+             xmlns:controls="using:RuneAndRust.Presentation.Gui.Controls"
+             x:Class="RuneAndRust.Presentation.Gui.Controls.QuickSlotBar"
+             x:DataType="vm:QuickSlotBarViewModel">
+
+    <!-- Quick-Slot Bar: 8 slots for abilities/items -->
+    <Border Classes="quickslot-bar" Padding="8,4">
+        <StackPanel Orientation="Horizontal" Spacing="4">
+            <ItemsControl ItemsSource="{Binding Slots}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal" Spacing="4" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="vm:QuickSlotViewModel">
+                        <controls:QuickSlotControl
+                            SlotNumber="{Binding SlotNumber}"
+                            Icon="{Binding Icon}"
+                            SlotName="{Binding Name}"
+                            IsOnCooldown="{Binding IsOnCooldown}"
+                            CooldownRemaining="{Binding CooldownRemaining}"
+                            IsEnabled="{Binding CanUse}"
+                            ToolTip.Tip="{Binding Tooltip}" />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </StackPanel>
+    </Border>
+</UserControl>

@@ -1,0 +1,106 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- ========================================== -->
+    <!-- Combat Summary Styles v0.8.3c             -->
+    <!-- Victory/defeat screens, rewards, level-up -->
+    <!-- ========================================== -->
+
+    <!-- Header Container -->
+    <Style Selector="Border.summary-header">
+        <Setter Property="Background" Value="#1E1E2E" />
+    </Style>
+
+    <!-- Header Title (Victory/Defeat) -->
+    <Style Selector="TextBlock.header-title">
+        <Setter Property="FontSize" Value="28" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="Foreground" Value="Gold" />
+    </Style>
+
+    <!-- Section Panel -->
+    <Style Selector="Border.section">
+        <Setter Property="Background" Value="#2E2E3E" />
+        <Setter Property="CornerRadius" Value="6" />
+        <Setter Property="BorderBrush" Value="#3E3E5E" />
+        <Setter Property="BorderThickness" Value="1" />
+    </Style>
+
+    <!-- Section Title -->
+    <Style Selector="TextBlock.section-title">
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="DeepSkyBlue" />
+        <Setter Property="FontSize" Value="14" />
+    </Style>
+
+    <!-- Enemy Item -->
+    <Style Selector="TextBlock.enemy-item">
+        <Setter Property="Margin" Value="8,2,0,0" />
+        <Setter Property="Foreground" Value="White" />
+    </Style>
+
+    <!-- Reward Line -->
+    <Style Selector="TextBlock.reward-line">
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="Foreground" Value="White" />
+    </Style>
+
+    <!-- Level-Up Panel -->
+    <Style Selector="Border.level-up-panel">
+        <Setter Property="Background" Value="#2A4A2A" />
+        <Setter Property="BorderBrush" Value="Gold" />
+        <Setter Property="BorderThickness" Value="2" />
+        <Setter Property="CornerRadius" Value="4" />
+    </Style>
+
+    <!-- Level-Up Title -->
+    <Style Selector="TextBlock.level-up-title">
+        <Setter Property="FontSize" Value="16" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="Foreground" Value="Gold" />
+    </Style>
+
+    <!-- Bonus Line -->
+    <Style Selector="TextBlock.bonus-line">
+        <Setter Property="Margin" Value="8,2,0,0" />
+        <Setter Property="Foreground" Value="LimeGreen" />
+    </Style>
+
+    <!-- Loot Header -->
+    <Style Selector="TextBlock.loot-header">
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="White" />
+    </Style>
+
+    <!-- Loot Item -->
+    <Style Selector="TextBlock.loot-item">
+        <Setter Property="Margin" Value="16,2,0,0" />
+        <Setter Property="Foreground" Value="White" />
+    </Style>
+
+    <!-- Defeat Message -->
+    <Style Selector="TextBlock.defeat-message">
+        <Setter Property="FontStyle" Value="Italic" />
+        <Setter Property="Foreground" Value="#808080" />
+        <Setter Property="FontSize" Value="16" />
+        <Setter Property="Margin" Value="0,20" />
+    </Style>
+
+    <!-- Footer Container -->
+    <Style Selector="Border.summary-footer">
+        <Setter Property="Background" Value="#1E1E2E" />
+        <Setter Property="BorderBrush" Value="#3E3E5E" />
+        <Setter Property="BorderThickness" Value="0,1,0,0" />
+    </Style>
+
+    <!-- Primary Button -->
+    <Style Selector="Button.primary">
+        <Setter Property="Background" Value="#4A7A4A" />
+        <Setter Property="Foreground" Value="White" />
+    </Style>
+
+    <Style Selector="Button.primary:pointerover">
+        <Setter Property="Background" Value="#5A8A5A" />
+    </Style>
+
+</Styles>

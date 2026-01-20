@@ -80,11 +80,11 @@ static async Task RunGameAsync(IServiceProvider services)
         switch (selection)
         {
             case MainMenuOption.NewGame:
-                await StartNewGameAsync(mainMenu, gameService, renderer, inputHandler);
+                await StartNewGameAsync(services, mainMenu, gameService, renderer, inputHandler);
                 break;
 
             case MainMenuOption.LoadGame:
-                await LoadGameAsync(gameService, renderer, inputHandler);
+                await LoadGameAsync(services, gameService, renderer, inputHandler);
                 break;
 
             case MainMenuOption.Quit:
@@ -96,6 +96,7 @@ static async Task RunGameAsync(IServiceProvider services)
 }
 
 static async Task StartNewGameAsync(
+    IServiceProvider services,
     MainMenuView mainMenu,
     GameSessionService gameService,
     IGameRenderer renderer,
@@ -112,11 +113,12 @@ static async Task StartNewGameAsync(
 
     mainMenu.RenderWelcome(playerName);
 
-    var gameView = new GameView(gameService, renderer, inputHandler);
+    var gameView = services.GetRequiredService<GameView>();
     await gameView.RunGameLoopAsync();
 }
 
 static async Task LoadGameAsync(
+    IServiceProvider services,
     GameSessionService gameService,
     IGameRenderer renderer,
     IInputHandler inputHandler)
@@ -147,6 +149,6 @@ static async Task LoadGameAsync(
     await renderer.RenderMessageAsync($"Welcome back, {state.Player.Name}!", MessageType.Success);
     Console.WriteLine();
 
-    var gameView = new GameView(gameService, renderer, inputHandler);
+    var gameView = services.GetRequiredService<GameView>();
     await gameView.RunGameLoopAsync();
 }

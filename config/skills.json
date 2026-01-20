@@ -1,0 +1,159 @@
+{
+    "$schema": "skills.schema.json",
+    "skills": [
+        {
+            "id": "athletics",
+            "name": "Athletics",
+            "description": "Physical feats of strength, climbing, jumping, and swimming.",
+            "primaryAttribute": "might",
+            "secondaryAttribute": "fortitude",
+            "baseDicePool": "1d10",
+            "allowUntrained": true,
+            "untrainedPenalty": 0,
+            "category": "Physical",
+            "tags": [
+                "physical",
+                "strength"
+            ],
+            "sortOrder": 1
+        },
+        {
+            "id": "acrobatics",
+            "name": "Acrobatics",
+            "description": "Balance, tumbling, and agile maneuvers.",
+            "primaryAttribute": "finesse",
+            "baseDicePool": "1d10",
+            "allowUntrained": true,
+            "untrainedPenalty": 0,
+            "category": "Physical",
+            "tags": [
+                "physical",
+                "agility"
+            ],
+            "sortOrder": 2
+        },
+        {
+            "id": "stealth",
+            "name": "Stealth",
+            "description": "Moving silently and remaining hidden.",
+            "primaryAttribute": "finesse",
+            "secondaryAttribute": "wits",
+            "baseDicePool": "1d10",
+            "allowUntrained": true,
+            "untrainedPenalty": 0,
+            "category": "Physical",
+            "tags": [
+                "physical",
+                "sneaking"
+            ],
+            "sortOrder": 3
+        },
+        {
+            "id": "perception",
+            "name": "Perception",
+            "description": "Noticing hidden things and spotting danger.",
+            "primaryAttribute": "wits",
+            "baseDicePool": "1d10",
+            "allowUntrained": true,
+            "untrainedPenalty": 0,
+            "category": "Mental",
+            "tags": [
+                "mental",
+                "awareness"
+            ],
+            "sortOrder": 4
+        },
+        {
+            "id": "endurance",
+            "name": "Endurance",
+            "description": "Resisting poison, disease, and exhaustion.",
+            "primaryAttribute": "fortitude",
+            "baseDicePool": "1d10",
+            "allowUntrained": true,
+            "untrainedPenalty": 0,
+            "category": "Physical",
+            "tags": [
+                "physical",
+                "resilience"
+            ],
+            "sortOrder": 5
+        },
+        {
+            "id": "intimidation",
+            "name": "Intimidation",
+            "description": "Coercing through threats and presence.",
+            "primaryAttribute": "might",
+            "secondaryAttribute": "will",
+            "baseDicePool": "1d10",
+            "allowUntrained": true,
+            "untrainedPenalty": 0,
+            "category": "Social",
+            "tags": [
+                "social",
+                "influence"
+            ],
+            "sortOrder": 6
+        },
+        {
+            "id": "persuasion",
+            "name": "Persuasion",
+            "description": "Convincing through charm and logic.",
+            "primaryAttribute": "will",
+            "baseDicePool": "1d10",
+            "allowUntrained": true,
+            "untrainedPenalty": 0,
+            "category": "Social",
+            "tags": [
+                "social",
+                "influence"
+            ],
+            "sortOrder": 7
+        },
+        {
+            "id": "lockpicking",
+            "name": "Lockpicking",
+            "description": "Opening locks without keys.",
+            "primaryAttribute": "finesse",
+            "baseDicePool": "1d10",
+            "allowUntrained": false,
+            "untrainedPenalty": 5,
+            "category": "Specialty",
+            "tags": [
+                "specialty",
+                "thievery"
+            ],
+            "sortOrder": 8
+        },
+        {
+            "id": "arcana",
+            "name": "Arcana",
+            "description": "Knowledge of magical lore and runes.",
+            "primaryAttribute": "will",
+            "secondaryAttribute": "wits",
+            "baseDicePool": "1d10",
+            "allowUntrained": false,
+            "untrainedPenalty": 3,
+            "category": "Knowledge",
+            "tags": [
+                "knowledge",
+                "magic"
+            ],
+            "sortOrder": 9
+        },
+        {
+            "id": "investigation",
+            "name": "Investigation",
+            "description": "Searching for clues and deducing information.",
+            "primaryAttribute": "wits",
+            "baseDicePool": "1d10",
+            "allowUntrained": true,
+            "untrainedPenalty": 0,
+            "category": "Mental",
+            "tags": [
+                "mental",
+                "investigation"
+            ],
+            "sortOrder": 10
+        }
+    ]
+}

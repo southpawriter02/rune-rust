@@ -1,0 +1,69 @@
+{
+    "$schema": "difficulty.schema.json",
+    "difficultyClasses": [
+        {
+            "id": "trivial",
+            "name": "Trivial",
+            "description": "Almost anyone can do this without effort.",
+            "targetNumber": 5,
+            "color": "#88FF88",
+            "sortOrder": 1
+        },
+        {
+            "id": "easy",
+            "name": "Easy",
+            "description": "A simple task for most people.",
+            "targetNumber": 8,
+            "color": "#44DD44",
+            "sortOrder": 2
+        },
+        {
+            "id": "moderate",
+            "name": "Moderate",
+            "description": "Requires some skill or effort.",
+            "targetNumber": 12,
+            "color": "#FFFF44",
+            "sortOrder": 3
+        },
+        {
+            "id": "challenging",
+            "name": "Challenging",
+            "description": "Difficult for most people.",
+            "targetNumber": 15,
+            "color": "#FFAA44",
+            "sortOrder": 4
+        },
+        {
+            "id": "hard",
+            "name": "Hard",
+            "description": "Only skilled individuals succeed reliably.",
+            "targetNumber": 18,
+            "color": "#FF6644",
+            "sortOrder": 5
+        },
+        {
+            "id": "very-hard",
+            "name": "Very Hard",
+            "description": "Requires expertise and luck.",
+            "targetNumber": 22,
+            "color": "#FF4444",
+            "sortOrder": 6
+        },
+        {
+            "id": "extreme",
+            "name": "Extreme",
+            "description": "Near the limits of mortal ability.",
+            "targetNumber": 26,
+            "color": "#CC22CC",
+            "sortOrder": 7
+        },
+        {
+            "id": "legendary",
+            "name": "Legendary",
+            "description": "Feats worthy of tales and sagas.",
+            "targetNumber": 30,
+            "color": "#AA00FF",
+            "sortOrder": 8
+        }
+    ]
+}

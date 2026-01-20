@@ -1,0 +1,243 @@
+{
+    "$schema": "schemas/room-templates.schema.json",
+    "version": "1.1",
+    "templates": [
+        {
+            "templateId": "dungeon-corridor-narrow",
+            "namePattern": "{adjective} Corridor",
+            "descriptionPattern": "A {width} {material} corridor stretches {direction}. {atmosphere}",
+            "validBiomes": [
+                "dungeon",
+                "ruins",
+                "cave"
+            ],
+            "roomType": "Standard",
+            "weight": 40,
+            "minDepth": 0,
+            "maxDepth": null,
+            "tags": [
+                "corridor",
+                "passage"
+            ],
+            "slots": [
+                {
+                    "slotId": "adjective",
+                    "type": "Description",
+                    "isRequired": true,
+                    "descriptorPool": "room.adjectives.corridor"
+                },
+                {
+                    "slotId": "width",
+                    "type": "Description",
+                    "isRequired": true,
+                    "descriptorPool": "room.dimensions.width"
+                },
+                {
+                    "slotId": "material",
+                    "type": "Description",
+                    "isRequired": true,
+                    "descriptorPool": "room.materials.wall"
+                },
+                {
+                    "slotId": "direction",
+                    "type": "Description",
+                    "isRequired": true,
+                    "descriptorPool": "room.directions"
+                },
+                {
+                    "slotId": "atmosphere",
+                    "type": "Description",
+                    "isRequired": false,
+                    "fillProbability": 0.7,
+                    "descriptorPool": "environmental.atmosphere"
+                },
+                {
+                    "slotId": "monster_01",
+                    "type": "Monster",
+                    "isRequired": false,
+                    "fillProbability": 0.35,
+                    "minQuantity": 1,
+                    "maxQuantity": 2,
+                    "constraints": {
+                        "maxTier": "standard"
+                    }
+                }
+            ]
+        },
+        {
+            "templateId": "dungeon-treasure-vault",
+            "namePattern": "{guardian}'s {container_type}",
+            "descriptionPattern": "A {size} chamber filled with {treasure_description}. {guardian_hint}",
+            "validBiomes": [
+                "dungeon",
+                "ruins"
+            ],
+            "roomType": "Treasure",
+            "weight": 8,
+            "minDepth": 2,
+            "maxDepth": null,
+            "tags": [
+                "treasure",
+                "vault",
+                "guarded"
+            ],
+            "slots": [
+                {
+                    "slotId": "guardian",
+                    "type": "Description",
+                    "isRequired": true,
+                    "descriptorPool": "npcs.guardian_types"
+                },
+                {
+                    "slotId": "container_type",
+                    "type": "Description",
+                    "isRequired": true,
+                    "descriptorPool": "room.container_names"
+                },
+                {
+                    "slotId": "size",
+                    "type": "Description",
+                    "isRequired": true,
+                    "descriptorPool": "room.dimensions.size"
+                },
+                {
+                    "slotId": "treasure_description",
+                    "type": "Description",
+                    "isRequired": true,
+                    "descriptorPool": "room.treasure_descriptions"
+                },
+                {
+                    "slotId": "guardian_hint",
+                    "type": "Description",
+                    "isRequired": false,
+                    "fillProbability": 0.8,
+                    "descriptorPool": "room.guardian_hints"
+                },
+                {
+                    "slotId": "guardian_monster",
+                    "type": "Monster",
+                    "isRequired": true,
+                    "fillProbability": 1.0,
+                    "minQuantity": 1,
+                    "maxQuantity": 1,
+                    "constraints": {
+                        "minTier": "elite"
+                    }
+                },
+                {
+                    "slotId": "main_container",
+                    "type": "Container",
+                    "isRequired": true,
+                    "fillProbability": 1.0,
+                    "constraints": {
+                        "containerType": "chest",
+                        "lootQuality": "high"
+                    }
+                }
+            ]
+        },
+        {
+            "templateId": "cave-crystal-chamber",
+            "namePattern": "Crystal {chamber_type}",
+            "descriptionPattern": "{crystal_description} {lighting_effect} {sound_description}",
+            "validBiomes": [
+                "cave"
+            ],
+            "roomType": "Standard",
+            "weight": 25,
+            "minDepth": 1,
+            "maxDepth": 5,
+            "tags": [
+                "crystal",
+                "natural"
+            ],
+            "slots": [
+                {
+                    "slotId": "chamber_type",
+                    "type": "Description",
+                    "isRequired": true,
+                    "descriptorPool": "room.cave_chamber_types"
+                },
+                {
+                    "slotId": "crystal_description",
+                    "type": "Description",
+                    "isRequired": true,
+                    "descriptorPool": "room.crystal_descriptions"
+                },
+                {
+                    "slotId": "lighting_effect",
+                    "type": "Description",
+                    "isRequired": true,
+                    "descriptorPool": "environmental.lighting.crystal"
+                },
+                {
+                    "slotId": "sound_description",
+                    "type": "Description",
+                    "isRequired": false,
+                    "fillProbability": 0.6,
+                    "descriptorPool": "environmental.sounds.cave"
+                }
+            ]
+        },
+        {
+            "templateId": "volcanic-lava-bridge",
+            "namePattern": "{condition} Bridge",
+            "descriptionPattern": "A {material} bridge spans a {chasm_type}. {heat_description} {danger_warning}",
+            "validBiomes": [
+                "volcanic"
+            ],
+            "roomType": "Standard",
+            "weight": 20,
+            "minDepth": 4,
+            "maxDepth": null,
+            "tags": [
+                "bridge",
+                "dangerous",
+                "lava"
+            ],
+            "slots": [
+                {
+                    "slotId": "condition",
+                    "type": "Description",
+                    "isRequired": true,
+                    "descriptorPool": "room.conditions.structure"
+                },
+                {
+                    "slotId": "material",
+                    "type": "Description",
+                    "isRequired": true,
+                    "descriptorPool": "room.materials.volcanic"
+                },
+                {
+                    "slotId": "chasm_type",
+                    "type": "Description",
+                    "isRequired": true,
+                    "descriptorPool": "room.chasms.volcanic"
+                },
+                {
+                    "slotId": "heat_description",
+                    "type": "Description",
+                    "isRequired": true,
+                    "descriptorPool": "environmental.temperature.volcanic"
+                },
+                {
+                    "slotId": "danger_warning",
+                    "type": "Description",
+                    "isRequired": false,
+                    "fillProbability": 0.7,
+                    "descriptorPool": "room.danger_warnings"
+                },
+                {
+                    "slotId": "hazard_01",
+                    "type": "Hazard",
+                    "isRequired": false,
+                    "fillProbability": 0.4,
+                    "constraints": {
+                        "hazardType": "environmental",
+                        "element": "fire"
+                    }
+                }
+            ]
+        }
+    ]
+}

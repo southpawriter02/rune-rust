@@ -1,0 +1,102 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://runeandrust.game/schemas/harvestable-features.schema.json",
+  "title": "Harvestable Features Configuration",
+  "description": "Schema for defining harvestable room features in Rune & Rust. Features are environmental objects that yield resources when gathered.",
+  "type": "object",
+  "required": ["harvestableFeatures"],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Reference to this schema file for validation"
+    },
+    "harvestableFeatures": {
+      "type": "array",
+      "description": "List of harvestable feature definitions",
+      "items": {
+        "$ref": "#/$defs/harvestableFeature"
+      },
+      "minItems": 1
+    }
+  },
+  "$defs": {
+    "harvestableFeature": {
+      "type": "object",
+      "description": "A single harvestable feature definition that can be placed in rooms",
+      "required": ["id", "name", "resourceId", "minQuantity", "maxQuantity", "difficultyClass"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the feature (lowercase, hyphenated)",
+          "pattern": "^[a-z][a-z0-9-]*$",
+          "minLength": 1,
+          "maxLength": 50,
+          "examples": ["iron-ore-vein", "herb-patch", "gem-cluster", "fallen-tree"]
+        },
+        "name": {
+          "type": "string",
+          "description": "Display name of the feature shown in room descriptions",
+          "minLength": 1,
+          "maxLength": 50,
+          "examples": ["Iron Ore Vein", "Herb Patch", "Gem Cluster"]
+        },
+        "description": {
+          "type": "string",
+          "description": "Detailed description shown when examining the feature",
+          "maxLength": 500,
+          "examples": ["A vein of iron ore embedded in the rock wall"]
+        },
+        "resourceId": {
+          "type": "string",
+          "description": "ID of the resource this feature yields when gathered. Must match a valid resource from gatherable-resources.json",
+          "pattern": "^[a-z][a-z0-9-]*$",
+          "minLength": 1,
+          "maxLength": 50,
+          "examples": ["iron-ore", "healing-herb", "ruby", "oak-wood"]
+        },
+        "minQuantity": {
+          "type": "integer",
+          "description": "Minimum quantity of resources yielded on successful gather",
+          "minimum": 0,
+          "maximum": 100,
+          "default": 1
+        },
+        "maxQuantity": {
+          "type": "integer",
+          "description": "Maximum quantity of resources yielded on successful gather. Must be >= minQuantity",
+          "minimum": 1,
+          "maximum": 100,
+          "default": 1
+        },
+        "difficultyClass": {
+          "type": "integer",
+          "description": "Difficulty class (DC) for gathering check. Player must roll d20 + modifier >= DC to succeed. Range: 1-30 where 10=Easy, 15=Hard, 20=Very Hard",
+          "minimum": 1,
+          "maximum": 30,
+          "default": 10
+        },
+        "requiredTool": {
+          "type": ["string", "null"],
+          "description": "Optional tool ID required to gather from this feature. If set, player must have this tool to attempt gathering",
+          "pattern": "^[a-z][a-z0-9-]*$",
+          "maxLength": 50,
+          "examples": ["pickaxe", "skinning-knife", "axe", "herbalism-kit"]
+        },
+        "replenishTurns": {
+          "type": "integer",
+          "description": "Number of turns until the feature replenishes after depletion. 0 means the feature never replenishes (one-time harvest)",
+          "minimum": 0,
+          "maximum": 10000,
+          "default": 0
+        },
+        "icon": {
+          "type": "string",
+          "description": "Path to the feature's icon file relative to assets directory",
+          "pattern": "^icons/.*\\.(png|jpg|svg)$",
+          "examples": ["icons/features/ore_vein.png", "icons/features/herb_patch.png"]
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

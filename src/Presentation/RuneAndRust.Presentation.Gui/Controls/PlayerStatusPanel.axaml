@@ -1,0 +1,155 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:RuneAndRust.Presentation.Gui.ViewModels"
+             xmlns:ctrl="using:RuneAndRust.Presentation.Gui.Controls"
+             xmlns:conv="using:RuneAndRust.Presentation.Gui.Converters"
+             x:Class="RuneAndRust.Presentation.Gui.Controls.PlayerStatusPanel"
+             x:DataType="vm:PlayerStatusViewModel">
+    
+    <UserControl.Resources>
+        <conv:ModifierToStringConverter x:Key="ModifierToString" />
+        <conv:BoolToMutedConverter x:Key="BoolToMuted" />
+    </UserControl.Resources>
+    
+    <Design.DataContext>
+        <vm:PlayerStatusViewModel />
+    </Design.DataContext>
+    
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Spacing="12" Margin="8">
+            
+            <!-- Character Info Section -->
+            <Border Classes="panel" Padding="12">
+                <StackPanel Spacing="4">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="⚔" FontSize="18" />
+                        <TextBlock Text="{Binding PlayerName}"
+                                   Classes="heading" />
+                    </StackPanel>
+                    <TextBlock Classes="secondary">
+                        <Run Text="Level " />
+                        <Run Text="{Binding Level}" />
+                        <Run Text=" " />
+                        <Run Text="{Binding ClassName}" />
+                    </TextBlock>
+                </StackPanel>
+            </Border>
+            
+            <!-- Resource Bars Section -->
+            <Border Classes="panel" Padding="12">
+                <StackPanel Spacing="8">
+                    <ctrl:HealthBarControl Label="HP"
+                                           BarType="Health"
+                                           CurrentValue="{Binding CurrentHp}"
+                                           MaxValue="{Binding MaxHp}" />
+                    
+                    <ctrl:HealthBarControl Label="MP"
+                                           BarType="Mana"
+                                           CurrentValue="{Binding CurrentMp}"
+                                           MaxValue="{Binding MaxMp}" />
+                    
+                    <ctrl:HealthBarControl Label="XP"
+                                           BarType="Experience"
+                                           CurrentValue="{Binding CurrentXp}"
+                                           MaxValue="{Binding XpToNextLevel}" />
+                </StackPanel>
+            </Border>
+            
+            <!-- Stats Section -->
+            <Border Classes="panel" Padding="12">
+                <StackPanel>
+                    <TextBlock Text="STATS" Classes="secondary" FontWeight="SemiBold"
+                               Margin="0,0,0,8" />
+                    <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto">
+                        <!-- Row 0 -->
+                        <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal" Margin="0,2">
+                            <TextBlock Text="STR: " Classes="muted" Width="40" />
+                            <TextBlock Text="{Binding Strength}" Classes="body" Width="25" />
+                            <TextBlock Text="{Binding StrengthModifier, Converter={StaticResource ModifierToString}}"
+                                       Classes="stat-modifier" />
+                        </StackPanel>
+                        <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" Margin="0,2">
+                            <TextBlock Text="DEX: " Classes="muted" Width="40" />
+                            <TextBlock Text="{Binding Dexterity}" Classes="body" Width="25" />
+                            <TextBlock Text="{Binding DexterityModifier, Converter={StaticResource ModifierToString}}"
+                                       Classes="stat-modifier" />
+                        </StackPanel>
+                        
+                        <!-- Row 1 -->
+                        <StackPanel Grid.Row="1" Grid.Column="0" Orientation="Horizontal" Margin="0,2">
+                            <TextBlock Text="CON: " Classes="muted" Width="40" />
+                            <TextBlock Text="{Binding Constitution}" Classes="body" Width="25" />
+                            <TextBlock Text="{Binding ConstitutionModifier, Converter={StaticResource ModifierToString}}"
+                                       Classes="stat-modifier" />
+                        </StackPanel>
+                        <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Margin="0,2">
+                            <TextBlock Text="INT: " Classes="muted" Width="40" />
+                            <TextBlock Text="{Binding Intelligence}" Classes="body" Width="25" />
+                            <TextBlock Text="{Binding IntelligenceModifier, Converter={StaticResource ModifierToString}}"
+                                       Classes="stat-modifier" />
+                        </StackPanel>
+                        
+                        <!-- Row 2 -->
+                        <StackPanel Grid.Row="2" Grid.Column="0" Orientation="Horizontal" Margin="0,2">
+                            <TextBlock Text="WIS: " Classes="muted" Width="40" />
+                            <TextBlock Text="{Binding Wisdom}" Classes="body" Width="25" />
+                            <TextBlock Text="{Binding WisdomModifier, Converter={StaticResource ModifierToString}}"
+                                       Classes="stat-modifier" />
+                        </StackPanel>
+                        <StackPanel Grid.Row="2" Grid.Column="1" Orientation="Horizontal" Margin="0,2">
+                            <TextBlock Text="CHA: " Classes="muted" Width="40" />
+                            <TextBlock Text="{Binding Charisma}" Classes="body" Width="25" />
+                            <TextBlock Text="{Binding CharismaModifier, Converter={StaticResource ModifierToString}}"
+                                       Classes="stat-modifier" />
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
+            </Border>
+            
+            <!-- Equipment Section -->
+            <Border Classes="panel" Padding="12">
+                <StackPanel>
+                    <TextBlock Text="EQUIPPED" Classes="secondary" FontWeight="SemiBold"
+                               Margin="0,0,0,8" />
+                    <ItemsControl ItemsSource="{Binding Equipment}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid ColumnDefinitions="24,70,*" Margin="0,2">
+                                    <TextBlock Grid.Column="0" Text="{Binding SlotIcon}" />
+                                    <TextBlock Grid.Column="1" Text="{Binding SlotName}"
+                                               Classes="muted" />
+                                    <StackPanel Grid.Column="2" Orientation="Horizontal">
+                                        <TextBlock Text="{Binding ItemName}"
+                                                   Classes="body"
+                                                   Foreground="{Binding IsEmpty, Converter={StaticResource BoolToMuted}}" />
+                                        <TextBlock Text="{Binding ItemBonus}"
+                                                   Classes="stat-bonus"
+                                                   IsVisible="{Binding HasBonus}"
+                                                   Margin="4,0,0,0" />
+                                    </StackPanel>
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+            
+            <!-- Footer Section -->
+            <Border Classes="panel" Padding="12">
+                <StackPanel Spacing="4">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="💰" />
+                        <TextBlock Text="Gold:" Classes="muted" />
+                        <TextBlock Text="{Binding Gold}" Classes="gold-value" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="📍" />
+                        <TextBlock Text="Location:" Classes="muted" />
+                        <TextBlock Text="{Binding LocationName}" Classes="body" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+            
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

@@ -3,8 +3,11 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using RuneAndRust.Application.Interfaces;
 using RuneAndRust.Application.Services;
+using RuneAndRust.Domain.Definitions;
 using RuneAndRust.Domain.Entities;
 using RuneAndRust.Domain.Enums;
+using RuneAndRust.Domain.Interfaces;
+using RuneAndRust.Domain.Services;
 
 namespace RuneAndRust.Application.UnitTests.Services;
 
@@ -12,15 +15,61 @@ namespace RuneAndRust.Application.UnitTests.Services;
 public class GameSessionServiceTests
 {
     private Mock<IGameRepository> _repositoryMock = null!;
+    private Mock<IGameConfigurationProvider> _mockConfig = null!;
     private Mock<ILogger<GameSessionService>> _loggerMock = null!;
+    private Mock<ILogger<ItemEffectService>> _itemEffectLoggerMock = null!;
+    private Mock<IDiceService> _diceServiceMock = null!;
+    private ItemEffectService _itemEffectService = null!;
+    private AbilityService _abilityService = null!;
+    private ResourceService _resourceService = null!;
+    private EquipmentService _equipmentService = null!;
+    private ExperienceService _experienceService = null!;
+    private ProgressionService _progressionService = null!;
+    private Mock<ILootService> _lootServiceMock = null!;
     private GameSessionService _service = null!;
 
     [SetUp]
     public void SetUp()
     {
         _repositoryMock = new Mock<IGameRepository>();
+        _mockConfig = new Mock<IGameConfigurationProvider>();
         _loggerMock = new Mock<ILogger<GameSessionService>>();
-        _service = new GameSessionService(_repositoryMock.Object, _loggerMock.Object);
+        _itemEffectLoggerMock = new Mock<ILogger<ItemEffectService>>();
+        _diceServiceMock = new Mock<IDiceService>();
+        _itemEffectService = new ItemEffectService(_itemEffectLoggerMock.Object);
+
+        // Setup minimal config for AbilityService
+        _mockConfig.Setup(c => c.GetAbilities()).Returns(new List<AbilityDefinition>());
+        _mockConfig.Setup(c => c.GetResourceTypes()).Returns(new List<ResourceTypeDefinition>());
+
+        var mockResourceLogger = new Mock<ILogger<ResourceService>>();
+        _resourceService = new ResourceService(_mockConfig.Object, mockResourceLogger.Object);
+
+        var mockAbilityLogger = new Mock<ILogger<AbilityService>>();
+        _abilityService = new AbilityService(_mockConfig.Object, _resourceService, mockAbilityLogger.Object);
+
+        var mockEquipmentLogger = new Mock<ILogger<EquipmentService>>();
+        _equipmentService = new EquipmentService(mockEquipmentLogger.Object);
+
+        var mockExperienceLogger = new Mock<ILogger<ExperienceService>>();
+        _experienceService = new ExperienceService(mockExperienceLogger.Object);
+
+        var mockProgressionLogger = new Mock<ILogger<ProgressionService>>();
+        _progressionService = new ProgressionService(mockProgressionLogger.Object);
+
+        _lootServiceMock = new Mock<ILootService>();
+
+        _service = new GameSessionService(
+            _repositoryMock.Object,
+            _loggerMock.Object,
+            _itemEffectService,
+            _abilityService,
+            _resourceService,
+            _diceServiceMock.Object,
+            _equipmentService,
+            _experienceService,
+            _progressionService,
+            _lootServiceMock.Object);
     }
 
     [Test]

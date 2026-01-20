@@ -1,0 +1,106 @@
+{
+    "category": "examine",
+    "pools": {
+        "conditions": {
+            "id": "conditions",
+            "name": "Item Conditions",
+            "descriptors": [
+                {
+                    "id": "pristine",
+                    "text": "in pristine condition, as if newly forged",
+                    "weight": 10
+                },
+                {
+                    "id": "battle_worn",
+                    "text": "battle-worn but still serviceable",
+                    "weight": 25
+                },
+                {
+                    "id": "corroded",
+                    "text": "heavily corroded by time and neglect",
+                    "weight": 20
+                },
+                {
+                    "id": "masterfully_crafted",
+                    "text": "masterfully crafted with exceptional skill",
+                    "weight": 10
+                },
+                {
+                    "id": "crude_effective",
+                    "text": "crude but brutally effective",
+                    "weight": 20
+                },
+                {
+                    "id": "ancient_powerful",
+                    "text": "ancient and thrumming with latent power",
+                    "weight": 15,
+                    "tags": [
+                        "magic"
+                    ]
+                }
+            ]
+        },
+        "hidden_details": {
+            "id": "hidden_details",
+            "name": "Hidden Details",
+            "descriptors": [
+                {
+                    "id": "closer_inspection",
+                    "text": "Upon closer inspection, you notice",
+                    "weight": 30
+                },
+                {
+                    "id": "barely_visible",
+                    "text": "A barely visible etching reveals",
+                    "weight": 20
+                },
+                {
+                    "id": "concealed_compartment",
+                    "text": "Your fingers find a concealed compartment containing",
+                    "weight": 15
+                },
+                {
+                    "id": "faint_writing",
+                    "text": "Faint writing becomes visible in the right light",
+                    "weight": 20
+                },
+                {
+                    "id": "hidden_mechanism",
+                    "text": "A hidden mechanism clicks as you examine it",
+                    "weight": 15
+                }
+            ]
+        },
+        "lore_hints": {
+            "id": "lore_hints",
+            "name": "Lore Hints",
+            "descriptors": [
+                {
+                    "id": "bears_mark",
+                    "text": "It bears the mark of",
+                    "weight": 25
+                },
+                {
+                    "id": "style_suggests",
+                    "text": "The style suggests it originated from",
+                    "weight": 25
+                },
+                {
+                    "id": "craftsmanship_indicates",
+                    "text": "The craftsmanship indicates",
+                    "weight": 20
+                },
+                {
+                    "id": "legends_speak",
+                    "text": "Legends speak of items like this",
+                    "weight": 15
+                },
+                {
+                    "id": "ancient_script",
+                    "text": "Ancient script identifies this as",
+                    "weight": 15
+                }
+            ]
+        }
+    }
+}
