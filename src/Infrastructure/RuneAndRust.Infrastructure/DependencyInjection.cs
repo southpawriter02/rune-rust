@@ -127,6 +127,14 @@ public static class DependencyInjection
             configuration.GetSection("CraftingStations"));
         services.AddSingleton<ICraftingStationProvider, CraftingStationProvider>();
 
+        // Quality tier provider (v0.11.2c) - loads quality tier definitions from JSON config
+        services.AddSingleton<IQualityTierProvider>(sp =>
+        {
+            var tiersPath = Path.Combine(configPath, "quality-tiers.json");
+            var logger = sp.GetRequiredService<ILogger<QualityTierProvider>>();
+            return new QualityTierProvider(tiersPath, logger);
+        });
+
         return services;
     }
 
@@ -303,6 +311,11 @@ public static class DependencyInjection
         // Dependencies: IRecipeProvider, IRecipeService, ICraftingStationProvider, IResourceProvider,
         //               IDiceService, IGameEventLogger
         services.AddScoped<ICraftingService, CraftingService>();
+
+        // Quality determination service (v0.11.2c)
+        // Determines crafted item quality based on roll results and margin thresholds
+        // Note: IQualityTierProvider is registered in AddInfrastructure as it loads from JSON config
+        services.AddScoped<IQualityDeterminationService, QualityDeterminationService>();
 
         return services;
     }

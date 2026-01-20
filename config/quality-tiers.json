@@ -1,0 +1,41 @@
+{
+  "$schema": "./schemas/quality-tiers.schema.json",
+  "tiers": [
+    {
+      "quality": "Standard",
+      "displayName": "Standard",
+      "colorCode": "#FFFFFF",
+      "statMultiplier": 1.0,
+      "valueMultiplier": 1.0,
+      "minimumMargin": 0,
+      "requiresNatural20": false
+    },
+    {
+      "quality": "Fine",
+      "displayName": "Fine",
+      "colorCode": "#1EFF00",
+      "statMultiplier": 1.10,
+      "valueMultiplier": 1.5,
+      "minimumMargin": 5,
+      "requiresNatural20": false
+    },
+    {
+      "quality": "Masterwork",
+      "displayName": "Masterwork",
+      "colorCode": "#0070DD",
+      "statMultiplier": 1.25,
+      "valueMultiplier": 2.5,
+      "minimumMargin": 10,
+      "requiresNatural20": false
+    },
+    {
+      "quality": "Legendary",
+      "displayName": "Legendary",
+      "colorCode": "#FF8000",
+      "statMultiplier": 1.50,
+      "valueMultiplier": 5.0,
+      "minimumMargin": 0,
+      "requiresNatural20": true
+    }
+  ]
+}

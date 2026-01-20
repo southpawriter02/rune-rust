@@ -1,0 +1,75 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "quality-tiers.schema.json",
+  "title": "Quality Tiers Configuration",
+  "description": "Schema for crafted item quality tier definitions (v0.11.2c)",
+  "type": "object",
+  "required": ["tiers"],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Reference to this schema file"
+    },
+    "tiers": {
+      "type": "array",
+      "description": "Array of quality tier definitions",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/definitions/tierDefinition"
+      }
+    }
+  },
+  "definitions": {
+    "tierDefinition": {
+      "type": "object",
+      "description": "Definition for a single quality tier",
+      "required": ["quality"],
+      "properties": {
+        "quality": {
+          "type": "string",
+          "description": "The quality tier identifier",
+          "enum": ["Standard", "Fine", "Masterwork", "Legendary"]
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Human-readable display name for UI presentation",
+          "minLength": 1,
+          "maxLength": 50
+        },
+        "colorCode": {
+          "type": "string",
+          "description": "Hex color code for visual styling (e.g., '#FFFFFF')",
+          "pattern": "^#[0-9A-Fa-f]{6}$"
+        },
+        "statMultiplier": {
+          "type": "number",
+          "description": "Multiplier applied to item stats (1.0 = no change, 1.25 = +25%)",
+          "minimum": 0.1,
+          "maximum": 10.0,
+          "default": 1.0
+        },
+        "valueMultiplier": {
+          "type": "number",
+          "description": "Multiplier applied to item gold/currency value",
+          "minimum": 0.1,
+          "maximum": 100.0,
+          "default": 1.0
+        },
+        "minimumMargin": {
+          "type": "integer",
+          "description": "Minimum roll margin (roll - DC) required to achieve this tier",
+          "minimum": 0,
+          "maximum": 20,
+          "default": 0
+        },
+        "requiresNatural20": {
+          "type": "boolean",
+          "description": "Whether this tier can only be achieved by rolling a natural 20",
+          "default": false
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}
