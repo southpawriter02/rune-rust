@@ -1,0 +1,139 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Progression Configuration",
+    "description": "Schema for level progression and XP requirements. Defines how characters advance through levels, including XP curves, milestones, and stat bonuses.",
+    "type": "object",
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "Reference to the JSON schema file for validation"
+        },
+        "experienceTerminology": {
+            "type": "string",
+            "description": "Display name for experience points (e.g., 'XP', 'Experience', 'Essence')",
+            "default": "XP",
+            "minLength": 1,
+            "maxLength": 50
+        },
+        "levelTerminology": {
+            "type": "string",
+            "description": "Display name for character level (e.g., 'Level', 'Rank', 'Tier')",
+            "default": "Level",
+            "minLength": 1,
+            "maxLength": 50
+        },
+        "maxLevel": {
+            "type": "integer",
+            "description": "Maximum level a character can reach",
+            "minimum": 1,
+            "maximum": 100
+        },
+        "curveType": {
+            "type": "string",
+            "description": "The XP curve calculation method",
+            "enum": [
+                "Linear",
+                "Exponential",
+                "Custom"
+            ],
+            "default": "Linear"
+        },
+        "baseXpRequirement": {
+            "type": "integer",
+            "description": "Base XP needed for level calculations",
+            "minimum": 1
+        },
+        "xpMultiplier": {
+            "type": "number",
+            "description": "Multiplier used in Exponential curve calculations",
+            "minimum": 1.0,
+            "default": 1.5
+        },
+        "healOnLevelUp": {
+            "type": "boolean",
+            "description": "Whether characters are fully healed when they level up",
+            "default": true
+        },
+        "defaultStatBonuses": {
+            "$ref": "#/definitions/StatBonuses",
+            "description": "Stat bonuses applied at each level (unless overridden by milestone)"
+        },
+        "levels": {
+            "type": "array",
+            "description": "Level milestone definitions for significant levels",
+            "items": {
+                "$ref": "#/definitions/LevelMilestone"
+            }
+        }
+    },
+    "required": [
+        "maxLevel",
+        "baseXpRequirement"
+    ],
+    "additionalProperties": false,
+    "definitions": {
+        "StatBonuses": {
+            "type": "object",
+            "description": "Stat bonuses applied when gaining a level",
+            "properties": {
+                "maxHealth": {
+                    "type": "integer",
+                    "description": "Maximum health increase per level",
+                    "minimum": 0,
+                    "default": 0
+                },
+                "attack": {
+                    "type": "integer",
+                    "description": "Attack stat increase per level",
+                    "minimum": 0,
+                    "default": 0
+                },
+                "defense": {
+                    "type": "integer",
+                    "description": "Defense stat increase per level",
+                    "minimum": 0,
+                    "default": 0
+                }
+            },
+            "additionalProperties": false
+        },
+        "LevelMilestone": {
+            "type": "object",
+            "description": "A milestone at a specific level with optional title and rewards",
+            "properties": {
+                "level": {
+                    "type": "integer",
+                    "description": "The level number this milestone applies to",
+                    "minimum": 1
+                },
+                "title": {
+                    "type": "string",
+                    "description": "Optional title earned at this level (e.g., 'Veteran', 'Champion')",
+                    "minLength": 1,
+                    "maxLength": 100
+                },
+                "customRewards": {
+                    "type": "array",
+                    "description": "List of custom rewards or unlocks at this level",
+                    "items": {
+                        "type": "string",
+                        "minLength": 1
+                    }
+                },
+                "statOverrides": {
+                    "$ref": "#/definitions/StatBonuses",
+                    "description": "Optional stat bonuses that override defaults for this level"
+                },
+                "xpRequired": {
+                    "type": "integer",
+                    "description": "Custom XP required to reach this level (used with Custom curve type)",
+                    "minimum": 0
+                }
+            },
+            "required": [
+                "level"
+            ],
+            "additionalProperties": false
+        }
+    }
+}
