@@ -1,0 +1,263 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Item Configuration",
+    "description": "Schema for general item definitions. Defines all items that are not weapons or armor, including consumables, materials, quest items, keys, and miscellaneous goods.",
+    "type": "object",
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "Reference to the JSON schema file for validation"
+        },
+        "version": {
+            "type": "string",
+            "description": "Optional version identifier for the configuration file",
+            "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+        },
+        "items": {
+            "type": "array",
+            "description": "List of item definitions",
+            "items": {
+                "$ref": "#/definitions/ItemDefinition"
+            },
+            "minItems": 1
+        }
+    },
+    "required": [
+        "items"
+    ],
+    "additionalProperties": false,
+    "definitions": {
+        "ItemDefinition": {
+            "type": "object",
+            "description": "A general item that can be held in inventory",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Unique identifier for the item (lowercase with underscores)",
+                    "pattern": "^[a-z][a-z0-9_]*$",
+                    "minLength": 1,
+                    "maxLength": 50
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Display name shown to players",
+                    "minLength": 1,
+                    "maxLength": 100
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Full description of the item",
+                    "minLength": 1
+                },
+                "category": {
+                    "type": "string",
+                    "description": "The type category of item",
+                    "enum": [
+                        "Consumable",
+                        "Material",
+                        "QuestItem",
+                        "Key",
+                        "Miscellaneous"
+                    ]
+                },
+                "rarity": {
+                    "type": "string",
+                    "description": "Rarity tier affecting drop rates and value",
+                    "enum": [
+                        "Common",
+                        "Uncommon",
+                        "Rare",
+                        "Epic",
+                        "Legendary"
+                    ],
+                    "default": "Common"
+                },
+                "stackLimit": {
+                    "type": "integer",
+                    "description": "Maximum number of this item per inventory stack",
+                    "minimum": 1,
+                    "maximum": 999,
+                    "default": 1
+                },
+                "weight": {
+                    "type": "number",
+                    "description": "Weight per unit for encumbrance calculation",
+                    "minimum": 0,
+                    "default": 0
+                },
+                "vendorPrices": {
+                    "$ref": "#/definitions/VendorPrices"
+                },
+                "consumableEffect": {
+                    "$ref": "#/definitions/ConsumableEffect"
+                },
+                "useRequirements": {
+                    "$ref": "#/definitions/UseRequirement"
+                },
+                "isQuestItem": {
+                    "type": "boolean",
+                    "description": "Whether this item is required for quest progression",
+                    "default": false
+                },
+                "isSellable": {
+                    "type": "boolean",
+                    "description": "Whether this item can be sold to vendors",
+                    "default": true
+                },
+                "tags": {
+                    "type": "array",
+                    "description": "Optional tags for categorization and filtering",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "sortOrder": {
+                    "type": "integer",
+                    "description": "Order for display sorting (lower values first)",
+                    "minimum": 0,
+                    "default": 0
+                }
+            },
+            "required": [
+                "id",
+                "name",
+                "description",
+                "category"
+            ],
+            "additionalProperties": false
+        },
+        "ConsumableEffect": {
+            "type": "object",
+            "description": "The effect triggered when a consumable item is used",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "description": "The type of effect this consumable provides",
+                    "enum": [
+                        "Heal",
+                        "RestoreMana",
+                        "RestoreStamina",
+                        "Buff",
+                        "Cure",
+                        "Damage",
+                        "Utility"
+                    ]
+                },
+                "value": {
+                    "type": "integer",
+                    "description": "Numeric value for the effect (HP restored, damage dealt, etc.)",
+                    "minimum": 0
+                },
+                "percentage": {
+                    "type": "number",
+                    "description": "Percentage-based effect (0.0 to 1.0 for 0% to 100%)",
+                    "minimum": 0,
+                    "maximum": 1
+                },
+                "duration": {
+                    "type": "integer",
+                    "description": "Duration in turns for buff effects",
+                    "minimum": 1
+                },
+                "statusEffect": {
+                    "type": "string",
+                    "description": "Reference to status effect ID for Buff type",
+                    "pattern": "^[a-z][a-z0-9_-]*$"
+                },
+                "cleanseType": {
+                    "type": "string",
+                    "description": "Type of cleansing for Cure type effects",
+                    "enum": [
+                        "Specific",
+                        "AllNegative",
+                        "Magical",
+                        "Elemental"
+                    ]
+                },
+                "specificEffect": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "description": "Specific status effect ID to cleanse (for Specific cleanseType)",
+                    "pattern": "^[a-z][a-z0-9_-]*$"
+                }
+            },
+            "required": [
+                "type"
+            ],
+            "additionalProperties": false
+        },
+        "UseRequirement": {
+            "type": "object",
+            "description": "Requirements that must be met to use this item",
+            "properties": {
+                "minLevel": {
+                    "type": "integer",
+                    "description": "Minimum character level required to use",
+                    "minimum": 1
+                },
+                "classIds": {
+                    "type": "array",
+                    "description": "List of class IDs that can use this item (empty = all classes)",
+                    "items": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9_-]*$"
+                    }
+                },
+                "statRequirements": {
+                    "$ref": "#/definitions/StatRequirements"
+                }
+            },
+            "additionalProperties": false
+        },
+        "VendorPrices": {
+            "type": "object",
+            "description": "Prices for buying and selling this item at vendors",
+            "properties": {
+                "buyPrice": {
+                    "type": "integer",
+                    "description": "Price the player pays to buy this item",
+                    "minimum": 0
+                },
+                "sellPrice": {
+                    "type": "integer",
+                    "description": "Price the player receives when selling this item",
+                    "minimum": 0
+                }
+            },
+            "required": [
+                "buyPrice",
+                "sellPrice"
+            ],
+            "additionalProperties": false
+        },
+        "StatRequirements": {
+            "type": "object",
+            "description": "Minimum stat requirements for using the item",
+            "properties": {
+                "minMight": {
+                    "type": "integer",
+                    "description": "Minimum Might required to use"
+                },
+                "minFortitude": {
+                    "type": "integer",
+                    "description": "Minimum Fortitude required to use"
+                },
+                "minWill": {
+                    "type": "integer",
+                    "description": "Minimum Will required to use"
+                },
+                "minWits": {
+                    "type": "integer",
+                    "description": "Minimum Wits required to use"
+                },
+                "minFinesse": {
+                    "type": "integer",
+                    "description": "Minimum Finesse required to use"
+                }
+            },
+            "additionalProperties": false
+        }
+    }
+}

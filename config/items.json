@@ -1,0 +1,295 @@
+{
+    "$schema": "./schemas/items.schema.json",
+    "items": [
+        {
+            "id": "health_potion",
+            "name": "Health Potion",
+            "description": "A red potion that restores health when consumed.",
+            "category": "Consumable",
+            "rarity": "Common",
+            "stackLimit": 20,
+            "weight": 0.5,
+            "vendorPrices": {
+                "buyPrice": 50,
+                "sellPrice": 12
+            },
+            "consumableEffect": {
+                "type": "Heal",
+                "value": 50
+            }
+        },
+        {
+            "id": "greater_health_potion",
+            "name": "Greater Health Potion",
+            "description": "A larger red potion that restores significant health.",
+            "category": "Consumable",
+            "rarity": "Uncommon",
+            "stackLimit": 10,
+            "weight": 0.5,
+            "vendorPrices": {
+                "buyPrice": 150,
+                "sellPrice": 37
+            },
+            "consumableEffect": {
+                "type": "Heal",
+                "value": 150
+            }
+        },
+        {
+            "id": "mana_potion",
+            "name": "Mana Potion",
+            "description": "A blue potion that restores mana when consumed.",
+            "category": "Consumable",
+            "rarity": "Common",
+            "stackLimit": 20,
+            "weight": 0.5,
+            "vendorPrices": {
+                "buyPrice": 75,
+                "sellPrice": 18
+            },
+            "consumableEffect": {
+                "type": "RestoreMana",
+                "value": 40
+            }
+        },
+        {
+            "id": "antidote",
+            "name": "Antidote",
+            "description": "Cures poison afflictions.",
+            "category": "Consumable",
+            "rarity": "Common",
+            "stackLimit": 10,
+            "weight": 0.3,
+            "vendorPrices": {
+                "buyPrice": 30,
+                "sellPrice": 7
+            },
+            "consumableEffect": {
+                "type": "Cure",
+                "cleanseType": "Specific",
+                "specificEffect": "poisoned"
+            }
+        },
+        {
+            "id": "panacea",
+            "name": "Panacea",
+            "description": "A miracle cure for all ailments.",
+            "category": "Consumable",
+            "rarity": "Rare",
+            "stackLimit": 5,
+            "weight": 0.5,
+            "vendorPrices": {
+                "buyPrice": 500,
+                "sellPrice": 125
+            },
+            "consumableEffect": {
+                "type": "Cure",
+                "cleanseType": "AllNegative",
+                "specificEffect": null
+            }
+        },
+        {
+            "id": "strength_elixir",
+            "name": "Elixir of Strength",
+            "description": "Temporarily increases physical power.",
+            "category": "Consumable",
+            "rarity": "Uncommon",
+            "stackLimit": 10,
+            "weight": 0.5,
+            "vendorPrices": {
+                "buyPrice": 200,
+                "sellPrice": 50
+            },
+            "consumableEffect": {
+                "type": "Buff",
+                "statusEffect": "strength_boost",
+                "duration": 10
+            }
+        },
+        {
+            "id": "iron_ore",
+            "name": "Iron Ore",
+            "description": "Raw iron ore that can be smelted into iron ingots.",
+            "category": "Material",
+            "rarity": "Common",
+            "stackLimit": 99,
+            "weight": 2.0,
+            "vendorPrices": {
+                "buyPrice": 5,
+                "sellPrice": 2
+            },
+            "tags": [
+                "metal",
+                "crafting",
+                "smithing"
+            ]
+        },
+        {
+            "id": "leather_strip",
+            "name": "Leather Strip",
+            "description": "A strip of tanned leather used in crafting.",
+            "category": "Material",
+            "rarity": "Common",
+            "stackLimit": 99,
+            "weight": 0.2,
+            "vendorPrices": {
+                "buyPrice": 3,
+                "sellPrice": 1
+            },
+            "tags": [
+                "leather",
+                "crafting"
+            ]
+        },
+        {
+            "id": "magic_dust",
+            "name": "Magic Dust",
+            "description": "Shimmering dust used for enchanting items.",
+            "category": "Material",
+            "rarity": "Uncommon",
+            "stackLimit": 50,
+            "weight": 0.1,
+            "vendorPrices": {
+                "buyPrice": 25,
+                "sellPrice": 6
+            },
+            "tags": [
+                "magic",
+                "crafting",
+                "enchanting"
+            ]
+        },
+        {
+            "id": "dragon_scale",
+            "name": "Dragon Scale",
+            "description": "A scale from a slain dragon. Extremely valuable for crafting.",
+            "category": "Material",
+            "rarity": "Epic",
+            "stackLimit": 20,
+            "weight": 1.0,
+            "vendorPrices": {
+                "buyPrice": 1000,
+                "sellPrice": 250
+            },
+            "tags": [
+                "dragon",
+                "crafting",
+                "rare"
+            ]
+        },
+        {
+            "id": "ancient_tome",
+            "name": "Ancient Tome",
+            "description": "A dusty book containing forbidden knowledge. The wizard seeks this.",
+            "category": "QuestItem",
+            "rarity": "Rare",
+            "stackLimit": 1,
+            "weight": 1.0,
+            "isQuestItem": true,
+            "isSellable": false,
+            "tags": [
+                "quest",
+                "wizard"
+            ]
+        },
+        {
+            "id": "royal_seal",
+            "name": "Royal Seal",
+            "description": "An official seal of the kingdom. Proof of royal authority.",
+            "category": "QuestItem",
+            "rarity": "Rare",
+            "stackLimit": 1,
+            "weight": 0.5,
+            "isQuestItem": true,
+            "isSellable": false,
+            "tags": [
+                "quest",
+                "kingdom"
+            ]
+        },
+        {
+            "id": "dungeon_key_01",
+            "name": "Iron Dungeon Key",
+            "description": "A rusty iron key that opens the first dungeon door.",
+            "category": "Key",
+            "rarity": "Common",
+            "stackLimit": 1,
+            "weight": 0.1,
+            "isSellable": false,
+            "tags": [
+                "dungeon",
+                "floor1"
+            ]
+        },
+        {
+            "id": "master_key",
+            "name": "Master Key",
+            "description": "A master key that opens many common locks.",
+            "category": "Key",
+            "rarity": "Rare",
+            "stackLimit": 1,
+            "weight": 0.1,
+            "isSellable": false,
+            "tags": [
+                "universal"
+            ]
+        },
+        {
+            "id": "torch",
+            "name": "Torch",
+            "description": "A wooden torch that provides light in dark areas.",
+            "category": "Miscellaneous",
+            "rarity": "Common",
+            "stackLimit": 10,
+            "weight": 0.5,
+            "vendorPrices": {
+                "buyPrice": 5,
+                "sellPrice": 1
+            },
+            "tags": [
+                "light",
+                "utility"
+            ]
+        },
+        {
+            "id": "rope",
+            "name": "Rope",
+            "description": "A length of sturdy rope. Useful for climbing and tying.",
+            "category": "Miscellaneous",
+            "rarity": "Common",
+            "stackLimit": 5,
+            "weight": 1.0,
+            "vendorPrices": {
+                "buyPrice": 10,
+                "sellPrice": 2
+            },
+            "tags": [
+                "utility",
+                "climbing"
+            ]
+        },
+        {
+            "id": "lockpick",
+            "name": "Lockpick",
+            "description": "A set of lockpicks for opening locks without keys.",
+            "category": "Miscellaneous",
+            "rarity": "Common",
+            "stackLimit": 20,
+            "weight": 0.1,
+            "vendorPrices": {
+                "buyPrice": 15,
+                "sellPrice": 3
+            },
+            "useRequirements": {
+                "minLevel": 1,
+                "statRequirements": {
+                    "minFinesse": 8
+                }
+            },
+            "tags": [
+                "thief",
+                "utility"
+            ]
+        }
+    ]
+}
