@@ -1,0 +1,320 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Status Effects Configuration",
+    "description": "Schema for buff/debuff status effect definitions. Defines all status effects including duration, stacking, stat modifiers, and trigger conditions.",
+    "type": "object",
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "Reference to the JSON schema file for validation"
+        },
+        "version": {
+            "type": "string",
+            "description": "Optional version identifier for the configuration file",
+            "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+        },
+        "effects": {
+            "type": "array",
+            "description": "List of status effect definitions",
+            "items": {
+                "$ref": "#/definitions/StatusEffect"
+            },
+            "minItems": 1
+        }
+    },
+    "required": [
+        "effects"
+    ],
+    "additionalProperties": false,
+    "definitions": {
+        "StatusEffect": {
+            "type": "object",
+            "description": "A status effect that can be applied to characters (buff, debuff, or environmental)",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Unique identifier for the status effect (lowercase, kebab-case)",
+                    "pattern": "^[a-z][a-z0-9-]*$",
+                    "minLength": 1,
+                    "maxLength": 50
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Display name shown to players",
+                    "minLength": 1,
+                    "maxLength": 100
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Full description of the status effect",
+                    "minLength": 1
+                },
+                "category": {
+                    "type": "string",
+                    "description": "The category of status effect",
+                    "enum": [
+                        "Buff",
+                        "Debuff",
+                        "Environmental"
+                    ]
+                },
+                "durationType": {
+                    "type": "string",
+                    "description": "How the effect duration is tracked",
+                    "enum": [
+                        "Turns",
+                        "Permanent",
+                        "Triggered",
+                        "ResourceBased"
+                    ],
+                    "default": "Turns"
+                },
+                "baseDuration": {
+                    "type": "integer",
+                    "description": "Duration in turns (required for Turns duration type)",
+                    "minimum": 0,
+                    "default": 0
+                },
+                "stackingRule": {
+                    "type": "string",
+                    "description": "How the effect behaves when reapplied",
+                    "enum": [
+                        "None",
+                        "RefreshDuration",
+                        "StackIntensity",
+                        "StackDuration",
+                        "Block"
+                    ],
+                    "default": "None"
+                },
+                "maxStacks": {
+                    "type": "integer",
+                    "description": "Maximum number of stacks (for StackIntensity/StackDuration)",
+                    "minimum": 1,
+                    "default": 1
+                },
+                "damagePerTurn": {
+                    "type": "integer",
+                    "description": "Damage dealt each turn (for DoT effects)",
+                    "minimum": 0
+                },
+                "healingPerTurn": {
+                    "type": "integer",
+                    "description": "Healing received each turn (for HoT effects)",
+                    "minimum": 0
+                },
+                "damageType": {
+                    "type": "string",
+                    "description": "Type of damage dealt (references damage-types configuration)",
+                    "pattern": "^[a-z][a-z0-9-]*$"
+                },
+                "statModifiers": {
+                    "type": "array",
+                    "description": "Stat modifications applied while effect is active",
+                    "items": {
+                        "$ref": "#/definitions/StatModifier"
+                    }
+                },
+                "triggerConditions": {
+                    "type": "array",
+                    "description": "Conditions that trigger additional effects",
+                    "items": {
+                        "$ref": "#/definitions/TriggerCondition"
+                    }
+                },
+                "cleansableBy": {
+                    "type": "array",
+                    "description": "Categories of cleanse abilities that can remove this effect",
+                    "items": {
+                        "type": "string",
+                        "enum": [
+                            "Magic",
+                            "Poison",
+                            "Curse",
+                            "Disease",
+                            "Physical",
+                            "All"
+                        ]
+                    }
+                },
+                "immunities": {
+                    "type": "array",
+                    "description": "Effects or categories this effect grants immunity to",
+                    "items": {
+                        "$ref": "#/definitions/EffectImmunity"
+                    }
+                },
+                "preventsActions": {
+                    "type": "boolean",
+                    "description": "Whether the effect prevents all actions",
+                    "default": false
+                },
+                "preventsMovement": {
+                    "type": "boolean",
+                    "description": "Whether the effect prevents movement",
+                    "default": false
+                },
+                "preventsAttacking": {
+                    "type": "boolean",
+                    "description": "Whether the effect prevents attacking",
+                    "default": false
+                },
+                "preventsAbilities": {
+                    "type": "boolean",
+                    "description": "Whether the effect prevents using abilities",
+                    "default": false
+                },
+                "resourcePool": {
+                    "type": "integer",
+                    "description": "Resource pool amount (for ResourceBased duration type)",
+                    "minimum": 0
+                },
+                "removalTrigger": {
+                    "type": "string",
+                    "description": "Trigger that removes the effect (for Triggered/Permanent duration types)",
+                    "minLength": 1
+                },
+                "vulnerableToDamageTypes": {
+                    "type": "array",
+                    "description": "Damage types the target becomes vulnerable to",
+                    "items": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9-]*$"
+                    }
+                },
+                "resistsDamageTypes": {
+                    "type": "array",
+                    "description": "Damage types the target gains resistance to",
+                    "items": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9-]*$"
+                    }
+                },
+                "iconId": {
+                    "type": "string",
+                    "description": "Icon identifier for UI display",
+                    "pattern": "^[a-z][a-z0-9-]*$"
+                },
+                "sortOrder": {
+                    "type": "integer",
+                    "description": "Order for display sorting (lower values first)",
+                    "minimum": 0,
+                    "default": 0
+                }
+            },
+            "required": [
+                "id",
+                "name",
+                "description",
+                "category"
+            ],
+            "additionalProperties": false
+        },
+        "StatModifier": {
+            "type": "object",
+            "description": "A stat modification applied while the effect is active",
+            "properties": {
+                "statId": {
+                    "type": "string",
+                    "description": "The stat being modified",
+                    "enum": [
+                        "attack",
+                        "defense",
+                        "speed",
+                        "maxHealth",
+                        "might",
+                        "fortitude",
+                        "will",
+                        "wits",
+                        "finesse"
+                    ]
+                },
+                "modifierType": {
+                    "type": "string",
+                    "description": "Whether the modifier is a flat value or percentage",
+                    "enum": [
+                        "Flat",
+                        "Percentage"
+                    ]
+                },
+                "value": {
+                    "type": "number",
+                    "description": "The modifier value (negative for reductions). For Percentage type, use decimal (0.25 = 25%, -0.5 = -50%)"
+                }
+            },
+            "required": [
+                "statId",
+                "modifierType",
+                "value"
+            ],
+            "additionalProperties": false
+        },
+        "TriggerCondition": {
+            "type": "object",
+            "description": "A condition that triggers additional effects or actions",
+            "properties": {
+                "trigger": {
+                    "type": "string",
+                    "description": "The event that triggers this condition",
+                    "enum": [
+                        "OnHit",
+                        "OnDamage",
+                        "OnTurnStart",
+                        "OnTurnEnd",
+                        "OnAbilityUse",
+                        "OnMove",
+                        "OnHeal",
+                        "OnDeath"
+                    ]
+                },
+                "effectId": {
+                    "type": "string",
+                    "description": "Status effect to apply when triggered",
+                    "pattern": "^[a-z][a-z0-9-]*$"
+                },
+                "damageAmount": {
+                    "type": "integer",
+                    "description": "Damage to deal when triggered",
+                    "minimum": 0
+                },
+                "chance": {
+                    "type": "number",
+                    "description": "Probability of the trigger activating (0.0 to 1.0)",
+                    "minimum": 0.0,
+                    "maximum": 1.0,
+                    "default": 1.0
+                }
+            },
+            "required": [
+                "trigger"
+            ],
+            "additionalProperties": false
+        },
+        "EffectImmunity": {
+            "type": "object",
+            "description": "Immunity to a specific effect or category of effects",
+            "properties": {
+                "effectId": {
+                    "type": "string",
+                    "description": "Specific status effect ID to grant immunity to",
+                    "pattern": "^[a-z][a-z0-9-]*$"
+                },
+                "category": {
+                    "type": "string",
+                    "description": "Category of effects to grant immunity to",
+                    "enum": [
+                        "Buff",
+                        "Debuff",
+                        "Environmental",
+                        "Poison",
+                        "Curse",
+                        "Disease",
+                        "Physical",
+                        "Magic"
+                    ]
+                }
+            },
+            "additionalProperties": false
+        }
+    }
+}

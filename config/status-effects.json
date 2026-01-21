@@ -1,5 +1,5 @@
 {
-    "$schema": "./status-effects.schema.json",
+    "$schema": "./schemas/status-effects.schema.json",
     "effects": [
         {
             "id": "bleeding",
