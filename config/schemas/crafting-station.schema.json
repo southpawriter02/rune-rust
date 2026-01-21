@@ -1,0 +1,142 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "crafting-station.schema.json",
+    "title": "Crafting Station Configuration",
+    "description": "Configuration for crafting station menu display settings",
+    "type": "object",
+    "properties": {
+        "menuWidth": {
+            "type": "integer",
+            "description": "Width of the crafting station menu",
+            "minimum": 50,
+            "maximum": 120,
+            "default": 70
+        },
+        "menuHeight": {
+            "type": "integer",
+            "description": "Height of the crafting station menu",
+            "minimum": 15,
+            "maximum": 40,
+            "default": 20
+        },
+        "recipeListWidth": {
+            "type": "integer",
+            "description": "Width of the recipe list panel",
+            "minimum": 25,
+            "maximum": 50,
+            "default": 35
+        },
+        "materialPanelWidth": {
+            "type": "integer",
+            "description": "Width of the material panel",
+            "minimum": 20,
+            "maximum": 40,
+            "default": 30
+        },
+        "maxVisibleRecipes": {
+            "type": "integer",
+            "description": "Maximum visible recipes in the list",
+            "minimum": 3,
+            "maximum": 15,
+            "default": 8
+        },
+        "maxMaterialsVisible": {
+            "type": "integer",
+            "description": "Maximum visible materials in the panel",
+            "minimum": 3,
+            "maximum": 10,
+            "default": 6
+        },
+        "progressBarWidth": {
+            "type": "integer",
+            "description": "Width of the progress bar",
+            "minimum": 10,
+            "maximum": 50,
+            "default": 30
+        },
+        "progressFilledChar": {
+            "type": "string",
+            "description": "Character for filled progress portion",
+            "minLength": 1,
+            "maxLength": 1,
+            "default": "#"
+        },
+        "progressEmptyChar": {
+            "type": "string",
+            "description": "Character for empty progress portion",
+            "minLength": 1,
+            "maxLength": 1,
+            "default": "."
+        },
+        "progressAnimationSteps": {
+            "type": "integer",
+            "description": "Number of animation steps",
+            "minimum": 1,
+            "maximum": 50,
+            "default": 10
+        },
+        "progressAnimationDelay": {
+            "type": "integer",
+            "description": "Delay between animation steps in milliseconds",
+            "minimum": 10,
+            "maximum": 500,
+            "default": 100
+        },
+        "headerColor": {
+            "$ref": "#/$defs/consoleColor",
+            "default": "Yellow"
+        },
+        "craftableColor": {
+            "$ref": "#/$defs/consoleColor",
+            "default": "Green"
+        },
+        "notCraftableColor": {
+            "$ref": "#/$defs/consoleColor",
+            "default": "Red"
+        },
+        "selectionColor": {
+            "$ref": "#/$defs/consoleColor",
+            "default": "Cyan"
+        },
+        "sufficientMaterialColor": {
+            "$ref": "#/$defs/consoleColor",
+            "default": "Green"
+        },
+        "missingMaterialColor": {
+            "$ref": "#/$defs/consoleColor",
+            "default": "Red"
+        },
+        "progressBarColor": {
+            "$ref": "#/$defs/consoleColor",
+            "default": "Cyan"
+        },
+        "completionColor": {
+            "$ref": "#/$defs/consoleColor",
+            "default": "Green"
+        }
+    },
+    "$defs": {
+        "consoleColor": {
+            "type": "string",
+            "enum": [
+                "Black",
+                "DarkBlue",
+                "DarkGreen",
+                "DarkCyan",
+                "DarkRed",
+                "DarkMagenta",
+                "DarkYellow",
+                "Gray",
+                "DarkGray",
+                "Blue",
+                "Green",
+                "Cyan",
+                "Red",
+                "Magenta",
+                "Yellow",
+                "White"
+            ]
+        }
+    },
+    "additionalProperties": false
+}

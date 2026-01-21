@@ -1,0 +1,22 @@
+{
+    "$schema": "./schemas/crafting-station.schema.json",
+    "menuWidth": 70,
+    "menuHeight": 20,
+    "recipeListWidth": 35,
+    "materialPanelWidth": 30,
+    "maxVisibleRecipes": 8,
+    "maxMaterialsVisible": 6,
+    "progressBarWidth": 30,
+    "progressFilledChar": "#",
+    "progressEmptyChar": ".",
+    "progressAnimationSteps": 10,
+    "progressAnimationDelay": 100,
+    "headerColor": "Yellow",
+    "craftableColor": "Green",
+    "notCraftableColor": "Red",
+    "selectionColor": "Cyan",
+    "sufficientMaterialColor": "Green",
+    "missingMaterialColor": "Red",
+    "progressBarColor": "Cyan",
+    "completionColor": "Green"
+}
