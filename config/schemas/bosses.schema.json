@@ -1,19 +1,27 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "$id": "bosses.schema.json",
-    "title": "Boss Definitions Configuration",
-    "description": "Configuration for boss encounters with multi-phase mechanics, summoning, and unique loot tables.",
+    "title": "Boss Configuration",
+    "description": "Schema for boss encounter definitions including multi-phase configurations, health thresholds, ability rotations, enrage mechanics, summon configurations, vulnerability windows, and boss-specific dialogue/announcements. Enables full customization of boss encounters without code changes.",
     "type": "object",
     "properties": {
         "$schema": {
             "type": "string",
-            "description": "Reference to this schema file"
+            "description": "Reference to the JSON schema file for validation"
+        },
+        "version": {
+            "type": "string",
+            "description": "Optional version identifier for the configuration file",
+            "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+        },
+        "description": {
+            "type": "string",
+            "description": "Optional file-level description"
         },
         "bosses": {
             "type": "array",
-            "description": "List of boss definitions",
+            "description": "List of boss encounter definitions",
             "items": {
-                "$ref": "#/definitions/boss"
+                "$ref": "#/definitions/BossDefinition"
             },
             "minItems": 1
         }
@@ -21,229 +29,454 @@
     "required": [
         "bosses"
     ],
+    "additionalProperties": false,
     "definitions": {
-        "boss": {
+        "BossDefinition": {
             "type": "object",
-            "description": "A boss definition with phases, loot, and unique mechanics",
+            "description": "A boss encounter definition with phases, abilities, and special mechanics. Bosses extend base monster definitions with multi-phase combat, enrage mechanics, and strategic vulnerability windows.",
             "properties": {
-                "bossId": {
+                "id": {
                     "type": "string",
-                    "description": "Unique identifier for the boss (lowercase, kebab-case)",
-                    "pattern": "^[a-z][a-z0-9-]*$",
-                    "examples": ["skeleton-king", "volcanic-wyrm", "shadow-lich"]
+                    "description": "Unique identifier for the boss (lowercase with hyphens allowed). Used as reference key in encounter systems.",
+                    "pattern": "^[a-z][a-z0-9_-]*$",
+                    "minLength": 1,
+                    "maxLength": 50
                 },
                 "name": {
                     "type": "string",
-                    "description": "Display name of the boss",
+                    "description": "Display name shown to players during encounters.",
                     "minLength": 1,
-                    "maxLength": 50,
-                    "examples": ["The Skeleton King", "Volcanic Wyrm", "Shadow Lich"]
+                    "maxLength": 100
+                },
+                "title": {
+                    "type": "string",
+                    "description": "Optional title displayed below name (e.g., 'Lord of Bones', 'Mistress of Darkness').",
+                    "maxLength": 100
                 },
                 "description": {
                     "type": "string",
-                    "description": "Background lore and flavor text for the boss",
-                    "minLength": 1,
-                    "maxLength": 500
+                    "description": "Lore or flavor text describing the boss. Shown in codex entries and encounter previews."
                 },
-                "baseMonsterDefinitionId": {
+                "baseMonsterId": {
                     "type": "string",
-                    "description": "Reference to the base monster definition for stats",
-                    "pattern": "^[a-z][a-z0-9-]*$",
-                    "examples": ["skeleton-elite", "dragon-base", "lich-base"]
+                    "description": "Reference to base monster definition in monsters.json. Provides base stats, abilities, and appearance.",
+                    "pattern": "^[a-z][a-z0-9_]*$"
                 },
-                "titleText": {
-                    "type": ["string", "null"],
-                    "description": "Dramatic subtitle shown during boss introduction",
-                    "maxLength": 100,
-                    "examples": ["Lord of the Undead Crypt", "Ancient Guardian of the Flame"]
+                "baseHealth": {
+                    "type": "integer",
+                    "description": "Override health value (replaces monster base health). Typically higher than standard monsters.",
+                    "minimum": 1
                 },
                 "phases": {
                     "type": "array",
-                    "description": "Combat phases with health thresholds and unique mechanics",
+                    "description": "Boss phases in order of activation by health threshold. First phase should have healthThresholdPercent: 100.",
                     "items": {
-                        "$ref": "#/definitions/bossPhase"
+                        "$ref": "#/definitions/BossPhase"
                     },
                     "minItems": 1
                 },
-                "loot": {
+                "enrage": {
+                    "$ref": "#/definitions/EnrageConfig",
+                    "description": "Optional enrage mechanic configuration. Triggers stat boosts and additional abilities."
+                },
+                "summons": {
                     "type": "array",
-                    "description": "Loot table entries with drop chances",
+                    "description": "Minion summoning configurations. Defines what monsters to summon and when.",
                     "items": {
-                        "$ref": "#/definitions/lootEntry"
+                        "$ref": "#/definitions/SummonConfig"
                     }
+                },
+                "vulnerabilityWindows": {
+                    "type": "array",
+                    "description": "Vulnerability window configurations. Defines periods when boss takes increased damage.",
+                    "items": {
+                        "$ref": "#/definitions/VulnerabilityWindow"
+                    }
+                },
+                "announcements": {
+                    "type": "array",
+                    "description": "Boss dialogue/announcement configurations. Displayed during key encounter moments.",
+                    "items": {
+                        "$ref": "#/definitions/BossAnnouncement"
+                    }
+                },
+                "uniqueLootTableId": {
+                    "type": "string",
+                    "description": "Reference to unique loot table in loot-tables.json. Boss-specific drops.",
+                    "pattern": "^[a-z][a-z0-9_-]*$"
+                },
+                "musicTrackId": {
+                    "type": "string",
+                    "description": "Music track to play during encounter. References audio system.",
+                    "pattern": "^[a-z][a-z0-9_-]*$"
+                },
+                "arenaRequirements": {
+                    "type": "object",
+                    "description": "Arena/room requirements for the boss encounter. Ensures adequate space for mechanics.",
+                    "properties": {
+                        "minWidth": {
+                            "type": "integer",
+                            "description": "Minimum arena width in tiles",
+                            "minimum": 1
+                        },
+                        "minHeight": {
+                            "type": "integer",
+                            "description": "Minimum arena height in tiles",
+                            "minimum": 1
+                        },
+                        "requiredTerrain": {
+                            "type": "array",
+                            "description": "Required terrain types in arena",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "sortOrder": {
+                    "type": "integer",
+                    "description": "Order for display sorting in boss lists (lower values first).",
+                    "minimum": 0
                 }
             },
             "required": [
-                "bossId",
+                "id",
                 "name",
-                "baseMonsterDefinitionId",
+                "description",
+                "baseMonsterId",
                 "phases"
             ],
             "additionalProperties": false
         },
-        "bossPhase": {
+        "BossPhase": {
             "type": "object",
-            "description": "A single combat phase with unique behavior and abilities",
+            "description": "A boss combat phase with specific behavior pattern and available abilities. Phases activate when boss health drops below the threshold.",
             "properties": {
-                "phaseNumber": {
-                    "type": "integer",
-                    "description": "Sequential phase number (1-based, phase 1 is starting phase)",
-                    "minimum": 1,
-                    "maximum": 10,
-                    "examples": [1, 2, 3]
+                "id": {
+                    "type": "string",
+                    "description": "Unique identifier for the phase within this boss (lowercase with underscores).",
+                    "pattern": "^[a-z][a-z0-9_]*$",
+                    "minLength": 1,
+                    "maxLength": 50
                 },
                 "name": {
                     "type": "string",
-                    "description": "Display name for the phase",
+                    "description": "Display name for the phase (e.g., 'Phase 1', 'Enraged Form', 'Final Stand').",
                     "minLength": 1,
-                    "maxLength": 30,
-                    "examples": ["Awakened", "Defensive Stance", "Enraged"]
+                    "maxLength": 100
                 },
-                "healthThreshold": {
-                    "type": "integer",
-                    "description": "Health percentage at which this phase activates (100 = starting phase)",
+                "healthThresholdPercent": {
+                    "type": "number",
+                    "description": "Health percentage at which this phase activates. 100 = full health (phase 1), 0 = death.",
                     "minimum": 0,
-                    "maximum": 100,
-                    "examples": [100, 75, 50, 25]
+                    "maximum": 100
                 },
                 "behavior": {
                     "type": "string",
-                    "description": "Combat behavior pattern for this phase",
-                    "enum": ["Aggressive", "Tactical", "Defensive", "Enraged", "Summoner"],
-                    "default": "Tactical"
+                    "description": "AI behavior pattern for this phase. Determines target selection and ability usage.",
+                    "enum": [
+                        "Aggressive",
+                        "Defensive",
+                        "Tactical",
+                        "Berserk",
+                        "Summoner"
+                    ]
                 },
                 "abilityIds": {
                     "type": "array",
-                    "description": "Ability IDs available during this phase",
+                    "description": "Abilities available during this phase. Boss selects from these based on behavior.",
                     "items": {
                         "type": "string",
-                        "pattern": "^[a-z][a-z0-9-]*$"
-                    },
-                    "examples": [["bone-strike", "raise-dead"], ["fire-breath", "tail-swipe"]]
-                },
-                "statModifiers": {
-                    "type": "array",
-                    "description": "Stat modifications active during this phase",
-                    "items": {
-                        "$ref": "#/definitions/statModifier"
+                        "pattern": "^[a-z][a-z0-9_]*$"
                     }
                 },
-                "transitionText": {
-                    "type": ["string", "null"],
-                    "description": "Text displayed when entering this phase",
-                    "maxLength": 200,
-                    "examples": ["The Skeleton King's eyes glow with fury!"]
+                "abilityRotation": {
+                    "type": "array",
+                    "description": "Fixed ability rotation order (optional, overrides random selection). Boss follows exact sequence.",
+                    "items": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9_]*$"
+                    }
                 },
-                "transitionEffectId": {
-                    "type": ["string", "null"],
-                    "description": "Effect ID triggered during phase transition",
-                    "pattern": "^[a-z][a-z0-9-]*$",
-                    "examples": ["boss-enrage-aura", "phase-transition-fire"]
+                "statModifiers": {
+                    "$ref": "#/definitions/StatModifiers",
+                    "description": "Stat modifications applied during this phase. Stacks with base stats."
                 },
-                "summonConfig": {
-                    "$ref": "#/definitions/summonConfig",
-                    "description": "Summoning configuration for this phase (optional)"
+                "transitionAnnouncement": {
+                    "type": "string",
+                    "description": "Text displayed when transitioning to this phase. Boss dialogue."
+                },
+                "transitionEffect": {
+                    "type": "string",
+                    "description": "Visual effect ID played on phase transition.",
+                    "pattern": "^[a-z][a-z0-9_]*$"
                 }
             },
             "required": [
-                "phaseNumber",
+                "id",
                 "name",
-                "healthThreshold"
+                "healthThresholdPercent",
+                "behavior"
             ],
             "additionalProperties": false
         },
-        "statModifier": {
+        "EnrageConfig": {
             "type": "object",
-            "description": "A modification to a combat stat",
+            "description": "Configuration for boss enrage mechanics. Triggers stat multipliers and additional abilities when conditions are met.",
             "properties": {
-                "statId": {
+                "triggerType": {
                     "type": "string",
-                    "description": "The stat being modified",
-                    "examples": ["attack", "defense", "speed", "accuracy"]
+                    "description": "What triggers the enrage state. Timer = seconds, HealthPercent = HP threshold, TurnCount = turns elapsed, AllyDeath = minion death.",
+                    "enum": [
+                        "Timer",
+                        "HealthPercent",
+                        "TurnCount",
+                        "AllyDeath"
+                    ]
                 },
-                "type": {
-                    "type": "string",
-                    "description": "How the modification is applied",
-                    "enum": ["Flat", "Percentage", "Override"],
-                    "default": "Flat"
-                },
-                "value": {
+                "triggerValue": {
                     "type": "number",
-                    "description": "The modification value. For Percentage, use decimal (0.3 = +30%)",
-                    "examples": [10, -5, 0.25, -0.5]
+                    "description": "Value for the trigger. Meaning depends on triggerType: seconds for Timer, percent for HealthPercent, turns for TurnCount, ignored for AllyDeath."
+                },
+                "statMultipliers": {
+                    "type": "object",
+                    "description": "Stat multipliers applied when enraged. 1.5 = +50% to that stat.",
+                    "properties": {
+                        "attack": {
+                            "type": "number",
+                            "description": "Attack multiplier (1.5 = +50% damage)",
+                            "minimum": 0.1
+                        },
+                        "defense": {
+                            "type": "number",
+                            "description": "Defense multiplier",
+                            "minimum": 0.1
+                        },
+                        "speed": {
+                            "type": "number",
+                            "description": "Speed multiplier (affects action frequency)",
+                            "minimum": 0.1
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "additionalAbilityIds": {
+                    "type": "array",
+                    "description": "Abilities unlocked when enraged. Added to current phase abilities.",
+                    "items": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9_]*$"
+                    }
+                },
+                "announcement": {
+                    "type": "string",
+                    "description": "Text displayed when enrage triggers. Boss dialogue."
                 }
             },
             "required": [
-                "statId",
-                "value"
+                "triggerType",
+                "triggerValue",
+                "statMultipliers"
             ],
             "additionalProperties": false
         },
-        "summonConfig": {
+        "SummonConfig": {
             "type": "object",
-            "description": "Configuration for boss summoning behavior",
+            "description": "Configuration for boss minion summoning. Defines which monsters to summon, when, and how many.",
             "properties": {
-                "monsterDefinitionId": {
+                "monsterId": {
                     "type": "string",
-                    "description": "Monster definition ID to summon",
-                    "pattern": "^[a-z][a-z0-9-]*$",
-                    "examples": ["skeleton-minion", "fire-elemental"]
+                    "description": "Monster ID to summon (references monsters.json).",
+                    "pattern": "^[a-z][a-z0-9_]*$"
                 },
                 "count": {
-                    "type": "integer",
-                    "description": "Number of monsters to summon per action",
-                    "minimum": 1,
-                    "maximum": 10,
-                    "default": 1
+                    "$ref": "#/definitions/QuantityRange",
+                    "description": "Number of monsters to summon. Random within range."
                 },
-                "intervalTurns": {
+                "triggerType": {
+                    "type": "string",
+                    "description": "What triggers the summon. PhaseStart = on phase entry, Timer = every N seconds, HealthPercent = at HP threshold, Random = % chance per turn.",
+                    "enum": [
+                        "PhaseStart",
+                        "Timer",
+                        "HealthPercent",
+                        "Random"
+                    ]
+                },
+                "triggerValue": {
+                    "type": "number",
+                    "description": "Value for the trigger. Meaning depends on triggerType."
+                },
+                "cooldownTurns": {
                     "type": "integer",
-                    "description": "Turns between summon actions",
-                    "minimum": 1,
-                    "maximum": 10,
-                    "default": 2
+                    "description": "Minimum turns between summons. Prevents spam.",
+                    "minimum": 0
                 },
                 "maxActive": {
                     "type": "integer",
-                    "description": "Maximum summoned monsters active at once",
-                    "minimum": 1,
-                    "maximum": 20,
-                    "default": 4
+                    "description": "Maximum number of active summons at once. Summon skipped if at cap.",
+                    "minimum": 1
+                },
+                "announcement": {
+                    "type": "string",
+                    "description": "Text displayed when summoning. Boss dialogue."
                 }
             },
             "required": [
-                "monsterDefinitionId"
+                "monsterId",
+                "count",
+                "triggerType"
             ],
             "additionalProperties": false
         },
-        "lootEntry": {
+        "VulnerabilityWindow": {
             "type": "object",
-            "description": "A potential loot drop from the boss",
+            "description": "Configuration for boss vulnerability periods. During these windows, boss takes increased damage.",
             "properties": {
-                "itemId": {
+                "id": {
                     "type": "string",
-                    "description": "Item definition ID",
-                    "pattern": "^[a-z][a-z0-9-]*$",
-                    "examples": ["gold", "crown-of-bones", "dragon-scale"]
+                    "description": "Unique identifier for this vulnerability window.",
+                    "pattern": "^[a-z][a-z0-9_]*$"
                 },
-                "amount": {
+                "triggerType": {
+                    "type": "string",
+                    "description": "What triggers the vulnerability window. AfterAbility = after specific ability, PhaseTransition = when entering phase, Timer = every N seconds, HealthPercent = at HP threshold.",
+                    "enum": [
+                        "AfterAbility",
+                        "PhaseTransition",
+                        "Timer",
+                        "HealthPercent"
+                    ]
+                },
+                "triggerValue": {
+                    "oneOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "number"
+                        }
+                    ],
+                    "description": "Trigger value. Ability ID for AfterAbility, phase ID for PhaseTransition, seconds for Timer, percent for HealthPercent."
+                },
+                "durationTurns": {
                     "type": "integer",
-                    "description": "Quantity of items to drop",
-                    "minimum": 1,
-                    "default": 1
+                    "description": "How many turns the vulnerability lasts. Players should capitalize on this window.",
+                    "minimum": 1
                 },
-                "chance": {
+                "damageMultiplier": {
                     "type": "number",
-                    "description": "Drop probability (0.0-1.0, where 1.0 = guaranteed)",
-                    "minimum": 0,
-                    "maximum": 1,
-                    "default": 1.0,
-                    "examples": [1.0, 0.5, 0.25, 0.10, 0.05]
+                    "description": "Damage multiplier during vulnerability (2.0 = double damage taken).",
+                    "minimum": 1.0,
+                    "default": 2.0
+                },
+                "announcement": {
+                    "type": "string",
+                    "description": "Text displayed when vulnerability window opens. Alerts players to opportunity."
                 }
             },
             "required": [
-                "itemId"
+                "id",
+                "triggerType",
+                "triggerValue",
+                "durationTurns"
             ],
+            "additionalProperties": false
+        },
+        "BossAnnouncement": {
+            "type": "object",
+            "description": "Configuration for boss dialogue/announcements. Displayed during key encounter moments for dramatic effect.",
+            "properties": {
+                "trigger": {
+                    "type": "string",
+                    "description": "What triggers this announcement. BattleStart = combat begins, PhaseTransition = entering phase, Enrage = enrage triggers, LowHealth = HP threshold, Victory = boss wins, Summon = summoning minions.",
+                    "enum": [
+                        "BattleStart",
+                        "PhaseTransition",
+                        "Enrage",
+                        "LowHealth",
+                        "Victory",
+                        "Summon"
+                    ]
+                },
+                "triggerValue": {
+                    "oneOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "number"
+                        }
+                    ],
+                    "description": "Trigger value. Phase ID for PhaseTransition, health percent for LowHealth, ignored for other triggers."
+                },
+                "text": {
+                    "type": "string",
+                    "description": "The announcement text to display. Boss dialogue.",
+                    "minLength": 1
+                }
+            },
+            "required": [
+                "trigger",
+                "text"
+            ],
+            "additionalProperties": false
+        },
+        "QuantityRange": {
+            "type": "object",
+            "description": "A range of values with minimum and maximum. Used for randomized counts.",
+            "properties": {
+                "min": {
+                    "type": "integer",
+                    "description": "Minimum value (inclusive)",
+                    "minimum": 1
+                },
+                "max": {
+                    "type": "integer",
+                    "description": "Maximum value (inclusive)",
+                    "minimum": 1
+                }
+            },
+            "required": [
+                "min",
+                "max"
+            ],
+            "additionalProperties": false
+        },
+        "StatModifiers": {
+            "type": "object",
+            "description": "Stat modifications applied to the boss during a phase. Flat modifiers that add to base stats.",
+            "properties": {
+                "maxHealth": {
+                    "type": "integer",
+                    "description": "Flat modifier to max health"
+                },
+                "attack": {
+                    "type": "integer",
+                    "description": "Flat modifier to attack power"
+                },
+                "defense": {
+                    "type": "integer",
+                    "description": "Flat modifier to defense"
+                },
+                "speed": {
+                    "type": "integer",
+                    "description": "Flat modifier to speed/initiative"
+                },
+                "criticalChance": {
+                    "type": "number",
+                    "description": "Modifier to critical hit chance (0.1 = +10%)"
+                },
+                "criticalDamage": {
+                    "type": "number",
+                    "description": "Modifier to critical damage multiplier"
+                },
+                "damageReduction": {
+                    "type": "number",
+                    "description": "Flat damage reduction amount"
+                }
+            },
             "additionalProperties": false
         }
     }
