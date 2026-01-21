@@ -1,0 +1,181 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Combat Rules Configuration",
+    "description": "Schema for combat mechanics and rules. Defines flanking, opportunity attacks, initiative calculation, and death/unconscious behaviors.",
+    "type": "object",
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "Reference to the JSON schema file for validation"
+        },
+        "version": {
+            "type": "string",
+            "description": "Optional version identifier for the configuration file",
+            "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+        },
+        "flanking": {
+            "$ref": "#/definitions/FlankingConfig"
+        },
+        "opportunityAttacks": {
+            "$ref": "#/definitions/OpportunityAttackConfig"
+        },
+        "initiative": {
+            "$ref": "#/definitions/InitiativeConfig"
+        },
+        "death": {
+            "$ref": "#/definitions/DeathConfig"
+        }
+    },
+    "additionalProperties": false,
+    "definitions": {
+        "FlankingConfig": {
+            "type": "object",
+            "description": "Configuration for flanking bonuses in tactical combat",
+            "properties": {
+                "enabled": {
+                    "type": "boolean",
+                    "description": "Whether flanking mechanics are enabled",
+                    "default": true
+                },
+                "attackBonus": {
+                    "type": "integer",
+                    "description": "Bonus to attack rolls when flanking an enemy",
+                    "minimum": 0,
+                    "default": 2
+                },
+                "damageBonus": {
+                    "type": "integer",
+                    "description": "Bonus to damage when flanking an enemy",
+                    "minimum": 0,
+                    "default": 0
+                },
+                "behindAttackBonus": {
+                    "type": "integer",
+                    "description": "Bonus to attack rolls when attacking from behind",
+                    "minimum": 0
+                },
+                "behindDamageBonus": {
+                    "type": "integer",
+                    "description": "Bonus to damage when attacking from behind",
+                    "minimum": 0
+                }
+            },
+            "additionalProperties": false
+        },
+        "OpportunityAttackConfig": {
+            "type": "object",
+            "description": "Configuration for opportunity attack rules",
+            "properties": {
+                "enabled": {
+                    "type": "boolean",
+                    "description": "Whether opportunity attacks are enabled",
+                    "default": true
+                },
+                "requiresMeleeWeapon": {
+                    "type": "boolean",
+                    "description": "Whether opportunity attacks require a melee weapon equipped",
+                    "default": true
+                },
+                "oneReactionPerRound": {
+                    "type": "boolean",
+                    "description": "Whether combatants are limited to one reaction per round",
+                    "default": true
+                },
+                "disengage": {
+                    "$ref": "#/definitions/DisengageConfig"
+                }
+            },
+            "additionalProperties": false
+        },
+        "DisengageConfig": {
+            "type": "object",
+            "description": "Configuration for the disengage action",
+            "properties": {
+                "enabled": {
+                    "type": "boolean",
+                    "description": "Whether the disengage action is available",
+                    "default": true
+                },
+                "consumesAction": {
+                    "type": "boolean",
+                    "description": "Whether disengaging consumes the character's action",
+                    "default": true
+                }
+            },
+            "additionalProperties": false
+        },
+        "InitiativeConfig": {
+            "type": "object",
+            "description": "Configuration for initiative calculation and turn order",
+            "properties": {
+                "baseAttribute": {
+                    "type": "string",
+                    "description": "The attribute used as the base for initiative calculation",
+                    "enum": [
+                        "wits",
+                        "finesse"
+                    ],
+                    "default": "wits"
+                },
+                "diceExpression": {
+                    "type": "string",
+                    "description": "Dice notation for initiative roll (e.g., '1d20', '2d6')",
+                    "pattern": "^[0-9]+d[0-9]+([+-][0-9]+)?$",
+                    "default": "1d20"
+                },
+                "tieBreaker": {
+                    "type": "string",
+                    "description": "Method for breaking initiative ties",
+                    "enum": [
+                        "HigherAttribute",
+                        "Random",
+                        "PlayerFirst"
+                    ],
+                    "default": "HigherAttribute"
+                },
+                "surpriseRoundBonus": {
+                    "type": "integer",
+                    "description": "Initiative penalty applied to surprised combatants"
+                }
+            },
+            "additionalProperties": false
+        },
+        "DeathConfig": {
+            "type": "object",
+            "description": "Configuration for death and unconscious mechanics",
+            "properties": {
+                "unconsciousThreshold": {
+                    "type": "integer",
+                    "description": "HP threshold at or below which a character falls unconscious",
+                    "default": 0
+                },
+                "deathThreshold": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "description": "HP threshold at or below which a character dies. Null means instant death at unconscious threshold.",
+                    "default": -10
+                },
+                "deathSavesEnabled": {
+                    "type": "boolean",
+                    "description": "Whether death saving throws are enabled",
+                    "default": false
+                },
+                "deathSaveSuccesses": {
+                    "type": "integer",
+                    "description": "Number of successful death saves needed to stabilize",
+                    "minimum": 1,
+                    "default": 3
+                },
+                "deathSaveFailures": {
+                    "type": "integer",
+                    "description": "Number of failed death saves before death",
+                    "minimum": 1,
+                    "default": 3
+                }
+            },
+            "additionalProperties": false
+        }
+    }
+}

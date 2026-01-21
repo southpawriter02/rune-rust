@@ -1,4 +1,5 @@
 {
+    "$schema": "./schemas/combat.schema.json",
     "flanking": {
         "enabled": true,
         "attackBonus": 2,
@@ -14,5 +15,18 @@
             "enabled": true,
             "consumesAction": true
         }
+    },
+    "initiative": {
+        "baseAttribute": "wits",
+        "diceExpression": "1d20",
+        "tieBreaker": "HigherAttribute",
+        "surpriseRoundBonus": 10
+    },
+    "death": {
+        "unconsciousThreshold": 0,
+        "deathThreshold": -10,
+        "deathSavesEnabled": false,
+        "deathSaveSuccesses": 3,
+        "deathSaveFailures": 3
     }
 }
