@@ -1,0 +1,31 @@
+{
+    "$schema": "./schemas/achievement-panel.schema.json",
+    "panelWidth": 70,
+    "panelHeight": 40,
+    "summaryOffset": 35,
+    "progressBarWidth": 40,
+    "notificationDurationSeconds": 5,
+    "showSecretPlaceholders": true,
+    "cardWidth": 65,
+    "notificationWidth": 55,
+    "categoryColors": {
+        "combat": "Red",
+        "exploration": "Cyan",
+        "progression": "Green",
+        "collection": "Yellow",
+        "challenge": "Magenta",
+        "secret": "DarkGray"
+    },
+    "tierColors": {
+        "bronze": "DarkYellow",
+        "silver": "Gray",
+        "gold": "Yellow",
+        "platinum": "Cyan"
+    },
+    "statusIndicators": {
+        "unlocked": "[x]",
+        "inProgress": "[~]",
+        "notStarted": "( )",
+        "locked": "[L]"
+    }
+}
