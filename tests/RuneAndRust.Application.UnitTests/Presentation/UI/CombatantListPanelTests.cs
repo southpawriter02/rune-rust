@@ -24,7 +24,7 @@ public class CombatantListPanelTests
         _mockTerminal = new Mock<ITerminalService>();
         _mockTerminal.Setup(t => t.SupportsUnicode).Returns(true);
         
-        _healthBar = new HealthBarDisplay(_mockTerminal.Object, HealthBarDisplayConfig.CreateDefault());
+        _healthBar = new HealthBarDisplay(_mockTerminal.Object, HealthBarConfig.CreateDefault());
         _panel = new CombatantListPanel(_mockTerminal.Object, _healthBar);
     }
 

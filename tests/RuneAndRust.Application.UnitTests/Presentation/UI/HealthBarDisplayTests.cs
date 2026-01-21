@@ -15,7 +15,7 @@ namespace RuneAndRust.Application.UnitTests.Presentation.UI;
 public class HealthBarDisplayTests
 {
     private Mock<ITerminalService> _mockTerminal = null!;
-    private HealthBarDisplay _healthBarDisplayDisplay = null!;
+    private HealthBarDisplay _healthBarDisplay = null!;
 
     [SetUp]
     public void Setup()
@@ -23,7 +23,7 @@ public class HealthBarDisplayTests
         _mockTerminal = new Mock<ITerminalService>();
         _mockTerminal.Setup(t => t.SupportsUnicode).Returns(true);
         
-        _healthBarDisplayDisplay = new HealthBarDisplayDisplay(_mockTerminal.Object);
+        _healthBarDisplay = new HealthBarDisplay(_mockTerminal.Object);
     }
 
     #region Render Tests

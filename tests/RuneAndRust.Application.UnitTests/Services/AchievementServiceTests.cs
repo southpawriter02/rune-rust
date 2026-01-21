@@ -89,7 +89,7 @@ public class AchievementServiceTests
         _achievementProvider.GetAllAchievements().Returns(new[] { achievement });
 
         // Set player stats to meet condition
-        _statistics.RecordMonsterKill("goblin", false);
+        _statistics.RecordMonsterKill("goblin");
 
         // Act
         var unlocked = _service.CheckAchievements(_player);
@@ -138,7 +138,7 @@ public class AchievementServiceTests
             AchievementCategory.Combat, AchievementTier.Bronze, conditions);
 
         _achievementProvider.GetAllAchievements().Returns(new[] { achievement });
-        _statistics.RecordMonsterKill("goblin", false);
+        _statistics.RecordMonsterKill("goblin");
 
         // Pre-unlock the achievement
         _player.AddAchievement("first-blood", 10);
@@ -169,7 +169,7 @@ public class AchievementServiceTests
         // Only one condition met
         for (int i = 0; i < 15; i++)
         {
-            _statistics.RecordMonsterKill("goblin", false);
+            _statistics.RecordMonsterKill("goblin");
         }
 
         // Act
@@ -271,7 +271,7 @@ public class AchievementServiceTests
         // Player has 50 kills
         for (int i = 0; i < 50; i++)
         {
-            _statistics.RecordMonsterKill("goblin", false);
+            _statistics.RecordMonsterKill("goblin");
         }
 
         // Act
