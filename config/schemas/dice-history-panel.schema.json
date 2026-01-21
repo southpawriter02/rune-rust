@@ -1,0 +1,135 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "dice-history-panel.schema.json",
+    "title": "Dice History Panel Configuration",
+    "description": "Configuration schema for the dice history panel display settings (v0.13.4d)",
+    "type": "object",
+    "properties": {
+        "panelWidth": {
+            "type": "integer",
+            "minimum": 60,
+            "maximum": 120,
+            "default": 72,
+            "description": "Total width of the panel in characters"
+        },
+        "recentRollDisplayCount": {
+            "type": "integer",
+            "minimum": 10,
+            "maximum": 50,
+            "default": 20,
+            "description": "Number of recent rolls to display"
+        },
+        "distributionBarWidth": {
+            "type": "integer",
+            "minimum": 10,
+            "maximum": 40,
+            "default": 20,
+            "description": "Width of distribution chart bars in characters"
+        },
+        "thresholds": {
+            "type": "object",
+            "description": "Luck rating threshold percentages",
+            "properties": {
+                "veryLucky": {
+                    "type": "number",
+                    "default": 10.0,
+                    "description": "Percentage threshold for very lucky rating (>= this value)"
+                },
+                "lucky": {
+                    "type": "number",
+                    "default": 5.0,
+                    "description": "Percentage threshold for lucky rating (>= this value)"
+                },
+                "unlucky": {
+                    "type": "number",
+                    "default": -5.0,
+                    "description": "Percentage threshold for unlucky rating (<= this value)"
+                },
+                "veryUnlucky": {
+                    "type": "number",
+                    "default": -10.0,
+                    "description": "Percentage threshold for very unlucky rating (<= this value)"
+                }
+            }
+        },
+        "colors": {
+            "type": "object",
+            "description": "Console color settings for various panel elements",
+            "properties": {
+                "criticalSuccess": {
+                    "type": "string",
+                    "default": "Yellow",
+                    "description": "Color for natural 20 critical success"
+                },
+                "criticalFailure": {
+                    "type": "string",
+                    "default": "Red",
+                    "description": "Color for natural 1 critical failure"
+                },
+                "luckyStreak": {
+                    "type": "string",
+                    "default": "Green",
+                    "description": "Color for lucky streak indicator"
+                },
+                "unluckyStreak": {
+                    "type": "string",
+                    "default": "Red",
+                    "description": "Color for unlucky streak indicator"
+                },
+                "veryLucky": {
+                    "type": "string",
+                    "default": "Green",
+                    "description": "Color for very lucky rating text"
+                },
+                "lucky": {
+                    "type": "string",
+                    "default": "DarkGreen",
+                    "description": "Color for lucky rating text"
+                },
+                "normal": {
+                    "type": "string",
+                    "default": "White",
+                    "description": "Color for normal rating text"
+                },
+                "unlucky": {
+                    "type": "string",
+                    "default": "DarkYellow",
+                    "description": "Color for unlucky rating text"
+                },
+                "veryUnlucky": {
+                    "type": "string",
+                    "default": "Red",
+                    "description": "Color for very unlucky rating text"
+                },
+                "aboveExpected": {
+                    "type": "string",
+                    "default": "Green",
+                    "description": "Color for distribution values above expected"
+                },
+                "belowExpected": {
+                    "type": "string",
+                    "default": "Red",
+                    "description": "Color for distribution values below expected"
+                }
+            }
+        },
+        "characters": {
+            "type": "object",
+            "description": "Characters used in bar chart rendering",
+            "properties": {
+                "barFilled": {
+                    "type": "string",
+                    "maxLength": 1,
+                    "default": "#",
+                    "description": "Character for filled portion of bars"
+                },
+                "barEmpty": {
+                    "type": "string",
+                    "maxLength": 1,
+                    "default": ".",
+                    "description": "Character for empty portion of bars"
+                }
+            }
+        }
+    }
+}

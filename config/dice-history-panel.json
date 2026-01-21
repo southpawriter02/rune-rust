@@ -1,0 +1,29 @@
+{
+    "$schema": "./schemas/dice-history-panel.schema.json",
+    "panelWidth": 72,
+    "recentRollDisplayCount": 20,
+    "distributionBarWidth": 20,
+    "thresholds": {
+        "veryLucky": 10.0,
+        "lucky": 5.0,
+        "unlucky": -5.0,
+        "veryUnlucky": -10.0
+    },
+    "colors": {
+        "criticalSuccess": "Yellow",
+        "criticalFailure": "Red",
+        "luckyStreak": "Green",
+        "unluckyStreak": "Red",
+        "veryLucky": "Green",
+        "lucky": "DarkGreen",
+        "normal": "White",
+        "unlucky": "DarkYellow",
+        "veryUnlucky": "Red",
+        "aboveExpected": "Green",
+        "belowExpected": "Red"
+    },
+    "characters": {
+        "barFilled": "#",
+        "barEmpty": "."
+    }
+}
