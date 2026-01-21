@@ -1,0 +1,15 @@
+{
+    "$schema": "./schemas/gathering-display.schema.json",
+    "indicatorWidth": 60,
+    "indicatorHeight": 10,
+    "displayWidth": 50,
+    "displayHeight": 12,
+    "maxVisibleNodes": 5,
+    "animationDelayMs": 300,
+    "selectionColor": "Cyan",
+    "difficultyColor": "Yellow",
+    "promptColor": "Green",
+    "headerColor": "White",
+    "successColor": "Green",
+    "failureColor": "Red"
+}
