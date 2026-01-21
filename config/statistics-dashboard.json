@@ -1,0 +1,16 @@
+{
+    "$schema": "./schemas/statistics-dashboard.schema.json",
+    "panelWidth": 72,
+    "panelHeight": 40,
+    "nameColumnWidth": 24,
+    "valueColumnWidth": 12,
+    "chartWidth": 30,
+    "chartLabelWidth": 10,
+    "chartFilledChar": "#",
+    "chartEmptyChar": ".",
+    "positiveChangeColor": "Green",
+    "negativeChangeColor": "Red",
+    "neutralChangeColor": "Gray",
+    "activeTabColor": "Cyan",
+    "inactiveTabColor": "Gray"
+}

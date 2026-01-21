@@ -1,0 +1,177 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Statistics Dashboard Configuration",
+    "description": "Configuration schema for the statistics dashboard display settings.",
+    "type": "object",
+    "properties": {
+        "panelWidth": {
+            "type": "integer",
+            "description": "Total width of the dashboard panel in characters.",
+            "default": 72,
+            "minimum": 40,
+            "maximum": 120
+        },
+        "panelHeight": {
+            "type": "integer",
+            "description": "Total height of the dashboard panel in characters.",
+            "default": 40,
+            "minimum": 20,
+            "maximum": 60
+        },
+        "nameColumnWidth": {
+            "type": "integer",
+            "description": "Width of the statistic name column.",
+            "default": 24,
+            "minimum": 15,
+            "maximum": 40
+        },
+        "valueColumnWidth": {
+            "type": "integer",
+            "description": "Width of the value columns (Session, All-Time, Change).",
+            "default": 12,
+            "minimum": 8,
+            "maximum": 20
+        },
+        "chartWidth": {
+            "type": "integer",
+            "description": "Width of the chart bars in characters.",
+            "default": 30,
+            "minimum": 10,
+            "maximum": 50
+        },
+        "chartLabelWidth": {
+            "type": "integer",
+            "description": "Width of chart labels.",
+            "default": 10,
+            "minimum": 5,
+            "maximum": 20
+        },
+        "chartFilledChar": {
+            "type": "string",
+            "description": "Character used for filled chart bar sections.",
+            "default": "#",
+            "maxLength": 1
+        },
+        "chartEmptyChar": {
+            "type": "string",
+            "description": "Character used for empty chart bar sections.",
+            "default": ".",
+            "maxLength": 1
+        },
+        "positiveChangeColor": {
+            "type": "string",
+            "description": "Color for positive change values.",
+            "enum": [
+                "Black",
+                "DarkBlue",
+                "DarkGreen",
+                "DarkCyan",
+                "DarkRed",
+                "DarkMagenta",
+                "DarkYellow",
+                "Gray",
+                "DarkGray",
+                "Blue",
+                "Green",
+                "Cyan",
+                "Red",
+                "Magenta",
+                "Yellow",
+                "White"
+            ],
+            "default": "Green"
+        },
+        "negativeChangeColor": {
+            "type": "string",
+            "description": "Color for negative change values.",
+            "enum": [
+                "Black",
+                "DarkBlue",
+                "DarkGreen",
+                "DarkCyan",
+                "DarkRed",
+                "DarkMagenta",
+                "DarkYellow",
+                "Gray",
+                "DarkGray",
+                "Blue",
+                "Green",
+                "Cyan",
+                "Red",
+                "Magenta",
+                "Yellow",
+                "White"
+            ],
+            "default": "Red"
+        },
+        "neutralChangeColor": {
+            "type": "string",
+            "description": "Color for neutral/zero change values.",
+            "enum": [
+                "Black",
+                "DarkBlue",
+                "DarkGreen",
+                "DarkCyan",
+                "DarkRed",
+                "DarkMagenta",
+                "DarkYellow",
+                "Gray",
+                "DarkGray",
+                "Blue",
+                "Green",
+                "Cyan",
+                "Red",
+                "Magenta",
+                "Yellow",
+                "White"
+            ],
+            "default": "Gray"
+        },
+        "activeTabColor": {
+            "type": "string",
+            "description": "Color for active category tabs.",
+            "enum": [
+                "Black",
+                "DarkBlue",
+                "DarkGreen",
+                "DarkCyan",
+                "DarkRed",
+                "DarkMagenta",
+                "DarkYellow",
+                "Gray",
+                "DarkGray",
+                "Blue",
+                "Green",
+                "Cyan",
+                "Red",
+                "Magenta",
+                "Yellow",
+                "White"
+            ],
+            "default": "Cyan"
+        },
+        "inactiveTabColor": {
+            "type": "string",
+            "description": "Color for inactive category tabs.",
+            "enum": [
+                "Black",
+                "DarkBlue",
+                "DarkGreen",
+                "DarkCyan",
+                "DarkRed",
+                "DarkMagenta",
+                "DarkYellow",
+                "Gray",
+                "DarkGray",
+                "Blue",
+                "Green",
+                "Cyan",
+                "Red",
+                "Magenta",
+                "Yellow",
+                "White"
+            ],
+            "default": "Gray"
+        }
+    }
+}
