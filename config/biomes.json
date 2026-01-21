@@ -1,4 +1,5 @@
 {
+  "$schema": "./schemas/biomes.schema.json",
   "version": "1.0",
   "biomes": {
     "cave": {
@@ -10,13 +11,27 @@
         "lighting": "dim",
         "era": "ancient"
       },
-      "impliedTags": ["underground", "natural", "stone", "cave"],
+      "impliedTags": [
+        "underground",
+        "natural",
+        "stone",
+        "cave"
+      ],
       "descriptorPoolOverrides": {
         "environmental.lighting": "environmental.lighting.cave",
         "environmental.sounds": "environmental.sounds.cave"
       },
-      "emphasizedTerms": ["dripping", "echo", "stone", "stalactite"],
-      "excludedTerms": ["sunlight", "breeze", "grass"]
+      "emphasizedTerms": [
+        "dripping",
+        "echo",
+        "stone",
+        "stalactite"
+      ],
+      "excludedTerms": [
+        "sunlight",
+        "breeze",
+        "grass"
+      ]
     },
     "dungeon": {
       "id": "dungeon",
@@ -27,12 +42,26 @@
         "lighting": "dim",
         "era": "medieval"
       },
-      "impliedTags": ["underground", "constructed", "stone", "dungeon"],
+      "impliedTags": [
+        "underground",
+        "constructed",
+        "stone",
+        "dungeon"
+      ],
       "descriptorPoolOverrides": {
         "environmental.lighting": "environmental.lighting.dungeon"
       },
-      "emphasizedTerms": ["torch", "chains", "iron", "stone"],
-      "excludedTerms": ["sunlight", "trees", "grass"]
+      "emphasizedTerms": [
+        "torch",
+        "chains",
+        "iron",
+        "stone"
+      ],
+      "excludedTerms": [
+        "sunlight",
+        "trees",
+        "grass"
+      ]
     },
     "volcanic": {
       "id": "volcanic",
@@ -42,14 +71,31 @@
         "climate": "scorching",
         "lighting": "dim"
       },
-      "impliedTags": ["volcanic", "heat", "danger", "fire"],
+      "impliedTags": [
+        "volcanic",
+        "heat",
+        "danger",
+        "fire"
+      ],
       "descriptorPoolOverrides": {
         "environmental.lighting": "environmental.lighting.volcanic",
         "environmental.temperature": "environmental.temperature.volcanic",
         "environmental.smells": "environmental.smells.volcanic"
       },
-      "emphasizedTerms": ["lava", "sulfur", "heat", "glow", "magma"],
-      "excludedTerms": ["cold", "ice", "frost", "chill", "freezing"]
+      "emphasizedTerms": [
+        "lava",
+        "sulfur",
+        "heat",
+        "glow",
+        "magma"
+      ],
+      "excludedTerms": [
+        "cold",
+        "ice",
+        "frost",
+        "chill",
+        "freezing"
+      ]
     },
     "frozen": {
       "id": "frozen",
@@ -59,13 +105,30 @@
         "climate": "freezing",
         "lighting": "bright"
       },
-      "impliedTags": ["frozen", "ice", "cold", "snow"],
+      "impliedTags": [
+        "frozen",
+        "ice",
+        "cold",
+        "snow"
+      ],
       "descriptorPoolOverrides": {
         "environmental.temperature": "environmental.temperature.frozen",
         "environmental.sounds": "environmental.sounds.frozen"
       },
-      "emphasizedTerms": ["ice", "frost", "frozen", "cold", "chill"],
-      "excludedTerms": ["warm", "heat", "fire", "lava", "sweat"]
+      "emphasizedTerms": [
+        "ice",
+        "frost",
+        "frozen",
+        "cold",
+        "chill"
+      ],
+      "excludedTerms": [
+        "warm",
+        "heat",
+        "fire",
+        "lava",
+        "sweat"
+      ]
     },
     "swamp": {
       "id": "swamp",
@@ -76,13 +139,30 @@
         "lighting": "dim",
         "condition": "flooded"
       },
-      "impliedTags": ["swamp", "wet", "decay", "water", "muck"],
+      "impliedTags": [
+        "swamp",
+        "wet",
+        "decay",
+        "water",
+        "muck"
+      ],
       "descriptorPoolOverrides": {
         "environmental.smells": "environmental.smells.swamp",
         "environmental.sounds": "environmental.sounds.swamp"
       },
-      "emphasizedTerms": ["murky", "rotting", "mud", "stagnant", "squelch"],
-      "excludedTerms": ["dry", "arid", "dusty", "clean"]
+      "emphasizedTerms": [
+        "murky",
+        "rotting",
+        "mud",
+        "stagnant",
+        "squelch"
+      ],
+      "excludedTerms": [
+        "dry",
+        "arid",
+        "dusty",
+        "clean"
+      ]
     },
     "ruins": {
       "id": "ruins",
@@ -94,10 +174,25 @@
         "era": "ancient",
         "condition": "collapsed"
       },
-      "impliedTags": ["ruins", "ancient", "stone", "decay"],
+      "impliedTags": [
+        "ruins",
+        "ancient",
+        "stone",
+        "decay"
+      ],
       "descriptorPoolOverrides": {},
-      "emphasizedTerms": ["crumbling", "ancient", "worn", "faded", "forgotten"],
-      "excludedTerms": ["new", "pristine", "polished"]
+      "emphasizedTerms": [
+        "crumbling",
+        "ancient",
+        "worn",
+        "faded",
+        "forgotten"
+      ],
+      "excludedTerms": [
+        "new",
+        "pristine",
+        "polished"
+      ]
     },
     "forest": {
       "id": "forest",
@@ -108,13 +203,28 @@
         "lighting": "dim",
         "condition": "overgrown"
       },
-      "impliedTags": ["forest", "outdoor", "natural", "trees"],
+      "impliedTags": [
+        "forest",
+        "outdoor",
+        "natural",
+        "trees"
+      ],
       "descriptorPoolOverrides": {
         "environmental.sounds": "environmental.sounds.forest",
         "environmental.smells": "environmental.smells.forest"
       },
-      "emphasizedTerms": ["leaves", "bark", "branches", "canopy", "undergrowth"],
-      "excludedTerms": ["stone", "dungeon", "torch"]
+      "emphasizedTerms": [
+        "leaves",
+        "bark",
+        "branches",
+        "canopy",
+        "undergrowth"
+      ],
+      "excludedTerms": [
+        "stone",
+        "dungeon",
+        "torch"
+      ]
     },
     "desert": {
       "id": "desert",
@@ -124,12 +234,28 @@
         "climate": "hot",
         "lighting": "bright"
       },
-      "impliedTags": ["desert", "outdoor", "dry", "sand"],
+      "impliedTags": [
+        "desert",
+        "outdoor",
+        "dry",
+        "sand"
+      ],
       "descriptorPoolOverrides": {
         "environmental.temperature": "environmental.temperature.desert"
       },
-      "emphasizedTerms": ["sand", "sun", "dry", "parched", "dune"],
-      "excludedTerms": ["wet", "damp", "moist", "water"]
+      "emphasizedTerms": [
+        "sand",
+        "sun",
+        "dry",
+        "parched",
+        "dune"
+      ],
+      "excludedTerms": [
+        "wet",
+        "damp",
+        "moist",
+        "water"
+      ]
     }
   }
 }

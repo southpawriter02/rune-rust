@@ -1,0 +1,304 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Biome Configuration",
+    "description": "Schema for biome definitions including environmental categories, descriptor overrides, monster spawn tables, terrain distributions, and hazard frequencies. Enables full customization of biome environments without code changes, supporting modding scenarios such as sci-fi space stations, underwater caverns, haunted mansions, or procedurally generated wilderness areas.",
+    "type": "object",
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "Reference to the JSON schema file for validation"
+        },
+        "version": {
+            "type": "string",
+            "description": "Optional version identifier for the configuration file",
+            "pattern": "^[0-9]+\\.[0-9]+$"
+        },
+        "biomes": {
+            "type": "object",
+            "description": "Map of biome IDs to biome definitions. Each biome defines environmental properties, descriptor configurations, monster spawn tables, terrain distributions, hazard frequencies, and audio associations.",
+            "additionalProperties": {
+                "$ref": "#/definitions/BiomeDefinition"
+            },
+            "minProperties": 1
+        }
+    },
+    "required": [
+        "biomes"
+    ],
+    "additionalProperties": false,
+    "definitions": {
+        "BiomeDefinition": {
+            "type": "object",
+            "description": "A biome definition with environmental categories, descriptors, and spawn configurations. Biomes define the thematic and mechanical properties of game regions, controlling monster spawns, terrain generation, hazard frequency, and atmospheric descriptions.",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Unique identifier for the biome (lowercase kebab-case). Must start with a letter and contain only lowercase letters, numbers, and hyphens.",
+                    "pattern": "^[a-z][a-z0-9-]*$",
+                    "minLength": 1,
+                    "maxLength": 50
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Display name shown to players in the UI and menus.",
+                    "minLength": 1,
+                    "maxLength": 100
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Flavor text describing the biome's atmosphere, history, or notable features. Shown to players when entering the biome or in info panels."
+                },
+                "defaultCategoryValues": {
+                    "$ref": "#/definitions/DefaultCategories",
+                    "description": "Default environmental category values for this biome. These values influence descriptor selection, gameplay mechanics (visibility, temperature effects), and room generation."
+                },
+                "impliedTags": {
+                    "type": "array",
+                    "description": "Tags automatically applied to rooms in this biome for descriptor filtering. Used by the descriptor system to select appropriate thematic text. Multiple tags allow for nuanced descriptor selection.",
+                    "items": {
+                        "type": "string",
+                        "minLength": 1
+                    }
+                },
+                "descriptorPoolOverrides": {
+                    "type": "object",
+                    "description": "Map of descriptor category to override pool ID. When generating descriptions, the system uses override pools instead of defaults. Categories not in the map use their default pools.",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "emphasizedTerms": {
+                    "type": "array",
+                    "description": "Terms that should be emphasized in descriptor selection. Descriptors containing these terms have increased selection probability, creating thematic consistency within the biome.",
+                    "items": {
+                        "type": "string",
+                        "minLength": 1
+                    }
+                },
+                "excludedTerms": {
+                    "type": "array",
+                    "description": "Terms that should be excluded from descriptors. Descriptors containing these terms are removed from the selection pool, preventing thematically inappropriate descriptions and ensuring immersion.",
+                    "items": {
+                        "type": "string",
+                        "minLength": 1
+                    }
+                },
+                "monsterSpawnTable": {
+                    "$ref": "#/definitions/SpawnTable",
+                    "description": "Monster spawn configuration for this biome. Defines weighted spawn entries with optional depth restrictions for progressive difficulty."
+                },
+                "terrainDistribution": {
+                    "$ref": "#/definitions/TerrainDistribution",
+                    "description": "Terrain type distribution percentages. Defines what percentage of tiles in generated rooms should be each terrain type."
+                },
+                "hazardFrequency": {
+                    "$ref": "#/definitions/HazardFrequency",
+                    "description": "Hazard spawn frequency configuration. Controls base probability of hazards and how that probability scales with dungeon depth."
+                },
+                "musicThemeId": {
+                    "type": "string",
+                    "description": "Reference to music theme in music-themes.json. When entering a room in this biome, the specified music theme plays. If not specified, uses default exploration music.",
+                    "pattern": "^[a-z][a-z0-9-]*$"
+                },
+                "ambientSoundId": {
+                    "type": "string",
+                    "description": "Reference to ambient sound in sound-effects.json. Ambient sounds loop while in rooms of this biome, layering with room-specific sounds for atmospheric immersion.",
+                    "pattern": "^[a-z][a-z0-9-]*$"
+                },
+                "sortOrder": {
+                    "type": "integer",
+                    "description": "Order for display sorting (lower values first). Used when presenting biomes in menus or selection interfaces.",
+                    "minimum": 0
+                }
+            },
+            "required": [
+                "id",
+                "name",
+                "description",
+                "defaultCategoryValues",
+                "impliedTags",
+                "descriptorPoolOverrides",
+                "emphasizedTerms",
+                "excludedTerms"
+            ],
+            "additionalProperties": false
+        },
+        "DefaultCategories": {
+            "type": "object",
+            "description": "Default environmental category values for a biome. Climate and lighting are required; era and condition are optional. These values influence descriptor selection, gameplay mechanics, and room generation.",
+            "properties": {
+                "climate": {
+                    "type": "string",
+                    "description": "Temperature characteristic of the biome. Affects stamina drain, damage-over-time effects, and descriptor selection. Values range from extreme cold (freezing) to extreme heat (scorching).",
+                    "enum": [
+                        "freezing",
+                        "cold",
+                        "temperate",
+                        "warm",
+                        "hot",
+                        "scorching"
+                    ]
+                },
+                "lighting": {
+                    "type": "string",
+                    "description": "Ambient light level of the biome. Affects visibility, sight range, and descriptor selection. Darker biomes may require light sources for effective exploration.",
+                    "enum": [
+                        "dark",
+                        "dim",
+                        "normal",
+                        "bright"
+                    ]
+                },
+                "era": {
+                    "type": "string",
+                    "description": "Architectural/temporal style of the biome (optional). Influences the visual style of constructed elements and descriptor selection. From primordial ruins to advanced technology.",
+                    "enum": [
+                        "ancient",
+                        "medieval",
+                        "modern",
+                        "futuristic"
+                    ]
+                },
+                "condition": {
+                    "type": "string",
+                    "description": "Physical state of structures in the biome (optional). Affects visual appearance, traversability, and descriptor selection. From perfect pristine state to completely overgrown.",
+                    "enum": [
+                        "pristine",
+                        "weathered",
+                        "ruined",
+                        "collapsed",
+                        "flooded",
+                        "overgrown"
+                    ]
+                }
+            },
+            "required": [
+                "climate",
+                "lighting"
+            ],
+            "additionalProperties": false
+        },
+        "SpawnTable": {
+            "type": "object",
+            "description": "Monster spawn configuration for a biome. Contains a list of spawn entries with weights and optional depth restrictions, plus an optional level modifier applied to all spawned monsters.",
+            "properties": {
+                "entries": {
+                    "type": "array",
+                    "description": "List of spawn entries with weights. Higher weights mean more common spawns. The system selects monsters from this list based on their relative weights.",
+                    "items": {
+                        "$ref": "#/definitions/SpawnEntry"
+                    },
+                    "minItems": 1
+                },
+                "levelModifier": {
+                    "type": "integer",
+                    "description": "Level modifier added to all spawned monsters in this biome. Positive values make monsters stronger; negative values make them weaker.",
+                    "default": 0
+                }
+            },
+            "required": [
+                "entries"
+            ],
+            "additionalProperties": false
+        },
+        "SpawnEntry": {
+            "type": "object",
+            "description": "A single monster spawn entry with weight and depth restrictions. Defines which monster can spawn, how common it is, and on which dungeon floors it appears.",
+            "properties": {
+                "monsterId": {
+                    "type": "string",
+                    "description": "Reference to monster ID in monsters.json. Must match an existing monster definition. Uses underscore-separated lowercase format.",
+                    "pattern": "^[a-z][a-z0-9_]*$"
+                },
+                "weight": {
+                    "type": "integer",
+                    "description": "Spawn weight (higher = more common). Weights are relative to other entries in the same spawn table. A monster with weight 100 spawns twice as often as one with weight 50.",
+                    "minimum": 1,
+                    "default": 100
+                },
+                "minDepth": {
+                    "type": "integer",
+                    "description": "Minimum floor depth for this monster to spawn (optional). If set, monster only spawns on this floor and deeper. Enables progressive difficulty.",
+                    "minimum": 1
+                },
+                "maxDepth": {
+                    "type": "integer",
+                    "description": "Maximum floor depth for this monster to spawn (optional). If set, monster only spawns up to this floor. Allows early-game monsters to phase out.",
+                    "minimum": 1
+                }
+            },
+            "required": [
+                "monsterId"
+            ],
+            "additionalProperties": false
+        },
+        "TerrainDistribution": {
+            "type": "object",
+            "description": "Terrain type distribution for a biome. Defines percentage allocations for different terrain types during room generation. Percentages do not need to sum to 100; remainder uses default floor.",
+            "properties": {
+                "entries": {
+                    "type": "array",
+                    "description": "List of terrain entries with percentages. Each entry specifies what percentage of tiles should be that terrain type.",
+                    "items": {
+                        "$ref": "#/definitions/TerrainEntry"
+                    },
+                    "minItems": 1
+                }
+            },
+            "required": [
+                "entries"
+            ],
+            "additionalProperties": false
+        },
+        "TerrainEntry": {
+            "type": "object",
+            "description": "A single terrain entry with percentage allocation. Specifies a terrain type and what percentage of tiles should use it during generation.",
+            "properties": {
+                "terrainId": {
+                    "type": "string",
+                    "description": "Reference to terrain ID in terrain.json. Must match an existing terrain definition. Uses kebab-case or underscore-separated lowercase format.",
+                    "pattern": "^[a-z][a-z0-9_-]*$"
+                },
+                "percentage": {
+                    "type": "number",
+                    "description": "Percentage of tiles using this terrain (0-100). A value of 60 means 60% of tiles should be this terrain type. Zero percentage means the terrain type is available but very rare.",
+                    "minimum": 0,
+                    "maximum": 100
+                }
+            },
+            "required": [
+                "terrainId",
+                "percentage"
+            ],
+            "additionalProperties": false
+        },
+        "HazardFrequency": {
+            "type": "object",
+            "description": "Hazard spawn frequency configuration. Controls the probability of hazards appearing in generated rooms, with optional scaling based on dungeon depth.",
+            "properties": {
+                "baseChance": {
+                    "type": "number",
+                    "description": "Base probability of hazard spawning (0.0 to 1.0). A value of 0.15 means 15% base chance. Combined with depth scaling for effective chance calculation.",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "default": 0.1
+                },
+                "hazardTypes": {
+                    "type": "array",
+                    "description": "List of hazard terrain IDs that can spawn in this biome. References hazardous terrain entries in terrain.json. When hazards spawn, the system selects from this list.",
+                    "items": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9_-]*$"
+                    }
+                },
+                "depthScaling": {
+                    "type": "number",
+                    "description": "Additional chance per floor depth. Added to baseChance for each floor level. Formula: min(1.0, baseChance + (depth × depthScaling)). Value of 0.02 means +2% per floor.",
+                    "minimum": 0,
+                    "default": 0
+                }
+            },
+            "additionalProperties": false
+        }
+    }
+}
