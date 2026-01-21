@@ -1,0 +1,273 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Damage Types Configuration",
+    "description": "Schema for damage type and resistance definitions. Defines all damage types, their categories, relationships, and resistance templates for creature types.",
+    "type": "object",
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "Reference to the JSON schema file for validation"
+        },
+        "version": {
+            "type": "string",
+            "description": "Optional version identifier for the configuration file",
+            "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+        },
+        "damageCategories": {
+            "type": "array",
+            "description": "List of damage category definitions",
+            "items": {
+                "$ref": "#/definitions/DamageCategory"
+            }
+        },
+        "damageTypes": {
+            "type": "array",
+            "description": "List of damage type definitions",
+            "items": {
+                "$ref": "#/definitions/DamageType"
+            },
+            "minItems": 1
+        },
+        "resistanceTemplates": {
+            "type": "array",
+            "description": "List of resistance templates for creature types",
+            "items": {
+                "$ref": "#/definitions/ResistanceTemplate"
+            }
+        }
+    },
+    "required": [
+        "damageTypes"
+    ],
+    "additionalProperties": false,
+    "definitions": {
+        "DamageCategory": {
+            "type": "object",
+            "description": "A category grouping related damage types",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Unique identifier for the category (lowercase, kebab-case)",
+                    "pattern": "^[a-z][a-z0-9-]*$",
+                    "minLength": 1,
+                    "maxLength": 50
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Display name for the category",
+                    "minLength": 1,
+                    "maxLength": 100
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Description of the damage category"
+                },
+                "sortOrder": {
+                    "type": "integer",
+                    "description": "Order for display sorting (lower values first)",
+                    "minimum": 0,
+                    "default": 0
+                }
+            },
+            "required": [
+                "id",
+                "name"
+            ],
+            "additionalProperties": false
+        },
+        "DamageType": {
+            "type": "object",
+            "description": "A damage type that can be dealt and resisted",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Unique identifier for the damage type (lowercase, kebab-case)",
+                    "pattern": "^[a-z][a-z0-9-]*$",
+                    "minLength": 1,
+                    "maxLength": 50
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Display name shown to players",
+                    "minLength": 1,
+                    "maxLength": 100
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Full description of the damage type",
+                    "minLength": 1
+                },
+                "categoryId": {
+                    "type": "string",
+                    "description": "Reference to the damage category this type belongs to",
+                    "pattern": "^[a-z][a-z0-9-]*$"
+                },
+                "color": {
+                    "type": "string",
+                    "description": "Console color name or hex value for display",
+                    "minLength": 1
+                },
+                "iconId": {
+                    "type": "string",
+                    "description": "Icon identifier for UI display",
+                    "pattern": "^[a-z][a-z0-9-]*$"
+                },
+                "vfxId": {
+                    "type": "string",
+                    "description": "Visual effect identifier for combat animations",
+                    "pattern": "^[a-z][a-z0-9-]*$"
+                },
+                "sfxId": {
+                    "type": "string",
+                    "description": "Sound effect identifier for combat audio",
+                    "pattern": "^[a-z][a-z0-9-]*$"
+                },
+                "bypassesArmor": {
+                    "type": "boolean",
+                    "description": "Whether this damage type ignores armor/defense",
+                    "default": false
+                },
+                "canCrit": {
+                    "type": "boolean",
+                    "description": "Whether this damage type can critically hit",
+                    "default": true
+                },
+                "relationships": {
+                    "type": "array",
+                    "description": "Relationships with other damage types or targets",
+                    "items": {
+                        "$ref": "#/definitions/DamageRelationship"
+                    }
+                },
+                "sortOrder": {
+                    "type": "integer",
+                    "description": "Order for display sorting (lower values first)",
+                    "minimum": 0,
+                    "default": 0
+                }
+            },
+            "required": [
+                "id",
+                "name",
+                "description",
+                "color"
+            ],
+            "additionalProperties": false
+        },
+        "DamageRelationship": {
+            "type": "object",
+            "description": "A relationship between this damage type and another type or target",
+            "properties": {
+                "targetTypeId": {
+                    "type": "string",
+                    "description": "The damage type ID or creature type this relationship targets",
+                    "pattern": "^[a-z][a-z0-9-]*$",
+                    "minLength": 1
+                },
+                "relationship": {
+                    "type": "string",
+                    "description": "The type of relationship",
+                    "enum": [
+                        "Strong",
+                        "Weak",
+                        "Neutral",
+                        "Nullifies"
+                    ]
+                },
+                "modifier": {
+                    "type": "number",
+                    "description": "Damage multiplier (1.0 = normal, 1.5 = 50% more, 0.5 = 50% less)",
+                    "minimum": 0.0,
+                    "maximum": 3.0,
+                    "default": 1.0
+                }
+            },
+            "required": [
+                "targetTypeId",
+                "relationship"
+            ],
+            "additionalProperties": false
+        },
+        "ResistanceTemplate": {
+            "type": "object",
+            "description": "A template defining resistances for a category of creatures",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Unique identifier for the template (lowercase, kebab-case)",
+                    "pattern": "^[a-z][a-z0-9-]*$",
+                    "minLength": 1,
+                    "maxLength": 50
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Display name for the template",
+                    "minLength": 1,
+                    "maxLength": 100
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Description of the resistance template"
+                },
+                "creatureTypes": {
+                    "type": "array",
+                    "description": "Creature type tags this template applies to",
+                    "items": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9-]*$",
+                        "minLength": 1
+                    },
+                    "minItems": 1
+                },
+                "resistances": {
+                    "type": "array",
+                    "description": "List of resistance entries for this template",
+                    "items": {
+                        "$ref": "#/definitions/ResistanceEntry"
+                    },
+                    "minItems": 1
+                }
+            },
+            "required": [
+                "id",
+                "name",
+                "creatureTypes",
+                "resistances"
+            ],
+            "additionalProperties": false
+        },
+        "ResistanceEntry": {
+            "type": "object",
+            "description": "A resistance entry for a specific damage type",
+            "properties": {
+                "damageTypeId": {
+                    "type": "string",
+                    "description": "Reference to the damage type this resistance applies to",
+                    "pattern": "^[a-z][a-z0-9-]*$",
+                    "minLength": 1
+                },
+                "value": {
+                    "type": "integer",
+                    "description": "Resistance value (-100 to 100). Positive = resistance, negative = vulnerability",
+                    "minimum": -100,
+                    "maximum": 100
+                },
+                "isImmunity": {
+                    "type": "boolean",
+                    "description": "If true, complete immunity that cannot be reduced by effects",
+                    "default": false
+                },
+                "isAbsorption": {
+                    "type": "boolean",
+                    "description": "If true, damage of this type heals instead of harming",
+                    "default": false
+                }
+            },
+            "required": [
+                "damageTypeId",
+                "value"
+            ],
+            "additionalProperties": false
+        }
+    }
+}

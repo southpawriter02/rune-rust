@@ -1,9 +1,37 @@
 {
+  "$schema": "./schemas/damage-types.schema.json",
+  "damageCategories": [
+    {
+      "id": "physical",
+      "name": "Physical",
+      "description": "Mundane physical damage from weapons and natural attacks.",
+      "sortOrder": 0
+    },
+    {
+      "id": "elemental",
+      "name": "Elemental",
+      "description": "Natural elemental forces and energies.",
+      "sortOrder": 1
+    },
+    {
+      "id": "magical",
+      "name": "Magical",
+      "description": "Pure magical energy from arcane or divine sources.",
+      "sortOrder": 2
+    },
+    {
+      "id": "special",
+      "name": "Special",
+      "description": "Unique damage types with special properties.",
+      "sortOrder": 3
+    }
+  ],
   "damageTypes": [
     {
       "id": "physical",
       "name": "Physical",
       "description": "Standard physical damage from weapons and natural attacks.",
+      "categoryId": "physical",
       "color": "white",
       "sortOrder": 0
     },
@@ -11,20 +39,37 @@
       "id": "fire",
       "name": "Fire",
       "description": "Burning damage from flames and heat.",
+      "categoryId": "elemental",
       "color": "red",
+      "relationships": [
+        {
+          "targetTypeId": "ice",
+          "relationship": "Strong",
+          "modifier": 1.5
+        }
+      ],
       "sortOrder": 1
     },
     {
       "id": "ice",
       "name": "Ice",
       "description": "Freezing damage from cold and frost.",
+      "categoryId": "elemental",
       "color": "cyan",
+      "relationships": [
+        {
+          "targetTypeId": "fire",
+          "relationship": "Weak",
+          "modifier": 0.75
+        }
+      ],
       "sortOrder": 2
     },
     {
       "id": "lightning",
       "name": "Lightning",
       "description": "Electrical damage from storms and magic.",
+      "categoryId": "elemental",
       "color": "yellow",
       "sortOrder": 3
     },
@@ -32,6 +77,7 @@
       "id": "poison",
       "name": "Poison",
       "description": "Toxic damage from venoms and chemicals.",
+      "categoryId": "special",
       "color": "green",
       "sortOrder": 4
     },
@@ -39,15 +85,135 @@
       "id": "holy",
       "name": "Holy",
       "description": "Radiant damage from divine sources.",
+      "categoryId": "magical",
       "color": "gold1",
+      "relationships": [
+        {
+          "targetTypeId": "dark",
+          "relationship": "Strong",
+          "modifier": 1.5
+        }
+      ],
       "sortOrder": 5
     },
     {
       "id": "dark",
       "name": "Dark",
       "description": "Necrotic damage from shadow and death magic.",
+      "categoryId": "magical",
       "color": "purple",
+      "relationships": [
+        {
+          "targetTypeId": "holy",
+          "relationship": "Strong",
+          "modifier": 1.5
+        }
+      ],
       "sortOrder": 6
+    }
+  ],
+  "resistanceTemplates": [
+    {
+      "id": "undead-resistances",
+      "name": "Undead Resistances",
+      "description": "Standard resistances for undead creatures.",
+      "creatureTypes": [
+        "undead",
+        "skeleton",
+        "zombie",
+        "ghost",
+        "vampire"
+      ],
+      "resistances": [
+        {
+          "damageTypeId": "poison",
+          "value": 100,
+          "isImmunity": true
+        },
+        {
+          "damageTypeId": "dark",
+          "value": 50
+        },
+        {
+          "damageTypeId": "ice",
+          "value": 25
+        },
+        {
+          "damageTypeId": "holy",
+          "value": -50
+        },
+        {
+          "damageTypeId": "fire",
+          "value": -25
+        }
+      ]
+    },
+    {
+      "id": "construct-resistances",
+      "name": "Construct Resistances",
+      "description": "Standard resistances for construct creatures.",
+      "creatureTypes": [
+        "construct",
+        "golem",
+        "automaton"
+      ],
+      "resistances": [
+        {
+          "damageTypeId": "poison",
+          "value": 100,
+          "isImmunity": true
+        },
+        {
+          "damageTypeId": "physical",
+          "value": 25
+        },
+        {
+          "damageTypeId": "lightning",
+          "value": -50
+        }
+      ]
+    },
+    {
+      "id": "fire-elemental-resistances",
+      "name": "Fire Elemental Resistances",
+      "description": "Standard resistances for fire elemental creatures.",
+      "creatureTypes": [
+        "fire-elemental",
+        "flame-spirit"
+      ],
+      "resistances": [
+        {
+          "damageTypeId": "fire",
+          "value": 100,
+          "isImmunity": true,
+          "isAbsorption": true
+        },
+        {
+          "damageTypeId": "ice",
+          "value": -50
+        }
+      ]
+    },
+    {
+      "id": "ice-elemental-resistances",
+      "name": "Ice Elemental Resistances",
+      "description": "Standard resistances for ice elemental creatures.",
+      "creatureTypes": [
+        "ice-elemental",
+        "frost-spirit"
+      ],
+      "resistances": [
+        {
+          "damageTypeId": "ice",
+          "value": 100,
+          "isImmunity": true,
+          "isAbsorption": true
+        },
+        {
+          "damageTypeId": "fire",
+          "value": -50
+        }
+      ]
     }
   ]
 }
