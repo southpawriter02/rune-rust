@@ -1,0 +1,291 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "monster-group-display.schema.json",
+    "title": "Monster Group Display Configuration",
+    "description": "Configuration for monster group display in combat UI",
+    "type": "object",
+    "properties": {
+        "totalWidth": {
+            "type": "integer",
+            "description": "Total width of the display area",
+            "minimum": 40,
+            "maximum": 150,
+            "default": 72
+        },
+        "totalHeight": {
+            "type": "integer",
+            "description": "Total height of the display area in rows",
+            "minimum": 10,
+            "maximum": 30,
+            "default": 16
+        },
+        "startX": {
+            "type": "integer",
+            "description": "Starting X coordinate",
+            "minimum": 0,
+            "default": 0
+        },
+        "startY": {
+            "type": "integer",
+            "description": "Starting Y coordinate",
+            "minimum": 0,
+            "default": 0
+        },
+        "textIndent": {
+            "type": "integer",
+            "description": "Text indentation",
+            "minimum": 0,
+            "maximum": 10,
+            "default": 3
+        },
+        "memberCardStartRow": {
+            "type": "integer",
+            "description": "Row offset for member cards",
+            "minimum": 1,
+            "maximum": 10,
+            "default": 2
+        },
+        "memberCardWidth": {
+            "type": "integer",
+            "description": "Width of each member card",
+            "minimum": 10,
+            "maximum": 25,
+            "default": 15
+        },
+        "cardSpacing": {
+            "type": "integer",
+            "description": "Spacing between cards",
+            "minimum": 0,
+            "maximum": 5,
+            "default": 2
+        },
+        "tacticIndicatorRow": {
+            "type": "integer",
+            "description": "Row offset for tactic indicator",
+            "minimum": 5,
+            "maximum": 20,
+            "default": 9
+        },
+        "moraleHintRow": {
+            "type": "integer",
+            "description": "Row offset for morale hint",
+            "minimum": 8,
+            "maximum": 25,
+            "default": 13
+        },
+        "moraleEffectRow": {
+            "type": "integer",
+            "description": "Row offset for morale effect display",
+            "minimum": 9,
+            "maximum": 25,
+            "default": 14
+        },
+        "symbols": {
+            "type": "object",
+            "description": "Symbol characters for display",
+            "properties": {
+                "leaderBadge": {
+                    "type": "string",
+                    "maxLength": 5,
+                    "default": "[*]"
+                },
+                "cardTopLeft": {
+                    "type": "string",
+                    "maxLength": 1,
+                    "default": "┌"
+                },
+                "cardTopRight": {
+                    "type": "string",
+                    "maxLength": 1,
+                    "default": "┐"
+                },
+                "cardBottomLeft": {
+                    "type": "string",
+                    "maxLength": 1,
+                    "default": "└"
+                },
+                "cardBottomRight": {
+                    "type": "string",
+                    "maxLength": 1,
+                    "default": "┘"
+                },
+                "cardHorizontal": {
+                    "type": "string",
+                    "maxLength": 1,
+                    "default": "─"
+                },
+                "cardVertical": {
+                    "type": "string",
+                    "maxLength": 1,
+                    "default": "│"
+                },
+                "treeBranch": {
+                    "type": "string",
+                    "maxLength": 5,
+                    "default": "|-- "
+                },
+                "treeEnd": {
+                    "type": "string",
+                    "maxLength": 5,
+                    "default": "+-- "
+                }
+            },
+            "additionalProperties": false
+        },
+        "colors": {
+            "type": "object",
+            "description": "Color configuration",
+            "properties": {
+                "headerColor": {
+                    "$ref": "#/$defs/consoleColor",
+                    "default": "Cyan"
+                },
+                "leaderColor": {
+                    "$ref": "#/$defs/consoleColor",
+                    "default": "Yellow"
+                },
+                "tacticColor": {
+                    "$ref": "#/$defs/consoleColor",
+                    "default": "Yellow"
+                },
+                "tacticHighlightColor": {
+                    "$ref": "#/$defs/consoleColor",
+                    "default": "Cyan"
+                },
+                "synergyColor": {
+                    "$ref": "#/$defs/consoleColor",
+                    "default": "Green"
+                },
+                "hintColor": {
+                    "$ref": "#/$defs/consoleColor",
+                    "default": "DarkYellow"
+                },
+                "criticalHealthColor": {
+                    "$ref": "#/$defs/consoleColor",
+                    "default": "DarkRed"
+                },
+                "defaultColor": {
+                    "$ref": "#/$defs/consoleColor",
+                    "default": "Gray"
+                },
+                "effectBoxBorderColor": {
+                    "$ref": "#/$defs/consoleColor",
+                    "default": "Yellow"
+                },
+                "effectBoxTitleColor": {
+                    "$ref": "#/$defs/consoleColor",
+                    "default": "Red"
+                },
+                "effectBoxContentColor": {
+                    "$ref": "#/$defs/consoleColor",
+                    "default": "White"
+                },
+                "negativeEffectColor": {
+                    "$ref": "#/$defs/consoleColor",
+                    "default": "Red"
+                }
+            },
+            "additionalProperties": false
+        },
+        "healthColorThresholds": {
+            "type": "array",
+            "description": "Health percentage color thresholds",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "percent": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 100
+                    },
+                    "color": {
+                        "$ref": "#/$defs/consoleColor"
+                    }
+                },
+                "required": [
+                    "percent",
+                    "color"
+                ],
+                "additionalProperties": false
+            },
+            "minItems": 1
+        },
+        "effectBox": {
+            "type": "object",
+            "description": "Effect box configuration",
+            "properties": {
+                "width": {
+                    "type": "integer",
+                    "minimum": 30,
+                    "maximum": 80,
+                    "default": 53
+                },
+                "height": {
+                    "type": "integer",
+                    "minimum": 6,
+                    "maximum": 15,
+                    "default": 10
+                },
+                "startRow": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 15,
+                    "default": 3
+                }
+            },
+            "additionalProperties": false
+        },
+        "tacticDescriptions": {
+            "type": "object",
+            "description": "Descriptions and role actions for each tactic type",
+            "patternProperties": {
+                "^[A-Za-z]+$": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string"
+                        },
+                        "description": {
+                            "type": "string"
+                        },
+                        "roleActions": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "required": [
+                        "name",
+                        "description"
+                    ],
+                    "additionalProperties": false
+                }
+            }
+        }
+    },
+    "$defs": {
+        "consoleColor": {
+            "type": "string",
+            "enum": [
+                "Black",
+                "DarkBlue",
+                "DarkGreen",
+                "DarkCyan",
+                "DarkRed",
+                "DarkMagenta",
+                "DarkYellow",
+                "Gray",
+                "DarkGray",
+                "Blue",
+                "Green",
+                "Cyan",
+                "Red",
+                "Magenta",
+                "Yellow",
+                "White"
+            ]
+        }
+    },
+    "additionalProperties": false
+}

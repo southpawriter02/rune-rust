@@ -1,0 +1,144 @@
+{
+    "$schema": "./schemas/monster-group-display.schema.json",
+    "totalWidth": 72,
+    "totalHeight": 16,
+    "startX": 0,
+    "startY": 0,
+    "textIndent": 3,
+    "memberCardStartRow": 2,
+    "memberCardWidth": 15,
+    "cardSpacing": 2,
+    "tacticIndicatorRow": 9,
+    "moraleHintRow": 13,
+    "moraleEffectRow": 14,
+    "symbols": {
+        "leaderBadge": "[*]",
+        "cardTopLeft": "┌",
+        "cardTopRight": "┐",
+        "cardBottomLeft": "└",
+        "cardBottomRight": "┘",
+        "cardHorizontal": "─",
+        "cardVertical": "│",
+        "treeBranch": "|-- ",
+        "treeEnd": "+-- "
+    },
+    "colors": {
+        "headerColor": "Cyan",
+        "leaderColor": "Yellow",
+        "tacticColor": "Yellow",
+        "tacticHighlightColor": "Cyan",
+        "synergyColor": "Green",
+        "hintColor": "DarkYellow",
+        "criticalHealthColor": "DarkRed",
+        "defaultColor": "Gray",
+        "effectBoxBorderColor": "Yellow",
+        "effectBoxTitleColor": "Red",
+        "effectBoxContentColor": "White",
+        "negativeEffectColor": "Red"
+    },
+    "healthColorThresholds": [
+        {
+            "percent": 75,
+            "color": "Green"
+        },
+        {
+            "percent": 50,
+            "color": "Yellow"
+        },
+        {
+            "percent": 25,
+            "color": "DarkYellow"
+        },
+        {
+            "percent": 0,
+            "color": "Red"
+        }
+    ],
+    "effectBox": {
+        "width": 53,
+        "height": 10,
+        "startRow": 3
+    },
+    "tacticDescriptions": {
+        "Flank": {
+            "name": "Flanking Assault",
+            "description": "Surround target for flanking bonuses",
+            "roleActions": {
+                "melee": "Move to cardinal positions around target",
+                "ranged": "Attack from range while allies flank",
+                "leader": "Coordinate flanking movements",
+                "caster": "Support with buffs and debuffs"
+            }
+        },
+        "FocusFire": {
+            "name": "Focused Assault",
+            "description": "All attack same target",
+            "roleActions": {
+                "melee": "Attack lowest HP enemy",
+                "ranged": "Focus fire on group target",
+                "leader": "Designate priority target",
+                "caster": "Debuff focused target"
+            }
+        },
+        "ProtectLeader": {
+            "name": "Guardian Formation",
+            "description": "Defend the group leader",
+            "roleActions": {
+                "melee": "Position between leader and threat",
+                "ranged": "Attack threats to leader",
+                "leader": "Stay protected behind allies",
+                "caster": "Heal and buff leader"
+            }
+        },
+        "ProtectCaster": {
+            "name": "Caster Defense",
+            "description": "Defend ranged/spellcasters",
+            "roleActions": {
+                "melee": "Guard caster positions",
+                "ranged": "Maintain safe distance",
+                "leader": "Direct melee to protect casters",
+                "caster": "Stay behind melee line"
+            }
+        },
+        "Swarm": {
+            "name": "Overwhelming Swarm",
+            "description": "Close in from all sides",
+            "roleActions": {
+                "melee": "Rush toward target",
+                "ranged": "Close distance and swarm",
+                "leader": "Lead the charge",
+                "caster": "Support swarming allies"
+            }
+        },
+        "Retreat": {
+            "name": "Tactical Retreat",
+            "description": "Fall back when damaged",
+            "roleActions": {
+                "melee": "Disengage and fall back",
+                "ranged": "Retreat to safe distance",
+                "leader": "Coordinate retreat",
+                "caster": "Cover retreating allies"
+            }
+        },
+        "Ambush": {
+            "name": "Ambush Position",
+            "description": "Wait in ambush position",
+            "roleActions": {
+                "melee": "Hold position until enemy in range",
+                "ranged": "Prepare ranged ambush",
+                "leader": "Signal ambush trigger",
+                "caster": "Prepare surprise spells"
+            }
+        },
+        "HitAndRun": {
+            "name": "Strike and Fade",
+            "description": "Attack then disengage",
+            "roleActions": {
+                "melee": "Attack then move away",
+                "ranged": "Hit and reposition",
+                "leader": "Coordinate strike timing",
+                "caster": "Quick cast and retreat"
+            }
+        }
+    }
+}
