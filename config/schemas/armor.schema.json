@@ -1,0 +1,294 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Armor Configuration",
+    "description": "Schema for armor and accessory definitions. Defines all defensive equipment including body armor, shields, helmets, and magical accessories with their defense values, penalties, and requirements.",
+    "type": "object",
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "Reference to the JSON schema file for validation"
+        },
+        "version": {
+            "type": "string",
+            "description": "Optional version identifier for the configuration file",
+            "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+        },
+        "armor": {
+            "type": "array",
+            "description": "List of armor definitions (body armor, shields, helmets, boots, gloves)",
+            "items": {
+                "$ref": "#/definitions/ArmorDefinition"
+            },
+            "minItems": 1
+        },
+        "accessories": {
+            "type": "array",
+            "description": "List of accessory definitions (rings, amulets, belts, cloaks)",
+            "items": {
+                "$ref": "#/definitions/AccessoryDefinition"
+            }
+        }
+    },
+    "required": [
+        "armor"
+    ],
+    "additionalProperties": false,
+    "definitions": {
+        "ArmorDefinition": {
+            "type": "object",
+            "description": "A piece of armor that can be equipped for defense",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Unique identifier for the armor (lowercase with underscores)",
+                    "pattern": "^[a-z][a-z0-9_]*$",
+                    "minLength": 1,
+                    "maxLength": 50
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Display name shown to players",
+                    "minLength": 1,
+                    "maxLength": 100
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Full description of the armor",
+                    "minLength": 1
+                },
+                "slot": {
+                    "type": "string",
+                    "description": "Equipment slot the armor occupies",
+                    "enum": [
+                        "Armor",
+                        "Shield",
+                        "Helmet",
+                        "Boots",
+                        "Gloves"
+                    ]
+                },
+                "armorType": {
+                    "type": "string",
+                    "description": "The category of armor affecting penalties and requirements",
+                    "enum": [
+                        "Light",
+                        "Medium",
+                        "Heavy"
+                    ]
+                },
+                "defenseBonus": {
+                    "type": "integer",
+                    "description": "Bonus to defense when equipped",
+                    "minimum": 0
+                },
+                "damageReduction": {
+                    "type": "integer",
+                    "description": "Flat damage reduction applied to incoming attacks",
+                    "minimum": 0,
+                    "default": 0
+                },
+                "initiativePenalty": {
+                    "type": "integer",
+                    "description": "Penalty to initiative when equipped (negative or zero)",
+                    "maximum": 0,
+                    "default": 0
+                },
+                "movementPenalty": {
+                    "type": "integer",
+                    "description": "Penalty to movement speed when equipped (negative or zero)",
+                    "maximum": 0,
+                    "default": 0
+                },
+                "stealthDisadvantage": {
+                    "type": "boolean",
+                    "description": "Whether the armor imposes disadvantage on stealth checks",
+                    "default": false
+                },
+                "requirements": {
+                    "$ref": "#/definitions/StatRequirements"
+                },
+                "statBonuses": {
+                    "$ref": "#/definitions/StatBonuses"
+                },
+                "material": {
+                    "type": "string",
+                    "description": "Material the armor is made from",
+                    "enum": [
+                        "Leather",
+                        "Chain",
+                        "Plate",
+                        "Cloth",
+                        "Wood",
+                        "Iron",
+                        "Steel",
+                        "Mithril"
+                    ]
+                },
+                "quality": {
+                    "type": "string",
+                    "description": "Quality tier affecting rarity and power",
+                    "enum": [
+                        "Common",
+                        "Uncommon",
+                        "Rare",
+                        "Epic",
+                        "Legendary"
+                    ],
+                    "default": "Common"
+                },
+                "value": {
+                    "type": "integer",
+                    "description": "Base value in gold pieces",
+                    "minimum": 0
+                },
+                "sortOrder": {
+                    "type": "integer",
+                    "description": "Order for display sorting (lower values first)",
+                    "minimum": 0,
+                    "default": 0
+                }
+            },
+            "required": [
+                "id",
+                "name",
+                "description",
+                "slot",
+                "armorType",
+                "defenseBonus",
+                "value"
+            ],
+            "additionalProperties": false
+        },
+        "AccessoryDefinition": {
+            "type": "object",
+            "description": "A magical accessory that provides stat bonuses when equipped",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Unique identifier for the accessory (lowercase with underscores)",
+                    "pattern": "^[a-z][a-z0-9_]*$",
+                    "minLength": 1,
+                    "maxLength": 50
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Display name shown to players",
+                    "minLength": 1,
+                    "maxLength": 100
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Full description of the accessory",
+                    "minLength": 1
+                },
+                "slot": {
+                    "type": "string",
+                    "description": "Equipment slot the accessory occupies",
+                    "enum": [
+                        "Ring",
+                        "Amulet",
+                        "Belt",
+                        "Cloak"
+                    ]
+                },
+                "statBonuses": {
+                    "$ref": "#/definitions/StatBonuses",
+                    "description": "Stat bonuses provided by the accessory"
+                },
+                "quality": {
+                    "type": "string",
+                    "description": "Quality tier affecting rarity and power",
+                    "enum": [
+                        "Common",
+                        "Uncommon",
+                        "Rare",
+                        "Epic",
+                        "Legendary"
+                    ],
+                    "default": "Common"
+                },
+                "value": {
+                    "type": "integer",
+                    "description": "Base value in gold pieces",
+                    "minimum": 0
+                },
+                "sortOrder": {
+                    "type": "integer",
+                    "description": "Order for display sorting (lower values first)",
+                    "minimum": 0,
+                    "default": 0
+                }
+            },
+            "required": [
+                "id",
+                "name",
+                "description",
+                "slot",
+                "statBonuses",
+                "value"
+            ],
+            "additionalProperties": false
+        },
+        "StatRequirements": {
+            "type": "object",
+            "description": "Minimum stat requirements for equipping the armor",
+            "properties": {
+                "minMight": {
+                    "type": "integer",
+                    "description": "Minimum Might required to equip"
+                },
+                "minFortitude": {
+                    "type": "integer",
+                    "description": "Minimum Fortitude required to equip"
+                },
+                "minWill": {
+                    "type": "integer",
+                    "description": "Minimum Will required to equip"
+                },
+                "minWits": {
+                    "type": "integer",
+                    "description": "Minimum Wits required to equip"
+                },
+                "minFinesse": {
+                    "type": "integer",
+                    "description": "Minimum Finesse required to equip"
+                }
+            },
+            "additionalProperties": false
+        },
+        "StatBonuses": {
+            "type": "object",
+            "description": "Attribute bonuses provided by equipping the item",
+            "properties": {
+                "might": {
+                    "type": "integer",
+                    "description": "Bonus to Might attribute"
+                },
+                "fortitude": {
+                    "type": "integer",
+                    "description": "Bonus to Fortitude attribute"
+                },
+                "will": {
+                    "type": "integer",
+                    "description": "Bonus to Will attribute"
+                },
+                "wits": {
+                    "type": "integer",
+                    "description": "Bonus to Wits attribute"
+                },
+                "finesse": {
+                    "type": "integer",
+                    "description": "Bonus to Finesse attribute"
+                },
+                "maxHealth": {
+                    "type": "integer",
+                    "description": "Bonus to maximum health"
+                }
+            },
+            "additionalProperties": {
+                "type": "integer",
+                "description": "Custom stat bonus"
+            }
+        }
+    }
+}

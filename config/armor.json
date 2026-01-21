@@ -1,5 +1,5 @@
 {
-  "$schema": "armor.schema.json",
+  "$schema": "./schemas/armor.schema.json",
   "armor": [
     {
       "id": "cloth_robes",
@@ -36,7 +36,9 @@
       "armorType": "Medium",
       "defenseBonus": 4,
       "initiativePenalty": -1,
-      "requirements": { "minFortitude": 12 },
+      "requirements": {
+        "minFortitude": 12
+      },
       "value": 100
     },
     {
@@ -47,7 +49,9 @@
       "armorType": "Medium",
       "defenseBonus": 5,
       "initiativePenalty": -2,
-      "requirements": { "minFortitude": 13 },
+      "requirements": {
+        "minFortitude": 13
+      },
       "value": 200
     },
     {
@@ -58,7 +62,10 @@
       "armorType": "Heavy",
       "defenseBonus": 6,
       "initiativePenalty": -3,
-      "requirements": { "minFortitude": 14, "minMight": 12 },
+      "requirements": {
+        "minFortitude": 14,
+        "minMight": 12
+      },
       "value": 500
     },
     {
@@ -87,7 +94,9 @@
       "armorType": "Heavy",
       "defenseBonus": 3,
       "initiativePenalty": -1,
-      "requirements": { "minMight": 12 },
+      "requirements": {
+        "minMight": 12
+      },
       "value": 150
     },
     {
@@ -116,7 +125,9 @@
       "armorType": "Heavy",
       "defenseBonus": 3,
       "initiativePenalty": -1,
-      "requirements": { "minFortitude": 12 },
+      "requirements": {
+        "minFortitude": 12
+      },
       "value": 100
     },
     {
@@ -136,7 +147,9 @@
       "armorType": "Heavy",
       "defenseBonus": 2,
       "initiativePenalty": -1,
-      "requirements": { "minFortitude": 11 },
+      "requirements": {
+        "minFortitude": 11
+      },
       "value": 60
     }
   ],
@@ -146,7 +159,9 @@
       "name": "Ring of Strength",
       "description": "A silver ring that enhances the wearer's physical power.",
       "slot": "Ring",
-      "statBonuses": { "might": 2 },
+      "statBonuses": {
+        "might": 2
+      },
       "value": 200
     },
     {
@@ -154,7 +169,9 @@
       "name": "Ring of Precision",
       "description": "A gold ring that sharpens the wearer's reflexes.",
       "slot": "Ring",
-      "statBonuses": { "finesse": 2 },
+      "statBonuses": {
+        "finesse": 2
+      },
       "value": 200
     },
     {
@@ -162,7 +179,10 @@
       "name": "Amulet of Vitality",
       "description": "A ruby amulet that bolsters the wearer's constitution.",
       "slot": "Amulet",
-      "statBonuses": { "fortitude": 2, "maxHealth": 10 },
+      "statBonuses": {
+        "fortitude": 2,
+        "maxHealth": 10
+      },
       "value": 250
     },
     {
@@ -170,7 +190,10 @@
       "name": "Amulet of Wisdom",
       "description": "An emerald amulet that enhances mental fortitude.",
       "slot": "Amulet",
-      "statBonuses": { "will": 2, "wits": 1 },
+      "statBonuses": {
+        "will": 2,
+        "wits": 1
+      },
       "value": 250
     }
   ]
