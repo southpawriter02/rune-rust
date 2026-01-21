@@ -1,0 +1,225 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Weapon Configuration",
+    "description": "Schema for weapon definitions. Defines all weapons including melee, ranged, and magical implements with their damage, properties, and requirements.",
+    "type": "object",
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "Reference to the JSON schema file for validation"
+        },
+        "version": {
+            "type": "string",
+            "description": "Optional version identifier for the configuration file",
+            "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+        },
+        "weapons": {
+            "type": "array",
+            "description": "List of weapon definitions",
+            "items": {
+                "$ref": "#/definitions/WeaponDefinition"
+            },
+            "minItems": 1
+        }
+    },
+    "required": [
+        "weapons"
+    ],
+    "additionalProperties": false,
+    "definitions": {
+        "WeaponDefinition": {
+            "type": "object",
+            "description": "A weapon that can be equipped and used in combat",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Unique identifier for the weapon (lowercase with underscores)",
+                    "pattern": "^[a-z][a-z0-9_]*$",
+                    "minLength": 1,
+                    "maxLength": 50
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Display name shown to players",
+                    "minLength": 1,
+                    "maxLength": 100
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Full description of the weapon",
+                    "minLength": 1
+                },
+                "weaponType": {
+                    "type": "string",
+                    "description": "The category of weapon",
+                    "enum": [
+                        "Sword",
+                        "Axe",
+                        "Dagger",
+                        "Staff",
+                        "Bow",
+                        "Mace",
+                        "Spear",
+                        "Hammer",
+                        "Crossbow",
+                        "Wand"
+                    ]
+                },
+                "damageDice": {
+                    "type": "string",
+                    "description": "Dice expression for damage (e.g., '1d8', '2d6+3')",
+                    "pattern": "^\\d+d\\d+([+-]\\d+)?$"
+                },
+                "damageType": {
+                    "type": "string",
+                    "description": "Reference to damage type ID from damage-types.json",
+                    "pattern": "^[a-z][a-z0-9-]*$"
+                },
+                "attackModifier": {
+                    "type": "integer",
+                    "description": "Bonus or penalty to attack rolls",
+                    "default": 0
+                },
+                "statBonuses": {
+                    "$ref": "#/definitions/StatBonuses"
+                },
+                "properties": {
+                    "type": "array",
+                    "description": "Special properties affecting weapon behavior",
+                    "items": {
+                        "type": "string",
+                        "enum": [
+                            "finesse",
+                            "versatile",
+                            "reach",
+                            "thrown",
+                            "two-handed",
+                            "light",
+                            "heavy",
+                            "loading"
+                        ]
+                    },
+                    "uniqueItems": true
+                },
+                "proficiency": {
+                    "type": "string",
+                    "description": "Training category required for effective use",
+                    "enum": [
+                        "Simple",
+                        "Martial",
+                        "Exotic"
+                    ],
+                    "default": "Simple"
+                },
+                "material": {
+                    "type": "string",
+                    "description": "Material the weapon is made from",
+                    "enum": [
+                        "Wood",
+                        "Iron",
+                        "Steel",
+                        "Mithril",
+                        "Adamantine"
+                    ]
+                },
+                "quality": {
+                    "type": "string",
+                    "description": "Quality tier affecting rarity and power",
+                    "enum": [
+                        "Common",
+                        "Uncommon",
+                        "Rare",
+                        "Epic",
+                        "Legendary"
+                    ],
+                    "default": "Common"
+                },
+                "range": {
+                    "$ref": "#/definitions/WeaponRange"
+                },
+                "isTwoHanded": {
+                    "type": "boolean",
+                    "description": "Whether the weapon requires both hands",
+                    "default": false
+                },
+                "value": {
+                    "type": "integer",
+                    "description": "Base value in gold pieces",
+                    "minimum": 0
+                },
+                "sortOrder": {
+                    "type": "integer",
+                    "description": "Order for display sorting (lower values first)",
+                    "minimum": 0,
+                    "default": 0
+                }
+            },
+            "required": [
+                "id",
+                "name",
+                "description",
+                "weaponType",
+                "damageDice",
+                "value"
+            ],
+            "additionalProperties": false
+        },
+        "StatBonuses": {
+            "type": "object",
+            "description": "Attribute bonuses provided by equipping the weapon",
+            "properties": {
+                "might": {
+                    "type": "integer",
+                    "description": "Bonus to Might attribute"
+                },
+                "fortitude": {
+                    "type": "integer",
+                    "description": "Bonus to Fortitude attribute"
+                },
+                "will": {
+                    "type": "integer",
+                    "description": "Bonus to Will attribute"
+                },
+                "wits": {
+                    "type": "integer",
+                    "description": "Bonus to Wits attribute"
+                },
+                "finesse": {
+                    "type": "integer",
+                    "description": "Bonus to Finesse attribute"
+                }
+            },
+            "additionalProperties": {
+                "type": "integer",
+                "description": "Custom stat bonus"
+            }
+        },
+        "WeaponRange": {
+            "type": "object",
+            "description": "Range parameters for ranged weapons",
+            "properties": {
+                "minimum": {
+                    "type": "integer",
+                    "description": "Minimum effective range (tiles closer than this have penalty)",
+                    "minimum": 1,
+                    "default": 1
+                },
+                "optimal": {
+                    "type": "integer",
+                    "description": "Optimal range with no penalties",
+                    "minimum": 1
+                },
+                "maximum": {
+                    "type": "integer",
+                    "description": "Maximum range (cannot attack beyond this)",
+                    "minimum": 1
+                }
+            },
+            "required": [
+                "optimal",
+                "maximum"
+            ],
+            "additionalProperties": false
+        }
+    }
+}

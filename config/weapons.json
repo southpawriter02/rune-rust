@@ -1,5 +1,5 @@
 {
-  "$schema": "weapons.schema.json",
+  "$schema": "./schemas/weapons.schema.json",
   "weapons": [
     {
       "id": "rusty_sword",
@@ -49,7 +49,9 @@
       "description": "A quick, precise blade favored by rogues.",
       "weaponType": "Dagger",
       "damageDice": "1d4",
-      "statBonuses": { "finesse": 2 },
+      "statBonuses": {
+        "finesse": 2
+      },
       "value": 40
     },
     {
@@ -58,7 +60,9 @@
       "description": "A wickedly sharp dagger perfect for striking vital points.",
       "weaponType": "Dagger",
       "damageDice": "1d4+2",
-      "statBonuses": { "finesse": 3 },
+      "statBonuses": {
+        "finesse": 3
+      },
       "value": 250
     },
     {
@@ -67,7 +71,9 @@
       "description": "A sturdy wooden staff imbued with minor magic.",
       "weaponType": "Staff",
       "damageDice": "1d6",
-      "statBonuses": { "will": 2 },
+      "statBonuses": {
+        "will": 2
+      },
       "value": 45
     },
     {
@@ -76,7 +82,9 @@
       "description": "A staff crackling with magical energy.",
       "weaponType": "Staff",
       "damageDice": "1d6+1",
-      "statBonuses": { "will": 4 },
+      "statBonuses": {
+        "will": 4
+      },
       "value": 300
     }
   ]
