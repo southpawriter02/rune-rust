@@ -1,0 +1,176 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "node-tooltip.schema.json",
+    "title": "Node Tooltip Configuration",
+    "description": "Configuration for ability tree node tooltip display",
+    "type": "object",
+    "properties": {
+        "tooltipWidth": {
+            "type": "integer",
+            "description": "Width of the tooltip box in characters",
+            "minimum": 30,
+            "maximum": 80,
+            "default": 45
+        },
+        "maxTooltipHeight": {
+            "type": "integer",
+            "description": "Maximum height of the tooltip in lines",
+            "minimum": 10,
+            "maximum": 40,
+            "default": 20
+        },
+        "tooltipOffset": {
+            "type": "integer",
+            "description": "Offset from node when positioning tooltip",
+            "minimum": 0,
+            "maximum": 10,
+            "default": 2
+        },
+        "pointDisplayWidth": {
+            "type": "integer",
+            "description": "Width of the talent point display area",
+            "minimum": 25,
+            "maximum": 60,
+            "default": 40
+        },
+        "borderColor": {
+            "type": "string",
+            "description": "Color for the tooltip border",
+            "enum": [
+                "Black",
+                "DarkBlue",
+                "DarkGreen",
+                "DarkCyan",
+                "DarkRed",
+                "DarkMagenta",
+                "DarkYellow",
+                "Gray",
+                "DarkGray",
+                "Blue",
+                "Green",
+                "Cyan",
+                "Red",
+                "Magenta",
+                "Yellow",
+                "White"
+            ],
+            "default": "DarkCyan"
+        },
+        "promptColor": {
+            "type": "string",
+            "description": "Color for the confirmation prompt",
+            "enum": [
+                "Black",
+                "DarkBlue",
+                "DarkGreen",
+                "DarkCyan",
+                "DarkRed",
+                "DarkMagenta",
+                "DarkYellow",
+                "Gray",
+                "DarkGray",
+                "Blue",
+                "Green",
+                "Cyan",
+                "Red",
+                "Magenta",
+                "Yellow",
+                "White"
+            ],
+            "default": "Yellow"
+        },
+        "availablePointsColor": {
+            "type": "string",
+            "description": "Color for available talent points when > 0",
+            "enum": [
+                "Black",
+                "DarkBlue",
+                "DarkGreen",
+                "DarkCyan",
+                "DarkRed",
+                "DarkMagenta",
+                "DarkYellow",
+                "Gray",
+                "DarkGray",
+                "Blue",
+                "Green",
+                "Cyan",
+                "Red",
+                "Magenta",
+                "Yellow",
+                "White"
+            ],
+            "default": "Yellow"
+        },
+        "spentPointsColor": {
+            "type": "string",
+            "description": "Color for spent talent points",
+            "enum": [
+                "Black",
+                "DarkBlue",
+                "DarkGreen",
+                "DarkCyan",
+                "DarkRed",
+                "DarkMagenta",
+                "DarkYellow",
+                "Gray",
+                "DarkGray",
+                "Blue",
+                "Green",
+                "Cyan",
+                "Red",
+                "Magenta",
+                "Yellow",
+                "White"
+            ],
+            "default": "Gray"
+        },
+        "satisfiedColor": {
+            "type": "string",
+            "description": "Color for satisfied requirements",
+            "enum": [
+                "Black",
+                "DarkBlue",
+                "DarkGreen",
+                "DarkCyan",
+                "DarkRed",
+                "DarkMagenta",
+                "DarkYellow",
+                "Gray",
+                "DarkGray",
+                "Blue",
+                "Green",
+                "Cyan",
+                "Red",
+                "Magenta",
+                "Yellow",
+                "White"
+            ],
+            "default": "Green"
+        },
+        "unsatisfiedColor": {
+            "type": "string",
+            "description": "Color for unsatisfied requirements",
+            "enum": [
+                "Black",
+                "DarkBlue",
+                "DarkGreen",
+                "DarkCyan",
+                "DarkRed",
+                "DarkMagenta",
+                "DarkYellow",
+                "Gray",
+                "DarkGray",
+                "Blue",
+                "Green",
+                "Cyan",
+                "Red",
+                "Magenta",
+                "Yellow",
+                "White"
+            ],
+            "default": "DarkGray"
+        }
+    },
+    "additionalProperties": false
+}

@@ -1,0 +1,13 @@
+{
+    "$schema": "./schemas/node-tooltip.schema.json",
+    "tooltipWidth": 45,
+    "maxTooltipHeight": 20,
+    "tooltipOffset": 2,
+    "pointDisplayWidth": 40,
+    "borderColor": "DarkCyan",
+    "promptColor": "Yellow",
+    "availablePointsColor": "Yellow",
+    "spentPointsColor": "Gray",
+    "satisfiedColor": "Green",
+    "unsatisfiedColor": "DarkGray"
+}
