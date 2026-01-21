@@ -1,0 +1,217 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Loot Table Configuration",
+    "description": "Schema for loot table definitions. Defines what items monsters drop, chests contain, or quests reward.",
+    "type": "object",
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "Reference to the JSON schema file for validation"
+        },
+        "version": {
+            "type": "string",
+            "description": "Optional version identifier for the configuration file",
+            "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+        },
+        "lootTables": {
+            "type": "array",
+            "description": "List of loot table definitions",
+            "items": {
+                "$ref": "#/definitions/LootTableDefinition"
+            },
+            "minItems": 1
+        }
+    },
+    "required": [
+        "lootTables"
+    ],
+    "additionalProperties": false,
+    "definitions": {
+        "LootTableDefinition": {
+            "type": "object",
+            "description": "A loot table defining items that can drop from a source",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Unique identifier for the loot table (lowercase with underscores/hyphens)",
+                    "pattern": "^[a-z][a-z0-9_-]*$",
+                    "minLength": 1,
+                    "maxLength": 50
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Display name for the loot table",
+                    "minLength": 1,
+                    "maxLength": 100
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Optional description of what this loot table is for"
+                },
+                "guaranteedDrops": {
+                    "type": "array",
+                    "description": "Items that always drop (subject to individual dropChance)",
+                    "items": {
+                        "$ref": "#/definitions/LootEntry"
+                    }
+                },
+                "randomPool": {
+                    "type": "array",
+                    "description": "Pool of items for weighted random selection",
+                    "items": {
+                        "$ref": "#/definitions/LootEntry"
+                    }
+                },
+                "poolDropCount": {
+                    "$ref": "#/definitions/QuantityRange",
+                    "description": "How many items to select from the random pool"
+                },
+                "currencyDrop": {
+                    "$ref": "#/definitions/CurrencyDrop",
+                    "description": "Currency (gold) dropped from this table"
+                },
+                "conditions": {
+                    "$ref": "#/definitions/DropCondition",
+                    "description": "Conditions that must be met for this table to apply"
+                }
+            },
+            "required": [
+                "id",
+                "name"
+            ],
+            "additionalProperties": false
+        },
+        "LootEntry": {
+            "type": "object",
+            "description": "A single item entry in a loot table",
+            "properties": {
+                "itemId": {
+                    "type": "string",
+                    "description": "Reference to the item ID in weapons.json, armor.json, or items.json",
+                    "minLength": 1
+                },
+                "itemType": {
+                    "type": "string",
+                    "description": "The type of item being referenced",
+                    "enum": [
+                        "Item",
+                        "Weapon",
+                        "Armor"
+                    ]
+                },
+                "dropChance": {
+                    "type": "number",
+                    "description": "Probability of this item dropping (0.0 to 1.0)",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "default": 1.0
+                },
+                "quantity": {
+                    "$ref": "#/definitions/QuantityRange",
+                    "description": "Number of items to drop"
+                },
+                "conditions": {
+                    "$ref": "#/definitions/DropCondition",
+                    "description": "Conditions specific to this entry"
+                },
+                "weight": {
+                    "type": "integer",
+                    "description": "Weight for weighted random selection (higher = more likely)",
+                    "minimum": 1,
+                    "default": 1
+                }
+            },
+            "required": [
+                "itemId"
+            ],
+            "additionalProperties": false
+        },
+        "QuantityRange": {
+            "type": "object",
+            "description": "A range of possible quantities",
+            "properties": {
+                "min": {
+                    "type": "integer",
+                    "description": "Minimum quantity (inclusive)",
+                    "minimum": 1,
+                    "default": 1
+                },
+                "max": {
+                    "type": "integer",
+                    "description": "Maximum quantity (inclusive)",
+                    "minimum": 1,
+                    "default": 1
+                }
+            },
+            "additionalProperties": false
+        },
+        "CurrencyDrop": {
+            "type": "object",
+            "description": "Currency dropped from a loot table",
+            "properties": {
+                "dropChance": {
+                    "type": "number",
+                    "description": "Probability of currency dropping (0.0 to 1.0)",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "default": 1.0
+                },
+                "amount": {
+                    "$ref": "#/definitions/QuantityRange",
+                    "description": "Range of currency amount to drop"
+                },
+                "currencyType": {
+                    "type": "string",
+                    "description": "Type of currency (default: gold)",
+                    "default": "gold"
+                }
+            },
+            "required": [
+                "amount"
+            ],
+            "additionalProperties": false
+        },
+        "DropCondition": {
+            "type": "object",
+            "description": "Conditions for loot to drop",
+            "properties": {
+                "minLevel": {
+                    "type": "integer",
+                    "description": "Minimum player level required",
+                    "minimum": 1
+                },
+                "maxLevel": {
+                    "type": "integer",
+                    "description": "Maximum player level allowed",
+                    "minimum": 1
+                },
+                "difficulty": {
+                    "type": "string",
+                    "description": "Required difficulty setting",
+                    "enum": [
+                        "Easy",
+                        "Normal",
+                        "Hard",
+                        "Nightmare"
+                    ]
+                },
+                "classIds": {
+                    "type": "array",
+                    "description": "Class IDs that can receive this drop",
+                    "items": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9_-]*$"
+                    }
+                },
+                "requiredFlags": {
+                    "type": "array",
+                    "description": "Quest flags that must be set",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            },
+            "additionalProperties": false
+        }
+    }
+}

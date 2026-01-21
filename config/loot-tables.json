@@ -1,0 +1,398 @@
+{
+    "$schema": "./schemas/loot-tables.schema.json",
+    "lootTables": [
+        {
+            "id": "goblin_common",
+            "name": "Common Goblin Loot",
+            "description": "Basic loot dropped by common goblins",
+            "randomPool": [
+                {
+                    "itemId": "health_potion",
+                    "itemType": "Item",
+                    "weight": 40,
+                    "quantity": {
+                        "min": 1,
+                        "max": 2
+                    }
+                },
+                {
+                    "itemId": "iron_ore",
+                    "itemType": "Item",
+                    "weight": 30,
+                    "quantity": {
+                        "min": 1,
+                        "max": 3
+                    }
+                },
+                {
+                    "itemId": "rusty_dagger",
+                    "itemType": "Weapon",
+                    "weight": 20
+                },
+                {
+                    "itemId": "leather_strip",
+                    "itemType": "Item",
+                    "weight": 10,
+                    "quantity": {
+                        "min": 1,
+                        "max": 2
+                    }
+                }
+            ],
+            "poolDropCount": {
+                "min": 1,
+                "max": 2
+            },
+            "currencyDrop": {
+                "dropChance": 0.8,
+                "amount": {
+                    "min": 5,
+                    "max": 15
+                },
+                "currencyType": "gold"
+            }
+        },
+        {
+            "id": "goblin_shaman",
+            "name": "Goblin Shaman Loot",
+            "description": "Loot from goblin shamans with magical items",
+            "guaranteedDrops": [
+                {
+                    "itemId": "shaman_staff",
+                    "itemType": "Weapon",
+                    "dropChance": 0.3
+                }
+            ],
+            "randomPool": [
+                {
+                    "itemId": "mana_potion",
+                    "itemType": "Item",
+                    "weight": 35,
+                    "quantity": {
+                        "min": 1,
+                        "max": 2
+                    }
+                },
+                {
+                    "itemId": "magic_dust",
+                    "itemType": "Item",
+                    "weight": 25,
+                    "quantity": {
+                        "min": 1,
+                        "max": 3
+                    }
+                },
+                {
+                    "itemId": "scroll_of_fireball",
+                    "itemType": "Item",
+                    "weight": 20
+                },
+                {
+                    "itemId": "enchanted_robe",
+                    "itemType": "Armor",
+                    "weight": 15
+                },
+                {
+                    "itemId": "rare_gem",
+                    "itemType": "Item",
+                    "weight": 5
+                }
+            ],
+            "poolDropCount": {
+                "min": 1,
+                "max": 3
+            },
+            "currencyDrop": {
+                "dropChance": 0.9,
+                "amount": {
+                    "min": 15,
+                    "max": 40
+                },
+                "currencyType": "gold"
+            }
+        },
+        {
+            "id": "treasure_chest_small",
+            "name": "Small Treasure Chest",
+            "description": "Contents of small treasure chests",
+            "guaranteedDrops": [
+                {
+                    "itemId": "gold_coins",
+                    "itemType": "Item",
+                    "quantity": {
+                        "min": 1,
+                        "max": 1
+                    }
+                }
+            ],
+            "randomPool": [
+                {
+                    "itemId": "health_potion",
+                    "itemType": "Item",
+                    "weight": 30,
+                    "quantity": {
+                        "min": 1,
+                        "max": 2
+                    }
+                },
+                {
+                    "itemId": "mana_potion",
+                    "itemType": "Item",
+                    "weight": 25
+                },
+                {
+                    "itemId": "antidote",
+                    "itemType": "Item",
+                    "weight": 20
+                },
+                {
+                    "itemId": "torch",
+                    "itemType": "Item",
+                    "weight": 15,
+                    "quantity": {
+                        "min": 2,
+                        "max": 5
+                    }
+                },
+                {
+                    "itemId": "lockpick",
+                    "itemType": "Item",
+                    "weight": 10,
+                    "quantity": {
+                        "min": 1,
+                        "max": 3
+                    }
+                }
+            ],
+            "poolDropCount": {
+                "min": 2,
+                "max": 4
+            },
+            "currencyDrop": {
+                "dropChance": 1.0,
+                "amount": {
+                    "min": 25,
+                    "max": 75
+                },
+                "currencyType": "gold"
+            }
+        },
+        {
+            "id": "boss_dragon",
+            "name": "Dragon Boss Loot",
+            "description": "Legendary loot from the ancient dragon boss",
+            "guaranteedDrops": [
+                {
+                    "itemId": "dragon_scale",
+                    "itemType": "Item",
+                    "quantity": {
+                        "min": 3,
+                        "max": 7
+                    }
+                },
+                {
+                    "itemId": "dragon_heart",
+                    "itemType": "Item",
+                    "dropChance": 0.5
+                }
+            ],
+            "randomPool": [
+                {
+                    "itemId": "dragonbane_sword",
+                    "itemType": "Weapon",
+                    "weight": 10
+                },
+                {
+                    "itemId": "dragon_mail",
+                    "itemType": "Armor",
+                    "weight": 10
+                },
+                {
+                    "itemId": "dragon_claw_dagger",
+                    "itemType": "Weapon",
+                    "weight": 15
+                },
+                {
+                    "itemId": "fire_resistance_ring",
+                    "itemType": "Item",
+                    "weight": 20
+                },
+                {
+                    "itemId": "greater_health_potion",
+                    "itemType": "Item",
+                    "weight": 25,
+                    "quantity": {
+                        "min": 2,
+                        "max": 4
+                    }
+                },
+                {
+                    "itemId": "panacea",
+                    "itemType": "Item",
+                    "weight": 20
+                }
+            ],
+            "poolDropCount": {
+                "min": 3,
+                "max": 5
+            },
+            "currencyDrop": {
+                "dropChance": 1.0,
+                "amount": {
+                    "min": 500,
+                    "max": 2000
+                },
+                "currencyType": "gold"
+            },
+            "conditions": {
+                "minLevel": 15
+            }
+        },
+        {
+            "id": "quest_reward_tier1",
+            "name": "Tier 1 Quest Reward",
+            "description": "Fixed rewards for completing tier 1 quests",
+            "guaranteedDrops": [
+                {
+                    "itemId": "health_potion",
+                    "itemType": "Item",
+                    "quantity": {
+                        "min": 3,
+                        "max": 3
+                    }
+                },
+                {
+                    "itemId": "mana_potion",
+                    "itemType": "Item",
+                    "quantity": {
+                        "min": 2,
+                        "max": 2
+                    }
+                }
+            ],
+            "currencyDrop": {
+                "dropChance": 1.0,
+                "amount": {
+                    "min": 100,
+                    "max": 100
+                },
+                "currencyType": "gold"
+            }
+        },
+        {
+            "id": "nightmare_bonus",
+            "name": "Nightmare Difficulty Bonus",
+            "description": "Extra loot only available on Nightmare difficulty",
+            "randomPool": [
+                {
+                    "itemId": "epic_weapon_token",
+                    "itemType": "Item",
+                    "weight": 30
+                },
+                {
+                    "itemId": "epic_armor_token",
+                    "itemType": "Item",
+                    "weight": 30
+                },
+                {
+                    "itemId": "legendary_essence",
+                    "itemType": "Item",
+                    "weight": 20
+                },
+                {
+                    "itemId": "ancient_rune",
+                    "itemType": "Item",
+                    "weight": 20
+                }
+            ],
+            "poolDropCount": {
+                "min": 1,
+                "max": 2
+            },
+            "conditions": {
+                "difficulty": "Nightmare"
+            }
+        },
+        {
+            "id": "class_specific_shadow-walker",
+            "name": "Shadow-Walker Class Drops",
+            "description": "Bonus drops only for Shadow-Walker class",
+            "randomPool": [
+                {
+                    "itemId": "shadow_blade",
+                    "itemType": "Weapon",
+                    "weight": 25
+                },
+                {
+                    "itemId": "cloak_of_shadows",
+                    "itemType": "Armor",
+                    "weight": 25
+                },
+                {
+                    "itemId": "smoke_bomb",
+                    "itemType": "Item",
+                    "weight": 30,
+                    "quantity": {
+                        "min": 2,
+                        "max": 5
+                    }
+                },
+                {
+                    "itemId": "poison_vial",
+                    "itemType": "Item",
+                    "weight": 20,
+                    "quantity": {
+                        "min": 1,
+                        "max": 3
+                    }
+                }
+            ],
+            "poolDropCount": {
+                "min": 1,
+                "max": 1
+            },
+            "conditions": {
+                "classIds": [
+                    "shadow-walker"
+                ]
+            }
+        },
+        {
+            "id": "post_dragon_quest_bonus",
+            "name": "Post-Dragon Quest Bonus",
+            "description": "Bonus loot available after slaying the dragon",
+            "guaranteedDrops": [
+                {
+                    "itemId": "dragon_slayer_medal",
+                    "itemType": "Item"
+                }
+            ],
+            "randomPool": [
+                {
+                    "itemId": "dragon_tooth_necklace",
+                    "itemType": "Item",
+                    "weight": 40
+                },
+                {
+                    "itemId": "flame_enchant_scroll",
+                    "itemType": "Item",
+                    "weight": 30
+                },
+                {
+                    "itemId": "dragon_rider_boots",
+                    "itemType": "Armor",
+                    "weight": 30
+                }
+            ],
+            "poolDropCount": {
+                "min": 1,
+                "max": 2
+            },
+            "conditions": {
+                "requiredFlags": [
+                    "dragon_slain"
+                ]
+            }
+        }
+    ]
+}
