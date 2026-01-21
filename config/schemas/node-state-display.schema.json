@@ -1,0 +1,185 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "node-state-display.schema.json",
+    "title": "Node State Display Configuration",
+    "description": "Configuration for ability tree node state display settings",
+    "type": "object",
+    "properties": {
+        "nodeWidth": {
+            "type": "integer",
+            "description": "Width of a node box in characters",
+            "default": 11,
+            "minimum": 5,
+            "maximum": 30
+        },
+        "nodeHeight": {
+            "type": "integer",
+            "description": "Height of a node box in rows",
+            "default": 3,
+            "minimum": 1,
+            "maximum": 10
+        },
+        "nodeHorizontalSpacing": {
+            "type": "integer",
+            "description": "Horizontal spacing between nodes",
+            "default": 4,
+            "minimum": 0,
+            "maximum": 20
+        },
+        "nodeVerticalSpacing": {
+            "type": "integer",
+            "description": "Vertical spacing between nodes",
+            "default": 2,
+            "minimum": 0,
+            "maximum": 10
+        },
+        "indicators": {
+            "type": "object",
+            "description": "State indicator strings",
+            "properties": {
+                "unlockedIndicator": {
+                    "type": "string",
+                    "description": "Indicator for unlocked nodes",
+                    "default": "[x]",
+                    "maxLength": 5
+                },
+                "availableIndicator": {
+                    "type": "string",
+                    "description": "Indicator for available nodes",
+                    "default": "( )",
+                    "maxLength": 5
+                },
+                "lockedIndicator": {
+                    "type": "string",
+                    "description": "Indicator for locked nodes",
+                    "default": "[L]",
+                    "maxLength": 5
+                }
+            },
+            "additionalProperties": false
+        },
+        "colors": {
+            "type": "object",
+            "description": "Console colors for each state",
+            "properties": {
+                "unlockedColor": {
+                    "type": "string",
+                    "description": "Color for unlocked nodes",
+                    "default": "Green",
+                    "enum": [
+                        "Black",
+                        "DarkBlue",
+                        "DarkGreen",
+                        "DarkCyan",
+                        "DarkRed",
+                        "DarkMagenta",
+                        "DarkYellow",
+                        "Gray",
+                        "DarkGray",
+                        "Blue",
+                        "Green",
+                        "Cyan",
+                        "Red",
+                        "Magenta",
+                        "Yellow",
+                        "White"
+                    ]
+                },
+                "availableColor": {
+                    "type": "string",
+                    "description": "Color for available nodes",
+                    "default": "Yellow",
+                    "enum": [
+                        "Black",
+                        "DarkBlue",
+                        "DarkGreen",
+                        "DarkCyan",
+                        "DarkRed",
+                        "DarkMagenta",
+                        "DarkYellow",
+                        "Gray",
+                        "DarkGray",
+                        "Blue",
+                        "Green",
+                        "Cyan",
+                        "Red",
+                        "Magenta",
+                        "Yellow",
+                        "White"
+                    ]
+                },
+                "lockedColor": {
+                    "type": "string",
+                    "description": "Color for locked nodes",
+                    "default": "DarkGray",
+                    "enum": [
+                        "Black",
+                        "DarkBlue",
+                        "DarkGreen",
+                        "DarkCyan",
+                        "DarkRed",
+                        "DarkMagenta",
+                        "DarkYellow",
+                        "Gray",
+                        "DarkGray",
+                        "Blue",
+                        "Green",
+                        "Cyan",
+                        "Red",
+                        "Magenta",
+                        "Yellow",
+                        "White"
+                    ]
+                },
+                "highlightedNodeColor": {
+                    "type": "string",
+                    "description": "Color for highlighted nodes",
+                    "default": "White",
+                    "enum": [
+                        "Black",
+                        "DarkBlue",
+                        "DarkGreen",
+                        "DarkCyan",
+                        "DarkRed",
+                        "DarkMagenta",
+                        "DarkYellow",
+                        "Gray",
+                        "DarkGray",
+                        "Blue",
+                        "Green",
+                        "Cyan",
+                        "Red",
+                        "Magenta",
+                        "Yellow",
+                        "White"
+                    ]
+                },
+                "rankProgressColor": {
+                    "type": "string",
+                    "description": "Color for rank progress text",
+                    "default": "Cyan",
+                    "enum": [
+                        "Black",
+                        "DarkBlue",
+                        "DarkGreen",
+                        "DarkCyan",
+                        "DarkRed",
+                        "DarkMagenta",
+                        "DarkYellow",
+                        "Gray",
+                        "DarkGray",
+                        "Blue",
+                        "Green",
+                        "Cyan",
+                        "Red",
+                        "Magenta",
+                        "Yellow",
+                        "White"
+                    ]
+                }
+            },
+            "additionalProperties": false
+        }
+    },
+    "additionalProperties": false
+}

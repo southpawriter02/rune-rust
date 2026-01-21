@@ -1,0 +1,19 @@
+{
+    "$schema": "./schemas/node-state-display.schema.json",
+    "nodeWidth": 11,
+    "nodeHeight": 3,
+    "nodeHorizontalSpacing": 4,
+    "nodeVerticalSpacing": 2,
+    "indicators": {
+        "unlockedIndicator": "[x]",
+        "availableIndicator": "( )",
+        "lockedIndicator": "[L]"
+    },
+    "colors": {
+        "unlockedColor": "Green",
+        "availableColor": "Yellow",
+        "lockedColor": "DarkGray",
+        "highlightedNodeColor": "White",
+        "rankProgressColor": "Cyan"
+    }
+}
