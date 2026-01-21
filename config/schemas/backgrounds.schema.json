@@ -1,0 +1,160 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Background Configuration",
+    "description": "Schema for character background definitions. Backgrounds represent a character's history and provide attribute bonuses, starter abilities, and starting items.",
+    "type": "object",
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "Reference to the JSON schema file for validation"
+        },
+        "version": {
+            "type": "string",
+            "description": "Configuration file version for compatibility tracking",
+            "pattern": "^[0-9]+\\.[0-9]+$"
+        },
+        "backgrounds": {
+            "type": "array",
+            "description": "List of background definitions",
+            "items": {
+                "$ref": "#/definitions/BackgroundDefinition"
+            },
+            "minItems": 1
+        }
+    },
+    "required": [
+        "backgrounds"
+    ],
+    "additionalProperties": false,
+    "definitions": {
+        "BackgroundDefinition": {
+            "type": "object",
+            "description": "A single background definition with category, bonuses, ability, and metadata",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Unique identifier for the background (lowercase kebab-case)",
+                    "pattern": "^[a-z][a-z0-9-]*$",
+                    "minLength": 1,
+                    "maxLength": 50
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Display name for the background shown to players",
+                    "minLength": 1,
+                    "maxLength": 100
+                },
+                "category": {
+                    "type": "string",
+                    "description": "Background category determining bonus distribution pattern",
+                    "enum": [
+                        "Profession",
+                        "Lineage"
+                    ]
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Short description of the background for character creation",
+                    "minLength": 1,
+                    "maxLength": 500
+                },
+                "lore": {
+                    "type": "string",
+                    "description": "Extended lore and background story flavor text",
+                    "maxLength": 2000
+                },
+                "attributeBonuses": {
+                    "$ref": "#/definitions/AttributeBonuses",
+                    "description": "Attribute bonuses provided by this background (0-2 per attribute)"
+                },
+                "starterAbilityId": {
+                    "type": "string",
+                    "description": "Unique identifier for the starter ability granted by this background",
+                    "minLength": 1,
+                    "maxLength": 50
+                },
+                "starterAbilityName": {
+                    "type": "string",
+                    "description": "Display name for the starter ability",
+                    "minLength": 1,
+                    "maxLength": 100
+                },
+                "starterAbilityDescription": {
+                    "type": "string",
+                    "description": "Description of the starter ability's effect",
+                    "minLength": 1,
+                    "maxLength": 500
+                },
+                "startingItems": {
+                    "type": "array",
+                    "description": "Item IDs granted to characters with this background at creation",
+                    "items": {
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "uniqueItems": true
+                },
+                "isPlayable": {
+                    "type": "boolean",
+                    "description": "Whether this background can be selected during character creation",
+                    "default": true
+                },
+                "sortOrder": {
+                    "type": "integer",
+                    "description": "Display order in character creation UI (lower = earlier)",
+                    "minimum": 0,
+                    "default": 0
+                }
+            },
+            "required": [
+                "id",
+                "name",
+                "category",
+                "description",
+                "attributeBonuses",
+                "starterAbilityId",
+                "starterAbilityName",
+                "starterAbilityDescription",
+                "startingItems"
+            ],
+            "additionalProperties": false
+        },
+        "AttributeBonuses": {
+            "type": "object",
+            "description": "Attribute bonuses provided by this background. All fields are optional; only specified attributes receive bonuses.",
+            "properties": {
+                "might": {
+                    "type": "integer",
+                    "description": "Physical power bonus affecting melee damage and carry capacity",
+                    "minimum": 0,
+                    "maximum": 2
+                },
+                "fortitude": {
+                    "type": "integer",
+                    "description": "Physical resilience bonus affecting health and resistances",
+                    "minimum": 0,
+                    "maximum": 2
+                },
+                "will": {
+                    "type": "integer",
+                    "description": "Mental fortitude bonus affecting magical resistance and focus",
+                    "minimum": 0,
+                    "maximum": 2
+                },
+                "wits": {
+                    "type": "integer",
+                    "description": "Mental acuity bonus affecting initiative and perception",
+                    "minimum": 0,
+                    "maximum": 2
+                },
+                "finesse": {
+                    "type": "integer",
+                    "description": "Dexterity bonus affecting accuracy and evasion",
+                    "minimum": 0,
+                    "maximum": 2
+                }
+            },
+            "additionalProperties": false
+        }
+    }
+}
