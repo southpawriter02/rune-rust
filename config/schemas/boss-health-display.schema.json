@@ -1,0 +1,206 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "boss-health-display.schema.json",
+    "title": "Boss Health Display Configuration",
+    "description": "Configuration for boss health bar display in combat UI",
+    "type": "object",
+    "properties": {
+        "barWidth": {
+            "type": "integer",
+            "description": "Width of the health bar fill area in characters",
+            "minimum": 20,
+            "maximum": 120,
+            "default": 60
+        },
+        "totalWidth": {
+            "type": "integer",
+            "description": "Total width of the display area",
+            "minimum": 30,
+            "maximum": 150,
+            "default": 72
+        },
+        "totalHeight": {
+            "type": "integer",
+            "description": "Total height of the display area in rows",
+            "minimum": 4,
+            "maximum": 10,
+            "default": 6
+        },
+        "startX": {
+            "type": "integer",
+            "description": "Starting X coordinate for the display",
+            "minimum": 0,
+            "default": 0
+        },
+        "startY": {
+            "type": "integer",
+            "description": "Starting Y coordinate for the display",
+            "minimum": 0,
+            "default": 0
+        },
+        "textIndent": {
+            "type": "integer",
+            "description": "Indentation for text elements",
+            "minimum": 0,
+            "maximum": 10,
+            "default": 3
+        },
+        "symbols": {
+            "type": "object",
+            "description": "Symbol characters for health bar rendering",
+            "properties": {
+                "filledChar": {
+                    "type": "string",
+                    "maxLength": 1,
+                    "default": "#",
+                    "description": "Character for filled health bar portion"
+                },
+                "emptyChar": {
+                    "type": "string",
+                    "maxLength": 1,
+                    "default": ".",
+                    "description": "Character for empty health bar portion"
+                },
+                "borderChar": {
+                    "type": "string",
+                    "maxLength": 1,
+                    "default": "=",
+                    "description": "Character for bar border"
+                },
+                "cornerChar": {
+                    "type": "string",
+                    "maxLength": 1,
+                    "default": "+",
+                    "description": "Character for bar corners"
+                },
+                "phaseMarkerChar": {
+                    "type": "string",
+                    "maxLength": 1,
+                    "default": "|",
+                    "description": "Character for phase marker on bar"
+                },
+                "headerPrefix": {
+                    "type": "string",
+                    "maxLength": 4,
+                    "default": "<<",
+                    "description": "Prefix for boss name header"
+                },
+                "headerSuffix": {
+                    "type": "string",
+                    "maxLength": 4,
+                    "default": ">>",
+                    "description": "Suffix for boss name header"
+                }
+            },
+            "additionalProperties": false
+        },
+        "colors": {
+            "type": "object",
+            "description": "Color configuration for health bar elements",
+            "properties": {
+                "headerColor": {
+                    "$ref": "#/$defs/consoleColor",
+                    "default": "Magenta",
+                    "description": "Color for the boss name header"
+                },
+                "phaseMarkerColor": {
+                    "$ref": "#/$defs/consoleColor",
+                    "default": "White",
+                    "description": "Color for phase markers"
+                },
+                "damageFlashColor": {
+                    "$ref": "#/$defs/consoleColor",
+                    "default": "Red",
+                    "description": "Color for damage flash effect"
+                },
+                "damageColor": {
+                    "$ref": "#/$defs/consoleColor",
+                    "default": "Red",
+                    "description": "Color for damage delta text"
+                },
+                "criticalColor": {
+                    "$ref": "#/$defs/consoleColor",
+                    "default": "DarkRed",
+                    "description": "Color for critical health (0%)"
+                },
+                "healingColor": {
+                    "$ref": "#/$defs/consoleColor",
+                    "default": "Green",
+                    "description": "Color for healing delta text"
+                }
+            },
+            "additionalProperties": false
+        },
+        "colorThresholds": {
+            "type": "array",
+            "description": "Health percentage color thresholds, evaluated from highest to lowest",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "percent": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 100,
+                        "description": "Health percentage threshold"
+                    },
+                    "color": {
+                        "$ref": "#/$defs/consoleColor",
+                        "description": "Color to use when health is above this threshold"
+                    }
+                },
+                "required": [
+                    "percent",
+                    "color"
+                ],
+                "additionalProperties": false
+            },
+            "minItems": 1
+        },
+        "animation": {
+            "type": "object",
+            "description": "Damage animation timing configuration",
+            "properties": {
+                "flashDurationMs": {
+                    "type": "integer",
+                    "description": "Duration of damage flash in milliseconds",
+                    "minimum": 0,
+                    "maximum": 500,
+                    "default": 100
+                },
+                "deltaDisplayMs": {
+                    "type": "integer",
+                    "description": "Duration to display damage delta in milliseconds",
+                    "minimum": 0,
+                    "maximum": 2000,
+                    "default": 500
+                }
+            },
+            "additionalProperties": false
+        }
+    },
+    "$defs": {
+        "consoleColor": {
+            "type": "string",
+            "enum": [
+                "Black",
+                "DarkBlue",
+                "DarkGreen",
+                "DarkCyan",
+                "DarkRed",
+                "DarkMagenta",
+                "DarkYellow",
+                "Gray",
+                "DarkGray",
+                "Blue",
+                "Green",
+                "Cyan",
+                "Red",
+                "Magenta",
+                "Yellow",
+                "White"
+            ],
+            "description": "Valid .NET ConsoleColor values"
+        }
+    },
+    "additionalProperties": false
+}

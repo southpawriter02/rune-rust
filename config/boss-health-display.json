@@ -1,0 +1,48 @@
+{
+    "$schema": "./schemas/boss-health-display.schema.json",
+    "barWidth": 60,
+    "totalWidth": 72,
+    "totalHeight": 6,
+    "startX": 0,
+    "startY": 0,
+    "textIndent": 3,
+    "symbols": {
+        "filledChar": "#",
+        "emptyChar": ".",
+        "borderChar": "=",
+        "cornerChar": "+",
+        "phaseMarkerChar": "|",
+        "headerPrefix": "<<",
+        "headerSuffix": ">>"
+    },
+    "colors": {
+        "headerColor": "Magenta",
+        "phaseMarkerColor": "White",
+        "damageFlashColor": "Red",
+        "damageColor": "Red",
+        "criticalColor": "DarkRed",
+        "healingColor": "Green"
+    },
+    "colorThresholds": [
+        {
+            "percent": 75,
+            "color": "Green"
+        },
+        {
+            "percent": 50,
+            "color": "Yellow"
+        },
+        {
+            "percent": 25,
+            "color": "DarkYellow"
+        },
+        {
+            "percent": 0,
+            "color": "Red"
+        }
+    ],
+    "animation": {
+        "flashDurationMs": 100,
+        "deltaDisplayMs": 500
+    }
+}

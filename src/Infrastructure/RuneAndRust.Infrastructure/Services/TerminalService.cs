@@ -125,6 +125,39 @@ public class TerminalService : ITerminalService, IDisposable
             Write(blank);
         }
     }
+
+    /// <inheritdoc/>
+    public void WriteAt(int x, int y, string text)
+    {
+        SetCursorPosition(x, y);
+        Write(text);
+    }
+
+    /// <inheritdoc/>
+    public void WriteColoredAt(int x, int y, string text, ConsoleColor foreground)
+    {
+        var previousColor = Console.ForegroundColor;
+        try
+        {
+            Console.ForegroundColor = foreground;
+            SetCursorPosition(x, y);
+            Write(text);
+        }
+        finally
+        {
+            Console.ForegroundColor = previousColor;
+        }
+    }
+
+    /// <inheritdoc/>
+    public void FlashDelay(int milliseconds)
+    {
+        if (milliseconds > 0)
+        {
+            Thread.Sleep(milliseconds);
+        }
+    }
+
     
     /// <summary>
     /// Polls for terminal resize events.

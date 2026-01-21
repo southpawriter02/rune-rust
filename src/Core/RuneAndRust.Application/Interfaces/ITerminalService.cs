@@ -69,4 +69,27 @@ public interface ITerminalService
     /// Gets whether Unicode output is supported.
     /// </summary>
     bool SupportsUnicode { get; }
+
+    /// <summary>
+    /// Writes text at a specific position.
+    /// </summary>
+    /// <param name="x">X coordinate (column).</param>
+    /// <param name="y">Y coordinate (row).</param>
+    /// <param name="text">Text to write.</param>
+    void WriteAt(int x, int y, string text);
+
+    /// <summary>
+    /// Writes colored text at a specific position.
+    /// </summary>
+    /// <param name="x">X coordinate (column).</param>
+    /// <param name="y">Y coordinate (row).</param>
+    /// <param name="text">Text to write.</param>
+    /// <param name="foreground">Foreground color.</param>
+    void WriteColoredAt(int x, int y, string text, ConsoleColor foreground);
+
+    /// <summary>
+    /// Introduces a brief delay for visual flash effects.
+    /// </summary>
+    /// <param name="milliseconds">Duration of the delay in milliseconds.</param>
+    void FlashDelay(int milliseconds);
 }
