@@ -1,0 +1,238 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Room Type Configuration",
+    "description": "Schema for room type definitions including multipliers, descriptions, connection rules, and feature spawning. Enables full customization of room behavior and characteristics without code changes, supporting modding scenarios such as custom dungeon layouts, specialized encounter rooms, or unique environmental chambers.",
+    "type": "object",
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "Reference to the JSON schema file for validation"
+        },
+        "version": {
+            "type": "string",
+            "description": "Optional version identifier for the configuration file",
+            "pattern": "^[0-9]+\\.[0-9]+$"
+        },
+        "roomTypes": {
+            "type": "object",
+            "description": "Map of room type IDs to room type definitions. Each room type defines behavioral properties, multipliers, descriptions, connection rules, and feature spawning.",
+            "additionalProperties": {
+                "$ref": "#/definitions/RoomTypeDefinition"
+            },
+            "minProperties": 1
+        }
+    },
+    "required": [
+        "roomTypes"
+    ],
+    "additionalProperties": false,
+    "definitions": {
+        "RoomTypeDefinition": {
+            "type": "object",
+            "description": "A room type definition with multipliers, descriptions, and spawn rules. Room types define the behavioral and mechanical properties of generated rooms, controlling monster spawns, loot drops, experience gains, and feature placement.",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Unique identifier for the room type (lowercase kebab-case). Must start with a letter and contain only lowercase letters, numbers, and hyphens.",
+                    "pattern": "^[a-z][a-z0-9-]*$",
+                    "minLength": 1,
+                    "maxLength": 50
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Display name shown to players in the UI and room headers.",
+                    "minLength": 1,
+                    "maxLength": 100
+                },
+                "entryDescription": {
+                    "type": "string",
+                    "description": "Text displayed when player first enters this room type. Provides atmospheric flavor and hints about the room's nature. Empty string means no special entry message."
+                },
+                "indicator": {
+                    "type": "string",
+                    "description": "Short UI indicator tag displayed in room header (e.g., '[Treasure Room]'). Empty string means no indicator shown. Helps player quickly identify room purpose."
+                },
+                "monsterSpawnMultiplier": {
+                    "type": "number",
+                    "description": "Multiplier for monster spawn count (0.0 = no monsters, 1.0 = normal, 2.0 = double). Final monster count is calculated as floor(baseCount × multiplier).",
+                    "minimum": 0,
+                    "default": 1.0
+                },
+                "lootMultiplier": {
+                    "type": "number",
+                    "description": "Multiplier for loot drop quantity (0.0 = no loot, 1.0 = normal, 2.0 = double). Final loot quantity is calculated as round(baseQuantity × multiplier).",
+                    "minimum": 0,
+                    "default": 1.0
+                },
+                "experienceMultiplier": {
+                    "type": "number",
+                    "description": "Multiplier for experience points gained from combat (0.0 = no XP, 1.0 = normal, 2.0 = double). Applied to all XP earned while in this room type.",
+                    "minimum": 0,
+                    "default": 1.0
+                },
+                "allowsRest": {
+                    "type": "boolean",
+                    "description": "Whether player can rest in this room type. True enables the rest command, allowing health/resource recovery. Typically only safe rooms allow resting.",
+                    "default": false
+                },
+                "descriptionPool": {
+                    "type": "array",
+                    "description": "Pool of descriptions randomly selected for variety. One description is randomly chosen per room instance. Empty array means no additional description. Provides replay variety within same room type.",
+                    "items": {
+                        "type": "string",
+                        "minLength": 1
+                    }
+                },
+                "connectionRules": {
+                    "$ref": "#/definitions/ConnectionRules",
+                    "description": "Rules for room connections and passages. Defines allowed door types, secret passage probability, and connection count limits."
+                },
+                "lightingOverride": {
+                    "type": "string",
+                    "description": "Override biome lighting for this room type. If specified, uses this lighting level instead of the biome default. If omitted, uses biome default lighting.",
+                    "enum": [
+                        "dark",
+                        "dim",
+                        "normal",
+                        "bright"
+                    ]
+                },
+                "featureSpawnRules": {
+                    "type": "array",
+                    "description": "Rules for spawning interactive objects and NPCs. Each rule defines a feature with spawn probability and quantity range.",
+                    "items": {
+                        "$ref": "#/definitions/FeatureSpawnRule"
+                    }
+                },
+                "requiredFeatures": {
+                    "type": "array",
+                    "description": "Features that always spawn in this room type (100% spawn chance). Used for defining room identity. Overrides biome restrictions.",
+                    "items": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9-]*$"
+                    }
+                },
+                "forbiddenFeatures": {
+                    "type": "array",
+                    "description": "Features that never spawn in this room type (0% spawn chance). Overrides biome additions and feature spawn rules. Used for safety (e.g., no traps in safe rooms).",
+                    "items": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9-]*$"
+                    }
+                },
+                "sortOrder": {
+                    "type": "integer",
+                    "description": "Order for display sorting (lower values first). Used when presenting room types in menus or selection interfaces.",
+                    "minimum": 0
+                }
+            },
+            "required": [
+                "id",
+                "name"
+            ],
+            "additionalProperties": false
+        },
+        "ConnectionRules": {
+            "type": "object",
+            "description": "Rules for room connections and passages. Controls door types, secret passage probability, and exit count limits for room topology.",
+            "properties": {
+                "allowedDoorTypes": {
+                    "type": "array",
+                    "description": "List of door object IDs that can spawn in connections. References door IDs from interactive-objects.json. Empty array or omitted means all door types allowed.",
+                    "items": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9-]*$"
+                    }
+                },
+                "secretPassageChance": {
+                    "type": "number",
+                    "description": "Probability of a secret passage being generated (0.0 to 1.0). Value of 0.15 means 15% chance. Secret passages are hidden exits discovered through exploration.",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "default": 0
+                },
+                "minConnections": {
+                    "type": "integer",
+                    "description": "Minimum number of exits from this room. Must be at least 1 (room must be reachable). Generator respects this during map creation.",
+                    "minimum": 1,
+                    "default": 1
+                },
+                "maxConnections": {
+                    "type": "integer",
+                    "description": "Maximum number of exits from this room. Must be at least 1. Generator will not create more connections than this limit.",
+                    "minimum": 1,
+                    "default": 4
+                }
+            },
+            "additionalProperties": false
+        },
+        "FeatureSpawnRule": {
+            "type": "object",
+            "description": "Rule for spawning a feature (interactive object or NPC) in this room type. Defines spawn probability and quantity range.",
+            "properties": {
+                "featureId": {
+                    "type": "string",
+                    "description": "Reference to interactive object or NPC ID from interactive-objects.json. Must match an existing feature definition.",
+                    "pattern": "^[a-z][a-z0-9-]*$"
+                },
+                "spawnChance": {
+                    "type": "number",
+                    "description": "Probability of this feature spawning (0.0 to 1.0). Value of 0.8 means 80% chance. Applied independently for each room instance.",
+                    "minimum": 0,
+                    "maximum": 1
+                },
+                "minQuantity": {
+                    "type": "integer",
+                    "description": "Minimum quantity if spawn succeeds. If spawn check passes, at least this many instances are placed.",
+                    "minimum": 0,
+                    "default": 0
+                },
+                "maxQuantity": {
+                    "type": "integer",
+                    "description": "Maximum quantity if spawn succeeds. If spawn check passes, at most this many instances are placed.",
+                    "minimum": 0,
+                    "default": 1
+                },
+                "conditions": {
+                    "$ref": "#/definitions/SpawnConditions",
+                    "description": "Additional conditions for spawning. If specified, feature only spawns when conditions are met."
+                }
+            },
+            "required": [
+                "featureId",
+                "spawnChance"
+            ],
+            "additionalProperties": false
+        },
+        "SpawnConditions": {
+            "type": "object",
+            "description": "Conditions that must be met for a feature to spawn. All specified conditions must be satisfied for the feature to be eligible.",
+            "properties": {
+                "minDepth": {
+                    "type": "integer",
+                    "description": "Minimum dungeon depth for spawn. Feature only spawns on this floor and deeper. Enables progressive difficulty.",
+                    "minimum": 1
+                },
+                "maxDepth": {
+                    "type": "integer",
+                    "description": "Maximum dungeon depth for spawn. Feature only spawns up to this floor. Allows features to phase out at deeper levels.",
+                    "minimum": 1
+                },
+                "requiredBiome": {
+                    "type": "string",
+                    "description": "Biome ID required for spawn. Feature only spawns in rooms within this biome.",
+                    "pattern": "^[a-z][a-z0-9-]*$"
+                },
+                "excludedBiomes": {
+                    "type": "array",
+                    "description": "Biome IDs that prevent spawn. Feature will not spawn in rooms within these biomes.",
+                    "items": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9-]*$"
+                    }
+                }
+            },
+            "additionalProperties": false
+        }
+    }
+}

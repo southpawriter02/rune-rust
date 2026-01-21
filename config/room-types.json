@@ -1,4 +1,5 @@
 {
+    "$schema": "./schemas/room-types.schema.json",
     "version": "1.0",
     "roomTypes": {
         "standard": {
