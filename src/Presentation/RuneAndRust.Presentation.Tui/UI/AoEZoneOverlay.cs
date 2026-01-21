@@ -25,7 +25,7 @@ namespace RuneAndRust.Presentation.Tui.UI;
 ///   <item><description>Zone legend with duration and effect information</description></item>
 /// </list>
 /// <para>
-/// Integrates with the CombatGridView to render zone overlays
+/// Integrates with the CombatGridPanel to render zone overlays
 /// between the terrain and entity layers.
 /// </para>
 /// <para>
@@ -238,7 +238,7 @@ public class AoEZoneOverlay
     /// </summary>
     /// <returns>Dictionary mapping positions to zone data.</returns>
     /// <remarks>
-    /// Used by the CombatGridView to render zone overlays.
+    /// Used by the CombatGridPanel to render zone overlays.
     /// </remarks>
     public IReadOnlyDictionary<GridPosition, ZoneDisplayDto> GetAllZoneCells()
     {

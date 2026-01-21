@@ -15,7 +15,7 @@ namespace RuneAndRust.Application.UnitTests.Presentation.UI;
 public class CombatantListPanelTests
 {
     private Mock<ITerminalService> _mockTerminal = null!;
-    private HealthBar _healthBar = null!;
+    private HealthBarDisplay _healthBar = null!;
     private CombatantListPanel _panel = null!;
 
     [SetUp]
@@ -24,7 +24,7 @@ public class CombatantListPanelTests
         _mockTerminal = new Mock<ITerminalService>();
         _mockTerminal.Setup(t => t.SupportsUnicode).Returns(true);
         
-        _healthBar = new HealthBar(_mockTerminal.Object, HealthBarConfig.CreateDefault());
+        _healthBar = new HealthBarDisplay(_mockTerminal.Object, HealthBarDisplayConfig.CreateDefault());
         _panel = new CombatantListPanel(_mockTerminal.Object, _healthBar);
     }
 
@@ -66,7 +66,7 @@ public class CombatantListPanelTests
     }
 
     [Test]
-    public void Render_WithHealthBars_IncludesHpInfo()
+    public void Render_WithHealthBarDisplays_IncludesHpInfo()
     {
         // Arrange
         var combatants = new List<(string, int, int, int, int, bool, bool, IReadOnlyList<string>)>

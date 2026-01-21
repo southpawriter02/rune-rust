@@ -9,14 +9,14 @@ using RuneAndRust.Presentation.UI;
 namespace RuneAndRust.Application.UnitTests.Presentation.UI;
 
 /// <summary>
-/// Unit tests for <see cref="CombatGridView"/>.
+/// Unit tests for <see cref="CombatGridPanel"/>.
 /// </summary>
 [TestFixture]
-public class CombatGridViewTests
+public class CombatGridPanelTests
 {
     private Mock<ITerminalService> _mockTerminal = null!;
     private ScreenLayout _layout = null!;
-    private CombatGridView _gridView = null!;
+    private CombatGridPanel _gridView = null!;
 
     [SetUp]
     public void Setup()
@@ -27,7 +27,7 @@ public class CombatGridViewTests
         var mockLogger = new Mock<ILogger<ScreenLayout>>();
         _layout = new ScreenLayout(_mockTerminal.Object, mockLogger.Object);
         
-        _gridView = new CombatGridView(_mockTerminal.Object, _layout);
+        _gridView = new CombatGridPanel(_mockTerminal.Object, _layout);
     }
     
     [TearDown]
@@ -171,10 +171,10 @@ public class CombatGridViewTests
     [Test]
     public void GetHighlightColor_ReturnsCorrectColors()
     {
-        CombatGridView.GetHighlightColor(HighlightType.Movement).Should().Be(ConsoleColor.DarkBlue);
-        CombatGridView.GetHighlightColor(HighlightType.Attack).Should().Be(ConsoleColor.DarkRed);
-        CombatGridView.GetHighlightColor(HighlightType.Ability).Should().Be(ConsoleColor.DarkMagenta);
-        CombatGridView.GetHighlightColor(HighlightType.Selected).Should().Be(ConsoleColor.Yellow);
+        CombatGridPanel.GetHighlightColor(HighlightType.Movement).Should().Be(ConsoleColor.DarkBlue);
+        CombatGridPanel.GetHighlightColor(HighlightType.Attack).Should().Be(ConsoleColor.DarkRed);
+        CombatGridPanel.GetHighlightColor(HighlightType.Ability).Should().Be(ConsoleColor.DarkMagenta);
+        CombatGridPanel.GetHighlightColor(HighlightType.Selected).Should().Be(ConsoleColor.Yellow);
     }
 
     #endregion

@@ -5,28 +5,29 @@ using RuneAndRust.Presentation.Configuration;
 namespace RuneAndRust.Presentation.UI;
 
 /// <summary>
-/// Renders visual health and resource bars.
+/// Renders visual health and resource bars (read-only, passive display).
 /// </summary>
 /// <remarks>
-/// Supports multiple display styles and color thresholds for danger indication.
-/// Uses Unicode characters (█░) with ASCII fallback (#-).
+/// <para>Supports multiple display styles and color thresholds for danger indication.
+/// Uses Unicode characters (█░) with ASCII fallback (#-).</para>
+/// <para>Renamed from HealthBar to HealthBarDisplay in v0.13.5a for naming convention alignment.</para>
 /// </remarks>
-public class HealthBar
+public class HealthBarDisplay
 {
     private readonly ITerminalService _terminal;
     private readonly HealthBarConfig _config;
-    private readonly ILogger<HealthBar>? _logger;
+    private readonly ILogger<HealthBarDisplay>? _logger;
     
     /// <summary>
-    /// Initializes a new instance of <see cref="HealthBar"/>.
+    /// Initializes a new instance of <see cref="HealthBarDisplay"/>.
     /// </summary>
     /// <param name="terminal">Terminal service for output.</param>
     /// <param name="config">Optional configuration (uses defaults if null).</param>
     /// <param name="logger">Optional logger.</param>
-    public HealthBar(
+    public HealthBarDisplay(
         ITerminalService terminal,
         HealthBarConfig? config = null,
-        ILogger<HealthBar>? logger = null)
+        ILogger<HealthBarDisplay>? logger = null)
     {
         _terminal = terminal;
         _config = config ?? HealthBarConfig.CreateDefault();

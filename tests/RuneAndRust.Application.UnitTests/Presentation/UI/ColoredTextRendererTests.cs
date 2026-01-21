@@ -6,10 +6,10 @@ using RuneAndRust.Presentation.UI;
 namespace RuneAndRust.Application.UnitTests.Presentation.UI;
 
 /// <summary>
-/// Unit tests for <see cref="ColoredText"/>.
+/// Unit tests for <see cref="ColoredTextRenderer"/>.
 /// </summary>
 [TestFixture]
-public class ColoredTextTests
+public class ColoredTextRendererTests
 {
     #region Factory Method Tests
 
@@ -17,7 +17,7 @@ public class ColoredTextTests
     public void Default_CreatesWithDefaultType()
     {
         // Act
-        var text = ColoredText.Default("Test");
+        var text = ColoredTextRenderer.Default("Test");
 
         // Assert
         text.Text.Should().Be("Test");
@@ -29,7 +29,7 @@ public class ColoredTextTests
     public void Info_CreatesWithInfoType()
     {
         // Act
-        var text = ColoredText.Info("Information");
+        var text = ColoredTextRenderer.Info("Information");
 
         // Assert
         text.Text.Should().Be("Information");
@@ -40,7 +40,7 @@ public class ColoredTextTests
     public void Warning_CreatesWithWarningType()
     {
         // Act
-        var text = ColoredText.Warning("Be careful!");
+        var text = ColoredTextRenderer.Warning("Be careful!");
 
         // Assert
         text.Text.Should().Be("Be careful!");
@@ -51,7 +51,7 @@ public class ColoredTextTests
     public void Error_CreatesWithErrorType()
     {
         // Act
-        var text = ColoredText.Error("Something went wrong");
+        var text = ColoredTextRenderer.Error("Something went wrong");
 
         // Assert
         text.Text.Should().Be("Something went wrong");
@@ -62,7 +62,7 @@ public class ColoredTextTests
     public void CombatHit_CreatesWithCombatHitType()
     {
         // Act
-        var text = ColoredText.CombatHit("Critical hit!");
+        var text = ColoredTextRenderer.CombatHit("Critical hit!");
 
         // Assert
         text.Type.Should().Be(MessageType.CombatHit);
@@ -72,7 +72,7 @@ public class ColoredTextTests
     public void CombatDamage_CreatesWithCombatDamageType()
     {
         // Act
-        var text = ColoredText.CombatDamage("25 damage dealt");
+        var text = ColoredTextRenderer.CombatDamage("25 damage dealt");
 
         // Assert
         text.Type.Should().Be(MessageType.CombatDamage);
@@ -82,28 +82,28 @@ public class ColoredTextTests
     public void CombatHeal_CreatesWithCombatHealType()
     {
         // Act
-        var text = ColoredText.CombatHeal("Healed for 30 HP");
+        var text = ColoredTextRenderer.CombatHeal("Healed for 30 HP");
 
         // Assert
         text.Type.Should().Be(MessageType.CombatHeal);
     }
 
     [Test]
-    [TestCase(nameof(ColoredText.LootCommon), MessageType.LootCommon)]
-    [TestCase(nameof(ColoredText.LootUncommon), MessageType.LootUncommon)]
-    [TestCase(nameof(ColoredText.LootRare), MessageType.LootRare)]
-    [TestCase(nameof(ColoredText.LootEpic), MessageType.LootEpic)]
-    [TestCase(nameof(ColoredText.LootLegendary), MessageType.LootLegendary)]
+    [TestCase(nameof(ColoredTextRenderer.LootCommon), MessageType.LootCommon)]
+    [TestCase(nameof(ColoredTextRenderer.LootUncommon), MessageType.LootUncommon)]
+    [TestCase(nameof(ColoredTextRenderer.LootRare), MessageType.LootRare)]
+    [TestCase(nameof(ColoredTextRenderer.LootEpic), MessageType.LootEpic)]
+    [TestCase(nameof(ColoredTextRenderer.LootLegendary), MessageType.LootLegendary)]
     public void LootMethods_CreateCorrectTypes(string methodName, MessageType expectedType)
     {
         // Act
         var text = methodName switch
         {
-            nameof(ColoredText.LootCommon) => ColoredText.LootCommon("Item"),
-            nameof(ColoredText.LootUncommon) => ColoredText.LootUncommon("Item"),
-            nameof(ColoredText.LootRare) => ColoredText.LootRare("Item"),
-            nameof(ColoredText.LootEpic) => ColoredText.LootEpic("Item"),
-            nameof(ColoredText.LootLegendary) => ColoredText.LootLegendary("Item"),
+            nameof(ColoredTextRenderer.LootCommon) => ColoredTextRenderer.LootCommon("Item"),
+            nameof(ColoredTextRenderer.LootUncommon) => ColoredTextRenderer.LootUncommon("Item"),
+            nameof(ColoredTextRenderer.LootRare) => ColoredTextRenderer.LootRare("Item"),
+            nameof(ColoredTextRenderer.LootEpic) => ColoredTextRenderer.LootEpic("Item"),
+            nameof(ColoredTextRenderer.LootLegendary) => ColoredTextRenderer.LootLegendary("Item"),
             _ => throw new ArgumentException($"Unknown method: {methodName}")
         };
 
@@ -115,7 +115,7 @@ public class ColoredTextTests
     public void Dialogue_CreatesWithDialogueType()
     {
         // Act
-        var text = ColoredText.Dialogue("Hello, traveler!");
+        var text = ColoredTextRenderer.Dialogue("Hello, traveler!");
 
         // Assert
         text.Type.Should().Be(MessageType.Dialogue);
@@ -125,7 +125,7 @@ public class ColoredTextTests
     public void Description_CreatesWithDescriptionType()
     {
         // Act
-        var text = ColoredText.Description("A dark cave stretches before you.");
+        var text = ColoredTextRenderer.Description("A dark cave stretches before you.");
 
         // Assert
         text.Type.Should().Be(MessageType.Description);
@@ -135,7 +135,7 @@ public class ColoredTextTests
     public void Success_CreatesWithSuccessType()
     {
         // Act
-        var text = ColoredText.Success("You succeeded!");
+        var text = ColoredTextRenderer.Success("You succeeded!");
 
         // Assert
         text.Type.Should().Be(MessageType.Success);
@@ -145,7 +145,7 @@ public class ColoredTextTests
     public void Failure_CreatesWithFailureType()
     {
         // Act
-        var text = ColoredText.Failure("You failed.");
+        var text = ColoredTextRenderer.Failure("You failed.");
 
         // Assert
         text.Type.Should().Be(MessageType.Failure);
@@ -159,7 +159,7 @@ public class ColoredTextTests
     public void ExplicitColor_CanBeSet()
     {
         // Act
-        var text = new ColoredText("Custom", MessageType.Default, ConsoleColor.Magenta);
+        var text = new ColoredTextRenderer("Custom", MessageType.Default, ConsoleColor.Magenta);
 
         // Assert
         text.ExplicitColor.Should().Be(ConsoleColor.Magenta);
@@ -169,7 +169,7 @@ public class ColoredTextTests
     public void ExplicitColor_DefaultsToNull()
     {
         // Act
-        var text = new ColoredText("Text", MessageType.Info);
+        var text = new ColoredTextRenderer("Text", MessageType.Info);
 
         // Assert
         text.ExplicitColor.Should().BeNull();

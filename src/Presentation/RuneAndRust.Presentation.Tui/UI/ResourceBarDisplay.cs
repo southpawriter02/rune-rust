@@ -4,15 +4,16 @@ using RuneAndRust.Application.Interfaces;
 namespace RuneAndRust.Presentation.UI;
 
 /// <summary>
-/// Renders bars for various resource types with appropriate colors.
+/// Renders bars for various resource types with appropriate colors (read-only, passive display).
 /// </summary>
 /// <remarks>
-/// Wraps <see cref="HealthBar"/> to provide resource-specific color mapping.
+/// <para>Wraps <see cref="HealthBarDisplay"/> to provide resource-specific color mapping.</para>
+/// <para>Renamed from ResourceBar to ResourceBarDisplay in v0.13.5a for naming convention alignment.</para>
 /// </remarks>
-public class ResourceBar
+public class ResourceBarDisplay
 {
-    private readonly HealthBar _healthBar;
-    private readonly ILogger<ResourceBar>? _logger;
+    private readonly HealthBarDisplay _healthBarDisplay;
+    private readonly ILogger<ResourceBarDisplay>? _logger;
     
     private static readonly Dictionary<string, BarType> ResourceTypeMap = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -35,15 +36,15 @@ public class ResourceBar
     };
     
     /// <summary>
-    /// Initializes a new instance of <see cref="ResourceBar"/>.
+    /// Initializes a new instance of <see cref="ResourceBarDisplay"/>.
     /// </summary>
-    /// <param name="healthBar">Health bar component for rendering.</param>
+    /// <param name="healthBarDisplay">Health bar display component for rendering.</param>
     /// <param name="logger">Optional logger.</param>
-    public ResourceBar(
-        HealthBar healthBar,
-        ILogger<ResourceBar>? logger = null)
+    public ResourceBarDisplay(
+        HealthBarDisplay healthBarDisplay,
+        ILogger<ResourceBarDisplay>? logger = null)
     {
-        _healthBar = healthBar;
+        _healthBarDisplay = healthBarDisplay;
         _logger = logger;
     }
     
@@ -58,7 +59,7 @@ public class ResourceBar
     /// <returns>Rendered bar string.</returns>
     public string Render(string resourceName, int current, int max, int width, BarStyle style = BarStyle.Standard)
     {
-        return _healthBar.Render(current, max, width, style);
+        return _healthBarDisplay.Render(current, max, width, style);
     }
     
     /// <summary>
@@ -76,7 +77,7 @@ public class ResourceBar
             {
                 return customColor;
             }
-            return _healthBar.GetThresholdColor(current, max, barType);
+            return _healthBarDisplay.GetThresholdColor(current, max, barType);
         }
         
         _logger?.LogDebug("Unknown resource type '{Resource}', using default color", resourceName);
@@ -94,7 +95,7 @@ public class ResourceBar
     /// <returns>Formatted bar with label.</returns>
     public string RenderLabeled(string label, string resourceName, int current, int max, int totalWidth)
     {
-        return _healthBar.RenderLabeled(label, current, max, totalWidth);
+        return _healthBarDisplay.RenderLabeled(label, current, max, totalWidth);
     }
     
     /// <summary>

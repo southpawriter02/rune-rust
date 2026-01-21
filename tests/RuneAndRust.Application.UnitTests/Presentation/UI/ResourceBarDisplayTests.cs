@@ -7,14 +7,14 @@ using RuneAndRust.Presentation.UI;
 namespace RuneAndRust.Application.UnitTests.Presentation.UI;
 
 /// <summary>
-/// Unit tests for <see cref="ResourceBar"/>.
+/// Unit tests for <see cref="ResourceBarDisplay"/>.
 /// </summary>
 [TestFixture]
-public class ResourceBarTests
+public class ResourceBarDisplayTests
 {
     private Mock<ITerminalService> _mockTerminal = null!;
-    private HealthBar _healthBar = null!;
-    private ResourceBar _resourceBar = null!;
+    private HealthBarDisplay _healthBar = null!;
+    private ResourceBarDisplay _resourceBar = null!;
 
     [SetUp]
     public void Setup()
@@ -22,8 +22,8 @@ public class ResourceBarTests
         _mockTerminal = new Mock<ITerminalService>();
         _mockTerminal.Setup(t => t.SupportsUnicode).Returns(true);
         
-        _healthBar = new HealthBar(_mockTerminal.Object);
-        _resourceBar = new ResourceBar(_healthBar);
+        _healthBar = new HealthBarDisplay(_mockTerminal.Object);
+        _resourceBar = new ResourceBarDisplay(_healthBar);
     }
 
     #region GetColor Tests
@@ -142,7 +142,7 @@ public class ResourceBarTests
     public void GetBarTypeForResource_ReturnsCorrectType(string resourceName, BarType expectedType)
     {
         // Act
-        var barType = ResourceBar.GetBarTypeForResource(resourceName);
+        var barType = ResourceBarDisplay.GetBarTypeForResource(resourceName);
 
         // Assert
         barType.Should().Be(expectedType);
@@ -152,7 +152,7 @@ public class ResourceBarTests
     public void GetBarTypeForResource_UnknownResource_ReturnsCustom()
     {
         // Act
-        var barType = ResourceBar.GetBarTypeForResource("UnknownStuff");
+        var barType = ResourceBarDisplay.GetBarTypeForResource("UnknownStuff");
 
         // Assert
         barType.Should().Be(BarType.Custom);

@@ -9,7 +9,7 @@ namespace RuneAndRust.Presentation.Tui.UI;
 
 /// <summary>
 /// Renders a prominent health bar for boss encounters with phase markers
-/// and damage animation support.
+/// and damage animation support (read-only, passive display).
 /// </summary>
 /// <remarks>
 /// <para>The boss health bar is displayed at the top of the combat view during
@@ -23,10 +23,11 @@ namespace RuneAndRust.Presentation.Tui.UI;
 ///   <item><description>Phase markers at transition thresholds</description></item>
 ///   <item><description>Damage animation with flash effect and delta display</description></item>
 /// </list>
+/// <para>Renamed from BossHealthBar to BossHealthBarDisplay in v0.13.5a for naming convention alignment.</para>
 /// </remarks>
 /// <example>
 /// <code>
-/// var healthBar = new BossHealthBar(renderer, terminalService, config, logger);
+/// var healthBar = new BossHealthBarDisplay(renderer, terminalService, config, logger);
 /// 
 /// // Set up phase markers
 /// var markers = new List&lt;PhaseMarkerDto&gt;
@@ -45,19 +46,19 @@ namespace RuneAndRust.Presentation.Tui.UI;
 /// healthBar.AnimateDamage(damageDto);
 /// </code>
 /// </example>
-public class BossHealthBar
+public class BossHealthBarDisplay
 {
     private readonly BossHealthBarRenderer _renderer;
     private readonly ITerminalService _terminalService;
     private readonly BossHealthDisplayConfig _config;
-    private readonly ILogger<BossHealthBar>? _logger;
+    private readonly ILogger<BossHealthBarDisplay>? _logger;
 
     private BossHealthDisplayDto? _currentState;
     private IReadOnlyList<PhaseMarkerDto> _phaseMarkers = Array.Empty<PhaseMarkerDto>();
     private bool _isAnimating;
 
     /// <summary>
-    /// Creates a new instance of the BossHealthBar.
+    /// Creates a new instance of the BossHealthBarDisplay.
     /// </summary>
     /// <param name="renderer">The renderer for formatting health bar elements.</param>
     /// <param name="terminalService">The terminal output service.</param>
@@ -66,11 +67,11 @@ public class BossHealthBar
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="renderer"/> or <paramref name="terminalService"/> is null.
     /// </exception>
-    public BossHealthBar(
+    public BossHealthBarDisplay(
         BossHealthBarRenderer renderer,
         ITerminalService terminalService,
         IOptions<BossHealthDisplayConfig>? config = null,
-        ILogger<BossHealthBar>? logger = null)
+        ILogger<BossHealthBarDisplay>? logger = null)
     {
         _renderer = renderer ?? throw new ArgumentNullException(nameof(renderer));
         _terminalService = terminalService ?? throw new ArgumentNullException(nameof(terminalService));
@@ -78,7 +79,7 @@ public class BossHealthBar
         _logger = logger;
 
         _logger?.LogDebug(
-            "BossHealthBar initialized with bar width {BarWidth}, total width {TotalWidth}",
+            "BossHealthBarDisplay initialized with bar width {BarWidth}, total width {TotalWidth}",
             _config.BarWidth, _config.TotalWidth);
     }
 

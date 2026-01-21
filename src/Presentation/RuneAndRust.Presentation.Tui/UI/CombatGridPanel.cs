@@ -5,20 +5,24 @@ using RuneAndRust.Domain.Enums;
 namespace RuneAndRust.Presentation.UI;
 
 /// <summary>
-/// Renders the enhanced combat grid view with coordinate labels and cell highlighting.
+/// Renders the enhanced combat grid panel with coordinate labels and cell highlighting.
 /// </summary>
 /// <remarks>
-/// Components:
-/// - 8x8 tactical grid with A-H / 1-8 labels
-/// - Entity position markers (@, M, A)
-/// - Terrain type indicators (., ~, #)
-/// - Cell highlighting for movement/attack/ability ranges
+/// <para>Components:</para>
+/// <list type="bullet">
+///   <item><description>8x8 tactical grid with A-H / 1-8 labels</description></item>
+///   <item><description>Entity position markers (@, M, A)</description></item>
+///   <item><description>Terrain type indicators (., ~, #)</description></item>
+///   <item><description>Cell highlighting for movement/attack/ability ranges</description></item>
+/// </list>
+/// <para>Renamed from CombatGridView to CombatGridPanel in v0.13.5a for naming convention alignment
+/// (container component, not a full-screen view).</para>
 /// </remarks>
-public class CombatGridView
+public class CombatGridPanel
 {
     private readonly ITerminalService _terminal;
     private readonly ScreenLayout _layout;
-    private readonly ILogger<CombatGridView>? _logger;
+    private readonly ILogger<CombatGridPanel>? _logger;
     
     private readonly HashSet<(int X, int Y)> _highlightedCells = new();
     private HighlightType _currentHighlightType = HighlightType.Movement;
@@ -44,12 +48,12 @@ public class CombatGridView
     };
     
     /// <summary>
-    /// Initializes a new instance of <see cref="CombatGridView"/>.
+    /// Initializes a new instance of <see cref="CombatGridPanel"/>.
     /// </summary>
-    public CombatGridView(
+    public CombatGridPanel(
         ITerminalService terminal,
         ScreenLayout layout,
-        ILogger<CombatGridView>? logger = null)
+        ILogger<CombatGridPanel>? logger = null)
     {
         _terminal = terminal;
         _layout = layout;

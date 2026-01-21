@@ -11,7 +11,7 @@ namespace RuneAndRust.Presentation.Tui.DTOs;
 /// <param name="CurrentPhaseNumber">The current phase number (1-based).</param>
 /// <remarks>
 /// <para>Used to transfer boss health state from the combat system to the
-/// <see cref="UI.BossHealthBar"/> for rendering.</para>
+/// <see cref="UI.BossHealthBarDisplay"/> for rendering.</para>
 /// <para>The <paramref name="HealthPercent"/> is pre-calculated to simplify
 /// phase marker positioning and color determination.</para>
 /// </remarks>

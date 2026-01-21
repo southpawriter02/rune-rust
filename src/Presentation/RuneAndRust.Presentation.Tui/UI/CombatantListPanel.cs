@@ -16,7 +16,7 @@ namespace RuneAndRust.Presentation.UI;
 public class CombatantListPanel
 {
     private readonly ITerminalService _terminal;
-    private readonly HealthBar _healthBar;
+    private readonly HealthBarDisplay _healthBarDisplay;
     private readonly ILogger<CombatantListPanel>? _logger;
     
     // Display constants
@@ -30,11 +30,11 @@ public class CombatantListPanel
     /// </summary>
     public CombatantListPanel(
         ITerminalService terminal,
-        HealthBar healthBar,
+        HealthBarDisplay healthBarDisplay,
         ILogger<CombatantListPanel>? logger = null)
     {
         _terminal = terminal;
-        _healthBar = healthBar;
+        _healthBarDisplay = healthBarDisplay;
         _logger = logger;
     }
     
@@ -58,13 +58,13 @@ public class CombatantListPanel
             lines.Add($"{turnMarker} {symbol} {c.Name}");
             
             // Line 2: HP bar
-            var hpBar = _healthBar.Render(c.CurrentHp, c.MaxHp, 20, BarStyle.Compact);
+            var hpBar = _healthBarDisplay.Render(c.CurrentHp, c.MaxHp, 20, BarStyle.Compact);
             lines.Add($"   HP {hpBar} {c.CurrentHp}/{c.MaxHp}");
             
             // Line 3: MP bar (if has mana) or status effects
             if (c.MaxMp > 0)
             {
-                var mpBar = _healthBar.Render(c.CurrentMp, c.MaxMp, 20, BarStyle.Compact);
+                var mpBar = _healthBarDisplay.Render(c.CurrentMp, c.MaxMp, 20, BarStyle.Compact);
                 lines.Add($"   MP {mpBar} {c.CurrentMp}/{c.MaxMp}");
             }
             
