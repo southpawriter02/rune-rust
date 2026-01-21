@@ -1,0 +1,45 @@
+{
+    "$schema": "./schemas/boss-status-display.schema.json",
+    "phaseIndicator": {
+        "startX": 0,
+        "startY": 7,
+        "width": 50,
+        "height": 5,
+        "maxHints": 3
+    },
+    "enrageTimer": {
+        "startX": 0,
+        "startY": 12,
+        "width": 60,
+        "height": 2,
+        "warningThreshold": 10
+    },
+    "vulnerabilityWindow": {
+        "startX": 0,
+        "startY": 14,
+        "width": 70,
+        "damageMultiplier": 1.5,
+        "closedDisplayMs": 1000,
+        "flashIntervalMs": 200
+    },
+    "transitionEffect": {
+        "centerX": 40,
+        "startY": 5,
+        "boxWidth": 55,
+        "displayDurationMs": 2000
+    },
+    "colors": {
+        "aggressiveColor": "Red",
+        "tacticalColor": "Cyan",
+        "defensiveColor": "Blue",
+        "enragedColor": "DarkRed",
+        "summonerColor": "Magenta",
+        "vulnerableColor": "Yellow",
+        "urgentColor": "Red",
+        "windowClosedColor": "Gray",
+        "transitionBoxColor": "White",
+        "criticalWarningColor": "Red",
+        "highWarningColor": "DarkYellow",
+        "lowWarningColor": "Yellow"
+    }
+}
