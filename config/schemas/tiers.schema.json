@@ -1,0 +1,145 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Monster Tier Configuration",
+    "description": "Schema for monster difficulty tier definitions. Defines scaling multipliers for stats and rewards, spawn weights for probability distribution, name modifications, and level gating for progressive difficulty.",
+    "type": "object",
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "Reference to the JSON schema file for validation"
+        },
+        "version": {
+            "type": "string",
+            "description": "Optional version identifier for the configuration file",
+            "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+        },
+        "description": {
+            "type": "string",
+            "description": "Optional file-level description"
+        },
+        "tiers": {
+            "type": "array",
+            "description": "List of tier definitions",
+            "items": {
+                "$ref": "#/definitions/TierDefinition"
+            },
+            "minItems": 1
+        }
+    },
+    "required": [
+        "tiers"
+    ],
+    "additionalProperties": false,
+    "definitions": {
+        "TierDefinition": {
+            "type": "object",
+            "description": "A difficulty tier that can be applied to monsters, affecting their base stats through multipliers, scaling rewards (XP, loot), and providing visual distinction through colors and name modifications.",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Unique identifier for the tier (lowercase with underscores). Used as reference key in monster possibleTiers arrays.",
+                    "pattern": "^[a-z][a-z0-9_]*$",
+                    "minLength": 1,
+                    "maxLength": 50
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Display name shown to players in tier lists and UI elements.",
+                    "minLength": 1,
+                    "maxLength": 100
+                },
+                "namePrefix": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "description": "Prefix added before monster name (e.g., 'Elite' makes 'Elite Goblin'). Use null for no prefix.",
+                    "maxLength": 50
+                },
+                "nameSuffix": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "description": "Suffix added after monster name (e.g., 'Champion' makes 'Goblin Champion'). Use null for no suffix.",
+                    "maxLength": 50
+                },
+                "healthMultiplier": {
+                    "type": "number",
+                    "description": "Multiplier applied to base health. 1.0 = 100% (unchanged), 2.0 = double HP. Final HP = floor(baseHP * multiplier).",
+                    "minimum": 0.1,
+                    "default": 1.0
+                },
+                "attackMultiplier": {
+                    "type": "number",
+                    "description": "Multiplier applied to base attack power. 1.0 = 100% (unchanged). Final ATK = floor(baseATK * multiplier).",
+                    "minimum": 0.1,
+                    "default": 1.0
+                },
+                "defenseMultiplier": {
+                    "type": "number",
+                    "description": "Multiplier applied to base defense. 1.0 = 100% (unchanged). Final DEF = floor(baseDEF * multiplier).",
+                    "minimum": 0.1,
+                    "default": 1.0
+                },
+                "experienceMultiplier": {
+                    "type": "number",
+                    "description": "Multiplier applied to experience reward on defeat. 1.0 = 100%, 3.0 = triple XP.",
+                    "minimum": 0.1,
+                    "default": 1.0
+                },
+                "lootMultiplier": {
+                    "type": "number",
+                    "description": "Multiplier applied to loot drop chances. 1.0 = 100%, 2.0 = double drop rates (capped at 100%).",
+                    "minimum": 0.1,
+                    "default": 1.0
+                },
+                "lootQualityBonus": {
+                    "type": "integer",
+                    "description": "Bonus added to loot rarity tier. +1 shifts common→uncommon, +2 shifts common→rare. Negative values decrease quality."
+                },
+                "color": {
+                    "type": "string",
+                    "description": "Display color for the tier indicator in UI. Named colors (white, yellow, orange3, red) or hex values.",
+                    "minLength": 1
+                },
+                "spawnWeight": {
+                    "type": "integer",
+                    "description": "Relative weight for random tier selection. Higher = more common. Probability = weight / total weights. 0 = never spawns randomly.",
+                    "minimum": 0,
+                    "default": 100
+                },
+                "generatesUniqueName": {
+                    "type": "boolean",
+                    "description": "Whether monsters of this tier get procedurally generated unique names using the monster's nameGenerator config.",
+                    "default": false
+                },
+                "additionalTraits": {
+                    "type": "array",
+                    "description": "Trait IDs automatically added to monsters of this tier (references traits.json). Added in addition to random traits.",
+                    "items": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9_]*$"
+                    }
+                },
+                "minimumLevel": {
+                    "type": "integer",
+                    "description": "Minimum player level required for this tier to spawn. Tier is excluded from spawn pool below this level.",
+                    "minimum": 1
+                },
+                "sortOrder": {
+                    "type": "integer",
+                    "description": "Order for display sorting in tier lists. Lower values appear first.",
+                    "minimum": 0
+                }
+            },
+            "required": [
+                "id",
+                "name",
+                "color",
+                "sortOrder"
+            ],
+            "additionalProperties": false
+        }
+    }
+}

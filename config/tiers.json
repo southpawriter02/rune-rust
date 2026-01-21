@@ -1,6 +1,6 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "description": "Monster tier definitions for v0.0.9c",
+  "$schema": "./schemas/tiers.schema.json",
+  "description": "Monster tier definitions for v0.14.3c",
   "tiers": [
     {
       "id": "common",
@@ -39,9 +39,11 @@
       "defenseMultiplier": 1.5,
       "experienceMultiplier": 3.0,
       "lootMultiplier": 3.0,
+      "lootQualityBonus": 1,
       "color": "orange3",
       "spawnWeight": 8,
       "generatesUniqueName": false,
+      "minimumLevel": 5,
       "sortOrder": 2
     },
     {
@@ -53,9 +55,11 @@
       "defenseMultiplier": 2.0,
       "experienceMultiplier": 10.0,
       "lootMultiplier": 5.0,
+      "lootQualityBonus": 2,
       "color": "red",
       "spawnWeight": 2,
       "generatesUniqueName": false,
+      "minimumLevel": 10,
       "sortOrder": 3
     }
   ]
