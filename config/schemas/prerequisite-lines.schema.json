@@ -1,0 +1,133 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "prerequisite-lines.schema.json",
+    "title": "Prerequisite Lines Configuration",
+    "description": "Configuration for ability tree prerequisite line display",
+    "type": "object",
+    "properties": {
+        "defaultNodeWidth": {
+            "type": "integer",
+            "description": "Default node width for edge calculations",
+            "minimum": 5,
+            "maximum": 25,
+            "default": 11
+        },
+        "defaultNodeHeight": {
+            "type": "integer",
+            "description": "Default node height for edge calculations",
+            "minimum": 3,
+            "maximum": 10,
+            "default": 3
+        },
+        "horizontalLineCharacter": {
+            "type": "string",
+            "description": "Character for horizontal line segments",
+            "minLength": 1,
+            "maxLength": 1,
+            "default": "─"
+        },
+        "verticalLineCharacter": {
+            "type": "string",
+            "description": "Character for vertical line segments",
+            "minLength": 1,
+            "maxLength": 1,
+            "default": "│"
+        },
+        "cornerTopRightCharacter": {
+            "type": "string",
+            "description": "Character for top-right corner",
+            "minLength": 1,
+            "maxLength": 1,
+            "default": "┐"
+        },
+        "cornerBottomRightCharacter": {
+            "type": "string",
+            "description": "Character for bottom-right corner",
+            "minLength": 1,
+            "maxLength": 1,
+            "default": "┘"
+        },
+        "cornerTopLeftCharacter": {
+            "type": "string",
+            "description": "Character for top-left corner",
+            "minLength": 1,
+            "maxLength": 1,
+            "default": "┌"
+        },
+        "cornerBottomLeftCharacter": {
+            "type": "string",
+            "description": "Character for bottom-left corner",
+            "minLength": 1,
+            "maxLength": 1,
+            "default": "└"
+        },
+        "connectionPointCharacter": {
+            "type": "string",
+            "description": "Character for connection points at node edges",
+            "minLength": 1,
+            "maxLength": 1,
+            "default": "─"
+        },
+        "satisfiedLineCharacter": {
+            "type": "string",
+            "description": "Character for satisfied (solid) lines",
+            "minLength": 1,
+            "maxLength": 1,
+            "default": "─"
+        },
+        "unsatisfiedLineCharacter": {
+            "type": "string",
+            "description": "Character for unsatisfied (dashed) lines",
+            "minLength": 1,
+            "maxLength": 1,
+            "default": "─"
+        },
+        "satisfiedLineColor": {
+            "type": "string",
+            "description": "Color for satisfied prerequisite lines",
+            "enum": [
+                "Black",
+                "DarkBlue",
+                "DarkGreen",
+                "DarkCyan",
+                "DarkRed",
+                "DarkMagenta",
+                "DarkYellow",
+                "Gray",
+                "DarkGray",
+                "Blue",
+                "Green",
+                "Cyan",
+                "Red",
+                "Magenta",
+                "Yellow",
+                "White"
+            ],
+            "default": "Green"
+        },
+        "unsatisfiedLineColor": {
+            "type": "string",
+            "description": "Color for unsatisfied prerequisite lines",
+            "enum": [
+                "Black",
+                "DarkBlue",
+                "DarkGreen",
+                "DarkCyan",
+                "DarkRed",
+                "DarkMagenta",
+                "DarkYellow",
+                "Gray",
+                "DarkGray",
+                "Blue",
+                "Green",
+                "Cyan",
+                "Red",
+                "Magenta",
+                "Yellow",
+                "White"
+            ],
+            "default": "DarkGray"
+        }
+    },
+    "additionalProperties": false
+}

@@ -1,0 +1,16 @@
+{
+    "$schema": "./schemas/prerequisite-lines.schema.json",
+    "defaultNodeWidth": 11,
+    "defaultNodeHeight": 3,
+    "horizontalLineCharacter": "─",
+    "verticalLineCharacter": "│",
+    "cornerTopRightCharacter": "┐",
+    "cornerBottomRightCharacter": "┘",
+    "cornerTopLeftCharacter": "┌",
+    "cornerBottomLeftCharacter": "└",
+    "connectionPointCharacter": "─",
+    "satisfiedLineCharacter": "─",
+    "unsatisfiedLineCharacter": "─",
+    "satisfiedLineColor": "Green",
+    "unsatisfiedLineColor": "DarkGray"
+}
