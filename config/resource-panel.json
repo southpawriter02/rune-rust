@@ -1,0 +1,13 @@
+{
+    "$schema": "./schemas/resource-panel.schema.json",
+    "panelWidth": 70,
+    "panelHeight": 20,
+    "columnCount": 3,
+    "maxResourcesPerColumn": 6,
+    "activeFilterColor": "Cyan",
+    "oreColor": "DarkYellow",
+    "herbColor": "Green",
+    "leatherColor": "DarkYellow",
+    "gemColor": "Cyan",
+    "miscColor": "White"
+}

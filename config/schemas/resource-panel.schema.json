@@ -1,0 +1,92 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "resource-panel.schema.json",
+    "title": "Resource Panel Configuration",
+    "description": "Configuration for resource inventory panel display settings.",
+    "type": "object",
+    "properties": {
+        "panelWidth": {
+            "type": "integer",
+            "description": "Width of the resource panel in characters.",
+            "minimum": 50,
+            "maximum": 120,
+            "default": 70
+        },
+        "panelHeight": {
+            "type": "integer",
+            "description": "Height of the resource panel in rows.",
+            "minimum": 10,
+            "maximum": 40,
+            "default": 20
+        },
+        "columnCount": {
+            "type": "integer",
+            "description": "Number of columns for category display.",
+            "minimum": 1,
+            "maximum": 5,
+            "default": 3
+        },
+        "maxResourcesPerColumn": {
+            "type": "integer",
+            "description": "Maximum resources per column before overflow indicator.",
+            "minimum": 3,
+            "maximum": 20,
+            "default": 6
+        },
+        "activeFilterColor": {
+            "$ref": "#/$defs/consoleColor",
+            "description": "Color for the active filter tab highlight.",
+            "default": "Cyan"
+        },
+        "oreColor": {
+            "$ref": "#/$defs/consoleColor",
+            "description": "Color for ore resources.",
+            "default": "DarkYellow"
+        },
+        "herbColor": {
+            "$ref": "#/$defs/consoleColor",
+            "description": "Color for herb resources.",
+            "default": "Green"
+        },
+        "leatherColor": {
+            "$ref": "#/$defs/consoleColor",
+            "description": "Color for leather resources.",
+            "default": "DarkYellow"
+        },
+        "gemColor": {
+            "$ref": "#/$defs/consoleColor",
+            "description": "Color for gem resources.",
+            "default": "Cyan"
+        },
+        "miscColor": {
+            "$ref": "#/$defs/consoleColor",
+            "description": "Color for miscellaneous resources.",
+            "default": "White"
+        }
+    },
+    "$defs": {
+        "consoleColor": {
+            "type": "string",
+            "description": "Console color enumeration value.",
+            "enum": [
+                "Black",
+                "DarkBlue",
+                "DarkGreen",
+                "DarkCyan",
+                "DarkRed",
+                "DarkMagenta",
+                "DarkYellow",
+                "Gray",
+                "DarkGray",
+                "Blue",
+                "Green",
+                "Cyan",
+                "Red",
+                "Magenta",
+                "Yellow",
+                "White"
+            ]
+        }
+    },
+    "additionalProperties": false
+}
