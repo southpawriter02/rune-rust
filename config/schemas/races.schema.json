@@ -1,0 +1,163 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Race Configuration",
+    "description": "Schema for playable race definitions in the game. Validates race attributes, traits, and metadata.",
+    "type": "object",
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "Reference to the JSON schema file for validation"
+        },
+        "version": {
+            "type": "string",
+            "description": "Configuration file version for compatibility tracking",
+            "pattern": "^[0-9]+\\.[0-9]+$"
+        },
+        "races": {
+            "type": "array",
+            "description": "List of race definitions",
+            "items": {
+                "$ref": "#/definitions/RaceDefinition"
+            },
+            "minItems": 1
+        }
+    },
+    "required": [
+        "races"
+    ],
+    "additionalProperties": false,
+    "definitions": {
+        "RaceDefinition": {
+            "type": "object",
+            "description": "A single race definition with attributes, traits, and metadata",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Unique identifier for the race (lowercase kebab-case)",
+                    "pattern": "^[a-z][a-z0-9-]*$",
+                    "minLength": 1,
+                    "maxLength": 50
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Display name for the race shown to players",
+                    "minLength": 1,
+                    "maxLength": 100
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Short description of the race for character creation",
+                    "minLength": 1,
+                    "maxLength": 500
+                },
+                "lore": {
+                    "type": "string",
+                    "description": "Extended lore and background information about the race",
+                    "maxLength": 2000
+                },
+                "attributeModifiers": {
+                    "$ref": "#/definitions/AttributeModifiers",
+                    "description": "Attribute bonuses and penalties applied to this race"
+                },
+                "traitId": {
+                    "type": "string",
+                    "description": "Unique identifier for the racial trait (lowercase with underscores)",
+                    "pattern": "^[a-z][a-z0-9_]*$",
+                    "minLength": 1,
+                    "maxLength": 50
+                },
+                "traitName": {
+                    "type": "string",
+                    "description": "Display name for the racial trait",
+                    "minLength": 1,
+                    "maxLength": 100
+                },
+                "traitDescription": {
+                    "type": "string",
+                    "description": "Description of the racial trait's mechanical effect",
+                    "minLength": 1,
+                    "maxLength": 500
+                },
+                "startingItems": {
+                    "type": "array",
+                    "description": "Item IDs granted to characters of this race at creation",
+                    "items": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9-]*$"
+                    },
+                    "uniqueItems": true
+                },
+                "isPlayable": {
+                    "type": "boolean",
+                    "description": "Whether this race can be selected during character creation",
+                    "default": true
+                },
+                "sortOrder": {
+                    "type": "integer",
+                    "description": "Display order in character creation UI (lower = earlier)",
+                    "minimum": 0,
+                    "default": 0
+                }
+            },
+            "required": [
+                "id",
+                "name",
+                "description",
+                "attributeModifiers",
+                "traitId",
+                "traitName",
+                "traitDescription"
+            ],
+            "additionalProperties": false
+        },
+        "AttributeModifiers": {
+            "type": "object",
+            "description": "Attribute modifiers applied to characters of this race",
+            "properties": {
+                "might": {
+                    "type": "integer",
+                    "description": "Physical power modifier affecting melee damage and carry capacity",
+                    "minimum": -3,
+                    "maximum": 3,
+                    "default": 0
+                },
+                "fortitude": {
+                    "type": "integer",
+                    "description": "Physical resilience modifier affecting health and resistances",
+                    "minimum": -3,
+                    "maximum": 3,
+                    "default": 0
+                },
+                "will": {
+                    "type": "integer",
+                    "description": "Mental fortitude modifier affecting magical resistance and focus",
+                    "minimum": -3,
+                    "maximum": 3,
+                    "default": 0
+                },
+                "wits": {
+                    "type": "integer",
+                    "description": "Mental acuity modifier affecting initiative and perception",
+                    "minimum": -3,
+                    "maximum": 3,
+                    "default": 0
+                },
+                "finesse": {
+                    "type": "integer",
+                    "description": "Dexterity modifier affecting accuracy and evasion",
+                    "minimum": -3,
+                    "maximum": 3,
+                    "default": 0
+                }
+            },
+            "required": [
+                "might",
+                "fortitude",
+                "will",
+                "wits",
+                "finesse"
+            ],
+            "additionalProperties": false
+        }
+    }
+}
