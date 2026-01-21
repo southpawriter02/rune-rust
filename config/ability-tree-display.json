@@ -1,0 +1,26 @@
+{
+    "$schema": "./schemas/ability-tree-display.schema.json",
+    "totalWidth": 72,
+    "totalHeight": 24,
+    "startX": 0,
+    "startY": 0,
+    "padding": 2,
+    "tierLabelRow": 4,
+    "branchHeaderRow": 3,
+    "nodeAreaStartRow": 7,
+    "nodeWidth": 11,
+    "nodeHeight": 3,
+    "columnSpacing": 8,
+    "nodeVerticalSpacing": 1,
+    "maxVisibleTiers": 4,
+    "maxNodesPerTier": 4,
+    "colors": {
+        "borderColor": "DarkGray",
+        "headerColor": "Cyan",
+        "tierLabelColor": "Yellow",
+        "branchHeaderColor": "Magenta",
+        "nodeBorderColor": "Gray",
+        "selectedNodeColor": "White",
+        "defaultColor": "Gray"
+    }
+}

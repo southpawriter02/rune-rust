@@ -1,0 +1,164 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "ability-tree-display.schema.json",
+    "title": "Ability Tree Display Configuration",
+    "description": "Configuration for ability tree visualization in character UI",
+    "type": "object",
+    "properties": {
+        "totalWidth": {
+            "type": "integer",
+            "description": "Total width of the display area",
+            "minimum": 40,
+            "maximum": 150,
+            "default": 72
+        },
+        "totalHeight": {
+            "type": "integer",
+            "description": "Total height of the display area in rows",
+            "minimum": 15,
+            "maximum": 50,
+            "default": 24
+        },
+        "startX": {
+            "type": "integer",
+            "description": "Starting X coordinate",
+            "minimum": 0,
+            "default": 0
+        },
+        "startY": {
+            "type": "integer",
+            "description": "Starting Y coordinate",
+            "minimum": 0,
+            "default": 0
+        },
+        "padding": {
+            "type": "integer",
+            "description": "Padding from border to content",
+            "minimum": 0,
+            "maximum": 10,
+            "default": 2
+        },
+        "tierLabelRow": {
+            "type": "integer",
+            "description": "Row offset for tier labels",
+            "minimum": 2,
+            "maximum": 10,
+            "default": 4
+        },
+        "branchHeaderRow": {
+            "type": "integer",
+            "description": "Row offset for branch headers",
+            "minimum": 2,
+            "maximum": 10,
+            "default": 3
+        },
+        "nodeAreaStartRow": {
+            "type": "integer",
+            "description": "Row offset where node area begins",
+            "minimum": 5,
+            "maximum": 15,
+            "default": 7
+        },
+        "nodeWidth": {
+            "type": "integer",
+            "description": "Width of each node box",
+            "minimum": 7,
+            "maximum": 20,
+            "default": 11
+        },
+        "nodeHeight": {
+            "type": "integer",
+            "description": "Height of each node box",
+            "minimum": 3,
+            "maximum": 7,
+            "default": 3
+        },
+        "columnSpacing": {
+            "type": "integer",
+            "description": "Horizontal spacing between tier columns",
+            "minimum": 2,
+            "maximum": 20,
+            "default": 8
+        },
+        "nodeVerticalSpacing": {
+            "type": "integer",
+            "description": "Vertical spacing between nodes",
+            "minimum": 0,
+            "maximum": 5,
+            "default": 1
+        },
+        "maxVisibleTiers": {
+            "type": "integer",
+            "description": "Maximum tiers visible before scrolling",
+            "minimum": 2,
+            "maximum": 8,
+            "default": 4
+        },
+        "maxNodesPerTier": {
+            "type": "integer",
+            "description": "Maximum nodes per tier before scrolling",
+            "minimum": 2,
+            "maximum": 10,
+            "default": 4
+        },
+        "colors": {
+            "type": "object",
+            "description": "Color configuration",
+            "properties": {
+                "borderColor": {
+                    "$ref": "#/$defs/consoleColor",
+                    "default": "DarkGray"
+                },
+                "headerColor": {
+                    "$ref": "#/$defs/consoleColor",
+                    "default": "Cyan"
+                },
+                "tierLabelColor": {
+                    "$ref": "#/$defs/consoleColor",
+                    "default": "Yellow"
+                },
+                "branchHeaderColor": {
+                    "$ref": "#/$defs/consoleColor",
+                    "default": "Magenta"
+                },
+                "nodeBorderColor": {
+                    "$ref": "#/$defs/consoleColor",
+                    "default": "Gray"
+                },
+                "selectedNodeColor": {
+                    "$ref": "#/$defs/consoleColor",
+                    "default": "White"
+                },
+                "defaultColor": {
+                    "$ref": "#/$defs/consoleColor",
+                    "default": "Gray"
+                }
+            },
+            "additionalProperties": false
+        }
+    },
+    "$defs": {
+        "consoleColor": {
+            "type": "string",
+            "enum": [
+                "Black",
+                "DarkBlue",
+                "DarkGreen",
+                "DarkCyan",
+                "DarkRed",
+                "DarkMagenta",
+                "DarkYellow",
+                "Gray",
+                "DarkGray",
+                "Blue",
+                "Green",
+                "Cyan",
+                "Red",
+                "Magenta",
+                "Yellow",
+                "White"
+            ]
+        }
+    },
+    "additionalProperties": false
+}
