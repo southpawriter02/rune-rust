@@ -1,0 +1,34 @@
+{
+    "browserWidth": 70,
+    "browserHeight": 25,
+    "searchBoxWidth": 15,
+    "maxRecipesPerCategory": 6,
+    "detailsWidth": 60,
+    "detailsHeight": 16,
+    "bookWidth": 50,
+    "bookHeight": 20,
+    "maxRecipesPerStation": 5,
+    "notificationWidth": 55,
+    "notificationDurationSeconds": 5,
+    "colors": {
+        "categoryHeader": "yellow",
+        "stationHeader": "cyan",
+        "selection": "green",
+        "activeFilter": "white",
+        "craftable": "green",
+        "notCraftable": "darkGray",
+        "sufficientMaterial": "green",
+        "insufficientMaterial": "red",
+        "newRecipe": "yellow",
+        "progressBar": "cyan",
+        "notificationBorder": "yellow",
+        "notificationHighlight": "green"
+    },
+    "qualityColors": {
+        "common": "gray",
+        "uncommon": "green",
+        "rare": "blue",
+        "epic": "magenta",
+        "legendary": "yellow"
+    }
+}
