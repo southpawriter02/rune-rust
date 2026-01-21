@@ -1,0 +1,266 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Class Configuration",
+    "description": "Schema for character class definitions in the game. Validates stat modifiers, growth rates, resource types, and ability references.",
+    "type": "object",
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "Reference to the JSON schema file for validation"
+        },
+        "version": {
+            "type": "string",
+            "description": "Configuration file version for compatibility tracking",
+            "pattern": "^[0-9]+\\.[0-9]+$"
+        },
+        "classes": {
+            "type": "array",
+            "description": "List of character class definitions",
+            "items": {
+                "$ref": "#/definitions/ClassDefinition"
+            },
+            "minItems": 1
+        }
+    },
+    "required": [
+        "classes"
+    ],
+    "additionalProperties": false,
+    "definitions": {
+        "ClassDefinition": {
+            "type": "object",
+            "description": "A single character class definition with stats, abilities, and progression",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Unique identifier for the class (lowercase kebab-case)",
+                    "pattern": "^[a-z][a-z0-9-]*$",
+                    "minLength": 1,
+                    "maxLength": 50
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Display name for the class shown to players",
+                    "minLength": 1,
+                    "maxLength": 100
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Detailed description of the class playstyle and lore",
+                    "minLength": 1,
+                    "maxLength": 1000
+                },
+                "archetypeId": {
+                    "type": "string",
+                    "description": "Reference to the parent archetype (must match an archetype ID)",
+                    "pattern": "^[a-z][a-z0-9-]*$",
+                    "minLength": 1,
+                    "maxLength": 50
+                },
+                "statModifiers": {
+                    "$ref": "#/definitions/StatModifiers",
+                    "description": "Base stat adjustments applied to characters of this class"
+                },
+                "growthRates": {
+                    "$ref": "#/definitions/GrowthRates",
+                    "description": "Per-level stat increases for characters of this class"
+                },
+                "primaryResourceId": {
+                    "type": "string",
+                    "description": "The primary resource type used by this class for abilities",
+                    "enum": [
+                        "mana",
+                        "rage",
+                        "energy",
+                        "focus",
+                        "faith",
+                        "stamina"
+                    ]
+                },
+                "startingAbilityIds": {
+                    "type": "array",
+                    "description": "Ability IDs granted to characters of this class at creation",
+                    "items": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9-]*$"
+                    },
+                    "uniqueItems": true
+                },
+                "requirements": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "type": "object",
+                            "description": "Optional unlock conditions for this class",
+                            "properties": {
+                                "level": {
+                                    "type": "integer",
+                                    "description": "Minimum character level to unlock",
+                                    "minimum": 1
+                                },
+                                "achievementIds": {
+                                    "type": "array",
+                                    "description": "Achievement IDs required to unlock",
+                                    "items": {
+                                        "type": "string",
+                                        "pattern": "^[a-z][a-z0-9-]*$"
+                                    }
+                                },
+                                "questIds": {
+                                    "type": "array",
+                                    "description": "Quest IDs that must be completed",
+                                    "items": {
+                                        "type": "string",
+                                        "pattern": "^[a-z][a-z0-9-]*$"
+                                    }
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    ]
+                },
+                "sortOrder": {
+                    "type": "integer",
+                    "description": "Display order in character creation UI (lower = earlier)",
+                    "minimum": 0,
+                    "default": 0
+                }
+            },
+            "required": [
+                "id",
+                "name",
+                "description",
+                "archetypeId",
+                "statModifiers",
+                "growthRates",
+                "primaryResourceId",
+                "startingAbilityIds"
+            ],
+            "additionalProperties": false
+        },
+        "StatModifiers": {
+            "type": "object",
+            "description": "Base stat adjustments applied at character creation (can be positive or negative)",
+            "properties": {
+                "maxHealth": {
+                    "type": "integer",
+                    "description": "Bonus or penalty to maximum health points",
+                    "default": 0
+                },
+                "attack": {
+                    "type": "integer",
+                    "description": "Bonus or penalty to attack power",
+                    "default": 0
+                },
+                "defense": {
+                    "type": "integer",
+                    "description": "Bonus or penalty to defense rating",
+                    "default": 0
+                },
+                "might": {
+                    "type": "integer",
+                    "description": "Bonus or penalty to physical power attribute",
+                    "default": 0
+                },
+                "fortitude": {
+                    "type": "integer",
+                    "description": "Bonus or penalty to physical resilience attribute",
+                    "default": 0
+                },
+                "will": {
+                    "type": "integer",
+                    "description": "Bonus or penalty to mental fortitude attribute",
+                    "default": 0
+                },
+                "wits": {
+                    "type": "integer",
+                    "description": "Bonus or penalty to mental acuity attribute",
+                    "default": 0
+                },
+                "finesse": {
+                    "type": "integer",
+                    "description": "Bonus or penalty to dexterity attribute",
+                    "default": 0
+                }
+            },
+            "required": [
+                "maxHealth",
+                "attack",
+                "defense",
+                "might",
+                "fortitude",
+                "will",
+                "wits",
+                "finesse"
+            ],
+            "additionalProperties": false
+        },
+        "GrowthRates": {
+            "type": "object",
+            "description": "Per-level stat increases for character progression (must be non-negative)",
+            "properties": {
+                "maxHealth": {
+                    "type": "integer",
+                    "description": "Health points gained per level",
+                    "minimum": 0,
+                    "default": 0
+                },
+                "attack": {
+                    "type": "integer",
+                    "description": "Attack power gained per level",
+                    "minimum": 0,
+                    "default": 0
+                },
+                "defense": {
+                    "type": "integer",
+                    "description": "Defense rating gained per level",
+                    "minimum": 0,
+                    "default": 0
+                },
+                "might": {
+                    "type": "integer",
+                    "description": "Might attribute growth per level",
+                    "minimum": 0,
+                    "default": 0
+                },
+                "fortitude": {
+                    "type": "integer",
+                    "description": "Fortitude attribute growth per level",
+                    "minimum": 0,
+                    "default": 0
+                },
+                "will": {
+                    "type": "integer",
+                    "description": "Will attribute growth per level",
+                    "minimum": 0,
+                    "default": 0
+                },
+                "wits": {
+                    "type": "integer",
+                    "description": "Wits attribute growth per level",
+                    "minimum": 0,
+                    "default": 0
+                },
+                "finesse": {
+                    "type": "integer",
+                    "description": "Finesse attribute growth per level",
+                    "minimum": 0,
+                    "default": 0
+                }
+            },
+            "required": [
+                "maxHealth",
+                "attack",
+                "defense",
+                "might",
+                "fortitude",
+                "will",
+                "wits",
+                "finesse"
+            ],
+            "additionalProperties": false
+        }
+    }
+}
