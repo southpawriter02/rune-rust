@@ -1,0 +1,72 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Leaderboard View Configuration",
+    "description": "Configuration schema for the Leaderboard View display settings",
+    "type": "object",
+    "properties": {
+        "panelWidth": {
+            "type": "integer",
+            "minimum": 60,
+            "maximum": 120,
+            "default": 72,
+            "description": "Total width of the leaderboard panel in characters"
+        },
+        "panelHeight": {
+            "type": "integer",
+            "minimum": 20,
+            "maximum": 50,
+            "default": 35,
+            "description": "Total height of the leaderboard panel in lines"
+        },
+        "rankColumnWidth": {
+            "type": "integer",
+            "minimum": 4,
+            "maximum": 10,
+            "default": 6,
+            "description": "Width of the rank column"
+        },
+        "nameColumnWidth": {
+            "type": "integer",
+            "minimum": 10,
+            "maximum": 20,
+            "default": 14,
+            "description": "Width of the name column"
+        },
+        "classColumnWidth": {
+            "type": "integer",
+            "minimum": 8,
+            "maximum": 15,
+            "default": 10,
+            "description": "Width of the class column"
+        },
+        "levelColumnWidth": {
+            "type": "integer",
+            "minimum": 5,
+            "maximum": 10,
+            "default": 8,
+            "description": "Width of the level column"
+        },
+        "scoreColumnWidth": {
+            "type": "integer",
+            "minimum": 8,
+            "maximum": 15,
+            "default": 12,
+            "description": "Width of the score column"
+        },
+        "dateColumnWidth": {
+            "type": "integer",
+            "minimum": 10,
+            "maximum": 15,
+            "default": 12,
+            "description": "Width of the date column"
+        },
+        "maxDisplayEntries": {
+            "type": "integer",
+            "minimum": 5,
+            "maximum": 20,
+            "default": 10,
+            "description": "Maximum number of entries to display"
+        }
+    },
+    "additionalProperties": false
+}

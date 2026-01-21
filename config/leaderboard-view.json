@@ -1,0 +1,11 @@
+{
+    "panelWidth": 72,
+    "panelHeight": 35,
+    "rankColumnWidth": 6,
+    "nameColumnWidth": 14,
+    "classColumnWidth": 10,
+    "levelColumnWidth": 8,
+    "scoreColumnWidth": 12,
+    "dateColumnWidth": 12,
+    "maxDisplayEntries": 10
+}
