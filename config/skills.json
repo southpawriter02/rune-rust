@@ -1,5 +1,5 @@
 {
-    "$schema": "skills.schema.json",
+    "$schema": "./schemas/skills.schema.json",
     "skills": [
         {
             "id": "athletics",

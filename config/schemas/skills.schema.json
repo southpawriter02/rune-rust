@@ -1,0 +1,126 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Skills Configuration",
+    "description": "Schema for skill definitions. Skills represent character abilities that can be used for checks, with attribute links and category classifications.",
+    "type": "object",
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "Reference to the JSON schema file for validation"
+        },
+        "skills": {
+            "type": "array",
+            "description": "List of skill definitions",
+            "items": {
+                "$ref": "#/definitions/SkillDefinition"
+            },
+            "minItems": 1
+        }
+    },
+    "required": [
+        "skills"
+    ],
+    "additionalProperties": false,
+    "definitions": {
+        "SkillDefinition": {
+            "type": "object",
+            "description": "A single skill definition with attribute links and mechanics",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Unique identifier for the skill (lowercase kebab-case)",
+                    "pattern": "^[a-z][a-z0-9-]*$",
+                    "minLength": 1,
+                    "maxLength": 50
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Display name for the skill shown to players",
+                    "minLength": 1,
+                    "maxLength": 100
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Description of what the skill represents and when it's used",
+                    "minLength": 1,
+                    "maxLength": 500
+                },
+                "primaryAttribute": {
+                    "type": "string",
+                    "description": "The main attribute that modifies this skill's checks",
+                    "enum": [
+                        "might",
+                        "fortitude",
+                        "will",
+                        "wits",
+                        "finesse"
+                    ]
+                },
+                "secondaryAttribute": {
+                    "type": "string",
+                    "description": "Optional secondary attribute that can also modify checks",
+                    "enum": [
+                        "might",
+                        "fortitude",
+                        "will",
+                        "wits",
+                        "finesse"
+                    ]
+                },
+                "baseDicePool": {
+                    "type": "string",
+                    "description": "The base dice pool for skill checks (e.g., '1d10', '2d6')",
+                    "pattern": "^\\d+d\\d+$"
+                },
+                "allowUntrained": {
+                    "type": "boolean",
+                    "description": "Whether characters can attempt this skill without training",
+                    "default": true
+                },
+                "untrainedPenalty": {
+                    "type": "integer",
+                    "description": "Penalty applied to untrained skill checks (0 = no penalty)",
+                    "minimum": 0,
+                    "default": 0
+                },
+                "category": {
+                    "type": "string",
+                    "description": "The category this skill belongs to for organization and filtering",
+                    "enum": [
+                        "Physical",
+                        "Mental",
+                        "Social",
+                        "Knowledge",
+                        "Specialty"
+                    ]
+                },
+                "tags": {
+                    "type": "array",
+                    "description": "Searchable tags for filtering and grouping skills",
+                    "items": {
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "uniqueItems": true
+                },
+                "sortOrder": {
+                    "type": "integer",
+                    "description": "Display order in skill lists (lower = earlier)",
+                    "minimum": 0,
+                    "default": 0
+                }
+            },
+            "required": [
+                "id",
+                "name",
+                "description",
+                "primaryAttribute",
+                "baseDicePool",
+                "allowUntrained",
+                "category",
+                "tags"
+            ],
+            "additionalProperties": false
+        }
+    }
+}

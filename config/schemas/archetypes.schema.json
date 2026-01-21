@@ -1,0 +1,81 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Archetypes Configuration",
+    "description": "Schema for class archetype definitions. Archetypes group classes by playstyle and stat tendencies.",
+    "type": "object",
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "Reference to the JSON schema file for validation"
+        },
+        "archetypes": {
+            "type": "array",
+            "description": "List of archetype definitions",
+            "items": {
+                "$ref": "#/definitions/ArchetypeDefinition"
+            },
+            "minItems": 1
+        }
+    },
+    "required": [
+        "archetypes"
+    ],
+    "additionalProperties": false,
+    "definitions": {
+        "ArchetypeDefinition": {
+            "type": "object",
+            "description": "A single archetype definition with playstyle and stat tendency metadata",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Unique identifier for the archetype (lowercase kebab-case)",
+                    "pattern": "^[a-z][a-z0-9-]*$",
+                    "minLength": 1,
+                    "maxLength": 50
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Display name for the archetype shown to players",
+                    "minLength": 1,
+                    "maxLength": 100
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Description of the archetype's role and characteristics",
+                    "minLength": 1,
+                    "maxLength": 1000
+                },
+                "playstyleSummary": {
+                    "type": "string",
+                    "description": "Brief summary of the archetype's playstyle for character creation UI",
+                    "minLength": 1,
+                    "maxLength": 200
+                },
+                "statTendency": {
+                    "type": "string",
+                    "description": "The general stat distribution tendency of classes in this archetype",
+                    "enum": [
+                        "offensive",
+                        "defensive",
+                        "balanced"
+                    ]
+                },
+                "sortOrder": {
+                    "type": "integer",
+                    "description": "Display order in archetype lists (lower = earlier)",
+                    "minimum": 0,
+                    "default": 0
+                }
+            },
+            "required": [
+                "id",
+                "name",
+                "description",
+                "playstyleSummary",
+                "statTendency",
+                "sortOrder"
+            ],
+            "additionalProperties": false
+        }
+    }
+}
