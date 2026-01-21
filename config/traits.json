@@ -1,6 +1,6 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "description": "Monster trait definitions for v0.0.9c",
+  "$schema": "./schemas/traits.schema.json",
+  "description": "Monster trait definitions for v0.14.3b",
   "traits": [
     {
       "id": "regenerating",
@@ -8,8 +8,10 @@
       "description": "Heals a small amount of HP each turn.",
       "effect": "Regeneration",
       "effectValue": 5,
-      "triggerThreshold": null,
-      "tags": ["healing", "passive"],
+      "tags": [
+        "healing",
+        "passive"
+      ],
       "color": "green",
       "sortOrder": 0
     },
@@ -19,8 +21,10 @@
       "description": "Harder to hit with melee attacks due to aerial mobility.",
       "effect": "Flying",
       "effectValue": 3,
-      "triggerThreshold": null,
-      "tags": ["mobility", "defensive"],
+      "tags": [
+        "mobility",
+        "defensive"
+      ],
       "color": "cyan",
       "sortOrder": 1
     },
@@ -30,8 +34,10 @@
       "description": "Attacks have a chance to poison the target.",
       "effect": "Venomous",
       "effectValue": 3,
-      "triggerThreshold": null,
-      "tags": ["poison", "offensive"],
+      "tags": [
+        "poison",
+        "offensive"
+      ],
       "color": "green",
       "sortOrder": 2
     },
@@ -41,10 +47,15 @@
       "description": "Thick hide or plating provides extra defense.",
       "effect": "Armored",
       "effectValue": 3,
-      "triggerThreshold": null,
-      "tags": ["defensive", "passive"],
+      "tags": [
+        "defensive",
+        "passive"
+      ],
       "color": "grey",
-      "sortOrder": 3
+      "sortOrder": 3,
+      "statModifiers": {
+        "bonusDefense": 3
+      }
     },
     {
       "id": "berserker",
@@ -53,7 +64,10 @@
       "effect": "Berserker",
       "effectValue": 50,
       "triggerThreshold": 30,
-      "tags": ["offensive", "triggered"],
+      "tags": [
+        "offensive",
+        "triggered"
+      ],
       "color": "red",
       "sortOrder": 4
     }

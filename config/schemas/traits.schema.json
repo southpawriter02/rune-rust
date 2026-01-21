@@ -1,0 +1,224 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Monster Trait Configuration",
+    "description": "Schema for monster trait definitions. Defines special abilities and passive bonuses that can be applied to monsters, including effect types, stat modifiers, resistance grants, and visual modifiers.",
+    "type": "object",
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "Reference to the JSON schema file for validation"
+        },
+        "version": {
+            "type": "string",
+            "description": "Optional version identifier for the configuration file",
+            "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+        },
+        "description": {
+            "type": "string",
+            "description": "Optional file-level description"
+        },
+        "traits": {
+            "type": "array",
+            "description": "List of trait definitions",
+            "items": {
+                "$ref": "#/definitions/TraitDefinition"
+            },
+            "minItems": 1
+        }
+    },
+    "required": [
+        "traits"
+    ],
+    "additionalProperties": false,
+    "definitions": {
+        "TraitDefinition": {
+            "type": "object",
+            "description": "A trait that can be applied to monsters, providing special abilities, stat modifications, or resistance grants. Traits define passive bonuses (always active), triggered effects (conditional), and active abilities (movement/action-based).",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Unique identifier for the trait (lowercase with underscores). Used as reference key in monster possibleTraits arrays.",
+                    "pattern": "^[a-z][a-z0-9_]*$",
+                    "minLength": 1,
+                    "maxLength": 50
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Display name shown to players in trait lists and tooltips.",
+                    "minLength": 1,
+                    "maxLength": 100
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Full description of the trait's effect shown in tooltips and monster inspection.",
+                    "minLength": 1
+                },
+                "effect": {
+                    "type": "string",
+                    "description": "The type of effect this trait provides. Determines how effectValue is interpreted and when the effect triggers.",
+                    "enum": [
+                        "Regeneration",
+                        "Flying",
+                        "Venomous",
+                        "Armored",
+                        "Berserker",
+                        "SpellResistant",
+                        "Undying",
+                        "Splitting",
+                        "Burrowing",
+                        "Invisible",
+                        "Teleporting"
+                    ]
+                },
+                "effectValue": {
+                    "type": "integer",
+                    "description": "Numeric value for the effect. Meaning varies by effect type: Regeneration=HP/turn, Flying=Defense bonus, Venomous=Poison damage, Armored=Defense bonus, Berserker=Damage bonus %, SpellResistant=Magic reduction %, Undying=Revive HP %, Splitting=Spawn count, Burrowing=Invuln turns, Invisible=Miss chance %, Teleporting=Max tiles."
+                },
+                "triggerThreshold": {
+                    "type": "integer",
+                    "description": "Health percentage or other threshold that triggers the effect (for triggered effects like Berserker). A value of 30 means the effect triggers below 30% HP.",
+                    "minimum": 0,
+                    "maximum": 100
+                },
+                "tags": {
+                    "type": "array",
+                    "description": "Category tags for trait classification and filtering. Used for UI organization and mechanical interactions.",
+                    "items": {
+                        "type": "string",
+                        "enum": [
+                            "passive",
+                            "triggered",
+                            "offensive",
+                            "defensive",
+                            "mobility",
+                            "healing",
+                            "poison"
+                        ]
+                    },
+                    "minItems": 1
+                },
+                "color": {
+                    "type": "string",
+                    "description": "Display color for the trait indicator in the UI. Common values: green (healing/nature), red (aggression), cyan (mobility), grey (defense), purple (magic), yellow (stealth), blue (undead).",
+                    "minLength": 1
+                },
+                "sortOrder": {
+                    "type": "integer",
+                    "description": "Order for display sorting in trait lists. Lower values appear first.",
+                    "minimum": 0
+                },
+                "statModifiers": {
+                    "$ref": "#/definitions/StatModifiers"
+                },
+                "resistanceModifiers": {
+                    "$ref": "#/definitions/ResistanceModifiers"
+                },
+                "grantedAbilityIds": {
+                    "type": "array",
+                    "description": "Ability IDs granted to monsters with this trait (references abilities.json).",
+                    "items": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9_-]*$"
+                    }
+                },
+                "visualSize": {
+                    "type": "string",
+                    "description": "Visual size modifier for monsters with this trait. Affects rendering scale.",
+                    "enum": [
+                        "Tiny",
+                        "Small",
+                        "Medium",
+                        "Large",
+                        "Huge"
+                    ]
+                },
+                "nameDescriptor": {
+                    "type": "string",
+                    "description": "Descriptor added to monster name when this trait is present (e.g., 'Poisonous Goblin', 'Giant Orc').",
+                    "minLength": 1,
+                    "maxLength": 50
+                }
+            },
+            "required": [
+                "id",
+                "name",
+                "description",
+                "effect",
+                "effectValue",
+                "tags",
+                "color",
+                "sortOrder"
+            ],
+            "additionalProperties": false
+        },
+        "StatModifiers": {
+            "type": "object",
+            "description": "Stat modifications granted by the trait. Flat bonuses are applied first, then percentage bonuses multiply the result.",
+            "properties": {
+                "bonusHealth": {
+                    "type": "integer",
+                    "description": "Flat bonus to maximum health. Added before percentage bonuses."
+                },
+                "bonusHealthPercent": {
+                    "type": "number",
+                    "description": "Percentage bonus to maximum health (0.0 to 1.0). A value of 0.25 means +25% HP. Applied after flat bonuses.",
+                    "minimum": 0,
+                    "maximum": 1
+                },
+                "bonusAttack": {
+                    "type": "integer",
+                    "description": "Flat bonus to attack power. Added before percentage bonuses."
+                },
+                "bonusAttackPercent": {
+                    "type": "number",
+                    "description": "Percentage bonus to attack power (0.0 to 1.0). A value of 0.10 means +10% attack. Applied after flat bonuses.",
+                    "minimum": 0,
+                    "maximum": 1
+                },
+                "bonusDefense": {
+                    "type": "integer",
+                    "description": "Flat bonus to defense. Added before percentage bonuses."
+                },
+                "bonusDefensePercent": {
+                    "type": "number",
+                    "description": "Percentage bonus to defense (0.0 to 1.0). A value of 0.15 means +15% defense. Applied after flat bonuses.",
+                    "minimum": 0,
+                    "maximum": 1
+                },
+                "bonusSpeed": {
+                    "type": "integer",
+                    "description": "Flat bonus to movement speed."
+                },
+                "bonusInitiative": {
+                    "type": "integer",
+                    "description": "Flat bonus to initiative roll for turn order determination. Positive values act faster."
+                }
+            },
+            "additionalProperties": false
+        },
+        "ResistanceModifiers": {
+            "type": "object",
+            "description": "Resistance and immunity modifications granted by the trait. Resistances reduce damage, immunities completely negate it.",
+            "properties": {
+                "resistances": {
+                    "type": "object",
+                    "description": "Damage type resistances to add. Keys are damage type IDs, values are percentages from -100 (double damage) to 100 (immune).",
+                    "additionalProperties": {
+                        "type": "integer",
+                        "minimum": -100,
+                        "maximum": 100
+                    }
+                },
+                "immunities": {
+                    "type": "array",
+                    "description": "Damage type IDs the monster becomes immune to (equivalent to 100% resistance).",
+                    "items": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9_-]*$"
+                    }
+                }
+            },
+            "additionalProperties": false
+        }
+    }
+}
