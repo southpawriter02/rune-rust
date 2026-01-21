@@ -1,15 +1,20 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 // GuiControlBase.cs
 // Abstract base class for GUI presentation controls with standardized DI patterns.
-// Version: 0.13.5c
+// Version: 0.13.5d
 // ═══════════════════════════════════════════════════════════════════════════════
 
+using System.Diagnostics;
 using Avalonia.Controls;
 using Avalonia.Media;
+using Avalonia.Threading;
 using Microsoft.Extensions.Logging;
 using RuneAndRust.Presentation.Interfaces;
 using RuneAndRust.Presentation.Shared.Enums;
+using RuneAndRust.Presentation.Shared.Extensions;
+using RuneAndRust.Presentation.Shared.Models;
 using RuneAndRust.Presentation.Shared.Services;
+using RuneAndRust.Presentation.Shared.Utilities;
 using RuneAndRust.Presentation.Shared.ValueObjects;
 
 namespace RuneAndRust.Presentation.Gui.Base;
@@ -197,6 +202,25 @@ public abstract class GuiControlBase : UserControl, IComponentLifecycle
     /// Use <see cref="InvalidateBrushCache"/> when the theme changes.
     /// </remarks>
     private readonly Dictionary<ColorKey, IBrush> _brushCache = new();
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // SAFERENDER STATE
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// Optional cache of the last valid state for fallback rendering.
+    /// </summary>
+    private object? _lastValidState;
+
+    /// <summary>
+    /// Tracks consecutive render errors for the retry limit.
+    /// </summary>
+    private int _consecutiveErrors;
+
+    /// <summary>
+    /// Maximum consecutive errors before stopping retry attempts.
+    /// </summary>
+    private const int MaxConsecutiveErrors = 3;
 
     // ═══════════════════════════════════════════════════════════════════════════
     // CONSTRUCTOR
@@ -471,6 +495,236 @@ public abstract class GuiControlBase : UserControl, IComponentLifecycle
     /// The base implementation does nothing.
     /// </remarks>
     protected virtual void OnControlDispose() { }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // SAFERENDER PATTERN
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// Executes a render action with error handling and fallback support.
+    /// </summary>
+    /// <param name="renderAction">The render action to execute.</param>
+    /// <param name="context">Optional context for error messages. Defaults to <see cref="ControlName"/>.</param>
+    /// <remarks>
+    /// <para>
+    /// The SafeRender pattern provides graceful degradation for render operations:
+    /// <list type="bullet">
+    ///   <item><description>Transient errors: Retry once, then fallback</description></item>
+    ///   <item><description>Recoverable errors: Use fallback content</description></item>
+    ///   <item><description>Permanent errors: Use fallback content, log warning</description></item>
+    ///   <item><description>Critical errors: Propagate to caller</description></item>
+    /// </list>
+    /// </para>
+    /// <para>
+    /// All render operations are timed and logged at Trace level.
+    /// Errors are logged at Warning level (recoverable) or Error level (critical).
+    /// </para>
+    /// <para>
+    /// Fallback rendering is dispatched to the UI thread to ensure
+    /// thread safety for Avalonia control modifications.
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// public void UpdateDisplay(HealthData data)
+    /// {
+    ///     SafeRender(() =>
+    ///     {
+    ///         // Render logic that might throw
+    ///         healthBar.Width = (data.Current / data.Max) * 100;
+    ///         healthBar.Background = GetHealthBrush(data.Percentage);
+    ///     });
+    /// }
+    /// </code>
+    /// </example>
+    protected void SafeRender(Action renderAction, string? context = null)
+    {
+        // Use control name if no context provided
+        var renderContext = context ?? ControlName;
+        var stopwatch = Stopwatch.StartNew();
+
+        // Log render start and create timing scope
+        using (Logger?.LogRenderStart(renderContext) ?? EmptyDisposable.Instance)
+        {
+            try
+            {
+                // Execute the render action
+                renderAction();
+                stopwatch.Stop();
+
+                // Reset consecutive error counter on success
+                _consecutiveErrors = 0;
+
+                // Log successful completion with timing
+                Logger?.LogRenderComplete(renderContext, stopwatch.Elapsed);
+            }
+            catch (Exception ex)
+            {
+                // Stop timing and increment error counter
+                stopwatch.Stop();
+                _consecutiveErrors++;
+
+                // Log the render error
+                Logger?.LogRenderError(renderContext, ex);
+
+                // Classify the error severity
+                var severity = RenderErrorHandler.GetErrorSeverity(ex);
+                var errorContext = RenderErrorHandler.CreateErrorContext(ex, renderContext);
+
+                // Log the classification
+                Logger?.LogErrorClassification(renderContext, ex, severity);
+
+                // Handle based on severity
+                switch (severity)
+                {
+                    case ErrorSeverity.Transient when _consecutiveErrors < MaxConsecutiveErrors:
+                        // Retry once for transient errors
+                        Logger?.LogDebug(
+                            "Retrying render for {Control} (attempt {Attempt}/{Max})",
+                            renderContext,
+                            _consecutiveErrors,
+                            MaxConsecutiveErrors);
+                        SafeRender(renderAction, context);
+                        return; // Exit after retry completes
+
+                    case ErrorSeverity.Critical:
+                        // Critical errors: Show error indicator, then propagate
+                        Dispatcher.UIThread.Post(() =>
+                            RenderFallback(renderContext, FallbackType.ErrorMessage));
+                        throw;
+
+                    default:
+                        // Use fallback for recoverable/permanent errors via UI thread
+                        Logger?.LogFallbackTriggered(renderContext, FallbackType.Placeholder);
+                        Dispatcher.UIThread.Post(() =>
+                            RenderFallback(renderContext, FallbackType.Placeholder));
+                        break;
+                }
+
+                // Call the error hook for subclass handling
+                OnRenderError(errorContext);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Renders fallback content when the primary render fails.
+    /// </summary>
+    /// <param name="context">The context string for the fallback content.</param>
+    /// <param name="fallbackType">The type of fallback to render.</param>
+    /// <remarks>
+    /// <para>
+    /// Override this method to provide control-specific fallback rendering.
+    /// The default implementation adjusts the control's visibility and opacity.
+    /// </para>
+    /// <para>
+    /// Fallback behaviors by type:
+    /// <list type="bullet">
+    ///   <item><description><see cref="FallbackType.Empty"/>: Hides the control</description></item>
+    ///   <item><description><see cref="FallbackType.Placeholder"/>: Reduces opacity to 50%</description></item>
+    ///   <item><description><see cref="FallbackType.ErrorMessage"/>: Shows error styling</description></item>
+    ///   <item><description><see cref="FallbackType.LastKnown"/>: Attempts to restore last valid state</description></item>
+    /// </list>
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// protected override void RenderFallback(string context, FallbackType type)
+    /// {
+    ///     base.RenderFallback(context, type); // Apply base styling
+    ///     
+    ///     // Control-specific fallback
+    ///     healthLabel.Text = "---";
+    ///     healthBar.Width = 0;
+    /// }
+    /// </code>
+    /// </example>
+    protected virtual void RenderFallback(string context, FallbackType fallbackType)
+    {
+        // Get fallback text for logging
+        var fallbackText = RenderErrorHandler.GetFallbackContent(context, fallbackType);
+        Logger?.LogDebug("Rendering fallback for {Control}: {FallbackText}", ControlName, fallbackText);
+
+        // Apply fallback styling based on type
+        switch (fallbackType)
+        {
+            case FallbackType.Empty:
+                // Hide the control entirely
+                IsVisible = false;
+                break;
+
+            case FallbackType.ErrorMessage:
+                // Show error indicator with accent color
+                Background = GetBrush(ColorKey.Accent);
+                Opacity = 1.0;
+                IsVisible = true;
+                break;
+
+            case FallbackType.Placeholder:
+            default:
+                // Show degraded state with reduced opacity
+                Background = GetBrush(ColorKey.Surface);
+                Opacity = 0.5;
+                IsVisible = true;
+                break;
+        }
+    }
+
+    /// <summary>
+    /// Called when a render error occurs after error handling.
+    /// </summary>
+    /// <param name="context">The error context with diagnostic information.</param>
+    /// <remarks>
+    /// <para>
+    /// Override this method to implement custom error handling behavior such as:
+    /// <list type="bullet">
+    ///   <item><description>Notifying parent components</description></item>
+    ///   <item><description>Tracking error metrics</description></item>
+    ///   <item><description>Triggering data refresh</description></item>
+    /// </list>
+    /// </para>
+    /// <para>
+    /// The base implementation does nothing. This is called after fallback
+    /// rendering is posted to the UI thread.
+    /// </para>
+    /// </remarks>
+    protected virtual void OnRenderError(RenderErrorContext context)
+    {
+        // Default: no additional handling
+        // Subclasses can override for custom error handling
+    }
+
+    /// <summary>
+    /// Caches the last valid state for potential fallback use.
+    /// </summary>
+    /// <param name="state">The state object to cache.</param>
+    /// <remarks>
+    /// Call this after successful renders if you want to support
+    /// <see cref="FallbackType.LastKnown"/> fallback behavior.
+    /// </remarks>
+    protected void CacheLastValidState(object state)
+    {
+        _lastValidState = state;
+    }
+
+    /// <summary>
+    /// Gets the last cached valid state, if available.
+    /// </summary>
+    /// <typeparam name="T">The type of state to retrieve.</typeparam>
+    /// <returns>The last valid state cast to <typeparamref name="T"/>, or <c>default</c> if none.</returns>
+    protected T? GetLastValidState<T>() where T : class
+    {
+        return _lastValidState as T;
+    }
+
+    /// <summary>
+    /// Empty disposable for null logger scenarios.
+    /// </summary>
+    private sealed class EmptyDisposable : IDisposable
+    {
+        public static readonly EmptyDisposable Instance = new();
+        public void Dispose() { }
+    }
 
     // ═══════════════════════════════════════════════════════════════════════════
     // THEME HELPER METHODS

@@ -1,13 +1,17 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 // TuiComponentBase.cs
 // Abstract base class for TUI presentation components with standardized DI patterns.
-// Version: 0.13.5c
+// Version: 0.13.5d
 // ═══════════════════════════════════════════════════════════════════════════════
 
+using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using RuneAndRust.Presentation.Interfaces;
 using RuneAndRust.Presentation.Shared.Enums;
+using RuneAndRust.Presentation.Shared.Extensions;
+using RuneAndRust.Presentation.Shared.Models;
 using RuneAndRust.Presentation.Shared.Services;
+using RuneAndRust.Presentation.Shared.Utilities;
 using RuneAndRust.Presentation.Shared.ValueObjects;
 using RuneAndRust.Presentation.Tui.Services;
 using Spectre.Console;
@@ -138,6 +142,29 @@ public abstract class TuiComponentBase : IComponentLifecycle
     /// Tracks whether <see cref="Dispose"/> has been called.
     /// </summary>
     private bool _isDisposed;
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // SAFERENDER STATE
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// Optional cache of the last successfully rendered output.
+    /// </summary>
+    /// <remarks>
+    /// Can be used with <see cref="FallbackType.LastKnown"/> to display
+    /// stale but valid content when a render error occurs.
+    /// </remarks>
+    private string? _lastValidOutput;
+
+    /// <summary>
+    /// Tracks consecutive render errors for the retry limit.
+    /// </summary>
+    private int _consecutiveErrors;
+
+    /// <summary>
+    /// Maximum consecutive errors before stopping retry attempts.
+    /// </summary>
+    private const int MaxConsecutiveErrors = 3;
 
     // ═══════════════════════════════════════════════════════════════════════════
     // CONSTRUCTOR
@@ -345,6 +372,197 @@ public abstract class TuiComponentBase : IComponentLifecycle
     /// The base implementation does nothing.
     /// </remarks>
     protected virtual void OnDispose() { }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // SAFERENDER PATTERN
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// Executes a render action with error handling and fallback support.
+    /// </summary>
+    /// <param name="renderAction">The render action to execute.</param>
+    /// <param name="context">Optional context for error messages. Defaults to <see cref="ComponentName"/>.</param>
+    /// <remarks>
+    /// <para>
+    /// The SafeRender pattern provides graceful degradation for render operations:
+    /// <list type="bullet">
+    ///   <item><description>Transient errors: Retry once, then fallback</description></item>
+    ///   <item><description>Recoverable errors: Use fallback content</description></item>
+    ///   <item><description>Permanent errors: Use fallback content, log warning</description></item>
+    ///   <item><description>Critical errors: Propagate to caller</description></item>
+    /// </list>
+    /// </para>
+    /// <para>
+    /// All render operations are timed and logged at Trace level.
+    /// Errors are logged at Warning level (recoverable) or Error level (critical).
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// public void Render(PlayerData data)
+    /// {
+    ///     SafeRender(() =>
+    ///     {
+    ///         // Render logic that might throw
+    ///         var bar = BuildHealthBar(data.Health, data.MaxHealth);
+    ///         Console.Write(bar);
+    ///     });
+    /// }
+    /// </code>
+    /// </example>
+    protected void SafeRender(Action renderAction, string? context = null)
+    {
+        // Use component name if no context provided
+        var renderContext = context ?? ComponentName;
+        var stopwatch = Stopwatch.StartNew();
+
+        // Log render start and create timing scope
+        using (Logger.LogRenderStart(renderContext))
+        {
+            try
+            {
+                // Execute the render action
+                renderAction();
+                stopwatch.Stop();
+
+                // Reset consecutive error counter on success
+                _consecutiveErrors = 0;
+
+                // Log successful completion with timing
+                Logger.LogRenderComplete(renderContext, stopwatch.Elapsed);
+            }
+            catch (Exception ex)
+            {
+                // Stop timing and increment error counter
+                stopwatch.Stop();
+                _consecutiveErrors++;
+
+                // Log the render error
+                Logger.LogRenderError(renderContext, ex);
+
+                // Classify the error severity
+                var severity = RenderErrorHandler.GetErrorSeverity(ex);
+                var errorContext = RenderErrorHandler.CreateErrorContext(ex, renderContext);
+
+                // Log the classification
+                Logger.LogErrorClassification(renderContext, ex, severity);
+
+                // Handle based on severity
+                switch (severity)
+                {
+                    case ErrorSeverity.Transient when _consecutiveErrors < MaxConsecutiveErrors:
+                        // Retry once for transient errors
+                        Logger.LogDebug(
+                            "Retrying render for {Component} (attempt {Attempt}/{Max})",
+                            renderContext,
+                            _consecutiveErrors,
+                            MaxConsecutiveErrors);
+                        SafeRender(renderAction, context);
+                        return; // Exit after retry completes
+
+                    case ErrorSeverity.Critical:
+                        // Propagate critical errors - cannot handle gracefully
+                        throw;
+
+                    default:
+                        // Use fallback for recoverable/permanent errors
+                        Logger.LogFallbackTriggered(renderContext, FallbackType.Placeholder);
+                        RenderFallback(renderContext);
+                        break;
+                }
+
+                // Call the error hook for subclass handling
+                OnRenderError(errorContext);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Renders fallback content when the primary render fails.
+    /// </summary>
+    /// <param name="context">The context string for the fallback content.</param>
+    /// <remarks>
+    /// <para>
+    /// Override this method to provide component-specific fallback rendering.
+    /// The default implementation outputs a muted placeholder to the console.
+    /// </para>
+    /// <para>
+    /// Fallback content should be:
+    /// <list type="bullet">
+    ///   <item><description>Visually distinct from normal content (muted styling)</description></item>
+    ///   <item><description>Indicative of the component's purpose</description></item>
+    ///   <item><description>Safe to render (should not throw)</description></item>
+    /// </list>
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// protected override void RenderFallback(string context)
+    /// {
+    ///     var color = GetColor(ColorKey.Muted);
+    ///     Console.ForegroundColor = color;
+    ///     Console.Write("[HP: ---/---]");
+    ///     Console.ResetColor();
+    /// }
+    /// </code>
+    /// </example>
+    protected virtual void RenderFallback(string context)
+    {
+        // Get fallback text from the error handler
+        var fallback = RenderErrorHandler.GetFallbackContent(context, FallbackType.Placeholder);
+
+        // Output fallback to console with muted color
+        var color = GetColor(ColorKey.Muted);
+        Console.ForegroundColor = color;
+        Console.Write(fallback);
+        Console.ResetColor();
+    }
+
+    /// <summary>
+    /// Called when a render error occurs after error handling.
+    /// </summary>
+    /// <param name="context">The error context with diagnostic information.</param>
+    /// <remarks>
+    /// <para>
+    /// Override this method to implement custom error handling behavior such as:
+    /// <list type="bullet">
+    ///   <item><description>Notifying parent components</description></item>
+    ///   <item><description>Tracking error metrics</description></item>
+    ///   <item><description>Triggering recovery procedures</description></item>
+    /// </list>
+    /// </para>
+    /// <para>
+    /// The base implementation does nothing. This is called after fallback
+    /// rendering is complete (or after critical errors are logged before re-throw).
+    /// </para>
+    /// </remarks>
+    protected virtual void OnRenderError(RenderErrorContext context)
+    {
+        // Default: no additional handling
+        // Subclasses can override for custom error handling
+    }
+
+    /// <summary>
+    /// Caches the last valid render output for potential fallback use.
+    /// </summary>
+    /// <param name="output">The rendered output to cache.</param>
+    /// <remarks>
+    /// Call this after successful renders if you want to support
+    /// <see cref="FallbackType.LastKnown"/> fallback behavior.
+    /// </remarks>
+    protected void CacheLastValidOutput(string output)
+    {
+        _lastValidOutput = output;
+    }
+
+    /// <summary>
+    /// Gets the last cached valid output, if available.
+    /// </summary>
+    /// <returns>The last valid output, or <c>null</c> if none cached.</returns>
+    protected string? GetLastValidOutput()
+    {
+        return _lastValidOutput;
+    }
 
     // ═══════════════════════════════════════════════════════════════════════════
     // THEME HELPER METHODS
