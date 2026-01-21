@@ -1,0 +1,332 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Monster Configuration",
+    "description": "Schema for monster definitions. Defines all monsters that can spawn in the game, including their stats, behaviors, resistances, and loot tables.",
+    "type": "object",
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "Reference to the JSON schema file for validation"
+        },
+        "version": {
+            "type": "string",
+            "description": "Optional version identifier for the configuration file",
+            "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+        },
+        "monsters": {
+            "type": "array",
+            "description": "List of monster definitions",
+            "items": {
+                "$ref": "#/definitions/MonsterDefinition"
+            },
+            "minItems": 1
+        }
+    },
+    "required": [
+        "monsters"
+    ],
+    "additionalProperties": false,
+    "definitions": {
+        "MonsterDefinition": {
+            "type": "object",
+            "description": "A monster that can spawn and be fought by players. Defines complete stat blocks, AI behavior patterns, resistances, tier/trait references, name generation rules, and embedded loot tables.",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Unique identifier for the monster (lowercase with underscores). Used as reference key by other systems.",
+                    "pattern": "^[a-z][a-z0-9_]*$",
+                    "minLength": 1,
+                    "maxLength": 50
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Display name shown to players during combat and exploration.",
+                    "minLength": 1,
+                    "maxLength": 100
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Full description of the monster shown when examined or encountered.",
+                    "minLength": 1
+                },
+                "baseHealth": {
+                    "type": "integer",
+                    "description": "Base hit points before tier modifiers are applied. Must be at least 1.",
+                    "minimum": 1
+                },
+                "baseAttack": {
+                    "type": "integer",
+                    "description": "Base attack power before tier modifiers. Determines damage dealt to players.",
+                    "minimum": 0
+                },
+                "baseDefense": {
+                    "type": "integer",
+                    "description": "Base defense value before tier modifiers. Reduces incoming damage.",
+                    "minimum": 0
+                },
+                "experienceValue": {
+                    "type": "integer",
+                    "description": "Base experience points awarded when this monster is defeated.",
+                    "minimum": 0
+                },
+                "behavior": {
+                    "type": "string",
+                    "description": "AI behavior pattern for combat decisions. Determines target selection and ability usage.",
+                    "enum": [
+                        "Aggressive",
+                        "Defensive",
+                        "Cowardly",
+                        "Support",
+                        "Chaotic",
+                        "Tactical"
+                    ]
+                },
+                "tags": {
+                    "type": "array",
+                    "description": "Category tags for monster type classification. Used for damage type interactions, targeting, and spell effects (e.g., humanoid, undead, beast, ooze, magic, construct, dragon).",
+                    "items": {
+                        "type": "string"
+                    },
+                    "minItems": 1
+                },
+                "canHeal": {
+                    "type": "boolean",
+                    "description": "Whether this monster can heal itself or allies during combat. If true, healAmount should be specified.",
+                    "default": false
+                },
+                "healAmount": {
+                    "type": "integer",
+                    "description": "Amount of healing per heal action. Required if canHeal is true.",
+                    "minimum": 1
+                },
+                "spawnWeight": {
+                    "type": "integer",
+                    "description": "Relative weight for spawn probability. Higher values make the monster more common in spawn pools.",
+                    "minimum": 0,
+                    "default": 100
+                },
+                "initiativeModifier": {
+                    "type": "integer",
+                    "description": "Modifier to initiative roll for turn order determination. Positive values act faster.",
+                    "default": 0
+                },
+                "baseResistances": {
+                    "type": "object",
+                    "description": "Damage type resistances and weaknesses. Keys are damage type IDs, values are percentages from -100 (double damage) to 100 (immune).",
+                    "additionalProperties": {
+                        "type": "integer",
+                        "minimum": -100,
+                        "maximum": 100
+                    }
+                },
+                "possibleTiers": {
+                    "type": "array",
+                    "description": "Tier IDs this monster can spawn as (references tiers.json). Determines stat multipliers and loot quality.",
+                    "items": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9_]*$"
+                    },
+                    "minItems": 1
+                },
+                "possibleTraits": {
+                    "type": "array",
+                    "description": "Trait IDs this monster can spawn with (references traits.json). Modifies abilities and stats.",
+                    "items": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9_]*$"
+                    }
+                },
+                "nameGenerator": {
+                    "$ref": "#/definitions/NameGenerator"
+                },
+                "lootTable": {
+                    "$ref": "#/definitions/EmbeddedLootTable"
+                },
+                "abilityIds": {
+                    "type": "array",
+                    "description": "Ability IDs this monster can use in combat (references abilities.json).",
+                    "items": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9_-]*$"
+                    }
+                },
+                "biomeIds": {
+                    "type": "array",
+                    "description": "Biome IDs where this monster can spawn (references biomes.json). If omitted, spawns in all biomes.",
+                    "items": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9_-]*$"
+                    }
+                },
+                "levelRange": {
+                    "$ref": "#/definitions/LevelRange"
+                },
+                "sortOrder": {
+                    "type": "integer",
+                    "description": "Order for display sorting in monster lists. Lower values appear first.",
+                    "minimum": 0
+                }
+            },
+            "required": [
+                "id",
+                "name",
+                "description",
+                "baseHealth",
+                "baseAttack",
+                "baseDefense",
+                "experienceValue",
+                "behavior",
+                "tags",
+                "possibleTiers"
+            ],
+            "additionalProperties": false
+        },
+        "NameGenerator": {
+            "type": "object",
+            "description": "Configuration for generating unique monster names for named/elite tiers. Combines random prefix and suffix syllables with a title format.",
+            "properties": {
+                "prefixes": {
+                    "type": "array",
+                    "description": "Name prefix syllables to randomly select from (e.g., 'Gr', 'Kr', 'Th').",
+                    "items": {
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "minItems": 1
+                },
+                "suffixes": {
+                    "type": "array",
+                    "description": "Name suffix syllables to randomly select from (e.g., 'ok', 'ag', 'ul').",
+                    "items": {
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "minItems": 1
+                },
+                "titleFormat": {
+                    "type": "string",
+                    "description": "Format string for full name with title. {0} = generated name, {1} = title (e.g., '{0} the {1}' produces 'Grok the Fierce').",
+                    "minLength": 1
+                }
+            },
+            "required": [
+                "prefixes",
+                "suffixes",
+                "titleFormat"
+            ],
+            "additionalProperties": false
+        },
+        "EmbeddedLootTable": {
+            "type": "object",
+            "description": "Loot table embedded directly in the monster definition. Defines items and currency dropped when the monster is defeated.",
+            "properties": {
+                "entries": {
+                    "type": "array",
+                    "description": "Item drop entries. Each entry defines an item that may drop.",
+                    "items": {
+                        "$ref": "#/definitions/LootEntry"
+                    }
+                },
+                "currencyDrops": {
+                    "type": "array",
+                    "description": "Currency (gold) drop entries. Multiple currency types can be defined.",
+                    "items": {
+                        "$ref": "#/definitions/CurrencyDrop"
+                    }
+                }
+            },
+            "additionalProperties": false
+        },
+        "LootEntry": {
+            "type": "object",
+            "description": "A single item drop entry in the embedded loot table. Defines the item, drop chance, weight, and quantity range.",
+            "properties": {
+                "itemId": {
+                    "type": "string",
+                    "description": "Reference to item ID in items.json, weapons.json, or armor.json.",
+                    "minLength": 1
+                },
+                "weight": {
+                    "type": "integer",
+                    "description": "Relative weight for selection from pool. Higher values make this item more likely to be selected.",
+                    "minimum": 1,
+                    "default": 100
+                },
+                "minQuantity": {
+                    "type": "integer",
+                    "description": "Minimum quantity of items to drop when this entry is selected.",
+                    "minimum": 1,
+                    "default": 1
+                },
+                "maxQuantity": {
+                    "type": "integer",
+                    "description": "Maximum quantity of items to drop when this entry is selected.",
+                    "minimum": 1,
+                    "default": 1
+                },
+                "dropChance": {
+                    "type": "number",
+                    "description": "Probability of this item dropping (0.0 to 1.0). A value of 0.25 means 25% chance.",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "default": 1.0
+                }
+            },
+            "required": [
+                "itemId"
+            ],
+            "additionalProperties": false
+        },
+        "CurrencyDrop": {
+            "type": "object",
+            "description": "Currency dropped by the monster when defeated. Defines the currency type, amount range, and drop chance.",
+            "properties": {
+                "currencyId": {
+                    "type": "string",
+                    "description": "Currency type ID (references currency.json). Defaults to 'gold'.",
+                    "default": "gold"
+                },
+                "minAmount": {
+                    "type": "integer",
+                    "description": "Minimum currency amount to drop.",
+                    "minimum": 0
+                },
+                "maxAmount": {
+                    "type": "integer",
+                    "description": "Maximum currency amount to drop.",
+                    "minimum": 0
+                },
+                "dropChance": {
+                    "type": "number",
+                    "description": "Probability of currency dropping (0.0 to 1.0). A value of 1.0 means guaranteed drop.",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "default": 1.0
+                }
+            },
+            "required": [
+                "minAmount",
+                "maxAmount"
+            ],
+            "additionalProperties": false
+        },
+        "LevelRange": {
+            "type": "object",
+            "description": "Level range for monster spawning. Restricts when this monster can appear based on player level.",
+            "properties": {
+                "min": {
+                    "type": "integer",
+                    "description": "Minimum player level for this monster to spawn. Defaults to 1.",
+                    "minimum": 1,
+                    "default": 1
+                },
+                "max": {
+                    "type": "integer",
+                    "description": "Maximum player level for this monster to spawn. If omitted, no maximum level is enforced.",
+                    "minimum": 1
+                }
+            },
+            "additionalProperties": false
+        }
+    }
+}

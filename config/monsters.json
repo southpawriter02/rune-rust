@@ -1,4 +1,5 @@
 {
+  "$schema": "./schemas/monsters.schema.json",
   "monsters": [
     {
       "id": "goblin",
@@ -9,25 +10,63 @@
       "baseDefense": 2,
       "experienceValue": 25,
       "behavior": "Cowardly",
-      "tags": ["humanoid"],
+      "tags": [
+        "humanoid"
+      ],
       "canHeal": false,
       "spawnWeight": 100,
       "initiativeModifier": 1,
       "baseResistances": {},
-      "possibleTiers": ["common", "named", "elite"],
-      "possibleTraits": ["venomous", "berserker"],
+      "possibleTiers": [
+        "common",
+        "named",
+        "elite"
+      ],
+      "possibleTraits": [
+        "venomous",
+        "berserker"
+      ],
       "nameGenerator": {
-        "prefixes": ["Gn", "Sn", "Gr", "Kr", "Zn"],
-        "suffixes": ["ik", "ob", "ax", "ek", "uk"],
+        "prefixes": [
+          "Gn",
+          "Sn",
+          "Gr",
+          "Kr",
+          "Zn"
+        ],
+        "suffixes": [
+          "ik",
+          "ob",
+          "ax",
+          "ek",
+          "uk"
+        ],
         "titleFormat": "{0} the {1}"
       },
       "lootTable": {
         "entries": [
-          { "itemId": "health_potion", "weight": 100, "minQuantity": 1, "maxQuantity": 1, "dropChance": 0.15 },
-          { "itemId": "rusty_dagger", "weight": 50, "minQuantity": 1, "maxQuantity": 1, "dropChance": 0.05 }
+          {
+            "itemId": "health_potion",
+            "weight": 100,
+            "minQuantity": 1,
+            "maxQuantity": 1,
+            "dropChance": 0.15
+          },
+          {
+            "itemId": "rusty_dagger",
+            "weight": 50,
+            "minQuantity": 1,
+            "maxQuantity": 1,
+            "dropChance": 0.05
+          }
         ],
         "currencyDrops": [
-          { "currencyId": "gold", "minAmount": 5, "maxAmount": 15, "dropChance": 0.80 }
+          {
+            "currencyId": "gold",
+            "minAmount": 5,
+            "maxAmount": 15,
+            "dropChance": 0.80
+          }
         ]
       }
     },
@@ -40,7 +79,9 @@
       "baseDefense": 3,
       "experienceValue": 20,
       "behavior": "Aggressive",
-      "tags": ["undead"],
+      "tags": [
+        "undead"
+      ],
       "canHeal": false,
       "spawnWeight": 80,
       "initiativeModifier": 0,
@@ -51,20 +92,57 @@
         "holy": -50,
         "dark": 50
       },
-      "possibleTiers": ["common", "named", "elite", "boss"],
-      "possibleTraits": ["armored", "berserker"],
+      "possibleTiers": [
+        "common",
+        "named",
+        "elite",
+        "boss"
+      ],
+      "possibleTraits": [
+        "armored",
+        "berserker"
+      ],
       "nameGenerator": {
-        "prefixes": ["Sk", "Bl", "Dr", "Vr", "Th"],
-        "suffixes": ["ull", "ax", "or", "im", "us"],
+        "prefixes": [
+          "Sk",
+          "Bl",
+          "Dr",
+          "Vr",
+          "Th"
+        ],
+        "suffixes": [
+          "ull",
+          "ax",
+          "or",
+          "im",
+          "us"
+        ],
         "titleFormat": "{0} the Bone {1}"
       },
       "lootTable": {
         "entries": [
-          { "itemId": "bone_dust", "weight": 100, "minQuantity": 1, "maxQuantity": 3, "dropChance": 0.30 },
-          { "itemId": "ancient_coin", "weight": 50, "minQuantity": 1, "maxQuantity": 1, "dropChance": 0.10 }
+          {
+            "itemId": "bone_dust",
+            "weight": 100,
+            "minQuantity": 1,
+            "maxQuantity": 3,
+            "dropChance": 0.30
+          },
+          {
+            "itemId": "ancient_coin",
+            "weight": 50,
+            "minQuantity": 1,
+            "maxQuantity": 1,
+            "dropChance": 0.10
+          }
         ],
         "currencyDrops": [
-          { "currencyId": "gold", "minAmount": 8, "maxAmount": 20, "dropChance": 0.90 }
+          {
+            "currencyId": "gold",
+            "minAmount": 8,
+            "maxAmount": 20,
+            "dropChance": 0.90
+          }
         ]
       }
     },
@@ -77,26 +155,72 @@
       "baseDefense": 4,
       "experienceValue": 40,
       "behavior": "Aggressive",
-      "tags": ["humanoid"],
+      "tags": [
+        "humanoid"
+      ],
       "canHeal": false,
       "spawnWeight": 50,
       "initiativeModifier": -1,
       "baseResistances": {},
-      "possibleTiers": ["common", "named", "elite", "boss"],
-      "possibleTraits": ["armored", "berserker", "regenerating"],
+      "possibleTiers": [
+        "common",
+        "named",
+        "elite",
+        "boss"
+      ],
+      "possibleTraits": [
+        "armored",
+        "berserker",
+        "regenerating"
+      ],
       "nameGenerator": {
-        "prefixes": ["Gr", "Kr", "Th", "Br", "Dr"],
-        "suffixes": ["ok", "ag", "ul", "ax", "or"],
+        "prefixes": [
+          "Gr",
+          "Kr",
+          "Th",
+          "Br",
+          "Dr"
+        ],
+        "suffixes": [
+          "ok",
+          "ag",
+          "ul",
+          "ax",
+          "or"
+        ],
         "titleFormat": "{0} the {1}"
       },
       "lootTable": {
         "entries": [
-          { "itemId": "health_potion", "weight": 100, "minQuantity": 1, "maxQuantity": 1, "dropChance": 0.25 },
-          { "itemId": "iron_sword", "weight": 50, "minQuantity": 1, "maxQuantity": 1, "dropChance": 0.10 },
-          { "itemId": "orcish_helm", "weight": 30, "minQuantity": 1, "maxQuantity": 1, "dropChance": 0.05 }
+          {
+            "itemId": "health_potion",
+            "weight": 100,
+            "minQuantity": 1,
+            "maxQuantity": 1,
+            "dropChance": 0.25
+          },
+          {
+            "itemId": "iron_sword",
+            "weight": 50,
+            "minQuantity": 1,
+            "maxQuantity": 1,
+            "dropChance": 0.10
+          },
+          {
+            "itemId": "orcish_helm",
+            "weight": 30,
+            "minQuantity": 1,
+            "maxQuantity": 1,
+            "dropChance": 0.05
+          }
         ],
         "currencyDrops": [
-          { "currencyId": "gold", "minAmount": 15, "maxAmount": 35, "dropChance": 1.0 }
+          {
+            "currencyId": "gold",
+            "minAmount": 15,
+            "maxAmount": 35,
+            "dropChance": 1.0
+          }
         ]
       }
     },
@@ -109,26 +233,64 @@
       "baseDefense": 1,
       "experienceValue": 30,
       "behavior": "Support",
-      "tags": ["humanoid", "magic"],
+      "tags": [
+        "humanoid",
+        "magic"
+      ],
       "canHeal": true,
       "healAmount": 10,
       "spawnWeight": 30,
       "initiativeModifier": 2,
       "baseResistances": {},
-      "possibleTiers": ["common", "named", "elite"],
-      "possibleTraits": ["regenerating"],
+      "possibleTiers": [
+        "common",
+        "named",
+        "elite"
+      ],
+      "possibleTraits": [
+        "regenerating"
+      ],
       "nameGenerator": {
-        "prefixes": ["Zn", "Xr", "Wr", "Qz", "Vx"],
-        "suffixes": ["ik", "ax", "um", "ek", "oz"],
+        "prefixes": [
+          "Zn",
+          "Xr",
+          "Wr",
+          "Qz",
+          "Vx"
+        ],
+        "suffixes": [
+          "ik",
+          "ax",
+          "um",
+          "ek",
+          "oz"
+        ],
         "titleFormat": "{0} the Shaman"
       },
       "lootTable": {
         "entries": [
-          { "itemId": "mana_potion", "weight": 100, "minQuantity": 1, "maxQuantity": 1, "dropChance": 0.20 },
-          { "itemId": "fetish_charm", "weight": 50, "minQuantity": 1, "maxQuantity": 1, "dropChance": 0.10 }
+          {
+            "itemId": "mana_potion",
+            "weight": 100,
+            "minQuantity": 1,
+            "maxQuantity": 1,
+            "dropChance": 0.20
+          },
+          {
+            "itemId": "fetish_charm",
+            "weight": 50,
+            "minQuantity": 1,
+            "maxQuantity": 1,
+            "dropChance": 0.10
+          }
         ],
         "currencyDrops": [
-          { "currencyId": "gold", "minAmount": 10, "maxAmount": 25, "dropChance": 0.85 }
+          {
+            "currencyId": "gold",
+            "minAmount": 10,
+            "maxAmount": 25,
+            "dropChance": 0.85
+          }
         ]
       }
     },
@@ -141,7 +303,9 @@
       "baseDefense": 5,
       "experienceValue": 15,
       "behavior": "Chaotic",
-      "tags": ["ooze"],
+      "tags": [
+        "ooze"
+      ],
       "canHeal": false,
       "spawnWeight": 90,
       "initiativeModifier": -2,
@@ -152,19 +316,49 @@
         "lightning": -50,
         "poison": 100
       },
-      "possibleTiers": ["common", "named", "elite"],
-      "possibleTraits": ["regenerating", "venomous"],
+      "possibleTiers": [
+        "common",
+        "named",
+        "elite"
+      ],
+      "possibleTraits": [
+        "regenerating",
+        "venomous"
+      ],
       "nameGenerator": {
-        "prefixes": ["Bl", "Gl", "Sl", "Sp", "Sq"],
-        "suffixes": ["ob", "ub", "op", "ip", "oop"],
+        "prefixes": [
+          "Bl",
+          "Gl",
+          "Sl",
+          "Sp",
+          "Sq"
+        ],
+        "suffixes": [
+          "ob",
+          "ub",
+          "op",
+          "ip",
+          "oop"
+        ],
         "titleFormat": "{0} the {1}"
       },
       "lootTable": {
         "entries": [
-          { "itemId": "slime_residue", "weight": 100, "minQuantity": 1, "maxQuantity": 3, "dropChance": 0.50 }
+          {
+            "itemId": "slime_residue",
+            "weight": 100,
+            "minQuantity": 1,
+            "maxQuantity": 3,
+            "dropChance": 0.50
+          }
         ],
         "currencyDrops": [
-          { "currencyId": "gold", "minAmount": 1, "maxAmount": 5, "dropChance": 0.30 }
+          {
+            "currencyId": "gold",
+            "minAmount": 1,
+            "maxAmount": 5,
+            "dropChance": 0.30
+          }
         ]
       }
     }
