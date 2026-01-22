@@ -1,0 +1,287 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Music Theme Configuration",
+    "description": "Configuration schema for music theme definitions including theme categories, transition rules, intensity layers, stingers, and loop points for seamless audio playback. Supports modding scenarios such as custom soundtracks, themed music packs, regional variations, or accessibility-focused audio profiles.",
+    "type": "object",
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "Reference to the JSON schema file for validation"
+        },
+        "version": {
+            "type": "string",
+            "description": "Optional version identifier for the configuration file"
+        },
+        "themes": {
+            "type": "array",
+            "description": "Array of music theme definitions. Each theme defines music for a specific game context.",
+            "items": {
+                "$ref": "#/definitions/ThemeDefinition"
+            },
+            "minItems": 1
+        },
+        "stingers": {
+            "type": "array",
+            "description": "Array of stinger (one-shot audio cue) definitions for events like victory or level-up.",
+            "items": {
+                "$ref": "#/definitions/Stinger"
+            },
+            "default": []
+        },
+        "transitions": {
+            "$ref": "#/definitions/Transitions",
+            "description": "Global transition settings for theme changes"
+        }
+    },
+    "required": [
+        "themes",
+        "transitions"
+    ],
+    "additionalProperties": false,
+    "definitions": {
+        "ThemeDefinition": {
+            "type": "object",
+            "description": "A music theme configuration for a specific game context.",
+            "properties": {
+                "theme": {
+                    "type": "string",
+                    "description": "Theme category identifier. Must be one of the 8 predefined categories.",
+                    "enum": [
+                        "MainMenu",
+                        "Exploration",
+                        "Combat",
+                        "BossCombat",
+                        "SafeArea",
+                        "Puzzle",
+                        "Cinematic",
+                        "Credits"
+                    ]
+                },
+                "tracks": {
+                    "type": "array",
+                    "description": "Array of audio file paths for this theme. At least one track required.",
+                    "items": {
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "minItems": 1
+                },
+                "introTrack": {
+                    "type": "string",
+                    "description": "Optional track to play once before main loop.",
+                    "minLength": 1
+                },
+                "outroTrack": {
+                    "type": "string",
+                    "description": "Optional track to play when transitioning away from this theme.",
+                    "minLength": 1
+                },
+                "volume": {
+                    "type": "number",
+                    "description": "Base volume level (0 = silent, 1 = full volume).",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "default": 1.0
+                },
+                "loop": {
+                    "type": "boolean",
+                    "description": "Loop main tracks after playing. True for most themes, false for Credits/Cinematic.",
+                    "default": true
+                },
+                "shuffle": {
+                    "type": "boolean",
+                    "description": "Randomize track order when multiple tracks exist.",
+                    "default": false
+                },
+                "intensityLayers": {
+                    "type": "array",
+                    "description": "Optional intensity-based music layers for dynamic music scaling.",
+                    "items": {
+                        "$ref": "#/definitions/IntensityLayer"
+                    },
+                    "default": []
+                },
+                "loopPoints": {
+                    "$ref": "#/definitions/LoopPoints",
+                    "description": "Optional custom loop points for seamless looping."
+                },
+                "tags": {
+                    "type": "array",
+                    "description": "Optional tags for filtering and organization.",
+                    "items": {
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "uniqueItems": true
+                }
+            },
+            "required": [
+                "theme",
+                "tracks"
+            ],
+            "additionalProperties": false
+        },
+        "IntensityLayer": {
+            "type": "object",
+            "description": "A music layer that fades in/out based on game intensity (0-1).",
+            "properties": {
+                "track": {
+                    "type": "string",
+                    "description": "Audio file path for this layer.",
+                    "minLength": 1
+                },
+                "minIntensity": {
+                    "type": "number",
+                    "description": "Intensity level (0-1) where layer starts fading in.",
+                    "minimum": 0,
+                    "maximum": 1
+                },
+                "maxIntensity": {
+                    "type": "number",
+                    "description": "Intensity level (0-1) where layer is at full volume.",
+                    "minimum": 0,
+                    "maximum": 1
+                },
+                "fadeTime": {
+                    "type": "number",
+                    "description": "Seconds to fade in/out when intensity changes.",
+                    "minimum": 0,
+                    "default": 0
+                },
+                "volumeMultiplier": {
+                    "type": "number",
+                    "description": "Maximum volume for this layer (0-1).",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "default": 1.0
+                }
+            },
+            "required": [
+                "track",
+                "minIntensity",
+                "maxIntensity"
+            ],
+            "additionalProperties": false
+        },
+        "LoopPoints": {
+            "type": "object",
+            "description": "Custom loop points for seamless audio looping. Use samples for precision or seconds for convenience.",
+            "properties": {
+                "loopStartSamples": {
+                    "type": "integer",
+                    "description": "Sample position where loop starts (takes precedence over seconds).",
+                    "minimum": 0
+                },
+                "loopEndSamples": {
+                    "type": "integer",
+                    "description": "Sample position where loop ends (takes precedence over seconds).",
+                    "minimum": 0
+                },
+                "loopStartSeconds": {
+                    "type": "number",
+                    "description": "Time position where loop starts (seconds).",
+                    "minimum": 0
+                },
+                "loopEndSeconds": {
+                    "type": "number",
+                    "description": "Time position where loop ends (seconds).",
+                    "minimum": 0
+                }
+            },
+            "additionalProperties": false
+        },
+        "Stinger": {
+            "type": "object",
+            "description": "A one-shot audio cue that plays over the current music.",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "Unique identifier for this stinger (kebab-case). Example: victory, level-up.",
+                    "pattern": "^[a-z][a-z0-9-]*$"
+                },
+                "track": {
+                    "type": "string",
+                    "description": "Audio file path for the stinger.",
+                    "minLength": 1
+                },
+                "volume": {
+                    "type": "number",
+                    "description": "Playback volume (0 = silent, 1 = full).",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "default": 1.0
+                },
+                "duckMusic": {
+                    "type": "boolean",
+                    "description": "Lower music volume while stinger plays.",
+                    "default": true
+                },
+                "duckAmount": {
+                    "type": "number",
+                    "description": "Volume level for ducked music (0 = silent, 1 = full). 0.3 = music at 30%.",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "default": 0.3
+                },
+                "resumeDelay": {
+                    "type": "number",
+                    "description": "Seconds to wait after stinger before restoring music volume.",
+                    "minimum": 0,
+                    "default": 0.5
+                }
+            },
+            "required": [
+                "name",
+                "track"
+            ],
+            "additionalProperties": false
+        },
+        "Transitions": {
+            "type": "object",
+            "description": "Global settings for music theme transitions.",
+            "properties": {
+                "defaultCrossfade": {
+                    "type": "number",
+                    "description": "Default crossfade duration in seconds.",
+                    "minimum": 0,
+                    "default": 2.0
+                },
+                "combatCrossfade": {
+                    "type": "number",
+                    "description": "Crossfade duration when entering combat (quick).",
+                    "minimum": 0,
+                    "default": 0.5
+                },
+                "bossCrossfade": {
+                    "type": "number",
+                    "description": "Crossfade duration for boss encounters.",
+                    "minimum": 0,
+                    "default": 1.0
+                },
+                "stingerFadeOut": {
+                    "type": "number",
+                    "description": "Duration to fade music when stinger plays.",
+                    "minimum": 0,
+                    "default": 1.0
+                },
+                "stingerResumeDelay": {
+                    "type": "number",
+                    "description": "Delay before music resumes after stinger.",
+                    "minimum": 0,
+                    "default": 0.5
+                },
+                "transitionType": {
+                    "type": "string",
+                    "description": "Default transition method: Crossfade (overlap), Immediate (cut), FadeOutFadeIn (silence gap).",
+                    "enum": [
+                        "Crossfade",
+                        "Immediate",
+                        "FadeOutFadeIn"
+                    ],
+                    "default": "Crossfade"
+                }
+            },
+            "additionalProperties": false
+        }
+    }
+}
