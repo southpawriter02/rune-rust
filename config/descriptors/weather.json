@@ -1,5 +1,5 @@
 {
-  "$schema": "../schemas/descriptors.schema.json",
+  "$schema": "../schemas/environment-descriptors.schema.json",
   "category": "weather",
   "pools": {
     "weather_rain_indoor": {

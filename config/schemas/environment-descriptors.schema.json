@@ -1,0 +1,256 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "environment-descriptors.schema.json",
+    "title": "Environment Descriptor Configuration Schema",
+    "description": "JSON Schema for environment-related text descriptor configuration files. Provides environment category validation, sensory pools, weather effects, ambient events, location tag filtering, and temporal filtering. Includes all base descriptor properties plus environment-specific extensions.",
+    "type": "object",
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "Reference to this JSON Schema for validation"
+        },
+        "version": {
+            "type": "string",
+            "description": "Optional version identifier for the configuration file"
+        },
+        "category": {
+            "$ref": "#/definitions/EnvironmentCategory"
+        },
+        "pools": {
+            "type": "object",
+            "description": "Collection of environment descriptor pools, keyed by pool ID",
+            "minProperties": 1,
+            "additionalProperties": {
+                "$ref": "#/definitions/EnvironmentDescriptorPool"
+            }
+        }
+    },
+    "required": [
+        "category",
+        "pools"
+    ],
+    "additionalProperties": false,
+    "definitions": {
+        "EnvironmentCategory": {
+            "type": "string",
+            "description": "Valid environment descriptor categories. Restricts the category field to environment-related values only.",
+            "enum": [
+                "environmental",
+                "weather",
+                "ambient",
+                "objects"
+            ]
+        },
+        "SensoryCategory": {
+            "type": "string",
+            "description": "Valid pool IDs for environmental sensory category (environmental.json). Covers the four sensory types: lighting, sounds, smells, and temperature.",
+            "enum": [
+                "lighting",
+                "sounds",
+                "smells",
+                "temperature"
+            ]
+        },
+        "WeatherPoolTypes": {
+            "type": "string",
+            "description": "Valid pool IDs for weather category (weather.json). Includes indoor and outdoor variants for rain, storm, snow, fog, and wind.",
+            "enum": [
+                "weather_rain_indoor",
+                "weather_rain_outdoor",
+                "weather_storm_indoor",
+                "weather_storm_outdoor",
+                "weather_snow_indoor",
+                "weather_snow_outdoor",
+                "weather_fog_indoor",
+                "weather_fog_outdoor",
+                "weather_wind_indoor",
+                "weather_wind_outdoor"
+            ]
+        },
+        "AmbientPoolTypes": {
+            "type": "string",
+            "description": "Valid pool IDs for ambient events category (ambient-events.json). Includes generic and biome-specific pools for sound, visual, creature, and environmental events.",
+            "enum": [
+                "sound",
+                "sound_cave",
+                "sound_dungeon",
+                "sound_forest",
+                "visual",
+                "visual_volcanic",
+                "visual_ruins",
+                "creature",
+                "creature_cave",
+                "creature_swamp",
+                "creature_forest",
+                "environmental",
+                "environmental_frozen",
+                "environmental_volcanic",
+                "environmental_swamp"
+            ]
+        },
+        "LocationTag": {
+            "type": "string",
+            "description": "Documentation: Common location tags used for filtering descriptors. Location types: indoor, outdoor, underground, underwater, enclosed. Biome types: cave, dungeon, forest, swamp, volcanic, frozen, ruin. Mood types: danger, safe, atmospheric, magic, supernatural, old, decay, creature, combat."
+        },
+        "ThemeTag": {
+            "type": "string",
+            "description": "Documentation: Common theme tags for genre/mood filtering. Examples: dark_fantasy, high_fantasy, horror."
+        },
+        "TimeOfDayValue": {
+            "type": "string",
+            "description": "Valid time of day values for temporal filtering",
+            "enum": [
+                "dawn",
+                "day",
+                "dusk",
+                "night"
+            ]
+        },
+        "SeasonValue": {
+            "type": "string",
+            "description": "Valid season values for temporal filtering",
+            "enum": [
+                "spring",
+                "summer",
+                "autumn",
+                "winter"
+            ]
+        },
+        "EnvironmentDescriptorPool": {
+            "type": "object",
+            "description": "A pool of environment descriptors with required identification and descriptor array",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Unique identifier for the pool, must use snake_case format",
+                    "pattern": "^[a-z][a-z0-9_]*$"
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Human-readable display name for the pool",
+                    "minLength": 1
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Detailed description of the pool's purpose and usage"
+                },
+                "descriptors": {
+                    "type": "array",
+                    "description": "Array of environment descriptors in this pool",
+                    "items": {
+                        "$ref": "#/definitions/EnvironmentDescriptor"
+                    },
+                    "minItems": 1
+                }
+            },
+            "required": [
+                "id",
+                "name",
+                "descriptors"
+            ],
+            "additionalProperties": false
+        },
+        "EnvironmentDescriptor": {
+            "type": "object",
+            "description": "A single environment text descriptor with optional environment-specific properties for temporal filtering and location/mood tagging",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Unique identifier for the descriptor, must use snake_case format",
+                    "pattern": "^[a-z][a-z0-9_]*$"
+                },
+                "text": {
+                    "type": "string",
+                    "description": "The actual descriptor text to display. May contain {variable} placeholders for dynamic substitution.",
+                    "minLength": 1
+                },
+                "weight": {
+                    "type": "integer",
+                    "description": "Selection weight for random descriptor choice. Higher values increase selection probability. Default: 100",
+                    "minimum": 1,
+                    "default": 100
+                },
+                "tags": {
+                    "type": "array",
+                    "description": "Contextual tags for filtering descriptors. Location tags (indoor, outdoor), biome tags (cave, forest), mood tags (danger, safe, atmospheric)",
+                    "items": {
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "uniqueItems": true
+                },
+                "themes": {
+                    "type": "array",
+                    "description": "Theme identifiers for filtering by active theme configuration (e.g., ['dark_fantasy', 'horror', 'high_fantasy'])",
+                    "items": {
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "uniqueItems": true
+                },
+                "variables": {
+                    "type": "array",
+                    "description": "List of variable names used in the text for documentation and validation",
+                    "items": {
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "uniqueItems": true
+                },
+                "minDamagePercent": {
+                    "type": "number",
+                    "description": "Minimum damage percentage threshold (0-1) for this descriptor to be selected",
+                    "minimum": 0,
+                    "maximum": 1
+                },
+                "maxDamagePercent": {
+                    "type": "number",
+                    "description": "Maximum damage percentage threshold (0-1) for this descriptor to be selected",
+                    "minimum": 0,
+                    "maximum": 1
+                },
+                "minHealthPercent": {
+                    "type": "number",
+                    "description": "Minimum target health percentage (0-1) for this descriptor to be selected",
+                    "minimum": 0,
+                    "maximum": 1
+                },
+                "maxHealthPercent": {
+                    "type": "number",
+                    "description": "Maximum target health percentage (0-1) for this descriptor to be selected",
+                    "minimum": 0,
+                    "maximum": 1
+                },
+                "fallbackId": {
+                    "type": "string",
+                    "description": "ID of another descriptor to use if this one's conditions aren't met",
+                    "pattern": "^[a-z][a-z0-9_]*$"
+                },
+                "timeOfDay": {
+                    "type": "array",
+                    "description": "Array of times when this descriptor can be used. If not specified, applies to all times. Values: dawn, day, dusk, night",
+                    "items": {
+                        "$ref": "#/definitions/TimeOfDayValue"
+                    },
+                    "uniqueItems": true
+                },
+                "season": {
+                    "type": "array",
+                    "description": "Array of seasons when this descriptor can be used. If not specified, applies to all seasons. Values: spring, summer, autumn, winter",
+                    "items": {
+                        "$ref": "#/definitions/SeasonValue"
+                    },
+                    "uniqueItems": true
+                }
+            },
+            "required": [
+                "id",
+                "text"
+            ],
+            "additionalProperties": false
+        },
+        "VariablePattern": {
+            "description": "Documentation: Variables in descriptor text use the format {variableName}. Common environment variables include: {biome} - current biome name, {time} - current time of day, {season} - current season, {weather} - current weather condition"
+        }
+    }
+}

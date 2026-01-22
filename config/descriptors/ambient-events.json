@@ -1,5 +1,5 @@
 {
-    "$schema": "../schemas/descriptors.schema.json",
+    "$schema": "../schemas/environment-descriptors.schema.json",
     "category": "ambient",
     "pools": {
         "sound": {
