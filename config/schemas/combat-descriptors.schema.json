@@ -1,0 +1,220 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "combat-descriptors.schema.json",
+    "title": "Combat Descriptor Configuration Schema",
+    "description": "JSON Schema for combat-specific text descriptor configuration files. Provides combat category validation, weapon/damage type filtering, and hit/death pool type enumerations. Includes all base descriptor properties plus combat-specific extensions.",
+    "type": "object",
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "Reference to this JSON Schema for validation"
+        },
+        "version": {
+            "type": "string",
+            "description": "Optional version identifier for the configuration file"
+        },
+        "category": {
+            "$ref": "#/definitions/CombatCategory"
+        },
+        "pools": {
+            "type": "object",
+            "description": "Collection of combat descriptor pools, keyed by pool ID",
+            "minProperties": 1,
+            "additionalProperties": {
+                "$ref": "#/definitions/CombatDescriptorPool"
+            }
+        }
+    },
+    "required": [
+        "category",
+        "pools"
+    ],
+    "additionalProperties": false,
+    "definitions": {
+        "CombatCategory": {
+            "type": "string",
+            "description": "Valid combat descriptor categories. Restricts the category field to combat-related values only.",
+            "enum": [
+                "combat-hits",
+                "combat-deaths",
+                "combat"
+            ]
+        },
+        "HitPoolTypes": {
+            "type": "string",
+            "description": "Valid pool IDs for combat-hits category. Includes weapon-based hit descriptions, critical hits, misses, and fumbles.",
+            "enum": [
+                "hit_sword",
+                "hit_axe",
+                "hit_bow",
+                "hit_staff",
+                "hit_dagger",
+                "hit_fist",
+                "hit_mace",
+                "hit_spear",
+                "critical_hit",
+                "miss_descriptions",
+                "fumble_descriptions"
+            ]
+        },
+        "DeathPoolTypes": {
+            "type": "string",
+            "description": "Valid pool IDs for combat-deaths category. Includes creature-type death descriptions, critical kills, player death, and low health warnings.",
+            "enum": [
+                "death_humanoid",
+                "death_undead",
+                "death_beast",
+                "death_construct",
+                "death_elemental",
+                "death_demon",
+                "critical_kill",
+                "player_death",
+                "near_death_warning",
+                "near_death_critical"
+            ]
+        },
+        "CombatDescriptorPool": {
+            "type": "object",
+            "description": "A pool of combat descriptors with required identification and descriptor array",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Unique identifier for the pool, must use snake_case format",
+                    "pattern": "^[a-z][a-z0-9_]*$"
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Human-readable display name for the pool",
+                    "minLength": 1
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Detailed description of the pool's purpose and usage"
+                },
+                "descriptors": {
+                    "type": "array",
+                    "description": "Array of combat descriptors in this pool",
+                    "items": {
+                        "$ref": "#/definitions/CombatDescriptor"
+                    },
+                    "minItems": 1
+                }
+            },
+            "required": [
+                "id",
+                "name",
+                "descriptors"
+            ],
+            "additionalProperties": false
+        },
+        "CombatDescriptor": {
+            "type": "object",
+            "description": "A single combat text descriptor with optional combat-specific properties for filtering by weapon type, damage type, and critical status",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Unique identifier for the descriptor, must use snake_case format",
+                    "pattern": "^[a-z][a-z0-9_]*$"
+                },
+                "text": {
+                    "type": "string",
+                    "description": "The actual descriptor text to display. May contain {variable} placeholders for dynamic substitution (e.g., {player}, {killer}, {target}, {weapon})",
+                    "minLength": 1
+                },
+                "weight": {
+                    "type": "integer",
+                    "description": "Selection weight for random descriptor choice. Higher values increase selection probability. Default: 100",
+                    "minimum": 1,
+                    "default": 100
+                },
+                "tags": {
+                    "type": "array",
+                    "description": "Contextual tags for filtering descriptors (e.g., ['skeleton', 'undead'] for creature-specific death messages)",
+                    "items": {
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "uniqueItems": true
+                },
+                "themes": {
+                    "type": "array",
+                    "description": "Theme identifiers for filtering by active theme configuration (e.g., ['dark_fantasy', 'horror'])",
+                    "items": {
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "uniqueItems": true
+                },
+                "variables": {
+                    "type": "array",
+                    "description": "List of variable names used in the text for documentation and validation (e.g., ['player', 'killer'])",
+                    "items": {
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "uniqueItems": true
+                },
+                "minDamagePercent": {
+                    "type": "number",
+                    "description": "Minimum damage percentage threshold (0-1) for this descriptor to be selected. Use for damage-scaled text selection.",
+                    "minimum": 0,
+                    "maximum": 1
+                },
+                "maxDamagePercent": {
+                    "type": "number",
+                    "description": "Maximum damage percentage threshold (0-1) for this descriptor to be selected. Use for damage-scaled text selection.",
+                    "minimum": 0,
+                    "maximum": 1
+                },
+                "minHealthPercent": {
+                    "type": "number",
+                    "description": "Minimum target health percentage (0-1) for this descriptor to be selected",
+                    "minimum": 0,
+                    "maximum": 1
+                },
+                "maxHealthPercent": {
+                    "type": "number",
+                    "description": "Maximum target health percentage (0-1) for this descriptor to be selected",
+                    "minimum": 0,
+                    "maximum": 1
+                },
+                "fallbackId": {
+                    "type": "string",
+                    "description": "ID of another descriptor to use if this one's conditions aren't met",
+                    "pattern": "^[a-z][a-z0-9_]*$"
+                },
+                "weaponTypes": {
+                    "type": "array",
+                    "description": "List of weapon types this descriptor applies to (e.g., ['sword', 'axe']). When specified, descriptor is only selected for matching weapon types.",
+                    "items": {
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "uniqueItems": true
+                },
+                "damageTypes": {
+                    "type": "array",
+                    "description": "List of damage types this descriptor applies to (e.g., ['slashing', 'fire', 'piercing']). When specified, descriptor is only selected for matching damage types.",
+                    "items": {
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "uniqueItems": true
+                },
+                "isCritical": {
+                    "type": "boolean",
+                    "description": "Whether this descriptor is specifically for critical hits/kills. Default: false",
+                    "default": false
+                }
+            },
+            "required": [
+                "id",
+                "text"
+            ],
+            "additionalProperties": false
+        },
+        "VariablePattern": {
+            "description": "Documentation: Variables in descriptor text use the format {variableName}. Common combat variables include: {player} - player character name, {killer} - entity that killed the player, {target} - target of an attack, {weapon} - weapon used in attack, {damage} - damage amount dealt"
+        }
+    }
+}

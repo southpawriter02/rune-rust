@@ -1,5 +1,5 @@
 {
-  "$schema": "../schemas/descriptors.schema.json",
+  "$schema": "../schemas/combat-descriptors.schema.json",
   "category": "combat-deaths",
   "pools": {
     "death_humanoid": {
