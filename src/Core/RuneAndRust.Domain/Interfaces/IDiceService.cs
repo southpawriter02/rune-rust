@@ -1,3 +1,4 @@
+using RuneAndRust.Domain.Constants;
 using RuneAndRust.Domain.Enums;
 using RuneAndRust.Domain.ValueObjects;
 
@@ -17,8 +18,20 @@ public interface IDiceService
     /// </summary>
     /// <param name="pool">The dice pool to roll.</param>
     /// <param name="advantageType">Whether to roll with advantage or disadvantage.</param>
+    /// <param name="context">Roll context for logging (default: General). See <see cref="RollContexts"/>.</param>
+    /// <param name="actorId">Optional actor ID for roll attribution.</param>
+    /// <param name="targetId">Optional target ID for roll attribution.</param>
     /// <returns>The complete roll result with breakdown.</returns>
-    DiceRollResult Roll(DicePool pool, AdvantageType advantageType = AdvantageType.Normal);
+    /// <remarks>
+    /// <b>v0.15.0e:</b> Added context and actor/target parameters for structured roll logging.
+    /// </remarks>
+    DiceRollResult Roll(
+        DicePool pool,
+        AdvantageType advantageType = AdvantageType.Normal,
+        string context = RollContexts.Default,
+        Guid? actorId = null,
+        Guid? targetId = null);
+
 
     /// <summary>
     /// Parses dice notation and rolls.

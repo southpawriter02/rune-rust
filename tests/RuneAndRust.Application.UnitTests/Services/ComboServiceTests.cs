@@ -669,7 +669,7 @@ public class ComboServiceTests
             .Returns(rollResult);
 
         _mockDiceService
-            .Setup(d => d.Roll(It.IsAny<DicePool>(), It.IsAny<AdvantageType>()))
+            .Setup(d => d.Roll(It.IsAny<DicePool>(), It.IsAny<AdvantageType>(), It.IsAny<string>(), It.IsAny<Guid?>(), It.IsAny<Guid?>()))
             .Returns(rollResult);
 
         _mockDiceService

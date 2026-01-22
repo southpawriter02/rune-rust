@@ -45,7 +45,7 @@ public class CombatServiceDiceTests
 
         var callCount = 0;
         // Setup dice rolls - must handle attack, damage, and potential counterattack
-        _diceServiceMock.Setup(d => d.Roll(It.IsAny<DicePool>(), It.IsAny<AdvantageType>()))
+        _diceServiceMock.Setup(d => d.Roll(It.IsAny<DicePool>(), It.IsAny<AdvantageType>(), It.IsAny<string>(), It.IsAny<Guid?>(), It.IsAny<Guid?>()))
             .Returns(() =>
             {
                 callCount++;
@@ -74,7 +74,7 @@ public class CombatServiceDiceTests
         var monster = CreateTestMonster(defense: 1); // Very low defense
 
         // Setup dice to roll natural 1 for attack
-        _diceServiceMock.SetupSequence(d => d.Roll(It.IsAny<DicePool>(), It.IsAny<AdvantageType>()))
+        _diceServiceMock.SetupSequence(d => d.Roll(It.IsAny<DicePool>(), It.IsAny<AdvantageType>(), It.IsAny<string>(), It.IsAny<Guid?>(), It.IsAny<Guid?>()))
             .Returns(new DiceRollResult(DicePool.D10(), new[] { 1 })) // Attack - critical miss
             .Returns(new DiceRollResult(DicePool.D10(), new[] { 5 })) // Monster attack roll
             .Returns(new DiceRollResult(DicePool.D6(), new[] { 3 })); // Monster damage roll
@@ -96,7 +96,7 @@ public class CombatServiceDiceTests
         var monster = CreateTestMonster(defense: 10);
 
         // Roll 7, with modifier = AttackTotal, verify hit succeeds
-        _diceServiceMock.SetupSequence(d => d.Roll(It.IsAny<DicePool>(), It.IsAny<AdvantageType>()))
+        _diceServiceMock.SetupSequence(d => d.Roll(It.IsAny<DicePool>(), It.IsAny<AdvantageType>(), It.IsAny<string>(), It.IsAny<Guid?>(), It.IsAny<Guid?>()))
             .Returns(new DiceRollResult(DicePool.D10(), new[] { 7 })) // Player attack
             .Returns(new DiceRollResult(DicePool.D6(), new[] { 5 })) // Player damage
             .Returns(new DiceRollResult(DicePool.D10(), new[] { 3 })); // Monster attack - misses
@@ -118,7 +118,7 @@ public class CombatServiceDiceTests
         var monster = CreateTestMonster(defense: 5);
 
         // Setup high attack roll to ensure hit, and specific damage roll
-        _diceServiceMock.SetupSequence(d => d.Roll(It.IsAny<DicePool>(), It.IsAny<AdvantageType>()))
+        _diceServiceMock.SetupSequence(d => d.Roll(It.IsAny<DicePool>(), It.IsAny<AdvantageType>(), It.IsAny<string>(), It.IsAny<Guid?>(), It.IsAny<Guid?>()))
             .Returns(new DiceRollResult(DicePool.D10(), new[] { 8 })) // Attack - hits
             .Returns(new DiceRollResult(DicePool.D6(), new[] { 4 })); // Damage - 4 + 5 Might - 2 armor = 7
 
@@ -138,7 +138,7 @@ public class CombatServiceDiceTests
         var monster = CreateTestMonster(health: 5);
 
         // High damage to kill monster
-        _diceServiceMock.SetupSequence(d => d.Roll(It.IsAny<DicePool>(), It.IsAny<AdvantageType>()))
+        _diceServiceMock.SetupSequence(d => d.Roll(It.IsAny<DicePool>(), It.IsAny<AdvantageType>(), It.IsAny<string>(), It.IsAny<Guid?>(), It.IsAny<Guid?>()))
             .Returns(new DiceRollResult(DicePool.D10(), new[] { 10 })) // Critical hit
             .Returns(new DiceRollResult(DicePool.D6(), new[] { 6, 6 })); // Double damage dice
 
@@ -157,7 +157,7 @@ public class CombatServiceDiceTests
         var player = CreateTestPlayer();
         var monster = CreateTestMonster(health: 100, attack: 8);
 
-        _diceServiceMock.SetupSequence(d => d.Roll(It.IsAny<DicePool>(), It.IsAny<AdvantageType>()))
+        _diceServiceMock.SetupSequence(d => d.Roll(It.IsAny<DicePool>(), It.IsAny<AdvantageType>(), It.IsAny<string>(), It.IsAny<Guid?>(), It.IsAny<Guid?>()))
             .Returns(new DiceRollResult(DicePool.D10(), new[] { 6 })) // Player attack
             .Returns(new DiceRollResult(DicePool.D6(), new[] { 3 })) // Player damage
             .Returns(new DiceRollResult(DicePool.D10(), new[] { 7 })) // Monster attack

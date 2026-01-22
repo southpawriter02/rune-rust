@@ -43,6 +43,7 @@ public class DiceService : IDiceService
     private readonly ILogger<DiceService> _logger;
     private readonly IGameEventLogger? _eventLogger;
     private readonly IDiceHistoryService? _historyService;
+    private readonly IDiceRollLogger? _rollLogger;
 
     /// <summary>
     /// Creates a new DiceService with the specified random provider.
@@ -53,25 +54,34 @@ public class DiceService : IDiceService
     /// <param name="historyService">
     /// Optional dice history service for recording rolls to player statistics (v0.12.0b).
     /// </param>
+    /// <param name="rollLogger">
+    /// Optional dice roll logger for structured roll history tracking (v0.15.0e).
+    /// </param>
     /// <remarks>
     /// <para>
     /// <b>v0.15.0b:</b> Primary constructor now uses <see cref="IRandomProvider"/> for
     /// seeded random number generation with save/restore capability.
+    /// </para>
+    /// <para>
+    /// <b>v0.15.0e:</b> Added optional <see cref="IDiceRollLogger"/> for structured
+    /// roll history with context-based filtering and statistics.
     /// </para>
     /// </remarks>
     public DiceService(
         IRandomProvider randomProvider,
         ILogger<DiceService> logger,
         IGameEventLogger? eventLogger = null,
-        IDiceHistoryService? historyService = null)
+        IDiceHistoryService? historyService = null,
+        IDiceRollLogger? rollLogger = null)
     {
         _randomProvider = randomProvider ?? throw new ArgumentNullException(nameof(randomProvider));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _eventLogger = eventLogger;
         _historyService = historyService;
+        _rollLogger = rollLogger;
         _logger.LogInformation(
-            "DiceService initialized with IRandomProvider (seed: {Seed}, history tracking: {HistoryEnabled})",
-            _randomProvider.GetCurrentSeed(), historyService is not null);
+            "DiceService initialized with IRandomProvider (seed: {Seed}, history tracking: {HistoryEnabled}, roll logging: {RollLoggerEnabled})",
+            _randomProvider.GetCurrentSeed(), historyService is not null, rollLogger is not null);
     }
 
     /// <summary>
@@ -106,46 +116,99 @@ public class DiceService : IDiceService
     /// </summary>
     /// <param name="pool">The dice pool to roll.</param>
     /// <param name="advantageType">Whether to roll with advantage or disadvantage.</param>
+    /// <param name="context">Roll context for logging (default: General). See <see cref="RollContexts"/>.</param>
+    /// <param name="actorId">Optional actor ID for roll attribution.</param>
+    /// <param name="targetId">Optional target ID for roll attribution.</param>
     /// <returns>The complete roll result with success-counting breakdown.</returns>
-    public DiceRollResult Roll(DicePool pool, AdvantageType advantageType = AdvantageType.Normal)
+    /// <remarks>
+    /// <para>
+    /// <b>v0.15.0e:</b> Added context and actor/target parameters for structured roll logging.
+    /// All rolls are now logged to <see cref="IDiceRollLogger"/> if available.
+    /// </para>
+    /// </remarks>
+    public DiceRollResult Roll(
+        DicePool pool,
+        AdvantageType advantageType = AdvantageType.Normal,
+        string context = RollContexts.Default,
+        Guid? actorId = null,
+        Guid? targetId = null)
     {
-        _logger.LogDebug("Rolling {Pool} with {AdvantageType}", pool, advantageType);
+        _logger.LogDebug("Rolling {Pool} with {AdvantageType}, context: {Context}", pool, advantageType, context);
+
+        // Capture seed before rolling for replay capability
+        var seed = _randomProvider.GetCurrentSeed();
+
+        DiceRollResult result;
 
         if (advantageType == AdvantageType.Normal)
         {
-            var result = RollOnce(pool, advantageType);
-            LogRollEvent(result);
-            return result;
+            result = RollOnce(pool, advantageType);
+        }
+        else
+        {
+            // Roll twice for advantage/disadvantage
+            var roll1 = RollOnce(pool, advantageType);
+            var roll2 = RollOnce(pool, advantageType);
+
+            // For success-counting, compare NetSuccesses (not Total)
+            var allNetSuccesses = new[] { roll1.NetSuccesses, roll2.NetSuccesses };
+            var selectedIndex = advantageType == AdvantageType.Advantage
+                ? (roll1.NetSuccesses >= roll2.NetSuccesses ? 0 : 1)
+                : (roll1.NetSuccesses <= roll2.NetSuccesses ? 0 : 1);
+
+            var selectedRoll = selectedIndex == 0 ? roll1 : roll2;
+
+            // Reconstruct with advantage info
+            result = new DiceRollResult(
+                pool,
+                selectedRoll.Rolls,
+                advantageType,
+                selectedRoll.ExplosionRolls,
+                allNetSuccesses,
+                selectedIndex);
+
+            _logger.LogInformation(
+                "Roll {Pool} ({AdvantageType}): [{Roll1}, {Roll2}] net successes -> {Selected} selected",
+                pool, advantageType, roll1.NetSuccesses, roll2.NetSuccesses, result.NetSuccesses);
         }
 
-        // Roll twice for advantage/disadvantage
-        var roll1 = RollOnce(pool, advantageType);
-        var roll2 = RollOnce(pool, advantageType);
+        // Log to structured roll history (v0.15.0e)
+        LogRollToHistory(result, seed, context, actorId, targetId);
 
-        // For success-counting, compare NetSuccesses (not Total)
-        var allNetSuccesses = new[] { roll1.NetSuccesses, roll2.NetSuccesses };
-        var selectedIndex = advantageType == AdvantageType.Advantage
-            ? (roll1.NetSuccesses >= roll2.NetSuccesses ? 0 : 1)
-            : (roll1.NetSuccesses <= roll2.NetSuccesses ? 0 : 1);
+        // Log roll event (existing behavior)
+        LogRollEvent(result);
 
-        var selectedRoll = selectedIndex == 0 ? roll1 : roll2;
+        return result;
+    }
 
-        // Reconstruct with advantage info
-        var result2 = new DiceRollResult(
-            pool,
-            selectedRoll.Rolls,
-            advantageType,
-            selectedRoll.ExplosionRolls,
-            allNetSuccesses,
-            selectedIndex);
+    /// <summary>
+    /// Logs a roll to the structured roll history.
+    /// </summary>
+    /// <param name="result">The roll result to log.</param>
+    /// <param name="seed">The RNG seed used for this roll.</param>
+    /// <param name="context">The roll context string.</param>
+    /// <param name="actorId">Optional actor ID.</param>
+    /// <param name="targetId">Optional target ID.</param>
+    private void LogRollToHistory(
+        DiceRollResult result,
+        int seed,
+        string context,
+        Guid? actorId,
+        Guid? targetId)
+    {
+        if (_rollLogger == null)
+            return;
 
-        _logger.LogInformation(
-            "Roll {Pool} ({AdvantageType}): [{Roll1}, {Roll2}] net successes -> {Selected} selected",
-            pool, advantageType, roll1.NetSuccesses, roll2.NetSuccesses, result2.NetSuccesses);
+        var rollLog = DiceRollLog.FromRollResult(result, seed, context, actorId, targetId);
+        _rollLogger.LogRoll(rollLog);
 
-        LogRollEvent(result2);
-
-        return result2;
+        _logger.LogDebug(
+            "Logged roll to history: [{Context}] {Net} net ({Successes}S-{Botches}B){Special}",
+            context,
+            result.NetSuccesses,
+            result.TotalSuccesses,
+            result.TotalBotches,
+            result.IsFumble ? " [FUMBLE]" : result.IsCriticalSuccess ? " [CRITICAL]" : "");
     }
 
     /// <summary>
