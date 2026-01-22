@@ -1,4 +1,5 @@
 {
+  "$schema": "./schemas/currency.schema.json",
   "currencies": [
     {
       "id": "gold",

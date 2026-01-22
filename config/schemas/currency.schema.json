@@ -1,0 +1,143 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Currency Configuration",
+    "description": "Configuration schema for currency definitions including display formatting, exchange rates, capacity limits, and visual representation. Supports modding scenarios such as multi-tier fantasy currencies (gold/silver/copper), sci-fi credits, faction tokens, or barter economies.",
+    "type": "object",
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "Reference to the JSON schema file for validation"
+        },
+        "version": {
+            "type": "string",
+            "description": "Optional version identifier for the configuration file",
+            "pattern": "^[0-9]+\\.[0-9]+$"
+        },
+        "currencies": {
+            "type": "array",
+            "description": "List of currency definitions. Each currency defines display formatting, exchange rates, and capacity limits.",
+            "items": {
+                "$ref": "#/definitions/CurrencyDefinition"
+            },
+            "minItems": 1
+        }
+    },
+    "required": [
+        "currencies"
+    ],
+    "additionalProperties": false,
+    "definitions": {
+        "CurrencyDefinition": {
+            "type": "object",
+            "description": "A currency definition with display formatting, exchange rates, and capacity limits. Supports symbol positioning, decimal precision, maximum caps, and trade restrictions.",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Unique identifier for the currency (lowercase kebab-case). Must start with a letter and contain only lowercase letters, numbers, and hyphens.",
+                    "pattern": "^[a-z][a-z0-9-]*$",
+                    "minLength": 1,
+                    "maxLength": 50
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Display name for the currency (singular form). Shown in UI and descriptions.",
+                    "minLength": 1,
+                    "maxLength": 50
+                },
+                "pluralName": {
+                    "type": "string",
+                    "description": "Plural form of the currency name. Defaults to name if not specified. Used when displaying amounts greater than 1.",
+                    "minLength": 1,
+                    "maxLength": 50
+                },
+                "symbol": {
+                    "type": "string",
+                    "description": "Symbol displayed with amounts (1-3 characters, can include emoji). Examples: G, $, CR, 💎.",
+                    "minLength": 1,
+                    "maxLength": 3
+                },
+                "symbolPosition": {
+                    "type": "string",
+                    "description": "Whether the symbol appears before or after the amount. Before: G100, After: 100G.",
+                    "enum": [
+                        "Before",
+                        "After"
+                    ],
+                    "default": "Before"
+                },
+                "color": {
+                    "type": "string",
+                    "description": "Color for UI display (named color or hex code). Examples: yellow, #FFD700, cyan.",
+                    "minLength": 1
+                },
+                "decimalPlaces": {
+                    "type": "integer",
+                    "description": "Number of decimal places for display (0-4). 0 = whole numbers (gold), 2 = monetary (dollars).",
+                    "minimum": 0,
+                    "maximum": 4,
+                    "default": 0
+                },
+                "maxAmount": {
+                    "type": "integer",
+                    "description": "Maximum amount a player can carry. Omit for no limit. Excess currency is discarded.",
+                    "minimum": 1
+                },
+                "exchangeRates": {
+                    "type": "array",
+                    "description": "Exchange rates to other currencies. Defines conversion ratios and bidirectional flags.",
+                    "items": {
+                        "$ref": "#/definitions/ExchangeRate"
+                    }
+                },
+                "isTradeOnly": {
+                    "type": "boolean",
+                    "description": "If true, this currency cannot be looted from enemies or found in chests. Only obtainable through trading, quests, or achievements.",
+                    "default": false
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Optional flavor text describing the currency. Shown in tooltips and information panels."
+                },
+                "sortOrder": {
+                    "type": "integer",
+                    "description": "Order for display sorting (lower values first). Used when listing currencies in UI.",
+                    "minimum": 0,
+                    "default": 0
+                }
+            },
+            "required": [
+                "id",
+                "name",
+                "symbol",
+                "color"
+            ],
+            "additionalProperties": false
+        },
+        "ExchangeRate": {
+            "type": "object",
+            "description": "Exchange rate to another currency. Defines the conversion ratio and whether reverse conversion is allowed.",
+            "properties": {
+                "targetCurrencyId": {
+                    "type": "string",
+                    "description": "ID of the currency to exchange to. Must reference a valid currency definition.",
+                    "pattern": "^[a-z][a-z0-9-]*$"
+                },
+                "rate": {
+                    "type": "number",
+                    "description": "Exchange rate (1 of this currency = rate of target currency). Example: rate 10 means 1 gold = 10 silver.",
+                    "minimum": 0.001
+                },
+                "bidirectional": {
+                    "type": "boolean",
+                    "description": "Whether the exchange can go both ways. False for premium currencies that can only be purchased.",
+                    "default": true
+                }
+            },
+            "required": [
+                "targetCurrencyId",
+                "rate"
+            ],
+            "additionalProperties": false
+        }
+    }
+}
