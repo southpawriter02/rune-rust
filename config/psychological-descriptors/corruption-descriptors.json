@@ -1,0 +1,174 @@
+{
+    "$schema": "../../config/schemas/psychological-descriptors.schema.json",
+    "version": "1.0.0",
+    "category": "corruption",
+    "pools": {
+        "corruption_touched_physical": [
+            {
+                "id": "corruption_touched_physical_001",
+                "text": "Your skin is paler than it should be. When did that happen?",
+                "weight": 10,
+                "threshold": "Touched",
+                "manifestation": "Physical",
+                "tags": [
+                    "Skin",
+                    "Early"
+                ]
+            }
+        ],
+        "corruption_touched_mental": [
+            {
+                "id": "corruption_touched_mental_001",
+                "text": "Dreams that are not your own. Memories that belong to no one.",
+                "weight": 10,
+                "threshold": "Touched",
+                "manifestation": "Mental",
+                "tags": [
+                    "Dreams",
+                    "Foreign"
+                ]
+            }
+        ],
+        "corruption_tainted_physical": [
+            {
+                "id": "corruption_tainted_physical_001",
+                "text": "Veins show through the skin, darker than they should be.",
+                "weight": 10,
+                "threshold": "Tainted",
+                "manifestation": "Physical",
+                "tags": [
+                    "Veins",
+                    "Visible"
+                ]
+            }
+        ],
+        "corruption_tainted_mental": [
+            {
+                "id": "corruption_tainted_mental_001",
+                "text": "The whispers have become a voice. It knows your name.",
+                "weight": 10,
+                "threshold": "Tainted",
+                "manifestation": "Mental",
+                "tags": [
+                    "Whispers",
+                    "Voice"
+                ]
+            }
+        ],
+        "corruption_tainted_social": [
+            {
+                "id": "corruption_tainted_social_001",
+                "text": "People look at you differently. They sense what you are becoming.",
+                "weight": 10,
+                "threshold": "Tainted",
+                "manifestation": "Social",
+                "tags": [
+                    "Recognition",
+                    "Fear"
+                ]
+            }
+        ],
+        "corruption_corrupted_physical": [
+            {
+                "id": "corruption_corrupted_physical_001",
+                "text": "Your skin has changed. The texture is wrong. Not quite human anymore.",
+                "weight": 10,
+                "threshold": "Corrupted",
+                "manifestation": "Physical",
+                "tags": [
+                    "Skin",
+                    "Transformation"
+                ]
+            }
+        ],
+        "corruption_corrupted_mental": [
+            {
+                "id": "corruption_corrupted_mental_001",
+                "text": "Hungry. Always hungry. But not for food.",
+                "weight": 10,
+                "threshold": "Corrupted",
+                "manifestation": "Mental",
+                "tags": [
+                    "Hunger",
+                    "Craving"
+                ]
+            }
+        ],
+        "corruption_corrupted_social": [
+            {
+                "id": "corruption_corrupted_social_001",
+                "text": "Your allies keep their distance now. They are wise to do so.",
+                "weight": 10,
+                "threshold": "Corrupted",
+                "manifestation": "Social",
+                "tags": [
+                    "Isolation",
+                    "Distance"
+                ]
+            }
+        ],
+        "corruption_lost_physical": [
+            {
+                "id": "corruption_lost_physical_001",
+                "text": "The mirror shows something other wearing your face.",
+                "weight": 10,
+                "threshold": "Lost",
+                "manifestation": "Physical",
+                "tags": [
+                    "Mirror",
+                    "Other"
+                ]
+            }
+        ],
+        "corruption_lost_mental": [
+            {
+                "id": "corruption_lost_mental_001",
+                "text": "Where do you end and it begin? The boundary is fading.",
+                "weight": 10,
+                "threshold": "Lost",
+                "manifestation": "Mental",
+                "tags": [
+                    "Identity",
+                    "Merging"
+                ]
+            }
+        ],
+        "corruption_lost_urgent": [
+            {
+                "id": "corruption_lost_urgent_001",
+                "text": "There is still time. Maybe. If you can find help. NOW.",
+                "weight": 10,
+                "threshold": "Lost",
+                "manifestation": "Urgent",
+                "tags": [
+                    "Desperate",
+                    "Time"
+                ]
+            }
+        ],
+        "corruption_forlorn_final": [
+            {
+                "id": "corruption_forlorn_final_001",
+                "text": "The change is complete. What was you is now... other.",
+                "weight": 10,
+                "threshold": "Forlorn",
+                "manifestation": "Final",
+                "tags": [
+                    "Complete",
+                    "Transformation"
+                ]
+            },
+            {
+                "id": "corruption_forlorn_final_002",
+                "text": "Welcome to the rust. Welcome to forever. Welcome... home.",
+                "weight": 10,
+                "threshold": "Forlorn",
+                "manifestation": "Final",
+                "tags": [
+                    "Complete",
+                    "Blight"
+                ]
+            }
+        ]
+    }
+}

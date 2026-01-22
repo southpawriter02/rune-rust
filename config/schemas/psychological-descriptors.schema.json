@@ -1,0 +1,415 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://rune-game.com/schemas/psychological-descriptors.schema.json",
+    "title": "Psychological Descriptor Configuration",
+    "description": "Schema for psychological state flavor text descriptors including stress manifestations, trauma effects, corruption progression, biome-specific environmental pressure, and recovery narratives. Supports 5 stress thresholds, 5 trauma types, 6 corruption thresholds, 6 biomes, and 6 recovery types. Version: 0.14.9d.",
+    "type": "object",
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "JSON Schema reference for validation tooling."
+        },
+        "version": {
+            "type": "string",
+            "description": "Schema version in semver format (e.g., '1.0.0').",
+            "pattern": "^\\d+\\.\\d+\\.\\d+$"
+        },
+        "category": {
+            "type": "string",
+            "description": "Descriptor category type. Determines which descriptor definition applies to pool contents.",
+            "enum": [
+                "stress",
+                "trauma",
+                "corruption",
+                "biome-pressure",
+                "recovery"
+            ]
+        },
+        "pools": {
+            "type": "object",
+            "description": "Map of pool ID to descriptor array. Pool IDs follow category-specific patterns (e.g., stress_{threshold}_{manifestation}).",
+            "additionalProperties": {
+                "type": "array",
+                "description": "Array of descriptors for weighted random selection.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "$ref": "#/definitions/StressDescriptor"
+                        },
+                        {
+                            "$ref": "#/definitions/TraumaDescriptor"
+                        },
+                        {
+                            "$ref": "#/definitions/CorruptionDescriptor"
+                        },
+                        {
+                            "$ref": "#/definitions/BiomePressureDescriptor"
+                        },
+                        {
+                            "$ref": "#/definitions/RecoveryDescriptor"
+                        }
+                    ]
+                },
+                "minItems": 1
+            },
+            "propertyNames": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "description": "Pool IDs must be snake_case starting with a lowercase letter."
+            }
+        }
+    },
+    "required": [
+        "version",
+        "category",
+        "pools"
+    ],
+    "additionalProperties": false,
+    "definitions": {
+        "StressDescriptor": {
+            "type": "object",
+            "description": "Stress manifestation descriptor. Used for physical, mental, and behavioral stress symptoms across five threshold levels.",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Unique descriptor identifier. Must be lowercase with underscores/hyphens.",
+                    "pattern": "^[a-z][a-z0-9_-]*$"
+                },
+                "text": {
+                    "type": "string",
+                    "description": "Descriptor text with {Variable} placeholders (e.g., {StressLevel}, {PlayerName}).",
+                    "minLength": 1
+                },
+                "weight": {
+                    "type": "integer",
+                    "description": "Selection weight for weighted random. Higher values = more likely to be selected.",
+                    "minimum": 1,
+                    "default": 10
+                },
+                "threshold": {
+                    "$ref": "#/definitions/StressThreshold",
+                    "description": "Stress threshold level (Minimal through Broken)."
+                },
+                "manifestation": {
+                    "$ref": "#/definitions/StressManifestation",
+                    "description": "Manifestation type (Physical, Mental, or Behavioral)."
+                },
+                "intensity": {
+                    "oneOf": [
+                        {
+                            "$ref": "#/definitions/Intensity"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "Intensity level (Subtle, Moderate, Oppressive). Null for default intensity."
+                },
+                "tags": {
+                    "type": "array",
+                    "description": "Metadata tags for filtering and categorization (e.g., 'Panic', 'Heartbeat', 'Trembling').",
+                    "items": {
+                        "type": "string"
+                    },
+                    "default": []
+                }
+            },
+            "required": [
+                "id",
+                "text",
+                "threshold",
+                "manifestation"
+            ],
+            "additionalProperties": false
+        },
+        "TraumaDescriptor": {
+            "type": "object",
+            "description": "Trauma effect descriptor. Used for flashback, panic, dissociation, hypervigilance, and avoidance responses.",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Unique descriptor identifier.",
+                    "pattern": "^[a-z][a-z0-9_-]*$"
+                },
+                "text": {
+                    "type": "string",
+                    "description": "Descriptor text with {Variable} placeholders.",
+                    "minLength": 1
+                },
+                "weight": {
+                    "type": "integer",
+                    "description": "Selection weight for weighted random.",
+                    "minimum": 1,
+                    "default": 10
+                },
+                "traumaType": {
+                    "$ref": "#/definitions/TraumaType",
+                    "description": "Trauma type classification."
+                },
+                "intensity": {
+                    "$ref": "#/definitions/TraumaIntensity",
+                    "description": "Trauma intensity level (Mild, Moderate, Severe)."
+                },
+                "triggerContext": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "description": "Situational trigger context (e.g., 'Combat', 'Darkness', 'Fire'). Null for universal."
+                },
+                "tags": {
+                    "type": "array",
+                    "description": "Metadata tags for filtering.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "default": []
+                }
+            },
+            "required": [
+                "id",
+                "text",
+                "traumaType",
+                "intensity"
+            ],
+            "additionalProperties": false
+        },
+        "CorruptionDescriptor": {
+            "type": "object",
+            "description": "Corruption progression descriptor. Describes Blight corruption from Clean through Forlorn transformation.",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Unique descriptor identifier.",
+                    "pattern": "^[a-z][a-z0-9_-]*$"
+                },
+                "text": {
+                    "type": "string",
+                    "description": "Descriptor text with {Variable} placeholders.",
+                    "minLength": 1
+                },
+                "weight": {
+                    "type": "integer",
+                    "description": "Selection weight for weighted random.",
+                    "minimum": 1,
+                    "default": 10
+                },
+                "threshold": {
+                    "$ref": "#/definitions/CorruptionThreshold",
+                    "description": "Corruption threshold level (Clean through Forlorn)."
+                },
+                "manifestation": {
+                    "$ref": "#/definitions/CorruptionManifestation",
+                    "description": "Manifestation type (Physical, Mental, Social, Urgent, Final)."
+                },
+                "tags": {
+                    "type": "array",
+                    "description": "Metadata tags for filtering.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "default": []
+                }
+            },
+            "required": [
+                "id",
+                "text",
+                "threshold",
+                "manifestation"
+            ],
+            "additionalProperties": false
+        },
+        "BiomePressureDescriptor": {
+            "type": "object",
+            "description": "Biome environmental pressure descriptor. Describes psychological pressure unique to each game biome.",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Unique descriptor identifier.",
+                    "pattern": "^[a-z][a-z0-9_-]*$"
+                },
+                "text": {
+                    "type": "string",
+                    "description": "Descriptor text with {Variable} placeholders.",
+                    "minLength": 1
+                },
+                "weight": {
+                    "type": "integer",
+                    "description": "Selection weight for weighted random.",
+                    "minimum": 1,
+                    "default": 10
+                },
+                "biome": {
+                    "$ref": "#/definitions/Biome",
+                    "description": "Biome type (The_Roots, Muspelheim, etc.)."
+                },
+                "pressureType": {
+                    "type": "string",
+                    "description": "Type of psychological pressure (e.g., 'Isolation', 'Heat', 'Darkness').",
+                    "minLength": 1
+                },
+                "intensity": {
+                    "oneOf": [
+                        {
+                            "$ref": "#/definitions/Intensity"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "Intensity level. Null for default intensity."
+                },
+                "tags": {
+                    "type": "array",
+                    "description": "Metadata tags for filtering.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "default": []
+                }
+            },
+            "required": [
+                "id",
+                "text",
+                "biome",
+                "pressureType"
+            ],
+            "additionalProperties": false
+        },
+        "RecoveryDescriptor": {
+            "type": "object",
+            "description": "Recovery moment descriptor. Describes healing and grounding experiences.",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Unique descriptor identifier.",
+                    "pattern": "^[a-z][a-z0-9_-]*$"
+                },
+                "text": {
+                    "type": "string",
+                    "description": "Descriptor text with {Variable} placeholders.",
+                    "minLength": 1
+                },
+                "weight": {
+                    "type": "integer",
+                    "description": "Selection weight for weighted random.",
+                    "minimum": 1,
+                    "default": 10
+                },
+                "recoveryType": {
+                    "$ref": "#/definitions/RecoveryType",
+                    "description": "Recovery type (Rest, Social, Grounding, etc.)."
+                },
+                "tags": {
+                    "type": "array",
+                    "description": "Metadata tags for filtering.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "default": []
+                }
+            },
+            "required": [
+                "id",
+                "text",
+                "recoveryType"
+            ],
+            "additionalProperties": false
+        },
+        "StressThreshold": {
+            "type": "string",
+            "description": "Stress threshold level. Minimal (0-25), Mounting (26-50), Critical (51-75), Breaking (76-99), Broken (100).",
+            "enum": [
+                "Minimal",
+                "Mounting",
+                "Critical",
+                "Breaking",
+                "Broken"
+            ]
+        },
+        "StressManifestation": {
+            "type": "string",
+            "description": "Stress manifestation type. Physical (body symptoms), Mental (thought patterns), Behavioral (actions).",
+            "enum": [
+                "Physical",
+                "Mental",
+                "Behavioral"
+            ]
+        },
+        "TraumaType": {
+            "type": "string",
+            "description": "Trauma type classification based on clinical categories.",
+            "enum": [
+                "Flashback",
+                "Panic",
+                "Dissociation",
+                "Hypervigilance",
+                "Avoidance"
+            ]
+        },
+        "TraumaIntensity": {
+            "type": "string",
+            "description": "Trauma intensity level. Mild (controlled), Moderate (struggling), Severe (overwhelming).",
+            "enum": [
+                "Mild",
+                "Moderate",
+                "Severe"
+            ]
+        },
+        "CorruptionThreshold": {
+            "type": "string",
+            "description": "Corruption threshold level. Clean (0-10), Touched (11-30), Tainted (31-50), Corrupted (51-75), Lost (76-99), Forlorn (100).",
+            "enum": [
+                "Clean",
+                "Touched",
+                "Tainted",
+                "Corrupted",
+                "Lost",
+                "Forlorn"
+            ]
+        },
+        "CorruptionManifestation": {
+            "type": "string",
+            "description": "Corruption manifestation type. Physical (body), Mental (mind), Social (relationships), Urgent (desperate), Final (transformation).",
+            "enum": [
+                "Physical",
+                "Mental",
+                "Social",
+                "Urgent",
+                "Final"
+            ]
+        },
+        "Biome": {
+            "type": "string",
+            "description": "Game biome for environmental pressure descriptors.",
+            "enum": [
+                "The_Roots",
+                "Muspelheim",
+                "Niflheim",
+                "Svartalfheim",
+                "Vanaheim",
+                "Jotunheim"
+            ]
+        },
+        "RecoveryType": {
+            "type": "string",
+            "description": "Recovery type classification.",
+            "enum": [
+                "Rest",
+                "Social",
+                "Grounding",
+                "Support",
+                "Milestone",
+                "Acceptance"
+            ]
+        },
+        "Intensity": {
+            "type": "string",
+            "description": "General intensity level. Subtle (barely noticeable), Moderate (clearly present), Oppressive (overwhelming).",
+            "enum": [
+                "Subtle",
+                "Moderate",
+                "Oppressive"
+            ]
+        }
+    }
+}

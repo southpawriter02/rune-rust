@@ -1,0 +1,139 @@
+{
+    "$schema": "../../config/schemas/psychological-descriptors.schema.json",
+    "version": "1.0.0",
+    "category": "recovery",
+    "pools": {
+        "recovery_rest": [
+            {
+                "id": "recovery_rest_001",
+                "text": "Breathing slows. The shaking stops. You are still here.",
+                "weight": 10,
+                "recoveryType": "Rest",
+                "tags": [
+                    "Calming",
+                    "Physical"
+                ]
+            },
+            {
+                "id": "recovery_rest_002",
+                "text": "Sleep comes, against all odds. Real sleep. Healing sleep.",
+                "weight": 10,
+                "recoveryType": "Rest",
+                "tags": [
+                    "Sleep",
+                    "Healing"
+                ]
+            }
+        ],
+        "recovery_social": [
+            {
+                "id": "recovery_social_001",
+                "text": "Another voice. Human. Not threatening. You had forgotten the sound.",
+                "weight": 10,
+                "recoveryType": "Social",
+                "tags": [
+                    "Connection",
+                    "Human"
+                ]
+            },
+            {
+                "id": "recovery_social_002",
+                "text": "Laughter. When did you last laugh? When did anything seem funny?",
+                "weight": 10,
+                "recoveryType": "Social",
+                "tags": [
+                    "Laughter",
+                    "Joy"
+                ]
+            }
+        ],
+        "recovery_grounding": [
+            {
+                "id": "recovery_grounding_001",
+                "text": "Count the exits. Name the objects. You are here. You are now. You are safe.",
+                "weight": 10,
+                "recoveryType": "Grounding",
+                "tags": [
+                    "Technique",
+                    "Present"
+                ]
+            },
+            {
+                "id": "recovery_grounding_002",
+                "text": "Five things you can see. Four you can touch. The panic recedes.",
+                "weight": 10,
+                "recoveryType": "Grounding",
+                "tags": [
+                    "Technique",
+                    "Senses"
+                ]
+            }
+        ],
+        "recovery_support": [
+            {
+                "id": "recovery_support_001",
+                "text": "Someone who understands. They have been there too.",
+                "weight": 10,
+                "recoveryType": "Support",
+                "tags": [
+                    "Understanding",
+                    "Shared"
+                ]
+            },
+            {
+                "id": "recovery_support_002",
+                "text": "'I know,' they say. And they do. They actually do.",
+                "weight": 10,
+                "recoveryType": "Support",
+                "tags": [
+                    "Validation",
+                    "Connection"
+                ]
+            }
+        ],
+        "recovery_milestone": [
+            {
+                "id": "recovery_milestone_001",
+                "text": "You survived. Again. It does not feel like victory, but it is.",
+                "weight": 10,
+                "recoveryType": "Milestone",
+                "tags": [
+                    "Survival",
+                    "Achievement"
+                ]
+            },
+            {
+                "id": "recovery_milestone_002",
+                "text": "Another dawn. Another day. Some days that is enough.",
+                "weight": 10,
+                "recoveryType": "Milestone",
+                "tags": [
+                    "Dawn",
+                    "Persistence"
+                ]
+            }
+        ],
+        "recovery_acceptance": [
+            {
+                "id": "recovery_acceptance_001",
+                "text": "The scar is part of you now. It does not have to define you.",
+                "weight": 10,
+                "recoveryType": "Acceptance",
+                "tags": [
+                    "Integration",
+                    "Healing"
+                ]
+            },
+            {
+                "id": "recovery_acceptance_002",
+                "text": "It happened. It cannot un-happen. But you are more than what happened.",
+                "weight": 10,
+                "recoveryType": "Acceptance",
+                "tags": [
+                    "Growth",
+                    "Identity"
+                ]
+            }
+        ]
+    }
+}

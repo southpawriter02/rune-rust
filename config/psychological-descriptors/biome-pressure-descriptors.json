@@ -1,0 +1,259 @@
+{
+    "$schema": "../../config/schemas/psychological-descriptors.schema.json",
+    "version": "1.0.0",
+    "category": "biome-pressure",
+    "pools": {
+        "the_roots_isolation": [
+            {
+                "id": "the_roots_isolation_001",
+                "text": "How long since you have seen another person? Days? Weeks?",
+                "weight": 10,
+                "biome": "The_Roots",
+                "pressureType": "Isolation",
+                "intensity": "Moderate",
+                "tags": [
+                    "Loneliness",
+                    "Time"
+                ]
+            }
+        ],
+        "the_roots_claustrophobia": [
+            {
+                "id": "the_roots_claustrophobia_001",
+                "text": "The walls are closer than they were. You are sure of it.",
+                "weight": 10,
+                "biome": "The_Roots",
+                "pressureType": "Claustrophobia",
+                "intensity": "Moderate",
+                "tags": [
+                    "Walls",
+                    "Closing"
+                ]
+            }
+        ],
+        "the_roots_dread": [
+            {
+                "id": "the_roots_dread_001",
+                "text": "Something is watching. Something is waiting. Something is patient.",
+                "weight": 10,
+                "biome": "The_Roots",
+                "pressureType": "Dread",
+                "intensity": "Oppressive",
+                "tags": [
+                    "Watching",
+                    "Waiting"
+                ]
+            }
+        ],
+        "muspelheim_heat": [
+            {
+                "id": "muspelheim_heat_001",
+                "text": "Your thoughts move slowly, boiled sluggish by the heat.",
+                "weight": 10,
+                "biome": "Muspelheim",
+                "pressureType": "Heat",
+                "intensity": "Oppressive",
+                "tags": [
+                    "Slow",
+                    "Boiling"
+                ]
+            }
+        ],
+        "muspelheim_thirst": [
+            {
+                "id": "muspelheim_thirst_001",
+                "text": "Water. You would kill for water. You might have to.",
+                "weight": 10,
+                "biome": "Muspelheim",
+                "pressureType": "Thirst",
+                "intensity": "Oppressive",
+                "tags": [
+                    "Desperation",
+                    "Survival"
+                ]
+            }
+        ],
+        "muspelheim_fury": [
+            {
+                "id": "muspelheim_fury_001",
+                "text": "Rage builds with the temperature. The heat demands violence.",
+                "weight": 10,
+                "biome": "Muspelheim",
+                "pressureType": "Fury",
+                "intensity": "Oppressive",
+                "tags": [
+                    "Anger",
+                    "Heat"
+                ]
+            }
+        ],
+        "niflheim_cold": [
+            {
+                "id": "niflheim_cold_001",
+                "text": "The cold takes emotion first. Then hope. Then everything else.",
+                "weight": 10,
+                "biome": "Niflheim",
+                "pressureType": "Cold",
+                "intensity": "Oppressive",
+                "tags": [
+                    "Numbing",
+                    "Progression"
+                ]
+            }
+        ],
+        "niflheim_despair": [
+            {
+                "id": "niflheim_despair_001",
+                "text": "What is the point? The cold has already decided.",
+                "weight": 10,
+                "biome": "Niflheim",
+                "pressureType": "Despair",
+                "intensity": "Oppressive",
+                "tags": [
+                    "Hopelessness",
+                    "Surrender"
+                ]
+            }
+        ],
+        "niflheim_stillness": [
+            {
+                "id": "niflheim_stillness_001",
+                "text": "It would be easier to stop. To lie down. To become part of the ice.",
+                "weight": 10,
+                "biome": "Niflheim",
+                "pressureType": "Stillness",
+                "intensity": "Oppressive",
+                "tags": [
+                    "Death",
+                    "Surrender"
+                ]
+            }
+        ],
+        "svartalfheim_darkness": [
+            {
+                "id": "svartalfheim_darkness_001",
+                "text": "The dark has weight here. Presence. Intent.",
+                "weight": 10,
+                "biome": "Svartalfheim",
+                "pressureType": "Darkness",
+                "intensity": "Oppressive",
+                "tags": [
+                    "Tangible",
+                    "Living"
+                ]
+            }
+        ],
+        "svartalfheim_paranoia": [
+            {
+                "id": "svartalfheim_paranoia_001",
+                "text": "Everything watches. Even when you cannot see eyes.",
+                "weight": 10,
+                "biome": "Svartalfheim",
+                "pressureType": "Paranoia",
+                "intensity": "Oppressive",
+                "tags": [
+                    "Watched",
+                    "Unseen"
+                ]
+            }
+        ],
+        "svartalfheim_madness": [
+            {
+                "id": "svartalfheim_madness_001",
+                "text": "The whispers make sense now. That is the terrifying part.",
+                "weight": 10,
+                "biome": "Svartalfheim",
+                "pressureType": "Madness",
+                "intensity": "Oppressive",
+                "tags": [
+                    "Whispers",
+                    "Understanding"
+                ]
+            }
+        ],
+        "vanaheim_consumption": [
+            {
+                "id": "vanaheim_consumption_001",
+                "text": "The jungle wants to eat you. It is patient. It has time.",
+                "weight": 10,
+                "biome": "Vanaheim",
+                "pressureType": "Consumption",
+                "intensity": "Oppressive",
+                "tags": [
+                    "Predator",
+                    "Patient"
+                ]
+            }
+        ],
+        "vanaheim_infection": [
+            {
+                "id": "vanaheim_infection_001",
+                "text": "Something is growing inside you. Something that does not belong.",
+                "weight": 10,
+                "biome": "Vanaheim",
+                "pressureType": "Infection",
+                "intensity": "Oppressive",
+                "tags": [
+                    "Invasion",
+                    "Body"
+                ]
+            }
+        ],
+        "vanaheim_alienation": [
+            {
+                "id": "vanaheim_alienation_001",
+                "text": "Nature here has no love for humanity. You are the intruder.",
+                "weight": 10,
+                "biome": "Vanaheim",
+                "pressureType": "Alienation",
+                "intensity": "Moderate",
+                "tags": [
+                    "Hostility",
+                    "Outsider"
+                ]
+            }
+        ],
+        "jotunheim_scale": [
+            {
+                "id": "jotunheim_scale_001",
+                "text": "You are small. So small. The giants barely notice you exist.",
+                "weight": 10,
+                "biome": "Jotunheim",
+                "pressureType": "Scale",
+                "intensity": "Oppressive",
+                "tags": [
+                    "Insignificance",
+                    "Giants"
+                ]
+            }
+        ],
+        "jotunheim_insignificance": [
+            {
+                "id": "jotunheim_insignificance_001",
+                "text": "Your existence is a footnote in a story that does not care about you.",
+                "weight": 10,
+                "biome": "Jotunheim",
+                "pressureType": "Insignificance",
+                "intensity": "Oppressive",
+                "tags": [
+                    "Meaningless",
+                    "Cosmic"
+                ]
+            }
+        ],
+        "jotunheim_exposure": [
+            {
+                "id": "jotunheim_exposure_001",
+                "text": "No cover. No shelter. Nothing between you and the infinite sky.",
+                "weight": 10,
+                "biome": "Jotunheim",
+                "pressureType": "Exposure",
+                "intensity": "Oppressive",
+                "tags": [
+                    "Vulnerable",
+                    "Open"
+                ]
+            }
+        ]
+    }
+}

@@ -1,0 +1,204 @@
+{
+    "$schema": "../../config/schemas/psychological-descriptors.schema.json",
+    "version": "1.0.0",
+    "category": "trauma",
+    "pools": {
+        "trauma_flashback_mild": [
+            {
+                "id": "trauma_flashback_mild_001",
+                "text": "A memory surfaces, unwanted. You push it back down.",
+                "weight": 10,
+                "traumaType": "Flashback",
+                "intensity": "Mild",
+                "tags": [
+                    "Memory",
+                    "Control"
+                ]
+            }
+        ],
+        "trauma_flashback_moderate": [
+            {
+                "id": "trauma_flashback_moderate_001",
+                "text": "The past bleeds into the present. You see both at once.",
+                "weight": 10,
+                "traumaType": "Flashback",
+                "intensity": "Moderate",
+                "tags": [
+                    "Memory",
+                    "Blending"
+                ]
+            }
+        ],
+        "trauma_flashback_severe": [
+            {
+                "id": "trauma_flashback_severe_001",
+                "text": "You are there again. Not here. THERE. Where it happened.",
+                "weight": 10,
+                "traumaType": "Flashback",
+                "intensity": "Severe",
+                "tags": [
+                    "Memory",
+                    "Reliving"
+                ]
+            }
+        ],
+        "trauma_panic_mild": [
+            {
+                "id": "trauma_panic_mild_001",
+                "text": "Your heart skips. A lurch of fear, quickly controlled.",
+                "weight": 10,
+                "traumaType": "Panic",
+                "intensity": "Mild",
+                "triggerContext": "Combat",
+                "tags": [
+                    "Fear",
+                    "Control"
+                ]
+            }
+        ],
+        "trauma_panic_moderate": [
+            {
+                "id": "trauma_panic_moderate_001",
+                "text": "Panic claws at your chest. You struggle for control.",
+                "weight": 10,
+                "traumaType": "Panic",
+                "intensity": "Moderate",
+                "triggerContext": "Darkness",
+                "tags": [
+                    "Fear",
+                    "Struggling"
+                ]
+            }
+        ],
+        "trauma_panic_severe": [
+            {
+                "id": "trauma_panic_severe_001",
+                "text": "You cannot breathe. You cannot think. You can only feel the terror.",
+                "weight": 10,
+                "traumaType": "Panic",
+                "intensity": "Severe",
+                "tags": [
+                    "Terror",
+                    "Overwhelm"
+                ]
+            }
+        ],
+        "trauma_dissociation_mild": [
+            {
+                "id": "trauma_dissociation_mild_001",
+                "text": "For a moment, you feel distant from your body. Remote.",
+                "weight": 10,
+                "traumaType": "Dissociation",
+                "intensity": "Mild",
+                "tags": [
+                    "Detachment",
+                    "Brief"
+                ]
+            }
+        ],
+        "trauma_dissociation_moderate": [
+            {
+                "id": "trauma_dissociation_moderate_001",
+                "text": "Watching yourself from outside. A puppet without a script.",
+                "weight": 10,
+                "traumaType": "Dissociation",
+                "intensity": "Moderate",
+                "tags": [
+                    "Detachment",
+                    "Observing"
+                ]
+            }
+        ],
+        "trauma_dissociation_severe": [
+            {
+                "id": "trauma_dissociation_severe_001",
+                "text": "Not sure who you are. Not sure if you are. The disconnect is total.",
+                "weight": 10,
+                "traumaType": "Dissociation",
+                "intensity": "Severe",
+                "tags": [
+                    "Identity",
+                    "Lost"
+                ]
+            }
+        ],
+        "trauma_hypervigilance_mild": [
+            {
+                "id": "trauma_hypervigilance_mild_001",
+                "text": "Your senses sharpen. Every sound is catalogued. Every movement noted.",
+                "weight": 10,
+                "traumaType": "Hypervigilance",
+                "intensity": "Mild",
+                "tags": [
+                    "Alert",
+                    "Aware"
+                ]
+            }
+        ],
+        "trauma_hypervigilance_moderate": [
+            {
+                "id": "trauma_hypervigilance_moderate_001",
+                "text": "You cannot stop scanning for threats. Rest is impossible.",
+                "weight": 10,
+                "traumaType": "Hypervigilance",
+                "intensity": "Moderate",
+                "tags": [
+                    "Exhausting",
+                    "Constant"
+                ]
+            }
+        ],
+        "trauma_hypervigilance_severe": [
+            {
+                "id": "trauma_hypervigilance_severe_001",
+                "text": "Everyone is a threat. Everything is a trap. Trust is impossible.",
+                "weight": 10,
+                "traumaType": "Hypervigilance",
+                "intensity": "Severe",
+                "tags": [
+                    "Paranoid",
+                    "Exhausted"
+                ]
+            }
+        ],
+        "trauma_avoidance_mild": [
+            {
+                "id": "trauma_avoidance_mild_001",
+                "text": "You would rather not go that way. There are other paths.",
+                "weight": 10,
+                "traumaType": "Avoidance",
+                "intensity": "Mild",
+                "tags": [
+                    "Preference",
+                    "Choice"
+                ]
+            }
+        ],
+        "trauma_avoidance_moderate": [
+            {
+                "id": "trauma_avoidance_moderate_001",
+                "text": "Your body refuses before your mind can argue. Not that way.",
+                "weight": 10,
+                "traumaType": "Avoidance",
+                "intensity": "Moderate",
+                "tags": [
+                    "Refusal",
+                    "Instinct"
+                ]
+            }
+        ],
+        "trauma_avoidance_severe": [
+            {
+                "id": "trauma_avoidance_severe_001",
+                "text": "You cannot go there. Not again. Never again.",
+                "weight": 10,
+                "traumaType": "Avoidance",
+                "intensity": "Severe",
+                "tags": [
+                    "Absolute",
+                    "Never"
+                ]
+            }
+        ]
+    }
+}

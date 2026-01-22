@@ -1,0 +1,223 @@
+{
+    "$schema": "../../config/schemas/psychological-descriptors.schema.json",
+    "version": "1.0.0",
+    "category": "stress",
+    "pools": {
+        "stress_minimal_physical": [
+            {
+                "id": "stress_minimal_physical_001",
+                "text": "Your grip tightens on your weapon. Not consciously. Just... tightens.",
+                "weight": 10,
+                "threshold": "Minimal",
+                "manifestation": "Physical",
+                "intensity": "Subtle",
+                "tags": [
+                    "Tension",
+                    "Grip"
+                ]
+            },
+            {
+                "id": "stress_minimal_physical_002",
+                "text": "A slight headache forms behind your eyes. Nothing serious. Yet.",
+                "weight": 10,
+                "threshold": "Minimal",
+                "manifestation": "Physical",
+                "intensity": "Subtle",
+                "tags": [
+                    "Headache",
+                    "Early"
+                ]
+            }
+        ],
+        "stress_minimal_mental": [
+            {
+                "id": "stress_minimal_mental_001",
+                "text": "Your thoughts move faster than usual. Sharper. More focused.",
+                "weight": 10,
+                "threshold": "Minimal",
+                "manifestation": "Mental",
+                "intensity": "Subtle",
+                "tags": [
+                    "Focus",
+                    "Alert"
+                ]
+            }
+        ],
+        "stress_mounting_physical": [
+            {
+                "id": "stress_mounting_physical_001",
+                "text": "Your jaw aches. You have been clenching it without realizing.",
+                "weight": 10,
+                "threshold": "Mounting",
+                "manifestation": "Physical",
+                "intensity": "Moderate",
+                "tags": [
+                    "Jaw",
+                    "Tension"
+                ]
+            },
+            {
+                "id": "stress_mounting_physical_002",
+                "text": "You flinch at shadows. Every movement could be a threat.",
+                "weight": 10,
+                "threshold": "Mounting",
+                "manifestation": "Physical",
+                "intensity": "Moderate",
+                "tags": [
+                    "Flinching",
+                    "Alert"
+                ]
+            }
+        ],
+        "stress_mounting_mental": [
+            {
+                "id": "stress_mounting_mental_001",
+                "text": "You keep seeing threats in every shadow. This is not paranoia. This is survival.",
+                "weight": 10,
+                "threshold": "Mounting",
+                "manifestation": "Mental",
+                "intensity": "Moderate",
+                "tags": [
+                    "Paranoia",
+                    "Survival"
+                ]
+            }
+        ],
+        "stress_critical_physical": [
+            {
+                "id": "stress_critical_physical_001",
+                "text": "Your heart pounds in your ears, drowning out everything else.",
+                "weight": 10,
+                "threshold": "Critical",
+                "manifestation": "Physical",
+                "intensity": "Oppressive",
+                "tags": [
+                    "Heartbeat",
+                    "Panic"
+                ]
+            },
+            {
+                "id": "stress_critical_physical_002",
+                "text": "Your hands shake. You try to still them. They shake anyway.",
+                "weight": 10,
+                "threshold": "Critical",
+                "manifestation": "Physical",
+                "intensity": "Oppressive",
+                "tags": [
+                    "Trembling",
+                    "Control"
+                ]
+            }
+        ],
+        "stress_critical_mental": [
+            {
+                "id": "stress_critical_mental_001",
+                "text": "Thoughts fragment. Complete sentences are getting harder. Focus. FOCUS.",
+                "weight": 10,
+                "threshold": "Critical",
+                "manifestation": "Mental",
+                "intensity": "Oppressive",
+                "tags": [
+                    "Fragmented",
+                    "Focus"
+                ]
+            }
+        ],
+        "stress_critical_behavioral": [
+            {
+                "id": "stress_critical_behavioral_001",
+                "text": "You snap at allies. The words leave before you can stop them.",
+                "weight": 10,
+                "threshold": "Critical",
+                "manifestation": "Behavioral",
+                "intensity": "Oppressive",
+                "tags": [
+                    "Snapping",
+                    "Allies"
+                ]
+            }
+        ],
+        "stress_breaking_physical": [
+            {
+                "id": "stress_breaking_physical_001",
+                "text": "Your body trembles. Not from cold. From something far worse.",
+                "weight": 10,
+                "threshold": "Breaking",
+                "manifestation": "Physical",
+                "intensity": "Oppressive",
+                "tags": [
+                    "Trembling",
+                    "Fear"
+                ]
+            },
+            {
+                "id": "stress_breaking_physical_002",
+                "text": "Tunnel vision. The world narrows to what is directly ahead. Everything else is noise.",
+                "weight": 10,
+                "threshold": "Breaking",
+                "manifestation": "Physical",
+                "intensity": "Oppressive",
+                "tags": [
+                    "Vision",
+                    "Tunnel"
+                ]
+            }
+        ],
+        "stress_breaking_mental": [
+            {
+                "id": "stress_breaking_mental_001",
+                "text": "Fight or flight. Those are the only options. There is nothing else.",
+                "weight": 10,
+                "threshold": "Breaking",
+                "manifestation": "Mental",
+                "intensity": "Oppressive",
+                "tags": [
+                    "Primal",
+                    "Survival"
+                ]
+            }
+        ],
+        "stress_broken_physical": [
+            {
+                "id": "stress_broken_physical_001",
+                "text": "SNAP. Your body moves without your permission. Control is a memory.",
+                "weight": 10,
+                "threshold": "Broken",
+                "manifestation": "Physical",
+                "intensity": "Oppressive",
+                "tags": [
+                    "Breakdown",
+                    "Control"
+                ]
+            }
+        ],
+        "stress_broken_mental": [
+            {
+                "id": "stress_broken_mental_001",
+                "text": "The world stops making sense. You stop making sense. There is only the reaction.",
+                "weight": 10,
+                "threshold": "Broken",
+                "manifestation": "Mental",
+                "intensity": "Oppressive",
+                "tags": [
+                    "Breakdown",
+                    "Dissociation"
+                ]
+            }
+        ],
+        "stress_broken_behavioral": [
+            {
+                "id": "stress_broken_behavioral_001",
+                "text": "You are screaming. When did you start screaming?",
+                "weight": 10,
+                "threshold": "Broken",
+                "manifestation": "Behavioral",
+                "intensity": "Oppressive",
+                "tags": [
+                    "Breakdown",
+                    "Screaming"
+                ]
+            }
+        ]
+    }
+}
