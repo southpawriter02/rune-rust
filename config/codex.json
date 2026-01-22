@@ -1,0 +1,507 @@
+{
+    "$schema": "./schemas/codex.schema.json",
+    "version": "1.0.0",
+    "progressionDefaults": {
+        "levels": [
+            {
+                "level": "Fragment",
+                "threshold": 0.25,
+                "description": "Basic outline and introduction",
+                "rewards": [
+                    {
+                        "type": "Legend",
+                        "value": 5
+                    }
+                ]
+            },
+            {
+                "level": "Partial",
+                "threshold": 0.50,
+                "description": "Core details and primary information",
+                "rewards": [
+                    {
+                        "type": "Legend",
+                        "value": 10
+                    }
+                ]
+            },
+            {
+                "level": "Complete",
+                "threshold": 0.75,
+                "description": "Full content with advanced details",
+                "rewards": [
+                    {
+                        "type": "Legend",
+                        "value": 15
+                    }
+                ]
+            },
+            {
+                "level": "Mastery",
+                "threshold": 1.00,
+                "description": "Expert insights and hidden lore",
+                "rewards": [
+                    {
+                        "type": "Legend",
+                        "value": 25
+                    },
+                    {
+                        "type": "Achievement",
+                        "referenceId": "achieve-loremaster"
+                    }
+                ]
+            }
+        ]
+    },
+    "categories": [
+        {
+            "id": "lore",
+            "name": "Lore",
+            "description": "Historical events, myths, and world history",
+            "icon": "icon-lore-book",
+            "sortOrder": 1,
+            "subcategories": [
+                {
+                    "id": "origins",
+                    "name": "Origins",
+                    "sortOrder": 1
+                },
+                {
+                    "id": "history",
+                    "name": "History",
+                    "sortOrder": 2
+                },
+                {
+                    "id": "myths",
+                    "name": "Myths & Legends",
+                    "sortOrder": 3
+                }
+            ]
+        },
+        {
+            "id": "bestiary",
+            "name": "Bestiary",
+            "description": "Creatures, enemies, and wildlife of Aethelgard",
+            "icon": "icon-bestiary",
+            "sortOrder": 2,
+            "subcategories": [
+                {
+                    "id": "blighted",
+                    "name": "Blighted Creatures",
+                    "sortOrder": 1
+                },
+                {
+                    "id": "wildlife",
+                    "name": "Wildlife",
+                    "sortOrder": 2
+                },
+                {
+                    "id": "constructs",
+                    "name": "Constructs",
+                    "sortOrder": 3
+                }
+            ]
+        },
+        {
+            "id": "items",
+            "name": "Items",
+            "description": "Equipment, artifacts, and consumables",
+            "icon": "icon-items",
+            "sortOrder": 3
+        },
+        {
+            "id": "locations",
+            "name": "Locations",
+            "description": "Places, regions, and landmarks",
+            "icon": "icon-map",
+            "sortOrder": 4
+        },
+        {
+            "id": "characters",
+            "name": "Characters",
+            "description": "Notable NPCs and historical figures",
+            "icon": "icon-characters",
+            "sortOrder": 5
+        },
+        {
+            "id": "mechanics",
+            "name": "Mechanics",
+            "description": "Game systems and runic crafting knowledge",
+            "icon": "icon-gears",
+            "sortOrder": 6,
+            "hidden": true
+        }
+    ],
+    "entries": [
+        {
+            "id": "codex-blight-001",
+            "categoryId": "lore",
+            "subcategoryId": "origins",
+            "title": "The Blight: Origin Unknown",
+            "era": "blight",
+            "summary": "The catastrophic event that ended the old world and birthed the twisted landscape of today.",
+            "totalFragments": 6,
+            "legendValue": 25,
+            "icon": "icon-blight",
+            "matchKeywords": [
+                "blight",
+                "catastrophe",
+                "origin",
+                "corruption",
+                "old-world"
+            ],
+            "unlockConditions": [
+                {
+                    "type": "CaptureCollected",
+                    "captureId": "cap-blight-origin-001"
+                }
+            ],
+            "sections": [
+                {
+                    "id": "section-overview",
+                    "title": "What We Know",
+                    "content": "The Blight came without warning. In a single night, the great cities fell silent, their populations transformed into something... other. The survivors speak of a spreading darkness, a corruption that twisted flesh and stone alike.",
+                    "unlockThreshold": 0.0,
+                    "sortOrder": 1
+                },
+                {
+                    "id": "section-theories",
+                    "title": "Scholar Theories",
+                    "content": "Three primary theories persist among the learned of the Hollow Covenant:\n\n1. **The Runic Collapse** - An experiment with Elder Runes triggered a cascade failure\n2. **The Breach** - Something broke through from another realm\n3. **The Awakening** - An ancient entity, long dormant, finally stirred\n\nNone have been proven. Perhaps none can be.",
+                    "unlockThreshold": 0.25,
+                    "sortOrder": 2
+                },
+                {
+                    "id": "section-witnesses",
+                    "title": "Witness Accounts",
+                    "content": "Echo recordings from the first days are fragmentary at best. Most who witnessed the initial outbreak did not survive long enough to create lasting records. Those that exist speak of the sky turning to brass, of the ground weeping black ichor.",
+                    "unlockThreshold": 0.50,
+                    "captureRequirement": "EchoRecording",
+                    "sortOrder": 3
+                },
+                {
+                    "id": "section-patterns",
+                    "title": "Spread Patterns",
+                    "content": "The Blight did not spread uniformly. Some regions fell within hours; others held for weeks. The pattern suggests intentionality—or perhaps resistance from unknown sources. The Iron Covenant's fortress held longest, though at terrible cost.",
+                    "unlockThreshold": 0.75,
+                    "sortOrder": 4
+                },
+                {
+                    "id": "section-truth",
+                    "title": "The Hidden Truth",
+                    "content": "Deep within the Hollow Covenant's restricted archives lies a single phrase, repeated across a dozen ancient texts: *'They knew. They always knew.'*\n\nWho 'they' were, and what they knew, remains the greatest mystery of our age.",
+                    "unlockThreshold": 1.0,
+                    "spoilerLevel": "major",
+                    "sortOrder": 5
+                }
+            ],
+            "relatedEntries": [
+                {
+                    "entryId": "codex-lore-002",
+                    "relationType": "Sequel",
+                    "description": "The aftermath of the Blight"
+                },
+                {
+                    "entryId": "codex-faction-001",
+                    "relationType": "SeeAlso",
+                    "description": "The Hollow Covenant's research"
+                }
+            ]
+        },
+        {
+            "id": "codex-beast-001",
+            "categoryId": "bestiary",
+            "subcategoryId": "blighted",
+            "title": "Hollow Stalker",
+            "era": "post-blight",
+            "summary": "A common predator born of Blight corruption, hunting in the ruins of the old world.",
+            "totalFragments": 4,
+            "legendValue": 10,
+            "icon": "icon-beast-stalker",
+            "matchKeywords": [
+                "stalker",
+                "hollow",
+                "predator",
+                "blighted",
+                "ruins"
+            ],
+            "unlockConditions": [
+                {
+                    "type": "EnemyKilled",
+                    "enemyId": "hollow-stalker",
+                    "count": 1
+                }
+            ],
+            "sections": [
+                {
+                    "id": "section-appearance",
+                    "title": "Appearance",
+                    "content": "The Hollow Stalker appears as a twisted quadruped, its body elongated and joints bending at unnatural angles. Its skin is a mottled gray, stretched thin over visible ribs and spine. Where eyes should be, only hollow sockets remain—yet it sees with terrible precision.",
+                    "unlockThreshold": 0.0,
+                    "sortOrder": 1
+                },
+                {
+                    "id": "section-behavior",
+                    "title": "Behavior",
+                    "content": "Stalkers hunt in packs of three to seven. They communicate through subsonic clicks inaudible to human ears. A lone Stalker is rarely truly alone—its packmates lurk nearby, waiting for the prey to commit to an attack.",
+                    "unlockThreshold": 0.25,
+                    "sortOrder": 2
+                },
+                {
+                    "id": "section-weaknesses",
+                    "title": "Weaknesses",
+                    "content": "Fire disrupts their coordination. Bright light blinds their empty sockets momentarily. Strike the spine where it curves most sharply—the bone is thin there, and a solid blow can sever their connection to the pack mind.",
+                    "unlockThreshold": 0.50,
+                    "sortOrder": 3
+                },
+                {
+                    "id": "section-origin",
+                    "title": "Origin",
+                    "content": "Before the Blight, these were hunting hounds—loyal companions bred for tracking game through dense forests. The corruption hollowed out their loyalty along with their eyes, leaving only hunger.",
+                    "unlockThreshold": 1.0,
+                    "captureRequirement": "Specimen",
+                    "sortOrder": 4
+                }
+            ],
+            "relatedEntries": [
+                {
+                    "entryId": "codex-beast-002",
+                    "relationType": "SeeAlso",
+                    "description": "Pack Alpha variant"
+                }
+            ]
+        },
+        {
+            "id": "codex-location-001",
+            "categoryId": "locations",
+            "title": "The Shattered Spire",
+            "era": "pre-blight",
+            "summary": "Once a beacon of learning, now a treacherous ruin filled with echoes of lost knowledge.",
+            "totalFragments": 5,
+            "legendValue": 15,
+            "icon": "icon-location-spire",
+            "matchKeywords": [
+                "spire",
+                "tower",
+                "academy",
+                "ruin",
+                "knowledge",
+                "library"
+            ],
+            "unlockConditions": [
+                {
+                    "type": "LocationVisited",
+                    "locationId": "shattered-spire"
+                }
+            ],
+            "sections": [
+                {
+                    "id": "section-discovery",
+                    "title": "First Glimpse",
+                    "content": "The Shattered Spire rises from the Ashlands like a broken finger pointing accusingly at the sky. Once, it stood three hundred spans tall—a monument to the old world's mastery of runic architecture. Now, barely a third remains standing.",
+                    "unlockThreshold": 0.0,
+                    "sortOrder": 1
+                },
+                {
+                    "id": "section-history",
+                    "title": "Historical Records",
+                    "content": "The Spire served as the Academy of Elevated Studies, where the greatest minds of the pre-Blight era gathered to push the boundaries of runic theory. Their final experiments may have contributed to the catastrophe itself.",
+                    "unlockThreshold": 0.40,
+                    "captureRequirement": "TextFragment",
+                    "sortOrder": 2
+                },
+                {
+                    "id": "section-dangers",
+                    "title": "Current Dangers",
+                    "content": "The lower levels remain accessible, though unstable. Residual runic energy creates pockets of temporal distortion—some explorers report losing hours, others return aged decades. The upper ruins are home to Shade Weavers.",
+                    "unlockThreshold": 0.60,
+                    "sortOrder": 3
+                },
+                {
+                    "id": "section-secrets",
+                    "title": "Hidden Chambers",
+                    "content": "Behind a wall marked with the glyph for 'truth,' a hidden archive survives. Within: personal journals of the Archmage Vaelen, detailing experiments that should never be repeated—and one that must be, if the Blight is ever to be undone.",
+                    "unlockThreshold": 1.0,
+                    "spoilerLevel": "major",
+                    "sortOrder": 4
+                }
+            ],
+            "relatedEntries": [
+                {
+                    "entryId": "codex-lore-003",
+                    "relationType": "Expansion",
+                    "description": "Archmage Vaelen's research"
+                },
+                {
+                    "entryId": "codex-beast-005",
+                    "relationType": "SeeAlso",
+                    "description": "Shade Weavers found in the upper ruins"
+                }
+            ]
+        },
+        {
+            "id": "codex-faction-001",
+            "categoryId": "characters",
+            "title": "The Hollow Covenant",
+            "era": "post-blight",
+            "summary": "Scholars and archivists dedicated to preserving and understanding pre-Blight knowledge.",
+            "totalFragments": 4,
+            "legendValue": 15,
+            "icon": "icon-faction-covenant",
+            "matchKeywords": [
+                "hollow",
+                "covenant",
+                "scholars",
+                "archive",
+                "knowledge",
+                "preservation"
+            ],
+            "unlockConditions": [
+                {
+                    "type": "FactionReputation",
+                    "factionId": "hollow-covenant",
+                    "standing": "Friendly"
+                }
+            ],
+            "conditionLogic": "or",
+            "sections": [
+                {
+                    "id": "section-public",
+                    "title": "Public Face",
+                    "content": "The Hollow Covenant presents itself as benevolent keepers of history. Their scribes travel the wastes, collecting artifacts and transcribing fading texts. They trade knowledge freely, asking only for contributions to their ever-growing archives.",
+                    "unlockThreshold": 0.0,
+                    "sortOrder": 1
+                },
+                {
+                    "id": "section-structure",
+                    "title": "Internal Structure",
+                    "content": "The Covenant operates in concentric circles of trust. Outer Circle members handle collection and trade. Inner Circle scholars analyze and categorize. The Core—whose existence is officially denied—guards knowledge deemed too dangerous for common hands.",
+                    "unlockThreshold": 0.50,
+                    "sortOrder": 2
+                },
+                {
+                    "id": "section-secrets",
+                    "title": "Hidden Agenda",
+                    "content": "The Covenant's true purpose extends beyond preservation. They seek the *Lexicon of Undoing*—a mythical text said to contain the ritual that caused the Blight, and by extension, the means to reverse it. They will pay any price to find it.",
+                    "unlockThreshold": 1.0,
+                    "spoilerLevel": "major",
+                    "sortOrder": 3
+                }
+            ],
+            "relatedEntries": [
+                {
+                    "entryId": "codex-blight-001",
+                    "relationType": "SeeAlso",
+                    "description": "Their research into the Blight"
+                }
+            ]
+        },
+        {
+            "id": "codex-item-001",
+            "categoryId": "items",
+            "title": "Echo Stone",
+            "era": "pre-blight",
+            "summary": "A resonant crystal capable of recording and replaying sounds from the past.",
+            "totalFragments": 3,
+            "legendValue": 10,
+            "icon": "icon-item-echo-stone",
+            "matchKeywords": [
+                "echo",
+                "stone",
+                "crystal",
+                "recording",
+                "memory",
+                "sound"
+            ],
+            "unlockConditions": [
+                {
+                    "type": "ItemObtained",
+                    "itemId": "echo-stone"
+                }
+            ],
+            "sections": [
+                {
+                    "id": "section-description",
+                    "title": "Description",
+                    "content": "A palm-sized crystal of deep amber hue, warm to the touch. When activated, it replays sounds captured in its vicinity—sometimes from moments ago, sometimes from before the Blight itself.",
+                    "unlockThreshold": 0.0,
+                    "sortOrder": 1
+                },
+                {
+                    "id": "section-usage",
+                    "title": "Usage",
+                    "content": "Press the stone to a flat surface and speak the activation phrase: *'Let memory speak.'* The stone will vibrate and begin playback. Duration varies based on the stone's quality and the strength of the recorded sounds.",
+                    "unlockThreshold": 0.50,
+                    "sortOrder": 2
+                },
+                {
+                    "id": "section-crafting",
+                    "title": "Crafting Notes",
+                    "content": "Echo Stones form naturally in places of great emotional intensity. Battlefields, ancient temples, and sites of tragedy often yield the highest quality specimens. The crystal structure traps sound vibrations in a stable runic lattice.",
+                    "unlockThreshold": 1.0,
+                    "captureRequirement": "RunicTrace",
+                    "sortOrder": 3
+                }
+            ]
+        },
+        {
+            "id": "codex-mech-001",
+            "categoryId": "mechanics",
+            "title": "Runic Inscription Basics",
+            "era": "unknown",
+            "summary": "Fundamental principles of runic crafting and inscription techniques.",
+            "totalFragments": 4,
+            "legendValue": 10,
+            "icon": "icon-runes",
+            "hidden": true,
+            "matchKeywords": [
+                "rune",
+                "inscription",
+                "crafting",
+                "runic",
+                "glyph"
+            ],
+            "unlockConditions": [
+                {
+                    "type": "QuestComplete",
+                    "questId": "runic-apprentice"
+                },
+                {
+                    "type": "LevelReached",
+                    "minLevel": 5
+                }
+            ],
+            "conditionLogic": "and",
+            "sections": [
+                {
+                    "id": "section-basics",
+                    "title": "Basic Principles",
+                    "content": "Runic inscription channels ambient magical energy through precise geometric patterns. The shape of each glyph determines its function; the depth and precision of the carving determines its power.",
+                    "unlockThreshold": 0.0,
+                    "sortOrder": 1
+                },
+                {
+                    "id": "section-tools",
+                    "title": "Required Tools",
+                    "content": "Essential tools include:\n- **Inscription Stylus**: For carving precise lines\n- **Resonance Hammer**: For activating carved runes\n- **Binding Powder**: For stabilizing the runic matrix",
+                    "unlockThreshold": 0.25,
+                    "sortOrder": 2
+                },
+                {
+                    "id": "section-advanced",
+                    "title": "Advanced Techniques",
+                    "content": "Compound runes combine multiple glyphs into unified effects. The order of inscription matters—carving the secondary glyph before the primary inverts the effect, sometimes catastrophically.",
+                    "unlockThreshold": 0.75,
+                    "sortOrder": 3
+                },
+                {
+                    "id": "section-dangers",
+                    "title": "Warnings",
+                    "content": "Never inscribe while emotionally distressed. The runes respond to intent as much as form. A fearful inscription may contain fear; an angry one may explode. Clear your mind before beginning.",
+                    "unlockThreshold": 1.0,
+                    "sortOrder": 4
+                }
+            ]
+        }
+    ]
+}

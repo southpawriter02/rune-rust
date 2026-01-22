@@ -1,0 +1,683 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://rune-game.com/schemas/codex.schema.json",
+    "title": "Codex Configuration Schema",
+    "description": "Defines codex entries, categories, and progressive revelation mechanics for the Scavenger's Journal. Integrates with Capture Template Schema (v0.14.9e) for keyword matching, Faction Schema (v0.14.10a) for reputation conditions, and Quest Schema (v0.14.10b) for quest completion triggers. Provides 8 unlock condition types, 5 relation types, 4 progression levels, and 6 capture type requirements.",
+    "type": "object",
+    "required": [
+        "version",
+        "categories",
+        "entries"
+    ],
+    "additionalProperties": false,
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "JSON Schema reference for IDE validation support."
+        },
+        "version": {
+            "type": "string",
+            "pattern": "^\\d+\\.\\d+\\.\\d+$",
+            "description": "Schema version in semver format. Used for migration tracking.",
+            "examples": [
+                "1.0.0",
+                "1.1.0"
+            ]
+        },
+        "categories": {
+            "type": "array",
+            "description": "Codex category definitions. Categories organize entries into logical groups such as Lore, Bestiary, Items, Locations, Characters, and Mechanics.",
+            "minItems": 1,
+            "items": {
+                "$ref": "#/definitions/CodexCategory"
+            }
+        },
+        "entries": {
+            "type": "array",
+            "description": "Codex entry definitions. Each entry represents a piece of world knowledge with progressive revelation through sections.",
+            "items": {
+                "$ref": "#/definitions/CodexEntry"
+            }
+        },
+        "globalKeywords": {
+            "type": "array",
+            "description": "Keywords that apply to all entries for baseline matching. Useful for common terms shared across the entire codex.",
+            "items": {
+                "type": "string"
+            }
+        },
+        "progressionDefaults": {
+            "$ref": "#/definitions/ProgressionDefaults",
+            "description": "Default progression level thresholds applied to entries that don't specify custom levels."
+        }
+    },
+    "definitions": {
+        "CodexCategory": {
+            "type": "object",
+            "description": "A codex category for organizing entries. Categories can contain subcategories for hierarchical organization.",
+            "required": [
+                "id",
+                "name"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9-]*$",
+                    "description": "Unique category identifier using lowercase kebab-case.",
+                    "examples": [
+                        "lore",
+                        "bestiary",
+                        "items",
+                        "locations",
+                        "characters",
+                        "mechanics"
+                    ]
+                },
+                "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 50,
+                    "description": "Display name for the category shown in the Journal UI."
+                },
+                "description": {
+                    "type": "string",
+                    "maxLength": 200,
+                    "description": "Brief category description shown in the Journal UI."
+                },
+                "icon": {
+                    "type": "string",
+                    "description": "Icon asset reference for UI display."
+                },
+                "sortOrder": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "default": 0,
+                    "description": "Display ordering (lower = first)."
+                },
+                "subcategories": {
+                    "type": "array",
+                    "description": "Nested subcategories for hierarchical organization.",
+                    "items": {
+                        "$ref": "#/definitions/CodexSubcategory"
+                    }
+                },
+                "defaultExpanded": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Whether category is expanded by default in the Journal UI."
+                },
+                "hidden": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "If true, category is hidden until it contains at least one unlocked entry."
+                }
+            }
+        },
+        "CodexSubcategory": {
+            "type": "object",
+            "description": "A subcategory within a codex category for finer-grained organization.",
+            "required": [
+                "id",
+                "name"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9-]*$",
+                    "description": "Unique subcategory identifier within parent category."
+                },
+                "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 50,
+                    "description": "Display name for the subcategory."
+                },
+                "description": {
+                    "type": "string",
+                    "maxLength": 200,
+                    "description": "Brief subcategory description."
+                },
+                "sortOrder": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "default": 0,
+                    "description": "Display ordering within parent category."
+                }
+            }
+        },
+        "CodexEntry": {
+            "type": "object",
+            "description": "A codex entry representing a piece of world knowledge. Entries have progressive content revealed through sections as the player collects Data Captures and meets unlock conditions.",
+            "required": [
+                "id",
+                "categoryId",
+                "title",
+                "sections"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "pattern": "^codex-[a-z][a-z0-9-]*-\\d{3}$",
+                    "description": "Unique entry identifier following the pattern codex-{category}-{number}.",
+                    "examples": [
+                        "codex-blight-001",
+                        "codex-beast-012",
+                        "codex-faction-003"
+                    ]
+                },
+                "categoryId": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9-]*$",
+                    "description": "Reference to parent category ID."
+                },
+                "subcategoryId": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9-]*$",
+                    "description": "Optional reference to subcategory ID within the parent category."
+                },
+                "title": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100,
+                    "description": "Display title for the entry shown in the Journal UI."
+                },
+                "era": {
+                    "type": "string",
+                    "enum": [
+                        "pre-blight",
+                        "blight",
+                        "post-blight",
+                        "unknown"
+                    ],
+                    "description": "Historical era the entry pertains to. Used for filtering and thematic organization."
+                },
+                "summary": {
+                    "type": "string",
+                    "maxLength": 500,
+                    "description": "Brief entry summary shown in list views before the full entry is opened."
+                },
+                "sections": {
+                    "type": "array",
+                    "description": "Progressive content sections. Sections unlock as the player progresses through the entry.",
+                    "minItems": 1,
+                    "items": {
+                        "$ref": "#/definitions/EntrySection"
+                    }
+                },
+                "matchKeywords": {
+                    "type": "array",
+                    "description": "Keywords for Data Capture correlation. When a capture's keywords overlap with these, it contributes to entry progress.",
+                    "items": {
+                        "type": "string",
+                        "minLength": 2,
+                        "maxLength": 50
+                    },
+                    "minItems": 1,
+                    "uniqueItems": true
+                },
+                "unlockConditions": {
+                    "type": "array",
+                    "description": "Conditions required to initially reveal the entry. Combined using conditionLogic.",
+                    "items": {
+                        "$ref": "#/definitions/UnlockCondition"
+                    }
+                },
+                "conditionLogic": {
+                    "type": "string",
+                    "enum": [
+                        "and",
+                        "or"
+                    ],
+                    "default": "or",
+                    "description": "Logic for combining multiple unlock conditions. 'or' = any condition, 'and' = all conditions."
+                },
+                "progressionLevels": {
+                    "type": "array",
+                    "description": "Custom progression thresholds for this entry. Overrides progressionDefaults when specified.",
+                    "items": {
+                        "$ref": "#/definitions/ProgressionLevel"
+                    }
+                },
+                "relatedEntries": {
+                    "type": "array",
+                    "description": "Typed relationships to other codex entries for navigation and cross-referencing.",
+                    "items": {
+                        "$ref": "#/definitions/EntryRelation"
+                    }
+                },
+                "totalFragments": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 20,
+                    "default": 4,
+                    "description": "Total capture fragments required for 100% completion (Mastery level)."
+                },
+                "legendValue": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 100,
+                    "default": 10,
+                    "description": "Legend progression points awarded upon reaching Mastery."
+                },
+                "icon": {
+                    "type": "string",
+                    "description": "Icon asset reference for UI display in lists and headers."
+                },
+                "imageAsset": {
+                    "type": "string",
+                    "description": "Full illustration asset path displayed in the entry detail view."
+                },
+                "sortPriority": {
+                    "type": "integer",
+                    "default": 0,
+                    "description": "Sort order within category (higher = first). Used for pinning important entries."
+                },
+                "hidden": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "If true, entry is hidden from the Journal until first unlock condition is met."
+                },
+                "metadata": {
+                    "type": "object",
+                    "description": "Optional extensible metadata for custom properties not covered by the schema.",
+                    "additionalProperties": true
+                }
+            }
+        },
+        "EntrySection": {
+            "type": "object",
+            "description": "A content section within a codex entry. Sections unlock progressively as the player collects more fragments.",
+            "required": [
+                "id",
+                "title",
+                "content",
+                "unlockThreshold"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "pattern": "^section-[a-z][a-z0-9-]*$",
+                    "description": "Unique section identifier within the entry.",
+                    "examples": [
+                        "section-overview",
+                        "section-origins",
+                        "section-weakness"
+                    ]
+                },
+                "title": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100,
+                    "description": "Section heading displayed in the entry detail view."
+                },
+                "content": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Section content. Supports markdown formatting for rich text display."
+                },
+                "unlockThreshold": {
+                    "type": "number",
+                    "minimum": 0.0,
+                    "maximum": 1.0,
+                    "description": "Progress threshold required to reveal this section. 0.0 = always visible, 1.0 = requires Mastery."
+                },
+                "captureRequirement": {
+                    "type": "string",
+                    "enum": [
+                        "TextFragment",
+                        "EchoRecording",
+                        "VisualRecord",
+                        "Specimen",
+                        "OralHistory",
+                        "RunicTrace"
+                    ],
+                    "description": "Optional specific capture type required to unlock this section (from v0.14.9e)."
+                },
+                "sortOrder": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "default": 0,
+                    "description": "Display ordering within the entry (lower = first)."
+                },
+                "spoilerLevel": {
+                    "type": "string",
+                    "enum": [
+                        "none",
+                        "minor",
+                        "major"
+                    ],
+                    "default": "none",
+                    "description": "Spoiler classification for UI warnings. 'major' sections show confirmation dialog."
+                }
+            }
+        },
+        "UnlockCondition": {
+            "type": "object",
+            "description": "A condition that must be met to unlock an entry or section. Eight types are supported covering captures, quests, kills, locations, items, factions, levels, and manual triggers.",
+            "required": [
+                "type"
+            ],
+            "oneOf": [
+                {
+                    "properties": {
+                        "type": {
+                            "const": "CaptureCollected"
+                        },
+                        "captureId": {
+                            "type": "string",
+                            "pattern": "^cap-[a-z][a-z0-9-]*-\\d{3}$",
+                            "description": "Reference to capture template ID (from v0.14.9e)."
+                        },
+                        "minQuality": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 100,
+                            "description": "Minimum quality value required for the capture."
+                        }
+                    },
+                    "required": [
+                        "type",
+                        "captureId"
+                    ],
+                    "additionalProperties": false
+                },
+                {
+                    "properties": {
+                        "type": {
+                            "const": "QuestComplete"
+                        },
+                        "questId": {
+                            "type": "string",
+                            "pattern": "^[a-z][a-z0-9-]*$",
+                            "description": "Reference to quest ID (from v0.14.10b)."
+                        },
+                        "objectiveId": {
+                            "type": "string",
+                            "pattern": "^[a-z][a-z0-9-]*$",
+                            "description": "Optional specific objective within the quest."
+                        }
+                    },
+                    "required": [
+                        "type",
+                        "questId"
+                    ],
+                    "additionalProperties": false
+                },
+                {
+                    "properties": {
+                        "type": {
+                            "const": "EnemyKilled"
+                        },
+                        "enemyId": {
+                            "type": "string",
+                            "pattern": "^[a-z][a-z0-9-]*$",
+                            "description": "Reference to enemy definition ID."
+                        },
+                        "count": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "default": 1,
+                            "description": "Number of kills required."
+                        },
+                        "bossOnly": {
+                            "type": "boolean",
+                            "default": false,
+                            "description": "If true, only boss variants of this enemy count."
+                        }
+                    },
+                    "required": [
+                        "type",
+                        "enemyId"
+                    ],
+                    "additionalProperties": false
+                },
+                {
+                    "properties": {
+                        "type": {
+                            "const": "LocationVisited"
+                        },
+                        "locationId": {
+                            "type": "string",
+                            "pattern": "^[a-z][a-z0-9-]*$",
+                            "description": "Reference to location definition ID."
+                        }
+                    },
+                    "required": [
+                        "type",
+                        "locationId"
+                    ],
+                    "additionalProperties": false
+                },
+                {
+                    "properties": {
+                        "type": {
+                            "const": "ItemObtained"
+                        },
+                        "itemId": {
+                            "type": "string",
+                            "pattern": "^[a-z][a-z0-9-]*$",
+                            "description": "Reference to item definition ID."
+                        },
+                        "quantity": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "default": 1,
+                            "description": "Quantity of item required."
+                        }
+                    },
+                    "required": [
+                        "type",
+                        "itemId"
+                    ],
+                    "additionalProperties": false
+                },
+                {
+                    "properties": {
+                        "type": {
+                            "const": "FactionReputation"
+                        },
+                        "factionId": {
+                            "type": "string",
+                            "pattern": "^[a-z][a-z0-9-]*$",
+                            "description": "Reference to faction ID (from v0.14.10a)."
+                        },
+                        "minReputation": {
+                            "type": "integer",
+                            "minimum": -10000,
+                            "maximum": 10000,
+                            "description": "Minimum reputation value required."
+                        },
+                        "standing": {
+                            "type": "string",
+                            "enum": [
+                                "Hostile",
+                                "Unfriendly",
+                                "Neutral",
+                                "Friendly",
+                                "Honored",
+                                "Revered",
+                                "Exalted"
+                            ],
+                            "description": "Alternative: minimum standing tier required instead of numeric value."
+                        }
+                    },
+                    "required": [
+                        "type",
+                        "factionId"
+                    ],
+                    "additionalProperties": false
+                },
+                {
+                    "properties": {
+                        "type": {
+                            "const": "LevelReached"
+                        },
+                        "minLevel": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 100,
+                            "description": "Minimum player level required."
+                        }
+                    },
+                    "required": [
+                        "type",
+                        "minLevel"
+                    ],
+                    "additionalProperties": false
+                },
+                {
+                    "properties": {
+                        "type": {
+                            "const": "ManualUnlock"
+                        },
+                        "triggerId": {
+                            "type": "string",
+                            "pattern": "^[a-z][a-z0-9-]*$",
+                            "description": "Script/event trigger identifier."
+                        },
+                        "description": {
+                            "type": "string",
+                            "description": "Human-readable description of the unlock trigger for documentation."
+                        }
+                    },
+                    "required": [
+                        "type",
+                        "triggerId"
+                    ],
+                    "additionalProperties": false
+                }
+            ]
+        },
+        "EntryRelation": {
+            "type": "object",
+            "description": "A typed relationship to another codex entry for navigation and cross-referencing.",
+            "required": [
+                "entryId",
+                "relationType"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "entryId": {
+                    "type": "string",
+                    "pattern": "^codex-[a-z][a-z0-9-]*-\\d{3}$",
+                    "description": "Reference to the related entry ID."
+                },
+                "relationType": {
+                    "type": "string",
+                    "enum": [
+                        "SeeAlso",
+                        "Prerequisite",
+                        "Sequel",
+                        "Contradiction",
+                        "Expansion"
+                    ],
+                    "description": "Type of relationship. SeeAlso = general reference, Prerequisite = read first, Sequel = continues topic, Contradiction = conflicting info, Expansion = additional detail."
+                },
+                "description": {
+                    "type": "string",
+                    "maxLength": 200,
+                    "description": "Optional context describing the relationship."
+                },
+                "bidirectional": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "If true, the relationship applies in both directions automatically."
+                },
+                "spoilerWarning": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "If true, UI shows spoiler warning before revealing the related entry."
+                }
+            }
+        },
+        "ProgressionLevel": {
+            "type": "object",
+            "description": "A progression stage for entry revelation. Four standard levels: Fragment (0.25), Partial (0.50), Complete (0.75), Mastery (1.00).",
+            "required": [
+                "level",
+                "threshold"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "level": {
+                    "type": "string",
+                    "enum": [
+                        "Fragment",
+                        "Partial",
+                        "Complete",
+                        "Mastery"
+                    ],
+                    "description": "Progression level name."
+                },
+                "threshold": {
+                    "type": "number",
+                    "minimum": 0.0,
+                    "maximum": 1.0,
+                    "description": "Progress value required to reach this level (0.0-1.0)."
+                },
+                "description": {
+                    "type": "string",
+                    "maxLength": 200,
+                    "description": "Description of what this level represents and what content is available."
+                },
+                "rewards": {
+                    "type": "array",
+                    "description": "Optional rewards granted upon reaching this progression level.",
+                    "items": {
+                        "$ref": "#/definitions/ProgressionReward"
+                    }
+                },
+                "uiStyle": {
+                    "type": "string",
+                    "description": "Optional CSS class or UI style identifier for this level's visual presentation."
+                }
+            }
+        },
+        "ProgressionReward": {
+            "type": "object",
+            "description": "A reward granted upon reaching a progression level.",
+            "required": [
+                "type"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "Legend",
+                        "Achievement",
+                        "Unlock",
+                        "Item"
+                    ],
+                    "description": "Reward type. Legend = XP points, Achievement = unlock achievement, Unlock = unlock content, Item = grant item."
+                },
+                "value": {
+                    "type": "integer",
+                    "description": "Numeric value for the reward (e.g., Legend points amount)."
+                },
+                "referenceId": {
+                    "type": "string",
+                    "description": "Reference ID for achievements, unlocks, or items."
+                }
+            }
+        },
+        "ProgressionDefaults": {
+            "type": "object",
+            "description": "Default progression level configuration applied to entries without custom progression levels.",
+            "additionalProperties": false,
+            "properties": {
+                "levels": {
+                    "type": "array",
+                    "description": "Default progression levels with thresholds and rewards.",
+                    "items": {
+                        "$ref": "#/definitions/ProgressionLevel"
+                    }
+                }
+            }
+        }
+    }
+}
