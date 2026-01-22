@@ -1,0 +1,656 @@
+{
+    "$schema": "./schemas/glossary.schema.json",
+    "version": "1.0.0",
+    "defaultDisplayRules": [
+        {
+            "context": "Tooltip",
+            "showDefinition": true,
+            "showExamples": false,
+            "maxLength": 120,
+            "highlightInText": true
+        },
+        {
+            "context": "Help",
+            "showDefinition": true,
+            "showExamples": true,
+            "highlightInText": true,
+            "showCrossReferences": true
+        },
+        {
+            "context": "Codex",
+            "showDefinition": true,
+            "showExamples": true,
+            "showCrossReferences": true
+        },
+        {
+            "context": "Combat",
+            "showDefinition": true,
+            "maxLength": 60,
+            "useAbbreviation": true
+        },
+        {
+            "context": "Inventory",
+            "showDefinition": true,
+            "maxLength": 100
+        }
+    ],
+    "categories": [
+        {
+            "id": "combat",
+            "name": "Combat",
+            "description": "Battle mechanics and combat-related terms",
+            "iconId": "icon-sword",
+            "sortOrder": 1,
+            "color": "#CC3333"
+        },
+        {
+            "id": "magic",
+            "name": "Magic",
+            "description": "Galdr, runes, and magical systems",
+            "iconId": "icon-rune",
+            "sortOrder": 2,
+            "color": "#6633CC"
+        },
+        {
+            "id": "lore",
+            "name": "Lore",
+            "description": "World terminology, history, and cultural terms",
+            "iconId": "icon-book",
+            "sortOrder": 3,
+            "color": "#996633"
+        },
+        {
+            "id": "items",
+            "name": "Items",
+            "description": "Equipment, artifacts, and consumable terminology",
+            "iconId": "icon-chest",
+            "sortOrder": 4,
+            "color": "#339933"
+        },
+        {
+            "id": "ui",
+            "name": "Interface",
+            "description": "User interface elements and controls",
+            "iconId": "icon-interface",
+            "sortOrder": 5,
+            "color": "#336699"
+        },
+        {
+            "id": "mechanics",
+            "name": "Mechanics",
+            "description": "Game systems, rules, and progression",
+            "iconId": "icon-gear",
+            "sortOrder": 6,
+            "color": "#666666"
+        },
+        {
+            "id": "status",
+            "name": "Status Effects",
+            "description": "Conditions, buffs, debuffs, and temporary effects",
+            "iconId": "icon-status",
+            "sortOrder": 7,
+            "color": "#CC6633"
+        },
+        {
+            "id": "attributes",
+            "name": "Attributes",
+            "description": "Character statistics and ability scores",
+            "iconId": "icon-stats",
+            "sortOrder": 8,
+            "color": "#3399CC"
+        }
+    ],
+    "terms": [
+        {
+            "id": "critical-hit",
+            "term": "Critical Hit",
+            "definition": "A critical hit occurs when you roll the maximum value on your attack die, or when specific abilities trigger a critical. Critical hits deal double damage and ignore a portion of the target's armor. Some abilities and equipment can increase your critical hit chance or enhance critical damage.",
+            "shortDefinition": "Maximum damage roll dealing double damage and ignoring armor.",
+            "categoryId": "combat",
+            "abbreviation": "Crit",
+            "aliases": [
+                "crit",
+                "critical",
+                "crit hit"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "attack",
+                    "relationship": "Prerequisite"
+                },
+                {
+                    "termId": "damage",
+                    "relationship": "Related"
+                }
+            ],
+            "examples": [
+                "Your strike finds a gap in the goblin's armor—Critical Hit! 24 damage.",
+                "The assassin's precise blow lands a critical, bypassing your shield."
+            ],
+            "tags": [
+                "damage",
+                "luck",
+                "combat-basics"
+            ],
+            "sortOrder": 5,
+            "firstAppearance": "Tutorial"
+        },
+        {
+            "id": "attack",
+            "term": "Attack",
+            "definition": "The primary offensive action in combat. An attack roll is made against the target's defense value. If the roll meets or exceeds the defense, the attack hits and deals damage. Attack values are modified by your Might attribute, weapon quality, and active buffs.",
+            "shortDefinition": "Offensive combat action; roll against target's defense to deal damage.",
+            "categoryId": "combat",
+            "abbreviation": "ATK",
+            "aliases": [
+                "atk",
+                "strike"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "defense",
+                    "relationship": "Contrast"
+                },
+                {
+                    "termId": "damage",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "might",
+                    "relationship": "Prerequisite"
+                }
+            ],
+            "examples": [
+                "Attack: Roll 15 vs Defense 12 = Hit!",
+                "Your attack value is increased by +3 from your enchanted blade."
+            ],
+            "tags": [
+                "combat-basics",
+                "offense"
+            ],
+            "sortOrder": 1,
+            "firstAppearance": "Tutorial"
+        },
+        {
+            "id": "defense",
+            "term": "Defense",
+            "definition": "Your ability to avoid or reduce incoming attacks. Defense is calculated from your base value, armor, shield, and active stances. When an enemy attacks, they must roll equal to or higher than your defense value to hit. Higher defense means fewer hits land.",
+            "shortDefinition": "Value attackers must meet or exceed to hit you.",
+            "categoryId": "combat",
+            "abbreviation": "DEF",
+            "aliases": [
+                "def",
+                "armor class",
+                "ac"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "attack",
+                    "relationship": "Contrast"
+                },
+                {
+                    "termId": "evasion",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "combat-basics",
+                "defensive"
+            ],
+            "sortOrder": 2,
+            "firstAppearance": "Tutorial"
+        },
+        {
+            "id": "damage",
+            "term": "Damage",
+            "definition": "The amount of harm inflicted by an attack or ability. Damage is calculated from weapon base damage, attribute bonuses, and modifiers. Damage reduces the target's health points. Different damage types (physical, fire, ice, etc.) may have varying effectiveness against certain enemies.",
+            "shortDefinition": "Harm inflicted; reduces target's health based on weapon and modifiers.",
+            "categoryId": "combat",
+            "abbreviation": "DMG",
+            "aliases": [
+                "dmg",
+                "harm"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "attack",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "health",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "combat-basics",
+                "offense"
+            ],
+            "sortOrder": 3,
+            "firstAppearance": "Tutorial"
+        },
+        {
+            "id": "galdr",
+            "term": "Galdr",
+            "definition": "The Norse magical tradition of runic chanting. Galdr practitioners invoke rune power through specific vocal patterns and inscribed symbols. Unlike sorcery which draws from internal reserves, Galdr channels ambient runic energy through disciplined incantation. Miscast Galdr can result in Blight corruption.",
+            "shortDefinition": "Norse runic magic invoked through chanting and inscribed runes.",
+            "categoryId": "magic",
+            "aliases": [
+                "galdor",
+                "rune magic",
+                "runic chanting"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "rune",
+                    "relationship": "Prerequisite"
+                },
+                {
+                    "termId": "runic-blight",
+                    "relationship": "Related"
+                }
+            ],
+            "examples": [
+                "The skald's galdr echoes through the hall, runes glowing in response.",
+                "She traced the protective galdr, warding the camp against spirits."
+            ],
+            "tags": [
+                "magic-system",
+                "norse",
+                "runes"
+            ],
+            "isGameMechanics": false,
+            "sortOrder": 1
+        },
+        {
+            "id": "rune",
+            "term": "Rune",
+            "definition": "Ancient symbols of power that form the basis of Galdr magic. Each rune represents a concept—fire, protection, strength—and can be inscribed, spoken, or gestured to invoke its power. Runes are organized into schools, and mastering a school unlocks more potent applications.",
+            "shortDefinition": "Magical symbol representing a concept; basis of Galdr magic.",
+            "categoryId": "magic",
+            "aliases": [
+                "runes",
+                "elder rune"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "galdr",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "magic-system",
+                "norse"
+            ],
+            "sortOrder": 2
+        },
+        {
+            "id": "runic-blight",
+            "term": "Runic Blight",
+            "definition": "A corruption that spreads through The Roots, tainting both technology and living beings. Runic Blight is believed to be a side effect of the catastrophe that ended the old world. Exposure to heavy Blight can cause mutations, madness, and transformation into Blighted creatures.",
+            "shortDefinition": "Corruption spreading through the land, tainting life and technology.",
+            "categoryId": "lore",
+            "aliases": [
+                "blight",
+                "the blight",
+                "corruption"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "the-glitch",
+                    "relationship": "Prerequisite"
+                }
+            ],
+            "tags": [
+                "world-lore",
+                "danger",
+                "corruption"
+            ],
+            "isGameMechanics": false,
+            "sortOrder": 1
+        },
+        {
+            "id": "the-glitch",
+            "term": "The Glitch",
+            "definition": "The catastrophic event that ended the old world and gave rise to the Runic Blight. Little is known about its true nature—whether it was a magical experiment gone wrong, divine punishment, or something else entirely. Understanding The Glitch is key to surviving in the blighted lands.",
+            "shortDefinition": "The catastrophe that ended the old world and created the Blight.",
+            "categoryId": "lore",
+            "aliases": [
+                "glitch",
+                "the cataclysm",
+                "the fall"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "runic-blight",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "world-lore",
+                "history",
+                "catastrophe"
+            ],
+            "isGameMechanics": false,
+            "sortOrder": 2
+        },
+        {
+            "id": "stress",
+            "term": "Stress",
+            "definition": "Mental strain accumulated through combat, trauma, environmental pressure, and difficult decisions. High stress can trigger psychological effects including panic, rage, or despair. Stress is reduced through rest, positive interactions, and certain abilities. Managing stress is crucial for long expeditions.",
+            "shortDefinition": "Mental strain; high levels trigger psychological effects.",
+            "categoryId": "mechanics",
+            "aliases": [
+                "mental stress",
+                "strain"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "rest",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "resolve",
+                    "relationship": "Contrast"
+                }
+            ],
+            "examples": [
+                "Witnessing the horror adds 15 Stress.",
+                "Your stress reaches critical levels—roll for affliction."
+            ],
+            "displayRules": [
+                {
+                    "context": "Combat",
+                    "showDefinition": true,
+                    "maxLength": 50,
+                    "useAbbreviation": false
+                }
+            ],
+            "tags": [
+                "mental-health",
+                "resource",
+                "survival"
+            ],
+            "sortOrder": 5
+        },
+        {
+            "id": "might",
+            "term": "Might",
+            "definition": "Physical power and raw strength. Might determines melee damage bonuses, carrying capacity, and success in feats of strength like breaking doors or grappling. Warriors and berserkers benefit most from high Might.",
+            "shortDefinition": "Physical strength; affects melee damage and carrying capacity.",
+            "categoryId": "attributes",
+            "abbreviation": "MIG",
+            "aliases": [
+                "str",
+                "strength"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "finesse",
+                    "relationship": "Contrast"
+                },
+                {
+                    "termId": "attack",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "attribute",
+                "physical",
+                "combat"
+            ],
+            "sortOrder": 1
+        },
+        {
+            "id": "finesse",
+            "term": "Finesse",
+            "definition": "Agility, precision, and quick reflexes. Finesse affects ranged accuracy, dodge chance, and delicate tasks like lockpicking. Rogues and archers benefit most from high Finesse.",
+            "shortDefinition": "Agility and precision; affects ranged accuracy and dodge.",
+            "categoryId": "attributes",
+            "abbreviation": "FIN",
+            "aliases": [
+                "dex",
+                "dexterity",
+                "agility"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "might",
+                    "relationship": "Contrast"
+                },
+                {
+                    "termId": "evasion",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "attribute",
+                "physical",
+                "precision"
+            ],
+            "sortOrder": 2
+        },
+        {
+            "id": "will",
+            "term": "Will",
+            "definition": "Mental fortitude and magical aptitude. Will determines mana capacity, spell effectiveness, and resistance to fear and mind effects. Mages and skalds require high Will for their abilities.",
+            "shortDefinition": "Mental fortitude; affects mana capacity and spell power.",
+            "categoryId": "attributes",
+            "abbreviation": "WIL",
+            "aliases": [
+                "int",
+                "intelligence",
+                "spirit"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "galdr",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "attribute",
+                "mental",
+                "magic"
+            ],
+            "sortOrder": 3
+        },
+        {
+            "id": "burning",
+            "term": "Burning",
+            "definition": "A damage-over-time status effect caused by fire. Burning targets take fire damage at the start of each turn and may spread the effect to adjacent allies. Burning can be removed by water, rolling on the ground (takes an action), or specific abilities.",
+            "shortDefinition": "Fire DoT; deals damage each turn, may spread to allies.",
+            "categoryId": "status",
+            "aliases": [
+                "on fire",
+                "ablaze",
+                "ignited"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "frozen",
+                    "relationship": "Contrast"
+                }
+            ],
+            "examples": [
+                "The dragon's breath leaves you Burning (3 damage/turn for 3 turns).",
+                "Roll to extinguish or take 5 fire damage."
+            ],
+            "displayRules": [
+                {
+                    "context": "Combat",
+                    "showDefinition": true,
+                    "maxLength": 80
+                }
+            ],
+            "tags": [
+                "debuff",
+                "fire",
+                "dot"
+            ],
+            "sortOrder": 1
+        },
+        {
+            "id": "frozen",
+            "term": "Frozen",
+            "definition": "A disabling status effect caused by extreme cold. Frozen targets cannot act and have reduced defense. The effect ends after a set duration or when the target takes fire damage. Frozen targets take double damage from physical attacks but are immune to additional cold effects.",
+            "shortDefinition": "Disabled by cold; cannot act, reduced defense, weak to physical.",
+            "categoryId": "status",
+            "aliases": [
+                "ice",
+                "encased",
+                "frozen solid"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "burning",
+                    "relationship": "Contrast"
+                },
+                {
+                    "termId": "stunned",
+                    "relationship": "Related"
+                }
+            ],
+            "displayRules": [
+                {
+                    "context": "Combat",
+                    "showDefinition": true,
+                    "maxLength": 80
+                }
+            ],
+            "tags": [
+                "debuff",
+                "cold",
+                "disable"
+            ],
+            "sortOrder": 2
+        },
+        {
+            "id": "rarity",
+            "term": "Rarity",
+            "definition": "The quality tier of equipment and items. Rarity affects base statistics, available enchantment slots, and resale value. From lowest to highest: Common (white), Uncommon (green), Rare (blue), Epic (purple), Legendary (orange), Artifact (red).",
+            "shortDefinition": "Item quality tier from Common to Artifact; affects stats and slots.",
+            "categoryId": "items",
+            "aliases": [
+                "item rarity",
+                "quality",
+                "tier"
+            ],
+            "examples": [
+                "You found a Rare sword with two enchantment slots.",
+                "Legendary items can only be obtained from bosses."
+            ],
+            "tags": [
+                "equipment",
+                "loot",
+                "quality"
+            ],
+            "sortOrder": 1
+        },
+        {
+            "id": "health",
+            "term": "Health",
+            "definition": "Your character's physical vitality. When health reaches zero, you are incapacitated or dead depending on game settings. Health is restored through rest, potions, and healing abilities. Maximum health is determined by Constitution and level.",
+            "shortDefinition": "Physical vitality; at zero you are incapacitated or dead.",
+            "categoryId": "mechanics",
+            "abbreviation": "HP",
+            "aliases": [
+                "hit points",
+                "hp",
+                "life",
+                "vitality"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "damage",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "resource",
+                "survival",
+                "core-mechanic"
+            ],
+            "sortOrder": 1
+        },
+        {
+            "id": "evasion",
+            "term": "Evasion",
+            "definition": "The ability to completely avoid incoming attacks through agility and reflexes. Unlike defense which reduces hit chance, successful evasion negates an attack entirely. Evasion is primarily derived from Finesse and light armor bonuses.",
+            "shortDefinition": "Chance to completely dodge an attack; derived from Finesse.",
+            "categoryId": "combat",
+            "abbreviation": "EVA",
+            "aliases": [
+                "dodge",
+                "dodge chance"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "defense",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "finesse",
+                    "relationship": "Prerequisite"
+                }
+            ],
+            "tags": [
+                "defense",
+                "agility",
+                "combat"
+            ],
+            "sortOrder": 4
+        },
+        {
+            "id": "rest",
+            "term": "Rest",
+            "definition": "Taking time to recover health, reduce stress, and prepare for challenges ahead. Rest can be short (brief pause during exploration) or long (camping overnight). Long rests fully restore resources but may trigger random encounters or advance time.",
+            "shortDefinition": "Recovery action; restores health, reduces stress, may trigger events.",
+            "categoryId": "mechanics",
+            "aliases": [
+                "camp",
+                "sleep",
+                "recuperate"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "stress",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "health",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "recovery",
+                "survival",
+                "camping"
+            ],
+            "sortOrder": 6
+        },
+        {
+            "id": "resolve",
+            "term": "Resolve",
+            "definition": "Mental resilience and determination. High resolve reduces stress gain and provides bonuses against fear and morale effects. Resolve can also be spent on certain powerful abilities that require unwavering focus.",
+            "shortDefinition": "Mental resilience; reduces stress gain and resists fear.",
+            "categoryId": "mechanics",
+            "abbreviation": "RES",
+            "aliases": [
+                "determination",
+                "willpower"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "stress",
+                    "relationship": "Contrast"
+                }
+            ],
+            "tags": [
+                "mental-health",
+                "resistance",
+                "resource"
+            ],
+            "sortOrder": 7
+        }
+    ]
+}

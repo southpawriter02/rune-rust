@@ -1,0 +1,288 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://rune-game.com/schemas/glossary.schema.json",
+    "title": "Glossary Configuration Schema",
+    "description": "Defines game terminology, tooltips, and help text for Aethelgard. Supports term definitions with cross-references, category organization, display rules, abbreviation mappings, and localization keys.",
+    "type": "object",
+    "required": [
+        "version",
+        "terms"
+    ],
+    "additionalProperties": false,
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "JSON Schema reference for IDE validation support."
+        },
+        "version": {
+            "type": "string",
+            "pattern": "^\\d+\\.\\d+\\.\\d+$",
+            "description": "Schema version in semver format. Used for migration tracking.",
+            "examples": [
+                "1.0.0",
+                "1.1.0"
+            ]
+        },
+        "categories": {
+            "type": "array",
+            "description": "Term category definitions for organizing glossary entries.",
+            "items": {
+                "$ref": "#/definitions/TermCategory"
+            }
+        },
+        "terms": {
+            "type": "array",
+            "description": "Glossary term definitions with definitions, cross-references, and display rules.",
+            "minItems": 1,
+            "items": {
+                "$ref": "#/definitions/GlossaryTerm"
+            }
+        },
+        "defaultDisplayRules": {
+            "type": "array",
+            "description": "Default display rules applied to all terms when no term-specific rule exists.",
+            "items": {
+                "$ref": "#/definitions/DisplayRule"
+            }
+        }
+    },
+    "definitions": {
+        "TermCategory": {
+            "type": "object",
+            "description": "A category for organizing glossary terms. Categories provide logical grouping for help navigation.",
+            "required": [
+                "id",
+                "name"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9-]*$",
+                    "description": "Unique category identifier using lowercase kebab-case."
+                },
+                "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 50,
+                    "description": "Display name for the category in help listings."
+                },
+                "description": {
+                    "type": "string",
+                    "maxLength": 200,
+                    "description": "Brief description of what terms this category contains."
+                },
+                "iconId": {
+                    "type": "string",
+                    "description": "Icon asset reference for UI display."
+                },
+                "sortOrder": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "default": 0,
+                    "description": "Display ordering in help listings (lower = first)."
+                },
+                "color": {
+                    "type": "string",
+                    "pattern": "^#[0-9A-Fa-f]{6}$",
+                    "description": "Category highlight color in hexadecimal format."
+                }
+            }
+        },
+        "GlossaryTerm": {
+            "type": "object",
+            "description": "A glossary term with full definition, short definition (tooltip), cross-references, and display rules.",
+            "required": [
+                "id",
+                "term",
+                "definition",
+                "categoryId"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9-]*$",
+                    "description": "Unique term identifier using lowercase kebab-case.",
+                    "examples": [
+                        "critical-hit",
+                        "runic-blight",
+                        "stress"
+                    ]
+                },
+                "term": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100,
+                    "description": "The word or phrase as displayed to the player."
+                },
+                "definition": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Full explanation of the term for help screens and codex."
+                },
+                "shortDefinition": {
+                    "type": "string",
+                    "maxLength": 150,
+                    "description": "Tooltip-length version of definition (max 150 chars)."
+                },
+                "categoryId": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9-]*$",
+                    "description": "Reference to parent category ID."
+                },
+                "aliases": {
+                    "type": "array",
+                    "description": "Alternative terms, spellings, or abbreviations that should resolve to this term.",
+                    "items": {
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "uniqueItems": true
+                },
+                "abbreviation": {
+                    "type": "string",
+                    "maxLength": 10,
+                    "description": "Common abbreviation (e.g., 'HP' for Hit Points, 'Crit' for Critical)."
+                },
+                "crossReferences": {
+                    "type": "array",
+                    "description": "Typed references to related terms with relationship classification.",
+                    "items": {
+                        "$ref": "#/definitions/CrossReference"
+                    }
+                },
+                "displayRules": {
+                    "type": "array",
+                    "description": "Context-specific display configuration overriding defaults.",
+                    "items": {
+                        "$ref": "#/definitions/DisplayRule"
+                    }
+                },
+                "examples": {
+                    "type": "array",
+                    "description": "Usage examples showing the term in context.",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "localizationKey": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_.]*$",
+                    "description": "Key for localization lookup (i18n support)."
+                },
+                "sortOrder": {
+                    "type": "integer",
+                    "default": 0,
+                    "description": "Display ordering within category."
+                },
+                "tags": {
+                    "type": "array",
+                    "description": "Searchable tags for term discovery.",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "isGameMechanics": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "If true, term refers to game mechanics. If false, term is lore/flavor."
+                },
+                "firstAppearance": {
+                    "type": "string",
+                    "description": "Where the player typically first encounters this term (e.g., 'Tutorial', 'Act 1')."
+                }
+            }
+        },
+        "CrossReference": {
+            "type": "object",
+            "description": "A typed reference to another glossary term indicating how terms relate to each other.",
+            "required": [
+                "termId",
+                "relationship"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "termId": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9-]*$",
+                    "description": "Reference to another term's ID."
+                },
+                "relationship": {
+                    "$ref": "#/definitions/CrossReferenceType",
+                    "description": "Type of relationship between terms."
+                },
+                "note": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "description": "Optional context explaining the relationship."
+                }
+            }
+        },
+        "CrossReferenceType": {
+            "type": "string",
+            "description": "Classification of relationship between two glossary terms.",
+            "enum": [
+                "SeeAlso",
+                "Contrast",
+                "Prerequisite",
+                "Related"
+            ]
+        },
+        "DisplayContext": {
+            "type": "string",
+            "description": "UI context where term may be displayed, each with different formatting needs.",
+            "enum": [
+                "Tooltip",
+                "Help",
+                "Codex",
+                "Combat",
+                "Inventory"
+            ]
+        },
+        "DisplayRule": {
+            "type": "object",
+            "description": "Context-specific display configuration controlling how a term appears in different UI contexts.",
+            "required": [
+                "context"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "context": {
+                    "$ref": "#/definitions/DisplayContext",
+                    "description": "UI context this rule applies to."
+                },
+                "showDefinition": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Whether to show the definition in this context."
+                },
+                "showExamples": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Whether to include usage examples."
+                },
+                "maxLength": {
+                    "type": "integer",
+                    "minimum": 10,
+                    "description": "Maximum character length for definition display."
+                },
+                "highlightInText": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Whether to highlight/link this term when found in text."
+                },
+                "useAbbreviation": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Whether to use abbreviation instead of full term."
+                },
+                "showCrossReferences": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Whether to show related terms in this context."
+                }
+            }
+        }
+    }
+}
