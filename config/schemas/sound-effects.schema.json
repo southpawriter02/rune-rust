@@ -1,0 +1,209 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Sound Effects Configuration",
+    "description": "Configuration schema for sound effect definitions including categories, trigger associations, volume/pitch variance, and fallback handling. Supports modding scenarios such as custom sound packs, themed audio, regional variations, or accessibility-focused audio profiles.",
+    "type": "object",
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "Reference to the JSON schema file for validation"
+        },
+        "version": {
+            "type": "string",
+            "description": "Optional version identifier for the configuration file"
+        },
+        "categories": {
+            "type": "object",
+            "description": "Sound effect categories (e.g., combat, ability, ui). Each property key is a category ID.",
+            "additionalProperties": {
+                "$ref": "#/definitions/SoundCategory"
+            },
+            "minProperties": 1
+        },
+        "settings": {
+            "$ref": "#/definitions/GlobalSettings",
+            "description": "Global audio system settings"
+        }
+    },
+    "required": [
+        "categories"
+    ],
+    "additionalProperties": false,
+    "definitions": {
+        "SoundCategory": {
+            "type": "object",
+            "description": "A category grouping related sound effects together.",
+            "properties": {
+                "description": {
+                    "type": "string",
+                    "description": "Optional description of this sound category"
+                },
+                "effects": {
+                    "type": "object",
+                    "description": "Sound effects within this category. Each property key is an effect ID.",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/SoundEffect"
+                    },
+                    "minProperties": 0
+                }
+            },
+            "required": [
+                "effects"
+            ],
+            "additionalProperties": false
+        },
+        "SoundEffect": {
+            "type": "object",
+            "description": "A single sound effect with playback configuration.",
+            "properties": {
+                "files": {
+                    "type": "array",
+                    "description": "Array of audio file paths (relative to game root). At least one file required.",
+                    "items": {
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "minItems": 1
+                },
+                "volume": {
+                    "type": "number",
+                    "description": "Base volume level (0 = silent, 1 = full volume).",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "default": 1.0
+                },
+                "volumeVariance": {
+                    "$ref": "#/definitions/VolumeRange",
+                    "description": "Optional volume variance multiplier range for dynamic playback."
+                },
+                "pitch": {
+                    "type": "number",
+                    "description": "Base pitch multiplier (0.5 = half speed, 1.0 = normal, 2.0 = double speed).",
+                    "minimum": 0.5,
+                    "maximum": 2.0,
+                    "default": 1.0
+                },
+                "pitchVariance": {
+                    "$ref": "#/definitions/PitchRange",
+                    "description": "Optional pitch variance multiplier range for dynamic playback."
+                },
+                "randomize": {
+                    "type": "boolean",
+                    "description": "Randomly select from files array on each play. False = play sequentially or first.",
+                    "default": false
+                },
+                "loop": {
+                    "type": "boolean",
+                    "description": "Loop the sound continuously until stopped.",
+                    "default": false
+                },
+                "cooldown": {
+                    "type": "number",
+                    "description": "Minimum seconds between consecutive plays of this effect.",
+                    "minimum": 0
+                },
+                "priority": {
+                    "type": "integer",
+                    "description": "Priority for simultaneous playback (0-10). Higher = more important.",
+                    "minimum": 0,
+                    "maximum": 10,
+                    "default": 5
+                },
+                "fallbackEffectId": {
+                    "type": "string",
+                    "description": "Effect ID to use if primary files are missing.",
+                    "pattern": "^[a-z][a-z0-9-]*$"
+                },
+                "tags": {
+                    "type": "array",
+                    "description": "Optional tags for filtering and organization.",
+                    "items": {
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "uniqueItems": true
+                }
+            },
+            "required": [
+                "files"
+            ],
+            "additionalProperties": false
+        },
+        "VolumeRange": {
+            "type": "object",
+            "description": "Volume variance range for dynamic playback. Final volume = base × random(min, max).",
+            "properties": {
+                "min": {
+                    "type": "number",
+                    "description": "Minimum volume multiplier.",
+                    "minimum": 0,
+                    "maximum": 1
+                },
+                "max": {
+                    "type": "number",
+                    "description": "Maximum volume multiplier.",
+                    "minimum": 0,
+                    "maximum": 1
+                }
+            },
+            "required": [
+                "min",
+                "max"
+            ],
+            "additionalProperties": false
+        },
+        "PitchRange": {
+            "type": "object",
+            "description": "Pitch variance range for dynamic playback. Final pitch = base × random(min, max).",
+            "properties": {
+                "min": {
+                    "type": "number",
+                    "description": "Minimum pitch multiplier (0.5 = half speed).",
+                    "minimum": 0.5,
+                    "maximum": 2.0
+                },
+                "max": {
+                    "type": "number",
+                    "description": "Maximum pitch multiplier (2.0 = double speed).",
+                    "minimum": 0.5,
+                    "maximum": 2.0
+                }
+            },
+            "required": [
+                "min",
+                "max"
+            ],
+            "additionalProperties": false
+        },
+        "GlobalSettings": {
+            "type": "object",
+            "description": "Global audio system configuration.",
+            "properties": {
+                "maxSimultaneous": {
+                    "type": "integer",
+                    "description": "Maximum number of concurrent sound effects.",
+                    "minimum": 1,
+                    "default": 8
+                },
+                "defaultVolume": {
+                    "type": "number",
+                    "description": "Default volume for effects without explicit volume setting.",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "default": 1.0
+                },
+                "masterMute": {
+                    "type": "boolean",
+                    "description": "Global mute toggle for all sound effects.",
+                    "default": false
+                },
+                "fallbackEnabled": {
+                    "type": "boolean",
+                    "description": "Enable fallback effect resolution for missing files.",
+                    "default": true
+                }
+            },
+            "additionalProperties": false
+        }
+    }
+}
