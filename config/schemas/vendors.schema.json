@@ -1,0 +1,318 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Vendor Configuration",
+    "description": "Configuration schema for vendor NPC definitions including inventory listings, price modifiers, restock rules, operating hours, and specialty categories. Supports modding scenarios such as wandering traders, specialty shops, black market dealers, or faction-exclusive vendors.",
+    "type": "object",
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "Reference to the JSON schema file for validation"
+        },
+        "version": {
+            "type": "string",
+            "description": "Optional version identifier for the configuration file"
+        },
+        "vendors": {
+            "type": "array",
+            "description": "List of vendor NPC definitions. Each vendor defines inventory, pricing, and availability.",
+            "items": {
+                "$ref": "#/definitions/VendorDefinition"
+            },
+            "minItems": 0
+        }
+    },
+    "required": [
+        "vendors"
+    ],
+    "additionalProperties": false,
+    "definitions": {
+        "VendorDefinition": {
+            "type": "object",
+            "description": "Complete definition for a vendor NPC with inventory, pricing, and availability.",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Unique identifier for the vendor (lowercase kebab-case). Example: blacksmith-ironforge.",
+                    "pattern": "^[a-z][a-z0-9-]*$",
+                    "minLength": 1
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Display name shown to the player. Example: Gromm Ironhand.",
+                    "minLength": 1
+                },
+                "title": {
+                    "type": "string",
+                    "description": "Optional honorific or profession title. Example: Master Blacksmith."
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Flavor text describing the vendor."
+                },
+                "specialty": {
+                    "type": "string",
+                    "description": "Vendor specialty category determining typical inventory focus.",
+                    "enum": [
+                        "General",
+                        "Blacksmith",
+                        "Armorer",
+                        "Alchemist",
+                        "Enchanter",
+                        "Jeweler",
+                        "Tailor",
+                        "Innkeeper",
+                        "Provisioner",
+                        "Exotic"
+                    ]
+                },
+                "inventory": {
+                    "type": "array",
+                    "description": "Array of items available for purchase.",
+                    "items": {
+                        "$ref": "#/definitions/InventoryItem"
+                    },
+                    "minItems": 0
+                },
+                "priceModifiers": {
+                    "$ref": "#/definitions/PriceModifiers",
+                    "description": "Price calculation modifiers for this vendor."
+                },
+                "restockRule": {
+                    "$ref": "#/definitions/RestockRule",
+                    "description": "Optional restock behavior configuration."
+                },
+                "acceptedCurrencies": {
+                    "type": "array",
+                    "description": "Currency IDs accepted by this vendor (references currency.json).",
+                    "items": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9-]*$"
+                    },
+                    "minItems": 1,
+                    "default": [
+                        "gold"
+                    ]
+                },
+                "reputationFactionId": {
+                    "type": "string",
+                    "description": "Faction ID for reputation-based pricing effects (for future use).",
+                    "pattern": "^[a-z][a-z0-9-]*$"
+                },
+                "dialogueStartId": {
+                    "type": "string",
+                    "description": "Dialogue node ID for conversation start (for future use).",
+                    "pattern": "^[a-z][a-z0-9-]*$"
+                },
+                "locationId": {
+                    "type": "string",
+                    "description": "Location ID where the vendor is found (for future use).",
+                    "pattern": "^[a-z][a-z0-9-]*$"
+                },
+                "operatingHours": {
+                    "$ref": "#/definitions/OperatingHours",
+                    "description": "Optional schedule for vendor availability. Null = always open."
+                },
+                "sortOrder": {
+                    "type": "integer",
+                    "description": "Display order in vendor lists (lower values first).",
+                    "minimum": 0,
+                    "default": 0
+                }
+            },
+            "required": [
+                "id",
+                "name",
+                "description",
+                "specialty",
+                "inventory",
+                "priceModifiers"
+            ],
+            "additionalProperties": false
+        },
+        "InventoryItem": {
+            "type": "object",
+            "description": "A single item in a vendor's inventory with stock and pricing configuration.",
+            "properties": {
+                "itemId": {
+                    "type": "string",
+                    "description": "Reference to item definition (references items.json).",
+                    "pattern": "^[a-z][a-z0-9-]*$",
+                    "minLength": 1
+                },
+                "itemType": {
+                    "type": "string",
+                    "description": "Type hint for item lookup. Item (default), Weapon, or Armor.",
+                    "enum": [
+                        "Item",
+                        "Weapon",
+                        "Armor"
+                    ],
+                    "default": "Item"
+                },
+                "stockQuantity": {
+                    "type": "integer",
+                    "description": "Available quantity. -1 = infinite stock, 0 = sold out, >0 = limited.",
+                    "minimum": -1
+                },
+                "priceOverride": {
+                    "type": "integer",
+                    "description": "Fixed price ignoring all calculations.",
+                    "minimum": 0
+                },
+                "buyPriceMultiplier": {
+                    "type": "number",
+                    "description": "Multiplier when player buys this item (overrides vendor base).",
+                    "minimum": 0.1
+                },
+                "sellPriceMultiplier": {
+                    "type": "number",
+                    "description": "Multiplier when player sells this item (overrides vendor base).",
+                    "minimum": 0.1
+                },
+                "requiredLevel": {
+                    "type": "integer",
+                    "description": "Minimum player level to purchase.",
+                    "minimum": 1
+                },
+                "requiredReputationLevel": {
+                    "type": "integer",
+                    "description": "Minimum reputation tier to purchase.",
+                    "minimum": 0
+                },
+                "isRare": {
+                    "type": "boolean",
+                    "description": "Whether item has limited availability. Rare items may not restock.",
+                    "default": false
+                }
+            },
+            "required": [
+                "itemId",
+                "stockQuantity"
+            ],
+            "additionalProperties": false
+        },
+        "PriceModifiers": {
+            "type": "object",
+            "description": "Price calculation configuration for a vendor.",
+            "properties": {
+                "baseBuyMultiplier": {
+                    "type": "number",
+                    "description": "Base markup when player buys from vendor. 1.0 = base price.",
+                    "minimum": 0.1,
+                    "default": 1.0
+                },
+                "baseSellMultiplier": {
+                    "type": "number",
+                    "description": "Base rate when player sells to vendor. 0.5 = half price.",
+                    "minimum": 0.1,
+                    "default": 0.5
+                },
+                "charismaEffect": {
+                    "type": "number",
+                    "description": "Discount per charisma point (e.g., 0.01 = 1% per CHA).",
+                    "minimum": 0,
+                    "default": 0
+                },
+                "persuasionEffect": {
+                    "type": "number",
+                    "description": "Discount per persuasion skill level.",
+                    "minimum": 0,
+                    "default": 0
+                },
+                "reputationEffect": {
+                    "type": "number",
+                    "description": "Discount per reputation level with faction.",
+                    "minimum": 0,
+                    "default": 0
+                },
+                "maxDiscount": {
+                    "type": "number",
+                    "description": "Maximum total discount allowed (0.0 to 0.9).",
+                    "minimum": 0,
+                    "maximum": 0.9,
+                    "default": 0.5
+                }
+            },
+            "additionalProperties": false
+        },
+        "RestockRule": {
+            "type": "object",
+            "description": "Configuration for vendor inventory restocking behavior.",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "description": "Type of restock trigger.",
+                    "enum": [
+                        "Timer",
+                        "OnRest",
+                        "OnLevelUp",
+                        "Manual",
+                        "Never"
+                    ]
+                },
+                "timerTurns": {
+                    "type": "integer",
+                    "description": "Number of turns until restock (required for Timer type).",
+                    "minimum": 1
+                },
+                "restockPercentage": {
+                    "type": "number",
+                    "description": "Fraction of depleted stock to restore (0.0 to 1.0).",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "default": 1.0
+                },
+                "restockRareItems": {
+                    "type": "boolean",
+                    "description": "Whether to restock items marked as rare.",
+                    "default": false
+                }
+            },
+            "required": [
+                "type"
+            ],
+            "additionalProperties": false
+        },
+        "OperatingHours": {
+            "type": "object",
+            "description": "Schedule configuration for vendor availability.",
+            "properties": {
+                "startHour": {
+                    "type": "integer",
+                    "description": "Hour when vendor opens (24-hour format, 0-23).",
+                    "minimum": 0,
+                    "maximum": 23
+                },
+                "endHour": {
+                    "type": "integer",
+                    "description": "Hour when vendor closes (24-hour format, 0-23). If < startHour, operates overnight.",
+                    "minimum": 0,
+                    "maximum": 23
+                },
+                "closedDays": {
+                    "type": "array",
+                    "description": "Days when vendor is closed.",
+                    "items": {
+                        "type": "string",
+                        "enum": [
+                            "Monday",
+                            "Tuesday",
+                            "Wednesday",
+                            "Thursday",
+                            "Friday",
+                            "Saturday",
+                            "Sunday"
+                        ]
+                    },
+                    "uniqueItems": true,
+                    "default": []
+                }
+            },
+            "required": [
+                "startHour",
+                "endHour"
+            ],
+            "additionalProperties": false
+        }
+    }
+}

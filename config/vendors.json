@@ -1,0 +1,325 @@
+{
+    "$schema": "./schemas/vendors.schema.json",
+    "version": "1.0",
+    "vendors": [
+        {
+            "id": "blacksmith-ironforge",
+            "name": "Gromm Ironhand",
+            "title": "Master Blacksmith",
+            "description": "A gruff but fair dwarf who has been forging weapons for over a century. His work is renowned throughout the realm.",
+            "specialty": "Blacksmith",
+            "inventory": [
+                {
+                    "itemId": "weapon-iron-sword",
+                    "itemType": "Weapon",
+                    "stockQuantity": 5,
+                    "isRare": false
+                },
+                {
+                    "itemId": "weapon-iron-axe",
+                    "itemType": "Weapon",
+                    "stockQuantity": 3,
+                    "isRare": false
+                },
+                {
+                    "itemId": "weapon-steel-sword",
+                    "itemType": "Weapon",
+                    "stockQuantity": 2,
+                    "requiredLevel": 5,
+                    "isRare": false
+                },
+                {
+                    "itemId": "weapon-legendary-blade",
+                    "itemType": "Weapon",
+                    "stockQuantity": 1,
+                    "requiredLevel": 15,
+                    "buyPriceMultiplier": 2.0,
+                    "isRare": true
+                },
+                {
+                    "itemId": "tool-smithing-hammer",
+                    "itemType": "Item",
+                    "stockQuantity": -1,
+                    "isRare": false
+                }
+            ],
+            "priceModifiers": {
+                "baseBuyMultiplier": 1.0,
+                "baseSellMultiplier": 0.5,
+                "charismaEffect": 0.01,
+                "persuasionEffect": 0.02,
+                "reputationEffect": 0.05,
+                "maxDiscount": 0.3
+            },
+            "restockRule": {
+                "type": "Timer",
+                "timerTurns": 50,
+                "restockPercentage": 1.0,
+                "restockRareItems": false
+            },
+            "acceptedCurrencies": [
+                "gold"
+            ],
+            "locationId": "town-ironforge-square",
+            "operatingHours": {
+                "startHour": 8,
+                "endHour": 18,
+                "closedDays": [
+                    "Sunday"
+                ]
+            },
+            "sortOrder": 0
+        },
+        {
+            "id": "alchemist-master",
+            "name": "Elara Moonwhisper",
+            "title": "Master Alchemist",
+            "description": "An enigmatic elf who brews potions of extraordinary potency. Her shop smells of exotic herbs and bubbling concoctions.",
+            "specialty": "Alchemist",
+            "inventory": [
+                {
+                    "itemId": "potion-health-basic",
+                    "itemType": "Item",
+                    "stockQuantity": -1,
+                    "isRare": false
+                },
+                {
+                    "itemId": "potion-health-greater",
+                    "itemType": "Item",
+                    "stockQuantity": 5,
+                    "requiredLevel": 5,
+                    "isRare": false
+                },
+                {
+                    "itemId": "potion-mana-basic",
+                    "itemType": "Item",
+                    "stockQuantity": -1,
+                    "isRare": false
+                },
+                {
+                    "itemId": "potion-invisibility",
+                    "itemType": "Item",
+                    "stockQuantity": 2,
+                    "requiredLevel": 10,
+                    "buyPriceMultiplier": 1.5,
+                    "isRare": true
+                },
+                {
+                    "itemId": "ingredient-moonpetal",
+                    "itemType": "Item",
+                    "stockQuantity": 10,
+                    "isRare": false
+                },
+                {
+                    "itemId": "ingredient-dragon-scale",
+                    "itemType": "Item",
+                    "stockQuantity": 1,
+                    "requiredReputationLevel": 2,
+                    "isRare": true
+                }
+            ],
+            "priceModifiers": {
+                "baseBuyMultiplier": 1.1,
+                "baseSellMultiplier": 0.4,
+                "charismaEffect": 0.01,
+                "persuasionEffect": 0.01,
+                "reputationEffect": 0.03,
+                "maxDiscount": 0.25
+            },
+            "restockRule": {
+                "type": "OnRest",
+                "restockPercentage": 0.75,
+                "restockRareItems": false
+            },
+            "acceptedCurrencies": [
+                "gold",
+                "guild-tokens"
+            ],
+            "reputationFactionId": "faction-mages-guild",
+            "locationId": "town-magic-quarter",
+            "operatingHours": {
+                "startHour": 10,
+                "endHour": 20,
+                "closedDays": []
+            },
+            "sortOrder": 1
+        },
+        {
+            "id": "innkeeper-golden-griffin",
+            "name": "Barlow Hearthstone",
+            "title": "Innkeeper",
+            "description": "A jovial halfling who runs the Golden Griffin Inn. His ale is as legendary as his hospitality.",
+            "specialty": "Innkeeper",
+            "inventory": [
+                {
+                    "itemId": "food-bread-fresh",
+                    "itemType": "Item",
+                    "stockQuantity": -1,
+                    "isRare": false
+                },
+                {
+                    "itemId": "food-cheese-wheel",
+                    "itemType": "Item",
+                    "stockQuantity": -1,
+                    "isRare": false
+                },
+                {
+                    "itemId": "drink-ale-common",
+                    "itemType": "Item",
+                    "stockQuantity": -1,
+                    "isRare": false
+                },
+                {
+                    "itemId": "drink-wine-fine",
+                    "itemType": "Item",
+                    "stockQuantity": 5,
+                    "buyPriceMultiplier": 1.2,
+                    "isRare": false
+                },
+                {
+                    "itemId": "meal-hearty-stew",
+                    "itemType": "Item",
+                    "stockQuantity": -1,
+                    "isRare": false
+                }
+            ],
+            "priceModifiers": {
+                "baseBuyMultiplier": 0.8,
+                "baseSellMultiplier": 0.3,
+                "charismaEffect": 0.02,
+                "persuasionEffect": 0.01,
+                "maxDiscount": 0.2
+            },
+            "acceptedCurrencies": [
+                "gold",
+                "copper"
+            ],
+            "locationId": "town-market-district",
+            "dialogueStartId": "dialogue-innkeeper-greeting",
+            "sortOrder": 2
+        },
+        {
+            "id": "exotic-trader-wandering",
+            "name": "Zephyr the Mysterious",
+            "title": "Exotic Trader",
+            "description": "A cloaked figure who appears only during certain moon phases, offering rare and unusual wares from distant lands.",
+            "specialty": "Exotic",
+            "inventory": [
+                {
+                    "itemId": "artifact-mysterious-orb",
+                    "itemType": "Item",
+                    "stockQuantity": 1,
+                    "priceOverride": 5000,
+                    "isRare": true
+                },
+                {
+                    "itemId": "map-treasure-ancient",
+                    "itemType": "Item",
+                    "stockQuantity": 1,
+                    "priceOverride": 1000,
+                    "requiredLevel": 10,
+                    "isRare": true
+                },
+                {
+                    "itemId": "gem-starshard",
+                    "itemType": "Item",
+                    "stockQuantity": 3,
+                    "buyPriceMultiplier": 2.5,
+                    "isRare": true
+                }
+            ],
+            "priceModifiers": {
+                "baseBuyMultiplier": 1.5,
+                "baseSellMultiplier": 0.7,
+                "charismaEffect": 0.005,
+                "persuasionEffect": 0.01,
+                "maxDiscount": 0.15
+            },
+            "restockRule": {
+                "type": "Never"
+            },
+            "acceptedCurrencies": [
+                "gold",
+                "soul-gems"
+            ],
+            "operatingHours": {
+                "startHour": 22,
+                "endHour": 4,
+                "closedDays": []
+            },
+            "sortOrder": 99
+        },
+        {
+            "id": "general-store-village",
+            "name": "Martha Goodweather",
+            "description": "A friendly shopkeeper who stocks a bit of everything. If she doesn't have it, she can probably order it.",
+            "specialty": "General",
+            "inventory": [
+                {
+                    "itemId": "torch-basic",
+                    "itemType": "Item",
+                    "stockQuantity": -1,
+                    "isRare": false
+                },
+                {
+                    "itemId": "rope-hemp-50ft",
+                    "itemType": "Item",
+                    "stockQuantity": -1,
+                    "isRare": false
+                },
+                {
+                    "itemId": "rations-travel",
+                    "itemType": "Item",
+                    "stockQuantity": -1,
+                    "isRare": false
+                },
+                {
+                    "itemId": "backpack-adventurer",
+                    "itemType": "Item",
+                    "stockQuantity": 3,
+                    "isRare": false
+                },
+                {
+                    "itemId": "lantern-hooded",
+                    "itemType": "Item",
+                    "stockQuantity": 5,
+                    "isRare": false
+                },
+                {
+                    "itemId": "tinderbox",
+                    "itemType": "Item",
+                    "stockQuantity": -1,
+                    "isRare": false
+                }
+            ],
+            "priceModifiers": {
+                "baseBuyMultiplier": 1.0,
+                "baseSellMultiplier": 0.5,
+                "charismaEffect": 0.015,
+                "persuasionEffect": 0.015,
+                "maxDiscount": 0.25
+            },
+            "restockRule": {
+                "type": "Timer",
+                "timerTurns": 30,
+                "restockPercentage": 1.0,
+                "restockRareItems": false
+            },
+            "acceptedCurrencies": [
+                "gold",
+                "copper",
+                "silver"
+            ],
+            "locationId": "village-main-street",
+            "operatingHours": {
+                "startHour": 7,
+                "endHour": 19,
+                "closedDays": [
+                    "Saturday",
+                    "Sunday"
+                ]
+            },
+            "sortOrder": 0
+        }
+    ]
+}
