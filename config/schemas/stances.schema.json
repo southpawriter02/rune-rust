@@ -1,128 +1,497 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "$id": "stances.schema.json",
-    "title": "Combat Stances Configuration",
-    "description": "Configuration for combat stances (Balanced, Aggressive, Defensive) in tactical combat. Stances provide stat modifiers that affect attack, defense, damage, and saving throws.",
+    "$id": "https://rune-game.com/schemas/stances.schema.json",
+    "title": "Combat Stance Configuration Schema",
+    "description": "Defines combat stance configurations for Aethelgard including stat modifiers, ability restrictions, switching rules, and AI behavior patterns.",
     "type": "object",
+    "required": [
+        "version",
+        "stances",
+        "defaultStance"
+    ],
+    "additionalProperties": false,
     "properties": {
         "$schema": {
             "type": "string",
-            "description": "Reference to this schema file"
+            "description": "JSON Schema reference for IDE validation support."
+        },
+        "version": {
+            "type": "string",
+            "pattern": "^\\d+\\.\\d+\\.\\d+$",
+            "description": "Schema version in semver format. Used for migration tracking.",
+            "examples": [
+                "1.0.0",
+                "1.1.0"
+            ]
+        },
+        "defaultStance": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]*$",
+            "description": "ID of the default starting stance that all entities begin combat with."
         },
         "stances": {
             "type": "array",
-            "description": "List of combat stance definitions",
+            "description": "Combat stance definitions with modifiers, restrictions, and AI behavior.",
+            "minItems": 1,
             "items": {
-                "$ref": "#/definitions/stance"
-            },
-            "minItems": 1
+                "$ref": "#/definitions/CombatStance"
+            }
         },
-        "settings": {
-            "$ref": "#/definitions/stanceSettings"
+        "globalSwitchingRules": {
+            "$ref": "#/definitions/SwitchingRule",
+            "description": "Default switching rules applied to all stances unless overridden."
         }
     },
-    "required": [
-        "stances"
-    ],
     "definitions": {
-        "stance": {
+        "ModifiableStat": {
+            "type": "string",
+            "description": "Combat statistics that can be modified by stances.",
+            "enum": [
+                "attack",
+                "defense",
+                "speed",
+                "accuracy",
+                "evasion",
+                "criticalChance",
+                "criticalDamage",
+                "damageReduction"
+            ]
+        },
+        "ModifierType": {
+            "type": "string",
+            "description": "How the stat modifier is applied to the base value.",
+            "enum": [
+                "flat",
+                "percentage"
+            ]
+        },
+        "ActionCost": {
+            "type": "string",
+            "description": "Action economy cost for switching stances.",
+            "enum": [
+                "Free",
+                "Swift",
+                "Standard",
+                "Full"
+            ]
+        },
+        "RestrictionType": {
+            "type": "string",
+            "description": "Type of ability restriction applied by the stance.",
+            "enum": [
+                "Category",
+                "Specific",
+                "Tag"
+            ]
+        },
+        "SwitchConditionType": {
+            "type": "string",
+            "description": "Condition types for stance switching requirements.",
+            "enum": [
+                "HealthAbove",
+                "HealthBelow",
+                "HasStatus",
+                "NotHasStatus",
+                "InCombat",
+                "OutOfCombat",
+                "TurnNumber"
+            ]
+        },
+        "TriggerEffectType": {
+            "type": "string",
+            "description": "Effect types triggered when switching to a stance.",
+            "enum": [
+                "Heal",
+                "Damage",
+                "ApplyStatus",
+                "RemoveStatus",
+                "Buff",
+                "Debuff"
+            ]
+        },
+        "EffectTarget": {
+            "type": "string",
+            "description": "Valid targets for trigger effects.",
+            "enum": [
+                "Self",
+                "NearbyAllies",
+                "NearbyEnemies"
+            ]
+        },
+        "AIConditionType": {
+            "type": "string",
+            "description": "Condition types for AI stance evaluation.",
+            "enum": [
+                "HealthBelow",
+                "HealthAbove",
+                "EnemyCount",
+                "AllyCount",
+                "StatusActive",
+                "TargetWeak",
+                "OutNumbered"
+            ]
+        },
+        "UnlockConditionType": {
+            "type": "string",
+            "description": "Condition types for unlocking stances.",
+            "enum": [
+                "Level",
+                "Quest",
+                "Skill",
+                "Item",
+                "Achievement"
+            ]
+        },
+        "CombatStance": {
             "type": "object",
-            "description": "A combat stance definition with associated stat modifiers",
-            "properties": {
-                "id": {
-                    "type": "string",
-                    "description": "Unique identifier (lowercase, must match CombatStance enum value)",
-                    "pattern": "^[a-z][a-z0-9]*$",
-                    "examples": ["balanced", "aggressive", "defensive"]
-                },
-                "name": {
-                    "type": "string",
-                    "description": "Display name of the stance",
-                    "minLength": 1,
-                    "maxLength": 50,
-                    "examples": ["Balanced Stance", "Aggressive Stance", "Defensive Stance"]
-                },
-                "description": {
-                    "type": "string",
-                    "description": "Detailed description of the stance and its effects",
-                    "minLength": 1,
-                    "maxLength": 500
-                },
-                "attackBonus": {
-                    "type": "integer",
-                    "description": "Modifier applied to attack rolls (positive = bonus, negative = penalty)",
-                    "minimum": -10,
-                    "maximum": 10,
-                    "default": 0,
-                    "examples": [0, 2, -2]
-                },
-                "damageBonus": {
-                    "type": ["string", "null"],
-                    "description": "Dice notation for bonus damage (e.g., '1d4', '-1d4'). Null means no damage modifier.",
-                    "pattern": "^-?\\d+d\\d+([+-]\\d+)?$|^null$",
-                    "examples": ["1d4", "-1d4", "2d6+1", null]
-                },
-                "defenseBonus": {
-                    "type": "integer",
-                    "description": "Modifier applied to defense/AC (positive = bonus, negative = penalty)",
-                    "minimum": -10,
-                    "maximum": 10,
-                    "default": 0,
-                    "examples": [0, 2, -2]
-                },
-                "saveBonus": {
-                    "type": "integer",
-                    "description": "Modifier applied to all saving throws (fortitude, reflex, will)",
-                    "minimum": -10,
-                    "maximum": 10,
-                    "default": 0,
-                    "examples": [0, 2, -1]
-                },
-                "isDefault": {
-                    "type": "boolean",
-                    "description": "Whether this stance is the default for new combatants. Only one stance should have isDefault: true.",
-                    "default": false
-                },
-                "icon": {
-                    "type": ["string", "null"],
-                    "description": "Path to the stance icon for UI display",
-                    "examples": ["icons/stances/balanced.png", "icons/stances/aggressive.png"]
-                }
-            },
+            "description": "A combat stance configuration with stat modifiers, ability access, and switching rules.",
             "required": [
                 "id",
                 "name",
-                "description",
-                "attackBonus",
-                "defenseBonus",
-                "saveBonus"
+                "description"
             ],
-            "additionalProperties": false
-        },
-        "stanceSettings": {
-            "type": "object",
-            "description": "Global settings for the stance system",
+            "additionalProperties": false,
             "properties": {
-                "stanceChangeLimit": {
+                "id": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9-]*$",
+                    "description": "Unique stance identifier using lowercase kebab-case.",
+                    "examples": [
+                        "balanced",
+                        "aggressive",
+                        "defensive"
+                    ]
+                },
+                "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 30,
+                    "description": "Display name for the stance in UI."
+                },
+                "description": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200,
+                    "description": "Stance explanation for tooltips and help."
+                },
+                "iconId": {
+                    "type": "string",
+                    "description": "Icon asset reference for UI display."
+                },
+                "color": {
+                    "type": "string",
+                    "pattern": "^#[0-9A-Fa-f]{6}$",
+                    "description": "UI highlight color in hexadecimal format."
+                },
+                "statModifiers": {
+                    "type": "array",
+                    "description": "Stat bonuses and penalties applied while in this stance.",
+                    "items": {
+                        "$ref": "#/definitions/StatModifier"
+                    }
+                },
+                "abilityRestrictions": {
+                    "type": "array",
+                    "description": "Abilities disabled while in this stance.",
+                    "items": {
+                        "$ref": "#/definitions/AbilityRestriction"
+                    }
+                },
+                "abilityGrants": {
+                    "type": "array",
+                    "description": "Ability IDs enabled by this stance (stance-exclusive abilities).",
+                    "items": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9-]*$"
+                    }
+                },
+                "switchingRule": {
+                    "$ref": "#/definitions/SwitchingRule",
+                    "description": "Stance-specific switching configuration overriding global rules."
+                },
+                "incompatibleStances": {
+                    "type": "array",
+                    "description": "Stance IDs that cannot be active simultaneously (mutual exclusions).",
+                    "items": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9-]*$"
+                    }
+                },
+                "aiBehavior": {
+                    "$ref": "#/definitions/AIBehavior",
+                    "description": "AI decision-making configuration for stance selection."
+                },
+                "visualEffectId": {
+                    "type": "string",
+                    "description": "Visual effect played when entering this stance."
+                },
+                "soundEffectId": {
+                    "type": "string",
+                    "description": "Sound effect played when entering this stance."
+                },
+                "isDefault": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "If true, this stance is available as a starting option."
+                },
+                "requiresUnlock": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "If true, stance must be unlocked before use."
+                },
+                "unlockCondition": {
+                    "$ref": "#/definitions/UnlockCondition",
+                    "description": "Condition for unlocking this stance."
+                },
+                "tags": {
+                    "type": "array",
+                    "description": "Searchable tags for stance classification.",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "sortOrder": {
                     "type": "integer",
-                    "description": "Maximum number of stance changes allowed per round",
-                    "minimum": 1,
-                    "maximum": 5,
-                    "default": 1
-                },
-                "stanceChangeResetTrigger": {
-                    "type": "string",
-                    "description": "When stance change availability resets",
-                    "enum": ["roundStart", "turnStart"],
-                    "default": "roundStart"
-                },
-                "defaultStanceId": {
-                    "type": "string",
-                    "description": "The stance ID to use if no stance is marked as default",
-                    "default": "balanced"
+                    "default": 0,
+                    "description": "Display order in UI stance selector."
                 }
-            },
-            "additionalProperties": false
+            }
+        },
+        "StatModifier": {
+            "type": "object",
+            "description": "A stat modification applied by a stance. Can be flat or percentage-based.",
+            "required": [
+                "stat",
+                "value",
+                "type"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "stat": {
+                    "$ref": "#/definitions/ModifiableStat",
+                    "description": "The combat stat to modify."
+                },
+                "value": {
+                    "type": "number",
+                    "description": "Modifier value. Positive for bonuses, negative for penalties."
+                },
+                "type": {
+                    "$ref": "#/definitions/ModifierType",
+                    "description": "How the modifier is applied (flat added, or percentage multiplier)."
+                },
+                "description": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "description": "Optional tooltip description for UI display."
+                }
+            }
+        },
+        "AbilityRestriction": {
+            "type": "object",
+            "description": "A restriction on ability use while in a stance.",
+            "required": [
+                "type",
+                "target"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "type": {
+                    "$ref": "#/definitions/RestrictionType",
+                    "description": "Type of restriction (category, specific ability, or tag)."
+                },
+                "target": {
+                    "type": "string",
+                    "description": "Ability category name, ability ID, or ability tag to restrict."
+                },
+                "description": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "description": "Reason for restriction shown to player."
+                }
+            }
+        },
+        "SwitchingRule": {
+            "type": "object",
+            "description": "Configuration for switching to a stance including costs and conditions.",
+            "required": [
+                "actionCost"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "actionCost": {
+                    "$ref": "#/definitions/ActionCost",
+                    "description": "Action economy cost for switching (Free, Swift, Standard, Full)."
+                },
+                "cooldown": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "default": 0,
+                    "description": "Number of turns before can switch stances again."
+                },
+                "conditions": {
+                    "type": "array",
+                    "description": "Conditions that must be met to switch to this stance.",
+                    "items": {
+                        "$ref": "#/definitions/SwitchCondition"
+                    }
+                },
+                "canSwitchDuringEnemyTurn": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "If true, can switch as a reaction during enemy turn."
+                },
+                "triggerEffects": {
+                    "type": "array",
+                    "description": "Effects triggered when switching to this stance.",
+                    "items": {
+                        "$ref": "#/definitions/TriggerEffect"
+                    }
+                }
+            }
+        },
+        "SwitchCondition": {
+            "type": "object",
+            "description": "A condition that must be met to switch to a stance.",
+            "required": [
+                "type"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "type": {
+                    "$ref": "#/definitions/SwitchConditionType",
+                    "description": "Type of condition to evaluate."
+                },
+                "value": {
+                    "type": [
+                        "number",
+                        "string"
+                    ],
+                    "description": "Condition parameter (percentage threshold, status ID, turn number, etc.)."
+                }
+            }
+        },
+        "TriggerEffect": {
+            "type": "object",
+            "description": "An effect triggered when switching to a stance.",
+            "required": [
+                "type"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "type": {
+                    "$ref": "#/definitions/TriggerEffectType",
+                    "description": "Type of effect to trigger."
+                },
+                "target": {
+                    "$ref": "#/definitions/EffectTarget",
+                    "default": "Self",
+                    "description": "Who is affected by the effect."
+                },
+                "value": {
+                    "type": [
+                        "number",
+                        "string"
+                    ],
+                    "description": "Effect value (amount, status ID, buff ID, etc.)."
+                },
+                "duration": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "Duration in turns for buffs/debuffs/statuses."
+                }
+            }
+        },
+        "AIBehavior": {
+            "type": "object",
+            "description": "AI decision-making configuration for when to use this stance.",
+            "required": [
+                "priority",
+                "useWhen"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "priority": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 100,
+                    "description": "Preference priority when multiple stances are viable (higher = more preferred)."
+                },
+                "useWhen": {
+                    "type": "array",
+                    "description": "Conditions that trigger AI to switch to this stance.",
+                    "minItems": 1,
+                    "items": {
+                        "$ref": "#/definitions/AICondition"
+                    }
+                },
+                "avoidWhen": {
+                    "type": "array",
+                    "description": "Conditions that prevent AI from using this stance.",
+                    "items": {
+                        "$ref": "#/definitions/AICondition"
+                    }
+                },
+                "stickiness": {
+                    "type": "number",
+                    "minimum": 0.0,
+                    "maximum": 1.0,
+                    "default": 0.5,
+                    "description": "Likelihood to stay in stance (0.0 = always change, 1.0 = never change)."
+                }
+            }
+        },
+        "AICondition": {
+            "type": "object",
+            "description": "A condition for AI stance evaluation.",
+            "required": [
+                "type"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "type": {
+                    "$ref": "#/definitions/AIConditionType",
+                    "description": "Type of AI condition to evaluate."
+                },
+                "value": {
+                    "type": [
+                        "number",
+                        "string"
+                    ],
+                    "description": "Condition parameter (health percentage, count, status ID, damage type)."
+                },
+                "weight": {
+                    "type": "number",
+                    "minimum": 0.0,
+                    "maximum": 10.0,
+                    "default": 1.0,
+                    "description": "Importance weight for this condition in AI decision-making."
+                }
+            }
+        },
+        "UnlockCondition": {
+            "type": "object",
+            "description": "Condition for unlocking a stance.",
+            "required": [
+                "type"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "type": {
+                    "$ref": "#/definitions/UnlockConditionType",
+                    "description": "Type of unlock requirement."
+                },
+                "value": {
+                    "type": [
+                        "number",
+                        "string"
+                    ],
+                    "description": "Required value (level number, quest ID, skill name, item ID, achievement ID)."
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Human-readable unlock requirement for UI display."
+                }
+            }
         }
     }
 }

@@ -1,43 +1,423 @@
 {
     "$schema": "./schemas/stances.schema.json",
+    "version": "1.0.0",
+    "defaultStance": "balanced",
+    "globalSwitchingRules": {
+        "actionCost": "Swift",
+        "cooldown": 1
+    },
     "stances": [
         {
             "id": "balanced",
-            "name": "Balanced Stance",
-            "description": "A neutral combat stance with no modifiers. Suitable for most situations where neither offense nor defense needs emphasis.",
-            "attackBonus": 0,
-            "damageBonus": null,
-            "defenseBonus": 0,
-            "saveBonus": 0,
+            "name": "Balanced",
+            "description": "A neutral combat stance with no bonuses or penalties. Provides flexibility in any situation.",
+            "iconId": "icon-stance-balanced",
+            "color": "#AAAAAA",
             "isDefault": true,
-            "icon": "icons/stances/balanced.png"
+            "switchingRule": {
+                "actionCost": "Free",
+                "cooldown": 0
+            },
+            "aiBehavior": {
+                "priority": 1,
+                "useWhen": [
+                    {
+                        "type": "HealthAbove",
+                        "value": 30
+                    },
+                    {
+                        "type": "HealthBelow",
+                        "value": 80
+                    }
+                ],
+                "stickiness": 0.3
+            },
+            "tags": [
+                "default",
+                "neutral",
+                "flexible"
+            ],
+            "sortOrder": 1
         },
         {
             "id": "aggressive",
-            "name": "Aggressive Stance",
-            "description": "An offensive stance that sacrifices defense for increased attack power. Grants +2 to attack rolls and +1d4 bonus damage, but suffers -2 defense and -1 to all saving throws.",
-            "attackBonus": 2,
-            "damageBonus": "1d4",
-            "defenseBonus": -2,
-            "saveBonus": -1,
-            "isDefault": false,
-            "icon": "icons/stances/aggressive.png"
+            "name": "Aggressive",
+            "description": "An offensive stance that increases damage output at the cost of defense. Best when you need to end fights quickly.",
+            "iconId": "icon-stance-aggressive",
+            "color": "#CC3333",
+            "statModifiers": [
+                {
+                    "stat": "attack",
+                    "value": 20,
+                    "type": "percentage",
+                    "description": "+20% damage"
+                },
+                {
+                    "stat": "defense",
+                    "value": -20,
+                    "type": "percentage",
+                    "description": "-20% defense"
+                }
+            ],
+            "abilityGrants": [
+                "power-attack",
+                "reckless-strike"
+            ],
+            "abilityRestrictions": [
+                {
+                    "type": "Category",
+                    "target": "defensive",
+                    "description": "Cannot use defensive abilities"
+                }
+            ],
+            "incompatibleStances": [
+                "defensive"
+            ],
+            "switchingRule": {
+                "actionCost": "Swift",
+                "cooldown": 1,
+                "conditions": [
+                    {
+                        "type": "NotHasStatus",
+                        "value": "stunned"
+                    }
+                ]
+            },
+            "aiBehavior": {
+                "priority": 3,
+                "useWhen": [
+                    {
+                        "type": "HealthAbove",
+                        "value": 60
+                    },
+                    {
+                        "type": "EnemyCount",
+                        "value": 1
+                    }
+                ],
+                "avoidWhen": [
+                    {
+                        "type": "HealthBelow",
+                        "value": 30
+                    }
+                ],
+                "stickiness": 0.6
+            },
+            "visualEffectId": "vfx-stance-aggressive",
+            "soundEffectId": "sfx-stance-aggressive",
+            "tags": [
+                "offensive",
+                "damage",
+                "risky"
+            ],
+            "sortOrder": 2
         },
         {
             "id": "defensive",
-            "name": "Defensive Stance",
-            "description": "A protective stance that sacrifices offense for increased survivability. Grants +2 defense and +2 to all saving throws, but suffers -2 to attack rolls and -1d4 damage penalty.",
-            "attackBonus": -2,
-            "damageBonus": "-1d4",
-            "defenseBonus": 2,
-            "saveBonus": 2,
-            "isDefault": false,
-            "icon": "icons/stances/defensive.png"
+            "name": "Defensive",
+            "description": "A protective stance that sacrifices offense for increased survivability. Ideal when facing multiple enemies or low on health.",
+            "iconId": "icon-stance-defensive",
+            "color": "#3366CC",
+            "statModifiers": [
+                {
+                    "stat": "defense",
+                    "value": 25,
+                    "type": "percentage",
+                    "description": "+25% defense"
+                },
+                {
+                    "stat": "attack",
+                    "value": -15,
+                    "type": "percentage",
+                    "description": "-15% damage"
+                },
+                {
+                    "stat": "damageReduction",
+                    "value": 3,
+                    "type": "flat",
+                    "description": "+3 damage reduction"
+                }
+            ],
+            "abilityGrants": [
+                "shield-wall",
+                "parry"
+            ],
+            "abilityRestrictions": [
+                {
+                    "type": "Tag",
+                    "target": "heavy",
+                    "description": "Heavy attacks too slow in defensive stance"
+                }
+            ],
+            "incompatibleStances": [
+                "aggressive",
+                "reckless"
+            ],
+            "switchingRule": {
+                "actionCost": "Swift",
+                "cooldown": 1,
+                "canSwitchDuringEnemyTurn": true
+            },
+            "aiBehavior": {
+                "priority": 4,
+                "useWhen": [
+                    {
+                        "type": "HealthBelow",
+                        "value": 40
+                    },
+                    {
+                        "type": "OutNumbered"
+                    }
+                ],
+                "stickiness": 0.7
+            },
+            "visualEffectId": "vfx-stance-defensive",
+            "soundEffectId": "sfx-stance-defensive",
+            "tags": [
+                "defensive",
+                "survival",
+                "tank"
+            ],
+            "sortOrder": 3
+        },
+        {
+            "id": "evasive",
+            "name": "Evasive",
+            "description": "A mobile stance focused on dodging attacks rather than blocking. Excellent against slow, powerful enemies.",
+            "iconId": "icon-stance-evasive",
+            "color": "#33CC66",
+            "statModifiers": [
+                {
+                    "stat": "evasion",
+                    "value": 30,
+                    "type": "percentage",
+                    "description": "+30% evasion"
+                },
+                {
+                    "stat": "speed",
+                    "value": 15,
+                    "type": "percentage",
+                    "description": "+15% speed"
+                },
+                {
+                    "stat": "defense",
+                    "value": -10,
+                    "type": "percentage",
+                    "description": "-10% defense when hit"
+                }
+            ],
+            "abilityGrants": [
+                "dodge-roll",
+                "quick-step"
+            ],
+            "abilityRestrictions": [
+                {
+                    "type": "Tag",
+                    "target": "heavy",
+                    "description": "Heavy attacks unavailable while evasive"
+                }
+            ],
+            "switchingRule": {
+                "actionCost": "Swift",
+                "cooldown": 1
+            },
+            "aiBehavior": {
+                "priority": 2,
+                "useWhen": [
+                    {
+                        "type": "EnemyCount",
+                        "value": 3
+                    },
+                    {
+                        "type": "HealthAbove",
+                        "value": 50
+                    }
+                ],
+                "stickiness": 0.4
+            },
+            "visualEffectId": "vfx-stance-evasive",
+            "soundEffectId": "sfx-stance-evasive",
+            "tags": [
+                "agility",
+                "dodge",
+                "mobile"
+            ],
+            "sortOrder": 4
+        },
+        {
+            "id": "focused",
+            "name": "Focused",
+            "description": "A precision stance that enhances accuracy and critical strikes. Perfect for landing decisive blows.",
+            "iconId": "icon-stance-focused",
+            "color": "#CCAA33",
+            "statModifiers": [
+                {
+                    "stat": "accuracy",
+                    "value": 20,
+                    "type": "percentage",
+                    "description": "+20% accuracy"
+                },
+                {
+                    "stat": "criticalChance",
+                    "value": 15,
+                    "type": "percentage",
+                    "description": "+15% critical chance"
+                },
+                {
+                    "stat": "criticalDamage",
+                    "value": 25,
+                    "type": "percentage",
+                    "description": "+25% critical damage"
+                },
+                {
+                    "stat": "speed",
+                    "value": -10,
+                    "type": "percentage",
+                    "description": "-10% speed (careful aim)"
+                }
+            ],
+            "abilityGrants": [
+                "precise-strike",
+                "aim"
+            ],
+            "switchingRule": {
+                "actionCost": "Swift",
+                "cooldown": 2
+            },
+            "aiBehavior": {
+                "priority": 2,
+                "useWhen": [
+                    {
+                        "type": "TargetWeak",
+                        "value": "physical"
+                    },
+                    {
+                        "type": "EnemyCount",
+                        "value": 1
+                    }
+                ],
+                "stickiness": 0.5
+            },
+            "visualEffectId": "vfx-stance-focused",
+            "soundEffectId": "sfx-stance-focused",
+            "tags": [
+                "precision",
+                "critical",
+                "accuracy"
+            ],
+            "sortOrder": 5
+        },
+        {
+            "id": "reckless",
+            "name": "Reckless",
+            "description": "An all-out offensive stance with massive damage potential but extreme vulnerability. High risk, high reward.",
+            "iconId": "icon-stance-reckless",
+            "color": "#FF3300",
+            "statModifiers": [
+                {
+                    "stat": "attack",
+                    "value": 40,
+                    "type": "percentage",
+                    "description": "+40% damage"
+                },
+                {
+                    "stat": "criticalChance",
+                    "value": 20,
+                    "type": "percentage",
+                    "description": "+20% critical chance"
+                },
+                {
+                    "stat": "defense",
+                    "value": -35,
+                    "type": "percentage",
+                    "description": "-35% defense"
+                },
+                {
+                    "stat": "evasion",
+                    "value": -25,
+                    "type": "percentage",
+                    "description": "-25% evasion"
+                }
+            ],
+            "abilityGrants": [
+                "berserk-strike",
+                "fury-blow"
+            ],
+            "abilityRestrictions": [
+                {
+                    "type": "Category",
+                    "target": "defensive",
+                    "description": "All defensive abilities disabled"
+                },
+                {
+                    "type": "Category",
+                    "target": "healing",
+                    "description": "Cannot use healing abilities"
+                }
+            ],
+            "incompatibleStances": [
+                "defensive",
+                "balanced"
+            ],
+            "switchingRule": {
+                "actionCost": "Standard",
+                "cooldown": 2,
+                "conditions": [
+                    {
+                        "type": "HealthAbove",
+                        "value": 50
+                    },
+                    {
+                        "type": "NotHasStatus",
+                        "value": "weakened"
+                    }
+                ],
+                "triggerEffects": [
+                    {
+                        "type": "ApplyStatus",
+                        "target": "Self",
+                        "value": "adrenaline",
+                        "duration": 2
+                    }
+                ]
+            },
+            "aiBehavior": {
+                "priority": 4,
+                "useWhen": [
+                    {
+                        "type": "HealthAbove",
+                        "value": 80
+                    },
+                    {
+                        "type": "AllyCount",
+                        "value": 2
+                    }
+                ],
+                "avoidWhen": [
+                    {
+                        "type": "HealthBelow",
+                        "value": 40
+                    },
+                    {
+                        "type": "OutNumbered"
+                    }
+                ],
+                "stickiness": 0.3
+            },
+            "requiresUnlock": true,
+            "unlockCondition": {
+                "type": "Level",
+                "value": 10,
+                "description": "Reach level 10"
+            },
+            "visualEffectId": "vfx-stance-reckless",
+            "soundEffectId": "sfx-stance-reckless",
+            "tags": [
+                "berserker",
+                "extreme",
+                "glass-cannon"
+            ],
+            "sortOrder": 6
         }
-    ],
-    "settings": {
-        "stanceChangeLimit": 1,
-        "stanceChangeResetTrigger": "roundStart",
-        "defaultStanceId": "balanced"
-    }
+    ]
 }
