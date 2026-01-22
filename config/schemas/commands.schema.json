@@ -1,0 +1,365 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://rune-game.com/schemas/commands.schema.json",
+    "title": "Command Configuration Schema",
+    "description": "Defines text-based interface commands, arguments, context restrictions, and help text for Aethelgard. Supports 10 argument types, 8 command categories, 9 context restrictions, global aliases, and comprehensive help documentation with examples.",
+    "type": "object",
+    "required": [
+        "version",
+        "commands"
+    ],
+    "additionalProperties": false,
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "JSON Schema reference for IDE validation support."
+        },
+        "version": {
+            "type": "string",
+            "pattern": "^\\d+\\.\\d+\\.\\d+$",
+            "description": "Schema version in semver format. Used for migration tracking.",
+            "examples": [
+                "1.0.0",
+                "1.1.0"
+            ]
+        },
+        "globalAliases": {
+            "type": "object",
+            "description": "Global shorthand mappings from single characters to command names. These provide quick access to common commands (e.g., 'n' → 'north', 'i' → 'inventory').",
+            "additionalProperties": {
+                "type": "string"
+            },
+            "examples": [
+                {
+                    "l": "look",
+                    "x": "examine",
+                    "n": "north"
+                }
+            ]
+        },
+        "ignoredWords": {
+            "type": "array",
+            "description": "Filler words to ignore during parsing (articles, prepositions). These are stripped from input before argument matching.",
+            "items": {
+                "type": "string"
+            },
+            "examples": [
+                [
+                    "the",
+                    "a",
+                    "an",
+                    "to",
+                    "at",
+                    "with"
+                ]
+            ]
+        },
+        "categories": {
+            "type": "array",
+            "description": "Command category definitions with metadata for organization and help display.",
+            "items": {
+                "$ref": "#/definitions/CommandCategoryDefinition"
+            }
+        },
+        "commands": {
+            "type": "array",
+            "description": "Command definitions. Each command specifies syntax, arguments, context restrictions, and help text.",
+            "minItems": 1,
+            "items": {
+                "$ref": "#/definitions/Command"
+            }
+        }
+    },
+    "definitions": {
+        "CommandCategory": {
+            "type": "string",
+            "description": "Logical category for command organization. Used for grouping in help listings.",
+            "enum": [
+                "Movement",
+                "Combat",
+                "Interaction",
+                "Inventory",
+                "Information",
+                "Social",
+                "System",
+                "Debug"
+            ]
+        },
+        "CommandCategoryDefinition": {
+            "type": "object",
+            "description": "Metadata for a command category including display name, description, and ordering.",
+            "required": [
+                "id",
+                "name"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "id": {
+                    "$ref": "#/definitions/CommandCategory",
+                    "description": "Category identifier matching the CommandCategory enum."
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Display name for the category in help listings."
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Brief description of what commands in this category do."
+                },
+                "sortOrder": {
+                    "type": "integer",
+                    "default": 0,
+                    "description": "Display ordering in help listings (lower = first)."
+                },
+                "icon": {
+                    "type": "string",
+                    "description": "Icon asset reference for UI display."
+                }
+            }
+        },
+        "ArgumentType": {
+            "type": "string",
+            "description": "Classification of argument for parsing and validation. Each type has specific validation rules and autocomplete sources.",
+            "enum": [
+                "String",
+                "Number",
+                "Direction",
+                "Target",
+                "Item",
+                "Ability",
+                "NPC",
+                "Location",
+                "Quantity",
+                "Boolean"
+            ]
+        },
+        "CommandContext": {
+            "type": "string",
+            "description": "Game context where a command is valid. Commands with 'Any' context work everywhere.",
+            "enum": [
+                "Exploration",
+                "Combat",
+                "Dialogue",
+                "Inventory",
+                "Menu",
+                "Rest",
+                "Crafting",
+                "Trading",
+                "Any"
+            ]
+        },
+        "Command": {
+            "type": "object",
+            "description": "A text interface command definition with arguments, context restrictions, and help documentation.",
+            "required": [
+                "id",
+                "name",
+                "category",
+                "description"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9-]*$",
+                    "description": "Unique command identifier using lowercase kebab-case.",
+                    "examples": [
+                        "look",
+                        "attack",
+                        "go-north"
+                    ]
+                },
+                "name": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9]*$",
+                    "minLength": 1,
+                    "maxLength": 20,
+                    "description": "Primary command word (lowercase, no spaces or hyphens). This is what players type."
+                },
+                "aliases": {
+                    "type": "array",
+                    "description": "Alternative names for the command. Each alias can be used interchangeably with the name.",
+                    "items": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9]*$",
+                        "minLength": 1
+                    },
+                    "uniqueItems": true
+                },
+                "category": {
+                    "$ref": "#/definitions/CommandCategory",
+                    "description": "Command category for organization in help listings."
+                },
+                "description": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200,
+                    "description": "Brief command description shown in help listings."
+                },
+                "arguments": {
+                    "type": "array",
+                    "description": "Ordered argument definitions. Arguments are matched in order from player input.",
+                    "items": {
+                        "$ref": "#/definitions/CommandArgument"
+                    }
+                },
+                "contexts": {
+                    "type": "array",
+                    "description": "Valid game contexts for this command. Empty array or 'Any' means available everywhere.",
+                    "items": {
+                        "$ref": "#/definitions/CommandContext"
+                    },
+                    "minItems": 1
+                },
+                "help": {
+                    "$ref": "#/definitions/CommandHelp",
+                    "description": "Detailed help information including usage pattern, examples, and related commands."
+                },
+                "isHidden": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "If true, command is hidden from help listings. Used for debug commands."
+                },
+                "requiresTarget": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "If true, requires target selection when no target argument is provided."
+                },
+                "canChain": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "If true, command can combine with others via 'then' keyword."
+                },
+                "cooldown": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "Turns between uses (0 = no cooldown). Used for combat abilities."
+                },
+                "priority": {
+                    "type": "integer",
+                    "default": 0,
+                    "description": "Resolution priority when multiple commands match (higher = preferred)."
+                },
+                "tags": {
+                    "type": "array",
+                    "description": "Searchable tags for command discovery and categorization.",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "CommandArgument": {
+            "type": "object",
+            "description": "A command argument with type, validation rules, and display hints.",
+            "required": [
+                "name",
+                "type"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-zA-Z0-9]*$",
+                    "description": "Argument identifier using camelCase."
+                },
+                "type": {
+                    "$ref": "#/definitions/ArgumentType",
+                    "description": "Argument type for parsing, validation, and autocomplete."
+                },
+                "description": {
+                    "type": "string",
+                    "maxLength": 200,
+                    "description": "Argument description shown in help text."
+                },
+                "isRequired": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "If true, argument must be provided. Optional arguments use defaultValue."
+                },
+                "isVariadic": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "If true, accepts multiple values (must be the last argument)."
+                },
+                "defaultValue": {
+                    "type": "string",
+                    "description": "Default value used when argument is not provided."
+                },
+                "validValues": {
+                    "type": "array",
+                    "description": "Enum-like restriction to specific allowed values.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "minItems": 1
+                },
+                "pattern": {
+                    "type": "string",
+                    "description": "Regex pattern for custom validation."
+                },
+                "displayHint": {
+                    "type": "string",
+                    "description": "Placeholder text for usage display (e.g., '<target>', '[direction]')."
+                },
+                "autocomplete": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "If true, enable autocomplete suggestions for this argument."
+                }
+            }
+        },
+        "CommandHelp": {
+            "type": "object",
+            "description": "Detailed help information for a command including usage syntax, examples, and related commands.",
+            "required": [
+                "usage"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "usage": {
+                    "type": "string",
+                    "description": "Syntax pattern showing arguments. Use <arg> for required, [arg] for optional."
+                },
+                "examples": {
+                    "type": "array",
+                    "description": "Example command usages with descriptions.",
+                    "items": {
+                        "$ref": "#/definitions/CommandExample"
+                    }
+                },
+                "notes": {
+                    "type": "string",
+                    "description": "Additional usage notes, tips, or caveats."
+                },
+                "seeAlso": {
+                    "type": "array",
+                    "description": "Related command IDs for cross-reference.",
+                    "items": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9-]*$"
+                    }
+                }
+            }
+        },
+        "CommandExample": {
+            "type": "object",
+            "description": "An example command usage showing input and expected behavior.",
+            "required": [
+                "input",
+                "description"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "input": {
+                    "type": "string",
+                    "description": "Example command input as the player would type it."
+                },
+                "description": {
+                    "type": "string",
+                    "description": "What the command does in this example."
+                }
+            }
+        }
+    }
+}

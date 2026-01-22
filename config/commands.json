@@ -1,0 +1,1193 @@
+{
+    "$schema": "./schemas/commands.schema.json",
+    "version": "1.0.0",
+    "globalAliases": {
+        "l": "look",
+        "x": "examine",
+        "n": "north",
+        "s": "south",
+        "e": "east",
+        "w": "west",
+        "u": "up",
+        "d": "down",
+        "i": "inventory",
+        "a": "attack",
+        "h": "help",
+        "q": "quit"
+    },
+    "ignoredWords": [
+        "the",
+        "a",
+        "an",
+        "to",
+        "at",
+        "with",
+        "on",
+        "in",
+        "from",
+        "and",
+        "my",
+        "using"
+    ],
+    "categories": [
+        {
+            "id": "Movement",
+            "name": "Movement",
+            "description": "Commands for navigating the world",
+            "sortOrder": 1,
+            "icon": "icon-movement"
+        },
+        {
+            "id": "Combat",
+            "name": "Combat",
+            "description": "Commands for battle and conflict",
+            "sortOrder": 2,
+            "icon": "icon-combat"
+        },
+        {
+            "id": "Interaction",
+            "name": "Interaction",
+            "description": "Commands for examining and interacting with the world",
+            "sortOrder": 3,
+            "icon": "icon-interaction"
+        },
+        {
+            "id": "Inventory",
+            "name": "Inventory",
+            "description": "Commands for managing items and equipment",
+            "sortOrder": 4,
+            "icon": "icon-inventory"
+        },
+        {
+            "id": "Information",
+            "name": "Information",
+            "description": "Commands for viewing status and information",
+            "sortOrder": 5,
+            "icon": "icon-info"
+        },
+        {
+            "id": "Social",
+            "name": "Social",
+            "description": "Commands for communication",
+            "sortOrder": 6,
+            "icon": "icon-social"
+        },
+        {
+            "id": "System",
+            "name": "System",
+            "description": "Meta commands and settings",
+            "sortOrder": 7,
+            "icon": "icon-system"
+        },
+        {
+            "id": "Debug",
+            "name": "Debug",
+            "description": "Developer and testing commands",
+            "sortOrder": 99,
+            "icon": "icon-debug"
+        }
+    ],
+    "commands": [
+        {
+            "id": "look",
+            "name": "look",
+            "aliases": [
+                "examine",
+                "inspect",
+                "view"
+            ],
+            "category": "Interaction",
+            "description": "Examine your surroundings or a specific target",
+            "arguments": [
+                {
+                    "name": "target",
+                    "type": "Target",
+                    "description": "What to look at",
+                    "isRequired": false,
+                    "displayHint": "[target]"
+                }
+            ],
+            "contexts": [
+                "Exploration",
+                "Combat",
+                "Inventory"
+            ],
+            "help": {
+                "usage": "look [target]",
+                "examples": [
+                    {
+                        "input": "look",
+                        "description": "Describe your current location"
+                    },
+                    {
+                        "input": "look door",
+                        "description": "Examine the door in detail"
+                    },
+                    {
+                        "input": "look goblin",
+                        "description": "Study the goblin before you"
+                    },
+                    {
+                        "input": "l north",
+                        "description": "Look to the north"
+                    }
+                ],
+                "notes": "Without a target, describes your current location. Use 'examine' for more detailed inspection.",
+                "seeAlso": [
+                    "search",
+                    "go"
+                ]
+            },
+            "tags": [
+                "observation",
+                "exploration",
+                "basic"
+            ]
+        },
+        {
+            "id": "go",
+            "name": "go",
+            "aliases": [
+                "move",
+                "walk",
+                "travel"
+            ],
+            "category": "Movement",
+            "description": "Move in a direction or to a location",
+            "arguments": [
+                {
+                    "name": "direction",
+                    "type": "Direction",
+                    "description": "Direction to move",
+                    "isRequired": true,
+                    "displayHint": "<direction>"
+                }
+            ],
+            "contexts": [
+                "Exploration"
+            ],
+            "help": {
+                "usage": "go <direction>",
+                "examples": [
+                    {
+                        "input": "go north",
+                        "description": "Move north"
+                    },
+                    {
+                        "input": "go up",
+                        "description": "Climb upward"
+                    },
+                    {
+                        "input": "n",
+                        "description": "Shorthand for 'go north'"
+                    }
+                ],
+                "notes": "Cardinal directions (n/s/e/w) can be typed directly without 'go'.",
+                "seeAlso": [
+                    "north",
+                    "south",
+                    "east",
+                    "west",
+                    "enter",
+                    "exit"
+                ]
+            },
+            "tags": [
+                "movement",
+                "navigation",
+                "basic"
+            ]
+        },
+        {
+            "id": "north",
+            "name": "north",
+            "aliases": [],
+            "category": "Movement",
+            "description": "Move north",
+            "contexts": [
+                "Exploration"
+            ],
+            "help": {
+                "usage": "north",
+                "examples": [
+                    {
+                        "input": "north",
+                        "description": "Move north"
+                    },
+                    {
+                        "input": "n",
+                        "description": "Shorthand"
+                    }
+                ]
+            },
+            "tags": [
+                "movement",
+                "direction"
+            ]
+        },
+        {
+            "id": "south",
+            "name": "south",
+            "aliases": [],
+            "category": "Movement",
+            "description": "Move south",
+            "contexts": [
+                "Exploration"
+            ],
+            "help": {
+                "usage": "south",
+                "examples": [
+                    {
+                        "input": "south",
+                        "description": "Move south"
+                    },
+                    {
+                        "input": "s",
+                        "description": "Shorthand"
+                    }
+                ]
+            },
+            "tags": [
+                "movement",
+                "direction"
+            ]
+        },
+        {
+            "id": "east",
+            "name": "east",
+            "aliases": [],
+            "category": "Movement",
+            "description": "Move east",
+            "contexts": [
+                "Exploration"
+            ],
+            "help": {
+                "usage": "east"
+            },
+            "tags": [
+                "movement",
+                "direction"
+            ]
+        },
+        {
+            "id": "west",
+            "name": "west",
+            "aliases": [],
+            "category": "Movement",
+            "description": "Move west",
+            "contexts": [
+                "Exploration"
+            ],
+            "help": {
+                "usage": "west"
+            },
+            "tags": [
+                "movement",
+                "direction"
+            ]
+        },
+        {
+            "id": "attack",
+            "name": "attack",
+            "aliases": [
+                "hit",
+                "strike",
+                "fight"
+            ],
+            "category": "Combat",
+            "description": "Attack a target with your equipped weapon",
+            "arguments": [
+                {
+                    "name": "target",
+                    "type": "Target",
+                    "description": "Enemy to attack",
+                    "isRequired": true,
+                    "displayHint": "<target>"
+                },
+                {
+                    "name": "weapon",
+                    "type": "Item",
+                    "description": "Weapon to use (default: equipped)",
+                    "isRequired": false,
+                    "displayHint": "[with <weapon>]"
+                }
+            ],
+            "contexts": [
+                "Combat"
+            ],
+            "requiresTarget": true,
+            "help": {
+                "usage": "attack <target> [with <weapon>]",
+                "examples": [
+                    {
+                        "input": "attack goblin",
+                        "description": "Attack the goblin with equipped weapon"
+                    },
+                    {
+                        "input": "attack goblin with dagger",
+                        "description": "Attack using your dagger"
+                    },
+                    {
+                        "input": "a goblin",
+                        "description": "Shorthand attack"
+                    }
+                ],
+                "notes": "If only one enemy is present, the target can be omitted.",
+                "seeAlso": [
+                    "defend",
+                    "cast",
+                    "use",
+                    "flee"
+                ]
+            },
+            "tags": [
+                "combat",
+                "offensive",
+                "basic"
+            ]
+        },
+        {
+            "id": "defend",
+            "name": "defend",
+            "aliases": [
+                "block",
+                "guard"
+            ],
+            "category": "Combat",
+            "description": "Take a defensive stance, reducing incoming damage",
+            "contexts": [
+                "Combat"
+            ],
+            "help": {
+                "usage": "defend",
+                "examples": [
+                    {
+                        "input": "defend",
+                        "description": "Raise your guard"
+                    }
+                ],
+                "notes": "Reduces damage from the next attack against you. Effect ends when you take another action.",
+                "seeAlso": [
+                    "attack",
+                    "stance"
+                ]
+            },
+            "tags": [
+                "combat",
+                "defensive"
+            ]
+        },
+        {
+            "id": "cast",
+            "name": "cast",
+            "aliases": [
+                "spell",
+                "invoke"
+            ],
+            "category": "Combat",
+            "description": "Cast a spell or invoke an ability",
+            "arguments": [
+                {
+                    "name": "ability",
+                    "type": "Ability",
+                    "description": "Spell or ability to use",
+                    "isRequired": true,
+                    "displayHint": "<spell>"
+                },
+                {
+                    "name": "target",
+                    "type": "Target",
+                    "description": "Target of the spell",
+                    "isRequired": false,
+                    "displayHint": "[at <target>]"
+                }
+            ],
+            "contexts": [
+                "Combat",
+                "Exploration"
+            ],
+            "help": {
+                "usage": "cast <spell> [at <target>]",
+                "examples": [
+                    {
+                        "input": "cast fireball at goblin",
+                        "description": "Hurl a fireball at the goblin"
+                    },
+                    {
+                        "input": "cast heal",
+                        "description": "Cast heal on yourself"
+                    },
+                    {
+                        "input": "cast light",
+                        "description": "Illuminate the area"
+                    }
+                ],
+                "notes": "Some spells require targets, others affect self or area. Check your spellbook for details.",
+                "seeAlso": [
+                    "attack",
+                    "abilities"
+                ]
+            },
+            "tags": [
+                "combat",
+                "magic",
+                "abilities"
+            ]
+        },
+        {
+            "id": "flee",
+            "name": "flee",
+            "aliases": [
+                "run",
+                "escape",
+                "retreat"
+            ],
+            "category": "Combat",
+            "description": "Attempt to flee from combat",
+            "contexts": [
+                "Combat"
+            ],
+            "help": {
+                "usage": "flee",
+                "examples": [
+                    {
+                        "input": "flee",
+                        "description": "Attempt to escape combat"
+                    },
+                    {
+                        "input": "run",
+                        "description": "Alias for flee"
+                    }
+                ],
+                "notes": "Success depends on speed and enemy awareness. Failed attempts waste your turn.",
+                "seeAlso": [
+                    "attack",
+                    "defend"
+                ]
+            },
+            "tags": [
+                "combat",
+                "escape"
+            ]
+        },
+        {
+            "id": "take",
+            "name": "take",
+            "aliases": [
+                "get",
+                "grab",
+                "pick",
+                "pickup"
+            ],
+            "category": "Interaction",
+            "description": "Pick up an item from the environment",
+            "arguments": [
+                {
+                    "name": "quantity",
+                    "type": "Quantity",
+                    "description": "How many to take",
+                    "isRequired": false,
+                    "defaultValue": "1",
+                    "displayHint": "[quantity]"
+                },
+                {
+                    "name": "item",
+                    "type": "Item",
+                    "description": "Item to take",
+                    "isRequired": true,
+                    "displayHint": "<item>"
+                }
+            ],
+            "contexts": [
+                "Exploration"
+            ],
+            "help": {
+                "usage": "take [quantity] <item>",
+                "examples": [
+                    {
+                        "input": "take sword",
+                        "description": "Pick up the sword"
+                    },
+                    {
+                        "input": "take 3 potions",
+                        "description": "Take three potions"
+                    },
+                    {
+                        "input": "take all coins",
+                        "description": "Take all available coins"
+                    },
+                    {
+                        "input": "get key",
+                        "description": "Alias for take"
+                    }
+                ],
+                "notes": "Use 'all' to take everything of that type. Items go to your inventory.",
+                "seeAlso": [
+                    "drop",
+                    "inventory",
+                    "look"
+                ]
+            },
+            "tags": [
+                "items",
+                "interaction",
+                "basic"
+            ]
+        },
+        {
+            "id": "drop",
+            "name": "drop",
+            "aliases": [
+                "discard",
+                "throw"
+            ],
+            "category": "Inventory",
+            "description": "Drop an item from your inventory",
+            "arguments": [
+                {
+                    "name": "quantity",
+                    "type": "Quantity",
+                    "description": "How many to drop",
+                    "isRequired": false,
+                    "defaultValue": "1"
+                },
+                {
+                    "name": "item",
+                    "type": "Item",
+                    "description": "Item to drop",
+                    "isRequired": true,
+                    "displayHint": "<item>"
+                }
+            ],
+            "contexts": [
+                "Exploration",
+                "Inventory"
+            ],
+            "help": {
+                "usage": "drop [quantity] <item>",
+                "examples": [
+                    {
+                        "input": "drop sword",
+                        "description": "Drop the sword"
+                    },
+                    {
+                        "input": "drop 5 arrows",
+                        "description": "Drop five arrows"
+                    }
+                ],
+                "seeAlso": [
+                    "take",
+                    "inventory"
+                ]
+            },
+            "tags": [
+                "items",
+                "inventory"
+            ]
+        },
+        {
+            "id": "inventory",
+            "name": "inventory",
+            "aliases": [
+                "inv",
+                "items",
+                "bag",
+                "backpack"
+            ],
+            "category": "Inventory",
+            "description": "View your inventory",
+            "contexts": [
+                "Any"
+            ],
+            "help": {
+                "usage": "inventory",
+                "examples": [
+                    {
+                        "input": "inventory",
+                        "description": "List all items you carry"
+                    },
+                    {
+                        "input": "i",
+                        "description": "Shorthand"
+                    }
+                ],
+                "notes": "Shows all items, their quantities, and equipped status.",
+                "seeAlso": [
+                    "equip",
+                    "drop",
+                    "use"
+                ]
+            },
+            "tags": [
+                "items",
+                "information",
+                "basic"
+            ]
+        },
+        {
+            "id": "equip",
+            "name": "equip",
+            "aliases": [
+                "wear",
+                "wield",
+                "don"
+            ],
+            "category": "Inventory",
+            "description": "Equip an item from your inventory",
+            "arguments": [
+                {
+                    "name": "item",
+                    "type": "Item",
+                    "description": "Item to equip",
+                    "isRequired": true,
+                    "displayHint": "<item>"
+                }
+            ],
+            "contexts": [
+                "Exploration",
+                "Inventory"
+            ],
+            "help": {
+                "usage": "equip <item>",
+                "examples": [
+                    {
+                        "input": "equip sword",
+                        "description": "Wield the sword"
+                    },
+                    {
+                        "input": "wear armor",
+                        "description": "Put on armor"
+                    }
+                ],
+                "notes": "Replaces currently equipped item in that slot.",
+                "seeAlso": [
+                    "unequip",
+                    "inventory"
+                ]
+            },
+            "tags": [
+                "items",
+                "equipment"
+            ]
+        },
+        {
+            "id": "use",
+            "name": "use",
+            "aliases": [
+                "consume",
+                "apply"
+            ],
+            "category": "Inventory",
+            "description": "Use an item from your inventory",
+            "arguments": [
+                {
+                    "name": "item",
+                    "type": "Item",
+                    "description": "Item to use",
+                    "isRequired": true,
+                    "displayHint": "<item>"
+                },
+                {
+                    "name": "target",
+                    "type": "Target",
+                    "description": "Target to use item on",
+                    "isRequired": false,
+                    "displayHint": "[on <target>]"
+                }
+            ],
+            "contexts": [
+                "Exploration",
+                "Combat",
+                "Inventory"
+            ],
+            "help": {
+                "usage": "use <item> [on <target>]",
+                "examples": [
+                    {
+                        "input": "use potion",
+                        "description": "Drink a health potion"
+                    },
+                    {
+                        "input": "use key on door",
+                        "description": "Use the key on the door"
+                    }
+                ],
+                "notes": "Some items require targets, others are self-use.",
+                "seeAlso": [
+                    "inventory",
+                    "equip"
+                ]
+            },
+            "tags": [
+                "items",
+                "interaction"
+            ]
+        },
+        {
+            "id": "talk",
+            "name": "talk",
+            "aliases": [
+                "speak",
+                "converse",
+                "greet"
+            ],
+            "category": "Interaction",
+            "description": "Start a conversation with an NPC",
+            "arguments": [
+                {
+                    "name": "npc",
+                    "type": "NPC",
+                    "description": "Character to talk to",
+                    "isRequired": true,
+                    "displayHint": "<character>"
+                }
+            ],
+            "contexts": [
+                "Exploration"
+            ],
+            "help": {
+                "usage": "talk [to] <character>",
+                "examples": [
+                    {
+                        "input": "talk bjorn",
+                        "description": "Speak with Bjorn"
+                    },
+                    {
+                        "input": "talk to merchant",
+                        "description": "Approach the merchant"
+                    }
+                ],
+                "notes": "Opens dialogue mode with the NPC.",
+                "seeAlso": [
+                    "say",
+                    "ask"
+                ]
+            },
+            "tags": [
+                "social",
+                "dialogue",
+                "npc"
+            ]
+        },
+        {
+            "id": "say",
+            "name": "say",
+            "aliases": [],
+            "category": "Social",
+            "description": "Say something aloud",
+            "arguments": [
+                {
+                    "name": "message",
+                    "type": "String",
+                    "description": "What to say",
+                    "isRequired": true,
+                    "isVariadic": true,
+                    "displayHint": "<message>"
+                }
+            ],
+            "contexts": [
+                "Dialogue",
+                "Exploration"
+            ],
+            "help": {
+                "usage": "say <message>",
+                "examples": [
+                    {
+                        "input": "say hello there",
+                        "description": "Say 'hello there' aloud"
+                    }
+                ],
+                "notes": "NPCs nearby may react to what you say.",
+                "seeAlso": [
+                    "talk",
+                    "whisper",
+                    "shout"
+                ]
+            },
+            "tags": [
+                "social",
+                "dialogue"
+            ]
+        },
+        {
+            "id": "status",
+            "name": "status",
+            "aliases": [
+                "stats",
+                "character",
+                "char"
+            ],
+            "category": "Information",
+            "description": "View your character status",
+            "contexts": [
+                "Any"
+            ],
+            "help": {
+                "usage": "status",
+                "examples": [
+                    {
+                        "input": "status",
+                        "description": "View health, stats, and conditions"
+                    },
+                    {
+                        "input": "stats",
+                        "description": "Alias for status"
+                    }
+                ],
+                "seeAlso": [
+                    "inventory",
+                    "abilities",
+                    "quest"
+                ]
+            },
+            "tags": [
+                "information",
+                "character",
+                "basic"
+            ]
+        },
+        {
+            "id": "help",
+            "name": "help",
+            "aliases": [
+                "commands",
+                "hint"
+            ],
+            "category": "System",
+            "description": "Get help on commands",
+            "arguments": [
+                {
+                    "name": "command",
+                    "type": "String",
+                    "description": "Command to get help for",
+                    "isRequired": false,
+                    "displayHint": "[command]"
+                }
+            ],
+            "contexts": [
+                "Any"
+            ],
+            "help": {
+                "usage": "help [command]",
+                "examples": [
+                    {
+                        "input": "help",
+                        "description": "List all commands"
+                    },
+                    {
+                        "input": "help attack",
+                        "description": "Get help on the attack command"
+                    },
+                    {
+                        "input": "h look",
+                        "description": "Shorthand help for look"
+                    }
+                ],
+                "notes": "Without arguments, shows command categories. With a command name, shows detailed help."
+            },
+            "tags": [
+                "system",
+                "meta",
+                "basic"
+            ]
+        },
+        {
+            "id": "save",
+            "name": "save",
+            "aliases": [],
+            "category": "System",
+            "description": "Save your current game",
+            "arguments": [
+                {
+                    "name": "slotName",
+                    "type": "String",
+                    "description": "Save slot name",
+                    "isRequired": false,
+                    "defaultValue": "quicksave",
+                    "displayHint": "[slot]"
+                }
+            ],
+            "contexts": [
+                "Exploration",
+                "Menu"
+            ],
+            "help": {
+                "usage": "save [slot]",
+                "examples": [
+                    {
+                        "input": "save",
+                        "description": "Quick save"
+                    },
+                    {
+                        "input": "save mysave",
+                        "description": "Save to slot 'mysave'"
+                    }
+                ],
+                "notes": "Cannot save during combat.",
+                "seeAlso": [
+                    "load",
+                    "quit"
+                ]
+            },
+            "tags": [
+                "system",
+                "save"
+            ]
+        },
+        {
+            "id": "load",
+            "name": "load",
+            "aliases": [
+                "restore"
+            ],
+            "category": "System",
+            "description": "Load a saved game",
+            "arguments": [
+                {
+                    "name": "slotName",
+                    "type": "String",
+                    "description": "Save slot name",
+                    "isRequired": false,
+                    "defaultValue": "quicksave",
+                    "displayHint": "[slot]"
+                }
+            ],
+            "contexts": [
+                "Menu"
+            ],
+            "help": {
+                "usage": "load [slot]",
+                "examples": [
+                    {
+                        "input": "load",
+                        "description": "Load quicksave"
+                    },
+                    {
+                        "input": "load mysave",
+                        "description": "Load from slot 'mysave'"
+                    }
+                ],
+                "seeAlso": [
+                    "save",
+                    "quit"
+                ]
+            },
+            "tags": [
+                "system",
+                "save"
+            ]
+        },
+        {
+            "id": "quit",
+            "name": "quit",
+            "aliases": [
+                "exit",
+                "bye"
+            ],
+            "category": "System",
+            "description": "Quit the game",
+            "contexts": [
+                "Any"
+            ],
+            "help": {
+                "usage": "quit",
+                "examples": [
+                    {
+                        "input": "quit",
+                        "description": "Exit the game"
+                    }
+                ],
+                "notes": "You will be prompted to save if there are unsaved changes."
+            },
+            "tags": [
+                "system",
+                "exit"
+            ]
+        },
+        {
+            "id": "settings",
+            "name": "settings",
+            "aliases": [
+                "options",
+                "config"
+            ],
+            "category": "System",
+            "description": "View or change game settings",
+            "arguments": [
+                {
+                    "name": "setting",
+                    "type": "String",
+                    "description": "Setting to view or change",
+                    "isRequired": false,
+                    "displayHint": "[setting]"
+                },
+                {
+                    "name": "value",
+                    "type": "String",
+                    "description": "New value for the setting",
+                    "isRequired": false,
+                    "displayHint": "[value]"
+                }
+            ],
+            "contexts": [
+                "Any"
+            ],
+            "help": {
+                "usage": "settings [setting] [value]",
+                "examples": [
+                    {
+                        "input": "settings",
+                        "description": "View all settings"
+                    },
+                    {
+                        "input": "settings volume 80",
+                        "description": "Set volume to 80"
+                    }
+                ]
+            },
+            "tags": [
+                "system",
+                "configuration"
+            ]
+        },
+        {
+            "id": "teleport",
+            "name": "teleport",
+            "aliases": [
+                "tp",
+                "goto"
+            ],
+            "category": "Debug",
+            "description": "Teleport to a location",
+            "arguments": [
+                {
+                    "name": "location",
+                    "type": "Location",
+                    "description": "Destination location ID",
+                    "isRequired": true,
+                    "displayHint": "<location>"
+                }
+            ],
+            "contexts": [
+                "Any"
+            ],
+            "isHidden": true,
+            "help": {
+                "usage": "teleport <location>",
+                "examples": [
+                    {
+                        "input": "teleport town-square",
+                        "description": "Teleport to town square"
+                    }
+                ],
+                "notes": "Debug command. May break quest states if used carelessly."
+            },
+            "tags": [
+                "debug",
+                "movement"
+            ]
+        },
+        {
+            "id": "spawn",
+            "name": "spawn",
+            "aliases": [
+                "create",
+                "summon"
+            ],
+            "category": "Debug",
+            "description": "Spawn an entity or item",
+            "arguments": [
+                {
+                    "name": "entityType",
+                    "type": "String",
+                    "description": "Type of entity (enemy/item/npc)",
+                    "isRequired": true,
+                    "validValues": [
+                        "enemy",
+                        "item",
+                        "npc"
+                    ],
+                    "displayHint": "<type>"
+                },
+                {
+                    "name": "entityId",
+                    "type": "String",
+                    "description": "Entity definition ID",
+                    "isRequired": true,
+                    "displayHint": "<id>"
+                },
+                {
+                    "name": "quantity",
+                    "type": "Number",
+                    "description": "Number to spawn",
+                    "isRequired": false,
+                    "defaultValue": "1",
+                    "displayHint": "[count]"
+                }
+            ],
+            "contexts": [
+                "Any"
+            ],
+            "isHidden": true,
+            "help": {
+                "usage": "spawn <type> <id> [count]",
+                "examples": [
+                    {
+                        "input": "spawn enemy goblin",
+                        "description": "Spawn a goblin"
+                    },
+                    {
+                        "input": "spawn item potion 5",
+                        "description": "Spawn 5 potions"
+                    }
+                ],
+                "notes": "Debug command for testing."
+            },
+            "tags": [
+                "debug",
+                "testing"
+            ]
+        },
+        {
+            "id": "godmode",
+            "name": "godmode",
+            "aliases": [
+                "god",
+                "invincible"
+            ],
+            "category": "Debug",
+            "description": "Toggle invincibility",
+            "arguments": [
+                {
+                    "name": "state",
+                    "type": "Boolean",
+                    "description": "Enable or disable",
+                    "isRequired": false,
+                    "displayHint": "[on/off]"
+                }
+            ],
+            "contexts": [
+                "Any"
+            ],
+            "isHidden": true,
+            "help": {
+                "usage": "godmode [on/off]",
+                "examples": [
+                    {
+                        "input": "godmode",
+                        "description": "Toggle godmode"
+                    },
+                    {
+                        "input": "godmode on",
+                        "description": "Enable godmode"
+                    }
+                ],
+                "notes": "Debug command. Makes you immune to damage."
+            },
+            "tags": [
+                "debug",
+                "cheats"
+            ]
+        }
+    ]
+}
