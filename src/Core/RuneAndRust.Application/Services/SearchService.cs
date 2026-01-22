@@ -46,6 +46,11 @@ public class SearchService
     /// <param name="room">The room being searched.</param>
     /// <param name="skillId">The skill to use (defaults to perception).</param>
     /// <returns>The search result with any discoveries.</returns>
+    /// <remarks>
+    /// v0.15.0c: Uses TotalResult for DC comparison, as search mechanics compare
+    /// the roll total against discovery DCs (not success-counting semantics).
+    /// </remarks>
+#pragma warning disable CS0618 // Type or member is obsolete - TotalResult intentionally used for DC comparison
     public SearchResult PerformSearch(
         Player player,
         Room room,
@@ -81,9 +86,10 @@ public class SearchService
             lowestDC,
             GetDifficultyName(lowestDC));
 
+        // v0.15.0c: Log using Outcome for success-counting, but TotalResult for DC comparison
         _logger.LogInformation(
-            "Search check: {Total} vs DC {DC} = {Result}",
-            checkResult.TotalResult, lowestDC, checkResult.SuccessLevel);
+            "Search check: {Total} vs DC {DC} = {Outcome}",
+            checkResult.TotalResult, lowestDC, checkResult.Outcome);
 
         if (!checkResult.IsSuccess)
         {
@@ -96,7 +102,7 @@ public class SearchService
             return SearchResult.Failed(checkResult);
         }
 
-        // Discover everything with DC <= roll result
+        // Discover everything with DC <= roll result (using TotalResult for DC comparison)
         var discoveredExits = new List<Direction>();
         var discoveredItems = new List<Guid>();
 
@@ -142,6 +148,7 @@ public class SearchService
 
         return SearchResult.Success(checkResult, discoveredExits, discoveredItems);
     }
+#pragma warning restore CS0618 // Type or member is obsolete
 
     /// <summary>
     /// Gets a difficulty name for a DC value.

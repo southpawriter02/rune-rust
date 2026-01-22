@@ -6,6 +6,10 @@ namespace RuneAndRust.Application.DTOs;
 /// <summary>
 /// DTO for skill check results displayed to the player.
 /// </summary>
+/// <remarks>
+/// v0.15.0c: Added NetSuccesses, IsFumble, and Outcome for success-counting mechanics.
+/// TotalResult and SuccessLevel preserved for backward compatibility.
+/// </remarks>
 public record SkillCheckResultDto(
     string SkillId,
     string SkillName,
@@ -13,17 +17,25 @@ public record SkillCheckResultDto(
     int AttributeBonus,
     int OtherBonus,
     int TotalResult,
+    int NetSuccesses,
     int DifficultyClass,
     string DifficultyName,
     string SuccessLevel,
+    string Outcome,
     int Margin,
     bool IsSuccess,
     bool IsCritical,
+    bool IsFumble,
     string? Descriptor = null)
 {
     /// <summary>
     /// Creates a DTO from a domain skill check result.
     /// </summary>
+    /// <remarks>
+    /// v0.15.0c: Now includes NetSuccesses and Outcome for success-counting mechanics.
+    /// Uses pragma to suppress obsolete warnings for backward compatibility properties.
+    /// </remarks>
+#pragma warning disable CS0618 // Type or member is obsolete
     public static SkillCheckResultDto FromDomainResult(
         SkillCheckResult result,
         string? descriptor = null)
@@ -34,33 +46,40 @@ public record SkillCheckResultDto(
             DiceRollDto.FromDomainResult(result.DiceResult),
             result.AttributeBonus,
             result.OtherBonus,
-            result.TotalResult,
+            result.TotalResult,          // Legacy: preserved for backward compatibility
+            result.NetSuccesses,         // v0.15.0c: New success-counting property
             result.DifficultyClass,
             result.DifficultyName,
-            result.SuccessLevel.ToString(),
+            result.SuccessLevel.ToString(), // Legacy: preserved for backward compatibility
+            result.Outcome.ToString(),   // v0.15.0c: New 6-tier classification
             result.Margin,
             result.IsSuccess,
             result.IsCritical,
+            result.IsFumble,
             descriptor);
     }
+#pragma warning restore CS0618 // Type or member is obsolete
 
     /// <summary>
     /// Gets a formatted summary of the check result.
     /// </summary>
+    /// <remarks>
+    /// v0.15.0c: Updated to show NetSuccesses and Outcome (success-counting format).
+    /// </remarks>
     public string Summary =>
-        $"{SkillName}: {TotalResult} vs DC {DifficultyClass} - {SuccessLevel}";
+        $"{SkillName}: {NetSuccesses} net vs DC {DifficultyClass} - {Outcome}";
 
     /// <summary>
     /// Gets whether this was a critical success.
     /// </summary>
     public bool IsCriticalSuccess =>
-        SuccessLevel == nameof(Domain.Enums.SuccessLevel.CriticalSuccess);
+        Outcome == nameof(Domain.Enums.SkillOutcome.CriticalSuccess);
 
     /// <summary>
     /// Gets whether this was a critical failure.
     /// </summary>
     public bool IsCriticalFailure =>
-        SuccessLevel == nameof(Domain.Enums.SuccessLevel.CriticalFailure);
+        Outcome == nameof(Domain.Enums.SkillOutcome.CriticalFailure);
 }
 
 /// <summary>

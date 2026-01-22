@@ -110,6 +110,10 @@ public class SkillCheckService
     /// <summary>
     /// Performs a contested skill check between two players.
     /// </summary>
+    /// <remarks>
+    /// v0.15.0c: Contested checks now compare NetSuccesses (success-counting mechanics)
+    /// instead of TotalResult. The player with more net successes wins. Ties favor the active player.
+    /// </remarks>
     public (SkillCheckResult ActiveResult, SkillCheckResult PassiveResult, string Winner) PerformContestedCheck(
         Player activePlayer,
         Player passivePlayer,
@@ -128,14 +132,15 @@ public class SkillCheckService
         var activeResult = PerformCheckWithDC(activePlayer, activeSkillId, 0, "Contested", activeAdvantage);
         var passiveResult = PerformCheckWithDC(passivePlayer, passiveSkillId, 0, "Contested", passiveAdvantage);
 
-        var winner = activeResult.TotalResult >= passiveResult.TotalResult
+        // v0.15.0c: Compare NetSuccesses for contested checks (success-counting mechanics)
+        var winner = activeResult.NetSuccesses >= passiveResult.NetSuccesses
             ? activePlayer.Name
             : passivePlayer.Name;
 
         _logger.LogInformation(
-            "Contested check: {Active} ({ActiveTotal}) vs {Passive} ({PassiveTotal}) -> {Winner} wins",
-            activePlayer.Name, activeResult.TotalResult,
-            passivePlayer.Name, passiveResult.TotalResult,
+            "Contested check: {Active} ({ActiveNet} net) vs {Passive} ({PassiveNet} net) -> {Winner} wins",
+            activePlayer.Name, activeResult.NetSuccesses,
+            passivePlayer.Name, passiveResult.NetSuccesses,
             winner);
 
         return (activeResult, passiveResult, winner);
@@ -214,32 +219,39 @@ public class SkillCheckService
         return true;
     }
 
+    /// <summary>
+    /// Logs the skill check result with appropriate detail level.
+    /// </summary>
+    /// <remarks>
+    /// v0.15.0c: Uses Outcome (6-tier) and NetSuccesses for success-counting mechanics.
+    /// </remarks>
     private void LogCheckResult(SkillCheckResult result)
     {
         var level = result.IsCritical ? LogLevel.Information : LogLevel.Debug;
 
+        // v0.15.0c: Log using NetSuccesses and Outcome (success-counting mechanics)
         _logger.Log(level,
-            "Skill check complete: Skill={Skill} Roll={Roll} Bonus={Bonus} Total={Total} DC={DC} Result={Result}",
+            "Skill check complete: Skill={Skill} NetSuccesses={Net} Margin={Margin} DC={DC} Outcome={Outcome}",
             result.SkillName,
-            result.DiceResult.Total,
-            result.TotalBonus,
-            result.TotalResult,
+            result.NetSuccesses,
+            result.Margin,
             result.DifficultyClass,
-            result.SuccessLevel);
+            result.Outcome);
 
-        _eventLogger?.LogDice("SkillCheck", $"{result.SkillName}: {result.SuccessLevel}",
+        // v0.15.0c: Event logging uses new success-counting properties
+        _eventLogger?.LogDice("SkillCheck", $"{result.SkillName}: {result.Outcome}",
             data: new Dictionary<string, object>
             {
                 ["skillId"] = result.SkillId,
                 ["skillName"] = result.SkillName,
-                ["roll"] = result.DiceResult.Total,
-                ["bonus"] = result.TotalBonus,
-                ["total"] = result.TotalResult,
+                ["netSuccesses"] = result.NetSuccesses,
+                ["margin"] = result.Margin,
                 ["dc"] = result.DifficultyClass,
                 ["dcName"] = result.DifficultyName,
                 ["success"] = result.IsSuccess,
                 ["critical"] = result.IsCritical,
-                ["successLevel"] = result.SuccessLevel.ToString()
+                ["isFumble"] = result.IsFumble,
+                ["outcome"] = result.Outcome.ToString()
             });
 
         if (result.IsCriticalSuccess)

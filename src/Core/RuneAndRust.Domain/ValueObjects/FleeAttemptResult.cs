@@ -80,9 +80,12 @@ public readonly record struct FleeAttemptResult(
     /// <summary>
     /// Returns a display string for the flee result.
     /// </summary>
+    /// <remarks>
+    /// v0.15.0c: Uses NetSuccesses (success-counting) instead of TotalResult.
+    /// </remarks>
     public override string ToString()
     {
         var result = Success ? "SUCCESS" : "FAILED";
-        return $"Flee {result}: {SkillCheck.TotalResult} vs DC {DifficultyClass}";
+        return $"Flee {result}: {SkillCheck.NetSuccesses} net vs DC {DifficultyClass}";
     }
 }

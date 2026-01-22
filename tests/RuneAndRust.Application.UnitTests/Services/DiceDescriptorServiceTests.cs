@@ -140,12 +140,12 @@ public class DiceDescriptorServiceTests
         };
         SetupDescriptors(descriptors);
 
-        // v0.15.0a: IsCriticalSuccess requires 5+ net successes
-        // Roll 5d10 all showing 8+ to get 5 successes
+        // v0.15.0c: CriticalSuccess requires margin >= 5 (NetSuccesses - DC >= 5)
+        // Roll 5d10 all showing 8+ to get 5 successes, DC 0 → margin +5 = CriticalSuccess
         var pool = new DicePool(5, Domain.Enums.DiceType.D10);
         var diceResult = new DiceRollResult(pool, new[] { 8, 9, 10, 8, 9 }); // 5 successes
         var result = new SkillCheckResult(
-            "perception", "Perception", diceResult, 2, 0, 12, "Moderate");
+            "perception", "Perception", diceResult, 0, 0, 0, "Trivial"); // DC 0 for margin +5
 
         // Act
         var descriptor = _service.GetSkillCheckDescriptor(result);
