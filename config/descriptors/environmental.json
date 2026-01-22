@@ -1,4 +1,5 @@
 {
+    "$schema": "../schemas/descriptors.schema.json",
     "category": "environmental",
     "pools": {
         "lighting": {

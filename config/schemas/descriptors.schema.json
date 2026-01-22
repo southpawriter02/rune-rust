@@ -1,0 +1,172 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://rune-game.com/schemas/descriptors.schema.json",
+    "title": "Descriptor Configuration",
+    "description": "Master schema for text descriptor pools with weighted selection, context tags, themes, and variable substitution. Supports modding scenarios such as custom combat narration, themed atmosphere descriptions, localization variations, or genre-specific text pools.",
+    "type": "object",
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "Reference to the JSON schema file for validation"
+        },
+        "version": {
+            "type": "string",
+            "description": "Configuration file version for compatibility tracking"
+        },
+        "category": {
+            "type": "string",
+            "description": "Category identifier for this descriptor file (kebab-case). Examples: combat-hits, combat-deaths, environmental, weather, ambient-events",
+            "pattern": "^[a-z][a-z0-9-]*$",
+            "minLength": 1
+        },
+        "pools": {
+            "type": "object",
+            "description": "Descriptor pools organized by pool ID. Each property key is the pool ID (lowercase with underscores), and the value is a DescriptorPool object.",
+            "additionalProperties": {
+                "$ref": "#/definitions/DescriptorPool"
+            },
+            "minProperties": 1
+        }
+    },
+    "required": [
+        "category",
+        "pools"
+    ],
+    "additionalProperties": false,
+    "definitions": {
+        "DescriptorPool": {
+            "type": "object",
+            "description": "A pool of related text descriptors grouped by purpose. Pools are identified by snake_case IDs and contain one or more weighted descriptors for random selection.",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Pool identifier (lowercase with underscores). Must match the key used in the 'pools' object. Examples: hit_sword, death_humanoid, lighting, weather_rain_indoor",
+                    "pattern": "^[a-z][a-z0-9_]*$",
+                    "minLength": 1
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Human-readable display name for the pool, shown in editors and logs. Examples: 'Sword Hit Descriptions', 'Lighting Descriptions'",
+                    "minLength": 1
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Optional description of the pool's purpose and when its descriptors are used"
+                },
+                "descriptors": {
+                    "type": "array",
+                    "description": "Array of text descriptors in this pool. At least one descriptor is required per pool.",
+                    "items": {
+                        "$ref": "#/definitions/Descriptor"
+                    },
+                    "minItems": 1
+                }
+            },
+            "required": [
+                "id",
+                "name",
+                "descriptors"
+            ],
+            "additionalProperties": false
+        },
+        "Descriptor": {
+            "type": "object",
+            "description": "A single text descriptor with selection parameters. Descriptors may include weights for probability-based selection, tags for context filtering, themes for genre filtering, and conditional thresholds for damage/health-based selection.",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Descriptor identifier (lowercase with underscores). Must be unique within the pool. Examples: slashes_across, dim_torch, falls_battle",
+                    "pattern": "^[a-z][a-z0-9_]*$",
+                    "minLength": 1
+                },
+                "text": {
+                    "type": "string",
+                    "description": "The descriptive text content. May contain {variable} placeholders for runtime substitution. Examples: 'slashes across', '{player} has fallen in battle against the {killer}...'",
+                    "minLength": 1
+                },
+                "weight": {
+                    "type": "integer",
+                    "description": "Selection weight for probability-based selection. Higher weights mean higher selection chance. Default is 100. All weights in a pool are summed and each descriptor's probability is weight/totalWeight.",
+                    "minimum": 1,
+                    "default": 100
+                },
+                "tags": {
+                    "type": "array",
+                    "description": "Context filter tags for situation-appropriate selection. Common categories: location (indoor, outdoor, underground), biome (cave, dungeon, forest, swamp, volcanic, frozen), mood (danger, safe, atmospheric, magical), type (creature, natural, supernatural)",
+                    "items": {
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "uniqueItems": true
+                },
+                "themes": {
+                    "type": "array",
+                    "description": "Genre/mood filter tags for theme-appropriate selection. Common values: dark_fantasy, high_fantasy, horror. Descriptors with matching themes are preferred when a theme is active.",
+                    "items": {
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "uniqueItems": true
+                },
+                "minDamagePercent": {
+                    "type": "number",
+                    "description": "Minimum damage percentage required for this descriptor to be selected (0-1). Used for damage-scaling text like 'cleaves through' for heavy hits. Value 0.5 means descriptor only used when damage >= 50% of maximum.",
+                    "minimum": 0,
+                    "maximum": 1
+                },
+                "maxDamagePercent": {
+                    "type": "number",
+                    "description": "Maximum damage percentage allowed for this descriptor to be selected (0-1). Used for damage-scaling text like 'grazes' for light hits. Value 0.25 means descriptor only used when damage <= 25% of maximum.",
+                    "minimum": 0,
+                    "maximum": 1
+                },
+                "minHealthPercent": {
+                    "type": "number",
+                    "description": "Minimum health percentage required for this descriptor to be selected (0-1). Used for health-based text filtering. Value 0.75 means descriptor only used when target health >= 75%.",
+                    "minimum": 0,
+                    "maximum": 1
+                },
+                "maxHealthPercent": {
+                    "type": "number",
+                    "description": "Maximum health percentage allowed for this descriptor to be selected (0-1). Used for near-death descriptions. Value 0.25 means descriptor only used when target health <= 25%.",
+                    "minimum": 0,
+                    "maximum": 1
+                },
+                "variables": {
+                    "type": "array",
+                    "description": "Documents variable placeholders used in the text field. This is for documentation purposes to indicate which {variables} are expected at runtime. Examples: ['player', 'killer'], ['target', 'weapon', 'damage']",
+                    "items": {
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "uniqueItems": true
+                },
+                "fallbackId": {
+                    "type": "string",
+                    "description": "Alternative descriptor ID to use if this descriptor's conditions are not met. Must reference another descriptor in the same pool.",
+                    "pattern": "^[a-z][a-z0-9_]*$"
+                }
+            },
+            "required": [
+                "id",
+                "text"
+            ],
+            "additionalProperties": false
+        },
+        "VariablePattern": {
+            "type": "object",
+            "description": "Documentation for variable substitution patterns used in descriptor text. Variables use curly brace syntax: {variableName}",
+            "properties": {
+                "pattern": {
+                    "type": "string",
+                    "description": "Regex pattern for variable syntax in descriptor text",
+                    "default": "\\{[a-zA-Z][a-zA-Z0-9_]*\\}"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Human-readable description of the variable pattern syntax"
+                }
+            }
+        }
+    }
+}

@@ -1,170 +1,487 @@
 {
+    "$schema": "../schemas/descriptors.schema.json",
     "category": "ambient",
     "pools": {
         "sound": {
             "id": "sound",
             "name": "Sound Events (Generic)",
             "descriptors": [
-                { "id": "distant_scream", "text": "A distant scream echoes through the corridors, then falls silent", "weight": 15 },
-                { "id": "heavy_fall", "text": "Something heavy falls with a crash somewhere nearby", "weight": 20 },
-                { "id": "whisper", "text": "You could swear you hear whispering, but there's no one there", "weight": 15 },
-                { "id": "footsteps", "text": "Footsteps echo from somewhere you can't quite place", "weight": 20 },
-                { "id": "grinding", "text": "A grinding sound of stone on stone reverberates through the walls", "weight": 15 },
-                { "id": "metallic_clang", "text": "A metallic clang rings out in the distance", "weight": 15 }
+                {
+                    "id": "distant_scream",
+                    "text": "A distant scream echoes through the corridors, then falls silent",
+                    "weight": 15
+                },
+                {
+                    "id": "heavy_fall",
+                    "text": "Something heavy falls with a crash somewhere nearby",
+                    "weight": 20
+                },
+                {
+                    "id": "whisper",
+                    "text": "You could swear you hear whispering, but there's no one there",
+                    "weight": 15
+                },
+                {
+                    "id": "footsteps",
+                    "text": "Footsteps echo from somewhere you can't quite place",
+                    "weight": 20
+                },
+                {
+                    "id": "grinding",
+                    "text": "A grinding sound of stone on stone reverberates through the walls",
+                    "weight": 15
+                },
+                {
+                    "id": "metallic_clang",
+                    "text": "A metallic clang rings out in the distance",
+                    "weight": 15
+                }
             ]
         },
         "sound_cave": {
             "id": "sound_cave",
             "name": "Sound Events (Cave)",
             "descriptors": [
-                { "id": "drip_echo", "text": "A single drop of water falls, its echo multiplying into a chorus", "weight": 25 },
-                { "id": "rock_fall", "text": "Loose stones clatter down from somewhere in the darkness above", "weight": 20 },
-                { "id": "bat_screech", "text": "A bat's screech pierces the silence, then fluttering wings fade into the distance", "weight": 20 },
-                { "id": "rumble", "text": "A deep rumble vibrates through the stone - the mountain settling, perhaps", "weight": 20 },
-                { "id": "wind_moan", "text": "Wind moans through unseen passages, carrying with it the smell of deep places", "weight": 15 }
+                {
+                    "id": "drip_echo",
+                    "text": "A single drop of water falls, its echo multiplying into a chorus",
+                    "weight": 25
+                },
+                {
+                    "id": "rock_fall",
+                    "text": "Loose stones clatter down from somewhere in the darkness above",
+                    "weight": 20
+                },
+                {
+                    "id": "bat_screech",
+                    "text": "A bat's screech pierces the silence, then fluttering wings fade into the distance",
+                    "weight": 20
+                },
+                {
+                    "id": "rumble",
+                    "text": "A deep rumble vibrates through the stone - the mountain settling, perhaps",
+                    "weight": 20
+                },
+                {
+                    "id": "wind_moan",
+                    "text": "Wind moans through unseen passages, carrying with it the smell of deep places",
+                    "weight": 15
+                }
             ]
         },
         "sound_dungeon": {
             "id": "sound_dungeon",
             "name": "Sound Events (Dungeon)",
             "descriptors": [
-                { "id": "chain_rattle", "text": "Chains rattle somewhere in the darkness", "weight": 25 },
-                { "id": "door_creak", "text": "A door creaks open or closed in a distant corridor", "weight": 20 },
-                { "id": "dripping", "text": "Water drips with maddening regularity from the ceiling", "weight": 20 },
-                { "id": "scratching", "text": "Something scratches at the other side of a nearby wall", "weight": 20 },
-                { "id": "muffled_cry", "text": "A muffled cry reaches you from deep within the dungeon", "weight": 15 }
+                {
+                    "id": "chain_rattle",
+                    "text": "Chains rattle somewhere in the darkness",
+                    "weight": 25
+                },
+                {
+                    "id": "door_creak",
+                    "text": "A door creaks open or closed in a distant corridor",
+                    "weight": 20
+                },
+                {
+                    "id": "dripping",
+                    "text": "Water drips with maddening regularity from the ceiling",
+                    "weight": 20
+                },
+                {
+                    "id": "scratching",
+                    "text": "Something scratches at the other side of a nearby wall",
+                    "weight": 20
+                },
+                {
+                    "id": "muffled_cry",
+                    "text": "A muffled cry reaches you from deep within the dungeon",
+                    "weight": 15
+                }
             ]
         },
         "sound_forest": {
             "id": "sound_forest",
             "name": "Sound Events (Forest)",
             "descriptors": [
-                { "id": "branch_snap", "text": "A branch snaps somewhere in the undergrowth", "weight": 25 },
-                { "id": "bird_call", "text": "A bird calls out, its song echoing through the trees", "weight": 25 },
-                { "id": "leaves_rustle", "text": "Leaves rustle overhead as something moves through the canopy", "weight": 20 },
-                { "id": "owl_hoot", "text": "An owl hoots mournfully in the distance", "weight": 15 },
-                { "id": "animal_cry", "text": "An animal cries out - hunter or hunted, you cannot tell", "weight": 15 }
+                {
+                    "id": "branch_snap",
+                    "text": "A branch snaps somewhere in the undergrowth",
+                    "weight": 25
+                },
+                {
+                    "id": "bird_call",
+                    "text": "A bird calls out, its song echoing through the trees",
+                    "weight": 25
+                },
+                {
+                    "id": "leaves_rustle",
+                    "text": "Leaves rustle overhead as something moves through the canopy",
+                    "weight": 20
+                },
+                {
+                    "id": "owl_hoot",
+                    "text": "An owl hoots mournfully in the distance",
+                    "weight": 15
+                },
+                {
+                    "id": "animal_cry",
+                    "text": "An animal cries out - hunter or hunted, you cannot tell",
+                    "weight": 15
+                }
             ]
         },
         "visual": {
             "id": "visual",
             "name": "Visual Events (Generic)",
             "descriptors": [
-                { "id": "shadow_move", "text": "Shadows shift at the corner of your vision, but nothing's there when you look", "weight": 25 },
-                { "id": "light_flicker", "text": "The light flickers and dims for a moment before returning to normal", "weight": 25 },
-                { "id": "dust_fall", "text": "Dust drifts down from above, glittering in the dim light", "weight": 20 },
-                { "id": "brief_glow", "text": "A faint glow pulses briefly from somewhere you can't quite identify", "weight": 15, "tags": ["magical"] },
-                { "id": "movement_glimpse", "text": "You glimpse movement in the distance, but it's gone before you can focus", "weight": 15 }
+                {
+                    "id": "shadow_move",
+                    "text": "Shadows shift at the corner of your vision, but nothing's there when you look",
+                    "weight": 25
+                },
+                {
+                    "id": "light_flicker",
+                    "text": "The light flickers and dims for a moment before returning to normal",
+                    "weight": 25
+                },
+                {
+                    "id": "dust_fall",
+                    "text": "Dust drifts down from above, glittering in the dim light",
+                    "weight": 20
+                },
+                {
+                    "id": "brief_glow",
+                    "text": "A faint glow pulses briefly from somewhere you can't quite identify",
+                    "weight": 15,
+                    "tags": [
+                        "magical"
+                    ]
+                },
+                {
+                    "id": "movement_glimpse",
+                    "text": "You glimpse movement in the distance, but it's gone before you can focus",
+                    "weight": 15
+                }
             ]
         },
         "visual_volcanic": {
             "id": "visual_volcanic",
             "name": "Visual Events (Volcanic)",
             "descriptors": [
-                { "id": "lava_bubble", "text": "A bubble of lava surfaces and pops, sending sparks into the air", "weight": 25 },
-                { "id": "steam_vent", "text": "A jet of steam hisses from a crack in the rock", "weight": 25 },
-                { "id": "ember_float", "text": "Glowing embers drift lazily through the superheated air", "weight": 20 },
-                { "id": "rock_glow", "text": "Cracks in the stone briefly glow brighter as magma surges below", "weight": 20 },
-                { "id": "ash_fall", "text": "Fine volcanic ash drifts down like gray snow", "weight": 10 }
+                {
+                    "id": "lava_bubble",
+                    "text": "A bubble of lava surfaces and pops, sending sparks into the air",
+                    "weight": 25
+                },
+                {
+                    "id": "steam_vent",
+                    "text": "A jet of steam hisses from a crack in the rock",
+                    "weight": 25
+                },
+                {
+                    "id": "ember_float",
+                    "text": "Glowing embers drift lazily through the superheated air",
+                    "weight": 20
+                },
+                {
+                    "id": "rock_glow",
+                    "text": "Cracks in the stone briefly glow brighter as magma surges below",
+                    "weight": 20
+                },
+                {
+                    "id": "ash_fall",
+                    "text": "Fine volcanic ash drifts down like gray snow",
+                    "weight": 10
+                }
             ]
         },
         "visual_ruins": {
             "id": "visual_ruins",
             "name": "Visual Events (Ruins)",
             "descriptors": [
-                { "id": "ghost_light", "text": "A ghostly light flickers in a distant window before fading", "weight": 20, "tags": ["magical"] },
-                { "id": "stone_crumble", "text": "A piece of stonework crumbles and falls from above", "weight": 25 },
-                { "id": "reflection_glimpse", "text": "You glimpse a reflection in a dusty surface that doesn't match your position", "weight": 15 },
-                { "id": "inscription_glow", "text": "Ancient inscriptions briefly glow as you pass", "weight": 20, "tags": ["magical"] },
-                { "id": "shadow_figure", "text": "A shadow passes across a doorway - but there's no one there", "weight": 20 }
+                {
+                    "id": "ghost_light",
+                    "text": "A ghostly light flickers in a distant window before fading",
+                    "weight": 20,
+                    "tags": [
+                        "magical"
+                    ]
+                },
+                {
+                    "id": "stone_crumble",
+                    "text": "A piece of stonework crumbles and falls from above",
+                    "weight": 25
+                },
+                {
+                    "id": "reflection_glimpse",
+                    "text": "You glimpse a reflection in a dusty surface that doesn't match your position",
+                    "weight": 15
+                },
+                {
+                    "id": "inscription_glow",
+                    "text": "Ancient inscriptions briefly glow as you pass",
+                    "weight": 20,
+                    "tags": [
+                        "magical"
+                    ]
+                },
+                {
+                    "id": "shadow_figure",
+                    "text": "A shadow passes across a doorway - but there's no one there",
+                    "weight": 20
+                }
             ]
         },
         "creature": {
             "id": "creature",
             "name": "Creature Events (Generic)",
             "descriptors": [
-                { "id": "rat_scatter", "text": "Rats scatter as you approach, disappearing into cracks in the walls", "weight": 25 },
-                { "id": "spider_web", "text": "You brush through an invisible spider web - something small scurries away", "weight": 20 },
-                { "id": "bat_flutter", "text": "A bat flutters past your head, startling you momentarily", "weight": 20 },
-                { "id": "insect_buzz", "text": "An insect buzzes past your ear with an angry drone", "weight": 20 },
-                { "id": "eyes_darkness", "text": "Tiny eyes reflect your light from the darkness, then blink out", "weight": 15 }
+                {
+                    "id": "rat_scatter",
+                    "text": "Rats scatter as you approach, disappearing into cracks in the walls",
+                    "weight": 25
+                },
+                {
+                    "id": "spider_web",
+                    "text": "You brush through an invisible spider web - something small scurries away",
+                    "weight": 20
+                },
+                {
+                    "id": "bat_flutter",
+                    "text": "A bat flutters past your head, startling you momentarily",
+                    "weight": 20
+                },
+                {
+                    "id": "insect_buzz",
+                    "text": "An insect buzzes past your ear with an angry drone",
+                    "weight": 20
+                },
+                {
+                    "id": "eyes_darkness",
+                    "text": "Tiny eyes reflect your light from the darkness, then blink out",
+                    "weight": 15
+                }
             ]
         },
         "creature_cave": {
             "id": "creature_cave",
             "name": "Creature Events (Cave)",
             "descriptors": [
-                { "id": "bat_colony", "text": "A colony of bats erupts from a crevice, filling the air with leathery wings", "weight": 20 },
-                { "id": "cave_fish", "text": "Pale, blind fish scatter in a underground pool as your shadow passes", "weight": 25 },
-                { "id": "cave_spider", "text": "A large cave spider retreats into its web as you approach", "weight": 20 },
-                { "id": "glow_worm", "text": "Glow worms on the ceiling create a false starfield above you", "weight": 20 },
-                { "id": "centipede", "text": "A large centipede skitters across the stone floor", "weight": 15 }
+                {
+                    "id": "bat_colony",
+                    "text": "A colony of bats erupts from a crevice, filling the air with leathery wings",
+                    "weight": 20
+                },
+                {
+                    "id": "cave_fish",
+                    "text": "Pale, blind fish scatter in a underground pool as your shadow passes",
+                    "weight": 25
+                },
+                {
+                    "id": "cave_spider",
+                    "text": "A large cave spider retreats into its web as you approach",
+                    "weight": 20
+                },
+                {
+                    "id": "glow_worm",
+                    "text": "Glow worms on the ceiling create a false starfield above you",
+                    "weight": 20
+                },
+                {
+                    "id": "centipede",
+                    "text": "A large centipede skitters across the stone floor",
+                    "weight": 15
+                }
             ]
         },
         "creature_swamp": {
             "id": "creature_swamp",
             "name": "Creature Events (Swamp)",
             "descriptors": [
-                { "id": "frog_leap", "text": "A large frog leaps from a log and splashes into the murky water", "weight": 25 },
-                { "id": "snake_slither", "text": "A snake slithers away through the undergrowth as you approach", "weight": 20 },
-                { "id": "insect_swarm", "text": "A cloud of biting insects descends upon you briefly before dispersing", "weight": 20 },
-                { "id": "bird_screech", "text": "A bird screeches an alarm call before taking flight", "weight": 20 },
-                { "id": "ripple_water", "text": "Something large moves beneath the water's surface, creating ripples", "weight": 15 }
+                {
+                    "id": "frog_leap",
+                    "text": "A large frog leaps from a log and splashes into the murky water",
+                    "weight": 25
+                },
+                {
+                    "id": "snake_slither",
+                    "text": "A snake slithers away through the undergrowth as you approach",
+                    "weight": 20
+                },
+                {
+                    "id": "insect_swarm",
+                    "text": "A cloud of biting insects descends upon you briefly before dispersing",
+                    "weight": 20
+                },
+                {
+                    "id": "bird_screech",
+                    "text": "A bird screeches an alarm call before taking flight",
+                    "weight": 20
+                },
+                {
+                    "id": "ripple_water",
+                    "text": "Something large moves beneath the water's surface, creating ripples",
+                    "weight": 15
+                }
             ]
         },
         "creature_forest": {
             "id": "creature_forest",
             "name": "Creature Events (Forest)",
             "descriptors": [
-                { "id": "deer_flee", "text": "A deer freezes at your approach, then bounds away through the trees", "weight": 25 },
-                { "id": "squirrel_chatter", "text": "A squirrel chatters angrily at you from a high branch", "weight": 25 },
-                { "id": "bird_flight", "text": "A flock of birds takes flight, disturbed by your presence", "weight": 20 },
-                { "id": "rabbit_dash", "text": "A rabbit dashes across your path and disappears into the brush", "weight": 20 },
-                { "id": "fox_glimpse", "text": "A fox watches you from the undergrowth before slinking away", "weight": 10 }
+                {
+                    "id": "deer_flee",
+                    "text": "A deer freezes at your approach, then bounds away through the trees",
+                    "weight": 25
+                },
+                {
+                    "id": "squirrel_chatter",
+                    "text": "A squirrel chatters angrily at you from a high branch",
+                    "weight": 25
+                },
+                {
+                    "id": "bird_flight",
+                    "text": "A flock of birds takes flight, disturbed by your presence",
+                    "weight": 20
+                },
+                {
+                    "id": "rabbit_dash",
+                    "text": "A rabbit dashes across your path and disappears into the brush",
+                    "weight": 20
+                },
+                {
+                    "id": "fox_glimpse",
+                    "text": "A fox watches you from the undergrowth before slinking away",
+                    "weight": 10
+                }
             ]
         },
         "environmental": {
             "id": "environmental",
             "name": "Environmental Events (Generic)",
             "descriptors": [
-                { "id": "dust_settle", "text": "Ancient dust settles around you, disturbed by your passage", "weight": 25 },
-                { "id": "cold_draft", "text": "A cold draft washes over you from an unseen source", "weight": 25 },
-                { "id": "stone_crack", "text": "A stone cracks underfoot, louder than expected", "weight": 20 },
-                { "id": "musty_air", "text": "A pocket of stale, musty air assaults your senses", "weight": 15 },
-                { "id": "floor_creak", "text": "The floor creaks ominously beneath your weight", "weight": 15 }
+                {
+                    "id": "dust_settle",
+                    "text": "Ancient dust settles around you, disturbed by your passage",
+                    "weight": 25
+                },
+                {
+                    "id": "cold_draft",
+                    "text": "A cold draft washes over you from an unseen source",
+                    "weight": 25
+                },
+                {
+                    "id": "stone_crack",
+                    "text": "A stone cracks underfoot, louder than expected",
+                    "weight": 20
+                },
+                {
+                    "id": "musty_air",
+                    "text": "A pocket of stale, musty air assaults your senses",
+                    "weight": 15
+                },
+                {
+                    "id": "floor_creak",
+                    "text": "The floor creaks ominously beneath your weight",
+                    "weight": 15
+                }
             ]
         },
         "environmental_frozen": {
             "id": "environmental_frozen",
             "name": "Environmental Events (Frozen)",
             "descriptors": [
-                { "id": "ice_crack", "text": "Ice cracks somewhere nearby with a sound like breaking glass", "weight": 25 },
-                { "id": "frost_form", "text": "Frost crystallizes before your eyes on a nearby surface", "weight": 25 },
-                { "id": "breath_fog", "text": "Your breath fogs heavily in the frigid air", "weight": 20 },
-                { "id": "icicle_fall", "text": "An icicle breaks free and shatters on the frozen ground", "weight": 15 },
-                { "id": "wind_howl", "text": "A freezing wind howls through the passage, cutting to the bone", "weight": 15 }
+                {
+                    "id": "ice_crack",
+                    "text": "Ice cracks somewhere nearby with a sound like breaking glass",
+                    "weight": 25
+                },
+                {
+                    "id": "frost_form",
+                    "text": "Frost crystallizes before your eyes on a nearby surface",
+                    "weight": 25
+                },
+                {
+                    "id": "breath_fog",
+                    "text": "Your breath fogs heavily in the frigid air",
+                    "weight": 20
+                },
+                {
+                    "id": "icicle_fall",
+                    "text": "An icicle breaks free and shatters on the frozen ground",
+                    "weight": 15
+                },
+                {
+                    "id": "wind_howl",
+                    "text": "A freezing wind howls through the passage, cutting to the bone",
+                    "weight": 15
+                }
             ]
         },
         "environmental_volcanic": {
             "id": "environmental_volcanic",
             "name": "Environmental Events (Volcanic)",
             "descriptors": [
-                { "id": "ground_tremor", "text": "The ground trembles briefly beneath your feet", "weight": 25 },
-                { "id": "sulfur_burst", "text": "A burst of sulfurous gas escapes from a crack in the rock", "weight": 25 },
-                { "id": "heat_wave", "text": "A wave of intense heat washes over you from deeper within", "weight": 20 },
-                { "id": "rock_pop", "text": "Superheated rock pops and cracks around you", "weight": 15 },
-                { "id": "ash_swirl", "text": "Volcanic ash swirls in the heated air currents", "weight": 15 }
+                {
+                    "id": "ground_tremor",
+                    "text": "The ground trembles briefly beneath your feet",
+                    "weight": 25
+                },
+                {
+                    "id": "sulfur_burst",
+                    "text": "A burst of sulfurous gas escapes from a crack in the rock",
+                    "weight": 25
+                },
+                {
+                    "id": "heat_wave",
+                    "text": "A wave of intense heat washes over you from deeper within",
+                    "weight": 20
+                },
+                {
+                    "id": "rock_pop",
+                    "text": "Superheated rock pops and cracks around you",
+                    "weight": 15
+                },
+                {
+                    "id": "ash_swirl",
+                    "text": "Volcanic ash swirls in the heated air currents",
+                    "weight": 15
+                }
             ]
         },
         "environmental_swamp": {
             "id": "environmental_swamp",
             "name": "Environmental Events (Swamp)",
             "descriptors": [
-                { "id": "bubble_rise", "text": "Bubbles rise from the murky water, releasing foul-smelling gas", "weight": 25 },
-                { "id": "mud_squelch", "text": "The mud squelches loudly with each step", "weight": 25 },
-                { "id": "mist_roll", "text": "A bank of mist rolls in, obscuring your vision", "weight": 20 },
-                { "id": "branch_fall", "text": "A waterlogged branch falls from a dead tree with a splash", "weight": 15 },
-                { "id": "will_o_wisp", "text": "A faint light flickers over the marsh - swamp gas, perhaps", "weight": 15, "tags": ["magical"] }
+                {
+                    "id": "bubble_rise",
+                    "text": "Bubbles rise from the murky water, releasing foul-smelling gas",
+                    "weight": 25
+                },
+                {
+                    "id": "mud_squelch",
+                    "text": "The mud squelches loudly with each step",
+                    "weight": 25
+                },
+                {
+                    "id": "mist_roll",
+                    "text": "A bank of mist rolls in, obscuring your vision",
+                    "weight": 20
+                },
+                {
+                    "id": "branch_fall",
+                    "text": "A waterlogged branch falls from a dead tree with a splash",
+                    "weight": 15
+                },
+                {
+                    "id": "will_o_wisp",
+                    "text": "A faint light flickers over the marsh - swamp gas, perhaps",
+                    "weight": 15,
+                    "tags": [
+                        "magical"
+                    ]
+                }
             ]
         }
     }

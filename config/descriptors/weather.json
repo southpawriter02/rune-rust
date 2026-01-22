@@ -1,102 +1,258 @@
 {
+  "$schema": "../schemas/descriptors.schema.json",
   "category": "weather",
   "pools": {
     "weather_rain_indoor": {
       "id": "weather_rain_indoor",
       "name": "Rain (Indoor)",
       "descriptors": [
-        { "id": "rain_roof", "text": "Rain patters steadily on the roof above", "weight": 30 },
-        { "id": "water_seep", "text": "Water seeps through cracks in the ceiling", "weight": 25 },
-        { "id": "damp_air", "text": "Damp air drifts in from outside", "weight": 25 },
-        { "id": "distant_rain", "text": "The muffled sound of rain reaches you from outside", "weight": 20 }
+        {
+          "id": "rain_roof",
+          "text": "Rain patters steadily on the roof above",
+          "weight": 30
+        },
+        {
+          "id": "water_seep",
+          "text": "Water seeps through cracks in the ceiling",
+          "weight": 25
+        },
+        {
+          "id": "damp_air",
+          "text": "Damp air drifts in from outside",
+          "weight": 25
+        },
+        {
+          "id": "distant_rain",
+          "text": "The muffled sound of rain reaches you from outside",
+          "weight": 20
+        }
       ]
     },
     "weather_rain_outdoor": {
       "id": "weather_rain_outdoor",
       "name": "Rain (Outdoor)",
       "descriptors": [
-        { "id": "steady_rain", "text": "Steady rain patters against you", "weight": 30 },
-        { "id": "rain_soaked", "text": "Rain soaks through your clothing", "weight": 25 },
-        { "id": "puddles", "text": "Rain pools in puddles around your feet", "weight": 25 },
-        { "id": "grey_curtain", "text": "A grey curtain of rain limits your vision", "weight": 20 }
+        {
+          "id": "steady_rain",
+          "text": "Steady rain patters against you",
+          "weight": 30
+        },
+        {
+          "id": "rain_soaked",
+          "text": "Rain soaks through your clothing",
+          "weight": 25
+        },
+        {
+          "id": "puddles",
+          "text": "Rain pools in puddles around your feet",
+          "weight": 25
+        },
+        {
+          "id": "grey_curtain",
+          "text": "A grey curtain of rain limits your vision",
+          "weight": 20
+        }
       ]
     },
     "weather_storm_indoor": {
       "id": "weather_storm_indoor",
       "name": "Storm (Indoor)",
       "descriptors": [
-        { "id": "thunder_rumble", "text": "Thunder rumbles overhead, shaking the walls", "weight": 30 },
-        { "id": "lightning_flash", "text": "Lightning flashes through the windows", "weight": 25 },
-        { "id": "storm_howl", "text": "The storm howls outside, rattling the shutters", "weight": 25 },
-        { "id": "wind_whistle", "text": "Wind whistles through every crack and gap", "weight": 20 }
+        {
+          "id": "thunder_rumble",
+          "text": "Thunder rumbles overhead, shaking the walls",
+          "weight": 30
+        },
+        {
+          "id": "lightning_flash",
+          "text": "Lightning flashes through the windows",
+          "weight": 25
+        },
+        {
+          "id": "storm_howl",
+          "text": "The storm howls outside, rattling the shutters",
+          "weight": 25
+        },
+        {
+          "id": "wind_whistle",
+          "text": "Wind whistles through every crack and gap",
+          "weight": 20
+        }
       ]
     },
     "weather_storm_outdoor": {
       "id": "weather_storm_outdoor",
       "name": "Storm (Outdoor)",
       "descriptors": [
-        { "id": "lightning_sky", "text": "Lightning splits the sky, briefly turning night to day", "weight": 30 },
-        { "id": "thunder_crash", "text": "Thunder crashes around you with deafening force", "weight": 25 },
-        { "id": "driving_rain", "text": "Driving rain stings your face", "weight": 25 },
-        { "id": "storm_fury", "text": "The full fury of the storm batters you", "weight": 20 }
+        {
+          "id": "lightning_sky",
+          "text": "Lightning splits the sky, briefly turning night to day",
+          "weight": 30
+        },
+        {
+          "id": "thunder_crash",
+          "text": "Thunder crashes around you with deafening force",
+          "weight": 25
+        },
+        {
+          "id": "driving_rain",
+          "text": "Driving rain stings your face",
+          "weight": 25
+        },
+        {
+          "id": "storm_fury",
+          "text": "The full fury of the storm batters you",
+          "weight": 20
+        }
       ]
     },
     "weather_snow_indoor": {
       "id": "weather_snow_indoor",
       "name": "Snow (Indoor)",
       "descriptors": [
-        { "id": "snow_drift", "text": "Snow drifts through gaps, piling in corners", "weight": 30 },
-        { "id": "cold_draft", "text": "Cold drafts carry snowflakes inside", "weight": 30 },
-        { "id": "muffled_quiet", "text": "The snow outside muffles all sound", "weight": 20 },
-        { "id": "frost_glass", "text": "Frost patterns creep across any glass", "weight": 20 }
+        {
+          "id": "snow_drift",
+          "text": "Snow drifts through gaps, piling in corners",
+          "weight": 30
+        },
+        {
+          "id": "cold_draft",
+          "text": "Cold drafts carry snowflakes inside",
+          "weight": 30
+        },
+        {
+          "id": "muffled_quiet",
+          "text": "The snow outside muffles all sound",
+          "weight": 20
+        },
+        {
+          "id": "frost_glass",
+          "text": "Frost patterns creep across any glass",
+          "weight": 20
+        }
       ]
     },
     "weather_snow_outdoor": {
       "id": "weather_snow_outdoor",
       "name": "Snow (Outdoor)",
       "descriptors": [
-        { "id": "snow_swirl", "text": "Snow swirls around you in dancing flurries", "weight": 30 },
-        { "id": "white_world", "text": "The world is blanketed in white", "weight": 25 },
-        { "id": "snow_crunch", "text": "Snow crunches beneath your feet", "weight": 25 },
-        { "id": "blinding_white", "text": "The snow creates a blinding white expanse", "weight": 20 }
+        {
+          "id": "snow_swirl",
+          "text": "Snow swirls around you in dancing flurries",
+          "weight": 30
+        },
+        {
+          "id": "white_world",
+          "text": "The world is blanketed in white",
+          "weight": 25
+        },
+        {
+          "id": "snow_crunch",
+          "text": "Snow crunches beneath your feet",
+          "weight": 25
+        },
+        {
+          "id": "blinding_white",
+          "text": "The snow creates a blinding white expanse",
+          "weight": 20
+        }
       ]
     },
     "weather_fog_indoor": {
       "id": "weather_fog_indoor",
       "name": "Fog (Indoor)",
       "descriptors": [
-        { "id": "mist_seep", "text": "Mist seeps under doors and through cracks", "weight": 35 },
-        { "id": "fog_tendrils", "text": "Tendrils of fog creep along the floor", "weight": 35 },
-        { "id": "damp_fog", "text": "Clammy fog makes everything damp to the touch", "weight": 30 }
+        {
+          "id": "mist_seep",
+          "text": "Mist seeps under doors and through cracks",
+          "weight": 35
+        },
+        {
+          "id": "fog_tendrils",
+          "text": "Tendrils of fog creep along the floor",
+          "weight": 35
+        },
+        {
+          "id": "damp_fog",
+          "text": "Clammy fog makes everything damp to the touch",
+          "weight": 30
+        }
       ]
     },
     "weather_fog_outdoor": {
       "id": "weather_fog_outdoor",
       "name": "Fog (Outdoor)",
       "descriptors": [
-        { "id": "thick_fog", "text": "Thick fog limits visibility to mere feet", "weight": 30 },
-        { "id": "fog_blanket", "text": "A blanket of fog muffles sight and sound", "weight": 30 },
-        { "id": "shapes_fog", "text": "Shapes loom suddenly from the fog", "weight": 25 },
-        { "id": "fog_swirl", "text": "Fog swirls around you like ghostly fingers", "weight": 15, "tags": ["horror"] }
+        {
+          "id": "thick_fog",
+          "text": "Thick fog limits visibility to mere feet",
+          "weight": 30
+        },
+        {
+          "id": "fog_blanket",
+          "text": "A blanket of fog muffles sight and sound",
+          "weight": 30
+        },
+        {
+          "id": "shapes_fog",
+          "text": "Shapes loom suddenly from the fog",
+          "weight": 25
+        },
+        {
+          "id": "fog_swirl",
+          "text": "Fog swirls around you like ghostly fingers",
+          "weight": 15,
+          "tags": [
+            "horror"
+          ]
+        }
       ]
     },
     "weather_wind_indoor": {
       "id": "weather_wind_indoor",
       "name": "Wind (Indoor)",
       "descriptors": [
-        { "id": "drafts_whistle", "text": "Drafts whistle through gaps in the walls", "weight": 35 },
-        { "id": "wind_moan", "text": "Wind moans through the corridors", "weight": 35 },
-        { "id": "banging_shutters", "text": "Loose shutters bang in the wind", "weight": 30 }
+        {
+          "id": "drafts_whistle",
+          "text": "Drafts whistle through gaps in the walls",
+          "weight": 35
+        },
+        {
+          "id": "wind_moan",
+          "text": "Wind moans through the corridors",
+          "weight": 35
+        },
+        {
+          "id": "banging_shutters",
+          "text": "Loose shutters bang in the wind",
+          "weight": 30
+        }
       ]
     },
     "weather_wind_outdoor": {
       "id": "weather_wind_outdoor",
       "name": "Wind (Outdoor)",
       "descriptors": [
-        { "id": "strong_wind", "text": "A strong wind buffets you", "weight": 30 },
-        { "id": "howling_wind", "text": "Wind howls across the open ground", "weight": 30 },
-        { "id": "biting_wind", "text": "A biting wind cuts through your clothing", "weight": 25 },
-        { "id": "gusting_wind", "text": "Gusting wind threatens to knock you off balance", "weight": 15 }
+        {
+          "id": "strong_wind",
+          "text": "A strong wind buffets you",
+          "weight": 30
+        },
+        {
+          "id": "howling_wind",
+          "text": "Wind howls across the open ground",
+          "weight": 30
+        },
+        {
+          "id": "biting_wind",
+          "text": "A biting wind cuts through your clothing",
+          "weight": 25
+        },
+        {
+          "id": "gusting_wind",
+          "text": "Gusting wind threatens to knock you off balance",
+          "weight": 15
+        }
       ]
     }
   }

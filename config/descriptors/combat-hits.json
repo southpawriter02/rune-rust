@@ -1,4 +1,5 @@
 {
+  "$schema": "../schemas/descriptors.schema.json",
   "category": "combat-hits",
   "pools": {
     "hit_sword": {
