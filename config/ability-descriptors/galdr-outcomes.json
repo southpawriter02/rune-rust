@@ -1,0 +1,142 @@
+{
+    "$schema": "../../config/schemas/ability-descriptors.schema.json",
+    "version": "1.0.0",
+    "category": "galdr-outcomes",
+    "pools": {
+        "flamebolt_hit_enemy": [
+            {
+                "id": "flamebolt_hit_enemy_001",
+                "text": "Fire engulfs the {Target}, scorching their {Target_Location}! Acrid smoke rises from charred flesh.",
+                "weight": 10,
+                "outcomeType": "Hit",
+                "abilityName": "FlameBolt",
+                "targetType": "Enemy",
+                "effectCategory": "Damage",
+                "tags": [
+                    "Damage",
+                    "Fire",
+                    "Descriptive"
+                ]
+            },
+            {
+                "id": "flamebolt_hit_enemy_002",
+                "text": "Flames wash over the {Target}, dealing {Damage} damage! The scent of burning fills the air.",
+                "weight": 10,
+                "outcomeType": "Hit",
+                "abilityName": "FlameBolt",
+                "targetType": "Enemy",
+                "effectCategory": "Damage",
+                "tags": [
+                    "Damage",
+                    "Fire"
+                ]
+            }
+        ],
+        "flamebolt_criticalhit_enemy": [
+            {
+                "id": "flamebolt_criticalhit_enemy_001",
+                "text": "The {Target} is CONSUMED by primal fire! Flames dance across their entire form—devastation incarnate!",
+                "weight": 10,
+                "outcomeType": "CriticalHit",
+                "abilityName": "FlameBolt",
+                "targetType": "Enemy",
+                "effectCategory": "Damage",
+                "tags": [
+                    "Critical",
+                    "Fire",
+                    "Epic"
+                ]
+            }
+        ],
+        "flamebolt_miss": [
+            {
+                "id": "flamebolt_miss_001",
+                "text": "Your flames dissipate before reaching the {Target}, leaving only smoke and disappointment.",
+                "weight": 10,
+                "outcomeType": "Miss",
+                "abilityName": "FlameBolt",
+                "targetType": "Enemy",
+                "effectCategory": "Damage",
+                "tags": [
+                    "Miss",
+                    "Fire"
+                ]
+            }
+        ],
+        "flamebolt_resisted": [
+            {
+                "id": "flamebolt_resisted_001",
+                "text": "The {Target} shrugs off your flames! Fire resistance blunts the Galdr's fury.",
+                "weight": 10,
+                "outcomeType": "Resisted",
+                "abilityName": "FlameBolt",
+                "targetType": "Enemy",
+                "effectCategory": "Damage",
+                "tags": [
+                    "Resisted",
+                    "Fire"
+                ]
+            }
+        ],
+        "healingchant_fulleffect_self": [
+            {
+                "id": "healingchant_fulleffect_self_001",
+                "text": "Warmth suffuses your body. Wounds knit, pain fades—Berkanan's blessing restores {Healing} health!",
+                "weight": 10,
+                "outcomeType": "FullEffect",
+                "abilityName": "HealingChant",
+                "targetType": "Self",
+                "effectCategory": "Healing",
+                "tags": [
+                    "Healing",
+                    "Restoration"
+                ]
+            }
+        ],
+        "healingchant_fulleffect_ally": [
+            {
+                "id": "healingchant_fulleffect_ally_001",
+                "text": "{Target}'s wounds close as Berkanan's gentle power flows through them. Life reasserts itself!",
+                "weight": 10,
+                "outcomeType": "FullEffect",
+                "abilityName": "HealingChant",
+                "targetType": "Ally",
+                "effectCategory": "Healing",
+                "tags": [
+                    "Healing",
+                    "Support"
+                ]
+            }
+        ],
+        "generic_hit": [
+            {
+                "id": "generic_hit_001",
+                "text": "Your {Ability} strikes the {Target}, dealing {Damage} damage!",
+                "weight": 10,
+                "outcomeType": "Hit",
+                "abilityName": "Generic",
+                "targetType": "Enemy",
+                "effectCategory": "Damage",
+                "tags": [
+                    "Generic",
+                    "Fallback"
+                ]
+            }
+        ],
+        "generic_miss": [
+            {
+                "id": "generic_miss_001",
+                "text": "Your {Ability} misses the {Target}!",
+                "weight": 10,
+                "outcomeType": "Miss",
+                "abilityName": "Generic",
+                "targetType": "Enemy",
+                "effectCategory": null,
+                "tags": [
+                    "Generic",
+                    "Fallback"
+                ]
+            }
+        ]
+    }
+}

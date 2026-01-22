@@ -1,0 +1,199 @@
+{
+    "$schema": "../../config/schemas/ability-descriptors.schema.json",
+    "version": "1.0.0",
+    "category": "galdr-miscasts",
+    "pools": {
+        "miscast_fizzle_minor": [
+            {
+                "id": "miscast_fizzle_minor_001",
+                "text": "Your Galdr falters. The rune flickers once and dies, the spell dissipating harmlessly.",
+                "weight": 10,
+                "miscastType": "Fizzle",
+                "severity": "Minor",
+                "runeSchool": null,
+                "mechanicalEffect": {
+                    "cosmetic": true
+                },
+                "tags": [
+                    "Harmless",
+                    "Embarrassing"
+                ]
+            },
+            {
+                "id": "miscast_fizzle_minor_002",
+                "text": "Nothing happens. The rune refuses to ignite, leaving you feeling foolish.",
+                "weight": 10,
+                "miscastType": "Fizzle",
+                "severity": "Minor",
+                "runeSchool": null,
+                "mechanicalEffect": {
+                    "cosmetic": true
+                },
+                "tags": [
+                    "Harmless"
+                ]
+            }
+        ],
+        "miscast_backlash_moderate": [
+            {
+                "id": "miscast_backlash_moderate_001",
+                "text": "The spell fizzles back at you! Raw arcane energy sears your hands as the Galdr rejects you!",
+                "weight": 10,
+                "miscastType": "Backlash",
+                "severity": "Moderate",
+                "runeSchool": null,
+                "mechanicalEffect": {
+                    "damage": 5,
+                    "target": "Self"
+                },
+                "tags": [
+                    "Painful",
+                    "Self-Damage"
+                ]
+            }
+        ],
+        "miscast_blight_moderate": [
+            {
+                "id": "miscast_blight_fehu_moderate_001",
+                "text": "Fehu inverts! Fire erupts—but it's cold flame, paradoxical and painful! You stagger as reality rebels!",
+                "weight": 10,
+                "miscastType": "BlightCorruption",
+                "severity": "Moderate",
+                "runeSchool": "Fehu",
+                "abilityName": "FlameBolt",
+                "corruptionSource": "RunicBlight",
+                "mechanicalEffect": {
+                    "damage": 6,
+                    "status": "Corrupted",
+                    "duration": 2,
+                    "target": "Self"
+                },
+                "tags": [
+                    "Paradoxical",
+                    "Dangerous",
+                    "Runic"
+                ]
+            },
+            {
+                "id": "miscast_blight_generic_moderate_001",
+                "text": "The Blight seizes your Galdr! The rune twists, meaning corrupted, power bleeding into wrongness!",
+                "weight": 10,
+                "miscastType": "BlightCorruption",
+                "severity": "Moderate",
+                "runeSchool": null,
+                "corruptionSource": "RunicBlight",
+                "mechanicalEffect": {
+                    "damage": 5,
+                    "status": "Corrupted",
+                    "duration": 1,
+                    "target": "Self",
+                    "corruption": 1
+                },
+                "tags": [
+                    "Blight",
+                    "Dangerous"
+                ]
+            }
+        ],
+        "miscast_blight_severe": [
+            {
+                "id": "miscast_blight_severe_001",
+                "text": "The Runic Blight SCREAMS through your Galdr! The rune inverts completely—power hemorrhages in all directions! Your flesh crawls with corruption!",
+                "weight": 10,
+                "miscastType": "BlightCorruption",
+                "severity": "Severe",
+                "runeSchool": null,
+                "corruptionSource": "RunicBlight",
+                "mechanicalEffect": {
+                    "damage": 10,
+                    "status": "Evolving_Corruption",
+                    "duration": 3,
+                    "target": "Self",
+                    "corruption": 3
+                },
+                "tags": [
+                    "Devastating",
+                    "Corruption"
+                ]
+            }
+        ],
+        "miscast_paradox_moderate": [
+            {
+                "id": "miscast_paradox_moderate_001",
+                "text": "Reality stutters. The rune exists and doesn't exist—for a heartbeat, you see THROUGH reality to something else. Something that sees you back.",
+                "weight": 10,
+                "miscastType": "Paradox",
+                "severity": "Moderate",
+                "runeSchool": null,
+                "mechanicalEffect": {
+                    "status": "Reality_Fractured",
+                    "duration": 1,
+                    "target": "Self"
+                },
+                "tags": [
+                    "Eldritch",
+                    "Disturbing"
+                ]
+            }
+        ],
+        "miscast_wildmagic_moderate": [
+            {
+                "id": "miscast_wildmagic_moderate_001",
+                "text": "Magic erupts in all directions! Uncontrolled energy rips through the air—anything could happen!",
+                "weight": 10,
+                "miscastType": "WildMagic",
+                "severity": "Moderate",
+                "runeSchool": null,
+                "mechanicalEffect": {
+                    "random_effect": true,
+                    "target": "Area"
+                },
+                "tags": [
+                    "Chaotic",
+                    "Unpredictable"
+                ]
+            }
+        ],
+        "miscast_alfheim_moderate": [
+            {
+                "id": "miscast_alfheim_moderate_001",
+                "text": "The Cursed Choir harmonizes with your Galdr! Wrong notes slip in—alien melodies that twist your spell into something the Choir desires!",
+                "weight": 10,
+                "miscastType": "AlfheimDistortion",
+                "severity": "Moderate",
+                "runeSchool": null,
+                "biome": "Alfheim",
+                "corruptionSource": "AlfheimCursedChoir",
+                "mechanicalEffect": {
+                    "status": "Choir_Touched",
+                    "duration": 2,
+                    "target": "Self"
+                },
+                "tags": [
+                    "Alfheim",
+                    "Cursed_Choir"
+                ]
+            }
+        ],
+        "miscast_runicinversion_moderate": [
+            {
+                "id": "miscast_runicinversion_fehu_001",
+                "text": "Fehu INVERTS! Fire becomes ice—heat becomes cold—the rune's meaning flips and your fire spell manifests as bitter frost!",
+                "weight": 10,
+                "miscastType": "RunicInversion",
+                "severity": "Moderate",
+                "runeSchool": "Fehu",
+                "mechanicalEffect": {
+                    "damage": 4,
+                    "status": "Frostbitten",
+                    "duration": 1,
+                    "target": "Self"
+                },
+                "tags": [
+                    "Inversion",
+                    "Elemental_Swap"
+                ]
+            }
+        ]
+    }
+}

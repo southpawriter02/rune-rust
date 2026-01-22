@@ -1,0 +1,96 @@
+{
+    "$schema": "../../config/schemas/ability-descriptors.schema.json",
+    "version": "1.0.0",
+    "category": "weapon-arts",
+    "pools": {
+        "weaponart_whirlwind_twohanded": [
+            {
+                "id": "whirlwind_strike_twohanded_001",
+                "text": "You spin your {Weapon} in a devastating arc, steel singing through the air as it cleaves through the {Target}!",
+                "weight": 10,
+                "abilityCategory": "WeaponArt",
+                "abilityName": "WhirlwindStrike",
+                "weaponType": "TwoHanded",
+                "successLevel": "SolidSuccess",
+                "tags": [
+                    "Melee",
+                    "AoE",
+                    "Dramatic"
+                ]
+            },
+            {
+                "id": "whirlwind_strike_twohanded_002",
+                "text": "A deadly spin! Your {Weapon} traces a circle of death, catching the {Target} in its path!",
+                "weight": 10,
+                "abilityCategory": "WeaponArt",
+                "abilityName": "WhirlwindStrike",
+                "weaponType": "TwoHanded",
+                "successLevel": "SolidSuccess",
+                "tags": [
+                    "Melee",
+                    "AoE"
+                ]
+            }
+        ],
+        "weaponart_shieldbash_onehanded": [
+            {
+                "id": "shield_bash_onehanded_001",
+                "text": "You slam your shield into the {Target}, the impact echoing through the chamber! They stagger backward!",
+                "weight": 10,
+                "abilityCategory": "WeaponArt",
+                "abilityName": "ShieldBash",
+                "weaponType": "Shield",
+                "successLevel": "SolidSuccess",
+                "tags": [
+                    "Defensive",
+                    "Stun"
+                ]
+            }
+        ],
+        "tacticalability_charge": [
+            {
+                "id": "charge_tactical_001",
+                "text": "You surge forward, closing the distance in a blur of motion! The {Target} barely has time to react!",
+                "weight": 10,
+                "abilityCategory": "TacticalAbility",
+                "abilityName": "Charge",
+                "weaponType": null,
+                "successLevel": "SolidSuccess",
+                "tags": [
+                    "Movement",
+                    "Aggressive"
+                ]
+            }
+        ],
+        "defensiveability_parry": [
+            {
+                "id": "parry_defensive_001",
+                "text": "You deflect the incoming blow with practiced precision, turning it aside with your {Weapon}!",
+                "weight": 10,
+                "abilityCategory": "DefensiveAbility",
+                "abilityName": "Parry",
+                "weaponType": null,
+                "successLevel": "SolidSuccess",
+                "tags": [
+                    "Defensive",
+                    "Counter"
+                ]
+            }
+        ],
+        "resourceability_secondwind": [
+            {
+                "id": "second_wind_resource_001",
+                "text": "You draw upon hidden reserves of strength! Energy floods back into your limbs, fatigue momentarily forgotten.",
+                "weight": 10,
+                "abilityCategory": "ResourceAbility",
+                "abilityName": "SecondWind",
+                "weaponType": null,
+                "successLevel": null,
+                "tags": [
+                    "Recovery",
+                    "Stamina"
+                ]
+            }
+        ]
+    }
+}

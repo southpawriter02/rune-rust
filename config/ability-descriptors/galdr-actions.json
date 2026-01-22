@@ -1,0 +1,162 @@
+{
+    "$schema": "../../config/schemas/ability-descriptors.schema.json",
+    "version": "1.0.0",
+    "category": "galdr-actions",
+    "pools": {
+        "fehu_flamebolt_minor": [
+            {
+                "id": "fehu_flamebolt_minor_001",
+                "text": "You chant the Fehu rune, its fiery syllables harsh on your tongue. Flames sputter weakly from your palm, barely reaching the {Target}.",
+                "weight": 10,
+                "actionType": "Invocation",
+                "runeSchool": "Fehu",
+                "abilityName": "FlameBolt",
+                "successLevel": "MinorSuccess",
+                "tags": [
+                    "Verbose",
+                    "Descriptive"
+                ]
+            },
+            {
+                "id": "fehu_flamebolt_minor_002",
+                "text": "You intone Fehu's name—a small gout of fire leaps forth, more smoke than flame.",
+                "weight": 10,
+                "actionType": "Invocation",
+                "runeSchool": "Fehu",
+                "abilityName": "FlameBolt",
+                "successLevel": "MinorSuccess",
+                "tags": [
+                    "Concise"
+                ]
+            }
+        ],
+        "fehu_flamebolt_solid": [
+            {
+                "id": "fehu_flamebolt_solid_001",
+                "text": "You sing the Fehu rune, its ancient will igniting the air. A bolt of flame streaks toward the {Target}, trailing embers.",
+                "weight": 10,
+                "actionType": "Invocation",
+                "runeSchool": "Fehu",
+                "abilityName": "FlameBolt",
+                "successLevel": "SolidSuccess",
+                "tags": [
+                    "Verbose",
+                    "Descriptive"
+                ]
+            },
+            {
+                "id": "fehu_flamebolt_solid_002",
+                "text": "Fehu blazes crimson in the air before you. Fire answers your call, arcing toward the {Target}!",
+                "weight": 10,
+                "actionType": "Invocation",
+                "runeSchool": "Fehu",
+                "abilityName": "FlameBolt",
+                "successLevel": "SolidSuccess",
+                "tags": [
+                    "Dramatic"
+                ]
+            }
+        ],
+        "fehu_flamebolt_exceptional": [
+            {
+                "id": "fehu_flamebolt_exceptional_001",
+                "text": "You invoke Fehu with perfect resonance—the rune blazes in the air before you! A devastating torrent of flame engulfs the {Target}!",
+                "weight": 10,
+                "actionType": "Invocation",
+                "runeSchool": "Fehu",
+                "abilityName": "FlameBolt",
+                "successLevel": "ExceptionalSuccess",
+                "tags": [
+                    "Dramatic",
+                    "Epic"
+                ]
+            }
+        ],
+        "thurisaz_frostlance_solid": [
+            {
+                "id": "thurisaz_frostlance_solid_001",
+                "text": "You intone Thurisaz, the giant's rune. Cold crystallizes from the air—a lance of ice hurtles toward the {Target}!",
+                "weight": 10,
+                "actionType": "Invocation",
+                "runeSchool": "Thurisaz",
+                "abilityName": "FrostLance",
+                "successLevel": "SolidSuccess",
+                "tags": [
+                    "Verbose"
+                ]
+            }
+        ],
+        "berkanan_healingchant_solid": [
+            {
+                "id": "berkanan_healingchant_solid_001",
+                "text": "You weave Berkanan's gentle melody. Warmth spreads through {Target}, wounds knitting as life reasserts itself.",
+                "weight": 10,
+                "actionType": "Invocation",
+                "runeSchool": "Berkanan",
+                "abilityName": "HealingChant",
+                "successLevel": "SolidSuccess",
+                "tags": [
+                    "Healing",
+                    "Gentle"
+                ]
+            }
+        ],
+        "generic_invocation": [
+            {
+                "id": "generic_invocation_001",
+                "text": "You chant the {Rune} rune, feeling its power resonate through you.",
+                "weight": 10,
+                "actionType": "Invocation",
+                "runeSchool": null,
+                "abilityName": null,
+                "successLevel": null,
+                "tags": [
+                    "Generic",
+                    "Fallback"
+                ]
+            },
+            {
+                "id": "generic_invocation_002",
+                "text": "Ancient power stirs as you invoke {Rune}. The rune's symbol {RuneSymbol} glows in the air.",
+                "weight": 10,
+                "actionType": "Invocation",
+                "runeSchool": null,
+                "abilityName": null,
+                "successLevel": null,
+                "tags": [
+                    "Generic"
+                ]
+            }
+        ],
+        "generic_discharge": [
+            {
+                "id": "generic_discharge_001",
+                "text": "The Galdr releases! Power surges from the rune toward the {Target}!",
+                "weight": 10,
+                "actionType": "Discharge",
+                "runeSchool": null,
+                "abilityName": null,
+                "successLevel": null,
+                "tags": [
+                    "Generic",
+                    "Fallback"
+                ]
+            }
+        ],
+        "generic_aftermath": [
+            {
+                "id": "generic_aftermath_001",
+                "text": "Residual energy crackles in the air where the spell passed. The echoes of Galdr fade.",
+                "weight": 10,
+                "actionType": "Aftermath",
+                "runeSchool": null,
+                "abilityName": null,
+                "successLevel": null,
+                "tags": [
+                    "Generic",
+                    "Atmospheric"
+                ]
+            }
+        ]
+    }
+}
