@@ -1,0 +1,56 @@
+{
+    "$schema": "../../config/schemas/capture-templates.schema.json",
+    "category": "blighted-creature",
+    "version": "1.0.0",
+    "description": "Capture templates for Blight-corrupted creatures. Focus on the horrifying transformation, the fusion of flesh and rust, and the tragedy of what they once were.",
+    "matchKeywords": [
+        "blight",
+        "corrupted",
+        "creature",
+        "infection"
+    ],
+    "templates": [
+        {
+            "id": "blighted-tissue-sample",
+            "type": "Specimen",
+            "fragmentContent": "Tissue samples reveal extensive cellular mutation. The boundary between organic matter and metallic corruption is disturbingly seamless—neither invasion nor transformation, but something in between. The cells themselves seem uncertain of what they are.",
+            "source": "Biological analysis",
+            "quality": 20,
+            "tags": [
+                "blight",
+                "specimen",
+                "horror"
+            ]
+        },
+        {
+            "id": "blighted-behavior-observation",
+            "type": "VisualRecord",
+            "fragmentContent": "The creature's movements follow patterns that suggest memory without consciousness. It retraces paths that no longer exist, reaches for objects long since crumbled. Whatever drove it in life, echoes remain in the corrupted shell.",
+            "source": "Field observation",
+            "quality": 15,
+            "tags": [
+                "blight",
+                "behavior",
+                "tragic"
+            ]
+        },
+        {
+            "id": "blighted-runic-contamination",
+            "type": "RunicTrace",
+            "fragmentContent": "The corruption carries traces of runic energy, twisted beyond recognition. What was once protective warding has become a conduit for the Blight's spread. The irony is not lost on those who can read such signs.",
+            "source": "Runic examination",
+            "matchKeywords": [
+                "blight",
+                "rune",
+                "corruption",
+                "warding"
+            ],
+            "quality": 25,
+            "tags": [
+                "blight",
+                "runic",
+                "corruption"
+            ]
+        }
+    ]
+}

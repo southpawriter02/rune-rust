@@ -1,0 +1,57 @@
+{
+    "$schema": "../../config/schemas/capture-templates.schema.json",
+    "category": "ancient-ruin",
+    "version": "1.0.0",
+    "description": "Capture templates for pre-Glitch ruins and archaeological discoveries. Focus on lost grandeur, fragmentary records, and the mystery of what came before.",
+    "matchKeywords": [
+        "ruin",
+        "ancient",
+        "pre-glitch",
+        "aesir"
+    ],
+    "templates": [
+        {
+            "id": "ruin-wall-inscription",
+            "type": "TextFragment",
+            "fragmentContent": "The wall inscription is partially legible: 'When the sky-fires came, we thought the end had arrived. We were wrong. That was merely the beginning of the end.' The stone is worn smooth by countless hands that once traced these words.",
+            "source": "Wall inscription",
+            "quality": 30,
+            "tags": [
+                "ruin",
+                "inscription",
+                "history",
+                "pre-glitch"
+            ]
+        },
+        {
+            "id": "ruin-veteran-tale",
+            "type": "OralHistory",
+            "fragmentContent": "The veterans speak of these halls in hushed tones. 'My grandmother's grandmother walked here,' one says. 'She said the lights still worked then. The walls still sang.' The reverence in their voices makes clear: this was once a sacred place.",
+            "source": "Local knowledge",
+            "quality": 20,
+            "tags": [
+                "ruin",
+                "oral",
+                "tradition"
+            ]
+        },
+        {
+            "id": "ruin-architectural-diagram",
+            "type": "VisualRecord",
+            "fragmentContent": "Fragments of an architectural plan survive on this weathered slate. The scale is difficult to determine—these people built in proportions that dwarf modern construction. Whatever stood here was meant to last forever. Nearly did.",
+            "source": "Technical schematic",
+            "matchKeywords": [
+                "ruin",
+                "aesir",
+                "architecture",
+                "construction"
+            ],
+            "quality": 25,
+            "tags": [
+                "ruin",
+                "architecture",
+                "visual"
+            ]
+        }
+    ]
+}

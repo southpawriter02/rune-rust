@@ -1,0 +1,50 @@
+{
+    "$schema": "../../config/schemas/capture-templates.schema.json",
+    "category": "generic-container",
+    "version": "1.0.0",
+    "description": "Capture templates for general containers—chests, lockboxes, salvage piles. Used when no specific category applies. Focus on fragmentary knowledge and universal observations.",
+    "matchKeywords": [
+        "container",
+        "loot",
+        "salvage"
+    ],
+    "templates": [
+        {
+            "id": "container-note-fragment",
+            "type": "TextFragment",
+            "fragmentContent": "A torn note, its ink faded but still legible: 'If you find this, know that we tried. We thought we could stop it. We thought the old ways would protect us. We were fools, but we were hopeful fools.' The signature is lost to time.",
+            "source": "Found in container",
+            "quality": 15,
+            "tags": [
+                "container",
+                "note",
+                "personal"
+            ]
+        },
+        {
+            "id": "container-survivor-wisdom",
+            "type": "OralHistory",
+            "fragmentContent": "The old scavenger's eyes grow distant. 'Never open a sealed container without listening first,' they advise. 'The Blight... it waits. It is patient. It knows we cannot resist searching for what was lost.' Wisdom hard-earned, freely given.",
+            "source": "Veteran's warning",
+            "quality": 20,
+            "tags": [
+                "container",
+                "wisdom",
+                "survival"
+            ]
+        },
+        {
+            "id": "container-supply-manifest",
+            "type": "TextFragment",
+            "fragmentContent": "A supply manifest, water-damaged but partially readable. Medical supplies, preserved rations, tools for repairs—someone was preparing for a long journey or a lengthy siege. Whether they embarked on either remains unknown.",
+            "source": "Recovered manifest",
+            "quality": 10,
+            "tags": [
+                "container",
+                "supplies",
+                "preparation"
+            ],
+            "domain4Notes": "References supplies conceptually without listing specific quantities"
+        }
+    ]
+}

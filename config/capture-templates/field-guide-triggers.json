@@ -1,0 +1,61 @@
+{
+    "$schema": "../../config/schemas/capture-templates.schema.json",
+    "category": "field-guide-triggers",
+    "version": "1.0.0",
+    "description": "Capture templates for gameplay event triggers and tutorial content. Used to introduce game mechanics through in-world discoveries.",
+    "matchKeywords": [
+        "guide",
+        "manual",
+        "instruction"
+    ],
+    "templates": [
+        {
+            "id": "guide-survival-basics",
+            "type": "OralHistory",
+            "fragmentContent": "The veteran's voice is steady, practiced: 'First rule of the Roots: never assume anything is dead. Second rule: the silence is never friendly. Third rule...' They pause, their eyes haunted. 'Learn to run before you learn to fight.'",
+            "source": "Veteran's advice",
+            "quality": 15,
+            "tags": [
+                "guide",
+                "tutorial",
+                "survival"
+            ]
+        },
+        {
+            "id": "guide-rune-primer",
+            "type": "TextFragment",
+            "fragmentContent": "A faded primer on runic basics, clearly intended for novices: 'The runes are not tools, nor weapons, nor shields. They are agreements between you and forces older than memory. Treat them with respect, or they will teach you humility.'",
+            "source": "Instructional text",
+            "matchKeywords": [
+                "guide",
+                "rune",
+                "magic",
+                "instruction"
+            ],
+            "quality": 20,
+            "tags": [
+                "guide",
+                "runes",
+                "tutorial"
+            ]
+        },
+        {
+            "id": "guide-trade-customs",
+            "type": "OralHistory",
+            "fragmentContent": "'The Dvergr measure worth differently than we do,' the merchant explains. 'Show them precision in your craft, honesty in your dealings, and never—NEVER—imply their work could be improved. They take such... personally.'",
+            "source": "Merchant's guidance",
+            "matchKeywords": [
+                "guide",
+                "dvergr",
+                "trade",
+                "faction"
+            ],
+            "quality": 15,
+            "tags": [
+                "guide",
+                "dvergr",
+                "trade"
+            ]
+        }
+    ]
+}

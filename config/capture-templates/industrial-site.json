@@ -1,0 +1,51 @@
+{
+    "$schema": "../../config/schemas/capture-templates.schema.json",
+    "category": "industrial-site",
+    "version": "1.0.0",
+    "description": "Capture templates for industrial locations—old forges, factories, and workshops. Focus on the remnants of productivity, the silence where machines once labored, and traces of those who worked here.",
+    "matchKeywords": [
+        "industrial",
+        "forge",
+        "factory",
+        "workshop"
+    ],
+    "templates": [
+        {
+            "id": "industrial-echo-recording",
+            "type": "EchoRecording",
+            "fragmentContent": "A damaged echo-stone preserves a fragment of routine: '...shift change in progress. All units report to assigned stations. Efficiency targets remain...' The recording degrades into static, but the rhythm of labor echoes through the corruption.",
+            "source": "Echo-stone playback",
+            "quality": 20,
+            "tags": [
+                "industrial",
+                "audio",
+                "routine"
+            ]
+        },
+        {
+            "id": "industrial-production-chart",
+            "type": "VisualRecord",
+            "fragmentContent": "Production charts line the walls, their meaning lost to time but their intent clear. Symbols mark quotas met and exceeded. Someone took pride in this work, once. Now the charts serve only as nesting material for rust-beetles.",
+            "source": "Wall chart analysis",
+            "quality": 15,
+            "tags": [
+                "industrial",
+                "production",
+                "visual"
+            ],
+            "domain4Notes": "Avoids specific numbers, focuses on the emotional resonance of productivity symbols"
+        },
+        {
+            "id": "industrial-worker-effects",
+            "type": "TextFragment",
+            "fragmentContent": "Personal effects scattered near an old workstation: a lucky charm worn smooth, a child's drawing carefully preserved, a list of names in careful script. Whoever worked here was not merely a cog in a machine, but someone with a life beyond these walls.",
+            "source": "Found in container",
+            "quality": 25,
+            "tags": [
+                "industrial",
+                "personal",
+                "human"
+            ]
+        }
+    ]
+}

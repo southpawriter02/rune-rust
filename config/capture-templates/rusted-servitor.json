@@ -1,0 +1,74 @@
+{
+    "$schema": "../../config/schemas/capture-templates.schema.json",
+    "category": "rusted-servitor",
+    "version": "1.0.0",
+    "description": "Capture templates for rusted servitor and automaton encounters. Focus on mechanical decay, unexplained preservation, and the unsettling fusion of rust and function.",
+    "matchKeywords": [
+        "servitor",
+        "automaton",
+        "machine",
+        "mechanical"
+    ],
+    "templates": [
+        {
+            "id": "servitor-fungal-infection",
+            "type": "Specimen",
+            "fragmentContent": "The servo-motor shows signs of organic fungal infiltration. Mycelial threads have woven through the mechanical joints, creating an unsettling fusion of rust and growth. The fungus appears to follow the old power conduits, as if seeking something.",
+            "source": "Servitor examination",
+            "quality": 15,
+            "tags": [
+                "servitor",
+                "fungal",
+                "blight-adjacent"
+            ]
+        },
+        {
+            "id": "servitor-maintenance-log",
+            "type": "TextFragment",
+            "fragmentContent": "Recovered maintenance logs, partially corrupted by age and moisture: '...Unit 7-Alpha showing signs of acoustic anomalies. Recommend immediate recalibration of...' The remainder is lost to decay, but the urgency in the notation remains palpable.",
+            "source": "Recovered from servitor memory",
+            "matchKeywords": [
+                "servitor",
+                "automaton",
+                "aesir"
+            ],
+            "quality": 20,
+            "tags": [
+                "servitor",
+                "log",
+                "pre-glitch"
+            ],
+            "domain4Notes": "Avoids specific technical details, focuses on the emotional content of the log"
+        },
+        {
+            "id": "servitor-aetheric-resonance",
+            "type": "RunicTrace",
+            "fragmentContent": "Faint aetheric resonance detected around the servitor's core housing. The patterns are consistent with Aesir rune-work, though corrupted by centuries of dormancy. Whatever power animated this construct, traces of it linger still.",
+            "source": "Runic analysis",
+            "matchKeywords": [
+                "servitor",
+                "aesir",
+                "rune",
+                "aetheric"
+            ],
+            "quality": 25,
+            "tags": [
+                "servitor",
+                "aetheric",
+                "aesir"
+            ]
+        },
+        {
+            "id": "servitor-crystalline-growth",
+            "type": "VisualRecord",
+            "fragmentContent": "Crystalline growths cluster around the servitor's optical sensors, refracting light in patterns that seem almost intentional. Whether this is damage, corruption, or some form of adaptation remains unclear.",
+            "source": "Visual inspection",
+            "quality": 15,
+            "tags": [
+                "servitor",
+                "crystal",
+                "visual"
+            ]
+        }
+    ]
+}

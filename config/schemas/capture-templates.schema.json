@@ -1,0 +1,162 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://rune-game.com/schemas/capture-templates.schema.json",
+    "title": "Capture Template Collection",
+    "description": "Schema for Data Capture template files in Rune & Rust. Supports 6 capture types (TextFragment, EchoRecording, VisualRecord, Specimen, OralHistory, RunicTrace). All content must follow AAM-VOICE Layer 2 (Diagnostic) constraints and Domain 4 compliance (no precision measurements). Version: 0.14.9e.",
+    "type": "object",
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "Reference to this schema file for validation tooling."
+        },
+        "category": {
+            "type": "string",
+            "description": "Category identifier matching the filename (kebab-case). Used to organize templates by encounter context.",
+            "pattern": "^[a-z][a-z0-9-]*$",
+            "examples": [
+                "rusted-servitor",
+                "blighted-creature",
+                "ancient-ruin",
+                "industrial-site",
+                "generic-container",
+                "field-guide-triggers"
+            ]
+        },
+        "version": {
+            "type": "string",
+            "description": "Schema version for migration tracking (semver format).",
+            "pattern": "^\\d+\\.\\d+\\.\\d+$",
+            "examples": [
+                "1.0.0"
+            ]
+        },
+        "description": {
+            "type": "string",
+            "description": "Human-readable description of this category for content authors."
+        },
+        "matchKeywords": {
+            "type": "array",
+            "description": "Default keywords for all templates in this category for Codex auto-assignment. Can be overridden per-template.",
+            "items": {
+                "type": "string",
+                "minLength": 2
+            },
+            "minItems": 1
+        },
+        "templates": {
+            "type": "array",
+            "description": "Array of capture templates in this category. Minimum 1 template required.",
+            "items": {
+                "$ref": "#/definitions/CaptureTemplate"
+            },
+            "minItems": 1
+        }
+    },
+    "required": [
+        "category",
+        "version",
+        "templates"
+    ],
+    "additionalProperties": false,
+    "definitions": {
+        "CaptureTemplate": {
+            "type": "object",
+            "description": "A single Data Capture template definition. Content must follow Domain 4 constraints (no precision measurements).",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Unique template identifier (kebab-case, globally unique across all files).",
+                    "pattern": "^[a-z][a-z0-9-]*$",
+                    "examples": [
+                        "servitor-fungal-infection",
+                        "container-note-fragment",
+                        "ruin-wall-inscription"
+                    ]
+                },
+                "type": {
+                    "$ref": "#/definitions/CaptureType",
+                    "description": "Capture type classification determining voice style and presentation."
+                },
+                "fragmentContent": {
+                    "type": "string",
+                    "description": "The lore text content of this fragment. Must follow Domain 4 constraints (no precision measurements like percentages, exact distances, or technical specifications). Length: 20-1000 characters.",
+                    "minLength": 20,
+                    "maxLength": 1000
+                },
+                "source": {
+                    "type": "string",
+                    "description": "Description of where/how the fragment was discovered (displayed in UI). Length: 5-100 characters.",
+                    "minLength": 5,
+                    "maxLength": 100,
+                    "examples": [
+                        "Servitor examination",
+                        "Found in container",
+                        "Wall inscription",
+                        "Echo-stone playback",
+                        "Local knowledge"
+                    ]
+                },
+                "matchKeywords": {
+                    "type": "array",
+                    "description": "Keywords for Codex auto-assignment. If provided, completely overrides category-level matchKeywords.",
+                    "items": {
+                        "type": "string",
+                        "minLength": 2
+                    },
+                    "minItems": 1
+                },
+                "quality": {
+                    "type": "integer",
+                    "description": "Quality value affecting Legend rewards (1-100). Higher values grant more progress toward unlocking Codex entries. Default: 15.",
+                    "minimum": 1,
+                    "maximum": 100,
+                    "default": 15
+                },
+                "tags": {
+                    "type": "array",
+                    "description": "Optional metadata tags for filtering and categorization (not displayed in-game). Use for faction, era, theme, subject, and tone classification.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "examples": [
+                        [
+                            "aesir",
+                            "pre-glitch"
+                        ],
+                        [
+                            "blight",
+                            "creature"
+                        ],
+                        [
+                            "servitor",
+                            "fungal"
+                        ]
+                    ]
+                },
+                "domain4Notes": {
+                    "type": "string",
+                    "description": "Author notes on Domain 4 compliance. For internal documentation only, not displayed in-game."
+                }
+            },
+            "required": [
+                "id",
+                "type",
+                "fragmentContent",
+                "source"
+            ],
+            "additionalProperties": false
+        },
+        "CaptureType": {
+            "type": "string",
+            "description": "Capture type classification. TextFragment (written records), EchoRecording (audio logs), VisualRecord (diagrams/images), Specimen (biological samples), OralHistory (verbal accounts), RunicTrace (magical analysis).",
+            "enum": [
+                "TextFragment",
+                "EchoRecording",
+                "VisualRecord",
+                "Specimen",
+                "OralHistory",
+                "RunicTrace"
+            ]
+        }
+    }
+}
