@@ -1,154 +1,345 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "recipes.schema.json",
-  "title": "Recipe Definitions",
-  "description": "Schema for crafting recipe definitions in RuneAndRust. Recipes define what resources are consumed and what items are produced when crafting succeeds.",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Crafting Recipe Configuration",
+  "description": "Configuration schema for crafting recipe definitions including material requirements, skill checks, output items, station requirements, and discovery conditions. Supports modding scenarios such as alchemical brewing, blacksmithing progression, magical enchanting, or survival-style cooking.",
   "type": "object",
-  "required": ["recipes"],
   "properties": {
     "$schema": {
       "type": "string",
-      "description": "Reference to this schema file for validation"
+      "description": "Reference to the JSON schema file for validation"
+    },
+    "version": {
+      "type": "string",
+      "description": "Optional version identifier for the configuration file",
+      "pattern": "^[0-9]+\\.[0-9]+$"
     },
     "recipes": {
       "type": "array",
-      "description": "Array of recipe definitions",
+      "description": "List of crafting recipe definitions. Each recipe defines materials, outputs, and conditions.",
       "items": {
-        "$ref": "#/$defs/recipe"
+        "$ref": "#/definitions/RecipeDefinition"
       },
       "minItems": 1
     }
   },
-  "$defs": {
-    "recipe": {
+  "required": [
+    "recipes"
+  ],
+  "additionalProperties": false,
+  "definitions": {
+    "RecipeDefinition": {
       "type": "object",
-      "description": "A single recipe definition specifying ingredients, output, and requirements",
-      "required": ["id", "name", "category", "requiredStation", "ingredients", "output", "difficultyClass"],
+      "description": "A crafting recipe with materials, skills, output, and discovery conditions.",
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique recipe identifier in kebab-case (lowercase with hyphens)",
+          "description": "Unique identifier for the recipe (lowercase kebab-case). Example: health-potion-basic, iron-sword.",
           "pattern": "^[a-z][a-z0-9-]*$",
-          "minLength": 2,
-          "maxLength": 64,
-          "examples": ["iron-sword", "healing-potion", "mithril-blade"]
+          "minLength": 1,
+          "maxLength": 50
         },
         "name": {
           "type": "string",
-          "description": "Display name for the recipe shown in UI",
+          "description": "Display name for the recipe. Example: Basic Health Potion, Iron Sword.",
           "minLength": 1,
-          "maxLength": 64,
-          "examples": ["Iron Sword", "Healing Potion", "Mithril Blade"]
+          "maxLength": 100
         },
         "description": {
           "type": "string",
-          "description": "Recipe description text shown in recipe book",
-          "maxLength": 256,
-          "examples": ["Forge a basic but reliable iron sword"]
+          "description": "Flavor text describing the recipe and its result."
         },
         "category": {
           "type": "string",
-          "description": "Recipe category for UI filtering and organization",
-          "enum": ["Weapon", "Armor", "Potion", "Consumable", "Accessory", "Tool", "Material"]
+          "description": "Crafting category this recipe belongs to. Determines which crafting skill applies.",
+          "enum": [
+            "Alchemy",
+            "Smithing",
+            "Enchanting",
+            "Cooking",
+            "Leatherworking",
+            "Tailoring",
+            "Jewelcrafting",
+            "Engineering",
+            "Inscription"
+          ]
         },
-        "requiredStation": {
-          "type": "string",
-          "description": "ID of the crafting station required to craft this recipe",
-          "pattern": "^[a-z][a-z0-9-]*$",
-          "minLength": 2,
-          "examples": ["anvil", "alchemy-table", "workbench", "cooking-fire"]
-        },
-        "ingredients": {
+        "materials": {
           "type": "array",
-          "description": "List of resources consumed when crafting",
+          "description": "Required materials to craft this recipe. At least one material is required.",
           "items": {
-            "$ref": "#/$defs/ingredient"
+            "$ref": "#/definitions/MaterialRequirement"
           },
-          "minItems": 1,
-          "maxItems": 10
+          "minItems": 1
+        },
+        "skillRequirements": {
+          "type": "array",
+          "description": "Optional skill requirements to craft this recipe.",
+          "items": {
+            "$ref": "#/definitions/SkillRequirement"
+          }
         },
         "output": {
-          "$ref": "#/$defs/output",
-          "description": "Item(s) produced when crafting succeeds"
+          "$ref": "#/definitions/OutputDefinition",
+          "description": "The item(s) produced by this recipe on success."
         },
-        "difficultyClass": {
+        "stationRequired": {
+          "type": "string",
+          "description": "ID of the crafting station required (references interactive-objects.json). Null = craft anywhere.",
+          "pattern": "^[a-z][a-z0-9-]*$"
+        },
+        "craftingTime": {
           "type": "integer",
-          "description": "Crafting skill check DC (1-30). Player must roll 2d6 + modifier >= DC to succeed.",
-          "minimum": 1,
-          "maximum": 30,
-          "examples": [8, 12, 15, 18]
+          "description": "Number of turns required to complete crafting. Null = instant.",
+          "minimum": 1
         },
-        "isDefault": {
+        "discoveryCondition": {
+          "$ref": "#/definitions/DiscoveryCondition",
+          "description": "How this recipe is learned/discovered."
+        },
+        "isKnownByDefault": {
           "type": "boolean",
-          "description": "Whether this recipe is known by new players. Default recipes don't require discovery.",
+          "description": "If true, all characters know this recipe from the start.",
           "default": false
         },
-        "craftingTimeSeconds": {
-          "type": "integer",
-          "description": "Time to craft in seconds, used for progress display",
+        "failureChance": {
+          "type": "number",
+          "description": "Probability of crafting failure (0.0 = never, 1.0 = always).",
           "minimum": 0,
-          "maximum": 3600,
-          "default": 30
+          "maximum": 1,
+          "default": 0
         },
-        "icon": {
-          "type": "string",
-          "description": "Path to recipe icon image for UI display",
-          "examples": ["icons/recipes/iron_sword.png"]
-        }
-      },
-      "additionalProperties": false
-    },
-    "ingredient": {
-      "type": "object",
-      "description": "A recipe ingredient requirement specifying resource and quantity",
-      "required": ["resourceId", "quantity"],
-      "properties": {
-        "resourceId": {
-          "type": "string",
-          "description": "ID of the required resource (references ResourceDefinition)",
-          "pattern": "^[a-z][a-z0-9-]*$",
-          "minLength": 2,
-          "examples": ["iron-ore", "leather", "healing-herb"]
+        "failureOutput": {
+          "$ref": "#/definitions/OutputDefinition",
+          "description": "Optional alternative output when crafting fails. If not set, nothing is produced on failure."
         },
-        "quantity": {
+        "experienceReward": {
           "type": "integer",
-          "description": "Number of resources consumed when crafting",
-          "minimum": 1,
-          "maximum": 999,
-          "examples": [1, 3, 5, 10]
+          "description": "Crafting experience points awarded on success.",
+          "minimum": 0
+        },
+        "sortOrder": {
+          "type": "integer",
+          "description": "Order for display sorting within category (lower values first).",
+          "minimum": 0
         }
       },
+      "required": [
+        "id",
+        "name",
+        "description",
+        "category",
+        "materials",
+        "output"
+      ],
       "additionalProperties": false
     },
-    "output": {
+    "MaterialRequirement": {
       "type": "object",
-      "description": "Recipe output specification defining what is produced",
-      "required": ["itemId", "quantity"],
+      "description": "A required material for crafting. Materials can be consumed or retained (tools).",
       "properties": {
         "itemId": {
           "type": "string",
-          "description": "ID of the item produced (references ItemDefinition)",
-          "pattern": "^[a-z][a-z0-9-]*$",
-          "minLength": 2,
-          "examples": ["iron-sword", "healing-potion", "iron-ingot"]
+          "description": "ID of the required item (references items.json).",
+          "pattern": "^[a-z][a-z0-9-]*$"
         },
         "quantity": {
           "type": "integer",
-          "description": "Number of items produced on success",
+          "description": "Number of items required.",
           "minimum": 1,
-          "maximum": 99,
-          "examples": [1, 2, 3]
+          "default": 1
         },
-        "qualityFormula": {
-          "type": "string",
-          "description": "Optional formula for roll-based quality determination. Uses 'roll' variable representing the crafting check result.",
-          "maxLength": 256,
-          "examples": [
-            "roll >= 20 ? 'Legendary' : roll >= 15 ? 'Epic' : 'Rare'",
-            "roll >= 18 ? 'Fine' : 'Common'"
-          ]
+        "isConsumed": {
+          "type": "boolean",
+          "description": "Whether the material is consumed during crafting. Tools use false.",
+          "default": true
         }
       },
+      "required": [
+        "itemId"
+      ],
+      "additionalProperties": false
+    },
+    "SkillRequirement": {
+      "type": "object",
+      "description": "A skill requirement for crafting. Use minimumLevel for gate, dc for check.",
+      "properties": {
+        "skillId": {
+          "type": "string",
+          "description": "ID of the required skill (references skills.json).",
+          "pattern": "^[a-z][a-z0-9-]*$"
+        },
+        "minimumLevel": {
+          "type": "integer",
+          "description": "Minimum skill level required to attempt crafting (gate).",
+          "minimum": 1
+        },
+        "dc": {
+          "type": "integer",
+          "description": "Difficulty class for skill check. Failure = crafting failure.",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "skillId"
+      ],
+      "additionalProperties": false
+    },
+    "OutputDefinition": {
+      "type": "object",
+      "description": "The output produced by crafting. Includes quantity range and quality variance.",
+      "properties": {
+        "itemId": {
+          "type": "string",
+          "description": "ID of the item produced (references items.json).",
+          "pattern": "^[a-z][a-z0-9-]*$"
+        },
+        "quantity": {
+          "$ref": "#/definitions/QuantityRange",
+          "description": "How many items are produced (min to max range)."
+        },
+        "qualityVariance": {
+          "$ref": "#/definitions/QualityVariance",
+          "description": "Optional quality tier variance configuration."
+        },
+        "bonusOutputs": {
+          "type": "array",
+          "description": "Optional additional outputs with chance to drop.",
+          "items": {
+            "$ref": "#/definitions/BonusOutput"
+          }
+        }
+      },
+      "required": [
+        "itemId",
+        "quantity"
+      ],
+      "additionalProperties": false
+    },
+    "QuantityRange": {
+      "type": "object",
+      "description": "A range of possible output quantities. Actual output is random within range.",
+      "properties": {
+        "min": {
+          "type": "integer",
+          "description": "Minimum quantity produced.",
+          "minimum": 1,
+          "default": 1
+        },
+        "max": {
+          "type": "integer",
+          "description": "Maximum quantity produced.",
+          "minimum": 1,
+          "default": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "QualityVariance": {
+      "type": "object",
+      "description": "Configuration for output quality variance. Critical upgrade = +2 tiers, upgrade = +1 tier.",
+      "properties": {
+        "baseQuality": {
+          "type": "string",
+          "description": "The default quality tier. Upgrades can improve this.",
+          "enum": [
+            "Common",
+            "Uncommon",
+            "Rare",
+            "Epic",
+            "Legendary"
+          ]
+        },
+        "upgradeChance": {
+          "type": "number",
+          "description": "Probability of upgrading quality by one tier (0.0 to 1.0).",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "criticalUpgradeChance": {
+          "type": "number",
+          "description": "Probability of upgrading quality by two tiers (0.0 to 1.0).",
+          "minimum": 0,
+          "maximum": 1
+        }
+      },
+      "required": [
+        "baseQuality"
+      ],
+      "additionalProperties": false
+    },
+    "BonusOutput": {
+      "type": "object",
+      "description": "An optional bonus item produced with a chance.",
+      "properties": {
+        "itemId": {
+          "type": "string",
+          "description": "ID of the bonus item (references items.json).",
+          "pattern": "^[a-z][a-z0-9-]*$"
+        },
+        "quantity": {
+          "type": "integer",
+          "description": "Number of bonus items produced.",
+          "minimum": 1
+        },
+        "chance": {
+          "type": "number",
+          "description": "Probability of receiving this bonus (0.0 to 1.0).",
+          "minimum": 0,
+          "maximum": 1
+        }
+      },
+      "required": [
+        "itemId",
+        "quantity",
+        "chance"
+      ],
+      "additionalProperties": false
+    },
+    "DiscoveryCondition": {
+      "type": "object",
+      "description": "How this recipe is discovered/learned. Type determines which field is required.",
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "The type of discovery condition.",
+          "enum": [
+            "Quest",
+            "Level",
+            "Teacher",
+            "Item",
+            "Exploration",
+            "Default"
+          ]
+        },
+        "questId": {
+          "type": "string",
+          "description": "Quest ID that rewards this recipe (for Quest type).",
+          "pattern": "^[a-z][a-z0-9-]*$"
+        },
+        "requiredLevel": {
+          "type": "integer",
+          "description": "Character level required to learn (for Level type).",
+          "minimum": 1
+        },
+        "teacherNpcId": {
+          "type": "string",
+          "description": "NPC ID that teaches this recipe (for Teacher type).",
+          "pattern": "^[a-z][a-z0-9-]*$"
+        },
+        "itemId": {
+          "type": "string",
+          "description": "Recipe scroll/book item ID (for Item type).",
+          "pattern": "^[a-z][a-z0-9-]*$"
+        },
+        "locationId": {
+          "type": "string",
+          "description": "Location ID where recipe is discovered (for Exploration type).",
+          "pattern": "^[a-z][a-z0-9-]*$"
+        }
+      },
+      "required": [
+        "type"
+      ],
       "additionalProperties": false
     }
   }
