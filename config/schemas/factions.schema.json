@@ -1,0 +1,494 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://rune-game.com/schemas/factions.schema.json",
+    "title": "Faction Configuration",
+    "description": "Schema for faction definitions and reputation systems in Rune & Rust. Defines faction identities, reputation thresholds, inter-faction relationships, reputation modifiers, faction perks, and vendor access. Integrates with dialogue outcomes (v0.14.9a) through AffectedFaction references.",
+    "type": "object",
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "Reference to this schema file for IDE validation support."
+        },
+        "version": {
+            "type": "string",
+            "description": "Schema version for migration tracking (semver format). Used to track breaking changes and enable configuration migration.",
+            "pattern": "^\\d+\\.\\d+\\.\\d+$",
+            "examples": [
+                "1.0.0",
+                "1.1.0",
+                "2.0.0"
+            ]
+        },
+        "defaultThresholds": {
+            "$ref": "#/definitions/ReputationThresholds",
+            "description": "Global default reputation thresholds applied to all factions that do not specify custom thresholds. Covers the full -1000 to 10000 reputation range with 6 levels."
+        },
+        "factions": {
+            "type": "array",
+            "description": "Array of faction definitions. Each faction represents a group, organization, or power in the game world with its own reputation system, relationships, and rewards.",
+            "items": {
+                "$ref": "#/definitions/Faction"
+            },
+            "minItems": 1
+        }
+    },
+    "required": [
+        "version",
+        "factions"
+    ],
+    "additionalProperties": false,
+    "definitions": {
+        "Faction": {
+            "type": "object",
+            "description": "A single faction definition containing identity, thresholds, relationships, modifiers, perks, and vendor access. Factions track player reputation and provide benefits at higher standing levels.",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Unique faction identifier using lowercase kebab-case. Referenced by dialogue outcomes, quest rewards, and other systems. Examples: 'rust-clans', 'midgard-combine', 'iron-banes'.",
+                    "pattern": "^[a-z][a-z0-9-]*$",
+                    "minLength": 2,
+                    "examples": [
+                        "rust-clans",
+                        "midgard-combine",
+                        "iron-banes",
+                        "dvergr-guild"
+                    ]
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Display name shown in UI. Should be the proper name of the faction as known in the game world.",
+                    "minLength": 1,
+                    "examples": [
+                        "Rust Clans",
+                        "Midgard Combine",
+                        "Iron-Bane Crusade"
+                    ]
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Lore description of the faction explaining their history, beliefs, territory, and role in the world. Displayed in codex and faction screens.",
+                    "minLength": 10
+                },
+                "iconId": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "description": "Reference to UI icon asset for displaying in faction lists and reputation bars. Null if no custom icon is defined.",
+                    "default": null
+                },
+                "color": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "description": "Hex color code for UI elements associated with this faction. Used for reputation bars, faction markers, and highlights. Format: '#RRGGBB'.",
+                    "pattern": "^#[0-9A-Fa-f]{6}$",
+                    "default": null,
+                    "examples": [
+                        "#B87333",
+                        "#8B4513",
+                        "#8B0000",
+                        "#4A4A4A"
+                    ]
+                },
+                "thresholds": {
+                    "$ref": "#/definitions/ReputationThresholds",
+                    "description": "Custom reputation thresholds for this faction. When specified, completely overrides the global defaultThresholds. Must cover the full -1000 to 10000 range without gaps or overlaps."
+                },
+                "relationships": {
+                    "type": "array",
+                    "description": "Array of relationships with other factions. Defines how reputation changes propagate between allied or hostile factions.",
+                    "items": {
+                        "$ref": "#/definitions/FactionRelationship"
+                    },
+                    "default": []
+                },
+                "reputationModifiers": {
+                    "type": "array",
+                    "description": "Array of actions that modify player reputation with this faction. Defines reputation gains/losses for various player actions.",
+                    "items": {
+                        "$ref": "#/definitions/ReputationModifier"
+                    },
+                    "default": []
+                },
+                "perks": {
+                    "type": "array",
+                    "description": "Array of perks unlocked at specific reputation thresholds. Perks provide benefits such as discounts, item access, or stat bonuses.",
+                    "items": {
+                        "$ref": "#/definitions/FactionPerk"
+                    },
+                    "default": []
+                },
+                "vendors": {
+                    "type": "array",
+                    "description": "Array of faction-specific vendor access rules. Defines which vendors are available at different reputation levels and any price modifiers.",
+                    "items": {
+                        "$ref": "#/definitions/VendorAccess"
+                    },
+                    "default": []
+                },
+                "headquarters": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "description": "Location ID for the faction's primary base of operations. Used for fast travel, quest markers, and territory display. Null if faction has no fixed headquarters.",
+                    "default": null
+                },
+                "isHidden": {
+                    "type": "boolean",
+                    "description": "Whether this faction is hidden from the player until discovered. Hidden factions are not shown in faction lists or reputation screens until revealed through gameplay.",
+                    "default": false
+                },
+                "tags": {
+                    "type": "array",
+                    "description": "Metadata tags for filtering and categorizing factions. Useful for grouping factions by region, philosophy, or other characteristics.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "default": []
+                }
+            },
+            "required": [
+                "id",
+                "name",
+                "description"
+            ],
+            "additionalProperties": false
+        },
+        "ReputationThresholds": {
+            "type": "object",
+            "description": "Defines the six reputation threshold levels from hostile (-1000) to exalted (10000). Each threshold includes min/max values and a display label. The complete range must be covered without gaps or overlaps.",
+            "properties": {
+                "hostile": {
+                    "$ref": "#/definitions/ThresholdRange",
+                    "description": "Hostile threshold for extremely negative reputation. Default range: -1000 to -501. At this level, faction members attack on sight and all services are denied."
+                },
+                "unfriendly": {
+                    "$ref": "#/definitions/ThresholdRange",
+                    "description": "Unfriendly threshold for moderately negative reputation. Default range: -500 to -1. At this level, services are limited and prices are increased."
+                },
+                "neutral": {
+                    "$ref": "#/definitions/ThresholdRange",
+                    "description": "Neutral threshold for indifferent reputation. Default range: 0 to 499. Standard interactions with no bonuses or penalties. Starting reputation for most factions."
+                },
+                "friendly": {
+                    "$ref": "#/definitions/ThresholdRange",
+                    "description": "Friendly threshold for positive reputation. Default range: 500 to 2999. At this level, players receive discounts and access to additional quests."
+                },
+                "allied": {
+                    "$ref": "#/definitions/ThresholdRange",
+                    "description": "Allied threshold for high reputation. Default range: 3000 to 8999. At this level, players receive significant discounts, special items, and faction perks."
+                },
+                "exalted": {
+                    "$ref": "#/definitions/ThresholdRange",
+                    "description": "Exalted threshold for maximum reputation. Default range: 9000 to 10000. At this level, players receive the best prices, unique rewards, and all faction benefits."
+                }
+            },
+            "required": [
+                "hostile",
+                "unfriendly",
+                "neutral",
+                "friendly",
+                "allied",
+                "exalted"
+            ],
+            "additionalProperties": false
+        },
+        "ThresholdRange": {
+            "type": "object",
+            "description": "A single reputation threshold range with minimum, maximum, and display label. The min and max values are inclusive. Values beyond 10000 can be used for special factions with impossible-to-reach thresholds (e.g., permanently hostile factions).",
+            "properties": {
+                "min": {
+                    "type": "integer",
+                    "description": "Minimum reputation value for this threshold (inclusive). Standard range is -1000 to 10000. Values beyond 10000 can be used for impossible-to-reach thresholds.",
+                    "minimum": -1000,
+                    "maximum": 100000
+                },
+                "max": {
+                    "type": "integer",
+                    "description": "Maximum reputation value for this threshold (inclusive). Must be greater than or equal to min. Values beyond 10000 can be used for impossible-to-reach thresholds.",
+                    "minimum": -1000,
+                    "maximum": 100000
+                },
+                "label": {
+                    "type": "string",
+                    "description": "Display label for this threshold level. Shown in reputation UI and notifications.",
+                    "minLength": 1,
+                    "examples": [
+                        "Hostile",
+                        "Unfriendly",
+                        "Neutral",
+                        "Friendly",
+                        "Allied",
+                        "Exalted"
+                    ]
+                }
+            },
+            "required": [
+                "min",
+                "max",
+                "label"
+            ],
+            "additionalProperties": false
+        },
+        "FactionRelationship": {
+            "type": "object",
+            "description": "Defines the relationship between two factions and how reputation changes propagate. Allied factions share reputation gains while hostile factions receive opposite changes.",
+            "properties": {
+                "factionId": {
+                    "type": "string",
+                    "description": "Reference to another faction's ID. Must match a valid faction ID defined in the factions array.",
+                    "pattern": "^[a-z][a-z0-9-]*$"
+                },
+                "relationship": {
+                    "type": "string",
+                    "description": "Type of relationship between the factions. Determines NPC behavior and dialogue options. 'Allied' = close allies, 'Friendly' = trading partners, 'Neutral' = no opinion, 'Unfriendly' = tension, 'Hostile' = active conflict, 'AtWar' = open warfare.",
+                    "enum": [
+                        "Allied",
+                        "Friendly",
+                        "Neutral",
+                        "Unfriendly",
+                        "Hostile",
+                        "AtWar"
+                    ]
+                },
+                "reputationLink": {
+                    "type": [
+                        "number",
+                        "null"
+                    ],
+                    "description": "Percentage of reputation change that propagates to this faction. Positive values share reputation gains with allies (e.g., 50 = +50% of original change). Negative values apply opposite changes to enemies (e.g., -25 = -25% of original). Null means no propagation.",
+                    "minimum": -100,
+                    "maximum": 100,
+                    "default": null,
+                    "examples": [
+                        50,
+                        25,
+                        -25,
+                        -50,
+                        null
+                    ]
+                },
+                "description": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "description": "Human-readable description explaining the relationship between the factions. Displayed in faction lore and diplomacy screens.",
+                    "default": null
+                }
+            },
+            "required": [
+                "factionId",
+                "relationship"
+            ],
+            "additionalProperties": false
+        },
+        "ReputationModifier": {
+            "type": "object",
+            "description": "Defines how specific player actions modify reputation with this faction. Each modifier specifies an action type, base amount, optional conditions, and a description.",
+            "properties": {
+                "action": {
+                    "type": "string",
+                    "description": "Type of action that triggers the reputation change. 'KillMember' = kill faction member, 'HelpMember' = assist faction member, 'CompleteQuest' = complete faction quest, 'FailQuest' = fail faction quest, 'Theft' = steal from faction, 'Gift' = give resources, 'Betrayal' = major betrayal, 'Discovery' = share valuable information.",
+                    "enum": [
+                        "KillMember",
+                        "HelpMember",
+                        "CompleteQuest",
+                        "FailQuest",
+                        "Theft",
+                        "Gift",
+                        "Betrayal",
+                        "Discovery"
+                    ]
+                },
+                "amount": {
+                    "type": "integer",
+                    "description": "Base reputation change amount. Positive values increase standing, negative values decrease it. Typical ranges: minor actions ±5-15, standard actions ±15-30, major actions ±30-100."
+                },
+                "conditions": {
+                    "type": [
+                        "array",
+                        "null"
+                    ],
+                    "description": "Optional conditions that modify the base amount. Multiple conditions are evaluated and the first matching condition's modifier is applied.",
+                    "items": {
+                        "$ref": "#/definitions/ModifierCondition"
+                    },
+                    "default": null
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Human-readable description of when this reputation change occurs. Displayed in reputation logs and notifications.",
+                    "minLength": 5
+                }
+            },
+            "required": [
+                "action",
+                "amount",
+                "description"
+            ],
+            "additionalProperties": false
+        },
+        "ModifierCondition": {
+            "type": "object",
+            "description": "A condition that modifies the base reputation change amount. Used for situational modifiers like witnessed vs unwitnessed actions.",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "description": "Type of condition to evaluate. 'Witnessed' = action was seen by faction members, 'Unwitnessed' = no witnesses, 'InTerritory' = action in faction territory, 'IsLeader' = target was a faction leader.",
+                    "enum": [
+                        "Witnessed",
+                        "Unwitnessed",
+                        "InTerritory",
+                        "IsLeader"
+                    ]
+                },
+                "modifier": {
+                    "type": "number",
+                    "description": "Multiplier applied to the base amount when this condition is met. 0 = no change, 1.0 = full amount, 1.5 = 150% of base. Values between 0-2 are typical.",
+                    "minimum": 0,
+                    "maximum": 2
+                },
+                "description": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "description": "Optional description explaining when this condition applies.",
+                    "default": null
+                }
+            },
+            "required": [
+                "type",
+                "modifier"
+            ],
+            "additionalProperties": false
+        },
+        "FactionPerk": {
+            "type": "object",
+            "description": "A benefit or reward unlocked at a specific reputation threshold. Perks can be passive (auto-applied) or active (require player activation).",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Unique perk identifier within this faction. Used for tracking unlocked perks and referencing in code.",
+                    "pattern": "^[a-z][a-z0-9-]*$"
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Display name for the perk. Shown in perk lists and unlock notifications.",
+                    "minLength": 1
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Detailed description of what the perk provides. Explains the benefit and any requirements.",
+                    "minLength": 10
+                },
+                "requiredThreshold": {
+                    "type": "string",
+                    "description": "Minimum reputation threshold required to unlock this perk. Only positive thresholds (friendly, allied, exalted) are valid for perks.",
+                    "enum": [
+                        "friendly",
+                        "allied",
+                        "exalted"
+                    ]
+                },
+                "effect": {
+                    "type": "object",
+                    "description": "The mechanical effect of this perk. Defines what benefit the player receives when the perk is active.",
+                    "properties": {
+                        "type": {
+                            "type": "string",
+                            "description": "Type of effect. 'PriceModifier' = vendor price change, 'StatBonus' = attribute/skill bonus, 'AccessGrant' = unlock access to content, 'AbilityGrant' = provide ability, 'ReputationBonus' = bonus to rep gains.",
+                            "enum": [
+                                "PriceModifier",
+                                "StatBonus",
+                                "AccessGrant",
+                                "AbilityGrant",
+                                "ReputationBonus"
+                            ]
+                        },
+                        "target": {
+                            "type": "string",
+                            "description": "Target of the effect. For PriceModifier: vendor category. For StatBonus: stat name. For AccessGrant/AbilityGrant: content ID."
+                        },
+                        "value": {
+                            "type": [
+                                "number",
+                                "string"
+                            ],
+                            "description": "Effect value. For PriceModifier: decimal multiplier (e.g., -0.15 = 15% discount). For StatBonus: integer bonus. For grants: status string."
+                        }
+                    },
+                    "required": [
+                        "type",
+                        "target",
+                        "value"
+                    ],
+                    "additionalProperties": false
+                },
+                "isPassive": {
+                    "type": "boolean",
+                    "description": "Whether this perk is automatically applied (true) or requires player activation (false). Passive perks take effect immediately upon reaching the threshold.",
+                    "default": true
+                }
+            },
+            "required": [
+                "id",
+                "name",
+                "description",
+                "requiredThreshold",
+                "effect"
+            ],
+            "additionalProperties": false
+        },
+        "VendorAccess": {
+            "type": "object",
+            "description": "Defines access rules for a faction-specific vendor at different reputation levels. Controls when vendors become available and what modifiers apply.",
+            "properties": {
+                "vendorId": {
+                    "type": "string",
+                    "description": "Reference to a vendor definition ID. Must match a vendor ID defined in vendors.json.",
+                    "pattern": "^[a-z][a-z0-9-]*$"
+                },
+                "requiredThreshold": {
+                    "type": "string",
+                    "description": "Minimum reputation threshold required to access this vendor. All six threshold levels are valid for vendor access.",
+                    "enum": [
+                        "hostile",
+                        "unfriendly",
+                        "neutral",
+                        "friendly",
+                        "allied",
+                        "exalted"
+                    ]
+                },
+                "priceModifier": {
+                    "type": "number",
+                    "description": "Price multiplier for this vendor at the required threshold. Values below 1.0 provide discounts (0.8 = 20% off), values above 1.0 increase prices (1.25 = 25% markup).",
+                    "minimum": 0.1,
+                    "maximum": 3.0,
+                    "default": 1.0
+                },
+                "exclusiveItems": {
+                    "type": [
+                        "array",
+                        "null"
+                    ],
+                    "description": "Array of item IDs that are only available at this reputation level or higher. These items are hidden from the vendor inventory until the threshold is met.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "default": null
+                }
+            },
+            "required": [
+                "vendorId",
+                "requiredThreshold"
+            ],
+            "additionalProperties": false
+        }
+    }
+}

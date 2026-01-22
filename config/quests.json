@@ -1,0 +1,713 @@
+{
+    "$schema": "./schemas/quests.schema.json",
+    "version": "1.0.0",
+    "quests": [
+        {
+            "id": "iron-path",
+            "name": "The Iron Path",
+            "description": "Legends speak of an ancient Dvergr forge, hidden beneath Ironhold. Kjartan the Smith believes it may hold the key to breaking the Rust Curse that plagues the eastern valleys.",
+            "category": "MainStory",
+            "level": 5,
+            "isRepeatable": false,
+            "isHidden": false,
+            "tags": [
+                "main-story",
+                "dvergr",
+                "forge"
+            ],
+            "prerequisites": [
+                {
+                    "type": "Level",
+                    "value": 5,
+                    "operator": "greaterThan"
+                },
+                {
+                    "type": "QuestComplete",
+                    "target": "intro-arrival",
+                    "operator": "has"
+                }
+            ],
+            "questGiver": {
+                "npcId": "npc-kjartan",
+                "dialogueNodeId": "kjartan-iron-path-offer",
+                "turnInNpcId": "npc-kjartan",
+                "turnInDialogueNodeId": "kjartan-iron-path-complete"
+            },
+            "stages": [
+                {
+                    "id": "speak-kjartan",
+                    "name": "The Smith's Tale",
+                    "description": "Speak with Kjartan about the forge legends.",
+                    "objectives": [
+                        {
+                            "id": "talk-kjartan",
+                            "type": "Talk",
+                            "description": "Speak with Kjartan about the forge legends",
+                            "target": "npc-kjartan"
+                        }
+                    ],
+                    "onComplete": [
+                        {
+                            "type": "Notification",
+                            "data": "Kjartan has marked the likely entrance on your map."
+                        }
+                    ],
+                    "nextStageId": "find-descent"
+                },
+                {
+                    "id": "find-descent",
+                    "name": "The Descent",
+                    "description": "Find the entrance to the Iron Crypts beneath Ironhold.",
+                    "objectives": [
+                        {
+                            "id": "locate-entrance",
+                            "type": "Explore",
+                            "description": "Find the descent to the Iron Crypts",
+                            "target": "location-iron-crypts-entrance"
+                        },
+                        {
+                            "id": "collect-notes",
+                            "type": "Collect",
+                            "description": "Collect ancient Dvergr notes",
+                            "target": "item-dvergr-notes",
+                            "quantity": 3,
+                            "isOptional": true
+                        }
+                    ],
+                    "nextStageId": "defeat-lord"
+                },
+                {
+                    "id": "defeat-lord",
+                    "name": "The Rust Lord",
+                    "description": "Confront and defeat the Rust Lord that guards the forge.",
+                    "objectives": [
+                        {
+                            "id": "defeat-rust-lord",
+                            "type": "Kill",
+                            "description": "Defeat the Rust Lord",
+                            "target": "enemy-rust-lord",
+                            "quantity": 1
+                        }
+                    ],
+                    "onComplete": [
+                        {
+                            "type": "UpdateWorldState",
+                            "target": "rust_lord_defeated",
+                            "data": "true"
+                        }
+                    ],
+                    "nextStageId": "return-kjartan"
+                },
+                {
+                    "id": "return-kjartan",
+                    "name": "The Smith's Gratitude",
+                    "description": "Return to Kjartan with proof of your victory.",
+                    "objectives": [
+                        {
+                            "id": "return-to-kjartan",
+                            "type": "Talk",
+                            "description": "Return to Kjartan with proof",
+                            "target": "npc-kjartan"
+                        }
+                    ],
+                    "nextStageId": null
+                }
+            ],
+            "rewards": [
+                {
+                    "type": "Experience",
+                    "amount": 500,
+                    "description": "+500 Legend"
+                },
+                {
+                    "type": "Gold",
+                    "target": "cogs",
+                    "amount": 200,
+                    "description": "+200 Dvergr Cogs"
+                },
+                {
+                    "type": "Item",
+                    "target": "item-rune-etched-blade",
+                    "amount": 1,
+                    "description": "Rune-Etched Blade [Rare]"
+                },
+                {
+                    "type": "Reputation",
+                    "target": "dvergr-guild",
+                    "amount": 50,
+                    "description": "+50 Dvergr Guild Reputation"
+                }
+            ],
+            "failureConditions": null,
+            "branches": null
+        },
+        {
+            "id": "lost-tools",
+            "name": "Lost Tools",
+            "description": "Kjartan's implements have been scattered throughout the nearby ruins. Recover them so he can continue his work.",
+            "category": "SideQuest",
+            "level": null,
+            "isRepeatable": false,
+            "tags": [
+                "side-quest",
+                "fetch",
+                "kjartan"
+            ],
+            "prerequisites": [
+                {
+                    "type": "QuestComplete",
+                    "target": "iron-path",
+                    "operator": "has"
+                }
+            ],
+            "questGiver": {
+                "npcId": "npc-kjartan",
+                "dialogueNodeId": "kjartan-lost-tools-offer"
+            },
+            "stages": [
+                {
+                    "id": "collect-hammers",
+                    "name": "The Scattered Implements",
+                    "description": "Search the ruins for Kjartan's lost tools.",
+                    "objectives": [
+                        {
+                            "id": "find-hammers",
+                            "type": "Collect",
+                            "description": "Collect Dvergr Hammers",
+                            "target": "item-dvergr-hammer",
+                            "quantity": 5
+                        }
+                    ],
+                    "nextStageId": "return-tools"
+                },
+                {
+                    "id": "return-tools",
+                    "name": "Return to the Smith",
+                    "description": "Bring the recovered tools back to Kjartan.",
+                    "objectives": [
+                        {
+                            "id": "deliver-tools",
+                            "type": "Deliver",
+                            "description": "Return the hammers to Kjartan",
+                            "target": "npc-kjartan"
+                        }
+                    ],
+                    "nextStageId": null
+                }
+            ],
+            "rewards": [
+                {
+                    "type": "Experience",
+                    "amount": 100,
+                    "description": "+100 Legend"
+                },
+                {
+                    "type": "Gold",
+                    "target": "cogs",
+                    "amount": 50,
+                    "description": "+50 Dvergr Cogs"
+                }
+            ]
+        },
+        {
+            "id": "patrol-route",
+            "name": "Patrol Route",
+            "description": "Clear the eastern corridor of hostile creatures threatening trade routes.",
+            "category": "Bounty",
+            "level": null,
+            "isRepeatable": true,
+            "tags": [
+                "bounty",
+                "combat",
+                "repeatable"
+            ],
+            "questGiver": {
+                "npcId": "npc-patrol-captain"
+            },
+            "stages": [
+                {
+                    "id": "clear-corridor",
+                    "name": "Clear the Corridor",
+                    "description": "Eliminate the Rust-Horrors infesting the eastern passage.",
+                    "objectives": [
+                        {
+                            "id": "kill-horrors",
+                            "type": "Kill",
+                            "description": "Eliminate Rust-Horrors",
+                            "target": "enemy-rust-horror",
+                            "quantity": 5,
+                            "location": "location-eastern-corridor"
+                        }
+                    ],
+                    "nextStageId": "report-back"
+                },
+                {
+                    "id": "report-back",
+                    "name": "Report Success",
+                    "description": "Return to the Patrol Captain to confirm the route is clear.",
+                    "objectives": [
+                        {
+                            "id": "report",
+                            "type": "Talk",
+                            "description": "Report to the Patrol Captain",
+                            "target": "npc-patrol-captain"
+                        }
+                    ],
+                    "nextStageId": null
+                }
+            ],
+            "rewards": [
+                {
+                    "type": "Gold",
+                    "target": "cogs",
+                    "amount": 25,
+                    "description": "+25 Cogs"
+                },
+                {
+                    "type": "Experience",
+                    "amount": 50,
+                    "description": "+50 Legend"
+                }
+            ]
+        },
+        {
+            "id": "rusted-heart",
+            "name": "The Rusted Heart",
+            "description": "An ancient Undying Warden has awakened and threatens the settlement. Find a way to disable it before it destroys everything.",
+            "category": "MainStory",
+            "level": 10,
+            "isRepeatable": false,
+            "tags": [
+                "main-story",
+                "modular",
+                "undying"
+            ],
+            "prerequisites": [
+                {
+                    "type": "Level",
+                    "value": 10,
+                    "operator": "greaterThan"
+                },
+                {
+                    "type": "QuestComplete",
+                    "target": "iron-path",
+                    "operator": "has"
+                }
+            ],
+            "questGiver": {
+                "npcId": "npc-elder-sigrun",
+                "dialogueNodeId": "sigrun-rusted-heart-offer"
+            },
+            "stages": [
+                {
+                    "id": "investigate-warden",
+                    "name": "Investigate the Threat",
+                    "description": "Learn more about the awakened Warden and find a way to stop it.",
+                    "objectives": [
+                        {
+                            "id": "gather-intel",
+                            "type": "Talk",
+                            "description": "Gather information about the Warden",
+                            "target": "npc-elder-sigrun"
+                        }
+                    ],
+                    "nextStageId": "disable-warden"
+                },
+                {
+                    "id": "disable-warden",
+                    "name": "Disable the Warden",
+                    "description": "Find a way to neutralize the Undying Warden.",
+                    "objectives": [
+                        {
+                            "id": "combat-path",
+                            "type": "Kill",
+                            "description": "Defeat the Warden in direct combat",
+                            "target": "enemy-undying-warden",
+                            "isHidden": true
+                        },
+                        {
+                            "id": "tech-path",
+                            "type": "Use",
+                            "description": "Hack the Warden's command console",
+                            "target": "object-warden-console",
+                            "isHidden": true,
+                            "conditions": [
+                                {
+                                    "type": "HasAbility",
+                                    "target": "ability-hack",
+                                    "value": true
+                                }
+                            ]
+                        },
+                        {
+                            "id": "env-path",
+                            "type": "Use",
+                            "description": "Trigger a structural collapse on the Warden",
+                            "target": "object-ceiling-support",
+                            "isHidden": true,
+                            "conditions": [
+                                {
+                                    "type": "InLocation",
+                                    "target": "location-unstable-chamber",
+                                    "value": true
+                                }
+                            ]
+                        }
+                    ],
+                    "nextStageId": "report-sigrun"
+                },
+                {
+                    "id": "combat-resolution",
+                    "name": "Victory Through Steel",
+                    "description": "You defeated the Warden through direct combat.",
+                    "objectives": [
+                        {
+                            "id": "confirm-combat",
+                            "type": "Talk",
+                            "description": "Report your combat victory to Sigrun",
+                            "target": "npc-elder-sigrun"
+                        }
+                    ],
+                    "nextStageId": null,
+                    "isOptional": true
+                },
+                {
+                    "id": "tech-resolution",
+                    "name": "The Hacker's Way",
+                    "description": "You disabled the Warden through technical means.",
+                    "objectives": [
+                        {
+                            "id": "confirm-tech",
+                            "type": "Talk",
+                            "description": "Report your technical solution to Sigrun",
+                            "target": "npc-elder-sigrun"
+                        }
+                    ],
+                    "nextStageId": null,
+                    "isOptional": true
+                },
+                {
+                    "id": "report-sigrun",
+                    "name": "Report to Sigrun",
+                    "description": "Tell Elder Sigrun how you dealt with the threat.",
+                    "objectives": [
+                        {
+                            "id": "final-report",
+                            "type": "Talk",
+                            "description": "Report to Elder Sigrun",
+                            "target": "npc-elder-sigrun"
+                        }
+                    ],
+                    "nextStageId": null
+                }
+            ],
+            "rewards": [
+                {
+                    "type": "Experience",
+                    "amount": 750,
+                    "description": "+750 Legend"
+                },
+                {
+                    "type": "Reputation",
+                    "target": "rust-clans",
+                    "amount": 100,
+                    "description": "+100 Rust Clans Reputation"
+                }
+            ],
+            "branches": [
+                {
+                    "id": "branch-combat",
+                    "condition": {
+                        "type": "ObjectiveComplete",
+                        "target": "combat-path"
+                    },
+                    "targetStageId": "combat-resolution",
+                    "description": "Player chose direct combat"
+                },
+                {
+                    "id": "branch-tech",
+                    "condition": {
+                        "type": "ObjectiveComplete",
+                        "target": "tech-path"
+                    },
+                    "targetStageId": "tech-resolution",
+                    "description": "Player chose hacking approach"
+                }
+            ],
+            "failureConditions": [
+                {
+                    "type": "TimeExpired",
+                    "description": "The Warden reached the settlement"
+                }
+            ],
+            "failureConsequences": [
+                {
+                    "type": "Reputation",
+                    "target": "rust-clans",
+                    "amount": -50,
+                    "description": "Lost reputation for failing to protect the settlement"
+                },
+                {
+                    "type": "Flag",
+                    "target": "settlement_damaged",
+                    "description": "The settlement suffers permanent damage"
+                }
+            ],
+            "timeLimit": 50
+        },
+        {
+            "id": "salvage-run-daily",
+            "name": "Daily Salvage Run",
+            "description": "Collect salvage materials from the designated scrap piles.",
+            "category": "Daily",
+            "level": null,
+            "isRepeatable": true,
+            "tags": [
+                "daily",
+                "salvage",
+                "rust-clans"
+            ],
+            "questGiver": {
+                "npcId": "npc-salvage-master"
+            },
+            "stages": [
+                {
+                    "id": "collect-salvage",
+                    "name": "Gather Salvage",
+                    "description": "Collect scrap materials from the designated areas.",
+                    "objectives": [
+                        {
+                            "id": "gather-scrap",
+                            "type": "Collect",
+                            "description": "Collect scrap metal",
+                            "target": "item-scrap-metal",
+                            "quantity": 10
+                        }
+                    ],
+                    "nextStageId": "turn-in-salvage"
+                },
+                {
+                    "id": "turn-in-salvage",
+                    "name": "Turn In",
+                    "description": "Return the salvage to the Salvage Master.",
+                    "objectives": [
+                        {
+                            "id": "deliver-salvage",
+                            "type": "Deliver",
+                            "description": "Deliver salvage to the Salvage Master",
+                            "target": "npc-salvage-master"
+                        }
+                    ],
+                    "nextStageId": null
+                }
+            ],
+            "rewards": [
+                {
+                    "type": "Gold",
+                    "target": "cogs",
+                    "amount": 15,
+                    "description": "+15 Cogs"
+                },
+                {
+                    "type": "Reputation",
+                    "target": "rust-clans",
+                    "amount": 5,
+                    "description": "+5 Rust Clans Reputation"
+                }
+            ]
+        },
+        {
+            "id": "hidden-cache",
+            "name": "The Hidden Cache",
+            "description": "Rumors speak of a forgotten supply cache hidden deep within the abandoned tunnels. Those who find it may discover valuable pre-Glitch technology.",
+            "category": "Exploration",
+            "level": 3,
+            "isRepeatable": false,
+            "isHidden": true,
+            "tags": [
+                "exploration",
+                "lore",
+                "hidden"
+            ],
+            "stages": [
+                {
+                    "id": "discover-cache",
+                    "name": "Locate the Cache",
+                    "description": "Search the abandoned tunnels for the hidden supply cache.",
+                    "objectives": [
+                        {
+                            "id": "explore-tunnels",
+                            "type": "Explore",
+                            "description": "Explore the abandoned tunnels",
+                            "target": "location-abandoned-tunnels"
+                        },
+                        {
+                            "id": "find-cache",
+                            "type": "Discover",
+                            "description": "Find the hidden supply cache",
+                            "target": "codex-hidden-cache-location"
+                        }
+                    ],
+                    "nextStageId": "loot-cache"
+                },
+                {
+                    "id": "loot-cache",
+                    "name": "Claim the Spoils",
+                    "description": "Collect the valuable supplies from the cache.",
+                    "objectives": [
+                        {
+                            "id": "collect-supplies",
+                            "type": "Collect",
+                            "description": "Collect pre-Glitch supplies",
+                            "target": "item-pre-glitch-supplies",
+                            "quantity": 1
+                        }
+                    ],
+                    "onComplete": [
+                        {
+                            "type": "Notification",
+                            "data": "You've uncovered ancient technology from before the Glitch."
+                        },
+                        {
+                            "type": "UpdateWorldState",
+                            "target": "hidden_cache_looted",
+                            "data": "true"
+                        }
+                    ],
+                    "nextStageId": null
+                }
+            ],
+            "rewards": [
+                {
+                    "type": "Experience",
+                    "amount": 150,
+                    "description": "+150 Legend"
+                },
+                {
+                    "type": "Item",
+                    "target": "item-ancient-schematic",
+                    "amount": 1,
+                    "description": "Ancient Schematic [Uncommon]"
+                },
+                {
+                    "type": "Unlock",
+                    "target": "crafting-advanced-tech",
+                    "description": "Unlocked: Advanced Tech Crafting"
+                }
+            ]
+        },
+        {
+            "id": "escort-scholar",
+            "name": "The Scholar's Journey",
+            "description": "A scholar from the Midgard Combine requires safe passage through dangerous territory to reach the ancient library. Protect them from harm during the journey.",
+            "category": "FactionQuest",
+            "level": 8,
+            "isRepeatable": false,
+            "tags": [
+                "faction-quest",
+                "escort",
+                "midgard-combine"
+            ],
+            "prerequisites": [
+                {
+                    "type": "FactionReputation",
+                    "target": "midgard-combine",
+                    "value": 500,
+                    "operator": "greaterThan"
+                }
+            ],
+            "questGiver": {
+                "npcId": "npc-combine-liaison",
+                "dialogueNodeId": "combine-escort-offer"
+            },
+            "stages": [
+                {
+                    "id": "meet-scholar",
+                    "name": "Meet the Scholar",
+                    "description": "Meet the Combine scholar at the outpost gates.",
+                    "objectives": [
+                        {
+                            "id": "find-scholar",
+                            "type": "Talk",
+                            "description": "Meet the Combine scholar",
+                            "target": "npc-scholar-elena"
+                        }
+                    ],
+                    "nextStageId": "escort-journey"
+                },
+                {
+                    "id": "escort-journey",
+                    "name": "The Journey",
+                    "description": "Escort the scholar safely through the dangerous passages.",
+                    "objectives": [
+                        {
+                            "id": "protect-scholar",
+                            "type": "Escort",
+                            "description": "Escort Scholar Elena to the ancient library",
+                            "target": "npc-scholar-elena",
+                            "location": "location-ancient-library"
+                        }
+                    ],
+                    "nextStageId": "arrival"
+                },
+                {
+                    "id": "arrival",
+                    "name": "Safe Arrival",
+                    "description": "Ensure the scholar reaches her destination safely.",
+                    "objectives": [
+                        {
+                            "id": "confirm-arrival",
+                            "type": "Talk",
+                            "description": "Speak with Scholar Elena upon arrival",
+                            "target": "npc-scholar-elena"
+                        }
+                    ],
+                    "nextStageId": null
+                }
+            ],
+            "rewards": [
+                {
+                    "type": "Experience",
+                    "amount": 300,
+                    "description": "+300 Legend"
+                },
+                {
+                    "type": "Reputation",
+                    "target": "midgard-combine",
+                    "amount": 75,
+                    "description": "+75 Midgard Combine Reputation"
+                },
+                {
+                    "type": "Gold",
+                    "target": "cogs",
+                    "amount": 100,
+                    "description": "+100 Cogs"
+                }
+            ],
+            "failureConditions": [
+                {
+                    "type": "NPCDeath",
+                    "target": "npc-scholar-elena",
+                    "description": "Scholar Elena died during the journey"
+                }
+            ],
+            "failureConsequences": [
+                {
+                    "type": "Reputation",
+                    "target": "midgard-combine",
+                    "amount": -100,
+                    "description": "Lost significant reputation with the Midgard Combine"
+                },
+                {
+                    "type": "LockQuest",
+                    "target": "scholars-discovery",
+                    "description": "The Scholar's Discovery quest is no longer available"
+                },
+                {
+                    "type": "Notification",
+                    "description": "Scholar Elena's valuable research is lost forever."
+                }
+            ]
+        }
+    ]
+}

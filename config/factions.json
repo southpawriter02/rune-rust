@@ -1,0 +1,531 @@
+{
+    "$schema": "schemas/factions.schema.json",
+    "version": "1.0.0",
+    "defaultThresholds": {
+        "hostile": {
+            "min": -1000,
+            "max": -501,
+            "label": "Hostile"
+        },
+        "unfriendly": {
+            "min": -500,
+            "max": -1,
+            "label": "Unfriendly"
+        },
+        "neutral": {
+            "min": 0,
+            "max": 499,
+            "label": "Neutral"
+        },
+        "friendly": {
+            "min": 500,
+            "max": 2999,
+            "label": "Friendly"
+        },
+        "allied": {
+            "min": 3000,
+            "max": 8999,
+            "label": "Allied"
+        },
+        "exalted": {
+            "min": 9000,
+            "max": 10000,
+            "label": "Exalted"
+        }
+    },
+    "factions": [
+        {
+            "id": "rust-clans",
+            "name": "Rust Clans",
+            "description": "Exile raiders and desperate scavengers who make their home in the iron deserts of Jötunheim. The Children of the Assembly Line, they follow the Creed of the Self: radical self-reliance bound by crew loyalty.",
+            "iconId": "faction-rust-clans",
+            "color": "#B87333",
+            "headquarters": "utgard",
+            "tags": [
+                "salvagers",
+                "jotunheim",
+                "creedless"
+            ],
+            "relationships": [
+                {
+                    "factionId": "dvergr-guild",
+                    "relationship": "Friendly",
+                    "reputationLink": 50,
+                    "description": "Trade partners—salvage for steel"
+                },
+                {
+                    "factionId": "iron-banes",
+                    "relationship": "Hostile",
+                    "reputationLink": -25,
+                    "description": "Ideological enemies—heretics versus zealots"
+                },
+                {
+                    "factionId": "midgard-combine",
+                    "relationship": "Neutral",
+                    "reputationLink": null,
+                    "description": "Transactional relationship—neither friend nor foe"
+                },
+                {
+                    "factionId": "god-sleeper-cults",
+                    "relationship": "Hostile",
+                    "reputationLink": -25,
+                    "description": "Theological incompatibility—salvagers versus worshippers"
+                },
+                {
+                    "factionId": "jotun-readers",
+                    "relationship": "Friendly",
+                    "reputationLink": 25,
+                    "description": "Frustrating cooperation—shared interest in ruins"
+                }
+            ],
+            "reputationModifiers": [
+                {
+                    "action": "KillMember",
+                    "amount": -20,
+                    "conditions": [
+                        {
+                            "type": "Witnessed",
+                            "modifier": 1.0,
+                            "description": "Full penalty when witnessed"
+                        },
+                        {
+                            "type": "Unwitnessed",
+                            "modifier": 0.0,
+                            "description": "No change if unwitnessed"
+                        }
+                    ],
+                    "description": "Killing a Rust Clan member"
+                },
+                {
+                    "action": "HelpMember",
+                    "amount": 10,
+                    "description": "Assisting a Rust Clan crew"
+                },
+                {
+                    "action": "CompleteQuest",
+                    "amount": 25,
+                    "description": "Completing a salvage contract"
+                },
+                {
+                    "action": "FailQuest",
+                    "amount": -15,
+                    "description": "Failing a salvage contract"
+                },
+                {
+                    "action": "Theft",
+                    "amount": -15,
+                    "description": "Stealing from Rust Clan merchants"
+                },
+                {
+                    "action": "Gift",
+                    "amount": 10,
+                    "description": "Trading valuable salvage at fair price"
+                },
+                {
+                    "action": "Betrayal",
+                    "amount": -50,
+                    "description": "Breaking a witnessed contract"
+                },
+                {
+                    "action": "Discovery",
+                    "amount": 15,
+                    "description": "Sharing location of untouched ruin"
+                }
+            ],
+            "perks": [
+                {
+                    "id": "scavengers-discount",
+                    "name": "Scavenger's Discount",
+                    "description": "Rust Clan merchants recognize you as a friend of the Clans and offer reduced prices.",
+                    "requiredThreshold": "friendly",
+                    "effect": {
+                        "type": "PriceModifier",
+                        "target": "FactionVendors",
+                        "value": -0.15
+                    },
+                    "isPassive": true
+                },
+                {
+                    "id": "scavengers-kit",
+                    "name": "Scavenger's Kit",
+                    "description": "Access to purchase the specialized salvage equipment used by Rust Clan crews.",
+                    "requiredThreshold": "allied",
+                    "effect": {
+                        "type": "AccessGrant",
+                        "target": "item-scavengers-kit",
+                        "value": "unlocked"
+                    },
+                    "isPassive": true
+                },
+                {
+                    "id": "clan-sigil",
+                    "name": "Clan Sigil",
+                    "description": "The Rig-Masters have granted you a Clan Sigil, revealing hidden salvage caches.",
+                    "requiredThreshold": "exalted",
+                    "effect": {
+                        "type": "AccessGrant",
+                        "target": "hidden-cache-locations",
+                        "value": "revealed"
+                    },
+                    "isPassive": false
+                }
+            ],
+            "vendors": [
+                {
+                    "vendorId": "utgard-salvage-merchant",
+                    "requiredThreshold": "neutral",
+                    "priceModifier": 1.0,
+                    "exclusiveItems": null
+                },
+                {
+                    "vendorId": "rust-clan-artificer",
+                    "requiredThreshold": "friendly",
+                    "priceModifier": 0.9,
+                    "exclusiveItems": [
+                        "iron-heart-fragment",
+                        "rust-resistance-serum"
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "midgard-combine",
+            "name": "Midgard Combine",
+            "description": "The Heartland Alliance—a decentralized confederation of agricultural Holds that produces the vast majority of the world's reliable food supply. Pragmatic farmers and defenders who value the harvest and the Wall.",
+            "iconId": "faction-midgard-combine",
+            "color": "#8B4513",
+            "headquarters": "crossroads",
+            "tags": [
+                "farmers",
+                "midgard",
+                "heartland"
+            ],
+            "relationships": [
+                {
+                    "factionId": "rangers-guild",
+                    "relationship": "Allied",
+                    "reputationLink": 75,
+                    "description": "Symbiotic infrastructure—Rangers keep the roads safe"
+                },
+                {
+                    "factionId": "dvergr-guild",
+                    "relationship": "Friendly",
+                    "reputationLink": 50,
+                    "description": "Critical economic partner—food for technology"
+                },
+                {
+                    "factionId": "rust-clans",
+                    "relationship": "Neutral",
+                    "reputationLink": null,
+                    "description": "Transactional—they pay on time"
+                },
+                {
+                    "factionId": "iron-banes",
+                    "relationship": "Unfriendly",
+                    "reputationLink": -10,
+                    "description": "Ideological tension—fanatics who burn useful salvage"
+                },
+                {
+                    "factionId": "scavenger-barons",
+                    "relationship": "Hostile",
+                    "reputationLink": -50,
+                    "description": "Hostile competition—raiders and slavers"
+                }
+            ],
+            "reputationModifiers": [
+                {
+                    "action": "KillMember",
+                    "amount": -25,
+                    "description": "Killing a Hold farmer or guard"
+                },
+                {
+                    "action": "HelpMember",
+                    "amount": 10,
+                    "description": "Assisting with Hold defense or harvest"
+                },
+                {
+                    "action": "CompleteQuest",
+                    "amount": 25,
+                    "description": "Completing a contract for the Combine"
+                },
+                {
+                    "action": "Gift",
+                    "amount": 5,
+                    "description": "Giving the Ghost's Share"
+                },
+                {
+                    "action": "Theft",
+                    "amount": -30,
+                    "description": "Stealing food—capital crime in the Combine"
+                }
+            ],
+            "perks": [
+                {
+                    "id": "harvest-wisdom",
+                    "name": "Harvest Wisdom",
+                    "description": "The elder farmers share their knowledge of crops and preservation.",
+                    "requiredThreshold": "friendly",
+                    "effect": {
+                        "type": "StatBonus",
+                        "target": "Survival",
+                        "value": 2
+                    },
+                    "isPassive": true
+                },
+                {
+                    "id": "hold-sanctuary",
+                    "name": "Hold Sanctuary",
+                    "description": "Allied Holds offer free rest and basic provisions.",
+                    "requiredThreshold": "allied",
+                    "effect": {
+                        "type": "AccessGrant",
+                        "target": "hold-sanctuary",
+                        "value": "unlocked"
+                    },
+                    "isPassive": true
+                }
+            ],
+            "vendors": [
+                {
+                    "vendorId": "combine-provisioner",
+                    "requiredThreshold": "neutral",
+                    "priceModifier": 1.0,
+                    "exclusiveItems": null
+                },
+                {
+                    "vendorId": "hold-quartermaster",
+                    "requiredThreshold": "allied",
+                    "priceModifier": 0.8,
+                    "exclusiveItems": [
+                        "grit-corn-seed",
+                        "preserved-rations"
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "iron-banes",
+            "name": "Iron-Bane Crusade",
+            "description": "Anti-Undying zealots who believe the Jötun-Forged are corrupted demons that must be purged. Their faith drives them to cleanse what others would salvage.",
+            "iconId": "faction-iron-banes",
+            "color": "#8B0000",
+            "headquarters": null,
+            "tags": [
+                "zealots",
+                "crusaders",
+                "anti-undying"
+            ],
+            "relationships": [
+                {
+                    "factionId": "rust-clans",
+                    "relationship": "Hostile",
+                    "reputationLink": -25,
+                    "description": "Ideological enemies—heretics who profit from taint"
+                },
+                {
+                    "factionId": "god-sleeper-cults",
+                    "relationship": "AtWar",
+                    "reputationLink": -75,
+                    "description": "Mortal enemies—demon-worshippers must be purged"
+                },
+                {
+                    "factionId": "midgard-combine",
+                    "relationship": "Unfriendly",
+                    "reputationLink": -10,
+                    "description": "Soft farmers who tolerate tainted technology"
+                }
+            ],
+            "reputationModifiers": [
+                {
+                    "action": "KillMember",
+                    "amount": -30,
+                    "description": "Killing a Crusader"
+                },
+                {
+                    "action": "HelpMember",
+                    "amount": 15,
+                    "description": "Assisting in a purge operation"
+                },
+                {
+                    "action": "Discovery",
+                    "amount": 30,
+                    "description": "Destroying corrupted Jötun-Forged"
+                },
+                {
+                    "action": "Betrayal",
+                    "amount": -100,
+                    "description": "Protecting Undying from purification"
+                }
+            ],
+            "perks": [
+                {
+                    "id": "purification-sigils",
+                    "name": "Purification Sigils",
+                    "description": "Blessed sigils that provide protection against Undying attacks.",
+                    "requiredThreshold": "friendly",
+                    "effect": {
+                        "type": "StatBonus",
+                        "target": "UndeadResistance",
+                        "value": 10
+                    },
+                    "isPassive": true
+                },
+                {
+                    "id": "zealots-blade",
+                    "name": "Zealot's Blade",
+                    "description": "A consecrated weapon that deals bonus damage to Undying.",
+                    "requiredThreshold": "exalted",
+                    "effect": {
+                        "type": "AccessGrant",
+                        "target": "item-zealots-blade",
+                        "value": "unlocked"
+                    },
+                    "isPassive": false
+                }
+            ],
+            "vendors": []
+        },
+        {
+            "id": "dvergr-guild",
+            "name": "Dvergr Guild",
+            "description": "Dwarven craftsmen and engineers from Nidavellir who maintain the technology the surface world depends upon. Their Pure Steel and clockwork are the foundation of post-Glitch economy.",
+            "iconId": "faction-dvergr",
+            "color": "#4A4A4A",
+            "headquarters": "nidavellir",
+            "tags": [
+                "craftsmen",
+                "engineers",
+                "dwarves"
+            ],
+            "relationships": [
+                {
+                    "factionId": "rust-clans",
+                    "relationship": "Friendly",
+                    "reputationLink": 50,
+                    "description": "Valuable suppliers of rare materials"
+                },
+                {
+                    "factionId": "midgard-combine",
+                    "relationship": "Friendly",
+                    "reputationLink": 50,
+                    "description": "Agricultural partners—food for steel"
+                },
+                {
+                    "factionId": "jotun-readers",
+                    "relationship": "Neutral",
+                    "reputationLink": null,
+                    "description": "Scholars with interesting data, impractical applications"
+                }
+            ],
+            "reputationModifiers": [
+                {
+                    "action": "CompleteQuest",
+                    "amount": 30,
+                    "description": "Fulfilling a Dvergr contract precisely"
+                },
+                {
+                    "action": "Gift",
+                    "amount": 15,
+                    "description": "Providing rare salvage at fair price"
+                },
+                {
+                    "action": "Theft",
+                    "amount": -50,
+                    "description": "Stealing from Dvergr—contract termination and blacklisting"
+                }
+            ],
+            "perks": [
+                {
+                    "id": "clockwork-precision",
+                    "name": "Clockwork Precision",
+                    "description": "Access to Dvergr-crafted tools with superior reliability.",
+                    "requiredThreshold": "friendly",
+                    "effect": {
+                        "type": "AccessGrant",
+                        "target": "dvergr-tool-inventory",
+                        "value": "unlocked"
+                    },
+                    "isPassive": true
+                },
+                {
+                    "id": "deep-gate-passage",
+                    "name": "Deep Gate Passage",
+                    "description": "Permission to use Dvergr Deep Gates for rapid travel.",
+                    "requiredThreshold": "allied",
+                    "effect": {
+                        "type": "AccessGrant",
+                        "target": "deep-gate-network",
+                        "value": "unlocked"
+                    },
+                    "isPassive": true
+                }
+            ],
+            "vendors": [
+                {
+                    "vendorId": "dvergr-smith",
+                    "requiredThreshold": "neutral",
+                    "priceModifier": 1.1,
+                    "exclusiveItems": null
+                },
+                {
+                    "vendorId": "dvergr-master-smith",
+                    "requiredThreshold": "allied",
+                    "priceModifier": 1.0,
+                    "exclusiveItems": [
+                        "pure-steel-ingot",
+                        "clockwork-core"
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "forlorn",
+            "name": "The Forlorn",
+            "description": "Corrupted beings touched by the Runic Blight. Neither living nor dead, they are hostile to all who still cling to sanity.",
+            "iconId": "faction-forlorn",
+            "color": "#2F4F4F",
+            "isHidden": false,
+            "tags": [
+                "corrupted",
+                "hostile",
+                "blight"
+            ],
+            "thresholds": {
+                "hostile": {
+                    "min": -1000,
+                    "max": 10000,
+                    "label": "Hostile"
+                },
+                "unfriendly": {
+                    "min": 10001,
+                    "max": 10001,
+                    "label": "Unfriendly"
+                },
+                "neutral": {
+                    "min": 10002,
+                    "max": 10002,
+                    "label": "Neutral"
+                },
+                "friendly": {
+                    "min": 10003,
+                    "max": 10003,
+                    "label": "Friendly"
+                },
+                "allied": {
+                    "min": 10004,
+                    "max": 10004,
+                    "label": "Allied"
+                },
+                "exalted": {
+                    "min": 10005,
+                    "max": 10005,
+                    "label": "Exalted"
+                }
+            },
+            "relationships": [],
+            "reputationModifiers": [],
+            "perks": [],
+            "vendors": []
+        }
+    ]
+}

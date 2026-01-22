@@ -1,0 +1,710 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://rune-game.com/schemas/quests.schema.json",
+    "title": "Quest Configuration",
+    "description": "Schema for quest definitions in Rune & Rust. Defines quest structure including stages, objectives, prerequisites, rewards, branching paths, and failure conditions. Integrates with dialogue outcomes (v0.14.9a) through QuestStart/QuestUpdate references and faction schema (v0.14.10a) for reputation rewards.",
+    "type": "object",
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "Reference to this schema file for IDE validation support."
+        },
+        "version": {
+            "type": "string",
+            "description": "Schema version for migration tracking (semver format). Used to track breaking changes and enable configuration migration.",
+            "pattern": "^\\d+\\.\\d+\\.\\d+$",
+            "examples": [
+                "1.0.0",
+                "1.1.0",
+                "2.0.0"
+            ]
+        },
+        "quests": {
+            "type": "array",
+            "description": "Array of quest definitions. Each quest represents a task, mission, or storyline the player can undertake with defined objectives, rewards, and potential consequences.",
+            "items": {
+                "$ref": "#/definitions/Quest"
+            },
+            "minItems": 1
+        }
+    },
+    "required": [
+        "version",
+        "quests"
+    ],
+    "additionalProperties": false,
+    "definitions": {
+        "Quest": {
+            "type": "object",
+            "description": "A single quest definition containing identity, stages, objectives, prerequisites, rewards, failure conditions, and branching paths. Quests can be main story, side quests, faction-specific, bounties, exploration, crafting, daily, or event-based.",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Unique quest identifier using lowercase kebab-case. Referenced by dialogue outcomes, prerequisites, and other systems. Examples: 'iron-path', 'lost-tools', 'patrol-route'.",
+                    "pattern": "^[a-z][a-z0-9-]*$",
+                    "minLength": 2,
+                    "examples": [
+                        "iron-path",
+                        "lost-tools",
+                        "patrol-route",
+                        "rusted-heart"
+                    ]
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Display name shown in the quest journal UI. Should be a proper title for the quest.",
+                    "minLength": 1,
+                    "examples": [
+                        "The Iron Path",
+                        "Lost Tools",
+                        "Patrol Route"
+                    ]
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Quest log description text explaining the quest objectives, backstory, and motivation. Displayed in the quest journal when the player views quest details.",
+                    "minLength": 10
+                },
+                "category": {
+                    "type": "string",
+                    "description": "Quest category determining UI presentation, typical rewards, and repeatability. 'MainStory' = primary narrative, 'SideQuest' = optional stories, 'FactionQuest' = faction-specific, 'Bounty' = kill targets, 'Exploration' = discover locations, 'Crafting' = create items, 'Daily' = repeatable dailies, 'Event' = limited-time.",
+                    "enum": [
+                        "MainStory",
+                        "SideQuest",
+                        "FactionQuest",
+                        "Bounty",
+                        "Exploration",
+                        "Crafting",
+                        "Daily",
+                        "Event"
+                    ]
+                },
+                "level": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "description": "Recommended player level for this quest. Null indicates no level recommendation. Used for sorting quests by difficulty and providing guidance to players.",
+                    "minimum": 1,
+                    "maximum": 100,
+                    "default": null
+                },
+                "isRepeatable": {
+                    "type": "boolean",
+                    "description": "Whether this quest can be repeated after completion. Typically true for bounties and daily quests, false for story quests.",
+                    "default": false
+                },
+                "isHidden": {
+                    "type": "boolean",
+                    "description": "Whether this quest is hidden from the player until discovered. Hidden quests are not shown in quest lists or on quest givers until revealed through gameplay.",
+                    "default": false
+                },
+                "prerequisites": {
+                    "type": "array",
+                    "description": "Array of requirements that must be met before the player can accept this quest. All prerequisites must be satisfied for the quest to become available.",
+                    "items": {
+                        "$ref": "#/definitions/Prerequisite"
+                    },
+                    "default": []
+                },
+                "questGiver": {
+                    "$ref": "#/definitions/QuestGiver",
+                    "description": "Configuration for the NPC who offers and accepts turn-in for this quest. Null for quests triggered by events or items."
+                },
+                "stages": {
+                    "type": "array",
+                    "description": "Sequential stages that make up the quest. Each stage contains one or more objectives. At least one stage is required.",
+                    "items": {
+                        "$ref": "#/definitions/QuestStage"
+                    },
+                    "minItems": 1
+                },
+                "rewards": {
+                    "type": "array",
+                    "description": "Rewards granted upon quest completion. Can include experience, currency, items, reputation, abilities, titles, and flags.",
+                    "items": {
+                        "$ref": "#/definitions/Reward"
+                    },
+                    "default": []
+                },
+                "failureConditions": {
+                    "type": [
+                        "array",
+                        "null"
+                    ],
+                    "description": "Conditions that cause the quest to fail. Null indicates the quest cannot fail (player can always retry objectives).",
+                    "items": {
+                        "$ref": "#/definitions/FailureCondition"
+                    },
+                    "default": null
+                },
+                "failureConsequences": {
+                    "type": [
+                        "array",
+                        "null"
+                    ],
+                    "description": "Effects that occur when the quest fails. Can include reputation loss, world state flags, locked quests, and notifications.",
+                    "items": {
+                        "$ref": "#/definitions/Consequence"
+                    },
+                    "default": null
+                },
+                "timeLimit": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "description": "Number of turns to complete the quest. Null indicates no time limit. If the time limit expires, the quest fails if TimeExpired is in failureConditions.",
+                    "minimum": 1,
+                    "default": null
+                },
+                "branches": {
+                    "type": [
+                        "array",
+                        "null"
+                    ],
+                    "description": "Branching path definitions that redirect quest progression based on player choices or conditions. Branches can lead to different stages and endings.",
+                    "items": {
+                        "$ref": "#/definitions/QuestBranch"
+                    },
+                    "default": null
+                },
+                "tags": {
+                    "type": "array",
+                    "description": "Metadata tags for filtering, categorizing, and searching quests. Useful for grouping quests by theme, location, faction, or other characteristics.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "default": []
+                }
+            },
+            "required": [
+                "id",
+                "name",
+                "description",
+                "category",
+                "stages"
+            ],
+            "additionalProperties": false
+        },
+        "QuestStage": {
+            "type": "object",
+            "description": "A single stage within a quest. Stages contain objectives that must be completed to progress. Stages are typically sequential but can be skipped via branching.",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Unique stage identifier within the quest. Referenced by nextStageId and branch targets. Uses lowercase kebab-case.",
+                    "pattern": "^[a-z][a-z0-9-]*$"
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Stage title displayed in the quest journal. Should describe the current phase of the quest.",
+                    "minLength": 1
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Stage-specific description text. Updates the quest journal description when this stage becomes active.",
+                    "minLength": 5
+                },
+                "objectives": {
+                    "type": "array",
+                    "description": "Objectives for this stage. At least one objective is required. All non-optional objectives must be completed to advance to the next stage.",
+                    "items": {
+                        "$ref": "#/definitions/Objective"
+                    },
+                    "minItems": 1
+                },
+                "onComplete": {
+                    "type": [
+                        "array",
+                        "null"
+                    ],
+                    "description": "Actions triggered when all required objectives in this stage are completed. Can include notifications, spawns, unlocks, and world state updates.",
+                    "items": {
+                        "$ref": "#/definitions/StageAction"
+                    },
+                    "default": null
+                },
+                "nextStageId": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "description": "ID of the next stage to advance to upon completion. Null indicates this is the final stage and completing it completes the quest.",
+                    "default": null
+                },
+                "isOptional": {
+                    "type": "boolean",
+                    "description": "Whether this stage is optional and can be skipped. Optional stages are typically reached via branches and provide alternative endings.",
+                    "default": false
+                }
+            },
+            "required": [
+                "id",
+                "name",
+                "description",
+                "objectives"
+            ],
+            "additionalProperties": false
+        },
+        "Objective": {
+            "type": "object",
+            "description": "A single objective within a quest stage. Objectives define specific tasks the player must complete. Types include Kill, Collect, Talk, Explore, Escort, Defend, Craft, Discover, Deliver, Use, Survive, and Reach.",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Unique objective identifier within the stage. Referenced by branch conditions and modular objective linking.",
+                    "pattern": "^[a-z][a-z0-9-]*$"
+                },
+                "type": {
+                    "type": "string",
+                    "description": "Type of objective determining completion logic. 'Kill' = defeat enemies, 'Collect' = gather items, 'Talk' = speak with NPC, 'Explore' = visit location, 'Escort' = protect NPC, 'Defend' = hold location, 'Craft' = create item, 'Discover' = find lore, 'Deliver' = bring item to NPC, 'Use' = interact with object, 'Survive' = stay alive, 'Reach' = arrive at destination.",
+                    "enum": [
+                        "Kill",
+                        "Collect",
+                        "Talk",
+                        "Explore",
+                        "Escort",
+                        "Defend",
+                        "Craft",
+                        "Discover",
+                        "Deliver",
+                        "Use",
+                        "Survive",
+                        "Reach"
+                    ]
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Objective text shown to the player in the quest journal. Should clearly describe what the player needs to do.",
+                    "minLength": 5
+                },
+                "target": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "description": "Entity reference for the objective target. Format varies by type: enemy ID for Kill, item ID for Collect, NPC ID for Talk/Deliver, location ID for Explore/Reach, object ID for Use.",
+                    "default": null
+                },
+                "quantity": {
+                    "type": "integer",
+                    "description": "Number required to complete the objective. Default is 1. For Kill objectives, number of enemies. For Collect, number of items. For Defend/Survive, number of turns.",
+                    "minimum": 1,
+                    "default": 1
+                },
+                "location": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "description": "Location ID where the objective must be completed. Null indicates the objective can be completed anywhere.",
+                    "default": null
+                },
+                "isOptional": {
+                    "type": "boolean",
+                    "description": "Whether this objective is optional. Optional objectives are not required to complete the stage but may provide bonus rewards or affect branching.",
+                    "default": false
+                },
+                "isHidden": {
+                    "type": "boolean",
+                    "description": "Whether this objective is hidden until discovered. Hidden objectives are not shown in the quest journal until the player discovers them through gameplay. Used for modular objective paths.",
+                    "default": false
+                },
+                "conditions": {
+                    "type": [
+                        "array",
+                        "null"
+                    ],
+                    "description": "Additional conditions that must be met for objective availability or completion. Used for gated objectives that require abilities, items, or locations.",
+                    "items": {
+                        "$ref": "#/definitions/ObjectiveCondition"
+                    },
+                    "default": null
+                }
+            },
+            "required": [
+                "id",
+                "type",
+                "description"
+            ],
+            "additionalProperties": false
+        },
+        "ObjectiveCondition": {
+            "type": "object",
+            "description": "Condition for objective completion or visibility. Used to gate objectives behind abilities, items, locations, or other objectives.",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "description": "Type of condition. 'HasAbility' = player has ability, 'HasItem' = player has item, 'InLocation' = player in location, 'FactionReputation' = faction threshold, 'AnyObjectiveComplete' = any of listed objectives, 'CustomFlag' = world state flag.",
+                    "enum": [
+                        "HasAbility",
+                        "HasItem",
+                        "InLocation",
+                        "FactionReputation",
+                        "AnyObjectiveComplete",
+                        "CustomFlag"
+                    ]
+                },
+                "target": {
+                    "type": [
+                        "string",
+                        "array"
+                    ],
+                    "description": "Condition target(s). For ability/item/location/flag, a string ID. For AnyObjectiveComplete, an array of objective IDs."
+                },
+                "value": {
+                    "type": [
+                        "string",
+                        "integer",
+                        "boolean",
+                        "null"
+                    ],
+                    "description": "Condition value. For FactionReputation, minimum reputation. For HasItem, minimum quantity. For flags, expected value.",
+                    "default": null
+                }
+            },
+            "required": [
+                "type",
+                "target"
+            ],
+            "additionalProperties": false
+        },
+        "Prerequisite": {
+            "type": "object",
+            "description": "Requirement to accept a quest. All prerequisites must be met for the quest to become available. Types include Level, QuestComplete, QuestActive, FactionReputation, HasItem, HasAbility, HasFlag, ClassIs, and RaceIs.",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "description": "Type of prerequisite. 'Level' = player level, 'QuestComplete' = finished quest, 'QuestActive' = quest in progress, 'FactionReputation' = standing with faction, 'HasItem' = item in inventory, 'HasAbility' = unlocked ability, 'HasFlag' = world state flag, 'ClassIs' = player class, 'RaceIs' = player race.",
+                    "enum": [
+                        "Level",
+                        "QuestComplete",
+                        "QuestActive",
+                        "FactionReputation",
+                        "HasItem",
+                        "HasAbility",
+                        "HasFlag",
+                        "ClassIs",
+                        "RaceIs"
+                    ]
+                },
+                "target": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "description": "Target reference for the prerequisite. Quest ID for QuestComplete/QuestActive, faction ID for FactionReputation, item/ability/flag/class/race ID for others. Null for Level type.",
+                    "default": null
+                },
+                "value": {
+                    "type": [
+                        "integer",
+                        "string",
+                        "null"
+                    ],
+                    "description": "Comparison value. Level number for Level, reputation amount for FactionReputation, item quantity for HasItem."
+                },
+                "operator": {
+                    "type": "string",
+                    "description": "Comparison operator. 'equals' = exact match, 'greaterThan' = greater than value, 'lessThan' = less than value, 'has' = has item/ability/flag, 'notHas' = does not have.",
+                    "enum": [
+                        "equals",
+                        "greaterThan",
+                        "lessThan",
+                        "has",
+                        "notHas"
+                    ],
+                    "default": "equals"
+                }
+            },
+            "required": [
+                "type",
+                "operator"
+            ],
+            "additionalProperties": false
+        },
+        "Reward": {
+            "type": "object",
+            "description": "Reward granted for completing a quest. Types include Experience, Gold, Item, Reputation, Ability, Title, Unlock, and Flag.",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "description": "Type of reward. 'Experience' = XP/Legend points, 'Gold' = currency, 'Item' = inventory item, 'Reputation' = faction standing (references v0.14.10a factions), 'Ability' = unlock ability, 'Title' = grant title, 'Unlock' = unlock content, 'Flag' = set world flag.",
+                    "enum": [
+                        "Experience",
+                        "Gold",
+                        "Item",
+                        "Reputation",
+                        "Ability",
+                        "Title",
+                        "Unlock",
+                        "Flag"
+                    ]
+                },
+                "target": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "description": "Target reference. Currency ID for Gold, item ID for Item, faction ID for Reputation (from v0.14.10a), ability/title/unlock/flag ID for others. Null for Experience.",
+                    "default": null
+                },
+                "amount": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "description": "Reward amount. XP for Experience, currency amount for Gold, item quantity for Item, reputation change for Reputation. Null for non-numeric rewards.",
+                    "default": null
+                },
+                "isOptional": {
+                    "type": "boolean",
+                    "description": "Whether this is a choice reward. If true, player must select this reward from available options. Used for quests with reward choices.",
+                    "default": false
+                },
+                "description": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "description": "Display text for the reward. Shown in quest completion UI and journal. Examples: '+500 Legend', 'Rune-Etched Blade [Rare]'.",
+                    "default": null
+                }
+            },
+            "required": [
+                "type"
+            ],
+            "additionalProperties": false
+        },
+        "QuestBranch": {
+            "type": "object",
+            "description": "A branching path that redirects quest progression. Branches are evaluated when objectives complete and can send the quest to different stages based on conditions.",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Unique branch identifier within the quest. Used for logging and debugging.",
+                    "pattern": "^[a-z][a-z0-9-]*$"
+                },
+                "condition": {
+                    "$ref": "#/definitions/BranchCondition",
+                    "description": "Condition that triggers this branch. First matching branch is taken."
+                },
+                "targetStageId": {
+                    "type": "string",
+                    "description": "ID of the stage to jump to when this branch is triggered. Must reference a valid stage in the quest."
+                },
+                "description": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "description": "Human-readable description of the branch for debugging and documentation purposes.",
+                    "default": null
+                }
+            },
+            "required": [
+                "id",
+                "condition",
+                "targetStageId"
+            ],
+            "additionalProperties": false
+        },
+        "BranchCondition": {
+            "type": "object",
+            "description": "Condition that triggers a quest branch. Evaluated when stage objectives complete or specific events occur.",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "description": "Type of condition. 'ObjectiveComplete' = specific objective done, 'HasItem' = player has item, 'FactionReputation' = faction threshold, 'DialogueChoice' = dialogue option chosen, 'TimeExpired' = time limit reached, 'CustomFlag' = world state flag.",
+                    "enum": [
+                        "ObjectiveComplete",
+                        "HasItem",
+                        "FactionReputation",
+                        "DialogueChoice",
+                        "TimeExpired",
+                        "CustomFlag"
+                    ]
+                },
+                "target": {
+                    "type": "string",
+                    "description": "Condition target. Objective ID for ObjectiveComplete, item ID for HasItem, faction ID for FactionReputation, dialogue node/choice ID for DialogueChoice, flag name for CustomFlag."
+                },
+                "value": {
+                    "type": [
+                        "string",
+                        "integer",
+                        "boolean",
+                        "null"
+                    ],
+                    "description": "Condition value for comparison. Reputation threshold for FactionReputation, expected value for CustomFlag. Null for simple existence checks.",
+                    "default": null
+                }
+            },
+            "required": [
+                "type",
+                "target"
+            ],
+            "additionalProperties": false
+        },
+        "FailureCondition": {
+            "type": "object",
+            "description": "Condition that causes the quest to fail. When triggered, the quest enters a failed state and failure consequences are applied.",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "description": "Type of failure condition. 'NPCDeath' = protected NPC dies, 'TimeExpired' = time limit exceeded, 'ItemLost' = required item destroyed/sold, 'LocationLeft' = left required area, 'PlayerDeath' = player dies, 'FactionHostile' = faction becomes hostile.",
+                    "enum": [
+                        "NPCDeath",
+                        "TimeExpired",
+                        "ItemLost",
+                        "LocationLeft",
+                        "PlayerDeath",
+                        "FactionHostile"
+                    ]
+                },
+                "target": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "description": "Target reference. NPC ID for NPCDeath, item ID for ItemLost, location ID for LocationLeft, faction ID for FactionHostile. Null for TimeExpired and PlayerDeath.",
+                    "default": null
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Description of the failure condition shown to the player when the quest fails.",
+                    "minLength": 5
+                }
+            },
+            "required": [
+                "type",
+                "description"
+            ],
+            "additionalProperties": false
+        },
+        "Consequence": {
+            "type": "object",
+            "description": "Effect that occurs when a quest fails. Consequences can include reputation changes, world state flags, locked quests, enemy spawns, item loss, and notifications.",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "description": "Type of consequence. 'Reputation' = faction reputation change (via v0.14.10a), 'Flag' = set world state flag, 'LockQuest' = permanently lock a quest, 'SpawnEnemy' = spawn hostile enemies, 'ItemLoss' = remove item from inventory, 'Notification' = display message.",
+                    "enum": [
+                        "Reputation",
+                        "Flag",
+                        "LockQuest",
+                        "SpawnEnemy",
+                        "ItemLoss",
+                        "Notification"
+                    ]
+                },
+                "target": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "description": "Target reference. Faction ID for Reputation, flag name for Flag, quest ID for LockQuest, enemy ID for SpawnEnemy, item ID for ItemLoss. Null for Notification.",
+                    "default": null
+                },
+                "amount": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "description": "Amount for the consequence. Reputation change amount for Reputation, item quantity for ItemLoss, enemy count for SpawnEnemy.",
+                    "default": null
+                },
+                "description": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "description": "Description of the consequence. For Notification type, this is the message shown. For others, documentation of what happened.",
+                    "default": null
+                }
+            },
+            "required": [
+                "type"
+            ],
+            "additionalProperties": false
+        },
+        "StageAction": {
+            "type": "object",
+            "description": "Action triggered when a quest stage completes. Used for narrative moments, spawns, unlocks, and world state changes.",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "description": "Type of action. 'Notification' = show message, 'SpawnEnemy' = spawn enemies, 'UnlockArea' = unlock location, 'GrantItem' = give item, 'UpdateWorldState' = set flag, 'TriggerEvent' = fire game event.",
+                    "enum": [
+                        "Notification",
+                        "SpawnEnemy",
+                        "UnlockArea",
+                        "GrantItem",
+                        "UpdateWorldState",
+                        "TriggerEvent"
+                    ]
+                },
+                "target": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "description": "Action target. Enemy ID for SpawnEnemy, location ID for UnlockArea, item ID for GrantItem, flag name for UpdateWorldState, event name for TriggerEvent.",
+                    "default": null
+                },
+                "data": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "description": "Action data. Message text for Notification, flag value for UpdateWorldState, spawn count for SpawnEnemy.",
+                    "default": null
+                }
+            },
+            "required": [
+                "type"
+            ],
+            "additionalProperties": false
+        },
+        "QuestGiver": {
+            "type": "object",
+            "description": "Configuration for the NPC who offers the quest and handles turn-in. NPCs are referenced by ID and can have associated dialogue nodes.",
+            "properties": {
+                "npcId": {
+                    "type": "string",
+                    "description": "Reference to the NPC definition. Uses lowercase kebab-case. This NPC will offer the quest and, by default, accept the turn-in.",
+                    "pattern": "^[a-z][a-z0-9-]*$"
+                },
+                "dialogueNodeId": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "description": "Reference to the dialogue node that starts the quest conversation. Used when the player first speaks to the quest giver about this quest.",
+                    "default": null
+                },
+                "turnInNpcId": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "description": "Reference to a different NPC who accepts the quest turn-in. Null indicates the same NPC who gave the quest accepts the turn-in.",
+                    "default": null
+                },
+                "turnInDialogueNodeId": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "description": "Reference to the dialogue node for quest completion conversation. Used when the player turns in the completed quest.",
+                    "default": null
+                }
+            },
+            "required": [
+                "npcId"
+            ],
+            "additionalProperties": false
+        }
+    }
+}
