@@ -1,0 +1,233 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://rune-game.com/schemas/dialogue.schema.json",
+    "title": "Dialogue Tree Configuration",
+    "description": "Schema for NPC dialogue trees with branching conversations, skill checks, and outcomes. Supports structured dialogue nodes, player response options, attribute-based skill checks, and various outcome types including combat initiation, reputation changes, quest assignments, and world state modifications.",
+    "type": "array",
+    "items": {
+        "$ref": "#/definitions/DialogueNode"
+    },
+    "minItems": 1,
+    "definitions": {
+        "DialogueNode": {
+            "type": "object",
+            "description": "A single node in the dialogue tree representing NPC speech and player response options. Each node contains the NPC's dialogue text and an array of available player responses.",
+            "properties": {
+                "Id": {
+                    "type": "string",
+                    "description": "Unique identifier for this dialogue node. Must be lowercase with underscores (snake_case). Examples: 'bjorn_greeting', 'sigrun_quest_hook', 'merchant_1_trade'.",
+                    "pattern": "^[a-z][a-z0-9_]*$",
+                    "minLength": 1
+                },
+                "Text": {
+                    "type": "string",
+                    "description": "The NPC's dialogue text displayed to the player. May include variable placeholders like {PlayerName} for runtime substitution.",
+                    "minLength": 1
+                },
+                "Options": {
+                    "type": "array",
+                    "description": "Array of player response options. At least one option is required for player interaction.",
+                    "items": {
+                        "$ref": "#/definitions/DialogueOption"
+                    },
+                    "minItems": 1
+                },
+                "EndsConversation": {
+                    "type": "boolean",
+                    "description": "Whether selecting any option from this node automatically ends the conversation after the outcome is applied. Default is false.",
+                    "default": false
+                },
+                "Conditions": {
+                    "type": "array",
+                    "description": "Optional array of conditions that must all be met for this node to be accessible. If any condition fails, the node is hidden from navigation.",
+                    "items": {
+                        "$ref": "#/definitions/Condition"
+                    }
+                }
+            },
+            "required": [
+                "Id",
+                "Text",
+                "Options"
+            ],
+            "additionalProperties": false
+        },
+        "DialogueOption": {
+            "type": "object",
+            "description": "A player response option within a dialogue node. Options can include skill checks, trigger outcomes, and navigate to other nodes.",
+            "properties": {
+                "Text": {
+                    "type": "string",
+                    "description": "The player's response text. May include skill check indicator prefixes like '[WILL 4]' or action hints like '[Fight]'. The prefix indicates the attribute and target value for any associated skill check.",
+                    "minLength": 1
+                },
+                "NextNodeId": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "description": "The Id of the next dialogue node to navigate to after this option is selected, or null to end the conversation. Must reference an existing node Id in the dialogue tree.",
+                    "pattern": "^[a-z][a-z0-9_]*$"
+                },
+                "SkillCheck": {
+                    "$ref": "#/definitions/SkillCheck",
+                    "description": "Optional skill check that must be passed to select this option. If the player fails the check, the option may be grayed out or unavailable."
+                },
+                "Outcome": {
+                    "oneOf": [
+                        {
+                            "$ref": "#/definitions/Outcome"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "Optional outcome triggered when this option is selected. May include reputation changes, combat initiation, quest updates, or other effects."
+                },
+                "Conditions": {
+                    "type": "array",
+                    "description": "Optional array of conditions that must all be met for this option to be visible. Hidden options are not displayed to the player.",
+                    "items": {
+                        "$ref": "#/definitions/Condition"
+                    }
+                }
+            },
+            "required": [
+                "Text",
+                "NextNodeId"
+            ],
+            "additionalProperties": false
+        },
+        "SkillCheck": {
+            "type": "object",
+            "description": "An attribute-based skill check for dialogue options. The player's attribute value (plus optional skill bonus) must meet or exceed the target value to pass.",
+            "properties": {
+                "Attribute": {
+                    "type": "string",
+                    "description": "The primary attribute to test against. Must be lowercase. 'might' for physical/intimidation, 'finesse' for dexterity/agility, 'will' for mental fortitude/persuasion, 'wits' for knowledge/reasoning. Empty string is allowed for skill-only checks.",
+                    "enum": [
+                        "might",
+                        "finesse",
+                        "will",
+                        "wits",
+                        ""
+                    ]
+                },
+                "TargetValue": {
+                    "type": "integer",
+                    "description": "The difficulty number the player must meet or exceed to pass the check. Typical ranges: 1-2 (trivial), 3-4 (easy), 5-6 (moderate), 7-8 (hard), 9-10 (very hard), 11+ (near impossible). Value of 0 is allowed for skill-only checks with empty Attribute.",
+                    "minimum": 0
+                },
+                "Skill": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "description": "Optional skill name that provides a bonus to the check. When specified, the player's ranks in this skill are multiplied by SkillRanks and added to the attribute value."
+                },
+                "SkillRanks": {
+                    "type": "integer",
+                    "description": "Number of skill ranks to apply as bonus when Skill is specified. Each rank provides additional bonus to the check.",
+                    "minimum": 0,
+                    "default": 0
+                }
+            },
+            "required": [
+                "Attribute",
+                "TargetValue"
+            ],
+            "additionalProperties": false
+        },
+        "Outcome": {
+            "type": "object",
+            "description": "The result of selecting a dialogue option. Outcomes can modify game state including faction reputation, combat encounters, quest progress, inventory, and world flags.",
+            "properties": {
+                "Type": {
+                    "type": "string",
+                    "description": "The type of outcome to apply. Each type has different effects: 'InitiateCombat' starts a fight, 'ReputationChange' modifies faction standing, 'Information' reveals lore, 'EndConversation' closes dialogue, 'QuestGiven' adds a quest, 'QuestUpdate' progresses a quest, 'ItemGiven' adds items, 'ItemTaken' removes items, 'FlagSet' sets world state flags.",
+                    "enum": [
+                        "InitiateCombat",
+                        "ReputationChange",
+                        "Information",
+                        "EndConversation",
+                        "QuestGiven",
+                        "QuestUpdate",
+                        "ItemGiven",
+                        "ItemReceived",
+                        "ItemTaken",
+                        "FlagSet"
+                    ]
+                },
+                "Data": {
+                    "type": "string",
+                    "description": "Context-specific data for the outcome. For InitiateCombat: enemy ID. For QuestGiven/QuestUpdate: quest ID or 'quest_id:state'. For ItemGiven/ItemTaken: item ID. For FlagSet: flag name. For ReputationChange/Information/EndConversation: description text."
+                },
+                "ReputationChange": {
+                    "type": "integer",
+                    "description": "Amount to change faction reputation when Type is 'ReputationChange'. Positive values increase reputation (friendly), negative values decrease it (hostile). Typical range: -10 to +10.",
+                    "default": 0
+                },
+                "AffectedFaction": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "description": "The faction ID whose reputation is affected when Type is 'ReputationChange'. Examples: 'RustClans', 'MidgardCombine'. Null if no faction is affected."
+                }
+            },
+            "required": [
+                "Type",
+                "Data"
+            ],
+            "additionalProperties": false
+        },
+        "Condition": {
+            "type": "object",
+            "description": "A condition that controls visibility of nodes or options. All conditions must evaluate to true for the node/option to be accessible.",
+            "properties": {
+                "Type": {
+                    "type": "string",
+                    "description": "The type of condition to evaluate. 'HasItem' checks inventory, 'HasReputation' checks faction standing, 'HasQuestState' checks quest progress, 'HasFlag' checks world state, 'SkillLevel' checks player skill ranks.",
+                    "enum": [
+                        "HasItem",
+                        "HasReputation",
+                        "HasQuestState",
+                        "HasFlag",
+                        "SkillLevel"
+                    ]
+                },
+                "Target": {
+                    "type": "string",
+                    "description": "The target to check. For HasItem: item ID. For HasReputation: faction ID. For HasQuestState: quest ID. For HasFlag: flag name. For SkillLevel: skill name.",
+                    "minLength": 1
+                },
+                "Value": {
+                    "type": [
+                        "string",
+                        "integer"
+                    ],
+                    "description": "The value to compare against. For HasItem/HasReputation/SkillLevel: integer quantity/level. For HasQuestState/HasFlag: string state/flag value."
+                },
+                "Operator": {
+                    "type": "string",
+                    "description": "The comparison operator to use. 'equals' for exact match, 'notEquals' for inequality, 'greaterThan' and 'lessThan' for numeric comparisons, 'greaterThanOrEquals' and 'lessThanOrEquals' for inclusive comparisons.",
+                    "enum": [
+                        "equals",
+                        "notEquals",
+                        "greaterThan",
+                        "lessThan",
+                        "greaterThanOrEquals",
+                        "lessThanOrEquals"
+                    ],
+                    "default": "equals"
+                }
+            },
+            "required": [
+                "Type",
+                "Target",
+                "Value"
+            ],
+            "additionalProperties": false
+        }
+    }
+}
