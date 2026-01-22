@@ -1,0 +1,475 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://rune-game.com/schemas/npc-descriptors.schema.json",
+    "title": "NPC Descriptor Configuration",
+    "description": "Schema for NPC flavor text descriptors including physical appearance, ambient dialogue barks, and emotional reaction descriptors. Supports 8 archetypes (Dvergr, Seidkona, Bandit, Raider, Merchant, Guard, Citizen, Forlorn), 16 bark types, and 15 reaction types. Version: 0.14.9c.",
+    "type": "object",
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "JSON Schema reference for validation tooling."
+        },
+        "version": {
+            "type": "string",
+            "description": "Schema version in semver format (e.g., '1.0.0').",
+            "pattern": "^\\d+\\.\\d+\\.\\d+$"
+        },
+        "category": {
+            "type": "string",
+            "description": "Descriptor category type. Determines which descriptor definition applies to pool contents.",
+            "enum": [
+                "npc-physical",
+                "npc-barks",
+                "npc-reactions"
+            ]
+        },
+        "pools": {
+            "type": "object",
+            "description": "Map of pool ID to descriptor array. Pool IDs follow pattern: {archetype}_{subtype}_{descriptorType|barkType|reactionType}.",
+            "additionalProperties": {
+                "type": "array",
+                "description": "Array of descriptors for weighted random selection.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "$ref": "#/definitions/NPCPhysicalDescriptor"
+                        },
+                        {
+                            "$ref": "#/definitions/NPCAmbientBarkDescriptor"
+                        },
+                        {
+                            "$ref": "#/definitions/NPCReactionDescriptor"
+                        }
+                    ]
+                },
+                "minItems": 1
+            },
+            "propertyNames": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "description": "Pool IDs must be snake_case starting with a lowercase letter."
+            }
+        }
+    },
+    "required": [
+        "version",
+        "category",
+        "pools"
+    ],
+    "additionalProperties": false,
+    "definitions": {
+        "NPCPhysicalDescriptor": {
+            "type": "object",
+            "description": "NPC physical appearance descriptor. Used for full body, face, clothing, equipment, bearing, and distinguishing trait descriptions.",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Unique descriptor identifier. Must be lowercase with underscores/hyphens.",
+                    "pattern": "^[a-z][a-z0-9_-]*$"
+                },
+                "text": {
+                    "type": "string",
+                    "description": "Descriptor text with {Variable} placeholders (e.g., {NPCName}, {Tool}, {Biome}).",
+                    "minLength": 1
+                },
+                "weight": {
+                    "type": "integer",
+                    "description": "Selection weight for weighted random. Higher values = more likely to be selected.",
+                    "minimum": 1,
+                    "default": 10
+                },
+                "archetype": {
+                    "$ref": "#/definitions/NPCArchetype",
+                    "description": "NPC archetype classification."
+                },
+                "subtype": {
+                    "type": "string",
+                    "description": "Archetype-specific subtype (e.g., 'Tinkerer', 'WanderingSeidkona', 'Scout').",
+                    "minLength": 1
+                },
+                "descriptorType": {
+                    "type": "string",
+                    "description": "Physical descriptor type categorizing the description.",
+                    "enum": [
+                        "FullBody",
+                        "Face",
+                        "Clothing",
+                        "Equipment",
+                        "Bearing",
+                        "Distinguishing"
+                    ]
+                },
+                "condition": {
+                    "oneOf": [
+                        {
+                            "$ref": "#/definitions/NPCCondition"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "NPC condition filter. Null for universal descriptors."
+                },
+                "biome": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "description": "Biome-specific variant (e.g., 'The Roots', 'Muspelheim'). Null for universal."
+                },
+                "ageCategory": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "description": "Age category filter for age-specific appearances.",
+                    "enum": [
+                        "Young",
+                        "MiddleAged",
+                        "Elderly",
+                        "Ageless",
+                        null
+                    ]
+                },
+                "tags": {
+                    "type": "array",
+                    "description": "Metadata tags for filtering and categorization (e.g., 'Memorable', 'Technical', 'Mystical').",
+                    "items": {
+                        "type": "string"
+                    },
+                    "default": []
+                }
+            },
+            "required": [
+                "id",
+                "text",
+                "archetype",
+                "subtype",
+                "descriptorType"
+            ],
+            "additionalProperties": false
+        },
+        "NPCAmbientBarkDescriptor": {
+            "type": "object",
+            "description": "NPC ambient dialogue bark descriptor. Used for at-work, idle, warning, greeting, combat, and other situational dialogue.",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Unique descriptor identifier.",
+                    "pattern": "^[a-z][a-z0-9_-]*$"
+                },
+                "text": {
+                    "type": "string",
+                    "description": "Bark dialogue text with {Variable} placeholders.",
+                    "minLength": 1
+                },
+                "weight": {
+                    "type": "integer",
+                    "description": "Selection weight for weighted random.",
+                    "minimum": 1,
+                    "default": 10
+                },
+                "archetype": {
+                    "$ref": "#/definitions/NPCArchetype",
+                    "description": "NPC archetype classification."
+                },
+                "subtype": {
+                    "type": "string",
+                    "description": "Archetype-specific subtype.",
+                    "minLength": 1
+                },
+                "barkType": {
+                    "$ref": "#/definitions/BarkType",
+                    "description": "Bark type categorization."
+                },
+                "activityContext": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "description": "Activity filter for when bark is appropriate.",
+                    "enum": [
+                        "Working",
+                        "Idle",
+                        "Trading",
+                        "Guarding",
+                        "Crafting",
+                        "Traveling",
+                        "Fighting",
+                        "Resting",
+                        "Searching",
+                        "Performing_Ritual",
+                        null
+                    ]
+                },
+                "dispositionContext": {
+                    "oneOf": [
+                        {
+                            "$ref": "#/definitions/Disposition"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "Disposition filter. Null to apply regardless of disposition."
+                },
+                "biome": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "description": "Biome-specific variant. Null for universal."
+                },
+                "triggerCondition": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "description": "Trigger condition for reactive barks.",
+                    "enum": [
+                        "PlayerNearby",
+                        "PlayerAbsent",
+                        "AllyPresent",
+                        "EnemyNear",
+                        "DangerDetected",
+                        "ResourceFound",
+                        "MechanismRepaired",
+                        "RitualComplete",
+                        null
+                    ]
+                },
+                "tags": {
+                    "type": "array",
+                    "description": "Metadata tags for filtering.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "default": []
+                }
+            },
+            "required": [
+                "id",
+                "text",
+                "archetype",
+                "subtype",
+                "barkType"
+            ],
+            "additionalProperties": false
+        },
+        "NPCReactionDescriptor": {
+            "type": "object",
+            "description": "NPC emotional reaction descriptor. Describes NPC responses to player actions and game events.",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Unique descriptor identifier.",
+                    "pattern": "^[a-z][a-z0-9_-]*$"
+                },
+                "text": {
+                    "type": "string",
+                    "description": "Reaction dialogue/description with {Variable} placeholders.",
+                    "minLength": 1
+                },
+                "weight": {
+                    "type": "integer",
+                    "description": "Selection weight for weighted random.",
+                    "minimum": 1,
+                    "default": 10
+                },
+                "archetype": {
+                    "$ref": "#/definitions/NPCArchetype",
+                    "description": "NPC archetype classification."
+                },
+                "subtype": {
+                    "type": "string",
+                    "description": "Archetype-specific subtype.",
+                    "minLength": 1
+                },
+                "reactionType": {
+                    "$ref": "#/definitions/ReactionType",
+                    "description": "Emotional reaction type."
+                },
+                "triggerEvent": {
+                    "$ref": "#/definitions/TriggerEvent",
+                    "description": "Event that triggered this reaction."
+                },
+                "intensity": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "description": "Reaction intensity/strength.",
+                    "enum": [
+                        "Mild",
+                        "Moderate",
+                        "Strong",
+                        "Extreme",
+                        null
+                    ]
+                },
+                "priorDisposition": {
+                    "oneOf": [
+                        {
+                            "$ref": "#/definitions/Disposition"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "Disposition state before the triggering event."
+                },
+                "actionTendency": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "description": "Likely follow-up action by the NPC.",
+                    "enum": [
+                        "Approach",
+                        "Flee",
+                        "Attack",
+                        "Assist",
+                        "Ignore",
+                        "Report",
+                        "Investigate",
+                        "Guard",
+                        null
+                    ]
+                },
+                "biome": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "description": "Biome-specific variant. Null for universal."
+                },
+                "tags": {
+                    "type": "array",
+                    "description": "Metadata tags for filtering.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "default": []
+                }
+            },
+            "required": [
+                "id",
+                "text",
+                "archetype",
+                "subtype",
+                "reactionType",
+                "triggerEvent"
+            ],
+            "additionalProperties": false
+        },
+        "NPCArchetype": {
+            "type": "string",
+            "description": "NPC archetype classification. Determines cultural voice and available subtypes.",
+            "enum": [
+                "Dvergr",
+                "Seidkona",
+                "Bandit",
+                "Raider",
+                "Merchant",
+                "Guard",
+                "Citizen",
+                "Forlorn"
+            ]
+        },
+        "NPCCondition": {
+            "type": "string",
+            "description": "NPC physical/mental condition affecting appearance descriptors.",
+            "enum": [
+                "Healthy",
+                "Wounded",
+                "Exhausted",
+                "Affluent",
+                "Impoverished",
+                "BattleReady"
+            ]
+        },
+        "Disposition": {
+            "type": "string",
+            "description": "NPC disposition toward the player. Affects bark and reaction selection.",
+            "enum": [
+                "Hostile",
+                "Unfriendly",
+                "Neutral",
+                "Friendly",
+                "Allied"
+            ]
+        },
+        "BarkType": {
+            "type": "string",
+            "description": "Ambient bark type categorization.",
+            "enum": [
+                "AtWork",
+                "IdleConversation",
+                "Observation",
+                "Warning",
+                "Celebration",
+                "Concern",
+                "Suspicion",
+                "Encouragement",
+                "Complaint",
+                "Teaching",
+                "Threat",
+                "Insult",
+                "Wounded",
+                "Fleeing",
+                "BattleCry",
+                "Greeting"
+            ]
+        },
+        "ReactionType": {
+            "type": "string",
+            "description": "Emotional reaction type covering positive, negative, and neutral responses.",
+            "enum": [
+                "Surprised",
+                "Angry",
+                "Fearful",
+                "Relieved",
+                "Suspicious",
+                "Joyful",
+                "Pained",
+                "Confused",
+                "Impressed",
+                "Disgusted",
+                "Grateful",
+                "Betrayed",
+                "Proud",
+                "Curious",
+                "Resigned"
+            ]
+        },
+        "TriggerEvent": {
+            "type": "string",
+            "description": "Event that triggers an NPC reaction. Includes player actions and game events.",
+            "enum": [
+                "PlayerApproaches",
+                "PlayerAttacks",
+                "PlayerHelps",
+                "PlayerGifts",
+                "PlayerSteals",
+                "AllyKilled",
+                "EnemyKilled",
+                "TakingDamage",
+                "VictoryAchieved",
+                "TreasureFound",
+                "SecretRevealed",
+                "MechanismRepaired",
+                "AncientKnowledgeFound",
+                "TrapTriggered",
+                "BlightEncounter",
+                "StructuralCollapse",
+                "AmbushDetected",
+                "QuestCompleted",
+                "BetrayalDetected",
+                "GiftReceived",
+                "TheftDetected",
+                "MagicWitnessed",
+                "RuneActivated",
+                "ProphecyFulfilled"
+            ]
+        }
+    }
+}

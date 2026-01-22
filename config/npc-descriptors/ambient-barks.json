@@ -1,0 +1,250 @@
+{
+    "$schema": "../../config/schemas/npc-descriptors.schema.json",
+    "version": "1.0.0",
+    "category": "npc-barks",
+    "pools": {
+        "dvergr_tinkerer_atwork": [
+            {
+                "id": "dvergr_tinkerer_atwork_001",
+                "text": "Tolerance specifications are off by point-oh-three millimeters. Unacceptable.",
+                "weight": 10,
+                "archetype": "Dvergr",
+                "subtype": "Tinkerer",
+                "barkType": "AtWork",
+                "activityContext": "Working",
+                "tags": [
+                    "Dvergr_Technical",
+                    "Perfectionist"
+                ]
+            },
+            {
+                "id": "dvergr_tinkerer_atwork_002",
+                "text": "This corrosion pattern suggests pre-Rusting manufacture. Fascinating.",
+                "weight": 10,
+                "archetype": "Dvergr",
+                "subtype": "Tinkerer",
+                "barkType": "AtWork",
+                "activityContext": "Working",
+                "tags": [
+                    "Dvergr_Technical",
+                    "Historical"
+                ]
+            },
+            {
+                "id": "dvergr_tinkerer_atwork_003",
+                "text": "Whoever designed this mechanism was either a genius or completely insane. Possibly both.",
+                "weight": 10,
+                "archetype": "Dvergr",
+                "subtype": "Tinkerer",
+                "barkType": "AtWork",
+                "activityContext": "Working",
+                "tags": [
+                    "Humorous",
+                    "Technical"
+                ]
+            }
+        ],
+        "dvergr_tinkerer_encouragement": [
+            {
+                "id": "dvergr_tinkerer_encouragement_001",
+                "text": "I respect competence. You've got it.",
+                "weight": 10,
+                "archetype": "Dvergr",
+                "subtype": "Tinkerer",
+                "barkType": "Encouragement",
+                "dispositionContext": "Friendly",
+                "tags": [
+                    "Positive",
+                    "Respect"
+                ]
+            },
+            {
+                "id": "dvergr_tinkerer_encouragement_002",
+                "text": "Good work. Efficiency matters.",
+                "weight": 10,
+                "archetype": "Dvergr",
+                "subtype": "Tinkerer",
+                "barkType": "Encouragement",
+                "dispositionContext": "Friendly",
+                "tags": [
+                    "Praise",
+                    "Technical"
+                ]
+            }
+        ],
+        "dvergr_tinkerer_idleconversation": [
+            {
+                "id": "dvergr_tinkerer_idle_001",
+                "text": "Remember when the forges ran hot and the gears never stopped turning? Neither do I, but my grandfather spoke of it.",
+                "weight": 10,
+                "archetype": "Dvergr",
+                "subtype": "Tinkerer",
+                "barkType": "IdleConversation",
+                "activityContext": "Idle",
+                "tags": [
+                    "Nostalgic",
+                    "Lore"
+                ]
+            }
+        ],
+        "seidkona_wandering_teaching": [
+            {
+                "id": "seidkona_wandering_teaching_001",
+                "text": "The runes are not tools. They are living forces. Treat them with respect—or suffer the consequences.",
+                "weight": 10,
+                "archetype": "Seidkona",
+                "subtype": "WanderingSeidkona",
+                "barkType": "Teaching",
+                "dispositionContext": "Friendly",
+                "tags": [
+                    "Mystical",
+                    "Wisdom"
+                ]
+            },
+            {
+                "id": "seidkona_wandering_teaching_002",
+                "text": "The Wyrd threads all things together. What you do here echoes in the unseen.",
+                "weight": 10,
+                "archetype": "Seidkona",
+                "subtype": "WanderingSeidkona",
+                "barkType": "Teaching",
+                "tags": [
+                    "Philosophical",
+                    "Arcane"
+                ]
+            }
+        ],
+        "seidkona_wandering_observation": [
+            {
+                "id": "seidkona_wandering_observation_001",
+                "text": "The threads of fate brought you here. Curious.",
+                "weight": 10,
+                "archetype": "Seidkona",
+                "subtype": "WanderingSeidkona",
+                "barkType": "Observation",
+                "triggerCondition": "PlayerNearby",
+                "tags": [
+                    "Mystical",
+                    "Cryptic"
+                ]
+            }
+        ],
+        "bandit_scout_threat": [
+            {
+                "id": "bandit_scout_threat_001",
+                "text": "Your gear or your life. Choose quick.",
+                "weight": 10,
+                "archetype": "Bandit",
+                "subtype": "Scout",
+                "barkType": "Threat",
+                "dispositionContext": "Hostile",
+                "tags": [
+                    "Aggressive",
+                    "Desperate"
+                ]
+            },
+            {
+                "id": "bandit_scout_threat_002",
+                "text": "Nothing personal. Just business.",
+                "weight": 10,
+                "archetype": "Bandit",
+                "subtype": "Scout",
+                "barkType": "Threat",
+                "dispositionContext": "Hostile",
+                "tags": [
+                    "Cold",
+                    "Professional"
+                ]
+            }
+        ],
+        "bandit_scout_fleeing": [
+            {
+                "id": "bandit_scout_fleeing_001",
+                "text": "Not worth it! Fall back!",
+                "weight": 10,
+                "archetype": "Bandit",
+                "subtype": "Scout",
+                "barkType": "Fleeing",
+                "activityContext": "Fighting",
+                "tags": [
+                    "Combat",
+                    "Retreat"
+                ]
+            },
+            {
+                "id": "bandit_scout_fleeing_002",
+                "text": "I'm not dying in this rust-heap!",
+                "weight": 10,
+                "archetype": "Bandit",
+                "subtype": "Scout",
+                "barkType": "Fleeing",
+                "activityContext": "Fighting",
+                "tags": [
+                    "Desperate",
+                    "Combat"
+                ]
+            }
+        ],
+        "bandit_scout_wounded": [
+            {
+                "id": "bandit_scout_wounded_001",
+                "text": "Bastard got me... but I'll take you with me!",
+                "weight": 10,
+                "archetype": "Bandit",
+                "subtype": "Scout",
+                "barkType": "Wounded",
+                "activityContext": "Fighting",
+                "tags": [
+                    "Combat",
+                    "Desperate"
+                ]
+            }
+        ],
+        "guard_veteran_warning": [
+            {
+                "id": "guard_veteran_warning_001",
+                "text": "State your business, stranger.",
+                "weight": 10,
+                "archetype": "Guard",
+                "subtype": "Veteran",
+                "barkType": "Warning",
+                "dispositionContext": "Neutral",
+                "triggerCondition": "PlayerNearby",
+                "tags": [
+                    "Authoritative",
+                    "Cautious"
+                ]
+            }
+        ],
+        "guard_veteran_battlecry": [
+            {
+                "id": "guard_veteran_battlecry_001",
+                "text": "For the Combine!",
+                "weight": 10,
+                "archetype": "Guard",
+                "subtype": "Veteran",
+                "barkType": "BattleCry",
+                "activityContext": "Fighting",
+                "tags": [
+                    "Combat",
+                    "Rally"
+                ]
+            }
+        ],
+        "forlorn_deteriorated_threat": [
+            {
+                "id": "forlorn_deteriorated_threat_001",
+                "text": "*incoherent rasping* ...join us... the rust embraces all...",
+                "weight": 10,
+                "archetype": "Forlorn",
+                "subtype": "Deteriorated",
+                "barkType": "Threat",
+                "dispositionContext": "Hostile",
+                "tags": [
+                    "Horror",
+                    "Corrupted"
+                ]
+            }
+        ]
+    }
+}

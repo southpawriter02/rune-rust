@@ -1,0 +1,267 @@
+{
+    "$schema": "../../config/schemas/npc-descriptors.schema.json",
+    "version": "1.0.0",
+    "category": "npc-reactions",
+    "pools": {
+        "dvergr_tinkerer_impressed": [
+            {
+                "id": "dvergr_tinkerer_impressed_001",
+                "text": "You have the look of someone who can actually fix things. Rare, these days.",
+                "weight": 10,
+                "archetype": "Dvergr",
+                "subtype": "Tinkerer",
+                "reactionType": "Impressed",
+                "triggerEvent": "MechanismRepaired",
+                "intensity": "Moderate",
+                "priorDisposition": "Neutral",
+                "actionTendency": "Assist",
+                "tags": [
+                    "Social",
+                    "Positive"
+                ]
+            },
+            {
+                "id": "dvergr_tinkerer_impressed_002",
+                "text": "Not bad. Not bad at all. That piece was temperamental even in the old days.",
+                "weight": 10,
+                "archetype": "Dvergr",
+                "subtype": "Tinkerer",
+                "reactionType": "Impressed",
+                "triggerEvent": "MechanismRepaired",
+                "intensity": "Moderate",
+                "actionTendency": "Approach",
+                "tags": [
+                    "Technical",
+                    "Approval"
+                ]
+            }
+        ],
+        "dvergr_tinkerer_disgusted": [
+            {
+                "id": "dvergr_tinkerer_disgusted_001",
+                "text": "Sloppy. That kind of work gets people killed.",
+                "weight": 10,
+                "archetype": "Dvergr",
+                "subtype": "Tinkerer",
+                "reactionType": "Disgusted",
+                "triggerEvent": "MechanismRepaired",
+                "intensity": "Mild",
+                "actionTendency": "Ignore",
+                "tags": [
+                    "Criticism",
+                    "Technical"
+                ]
+            }
+        ],
+        "dvergr_tinkerer_grateful": [
+            {
+                "id": "dvergr_tinkerer_grateful_001",
+                "text": "Good work. Efficiency matters.",
+                "weight": 10,
+                "archetype": "Dvergr",
+                "subtype": "Tinkerer",
+                "reactionType": "Grateful",
+                "triggerEvent": "PlayerHelps",
+                "intensity": "Moderate",
+                "priorDisposition": "Friendly",
+                "actionTendency": "Assist",
+                "tags": [
+                    "Positive",
+                    "Respect"
+                ]
+            }
+        ],
+        "seidkona_wandering_impressed": [
+            {
+                "id": "seidkona_wandering_impressed_001",
+                "text": "You touched the threads of the Wyrd with surprising grace. The runes noticed.",
+                "weight": 10,
+                "archetype": "Seidkona",
+                "subtype": "WanderingSeidkona",
+                "reactionType": "Impressed",
+                "triggerEvent": "MagicWitnessed",
+                "intensity": "Moderate",
+                "actionTendency": "Approach",
+                "tags": [
+                    "Mystical",
+                    "Approval"
+                ]
+            }
+        ],
+        "seidkona_wandering_curious": [
+            {
+                "id": "seidkona_wandering_curious_001",
+                "text": "The threads of fate brought you here. Curious.",
+                "weight": 10,
+                "archetype": "Seidkona",
+                "subtype": "WanderingSeidkona",
+                "reactionType": "Curious",
+                "triggerEvent": "PlayerApproaches",
+                "intensity": "Mild",
+                "priorDisposition": "Neutral",
+                "actionTendency": "Investigate",
+                "tags": [
+                    "Mystical",
+                    "Cryptic"
+                ]
+            }
+        ],
+        "seidkona_wandering_proud": [
+            {
+                "id": "seidkona_wandering_proud_001",
+                "text": "You understand the balance. Few do.",
+                "weight": 10,
+                "archetype": "Seidkona",
+                "subtype": "WanderingSeidkona",
+                "reactionType": "Proud",
+                "triggerEvent": "RuneActivated",
+                "intensity": "Moderate",
+                "priorDisposition": "Friendly",
+                "actionTendency": "Assist",
+                "tags": [
+                    "Approval",
+                    "Mystical"
+                ]
+            }
+        ],
+        "bandit_scout_fearful": [
+            {
+                "id": "bandit_scout_fearful_001",
+                "text": "Bloody hell! Fall back! FALL BACK!",
+                "weight": 10,
+                "archetype": "Bandit",
+                "subtype": "Scout",
+                "reactionType": "Fearful",
+                "triggerEvent": "AllyKilled",
+                "intensity": "Strong",
+                "actionTendency": "Flee",
+                "tags": [
+                    "Combat",
+                    "Desperate"
+                ]
+            }
+        ],
+        "bandit_scout_angry": [
+            {
+                "id": "bandit_scout_angry_001",
+                "text": "You'll pay for that!",
+                "weight": 10,
+                "archetype": "Bandit",
+                "subtype": "Scout",
+                "reactionType": "Angry",
+                "triggerEvent": "AllyKilled",
+                "intensity": "Strong",
+                "actionTendency": "Attack",
+                "tags": [
+                    "Combat",
+                    "Vengeance"
+                ]
+            }
+        ],
+        "bandit_scout_suspicious": [
+            {
+                "id": "bandit_scout_suspicious_001",
+                "text": "I don't like the look of this...",
+                "weight": 10,
+                "archetype": "Bandit",
+                "subtype": "Scout",
+                "reactionType": "Suspicious",
+                "triggerEvent": "PlayerApproaches",
+                "intensity": "Mild",
+                "priorDisposition": "Unfriendly",
+                "actionTendency": "Guard",
+                "tags": [
+                    "Alert",
+                    "Wary"
+                ]
+            }
+        ],
+        "guard_veteran_surprised": [
+            {
+                "id": "guard_veteran_surprised_001",
+                "text": "Hmm? Need something?",
+                "weight": 10,
+                "archetype": "Guard",
+                "subtype": "Veteran",
+                "reactionType": "Surprised",
+                "triggerEvent": "PlayerApproaches",
+                "intensity": "Mild",
+                "priorDisposition": "Neutral",
+                "actionTendency": "Investigate",
+                "tags": [
+                    "Alert",
+                    "Professional"
+                ]
+            }
+        ],
+        "guard_veteran_relieved": [
+            {
+                "id": "guard_veteran_relieved_001",
+                "text": "Thank the gods that's over. Good fight.",
+                "weight": 10,
+                "archetype": "Guard",
+                "subtype": "Veteran",
+                "reactionType": "Relieved",
+                "triggerEvent": "VictoryAchieved",
+                "intensity": "Moderate",
+                "actionTendency": "Approach",
+                "tags": [
+                    "Combat",
+                    "Positive"
+                ]
+            }
+        ],
+        "forlorn_deteriorated_pained": [
+            {
+                "id": "forlorn_deteriorated_pained_001",
+                "text": "*agonized screeching* ...it burns... the light burns...",
+                "weight": 10,
+                "archetype": "Forlorn",
+                "subtype": "Deteriorated",
+                "reactionType": "Pained",
+                "triggerEvent": "TakingDamage",
+                "intensity": "Strong",
+                "actionTendency": "Attack",
+                "tags": [
+                    "Horror",
+                    "Corrupted"
+                ]
+            }
+        ],
+        "merchant_prosperous_joyful": [
+            {
+                "id": "merchant_prosperous_joyful_001",
+                "text": "Excellent! A pleasure doing business with you!",
+                "weight": 10,
+                "archetype": "Merchant",
+                "subtype": "Prosperous",
+                "reactionType": "Joyful",
+                "triggerEvent": "PlayerGifts",
+                "intensity": "Moderate",
+                "priorDisposition": "Friendly",
+                "actionTendency": "Assist",
+                "tags": [
+                    "Commerce",
+                    "Positive"
+                ]
+            }
+        ],
+        "merchant_prosperous_betrayed": [
+            {
+                "id": "merchant_prosperous_betrayed_001",
+                "text": "A thief! Guards! We have a thief!",
+                "weight": 10,
+                "archetype": "Merchant",
+                "subtype": "Prosperous",
+                "reactionType": "Betrayed",
+                "triggerEvent": "TheftDetected",
+                "intensity": "Strong",
+                "actionTendency": "Report",
+                "tags": [
+                    "Crime",
+                    "Alarm"
+                ]
+            }
+        ]
+    }
+}

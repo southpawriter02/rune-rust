@@ -1,0 +1,216 @@
+{
+    "$schema": "../../config/schemas/npc-descriptors.schema.json",
+    "version": "1.0.0",
+    "category": "npc-physical",
+    "pools": {
+        "dvergr_tinkerer_fullbody": [
+            {
+                "id": "dvergr_tinkerer_fullbody_001",
+                "text": "A stocky Dvergr covered in soot and machine oil, tools hanging from every belt loop.",
+                "weight": 10,
+                "archetype": "Dvergr",
+                "subtype": "Tinkerer",
+                "descriptorType": "FullBody",
+                "condition": "Healthy",
+                "tags": [
+                    "Memorable",
+                    "Technical"
+                ]
+            },
+            {
+                "id": "dvergr_tinkerer_fullbody_002",
+                "text": "A short, broad-shouldered craftsman with thick goggles pushed up on their forehead.",
+                "weight": 10,
+                "archetype": "Dvergr",
+                "subtype": "Tinkerer",
+                "descriptorType": "FullBody",
+                "condition": "Healthy",
+                "tags": [
+                    "Professional",
+                    "Distinctive"
+                ]
+            }
+        ],
+        "dvergr_tinkerer_face": [
+            {
+                "id": "dvergr_tinkerer_face_001",
+                "text": "An elderly Dvergr whose eyes reflect the light strangely—decades of staring into forge-fire have left their mark.",
+                "weight": 10,
+                "archetype": "Dvergr",
+                "subtype": "Tinkerer",
+                "descriptorType": "Face",
+                "ageCategory": "Elderly",
+                "tags": [
+                    "Memorable",
+                    "Weathered"
+                ]
+            },
+            {
+                "id": "dvergr_tinkerer_face_002",
+                "text": "A soot-smudged face with keen, calculating eyes that seem to measure everything they see.",
+                "weight": 10,
+                "archetype": "Dvergr",
+                "subtype": "Tinkerer",
+                "descriptorType": "Face",
+                "tags": [
+                    "Technical",
+                    "Observant"
+                ]
+            }
+        ],
+        "dvergr_tinkerer_distinguishing": [
+            {
+                "id": "dvergr_tinkerer_distinguishing_001",
+                "text": "This Dvergr's hands are stained black from decades of working with corroded metal.",
+                "weight": 10,
+                "archetype": "Dvergr",
+                "subtype": "Tinkerer",
+                "descriptorType": "Distinguishing",
+                "tags": [
+                    "Memorable"
+                ]
+            },
+            {
+                "id": "dvergr_tinkerer_distinguishing_002",
+                "text": "A singed beard bears evidence of numerous explosive mishaps—occupational hazards of the trade.",
+                "weight": 10,
+                "archetype": "Dvergr",
+                "subtype": "Tinkerer",
+                "descriptorType": "Distinguishing",
+                "tags": [
+                    "Humorous",
+                    "Distinctive"
+                ]
+            }
+        ],
+        "seidkona_wandering_fullbody": [
+            {
+                "id": "seidkona_wandering_fullbody_001",
+                "text": "A weathered woman in traveling furs, a staff carved with runes in one hand.",
+                "weight": 10,
+                "archetype": "Seidkona",
+                "subtype": "WanderingSeidkona",
+                "descriptorType": "FullBody",
+                "condition": "Healthy",
+                "tags": [
+                    "Mystical",
+                    "Memorable"
+                ]
+            },
+            {
+                "id": "seidkona_wandering_fullbody_002",
+                "text": "A tall figure wrapped in layers of weathered cloth, runic symbols visible at cuff and hem.",
+                "weight": 10,
+                "archetype": "Seidkona",
+                "subtype": "WanderingSeidkona",
+                "descriptorType": "FullBody",
+                "tags": [
+                    "Mysterious",
+                    "Arcane"
+                ]
+            }
+        ],
+        "seidkona_wandering_bearing": [
+            {
+                "id": "seidkona_wandering_bearing_001",
+                "text": "This Seidkona moves with an otherworldly grace, as if listening to music no one else can hear.",
+                "weight": 10,
+                "archetype": "Seidkona",
+                "subtype": "WanderingSeidkona",
+                "descriptorType": "Bearing",
+                "tags": [
+                    "Mystical",
+                    "Ethereal"
+                ]
+            }
+        ],
+        "bandit_scout_fullbody": [
+            {
+                "id": "bandit_scout_fullbody_001",
+                "text": "A lean, wary figure in patched leather, eyes constantly scanning for threats—or opportunities.",
+                "weight": 10,
+                "archetype": "Bandit",
+                "subtype": "Scout",
+                "descriptorType": "FullBody",
+                "condition": "Healthy",
+                "tags": [
+                    "Alert",
+                    "Predatory"
+                ]
+            }
+        ],
+        "bandit_scout_bearing": [
+            {
+                "id": "bandit_scout_bearing_001",
+                "text": "This scout moves with predatory grace, every step calculated for silence.",
+                "weight": 10,
+                "archetype": "Bandit",
+                "subtype": "Scout",
+                "descriptorType": "Bearing",
+                "tags": [
+                    "Stealthy",
+                    "Dangerous"
+                ]
+            }
+        ],
+        "forlorn_deteriorated_fullbody": [
+            {
+                "id": "forlorn_deteriorated_fullbody_001",
+                "text": "What was once human stands before you, flesh grey and mottled with the Blight's corruption. Rust grows from open sores.",
+                "weight": 10,
+                "archetype": "Forlorn",
+                "subtype": "Deteriorated",
+                "descriptorType": "FullBody",
+                "condition": "Wounded",
+                "tags": [
+                    "Horror",
+                    "Corrupted"
+                ]
+            }
+        ],
+        "forlorn_deteriorated_distinguishing": [
+            {
+                "id": "forlorn_deteriorated_distinguishing_001",
+                "text": "One arm has been entirely consumed by rusty growths, now more metal than flesh.",
+                "weight": 10,
+                "archetype": "Forlorn",
+                "subtype": "Deteriorated",
+                "descriptorType": "Distinguishing",
+                "tags": [
+                    "Horror",
+                    "Blight"
+                ]
+            }
+        ],
+        "merchant_prosperous_fullbody": [
+            {
+                "id": "merchant_prosperous_fullbody_001",
+                "text": "A well-fed merchant in clean, quality clothes—clearly someone who has done well for themselves.",
+                "weight": 10,
+                "archetype": "Merchant",
+                "subtype": "Prosperous",
+                "descriptorType": "FullBody",
+                "condition": "Affluent",
+                "tags": [
+                    "Wealthy",
+                    "Successful"
+                ]
+            }
+        ],
+        "guard_veteran_fullbody": [
+            {
+                "id": "guard_veteran_fullbody_001",
+                "text": "A seasoned warrior in well-maintained armor, scarred face suggesting countless battles survived.",
+                "weight": 10,
+                "archetype": "Guard",
+                "subtype": "Veteran",
+                "descriptorType": "FullBody",
+                "condition": "BattleReady",
+                "tags": [
+                    "Experienced",
+                    "Watchful"
+                ]
+            }
+        ]
+    }
+}
