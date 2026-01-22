@@ -1,0 +1,115 @@
+{
+    "$schema": "./schemas/dice-types.schema.json",
+    "version": "1.0.0",
+    "dieTypes": [
+        {
+            "id": "d4",
+            "name": "Four-sided Die",
+            "faces": 4,
+            "minValue": 1,
+            "maxValue": 4,
+            "average": 2.5,
+            "isStandard": true,
+            "sortOrder": 0,
+            "color": "#9C27B0",
+            "iconId": "dice_d4",
+            "description": "Tetrahedron die used for small weapons and minor healing"
+        },
+        {
+            "id": "d6",
+            "name": "Six-sided Die",
+            "faces": 6,
+            "minValue": 1,
+            "maxValue": 6,
+            "average": 3.5,
+            "isStandard": true,
+            "sortOrder": 1,
+            "color": "#4CAF50",
+            "iconId": "dice_d6",
+            "description": "Cube die used for common damage rolls and hazard effects"
+        },
+        {
+            "id": "d8",
+            "name": "Eight-sided Die",
+            "faces": 8,
+            "minValue": 1,
+            "maxValue": 8,
+            "average": 4.5,
+            "isStandard": true,
+            "sortOrder": 2,
+            "color": "#2196F3",
+            "iconId": "dice_d8",
+            "description": "Octahedron die used for medium weapons"
+        },
+        {
+            "id": "d10",
+            "name": "Ten-sided Die",
+            "faces": 10,
+            "minValue": 1,
+            "maxValue": 10,
+            "average": 5.5,
+            "isStandard": true,
+            "sortOrder": 3,
+            "color": "#FF9800",
+            "iconId": "dice_d10",
+            "description": "Pentagonal trapezohedron used for skill checks and large weapons"
+        },
+        {
+            "id": "d12",
+            "name": "Twelve-sided Die",
+            "faces": 12,
+            "minValue": 1,
+            "maxValue": 12,
+            "average": 6.5,
+            "isStandard": true,
+            "sortOrder": 4,
+            "color": "#E91E63",
+            "iconId": "dice_d12",
+            "description": "Dodecahedron die used for heavy weapons"
+        },
+        {
+            "id": "d20",
+            "name": "Twenty-sided Die",
+            "faces": 20,
+            "minValue": 1,
+            "maxValue": 20,
+            "average": 10.5,
+            "isStandard": true,
+            "sortOrder": 5,
+            "color": "#F44336",
+            "iconId": "dice_d20",
+            "description": "Icosahedron die used for attack rolls, saves, and critical determinations"
+        },
+        {
+            "id": "d100",
+            "name": "Percentile Die",
+            "faces": 100,
+            "minValue": 1,
+            "maxValue": 100,
+            "average": 50.5,
+            "isStandard": true,
+            "sortOrder": 6,
+            "color": "#607D8B",
+            "iconId": "dice_d100",
+            "description": "Percentile die (or 2d10) used for random tables and percentage chances"
+        }
+    ],
+    "expressionPattern": {
+        "pattern": "^\\d+d\\d+([+-]\\d+)?$",
+        "captureGroups": {
+            "count": "First \\d+ captures the number of dice to roll",
+            "faces": "Second \\d+ (after 'd') captures the number of faces",
+            "modifier": "Optional [+-]\\d+ captures the modifier with sign"
+        },
+        "examples": [
+            "1d6",
+            "2d6",
+            "1d8+2",
+            "3d6-1",
+            "1d20",
+            "1d10+5",
+            "2d4",
+            "1d100"
+        ]
+    }
+}

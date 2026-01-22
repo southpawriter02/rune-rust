@@ -1,0 +1,176 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "dice-types.schema.json",
+    "title": "Dice Types Configuration Schema",
+    "description": "JSON Schema for die type definitions, dice expressions, and validation patterns. Provides standardized die types (d4, d6, d8, d10, d12, d20, d100), custom die support, dice expression pattern validation, and display metadata for UI rendering.",
+    "type": "object",
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "Reference to this JSON Schema for validation"
+        },
+        "version": {
+            "type": "string",
+            "description": "Configuration file version for compatibility tracking"
+        },
+        "dieTypes": {
+            "type": "array",
+            "description": "Array of die type definitions. Contains standard RPG dice and optional custom dice.",
+            "items": {
+                "$ref": "#/definitions/DieType"
+            },
+            "minItems": 1
+        },
+        "expressionPattern": {
+            "$ref": "#/definitions/DiceExpressionPattern",
+            "description": "Pattern definition for validating dice expressions used throughout configuration files"
+        }
+    },
+    "required": [
+        "dieTypes"
+    ],
+    "additionalProperties": false,
+    "definitions": {
+        "DieType": {
+            "type": "object",
+            "description": "A single die type definition with core properties, computed statistics, classification, and display metadata",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Die identifier in the format 'd' followed by face count (e.g., 'd6', 'd20', 'd100'). Used as unique reference throughout configuration.",
+                    "pattern": "^d\\d+$",
+                    "minLength": 2
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Human-readable display name for the die type (e.g., 'Six-sided Die', 'Twenty-sided Die')",
+                    "minLength": 1
+                },
+                "faces": {
+                    "type": "integer",
+                    "description": "Number of faces on the die. Minimum is 2 (coin flip). Common values: 4, 6, 8, 10, 12, 20, 100.",
+                    "minimum": 2
+                },
+                "minValue": {
+                    "type": "integer",
+                    "description": "Minimum value on the die. Typically 1 for standard dice. Can be 0 for custom dice.",
+                    "minimum": 0,
+                    "default": 1
+                },
+                "maxValue": {
+                    "type": "integer",
+                    "description": "Maximum value on the die. For standard dice, this equals minValue + faces - 1. Explicitly specified for clarity.",
+                    "minimum": 1
+                },
+                "average": {
+                    "type": "number",
+                    "description": "Average roll value, calculated as (minValue + maxValue) / 2. Used for probability display in tooltips."
+                },
+                "isStandard": {
+                    "type": "boolean",
+                    "description": "Whether this is a standard RPG die (d4, d6, d8, d10, d12, d20, d100). Custom dice should set this to false.",
+                    "default": true
+                },
+                "sortOrder": {
+                    "type": "integer",
+                    "description": "Sort order for UI display. Lower numbers appear first. Standard dice use 0-6.",
+                    "minimum": 0,
+                    "default": 0
+                },
+                "color": {
+                    "type": "string",
+                    "description": "Hex color code for display purposes (e.g., '#FF5722', '#4CAF50'). Used in dice icons and roll displays.",
+                    "pattern": "^#[0-9A-Fa-f]{6}$"
+                },
+                "iconId": {
+                    "type": "string",
+                    "description": "Icon identifier for UI rendering (e.g., 'dice_d6', 'dice_d20'). References icon assets.",
+                    "minLength": 1
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Usage notes for this die type (e.g., 'Common damage die, hazard effects'). Displayed in help tooltips."
+                }
+            },
+            "required": [
+                "id",
+                "name",
+                "faces"
+            ],
+            "additionalProperties": false
+        },
+        "DiceExpression": {
+            "type": "object",
+            "description": "A parsed dice expression representing a dice roll notation. Used for validation and runtime parsing.",
+            "properties": {
+                "count": {
+                    "type": "integer",
+                    "description": "Number of dice to roll (e.g., 2 in '2d6+3'). Minimum 1.",
+                    "minimum": 1,
+                    "default": 1
+                },
+                "dieType": {
+                    "type": "string",
+                    "description": "Reference to DieType.id (e.g., 'd6', 'd20'). Must match the pattern for die type IDs.",
+                    "pattern": "^d\\d+$"
+                },
+                "modifier": {
+                    "type": "integer",
+                    "description": "Flat bonus or penalty to the roll (e.g., +3 in '2d6+3', -1 in '3d6-1'). Default is 0.",
+                    "default": 0
+                },
+                "raw": {
+                    "type": "string",
+                    "description": "Original expression string (e.g., '2d6+3'). Preserved for display and debugging.",
+                    "pattern": "^\\d+d\\d+([+-]\\d+)?$"
+                }
+            },
+            "required": [
+                "dieType"
+            ],
+            "additionalProperties": false
+        },
+        "DiceExpressionPattern": {
+            "type": "object",
+            "description": "Pattern definition for validating dice expressions across configuration files. Provides the regex pattern, capture group documentation, and valid examples.",
+            "properties": {
+                "pattern": {
+                    "type": "string",
+                    "description": "Regex pattern for validating dice expressions. Standard pattern: ^\\d+d\\d+([+-]\\d+)?$",
+                    "default": "^\\d+d\\d+([+-]\\d+)?$"
+                },
+                "captureGroups": {
+                    "type": "object",
+                    "description": "Describes regex capture groups for expression parsing",
+                    "properties": {
+                        "count": {
+                            "type": "string",
+                            "description": "Description of count capture group (first \\d+)"
+                        },
+                        "faces": {
+                            "type": "string",
+                            "description": "Description of faces capture group (second \\d+ after 'd')"
+                        },
+                        "modifier": {
+                            "type": "string",
+                            "description": "Description of modifier capture group (optional [+-]\\d+)"
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "examples": {
+                    "type": "array",
+                    "description": "Array of valid dice expression examples for documentation and testing",
+                    "items": {
+                        "type": "string",
+                        "pattern": "^\\d+d\\d+([+-]\\d+)?$"
+                    }
+                }
+            },
+            "required": [
+                "pattern"
+            ],
+            "additionalProperties": false
+        }
+    }
+}

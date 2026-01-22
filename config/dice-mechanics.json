@@ -1,0 +1,89 @@
+{
+    "$schema": "./schemas/dice-mechanics.schema.json",
+    "version": "1.0.0",
+    "criticalThresholds": {
+        "naturalMin": 1,
+        "naturalMax": "max",
+        "criticalMultiplier": 2,
+        "criticalBonusDice": null,
+        "autoFailOnNatMin": true,
+        "autoSuccessOnNatMax": true
+    },
+    "advantageRules": {
+        "advantageDice": 1,
+        "advantageKeep": "Highest",
+        "disadvantageDice": 1,
+        "disadvantageKeep": "Lowest",
+        "stackable": false
+    },
+    "explodingDice": {
+        "enabled": false,
+        "explodeOn": "Max",
+        "threshold": null,
+        "maxExplosions": 10,
+        "appliesToTypes": []
+    },
+    "keepRules": {
+        "keepHighest": null,
+        "keepLowest": null,
+        "dropHighest": null
+    },
+    "rerollRules": {
+        "rerollOnes": false,
+        "rerollBelow": null,
+        "maxRerolls": 1,
+        "keepOriginalOnReroll": false
+    },
+    "defaultDice": {
+        "skillCheck": "1d10",
+        "attackRoll": "1d20",
+        "saveRoll": "1d20",
+        "damageRoll": "1d6",
+        "initiativeRoll": "1d10",
+        "healingRoll": "1d8"
+    },
+    "difficultyClasses": [
+        {
+            "id": "trivial",
+            "name": "Trivial",
+            "dc": 5,
+            "description": "Almost automatic success for any trained character",
+            "sortOrder": 0
+        },
+        {
+            "id": "easy",
+            "name": "Easy",
+            "dc": 8,
+            "description": "Simple tasks that most characters can accomplish",
+            "sortOrder": 1
+        },
+        {
+            "id": "moderate",
+            "name": "Moderate",
+            "dc": 12,
+            "description": "Tasks requiring some skill or focus",
+            "sortOrder": 2
+        },
+        {
+            "id": "hard",
+            "name": "Hard",
+            "dc": 16,
+            "description": "Challenging tasks requiring significant expertise",
+            "sortOrder": 3
+        },
+        {
+            "id": "very-hard",
+            "name": "Very Hard",
+            "dc": 20,
+            "description": "Expert-level challenges that test masters",
+            "sortOrder": 4
+        },
+        {
+            "id": "nearly-impossible",
+            "name": "Nearly Impossible",
+            "dc": 25,
+            "description": "Legendary feats that few can achieve",
+            "sortOrder": 5
+        }
+    ]
+}

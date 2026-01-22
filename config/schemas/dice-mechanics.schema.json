@@ -1,0 +1,374 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "dice-mechanics.schema.json",
+    "title": "Dice Mechanics Configuration",
+    "description": "JSON Schema for dice pool mechanics, roll modifiers, critical thresholds, advantage/disadvantage rules, exploding dice, keep/drop rules, reroll conditions, and difficulty class definitions. Enables full customization of roll mechanics without code changes.",
+    "type": "object",
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "Reference to the JSON schema for validation"
+        },
+        "version": {
+            "type": "string",
+            "description": "Schema version for compatibility tracking",
+            "pattern": "^\\d+\\.\\d+\\.\\d+$"
+        },
+        "criticalThresholds": {
+            "$ref": "#/definitions/CriticalThresholds",
+            "description": "Configuration for critical success and failure thresholds"
+        },
+        "advantageRules": {
+            "$ref": "#/definitions/AdvantageRules",
+            "description": "Configuration for advantage and disadvantage mechanics"
+        },
+        "explodingDice": {
+            "$ref": "#/definitions/ExplodingDiceRules",
+            "description": "Configuration for exploding dice mechanics"
+        },
+        "keepRules": {
+            "$ref": "#/definitions/KeepRules",
+            "description": "Configuration for keeping or dropping dice from a roll"
+        },
+        "rerollRules": {
+            "$ref": "#/definitions/RerollRules",
+            "description": "Configuration for automatic dice rerolling"
+        },
+        "defaultDice": {
+            "$ref": "#/definitions/DefaultDice",
+            "description": "Default dice expressions for different roll categories"
+        },
+        "difficultyClasses": {
+            "type": "array",
+            "description": "Array of difficulty class definitions for consistent DC values",
+            "items": {
+                "$ref": "#/definitions/DifficultyClass"
+            },
+            "uniqueItems": true
+        }
+    },
+    "required": [
+        "criticalThresholds",
+        "defaultDice"
+    ],
+    "additionalProperties": false,
+    "definitions": {
+        "CriticalThresholds": {
+            "type": "object",
+            "description": "Configuration for critical success and failure thresholds. Defines which values trigger criticals, damage multipliers, bonus dice, and automatic success/failure behavior.",
+            "properties": {
+                "naturalMin": {
+                    "type": "integer",
+                    "description": "The die value that triggers a critical failure (typically 1)",
+                    "minimum": 1,
+                    "default": 1
+                },
+                "naturalMax": {
+                    "oneOf": [
+                        {
+                            "type": "string",
+                            "const": "max",
+                            "description": "Use the die's maximum value for critical success"
+                        },
+                        {
+                            "type": "integer",
+                            "minimum": 1,
+                            "description": "Specific value that triggers critical success (e.g., 19 for expanded crit range)"
+                        }
+                    ],
+                    "description": "The die value that triggers a critical success. 'max' uses die maximum, or specify an integer for expanded crit range.",
+                    "default": "max"
+                },
+                "criticalMultiplier": {
+                    "type": "number",
+                    "description": "Damage multiplier applied on critical hit. Standard is 2 (double damage).",
+                    "minimum": 1,
+                    "default": 2
+                },
+                "criticalBonusDice": {
+                    "oneOf": [
+                        {
+                            "type": "string",
+                            "pattern": "^\\d+d\\d+([+-]\\d+)?$",
+                            "description": "Dice expression for bonus dice on critical (e.g., '1d6')"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "Extra dice rolled and added on critical hit. Null means no bonus dice.",
+                    "default": null
+                },
+                "autoFailOnNatMin": {
+                    "type": "boolean",
+                    "description": "Whether rolling natural minimum always fails regardless of modifiers",
+                    "default": true
+                },
+                "autoSuccessOnNatMax": {
+                    "type": "boolean",
+                    "description": "Whether rolling natural maximum always succeeds regardless of DC",
+                    "default": true
+                }
+            },
+            "additionalProperties": false
+        },
+        "AdvantageRules": {
+            "type": "object",
+            "description": "Configuration for advantage and disadvantage mechanics. When a character has advantage, they roll extra dice and keep the best result; disadvantage keeps the worst.",
+            "properties": {
+                "advantageDice": {
+                    "type": "integer",
+                    "description": "Number of extra dice rolled when the character has advantage (default: 1, roll 2 keep 1)",
+                    "minimum": 1,
+                    "default": 1
+                },
+                "advantageKeep": {
+                    "type": "string",
+                    "description": "Which result to keep when rolling with advantage",
+                    "enum": [
+                        "Highest",
+                        "Lowest"
+                    ],
+                    "default": "Highest"
+                },
+                "disadvantageDice": {
+                    "type": "integer",
+                    "description": "Number of extra dice rolled when the character has disadvantage",
+                    "minimum": 1,
+                    "default": 1
+                },
+                "disadvantageKeep": {
+                    "type": "string",
+                    "description": "Which result to keep when rolling with disadvantage",
+                    "enum": [
+                        "Highest",
+                        "Lowest"
+                    ],
+                    "default": "Lowest"
+                },
+                "stackable": {
+                    "type": "boolean",
+                    "description": "Whether multiple sources of advantage or disadvantage stack (if false, multiple advantages = single advantage)",
+                    "default": false
+                }
+            },
+            "additionalProperties": false
+        },
+        "ExplodingDiceRules": {
+            "type": "object",
+            "description": "Configuration for exploding dice mechanics. Rolling the maximum value (or threshold) allows rolling an additional die that adds to the total.",
+            "properties": {
+                "enabled": {
+                    "type": "boolean",
+                    "description": "Whether exploding dice mechanics are active",
+                    "default": false
+                },
+                "explodeOn": {
+                    "type": "string",
+                    "description": "The condition that triggers a die to explode: 'Max' (die maximum) or 'Threshold' (>= threshold value)",
+                    "enum": [
+                        "Max",
+                        "Threshold"
+                    ],
+                    "default": "Max"
+                },
+                "threshold": {
+                    "oneOf": [
+                        {
+                            "type": "integer",
+                            "minimum": 1,
+                            "description": "Minimum value that triggers explosion in Threshold mode"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "The threshold value for Threshold mode (ignored if explodeOn is 'Max')",
+                    "default": null
+                },
+                "maxExplosions": {
+                    "type": "integer",
+                    "description": "Maximum number of times a single die can explode (prevents infinite loops)",
+                    "minimum": 1,
+                    "default": 10
+                },
+                "appliesToTypes": {
+                    "type": "array",
+                    "description": "Array of die type IDs that can explode (e.g., ['d6', 'd10']). Empty array means all die types can explode.",
+                    "items": {
+                        "type": "string",
+                        "pattern": "^d\\d+$"
+                    },
+                    "default": []
+                }
+            },
+            "additionalProperties": false
+        },
+        "KeepRules": {
+            "type": "object",
+            "description": "Configuration for keeping or dropping dice from a roll. These rules modify the dice pool before calculating the final result.",
+            "properties": {
+                "keepHighest": {
+                    "oneOf": [
+                        {
+                            "type": "integer",
+                            "minimum": 1,
+                            "description": "Number of highest dice to keep"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "Keep only the N highest dice from the roll. Null means no keep highest rule.",
+                    "default": null
+                },
+                "keepLowest": {
+                    "oneOf": [
+                        {
+                            "type": "integer",
+                            "minimum": 1,
+                            "description": "Number of lowest dice to keep"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "Keep only the N lowest dice from the roll. Null means no keep lowest rule.",
+                    "default": null
+                },
+                "dropHighest": {
+                    "oneOf": [
+                        {
+                            "type": "integer",
+                            "minimum": 1,
+                            "description": "Number of highest dice to drop"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "Drop the N highest dice from the roll. Null means no drop highest rule.",
+                    "default": null
+                }
+            },
+            "additionalProperties": false
+        },
+        "RerollRules": {
+            "type": "object",
+            "description": "Configuration for automatic dice rerolling. Supports mechanics like 'reroll 1s' or 'reroll any die below threshold'.",
+            "properties": {
+                "rerollOnes": {
+                    "type": "boolean",
+                    "description": "Automatically reroll any die that shows a 1",
+                    "default": false
+                },
+                "rerollBelow": {
+                    "oneOf": [
+                        {
+                            "type": "integer",
+                            "minimum": 1,
+                            "description": "Threshold below which dice are rerolled"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "Reroll any die that shows a value below this threshold. Null means no reroll below rule.",
+                    "default": null
+                },
+                "maxRerolls": {
+                    "type": "integer",
+                    "description": "Maximum number of times a single die can be rerolled",
+                    "minimum": 1,
+                    "default": 1
+                },
+                "keepOriginalOnReroll": {
+                    "type": "boolean",
+                    "description": "If true, keep the original roll if the reroll result is worse",
+                    "default": false
+                }
+            },
+            "additionalProperties": false
+        },
+        "DefaultDice": {
+            "type": "object",
+            "description": "Default dice expressions for different roll categories. These can be overridden by specific abilities, weapons, or other game elements.",
+            "properties": {
+                "skillCheck": {
+                    "type": "string",
+                    "description": "Default dice expression for skill checks",
+                    "pattern": "^\\d+d\\d+([+-]\\d+)?$",
+                    "default": "1d10"
+                },
+                "attackRoll": {
+                    "type": "string",
+                    "description": "Default dice expression for attack rolls",
+                    "pattern": "^\\d+d\\d+([+-]\\d+)?$",
+                    "default": "1d20"
+                },
+                "saveRoll": {
+                    "type": "string",
+                    "description": "Default dice expression for saving throws",
+                    "pattern": "^\\d+d\\d+([+-]\\d+)?$",
+                    "default": "1d20"
+                },
+                "damageRoll": {
+                    "type": "string",
+                    "description": "Default dice expression for damage (typically overridden by weapon)",
+                    "pattern": "^\\d+d\\d+([+-]\\d+)?$",
+                    "default": "1d6"
+                },
+                "initiativeRoll": {
+                    "type": "string",
+                    "description": "Default dice expression for initiative rolls",
+                    "pattern": "^\\d+d\\d+([+-]\\d+)?$",
+                    "default": "1d10"
+                },
+                "healingRoll": {
+                    "type": "string",
+                    "description": "Default dice expression for healing (typically overridden by spell/ability)",
+                    "pattern": "^\\d+d\\d+([+-]\\d+)?$",
+                    "default": "1d8"
+                }
+            },
+            "additionalProperties": false
+        },
+        "DifficultyClass": {
+            "type": "object",
+            "description": "A named difficulty level with associated target number. Provides reference points for setting check DCs throughout the game.",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Unique identifier for the difficulty class (kebab-case, e.g., 'very-hard')",
+                    "pattern": "^[a-z][a-z0-9-]*$"
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Display name for the difficulty level",
+                    "minLength": 1
+                },
+                "dc": {
+                    "type": "integer",
+                    "description": "Target number that must be met or exceeded to succeed",
+                    "minimum": 1
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Optional description of when this difficulty applies"
+                },
+                "sortOrder": {
+                    "type": "integer",
+                    "description": "Display ordering (lower numbers appear first)",
+                    "minimum": 0,
+                    "default": 0
+                }
+            },
+            "required": [
+                "id",
+                "name",
+                "dc"
+            ],
+            "additionalProperties": false
+        }
+    }
+}
