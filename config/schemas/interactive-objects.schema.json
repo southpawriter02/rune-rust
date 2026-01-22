@@ -1,0 +1,435 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Interactive Object Configuration",
+    "description": "Configuration schema for interactive object definitions including types, states, interactions, skill checks, state transitions, rewards, trap effects, and keywords. Enables full customization of dungeon interactables without code changes.",
+    "type": "object",
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "Reference to the JSON schema file for validation"
+        },
+        "version": {
+            "type": "string",
+            "description": "Optional version identifier for the configuration file",
+            "pattern": "^[0-9]+\\.[0-9]+$"
+        },
+        "interactiveObjects": {
+            "type": "array",
+            "description": "List of interactive object definitions. Each object defines type, state, interactions, and optional skill checks, rewards, and trap effects.",
+            "items": {
+                "$ref": "#/definitions/InteractiveObjectDefinition"
+            },
+            "minItems": 1
+        }
+    },
+    "required": [
+        "interactiveObjects"
+    ],
+    "additionalProperties": false,
+    "definitions": {
+        "InteractiveObjectDefinition": {
+            "type": "object",
+            "description": "An interactive object definition with type, state, interactions, and behavior. Supports skill checks for interactions, state transitions, rewards, and trap effects.",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Unique identifier for the interactive object (lowercase kebab-case). Must start with a letter and contain only lowercase letters, numbers, and hyphens.",
+                    "pattern": "^[a-z][a-z0-9-]*$",
+                    "minLength": 1,
+                    "maxLength": 50
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Display name shown to players in UI and descriptions.",
+                    "minLength": 1,
+                    "maxLength": 100
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Detailed description shown when the object is examined.",
+                    "minLength": 1
+                },
+                "objectType": {
+                    "type": "string",
+                    "description": "Category of interactive object. Determines available interactions and behaviors.",
+                    "enum": [
+                        "Door",
+                        "Chest",
+                        "Lever",
+                        "Altar",
+                        "Barrel",
+                        "Crate",
+                        "Web",
+                        "Statue",
+                        "LightSource",
+                        "Inscription",
+                        "Trap",
+                        "Switch",
+                        "Bookshelf",
+                        "Fountain"
+                    ]
+                },
+                "defaultState": {
+                    "type": "string",
+                    "description": "Initial state when the object is spawned. State affects available interactions.",
+                    "enum": [
+                        "Closed",
+                        "Open",
+                        "Locked",
+                        "Broken",
+                        "Lit",
+                        "Unlit",
+                        "Active",
+                        "Inactive",
+                        "Normal",
+                        "Triggered",
+                        "Down",
+                        "Up"
+                    ]
+                },
+                "allowedInteractions": {
+                    "type": "array",
+                    "description": "List of interactions this object supports. Each interaction may have skill checks and trigger state transitions.",
+                    "items": {
+                        "type": "string",
+                        "enum": [
+                            "Open",
+                            "Close",
+                            "Examine",
+                            "Search",
+                            "Activate",
+                            "Break",
+                            "Unlock",
+                            "Lock",
+                            "Read",
+                            "Use",
+                            "Push",
+                            "Pull"
+                        ]
+                    },
+                    "minItems": 1
+                },
+                "blocksPassage": {
+                    "type": "boolean",
+                    "description": "Whether this object blocks player movement. Typical for doors and webs in closed/locked state.",
+                    "default": false
+                },
+                "blocksLOS": {
+                    "type": "boolean",
+                    "description": "Whether this object blocks line of sight. Affects visibility and ranged attacks.",
+                    "default": false
+                },
+                "keywords": {
+                    "type": "array",
+                    "description": "Alternative names for natural language parsing. Allows players to refer to objects by different terms.",
+                    "items": {
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "minItems": 1
+                },
+                "skillChecks": {
+                    "type": "object",
+                    "description": "Skill checks required for specific interactions. Key is interaction type, value is skill check configuration.",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/SkillCheck"
+                    }
+                },
+                "stateTransitions": {
+                    "type": "array",
+                    "description": "Rules for changing object state via interactions. Defines from/to/via for each valid transition.",
+                    "items": {
+                        "$ref": "#/definitions/StateTransition"
+                    }
+                },
+                "rewards": {
+                    "type": "object",
+                    "description": "Rewards granted when reaching specific states. Key is state name, value is reward configuration.",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/Reward"
+                    }
+                },
+                "trapEffect": {
+                    "$ref": "#/definitions/TrapEffect",
+                    "description": "Trap configuration for harmful interactive objects. Defines damage, saving throws, and disarm DC."
+                },
+                "sortOrder": {
+                    "type": "integer",
+                    "description": "Order for display sorting (lower values first). Used when listing objects.",
+                    "minimum": 0
+                }
+            },
+            "required": [
+                "id",
+                "name",
+                "description",
+                "objectType",
+                "defaultState",
+                "allowedInteractions",
+                "keywords"
+            ],
+            "additionalProperties": false
+        },
+        "SkillCheck": {
+            "type": "object",
+            "description": "Skill check requirement for an interaction. Defines primary skill and DC, with optional alternate skill.",
+            "properties": {
+                "skillId": {
+                    "type": "string",
+                    "description": "Primary skill ID reference. Must match a skill defined in skills.json.",
+                    "pattern": "^[a-z][a-z0-9-]*$"
+                },
+                "dc": {
+                    "type": "integer",
+                    "description": "Difficulty class for the check. Roll >= DC to succeed.",
+                    "minimum": 1
+                },
+                "alternateSkillId": {
+                    "type": "string",
+                    "description": "Alternative skill that can be used instead. Typically has higher DC.",
+                    "pattern": "^[a-z][a-z0-9-]*$"
+                },
+                "alternateDc": {
+                    "type": "integer",
+                    "description": "DC for the alternate skill (typically higher than primary).",
+                    "minimum": 1
+                }
+            },
+            "required": [
+                "skillId",
+                "dc"
+            ],
+            "additionalProperties": false
+        },
+        "StateTransition": {
+            "type": "object",
+            "description": "Rule for changing object state via interaction. Defines the from state, to state, and triggering interaction.",
+            "properties": {
+                "fromState": {
+                    "type": "string",
+                    "description": "Required current state for this transition to be valid.",
+                    "enum": [
+                        "Closed",
+                        "Open",
+                        "Locked",
+                        "Broken",
+                        "Lit",
+                        "Unlit",
+                        "Active",
+                        "Inactive",
+                        "Normal",
+                        "Triggered",
+                        "Down",
+                        "Up"
+                    ]
+                },
+                "toState": {
+                    "type": "string",
+                    "description": "Resulting state after the interaction succeeds.",
+                    "enum": [
+                        "Closed",
+                        "Open",
+                        "Locked",
+                        "Broken",
+                        "Lit",
+                        "Unlit",
+                        "Active",
+                        "Inactive",
+                        "Normal",
+                        "Triggered",
+                        "Down",
+                        "Up"
+                    ]
+                },
+                "viaInteraction": {
+                    "type": "string",
+                    "description": "Interaction that triggers this state transition.",
+                    "enum": [
+                        "Open",
+                        "Close",
+                        "Examine",
+                        "Search",
+                        "Activate",
+                        "Break",
+                        "Unlock",
+                        "Lock",
+                        "Read",
+                        "Use",
+                        "Push",
+                        "Pull"
+                    ]
+                },
+                "requiresSkillCheck": {
+                    "type": "boolean",
+                    "description": "Whether the interaction requires a skill check to succeed.",
+                    "default": false
+                },
+                "message": {
+                    "type": "string",
+                    "description": "Feedback text shown to player on successful transition."
+                }
+            },
+            "required": [
+                "fromState",
+                "toState",
+                "viaInteraction"
+            ],
+            "additionalProperties": false
+        },
+        "Reward": {
+            "type": "object",
+            "description": "Reward granted when reaching a state or completing an interaction. Supports loot tables, fixed items, gold, experience, and information.",
+            "properties": {
+                "lootTableId": {
+                    "type": "string",
+                    "description": "Reference to loot table for random drops. Must match a loot table in loot-tables.json.",
+                    "pattern": "^[a-z][a-z0-9-]*$"
+                },
+                "fixedItems": {
+                    "type": "array",
+                    "description": "Guaranteed or chance-based specific items to reward.",
+                    "items": {
+                        "$ref": "#/definitions/ItemReward"
+                    }
+                },
+                "goldRange": {
+                    "$ref": "#/definitions/QuantityRange",
+                    "description": "Range of gold to reward. Random value between min and max."
+                },
+                "experienceReward": {
+                    "type": "integer",
+                    "description": "Experience points granted for this reward.",
+                    "minimum": 0
+                },
+                "informationText": {
+                    "type": "string",
+                    "description": "Lore, clue, or other information revealed to the player."
+                }
+            },
+            "additionalProperties": false
+        },
+        "ItemReward": {
+            "type": "object",
+            "description": "A specific item reward with quantity and chance. References items.json.",
+            "properties": {
+                "itemId": {
+                    "type": "string",
+                    "description": "Reference to item definition in items.json.",
+                    "pattern": "^[a-z][a-z0-9-]*$"
+                },
+                "quantity": {
+                    "type": "integer",
+                    "description": "Number of items to grant. Defaults to 1.",
+                    "minimum": 1,
+                    "default": 1
+                },
+                "chance": {
+                    "type": "number",
+                    "description": "Probability of granting this item (0.0 to 1.0). Defaults to 1.0 (guaranteed).",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "default": 1.0
+                }
+            },
+            "required": [
+                "itemId"
+            ],
+            "additionalProperties": false
+        },
+        "QuantityRange": {
+            "type": "object",
+            "description": "A range of quantities with min and max values. Used for gold rewards.",
+            "properties": {
+                "min": {
+                    "type": "integer",
+                    "description": "Minimum quantity (inclusive).",
+                    "minimum": 0
+                },
+                "max": {
+                    "type": "integer",
+                    "description": "Maximum quantity (inclusive).",
+                    "minimum": 0
+                }
+            },
+            "required": [
+                "min",
+                "max"
+            ],
+            "additionalProperties": false
+        },
+        "TrapEffect": {
+            "type": "object",
+            "description": "Trap configuration for harmful interactive objects. Defines damage, damage type, saving throw, and disarm DC.",
+            "properties": {
+                "damage": {
+                    "type": "string",
+                    "description": "Dice expression for damage (e.g., '2d6', '1d8+2'). Format: NdS or NdS+M or NdS-M.",
+                    "pattern": "^[0-9]+d[0-9]+([+-][0-9]+)?$"
+                },
+                "damageType": {
+                    "type": "string",
+                    "description": "Damage type ID (e.g., 'piercing', 'poison', 'fire'). References damage-types.",
+                    "pattern": "^[a-z][a-z0-9-]*$"
+                },
+                "statusEffect": {
+                    "type": "string",
+                    "description": "Status effect ID applied on hit. References status-effects.json.",
+                    "pattern": "^[a-z][a-z0-9-]*$"
+                },
+                "savingThrow": {
+                    "$ref": "#/definitions/SavingThrow",
+                    "description": "Saving throw to reduce or avoid damage."
+                },
+                "triggerChance": {
+                    "type": "number",
+                    "description": "Probability of trap triggering (0.0 to 1.0). Defaults to 1.0 (always triggers).",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "default": 1.0
+                },
+                "disarmDc": {
+                    "type": "integer",
+                    "description": "Difficulty class to disarm the trap. If not specified, trap cannot be disarmed.",
+                    "minimum": 1
+                }
+            },
+            "required": [
+                "damage",
+                "damageType"
+            ],
+            "additionalProperties": false
+        },
+        "SavingThrow": {
+            "type": "object",
+            "description": "Saving throw configuration for damage avoidance. Shared definition with terrain schema.",
+            "properties": {
+                "attribute": {
+                    "type": "string",
+                    "description": "Attribute used for the saving throw. might = brute force, fortitude = resistance, will = mental, wits = reaction, finesse = dodging.",
+                    "enum": [
+                        "might",
+                        "fortitude",
+                        "will",
+                        "wits",
+                        "finesse"
+                    ]
+                },
+                "dc": {
+                    "type": "integer",
+                    "description": "Difficulty class for the saving throw. Roll >= DC to succeed.",
+                    "minimum": 1
+                },
+                "halfOnSuccess": {
+                    "type": "boolean",
+                    "description": "Whether success reduces damage to half instead of negating it.",
+                    "default": true
+                }
+            },
+            "required": [
+                "attribute",
+                "dc"
+            ],
+            "additionalProperties": false
+        }
+    }
+}
