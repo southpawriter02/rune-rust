@@ -1,0 +1,44 @@
+{
+  "TemplateId": "training_hall",
+  "Biome": "the_roots",
+  "Size": "Large",
+  "Archetype": "Chamber",
+  "NameTemplates": [
+    "The {Adjective} Training Hall",
+    "The {Adjective} Combat Chamber",
+    "The {Adjective} Practice Arena"
+  ],
+  "Adjectives": [
+    "Cavernous",
+    "Vast",
+    "Echoing",
+    "Spacious",
+    "Open"
+  ],
+  "DescriptionTemplates": [
+    "A {Adjective} training hall opens before you. {Detail}. This space was designed for combat drills and military exercises.",
+    "This {Adjective} combat chamber still bears the scars of ancient practice. {Detail}. The walls are reinforced to withstand weapons fire.",
+    "You stand in a {Adjective} practice arena. {Detail}. Warning zones are still marked on the floor in faded paint."
+  ],
+  "Details": [
+    "Training dummies, corroded but still upright, line one wall",
+    "Blast marks scar the reinforced walls",
+    "Weapon racks stand empty, their contents scavenged long ago",
+    "The floor is marked with tactical grid patterns",
+    "An observation gallery overlooks the space from above"
+  ],
+  "MinConnectionPoints": 2,
+  "MaxConnectionPoints": 3,
+  "ValidConnections": [
+    "Corridor",
+    "Chamber",
+    "BossArena"
+  ],
+  "Difficulty": "Medium",
+  "Tags": [
+    "Exploration",
+    "Combat",
+    "Large",
+    "Military"
+  ]
+}

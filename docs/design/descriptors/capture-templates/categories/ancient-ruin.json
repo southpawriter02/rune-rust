@@ -1,0 +1,36 @@
+{
+  "$schema": "../schema/capture-template.schema.json",
+  "category": "ancient-ruin",
+  "version": "1.0.0",
+  "description": "Templates for ancient ruin discoveries. Matched by keywords: ruin, ancient, collapsed, abandoned.",
+  "matchKeywords": ["ruin", "ancient", "collapsed", "abandoned"],
+  "templates": [
+    {
+      "id": "ruin-wall-inscription",
+      "type": "TextFragment",
+      "fragmentContent": "Wall inscriptions, partially eroded: '...the Sleepers must not wake. We have sealed the chambers according to the old rites. May those who come after us understand why.'",
+      "source": "Wall inscription",
+      "matchKeywords": ["ruin", "ancient", "inscription", "tomb"],
+      "quality": 15,
+      "tags": ["sleepers", "sealed", "rites"]
+    },
+    {
+      "id": "ruin-wanderers-tales",
+      "type": "OralHistory",
+      "fragmentContent": "This site matches descriptions from the Wanderer's Tales: 'Where the three rivers once met, before the Glitch drank them dry, the Aesir built their watching towers.' Only foundations remain now.",
+      "source": "Historical correlation",
+      "matchKeywords": ["ruin", "ancient", "tower", "aesir"],
+      "quality": 15,
+      "tags": ["wanderer", "rivers", "aesir", "towers"]
+    },
+    {
+      "id": "ruin-defaced-murals",
+      "type": "VisualRecord",
+      "fragmentContent": "Murals cover what remains of the walls. The art depicts figures in flowing robes overseeing great machines. Their faces have been systematically defaced.",
+      "source": "Artistic record",
+      "matchKeywords": ["ruin", "mural", "art", "ancient"],
+      "quality": 15,
+      "tags": ["murals", "art", "defaced", "machines"]
+    }
+  ]
+}

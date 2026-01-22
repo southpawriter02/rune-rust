@@ -1,0 +1,43 @@
+{
+  "TemplateId": "data_spine",
+  "Biome": "the_roots",
+  "Size": "Small",
+  "Archetype": "Corridor",
+  "NameTemplates": [
+    "The {Adjective} Data-Spine",
+    "The {Adjective} Information Conduit",
+    "The {Adjective} Network Passage"
+  ],
+  "Adjectives": [
+    "Glowing",
+    "Pulsing",
+    "Flickering",
+    "Humming",
+    "Active"
+  ],
+  "DescriptionTemplates": [
+    "A {Adjective} data-spine runs along this narrow passage. {Detail}. The runic circuits still pulse with residual power.",
+    "This {Adjective} corridor houses an information conduit. {Detail}. It's one of the few systems still partially functional.",
+    "You traverse a {Adjective} network passage. {Detail}. The walls glow with faint runic light."
+  ],
+  "Details": [
+    "Data-Slates embedded in the walls flicker with corrupted information",
+    "The runic circuit pulses in irregular patterns",
+    "Diagnostic readouts scroll endlessly on small displays",
+    "A low hum emanates from the data infrastructure",
+    "Occasionally, fragments of old transmissions echo through the corridor"
+  ],
+  "MinConnectionPoints": 2,
+  "MaxConnectionPoints": 2,
+  "ValidConnections": [
+    "Corridor",
+    "Chamber",
+    "SecretRoom"
+  ],
+  "Difficulty": "Easy",
+  "Tags": [
+    "Connector",
+    "Technical",
+    "Atmospheric"
+  ]
+}

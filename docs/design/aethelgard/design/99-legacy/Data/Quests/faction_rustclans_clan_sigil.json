@@ -1,0 +1,52 @@
+{
+  "Id": "faction_rustclans_clan_sigil",
+  "Title": "Earning the Clan Sigil",
+  "Description": "Prove yourself worthy of bearing the Rust-Clan sigil. Complete a series of trials demonstrating scavenging skill, combat prowess, and practical survival knowledge.\n\n=== CLAN TRIAL ACTIVE ===\nID: SIGIL_TRIAL_COMPLETE\nObjective: Complete all clan trials\nPriority: CRITICAL\nStatus: Veteran Member\nReward: Full clan membership",
+  "GiverNpcId": "rustclan_elder_bjorn",
+  "GiverNpcName": "Elder Bjorn",
+  "Status": "NotStarted",
+  "MinimumLegend": 650,
+  "PrerequisiteQuests": ["faction_rustclans_cache_recovery"],
+  "Type": "Faction",
+  "Category": "Challenge",
+  "EstimatedDuration": 90,
+  "Objectives": [
+    {
+      "Description": "Complete scavenging trial",
+      "Type": "CollectItem",
+      "TargetId": "rare_salvage",
+      "Required": 5,
+      "Current": 0
+    },
+    {
+      "Description": "Complete combat trial",
+      "Type": "KillEnemy",
+      "TargetId": "TrialEnemy",
+      "Required": 20,
+      "Current": 0
+    },
+    {
+      "Description": "Complete survival trial",
+      "Type": "SurviveEncounter",
+      "TargetId": "survival_challenge",
+      "Required": 1,
+      "Current": 0
+    }
+  ],
+  "Reward": {
+    "Experience": 1200,
+    "Currency": 1500,
+    "DetailedItems": [
+      {
+        "ItemId": "clan_sigil",
+        "Quantity": 1,
+        "ForcedQuality": "Epic"
+      }
+    ],
+    "ReputationGains": {
+      "RustClans": 40
+    },
+    "UnlockedQuests": []
+  },
+  "GenerationReqs": null
+}

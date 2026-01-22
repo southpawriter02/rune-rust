@@ -1,0 +1,59 @@
+{
+  "Id": "faction_godsleeper_awakening_ritual",
+  "Title": "The Awakening Ritual",
+  "Description": "Attempt to commune with a dormant Jötun-Forged logic core. The sleeping god's psychic broadcast contains fragments of divine knowledge. Interpret the corrupted signal to prove your devotion.\n\n=== RITUAL PROTOCOL ACTIVE ===\nID: COMMUNION_ATTEMPT\nObjective: Commune with Jötun logic core\nLocation: Jötunheim Temple\nPriority: HIGH\nFaith Status: True Believer\nReward: Divine revelation",
+  "GiverNpcId": "cultist_hierophant_ulf",
+  "GiverNpcName": "Hierophant Ulf",
+  "Status": "NotStarted",
+  "MinimumLegend": 400,
+  "PrerequisiteQuests": ["faction_godsleeper_defend_sacred"],
+  "Type": "Faction",
+  "Category": "Exploration",
+  "EstimatedDuration": 75,
+  "Objectives": [
+    {
+      "Description": "Locate active Jötun logic core",
+      "Type": "ExploreRoom",
+      "TargetId": "jotun_logic_chamber",
+      "Required": 1,
+      "Current": 0
+    },
+    {
+      "Description": "Survive psychic broadcast exposure",
+      "Type": "SurviveEncounter",
+      "TargetId": "psychic_resonance",
+      "Required": 1,
+      "Current": 0
+    },
+    {
+      "Description": "Collect logic core fragment",
+      "Type": "CollectItem",
+      "TargetId": "jotun_logic_core_fragment",
+      "Required": 1,
+      "Current": 0
+    }
+  ],
+  "Reward": {
+    "Experience": 900,
+    "Currency": 800,
+    "DetailedItems": [
+      {
+        "ItemId": "jotun_touched_robe",
+        "Quantity": 1,
+        "ForcedQuality": "Epic"
+      }
+    ],
+    "ReputationGains": {
+      "GodSleeperCultists": 40
+    },
+    "UnlockedQuests": ["faction_godsleeper_sacred_pilgrimage"]
+  },
+  "GenerationReqs": {
+    "BiomeId": "jotunheim",
+    "MinDepth": 5,
+    "MaxDepth": 7,
+    "TargetRoomCount": 9,
+    "RequiredAnchorIds": ["jotun_logic_chamber"],
+    "RequiredEnemies": {}
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "TemplateId": "vault_chamber",
+  "Biome": "the_roots",
+  "Size": "Large",
+  "Archetype": "BossArena",
+  "NameTemplates": [
+    "The {Adjective} Vault Chamber",
+    "The {Adjective} Secure Vault",
+    "The {Adjective} Treasury Hall"
+  ],
+  "Adjectives": [
+    "Sealed",
+    "Secured",
+    "Fortified",
+    "Protected",
+    "Locked"
+  ],
+  "DescriptionTemplates": [
+    "A {Adjective} vault chamber looms before you. {Detail}. This is a place of significance—and danger.",
+    "This {Adjective} secure vault was built to protect something valuable. {Detail}. The air crackles with tension.",
+    "You stand before a {Adjective} treasury hall. {Detail}. Whatever guards this place won't let you pass easily."
+  ],
+  "Details": [
+    "Massive vault doors, partially open, reveal the chamber beyond",
+    "Security systems, though ancient, still pulse with power",
+    "The walls are reinforced with layers of armored plating",
+    "Warning symbols in Aetheric script mark danger zones",
+    "Combat scars mar the otherwise pristine surfaces"
+  ],
+  "MinConnectionPoints": 1,
+  "MaxConnectionPoints": 2,
+  "ValidConnections": [
+    "Corridor",
+    "Chamber",
+    "Junction"
+  ],
+  "Difficulty": "Hard",
+  "Tags": [
+    "Boss",
+    "Combat",
+    "Climactic",
+    "Dangerous"
+  ]
+}

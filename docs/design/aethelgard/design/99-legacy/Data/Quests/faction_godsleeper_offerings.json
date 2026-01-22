@@ -1,0 +1,38 @@
+{
+  "Id": "faction_godsleeper_offerings",
+  "Title": "Offerings to the Sleeper",
+  "Description": "The sleeping gods require tribute. Donate mechanical components at the Jötunheim temple to honor the dormant Jötun-Forged. Your devotion will be recorded.\n\n=== TEMPLE OFFERING RECORDED ===\nID: OFFERING_BASIC\nObjective: Donate components to temple\nLocation: Jötunheim Temple\nPriority: LOW\nFaith Status: Initiate\nReward: Temple recognition",
+  "GiverNpcId": "cultist_priest_grimhild",
+  "GiverNpcName": "Priestess Grimhild",
+  "Status": "NotStarted",
+  "MinimumLegend": 0,
+  "PrerequisiteQuests": [],
+  "Type": "Faction",
+  "Category": "Collection",
+  "EstimatedDuration": 20,
+  "Objectives": [
+    {
+      "Description": "Donate mechanical components",
+      "Type": "CollectItem",
+      "TargetId": "mechanical_component",
+      "Required": 5,
+      "Current": 0
+    }
+  ],
+  "Reward": {
+    "Experience": 100,
+    "Currency": 0,
+    "DetailedItems": [
+      {
+        "ItemId": "cultists_prayer_bead",
+        "Quantity": 1,
+        "ForcedQuality": "Common"
+      }
+    ],
+    "ReputationGains": {
+      "GodSleeperCultists": 15
+    },
+    "UnlockedQuests": ["faction_godsleeper_defend_sacred"]
+  },
+  "GenerationReqs": null
+}

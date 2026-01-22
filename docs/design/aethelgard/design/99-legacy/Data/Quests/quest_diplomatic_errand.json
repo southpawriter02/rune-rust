@@ -1,0 +1,22 @@
+{
+  "Id": "quest_diplomatic_errand",
+  "Title": "A Message for Kjartan",
+  "Description": "Astrid needs you to deliver a message to Kjartan the Rust-Smith.",
+  "GiverNpcId": "astrid_reader",
+  "Status": "NotStarted",
+  "Objectives": [
+    {
+      "Description": "Speak with Kjartan the Rust-Smith",
+      "Type": "TalkToNPC",
+      "TargetId": "kjartan_smith",
+      "Required": 1,
+      "Current": 0
+    }
+  ],
+  "Reward": {
+    "Experience": 50,
+    "ItemIds": [],
+    "ReputationChange": 10,
+    "Faction": "Independents"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "Id": "ulf_scrapper",
+  "Name": "Ulf the Scrapper",
+  "Description": "A grimy scavenger with rust-stained hands and a permanent scowl. His collection of scrap metal, components, and oddities is chaotic but surprisingly comprehensive. He'll buy anything that isn't nailed down.",
+  "InitialGreeting": "Got scrap? I'll take it off your hands. Need materials? I probably got some buried in this mess somewhere.",
+  "Archetype": "Merchant",
+  "Subtype": "Struggling",
+  "RoomId": 19,
+  "IsHostile": false,
+  "Faction": "RustClans",
+  "BaseDisposition": 10,
+  "CurrentDisposition": 10,
+  "RootDialogueId": "ulf_scrapper_greeting",
+  "EncounteredTopics": [],
+  "HasBeenMet": false,
+  "IsAlive": true,
+  "QuestFlags": {},
+  "IsMerchant": true,
+  "Type": "ScrapTrader",
+  "RestockIntervalDays": 1,
+  "BaseMarkup": 1.8,
+  "ReputationPriceRange": 0.3,
+  "BarterSkillImpact": 0.2,
+  "CategoryModifiers": {
+    "Component": 1.3,
+    "Equipment": 0.4,
+    "Consumable": 0.6
+  }
+}

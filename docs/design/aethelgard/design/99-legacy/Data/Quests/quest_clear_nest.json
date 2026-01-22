@@ -1,0 +1,23 @@
+{
+  "Id": "quest_clear_nest",
+  "Title": "Clear the Nest",
+  "Description": "Thorvald reports Rust-Horrors have nested in the eastern corridor. Eliminate 5 of them.",
+  "GiverNpcId": "thorvald_guard",
+  "Status": "NotStarted",
+  "Objectives": [
+    {
+      "Description": "Kill Rust-Horrors",
+      "Type": "KillEnemy",
+      "TargetId": "rust_horror",
+      "Required": 5,
+      "Current": 0
+    }
+  ],
+  "Reward": {
+    "Experience": 150,
+    "ItemIds": ["reinforced_gloves"],
+    "ReputationChange": 20,
+    "Faction": "MidgardCombine",
+    "Currency": 100
+  }
+}

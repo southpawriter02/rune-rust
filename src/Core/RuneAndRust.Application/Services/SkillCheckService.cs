@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using RuneAndRust.Application.Interfaces;
+using RuneAndRust.Domain.Constants;
 using RuneAndRust.Domain.Definitions;
 using RuneAndRust.Domain.Entities;
 using RuneAndRust.Domain.Enums;
@@ -144,6 +145,276 @@ public class SkillCheckService
             winner);
 
         return (activeResult, passiveResult, winner);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // CONTESTED CHECK METHODS (v0.15.0d)
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// Resolves a contested skill check between two characters using success-counting mechanics.
+    /// </summary>
+    /// <param name="initiatorId">ID of the initiating character.</param>
+    /// <param name="defenderId">ID of the defending character.</param>
+    /// <param name="initiatorSkillId">Skill ID for the initiator.</param>
+    /// <param name="defenderSkillId">Skill ID for the defender.</param>
+    /// <param name="initiatorAdvantage">Advantage type for initiator roll.</param>
+    /// <param name="defenderAdvantage">Advantage type for defender roll.</param>
+    /// <returns>Complete contested check result with outcome and margin.</returns>
+    /// <remarks>
+    /// <para>
+    /// v0.15.0d: New method returning a structured ContestedCheckResult value object.
+    /// Resolution priority:
+    /// <list type="bullet">
+    ///   <item><description>Both fumble → BothFumble outcome</description></item>
+    ///   <item><description>Initiator fumbles → InitiatorFumble (defender auto-wins)</description></item>
+    ///   <item><description>Defender fumbles → DefenderFumble (initiator auto-wins)</description></item>
+    ///   <item><description>Compare net successes → higher wins, equal = Tie</description></item>
+    /// </list>
+    /// </para>
+    /// </remarks>
+    public ContestedCheckResult ResolveContestedCheck(
+        string initiatorId,
+        string defenderId,
+        string initiatorSkillId,
+        string defenderSkillId,
+        AdvantageType initiatorAdvantage = AdvantageType.Normal,
+        AdvantageType defenderAdvantage = AdvantageType.Normal)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(initiatorId, nameof(initiatorId));
+        ArgumentException.ThrowIfNullOrWhiteSpace(defenderId, nameof(defenderId));
+        ArgumentException.ThrowIfNullOrWhiteSpace(initiatorSkillId, nameof(initiatorSkillId));
+        ArgumentException.ThrowIfNullOrWhiteSpace(defenderSkillId, nameof(defenderSkillId));
+
+        _logger.LogDebug(
+            "Resolving contested check: {Initiator} ({InitiatorSkill}) vs {Defender} ({DefenderSkill})",
+            initiatorId, initiatorSkillId, defenderId, defenderSkillId);
+
+        // Roll for both parties
+        var initiatorRoll = RollForSkill(initiatorSkillId, initiatorAdvantage);
+        var defenderRoll = RollForSkill(defenderSkillId, defenderAdvantage);
+
+        // Determine outcome using static helper
+        var (outcome, margin) = ContestedCheckResult.DetermineOutcome(initiatorRoll, defenderRoll);
+
+        var result = new ContestedCheckResult
+        {
+            InitiatorId = initiatorId,
+            DefenderId = defenderId,
+            InitiatorSkillId = initiatorSkillId,
+            DefenderSkillId = defenderSkillId,
+            InitiatorRoll = initiatorRoll,
+            DefenderRoll = defenderRoll,
+            Outcome = outcome,
+            Margin = margin
+        };
+
+        LogContestedResult(result);
+
+        return result;
+    }
+
+    /// <summary>
+    /// Rolls for a skill check without comparing to a DC.
+    /// </summary>
+    /// <param name="skillId">The skill ID to roll for.</param>
+    /// <param name="advantageType">Advantage type for the roll.</param>
+    /// <returns>The dice roll result.</returns>
+    private DiceRollResult RollForSkill(string skillId, AdvantageType advantageType)
+    {
+        var skill = _configProvider.GetSkillById(skillId)
+            ?? throw new ArgumentException($"Unknown skill: {skillId}", nameof(skillId));
+
+        var dicePool = DicePool.Parse(skill.BaseDicePool);
+        return _diceService.Roll(dicePool, advantageType);
+    }
+
+    /// <summary>
+    /// Logs the contested check result.
+    /// </summary>
+    private void LogContestedResult(ContestedCheckResult result)
+    {
+        var logLevel = result.HadFumble ? LogLevel.Information : LogLevel.Debug;
+
+        _logger.Log(logLevel,
+            "Contested check: {Initiator} ({INet}) vs {Defender} ({DNet}) → {Outcome} (margin: {Margin})",
+            result.InitiatorId, result.InitiatorNetSuccesses,
+            result.DefenderId, result.DefenderNetSuccesses,
+            result.Outcome, result.Margin);
+
+        _eventLogger?.LogDice("ContestedCheck", result.ToString(),
+            data: new Dictionary<string, object>
+            {
+                ["initiatorId"] = result.InitiatorId,
+                ["defenderId"] = result.DefenderId,
+                ["initiatorSkillId"] = result.InitiatorSkillId,
+                ["defenderSkillId"] = result.DefenderSkillId,
+                ["initiatorNet"] = result.InitiatorNetSuccesses,
+                ["defenderNet"] = result.DefenderNetSuccesses,
+                ["outcome"] = result.Outcome.ToString(),
+                ["margin"] = result.Margin,
+                ["winnerId"] = result.WinnerId ?? "none",
+                ["hadFumble"] = result.HadFumble
+            });
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // EXTENDED CHECK METHODS (v0.15.0d)
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// Starts a new extended skill check.
+    /// </summary>
+    /// <param name="characterId">ID of the character.</param>
+    /// <param name="skillId">ID of the skill to use.</param>
+    /// <param name="targetSuccesses">Successes required to complete.</param>
+    /// <param name="maxRounds">Maximum rounds allowed (default: 10).</param>
+    /// <returns>The initial ExtendedCheckState.</returns>
+    /// <remarks>
+    /// v0.15.0d: Creates a new extended check that tracks accumulated successes
+    /// across multiple rounds. Use PerformExtendedCheckRound() to advance.
+    /// </remarks>
+    public ExtendedCheckState StartExtendedCheck(
+        string characterId,
+        string skillId,
+        int targetSuccesses,
+        int maxRounds = ExtendedCheckConstants.DefaultMaxRounds)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(characterId, nameof(characterId));
+        ArgumentException.ThrowIfNullOrWhiteSpace(skillId, nameof(skillId));
+
+        // Validate skill exists
+        var skill = _configProvider.GetSkillById(skillId)
+            ?? throw new ArgumentException($"Unknown skill: {skillId}", nameof(skillId));
+
+        var checkId = Guid.NewGuid().ToString("N")[..8]; // Short unique ID
+
+        var state = ExtendedCheckState.Create(
+            checkId,
+            characterId,
+            skillId,
+            targetSuccesses,
+            maxRounds);
+
+        _logger.LogInformation(
+            "Started extended check {CheckId}: {Character} using {Skill}, " +
+            "target {Target} successes in {MaxRounds} rounds",
+            checkId, characterId, skill.Name, targetSuccesses, maxRounds);
+
+        _eventLogger?.LogDice("ExtendedCheckStarted", $"Started: {targetSuccesses} successes in {maxRounds} rounds",
+            data: new Dictionary<string, object>
+            {
+                ["checkId"] = checkId,
+                ["characterId"] = characterId,
+                ["skillId"] = skillId,
+                ["targetSuccesses"] = targetSuccesses,
+                ["maxRounds"] = maxRounds
+            });
+
+        return state;
+    }
+
+    /// <summary>
+    /// Performs one round of an extended check.
+    /// </summary>
+    /// <param name="state">The current extended check state.</param>
+    /// <param name="advantageType">Advantage type for this round's roll.</param>
+    /// <returns>The updated state after processing this round.</returns>
+    /// <exception cref="InvalidOperationException">If the check is not in progress.</exception>
+    /// <remarks>
+    /// v0.15.0d: Each round adds net successes to accumulated total.
+    /// Fumbles subtract 2 accumulated successes (min 0).
+    /// 3 consecutive fumbles trigger catastrophic failure.
+    /// </remarks>
+    public ExtendedCheckState PerformExtendedCheckRound(
+        ExtendedCheckState state,
+        AdvantageType advantageType = AdvantageType.Normal)
+    {
+        ArgumentNullException.ThrowIfNull(state);
+
+        if (!state.IsActive)
+            throw new InvalidOperationException(
+                $"Cannot perform round: check is {state.Status}");
+
+        // Roll for this round
+        var rollResult = RollForSkill(state.SkillId, advantageType);
+
+        // Process the round (mutates state)
+        state.ProcessRound(rollResult);
+
+        // Log the result
+        LogExtendedCheckRound(state, rollResult);
+
+        return state;
+    }
+
+    /// <summary>
+    /// Abandons an in-progress extended check.
+    /// </summary>
+    /// <param name="state">The extended check state to abandon.</param>
+    /// <returns>The updated state with Abandoned status.</returns>
+    /// <exception cref="InvalidOperationException">If the check is not in progress.</exception>
+    public ExtendedCheckState AbandonExtendedCheck(ExtendedCheckState state)
+    {
+        ArgumentNullException.ThrowIfNull(state);
+
+        state.Abandon();
+
+        _logger.LogInformation(
+            "Extended check {CheckId} abandoned by {Character} with {Accumulated}/{Target} successes",
+            state.CheckId, state.CharacterId, state.AccumulatedSuccesses, state.TargetSuccesses);
+
+        _eventLogger?.LogDice("ExtendedCheckAbandoned", $"Abandoned with {state.AccumulatedSuccesses}/{state.TargetSuccesses}",
+            data: new Dictionary<string, object>
+            {
+                ["checkId"] = state.CheckId,
+                ["characterId"] = state.CharacterId,
+                ["accumulated"] = state.AccumulatedSuccesses,
+                ["target"] = state.TargetSuccesses,
+                ["roundsCompleted"] = state.RoundsCompleted
+            });
+
+        return state;
+    }
+
+    /// <summary>
+    /// Logs an extended check round result.
+    /// </summary>
+    private void LogExtendedCheckRound(ExtendedCheckState state, DiceRollResult rollResult)
+    {
+        var logLevel = rollResult.IsFumble ? LogLevel.Warning : LogLevel.Debug;
+        var riskNote = state.IsAtRisk ? " [AT RISK - one more fumble = catastrophic!]" : "";
+
+        _logger.Log(logLevel,
+            "Extended check {CheckId} round {Round}: {Net} net successes " +
+            "(accumulated: {Accumulated}/{Target}, remaining: {Remaining}){Risk}",
+            state.CheckId, state.RoundsCompleted, rollResult.NetSuccesses,
+            state.AccumulatedSuccesses, state.TargetSuccesses, state.RoundsRemaining, riskNote);
+
+        if (state.IsComplete)
+        {
+            _logger.LogInformation(
+                "Extended check {CheckId} completed with status: {Status} " +
+                "(accumulated: {Accumulated}, rounds: {Rounds}, fumbles: {Fumbles})",
+                state.CheckId, state.Status,
+                state.AccumulatedSuccesses, state.RoundsCompleted, state.TotalFumbles);
+        }
+
+        _eventLogger?.LogDice("ExtendedCheckRound", $"Round {state.RoundsCompleted}: {rollResult.NetSuccesses} net",
+            data: new Dictionary<string, object>
+            {
+                ["checkId"] = state.CheckId,
+                ["characterId"] = state.CharacterId,
+                ["skillId"] = state.SkillId,
+                ["round"] = state.RoundsCompleted,
+                ["netSuccesses"] = rollResult.NetSuccesses,
+                ["isFumble"] = rollResult.IsFumble,
+                ["accumulated"] = state.AccumulatedSuccesses,
+                ["target"] = state.TargetSuccesses,
+                ["remaining"] = state.RoundsRemaining,
+                ["consecutiveFumbles"] = state.ConsecutiveFumbles,
+                ["status"] = state.Status.ToString()
+            });
     }
 
     private SkillCheckResult PerformCheckInternal(

@@ -1,0 +1,35 @@
+{
+  "RoomId": "silent_library",
+  "Name": "[The Silent Library]",
+  "Description": "Data-Slates line silent shelves in this preserved archive. Pre-Glitch knowledge waits to be read - or lost forever. Emergency power keeps the temperature stable, protecting millennia of accumulated data from decay. The silence is absolute.",
+  "Archetype": "Chamber",
+  "SuggestedNodeType": "Branch",
+  "NarrativeText": "This was a Jötun-Reader data repository - one of the vast libraries where the alien AI stored its collected knowledge. The data here spans civilizations, worlds, and time periods beyond human comprehension. But reading it comes at a price: your mind touching alien thought.",
+  "FlavorText": "Rows upon rows of data storage crystals pulse with faint light. A reading terminal sits dormant, waiting. The air tastes like ozone. On one shelf, you notice a data-slate labeled in Old Aetheric: 'The truth of what we are'.",
+  "EnemyIds": [
+    "JotunReaderFragment"
+  ],
+  "HazardIds": [],
+  "TerrainIds": [
+    "data_storage_racks",
+    "reading_terminal"
+  ],
+  "LootIds": [
+    "data_slate_ancient_lore",
+    "knowledge_cache",
+    "tech_components_advanced"
+  ],
+  "ConditionIds": [
+    "psychic_resonance",
+    "preserved"
+  ],
+  "NPCIds": [],
+  "IsSafeZone": false,
+  "IsBossArena": false,
+  "HasQuestObjective": true,
+  "QuestObjectiveId": "recover_lost_knowledge",
+  "PreferredExits": {
+    "East": "Corridor",
+    "West": "Corridor"
+  }
+}

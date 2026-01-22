@@ -1,0 +1,135 @@
+[
+  {
+    "Id": "rolf_greeting",
+    "Text": "Hmm. Not many find their way to this corner. Interesting.",
+    "Options": [
+      {
+        "Text": "Who are you?",
+        "NextNodeId": "rolf_about",
+        "Outcome": null
+      },
+      {
+        "Text": "Do you know these ruins well?",
+        "NextNodeId": "rolf_knowledge",
+        "Outcome": null
+      },
+      {
+        "Text": "Just exploring.",
+        "NextNodeId": null,
+        "Outcome": {
+          "Type": "EndConversation",
+          "Data": "",
+          "ReputationChange": 0,
+          "AffectedFaction": null
+        }
+      }
+    ],
+    "EndsConversation": false
+  },
+  {
+    "Id": "rolf_about",
+    "Text": "Just an old man trying to stay out of faction squabbles. I've seen too much bloodshed over salvage rights.",
+    "Options": [
+      {
+        "Text": "Wise choice.",
+        "NextNodeId": null,
+        "Outcome": {
+          "Type": "ReputationChange",
+          "Data": "Respected independence",
+          "ReputationChange": 3,
+          "AffectedFaction": "Independents"
+        }
+      },
+      {
+        "Text": "Sounds lonely.",
+        "NextNodeId": "rolf_lonely",
+        "Outcome": null
+      }
+    ],
+    "EndsConversation": false
+  },
+  {
+    "Id": "rolf_lonely",
+    "Text": "Sometimes. But loneliness is better than dying for someone else's cause.",
+    "Options": [
+      {
+        "Text": "Fair enough.",
+        "NextNodeId": null,
+        "Outcome": {
+          "Type": "EndConversation",
+          "Data": "",
+          "ReputationChange": 0,
+          "AffectedFaction": null
+        }
+      }
+    ],
+    "EndsConversation": false
+  },
+  {
+    "Id": "rolf_knowledge",
+    "Text": "Better than most. I know shortcuts, hidden passages... things the scavengers miss.",
+    "Options": [
+      {
+        "Text": "[WITS 5] I noticed unstable wall panels. Is that one of them?",
+        "SkillCheck": {
+          "Attribute": "wits",
+          "TargetValue": 5,
+          "Skill": null,
+          "SkillRanks": 0
+        },
+        "NextNodeId": "rolf_shortcut_revealed",
+        "Outcome": null
+      },
+      {
+        "Text": "Would you share that knowledge? [Offer 50 gold]",
+        "NextNodeId": "rolf_bribe",
+        "Outcome": null
+      },
+      {
+        "Text": "Interesting.",
+        "NextNodeId": null,
+        "Outcome": {
+          "Type": "EndConversation",
+          "Data": "",
+          "ReputationChange": 0,
+          "AffectedFaction": null
+        }
+      }
+    ],
+    "EndsConversation": false
+  },
+  {
+    "Id": "rolf_shortcut_revealed",
+    "Text": "Sharp eyes. Yes, that panel leads directly to the deeper levels. Saves you going through the Horror nests. Use it if you want.",
+    "Options": [
+      {
+        "Text": "Thanks for the tip.",
+        "NextNodeId": null,
+        "Outcome": {
+          "Type": "Information",
+          "Data": "Shortcut to Room 24 unlocked",
+          "ReputationChange": 5,
+          "AffectedFaction": "Independents"
+        }
+      }
+    ],
+    "EndsConversation": false
+  },
+  {
+    "Id": "rolf_bribe",
+    "Text": "Gold speaks. Alright. There's a hidden passage behind the west wall. Leads straight to the deep chambers. Watch yourself down there.",
+    "Options": [
+      {
+        "Text": "Worth every coin.",
+        "NextNodeId": null,
+        "Outcome": {
+          "Type": "Information",
+          "Data": "Shortcut to Room 24 unlocked (paid 50 gold)",
+          "ReputationChange": 0,
+          "AffectedFaction": null
+        }
+      }
+    ],
+    "EndsConversation": false
+  }
+]

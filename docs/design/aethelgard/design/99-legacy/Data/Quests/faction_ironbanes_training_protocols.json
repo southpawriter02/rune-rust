@@ -1,0 +1,39 @@
+{
+  "Id": "faction_ironbanes_training_protocols",
+  "Title": "Purification Training",
+  "Description": "Learn Iron-Bane purification techniques. Study anti-corruption protocols and prove combat proficiency against Undying targets. Basic training for potential recruits.\n\n=== TRAINING PROTOCOL ACTIVE ===\nID: BASIC_PURIFICATION_TRAINING\nObjective: Complete combat trials\nPriority: LOW\nClearance: Open to all\nReward: Basic purification techniques",
+  "GiverNpcId": "ironbane_instructor_bjorn",
+  "GiverNpcName": "Instructor Bjorn",
+  "Status": "NotStarted",
+  "MinimumLegend": 50,
+  "PrerequisiteQuests": [],
+  "Type": "Faction",
+  "Category": "Training",
+  "EstimatedDuration": 30,
+  "Objectives": [
+    {
+      "Description": "Complete combat trial against Undying",
+      "Type": "KillEnemy",
+      "TargetId": "Undying",
+      "Required": 5,
+      "Current": 0
+    },
+    {
+      "Description": "Study purification manual",
+      "Type": "CollectItem",
+      "TargetId": "purification_manual",
+      "Required": 1,
+      "Current": 0
+    }
+  ],
+  "Reward": {
+    "Experience": 100,
+    "Currency": 200,
+    "DetailedItems": [],
+    "ReputationGains": {
+      "IronBanes": 15
+    },
+    "UnlockedQuests": ["faction_ironbanes_purge_rust"]
+  },
+  "GenerationReqs": null
+}

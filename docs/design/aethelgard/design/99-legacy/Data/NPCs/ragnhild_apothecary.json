@@ -1,0 +1,29 @@
+{
+  "Id": "ragnhild_apothecary",
+  "Name": "Ragnhild the Apothecary",
+  "Description": "A thin woman with herb-stained fingers and sharp eyes. Her workspace is cluttered with vials, dried plants, and bubbling concoctions. She's one of the few who remembers pre-Glitch healing arts.",
+  "InitialGreeting": "Need healing supplies? I brew the finest remedies this side of the wasteland. For the right price, of course.",
+  "Archetype": "Seidkona",
+  "Subtype": "WanderingSeidkona",
+  "RoomId": 14,
+  "IsHostile": false,
+  "Faction": "Independents",
+  "BaseDisposition": 20,
+  "CurrentDisposition": 20,
+  "RootDialogueId": "ragnhild_apothecary_greeting",
+  "EncounteredTopics": [],
+  "HasBeenMet": false,
+  "IsAlive": true,
+  "QuestFlags": {},
+  "IsMerchant": true,
+  "Type": "Apothecary",
+  "RestockIntervalDays": 2,
+  "BaseMarkup": 2.0,
+  "ReputationPriceRange": 0.3,
+  "BarterSkillImpact": 0.2,
+  "CategoryModifiers": {
+    "Consumable": 1.2,
+    "Component": 0.9,
+    "Equipment": 0.5
+  }
+}
