@@ -1,74 +1,232 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://runeandrust.game/schemas/resources.schema.json",
-  "title": "Resources Configuration",
-  "description": "Schema for defining gatherable resources in Rune & Rust",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Resource Configuration",
+  "description": "Configuration schema for class resource definitions including regeneration rules, maximum calculations, depletion effects, and visual representation. Supports modding scenarios such as alternative magic systems, stamina-based combat, combo-building mechanics, or faith-based divine powers.",
   "type": "object",
-  "required": ["resources"],
   "properties": {
     "$schema": {
       "type": "string",
-      "description": "Reference to this schema file"
+      "description": "Reference to the JSON schema file for validation"
     },
-    "resources": {
+    "version": {
+      "type": "string",
+      "description": "Optional version identifier for the configuration file",
+      "pattern": "^[0-9]+\\.[0-9]+$"
+    },
+    "resourceTypes": {
       "type": "array",
-      "description": "List of resource definitions",
+      "description": "List of resource type definitions. Each resource defines mechanics, regeneration, decay, and visual properties.",
       "items": {
-        "$ref": "#/$defs/resource"
+        "$ref": "#/definitions/ResourceDefinition"
       },
       "minItems": 1
     }
   },
-  "$defs": {
-    "resource": {
+  "required": [
+    "resourceTypes"
+  ],
+  "additionalProperties": false,
+  "definitions": {
+    "ResourceDefinition": {
       "type": "object",
-      "description": "A single resource definition",
-      "required": ["id", "name", "category", "quality", "baseValue"],
+      "description": "A resource definition with regeneration, decay, build triggers, and display properties. Supports patterns like mana pools, rage builders, energy, and faith.",
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the resource (lowercase, hyphenated)",
+          "description": "Unique identifier for the resource (lowercase kebab-case). Must start with a letter and contain only lowercase letters, numbers, and hyphens.",
           "pattern": "^[a-z][a-z0-9-]*$",
-          "examples": ["iron-ore", "healing-herb", "dragon-scale"]
-        },
-        "name": {
-          "type": "string",
-          "description": "Display name of the resource",
           "minLength": 1,
           "maxLength": 50
         },
+        "displayName": {
+          "type": "string",
+          "description": "Display name for the resource shown in UI. Example: Vitality, Arcane Power, Fury.",
+          "minLength": 1,
+          "maxLength": 50
+        },
+        "abbreviation": {
+          "type": "string",
+          "description": "Short abbreviation for compact UI display (1-4 characters). Example: HP, MP, RG, EN.",
+          "minLength": 1,
+          "maxLength": 4
+        },
         "description": {
           "type": "string",
-          "description": "Detailed description shown in tooltips",
-          "maxLength": 500
+          "description": "Flavor text describing the resource. Shown in tooltips and information panels."
         },
-        "category": {
+        "color": {
           "type": "string",
-          "description": "Resource category for filtering and recipes",
-          "enum": ["Ore", "Herb", "Leather", "Gem", "Wood", "Cloth"]
+          "description": "Hex color code for UI resource bar. Must be 6-digit hex prefixed with #.",
+          "pattern": "^#[0-9A-Fa-f]{6}$"
         },
-        "quality": {
+        "defaultMax": {
+          "type": "integer",
+          "description": "Default maximum value for this resource. Used when maxCalculation is not specified.",
+          "minimum": 1
+        },
+        "maxCalculation": {
+          "$ref": "#/definitions/MaxCalculation",
+          "description": "Optional formula for calculating maximum based on level and attributes."
+        },
+        "regenPerTurn": {
+          "type": "integer",
+          "description": "Amount regenerated each turn. 0 = no regeneration.",
+          "minimum": 0,
+          "default": 0
+        },
+        "regenOutOfCombatOnly": {
+          "type": "boolean",
+          "description": "If true, regeneration only occurs outside of combat.",
+          "default": false
+        },
+        "decayPerTurn": {
+          "type": "integer",
+          "description": "Amount lost each turn (decay). 0 = no decay.",
+          "minimum": 0,
+          "default": 0
+        },
+        "decayOnlyOutOfCombat": {
+          "type": "boolean",
+          "description": "If true, decay only occurs outside of combat. Used for rage that decays when not fighting.",
+          "default": false
+        },
+        "buildOnDamageDealt": {
+          "type": "integer",
+          "description": "Amount gained when dealing damage. Triggers per damage instance, not per damage point.",
+          "minimum": 1
+        },
+        "buildOnDamageTaken": {
+          "type": "integer",
+          "description": "Amount gained when taking damage. Triggers per damage instance.",
+          "minimum": 1
+        },
+        "buildOnHeal": {
+          "type": "integer",
+          "description": "Amount gained when healing any target (self or ally). Used for faith-based resources.",
+          "minimum": 1
+        },
+        "buildOnKill": {
+          "type": "integer",
+          "description": "Amount gained on delivering a killing blow. Used for execution-focused builds.",
+          "minimum": 1
+        },
+        "buildOnCritical": {
+          "type": "integer",
+          "description": "Amount gained on landing a critical hit. Used for precision-focused builds.",
+          "minimum": 1
+        },
+        "isUniversal": {
+          "type": "boolean",
+          "description": "If true, all classes have this resource. Health is typically universal.",
+          "default": false
+        },
+        "startsAtZero": {
+          "type": "boolean",
+          "description": "If true, resource starts at 0 instead of maximum. Used for builders like rage.",
+          "default": false
+        },
+        "depletionEffect": {
+          "$ref": "#/definitions/DepletionEffect",
+          "description": "Optional effects when resource reaches zero. Can apply status, prevent actions, or show message."
+        },
+        "iconId": {
           "type": "string",
-          "description": "Quality tier affecting value and crafting bonuses",
-          "enum": ["Common", "Fine", "Rare", "Legendary"]
+          "description": "Optional reference to icon asset for UI display. Must be kebab-case.",
+          "pattern": "^[a-z][a-z0-9-]*$"
         },
+        "sortOrder": {
+          "type": "integer",
+          "description": "Order for display sorting (lower values first). Health should be 0.",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "id",
+        "displayName",
+        "abbreviation",
+        "description",
+        "color",
+        "defaultMax",
+        "sortOrder"
+      ],
+      "additionalProperties": false
+    },
+    "MaxCalculation": {
+      "type": "object",
+      "description": "Formula for calculating resource maximum based on level and attributes. Formula: (classOverride or baseValue) + (level × perLevelBonus) + (attribute × multiplier).",
+      "properties": {
         "baseValue": {
           "type": "integer",
-          "description": "Base gold value before quality multiplier",
-          "minimum": 1,
-          "maximum": 10000
+          "description": "Base maximum value before modifiers. Used when class has no override.",
+          "minimum": 1
         },
-        "stackSize": {
+        "perLevelBonus": {
           "type": "integer",
-          "description": "Maximum stack size in inventory",
-          "minimum": 1,
-          "maximum": 999,
-          "default": 20
+          "description": "Additional maximum per character level. Example: 5 = +5 max per level.",
+          "minimum": 0
         },
-        "icon": {
+        "attributeScaling": {
+          "$ref": "#/definitions/AttributeScaling",
+          "description": "Attribute-based scaling for maximum. Adds (attribute × multiplier) to max."
+        },
+        "classOverrides": {
+          "type": "object",
+          "description": "Class-specific base value overrides. Key is class ID, value is base value. Example: { \"galdr-caster\": 80 }.",
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      },
+      "required": [
+        "baseValue"
+      ],
+      "additionalProperties": false
+    },
+    "AttributeScaling": {
+      "type": "object",
+      "description": "Attribute-based scaling configuration. Adds (attribute value × multiplier) to resource maximum.",
+      "properties": {
+        "attribute": {
           "type": "string",
-          "description": "Path to the resource icon",
-          "pattern": "^icons/.*\\.(png|jpg|svg)$"
+          "description": "The attribute that scales this resource. might = strength, fortitude = constitution, will = wisdom, wits = intelligence, finesse = dexterity.",
+          "enum": [
+            "might",
+            "fortitude",
+            "will",
+            "wits",
+            "finesse"
+          ]
+        },
+        "multiplier": {
+          "type": "number",
+          "description": "Multiplier applied to the attribute value. Example: 3.0 = +3 max per attribute point.",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "attribute",
+        "multiplier"
+      ],
+      "additionalProperties": false
+    },
+    "DepletionEffect": {
+      "type": "object",
+      "description": "Effects when resource reaches zero. Can apply status effects, prevent actions, or display messages.",
+      "properties": {
+        "statusEffectId": {
+          "type": "string",
+          "description": "Status effect ID to apply when depleted. References status-effects.json.",
+          "pattern": "^[a-z][a-z0-9-]*$"
+        },
+        "preventActions": {
+          "type": "boolean",
+          "description": "If true, character cannot take actions when depleted. Used for health depletion.",
+          "default": false
+        },
+        "message": {
+          "type": "string",
+          "description": "Message displayed when resource is depleted. Shown in combat log."
         }
       },
       "additionalProperties": false
