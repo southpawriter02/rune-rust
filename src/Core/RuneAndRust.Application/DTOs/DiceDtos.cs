@@ -52,6 +52,9 @@ public record DiceRollDto
     /// <returns>A DTO for presentation.</returns>
     public static DiceRollDto FromDomainResult(DiceRollResult result, string? descriptor = null)
     {
+        // Use new success-counting properties for critical detection
+        // but fall back to legacy properties for sum-based display
+#pragma warning disable CS0618 // Legacy properties still used for display
         return new DiceRollDto
         {
             Notation = result.Pool.ToString(),
@@ -67,6 +70,7 @@ public record DiceRollDto
             AllRollTotals = result.AdvantageType != Domain.Enums.AdvantageType.Normal ? result.AllRollTotals : null,
             Descriptor = descriptor
         };
+#pragma warning restore CS0618
     }
 }
 

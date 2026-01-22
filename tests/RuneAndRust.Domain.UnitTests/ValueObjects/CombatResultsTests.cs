@@ -11,8 +11,8 @@ public class CombatResultsTests
     public void CombatRoundResult_AttackSuccessLevel_ReturnsCriticalSuccess_OnCriticalHit()
     {
         // Arrange
-        var attackRoll = new DiceRollResult(DicePool.D10(), new[] { 10 }, 10);
-        var damageRoll = new DiceRollResult(DicePool.D6(), new[] { 5, 5 }, 10);
+        var attackRoll = new DiceRollResult(DicePool.D10(), new[] { 10 });
+        var damageRoll = new DiceRollResult(DicePool.D6(), new[] { 5, 5 });
 
         // Act
         var result = new CombatRoundResult(
@@ -35,7 +35,7 @@ public class CombatResultsTests
     public void CombatRoundResult_AttackSuccessLevel_ReturnsCriticalFailure_OnCriticalMiss()
     {
         // Arrange
-        var attackRoll = new DiceRollResult(DicePool.D10(), new[] { 1 }, 1);
+        var attackRoll = new DiceRollResult(DicePool.D10(), new[] { 1 });
 
         // Act
         var result = new CombatRoundResult(
@@ -58,10 +58,10 @@ public class CombatResultsTests
     public void CombatRoundResult_DamageReceived_ReturnsCounterAttackDamage()
     {
         // Arrange
-        var attackRoll = new DiceRollResult(DicePool.D10(), new[] { 7 }, 7);
-        var damageRoll = new DiceRollResult(DicePool.D6(), new[] { 4 }, 4);
-        var counterAttackRoll = new DiceRollResult(DicePool.D10(), new[] { 8 }, 8);
-        var counterDamageRoll = new DiceRollResult(DicePool.D6(), new[] { 5 }, 5);
+        var attackRoll = new DiceRollResult(DicePool.D10(), new[] { 7 });
+        var damageRoll = new DiceRollResult(DicePool.D6(), new[] { 4 });
+        var counterAttackRoll = new DiceRollResult(DicePool.D10(), new[] { 8 });
+        var counterDamageRoll = new DiceRollResult(DicePool.D6(), new[] { 5 });
 
         var counterAttack = new MonsterCounterAttackResult(
             counterAttackRoll, 12, true, false, false, counterDamageRoll, 6, false);
@@ -87,8 +87,8 @@ public class CombatResultsTests
     public void CombatRoundResult_CombatEnded_True_WhenMonsterDefeated()
     {
         // Arrange
-        var attackRoll = new DiceRollResult(DicePool.D10(), new[] { 8 }, 8);
-        var damageRoll = new DiceRollResult(DicePool.D6(), new[] { 6 }, 6);
+        var attackRoll = new DiceRollResult(DicePool.D10(), new[] { 8 });
+        var damageRoll = new DiceRollResult(DicePool.D6(), new[] { 6 });
 
         // Act
         var result = new CombatRoundResult(
@@ -111,8 +111,8 @@ public class CombatResultsTests
     public void MonsterCounterAttackResult_AttackSuccessLevel_ReturnsSuccess_OnHit()
     {
         // Arrange
-        var attackRoll = new DiceRollResult(DicePool.D10(), new[] { 7 }, 7);
-        var damageRoll = new DiceRollResult(DicePool.D6(), new[] { 4 }, 4);
+        var attackRoll = new DiceRollResult(DicePool.D10(), new[] { 7 });
+        var damageRoll = new DiceRollResult(DicePool.D6(), new[] { 4 });
 
         // Act
         var result = new MonsterCounterAttackResult(
@@ -126,8 +126,8 @@ public class CombatResultsTests
     public void CombatRoundResult_ToString_IncludesAttackResult()
     {
         // Arrange
-        var attackRoll = new DiceRollResult(DicePool.D10(), new[] { 10 }, 10);
-        var damageRoll = new DiceRollResult(DicePool.D6(), new[] { 6 }, 6);
+        var attackRoll = new DiceRollResult(DicePool.D10(), new[] { 10 });
+        var damageRoll = new DiceRollResult(DicePool.D6(), new[] { 6 });
 
         var result = new CombatRoundResult(
             attackRoll: attackRoll,

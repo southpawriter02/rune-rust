@@ -14,7 +14,7 @@ public class CombatantTests
     private static InitiativeRoll CreateInitiativeRoll(int rollValue, int modifier)
     {
         var pool = DicePool.D10();
-        var diceResult = new DiceRollResult(pool, [rollValue], rollValue);
+        var diceResult = new DiceRollResult(pool, [rollValue]);
         return new InitiativeRoll(diceResult, modifier);
     }
 

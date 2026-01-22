@@ -51,9 +51,9 @@ public class CombatServiceDiceTests
                 callCount++;
                 return callCount switch
                 {
-                    1 => new DiceRollResult(DicePool.D10(), new[] { 10 }, 10), // Player attack - crit
-                    2 => new DiceRollResult(DicePool.D6(), new[] { 4, 4 }, 8),  // Player damage
-                    _ => new DiceRollResult(DicePool.D10(), new[] { 5 }, 5)     // Any other roll
+                    1 => new DiceRollResult(DicePool.D10(), new[] { 10 }), // Player attack - crit
+                    2 => new DiceRollResult(DicePool.D6(), new[] { 4, 4 }),  // Player damage
+                    _ => new DiceRollResult(DicePool.D10(), new[] { 5 })     // Any other roll
                 };
             });
 
@@ -75,9 +75,9 @@ public class CombatServiceDiceTests
 
         // Setup dice to roll natural 1 for attack
         _diceServiceMock.SetupSequence(d => d.Roll(It.IsAny<DicePool>(), It.IsAny<AdvantageType>()))
-            .Returns(new DiceRollResult(DicePool.D10(), new[] { 1 }, 1)) // Attack - critical miss
-            .Returns(new DiceRollResult(DicePool.D10(), new[] { 5 }, 5)) // Monster attack roll
-            .Returns(new DiceRollResult(DicePool.D6(), new[] { 3 }, 3)); // Monster damage roll
+            .Returns(new DiceRollResult(DicePool.D10(), new[] { 1 })) // Attack - critical miss
+            .Returns(new DiceRollResult(DicePool.D10(), new[] { 5 })) // Monster attack roll
+            .Returns(new DiceRollResult(DicePool.D6(), new[] { 3 })); // Monster damage roll
 
         // Act
         var result = _combatService.ResolveCombatRound(player, monster, _diceServiceMock.Object);
@@ -97,9 +97,9 @@ public class CombatServiceDiceTests
 
         // Roll 7, with modifier = AttackTotal, verify hit succeeds
         _diceServiceMock.SetupSequence(d => d.Roll(It.IsAny<DicePool>(), It.IsAny<AdvantageType>()))
-            .Returns(new DiceRollResult(DicePool.D10(), new[] { 7 }, 7)) // Player attack
-            .Returns(new DiceRollResult(DicePool.D6(), new[] { 5 }, 5)) // Player damage
-            .Returns(new DiceRollResult(DicePool.D10(), new[] { 3 }, 3)); // Monster attack - misses
+            .Returns(new DiceRollResult(DicePool.D10(), new[] { 7 })) // Player attack
+            .Returns(new DiceRollResult(DicePool.D6(), new[] { 5 })) // Player damage
+            .Returns(new DiceRollResult(DicePool.D10(), new[] { 3 })); // Monster attack - misses
 
         // Act
         var result = _combatService.ResolveCombatRound(player, monster, _diceServiceMock.Object);
@@ -119,8 +119,8 @@ public class CombatServiceDiceTests
 
         // Setup high attack roll to ensure hit, and specific damage roll
         _diceServiceMock.SetupSequence(d => d.Roll(It.IsAny<DicePool>(), It.IsAny<AdvantageType>()))
-            .Returns(new DiceRollResult(DicePool.D10(), new[] { 8 }, 8)) // Attack - hits
-            .Returns(new DiceRollResult(DicePool.D6(), new[] { 4 }, 4)); // Damage - 4 + 5 Might - 2 armor = 7
+            .Returns(new DiceRollResult(DicePool.D10(), new[] { 8 })) // Attack - hits
+            .Returns(new DiceRollResult(DicePool.D6(), new[] { 4 })); // Damage - 4 + 5 Might - 2 armor = 7
 
         // Act
         var result = _combatService.ResolveCombatRound(player, monster, _diceServiceMock.Object);
@@ -139,8 +139,8 @@ public class CombatServiceDiceTests
 
         // High damage to kill monster
         _diceServiceMock.SetupSequence(d => d.Roll(It.IsAny<DicePool>(), It.IsAny<AdvantageType>()))
-            .Returns(new DiceRollResult(DicePool.D10(), new[] { 10 }, 10)) // Critical hit
-            .Returns(new DiceRollResult(DicePool.D6(), new[] { 6, 6 }, 12)); // Double damage dice
+            .Returns(new DiceRollResult(DicePool.D10(), new[] { 10 })) // Critical hit
+            .Returns(new DiceRollResult(DicePool.D6(), new[] { 6, 6 })); // Double damage dice
 
         // Act
         var result = _combatService.ResolveCombatRound(player, monster, _diceServiceMock.Object);
@@ -158,10 +158,10 @@ public class CombatServiceDiceTests
         var monster = CreateTestMonster(health: 100, attack: 8);
 
         _diceServiceMock.SetupSequence(d => d.Roll(It.IsAny<DicePool>(), It.IsAny<AdvantageType>()))
-            .Returns(new DiceRollResult(DicePool.D10(), new[] { 6 }, 6)) // Player attack
-            .Returns(new DiceRollResult(DicePool.D6(), new[] { 3 }, 3)) // Player damage
-            .Returns(new DiceRollResult(DicePool.D10(), new[] { 7 }, 7)) // Monster attack
-            .Returns(new DiceRollResult(DicePool.D6(), new[] { 4 }, 4)); // Monster damage
+            .Returns(new DiceRollResult(DicePool.D10(), new[] { 6 })) // Player attack
+            .Returns(new DiceRollResult(DicePool.D6(), new[] { 3 })) // Player damage
+            .Returns(new DiceRollResult(DicePool.D10(), new[] { 7 })) // Monster attack
+            .Returns(new DiceRollResult(DicePool.D6(), new[] { 4 })); // Monster damage
 
         // Act
         var result = _combatService.ResolveCombatRound(player, monster, _diceServiceMock.Object);
@@ -175,7 +175,7 @@ public class CombatServiceDiceTests
     public void GetCombatDescription_NormalMiss_IncludesMissMessage()
     {
         // Arrange
-        var attackRoll = new DiceRollResult(DicePool.D10(), new[] { 2 }, 2);
+        var attackRoll = new DiceRollResult(DicePool.D10(), new[] { 2 });
 
         var result = new CombatRoundResult(
             attackRoll: attackRoll,
@@ -200,8 +200,8 @@ public class CombatServiceDiceTests
     public void GetCombatDescription_CriticalHit_IncludesSpecialMessage()
     {
         // Arrange
-        var attackRoll = new DiceRollResult(DicePool.D10(), new[] { 10 }, 10);
-        var damageRoll = new DiceRollResult(DicePool.D6(), new[] { 5, 5 }, 10);
+        var attackRoll = new DiceRollResult(DicePool.D10(), new[] { 10 });
+        var damageRoll = new DiceRollResult(DicePool.D6(), new[] { 5, 5 });
 
         var result = new CombatRoundResult(
             attackRoll: attackRoll,
@@ -227,7 +227,7 @@ public class CombatServiceDiceTests
     public void GetCombatDescription_CriticalMiss_IncludesFumbleMessage()
     {
         // Arrange
-        var attackRoll = new DiceRollResult(DicePool.D10(), new[] { 1 }, 1);
+        var attackRoll = new DiceRollResult(DicePool.D10(), new[] { 1 });
 
         var result = new CombatRoundResult(
             attackRoll: attackRoll,
@@ -252,8 +252,8 @@ public class CombatServiceDiceTests
     public void GetCombatDescription_NormalHit_IncludesDamage()
     {
         // Arrange
-        var attackRoll = new DiceRollResult(DicePool.D10(), new[] { 7 }, 7);
-        var damageRoll = new DiceRollResult(DicePool.D6(), new[] { 4 }, 4);
+        var attackRoll = new DiceRollResult(DicePool.D10(), new[] { 7 });
+        var damageRoll = new DiceRollResult(DicePool.D6(), new[] { 4 });
 
         var result = new CombatRoundResult(
             attackRoll: attackRoll,

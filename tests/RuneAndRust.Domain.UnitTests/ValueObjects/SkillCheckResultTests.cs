@@ -12,7 +12,7 @@ public class SkillCheckResultTests
     {
         // Arrange
         var dicePool = new DicePool(1, DiceType.D10);
-        var diceResult = new DiceRollResult(dicePool, new[] { 7 }, 7);
+        var diceResult = new DiceRollResult(dicePool, new[] { 7 });
 
         // Act
         var result = new SkillCheckResult(
@@ -35,7 +35,7 @@ public class SkillCheckResultTests
     {
         // Arrange
         var dicePool = new DicePool(1, DiceType.D10);
-        var diceResult = new DiceRollResult(dicePool, new[] { 10 }, 10);
+        var diceResult = new DiceRollResult(dicePool, new[] { 10 });
 
         // Act
         var result = new SkillCheckResult(
@@ -56,7 +56,7 @@ public class SkillCheckResultTests
     {
         // Arrange
         var dicePool = new DicePool(1, DiceType.D10);
-        var diceResult = new DiceRollResult(dicePool, new[] { 1 }, 1);
+        var diceResult = new DiceRollResult(dicePool, new[] { 1 });
 
         // Act
         var result = new SkillCheckResult(
@@ -78,7 +78,7 @@ public class SkillCheckResultTests
     {
         // Arrange
         var dicePool = new DicePool(1, DiceType.D10);
-        var diceResult = new DiceRollResult(dicePool, new[] { 5 }, 5);
+        var diceResult = new DiceRollResult(dicePool, new[] { 5 });
 
         // Act
         var result = new SkillCheckResult(
@@ -100,7 +100,7 @@ public class SkillCheckResultTests
     {
         // Arrange
         var dicePool = new DicePool(1, DiceType.D10);
-        var diceResult = new DiceRollResult(dicePool, new[] { 8 }, 8);
+        var diceResult = new DiceRollResult(dicePool, new[] { 8 });
         var result = new SkillCheckResult(
             "perception", "Perception",
             diceResult,

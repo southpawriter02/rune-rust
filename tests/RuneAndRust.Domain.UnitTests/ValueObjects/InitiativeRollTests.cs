@@ -15,7 +15,7 @@ public class InitiativeRollTests
     {
         // Arrange
         var pool = DicePool.D10();
-        var diceResult = new DiceRollResult(pool, [7], 7);
+        var diceResult = new DiceRollResult(pool, [7]);
 
         // Act
         var initiative = new InitiativeRoll(diceResult, 3);
@@ -31,7 +31,7 @@ public class InitiativeRollTests
     {
         // Arrange
         var pool = DicePool.D10();
-        var diceResult = new DiceRollResult(pool, [5], 5);
+        var diceResult = new DiceRollResult(pool, [5]);
 
         // Act
         var initiative = new InitiativeRoll(diceResult, -2);
@@ -45,7 +45,7 @@ public class InitiativeRollTests
     {
         // Arrange
         var pool = DicePool.D10();
-        var diceResult = new DiceRollResult(pool, [8], 8);
+        var diceResult = new DiceRollResult(pool, [8]);
         var initiative = new InitiativeRoll(diceResult, 4);
 
         // Act
@@ -60,7 +60,7 @@ public class InitiativeRollTests
     {
         // Arrange
         var pool = DicePool.D10();
-        var diceResult = new DiceRollResult(pool, [6], 6);
+        var diceResult = new DiceRollResult(pool, [6]);
         var initiative = new InitiativeRoll(diceResult, -1);
 
         // Act
@@ -75,7 +75,7 @@ public class InitiativeRollTests
     {
         // Arrange
         var pool = DicePool.D10();
-        var diceResult = new DiceRollResult(pool, [10], 10); // 10 is max on d10
+        var diceResult = new DiceRollResult(pool, [10]); // 10 is max on d10
 
         // Act
         var initiative = new InitiativeRoll(diceResult, 0);
@@ -90,7 +90,7 @@ public class InitiativeRollTests
     {
         // Arrange
         var pool = DicePool.D10();
-        var diceResult = new DiceRollResult(pool, [1], 1);
+        var diceResult = new DiceRollResult(pool, [1]);
 
         // Act
         var initiative = new InitiativeRoll(diceResult, 0);

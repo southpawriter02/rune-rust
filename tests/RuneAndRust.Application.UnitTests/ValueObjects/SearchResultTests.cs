@@ -84,8 +84,7 @@ public class SearchResultTests
         // Create a dice roll result with the appropriate values
         var diceResult = new DiceRollResult(
             pool: dicePool,
-            rolls: [diceValue > 0 ? diceValue : 1],
-            total: diceValue > 0 ? diceValue : 1);
+            rolls: [diceValue > 0 ? diceValue : 1]);
 
         return new SkillCheckResult(
             skillId: "perception",

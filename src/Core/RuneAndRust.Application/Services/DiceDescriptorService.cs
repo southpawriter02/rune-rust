@@ -73,12 +73,13 @@ public class DiceDescriptorService
     /// <returns>Appropriate descriptor, or null if no special result.</returns>
     public string? GetDiceRollDescriptor(DiceRollResult result)
     {
-        if (result.IsNaturalMax)
+        // v0.15.0a: Use success-counting for critical detection
+        if (result.IsCriticalSuccess)
         {
             return GetDescriptor("dice.natural_max");
         }
 
-        if (result.IsNaturalOne)
+        if (result.IsFumble)
         {
             return GetDescriptor("dice.natural_one");
         }

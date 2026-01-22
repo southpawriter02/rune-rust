@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using RuneAndRust.Application.Interfaces;
+using RuneAndRust.Domain.Constants;
 using RuneAndRust.Domain.Entities;
 using RuneAndRust.Domain.Interfaces;
 using RuneAndRust.Domain.Enums;
@@ -9,17 +10,31 @@ using RuneAndRust.Domain.ValueObjects;
 namespace RuneAndRust.Application.Services;
 
 /// <summary>
-/// Core dice rolling service. Handles all randomization in the game.
+/// Core dice rolling service using success-counting mechanics.
 /// </summary>
 /// <remarks>
 /// <para>
-/// Supports standard dice pools, exploding dice, and advantage/disadvantage rolls.
-/// Accepts an optional Random instance for deterministic testing.
+/// Supports standard dice pools with success-counting, exploding dice,
+/// and advantage/disadvantage rolls.
+/// </para>
+/// <para>
+/// Success-counting mechanics:
+/// <list type="bullet">
+///   <item><description>Dice showing 8-10 count as successes</description></item>
+///   <item><description>Dice showing 1 count as botches</description></item>
+///   <item><description>Net successes = successes - botches (min 0)</description></item>
+///   <item><description>Fumble = 0 successes AND ≥1 botch</description></item>
+///   <item><description>Critical = net ≥ 5</description></item>
+/// </list>
 /// </para>
 /// <para>
 /// <b>v0.12.0b Update:</b> Added optional dice history tracking integration.
 /// When an IDiceHistoryService is provided and a Player is passed to Roll methods,
 /// rolls are automatically recorded to the player's dice history for statistics tracking.
+/// </para>
+/// <para>
+/// <b>v0.15.0a Update:</b> Refactored to success-counting mechanics.
+/// Advantage/disadvantage now compare NetSuccesses instead of raw totals.
 /// </para>
 /// </remarks>
 public class DiceService : IDiceService
@@ -48,66 +63,64 @@ public class DiceService : IDiceService
         _random = random ?? new Random();
         _eventLogger = eventLogger;
         _historyService = historyService;
-        _logger.LogInformation("DiceService initialized (history tracking: {HistoryEnabled})",
+        _logger.LogInformation(
+            "DiceService initialized with success-counting mechanics (history tracking: {HistoryEnabled})",
             historyService is not null);
     }
 
     /// <summary>
-    /// Rolls a dice pool and returns the result.
+    /// Rolls a dice pool and returns the result with success counts.
     /// </summary>
     /// <param name="pool">The dice pool to roll.</param>
     /// <param name="advantageType">Whether to roll with advantage or disadvantage.</param>
-    /// <returns>The complete roll result with breakdown.</returns>
+    /// <returns>The complete roll result with success-counting breakdown.</returns>
     public DiceRollResult Roll(DicePool pool, AdvantageType advantageType = AdvantageType.Normal)
     {
         _logger.LogDebug("Rolling {Pool} with {AdvantageType}", pool, advantageType);
 
         if (advantageType == AdvantageType.Normal)
         {
-            return RollOnce(pool, advantageType);
+            var result = RollOnce(pool, advantageType);
+            LogRollEvent(result);
+            return result;
         }
 
         // Roll twice for advantage/disadvantage
         var roll1 = RollOnce(pool, advantageType);
         var roll2 = RollOnce(pool, advantageType);
 
-        var allTotals = new[] { roll1.Total, roll2.Total };
+        // For success-counting, compare NetSuccesses (not Total)
+        var allNetSuccesses = new[] { roll1.NetSuccesses, roll2.NetSuccesses };
         var selectedIndex = advantageType == AdvantageType.Advantage
-            ? (roll1.Total >= roll2.Total ? 0 : 1)
-            : (roll1.Total <= roll2.Total ? 0 : 1);
+            ? (roll1.NetSuccesses >= roll2.NetSuccesses ? 0 : 1)
+            : (roll1.NetSuccesses <= roll2.NetSuccesses ? 0 : 1);
 
         var selectedRoll = selectedIndex == 0 ? roll1 : roll2;
 
-        var result = new DiceRollResult(
+        // Reconstruct with advantage info
+        var result2 = new DiceRollResult(
             pool,
             selectedRoll.Rolls,
-            selectedRoll.Total,
             advantageType,
             selectedRoll.ExplosionRolls,
-            allTotals,
+            allNetSuccesses,
             selectedIndex);
 
         _logger.LogInformation(
-            "Roll {Pool} ({AdvantageType}): [{Roll1}, {Roll2}] -> {Selected}",
-            pool, advantageType, roll1.Total, roll2.Total, result.Total);
+            "Roll {Pool} ({AdvantageType}): [{Roll1}, {Roll2}] net successes -> {Selected} selected",
+            pool, advantageType, roll1.NetSuccesses, roll2.NetSuccesses, result2.NetSuccesses);
 
-        _eventLogger?.LogDice("DiceRolled", $"{pool} = {result.Total}",
-            data: new Dictionary<string, object>
-            {
-                ["pool"] = pool.ToString(),
-                ["total"] = result.Total,
-                ["advantageType"] = advantageType.ToString()
-            });
+        LogRollEvent(result2);
 
-        return result;
+        return result2;
     }
 
     /// <summary>
     /// Parses dice notation and rolls.
     /// </summary>
-    /// <param name="notation">Dice notation (e.g., "3d6+5").</param>
+    /// <param name="notation">Dice notation (e.g., "3d10").</param>
     /// <param name="advantageType">Advantage/disadvantage.</param>
-    /// <returns>Roll result.</returns>
+    /// <returns>Roll result with success counts.</returns>
     /// <exception cref="FormatException">If notation is invalid.</exception>
     public DiceRollResult Roll(string notation, AdvantageType advantageType = AdvantageType.Normal)
     {
@@ -121,7 +134,7 @@ public class DiceService : IDiceService
     /// <param name="diceType">Type of die to roll.</param>
     /// <param name="count">Number of dice (default 1).</param>
     /// <param name="modifier">Modifier to add (default 0).</param>
-    /// <returns>Roll result.</returns>
+    /// <returns>Roll result with success counts.</returns>
     public DiceRollResult Roll(DiceType diceType, int count = 1, int modifier = 0)
     {
         var pool = new DicePool(count, diceType, modifier);
@@ -129,17 +142,40 @@ public class DiceService : IDiceService
     }
 
     /// <summary>
-    /// Quick roll returning just the total (for internal use).
+    /// Rolls a dice pool specifically for damage (sum-based, not success-counting).
     /// </summary>
     /// <param name="pool">The dice pool to roll.</param>
-    /// <returns>The total result.</returns>
+    /// <returns>Roll result; use RawTotal or Total for damage value.</returns>
+    /// <remarks>
+    /// Damage rolls use sum-based mechanics. Use the RawTotal property
+    /// for the damage value before modifiers, or Total for final damage.
+    /// </remarks>
+    public DiceRollResult RollDamage(DicePool pool)
+    {
+        var result = Roll(pool);
+        _logger.LogDebug("Damage roll {Pool}: {Total} total (raw: {RawTotal})", pool, result.Total, result.RawTotal);
+        return result;
+    }
+
+    /// <summary>
+    /// Quick roll returning net successes (for skill checks).
+    /// </summary>
+    /// <param name="pool">The dice pool to roll.</param>
+    /// <returns>The net success count.</returns>
+    public int RollNetSuccesses(DicePool pool) => Roll(pool).NetSuccesses;
+
+    /// <summary>
+    /// Quick roll returning just the raw total (for damage).
+    /// </summary>
+    /// <param name="pool">The dice pool to roll.</param>
+    /// <returns>The total result (sum-based).</returns>
     public int RollTotal(DicePool pool) => Roll(pool).Total;
 
     /// <summary>
     /// Quick roll from notation returning just the total.
     /// </summary>
     /// <param name="notation">Dice notation (e.g., "3d6+5").</param>
-    /// <returns>The total result.</returns>
+    /// <returns>The total result (sum-based).</returns>
     public int RollTotal(string notation) => Roll(notation).Total;
 
     // ═══════════════════════════════════════════════════════════════════════════
@@ -255,19 +291,20 @@ public class DiceService : IDiceService
             return;
         }
 
-        // Create a DiceRollRecord from the DiceRollResult
+        // Create a DiceRollRecord from the DiceRollResult using RawTotal for damage-like contexts
         var record = DiceRollRecord.Create(
             expression: result.Pool.ToString(),
-            result: result.Total,
+            result: result.RawTotal,
             rolls: result.Rolls.ToArray(),
             context: context);
 
         _historyService.RecordRoll(player, record);
 
         _logger.LogDebug(
-            "Recorded roll to history: {Expression} = {Result} for player {PlayerId}",
+            "Recorded roll to history: {Expression} = {Result} ({NetSuccesses} net successes) for player {PlayerId}",
             result.Pool,
-            result.Total,
+            result.RawTotal,
+            result.NetSuccesses,
             player.Id);
     }
 
@@ -280,51 +317,82 @@ public class DiceService : IDiceService
     /// </summary>
     private DiceRollResult RollOnce(DicePool pool, AdvantageType advantageType)
     {
+        // Enforce minimum pool size
+        var actualCount = Math.Max(DiceConstants.MinimumPool, pool.Count);
+        var actualPool = actualCount != pool.Count
+            ? new DicePool(actualCount, pool.DiceType, pool.Modifier, pool.Exploding, pool.MaxExplosions)
+            : pool;
+
         var rolls = new List<int>();
         var explosions = new List<int>();
 
         // Roll each die
-        for (var i = 0; i < pool.Count; i++)
+        for (var i = 0; i < actualPool.Count; i++)
         {
-            var roll = RollSingleDie(pool.Faces);
+            var roll = RollSingleDie(actualPool.Faces);
             rolls.Add(roll);
 
             // Handle exploding dice
-            if (pool.Exploding && roll == pool.Faces)
+            if (actualPool.Exploding && roll == actualPool.Faces)
             {
                 var explosionCount = 0;
                 var explosionRoll = roll;
 
-                while (explosionRoll == pool.Faces && explosionCount < pool.MaxExplosions)
+                while (explosionRoll == actualPool.Faces && explosionCount < actualPool.MaxExplosions)
                 {
-                    explosionRoll = RollSingleDie(pool.Faces);
+                    explosionRoll = RollSingleDie(actualPool.Faces);
                     explosions.Add(explosionRoll);
                     explosionCount++;
 
                     _logger.LogDebug(
                         "Die exploded! Roll {Explosion} on d{Faces} (explosion {Count})",
-                        explosionRoll, pool.Faces, explosionCount);
+                        explosionRoll, actualPool.Faces, explosionCount);
                 }
             }
         }
 
-        var diceTotal = rolls.Sum() + explosions.Sum();
-        var total = diceTotal + pool.Modifier;
-
-        _logger.LogDebug(
-            "Rolled {Pool}: dice=[{Rolls}] explosions=[{Explosions}] total={Total}",
-            pool, string.Join(",", rolls), string.Join(",", explosions), total);
-
-        return new DiceRollResult(
-            pool,
+        // Create result (constructor handles success counting)
+        var result = new DiceRollResult(
+            actualPool,
             rolls.AsReadOnly(),
-            total,
             advantageType,
             explosions.AsReadOnly());
+
+        _logger.LogDebug(
+            "Rolled {Pool}: dice=[{Rolls}] explosions=[{Explosions}] → {Successes}S - {Botches}B = {Net} net{Special}",
+            actualPool,
+            string.Join(",", rolls),
+            string.Join(",", explosions),
+            result.TotalSuccesses,
+            result.TotalBotches,
+            result.NetSuccesses,
+            result.IsFumble ? " [FUMBLE]" : result.IsCriticalSuccess ? " [CRITICAL]" : "");
+
+        return result;
     }
 
     /// <summary>
     /// Rolls a single die with the specified number of faces.
     /// </summary>
     private int RollSingleDie(int faces) => _random.Next(1, faces + 1);
+
+    /// <summary>
+    /// Logs a roll event to the game event logger if available.
+    /// </summary>
+    private void LogRollEvent(DiceRollResult result)
+    {
+        _eventLogger?.LogDice("DiceRolled", $"{result.Pool} → {result.NetSuccesses} net successes",
+            data: new Dictionary<string, object>
+            {
+                ["pool"] = result.Pool.ToString(),
+                ["rolls"] = result.Rolls.ToArray(),
+                ["totalSuccesses"] = result.TotalSuccesses,
+                ["totalBotches"] = result.TotalBotches,
+                ["netSuccesses"] = result.NetSuccesses,
+                ["isFumble"] = result.IsFumble,
+                ["isCriticalSuccess"] = result.IsCriticalSuccess,
+                ["rawTotal"] = result.RawTotal,
+                ["advantageType"] = result.AdvantageType.ToString()
+            });
+    }
 }

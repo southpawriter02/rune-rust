@@ -30,12 +30,22 @@ public readonly record struct InitiativeRoll(
     /// <summary>
     /// Gets whether this was a natural maximum roll (10 on d10).
     /// </summary>
+    /// <remarks>
+    /// Initiative uses sum-based mechanics; intentionally uses legacy property.
+    /// </remarks>
+#pragma warning disable CS0618 // IsNaturalMax intentionally used for sum-based initiative
     public bool IsNaturalMax => DiceResult.IsNaturalMax;
+#pragma warning restore CS0618
 
     /// <summary>
     /// Gets whether this was a natural minimum roll (1 on d10).
     /// </summary>
+    /// <remarks>
+    /// Initiative uses sum-based mechanics; intentionally uses legacy property.
+    /// </remarks>
+#pragma warning disable CS0618 // IsNaturalOne intentionally used for sum-based initiative
     public bool IsNaturalOne => DiceResult.IsNaturalOne;
+#pragma warning restore CS0618
 
     /// <summary>
     /// Creates a display string showing the initiative breakdown.

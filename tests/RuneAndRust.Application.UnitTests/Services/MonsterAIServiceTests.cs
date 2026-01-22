@@ -128,7 +128,7 @@ public class MonsterAIServiceTests
     {
         var pool = DicePool.D10();
         var initiative = new InitiativeRoll(
-            new DiceRollResult(pool, [5], 5),
+            new DiceRollResult(pool, [5]),
             monster.InitiativeModifier);
         return Combatant.ForMonster(monster, initiative, 0);
     }
@@ -137,7 +137,7 @@ public class MonsterAIServiceTests
     {
         var pool = DicePool.D10();
         var initiative = new InitiativeRoll(
-            new DiceRollResult(pool, [5], 5),
+            new DiceRollResult(pool, [5]),
             player.Attributes.Finesse);
         return Combatant.ForPlayer(player, initiative);
     }

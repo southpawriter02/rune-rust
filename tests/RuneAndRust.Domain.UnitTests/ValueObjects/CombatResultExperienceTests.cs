@@ -15,12 +15,12 @@ public class CombatResultExperienceTests
     {
         // Arrange & Act
         var result = new CombatRoundResult(
-            attackRoll: new DiceRollResult(DicePool.D10(), new[] { 5 }, 5),
+            attackRoll: new DiceRollResult(DicePool.D10(), new[] { 5 }),
             attackTotal: 10,
             isHit: true,
             isCriticalHit: false,
             isCriticalMiss: false,
-            damageRoll: new DiceRollResult(DicePool.D6(), new[] { 3 }, 3),
+            damageRoll: new DiceRollResult(DicePool.D6(), new[] { 3 }),
             damageDealt: 5,
             monsterCounterAttack: null,
             monsterDefeated: false,
@@ -35,12 +35,12 @@ public class CombatResultExperienceTests
     {
         // Arrange & Act
         var result = new CombatRoundResult(
-            attackRoll: new DiceRollResult(DicePool.D10(), new[] { 8 }, 8),
+            attackRoll: new DiceRollResult(DicePool.D10(), new[] { 8 }),
             attackTotal: 15,
             isHit: true,
             isCriticalHit: false,
             isCriticalMiss: false,
-            damageRoll: new DiceRollResult(DicePool.D6(), new[] { 6, 6 }, 12),
+            damageRoll: new DiceRollResult(DicePool.D6(), new[] { 6, 6 }),
             damageDealt: 12,
             monsterCounterAttack: null,
             monsterDefeated: true,
@@ -57,12 +57,12 @@ public class CombatResultExperienceTests
     {
         // Arrange & Act
         var result = new CombatRoundResult(
-            attackRoll: new DiceRollResult(DicePool.D10(), new[] { 7 }, 7),
+            attackRoll: new DiceRollResult(DicePool.D10(), new[] { 7 }),
             attackTotal: 12,
             isHit: true,
             isCriticalHit: false,
             isCriticalMiss: false,
-            damageRoll: new DiceRollResult(DicePool.D6(), new[] { 4 }, 4),
+            damageRoll: new DiceRollResult(DicePool.D6(), new[] { 4 }),
             damageDealt: 4,
             monsterCounterAttack: null,
             monsterDefeated: false,
@@ -79,7 +79,7 @@ public class CombatResultExperienceTests
     {
         // Arrange & Act
         var result = new CombatRoundResult(
-            attackRoll: new DiceRollResult(DicePool.D10(), new[] { 1 }, 1),
+            attackRoll: new DiceRollResult(DicePool.D10(), new[] { 1 }),
             attackTotal: 6,
             isHit: false,
             isCriticalHit: false,
@@ -102,23 +102,23 @@ public class CombatResultExperienceTests
     {
         // Arrange
         var counterAttack = new MonsterCounterAttackResult(
-            attackRoll: new DiceRollResult(DicePool.D10(), new[] { 6 }, 6),
+            attackRoll: new DiceRollResult(DicePool.D10(), new[] { 6 }),
             attackTotal: 8,
             isHit: true,
             isCriticalHit: false,
             isCriticalMiss: false,
-            damageRoll: new DiceRollResult(DicePool.D4(), new[] { 3 }, 3),
+            damageRoll: new DiceRollResult(DicePool.D4(), new[] { 3 }),
             damageDealt: 3,
             playerDefeated: false);
 
         // Act
         var result = new CombatRoundResult(
-            attackRoll: new DiceRollResult(DicePool.D10(), new[] { 10 }, 10),
+            attackRoll: new DiceRollResult(DicePool.D10(), new[] { 10 }),
             attackTotal: 17,
             isHit: true,
             isCriticalHit: true,
             isCriticalMiss: false,
-            damageRoll: new DiceRollResult(DicePool.D6(), new[] { 6, 5 }, 22),
+            damageRoll: new DiceRollResult(DicePool.D6(), new[] { 6, 5 }),
             damageDealt: 22,
             monsterCounterAttack: counterAttack,
             monsterDefeated: true,

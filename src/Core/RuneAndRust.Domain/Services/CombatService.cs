@@ -144,8 +144,11 @@ public class CombatService
         var attackRoll = diceService.Roll(DicePool.D10());
         var attackTotal = attackRoll.Total + effectiveFinesse + weaponAttackMod;
 
+        // Combat uses sum-based mechanics for damage; suppress obsolete warnings
+#pragma warning disable CS0618 // IsNaturalMax/IsNaturalOne intentionally used for damage rolls
         var isCriticalHit = attackRoll.IsNaturalMax;
         var isCriticalMiss = attackRoll.IsNaturalOne;
+#pragma warning restore CS0618
         var isHit = !isCriticalMiss && (attackTotal >= monster.Stats.Defense || isCriticalHit);
 
         _logger.LogDebug(
@@ -186,8 +189,11 @@ public class CombatService
         var attackModifier = monster.Stats.Attack;
         var attackTotal = attackRoll.Total + attackModifier;
 
+        // Combat uses sum-based mechanics for damage; suppress obsolete warnings
+#pragma warning disable CS0618 // IsNaturalMax/IsNaturalOne intentionally used for damage rolls
         var isCriticalHit = attackRoll.IsNaturalMax;
         var isCriticalMiss = attackRoll.IsNaturalOne;
+#pragma warning restore CS0618
         var isHit = !isCriticalMiss && (attackTotal >= player.Stats.Defense || isCriticalHit);
 
         _logger.LogDebug(

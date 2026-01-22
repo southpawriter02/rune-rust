@@ -51,7 +51,7 @@ public class DiceServiceTests
     #region Advantage/Disadvantage Tests
 
     [Test]
-    public void Roll_WithAdvantage_RollsTwiceAndTakesHigher()
+    public void Roll_WithAdvantage_RollsTwiceAndTakesHigherNetSuccesses()
     {
         // Use seeded random for deterministic result
         var seededRandom = new Random(42);
@@ -61,11 +61,12 @@ public class DiceServiceTests
 
         Assert.That(result.AdvantageType, Is.EqualTo(AdvantageType.Advantage));
         Assert.That(result.AllRollTotals, Has.Count.EqualTo(2));
-        Assert.That(result.Total, Is.EqualTo(result.AllRollTotals.Max()));
+        // v0.15.0a: AllRollTotals contains NetSuccesses, selected is the higher one
+        Assert.That(result.NetSuccesses, Is.EqualTo(result.AllRollTotals.Max()));
     }
 
     [Test]
-    public void Roll_WithDisadvantage_RollsTwiceAndTakesLower()
+    public void Roll_WithDisadvantage_RollsTwiceAndTakesLowerNetSuccesses()
     {
         var seededRandom = new Random(42);
         var service = new DiceService(_mockLogger.Object, seededRandom);
@@ -74,7 +75,8 @@ public class DiceServiceTests
 
         Assert.That(result.AdvantageType, Is.EqualTo(AdvantageType.Disadvantage));
         Assert.That(result.AllRollTotals, Has.Count.EqualTo(2));
-        Assert.That(result.Total, Is.EqualTo(result.AllRollTotals.Min()));
+        // v0.15.0a: AllRollTotals contains NetSuccesses, selected is the lower one
+        Assert.That(result.NetSuccesses, Is.EqualTo(result.AllRollTotals.Min()));
     }
 
     #endregion

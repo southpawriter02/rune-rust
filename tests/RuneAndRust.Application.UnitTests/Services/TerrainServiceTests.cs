@@ -253,10 +253,9 @@ public class TerrainServiceTests
         var mockResult = new DiceRollResult(
             pool: pool,
             rolls: new[] { 4 },
-            total: 4,
             advantageType: AdvantageType.Normal,
             explosionRolls: Array.Empty<int>(),
-            allRollTotals: new[] { 4 },
+            allRollTotals: new[] { 0 },  // NetSuccesses
             selectedRollIndex: 0);
         _mockDiceService
             .Setup(d => d.Roll(It.IsAny<string>(), It.IsAny<AdvantageType>()))

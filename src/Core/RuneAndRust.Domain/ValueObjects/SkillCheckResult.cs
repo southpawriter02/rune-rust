@@ -126,10 +126,11 @@ public readonly record struct SkillCheckResult
         int totalResult,
         int difficultyClass)
     {
-        if (diceResult.IsNaturalOne)
+        // v0.15.0a: Use new success-counting fumble/critical detection
+        if (diceResult.IsFumble)
             return SuccessLevel.CriticalFailure;
 
-        if (diceResult.IsNaturalMax)
+        if (diceResult.IsCriticalSuccess)
             return SuccessLevel.CriticalSuccess;
 
         return totalResult >= difficultyClass

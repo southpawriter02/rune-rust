@@ -88,7 +88,7 @@ public class DiceDescriptorServiceTests
     }
 
     [Test]
-    public void GetDiceRollDescriptor_WithNaturalMax_ReturnsDescriptor()
+    public void GetDiceRollDescriptor_WithCriticalSuccess_ReturnsDescriptor()
     {
         // Arrange
         var descriptors = new Dictionary<string, IReadOnlyList<string>>
@@ -97,14 +97,17 @@ public class DiceDescriptorServiceTests
         };
         SetupDescriptors(descriptors);
 
-        var pool = DicePool.D6();
-        var result = new DiceRollResult(pool, new[] { 6 }, 6); // Natural max for d6
+        // v0.15.0a: IsCriticalSuccess requires 5+ net successes
+        // Roll 5d10 all showing 8+ to get 5 successes
+        var pool = new DicePool(5, Domain.Enums.DiceType.D10);
+        var result = new DiceRollResult(pool, new[] { 8, 9, 10, 8, 9 }); // 5 successes
 
         // Act
         var descriptor = _service.GetDiceRollDescriptor(result);
 
         // Assert
         descriptor.Should().Be("Fortune smiles!");
+        result.IsCriticalSuccess.Should().BeTrue();
     }
 
     [Test]
@@ -118,7 +121,7 @@ public class DiceDescriptorServiceTests
         SetupDescriptors(descriptors);
 
         var pool = DicePool.D10();
-        var result = new DiceRollResult(pool, new[] { 1 }, 1); // Natural 1
+        var result = new DiceRollResult(pool, new[] { 1 }); // Natural 1
 
         // Act
         var descriptor = _service.GetDiceRollDescriptor(result);
@@ -137,9 +140,10 @@ public class DiceDescriptorServiceTests
         };
         SetupDescriptors(descriptors);
 
-        // Natural max (10 on d10) triggers critical success
-        var pool = DicePool.D10();
-        var diceResult = new DiceRollResult(pool, new[] { 10 }, 10);
+        // v0.15.0a: IsCriticalSuccess requires 5+ net successes
+        // Roll 5d10 all showing 8+ to get 5 successes
+        var pool = new DicePool(5, Domain.Enums.DiceType.D10);
+        var diceResult = new DiceRollResult(pool, new[] { 8, 9, 10, 8, 9 }); // 5 successes
         var result = new SkillCheckResult(
             "perception", "Perception", diceResult, 2, 0, 12, "Moderate");
 
@@ -163,7 +167,7 @@ public class DiceDescriptorServiceTests
 
         // Natural 1 on d10 triggers critical failure
         var pool = DicePool.D10();
-        var diceResult = new DiceRollResult(pool, new[] { 1 }, 1);
+        var diceResult = new DiceRollResult(pool, new[] { 1 });
         var result = new SkillCheckResult(
             "stealth", "Stealth", diceResult, 2, 0, 15, "Hard");
 
