@@ -1,15 +1,16 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Terrain Configuration",
-    "description": "Configuration schema for terrain definitions",
+    "description": "Configuration schema for terrain definitions with cover, visibility, hazards, and status effects. Supports tactical combat mechanics like cover bonuses, line-of-sight modifiers, and sophisticated hazard behaviors without code changes.",
     "type": "object",
     "properties": {
         "$schema": {
-            "type": "string"
+            "type": "string",
+            "description": "Reference to the JSON schema file for validation"
         },
         "terrainDefinitions": {
             "type": "array",
-            "description": "List of terrain type definitions",
+            "description": "List of terrain type definitions. Each terrain type defines movement, visibility, cover, hazards, and environmental effects.",
             "items": {
                 "$ref": "#/definitions/TerrainDefinition"
             }
@@ -18,23 +19,24 @@
     "required": [
         "terrainDefinitions"
     ],
+    "additionalProperties": false,
     "definitions": {
         "TerrainDefinition": {
             "type": "object",
-            "description": "A single terrain type definition",
+            "description": "A single terrain type definition with optional tactical properties. Supports cover levels, visibility modifiers, hazard effects with saving throws, and status effect application.",
             "properties": {
                 "id": {
                     "type": "string",
-                    "description": "Unique identifier for this terrain (lowercase kebab-case)",
+                    "description": "Unique identifier for this terrain (lowercase kebab-case). Must start with a letter and contain only lowercase letters, numbers, and hyphens.",
                     "pattern": "^[a-z][a-z0-9-]*$"
                 },
                 "name": {
                     "type": "string",
-                    "description": "Display name for the terrain"
+                    "description": "Display name for the terrain shown in UI and tooltips."
                 },
                 "type": {
                     "type": "string",
-                    "description": "Base terrain category",
+                    "description": "Base terrain category determining movement and hazard behavior.",
                     "enum": [
                         "Normal",
                         "Difficult",
@@ -44,40 +46,169 @@
                 },
                 "movementCostMultiplier": {
                     "type": "number",
-                    "description": "Movement cost multiplier (1.0 = normal)",
+                    "description": "Movement cost multiplier (1.0 = normal, 2.0 = difficult). Movement points required = base cost × multiplier.",
                     "minimum": 0,
                     "default": 1.0
                 },
                 "damageOnEntry": {
                     "type": "string",
-                    "description": "Dice expression for hazard damage (e.g., '1d6')"
+                    "description": "Dice expression for hazard damage (legacy field, prefer hazardEffect for new terrain). Format: NdS or NdS+M or NdS-M.",
+                    "pattern": "^[0-9]+d[0-9]+([+-][0-9]+)?$"
                 },
                 "damageType": {
                     "type": "string",
-                    "description": "Damage type ID for hazardous terrain"
+                    "description": "Damage type ID for hazardous terrain (legacy field). References damage-types configuration.",
+                    "pattern": "^[a-z][a-z0-9-]*$"
                 },
                 "blocksLOS": {
                     "type": "boolean",
-                    "description": "Whether this terrain blocks line of sight",
+                    "description": "Whether this terrain blocks line of sight completely. If true, visibilityModifier is effectively 0.0.",
                     "default": false
                 },
                 "displayChar": {
                     "type": "string",
-                    "description": "ASCII character for grid display",
+                    "description": "ASCII/Unicode character for grid display in TUI mode.",
                     "minLength": 1,
                     "maxLength": 1,
                     "default": "."
                 },
                 "description": {
                     "type": "string",
-                    "description": "Description for legends and tooltips"
+                    "description": "Description for legends, tooltips, and player information."
+                },
+                "coverLevel": {
+                    "type": "string",
+                    "description": "Level of cover provided by this terrain. None = +0 defense, Half = +2, ThreeQuarters = +4, Full = +6 or blocked.",
+                    "enum": [
+                        "None",
+                        "Half",
+                        "ThreeQuarters",
+                        "Full"
+                    ],
+                    "default": "None"
+                },
+                "visibilityModifier": {
+                    "type": "number",
+                    "description": "Visibility through this terrain (0.0 = opaque, 1.0 = clear). Used for perception checks and stealth. If blocksLOS is true, this is effectively 0.0.",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "default": 1.0
+                },
+                "providesConcealment": {
+                    "type": "boolean",
+                    "description": "Whether this terrain allows characters to hide. Enables stealth checks and provides miss chance against concealed targets.",
+                    "default": false
+                },
+                "hazardEffect": {
+                    "$ref": "#/definitions/HazardEffect",
+                    "description": "Detailed hazard configuration (alternative to damageOnEntry). Supports trigger timing, saving throws, and status effects."
+                },
+                "appliesStatusEffect": {
+                    "type": "string",
+                    "description": "Status effect ID applied when entering this terrain. References status-effects configuration.",
+                    "pattern": "^[a-z][a-z0-9-]*$"
+                },
+                "statusEffectChance": {
+                    "type": "number",
+                    "description": "Probability of applying status effect (0.0 to 1.0). Value of 0.5 means 50% chance.",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "default": 1.0
+                },
+                "tags": {
+                    "type": "array",
+                    "description": "Categorical tags for filtering terrain types. Common tags: hazardous, difficult, natural, constructed, light-source, warm, cold.",
+                    "items": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9-]*$"
+                    }
+                },
+                "biomeAssociations": {
+                    "type": "array",
+                    "description": "Biome IDs where this terrain commonly appears. Used for level generation and biome-specific terrain pools.",
+                    "items": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9-]*$"
+                    }
                 }
             },
             "required": [
                 "id",
                 "name",
                 "type"
-            ]
+            ],
+            "additionalProperties": false
+        },
+        "HazardEffect": {
+            "type": "object",
+            "description": "Detailed configuration for hazardous terrain effects. Defines trigger timing, damage expression, damage type, and optional saving throw for damage reduction.",
+            "properties": {
+                "triggerType": {
+                    "type": "string",
+                    "description": "When the hazard effect triggers. OnEntry = when stepping onto tile, PerTurn = each turn while on tile, OnExit = when leaving tile.",
+                    "enum": [
+                        "OnEntry",
+                        "PerTurn",
+                        "OnExit"
+                    ]
+                },
+                "damage": {
+                    "type": "string",
+                    "description": "Dice expression for damage (e.g., '1d6', '2d4+2'). Format: NdS or NdS+M or NdS-M.",
+                    "pattern": "^[0-9]+d[0-9]+([+-][0-9]+)?$"
+                },
+                "damageType": {
+                    "type": "string",
+                    "description": "Damage type ID (e.g., 'fire', 'acid', 'piercing'). References damage-types configuration.",
+                    "pattern": "^[a-z][a-z0-9-]*$"
+                },
+                "savingThrow": {
+                    "$ref": "#/definitions/SavingThrow",
+                    "description": "Optional saving throw to reduce or avoid damage. Omit for unavoidable hazards."
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Flavor text displayed when hazard triggers. Provides atmospheric feedback to player."
+                }
+            },
+            "required": [
+                "triggerType",
+                "damage",
+                "damageType"
+            ],
+            "additionalProperties": false
+        },
+        "SavingThrow": {
+            "type": "object",
+            "description": "Saving throw configuration for hazard avoidance. Defines which attribute to roll, the difficulty class, and whether success halves damage or negates it.",
+            "properties": {
+                "attribute": {
+                    "type": "string",
+                    "description": "Attribute used for the saving throw. might = brute force, fortitude = resistance, will = mental, wits = reaction, finesse = dodging.",
+                    "enum": [
+                        "might",
+                        "fortitude",
+                        "will",
+                        "wits",
+                        "finesse"
+                    ]
+                },
+                "dc": {
+                    "type": "integer",
+                    "description": "Difficulty class for the saving throw. Roll >= DC to succeed.",
+                    "minimum": 1
+                },
+                "halfOnSuccess": {
+                    "type": "boolean",
+                    "description": "Whether success reduces damage to half instead of negating it. True = half damage on success, false = no damage on success.",
+                    "default": true
+                }
+            },
+            "required": [
+                "attribute",
+                "dc"
+            ],
+            "additionalProperties": false
         }
     }
 }
