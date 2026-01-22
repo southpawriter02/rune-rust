@@ -39,33 +39,66 @@ namespace RuneAndRust.Application.Services;
 /// </remarks>
 public class DiceService : IDiceService
 {
-    private readonly Random _random;
+    private readonly IRandomProvider _randomProvider;
     private readonly ILogger<DiceService> _logger;
     private readonly IGameEventLogger? _eventLogger;
     private readonly IDiceHistoryService? _historyService;
 
     /// <summary>
-    /// Creates a new DiceService.
+    /// Creates a new DiceService with the specified random provider.
+    /// </summary>
+    /// <param name="randomProvider">The random number provider.</param>
+    /// <param name="logger">Logger instance for diagnostics.</param>
+    /// <param name="eventLogger">Optional game event logger for roll event tracking.</param>
+    /// <param name="historyService">
+    /// Optional dice history service for recording rolls to player statistics (v0.12.0b).
+    /// </param>
+    /// <remarks>
+    /// <para>
+    /// <b>v0.15.0b:</b> Primary constructor now uses <see cref="IRandomProvider"/> for
+    /// seeded random number generation with save/restore capability.
+    /// </para>
+    /// </remarks>
+    public DiceService(
+        IRandomProvider randomProvider,
+        ILogger<DiceService> logger,
+        IGameEventLogger? eventLogger = null,
+        IDiceHistoryService? historyService = null)
+    {
+        _randomProvider = randomProvider ?? throw new ArgumentNullException(nameof(randomProvider));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _eventLogger = eventLogger;
+        _historyService = historyService;
+        _logger.LogInformation(
+            "DiceService initialized with IRandomProvider (seed: {Seed}, history tracking: {HistoryEnabled})",
+            _randomProvider.GetCurrentSeed(), historyService is not null);
+    }
+
+    /// <summary>
+    /// Creates a new DiceService with a raw Random instance.
     /// </summary>
     /// <param name="logger">Logger instance for diagnostics.</param>
     /// <param name="random">Optional Random instance for deterministic testing.</param>
     /// <param name="eventLogger">Optional game event logger for roll event tracking.</param>
     /// <param name="historyService">
-    /// Optional dice history service for recording rolls to player statistics (v0.12.0b).
+    /// Optional dice history service for recording rolls to player statistics.
     /// </param>
+    /// <remarks>
+    /// This constructor exists for backward compatibility. New code should use the
+    /// constructor accepting <see cref="IRandomProvider"/>.
+    /// </remarks>
+    [Obsolete("Use constructor with IRandomProvider. This overload exists for backward compatibility.")]
     public DiceService(
         ILogger<DiceService> logger,
         Random? random = null,
         IGameEventLogger? eventLogger = null,
         IDiceHistoryService? historyService = null)
+        : this(
+            new RandomAdapter(random ?? new Random()),
+            logger,
+            eventLogger,
+            historyService)
     {
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _random = random ?? new Random();
-        _eventLogger = eventLogger;
-        _historyService = historyService;
-        _logger.LogInformation(
-            "DiceService initialized with success-counting mechanics (history tracking: {HistoryEnabled})",
-            historyService is not null);
     }
 
     /// <summary>
@@ -374,7 +407,7 @@ public class DiceService : IDiceService
     /// <summary>
     /// Rolls a single die with the specified number of faces.
     /// </summary>
-    private int RollSingleDie(int faces) => _random.Next(1, faces + 1);
+    private int RollSingleDie(int faces) => _randomProvider.Next(1, faces + 1);
 
     /// <summary>
     /// Logs a roll event to the game event logger if available.
@@ -395,4 +428,67 @@ public class DiceService : IDiceService
                 ["advantageType"] = result.AdvantageType.ToString()
             });
     }
+}
+
+/// <summary>
+/// Adapter to wrap System.Random in IRandomProvider interface.
+/// </summary>
+/// <remarks>
+/// <para>
+/// Provides backward compatibility for code using the old Random-based constructor.
+/// State management methods are no-ops since Random doesn't expose its internal state.
+/// </para>
+/// <para>
+/// SetSeed only tracks the seed value; it cannot actually reseed an existing Random.
+/// </para>
+/// </remarks>
+internal class RandomAdapter : IRandomProvider
+{
+    private readonly Random _random;
+    private int _seed;
+
+    /// <summary>
+    /// Creates a new RandomAdapter wrapping the specified Random instance.
+    /// </summary>
+    /// <param name="random">The Random to wrap.</param>
+    /// <param name="seed">Optional seed tracking value (default 0).</param>
+    public RandomAdapter(Random random, int seed = 0)
+    {
+        _random = random ?? throw new ArgumentNullException(nameof(random));
+        _seed = seed;
+    }
+
+    /// <inheritdoc />
+    public int Next(int minInclusive, int maxExclusive) => _random.Next(minInclusive, maxExclusive);
+
+    /// <inheritdoc />
+    public int[] NextMany(int count, int minInclusive, int maxExclusive)
+    {
+        if (count < 0)
+            throw new ArgumentOutOfRangeException(nameof(count));
+        if (count == 0)
+            return Array.Empty<int>();
+
+        var results = new int[count];
+        for (var i = 0; i < count; i++)
+        {
+            results[i] = _random.Next(minInclusive, maxExclusive);
+        }
+        return results;
+    }
+
+    /// <inheritdoc />
+    /// <remarks>Cannot actually reseed an existing Random; only tracks the value.</remarks>
+    public void SetSeed(int seed) => _seed = seed;
+
+    /// <inheritdoc />
+    public int GetCurrentSeed() => _seed;
+
+    /// <inheritdoc />
+    /// <remarks>No-op for RandomAdapter since Random doesn't expose state.</remarks>
+    public void SaveState() { }
+
+    /// <inheritdoc />
+    /// <remarks>No-op for RandomAdapter since Random doesn't expose state.</remarks>
+    public void RestoreState() { }
 }
