@@ -1,0 +1,223 @@
+{
+    "$schema": "./schemas/intimidation-targets.schema.json",
+    "version": "0.15.3d",
+    "description": "Configuration for intimidation target tiers, modifiers, and costs",
+
+    "targetTiers": [
+        {
+            "id": "Coward",
+            "baseDc": 8,
+            "displayName": "Coward",
+            "description": "Timid individuals who frighten easily",
+            "typicalResponse": "Immediate compliance, visible trembling",
+            "likelyToResist": false,
+            "examples": [
+                "Nervous merchants",
+                "Sheltered nobles",
+                "Inexperienced youth",
+                "Those already visibly afraid"
+            ]
+        },
+        {
+            "id": "Common",
+            "baseDc": 12,
+            "displayName": "Common",
+            "description": "Average individuals with normal resolve",
+            "typicalResponse": "Reluctant compliance, seeks help if possible",
+            "likelyToResist": false,
+            "examples": [
+                "Town guards (standard duty)",
+                "Craftsmen and laborers",
+                "Innkeepers and shopkeepers",
+                "Travelers and commoners"
+            ]
+        },
+        {
+            "id": "Veteran",
+            "baseDc": 16,
+            "displayName": "Veteran",
+            "description": "Battle-hardened individuals who have faced death",
+            "typicalResponse": "Assesses threat carefully, complies but with dignity",
+            "likelyToResist": true,
+            "examples": [
+                "Experienced soldiers",
+                "Seasoned mercenaries",
+                "Veteran guards (gate captains)",
+                "Criminals with violent history"
+            ]
+        },
+        {
+            "id": "Elite",
+            "baseDc": 20,
+            "displayName": "Elite",
+            "description": "Exceptional individuals with ironclad willpower",
+            "typicalResponse": "May counter-threaten before yielding, never forgets",
+            "likelyToResist": true,
+            "examples": [
+                "Champions and war heroes",
+                "Elite guard commanders",
+                "Notorious crime lords",
+                "Fanatical zealots"
+            ]
+        },
+        {
+            "id": "FactionLeader",
+            "baseDc": 24,
+            "displayName": "Faction Leader",
+            "description": "Leaders whose position demands fearlessness",
+            "typicalResponse": "Outraged compliance (if any), certain retribution",
+            "likelyToResist": true,
+            "examples": [
+                "Jarls and settlement rulers",
+                "Guild masters",
+                "Clan chieftains",
+                "High priests and war leaders"
+            ]
+        }
+    ],
+
+    "approaches": [
+        {
+            "id": "Physical",
+            "attribute": "MIGHT",
+            "displayName": "Physical Threat",
+            "description": "Uses physical presence and the threat of violence",
+            "exampleActions": [
+                "Looming over the target",
+                "Drawing or displaying weapon",
+                "Flexing muscles, cracking knuckles",
+                "Physical blocking of escape routes",
+                "Grabbing collar or slamming table"
+            ]
+        },
+        {
+            "id": "Mental",
+            "attribute": "WILL",
+            "displayName": "Mental Pressure",
+            "description": "Uses willpower and psychological pressure",
+            "exampleActions": [
+                "Cold, unflinching stare",
+                "Calm threats with implied doom",
+                "Referencing reputation or past deeds",
+                "Quiet certainty of violence to come",
+                "Mentioning what happened to the last one"
+            ]
+        }
+    ],
+
+    "playerDiceModifiers": [
+        {
+            "id": "WeakerTarget",
+            "condition": "Player level > NPC level + 1",
+            "modifier": 1,
+            "description": "Target feels outmatched"
+        },
+        {
+            "id": "HonoredReputation",
+            "condition": "Player has [Honored] with target's faction",
+            "modifier": 1,
+            "description": "NPC knows player's respectable deeds"
+        },
+        {
+            "id": "FearedReputation",
+            "condition": "Player has [Feared] with target's faction",
+            "modifier": 1,
+            "description": "NPC has heard frightening stories"
+        },
+        {
+            "id": "WieldingArtifact",
+            "condition": "Player is wielding a visible [Artifact] item",
+            "modifier": 1,
+            "description": "Legendary weapon adds to threat"
+        },
+        {
+            "id": "IntimidatingAlly",
+            "condition": "Intimidating ally present (Kriger, monster, etc.)",
+            "modifier": 1,
+            "description": "Ally adds to perceived threat"
+        }
+    ],
+
+    "npcDiceModifiers": [
+        {
+            "id": "StrongerTarget",
+            "condition": "NPC level > Player level + 1",
+            "modifier": 1,
+            "description": "NPC feels capable of handling threat"
+        },
+        {
+            "id": "HasBackup",
+            "condition": "NPC has visible allies nearby",
+            "modifier": 1,
+            "description": "NPC feels safer with numbers"
+        }
+    ],
+
+    "costOfFear": {
+        "description": "Intimidation ALWAYS costs faction reputation",
+        "costs": [
+            {
+                "outcome": "CriticalSuccess",
+                "reputationCost": -3,
+                "narrative": "Efficient display of dominance minimizes lasting damage"
+            },
+            {
+                "outcome": "Success",
+                "reputationCost": -5,
+                "narrative": "Word of threatening behavior spreads"
+            },
+            {
+                "outcome": "Failure",
+                "reputationCost": -10,
+                "narrative": "Failed threat makes you look weak and desperate"
+            },
+            {
+                "outcome": "Fumble",
+                "reputationCost": -10,
+                "narrative": "Catastrophic attempt becomes local gossip"
+            }
+        ]
+    },
+
+    "challengeAcceptedFumble": {
+        "id": "ChallengeAccepted",
+        "description": "NPC refuses to be cowed and attacks immediately",
+        "severity": "Severe",
+        "effects": [
+            {
+                "type": "CombatInitiation",
+                "initiator": "NPC",
+                "npcInitiativeBonus": 2
+            },
+            {
+                "type": "StatusEffect",
+                "target": "NPC",
+                "effectId": "Furious",
+                "duration": "EntireCombat",
+                "bonusDamageDice": 2
+            },
+            {
+                "type": "CombatRestriction",
+                "restriction": "NpcRefusesSurrender"
+            },
+            {
+                "type": "StressCost",
+                "target": "Player",
+                "stressType": "Psychic",
+                "amount": 5
+            }
+        ],
+        "narrativeTemplate": "\"You think you can threaten ME?\" {TargetName} snarls, eyes blazing with fury. They draw their weapon and attack without hesitation."
+    },
+
+    "furiousStatusEffect": {
+        "id": "Furious",
+        "type": "Buff",
+        "displayName": "Furious",
+        "description": "Consumed by righteous fury. +2d10 to all damage. Cannot be removed.",
+        "bonusDamageDice": 2,
+        "canBeDispelled": false,
+        "canBeCleansed": false,
+        "duration": "UntilCombatEnds"
+    }
+}
