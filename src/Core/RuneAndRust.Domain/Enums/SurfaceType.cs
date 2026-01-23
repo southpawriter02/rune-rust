@@ -16,6 +16,7 @@ namespace RuneAndRust.Domain.Enums;
 ///   <item><description>Wet: -1d10</description></item>
 ///   <item><description>Compromised: -2d10</description></item>
 ///   <item><description>Collapsing: -3d10</description></item>
+///   <item><description>Glitched: DC +2 (uses DC modifier instead of dice)</description></item>
 /// </list>
 /// </para>
 /// </remarks>
@@ -44,5 +45,15 @@ public enum SurfaceType
     /// <summary>
     /// Actively falling apart. -3d10 to climbing.
     /// </summary>
-    Collapsing = 4
+    Collapsing = 4,
+
+    /// <summary>
+    /// Corruption-affected surface with unstable reality.
+    /// </summary>
+    /// <remarks>
+    /// Unlike other surface types, Glitched surfaces apply a DC modifier (+2)
+    /// instead of modifying the dice pool. This represents the unpredictable
+    /// nature of climbing in areas affected by the Glitch.
+    /// </remarks>
+    Glitched = 5
 }

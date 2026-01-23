@@ -1,0 +1,152 @@
+{
+    "$schema": "./schemas/climbing-surfaces.schema.json",
+    "version": "0.15.2a",
+    "surfaceTypes": {
+        "stable": {
+            "name": "Stable",
+            "description": "Well-maintained surface with good handholds",
+            "diceModifier": 1,
+            "dcModifier": 0,
+            "examples": [
+                "Ladder rungs",
+                "Carved stone stairs",
+                "Maintained scaffolding"
+            ]
+        },
+        "normal": {
+            "name": "Normal",
+            "description": "Standard surface with no special conditions",
+            "diceModifier": 0,
+            "dcModifier": 0,
+            "examples": [
+                "Standard brick wall",
+                "Tree with branches",
+                "Rocky cliff face"
+            ]
+        },
+        "wet": {
+            "name": "Wet",
+            "description": "Slippery surface requiring extra caution",
+            "diceModifier": -1,
+            "dcModifier": 0,
+            "examples": [
+                "Rain-soaked wall",
+                "Moss-covered stone",
+                "Condensation on metal"
+            ]
+        },
+        "compromised": {
+            "name": "Compromised",
+            "description": "Damaged or unstable surface with crumbling handholds",
+            "diceModifier": -2,
+            "dcModifier": 0,
+            "examples": [
+                "Crumbling masonry",
+                "Rotted wood",
+                "Earthquake-damaged structure"
+            ]
+        },
+        "collapsing": {
+            "name": "Collapsing",
+            "description": "Actively falling apart, extremely dangerous",
+            "diceModifier": -3,
+            "dcModifier": 0,
+            "examples": [
+                "Collapsing building",
+                "Avalanche zone",
+                "Actively burning structure"
+            ]
+        },
+        "glitched": {
+            "name": "Glitched",
+            "description": "Corruption-affected surface with unstable reality",
+            "diceModifier": 0,
+            "dcModifier": 2,
+            "examples": [
+                "Walls in [Glitched] zones",
+                "Structures near Resonance sources"
+            ]
+        }
+    },
+    "equipmentModifiers": {
+        "climbingGear": {
+            "name": "Climbing Gear",
+            "description": "Rope, pitons, and harness",
+            "diceModifier": 1,
+            "requirements": []
+        },
+        "grapplingHook": {
+            "name": "Grappling Hook",
+            "description": "Hook and rope for vertical surfaces",
+            "diceModifier": 2,
+            "requirements": [
+                "verticalSurface"
+            ]
+        }
+    },
+    "armorPenalties": {
+        "none": {
+            "name": "No Armor",
+            "diceModifier": 0
+        },
+        "light": {
+            "name": "Light Armor",
+            "diceModifier": 0
+        },
+        "medium": {
+            "name": "Medium Armor",
+            "diceModifier": -1
+        },
+        "heavy": {
+            "name": "Heavy Armor",
+            "diceModifier": -4
+        }
+    },
+    "stageCalculation": {
+        "heights": [
+            {
+                "minHeight": 1,
+                "maxHeight": 20,
+                "stages": 1
+            },
+            {
+                "minHeight": 21,
+                "maxHeight": 40,
+                "stages": 2
+            },
+            {
+                "minHeight": 41,
+                "maxHeight": null,
+                "stages": 3
+            }
+        ],
+        "heightPerStage": {
+            "stage1": 20,
+            "stage2": 20,
+            "stage3": "remaining"
+        }
+    },
+    "outcomes": {
+        "criticalSuccess": {
+            "stagesAdvanced": 2,
+            "description": "Magnificent climb! You surge upward with incredible speed."
+        },
+        "success": {
+            "stagesAdvanced": 1,
+            "description": "You make steady progress up the surface."
+        },
+        "failure": {
+            "stagesLost": 1,
+            "description": "Your grip falters and you slip back down."
+        },
+        "fumble": {
+            "effect": "fall",
+            "fumbleType": "TheSlip",
+            "description": "You lose your grip entirely and plummet to the ground!"
+        }
+    },
+    "defaults": {
+        "baseDc": 2,
+        "minimumDicePool": 1
+    }
+}

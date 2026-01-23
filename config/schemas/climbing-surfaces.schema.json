@@ -1,0 +1,289 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "climbing-surfaces.schema.json",
+    "title": "Climbing Surfaces Configuration",
+    "description": "Configuration for climbing system surface types and modifiers (v0.15.2a)",
+    "type": "object",
+    "required": [
+        "version",
+        "surfaceTypes",
+        "equipmentModifiers",
+        "armorPenalties",
+        "stageCalculation",
+        "outcomes",
+        "defaults"
+    ],
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "JSON Schema reference"
+        },
+        "version": {
+            "type": "string",
+            "description": "Configuration version"
+        },
+        "surfaceTypes": {
+            "type": "object",
+            "description": "Surface type definitions with modifiers",
+            "additionalProperties": {
+                "$ref": "#/$defs/SurfaceTypeDefinition"
+            }
+        },
+        "equipmentModifiers": {
+            "type": "object",
+            "description": "Equipment bonus definitions",
+            "additionalProperties": {
+                "$ref": "#/$defs/EquipmentModifier"
+            }
+        },
+        "armorPenalties": {
+            "type": "object",
+            "description": "Armor penalty definitions",
+            "additionalProperties": {
+                "$ref": "#/$defs/ArmorPenalty"
+            }
+        },
+        "stageCalculation": {
+            "$ref": "#/$defs/StageCalculation"
+        },
+        "outcomes": {
+            "$ref": "#/$defs/Outcomes"
+        },
+        "defaults": {
+            "$ref": "#/$defs/Defaults"
+        }
+    },
+    "$defs": {
+        "SurfaceTypeDefinition": {
+            "type": "object",
+            "description": "Definition of a climbing surface type",
+            "required": [
+                "name",
+                "description",
+                "diceModifier",
+                "dcModifier"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "Display name of the surface type"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Description of the surface conditions"
+                },
+                "diceModifier": {
+                    "type": "integer",
+                    "minimum": -10,
+                    "maximum": 10,
+                    "description": "Dice pool modifier (+1 to -3 typical)"
+                },
+                "dcModifier": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 10,
+                    "description": "DC modifier (0 for most, +2 for Glitched)"
+                },
+                "examples": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "Example surfaces of this type"
+                }
+            }
+        },
+        "EquipmentModifier": {
+            "type": "object",
+            "description": "Equipment bonus definition",
+            "required": [
+                "name",
+                "description",
+                "diceModifier"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "Display name of the equipment"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Description of the equipment"
+                },
+                "diceModifier": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 10,
+                    "description": "Dice pool bonus from equipment"
+                },
+                "requirements": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "Requirements for equipment use"
+                }
+            }
+        },
+        "ArmorPenalty": {
+            "type": "object",
+            "description": "Armor penalty definition",
+            "required": [
+                "name",
+                "diceModifier"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "Display name of the armor category"
+                },
+                "diceModifier": {
+                    "type": "integer",
+                    "maximum": 0,
+                    "description": "Dice pool penalty from armor (negative or 0)"
+                }
+            }
+        },
+        "StageCalculation": {
+            "type": "object",
+            "description": "Stage calculation configuration",
+            "required": [
+                "heights",
+                "heightPerStage"
+            ],
+            "properties": {
+                "heights": {
+                    "type": "array",
+                    "description": "Height-to-stage mapping",
+                    "items": {
+                        "type": "object",
+                        "required": [
+                            "minHeight",
+                            "stages"
+                        ],
+                        "properties": {
+                            "minHeight": {
+                                "type": "integer",
+                                "minimum": 1,
+                                "description": "Minimum height for this stage count"
+                            },
+                            "maxHeight": {
+                                "type": [
+                                    "integer",
+                                    "null"
+                                ],
+                                "description": "Maximum height (null for unlimited)"
+                            },
+                            "stages": {
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 3,
+                                "description": "Number of stages required"
+                            }
+                        }
+                    }
+                },
+                "heightPerStage": {
+                    "type": "object",
+                    "description": "Height gained per stage"
+                }
+            }
+        },
+        "Outcomes": {
+            "type": "object",
+            "description": "Outcome definitions",
+            "required": [
+                "criticalSuccess",
+                "success",
+                "failure",
+                "fumble"
+            ],
+            "properties": {
+                "criticalSuccess": {
+                    "type": "object",
+                    "required": [
+                        "stagesAdvanced",
+                        "description"
+                    ],
+                    "properties": {
+                        "stagesAdvanced": {
+                            "type": "integer"
+                        },
+                        "description": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "success": {
+                    "type": "object",
+                    "required": [
+                        "stagesAdvanced",
+                        "description"
+                    ],
+                    "properties": {
+                        "stagesAdvanced": {
+                            "type": "integer"
+                        },
+                        "description": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "failure": {
+                    "type": "object",
+                    "required": [
+                        "stagesLost",
+                        "description"
+                    ],
+                    "properties": {
+                        "stagesLost": {
+                            "type": "integer"
+                        },
+                        "description": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "fumble": {
+                    "type": "object",
+                    "required": [
+                        "effect",
+                        "fumbleType",
+                        "description"
+                    ],
+                    "properties": {
+                        "effect": {
+                            "type": "string"
+                        },
+                        "fumbleType": {
+                            "type": "string"
+                        },
+                        "description": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "Defaults": {
+            "type": "object",
+            "description": "Default values",
+            "required": [
+                "baseDc",
+                "minimumDicePool"
+            ],
+            "properties": {
+                "baseDc": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "Default base DC for climbing checks"
+                },
+                "minimumDicePool": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "Minimum dice pool after all modifiers"
+                }
+            }
+        }
+    }
+}
