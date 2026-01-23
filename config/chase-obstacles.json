@@ -1,0 +1,286 @@
+{
+    "$schema": "./schemas/chase-obstacles.schema.json",
+    "version": "0.15.2e",
+    "description": "Chase obstacle configuration for dynamic obstacle generation during chase sequences",
+    "distanceTrack": {
+        "caught": 0,
+        "escaped": 6,
+        "defaultStart": 3,
+        "minStart": 1,
+        "maxStart": 5,
+        "zones": [
+            {
+                "range": [
+                    0,
+                    0
+                ],
+                "name": "Caught",
+                "description": "Pursuer has caught the fleeing character"
+            },
+            {
+                "range": [
+                    1,
+                    1
+                ],
+                "name": "Close",
+                "description": "Pursuer can attempt capture"
+            },
+            {
+                "range": [
+                    2,
+                    3
+                ],
+                "name": "Near",
+                "description": "Within striking distance"
+            },
+            {
+                "range": [
+                    4,
+                    5
+                ],
+                "name": "Far",
+                "description": "Fleeing character pulling ahead"
+            },
+            {
+                "range": [
+                    6,
+                    99
+                ],
+                "name": "Lost",
+                "description": "Fleeing character has escaped"
+            }
+        ]
+    },
+    "distanceChanges": {
+        "criticalSuccess": 2,
+        "success": 1,
+        "failure": -1,
+        "criticalFailure": -2,
+        "description": "Positive values increase distance (favor fleeing), inverted for pursuer"
+    },
+    "obstacleTypes": [
+        {
+            "id": "gap",
+            "name": "Gap",
+            "skillRequired": "Acrobatics",
+            "baseDcRange": [
+                2,
+                4
+            ],
+            "descriptions": {
+                "default": {
+                    "success": "You clear the gap with a powerful leap.",
+                    "failure": "You misjudge the gap and lose momentum."
+                },
+                "variations": [
+                    {
+                        "tag": "rooftop",
+                        "description": "rooftop gap",
+                        "success": "You vault across the rooftop gap without breaking stride.",
+                        "failure": "The gap is wider than expected; you scramble for the edge."
+                    },
+                    {
+                        "tag": "industrial",
+                        "description": "broken walkway",
+                        "success": "You leap across the missing section of walkway.",
+                        "failure": "The rusted metal gives way as you jump."
+                    }
+                ]
+            }
+        },
+        {
+            "id": "climb",
+            "name": "Climb",
+            "skillRequired": "Acrobatics",
+            "baseDcRange": [
+                2,
+                4
+            ],
+            "descriptions": {
+                "default": {
+                    "success": "You scale the obstacle without breaking stride.",
+                    "failure": "You slip and lose precious seconds."
+                },
+                "variations": [
+                    {
+                        "tag": "urban",
+                        "description": "chain-link fence",
+                        "success": "You vault the fence in one fluid motion.",
+                        "failure": "Your coat catches on the fence wire."
+                    },
+                    {
+                        "tag": "industrial",
+                        "description": "rusty scaffolding",
+                        "success": "You scramble up the scaffolding with practiced ease.",
+                        "failure": "A rung breaks under your weight."
+                    }
+                ]
+            }
+        },
+        {
+            "id": "debris",
+            "name": "Debris",
+            "skillRequired": "Acrobatics",
+            "baseDcRange": [
+                2,
+                3
+            ],
+            "descriptions": {
+                "default": {
+                    "success": "You weave through the debris with nimble footwork.",
+                    "failure": "The debris trips you up momentarily."
+                },
+                "variations": [
+                    {
+                        "tag": "market",
+                        "description": "overturned market stalls",
+                        "success": "You slide across an upturned table and keep running.",
+                        "failure": "Scattered goods tangle your feet."
+                    },
+                    {
+                        "tag": "construction",
+                        "description": "construction materials",
+                        "success": "You dance through the maze of pipes and beams.",
+                        "failure": "You clip a stack of pipes, sending them clattering."
+                    }
+                ]
+            }
+        },
+        {
+            "id": "crowd",
+            "name": "Crowd",
+            "skillRequired": "Acrobatics",
+            "baseDcRange": [
+                3,
+                4
+            ],
+            "descriptions": {
+                "default": {
+                    "success": "You slip through the crowd like water.",
+                    "failure": "The crowd slows you down as you push through."
+                },
+                "variations": [
+                    {
+                        "tag": "market",
+                        "description": "busy shoppers",
+                        "success": "You weave between shoppers with reflexive grace.",
+                        "failure": "An oblivious shopper steps directly into your path."
+                    },
+                    {
+                        "tag": "transit",
+                        "description": "rush hour commuters",
+                        "success": "You flow with the human current, using it to your advantage.",
+                        "failure": "The wall of commuters is nearly impassable."
+                    }
+                ]
+            }
+        },
+        {
+            "id": "hazard",
+            "name": "Hazard",
+            "skillRequired": "Acrobatics",
+            "baseDcRange": [
+                2,
+                5
+            ],
+            "descriptions": {
+                "default": {
+                    "success": "You dodge the hazard with split-second timing.",
+                    "failure": "The hazard forces you to take a longer route."
+                },
+                "variations": [
+                    {
+                        "tag": "industrial",
+                        "description": "steam vent",
+                        "success": "You time your dash perfectly between bursts of scalding steam.",
+                        "failure": "A jet of steam forces you back."
+                    },
+                    {
+                        "tag": "construction",
+                        "description": "swinging crane load",
+                        "success": "You duck under the swinging cargo at the last moment.",
+                        "failure": "You have to wait for the crane to pass."
+                    }
+                ]
+            }
+        }
+    ],
+    "environments": [
+        {
+            "id": "rooftop",
+            "name": "Rooftops",
+            "weightedObstacles": {
+                "gap": 40,
+                "climb": 30,
+                "debris": 15,
+                "hazard": 15
+            }
+        },
+        {
+            "id": "market",
+            "name": "Marketplace",
+            "weightedObstacles": {
+                "crowd": 40,
+                "debris": 35,
+                "climb": 15,
+                "gap": 10
+            }
+        },
+        {
+            "id": "industrial",
+            "name": "Industrial Zone",
+            "weightedObstacles": {
+                "hazard": 30,
+                "climb": 25,
+                "debris": 25,
+                "gap": 20
+            }
+        },
+        {
+            "id": "transit",
+            "name": "Transit Hub",
+            "weightedObstacles": {
+                "crowd": 45,
+                "debris": 25,
+                "hazard": 20,
+                "climb": 10
+            }
+        }
+    ],
+    "chaseOutcomes": {
+        "caught": {
+            "name": "Caught",
+            "description": "The pursuer has caught the fleeing character",
+            "narrativeTemplates": [
+                "{pursuer} tackles {fleeing} to the ground!",
+                "{pursuer} grabs {fleeing} by the collar!",
+                "{fleeing} is cornered with nowhere to run!"
+            ]
+        },
+        "escaped": {
+            "name": "Escaped",
+            "description": "The fleeing character has escaped",
+            "narrativeTemplates": [
+                "{fleeing} disappears into the shadows!",
+                "{pursuer} loses sight of {fleeing} in the crowd!",
+                "{fleeing} rounds a corner and vanishes!"
+            ]
+        },
+        "abandoned": {
+            "name": "Abandoned",
+            "description": "The chase was abandoned",
+            "narrativeTemplates": [
+                "{abandoner} gives up the chase.",
+                "{abandoner} stops running, gasping for breath."
+            ]
+        },
+        "timedOut": {
+            "name": "Timed Out",
+            "description": "The chase reached its maximum duration",
+            "narrativeTemplates": [
+                "Both participants are exhausted; the chase ends inconclusively.",
+                "External circumstances force the chase to end."
+            ]
+        }
+    }
+}

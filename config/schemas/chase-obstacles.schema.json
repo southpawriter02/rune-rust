@@ -1,0 +1,272 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "chase-obstacles.schema.json",
+    "title": "Chase Obstacles Configuration",
+    "description": "Configuration for chase sequence obstacles and mechanics",
+    "type": "object",
+    "required": [
+        "version",
+        "distanceTrack",
+        "distanceChanges",
+        "obstacleTypes"
+    ],
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "JSON Schema reference"
+        },
+        "version": {
+            "type": "string",
+            "description": "Configuration version",
+            "pattern": "^\\d+\\.\\d+\\.\\d+[a-z]?$"
+        },
+        "description": {
+            "type": "string",
+            "description": "Human-readable description of this configuration"
+        },
+        "distanceTrack": {
+            "type": "object",
+            "description": "Configuration for the chase distance track",
+            "required": [
+                "caught",
+                "escaped",
+                "defaultStart",
+                "zones"
+            ],
+            "properties": {
+                "caught": {
+                    "type": "integer",
+                    "description": "Distance threshold for caught status",
+                    "minimum": 0,
+                    "maximum": 0
+                },
+                "escaped": {
+                    "type": "integer",
+                    "description": "Distance threshold for escaped status",
+                    "minimum": 4,
+                    "maximum": 10
+                },
+                "defaultStart": {
+                    "type": "integer",
+                    "description": "Default starting distance",
+                    "minimum": 1,
+                    "maximum": 5
+                },
+                "minStart": {
+                    "type": "integer",
+                    "description": "Minimum valid starting distance",
+                    "minimum": 1
+                },
+                "maxStart": {
+                    "type": "integer",
+                    "description": "Maximum valid starting distance",
+                    "maximum": 5
+                },
+                "zones": {
+                    "type": "array",
+                    "description": "Distance zones for narrative purposes",
+                    "items": {
+                        "type": "object",
+                        "required": [
+                            "range",
+                            "name",
+                            "description"
+                        ],
+                        "properties": {
+                            "range": {
+                                "type": "array",
+                                "items": {
+                                    "type": "integer"
+                                },
+                                "minItems": 2,
+                                "maxItems": 2
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "distanceChanges": {
+            "type": "object",
+            "description": "Distance change values for different outcomes",
+            "required": [
+                "criticalSuccess",
+                "success",
+                "failure",
+                "criticalFailure"
+            ],
+            "properties": {
+                "criticalSuccess": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "success": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "failure": {
+                    "type": "integer",
+                    "maximum": -1
+                },
+                "criticalFailure": {
+                    "type": "integer",
+                    "maximum": -1
+                },
+                "description": {
+                    "type": "string"
+                }
+            }
+        },
+        "obstacleTypes": {
+            "type": "array",
+            "description": "Available obstacle type definitions",
+            "items": {
+                "type": "object",
+                "required": [
+                    "id",
+                    "name",
+                    "skillRequired",
+                    "baseDcRange",
+                    "descriptions"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "description": "Unique identifier for the obstacle type",
+                        "pattern": "^[a-z][a-z0-9-]*$"
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "Display name for the obstacle"
+                    },
+                    "skillRequired": {
+                        "type": "string",
+                        "description": "Skill used for the check"
+                    },
+                    "baseDcRange": {
+                        "type": "array",
+                        "description": "Range for random DC generation [min, max]",
+                        "items": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 10
+                        },
+                        "minItems": 2,
+                        "maxItems": 2
+                    },
+                    "descriptions": {
+                        "type": "object",
+                        "description": "Narrative descriptions for success/failure",
+                        "required": [
+                            "default"
+                        ],
+                        "properties": {
+                            "default": {
+                                "type": "object",
+                                "required": [
+                                    "success",
+                                    "failure"
+                                ],
+                                "properties": {
+                                    "success": {
+                                        "type": "string"
+                                    },
+                                    "failure": {
+                                        "type": "string"
+                                    }
+                                }
+                            },
+                            "variations": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "required": [
+                                        "tag",
+                                        "description",
+                                        "success",
+                                        "failure"
+                                    ],
+                                    "properties": {
+                                        "tag": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "success": {
+                                            "type": "string"
+                                        },
+                                        "failure": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "environments": {
+            "type": "array",
+            "description": "Environment configurations with weighted obstacle selection",
+            "items": {
+                "type": "object",
+                "required": [
+                    "id",
+                    "name",
+                    "weightedObstacles"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9-]*$"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "weightedObstacles": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 100
+                        }
+                    }
+                }
+            }
+        },
+        "chaseOutcomes": {
+            "type": "object",
+            "description": "Narrative templates for chase outcomes",
+            "additionalProperties": {
+                "type": "object",
+                "required": [
+                    "name",
+                    "description",
+                    "narrativeTemplates"
+                ],
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "narrativeTemplates": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
