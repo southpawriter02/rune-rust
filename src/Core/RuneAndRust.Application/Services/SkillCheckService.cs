@@ -108,6 +108,122 @@ public class SkillCheckService
         return result;
     }
 
+    // ═══════════════════════════════════════════════════════════════════════════
+    // CONTEXT-AWARE SKILL CHECK (v0.15.1a)
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// Performs a skill check with full context modifiers.
+    /// </summary>
+    /// <param name="player">The player making the check.</param>
+    /// <param name="skillId">The skill identifier.</param>
+    /// <param name="difficultyClass">Base difficulty class.</param>
+    /// <param name="difficultyName">Difficulty name for display.</param>
+    /// <param name="context">Skill context with all modifiers.</param>
+    /// <param name="advantageType">Advantage or disadvantage.</param>
+    /// <returns>The complete skill check result.</returns>
+    /// <remarks>
+    /// <para>
+    /// v0.15.1a: New method that accepts a <see cref="SkillContext"/> containing
+    /// equipment, situational, environment, and target modifiers.
+    /// </para>
+    /// <para>
+    /// Context modifiers affect:
+    /// <list type="bullet">
+    ///   <item><description>Dice pool: TotalDiceModifier added to base pool (minimum 1 die)</description></item>
+    ///   <item><description>Difficulty class: TotalDcModifier added to base DC (minimum 0)</description></item>
+    /// </list>
+    /// </para>
+    /// </remarks>
+    public SkillCheckResult PerformCheckWithContext(
+        Player player,
+        string skillId,
+        int difficultyClass,
+        string difficultyName,
+        SkillContext context,
+        AdvantageType advantageType = AdvantageType.Normal)
+    {
+        ArgumentNullException.ThrowIfNull(player);
+        ArgumentException.ThrowIfNullOrWhiteSpace(skillId, nameof(skillId));
+        ArgumentNullException.ThrowIfNull(context);
+
+        if (difficultyClass < 0)
+            throw new ArgumentOutOfRangeException(nameof(difficultyClass), "Difficulty class must be non-negative");
+
+        _logger.LogDebug(
+            "Performing skill check with context: Player={Player}, Skill={Skill}, BaseDC={DC}, Context={Context}",
+            player.Name, skillId, difficultyClass, context);
+
+        var skill = _configProvider.GetSkillById(skillId)
+            ?? throw new ArgumentException($"Unknown skill: {skillId}", nameof(skillId));
+
+        var attributeBonus = CalculateAttributeBonus(player, skill);
+        var otherBonus = CalculateOtherBonus(player, skill, 0);
+
+        // Apply context modifiers
+        var contextDiceBonus = context.TotalDiceModifier;
+        var contextDcMod = context.TotalDcModifier;
+
+        // Build dice pool: base pool + context bonus (minimum 1 die)
+        var baseDicePool = DicePool.Parse(skill.BaseDicePool);
+        var totalDice = baseDicePool.Count + contextDiceBonus;
+        var finalPoolSize = Math.Max(1, totalDice);
+        var dicePool = new DicePool(finalPoolSize, baseDicePool.DiceType);
+
+        // Apply DC modification (minimum 0)
+        var finalDc = Math.Max(0, difficultyClass + contextDcMod);
+        var finalDcName = contextDcMod != 0
+            ? $"{difficultyName} (modified)"
+            : difficultyName;
+
+        _logger.LogDebug(
+            "Final check parameters: Pool={Pool} (base {Base} + context {ContextDice}), DC={DC} (base {BaseDC} + context {ContextDC})",
+            finalPoolSize, baseDicePool.Count, contextDiceBonus,
+            finalDc, difficultyClass, contextDcMod);
+
+        var rollResult = _diceService.Roll(dicePool, advantageType);
+
+        var result = new SkillCheckResult(
+            skill.Id,
+            skill.Name,
+            rollResult,
+            attributeBonus,
+            otherBonus + contextDiceBonus,  // Include context bonus in "other"
+            finalDc,
+            finalDcName);
+
+        LogCheckResult(result, context);
+        return result;
+    }
+
+    /// <summary>
+    /// Logs the check result with context information.
+    /// </summary>
+    private void LogCheckResult(SkillCheckResult result, SkillContext? context)
+    {
+        var level = result.IsCritical ? LogLevel.Information : LogLevel.Debug;
+
+        _logger.Log(level,
+            "Skill check complete: Skill={Skill} Net={Net} ({Successes}S-{Botches}B) DC={DC} Outcome={Outcome} Margin={Margin}",
+            result.SkillName,
+            result.NetSuccesses,
+            result.DiceResult.TotalSuccesses,
+            result.DiceResult.TotalBotches,
+            result.DifficultyClass,
+            result.Outcome,
+            result.Margin);
+
+        if (context?.HasModifiers == true)
+        {
+            _logger.LogDebug("Applied modifiers:\n{Modifiers}", context.ToDescription());
+        }
+
+        if (result.IsFumble)
+            _logger.LogInformation("FUMBLE on {Skill}!", result.SkillName);
+        else if (result.IsCriticalSuccess)
+            _logger.LogInformation("CRITICAL SUCCESS on {Skill}!", result.SkillName);
+    }
+
     /// <summary>
     /// Performs a contested skill check between two players.
     /// </summary>

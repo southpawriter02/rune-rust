@@ -1,0 +1,86 @@
+{
+    "equipmentModifiers": [
+        {
+            "equipmentId": "tinkers-toolkit",
+            "name": "Tinker's Toolkit",
+            "diceModifier": 2,
+            "dcModifier": 0,
+            "category": "Tool",
+            "skills": [
+                "system-bypass",
+                "lockpicking",
+                "trap-disarm"
+            ],
+            "description": "A comprehensive toolkit for bypassing mechanical and electronic systems."
+        },
+        {
+            "equipmentId": "lockpicks-basic",
+            "name": "Basic Lockpicks",
+            "diceModifier": 0,
+            "dcModifier": 0,
+            "category": "Tool",
+            "skills": [
+                "lockpicking"
+            ],
+            "requiredForCheck": true,
+            "description": "Simple lockpicking tools. Required for lockpicking attempts."
+        },
+        {
+            "equipmentId": "lockpicks-quality",
+            "name": "Quality Lockpicks",
+            "diceModifier": 1,
+            "dcModifier": 0,
+            "category": "Tool",
+            "skills": [
+                "lockpicking"
+            ],
+            "requiredForCheck": true,
+            "description": "Well-crafted lockpicks that improve success chances."
+        },
+        {
+            "equipmentId": "climbing-gear",
+            "name": "Climbing Gear",
+            "diceModifier": 1,
+            "dcModifier": 0,
+            "category": "Tool",
+            "skills": [
+                "acrobatics-climb"
+            ],
+            "description": "Ropes, pitons, and carabiners for safer climbing."
+        },
+        {
+            "equipmentId": "magnifying-glass",
+            "name": "Magnifying Glass",
+            "diceModifier": 1,
+            "dcModifier": 0,
+            "category": "Tool",
+            "skills": [
+                "examination",
+                "perception"
+            ],
+            "description": "Aids in detailed examination of small objects."
+        },
+        {
+            "equipmentId": "compass-working",
+            "name": "Working Compass",
+            "diceModifier": 1,
+            "dcModifier": 0,
+            "category": "Tool",
+            "skills": [
+                "navigation"
+            ],
+            "description": "A functional compass that aids navigation."
+        },
+        {
+            "equipmentId": "compass-damaged",
+            "name": "Damaged Compass",
+            "diceModifier": -1,
+            "dcModifier": 0,
+            "category": "Tool",
+            "skills": [
+                "navigation"
+            ],
+            "description": "A malfunctioning compass that may mislead."
+        }
+    ]
+}
