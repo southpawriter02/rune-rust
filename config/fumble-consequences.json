@@ -1,0 +1,67 @@
+{
+    "fumbleConsequences": [
+        {
+            "fumbleType": "TrustShattered",
+            "skillId": "persuasion",
+            "description": "Your words have shattered any trust this person had in you.",
+            "duration": null,
+            "recoveryCondition": "complete-favor-quest"
+        },
+        {
+            "fumbleType": "LieExposed",
+            "skillId": "deception",
+            "description": "Your deception has been exposed, and word has spread throughout the faction.",
+            "duration": null,
+            "recoveryCondition": "improve-faction-standing"
+        },
+        {
+            "fumbleType": "ChallengeAccepted",
+            "skillId": "intimidation",
+            "description": "Your target has accepted your challenge and attacks with renewed fury.",
+            "duration": null,
+            "recoveryCondition": "win-or-escape-combat"
+        },
+        {
+            "fumbleType": "MechanismJammed",
+            "skillId": "lockpicking",
+            "description": "The lock mechanism has jammed, making future attempts significantly more difficult.",
+            "duration": null,
+            "recoveryCondition": "find-alternate-entry"
+        },
+        {
+            "fumbleType": "SystemLockout",
+            "skillId": "hacking",
+            "description": "The terminal has locked you out and triggered a security alert.",
+            "duration": null,
+            "recoveryCondition": "find-admin-credentials"
+        },
+        {
+            "fumbleType": "ForcedExecution",
+            "skillId": "trap-disarmament",
+            "description": "The trap triggers immediately, catching you in the blast.",
+            "duration": null,
+            "recoveryCondition": null
+        },
+        {
+            "fumbleType": "TheSlip",
+            "skillId": "climbing",
+            "description": "You lose your grip and fall, taking damage and stress.",
+            "duration": null,
+            "recoveryCondition": null
+        },
+        {
+            "fumbleType": "TheLongFall",
+            "skillId": "leaping",
+            "description": "Your landing is catastrophic, dealing extra damage and leaving you disoriented.",
+            "durationMinutes": 2,
+            "recoveryCondition": null
+        },
+        {
+            "fumbleType": "SystemWideAlert",
+            "skillId": "stealth",
+            "description": "You've alerted all nearby enemies, who now converge on your location.",
+            "duration": null,
+            "recoveryCondition": "defeat-or-escape-enemies"
+        }
+    ]
+}
