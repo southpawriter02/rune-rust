@@ -1,0 +1,296 @@
+{
+  "$schema": "../schemas/rhetoric-specialization-abilities.schema.json",
+  "version": "0.15.3i",
+  "description": "Rhetoric specialization ability definitions for archetype bonuses. Part of the Specialization Bonus Hook Pattern implementation.",
+
+  "abilities": [
+    {
+      "id": "voice-of-reason",
+      "name": "Voice of Reason",
+      "archetypeId": "thul",
+      "abilityEnum": "VoiceOfReason",
+      "description": "Failed persuasion doesn't lock dialogue options",
+      "type": "outcomeModification",
+      "trigger": {
+        "interactionType": "persuasion",
+        "outcome": "failure",
+        "excludeOutcome": "criticalFailure"
+      },
+      "effect": {
+        "preventOptionLock": true
+      },
+      "limitations": [
+        "Does NOT prevent fumble consequences (Trust Shattered still locks)",
+        "Only applies to Persuasion, not Deception or Intimidation",
+        "Requires waiting for next conversation (not immediate retry)",
+        "Does NOT prevent disposition loss from failure"
+      ],
+      "flavorText": "Your reasoned approach leaves the conversation open for future attempts."
+    },
+    {
+      "id": "scholarly-authority",
+      "name": "Scholarly Authority",
+      "archetypeId": "thul",
+      "abilityEnum": "ScholarlyAuthority",
+      "description": "+2d10 when discussing lore/history topics",
+      "type": "diceBonus",
+      "trigger": {
+        "topicTags": ["lore", "history", "academic", "scholarly", "ancient", "archives", "records", "traditions", "cultural", "mythology"]
+      },
+      "effect": {
+        "diceBonus": 2
+      },
+      "exampleTopics": [
+        "Historical events (\"The Fall of the Old Kingdom\")",
+        "Ancient lore (\"The Rune-Singers of Mímir\")",
+        "Academic knowledge (\"The principles of æthercraft\")",
+        "Written records (\"As documented in the Archives\")",
+        "Cultural traditions (\"According to Dvergr custom\")"
+      ],
+      "flavorText": "Your scholarly expertise lends weight to your words."
+    },
+    {
+      "id": "inspiring-words",
+      "name": "Inspiring Words",
+      "archetypeId": "skald",
+      "abilityEnum": "InspiringWords",
+      "description": "Grant allies +1d10 on social checks through oratory",
+      "type": "partyBuff",
+      "trigger": {
+        "action": "inspire",
+        "timing": "beforeAllyCheck"
+      },
+      "activation": {
+        "checkRequired": true,
+        "checkSkill": "rhetoric",
+        "checkDc": 12,
+        "cooldown": "perScene"
+      },
+      "effect": {
+        "diceBonus": 1,
+        "duration": "10 minutes",
+        "targetCount": 1,
+        "partyWideOnExceptional": true,
+        "exceptionalThreshold": 3,
+        "stacking": false
+      },
+      "flavorText": "Your rousing words fill your allies with confidence."
+    },
+    {
+      "id": "saga-of-heroes",
+      "name": "Saga of Heroes",
+      "archetypeId": "skald",
+      "abilityEnum": "SagaOfHeroes",
+      "description": "Reduce party Stress through storytelling during rest",
+      "type": "partyStressRelief",
+      "trigger": {
+        "timing": "rest",
+        "action": "storytelling"
+      },
+      "activation": {
+        "checkRequired": true,
+        "checkSkill": "rhetoric",
+        "checkDc": 10,
+        "cooldown": "perRest",
+        "durationMinutes": 30
+      },
+      "effect": {
+        "stressReduction": {
+          "marginal": 1,
+          "full": 2,
+          "exceptional": 3,
+          "critical": 4
+        },
+        "isPartyWide": true
+      },
+      "flavorText": "Your tale of heroism soothes troubled minds."
+    },
+    {
+      "id": "silver-tongue",
+      "name": "Silver Tongue",
+      "archetypeId": "kupmadr",
+      "abilityEnum": "SilverTongue",
+      "description": "Auto-succeed negotiation checks with DC ≤ 12",
+      "type": "autoSuccess",
+      "trigger": {
+        "interactionType": "negotiation",
+        "dcThreshold": 12
+      },
+      "effect": {
+        "autoSuccess": true,
+        "treatAsOutcome": "fullSuccess"
+      },
+      "exampleNegotiations": [
+        "Fair trade exchanges (DC 10)",
+        "Slight advantage in common goods (DC 12)",
+        "Standard bartering with neutral merchants (DC 10-12)"
+      ],
+      "flavorText": "Your mercantile expertise makes this negotiation trivial."
+    },
+    {
+      "id": "sniff-out-lies",
+      "name": "Sniff Out Lies",
+      "archetypeId": "kupmadr",
+      "abilityEnum": "SniffOutLies",
+      "description": "+2d10 when detecting NPC deception",
+      "type": "diceBonus",
+      "trigger": {
+        "context": "deceptionDetection"
+      },
+      "effect": {
+        "diceBonus": 2
+      },
+      "detectionScenarios": [
+        "NPC attempts to deceive player (passive detection)",
+        "Player actively questions NPC's honesty",
+        "GM-initiated detection when NPC lies"
+      ],
+      "cooldown": "none",
+      "flavorText": "Your merchant's instincts detect something false."
+    },
+    {
+      "id": "maintain-cover",
+      "name": "Maintain Cover",
+      "archetypeId": "myrk-gengr",
+      "abilityEnum": "MaintainCover",
+      "description": "+2d10 and reduced stress when cover is challenged",
+      "type": "composite",
+      "trigger": {
+        "context": "coverChallenged",
+        "requiresActiveCover": true
+      },
+      "effect": {
+        "diceBonus": 2,
+        "stressReduction": 1,
+        "fumbleDowngrade": true,
+        "fumbleDowngradeDescription": "Lie Exposed → normal failure"
+      },
+      "limitations": [
+        "Only applies when maintaining an established cover identity",
+        "Does not apply to initial deception attempts"
+      ],
+      "flavorText": "Your training allows you to stay calm and in character."
+    },
+    {
+      "id": "forge-documents",
+      "name": "Forge Documents",
+      "archetypeId": "myrk-gengr",
+      "abilityEnum": "ForgeDocuments",
+      "description": "Create forged documents as evidence/credentials",
+      "type": "specialAction",
+      "trigger": {
+        "timing": "downtime",
+        "action": "forge",
+        "requirements": [
+          "Player has materials for forgery",
+          "Player has time for forgery",
+          "Player is not in combat or stressful situation"
+        ]
+      },
+      "activation": {
+        "checkRequired": true,
+        "checkSkill": "rhetoric",
+        "checkAttribute": "wits",
+        "referenceSampleBonus": 2
+      },
+      "documentTypes": {
+        "simple": { "dc": 10, "timeMinutes": 10, "description": "Simple note" },
+        "travel": { "dc": 12, "timeMinutes": 30, "description": "Travel papers" },
+        "guild": { "dc": 14, "timeMinutes": 60, "description": "Guild credentials" },
+        "official": { "dc": 16, "timeMinutes": 120, "description": "Official orders" },
+        "faction": { "dc": 18, "timeMinutes": 240, "description": "Faction authorization" },
+        "rare": { "dc": 20, "timeMinutes": 480, "description": "Rare/complex document" }
+      },
+      "qualityBySuccess": {
+        "marginal": { "quality": 2, "qualityName": "Passable", "detectDcReduction": -2 },
+        "full": { "quality": 3, "qualityName": "Good", "detectDcReduction": -4 },
+        "exceptional": { "quality": 4, "qualityName": "Excellent", "detectDcReduction": -6 },
+        "critical": { "quality": 5, "qualityName": "Masterwork", "detectDcReduction": null, "note": "Requires expertise to detect" }
+      },
+      "flavorText": "You craft a convincing forgery."
+    }
+  ],
+
+  "archetypeMapping": {
+    "thul": ["voice-of-reason", "scholarly-authority"],
+    "skald": ["inspiring-words", "saga-of-heroes"],
+    "kupmadr": ["silver-tongue", "sniff-out-lies"],
+    "myrk-gengr": ["maintain-cover", "forge-documents"]
+  },
+
+  "abilityTypes": {
+    "outcomeModification": {
+      "description": "Modifies the outcome of a check after it has been resolved",
+      "examples": ["Voice of Reason - prevents option lock on failure"]
+    },
+    "diceBonus": {
+      "description": "Adds bonus dice to the dice pool before rolling",
+      "examples": ["Scholarly Authority (+2d10)", "Sniff Out Lies (+2d10)", "Maintain Cover (+2d10)"]
+    },
+    "autoSuccess": {
+      "description": "Automatically succeeds on checks below a threshold",
+      "examples": ["Silver Tongue (DC ≤ 12 negotiations)"]
+    },
+    "partyBuff": {
+      "description": "Provides a temporary bonus to allies",
+      "examples": ["Inspiring Words (+1d10 to ally social checks)"]
+    },
+    "partyStressRelief": {
+      "description": "Reduces stress for party members",
+      "examples": ["Saga of Heroes (stress reduction during rest)"]
+    },
+    "composite": {
+      "description": "Combines multiple effect types",
+      "examples": ["Maintain Cover (+2d10, stress reduction, fumble downgrade)"]
+    },
+    "specialAction": {
+      "description": "Creates assets or triggers special game mechanics",
+      "examples": ["Forge Documents (creates forged credentials)"]
+    }
+  },
+
+  "globalSettings": {
+    "successCountingThreshold": 6,
+    "diceType": "d10",
+    "defaultInspirationDuration": "10 minutes",
+    "defaultCooldownDuration": "perScene"
+  },
+
+  "narrativeTemplates": {
+    "voiceOfReason": {
+      "triggered": "Though {npcName} remains unconvinced, your measured approach hasn't burned any bridges.",
+      "notTriggered": "Your argument failed, and the critical failure has closed this avenue of discussion."
+    },
+    "scholarlyAuthority": {
+      "triggered": "Your scholarly credentials lend weight to your words as you speak of {topic}.",
+      "topicRecognized": "The conversation turns to matters of lore, and your expertise shines through."
+    },
+    "inspiringWords": {
+      "success": "Your rousing words fill {allyName} with confidence.",
+      "exceptionalSuccess": "Your inspiring oratory fills the entire party with newfound courage.",
+      "failure": "Your attempt at inspiration falls flat."
+    },
+    "sagaOfHeroes": {
+      "marginal": "Your tale brings a small measure of comfort to weary souls.",
+      "full": "The saga resonates deeply, visibly lifting spirits around the fire.",
+      "exceptional": "Your masterful storytelling transports listeners, melting away their troubles.",
+      "critical": "The words seem to carry power beyond mere tale-telling, as if the heroes themselves bless the gathering."
+    },
+    "silverTongue": {
+      "triggered": "This negotiation is child's play for someone of your mercantile expertise.",
+      "notTriggered": "This deal is complex enough to require your full attention."
+    },
+    "sniffOutLies": {
+      "triggered": "Your merchant's instincts prickle—something about what they said doesn't add up.",
+      "detected": "You catch the telltale signs of deception: the slight hesitation, the averted gaze."
+    },
+    "maintainCover": {
+      "triggered": "Your training kicks in, keeping your composure despite the probing questions.",
+      "fumbleDowngraded": "Though you stumbled, your quick recovery prevents disaster."
+    },
+    "forgeDocuments": {
+      "success": "You produce a convincing {documentType} that should pass casual inspection.",
+      "failure": "Your forgery attempt produces a document with obvious flaws."
+    }
+  }
+}

@@ -1,0 +1,496 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "rhetoric-specialization-abilities.schema.json",
+  "title": "Rhetoric Specialization Abilities Configuration",
+  "description": "JSON Schema for the Rhetoric Specialization Abilities configuration. Defines archetype-specific abilities that modify rhetoric skill checks through the Specialization Bonus Hook Pattern.",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Reference to the JSON schema for validation"
+    },
+    "version": {
+      "type": "string",
+      "description": "Schema version for compatibility tracking",
+      "pattern": "^\\d+\\.\\d+\\.\\d+[a-z]?$"
+    },
+    "description": {
+      "type": "string",
+      "description": "Human-readable description of this configuration file"
+    },
+    "abilities": {
+      "type": "array",
+      "description": "Array of rhetoric specialization ability definitions",
+      "items": {
+        "$ref": "#/definitions/Ability"
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "archetypeMapping": {
+      "$ref": "#/definitions/ArchetypeMapping",
+      "description": "Maps archetype IDs to their available abilities"
+    },
+    "abilityTypes": {
+      "type": "object",
+      "description": "Definitions of ability type categories",
+      "additionalProperties": {
+        "$ref": "#/definitions/AbilityTypeDefinition"
+      }
+    },
+    "globalSettings": {
+      "$ref": "#/definitions/GlobalSettings",
+      "description": "Global settings that apply to all specialization abilities"
+    },
+    "narrativeTemplates": {
+      "type": "object",
+      "description": "Templates for narrative text generation for each ability",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "required": [
+    "version",
+    "abilities",
+    "archetypeMapping"
+  ],
+  "additionalProperties": false,
+  "definitions": {
+    "Ability": {
+      "type": "object",
+      "description": "Defines a single rhetoric specialization ability",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for this ability (kebab-case)",
+          "pattern": "^[a-z][a-z0-9-]*$"
+        },
+        "name": {
+          "type": "string",
+          "description": "Human-readable name for display in UI",
+          "minLength": 1
+        },
+        "archetypeId": {
+          "type": "string",
+          "description": "ID of the archetype that grants this ability",
+          "enum": ["thul", "skald", "kupmadr", "myrk-gengr"]
+        },
+        "abilityEnum": {
+          "type": "string",
+          "description": "C# enum value name for this ability",
+          "enum": ["VoiceOfReason", "ScholarlyAuthority", "InspiringWords", "SagaOfHeroes", "SilverTongue", "SniffOutLies", "MaintainCover", "ForgeDocuments"]
+        },
+        "description": {
+          "type": "string",
+          "description": "Short description of what this ability does"
+        },
+        "type": {
+          "type": "string",
+          "description": "Category of ability effect",
+          "enum": ["outcomeModification", "diceBonus", "autoSuccess", "partyBuff", "partyStressRelief", "composite", "specialAction"]
+        },
+        "trigger": {
+          "$ref": "#/definitions/AbilityTrigger",
+          "description": "Conditions that trigger this ability"
+        },
+        "activation": {
+          "$ref": "#/definitions/AbilityActivation",
+          "description": "Requirements for activating this ability (if any)"
+        },
+        "effect": {
+          "$ref": "#/definitions/AbilityEffect",
+          "description": "The mechanical effect when this ability triggers"
+        },
+        "documentTypes": {
+          "$ref": "#/definitions/DocumentTypes",
+          "description": "For ForgeDocuments ability: types of documents that can be created"
+        },
+        "qualityBySuccess": {
+          "$ref": "#/definitions/QualityBySuccess",
+          "description": "For ForgeDocuments ability: quality levels by success tier"
+        },
+        "limitations": {
+          "type": "array",
+          "description": "Explicit limitations on when this ability does not apply",
+          "items": {
+            "type": "string"
+          }
+        },
+        "exampleTopics": {
+          "type": "array",
+          "description": "Example topics that trigger this ability (for topic-based abilities)",
+          "items": {
+            "type": "string"
+          }
+        },
+        "exampleNegotiations": {
+          "type": "array",
+          "description": "Example negotiations (for negotiation-based abilities)",
+          "items": {
+            "type": "string"
+          }
+        },
+        "detectionScenarios": {
+          "type": "array",
+          "description": "Example scenarios for deception detection",
+          "items": {
+            "type": "string"
+          }
+        },
+        "cooldown": {
+          "type": "string",
+          "description": "Cooldown period for this ability",
+          "enum": ["none", "perScene", "perRest", "perDay"]
+        },
+        "flavorText": {
+          "type": "string",
+          "description": "Narrative flavor text when ability triggers"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "archetypeId",
+        "abilityEnum",
+        "description",
+        "type",
+        "trigger",
+        "effect"
+      ],
+      "additionalProperties": false
+    },
+    "AbilityTrigger": {
+      "type": "object",
+      "description": "Conditions that trigger an ability",
+      "properties": {
+        "interactionType": {
+          "type": "string",
+          "description": "Type of social interaction that triggers the ability",
+          "enum": ["persuasion", "deception", "intimidation", "negotiation", "any"]
+        },
+        "outcome": {
+          "type": "string",
+          "description": "Check outcome that triggers the ability",
+          "enum": ["success", "failure", "criticalSuccess", "criticalFailure", "any"]
+        },
+        "excludeOutcome": {
+          "type": "string",
+          "description": "Outcome that prevents the ability from triggering",
+          "enum": ["success", "failure", "criticalSuccess", "criticalFailure"]
+        },
+        "topicTags": {
+          "type": "array",
+          "description": "Topic tags that trigger this ability",
+          "items": {
+            "type": "string"
+          }
+        },
+        "action": {
+          "type": "string",
+          "description": "Player action that triggers the ability",
+          "enum": ["inspire", "storytelling", "forge"]
+        },
+        "timing": {
+          "type": "string",
+          "description": "When during gameplay this ability can trigger",
+          "enum": ["beforeCheck", "afterCheck", "beforeAllyCheck", "rest", "downtime"]
+        },
+        "context": {
+          "type": "string",
+          "description": "Context that triggers the ability",
+          "enum": ["deceptionDetection", "coverChallenged", "loreDiscussion"]
+        },
+        "dcThreshold": {
+          "type": "integer",
+          "description": "DC threshold for auto-success abilities",
+          "minimum": 1,
+          "maximum": 30
+        },
+        "requiresActiveCover": {
+          "type": "boolean",
+          "description": "Whether an active cover identity is required"
+        },
+        "requirements": {
+          "type": "array",
+          "description": "Additional requirements for the trigger",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "AbilityActivation": {
+      "type": "object",
+      "description": "Requirements for activating an ability that requires a check",
+      "properties": {
+        "checkRequired": {
+          "type": "boolean",
+          "description": "Whether a skill check is required to activate"
+        },
+        "checkSkill": {
+          "type": "string",
+          "description": "Skill used for the activation check"
+        },
+        "checkAttribute": {
+          "type": "string",
+          "description": "Attribute used for the activation check"
+        },
+        "checkDc": {
+          "type": "integer",
+          "description": "DC for the activation check",
+          "minimum": 1,
+          "maximum": 30
+        },
+        "cooldown": {
+          "type": "string",
+          "description": "Cooldown period after use",
+          "enum": ["none", "perScene", "perRest", "perDay"]
+        },
+        "durationMinutes": {
+          "type": "integer",
+          "description": "Duration in minutes for the activation",
+          "minimum": 1
+        },
+        "referenceSampleBonus": {
+          "type": "integer",
+          "description": "Bonus dice when a reference sample is available",
+          "minimum": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "AbilityEffect": {
+      "type": "object",
+      "description": "The mechanical effect of an ability",
+      "properties": {
+        "diceBonus": {
+          "type": "integer",
+          "description": "Number of bonus dice added to the pool",
+          "minimum": 1,
+          "maximum": 10
+        },
+        "autoSuccess": {
+          "type": "boolean",
+          "description": "Whether this grants automatic success"
+        },
+        "treatAsOutcome": {
+          "type": "string",
+          "description": "Outcome to treat auto-success as",
+          "enum": ["marginalSuccess", "fullSuccess", "exceptionalSuccess", "criticalSuccess"]
+        },
+        "preventOptionLock": {
+          "type": "boolean",
+          "description": "Whether this prevents dialogue options from locking on failure"
+        },
+        "stressReduction": {
+          "oneOf": [
+            {
+              "type": "integer",
+              "description": "Flat stress reduction amount",
+              "minimum": 1
+            },
+            {
+              "$ref": "#/definitions/StressReductionByTier",
+              "description": "Stress reduction amounts by success tier"
+            }
+          ]
+        },
+        "isPartyWide": {
+          "type": "boolean",
+          "description": "Whether the effect applies to all party members"
+        },
+        "duration": {
+          "type": "string",
+          "description": "Duration of the effect"
+        },
+        "targetCount": {
+          "type": "integer",
+          "description": "Number of targets affected",
+          "minimum": 1
+        },
+        "partyWideOnExceptional": {
+          "type": "boolean",
+          "description": "Whether effect becomes party-wide on exceptional success"
+        },
+        "exceptionalThreshold": {
+          "type": "integer",
+          "description": "Net successes needed for exceptional effect",
+          "minimum": 1
+        },
+        "stacking": {
+          "type": "boolean",
+          "description": "Whether this effect can stack with itself"
+        },
+        "fumbleDowngrade": {
+          "type": "boolean",
+          "description": "Whether fumble consequences are downgraded"
+        },
+        "fumbleDowngradeDescription": {
+          "type": "string",
+          "description": "Description of how fumbles are downgraded"
+        }
+      },
+      "additionalProperties": false
+    },
+    "StressReductionByTier": {
+      "type": "object",
+      "description": "Stress reduction amounts for different success tiers",
+      "properties": {
+        "marginal": {
+          "type": "integer",
+          "description": "Stress reduction on marginal success",
+          "minimum": 0
+        },
+        "full": {
+          "type": "integer",
+          "description": "Stress reduction on full success",
+          "minimum": 0
+        },
+        "exceptional": {
+          "type": "integer",
+          "description": "Stress reduction on exceptional success",
+          "minimum": 0
+        },
+        "critical": {
+          "type": "integer",
+          "description": "Stress reduction on critical success",
+          "minimum": 0
+        }
+      },
+      "required": ["marginal", "full", "exceptional", "critical"],
+      "additionalProperties": false
+    },
+    "DocumentTypes": {
+      "type": "object",
+      "description": "Types of documents that can be forged with DC and time requirements",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "dc": {
+            "type": "integer",
+            "description": "Difficulty class to create this document type",
+            "minimum": 1,
+            "maximum": 30
+          },
+          "timeMinutes": {
+            "type": "integer",
+            "description": "Time in minutes required to create this document",
+            "minimum": 1
+          },
+          "description": {
+            "type": "string",
+            "description": "Description of this document type"
+          }
+        },
+        "required": ["dc", "timeMinutes"],
+        "additionalProperties": false
+      }
+    },
+    "QualityBySuccess": {
+      "type": "object",
+      "description": "Quality levels for forged documents based on success tier",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "quality": {
+            "type": "integer",
+            "description": "Quality rating (1-5)",
+            "minimum": 1,
+            "maximum": 5
+          },
+          "qualityName": {
+            "type": "string",
+            "description": "Human-readable quality name"
+          },
+          "detectDcReduction": {
+            "type": ["integer", "null"],
+            "description": "DC reduction for detecting the forgery (null = requires expertise)",
+            "maximum": 0
+          },
+          "note": {
+            "type": "string",
+            "description": "Additional note about this quality level"
+          }
+        },
+        "required": ["quality"],
+        "additionalProperties": false
+      }
+    },
+    "ArchetypeMapping": {
+      "type": "object",
+      "description": "Maps archetype IDs to their granted abilities",
+      "properties": {
+        "thul": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Abilities granted to Thul archetype"
+        },
+        "skald": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Abilities granted to Skald archetype"
+        },
+        "kupmadr": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Abilities granted to Kupmadr archetype"
+        },
+        "myrk-gengr": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Abilities granted to Myrk-gengr archetype"
+        }
+      },
+      "additionalProperties": false
+    },
+    "AbilityTypeDefinition": {
+      "type": "object",
+      "description": "Definition of an ability type category",
+      "properties": {
+        "description": {
+          "type": "string",
+          "description": "Explanation of what this ability type does"
+        },
+        "examples": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Examples of abilities with this type"
+        }
+      },
+      "required": ["description"],
+      "additionalProperties": false
+    },
+    "GlobalSettings": {
+      "type": "object",
+      "description": "Global settings for specialization abilities",
+      "properties": {
+        "successCountingThreshold": {
+          "type": "integer",
+          "description": "Die result that counts as a success (e.g., 6+ on d10)",
+          "minimum": 1,
+          "default": 6
+        },
+        "diceType": {
+          "type": "string",
+          "description": "Type of die used for checks",
+          "pattern": "^d\\d+$",
+          "default": "d10"
+        },
+        "defaultInspirationDuration": {
+          "type": "string",
+          "description": "Default duration for inspiration effects"
+        },
+        "defaultCooldownDuration": {
+          "type": "string",
+          "description": "Default cooldown duration for abilities"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}
