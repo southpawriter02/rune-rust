@@ -1,0 +1,163 @@
+{
+    "$schema": "./schemas/persuasion-requests.schema.json",
+    "version": "0.15.3b",
+    "description": "Persuasion request complexity definitions and modifiers",
+    "requestTiers": {
+        "trivial": {
+            "id": "trivial",
+            "displayName": "Trivial Request",
+            "baseDc": 8,
+            "requiredSuccesses": 1,
+            "minimumDisposition": "Unfriendly",
+            "mayBeImpossible": false,
+            "examples": [
+                "Tell me the time",
+                "Point me to the tavern",
+                "Hold this for a moment"
+            ],
+            "description": "Minimal cost or effort for the NPC"
+        },
+        "simple": {
+            "id": "simple",
+            "displayName": "Simple Request",
+            "baseDc": 12,
+            "requiredSuccesses": 2,
+            "minimumDisposition": "Neutral",
+            "mayBeImpossible": false,
+            "examples": [
+                "Share your rations",
+                "Give me a small discount",
+                "Introduce me to your friend"
+            ],
+            "description": "Small favor or minor inconvenience"
+        },
+        "moderate": {
+            "id": "moderate",
+            "displayName": "Moderate Request",
+            "baseDc": 16,
+            "requiredSuccesses": 3,
+            "minimumDisposition": "NeutralPositive",
+            "mayBeImpossible": false,
+            "examples": [
+                "Help me fight these enemies",
+                "Lend me your weapon",
+                "Share sensitive information"
+            ],
+            "description": "Meaningful assistance with some personal cost"
+        },
+        "major": {
+            "id": "major",
+            "displayName": "Major Request",
+            "baseDc": 20,
+            "requiredSuccesses": 4,
+            "minimumDisposition": "Friendly",
+            "mayBeImpossible": false,
+            "examples": [
+                "Attack your faction's enemies",
+                "Give me your life savings",
+                "Reveal faction secrets"
+            ],
+            "description": "Significant personal risk or faction conflict"
+        },
+        "extreme": {
+            "id": "extreme",
+            "displayName": "Extreme Request",
+            "baseDc": 24,
+            "requiredSuccesses": 4,
+            "minimumDisposition": "Ally",
+            "mayBeImpossible": true,
+            "examples": [
+                "Betray your clan leader",
+                "Sacrifice yourself",
+                "Kill your closest ally"
+            ],
+            "description": "Life-altering decision, ultimate betrayal"
+        }
+    },
+    "modifiers": {
+        "argumentAligned": {
+            "diceModifier": 1,
+            "description": "Argument appeals to NPC values"
+        },
+        "argumentContradicts": {
+            "diceModifier": -1,
+            "description": "Argument conflicts with NPC values"
+        },
+        "evidenceProvided": {
+            "diceModifier": 2,
+            "description": "Physical proof supports argument"
+        },
+        "npcStressed": {
+            "diceModifier": -1,
+            "description": "Target has [Stressed] status"
+        },
+        "npcFeared": {
+            "diceModifier": -1,
+            "description": "Target has [Feared] status"
+        },
+        "npcGrateful": {
+            "diceModifier": 1,
+            "description": "Target has [Grateful] status"
+        },
+        "previousAttemptSecond": {
+            "dcModifier": 2,
+            "description": "Second persuasion attempt"
+        },
+        "previousAttemptThird": {
+            "dcModifier": 4,
+            "description": "Third or more persuasion attempt"
+        },
+        "sameArgumentUsed": {
+            "dcModifier": 2,
+            "description": "Same argument used previously"
+        },
+        "newEvidenceProvided": {
+            "dcModifier": -2,
+            "description": "New evidence resets some penalty"
+        }
+    },
+    "outcomes": {
+        "criticalSuccess": {
+            "dispositionChange": 15,
+            "reputationChange": 5,
+            "convictionDepth": "Deep",
+            "unlocksMultipleOptions": true
+        },
+        "exceptionalSuccess": {
+            "dispositionChange": 12,
+            "reputationChange": 3,
+            "convictionDepth": "Strong",
+            "unlocksMultipleOptions": false
+        },
+        "fullSuccess": {
+            "dispositionChange": 10,
+            "reputationChange": 2,
+            "convictionDepth": "Moderate",
+            "unlocksMultipleOptions": false
+        },
+        "marginalSuccess": {
+            "dispositionChange": 5,
+            "reputationChange": 0,
+            "convictionDepth": "Shallow",
+            "unlocksMultipleOptions": false
+        },
+        "failure": {
+            "dispositionChange": -5,
+            "reputationChange": -2,
+            "convictionDepth": "None",
+            "locksCurrentArgument": true
+        },
+        "fumble": {
+            "dispositionChange": -30,
+            "reputationChange": -10,
+            "convictionDepth": "None",
+            "fumbleType": "TrustShattered",
+            "locksAllPersuasion": true
+        }
+    },
+    "trustShatteredRecovery": {
+        "questCompletion": "Complete a quest that benefits the NPC",
+        "timePassing": "Wait several in-game weeks",
+        "thirdPartyIntercession": "Have an ally vouch for you"
+    }
+}
