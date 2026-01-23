@@ -1,0 +1,203 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "stealth-surfaces.schema.json",
+    "title": "Stealth Surfaces Configuration",
+    "description": "Configuration for stealth surface types, modifiers, and [Hidden] status",
+    "type": "object",
+    "required": [
+        "version",
+        "surfaces",
+        "modifiers",
+        "hiddenStatus"
+    ],
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "JSON Schema reference"
+        },
+        "version": {
+            "type": "string",
+            "description": "Configuration version"
+        },
+        "surfaces": {
+            "type": "object",
+            "description": "Surface type definitions",
+            "additionalProperties": {
+                "$ref": "#/$defs/SurfaceDefinition"
+            }
+        },
+        "modifiers": {
+            "type": "object",
+            "description": "Environmental modifiers",
+            "properties": {
+                "lighting": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/$defs/Modifier"
+                    }
+                },
+                "alertStatus": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/$defs/Modifier"
+                    }
+                },
+                "zones": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/$defs/Modifier"
+                    }
+                }
+            }
+        },
+        "hiddenStatus": {
+            "type": "object",
+            "description": "[Hidden] status configuration",
+            "properties": {
+                "effects": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "Effects while [Hidden]"
+                },
+                "breakConditions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/BreakCondition"
+                    },
+                    "description": "Conditions that break [Hidden]"
+                }
+            }
+        },
+        "fumbleConsequence": {
+            "$ref": "#/$defs/FumbleConsequence"
+        },
+        "partyStealthRule": {
+            "$ref": "#/$defs/PartyStealthRule"
+        }
+    },
+    "$defs": {
+        "SurfaceDefinition": {
+            "type": "object",
+            "required": [
+                "name",
+                "baseDc",
+                "description"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "Display name for the surface type"
+                },
+                "baseDc": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 10,
+                    "description": "Base DC in successes needed"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Description of the surface type"
+                },
+                "examples": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "Example materials for this surface"
+                }
+            }
+        },
+        "Modifier": {
+            "type": "object",
+            "required": [
+                "dcModifier",
+                "description"
+            ],
+            "properties": {
+                "dcModifier": {
+                    "type": "integer",
+                    "minimum": -5,
+                    "maximum": 5,
+                    "description": "DC modifier (positive = harder, negative = easier)"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Description of this modifier"
+                }
+            }
+        },
+        "BreakCondition": {
+            "type": "object",
+            "required": [
+                "condition",
+                "description"
+            ],
+            "properties": {
+                "condition": {
+                    "type": "string",
+                    "enum": [
+                        "Attack",
+                        "LoudAction",
+                        "EnemyCriticalPerception",
+                        "LeaveZone",
+                        "FastMovement",
+                        "EnterLight",
+                        "EncounterEnd"
+                    ],
+                    "description": "The break condition type"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Description of when this condition triggers"
+                }
+            }
+        },
+        "FumbleConsequence": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "description": "Fumble consequence type"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Description of the consequence"
+                },
+                "effects": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "Effects of the fumble"
+                },
+                "duration": {
+                    "type": "string",
+                    "description": "How long the consequence lasts"
+                },
+                "recovery": {
+                    "type": "string",
+                    "description": "How to end the consequence early"
+                }
+            }
+        },
+        "PartyStealthRule": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "Rule name"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Rule description"
+                },
+                "quote": {
+                    "type": "string",
+                    "description": "Flavor quote"
+                }
+            }
+        }
+    }
+}

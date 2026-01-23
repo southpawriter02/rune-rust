@@ -1,0 +1,127 @@
+{
+    "$schema": "./schemas/stealth-surfaces.schema.json",
+    "version": "0.15.2d",
+    "surfaces": {
+        "silent": {
+            "name": "Silent",
+            "baseDc": 2,
+            "description": "Sound-absorbing surface that muffles footsteps",
+            "examples": [
+                "Thick carpet",
+                "Moss-covered stone",
+                "Deep sand",
+                "Padded flooring"
+            ]
+        },
+        "normal": {
+            "name": "Normal",
+            "baseDc": 3,
+            "description": "Standard surface with typical noise characteristics",
+            "examples": [
+                "Concrete",
+                "Packed dirt",
+                "Solid wood flooring",
+                "Smooth stone"
+            ]
+        },
+        "noisy": {
+            "name": "Noisy",
+            "baseDc": 4,
+            "description": "Surface that amplifies sound from movement",
+            "examples": [
+                "Loose rubble",
+                "Gravel",
+                "Dry leaves",
+                "Creaky wooden boards"
+            ]
+        },
+        "veryNoisy": {
+            "name": "Very Noisy",
+            "baseDc": 5,
+            "description": "Extremely loud surface that makes stealth nearly impossible",
+            "examples": [
+                "Scrap metal piles",
+                "Broken glass",
+                "Metal grating",
+                "Chains"
+            ]
+        }
+    },
+    "modifiers": {
+        "lighting": {
+            "dimLight": {
+                "dcModifier": -1,
+                "description": "Dim lighting or obscuring terrain"
+            },
+            "illuminated": {
+                "dcModifier": 2,
+                "description": "Bright lighting makes hiding difficult"
+            }
+        },
+        "alertStatus": {
+            "enemiesAlerted": {
+                "dcModifier": 1,
+                "description": "Enemies are actively searching"
+            },
+            "inCombat": {
+                "dcModifier": 1,
+                "description": "Combat makes stealth harder"
+            }
+        },
+        "zones": {
+            "psychicResonance": {
+                "dcModifier": -2,
+                "description": "[Psychic Resonance] zones disrupt enemy perception"
+            }
+        }
+    },
+    "hiddenStatus": {
+        "effects": [
+            "Cannot be directly targeted by single-target attacks",
+            "Can still be hit by AoE abilities",
+            "First attack from hiding grants advantage"
+        ],
+        "breakConditions": [
+            {
+                "condition": "Attack",
+                "description": "Making any attack"
+            },
+            {
+                "condition": "LoudAction",
+                "description": "Yelling, breaking objects, loud abilities"
+            },
+            {
+                "condition": "EnemyCriticalPerception",
+                "description": "Enemy rolls net ≥5 on Perception"
+            },
+            {
+                "condition": "LeaveZone",
+                "description": "Leaving zone that granted [Hidden]"
+            },
+            {
+                "condition": "FastMovement",
+                "description": "Moving faster than half speed"
+            },
+            {
+                "condition": "EnterLight",
+                "description": "Entering a brightly lit area"
+            }
+        ]
+    },
+    "fumbleConsequence": {
+        "type": "SystemWideAlert",
+        "description": "All enemies in adjacent rooms are alerted",
+        "effects": [
+            "+2 DC to stealth checks in affected area",
+            "Enemies move to investigate",
+            "Reinforcements may arrive"
+        ],
+        "duration": "10 minutes",
+        "recovery": "Leave the area or wait for expiration"
+    },
+    "partyStealthRule": {
+        "name": "Weakest Link",
+        "description": "The party member with the lowest Acrobatics dice pool makes the check for everyone",
+        "quote": "A chain is only as strong as its weakest link."
+    }
+}
