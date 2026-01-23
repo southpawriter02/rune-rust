@@ -1,0 +1,251 @@
+{
+    "$schema": "./schemas/master-abilities.schema.json",
+    "masterAbilities": [
+        {
+            "id": "spider-climb",
+            "skillId": "acrobatics",
+            "name": "Spider Climb",
+            "description": "Your mastery of climbing allows you to scale surfaces that would challenge lesser climbers. Automatically succeed on climbing checks with DC 12 or lower, moving at full speed.",
+            "abilityType": "AutoSucceed",
+            "autoSucceedDc": 12,
+            "subTypes": [
+                "climbing"
+            ],
+            "isPassive": true,
+            "triggerMessage": "Your mastery allows you to scale the surface effortlessly."
+        },
+        {
+            "id": "cats-grace",
+            "skillId": "acrobatics",
+            "name": "Cat's Grace",
+            "description": "You land with supernatural grace, absorbing impact that would injure others. Take no damage from falls of 30 feet or less.",
+            "abilityType": "DamageReduction",
+            "damageThreshold": 30,
+            "reductionAmount": null,
+            "subTypes": [
+                "falling",
+                "leaping"
+            ],
+            "isPassive": true,
+            "triggerMessage": "You land with cat-like grace, absorbing the impact."
+        },
+        {
+            "id": "ghost-walk",
+            "skillId": "acrobatics",
+            "name": "Ghost Walk",
+            "description": "You move with preternatural silence, your footsteps barely disturbing the air. Automatically succeed on stealth checks with DC 14 or lower.",
+            "abilityType": "AutoSucceed",
+            "autoSucceedDc": 14,
+            "subTypes": [
+                "stealth"
+            ],
+            "isPassive": true,
+            "triggerMessage": "You move like a shadow, making no sound."
+        },
+        {
+            "id": "death-defying-leap",
+            "skillId": "acrobatics",
+            "name": "Death-Defying Leap",
+            "description": "Your leaping ability far exceeds normal limits. Add 10 feet to your maximum leap distance.",
+            "abilityType": "DistanceBonus",
+            "distanceBonus": 10,
+            "subTypes": [
+                "leaping"
+            ],
+            "isPassive": true,
+            "triggerMessage": "You launch yourself through the air with impossible distance."
+        },
+        {
+            "id": "perfect-balance",
+            "skillId": "acrobatics",
+            "name": "Perfect Balance",
+            "description": "Your sense of balance is impeccable. Automatically succeed on balance checks with DC 16 or lower.",
+            "abilityType": "AutoSucceed",
+            "autoSucceedDc": 16,
+            "subTypes": [
+                "balance",
+                "climbing"
+            ],
+            "isPassive": true,
+            "triggerMessage": "Your perfect balance keeps you steady."
+        },
+        {
+            "id": "polyglot",
+            "skillId": "rhetoric",
+            "name": "Polyglot",
+            "description": "Your linguistic mastery encompasses all common cants and dialects. Automatically succeed on language and cant checks with DC 14 or lower.",
+            "abilityType": "AutoSucceed",
+            "autoSucceedDc": 14,
+            "subTypes": [
+                "language",
+                "cant"
+            ],
+            "isPassive": true,
+            "triggerMessage": "The words come naturally, as if you've spoken this tongue your whole life."
+        },
+        {
+            "id": "cultural-diplomat",
+            "skillId": "rhetoric",
+            "name": "Cultural Diplomat",
+            "description": "You understand the subtle protocols of every culture. Automatically succeed on cultural protocol checks with DC 14 or lower.",
+            "abilityType": "AutoSucceed",
+            "autoSucceedDc": 14,
+            "subTypes": [
+                "protocol",
+                "etiquette"
+            ],
+            "isPassive": true,
+            "triggerMessage": "You navigate the cultural expectations with practiced ease."
+        },
+        {
+            "id": "master-negotiator",
+            "skillId": "rhetoric",
+            "name": "Master Negotiator",
+            "description": "Your negotiation skills allow you to recover from setbacks. Once per conversation, you may re-roll a failed negotiation check.",
+            "abilityType": "RerollFailure",
+            "rerollPeriod": "Conversation",
+            "subTypes": [
+                "negotiation",
+                "bargaining"
+            ],
+            "isPassive": true,
+            "triggerMessage": "You adjust your approach, finding a new angle."
+        },
+        {
+            "id": "silver-tongue",
+            "skillId": "rhetoric",
+            "name": "Silver Tongue",
+            "description": "Your words carry an almost magical persuasiveness. Automatically succeed on persuasion checks with DC 12 or lower.",
+            "abilityType": "AutoSucceed",
+            "autoSucceedDc": 12,
+            "subTypes": [
+                "persuasion"
+            ],
+            "isPassive": true,
+            "triggerMessage": "Your silver tongue works its magic."
+        },
+        {
+            "id": "fearsome-reputation",
+            "skillId": "rhetoric",
+            "name": "Fearsome Reputation",
+            "description": "Your reputation precedes you, making your threats all the more effective. Add +2d10 to all intimidation checks.",
+            "abilityType": "DiceBonus",
+            "diceBonus": 2,
+            "subTypes": [
+                "intimidation"
+            ],
+            "isPassive": true,
+            "triggerMessage": "Your fearsome reputation lends weight to your words."
+        },
+        {
+            "id": "auto-bypass",
+            "skillId": "system-bypass",
+            "name": "Auto-Bypass",
+            "description": "Simple locks and systems pose no challenge to your expertise. Automatically succeed on bypass checks with DC 10 or lower.",
+            "abilityType": "AutoSucceed",
+            "autoSucceedDc": 10,
+            "subTypes": [
+                "lockpicking",
+                "hacking"
+            ],
+            "isPassive": true,
+            "triggerMessage": "The mechanism yields instantly to your expert touch."
+        },
+        {
+            "id": "salvage-expertise",
+            "skillId": "system-bypass",
+            "name": "Salvage Expertise",
+            "description": "Your careful technique always preserves valuable components. You always recover trap components on successful disarmament.",
+            "abilityType": "SpecialAction",
+            "specialEffect": "AlwaysRecoverTrapComponents",
+            "subTypes": [
+                "traps",
+                "disarmament"
+            ],
+            "isPassive": true,
+            "triggerMessage": "Your expert touch preserves the valuable components."
+        },
+        {
+            "id": "silent-bypass",
+            "skillId": "system-bypass",
+            "name": "Silent Bypass",
+            "description": "You work with absolute silence, never alerting guards or triggering audio sensors. Your successful bypass attempts generate no noise.",
+            "abilityType": "SpecialAction",
+            "specialEffect": "NoNoiseOnSuccess",
+            "subTypes": [
+                "lockpicking",
+                "hacking",
+                "traps"
+            ],
+            "isPassive": true,
+            "triggerMessage": "You work in perfect silence."
+        },
+        {
+            "id": "glitch-reader",
+            "skillId": "system-bypass",
+            "name": "Glitch Reader",
+            "description": "You've learned to read the patterns in corrupted systems. Reduce the DC penalty from [Glitched] status by 2.",
+            "abilityType": "DiceBonus",
+            "diceBonus": 2,
+            "subTypes": [
+                "glitched"
+            ],
+            "isPassive": true,
+            "triggerMessage": "You read the glitch patterns, finding the rhythm in the chaos."
+        },
+        {
+            "id": "wasteland-cartographer",
+            "skillId": "wasteland-survival",
+            "name": "Wasteland Cartographer",
+            "description": "You've mapped so much of the wasteland that finding your way is second nature. Automatically succeed on navigation checks with DC 10 or lower.",
+            "abilityType": "AutoSucceed",
+            "autoSucceedDc": 10,
+            "subTypes": [
+                "navigation"
+            ],
+            "isPassive": true,
+            "triggerMessage": "Your mental map guides you unerringly."
+        },
+        {
+            "id": "apex-scavenger",
+            "skillId": "wasteland-survival",
+            "name": "Apex Scavenger",
+            "description": "You find resources where others see only waste. You never return empty-handed from foraging, and all yields are increased by 50%.",
+            "abilityType": "SpecialAction",
+            "specialEffect": "NeverEmptyForaging,YieldBonus50",
+            "subTypes": [
+                "foraging",
+                "scavenging"
+            ],
+            "isPassive": true,
+            "triggerMessage": "Your trained eye spots resources others would miss."
+        },
+        {
+            "id": "master-tracker",
+            "skillId": "wasteland-survival",
+            "name": "Master Tracker",
+            "description": "No trail escapes your notice. You can track trails up to 48 hours old, double the normal limit.",
+            "abilityType": "DistanceBonus",
+            "distanceBonus": 24,
+            "subTypes": [
+                "tracking"
+            ],
+            "isPassive": true,
+            "triggerMessage": "Even the faintest traces reveal a clear path to you."
+        },
+        {
+            "id": "hazard-sense",
+            "skillId": "wasteland-survival",
+            "name": "Hazard Sense",
+            "description": "You've developed an almost supernatural awareness of environmental dangers. Automatically succeed on hazard detection checks with DC 16 or lower.",
+            "abilityType": "AutoSucceed",
+            "autoSucceedDc": 16,
+            "subTypes": [
+                "hazards",
+                "detection"
+            ],
+            "isPassive": true,
+            "triggerMessage": "Your instincts scream a warning before you even consciously perceive the danger."
+        }
+    ]
+}
