@@ -1,0 +1,150 @@
+{
+    "$schema": "./schemas/leap-distances.schema.json",
+    "version": "0.15.2b",
+    "distanceCategories": {
+        "short": {
+            "name": "Short",
+            "minFeet": 1,
+            "maxFeet": 5,
+            "baseDc": 1,
+            "baseStaminaCost": 1,
+            "description": "Trivial for most characters. Small gaps, stepping stones."
+        },
+        "medium": {
+            "name": "Medium",
+            "minFeet": 6,
+            "maxFeet": 10,
+            "baseDc": 2,
+            "baseStaminaCost": 1,
+            "description": "Standard athletic jump. Most urban environment gaps."
+        },
+        "long": {
+            "name": "Long",
+            "minFeet": 11,
+            "maxFeet": 15,
+            "baseDc": 3,
+            "baseStaminaCost": 2,
+            "description": "Challenging jump requiring commitment. Rooftop gaps, wide chasms."
+        },
+        "extreme": {
+            "name": "Extreme",
+            "minFeet": 16,
+            "maxFeet": 20,
+            "baseDc": 4,
+            "baseStaminaCost": 2,
+            "description": "Pushing physical limits. Running start highly recommended."
+        },
+        "heroic": {
+            "name": "Heroic",
+            "minFeet": 21,
+            "maxFeet": 25,
+            "baseDc": 5,
+            "baseStaminaCost": 3,
+            "description": "Near-impossible without Master rank or specialization abilities.",
+            "requiresMasterRank": true
+        }
+    },
+    "dcModifiers": {
+        "runningStart": {
+            "name": "Running Start",
+            "modifier": -1,
+            "condition": "10ft clear run-up available",
+            "description": "Momentum reduces difficulty"
+        },
+        "standingJump": {
+            "name": "Standing Jump",
+            "modifier": 1,
+            "condition": "No run-up space available",
+            "description": "Lack of momentum increases difficulty"
+        },
+        "precisionLanding": {
+            "name": "Precision Landing",
+            "modifier": 1,
+            "condition": "Target less than 5ft wide",
+            "description": "Small landing area requires accuracy"
+        },
+        "glitchedLanding": {
+            "name": "Glitched Landing",
+            "modifier": 2,
+            "condition": "Landing zone affected by corruption",
+            "description": "Unstable reality affects landing"
+        },
+        "encumbered": {
+            "name": "Encumbered",
+            "modifier": 1,
+            "condition": "Carrying capacity exceeded",
+            "description": "Weight affects jumping ability"
+        },
+        "lowGravity": {
+            "name": "[Low Gravity]",
+            "modifier": -1,
+            "condition": "Environmental modifier active",
+            "description": "Reduced gravity aids jumping"
+        },
+        "downwardLeap": {
+            "name": "Downward Leap",
+            "modifier": -1,
+            "condition": "Landing zone below takeoff point",
+            "description": "Gravity assists the leap"
+        }
+    },
+    "landingTypes": {
+        "normal": {
+            "name": "Normal",
+            "dcModifier": 0,
+            "description": "Standard landing on 5ft+ surface"
+        },
+        "precision": {
+            "name": "Precision",
+            "dcModifier": 1,
+            "description": "Landing on surface less than 5ft wide"
+        },
+        "glitched": {
+            "name": "Glitched",
+            "dcModifier": 2,
+            "description": "Landing on corruption-affected surface"
+        },
+        "precisionGlitched": {
+            "name": "Precision + Glitched",
+            "dcModifier": 3,
+            "description": "Precision landing on Glitched surface"
+        },
+        "downward": {
+            "name": "Downward",
+            "dcModifier": -1,
+            "description": "Landing at lower elevation"
+        }
+    },
+    "outcomes": {
+        "criticalSuccess": {
+            "staminaMultiplier": 0.5,
+            "description": "You soar through the air with perfect form, landing gracefully."
+        },
+        "success": {
+            "staminaMultiplier": 1.0,
+            "description": "You clear the gap and land solidly on the other side."
+        },
+        "marginalSuccess": {
+            "staminaModifier": 1,
+            "description": "You barely make it, stumbling slightly as you land on the edge."
+        },
+        "failure": {
+            "triggersFall": true,
+            "description": "You don't quite make it. Your fingers scrape the edge as you fall."
+        },
+        "fumble": {
+            "fumbleType": "TheLongFall",
+            "triggersFall": true,
+            "bonusDamageDice": 1,
+            "stressGained": 2,
+            "statusApplied": "Disoriented",
+            "statusDuration": 2,
+            "description": "You misjudge the leap catastrophically! [Disoriented] for 2 rounds."
+        }
+    },
+    "defaults": {
+        "minimumDc": 1,
+        "defaultFallDepth": 20,
+        "maximumLeapDistance": 25
+    }
+}

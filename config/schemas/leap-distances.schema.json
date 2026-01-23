@@ -1,0 +1,287 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "leap-distances.schema.json",
+    "title": "Leap Distances Configuration",
+    "description": "Configuration for leaping system distance categories and modifiers",
+    "type": "object",
+    "required": [
+        "version",
+        "distanceCategories",
+        "dcModifiers",
+        "landingTypes",
+        "outcomes",
+        "defaults"
+    ],
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "JSON Schema reference"
+        },
+        "version": {
+            "type": "string",
+            "description": "Configuration version"
+        },
+        "distanceCategories": {
+            "type": "object",
+            "description": "Leap distance categories with DC and stamina costs",
+            "additionalProperties": {
+                "$ref": "#/$defs/DistanceCategory"
+            },
+            "minProperties": 1
+        },
+        "dcModifiers": {
+            "type": "object",
+            "description": "DC modifiers for various leap conditions",
+            "additionalProperties": {
+                "$ref": "#/$defs/DcModifier"
+            }
+        },
+        "landingTypes": {
+            "type": "object",
+            "description": "Landing surface types with DC modifiers",
+            "additionalProperties": {
+                "$ref": "#/$defs/LandingType"
+            }
+        },
+        "outcomes": {
+            "type": "object",
+            "description": "Leap outcomes with effects",
+            "required": [
+                "criticalSuccess",
+                "success",
+                "marginalSuccess",
+                "failure",
+                "fumble"
+            ],
+            "properties": {
+                "criticalSuccess": {
+                    "$ref": "#/$defs/Outcome"
+                },
+                "success": {
+                    "$ref": "#/$defs/Outcome"
+                },
+                "marginalSuccess": {
+                    "$ref": "#/$defs/Outcome"
+                },
+                "failure": {
+                    "$ref": "#/$defs/Outcome"
+                },
+                "fumble": {
+                    "$ref": "#/$defs/FumbleOutcome"
+                }
+            },
+            "additionalProperties": false
+        },
+        "defaults": {
+            "$ref": "#/$defs/Defaults"
+        }
+    },
+    "additionalProperties": false,
+    "$defs": {
+        "DistanceCategory": {
+            "type": "object",
+            "description": "A leap distance category definition",
+            "required": [
+                "name",
+                "minFeet",
+                "maxFeet",
+                "baseDc",
+                "baseStaminaCost",
+                "description"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "Display name for the category"
+                },
+                "minFeet": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "Minimum distance in feet for this category"
+                },
+                "maxFeet": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "Maximum distance in feet for this category"
+                },
+                "baseDc": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 10,
+                    "description": "Base DC in net successes required"
+                },
+                "baseStaminaCost": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "Base stamina points consumed"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Flavor text for the category"
+                },
+                "requiresMasterRank": {
+                    "type": "boolean",
+                    "description": "Whether Master rank is recommended"
+                }
+            },
+            "additionalProperties": false
+        },
+        "DcModifier": {
+            "type": "object",
+            "description": "A DC modifier definition",
+            "required": [
+                "name",
+                "modifier",
+                "condition",
+                "description"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "Display name for the modifier"
+                },
+                "modifier": {
+                    "type": "integer",
+                    "description": "DC change (positive increases, negative decreases)"
+                },
+                "condition": {
+                    "type": "string",
+                    "description": "When this modifier applies"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Explanation of the modifier"
+                }
+            },
+            "additionalProperties": false
+        },
+        "LandingType": {
+            "type": "object",
+            "description": "A landing type definition",
+            "required": [
+                "name",
+                "dcModifier",
+                "description"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "Display name for the landing type"
+                },
+                "dcModifier": {
+                    "type": "integer",
+                    "description": "DC modifier for this landing type"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Explanation of the landing type"
+                }
+            },
+            "additionalProperties": false
+        },
+        "Outcome": {
+            "type": "object",
+            "description": "A standard leap outcome",
+            "required": [
+                "description"
+            ],
+            "properties": {
+                "staminaMultiplier": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 2,
+                    "description": "Multiplier for stamina cost"
+                },
+                "staminaModifier": {
+                    "type": "integer",
+                    "description": "Additional stamina cost"
+                },
+                "triggersFall": {
+                    "type": "boolean",
+                    "description": "Whether this outcome causes a fall"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Narrative description of the outcome"
+                }
+            },
+            "additionalProperties": false
+        },
+        "FumbleOutcome": {
+            "type": "object",
+            "description": "The Long Fall fumble outcome",
+            "required": [
+                "fumbleType",
+                "triggersFall",
+                "bonusDamageDice",
+                "stressGained",
+                "statusApplied",
+                "statusDuration",
+                "description"
+            ],
+            "properties": {
+                "fumbleType": {
+                    "type": "string",
+                    "const": "TheLongFall",
+                    "description": "The fumble type identifier"
+                },
+                "triggersFall": {
+                    "type": "boolean",
+                    "const": true,
+                    "description": "Fumbles always trigger falls"
+                },
+                "bonusDamageDice": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "Extra d10s of fall damage"
+                },
+                "stressGained": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "Stress points gained from fumble"
+                },
+                "statusApplied": {
+                    "type": "string",
+                    "description": "Status effect applied"
+                },
+                "statusDuration": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "Duration of status in rounds"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Narrative description"
+                }
+            },
+            "additionalProperties": false
+        },
+        "Defaults": {
+            "type": "object",
+            "description": "Default values for the leaping system",
+            "required": [
+                "minimumDc",
+                "defaultFallDepth",
+                "maximumLeapDistance"
+            ],
+            "properties": {
+                "minimumDc": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "Minimum DC regardless of modifiers"
+                },
+                "defaultFallDepth": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "Default fall depth if not specified"
+                },
+                "maximumLeapDistance": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "Maximum leap distance in feet"
+                }
+            },
+            "additionalProperties": false
+        }
+    }
+}
