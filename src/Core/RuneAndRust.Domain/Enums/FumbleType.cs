@@ -89,7 +89,30 @@ public enum FumbleType
     /// </list>
     /// </para>
     /// </remarks>
-    NegotiationCollapsed = 9
+    NegotiationCollapsed = 9,
+
+    /// <summary>
+    /// Interrogation/Torture: Subject has been damaged beyond recovery.
+    /// The subject may die, go insane, or become catatonic.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Triggered when a fumble occurs during torture interrogation. The physical or
+    /// psychological damage inflicted is irreversible. No information can ever be
+    /// extracted from the subject again.
+    /// </para>
+    /// <para>
+    /// Mechanical effects:
+    /// <list type="bullet">
+    ///   <item><description>Subject gains permanent condition (Dead/Insane/Catatonic)</description></item>
+    ///   <item><description>Additional -20 reputation loss (total -50 with standard torture cost)</description></item>
+    ///   <item><description>Some factions may become permanently hostile</description></item>
+    ///   <item><description>No information can be extracted</description></item>
+    ///   <item><description>Companions may leave or refuse future orders</description></item>
+    /// </list>
+    /// </para>
+    /// </remarks>
+    SubjectBroken = 10
 }
 
 /// <summary>
@@ -114,6 +137,7 @@ public static class FumbleTypeExtensions
             FumbleType.TheLongFall => false,    // Instant effect
             FumbleType.SystemWideAlert => true, // Affects all enemies in area
             FumbleType.NegotiationCollapsed => false, // Only affects specific NPC/deal
+            FumbleType.SubjectBroken => false, // Only affects specific subject
             _ => false
         };
     }
@@ -129,6 +153,7 @@ public static class FumbleTypeExtensions
             FumbleType.TheSlip => true,
             FumbleType.TheLongFall => false, // Has status duration
             FumbleType.NegotiationCollapsed => true, // Immediate termination
+            FumbleType.SubjectBroken => true, // Subject immediately broken/dead
             _ => false
         };
     }
@@ -150,6 +175,7 @@ public static class FumbleTypeExtensions
             FumbleType.TheLongFall => "leaping",
             FumbleType.SystemWideAlert => "stealth",
             FumbleType.NegotiationCollapsed => "negotiation",
+            FumbleType.SubjectBroken => "interrogation",
             _ => "unknown"
         };
     }
@@ -171,6 +197,7 @@ public static class FumbleTypeExtensions
             FumbleType.TheLongFall => "The Long Fall",
             FumbleType.SystemWideAlert => "System-Wide Alert",
             FumbleType.NegotiationCollapsed => "Negotiation Collapsed",
+            FumbleType.SubjectBroken => "Subject Broken",
             _ => "Unknown Fumble"
         };
     }
@@ -204,6 +231,8 @@ public static class FumbleTypeExtensions
                 "All nearby enemies are alerted and converge on your position.",
             FumbleType.NegotiationCollapsed =>
                 "The negotiation has completely failed. The NPC walks away and the deal is permanently off the table.",
+            FumbleType.SubjectBroken =>
+                "The torture has gone too far. The subject is permanently broken - dead, insane, or catatonic. No information can be extracted.",
             _ => "An unknown fumble consequence occurred."
         };
     }
@@ -219,6 +248,7 @@ public static class FumbleTypeExtensions
         {
             FumbleType.ChallengeAccepted => true,
             FumbleType.SystemWideAlert => true, // Enemies converge
+            FumbleType.SubjectBroken => false, // No combat, subject is incapacitated
             _ => false
         };
     }
@@ -235,6 +265,7 @@ public static class FumbleTypeExtensions
             FumbleType.TrustShattered => true, // Until recovery condition
             FumbleType.MechanismJammed => true, // Lock permanently affected
             FumbleType.NegotiationCollapsed => true, // Deal permanently lost
+            FumbleType.SubjectBroken => true, // Subject permanently incapacitated
             _ => false
         };
     }

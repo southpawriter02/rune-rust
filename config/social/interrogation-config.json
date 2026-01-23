@@ -1,0 +1,326 @@
+{
+  "$schema": "interrogation-config-schema.json",
+  "version": "0.15.3f",
+  "description": "Configuration for the Interrogation System - defines methods, resistance levels, and consequence mechanics",
+
+  "methods": {
+    "goodCop": {
+      "displayName": "Good Cop",
+      "description": "Empathetic questioning. Build rapport, express understanding, and offer help in exchange for cooperation.",
+      "baseDc": 14,
+      "durationMinutes": 30,
+      "reliabilityPercent": 95,
+      "dispositionChange": 0,
+      "reputationCost": 0,
+      "attribute": "WILL",
+      "skill": "Rhetoric",
+      "underlyingSystem": "Persuasion",
+      "specialRules": [],
+      "bestUsedWhen": [
+        "Time is not critical",
+        "Subject is not ideologically committed",
+        "You want reliable information",
+        "Maintaining reputation matters"
+      ]
+    },
+    "badCop": {
+      "displayName": "Bad Cop",
+      "description": "Aggressive questioning. Threats, shouting, physical intimidation. Fast but damages the relationship.",
+      "baseDc": 12,
+      "durationMinutes": 15,
+      "reliabilityPercent": 80,
+      "dispositionChange": -5,
+      "reputationCost": 0,
+      "attribute": "MIGHT_OR_WILL",
+      "skill": "Rhetoric",
+      "underlyingSystem": "Intimidation",
+      "specialRules": ["challengeAcceptedRisk"],
+      "bestUsedWhen": [
+        "Subject is weak-willed",
+        "Time pressure exists",
+        "You don't care about the relationship",
+        "Following up GoodCop failure"
+      ]
+    },
+    "deception": {
+      "displayName": "Deception",
+      "description": "Trick the subject with false information, bluffs about what you already know, or impersonating authority.",
+      "baseDc": 16,
+      "durationMinutes": 20,
+      "reliabilityPercent": 70,
+      "dispositionChange": -2,
+      "reputationCost": 0,
+      "attribute": "WILL",
+      "skill": "Rhetoric",
+      "underlyingSystem": "Deception",
+      "opposedBy": "SUBJECT_WITS",
+      "specialRules": ["counterDeceptionRisk", "liarsBurdenStress", "lieExposedFumble"],
+      "bestUsedWhen": [
+        "Subject is not perceptive (low WITS)",
+        "You have partial information to leverage",
+        "Direct approaches have failed",
+        "You're skilled in deception"
+      ]
+    },
+    "bribery": {
+      "displayName": "Bribery",
+      "description": "Offer the subject something they want: gold, freedom, protection, revenge on enemies, or other valuable considerations.",
+      "baseDc": 10,
+      "durationMinutes": 10,
+      "reliabilityPercent": 90,
+      "dispositionChange": 0,
+      "reputationCost": 0,
+      "attribute": "WILL",
+      "skill": "Rhetoric",
+      "underlyingSystem": "Persuasion",
+      "requiresResources": true,
+      "specialRules": ["costScalesWithResistance"],
+      "bestUsedWhen": [
+        "You have resources to spare",
+        "Subject is pragmatic/mercenary",
+        "You need reliable information quickly",
+        "Other methods have failed"
+      ]
+    },
+    "torture": {
+      "displayName": "Torture",
+      "description": "Physical or psychological torture to break the subject. The most extreme method with severe consequences.",
+      "baseDcMultiplier": 2,
+      "dcBase": "SUBJECT_WILL",
+      "durationMinutes": 60,
+      "reliabilityPercent": 50,
+      "dispositionChange": -20,
+      "reputationCost": -30,
+      "attribute": "MIGHT_OR_WILL",
+      "skill": null,
+      "underlyingSystem": null,
+      "specialRules": [
+        "traumaInflicted",
+        "reliabilityCap60",
+        "factionHostility",
+        "companionDisapproval",
+        "subjectBrokenFumble"
+      ],
+      "bestUsedWhen": [
+        "ALMOST NEVER",
+        "Only in extreme circumstances",
+        "When reliability doesn't matter",
+        "Role-playing an evil character",
+        "When consequences are acceptable"
+      ],
+      "warnings": [
+        "Subject will say ANYTHING to make it stop",
+        "Information is extremely unreliable",
+        "-30 Faction Reputation (or worse)",
+        "Subject gains [Traumatized] permanent condition",
+        "Certain factions become permanently hostile",
+        "Some companions may leave or refuse orders",
+        "Quest paths may close",
+        "[Subject Broken] fumble can cause death"
+      ]
+    }
+  },
+
+  "resistanceLevels": {
+    "minimal": {
+      "displayName": "Minimal",
+      "description": "Frightened civilian, coward, or already broken individual",
+      "willRange": { "min": 1, "max": 2 },
+      "checksToBreak": { "min": 1, "max": 1 },
+      "baseBriberyCost": 15,
+      "maxRounds": 3,
+      "typicalSubjects": [
+        "Frightened civilian",
+        "Coward",
+        "Already traumatized",
+        "Children or elderly with low will"
+      ]
+    },
+    "low": {
+      "displayName": "Low",
+      "description": "Hired muscle, petty criminal, or untrained individual",
+      "willRange": { "min": 3, "max": 4 },
+      "checksToBreak": { "min": 2, "max": 3 },
+      "baseBriberyCost": 35,
+      "maxRounds": 6,
+      "typicalSubjects": [
+        "Hired thugs and mercenaries",
+        "Petty criminals",
+        "Opportunistic informant",
+        "Common soldiers"
+      ]
+    },
+    "moderate": {
+      "displayName": "Moderate",
+      "description": "Loyal soldier, guild member, or moderately committed individual",
+      "willRange": { "min": 5, "max": 6 },
+      "checksToBreak": { "min": 4, "max": 5 },
+      "baseBriberyCost": 75,
+      "maxRounds": 10,
+      "typicalSubjects": [
+        "Soldiers loyal to their commander",
+        "Guild members protecting secrets",
+        "Devoted servants",
+        "Religious believers"
+      ]
+    },
+    "high": {
+      "displayName": "High",
+      "description": "Trained operative, sworn knight, or highly committed individual",
+      "willRange": { "min": 7, "max": 8 },
+      "checksToBreak": { "min": 6, "max": 8 },
+      "baseBriberyCost": 150,
+      "maxRounds": 15,
+      "typicalSubjects": [
+        "Trained spies and operatives",
+        "Sworn knights bound by oath",
+        "Professional assassins",
+        "Veteran soldiers with training"
+      ]
+    },
+    "extreme": {
+      "displayName": "Extreme",
+      "description": "Fanatical believer, elite spy, or extraordinarily committed individual",
+      "willRange": { "min": 9, "max": 99 },
+      "checksToBreak": { "min": 10, "max": 15 },
+      "baseBriberyCost": 350,
+      "maxRounds": 20,
+      "typicalSubjects": [
+        "Fanatical cult members",
+        "Elite assassins",
+        "Devoted cultists",
+        "True believers"
+      ],
+      "notes": "Breaking such subjects may not be possible through normal interrogation. Magical means or extreme measures may be required."
+    }
+  },
+
+  "resistanceModifiers": {
+    "training": {
+      "military": { "value": 2, "description": "Military training in resistance" },
+      "spy": { "value": 3, "description": "Professional spy training" },
+      "cultist": { "value": 2, "description": "Cult conditioning" },
+      "noble": { "value": 1, "description": "Noble upbringing (dignity/honor)" }
+    },
+    "loyalty": {
+      "sworn": { "value": 3, "description": "Sworn oath or vow" },
+      "loyal": { "value": 2, "description": "Strong personal loyalty" },
+      "affiliated": { "value": 1, "description": "Group affiliation" },
+      "hired": { "value": 0, "description": "Mercenary relationship" }
+    },
+    "stakes": {
+      "protectingLovedOnes": { "value": 2, "description": "Protecting family/loved ones" },
+      "protectingLeader": { "value": 2, "description": "Protecting leader/superior" },
+      "protectingSelf": { "value": 1, "description": "Protecting self-interest" },
+      "protectingSecrets": { "value": 1, "description": "Protecting organizational secrets" }
+    },
+    "conditions": {
+      "priorTorture": { "value": -1, "description": "Previously tortured (weakened)" },
+      "alreadyFrightened": { "value": -1, "description": "Currently frightened" },
+      "injured": { "value": -1, "description": "Physically injured" },
+      "wellRested": { "value": 1, "description": "Well-rested and alert" }
+    }
+  },
+
+  "tortureConsequences": {
+    "reputationLoss": -30,
+    "traumaInflicted": true,
+    "traumaCondition": "Traumatized",
+    "traumaIsPermanent": true,
+    "maxReliability": 60,
+    "hostileFactions": [
+      "Church of the Allfather",
+      "Healers Guild",
+      "Merchant League",
+      "Order of the White Rose"
+    ],
+    "companionReactions": {
+      "goodAligned": "Leave or refuse orders",
+      "neutralAligned": "Disapproval, reduced loyalty",
+      "evilAligned": "No reaction or approval"
+    },
+    "fumbleOutcomes": {
+      "dead": {
+        "weight": 40,
+        "description": "Subject dies from shock, blood loss, or cardiac arrest",
+        "additionalReputationCost": -20
+      },
+      "insane": {
+        "weight": 35,
+        "description": "Subject's mind breaks completely, becoming incoherent",
+        "additionalReputationCost": -15
+      },
+      "catatonic": {
+        "weight": 25,
+        "description": "Subject becomes unresponsive, retreating into themselves",
+        "additionalReputationCost": -10
+      }
+    }
+  },
+
+  "dcModifiers": {
+    "interrogation": {
+      "trainedOperative": { "value": 4, "description": "+4 DC for trained operatives" },
+      "fanaticalBeliever": { "value": 6, "description": "+6 DC for fanatical believers" },
+      "alreadyTortured": { "value": -2, "description": "-2 DC but -20% reliability" },
+      "injured": { "value": -2, "description": "-2 DC for injured subjects" }
+    }
+  },
+
+  "settings": {
+    "briberyCostVariance": 0.2,
+    "maxRoundsPerSession": 20,
+    "minimumResistance": 1,
+    "successReducesResistanceBy": 1,
+    "criticalSuccessReducesResistanceBy": 2,
+    "fumbleEndsInterrogation": {
+      "torture": true,
+      "other": false
+    }
+  },
+
+  "informationTopics": {
+    "categories": [
+      { "id": "location", "description": "Where something or someone is" },
+      { "id": "identity", "description": "Who someone is or names of people" },
+      { "id": "plans", "description": "Future plans, intentions, or strategies" },
+      { "id": "resources", "description": "Money, equipment, personnel" },
+      { "id": "relationships", "description": "Alliances, enemies, contacts" },
+      { "id": "secrets", "description": "Hidden information, passwords, codes" }
+    ],
+    "questRelevant": true,
+    "npcKnowledgeBased": true
+  },
+
+  "narrativeTemplates": {
+    "success": {
+      "goodCop": "Your sympathetic approach finds purchase. The subject seems slightly more willing to talk.",
+      "badCop": "Your aggressive stance has the desired effect. Fear flickers in the subject's eyes.",
+      "deception": "Your deception works. The subject unknowingly reveals something useful.",
+      "bribery": "The offer is tempting. The subject's resistance wavers.",
+      "torture": "The subject screams. Their will erodes under the pain."
+    },
+    "failure": {
+      "goodCop": "The subject remains unmoved by your words.",
+      "badCop": "The subject endures your threats in sullen silence.",
+      "deception": "The subject doesn't take the bait.",
+      "bribery": "The offer isn't enough to sway them.",
+      "torture": "The subject holds on, refusing to break."
+    },
+    "fumble": {
+      "goodCop": "Your attempt at empathy backfires completely. The subject sees through your facade and clams up.",
+      "badCop": "Your threats are met with defiance. The subject challenges you, emboldened rather than afraid.",
+      "deception": "Your lie is immediately spotted. The subject now knows you cannot be trusted.",
+      "bribery": "Your offer is taken as an insult. The subject's resolve hardens.",
+      "torture": "The torture goes too far. The subject is broken in ways that cannot be undone."
+    }
+  },
+
+  "reliabilityAssessments": {
+    "veryHigh": { "min": 90, "max": 100, "description": "Almost certainly accurate" },
+    "high": { "min": 80, "max": 89, "description": "Likely accurate" },
+    "moderate": { "min": 70, "max": 79, "description": "Probably accurate but verify if possible" },
+    "low": { "min": 60, "max": 69, "description": "May be inaccurate - verification recommended" },
+    "veryLow": { "min": 0, "max": 59, "description": "Unreliable - significant chance of false information" }
+  }
+}
