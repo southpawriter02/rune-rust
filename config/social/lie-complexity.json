@@ -1,0 +1,181 @@
+{
+    "$schema": "./schemas/lie-complexity.schema.json",
+    "version": "0.15.3c",
+    "description": "Lie complexity definitions and deception modifiers",
+    "lieTiers": {
+        "whiteLie": {
+            "id": "white-lie",
+            "displayName": "White Lie",
+            "baseDc": 10,
+            "detectionSeverity": 1,
+            "combatChanceModifier": -10,
+            "requiresEvidence": false,
+            "examples": [
+                "I was here the whole time",
+                "I didn't see anything",
+                "I'm just passing through",
+                "We've never met before"
+            ],
+            "description": "Minor falsehoods, easily believed, low stakes"
+        },
+        "plausible": {
+            "id": "plausible",
+            "displayName": "Plausible",
+            "baseDc": 14,
+            "detectionSeverity": 2,
+            "combatChanceModifier": 0,
+            "requiresEvidence": false,
+            "examples": [
+                "I'm with the Combine",
+                "The captain sent me to relieve you",
+                "I'm a merchant from the outer settlements",
+                "This is my first time in the city"
+            ],
+            "description": "Believable lies that could be true given context"
+        },
+        "unlikely": {
+            "id": "unlikely",
+            "displayName": "Unlikely",
+            "baseDc": 18,
+            "detectionSeverity": 3,
+            "combatChanceModifier": 10,
+            "requiresEvidence": true,
+            "examples": [
+                "The Warden sent me",
+                "I'm a high-ranking official from the capital",
+                "I discovered a cure for the blight",
+                "The guards already cleared me to be here"
+            ],
+            "description": "Stretches credibility, requires supporting details"
+        },
+        "outrageous": {
+            "id": "outrageous",
+            "displayName": "Outrageous",
+            "baseDc": 22,
+            "detectionSeverity": 4,
+            "combatChanceModifier": 20,
+            "requiresEvidence": true,
+            "examples": [
+                "I am the Warden",
+                "I single-handedly defeated the Iron-Bane warband",
+                "I've been chosen by the Shattered God",
+                "The entire settlement owes me a blood debt"
+            ],
+            "description": "Nearly unbelievable claims requiring extreme audacity"
+        }
+    },
+    "coverStoryQuality": {
+        "none": {
+            "dcModifier": 0,
+            "description": "Improvised lie"
+        },
+        "basic": {
+            "dcModifier": -1,
+            "description": "General story, few details"
+        },
+        "good": {
+            "dcModifier": -2,
+            "description": "Consistent details, names"
+        },
+        "excellent": {
+            "dcModifier": -3,
+            "description": "Researched, verifiable"
+        },
+        "masterwork": {
+            "dcModifier": -4,
+            "description": "Airtight with proof"
+        }
+    },
+    "dcModifiers": {
+        "npcSuspicious": {
+            "modifier": 4,
+            "description": "NPC has [Suspicious] status"
+        },
+        "npcTrusting": {
+            "modifier": -4,
+            "description": "NPC has [Trusting] status"
+        },
+        "evidenceContradicts": {
+            "modifier": 6,
+            "description": "Physical evidence contradicts the lie"
+        },
+        "playerUntrustworthy": {
+            "modifier": 3,
+            "description": "Player has [Untrustworthy] flag with NPC"
+        }
+    },
+    "diceModifiers": {
+        "player": {
+            "forgedDocumentsBasic": {
+                "modifier": 1,
+                "description": "Basic forged documents"
+            },
+            "forgedDocumentsHigh": {
+                "modifier": 2,
+                "description": "High-quality forged documents"
+            },
+            "lieContainsTruth": {
+                "modifier": 1,
+                "description": "Lie incorporates genuine truth"
+            },
+            "npcDistracted": {
+                "modifier": 1,
+                "description": "NPC is distracted"
+            },
+            "npcIntoxicated": {
+                "modifier": 1,
+                "description": "NPC is intoxicated"
+            },
+            "honoredReputation": {
+                "modifier": 1,
+                "description": "Honored standing with NPC's faction"
+            }
+        },
+        "npc": {
+            "trainedObserver": {
+                "modifier": 1,
+                "description": "NPC is a guard, investigator, etc."
+            },
+            "previouslyFooled": {
+                "modifier": 1,
+                "description": "NPC was previously deceived by player"
+            },
+            "alertStatus": {
+                "modifier": 1,
+                "description": "NPC has [Alert] status"
+            },
+            "knowsPlayer": {
+                "modifier": 1,
+                "description": "NPC knows the player personally"
+            },
+            "fatiguedStatus": {
+                "modifier": -1,
+                "description": "NPC has [Fatigued] status"
+            }
+        }
+    },
+    "liarsBurden": {
+        "successCost": 1,
+        "failureCost": 3,
+        "fumbleBaseCost": 8,
+        "lieExposedAdditional": 5,
+        "description": "Psychic stress cost for deception attempts"
+    },
+    "fumbleConsequences": {
+        "baseCombatChance": 50,
+        "baseBanChance": 30,
+        "untrustworthyApplied": true,
+        "recoveryConditions": [
+            "Complete a quest that benefits the NPC",
+            "Save the NPC's life or property",
+            "Significant time passage (2+ in-game weeks)",
+            "A trusted third party vouches for you"
+        ]
+    },
+    "opposedRoll": {
+        "playerPool": "WILL + Rhetoric + modifiers",
+        "npcPool": "WITS + modifiers",
+        "successThreshold": 8,
+        "description": "Deception uses opposed rolls instead of DC-based checks"
+    }
+}
