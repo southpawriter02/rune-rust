@@ -1,0 +1,267 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "balance-surfaces.schema.json",
+    "title": "Balance Surfaces Configuration",
+    "description": "Configuration for balance check mechanics",
+    "type": "object",
+    "required": [
+        "version",
+        "widthCategories",
+        "stabilityModifiers",
+        "conditionModifiers"
+    ],
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "JSON Schema reference"
+        },
+        "version": {
+            "type": "string",
+            "description": "Configuration version",
+            "pattern": "^\\d+\\.\\d+\\.\\d+[a-z]?$"
+        },
+        "description": {
+            "type": "string",
+            "description": "Human-readable description"
+        },
+        "widthCategories": {
+            "type": "array",
+            "description": "Surface width categories and their base DCs",
+            "items": {
+                "type": "object",
+                "required": [
+                    "id",
+                    "name",
+                    "baseDc"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9-]*$"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "minInches": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "minimum": 0
+                    },
+                    "maxInches": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "baseDc": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 10
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "examples": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "stabilityModifiers": {
+            "type": "array",
+            "description": "Surface stability states and DC modifiers",
+            "items": {
+                "type": "object",
+                "required": [
+                    "id",
+                    "name",
+                    "dcModifier"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "dcModifier": {
+                        "type": "integer",
+                        "minimum": 0
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "examples": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "conditionModifiers": {
+            "type": "array",
+            "description": "Surface conditions and DC modifiers",
+            "items": {
+                "type": "object",
+                "required": [
+                    "id",
+                    "name",
+                    "dcModifier"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "dcModifier": {
+                        "type": "integer",
+                        "minimum": 0
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "examples": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "environmentalModifiers": {
+            "type": "object",
+            "properties": {
+                "wind": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "required": [
+                            "condition",
+                            "dcModifier"
+                        ],
+                        "properties": {
+                            "condition": {
+                                "type": "string"
+                            },
+                            "dcModifier": {
+                                "type": "integer",
+                                "minimum": 0
+                            },
+                            "description": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                },
+                "encumbrance": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "required": [
+                            "level"
+                        ],
+                        "properties": {
+                            "level": {
+                                "type": "string"
+                            },
+                            "dcModifier": {
+                                "type": [
+                                    "integer",
+                                    "null"
+                                ]
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "preventAttempt": {
+                                "type": "boolean"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "equipment": {
+            "type": "object",
+            "additionalProperties": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "dcReduction": {
+                        "type": "integer",
+                        "minimum": 1
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "alternateItems": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "outcomes": {
+            "type": "object",
+            "additionalProperties": {
+                "type": "object",
+                "properties": {
+                    "marginRequired": {
+                        "type": "integer"
+                    },
+                    "staminaCost": {
+                        "type": "integer",
+                        "minimum": 0
+                    },
+                    "result": {
+                        "type": "string"
+                    },
+                    "bonusFallDamage": {
+                        "type": "integer"
+                    },
+                    "additionalEffects": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "narrativeTemplates": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "longTraverse": {
+            "type": "object",
+            "properties": {
+                "feetPerCheck": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "description": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}

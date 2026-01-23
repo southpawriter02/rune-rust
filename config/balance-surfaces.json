@@ -1,0 +1,242 @@
+{
+    "$schema": "./schemas/balance-surfaces.schema.json",
+    "version": "0.15.2f",
+    "description": "Balance check configuration for traversing narrow or unstable surfaces",
+    "widthCategories": [
+        {
+            "id": "wide",
+            "name": "Wide",
+            "minInches": 24,
+            "maxInches": null,
+            "baseDc": 2,
+            "description": "Wide surfaces (2+ feet) that are relatively easy to traverse",
+            "examples": [
+                "Wide planks",
+                "Thick stone ledges",
+                "Fallen tree trunks",
+                "Structural beams"
+            ]
+        },
+        {
+            "id": "narrow",
+            "name": "Narrow",
+            "minInches": 6,
+            "maxInches": 23,
+            "baseDc": 3,
+            "description": "Narrow surfaces (approximately 1 foot) requiring concentration",
+            "examples": [
+                "Standard building ledges",
+                "Thin walls",
+                "Narrow rafters",
+                "Bridge railings"
+            ]
+        },
+        {
+            "id": "cable",
+            "name": "Cable",
+            "minInches": 3,
+            "maxInches": 5,
+            "baseDc": 4,
+            "description": "Cable or pipe width (approximately 6 inches) for challenging traversal",
+            "examples": [
+                "Power cables",
+                "Water pipes",
+                "Tightropes",
+                "Thin chains"
+            ]
+        },
+        {
+            "id": "razor-edge",
+            "name": "Razor Edge",
+            "minInches": 0,
+            "maxInches": 2,
+            "baseDc": 5,
+            "description": "Razor-thin edges (less than 6 inches) with extreme difficulty",
+            "examples": [
+                "Knife edges",
+                "Wire cables",
+                "Decorative blade motifs",
+                "Barely-there ledges"
+            ]
+        }
+    ],
+    "stabilityModifiers": [
+        {
+            "id": "stable",
+            "name": "Stable",
+            "dcModifier": 0,
+            "description": "Fixed, solid, and predictable surface",
+            "examples": [
+                "Stone ledges",
+                "Metal beams",
+                "Sturdy wooden planks"
+            ]
+        },
+        {
+            "id": "unstable",
+            "name": "Unstable",
+            "dcModifier": 1,
+            "description": "Surface shifts or wobbles under weight",
+            "examples": [
+                "Loose boards",
+                "Crumbling ledges",
+                "Stacked debris"
+            ]
+        },
+        {
+            "id": "swaying",
+            "name": "Swaying",
+            "dcModifier": 2,
+            "description": "Surface moves continuously in a rhythm",
+            "examples": [
+                "Rope bridges",
+                "Hanging cables",
+                "Suspended platforms"
+            ]
+        }
+    ],
+    "conditionModifiers": [
+        {
+            "id": "dry",
+            "name": "Dry",
+            "dcModifier": 0,
+            "description": "Normal dry surface with standard traction"
+        },
+        {
+            "id": "wet",
+            "name": "Wet",
+            "dcModifier": 1,
+            "description": "Wet surface reducing traction",
+            "examples": [
+                "Rain-slicked surfaces",
+                "Recently washed areas"
+            ]
+        },
+        {
+            "id": "icy",
+            "name": "Icy",
+            "dcModifier": 2,
+            "description": "Frozen surface with significantly reduced traction",
+            "examples": [
+                "Frost-covered ledges",
+                "Frozen pipes",
+                "Ice-coated rails"
+            ]
+        }
+    ],
+    "environmentalModifiers": {
+        "wind": [
+            {
+                "condition": "none",
+                "dcModifier": 0,
+                "description": "No wind or light breeze"
+            },
+            {
+                "condition": "moderate",
+                "dcModifier": 0,
+                "description": "Moderate wind (no effect on balance)"
+            },
+            {
+                "condition": "strong",
+                "dcModifier": 1,
+                "description": "Strong wind pushing against balance"
+            },
+            {
+                "condition": "severe",
+                "dcModifier": 2,
+                "description": "Severe or storm-level wind"
+            }
+        ],
+        "encumbrance": [
+            {
+                "level": "light",
+                "dcModifier": 0,
+                "description": "Light or no encumbrance"
+            },
+            {
+                "level": "medium",
+                "dcModifier": 1,
+                "description": "Medium load affecting balance"
+            },
+            {
+                "level": "heavy",
+                "dcModifier": 2,
+                "description": "Heavy load significantly affecting balance"
+            },
+            {
+                "level": "overloaded",
+                "dcModifier": null,
+                "description": "Cannot attempt balance while overloaded",
+                "preventAttempt": true
+            }
+        ]
+    },
+    "equipment": {
+        "balancePole": {
+            "id": "balance-pole",
+            "dcReduction": 1,
+            "description": "A pole or staff used to aid balance",
+            "alternateItems": [
+                "quarterstaff",
+                "bo-staff",
+                "walking-stick"
+            ]
+        }
+    },
+    "outcomes": {
+        "criticalSuccess": {
+            "marginRequired": 5,
+            "staminaCost": 0,
+            "description": "Cross with perfect grace, no stamina cost",
+            "narrativeTemplates": [
+                "You cross with perfect grace, barely seeming to touch the surface."
+            ]
+        },
+        "exceptionalSuccess": {
+            "marginRequired": 3,
+            "staminaCost": 1,
+            "description": "Traverse with confident, measured steps",
+            "narrativeTemplates": [
+                "You traverse the surface with confident, measured steps."
+            ]
+        },
+        "fullSuccess": {
+            "marginRequired": 1,
+            "staminaCost": 1,
+            "description": "Careful crossing",
+            "narrativeTemplates": [
+                "You carefully make your way across the surface."
+            ]
+        },
+        "marginalSuccess": {
+            "marginRequired": 0,
+            "staminaCost": 2,
+            "description": "Barely successful, double stamina cost",
+            "narrativeTemplates": [
+                "You wobble precariously but manage to keep your balance."
+            ]
+        },
+        "failure": {
+            "result": "fall",
+            "description": "Lose balance and fall",
+            "narrativeTemplates": [
+                "You lose your balance and fall from the surface."
+            ]
+        },
+        "fumble": {
+            "result": "fall",
+            "bonusFallDamage": 1,
+            "additionalEffects": [
+                "disorientation"
+            ],
+            "description": "Catastrophic slip with additional consequences",
+            "narrativeTemplates": [
+                "Your foot slips catastrophically and you tumble into the void!"
+            ]
+        }
+    },
+    "longTraverse": {
+        "feetPerCheck": 20,
+        "description": "Surfaces longer than this require multiple balance checks"
+    }
+}
