@@ -1,0 +1,225 @@
+{
+    "$schema": "schemas/skill-descriptors.schema.json",
+    "skills": {
+        "lockpicking": {
+            "categories": {
+                "catastrophic": {
+                    "default": [
+                        "Something in the mechanism snaps. The lock is now permanently jammed.",
+                        "Your pick shatters inside the lock, adding insult to injury.",
+                        "A spring fires loose, ricocheting dangerously. The lock will never open now."
+                    ],
+                    "contextual": {
+                        "glitched": [
+                            "Reality shudders as the lock phases through your picks, reforming in a twisted configuration.",
+                            "The Blight's touch makes the mechanism phase in and out of existence."
+                        ]
+                    }
+                },
+                "failed": {
+                    "default": [
+                        "The tumblers refuse to cooperate. This lock remains secure.",
+                        "Despite your best efforts, the mechanism resists your manipulations.",
+                        "You work the lock for several minutes, but it stubbornly refuses to yield."
+                    ]
+                },
+                "marginal": {
+                    "default": [
+                        "After tense moments of fumbling, the lock finally clicks open.",
+                        "With a grunt of frustration, you force the last pin into place.",
+                        "It takes everything you have, but the lock surrenders at last."
+                    ]
+                },
+                "competent": {
+                    "default": [
+                        "Your picks find their marks. The lock opens smoothly.",
+                        "A satisfying click, and the mechanism yields to your expertise.",
+                        "Tumblers fall into place, one by one. The lock is defeated."
+                    ]
+                },
+                "impressive": {
+                    "default": [
+                        "Your picks dance through the mechanism with practiced grace.",
+                        "The lock practically falls open at your touch.",
+                        "Even a master locksmith would applaud your technique."
+                    ]
+                },
+                "masterful": {
+                    "default": [
+                        "The lock opens before you've even finished inserting your first pick.",
+                        "You've never seen tumblers surrender so quickly. This is art.",
+                        "The ancestors of the Dvergr would mark you as one of their own."
+                    ]
+                }
+            }
+        },
+        "persuasion": {
+            "categories": {
+                "catastrophic": {
+                    "default": [
+                        "Your words come out as a jumbled mess. They stare at you with contempt.",
+                        "You've managed to say the exact wrong thing. The situation has worsened.",
+                        "Their face hardens. You've not only failed—you've made an enemy."
+                    ],
+                    "contextual": {
+                        "hostile": [
+                            "Your attempt at diplomacy only deepens their hostility.",
+                            "They were already disinclined to listen. Now they're openly hostile."
+                        ]
+                    }
+                },
+                "failed": {
+                    "default": [
+                        "Your argument fails to find purchase. They remain unconvinced.",
+                        "Your words fall flat, meeting only skeptical silence.",
+                        "They listen, but clearly remain unswayed by your reasoning."
+                    ]
+                },
+                "marginal": {
+                    "default": [
+                        "After considerable effort, you see a grudging acceptance in their eyes.",
+                        "They're not happy about it, but your point finally lands.",
+                        "It takes everything you have, but they eventually come around."
+                    ]
+                },
+                "competent": {
+                    "default": [
+                        "Your argument resonates. They nod in understanding.",
+                        "Your words find fertile ground, and agreement blooms.",
+                        "A well-crafted appeal achieves the desired effect."
+                    ],
+                    "contextual": {
+                        "friendly": [
+                            "Your friend listens warmly and agrees readily.",
+                            "They were already inclined to help, and your words seal it."
+                        ]
+                    }
+                },
+                "impressive": {
+                    "default": [
+                        "Your rhetoric is so compelling, they wonder why they ever doubted you.",
+                        "Not only do they agree—they're now eager to help.",
+                        "Your persuasion is so effective, they feel they've reached this conclusion themselves."
+                    ]
+                },
+                "masterful": {
+                    "default": [
+                        "Your words weave a spell of pure conviction. They would follow you anywhere.",
+                        "In a single conversation, you've transformed a stranger into a true believer.",
+                        "The Skalds would compose sagas about this display of rhetorical mastery."
+                    ]
+                }
+            }
+        },
+        "climbing": {
+            "categories": {
+                "catastrophic": {
+                    "default": [
+                        "Your grip fails catastrophically. The ground rushes up to meet you.",
+                        "The surface crumbles beneath your fingers. You're falling.",
+                        "A handhold snaps. For a sickening moment, you're weightless."
+                    ],
+                    "contextual": {
+                        "compromised": [
+                            "The already unstable surface gives way entirely, taking you with it.",
+                            "The corroded metal finally surrenders to your weight. Everything collapses."
+                        ]
+                    }
+                },
+                "failed": {
+                    "default": [
+                        "You can find no safe path upward. The ascent eludes you.",
+                        "Every potential handhold proves treacherous. You're stuck.",
+                        "The surface offers nothing you can safely grip."
+                    ]
+                },
+                "marginal": {
+                    "default": [
+                        "By the narrowest of margins, you reach the next hold.",
+                        "A scrambling, undignified climb, but you make it.",
+                        "More luck than skill sees you to the next stage."
+                    ]
+                },
+                "competent": {
+                    "default": [
+                        "Your ascent is controlled and steady.",
+                        "Hands and feet find purchase with practiced reliability.",
+                        "A clean climb, nothing wasted."
+                    ],
+                    "contextual": {
+                        "stable": [
+                            "The solid surface makes your climb almost effortless.",
+                            "Reliable handholds guide your confident ascent."
+                        ]
+                    }
+                },
+                "impressive": {
+                    "default": [
+                        "You flow up the surface like water running in reverse.",
+                        "Every movement is economical, every grip perfect.",
+                        "The climb is poetry in motion."
+                    ]
+                },
+                "masterful": {
+                    "default": [
+                        "You ascend with the grace of a Gantry-Runner born to the heights.",
+                        "The surface seems to welcome you, offering holds that others would never see.",
+                        "The ancestors of the Dvergr would mark you as one of their own."
+                    ]
+                }
+            }
+        },
+        "stealth": {
+            "categories": {
+                "catastrophic": {
+                    "default": [
+                        "A deafening clatter echoes through the space. Every eye turns your way.",
+                        "You couldn't have drawn more attention if you'd fired a flare.",
+                        "Alert klaxons begin to wail. So much for subtlety."
+                    ],
+                    "contextual": {
+                        "dark": [
+                            "You crash into something in the darkness. The noise seems impossibly loud.",
+                            "The shadows that were your ally have betrayed you. You've given yourself away."
+                        ]
+                    }
+                },
+                "failed": {
+                    "default": [
+                        "Something gives your position away. You've been spotted.",
+                        "Despite your best efforts, you're not as hidden as you thought.",
+                        "A sound. A shadow. Something has revealed you."
+                    ]
+                },
+                "marginal": {
+                    "default": [
+                        "They heard something, but you freeze in time. They look away.",
+                        "A close call. You nearly gave yourself away.",
+                        "By sheer luck, you remain undetected. Barely."
+                    ]
+                },
+                "competent": {
+                    "default": [
+                        "Your movements produce no sound. The shadows embrace you.",
+                        "Like a ghost, you pass unseen and unheard.",
+                        "The space accepts your presence without complaint."
+                    ]
+                },
+                "impressive": {
+                    "default": [
+                        "You are one with the darkness. Nothing marks your passage.",
+                        "Even the most vigilant would struggle to detect you.",
+                        "Your stealth is so complete, you nearly startle yourself."
+                    ]
+                },
+                "masterful": {
+                    "default": [
+                        "The Myrk-gengr themselves would acknowledge you as kindred.",
+                        "You don't just hide—you cease to exist until you choose otherwise.",
+                        "Shadows knit themselves around you like a living cloak."
+                    ]
+                }
+            }
+        }
+    }
+}

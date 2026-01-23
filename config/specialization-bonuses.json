@@ -1,0 +1,197 @@
+{
+    "$schema": "schemas/specialization-bonuses.schema.json",
+    "specializations": {
+        "gantry-runner": {
+            "name": "Gantry-Runner: Urban Acrobat",
+            "skills": {
+                "climbing": {
+                    "diceBonus": 2,
+                    "description": "Born to the Heights"
+                },
+                "leaping": {
+                    "diceBonus": 1,
+                    "description": "Gap Jumper"
+                },
+                "stealth": {
+                    "diceBonus": 1,
+                    "condition": {
+                        "surfaceTypes": [
+                            "metal",
+                            "industrial"
+                        ]
+                    },
+                    "description": "Industrial Crawler"
+                }
+            }
+        },
+        "myrk-gengr": {
+            "name": "Myrk-gengr: Shadow Walker",
+            "skills": {
+                "stealth": {
+                    "diceBonus": 2,
+                    "description": "Shadow Born"
+                },
+                "observation": {
+                    "diceBonus": 1,
+                    "condition": {
+                        "lightingLevel": [
+                            "dim",
+                            "dark"
+                        ]
+                    },
+                    "description": "Dark-Adapted Eyes"
+                }
+            }
+        },
+        "thul": {
+            "name": "Thul: Speaker of Truths",
+            "skills": {
+                "persuasion": {
+                    "diceBonus": 1,
+                    "specialAbility": "no-reputation-loss-on-failure",
+                    "description": "Protected Diplomat"
+                },
+                "deception": {
+                    "dcModifier": 2,
+                    "description": "Bound to Truth"
+                }
+            }
+        },
+        "skald": {
+            "name": "Skald: Voice of Legend",
+            "skills": {
+                "intimidation": {
+                    "diceBonus": 1,
+                    "description": "Bardic Presence"
+                },
+                "persuasion": {
+                    "diceBonus": 1,
+                    "description": "Silver Tongue"
+                }
+            }
+        },
+        "kupmadr": {
+            "name": "Kaupmaðr: Master Negotiator",
+            "skills": {
+                "negotiation": {
+                    "diceBonus": 2,
+                    "description": "Trade Mastery"
+                },
+                "persuasion": {
+                    "diceBonus": 1,
+                    "condition": {
+                        "targetDisposition": [
+                            "neutral",
+                            "friendly"
+                        ]
+                    },
+                    "description": "Deal Maker"
+                }
+            }
+        },
+        "scrap-tinker": {
+            "name": "Scrap-Tinker: Mechanical Savant",
+            "skills": {
+                "lockpicking": {
+                    "diceBonus": 1,
+                    "description": "Lock Sense"
+                },
+                "trap-disarmament": {
+                    "diceBonus": 2,
+                    "description": "Mechanical Intuition"
+                },
+                "jury-rigging": {
+                    "diceBonus": 2,
+                    "description": "Improvised Solutions"
+                }
+            }
+        },
+        "ruin-stalker": {
+            "name": "Ruin-Stalker: Trap Master",
+            "skills": {
+                "trap-disarmament": {
+                    "diceBonus": 2,
+                    "specialAbility": "always-salvage-components",
+                    "description": "Expert Disarmer"
+                },
+                "trap-detection": {
+                    "diceBonus": 1,
+                    "description": "Danger Sense"
+                }
+            }
+        },
+        "jotun-reader": {
+            "name": "Jötun-Reader: Terminal Master",
+            "skills": {
+                "terminal-hacking": {
+                    "diceBonus": 2,
+                    "description": "Data Communion"
+                },
+                "data-recovery": {
+                    "diceBonus": 1,
+                    "description": "Ancestral Whispers"
+                }
+            }
+        },
+        "veidimadr": {
+            "name": "Veiðimaðr: Creature Tracker",
+            "skills": {
+                "tracking": {
+                    "diceBonus": 2,
+                    "condition": {
+                        "targetType": [
+                            "creature",
+                            "beast"
+                        ]
+                    },
+                    "description": "Beast Hunter"
+                },
+                "foraging": {
+                    "diceBonus": 1,
+                    "description": "Hunter's Knowledge"
+                }
+            }
+        },
+        "myr-stalker": {
+            "name": "Myr-Stalker: Wasteland Expert",
+            "skills": {
+                "navigation": {
+                    "diceBonus": 2,
+                    "condition": {
+                        "biomes": [
+                            "swamp",
+                            "marsh",
+                            "bog",
+                            "wetland"
+                        ]
+                    },
+                    "description": "Mire Walker"
+                },
+                "hazard-detection": {
+                    "diceBonus": 1,
+                    "condition": {
+                        "biomes": [
+                            "swamp",
+                            "marsh",
+                            "bog",
+                            "wetland"
+                        ]
+                    },
+                    "description": "Swamp Sense"
+                },
+                "foraging": {
+                    "diceBonus": 1,
+                    "condition": {
+                        "biomes": [
+                            "swamp",
+                            "marsh",
+                            "bog",
+                            "wetland"
+                        ]
+                    },
+                    "description": "Mire Harvester"
+                }
+            }
+        }
+    }
+}

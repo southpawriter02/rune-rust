@@ -1,0 +1,66 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "skill-descriptors.schema.json",
+    "title": "Skill Descriptors Configuration",
+    "description": "Schema for skill-specific voice guidance descriptors",
+    "type": "object",
+    "properties": {
+        "$schema": {
+            "type": "string"
+        },
+        "skills": {
+            "type": "object",
+            "description": "Map of skill IDs to their descriptor pools",
+            "additionalProperties": {
+                "$ref": "#/$defs/skillConfig"
+            }
+        }
+    },
+    "required": [
+        "skills"
+    ],
+    "$defs": {
+        "skillConfig": {
+            "type": "object",
+            "properties": {
+                "categories": {
+                    "type": "object",
+                    "description": "Descriptor pools organized by outcome category",
+                    "additionalProperties": {
+                        "$ref": "#/$defs/categoryPool"
+                    }
+                }
+            },
+            "required": [
+                "categories"
+            ]
+        },
+        "categoryPool": {
+            "type": "object",
+            "properties": {
+                "default": {
+                    "type": "array",
+                    "description": "Default descriptor pool for this category",
+                    "items": {
+                        "type": "string"
+                    },
+                    "minItems": 1
+                },
+                "contextual": {
+                    "type": "object",
+                    "description": "Context-specific descriptor pools (corruption, surface, disposition)",
+                    "additionalProperties": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "minItems": 1
+                    }
+                }
+            },
+            "required": [
+                "default"
+            ]
+        }
+    }
+}

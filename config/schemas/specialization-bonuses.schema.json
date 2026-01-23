@@ -1,0 +1,118 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "specialization-bonuses.schema.json",
+    "title": "Specialization Bonuses Configuration",
+    "description": "Schema for archetype-specific skill bonuses",
+    "type": "object",
+    "properties": {
+        "$schema": {
+            "type": "string"
+        },
+        "specializations": {
+            "type": "object",
+            "description": "Map of specialization IDs to their configurations",
+            "additionalProperties": {
+                "$ref": "#/$defs/specializationConfig"
+            }
+        }
+    },
+    "required": [
+        "specializations"
+    ],
+    "$defs": {
+        "specializationConfig": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "Display name for the specialization"
+                },
+                "skills": {
+                    "type": "object",
+                    "description": "Map of skill IDs to bonus configurations",
+                    "additionalProperties": {
+                        "$ref": "#/$defs/skillBonusConfig"
+                    }
+                }
+            },
+            "required": [
+                "name",
+                "skills"
+            ]
+        },
+        "skillBonusConfig": {
+            "type": "object",
+            "properties": {
+                "diceBonus": {
+                    "type": "integer",
+                    "description": "Dice pool modifier (+/- d10s)",
+                    "default": 0
+                },
+                "dcModifier": {
+                    "type": "integer",
+                    "description": "Difficulty class modifier",
+                    "default": 0
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Human-readable bonus description"
+                },
+                "specialAbility": {
+                    "type": "string",
+                    "description": "Optional special ability identifier"
+                },
+                "condition": {
+                    "$ref": "#/$defs/conditionConfig"
+                }
+            }
+        },
+        "conditionConfig": {
+            "type": "object",
+            "description": "Conditions that must be met for the bonus to apply",
+            "properties": {
+                "biomes": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "Required biome types"
+                },
+                "surfaceTypes": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "Required surface types"
+                },
+                "requiredEquipment": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "Required equipment IDs"
+                },
+                "lightingLevel": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "Required lighting conditions"
+                },
+                "targetDisposition": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "Required target disposition"
+                },
+                "targetType": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "Required target types"
+                }
+            }
+        }
+    }
+}
