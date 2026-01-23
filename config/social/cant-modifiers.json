@@ -1,0 +1,167 @@
+{
+  "$schema": "cant-modifiers-schema.json",
+  "version": "0.15.3g",
+  "description": "Configuration for Cant (cultural trade language) modifiers and fluency effects",
+
+  "CantModifiers": {
+    "None": {
+      "DiceModifier": -1,
+      "Description": "No knowledge of the cant",
+      "DisplayText": "Unfamiliar (-1d10)",
+      "NarrativeDescription": "You cannot understand or speak this dialect. Cultural references and idioms are completely lost on you, and you may accidentally cause offense through linguistic ignorance.",
+      "CanUnderstand": false,
+      "CanSpeak": false,
+      "GrantsCulturalDialogueAccess": false
+    },
+    "Basic": {
+      "DiceModifier": 0,
+      "Description": "Basic understanding of the cant",
+      "DisplayText": "Basic Understanding (+0)",
+      "NarrativeDescription": "You can communicate basic ideas, but lack nuance. You understand literal meanings but miss subtext and cultural implications. You are clearly recognized as a learner or outsider.",
+      "CanUnderstand": true,
+      "CanSpeak": true,
+      "GrantsCulturalDialogueAccess": false
+    },
+    "Fluent": {
+      "DiceModifier": 1,
+      "Description": "Fluent in the cant",
+      "DisplayText": "Fluent (+1d10)",
+      "NarrativeDescription": "You speak with native-level proficiency, understanding idioms, cultural references, and subtle implications. You can use appropriate honorifics and demonstrate cultural respect through language.",
+      "CanUnderstand": true,
+      "CanSpeak": true,
+      "GrantsCulturalDialogueAccess": true
+    }
+  },
+
+  "CultureCants": {
+    "dvergr": {
+      "CantName": "Dvergr Trade-Tongue",
+      "Description": "A precision language for craft and commerce. Every term has exact meaning, and ambiguity is considered sloppy thinking.",
+      "NarrativeIntro": "The Dvergr Trade-Tongue is like clockwork made of words - every syllable clicks into place with mechanical precision.",
+      "KeyFeatures": [
+        "Mathematical terminology for quality grades",
+        "Precise measurements and specifications",
+        "Contractual language with binding implications",
+        "Technical vocabulary for all crafts"
+      ],
+      "LearningDifficulty": "High",
+      "CommonPhrases": [
+        {"phrase": "Vrekk-stone", "meaning": "Deal is struck (literally: 'stone-sealed')"},
+        {"phrase": "Null-measure", "meaning": "Unacceptable quality"},
+        {"phrase": "Triple-counted", "meaning": "Thoroughly verified"}
+      ]
+    },
+    "utgard": {
+      "CantName": "Utgard Shadow-Tongue",
+      "Description": "A layered language where truth is hidden beneath acceptable deception. Every statement has surface and deeper meanings.",
+      "NarrativeIntro": "Speaking Shadow-Tongue is like dancing in fog - what you say and what you mean waltz together but never quite touch.",
+      "KeyFeatures": [
+        "Multiple layers of meaning in every phrase",
+        "Culturally-coded references and callbacks",
+        "Subtle distinctions between levels of deception",
+        "Poetic constructions that mask intent"
+      ],
+      "LearningDifficulty": "Very High",
+      "CommonPhrases": [
+        {"phrase": "Mist-speak", "meaning": "Polite lie (expected and respected)"},
+        {"phrase": "Clear-tongue", "meaning": "Insultingly direct speech"},
+        {"phrase": "Veil-worthy", "meaning": "A worthy conversation partner"}
+      ]
+    },
+    "gorge-maw": {
+      "CantName": "Gorge-Maw Rumble",
+      "Description": "A resonant, tonal language requiring patience to parse. Extended vocalizations carry complex meanings through pitch and duration.",
+      "NarrativeIntro": "The Rumble flows like deep water through stone - slow, patient, and carrying more meaning than surface-dwellers can easily grasp.",
+      "KeyFeatures": [
+        "Tonal variations convey emotional context",
+        "Extended phrases that cannot be interrupted",
+        "Ritual greetings that establish relationship",
+        "Silence as meaningful communication"
+      ],
+      "LearningDifficulty": "Moderate",
+      "CommonPhrases": [
+        {"phrase": "Deep-hum", "meaning": "Greeting of respect (takes 30+ seconds)"},
+        {"phrase": "Stone-still", "meaning": "Patient understanding"},
+        {"phrase": "Crack-voiced", "meaning": "One who interrupts (grave insult)"}
+      ]
+    },
+    "rune-lupin": {
+      "CantName": "Lupin Mind-Speech",
+      "Description": "A semi-telepathic communication that blends verbal and emotional elements. Requires mental openness to fully comprehend.",
+      "NarrativeIntro": "Mind-Speech is less speaking and more... feeling words into existence. Thoughts carry emotion; emotions carry meaning.",
+      "KeyFeatures": [
+        "Emotional impressions accompany words",
+        "Pack hierarchy reflected in speech patterns",
+        "Mental state visible to fluent speakers",
+        "Deception nearly impossible (emotions leak)"
+      ],
+      "LearningDifficulty": "Low (with mental openness)",
+      "CommonPhrases": [
+        {"phrase": "Pack-bound", "meaning": "Trusted ally (can share thoughts)"},
+        {"phrase": "Closed-mind", "meaning": "Outsider or untrustworthy"},
+        {"phrase": "Heart-speak", "meaning": "Honest emotional communication"}
+      ]
+    },
+    "iron-bane": {
+      "CantName": "Iron-Bane War-Cant",
+      "Description": "Martial terminology and honor codes embedded in language. Words carry weight, and oaths once spoken are binding.",
+      "NarrativeIntro": "War-Cant is forged like steel - every word hammered into shape carries the weight of blood and honor.",
+      "KeyFeatures": [
+        "Battle terminology with precise meanings",
+        "Honor codes expressed through speech",
+        "Oath-words that carry binding weight",
+        "Challenge and response rituals"
+      ],
+      "LearningDifficulty": "Moderate",
+      "CommonPhrases": [
+        {"phrase": "Steel-sworn", "meaning": "Oath bound by honor (unbreakable)"},
+        {"phrase": "Blood-price", "meaning": "Debt that can only be paid in blood"},
+        {"phrase": "Shield-worthy", "meaning": "Trustworthy to stand beside in battle"}
+      ]
+    }
+  },
+
+  "FluencyAcquisition": {
+    "StartingFluency": {
+      "OwnCulture": "Fluent",
+      "NeighboringCultures": "Basic",
+      "DistantCultures": "None"
+    },
+    "LearningMethods": [
+      {
+        "Method": "Immersion",
+        "TimeToBasic": "1-3 months",
+        "TimeToFluent": "6-12 months",
+        "Description": "Living among the culture"
+      },
+      {
+        "Method": "Study",
+        "TimeToBasic": "3-6 months",
+        "TimeToFluent": "12-24 months",
+        "Description": "Formal instruction or book learning"
+      },
+      {
+        "Method": "MagicalMeans",
+        "TimeToBasic": "Instant",
+        "TimeToFluent": "Varies",
+        "Description": "Magical language acquisition"
+      }
+    ]
+  },
+
+  "DisplayFormats": {
+    "Bonus": "{CantName}: +{Modifier}d10 (Fluent)",
+    "Neutral": "{CantName}: No modifier (Basic)",
+    "Penalty": "{CantName}: {Modifier}d10 (Unfamiliar)",
+    "ShortBonus": "+{Modifier}d10",
+    "ShortNeutral": "±0",
+    "ShortPenalty": "{Modifier}d10"
+  },
+
+  "Settings": {
+    "EnableCantSystem": true,
+    "ShowCantHints": true,
+    "AllowCantLearning": true,
+    "DefaultFluencyForUnknownCultures": "Basic"
+  }
+}

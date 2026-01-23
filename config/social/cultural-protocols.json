@@ -1,0 +1,334 @@
+{
+  "$schema": "cultural-protocols-schema.json",
+  "version": "0.15.3g",
+  "description": "Configuration for the Cultural Protocol System - defines protocols for five major cultures",
+
+  "CulturalProtocols": {
+    "Protocols": [
+      {
+        "CultureId": "dvergr",
+        "ProtocolName": "Logic-Chain",
+        "BaseDc": 18,
+        "Requirements": "Precise, non-contradictory sequences. Arguments must follow logical progression without emotional appeals or circular reasoning.",
+        "ViolationConsequence": "Dismissal of argument as irrational. The Dvergr will refuse to engage further until you demonstrate logical competence.",
+        "CantName": "Dvergr Trade-Tongue",
+        "SpecialRuleType": "LogicChain",
+        "DetailedRequirements": [
+          {
+            "RequirementText": "Present premises before conclusions",
+            "RequirementType": "Verbal",
+            "IsMandatory": true,
+            "ViolationSeverity": "Moderate"
+          },
+          {
+            "RequirementText": "Avoid emotional appeals",
+            "RequirementType": "Behavioral",
+            "IsMandatory": true,
+            "ViolationSeverity": "Minor"
+          },
+          {
+            "RequirementText": "Acknowledge counterarguments",
+            "RequirementType": "Verbal",
+            "IsMandatory": false,
+            "ViolationSeverity": "Minor"
+          },
+          {
+            "RequirementText": "Use precise numerical language when discussing quantities",
+            "RequirementType": "Verbal",
+            "IsMandatory": false,
+            "ViolationSeverity": "Minor"
+          }
+        ],
+        "CultureDescription": "The Dvergr value precision and logical consistency above all else. Arguments must follow clear reasoning chains, and contradictions are considered either insulting or evidence of poor intellect.",
+        "ProtocolNarrative": "Among the Dvergr, every word is a stone in an argument's foundation. Build carelessly, and the entire structure of your position collapses."
+      },
+      {
+        "CultureId": "utgard",
+        "ProtocolName": "Veil-Speech",
+        "BaseDc": 16,
+        "Requirements": "Layer truth in deception. Direct statements are considered crude and offensive. Wrap your meaning in metaphor and misdirection.",
+        "ViolationConsequence": "Social offense. Direct truth-telling marks you as unsophisticated. -2d10 on future checks with this NPC.",
+        "CantName": "Utgard Shadow-Tongue",
+        "SpecialRuleType": "VeilSpeech",
+        "DetailedRequirements": [
+          {
+            "RequirementText": "Never state intentions directly",
+            "RequirementType": "Verbal",
+            "IsMandatory": true,
+            "ViolationSeverity": "Moderate"
+          },
+          {
+            "RequirementText": "Use metaphor and allegory",
+            "RequirementType": "Verbal",
+            "IsMandatory": true,
+            "ViolationSeverity": "Minor"
+          },
+          {
+            "RequirementText": "Acknowledge the game being played",
+            "RequirementType": "Behavioral",
+            "IsMandatory": false,
+            "ViolationSeverity": "Minor"
+          },
+          {
+            "RequirementText": "Accept deception as a form of respect",
+            "RequirementType": "Behavioral",
+            "IsMandatory": true,
+            "ViolationSeverity": "Severe"
+          }
+        ],
+        "CultureDescription": "The Utgard believe that only fools and children speak plainly. Proper communication involves layering truth within acceptable deception, demonstrating wit and sophistication.",
+        "ProtocolNarrative": "In Utgard society, the veil between truth and lie is not a barrier but a dance floor. To speak plainly is to stand still while others waltz."
+      },
+      {
+        "CultureId": "gorge-maw",
+        "ProtocolName": "Hospitality Rite",
+        "BaseDc": 14,
+        "Requirements": "Listen to the extended greeting rumble. The Gorge-Maw communicate through extended, resonant vocalizations. Interruption is the gravest insult.",
+        "ViolationConsequence": "Perceived arrogance triggers immediate hostility. The Gorge-Maw may attack or refuse all future interaction.",
+        "CantName": "Gorge-Maw Rumble",
+        "SpecialRuleType": "HospitalityRite",
+        "DetailedRequirements": [
+          {
+            "RequirementText": "Remain silent during the greeting rumble",
+            "RequirementType": "Behavioral",
+            "IsMandatory": true,
+            "ViolationSeverity": "Severe"
+          },
+          {
+            "RequirementText": "Maintain eye contact during communication",
+            "RequirementType": "Behavioral",
+            "IsMandatory": true,
+            "ViolationSeverity": "Minor"
+          },
+          {
+            "RequirementText": "Respond with brief acknowledgment rumble",
+            "RequirementType": "Verbal",
+            "IsMandatory": false,
+            "ViolationSeverity": "Minor"
+          },
+          {
+            "RequirementText": "Accept offered food or drink",
+            "RequirementType": "Ritual",
+            "IsMandatory": true,
+            "ViolationSeverity": "Moderate"
+          }
+        ],
+        "CultureDescription": "The Gorge-Maw consider hospitality sacred. Business cannot be discussed until proper hospitality rites are completed, including shared food, extended greetings, and patient listening.",
+        "ProtocolNarrative": "To the Gorge-Maw, patience is the highest form of respect. The rumble of greeting carries generations of history - to interrupt is to silence ancestors."
+      },
+      {
+        "CultureId": "rune-lupin",
+        "ProtocolName": "Pack-Speech Telepathy",
+        "BaseDc": 12,
+        "Requirements": "Open mind, suppress hostility. The Rune-Lupin communicate through limited telepathy. Mental barriers or hostile thoughts cause painful feedback.",
+        "ViolationConsequence": "Psychic feedback causes +2 Stress. Repeated violations may result in permanent telepathic block.",
+        "CantName": "Lupin Mind-Speech",
+        "SpecialRuleType": "Telepathy",
+        "DetailedRequirements": [
+          {
+            "RequirementText": "Lower mental defenses",
+            "RequirementType": "Mental",
+            "IsMandatory": true,
+            "ViolationSeverity": "Moderate"
+          },
+          {
+            "RequirementText": "Suppress hostile or deceptive thoughts",
+            "RequirementType": "Mental",
+            "IsMandatory": true,
+            "ViolationSeverity": "Severe"
+          },
+          {
+            "RequirementText": "Project calm emotional state",
+            "RequirementType": "Mental",
+            "IsMandatory": false,
+            "ViolationSeverity": "Minor"
+          },
+          {
+            "RequirementText": "Accept emotional impressions from the pack",
+            "RequirementType": "Mental",
+            "IsMandatory": false,
+            "ViolationSeverity": "Minor"
+          }
+        ],
+        "CultureDescription": "The Rune-Lupin communicate partially through telepathic impression. Successful interaction requires opening one's mind to their pack telepathy and allowing emotional states to be sensed.",
+        "ProtocolNarrative": "The Rune-Lupin see thoughts as clearly as words. To them, a closed mind is a slammed door - and hostile thoughts are drawn weapons.",
+        "SpecialWarnings": [
+          "Attempting deception is extremely difficult (DC +6)",
+          "Hostile thoughts cause immediate detection",
+          "Characters with mental shields face significant challenges"
+        ]
+      },
+      {
+        "CultureId": "iron-bane",
+        "ProtocolName": "Martial Tribute",
+        "BaseDc": 16,
+        "Requirements": "Offer martial tribute first. Before any negotiation, you must demonstrate martial worth through a gift of weapons, armor, or combat prowess.",
+        "ViolationConsequence": "Viewed as weakling unworthy of respect. DC +4 on all checks. May be challenged to prove worth through combat.",
+        "CantName": "Iron-Bane War-Cant",
+        "SpecialRuleType": "MartialTribute",
+        "DetailedRequirements": [
+          {
+            "RequirementText": "Present weapon or armor as gift",
+            "RequirementType": "Offering",
+            "IsMandatory": true,
+            "ViolationSeverity": "Moderate"
+          },
+          {
+            "RequirementText": "Describe a personal battle victory",
+            "RequirementType": "Verbal",
+            "IsMandatory": false,
+            "ViolationSeverity": "Minor"
+          },
+          {
+            "RequirementText": "Accept challenge if offered",
+            "RequirementType": "Behavioral",
+            "IsMandatory": true,
+            "ViolationSeverity": "Severe"
+          },
+          {
+            "RequirementText": "Honor all sworn oaths",
+            "RequirementType": "Behavioral",
+            "IsMandatory": true,
+            "ViolationSeverity": "Unforgivable"
+          }
+        ],
+        "CultureDescription": "The Iron-Bane respect martial achievement. Before serious discussion can occur, visitors must demonstrate their martial status through tribute or by recounting their martial achievements.",
+        "ProtocolNarrative": "Among the Iron-Bane, steel speaks louder than words. An empty hand offers nothing; a blooded blade offers everything.",
+        "BloodOathRules": {
+          "Description": "The Iron-Bane seal significant agreements with blood oaths - rituals that bind both parties to their word with supernatural consequences for betrayal.",
+          "RefusingOathPenalty": "-2d10 on negotiation (seen as lacking commitment)",
+          "BreakingOathConsequence": "Unforgivable violation with supernatural consequences",
+          "CompletingOathBenefit": "Significant reputation gain with all Iron-Bane"
+        }
+      }
+    ],
+
+    "CantModifiers": {
+      "None": -1,
+      "Basic": 0,
+      "Fluent": 1
+    },
+
+    "VeilSpeechRules": {
+      "DeceptionDcReduction": 4,
+      "ProperVeilSpeechBonus": 1,
+      "DirectTruthPenalty": -2,
+      "OffenseEscalationThreshold": 2,
+      "StateDescriptions": {
+        "Neutral": "No prior interaction or neutral standing. Standard rules apply.",
+        "Respected": "Proper Veil-Speech demonstrated. +1d10 bonus on future checks.",
+        "Offended": "Direct truth told. -2d10 penalty on future checks until amends made.",
+        "DeepOffense": "Repeated offense. -4d10 penalty, interaction may be blocked."
+      },
+      "RecoveryMethods": {
+        "Offended": [
+          "Formal apology using proper Veil-Speech",
+          "A gift or favor appropriate to the offense",
+          "Sufficient time for the offense to be forgotten"
+        ],
+        "DeepOffense": [
+          "Intervention by a respected third party",
+          "Completion of a quest or significant favor",
+          "Substantial gifts and formal apology",
+          "Some NPCs may never forgive this level of offense"
+        ]
+      }
+    },
+
+    "ViolationConsequences": {
+      "Minor": {
+        "DisplayName": "Minor Faux Pas",
+        "DcIncrease": 2,
+        "DicePenalty": 0,
+        "DispositionChange": -5,
+        "Recovery": "Automatic after one successful interaction, or a brief apology",
+        "BlocksInteraction": false,
+        "MayTriggerHostility": false,
+        "AffectsFactionReputation": false
+      },
+      "Moderate": {
+        "DisplayName": "Protocol Breach",
+        "DcIncrease": 4,
+        "DicePenalty": 1,
+        "DispositionChange": -15,
+        "Recovery": "Requires explicit acknowledgment of error and a small gesture of respect",
+        "BlocksInteraction": false,
+        "MayTriggerHostility": false,
+        "AffectsFactionReputation": false
+      },
+      "Severe": {
+        "DisplayName": "Serious Offense",
+        "DcIncrease": 6,
+        "DicePenalty": 2,
+        "DispositionChange": -30,
+        "Recovery": "Requires substantial gift, formal apology before witnesses, or completing a task",
+        "BlocksInteraction": false,
+        "MayTriggerHostility": true,
+        "AffectsFactionReputation": false
+      },
+      "Unforgivable": {
+        "DisplayName": "Unforgivable Transgression",
+        "DcIncrease": 999,
+        "DicePenalty": 999,
+        "DispositionChange": -100,
+        "Recovery": "Generally impossible. May require extraordinary measures such as completing a major quest.",
+        "BlocksInteraction": true,
+        "MayTriggerHostility": true,
+        "AffectsFactionReputation": true
+      }
+    },
+
+    "CultureSummary": {
+      "Dvergr": {
+        "BaseDc": 18,
+        "Difficulty": "Very Hard",
+        "KeyProtocol": "Logic-Chain",
+        "CantName": "Dvergr Trade-Tongue",
+        "BestApproach": "Logical arguments with precise language",
+        "WorstApproach": "Emotional appeals or contradictory statements"
+      },
+      "Utgard": {
+        "BaseDc": 16,
+        "Difficulty": "Hard",
+        "KeyProtocol": "Veil-Speech",
+        "CantName": "Utgard Shadow-Tongue",
+        "BestApproach": "Layered communication, acceptable deception",
+        "WorstApproach": "Direct, unvarnished truth"
+      },
+      "GorgeMaw": {
+        "BaseDc": 14,
+        "Difficulty": "Moderate",
+        "KeyProtocol": "Hospitality Rite",
+        "CantName": "Gorge-Maw Rumble",
+        "BestApproach": "Patience, listening, accepting hospitality",
+        "WorstApproach": "Interrupting or rushing"
+      },
+      "RuneLupin": {
+        "BaseDc": 12,
+        "Difficulty": "Easy",
+        "KeyProtocol": "Telepathy",
+        "CantName": "Lupin Mind-Speech",
+        "BestApproach": "Mental openness, emotional honesty",
+        "WorstApproach": "Mental barriers or deception attempts"
+      },
+      "IronBane": {
+        "BaseDc": 16,
+        "Difficulty": "Hard",
+        "KeyProtocol": "Martial Tribute",
+        "CantName": "Iron-Bane War-Cant",
+        "BestApproach": "Demonstrate martial worth, honor oaths",
+        "WorstApproach": "Appearing weak or breaking sworn oaths"
+      }
+    }
+  },
+
+  "Settings": {
+    "EnableCulturalProtocols": true,
+    "EnableCantModifiers": true,
+    "EnableVeilSpeech": true,
+    "EnableViolationTracking": true,
+    "MaxViolationsBeforeBlock": 3,
+    "ViolationDecayDays": 30,
+    "ShowProtocolHints": true
+  }
+}
