@@ -1,6 +1,7 @@
 namespace RuneAndRust.Application.Interfaces;
 
 using RuneAndRust.Domain.Entities;
+using RuneAndRust.Domain.Enums;
 using RuneAndRust.Domain.ValueObjects;
 
 /// <summary>
@@ -21,6 +22,28 @@ public interface IFumbleConsequenceService
         string skillId,
         string? targetId,
         SkillContext? context);
+
+    /// <summary>
+    /// Creates a new fumble consequence with a specific type and description.
+    /// </summary>
+    /// <param name="characterId">The character who fumbled.</param>
+    /// <param name="skillId">The skill that was fumbled.</param>
+    /// <param name="fumbleType">The specific type of fumble consequence.</param>
+    /// <param name="targetId">The optional target of the skill check.</param>
+    /// <param name="description">Custom description for the consequence.</param>
+    /// <returns>The created fumble consequence.</returns>
+    /// <remarks>
+    /// <para>
+    /// Use this overload when the fumble type is predetermined (e.g., lockpicking
+    /// always results in [Mechanism Jammed]) rather than derived from skill ID.
+    /// </para>
+    /// </remarks>
+    FumbleConsequence CreateConsequence(
+        string characterId,
+        string skillId,
+        FumbleType fumbleType,
+        string? targetId,
+        string? description = null);
 
     /// <summary>
     /// Gets all active consequences for a character.

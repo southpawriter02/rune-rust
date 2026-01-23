@@ -1,0 +1,199 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "lockpicking-tools.schema.json",
+    "title": "Lockpicking Tools Configuration",
+    "description": "Schema for tool quality definitions and salvageable components (v0.15.4a)",
+    "type": "object",
+    "required": ["toolQualities", "salvageableComponents", "rarityMultipliers"],
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "Reference to this schema file"
+        },
+        "version": {
+            "type": "string",
+            "description": "Configuration version identifier",
+            "pattern": "^\\d+\\.\\d+\\.\\d+[a-z]?$"
+        },
+        "description": {
+            "type": "string",
+            "description": "Human-readable description of this configuration file"
+        },
+        "toolQualities": {
+            "type": "array",
+            "description": "Array of tool quality definitions",
+            "minItems": 1,
+            "items": {
+                "$ref": "#/definitions/toolQualityDefinition"
+            }
+        },
+        "salvageableComponents": {
+            "type": "array",
+            "description": "Array of salvageable component definitions",
+            "minItems": 1,
+            "items": {
+                "$ref": "#/definitions/componentDefinition"
+            }
+        },
+        "rarityMultipliers": {
+            "$ref": "#/definitions/rarityMultipliers"
+        }
+    },
+    "definitions": {
+        "toolQualityDefinition": {
+            "type": "object",
+            "description": "Definition for a tool quality tier",
+            "required": ["id", "name", "diceModifier"],
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Unique identifier for this tool quality",
+                    "pattern": "^[a-z][a-z0-9-]*$",
+                    "minLength": 1,
+                    "maxLength": 50
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Human-readable display name",
+                    "minLength": 1,
+                    "maxLength": 100
+                },
+                "diceModifier": {
+                    "type": "integer",
+                    "description": "Modifier to dice pool (positive = bonus dice, negative = penalty)",
+                    "minimum": -10,
+                    "maximum": 10
+                },
+                "maxLockDc": {
+                    "type": ["integer", "null"],
+                    "description": "Maximum lock DC this tool can attempt (null = no limit)",
+                    "minimum": 1,
+                    "maximum": 30
+                },
+                "canBreakOnFumble": {
+                    "type": "boolean",
+                    "description": "Whether these tools can break on a fumble",
+                    "default": false
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Detailed description of this tool quality",
+                    "maxLength": 500
+                },
+                "examples": {
+                    "type": "array",
+                    "description": "Example items of this quality",
+                    "items": {
+                        "type": "string",
+                        "maxLength": 100
+                    }
+                },
+                "flavorText": {
+                    "type": "string",
+                    "description": "Flavor text for immersion",
+                    "maxLength": 500
+                }
+            },
+            "additionalProperties": false
+        },
+        "componentDefinition": {
+            "type": "object",
+            "description": "Definition for a salvageable component",
+            "required": ["componentId", "name", "rarity", "baseValue"],
+            "properties": {
+                "componentId": {
+                    "type": "string",
+                    "description": "Unique identifier for this component",
+                    "pattern": "^[a-z][a-z0-9-]*$",
+                    "minLength": 1,
+                    "maxLength": 50
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Human-readable display name",
+                    "minLength": 1,
+                    "maxLength": 100
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Detailed description of this component",
+                    "maxLength": 500
+                },
+                "rarity": {
+                    "type": "string",
+                    "description": "Rarity tier of this component",
+                    "enum": ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
+                },
+                "baseValue": {
+                    "type": "integer",
+                    "description": "Base monetary value (before rarity multiplier)",
+                    "minimum": 0,
+                    "maximum": 10000
+                },
+                "weight": {
+                    "type": "number",
+                    "description": "Weight of the component in units",
+                    "minimum": 0,
+                    "maximum": 100
+                },
+                "craftingTags": {
+                    "type": "array",
+                    "description": "Tags indicating crafting categories",
+                    "items": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9-]*$",
+                        "maxLength": 50
+                    }
+                },
+                "sourceLockTypes": {
+                    "type": "array",
+                    "description": "Lock types that can yield this component",
+                    "items": {
+                        "type": "string",
+                        "enum": ["ImprovisedLatch", "SimpleLock", "StandardLock", "ComplexLock", "MasterLock", "JotunForged"]
+                    }
+                }
+            },
+            "additionalProperties": false
+        },
+        "rarityMultipliers": {
+            "type": "object",
+            "description": "Value multipliers by rarity tier",
+            "required": ["Common", "Uncommon", "Rare", "Legendary"],
+            "properties": {
+                "Common": {
+                    "type": "number",
+                    "description": "Multiplier for Common items",
+                    "minimum": 0.1,
+                    "maximum": 10
+                },
+                "Uncommon": {
+                    "type": "number",
+                    "description": "Multiplier for Uncommon items",
+                    "minimum": 0.1,
+                    "maximum": 20
+                },
+                "Rare": {
+                    "type": "number",
+                    "description": "Multiplier for Rare items",
+                    "minimum": 0.1,
+                    "maximum": 50
+                },
+                "Epic": {
+                    "type": "number",
+                    "description": "Multiplier for Epic items",
+                    "minimum": 0.1,
+                    "maximum": 100
+                },
+                "Legendary": {
+                    "type": "number",
+                    "description": "Multiplier for Legendary items",
+                    "minimum": 0.1,
+                    "maximum": 200
+                }
+            },
+            "additionalProperties": false
+        }
+    },
+    "additionalProperties": false
+}

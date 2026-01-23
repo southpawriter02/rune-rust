@@ -70,6 +70,49 @@ public sealed class FumbleConsequenceService : IFumbleConsequenceService
     }
 
     /// <inheritdoc />
+    public FumbleConsequence CreateConsequence(
+        string characterId,
+        string skillId,
+        FumbleType fumbleType,
+        string? targetId,
+        string? description = null)
+    {
+        var config = _configProvider.GetConfiguration(fumbleType);
+
+        // Use custom description if provided, otherwise use config default
+        var effectiveDescription = !string.IsNullOrWhiteSpace(description)
+            ? description
+            : config.Description;
+
+        var consequence = new FumbleConsequence(
+            consequenceId: GenerateConsequenceId(),
+            characterId: characterId,
+            skillId: skillId,
+            consequenceType: fumbleType,
+            targetId: targetId,
+            appliedAt: DateTime.UtcNow,
+            expiresAt: config.Duration.HasValue
+                ? DateTime.UtcNow.Add(config.Duration.Value)
+                : null,
+            description: effectiveDescription,
+            recoveryCondition: config.RecoveryCondition);
+
+        _repository.Add(consequence);
+
+        _logger.LogInformation(
+            "Created fumble consequence {ConsequenceId} of type {FumbleType} for character {CharacterId} " +
+            "on skill {SkillId} targeting {TargetId} with custom description: {HasCustomDesc}",
+            consequence.ConsequenceId,
+            fumbleType,
+            characterId,
+            skillId,
+            targetId ?? "none",
+            !string.IsNullOrWhiteSpace(description));
+
+        return consequence;
+    }
+
+    /// <inheritdoc />
     public IReadOnlyList<FumbleConsequence> GetActiveConsequences(string characterId)
     {
         return _repository.GetActiveByCharacter(characterId);

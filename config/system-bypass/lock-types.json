@@ -1,0 +1,145 @@
+{
+    "$schema": "../schemas/lock-types.schema.json",
+    "version": "0.15.4a",
+    "description": "Lock classification system for the Lockpicking subsystem of System Bypass skill",
+    "lockTypes": [
+        {
+            "id": "improvised-latch",
+            "name": "Improvised Latch",
+            "baseDc": 6,
+            "difficultyRating": "Trivial",
+            "minimumToolQuality": "BareHands",
+            "description": "A makeshift latch using scrap and twine. Common on shanty dwellings.",
+            "examples": [
+                "Shanty door latches",
+                "Scrap-metal containers",
+                "Improvised storage boxes"
+            ],
+            "salvageComponents": [
+                { "componentId": "wire-bundle", "weight": 50 },
+                { "componentId": "spring-small", "weight": 50 }
+            ],
+            "flavorText": "Barely deserving of the name 'lock' - more of a polite suggestion to stay out."
+        },
+        {
+            "id": "simple-lock",
+            "name": "Simple Lock",
+            "baseDc": 10,
+            "difficultyRating": "Easy",
+            "minimumToolQuality": "Improvised",
+            "description": "Basic pre-Shattering lock. Common on residential doors.",
+            "examples": [
+                "Residential doors",
+                "Storage lockers",
+                "Basic chests"
+            ],
+            "salvageComponents": [
+                { "componentId": "high-tension-spring", "weight": 50 },
+                { "componentId": "pin-set", "weight": 50 }
+            ],
+            "flavorText": "A relic from the World Before - the mechanisms still function, even if their makers are long forgotten."
+        },
+        {
+            "id": "standard-lock",
+            "name": "Standard Lock",
+            "baseDc": 14,
+            "difficultyRating": "Moderate",
+            "minimumToolQuality": "Proper",
+            "description": "Quality mechanism requiring proper tools. Found on commercial buildings.",
+            "examples": [
+                "Shop doors",
+                "Office locks",
+                "Secure containers"
+            ],
+            "salvageComponents": [
+                { "componentId": "high-tension-spring", "weight": 50 },
+                { "componentId": "pin-set", "weight": 50 }
+            ],
+            "flavorText": "Built to last - these locks protected pre-Shattering businesses from the merely curious."
+        },
+        {
+            "id": "complex-lock",
+            "name": "Complex Lock",
+            "baseDc": 18,
+            "difficultyRating": "Hard",
+            "minimumToolQuality": "Proper",
+            "description": "Multi-tumbler system with anti-pick features. Found on military installations.",
+            "examples": [
+                "Military armories",
+                "Research facilities",
+                "High-security vaults"
+            ],
+            "salvageComponents": [
+                { "componentId": "circuit-fragment", "weight": 50 },
+                { "componentId": "power-cell-fragment", "weight": 50 }
+            ],
+            "flavorText": "The Old World took its secrets seriously. These locks guard what they wished to keep hidden."
+        },
+        {
+            "id": "master-lock",
+            "name": "Master Lock",
+            "baseDc": 22,
+            "difficultyRating": "Very Hard",
+            "minimumToolQuality": "Masterwork",
+            "description": "Dvergr-quality mechanism with multiple security layers.",
+            "examples": [
+                "Bank vaults",
+                "Executive safes",
+                "Protected archives"
+            ],
+            "salvageComponents": [
+                { "componentId": "circuit-fragment", "weight": 50 },
+                { "componentId": "power-cell-fragment", "weight": 50 }
+            ],
+            "flavorText": "Crafted by the finest artisans of the Dvergr - each one a masterwork of mechanical precision."
+        },
+        {
+            "id": "jotun-forged",
+            "name": "Jotun-Forged",
+            "baseDc": 26,
+            "difficultyRating": "Legendary",
+            "minimumToolQuality": "Masterwork",
+            "description": "Ancient giant-craft with incomprehensible mechanisms. Extremely rare.",
+            "examples": [
+                "Ancient vaults",
+                "Jotun artifacts",
+                "Legendary treasuries"
+            ],
+            "salvageComponents": [
+                { "componentId": "encryption-chip", "weight": 50 },
+                { "componentId": "biometric-sensor", "weight": 50 }
+            ],
+            "flavorText": "The Jotun built these locks not for men but for their own purposes. To open one is to touch the sublime."
+        }
+    ],
+    "corruptionModifiers": [
+        {
+            "corruptionTier": "Normal",
+            "dcModifier": 0,
+            "description": "No corruption - lock functions normally"
+        },
+        {
+            "corruptionTier": "Glitched",
+            "dcModifier": 2,
+            "description": "Minor corruption causing unpredictable behavior"
+        },
+        {
+            "corruptionTier": "Blighted",
+            "dcModifier": 4,
+            "description": "Significant corruption warping the mechanism"
+        },
+        {
+            "corruptionTier": "Resonance",
+            "dcModifier": 6,
+            "description": "Severe corruption with reality-distorting effects"
+        }
+    ],
+    "globalSettings": {
+        "jammedDcPenalty": 2,
+        "toolRequirementThreshold": 10,
+        "bareHandsDiceModifier": -2,
+        "improvisedDiceModifier": 0,
+        "properDiceModifier": 1,
+        "masterworkDiceModifier": 2
+    }
+}

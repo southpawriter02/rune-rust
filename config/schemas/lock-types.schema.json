@@ -1,0 +1,194 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "lock-types.schema.json",
+    "title": "Lock Types Configuration",
+    "description": "Schema for lock classification system in the Lockpicking subsystem (v0.15.4a)",
+    "type": "object",
+    "required": ["lockTypes", "corruptionModifiers", "globalSettings"],
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "Reference to this schema file"
+        },
+        "version": {
+            "type": "string",
+            "description": "Configuration version identifier",
+            "pattern": "^\\d+\\.\\d+\\.\\d+[a-z]?$"
+        },
+        "description": {
+            "type": "string",
+            "description": "Human-readable description of this configuration file"
+        },
+        "lockTypes": {
+            "type": "array",
+            "description": "Array of lock type definitions",
+            "minItems": 1,
+            "items": {
+                "$ref": "#/definitions/lockTypeDefinition"
+            }
+        },
+        "corruptionModifiers": {
+            "type": "array",
+            "description": "Corruption tier DC modifiers",
+            "minItems": 1,
+            "items": {
+                "$ref": "#/definitions/corruptionModifier"
+            }
+        },
+        "globalSettings": {
+            "$ref": "#/definitions/globalSettings"
+        }
+    },
+    "definitions": {
+        "lockTypeDefinition": {
+            "type": "object",
+            "description": "Definition for a single lock type",
+            "required": ["id", "name", "baseDc", "difficultyRating", "minimumToolQuality"],
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Unique identifier for this lock type",
+                    "pattern": "^[a-z][a-z0-9-]*$",
+                    "minLength": 1,
+                    "maxLength": 50
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Human-readable display name",
+                    "minLength": 1,
+                    "maxLength": 100
+                },
+                "baseDc": {
+                    "type": "integer",
+                    "description": "Base difficulty class for this lock type",
+                    "minimum": 1,
+                    "maximum": 30
+                },
+                "difficultyRating": {
+                    "type": "string",
+                    "description": "Difficulty rating for display",
+                    "enum": ["Trivial", "Easy", "Moderate", "Hard", "Very Hard", "Legendary"]
+                },
+                "minimumToolQuality": {
+                    "type": "string",
+                    "description": "Minimum tool quality required to attempt this lock",
+                    "enum": ["BareHands", "Improvised", "Proper", "Masterwork"]
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Detailed description of this lock type",
+                    "maxLength": 500
+                },
+                "examples": {
+                    "type": "array",
+                    "description": "Example locations where this lock type is found",
+                    "items": {
+                        "type": "string",
+                        "maxLength": 100
+                    }
+                },
+                "salvageComponents": {
+                    "type": "array",
+                    "description": "Components that can be salvaged from this lock on critical success",
+                    "items": {
+                        "$ref": "#/definitions/salvageEntry"
+                    }
+                },
+                "flavorText": {
+                    "type": "string",
+                    "description": "Flavor text for immersion",
+                    "maxLength": 500
+                }
+            },
+            "additionalProperties": false
+        },
+        "salvageEntry": {
+            "type": "object",
+            "description": "Entry for a salvageable component",
+            "required": ["componentId", "weight"],
+            "properties": {
+                "componentId": {
+                    "type": "string",
+                    "description": "Reference to component ID in lockpicking-tools.json",
+                    "pattern": "^[a-z][a-z0-9-]*$"
+                },
+                "weight": {
+                    "type": "integer",
+                    "description": "Relative weight for random selection",
+                    "minimum": 1,
+                    "maximum": 100
+                }
+            },
+            "additionalProperties": false
+        },
+        "corruptionModifier": {
+            "type": "object",
+            "description": "DC modifier for a corruption tier",
+            "required": ["corruptionTier", "dcModifier"],
+            "properties": {
+                "corruptionTier": {
+                    "type": "string",
+                    "description": "Corruption tier name",
+                    "enum": ["Normal", "Glitched", "Blighted", "Resonance"]
+                },
+                "dcModifier": {
+                    "type": "integer",
+                    "description": "DC modifier for this corruption tier",
+                    "minimum": 0,
+                    "maximum": 10
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Description of this corruption tier's effects",
+                    "maxLength": 200
+                }
+            },
+            "additionalProperties": false
+        },
+        "globalSettings": {
+            "type": "object",
+            "description": "Global settings for the lockpicking system",
+            "required": ["jammedDcPenalty", "toolRequirementThreshold"],
+            "properties": {
+                "jammedDcPenalty": {
+                    "type": "integer",
+                    "description": "DC increase when mechanism is jammed",
+                    "minimum": 1,
+                    "maximum": 10
+                },
+                "toolRequirementThreshold": {
+                    "type": "integer",
+                    "description": "DC threshold above which tools are required",
+                    "minimum": 1,
+                    "maximum": 20
+                },
+                "bareHandsDiceModifier": {
+                    "type": "integer",
+                    "description": "Dice modifier for bare hands",
+                    "minimum": -10,
+                    "maximum": 0
+                },
+                "improvisedDiceModifier": {
+                    "type": "integer",
+                    "description": "Dice modifier for improvised tools",
+                    "minimum": -5,
+                    "maximum": 5
+                },
+                "properDiceModifier": {
+                    "type": "integer",
+                    "description": "Dice modifier for proper tools",
+                    "minimum": 0,
+                    "maximum": 5
+                },
+                "masterworkDiceModifier": {
+                    "type": "integer",
+                    "description": "Dice modifier for masterwork tools",
+                    "minimum": 0,
+                    "maximum": 10
+                }
+            },
+            "additionalProperties": false
+        }
+    },
+    "additionalProperties": false
+}

@@ -1,0 +1,152 @@
+{
+    "$schema": "../schemas/lockpicking-tools.schema.json",
+    "version": "0.15.4a",
+    "description": "Tool quality definitions and salvageable components for the Lockpicking system",
+    "toolQualities": [
+        {
+            "id": "bare-hands",
+            "name": "Bare Hands",
+            "diceModifier": -2,
+            "maxLockDc": 9,
+            "canBreakOnFumble": false,
+            "description": "Attempting to manipulate the lock with fingers only.",
+            "examples": [
+                "Fingers only",
+                "No tools available"
+            ],
+            "flavorText": "Your fingers probe the mechanism, but without proper tools, your touch is clumsy."
+        },
+        {
+            "id": "improvised",
+            "name": "Improvised Tools",
+            "diceModifier": 0,
+            "maxLockDc": null,
+            "canBreakOnFumble": true,
+            "description": "Improvised tools such as bent wire, hairpins, or scrap metal.",
+            "examples": [
+                "Bent wire",
+                "Hairpin",
+                "Scrap metal shard",
+                "Broken knife blade"
+            ],
+            "flavorText": "Makeshift picks fashioned from whatever's at hand. Serviceable, but fragile."
+        },
+        {
+            "id": "proper",
+            "name": "Tinker's Toolkit",
+            "diceModifier": 1,
+            "maxLockDc": null,
+            "canBreakOnFumble": false,
+            "description": "Proper lockpicking tools from a Tinker's Toolkit.",
+            "examples": [
+                "Tinker's Toolkit",
+                "Quality lock picks",
+                "Tension wrench set"
+            ],
+            "flavorText": "Professional tools passed down through generations of Scrap-Tinkers."
+        },
+        {
+            "id": "masterwork",
+            "name": "Masterwork Tools",
+            "diceModifier": 2,
+            "maxLockDc": null,
+            "canBreakOnFumble": false,
+            "description": "Masterwork tools of exceptional quality, often Dvergr-crafted.",
+            "examples": [
+                "Dvergr-crafted picks",
+                "Master Tinker's set",
+                "Legendary lockpicks"
+            ],
+            "flavorText": "Tools of legend - each pick precisely weighted, each edge perfectly honed."
+        }
+    ],
+    "salvageableComponents": [
+        {
+            "componentId": "wire-bundle",
+            "name": "Wire Bundle",
+            "description": "A bundle of salvaged wires, useful for improvised tools and repairs.",
+            "rarity": "Common",
+            "baseValue": 2,
+            "weight": 0.1,
+            "craftingTags": ["mechanical", "wire", "improvised"],
+            "sourceLockTypes": ["ImprovisedLatch"]
+        },
+        {
+            "componentId": "spring-small",
+            "name": "Small Spring",
+            "description": "A basic mechanical spring, a fundamental component for many devices.",
+            "rarity": "Common",
+            "baseValue": 3,
+            "weight": 0.05,
+            "craftingTags": ["mechanical", "spring", "basic"],
+            "sourceLockTypes": ["ImprovisedLatch"]
+        },
+        {
+            "componentId": "high-tension-spring",
+            "name": "High-Tension Spring",
+            "description": "A quality mechanical spring under high tension. Valuable for crafting.",
+            "rarity": "Uncommon",
+            "baseValue": 8,
+            "weight": 0.1,
+            "craftingTags": ["mechanical", "spring", "quality"],
+            "sourceLockTypes": ["SimpleLock", "StandardLock"]
+        },
+        {
+            "componentId": "pin-set",
+            "name": "Pin Set",
+            "description": "A set of precision pins from a lock mechanism. Useful for crafting lockpicks.",
+            "rarity": "Uncommon",
+            "baseValue": 10,
+            "weight": 0.05,
+            "craftingTags": ["mechanical", "precision", "lockpick-material"],
+            "sourceLockTypes": ["SimpleLock", "StandardLock"]
+        },
+        {
+            "componentId": "circuit-fragment",
+            "name": "Circuit Fragment",
+            "description": "A fragment of Old World circuitry. Highly valued by Scrap-Tinkers.",
+            "rarity": "Rare",
+            "baseValue": 25,
+            "weight": 0.02,
+            "craftingTags": ["electronic", "circuit", "old-world"],
+            "sourceLockTypes": ["ComplexLock", "MasterLock"]
+        },
+        {
+            "componentId": "power-cell-fragment",
+            "name": "Power Cell Fragment",
+            "description": "A partially depleted power cell. Can be recharged or used for parts.",
+            "rarity": "Rare",
+            "baseValue": 30,
+            "weight": 0.15,
+            "craftingTags": ["electronic", "power", "energy-source"],
+            "sourceLockTypes": ["ComplexLock", "MasterLock"]
+        },
+        {
+            "componentId": "encryption-chip",
+            "name": "Encryption Chip",
+            "description": "A rare Old World encryption chip. Its secrets are incomprehensible to most.",
+            "rarity": "Legendary",
+            "baseValue": 100,
+            "weight": 0.01,
+            "craftingTags": ["electronic", "encryption", "old-world", "jotun"],
+            "sourceLockTypes": ["JotunForged"]
+        },
+        {
+            "componentId": "biometric-sensor",
+            "name": "Biometric Sensor",
+            "description": "An advanced security component from the World Before. Exceedingly rare.",
+            "rarity": "Legendary",
+            "baseValue": 150,
+            "weight": 0.03,
+            "craftingTags": ["electronic", "security", "old-world", "jotun", "biometric"],
+            "sourceLockTypes": ["JotunForged"]
+        }
+    ],
+    "rarityMultipliers": {
+        "Common": 1.0,
+        "Uncommon": 2.0,
+        "Rare": 5.0,
+        "Epic": 10.0,
+        "Legendary": 25.0
+    }
+}
