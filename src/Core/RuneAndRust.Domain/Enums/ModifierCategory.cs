@@ -47,5 +47,13 @@ public enum ModifierCategory
     /// <remarks>
     /// Examples: Disposition, Suspicion Level, Relative Strength
     /// </remarks>
-    Target = 3
+    Target = 3,
+
+    /// <summary>
+    /// Modifiers specific to social interactions.
+    /// </summary>
+    /// <remarks>
+    /// Examples: Faction Standing, Argument Alignment, Evidence, Reputation
+    /// </remarks>
+    Social = 4
 }
