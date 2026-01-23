@@ -1,0 +1,184 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "specialization-abilities.schema.json",
+    "title": "Specialization Abilities Configuration",
+    "description": "Configuration for specialization-specific abilities",
+    "type": "object",
+    "required": [
+        "version",
+        "specializations"
+    ],
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "JSON Schema reference"
+        },
+        "version": {
+            "type": "string",
+            "description": "Configuration version",
+            "pattern": "^\\d+\\.\\d+\\.\\d+[a-z]?$"
+        },
+        "description": {
+            "type": "string",
+            "description": "Human-readable description"
+        },
+        "specializations": {
+            "type": "object",
+            "additionalProperties": {
+                "$ref": "#/$defs/specialization"
+            }
+        }
+    },
+    "$defs": {
+        "specialization": {
+            "type": "object",
+            "required": [
+                "id",
+                "name",
+                "abilities"
+            ],
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9-]*$"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "primarySkill": {
+                    "type": "string"
+                },
+                "abilities": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/ability"
+                    }
+                }
+            }
+        },
+        "ability": {
+            "type": "object",
+            "required": [
+                "id",
+                "name",
+                "type",
+                "description"
+            ],
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9-]*$"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "passive",
+                        "triggered",
+                        "reactive",
+                        "active"
+                    ]
+                },
+                "description": {
+                    "type": "string"
+                },
+                "trigger": {
+                    "type": "string"
+                },
+                "requirements": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "cost": {
+                    "type": "object",
+                    "properties": {
+                        "actions": {
+                            "type": "integer",
+                            "minimum": 0
+                        },
+                        "concentration": {
+                            "type": "boolean"
+                        }
+                    }
+                },
+                "uses": {
+                    "type": "object",
+                    "properties": {
+                        "count": {
+                            "type": "integer",
+                            "minimum": 1
+                        },
+                        "resetOn": {
+                            "type": "string",
+                            "enum": [
+                                "long-rest",
+                                "short-rest",
+                                "encounter-end"
+                            ]
+                        }
+                    }
+                },
+                "effect": {
+                    "type": "object",
+                    "properties": {
+                        "type": {
+                            "type": "string"
+                        },
+                        "value": {
+                            "type": "integer"
+                        },
+                        "minimum": {
+                            "type": "integer"
+                        },
+                        "bonusFeet": {
+                            "type": "integer"
+                        },
+                        "diceBonus": {
+                            "type": "integer"
+                        },
+                        "dc": {
+                            "type": "integer"
+                        },
+                        "dcThreshold": {
+                            "type": "integer"
+                        },
+                        "rangeFeet": {
+                            "type": "integer"
+                        },
+                        "maxDistance": {
+                            "type": "string"
+                        },
+                        "condition": {
+                            "type": "string"
+                        },
+                        "actionCost": {
+                            "type": "integer"
+                        },
+                        "target": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "limitations": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "narrativeTemplates": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        }
+    }
+}

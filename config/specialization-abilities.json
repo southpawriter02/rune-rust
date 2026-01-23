@@ -1,0 +1,177 @@
+{
+    "$schema": "./schemas/specialization-abilities.schema.json",
+    "version": "0.15.2g",
+    "description": "Specialization abilities for Gantry-Runner and Myrk-gengr specializations",
+    "specializations": {
+        "gantry-runner": {
+            "id": "gantry-runner",
+            "name": "Gantry-Runner",
+            "description": "Masters of urban acrobatics, specializing in rooftop traversal and death-defying leaps",
+            "primarySkill": "Acrobatics",
+            "abilities": [
+                {
+                    "id": "roof-runner",
+                    "name": "[Roof-Runner]",
+                    "type": "passive",
+                    "description": "Reduce climbing stages required by 1 (minimum 1 stage)",
+                    "effect": {
+                        "type": "stage-reduction",
+                        "value": 1,
+                        "minimum": 1
+                    },
+                    "narrativeTemplates": [
+                        "Your expertise finds an efficient route up.",
+                        "You instinctively trace the fastest path upward."
+                    ]
+                },
+                {
+                    "id": "death-defying-leap",
+                    "name": "[Death-Defying Leap]",
+                    "type": "passive",
+                    "description": "Add +10 ft to your maximum leap distance",
+                    "effect": {
+                        "type": "distance-bonus",
+                        "bonusFeet": 10
+                    },
+                    "narrativeTemplates": [
+                        "You push beyond normal limits.",
+                        "Your leap defies what others believe possible."
+                    ]
+                },
+                {
+                    "id": "wall-run",
+                    "name": "[Wall-Run]",
+                    "type": "active",
+                    "description": "Run vertically up a wall as a combat action (DC 3 Acrobatics)",
+                    "cost": {
+                        "actions": 1
+                    },
+                    "effect": {
+                        "type": "vertical-movement",
+                        "dc": 3,
+                        "maxDistance": "movement-speed"
+                    },
+                    "limitations": [
+                        "Must end on a surface or fall"
+                    ],
+                    "narrativeTemplates": [
+                        "You sprint up the wall, defying gravity with each stride.",
+                        "Your feet find impossible purchase on the vertical surface."
+                    ]
+                },
+                {
+                    "id": "double-jump",
+                    "name": "[Double Jump]",
+                    "type": "reactive",
+                    "description": "Reroll a failed leap check with +1d10 bonus (once per day)",
+                    "trigger": "After failing a leap check but before falling",
+                    "uses": {
+                        "count": 1,
+                        "resetOn": "long-rest"
+                    },
+                    "effect": {
+                        "type": "reroll",
+                        "diceBonus": 1
+                    },
+                    "narrativeTemplates": [
+                        "You twist mid-air, defying gravity for a precious moment.",
+                        "A second burst of effort propels you further."
+                    ]
+                },
+                {
+                    "id": "featherfall",
+                    "name": "[Featherfall]",
+                    "type": "passive",
+                    "description": "Auto-succeed Crash Landing checks with DC ≤ 3",
+                    "effect": {
+                        "type": "auto-success",
+                        "dcThreshold": 3
+                    },
+                    "narrativeTemplates": [
+                        "You land with preternatural grace, absorbing the impact effortlessly.",
+                        "Your body instinctively knows how to fall."
+                    ]
+                }
+            ]
+        },
+        "myrk-gengr": {
+            "id": "myrk-gengr",
+            "name": "Myrk-gengr",
+            "description": "Shadow-walkers who move unseen through darkness and manipulate concealment",
+            "primarySkill": "Stealth",
+            "abilities": [
+                {
+                    "id": "slip-into-shadow",
+                    "name": "[Slip into Shadow]",
+                    "type": "triggered",
+                    "trigger": "Entering shadows, dim light, or darkness",
+                    "description": "Enter [Hidden] without using an action when entering shadows",
+                    "requirements": [
+                        "Area has shadows or low lighting",
+                        "Not actively observed by enemies"
+                    ],
+                    "effect": {
+                        "type": "hidden-entry",
+                        "actionCost": 0
+                    },
+                    "narrativeTemplates": [
+                        "You melt into the shadows without breaking stride.",
+                        "The darkness welcomes you like an old friend."
+                    ]
+                },
+                {
+                    "id": "ghostly-form",
+                    "name": "[Ghostly Form]",
+                    "type": "reactive",
+                    "trigger": "After completing an attack from [Hidden]",
+                    "description": "Stay [Hidden] after making an attack (once per encounter)",
+                    "uses": {
+                        "count": 1,
+                        "resetOn": "encounter-end"
+                    },
+                    "effect": {
+                        "type": "maintain-hidden"
+                    },
+                    "narrativeTemplates": [
+                        "You strike from the shadows and vanish once more.",
+                        "Your presence flickers like smoke after the attack."
+                    ]
+                },
+                {
+                    "id": "cloak-the-party",
+                    "name": "[Cloak the Party]",
+                    "type": "active",
+                    "description": "Grant party members within 30 ft +2d10 on Passive Stealth (concentration)",
+                    "cost": {
+                        "concentration": true
+                    },
+                    "effect": {
+                        "type": "party-dice-bonus",
+                        "diceBonus": 2,
+                        "rangeFeet": 30,
+                        "target": "passive-stealth"
+                    },
+                    "narrativeTemplates": [
+                        "You extend your shroud of shadows to your companions.",
+                        "Your allies fade from perception as your will envelops them."
+                    ]
+                },
+                {
+                    "id": "one-with-the-static",
+                    "name": "[One with the Static]",
+                    "type": "passive",
+                    "trigger": "Entering a zone with [Psychic Resonance] environmental tag",
+                    "description": "Automatically enter [Hidden] in [Psychic Resonance] zones",
+                    "effect": {
+                        "type": "auto-hidden",
+                        "condition": "psychic-resonance-zone"
+                    },
+                    "narrativeTemplates": [
+                        "The psychic static envelops you, hiding you from perception.",
+                        "The resonance distorts your presence, making you invisible to minds."
+                    ]
+                }
+            ]
+        }
+    }
+}
