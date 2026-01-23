@@ -1,0 +1,315 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "fall-damage.schema.json",
+    "title": "Fall Damage Configuration Schema",
+    "description": "Schema for fall damage configuration including height-based damage and Crash Landing mechanics",
+    "type": "object",
+    "required": [
+        "version",
+        "damageCalculation",
+        "crashLanding"
+    ],
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "Reference to this schema"
+        },
+        "version": {
+            "type": "string",
+            "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+[a-z]?$",
+            "description": "Version of the configuration"
+        },
+        "description": {
+            "type": "string",
+            "description": "Human-readable description of this configuration"
+        },
+        "damageCalculation": {
+            "$ref": "#/$defs/DamageCalculation"
+        },
+        "crashLanding": {
+            "$ref": "#/$defs/CrashLanding"
+        },
+        "severityThresholds": {
+            "$ref": "#/$defs/SeverityThresholds"
+        },
+        "outcomeDescriptions": {
+            "$ref": "#/$defs/OutcomeDescriptions"
+        },
+        "specialSources": {
+            "$ref": "#/$defs/SpecialSources"
+        },
+        "displayConfig": {
+            "$ref": "#/$defs/DisplayConfig"
+        }
+    },
+    "$defs": {
+        "DamageCalculation": {
+            "type": "object",
+            "description": "Configuration for fall damage calculation",
+            "required": [
+                "dicePerTenFeet",
+                "maxDamageDice",
+                "diceType",
+                "minDamageHeight",
+                "damageType"
+            ],
+            "properties": {
+                "dicePerTenFeet": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 3,
+                    "description": "Number of damage dice per 10 feet fallen (default: 1)"
+                },
+                "maxDamageDice": {
+                    "type": "integer",
+                    "minimum": 5,
+                    "maximum": 20,
+                    "description": "Maximum damage dice regardless of height (default: 10)"
+                },
+                "diceType": {
+                    "type": "string",
+                    "enum": [
+                        "d4",
+                        "d6",
+                        "d8",
+                        "d10",
+                        "d12"
+                    ],
+                    "description": "Type of dice used for fall damage"
+                },
+                "minDamageHeight": {
+                    "type": "integer",
+                    "minimum": 5,
+                    "maximum": 20,
+                    "description": "Minimum height in feet to cause damage"
+                },
+                "damageType": {
+                    "type": "string",
+                    "pattern": "^[a-z]+$",
+                    "description": "Damage type ID (e.g., bludgeoning)"
+                }
+            },
+            "additionalProperties": false
+        },
+        "CrashLanding": {
+            "type": "object",
+            "description": "Configuration for Crash Landing mechanics",
+            "required": [
+                "baseDc",
+                "dcPerTenFeet",
+                "skill",
+                "linkedAttribute",
+                "minimumHeight",
+                "damageReductionPerExcessSuccess"
+            ],
+            "properties": {
+                "baseDc": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 5,
+                    "description": "Base DC for Crash Landing (success-counting: successes needed)"
+                },
+                "dcPerTenFeet": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 3,
+                    "description": "Additional DC per 10 feet of fall height"
+                },
+                "skill": {
+                    "type": "string",
+                    "pattern": "^[a-z-]+$",
+                    "description": "Skill used for Crash Landing checks"
+                },
+                "linkedAttribute": {
+                    "type": "string",
+                    "pattern": "^[a-z-]+$",
+                    "description": "Attribute linked to the Crash Landing skill"
+                },
+                "minimumHeight": {
+                    "type": "integer",
+                    "minimum": 5,
+                    "maximum": 20,
+                    "description": "Minimum fall height for Crash Landing eligibility"
+                },
+                "damageReductionPerExcessSuccess": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 2,
+                    "description": "Damage dice reduced per success above DC"
+                }
+            },
+            "additionalProperties": false
+        },
+        "SeverityThresholds": {
+            "type": "object",
+            "description": "Height-based severity classifications",
+            "additionalProperties": {
+                "$ref": "#/$defs/SeverityLevel"
+            }
+        },
+        "SeverityLevel": {
+            "type": "object",
+            "required": [
+                "minHeight",
+                "description"
+            ],
+            "properties": {
+                "minHeight": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "Minimum height in feet for this severity"
+                },
+                "maxHeight": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "minimum": 0,
+                    "description": "Maximum height in feet for this severity (null for unbounded)"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Human-readable description of this severity level"
+                }
+            },
+            "additionalProperties": false
+        },
+        "OutcomeDescriptions": {
+            "type": "object",
+            "description": "Descriptions for each Crash Landing outcome",
+            "additionalProperties": {
+                "$ref": "#/$defs/OutcomeDescription"
+            }
+        },
+        "OutcomeDescription": {
+            "type": "object",
+            "required": [
+                "description"
+            ],
+            "properties": {
+                "minMargin": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "description": "Minimum margin of success for this outcome"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Human-readable outcome description"
+                },
+                "sound": {
+                    "type": "string",
+                    "pattern": "^[a-z-]+$",
+                    "description": "Sound effect ID for this outcome"
+                }
+            },
+            "additionalProperties": false
+        },
+        "SpecialSources": {
+            "type": "object",
+            "description": "Configuration for different fall sources",
+            "additionalProperties": {
+                "$ref": "#/$defs/FallSourceConfig"
+            }
+        },
+        "FallSourceConfig": {
+            "type": "object",
+            "required": [
+                "displayName",
+                "bonusDamage"
+            ],
+            "properties": {
+                "displayName": {
+                    "type": "string",
+                    "description": "Human-readable name for this fall source"
+                },
+                "fumbleConsequence": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "pattern": "^[a-z-]+$",
+                    "description": "Fumble consequence ID triggered by this fall source"
+                },
+                "bonusDamage": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 5,
+                    "description": "Bonus damage dice for this fall source"
+                },
+                "additionalEffects": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/AdditionalEffect"
+                    },
+                    "description": "Additional effects applied for this fall source"
+                }
+            },
+            "additionalProperties": false
+        },
+        "AdditionalEffect": {
+            "type": "object",
+            "required": [
+                "type"
+            ],
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "status-effect",
+                        "stress",
+                        "damage"
+                    ],
+                    "description": "Type of additional effect"
+                },
+                "effectId": {
+                    "type": "string",
+                    "pattern": "^[a-z-]+$",
+                    "description": "Status effect ID (required for status-effect type)"
+                },
+                "duration": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "Duration in rounds (for status effects)"
+                },
+                "amount": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "Amount (for stress or damage effects)"
+                }
+            },
+            "additionalProperties": false
+        },
+        "DisplayConfig": {
+            "type": "object",
+            "description": "Configuration for fall damage display",
+            "properties": {
+                "showDamageBreakdown": {
+                    "type": "boolean",
+                    "description": "Whether to show detailed damage breakdown"
+                },
+                "showCrashLandingAttempt": {
+                    "type": "boolean",
+                    "description": "Whether to show Crash Landing attempts"
+                },
+                "showSeverityWarnings": {
+                    "type": "boolean",
+                    "description": "Whether to show severity-based warnings"
+                },
+                "dangerousDamageThreshold": {
+                    "type": "integer",
+                    "minimum": 20,
+                    "description": "Damage threshold for dangerous warning"
+                },
+                "nearFatalDamageThreshold": {
+                    "type": "integer",
+                    "minimum": 50,
+                    "description": "Damage threshold for near-fatal warning"
+                }
+            },
+            "additionalProperties": false
+        }
+    },
+    "additionalProperties": false
+}

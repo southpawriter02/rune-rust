@@ -1,0 +1,119 @@
+{
+    "$schema": "./schemas/fall-damage.schema.json",
+    "version": "0.15.2c",
+    "description": "Fall damage configuration for height-based damage and Crash Landing mechanics",
+    "damageCalculation": {
+        "dicePerTenFeet": 1,
+        "maxDamageDice": 10,
+        "diceType": "d10",
+        "minDamageHeight": 10,
+        "damageType": "bludgeoning"
+    },
+    "crashLanding": {
+        "baseDc": 2,
+        "dcPerTenFeet": 1,
+        "skill": "acrobatics",
+        "linkedAttribute": "finesse",
+        "minimumHeight": 10,
+        "damageReductionPerExcessSuccess": 1
+    },
+    "severityThresholds": {
+        "minor": {
+            "minHeight": 10,
+            "maxHeight": 29,
+            "description": "Minor fall"
+        },
+        "moderate": {
+            "minHeight": 30,
+            "maxHeight": 59,
+            "description": "Moderate fall"
+        },
+        "severe": {
+            "minHeight": 60,
+            "maxHeight": 99,
+            "description": "Severe fall"
+        },
+        "extreme": {
+            "minHeight": 100,
+            "maxHeight": null,
+            "description": "Extreme fall (max damage)"
+        }
+    },
+    "outcomeDescriptions": {
+        "criticalSuccess": {
+            "minMargin": 5,
+            "description": "You land with perfect grace, negating most or all damage!",
+            "sound": "perfect-landing"
+        },
+        "exceptionalSuccess": {
+            "minMargin": 3,
+            "description": "You tuck and roll expertly, significantly reducing the impact!",
+            "sound": "skilled-landing"
+        },
+        "fullSuccess": {
+            "minMargin": 1,
+            "description": "You manage a controlled landing, reducing the damage.",
+            "sound": "normal-landing"
+        },
+        "marginalSuccess": {
+            "minMargin": 0,
+            "description": "You barely manage to control your fall.",
+            "sound": "rough-landing"
+        },
+        "failure": {
+            "minMargin": null,
+            "description": "You hit the ground hard, taking full damage.",
+            "sound": "hard-impact"
+        },
+        "criticalFailure": {
+            "minMargin": null,
+            "description": "You land disastrously! Additional complications may occur.",
+            "sound": "crash-landing"
+        }
+    },
+    "specialSources": {
+        "climbing": {
+            "displayName": "Fall from climbing",
+            "fumbleConsequence": "the-slip",
+            "bonusDamage": 0
+        },
+        "leaping": {
+            "displayName": "Fall from leaping",
+            "fumbleConsequence": "the-long-fall",
+            "bonusDamage": 1,
+            "additionalEffects": [
+                {
+                    "type": "status-effect",
+                    "effectId": "disoriented",
+                    "duration": 2
+                },
+                {
+                    "type": "stress",
+                    "amount": 2
+                }
+            ]
+        },
+        "balance": {
+            "displayName": "Fall from balance failure",
+            "fumbleConsequence": null,
+            "bonusDamage": 0
+        },
+        "pushed": {
+            "displayName": "Fall from being pushed",
+            "fumbleConsequence": null,
+            "bonusDamage": 0
+        },
+        "environmental": {
+            "displayName": "Environmental fall",
+            "fumbleConsequence": null,
+            "bonusDamage": 0
+        }
+    },
+    "displayConfig": {
+        "showDamageBreakdown": true,
+        "showCrashLandingAttempt": true,
+        "showSeverityWarnings": true,
+        "dangerousDamageThreshold": 50,
+        "nearFatalDamageThreshold": 75
+    }
+}
