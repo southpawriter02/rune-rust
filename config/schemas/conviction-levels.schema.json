@@ -1,0 +1,402 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "conviction-levels.schema.json",
+  "title": "Conviction Levels Configuration",
+  "description": "JSON Schema for the Extended Influence System configuration. Defines conviction levels, pool thresholds, resistance mechanics, and narrative templates for NPC belief change.",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Reference to the JSON schema for validation"
+    },
+    "version": {
+      "type": "string",
+      "description": "Schema version for compatibility tracking",
+      "pattern": "^\\d+\\.\\d+\\.\\d+[a-z]?$"
+    },
+    "description": {
+      "type": "string",
+      "description": "Human-readable description of this configuration file"
+    },
+    "convictionLevels": {
+      "type": "array",
+      "description": "Array of conviction level definitions, ordered from easiest to hardest to change",
+      "items": {
+        "$ref": "#/definitions/ConvictionLevel"
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "globalSettings": {
+      "$ref": "#/definitions/GlobalSettings",
+      "description": "Global settings that apply to all influence attempts"
+    },
+    "resistanceMechanics": {
+      "$ref": "#/definitions/ResistanceMechanics",
+      "description": "Configuration for how resistance builds and affects influence"
+    },
+    "statusDescriptions": {
+      "$ref": "#/definitions/StatusDescriptions",
+      "description": "Display information for each influence status"
+    },
+    "progressDisplay": {
+      "$ref": "#/definitions/ProgressDisplay",
+      "description": "Configuration for how progress is displayed to the player"
+    },
+    "tacticalAdvice": {
+      "type": "object",
+      "description": "Tactical advice for each conviction level",
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
+    },
+    "narrativeTemplates": {
+      "$ref": "#/definitions/NarrativeTemplates",
+      "description": "Templates for narrative text generation"
+    }
+  },
+  "required": [
+    "version",
+    "convictionLevels",
+    "globalSettings"
+  ],
+  "additionalProperties": false,
+  "definitions": {
+    "ConvictionLevel": {
+      "type": "object",
+      "description": "Defines a single conviction level with its mechanical properties and display information",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for this conviction level (camelCase)",
+          "pattern": "^[a-z][a-zA-Z0-9]*$"
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Human-readable name for display in UI",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "description": "Short description of what this conviction level represents"
+        },
+        "poolRequired": {
+          "type": "integer",
+          "description": "Total influence pool points needed to change this belief",
+          "minimum": 1
+        },
+        "baseDc": {
+          "type": "integer",
+          "description": "Base difficulty class for rhetoric checks against this conviction level",
+          "minimum": 1,
+          "maximum": 30
+        },
+        "resistancePerFailure": {
+          "type": "number",
+          "description": "How much resistance increases per failed attempt (0 = no buildup, can be fractional)",
+          "minimum": 0,
+          "maximum": 10
+        },
+        "colorHint": {
+          "type": "string",
+          "description": "CSS-compatible color for UI display (hex format)",
+          "pattern": "^#[0-9A-Fa-f]{6}$"
+        },
+        "difficultyIndicator": {
+          "type": "string",
+          "description": "Visual indicator of difficulty (e.g., stars)",
+          "minLength": 1,
+          "maxLength": 10
+        },
+        "examples": {
+          "type": "array",
+          "description": "Example beliefs that fit this conviction level",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "mechanicsSummary": {
+          "type": "string",
+          "description": "Brief summary of mechanics for this level"
+        },
+        "narrativeDescription": {
+          "type": "string",
+          "description": "Narrative text describing how this conviction feels to challenge"
+        },
+        "warningText": {
+          "type": "string",
+          "description": "Optional warning text for high-difficulty levels"
+        }
+      },
+      "required": [
+        "id",
+        "displayName",
+        "description",
+        "poolRequired",
+        "baseDc",
+        "resistancePerFailure"
+      ],
+      "additionalProperties": false
+    },
+    "GlobalSettings": {
+      "type": "object",
+      "description": "Global settings that apply to all influence mechanics",
+      "properties": {
+        "maxResistance": {
+          "type": "integer",
+          "description": "Maximum resistance modifier before influence fails permanently",
+          "minimum": 1,
+          "default": 6
+        },
+        "stallThreshold": {
+          "type": "integer",
+          "description": "Resistance level at which influence stalls (requires external event to continue)",
+          "minimum": 1,
+          "default": 4
+        },
+        "resumeResistanceReduction": {
+          "type": "integer",
+          "description": "How much resistance is reduced when resuming a stalled influence",
+          "minimum": 0,
+          "default": 2
+        },
+        "successCountingThreshold": {
+          "type": "integer",
+          "description": "Die result that counts as a success (e.g., 6+ on d10)",
+          "minimum": 1,
+          "default": 6
+        },
+        "diceType": {
+          "type": "string",
+          "description": "Type of die used for influence checks",
+          "pattern": "^d\\d+$",
+          "default": "d10"
+        },
+        "minResistanceForStall": {
+          "type": "integer",
+          "description": "Minimum resistance needed before stalling can occur",
+          "minimum": 0,
+          "default": 4
+        },
+        "maxInteractionsPerSession": {
+          "type": "integer",
+          "description": "Maximum influence attempts allowed per game session",
+          "minimum": 1,
+          "default": 3
+        }
+      },
+      "required": [
+        "maxResistance",
+        "stallThreshold",
+        "resumeResistanceReduction"
+      ],
+      "additionalProperties": false
+    },
+    "ResistanceMechanics": {
+      "type": "object",
+      "description": "Detailed configuration for resistance mechanics",
+      "properties": {
+        "description": {
+          "type": "string",
+          "description": "Human-readable description of resistance mechanics"
+        },
+        "baselineResistance": {
+          "type": "integer",
+          "description": "Starting resistance modifier for new influence attempts",
+          "minimum": 0,
+          "default": 0
+        },
+        "effectiveDcFormula": {
+          "type": "string",
+          "description": "Formula for calculating effective DC",
+          "default": "baseDc + resistanceModifier"
+        },
+        "stallBehavior": {
+          "type": "object",
+          "description": "Configuration for stall behavior",
+          "properties": {
+            "triggerCondition": {
+              "type": "string",
+              "description": "Condition that triggers a stall"
+            },
+            "effect": {
+              "type": "string",
+              "description": "What happens when stalled"
+            },
+            "resumeConditions": {
+              "type": "array",
+              "description": "Conditions that can resume a stalled influence",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "failureBehavior": {
+          "type": "object",
+          "description": "Configuration for permanent failure",
+          "properties": {
+            "triggerCondition": {
+              "type": "string",
+              "description": "Condition that triggers permanent failure"
+            },
+            "effect": {
+              "type": "string",
+              "description": "What happens on permanent failure"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "StatusDescriptions": {
+      "type": "object",
+      "description": "Display information for each influence status",
+      "properties": {
+        "active": {
+          "$ref": "#/definitions/StatusInfo"
+        },
+        "successful": {
+          "$ref": "#/definitions/StatusInfo"
+        },
+        "failed": {
+          "$ref": "#/definitions/StatusInfo"
+        },
+        "stalled": {
+          "$ref": "#/definitions/StatusInfo"
+        }
+      },
+      "additionalProperties": false
+    },
+    "StatusInfo": {
+      "type": "object",
+      "description": "Display information for a single status",
+      "properties": {
+        "displayName": {
+          "type": "string",
+          "description": "Human-readable name for UI"
+        },
+        "description": {
+          "type": "string",
+          "description": "Explanation of what this status means"
+        },
+        "indicator": {
+          "type": "string",
+          "description": "Unicode character for status indication",
+          "maxLength": 2
+        },
+        "colorHint": {
+          "type": "string",
+          "description": "CSS-compatible color (hex format)",
+          "pattern": "^#[0-9A-Fa-f]{6}$"
+        }
+      },
+      "required": [
+        "displayName",
+        "description"
+      ],
+      "additionalProperties": false
+    },
+    "ProgressDisplay": {
+      "type": "object",
+      "description": "Configuration for progress display in UI",
+      "properties": {
+        "showPoolProgress": {
+          "type": "boolean",
+          "description": "Whether to show pool progress to player",
+          "default": true
+        },
+        "showResistanceLevel": {
+          "type": "boolean",
+          "description": "Whether to show current resistance level",
+          "default": true
+        },
+        "showEstimatedAttempts": {
+          "type": "boolean",
+          "description": "Whether to show estimated remaining attempts",
+          "default": true
+        },
+        "poolProgressFormat": {
+          "type": "string",
+          "description": "Format string for pool progress display",
+          "default": "{current}/{threshold}"
+        },
+        "percentageFormat": {
+          "type": "string",
+          "description": "Format string for percentage display",
+          "default": "{percent}%"
+        },
+        "narrativeProgressBands": {
+          "type": "array",
+          "description": "Bands for narrative progress descriptions",
+          "items": {
+            "$ref": "#/definitions/ProgressBand"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "ProgressBand": {
+      "type": "object",
+      "description": "A progress band for narrative descriptions",
+      "properties": {
+        "min": {
+          "type": "integer",
+          "description": "Minimum percentage (inclusive)",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "max": {
+          "type": "integer",
+          "description": "Maximum percentage (inclusive)",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "description": {
+          "type": "string",
+          "description": "Narrative description for this band"
+        }
+      },
+      "required": [
+        "min",
+        "max",
+        "description"
+      ],
+      "additionalProperties": false
+    },
+    "NarrativeTemplates": {
+      "type": "object",
+      "description": "Templates for generating narrative text",
+      "properties": {
+        "attemptSuccess": {
+          "type": "object",
+          "description": "Templates for successful attempts by progress level",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "attemptFailure": {
+          "type": "object",
+          "description": "Templates for failed attempts by consequence",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "convictionChanged": {
+          "type": "object",
+          "description": "Templates for conviction change by level",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

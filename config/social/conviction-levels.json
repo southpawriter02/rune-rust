@@ -1,0 +1,222 @@
+{
+  "$schema": "../schemas/conviction-levels.schema.json",
+  "version": "0.15.3h",
+  "description": "Configuration for the Extended Influence System - defines conviction levels, pool thresholds, and resistance mechanics for NPC belief change",
+
+  "convictionLevels": [
+    {
+      "id": "weakOpinion",
+      "displayName": "Weak Opinion",
+      "description": "A loosely held view that the NPC hasn't deeply considered. Easily swayed with modest effort.",
+      "poolRequired": 5,
+      "baseDc": 10,
+      "resistancePerFailure": 0,
+      "colorHint": "#4CAF50",
+      "difficultyIndicator": "★",
+      "examples": [
+        "Casual preference for one tavern over another",
+        "Minor superstition picked up from others",
+        "Passing opinion about weather patterns",
+        "Preference for a particular food or drink"
+      ],
+      "mechanicsSummary": "Base DC 10, threshold 5. No resistance buildup on failure. Can typically be changed in 2-3 interactions.",
+      "narrativeDescription": "This belief is held loosely, adopted without much thought. A few well-chosen words should suffice to change their mind."
+    },
+    {
+      "id": "moderateBelief",
+      "displayName": "Moderate Belief",
+      "description": "A considered position with some personal investment. Requires sustained persuasion to change.",
+      "poolRequired": 10,
+      "baseDc": 12,
+      "resistancePerFailure": 0,
+      "colorHint": "#8BC34A",
+      "difficultyIndicator": "★★",
+      "examples": [
+        "Political alignment with a local faction",
+        "Professional opinion on trade practices",
+        "Trust or distrust of a particular group",
+        "Views on proper social etiquette"
+      ],
+      "mechanicsSummary": "Base DC 12, threshold 10. No resistance buildup. Requires 3-5 successful interactions.",
+      "narrativeDescription": "The NPC has given this matter some thought and won't be swayed by a single argument. Persistent, consistent reasoning will be needed."
+    },
+    {
+      "id": "strongConviction",
+      "displayName": "Strong Conviction",
+      "description": "A deeply held view tied to personal experience or values. Resistance grows with failed attempts.",
+      "poolRequired": 15,
+      "baseDc": 14,
+      "resistancePerFailure": 0.5,
+      "colorHint": "#FFC107",
+      "difficultyIndicator": "★★★",
+      "examples": [
+        "Religious practices and observances",
+        "Loyalty to a particular leader or cause",
+        "Long-held grudge against an enemy",
+        "Professional code of conduct"
+      ],
+      "mechanicsSummary": "Base DC 14, threshold 15. Resistance increases by 1 per 2 failures. Expect 5-8 interactions and possible setbacks.",
+      "narrativeDescription": "This belief is woven into the NPC's identity. They will actively resist attempts to change their mind, and clumsy efforts will make them more entrenched.",
+      "warningText": "Repeated failures will increase DC. Consider your approach carefully."
+    },
+    {
+      "id": "coreBelief",
+      "displayName": "Core Belief",
+      "description": "A fundamental truth that shapes how the NPC sees the world. Extremely difficult to change.",
+      "poolRequired": 20,
+      "baseDc": 16,
+      "resistancePerFailure": 1,
+      "colorHint": "#FF9800",
+      "difficultyIndicator": "★★★★",
+      "examples": [
+        "Devotion to family above all else",
+        "Absolute faith in a deity or philosophy",
+        "Hatred born from personal tragedy",
+        "Oath sworn in blood or before witnesses"
+      ],
+      "mechanicsSummary": "Base DC 16, threshold 20. Resistance increases by 1 per failure. Extended campaign required, high risk of permanent failure.",
+      "narrativeDescription": "This belief defines who the NPC is at their core. Challenging it may be seen as a personal attack. Only overwhelming evidence or transformative experiences may succeed.",
+      "warningText": "Each failure significantly increases DC. Quest-related events may be required for success."
+    },
+    {
+      "id": "fanatical",
+      "displayName": "Fanatical",
+      "description": "An absolute certainty that defines the NPC's entire existence. Near-impossible to change through normal means.",
+      "poolRequired": 25,
+      "baseDc": 18,
+      "resistancePerFailure": 2,
+      "colorHint": "#F44336",
+      "difficultyIndicator": "★★★★★",
+      "examples": [
+        "Cult-like devotion to a cause or leader",
+        "Revenge that has consumed their entire life",
+        "Prophecy they believe they must fulfill",
+        "Identity-defining trauma response"
+      ],
+      "mechanicsSummary": "Base DC 18, threshold 25. Resistance increases by 2 per failure. Normal influence may be impossible; extraordinary circumstances required.",
+      "narrativeDescription": "This isn't a belief—it's the very foundation of their being. Questioning it threatens their entire sense of self. Only cataclysmic events or divine intervention might shake such certainty.",
+      "warningText": "Normal persuasion is unlikely to succeed. Consider quest paths or extraordinary measures."
+    }
+  ],
+
+  "globalSettings": {
+    "maxResistance": 6,
+    "stallThreshold": 4,
+    "resumeResistanceReduction": 2,
+    "successCountingThreshold": 6,
+    "diceType": "d10",
+    "minResistanceForStall": 4,
+    "maxInteractionsPerSession": 3
+  },
+
+  "resistanceMechanics": {
+    "description": "How resistance builds and affects influence attempts",
+    "baselineResistance": 0,
+    "effectiveDcFormula": "baseDc + resistanceModifier",
+    "stallBehavior": {
+      "triggerCondition": "resistanceModifier >= stallThreshold",
+      "effect": "Influence enters Stalled status until external condition is met",
+      "resumeConditions": [
+        "24+ hours game time passes",
+        "Complete a related quest",
+        "Provide counter-evidence",
+        "NPC emotional state changes"
+      ]
+    },
+    "failureBehavior": {
+      "triggerCondition": "resistanceModifier >= maxResistance AND pool < threshold",
+      "effect": "Influence enters Failed status permanently"
+    }
+  },
+
+  "statusDescriptions": {
+    "active": {
+      "displayName": "Active",
+      "description": "The influence attempt is ongoing. Continue making progress toward changing their belief.",
+      "indicator": "◐",
+      "colorHint": "#2196F3"
+    },
+    "successful": {
+      "displayName": "Successful",
+      "description": "The NPC's belief has been changed. New dialogue and options may be available.",
+      "indicator": "✓",
+      "colorHint": "#4CAF50"
+    },
+    "failed": {
+      "displayName": "Failed",
+      "description": "The NPC is completely resistant. Normal influence can no longer change this belief.",
+      "indicator": "✗",
+      "colorHint": "#F44336"
+    },
+    "stalled": {
+      "displayName": "Stalled",
+      "description": "Progress is blocked. An external event or condition must be resolved to continue.",
+      "indicator": "⏸",
+      "colorHint": "#FF9800"
+    }
+  },
+
+  "progressDisplay": {
+    "showPoolProgress": true,
+    "showResistanceLevel": true,
+    "showEstimatedAttempts": true,
+    "poolProgressFormat": "{current}/{threshold}",
+    "percentageFormat": "{percent}%",
+    "narrativeProgressBands": [
+      { "min": 0, "max": 25, "description": "barely begun" },
+      { "min": 26, "max": 50, "description": "making progress" },
+      { "min": 51, "max": 75, "description": "substantial progress" },
+      { "min": 76, "max": 99, "description": "nearly convinced" },
+      { "min": 100, "max": 100, "description": "belief changed" }
+    ]
+  },
+
+  "tacticalAdvice": {
+    "weakOpinion": [
+      "Focus on making good arguments - failures have no lasting consequence",
+      "Two or three successful checks should be sufficient"
+    ],
+    "moderateBelief": [
+      "Plan for a sustained campaign of 3-5 interactions",
+      "Failures don't build resistance, so persistence pays off"
+    ],
+    "strongConviction": [
+      "Each failure makes the next attempt harder",
+      "Consider your arguments carefully before attempting",
+      "Look for evidence or events that support your position"
+    ],
+    "coreBelief": [
+      "This will require significant investment of time and resources",
+      "Consider whether quests or events might provide breakthrough moments",
+      "Failures significantly increase difficulty - choose your battles wisely"
+    ],
+    "fanatical": [
+      "Normal persuasion is unlikely to succeed",
+      "Look for extraordinary circumstances or divine intervention",
+      "Consider whether changing this belief is truly necessary",
+      "Quest-related breakthroughs may be the only path forward"
+    ]
+  },
+
+  "narrativeTemplates": {
+    "attemptSuccess": {
+      "lowProgress": "Your words find purchase. {target} seems slightly more receptive to your perspective.",
+      "mediumProgress": "You're making real progress. {target} is genuinely considering your arguments.",
+      "highProgress": "You can see doubt forming in {target}'s eyes. Their conviction is wavering.",
+      "breakthrough": "{target}'s expression shifts. You've broken through their resistance."
+    },
+    "attemptFailure": {
+      "noResistanceGain": "Your argument falls flat, but {target} doesn't seem more entrenched.",
+      "resistanceGain": "{target}'s jaw sets. Your approach has made them more resistant to future attempts.",
+      "nearStall": "{target} is becoming increasingly defensive. Much more pressure could stall your efforts entirely.",
+      "stalled": "{target} shuts down completely. Further attempts will require a different approach."
+    },
+    "convictionChanged": {
+      "weakOpinion": "{target} shrugs and nods. 'You know what? You're right.'",
+      "moderateBelief": "{target} pauses thoughtfully. 'I... hadn't considered it that way. Perhaps you have a point.'",
+      "strongConviction": "{target} lets out a long breath. 'I've held this belief for years, but your arguments... I cannot deny them.'",
+      "coreBelief": "{target}'s voice trembles. 'Everything I thought I knew... you've shown me a different truth.'",
+      "fanatical": "{target} falls to their knees, shaken to their core. 'My entire life... was built on a lie?'"
+    }
+  }
+}
