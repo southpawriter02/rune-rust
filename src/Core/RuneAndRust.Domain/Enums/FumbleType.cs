@@ -67,7 +67,29 @@ public enum FumbleType
     /// Acrobatics/Stealth: Alerted all nearby enemies.
     /// All enemies in adjacent rooms converge on location.
     /// </summary>
-    SystemWideAlert = 8
+    SystemWideAlert = 8,
+
+    /// <summary>
+    /// Rhetoric/Negotiation: Negotiation has completely collapsed.
+    /// NPC walks away permanently, deal is off the table.
+    /// Future negotiations with this NPC require significant disposition recovery.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Triggered when a fumble occurs during negotiation tactics (Persuade, Deceive, or Pressure).
+    /// The NPC refuses to continue any further discussion and the negotiation ends in failure.
+    /// </para>
+    /// <para>
+    /// Mechanical effects:
+    /// <list type="bullet">
+    ///   <item><description>Immediate negotiation termination</description></item>
+    ///   <item><description>Disposition penalty applied (-10 to -20 depending on tactic)</description></item>
+    ///   <item><description>PC cannot re-initiate negotiation for this deal</description></item>
+    ///   <item><description>Any concessions already made are still consumed</description></item>
+    /// </list>
+    /// </para>
+    /// </remarks>
+    NegotiationCollapsed = 9
 }
 
 /// <summary>
@@ -91,6 +113,7 @@ public static class FumbleTypeExtensions
             FumbleType.TheSlip => false,        // Instant effect
             FumbleType.TheLongFall => false,    // Instant effect
             FumbleType.SystemWideAlert => true, // Affects all enemies in area
+            FumbleType.NegotiationCollapsed => false, // Only affects specific NPC/deal
             _ => false
         };
     }
@@ -105,6 +128,7 @@ public static class FumbleTypeExtensions
             FumbleType.ForcedExecution => true,
             FumbleType.TheSlip => true,
             FumbleType.TheLongFall => false, // Has status duration
+            FumbleType.NegotiationCollapsed => true, // Immediate termination
             _ => false
         };
     }
@@ -125,6 +149,7 @@ public static class FumbleTypeExtensions
             FumbleType.TheSlip => "climbing",
             FumbleType.TheLongFall => "leaping",
             FumbleType.SystemWideAlert => "stealth",
+            FumbleType.NegotiationCollapsed => "negotiation",
             _ => "unknown"
         };
     }
@@ -145,7 +170,72 @@ public static class FumbleTypeExtensions
             FumbleType.TheSlip => "The Slip",
             FumbleType.TheLongFall => "The Long Fall",
             FumbleType.SystemWideAlert => "System-Wide Alert",
+            FumbleType.NegotiationCollapsed => "Negotiation Collapsed",
             _ => "Unknown Fumble"
+        };
+    }
+
+    /// <summary>
+    /// Gets a description of the fumble consequence.
+    /// </summary>
+    /// <param name="fumbleType">The fumble type.</param>
+    /// <returns>A descriptive string explaining the consequence.</returns>
+    public static string GetDescription(this FumbleType fumbleType)
+    {
+        return fumbleType switch
+        {
+            FumbleType.TrustShattered =>
+                "Trust is completely broken. The NPC refuses all future persuasion attempts until trust is rebuilt.",
+            FumbleType.LieExposed =>
+                "Your deception has been uncovered. -2d10 penalty to Deception with this faction.",
+            FumbleType.ChallengeAccepted =>
+                "The target takes your intimidation as a challenge. Combat begins immediately with the enemy gaining +1d10 to attacks.",
+            FumbleType.MechanismJammed =>
+                "The lock mechanism is jammed. DC permanently increased by +2 and keys no longer work.",
+            FumbleType.SystemLockout =>
+                "Security triggered. The terminal is disabled and guards are alerted.",
+            FumbleType.ForcedExecution =>
+                "The trap activates on you. Take full trap damage immediately.",
+            FumbleType.TheSlip =>
+                "You lose your grip and fall. Take fall damage plus stress.",
+            FumbleType.TheLongFall =>
+                "Catastrophic landing. Bonus fall damage and [Disoriented] for 2 rounds.",
+            FumbleType.SystemWideAlert =>
+                "All nearby enemies are alerted and converge on your position.",
+            FumbleType.NegotiationCollapsed =>
+                "The negotiation has completely failed. The NPC walks away and the deal is permanently off the table.",
+            _ => "An unknown fumble consequence occurred."
+        };
+    }
+
+    /// <summary>
+    /// Determines if this fumble type triggers combat.
+    /// </summary>
+    /// <param name="fumbleType">The fumble type.</param>
+    /// <returns>True if combat is initiated; otherwise, false.</returns>
+    public static bool TriggersCombat(this FumbleType fumbleType)
+    {
+        return fumbleType switch
+        {
+            FumbleType.ChallengeAccepted => true,
+            FumbleType.SystemWideAlert => true, // Enemies converge
+            _ => false
+        };
+    }
+
+    /// <summary>
+    /// Determines if this fumble type permanently affects future interactions.
+    /// </summary>
+    /// <param name="fumbleType">The fumble type.</param>
+    /// <returns>True if the effect is permanent; otherwise, false.</returns>
+    public static bool IsPermanent(this FumbleType fumbleType)
+    {
+        return fumbleType switch
+        {
+            FumbleType.TrustShattered => true, // Until recovery condition
+            FumbleType.MechanismJammed => true, // Lock permanently affected
+            FumbleType.NegotiationCollapsed => true, // Deal permanently lost
+            _ => false
         };
     }
 }

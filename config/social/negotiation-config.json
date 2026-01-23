@@ -1,0 +1,531 @@
+{
+    "$schema": "./schemas/negotiation-config.schema.json",
+    "version": "0.15.3e",
+    "description": "Configuration for negotiation system including request complexity, concession types, position track, and tactics",
+
+    "requestComplexity": [
+        {
+            "id": "FairTrade",
+            "baseDc": 10,
+            "initialGap": 2,
+            "defaultRounds": 3,
+            "displayName": "Fair Trade",
+            "difficultyRating": "Easy",
+            "description": "An equal exchange where both parties benefit equally.",
+            "pcStartPosition": 4,
+            "npcStartPosition": 6,
+            "examples": [
+                "Trade supplies for a map",
+                "Even split of salvage rights",
+                "Mutual defense agreement"
+            ]
+        },
+        {
+            "id": "SlightAdvantage",
+            "baseDc": 14,
+            "initialGap": 3,
+            "defaultRounds": 4,
+            "displayName": "Slight Advantage",
+            "difficultyRating": "Moderate",
+            "description": "You're asking for a minor edge in the deal.",
+            "pcStartPosition": 3,
+            "npcStartPosition": 6,
+            "examples": [
+                "60% of the profits",
+                "Priority access to resources",
+                "A small bonus for your trouble"
+            ]
+        },
+        {
+            "id": "NoticeableAdvantage",
+            "baseDc": 18,
+            "initialGap": 4,
+            "defaultRounds": 5,
+            "displayName": "Noticeable Advantage",
+            "difficultyRating": "Challenging",
+            "description": "You're seeking a clear benefit over them.",
+            "pcStartPosition": 2,
+            "npcStartPosition": 6,
+            "examples": [
+                "Exclusive access to a trade route",
+                "Support in an upcoming vote",
+                "First pick of any salvage"
+            ]
+        },
+        {
+            "id": "MajorAdvantage",
+            "baseDc": 22,
+            "initialGap": 5,
+            "defaultRounds": 6,
+            "displayName": "Major Advantage",
+            "difficultyRating": "Difficult",
+            "description": "You want a significant gain at their expense.",
+            "pcStartPosition": 1,
+            "npcStartPosition": 6,
+            "examples": [
+                "Full control of guild contracts",
+                "Oath of non-interference in your territory",
+                "Permanent reduced prices"
+            ]
+        },
+        {
+            "id": "OneSidedDeal",
+            "baseDc": 26,
+            "initialGap": 6,
+            "defaultRounds": 7,
+            "displayName": "One-Sided Deal",
+            "difficultyRating": "Extremely Difficult",
+            "description": "You want everything in your favor.",
+            "pcStartPosition": 0,
+            "npcStartPosition": 6,
+            "examples": [
+                "Unconditional surrender of all assets",
+                "Complete control with no strings",
+                "Full allegiance with no reciprocation"
+            ]
+        }
+    ],
+
+    "positionTrack": {
+        "description": "10-point scale representing bargaining positions from Maximum Demand (0) to Walk Away (8)",
+        "positions": [
+            {
+                "position": 0,
+                "name": "Maximum Demand",
+                "category": "PC Demand",
+                "description": "Extreme position representing everything in the player's favor"
+            },
+            {
+                "position": 1,
+                "name": "Strong+",
+                "category": "PC Demand",
+                "description": "Very aggressive position heavily favoring the player"
+            },
+            {
+                "position": 2,
+                "name": "Strong",
+                "category": "PC Demand",
+                "description": "Aggressive position clearly benefiting the player"
+            },
+            {
+                "position": 3,
+                "name": "Favorable+",
+                "category": "PC Demand",
+                "description": "Position with notable player advantage"
+            },
+            {
+                "position": 4,
+                "name": "Favorable",
+                "category": "PC Demand",
+                "description": "Position with minor player advantage"
+            },
+            {
+                "position": 5,
+                "name": "Compromise",
+                "category": "Neutral",
+                "description": "Equal agreement zone acceptable to both parties",
+                "isAgreementZone": true
+            },
+            {
+                "position": 6,
+                "name": "Unfavorable",
+                "category": "NPC Demand",
+                "description": "Position with minor NPC advantage, typical starting point"
+            },
+            {
+                "position": 7,
+                "name": "Unfavorable+",
+                "category": "NPC Demand",
+                "description": "Position with notable NPC advantage"
+            },
+            {
+                "position": 8,
+                "name": "Walk Away",
+                "category": "NPC Demand",
+                "description": "NPC termination point, negotiation collapses if reached",
+                "isTerminationPoint": true
+            }
+        ],
+        "gapDescriptions": {
+            "adjacent": {
+                "minGap": 0,
+                "maxGap": 1,
+                "description": "Very close - agreement imminent"
+            },
+            "near": {
+                "minGap": 2,
+                "maxGap": 2,
+                "description": "Near - making good progress"
+            },
+            "moderate": {
+                "minGap": 3,
+                "maxGap": 3,
+                "description": "Moderate gap - work to do"
+            },
+            "far": {
+                "minGap": 4,
+                "maxGap": 4,
+                "description": "Far apart - challenging negotiation"
+            },
+            "veryFar": {
+                "minGap": 5,
+                "maxGap": 99,
+                "description": "Very far - significant concessions needed"
+            }
+        }
+    },
+
+    "tactics": [
+        {
+            "id": "Persuade",
+            "displayName": "Persuade",
+            "underlyingSystem": "Persuasion",
+            "requiresCheck": true,
+            "description": "Make an honest, logical appeal to move the NPC toward agreement.",
+            "primaryAttribute": "WILL",
+            "riskLevel": "Low",
+            "incursStress": false,
+            "costsReputation": false,
+            "fumbleCollapsesNegotiation": true,
+            "fumbleType": "TrustShattered",
+            "sideEffectWarning": null,
+            "exampleDialogue": [
+                "Consider the mutual benefits of this arrangement...",
+                "Your people would prosper under these terms...",
+                "This trade route serves both our interests..."
+            ]
+        },
+        {
+            "id": "Deceive",
+            "displayName": "Deceive",
+            "underlyingSystem": "Deception",
+            "requiresCheck": true,
+            "description": "Mislead the NPC about the deal's terms or your intentions.",
+            "primaryAttribute": "WILL",
+            "riskLevel": "High",
+            "incursStress": true,
+            "stressCost": {
+                "success": 1,
+                "failure": 3,
+                "fumble": 8
+            },
+            "costsReputation": false,
+            "fumbleCollapsesNegotiation": true,
+            "fumbleType": "LieExposed",
+            "sideEffectWarning": "Incurs Liar's Burden stress cost",
+            "exampleDialogue": [
+                "I assure you, this is our final offer...",
+                "My contacts have confirmed the market value...",
+                "The guild would never approve better terms..."
+            ]
+        },
+        {
+            "id": "Pressure",
+            "displayName": "Pressure",
+            "underlyingSystem": "Intimidation",
+            "requiresCheck": true,
+            "description": "Use threats or implied consequences to force movement.",
+            "primaryAttribute": "MIGHT",
+            "alternativeAttribute": "WILL",
+            "riskLevel": "Very High",
+            "incursStress": false,
+            "costsReputation": true,
+            "reputationCost": {
+                "criticalSuccess": -3,
+                "success": -5,
+                "failure": -10,
+                "fumble": -10
+            },
+            "fumbleCollapsesNegotiation": true,
+            "fumbleType": "ChallengeAccepted",
+            "sideEffectWarning": "Always costs faction reputation",
+            "exampleDialogue": [
+                "It would be unfortunate if word got out about your... situation.",
+                "My associates are not known for their patience.",
+                "Consider what happens if we become enemies instead of partners."
+            ]
+        },
+        {
+            "id": "Concede",
+            "displayName": "Concede",
+            "underlyingSystem": null,
+            "requiresCheck": false,
+            "description": "Voluntarily give ground to gain bonus dice on your next check.",
+            "primaryAttribute": null,
+            "riskLevel": "Low",
+            "incursStress": false,
+            "costsReputation": false,
+            "fumbleCollapsesNegotiation": false,
+            "fumbleType": null,
+            "sideEffectWarning": "Concession costs apply (item loss, debt, etc.)",
+            "exampleDialogue": [
+                "Very well, I can see your position. Perhaps we can meet halfway.",
+                "Let me offer something to show my good faith.",
+                "I'm willing to make a gesture of compromise."
+            ]
+        }
+    ],
+
+    "concessions": [
+        {
+            "id": "OfferItem",
+            "displayName": "Offer Item",
+            "dcReduction": 2,
+            "bonusDice": 2,
+            "riskLevel": "Low",
+            "consumesItem": true,
+            "createsDebt": false,
+            "revealsInformation": false,
+            "risksReputation": false,
+            "requiresContextData": true,
+            "contextDataRequired": "itemId",
+            "description": "Offer a valuable item as part of the deal. The item is consumed and transferred to the NPC.",
+            "shortDescription": "Give an item of value",
+            "cost": "Item is consumed and transferred",
+            "examples": [
+                "\"I'll include this Dvergr compass as a sign of good faith.\"",
+                "\"Take these medical supplies as a gesture of goodwill.\"",
+                "\"This salvage toolkit should sweeten the deal.\""
+            ]
+        },
+        {
+            "id": "PromiseFavor",
+            "displayName": "Promise Favor",
+            "dcReduction": 2,
+            "bonusDice": 2,
+            "riskLevel": "Medium",
+            "consumesItem": false,
+            "createsDebt": true,
+            "revealsInformation": false,
+            "risksReputation": false,
+            "requiresContextData": false,
+            "description": "Promise a future favor to the NPC. Creates a debt that must be repaid later.",
+            "shortDescription": "Owe them a favor",
+            "cost": "Creates a debt that must be repaid",
+            "examples": [
+                "\"I'll owe you a favor - no questions asked.\"",
+                "\"When you need something done, call on me.\"",
+                "\"Consider me in your debt.\""
+            ]
+        },
+        {
+            "id": "TradeInformation",
+            "displayName": "Trade Information",
+            "dcReduction": 4,
+            "bonusDice": 2,
+            "riskLevel": "High",
+            "consumesItem": false,
+            "createsDebt": false,
+            "revealsInformation": true,
+            "risksReputation": false,
+            "requiresContextData": false,
+            "description": "Trade valuable information to the NPC. Information cannot be unshared once revealed.",
+            "shortDescription": "Reveal a secret",
+            "cost": "Information is now known to the NPC",
+            "examples": [
+                "\"I'll tell you where the Combine keeps their supply cache.\"",
+                "\"The guild master has a weakness you should know about...\"",
+                "\"I know who really controls the shipping routes.\""
+            ]
+        },
+        {
+            "id": "TakeRisk",
+            "displayName": "Take Risk",
+            "dcReduction": 4,
+            "bonusDice": 2,
+            "riskLevel": "High",
+            "consumesItem": false,
+            "createsDebt": false,
+            "revealsInformation": false,
+            "risksReputation": false,
+            "requiresContextData": false,
+            "description": "Take on personal risk as part of the agreement. Shows commitment by accepting vulnerability.",
+            "shortDescription": "Accept personal danger",
+            "cost": "You accept personal danger or disadvantage",
+            "examples": [
+                "\"I'll go first into the dangerous section.\"",
+                "\"I'll accept liability if this goes wrong.\"",
+                "\"Put my life on the line to prove I'm serious.\""
+            ]
+        },
+        {
+            "id": "StakeReputation",
+            "displayName": "Stake Reputation",
+            "dcReduction": 6,
+            "bonusDice": 2,
+            "riskLevel": "Very High",
+            "consumesItem": false,
+            "createsDebt": false,
+            "revealsInformation": false,
+            "risksReputation": true,
+            "requiresContextData": true,
+            "contextDataRequired": "factionId",
+            "description": "Put faction reputation on the line. The most powerful concession, but failure causes severe reputation damage.",
+            "shortDescription": "Risk faction standing",
+            "cost": "Failure damages faction reputation significantly",
+            "examples": [
+                "\"My clan's honor guarantees this agreement.\"",
+                "\"The Scavenger Guild stands behind my word.\"",
+                "\"My faction vouches for this deal.\""
+            ]
+        }
+    ],
+
+    "outcomeEffects": {
+        "criticalSuccess": {
+            "pcMovement": 0,
+            "npcMovement": 2,
+            "description": "NPC moves 2 steps toward PC, PC holds ground",
+            "narrativeTemplate": "Your {TacticName} is masterfully executed. {NpcName}'s position shifts significantly in your favor."
+        },
+        "fullSuccess": {
+            "pcMovement": 0,
+            "npcMovement": 1,
+            "description": "NPC moves 1 step toward PC, PC holds ground",
+            "narrativeTemplate": "Your {TacticName} finds its mark. {NpcName} reconsiders and moves toward your position."
+        },
+        "partialSuccess": {
+            "pcMovement": 1,
+            "npcMovement": 1,
+            "description": "Both move 1 step toward each other (mutual compromise)",
+            "narrativeTemplate": "A partial breakthrough. Both you and {NpcName} make small concessions."
+        },
+        "failure": {
+            "pcMovement": 1,
+            "npcMovement": 0,
+            "description": "PC moves 1 step toward NPC, NPC holds",
+            "narrativeTemplate": "Your {TacticName} falls flat. {NpcName} stands firm, and you feel pressure to yield."
+        },
+        "fumble": {
+            "outcome": "negotiationCollapses",
+            "description": "Negotiation immediately ends in failure",
+            "fumbleType": "NegotiationCollapsed",
+            "narrativeTemplate": "Disaster! {NpcName} has had enough. The negotiation is over."
+        }
+    },
+
+    "npcFlexibility": {
+        "description": "How willing the NPC is to compromise, affecting starting position",
+        "levels": [
+            {
+                "id": "Desperate",
+                "positionModifier": -1,
+                "description": "NPC is desperate and starts closer to compromise"
+            },
+            {
+                "id": "Eager",
+                "positionModifier": 0,
+                "description": "NPC is willing to deal, standard positioning"
+            },
+            {
+                "id": "Neutral",
+                "positionModifier": 0,
+                "description": "NPC has no strong feelings, standard positioning"
+            },
+            {
+                "id": "Reluctant",
+                "positionModifier": 1,
+                "description": "NPC is hesitant, starts further from compromise"
+            },
+            {
+                "id": "Hostile",
+                "positionModifier": 2,
+                "description": "NPC is openly hostile, starts at edge of negotiation"
+            }
+        ]
+    },
+
+    "dispositionModifiers": {
+        "description": "How disposition affects negotiation DC",
+        "modifiers": [
+            {
+                "disposition": "Friendly",
+                "dcModifier": -2,
+                "description": "Friendly NPCs are easier to negotiate with"
+            },
+            {
+                "disposition": "Neutral",
+                "dcModifier": 0,
+                "description": "No modifier for neutral disposition"
+            },
+            {
+                "disposition": "Unfriendly",
+                "dcModifier": 2,
+                "description": "Unfriendly NPCs are harder to negotiate with"
+            },
+            {
+                "disposition": "Hostile",
+                "dcModifier": 4,
+                "description": "Hostile NPCs require significant skill to negotiate"
+            }
+        ]
+    },
+
+    "consecutiveFailureCollapse": {
+        "threshold": 3,
+        "description": "Negotiation collapses after 3 consecutive failures"
+    },
+
+    "fumbleConsequences": {
+        "NegotiationCollapsed": {
+            "id": "NegotiationCollapsed",
+            "severity": "Severe",
+            "description": "The negotiation has catastrophically failed",
+            "effects": [
+                {
+                    "type": "NegotiationTermination",
+                    "outcome": "Collapsed"
+                },
+                {
+                    "type": "DispositionPenalty",
+                    "amount": -15,
+                    "description": "NPC's disposition toward player decreases"
+                },
+                {
+                    "type": "ConcessionLoss",
+                    "description": "Any concessions already made are still consumed"
+                },
+                {
+                    "type": "FutureNegotiationBlock",
+                    "targetId": "SameNpcSameDeal",
+                    "description": "Cannot re-initiate this specific negotiation"
+                }
+            ],
+            "narrativeTemplate": "{NpcName} rises abruptly. \"We're done here. This discussion is over.\" They turn and walk away, leaving no room for further negotiation."
+        }
+    },
+
+    "agreementTerms": {
+        "description": "The quality of the final agreement based on where positions meet",
+        "positionRanges": [
+            {
+                "finalPosition": 0,
+                "quality": "Exceptional",
+                "description": "Maximum Demand achieved - extraordinary terms"
+            },
+            {
+                "minPosition": 1,
+                "maxPosition": 2,
+                "quality": "Excellent",
+                "description": "Strong terms heavily in player's favor"
+            },
+            {
+                "minPosition": 3,
+                "maxPosition": 4,
+                "quality": "Good",
+                "description": "Favorable terms with clear player advantage"
+            },
+            {
+                "finalPosition": 5,
+                "quality": "Fair",
+                "description": "Compromise - balanced terms for both parties"
+            },
+            {
+                "minPosition": 6,
+                "maxPosition": 7,
+                "quality": "Poor",
+                "description": "NPC got the better end of the deal"
+            }
+        ]
+    }
+}
