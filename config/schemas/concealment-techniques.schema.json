@@ -1,0 +1,261 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "concealment-techniques.schema.json",
+    "title": "Concealment Techniques Configuration Schema",
+    "description": "Schema for counter-tracking concealment technique definitions in Rune & Rust. Defines technique bonuses, time multipliers, and environmental requirements for the Counter-Tracking System.",
+    "type": "object",
+    "required": [
+        "dcLimits",
+        "stackingRules",
+        "techniques",
+        "effectivenessRatings"
+    ],
+    "additionalProperties": false,
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "Reference to this schema"
+        },
+        "dcLimits": {
+            "$ref": "#/$defs/dcLimitsDefinition",
+            "description": "Minimum and maximum DC values for concealment results"
+        },
+        "stackingRules": {
+            "$ref": "#/$defs/stackingRulesDefinition",
+            "description": "Rules for how bonuses and multipliers combine"
+        },
+        "techniques": {
+            "type": "array",
+            "description": "List of concealment technique definitions",
+            "items": {
+                "$ref": "#/$defs/techniqueDefinition"
+            },
+            "minItems": 1
+        },
+        "effectivenessRatings": {
+            "type": "array",
+            "description": "Effectiveness rating tiers based on concealment DC",
+            "items": {
+                "$ref": "#/$defs/effectivenessRatingDefinition"
+            },
+            "minItems": 1
+        }
+    },
+    "$defs": {
+        "dcLimitsDefinition": {
+            "type": "object",
+            "description": "Configuration for concealment DC clamping",
+            "required": [
+                "minimum",
+                "maximum"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "minimum": {
+                    "type": "integer",
+                    "description": "Minimum concealment DC (floor for poor rolls)",
+                    "minimum": 1,
+                    "maximum": 30,
+                    "default": 10
+                },
+                "maximum": {
+                    "type": "integer",
+                    "description": "Maximum concealment DC (ceiling for excellent rolls)",
+                    "minimum": 10,
+                    "maximum": 50,
+                    "default": 30
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Explanation of the DC clamping rules"
+                }
+            }
+        },
+        "stackingRulesDefinition": {
+            "type": "object",
+            "description": "Rules for combining multiple technique modifiers",
+            "required": [
+                "bonuses",
+                "timeMultipliers"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "bonuses": {
+                    "type": "string",
+                    "description": "How technique bonuses combine",
+                    "enum": [
+                        "additive",
+                        "highest-only",
+                        "multiplicative"
+                    ],
+                    "default": "additive"
+                },
+                "timeMultipliers": {
+                    "type": "string",
+                    "description": "How time multipliers combine",
+                    "enum": [
+                        "additive",
+                        "highest-only",
+                        "multiplicative"
+                    ],
+                    "default": "multiplicative"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Explanation of the stacking rules"
+                }
+            }
+        },
+        "techniqueDefinition": {
+            "type": "object",
+            "description": "Definition for a concealment technique",
+            "required": [
+                "id",
+                "technique",
+                "displayName",
+                "description",
+                "bonus",
+                "timeMultiplier"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Unique identifier for this technique (kebab-case)",
+                    "pattern": "^[a-z][a-z0-9-]*$"
+                },
+                "technique": {
+                    "type": "string",
+                    "description": "Enum value name matching ConcealmentTechnique enum",
+                    "enum": [
+                        "HardSurfaces",
+                        "BrushTracks",
+                        "FalseTrail",
+                        "WaterCrossing",
+                        "Backtracking"
+                    ]
+                },
+                "displayName": {
+                    "type": "string",
+                    "description": "Human-readable name shown to players",
+                    "minLength": 1,
+                    "maxLength": 50
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Brief mechanical description of what the technique does",
+                    "minLength": 1,
+                    "maxLength": 200
+                },
+                "bonus": {
+                    "type": "integer",
+                    "description": "Bonus added to concealment roll when using this technique",
+                    "minimum": 0,
+                    "maximum": 20
+                },
+                "timeMultiplier": {
+                    "type": "number",
+                    "description": "Travel time multiplier when using this technique (1.0 = no change)",
+                    "minimum": 1.0,
+                    "maximum": 5.0,
+                    "default": 1.0
+                },
+                "requirements": {
+                    "type": "array",
+                    "description": "Environmental requirements that must be met to use this technique",
+                    "items": {
+                        "$ref": "#/$defs/requirementDefinition"
+                    },
+                    "default": []
+                },
+                "flavorText": {
+                    "type": "string",
+                    "description": "Narrative flavor text describing the technique in-world",
+                    "maxLength": 500
+                }
+            }
+        },
+        "requirementDefinition": {
+            "type": "object",
+            "description": "An environmental requirement for a technique",
+            "required": [
+                "type",
+                "property",
+                "value"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "description": "The type of requirement",
+                    "enum": [
+                        "environment",
+                        "equipment",
+                        "skill",
+                        "status"
+                    ]
+                },
+                "property": {
+                    "type": "string",
+                    "description": "The property name to check",
+                    "enum": [
+                        "hasWaterNearby",
+                        "hasFoliageOrDebris",
+                        "hasHardSurfaces",
+                        "isDaytime",
+                        "isNighttime"
+                    ]
+                },
+                "value": {
+                    "type": "boolean",
+                    "description": "The required value for the property"
+                },
+                "errorMessage": {
+                    "type": "string",
+                    "description": "Message shown when the requirement is not met",
+                    "maxLength": 200
+                }
+            }
+        },
+        "effectivenessRatingDefinition": {
+            "type": "object",
+            "description": "Defines an effectiveness tier based on concealment DC",
+            "required": [
+                "minDc",
+                "maxDc",
+                "rating"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "minDc": {
+                    "type": "integer",
+                    "description": "Minimum DC for this rating tier (inclusive)",
+                    "minimum": 1,
+                    "maximum": 50
+                },
+                "maxDc": {
+                    "type": "integer",
+                    "description": "Maximum DC for this rating tier (inclusive)",
+                    "minimum": 1,
+                    "maximum": 50
+                },
+                "rating": {
+                    "type": "string",
+                    "description": "Display name for this effectiveness tier",
+                    "enum": [
+                        "Minimal",
+                        "Moderate",
+                        "Effective",
+                        "Excellent",
+                        "Masterful"
+                    ]
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Narrative description of this effectiveness level",
+                    "maxLength": 200
+                }
+            }
+        }
+    }
+}

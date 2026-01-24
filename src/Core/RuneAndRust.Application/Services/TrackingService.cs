@@ -32,6 +32,15 @@ namespace RuneAndRust.Application.Services;
 ///   <item><description>Fumble during acquisition → immediate cold</description></item>
 /// </list>
 /// </para>
+/// <para>
+/// Counter-Tracking Integration (v0.15.5b):
+/// <list type="bullet">
+///   <item><description>When a target uses counter-tracking, their concealment DC replaces the base DC</description></item>
+///   <item><description>Use <see cref="TrackingState.ActualBaseDc"/> which returns ContestedDc when set</description></item>
+///   <item><description>Time multipliers from concealment affect pursuit duration</description></item>
+///   <item><description>Counter-tracking can be applied via <see cref="ICounterTrackingService"/></description></item>
+/// </list>
+/// </para>
 /// </remarks>
 public class TrackingService : ITrackingService
 {
@@ -186,13 +195,13 @@ public class TrackingService : ITrackingService
             "Created TrackingState: Id={TrackingId}, BaseDc={BaseDc}",
             state.TrackingId, state.BaseDc);
 
-        // Calculate effective DC
-        var baseDc = state.BaseDc;
+        // Calculate effective DC (uses ActualBaseDc which respects ContestedDc from counter-tracking)
+        var baseDc = state.ActualBaseDc;
         var effectiveDc = Math.Max(0, baseDc + modifiers.TotalDcModifier);
 
         _logger.LogDebug(
-            "Acquisition check: BaseDc={BaseDc}, ModifierDc={ModifierDc}, EffectiveDc={EffectiveDc}",
-            baseDc, modifiers.TotalDcModifier, effectiveDc);
+            "Acquisition check: BaseDc={BaseDc}, HasCounterTracking={HasCT}, ModifierDc={ModifierDc}, EffectiveDc={EffectiveDc}",
+            baseDc, state.HasCounterTracking, modifiers.TotalDcModifier, effectiveDc);
 
         // Perform the acquisition check
         var context = modifiers.ToSkillContext();
@@ -361,15 +370,15 @@ public class TrackingService : ITrackingService
                 "Must be in Pursuit phase.");
         }
 
-        // Calculate effective DC
-        var baseDc = state.BaseDc;
+        // Calculate effective DC (uses ActualBaseDc which respects ContestedDc from counter-tracking)
+        var baseDc = state.ActualBaseDc;
         var cumulativeModifier = state.CumulativeDcModifier;
         var conditionModifier = modifiers.TotalDcModifier;
         var effectiveDc = Math.Max(0, baseDc + cumulativeModifier + conditionModifier);
 
         _logger.LogDebug(
-            "Pursuit check: BaseDc={BaseDc}, Cumulative={Cumulative}, Condition={Condition}, EffectiveDc={EffectiveDc}",
-            baseDc, cumulativeModifier, conditionModifier, effectiveDc);
+            "Pursuit check: BaseDc={BaseDc}, HasCounterTracking={HasCT}, Cumulative={Cumulative}, Condition={Condition}, EffectiveDc={EffectiveDc}",
+            baseDc, state.HasCounterTracking, cumulativeModifier, conditionModifier, effectiveDc);
 
         // Perform the pursuit check
         var context = modifiers.ToSkillContext();
@@ -518,15 +527,15 @@ public class TrackingService : ITrackingService
             _ => "Recovery"
         };
 
-        // Calculate effective DC
-        var baseDc = state.BaseDc;
+        // Calculate effective DC (uses ActualBaseDc which respects ContestedDc from counter-tracking)
+        var baseDc = state.ActualBaseDc;
         var cumulativeModifier = state.CumulativeDcModifier;
         var conditionModifier = modifiers.TotalDcModifier;
         var effectiveDc = Math.Max(0, baseDc + cumulativeModifier + conditionModifier + recoveryDcModifier);
 
         _logger.LogDebug(
-            "Recovery check: BaseDc={BaseDc}, Cumulative={Cumulative}, Condition={Condition}, Recovery={Recovery}, EffectiveDc={EffectiveDc}",
-            baseDc, cumulativeModifier, conditionModifier, recoveryDcModifier, effectiveDc);
+            "Recovery check: BaseDc={BaseDc}, HasCounterTracking={HasCT}, Cumulative={Cumulative}, Condition={Condition}, Recovery={Recovery}, EffectiveDc={EffectiveDc}",
+            baseDc, state.HasCounterTracking, cumulativeModifier, conditionModifier, recoveryDcModifier, effectiveDc);
 
         // Perform the recovery check
         var context = modifiers.ToSkillContext();
@@ -703,15 +712,15 @@ public class TrackingService : ITrackingService
             ? Within100FtDcModifier
             : Within500FtDcModifier;
 
-        // Calculate effective DC
-        var baseDc = state.BaseDc;
+        // Calculate effective DC (uses ActualBaseDc which respects ContestedDc from counter-tracking)
+        var baseDc = state.ActualBaseDc;
         var cumulativeModifier = state.CumulativeDcModifier;
         var conditionModifier = modifiers.TotalDcModifier;
         var effectiveDc = Math.Max(0, baseDc + cumulativeModifier + conditionModifier + distanceDcModifier);
 
         _logger.LogDebug(
-            "Closing check: BaseDc={BaseDc}, Distance modifier={DistMod}, EffectiveDc={EffectiveDc}",
-            baseDc, distanceDcModifier, effectiveDc);
+            "Closing check: BaseDc={BaseDc}, HasCounterTracking={HasCT}, Distance modifier={DistMod}, EffectiveDc={EffectiveDc}",
+            baseDc, state.HasCounterTracking, distanceDcModifier, effectiveDc);
 
         // Perform the closing check
         var context = modifiers.ToSkillContext();

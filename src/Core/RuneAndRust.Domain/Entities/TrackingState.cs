@@ -261,6 +261,43 @@ public class TrackingState
     public int? EstimatedTargetCount { get; private set; }
 
     // ═══════════════════════════════════════════════════════════════════════════
+    // COUNTER-TRACKING PROPERTIES
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// Contested difficulty class set by the target's counter-tracking attempt.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// When the target has successfully concealed their trail, this DC replaces
+    /// the normal trail age DC. The concealment DC is calculated as:
+    /// <code>
+    /// ContestedDc = Math.Clamp(NetSuccesses + TechniqueBonus, 10, 30)
+    /// </code>
+    /// </para>
+    /// <para>
+    /// When set, the <see cref="EffectiveDc"/> uses this value instead of the
+    /// base trail age DC. Null indicates no counter-tracking has been applied.
+    /// </para>
+    /// </remarks>
+    public int? ContestedDc { get; private set; }
+
+    /// <summary>
+    /// Time multiplier imposed by the target's concealment techniques.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Represents the additional time required to follow the concealed trail.
+    /// Time multipliers from different techniques compound multiplicatively.
+    /// For example, BrushTracks (x1.5) + Backtracking (x1.25) = x1.875.
+    /// </para>
+    /// <para>
+    /// Defaults to 1.0 (no time penalty) when no concealment is active.
+    /// </para>
+    /// </remarks>
+    public decimal ConcealmentTimeMultiplier { get; private set; } = 1.0m;
+
+    // ═══════════════════════════════════════════════════════════════════════════
     // CONSTRUCTORS
     // ═══════════════════════════════════════════════════════════════════════════
 
@@ -695,6 +732,77 @@ public class TrackingState
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
+    // COUNTER-TRACKING METHODS
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// Applies counter-tracking from a concealment attempt.
+    /// </summary>
+    /// <param name="result">The result of the counter-tracking attempt.</param>
+    /// <remarks>
+    /// <para>
+    /// When a target successfully conceals their trail, the concealment DC
+    /// replaces the normal trail age DC for subsequent tracking checks.
+    /// The time multiplier is also applied to track the travel time penalty.
+    /// </para>
+    /// <para>
+    /// The contested DC represents how well the target hid their trail,
+    /// clamped between 10 (minimum) and 30 (maximum).
+    /// </para>
+    /// </remarks>
+    public void ApplyCounterTracking(CounterTrackingResult result)
+    {
+        ContestedDc = result.ConcealmentDc;
+        ConcealmentTimeMultiplier = result.TimeMultiplier;
+    }
+
+    /// <summary>
+    /// Clears any active counter-tracking, reverting to normal trail age DC.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Call this when:
+    /// <list type="bullet">
+    ///   <item><description>The tracker catches up to the concealed section</description></item>
+    ///   <item><description>Counter-tracking effect expires</description></item>
+    ///   <item><description>The target stops concealing</description></item>
+    /// </list>
+    /// </para>
+    /// <para>
+    /// Resets ContestedDc to null and ConcealmentTimeMultiplier to 1.0.
+    /// </para>
+    /// </remarks>
+    public void ClearCounterTracking()
+    {
+        ContestedDc = null;
+        ConcealmentTimeMultiplier = 1.0m;
+    }
+
+    /// <summary>
+    /// Whether counter-tracking is currently active.
+    /// </summary>
+    /// <remarks>
+    /// True when a contested DC has been set from a concealment attempt.
+    /// When active, the ContestedDc is used instead of the trail age base DC.
+    /// </remarks>
+    public bool HasCounterTracking => ContestedDc.HasValue;
+
+    /// <summary>
+    /// Gets the actual base DC to use, considering counter-tracking.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// When counter-tracking is active, returns the contested DC.
+    /// Otherwise, returns the normal trail age base DC.
+    /// </para>
+    /// <para>
+    /// Use this property when calculating the effective DC for tracking checks
+    /// to properly account for concealment attempts.
+    /// </para>
+    /// </remarks>
+    public int ActualBaseDc => ContestedDc ?? BaseDc;
+
+    // ═══════════════════════════════════════════════════════════════════════════
     // STRING FORMATTING
     // ═══════════════════════════════════════════════════════════════════════════
 
@@ -723,11 +831,16 @@ public class TrackingState
     /// <returns>A multi-line string with complete tracking state details.</returns>
     public string ToDetailedString()
     {
+        var counterTrackingInfo = HasCounterTracking
+            ? $"\n  Counter-Tracking: DC {ContestedDc}, Time x{ConcealmentTimeMultiplier:F2}"
+            : "\n  Counter-Tracking: None";
+
         return $"TrackingState [{TrackingId}]\n" +
                $"  Tracker: {TrackerId}\n" +
                $"  Target: {TargetDescription}\n" +
                $"  Status: {Status}, Phase: {CurrentPhase}\n" +
                $"  Trail Age: {TrailAge} (Base DC: {BaseDc})\n" +
+               $"  Actual Base DC: {ActualBaseDc}{(HasCounterTracking ? " [Contested]" : "")}\n" +
                $"  Cumulative Modifier: +{CumulativeDcModifier} (Effective DC: {EffectiveDc})\n" +
                $"  Distance Covered: {DistanceCovered:F2} miles\n" +
                $"  Failed Attempts in Phase: {FailedAttemptsInPhase}\n" +
@@ -735,6 +848,7 @@ public class TrackingState
                $"  Started: {StartedAt:yyyy-MM-dd HH:mm:ss} UTC\n" +
                $"  Last Check: {LastCheckAt:yyyy-MM-dd HH:mm:ss} UTC\n" +
                $"  Estimated Target Count: {EstimatedTargetCount?.ToString() ?? "Unknown"}\n" +
-               $"  Estimated Distance: {EstimatedDistanceToTarget?.ToString() ?? "Unknown"} ft";
+               $"  Estimated Distance: {EstimatedDistanceToTarget?.ToString() ?? "Unknown"} ft" +
+               counterTrackingInfo;
     }
 }

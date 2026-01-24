@@ -1,0 +1,105 @@
+{
+    "$schema": "./schemas/concealment-techniques.schema.json",
+    "dcLimits": {
+        "minimum": 10,
+        "maximum": 30,
+        "description": "Concealment DC is clamped between these values, ensuring even poor rolls provide some protection while preventing impossible DCs."
+    },
+    "stackingRules": {
+        "bonuses": "additive",
+        "timeMultipliers": "multiplicative",
+        "description": "Technique bonuses stack additively (e.g., +4 + +4 = +8). Time multipliers compound multiplicatively (e.g., x1.5 * x1.25 = x1.875)."
+    },
+    "techniques": [
+        {
+            "id": "hard-surfaces",
+            "technique": "HardSurfaces",
+            "displayName": "Hard Surfaces",
+            "description": "Walk on stone, metal, or packed earth that doesn't hold tracks well.",
+            "bonus": 2,
+            "timeMultiplier": 1.0,
+            "requirements": [],
+            "flavorText": "The Jotun-built roads and pre-Shattering concrete leave no trace of passage. You walk where footprints cannot follow."
+        },
+        {
+            "id": "brush-tracks",
+            "technique": "BrushTracks",
+            "displayName": "Brush Tracks",
+            "description": "Use branches or debris to sweep away your footprints as you go.",
+            "bonus": 4,
+            "timeMultiplier": 1.5,
+            "requirements": [
+                {
+                    "type": "environment",
+                    "property": "hasFoliageOrDebris",
+                    "value": true,
+                    "errorMessage": "Requires foliage or debris to sweep away tracks."
+                }
+            ],
+            "flavorText": "Each step erased as if you were never there. The branches whisper across the ground, consuming all evidence of your passage."
+        },
+        {
+            "id": "false-trail",
+            "technique": "FalseTrail",
+            "displayName": "False Trail",
+            "description": "Create misleading tracks leading in a different direction, then double back.",
+            "bonus": 6,
+            "timeMultiplier": 2.0,
+            "requirements": [],
+            "flavorText": "Let them chase shadows while you slip away. Your deliberate deception leads pursuers on a merry chase to nowhere."
+        },
+        {
+            "id": "water-crossing",
+            "technique": "WaterCrossing",
+            "displayName": "Water Crossing",
+            "description": "Wade through a stream or pond to break your scent and visual trail.",
+            "bonus": 8,
+            "timeMultiplier": 1.0,
+            "requirements": [
+                {
+                    "type": "environment",
+                    "property": "hasWaterNearby",
+                    "value": true,
+                    "errorMessage": "Requires a water body (stream, river, pond, swamp) to cross through."
+                }
+            ],
+            "flavorText": "The stream carries away all evidence of your passage, breaking both scent and visual trails completely."
+        },
+        {
+            "id": "backtracking",
+            "technique": "Backtracking",
+            "displayName": "Backtracking",
+            "description": "Walk backwards over your own trail to confuse pursuers about your direction.",
+            "bonus": 4,
+            "timeMultiplier": 1.25,
+            "requirements": [],
+            "flavorText": "Your footprints tell a lie about where you went. The trail leads them in the wrong direction while you vanish into the wasteland."
+        }
+    ],
+    "effectivenessRatings": [
+        {
+            "minDc": 10,
+            "maxDc": 14,
+            "rating": "Minimal",
+            "description": "The trail is barely concealed. Competent trackers will still find it."
+        },
+        {
+            "minDc": 15,
+            "maxDc": 19,
+            "rating": "Moderate",
+            "description": "The trail is reasonably concealed. Average trackers may struggle."
+        },
+        {
+            "minDc": 20,
+            "maxDc": 24,
+            "rating": "Effective",
+            "description": "The trail is well-concealed. Only skilled trackers can follow."
+        },
+        {
+            "minDc": 25,
+            "maxDc": 30,
+            "rating": "Excellent",
+            "description": "The trail is masterfully concealed. Only expert trackers have a chance."
+        }
+    ]
+}
