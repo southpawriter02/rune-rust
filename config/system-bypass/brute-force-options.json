@@ -1,0 +1,276 @@
+{
+    "$schema": "../schemas/brute-force-options.schema.json",
+    "version": "0.15.4h",
+    "description": "Brute force bypass configuration for the Alternative Bypass Methods subsystem",
+    "bruteForceTargets": [
+        {
+            "id": "simpleDoor",
+            "targetType": "SimpleDoor",
+            "name": "Simple Door",
+            "description": "Standard wooden or light metal door with basic construction.",
+            "baseDc": 12,
+            "maxAttempts": 5,
+            "retryPenaltyPerAttempt": 1,
+            "targetHitPoints": 20,
+            "consequences": [
+                {
+                    "type": "Noise",
+                    "noiseLevel": "Loud",
+                    "probability": 1.0,
+                    "canBeAvoidedOnCritical": true,
+                    "severityRating": 2,
+                    "description": "Loud noise alerts nearby (60 ft radius)"
+                }
+            ],
+            "toolModifiers": [
+                {
+                    "tool": "Crowbar",
+                    "dcModifier": -2,
+                    "bonusDice": 1
+                },
+                {
+                    "tool": "Sledgehammer",
+                    "dcModifier": -4,
+                    "bonusDice": 2
+                }
+            ],
+            "flavorText": {
+                "description": "a wooden door with a simple lock",
+                "criticalSuccess": "With a precise strike, the door gives way cleanly. The hinges surrender without protest, and the opening is clear.",
+                "success": "The door crashes inward with a resounding bang. Splinters scatter across the floor.",
+                "failure": "the door holds firm. You'll need to try harder.",
+                "fumble": "Your strike goes wide! You stumble into the doorframe, taking damage from the impact."
+            }
+        },
+        {
+            "id": "reinforcedDoor",
+            "targetType": "ReinforcedDoor",
+            "name": "Reinforced Door",
+            "description": "Metal-reinforced door with heavy construction and security features.",
+            "baseDc": 16,
+            "maxAttempts": 3,
+            "retryPenaltyPerAttempt": 2,
+            "targetHitPoints": 40,
+            "consequences": [
+                {
+                    "type": "Noise",
+                    "noiseLevel": "VeryLoud",
+                    "probability": 1.0,
+                    "canBeAvoidedOnCritical": true,
+                    "severityRating": 3,
+                    "description": "Very loud noise alerts guards (120 ft radius)"
+                },
+                {
+                    "type": "ContentDamage",
+                    "noiseLevel": "Silent",
+                    "probability": 0.5,
+                    "canBeAvoidedOnCritical": true,
+                    "severityRating": 3,
+                    "description": "Risk of damaging contents (50% chance)"
+                }
+            ],
+            "toolModifiers": [
+                {
+                    "tool": "Crowbar",
+                    "dcModifier": -2,
+                    "bonusDice": 1
+                },
+                {
+                    "tool": "Sledgehammer",
+                    "dcModifier": -3,
+                    "bonusDice": 2
+                },
+                {
+                    "tool": "Breaching Charge",
+                    "dcModifier": -6,
+                    "bonusDice": 2
+                }
+            ],
+            "flavorText": {
+                "description": "a reinforced door with metal bracing",
+                "criticalSuccess": "You find the weak point in the reinforcement. One powerful blow, and the door buckles inward with minimal noise.",
+                "success": "Metal screeches against metal as the door finally gives way. The noise echoes through the corridors.",
+                "failure": "the reinforced door refuses to yield. Perhaps a different approach?",
+                "fumble": "The door doesn't budge, but something in your shoulder does. Pain shoots through your arm."
+            }
+        },
+        {
+            "id": "vault",
+            "targetType": "Vault",
+            "name": "Vault Door",
+            "description": "Heavy vault door of Old World or Jotun construction with extreme durability.",
+            "baseDc": 22,
+            "maxAttempts": 2,
+            "retryPenaltyPerAttempt": 3,
+            "targetHitPoints": 80,
+            "consequences": [
+                {
+                    "type": "Noise",
+                    "noiseLevel": "VeryLoud",
+                    "probability": 1.0,
+                    "canBeAvoidedOnCritical": true,
+                    "severityRating": 3,
+                    "description": "Very loud noise alerts guards (120 ft radius)"
+                },
+                {
+                    "type": "Exhaustion",
+                    "noiseLevel": "Silent",
+                    "probability": 1.0,
+                    "canBeAvoidedOnCritical": true,
+                    "severityRating": 2,
+                    "description": "Physical exhaustion from tremendous effort"
+                },
+                {
+                    "type": "ContentDamage",
+                    "noiseLevel": "Silent",
+                    "probability": 0.5,
+                    "canBeAvoidedOnCritical": true,
+                    "severityRating": 3,
+                    "description": "Risk of damaging contents (50% chance)"
+                }
+            ],
+            "toolModifiers": [
+                {
+                    "tool": "Sledgehammer",
+                    "dcModifier": -2,
+                    "bonusDice": 2
+                },
+                {
+                    "tool": "Breaching Charge",
+                    "dcModifier": -4,
+                    "bonusDice": 2
+                },
+                {
+                    "tool": "Industrial Cutter",
+                    "dcModifier": -6,
+                    "bonusDice": 2
+                }
+            ],
+            "flavorText": {
+                "description": "a heavy vault door of Old World construction",
+                "criticalSuccess": "The vault door groans under your assault, and ancient seals finally give way. The interior appears undisturbed.",
+                "success": "After tremendous effort, the vault door surrenders. Your muscles ache, but the way is open.",
+                "failure": "the vault door remains sealed. This will require significant effort.",
+                "fumble": "A hidden mechanism triggers as you strike wrong—sparks fly and you jerk back, burned."
+            }
+        },
+        {
+            "id": "container",
+            "targetType": "Container",
+            "name": "Container",
+            "description": "Locked container, chest, or safe with variable construction strength.",
+            "baseDcFormula": "8 + (strength x 2)",
+            "baseDcRange": {
+                "min": 10,
+                "max": 18
+            },
+            "maxAttempts": 3,
+            "retryPenaltyPerAttempt": 1,
+            "targetHitPointsFormula": "10 + (strength x 5)",
+            "targetHitPointsRange": {
+                "min": 15,
+                "max": 35
+            },
+            "strengthModifier": {
+                "min": 1,
+                "max": 5,
+                "default": 3,
+                "description": "Container strength affects DC and HP. Strength 1 = flimsy, 5 = heavy"
+            },
+            "consequences": [
+                {
+                    "type": "Noise",
+                    "noiseLevel": "Loud",
+                    "probability": 1.0,
+                    "canBeAvoidedOnCritical": true,
+                    "severityRating": 2,
+                    "description": "Loud noise alerts nearby (60 ft radius)"
+                },
+                {
+                    "type": "ContentDamage",
+                    "noiseLevel": "Silent",
+                    "probability": 0.5,
+                    "canBeAvoidedOnCritical": true,
+                    "severityRating": 3,
+                    "description": "Risk of damaging contents (50% chance)"
+                }
+            ],
+            "toolModifiers": [
+                {
+                    "tool": "Crowbar",
+                    "dcModifier": -2,
+                    "bonusDice": 1
+                },
+                {
+                    "tool": "Knife",
+                    "dcModifier": -1,
+                    "bonusDice": 0
+                }
+            ],
+            "flavorText": {
+                "description": "a locked container",
+                "criticalSuccess": "The lock mechanism snaps cleanly, and the container opens without damaging the contents within.",
+                "success": "The container bursts open. Some contents may have shifted roughly.",
+                "failure": "the container's lock resists your force.",
+                "fumble": "Your tool slips, gashing your hand. Blood drips onto the unyielding container."
+            }
+        }
+    ],
+    "environmentModifiers": [
+        {
+            "condition": "PartiallyDamaged",
+            "dcModifier": -4,
+            "description": "Obstacle is already damaged or weakened"
+        },
+        {
+            "condition": "ReinforcedHinges",
+            "dcModifier": 2,
+            "description": "Hinges have been reinforced beyond standard"
+        },
+        {
+            "condition": "JotunForged",
+            "dcModifier": 4,
+            "description": "Ancient Jotun construction provides exceptional durability"
+        },
+        {
+            "condition": "Rusted",
+            "dcModifier": -2,
+            "description": "Metal components are corroded and weakened"
+        },
+        {
+            "condition": "MagicallyWarded",
+            "dcModifier": 4,
+            "description": "Runic wards reinforce the obstacle"
+        }
+    ],
+    "fumbleEffects": {
+        "baseDamage": "1d6",
+        "additionalDcPenalty": 2,
+        "toolBreaksOnFumble": true,
+        "noiseLevel": "Extreme",
+        "description": "Fumble causes 1d6 damage, +2 permanent DC penalty, tool breaks, and maximum noise"
+    },
+    "criticalSuccess": {
+        "threshold": 5,
+        "noiseLevelReduction": 1,
+        "avoidsContentDamage": true,
+        "avoidsExhaustion": true,
+        "description": "Net successes >= 5 reduces noise by one level and avoids content damage and exhaustion"
+    },
+    "toolBonusDice": {
+        "Crowbar": 1,
+        "Sledgehammer": 2,
+        "Breaching Charge": 2,
+        "Industrial Cutter": 2,
+        "Knife": 0
+    },
+    "assistanceBonus": {
+        "maxBonusDice": 2,
+        "dicePerAssistant": 1,
+        "description": "Each assisting character adds +1d10, maximum +2d10 total"
+    },
+    "exhaustionPenalty": {
+        "formula": "exhaustionLevel / 2",
+        "description": "Exhaustion reduces dice pool by half the exhaustion level"
+    }
+}

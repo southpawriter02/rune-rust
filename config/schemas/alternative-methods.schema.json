@@ -1,0 +1,232 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "alternative-methods.schema.json",
+    "title": "Alternative Bypass Methods Configuration",
+    "description": "Schema for alternative bypass methods configuration in the Alternative Bypass Methods subsystem (v0.15.4h)",
+    "type": "object",
+    "required": ["version", "alternatives", "checkTypes"],
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "Reference to this schema file"
+        },
+        "version": {
+            "type": "string",
+            "description": "Configuration version",
+            "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+[a-z]?$"
+        },
+        "description": {
+            "type": "string",
+            "description": "Human-readable description of this configuration"
+        },
+        "alternatives": {
+            "type": "object",
+            "description": "Alternative methods organized by obstacle type",
+            "properties": {
+                "LockedDoor": {
+                    "type": "array",
+                    "items": { "$ref": "#/definitions/alternativeMethod" }
+                },
+                "SecuredTerminal": {
+                    "type": "array",
+                    "items": { "$ref": "#/definitions/alternativeMethod" }
+                },
+                "ActiveTrap": {
+                    "type": "array",
+                    "items": { "$ref": "#/definitions/alternativeMethod" }
+                },
+                "PhysicalBarrier": {
+                    "type": "array",
+                    "items": { "$ref": "#/definitions/alternativeMethod" }
+                },
+                "EnergyBarrier": {
+                    "type": "array",
+                    "items": { "$ref": "#/definitions/alternativeMethod" }
+                }
+            },
+            "additionalProperties": false
+        },
+        "checkTypes": {
+            "type": "object",
+            "description": "Definitions of check types",
+            "additionalProperties": {
+                "$ref": "#/definitions/checkTypeDefinition"
+            }
+        },
+        "difficultyDescriptions": {
+            "type": "object",
+            "description": "Mapping of DC ranges to difficulty descriptions",
+            "additionalProperties": {
+                "type": "string"
+            }
+        },
+        "futureImplementation": {
+            "type": "object",
+            "description": "Placeholder for future obstacle types",
+            "additionalProperties": {
+                "type": "object",
+                "properties": {
+                    "description": { "type": "string" },
+                    "plannedAlternatives": {
+                        "type": "array",
+                        "items": { "type": "string" }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "alternativeMethod": {
+            "type": "object",
+            "required": ["methodId", "methodName", "description", "requiredCheck", "checkDc", "timeRequired", "prerequisites", "consequences"],
+            "properties": {
+                "methodId": {
+                    "type": "string",
+                    "description": "Unique identifier for this method",
+                    "pattern": "^alt_[a-z]+_[a-z_]+$"
+                },
+                "methodName": {
+                    "type": "string",
+                    "description": "Display name of the alternative"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Narrative description of the approach"
+                },
+                "requiredCheck": {
+                    "type": "string",
+                    "description": "Type of check required",
+                    "enum": ["None", "Might", "Finesse", "Wits", "Investigation", "Perception", "Runecraft", "Attack", "Social"]
+                },
+                "checkDc": {
+                    "type": "integer",
+                    "description": "Difficulty class for the check (0 if no check required)",
+                    "minimum": 0,
+                    "maximum": 30
+                },
+                "checkDcNote": {
+                    "type": "string",
+                    "description": "Additional notes about DC (e.g., varies by target)"
+                },
+                "timeRequired": {
+                    "type": "string",
+                    "description": "Time cost description (e.g., '1 round', '5-15 minutes')"
+                },
+                "prerequisites": {
+                    "type": "array",
+                    "description": "Requirements to attempt this method",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "consequences": {
+                    "type": "array",
+                    "description": "Trade-offs for using this method",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "linksToBruteForce": {
+                    "type": "boolean",
+                    "description": "Whether this method uses the brute force subsystem"
+                },
+                "essenceCost": {
+                    "type": "object",
+                    "description": "Essence cost for runic methods",
+                    "properties": {
+                        "min": { "type": "integer", "minimum": 0 },
+                        "max": { "type": "integer", "minimum": 0 }
+                    }
+                },
+                "accessLevelGranted": {
+                    "type": "string",
+                    "description": "Access level granted on success (for terminals)",
+                    "enum": ["None", "Guest", "User", "Admin", "Root"]
+                },
+                "trapAcRange": {
+                    "type": "object",
+                    "description": "AC range for trap mechanisms",
+                    "properties": {
+                        "min": { "type": "integer" },
+                        "max": { "type": "integer" }
+                    }
+                },
+                "itemDamageRisk": {
+                    "type": "object",
+                    "description": "Item damage configuration for sacrifice methods",
+                    "properties": {
+                        "shieldDamage": {
+                            "type": "string",
+                            "pattern": "^[0-9]+d[0-9]+([+-][0-9]+)?$"
+                        },
+                        "breakThreshold": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "flavorText": {
+                    "$ref": "#/definitions/methodFlavorText"
+                },
+                "uiHints": {
+                    "$ref": "#/definitions/uiHints"
+                }
+            }
+        },
+        "checkTypeDefinition": {
+            "type": "object",
+            "properties": {
+                "attribute": {
+                    "type": "string",
+                    "description": "Primary attribute used (e.g., MIGHT, FINESSE, WITS)"
+                },
+                "skill": {
+                    "type": "string",
+                    "description": "Skill used for this check type"
+                },
+                "type": {
+                    "type": "string",
+                    "description": "Special check type (e.g., Attack)"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Human-readable description"
+                }
+            }
+        },
+        "methodFlavorText": {
+            "type": "object",
+            "properties": {
+                "attempt": {
+                    "type": "string",
+                    "description": "Narrative when attempting the method"
+                },
+                "success": {
+                    "type": "string",
+                    "description": "Narrative on success"
+                },
+                "failure": {
+                    "type": ["string", "null"],
+                    "description": "Narrative on failure (null if method cannot fail)"
+                },
+                "unavailable": {
+                    "type": "string",
+                    "description": "Narrative when method is unavailable"
+                }
+            }
+        },
+        "uiHints": {
+            "type": "object",
+            "description": "UI rendering hints",
+            "properties": {
+                "colorHint": {
+                    "type": "string",
+                    "description": "Suggested color for UI elements"
+                },
+                "iconHint": {
+                    "type": "string",
+                    "description": "Suggested icon name"
+                }
+            }
+        }
+    }
+}

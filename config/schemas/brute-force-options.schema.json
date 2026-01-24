@@ -1,0 +1,338 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "brute-force-options.schema.json",
+    "title": "Brute Force Options Configuration",
+    "description": "Schema for brute force bypass configuration in the Alternative Bypass Methods subsystem (v0.15.4h)",
+    "type": "object",
+    "required": ["version", "bruteForceTargets", "fumbleEffects", "criticalSuccess"],
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "Reference to this schema file"
+        },
+        "version": {
+            "type": "string",
+            "description": "Configuration version",
+            "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+[a-z]?$"
+        },
+        "description": {
+            "type": "string",
+            "description": "Human-readable description of this configuration"
+        },
+        "bruteForceTargets": {
+            "type": "array",
+            "description": "List of brute force target configurations",
+            "items": {
+                "$ref": "#/definitions/bruteForceTarget"
+            },
+            "minItems": 1
+        },
+        "environmentModifiers": {
+            "type": "array",
+            "description": "Environmental conditions that modify DC",
+            "items": {
+                "$ref": "#/definitions/environmentModifier"
+            }
+        },
+        "fumbleEffects": {
+            "$ref": "#/definitions/fumbleEffects"
+        },
+        "criticalSuccess": {
+            "$ref": "#/definitions/criticalSuccess"
+        },
+        "toolBonusDice": {
+            "type": "object",
+            "description": "Mapping of tool names to bonus dice",
+            "additionalProperties": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 5
+            }
+        },
+        "assistanceBonus": {
+            "$ref": "#/definitions/assistanceBonus"
+        },
+        "exhaustionPenalty": {
+            "$ref": "#/definitions/exhaustionPenalty"
+        }
+    },
+    "definitions": {
+        "bruteForceTarget": {
+            "type": "object",
+            "required": ["id", "targetType", "name", "baseDc", "maxAttempts", "retryPenaltyPerAttempt", "consequences", "toolModifiers"],
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Unique identifier for this target type",
+                    "pattern": "^[a-zA-Z][a-zA-Z0-9_]*$"
+                },
+                "targetType": {
+                    "type": "string",
+                    "description": "Enum value for BruteForceTargetType",
+                    "enum": ["SimpleDoor", "ReinforcedDoor", "Vault", "Container"]
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Display name for the target"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Detailed description of the target"
+                },
+                "baseDc": {
+                    "type": "integer",
+                    "description": "Base difficulty class for MIGHT check",
+                    "minimum": 1,
+                    "maximum": 30
+                },
+                "baseDcFormula": {
+                    "type": "string",
+                    "description": "Formula for calculating base DC (for variable targets)"
+                },
+                "baseDcRange": {
+                    "type": "object",
+                    "properties": {
+                        "min": { "type": "integer" },
+                        "max": { "type": "integer" }
+                    }
+                },
+                "maxAttempts": {
+                    "type": "integer",
+                    "description": "Maximum number of attempts before obstacle becomes impassable",
+                    "minimum": 1,
+                    "maximum": 10
+                },
+                "retryPenaltyPerAttempt": {
+                    "type": "integer",
+                    "description": "DC increase per failed attempt",
+                    "minimum": 0,
+                    "maximum": 5
+                },
+                "targetHitPoints": {
+                    "type": "integer",
+                    "description": "HP for damage-based bypass",
+                    "minimum": 1
+                },
+                "targetHitPointsFormula": {
+                    "type": "string",
+                    "description": "Formula for calculating HP (for variable targets)"
+                },
+                "targetHitPointsRange": {
+                    "type": "object",
+                    "properties": {
+                        "min": { "type": "integer" },
+                        "max": { "type": "integer" }
+                    }
+                },
+                "strengthModifier": {
+                    "type": "object",
+                    "description": "Strength modifier configuration for variable targets",
+                    "properties": {
+                        "min": { "type": "integer" },
+                        "max": { "type": "integer" },
+                        "default": { "type": "integer" },
+                        "description": { "type": "string" }
+                    }
+                },
+                "consequences": {
+                    "type": "array",
+                    "description": "Consequences that may apply on success",
+                    "items": {
+                        "$ref": "#/definitions/consequence"
+                    }
+                },
+                "toolModifiers": {
+                    "type": "array",
+                    "description": "Tool modifiers for this target",
+                    "items": {
+                        "$ref": "#/definitions/toolModifier"
+                    }
+                },
+                "flavorText": {
+                    "$ref": "#/definitions/flavorText"
+                }
+            }
+        },
+        "consequence": {
+            "type": "object",
+            "required": ["type", "probability", "canBeAvoidedOnCritical", "severityRating"],
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "description": "Type of consequence",
+                    "enum": ["Noise", "ContentDamage", "Exhaustion", "SelfDamage", "MaxNoise", "SecurityAlert", "StructuralDamage"]
+                },
+                "noiseLevel": {
+                    "type": "string",
+                    "description": "Noise level if this is a noise consequence",
+                    "enum": ["Silent", "Quiet", "Moderate", "Loud", "VeryLoud", "Extreme"]
+                },
+                "probability": {
+                    "type": "number",
+                    "description": "Probability this consequence applies (0.0-1.0)",
+                    "minimum": 0,
+                    "maximum": 1
+                },
+                "canBeAvoidedOnCritical": {
+                    "type": "boolean",
+                    "description": "Whether critical success avoids this consequence"
+                },
+                "severityRating": {
+                    "type": "integer",
+                    "description": "Impact rating from 1 (minor) to 5 (severe)",
+                    "minimum": 1,
+                    "maximum": 5
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Human-readable description of the consequence"
+                }
+            }
+        },
+        "toolModifier": {
+            "type": "object",
+            "required": ["tool", "dcModifier"],
+            "properties": {
+                "tool": {
+                    "type": "string",
+                    "description": "Name of the tool"
+                },
+                "dcModifier": {
+                    "type": "integer",
+                    "description": "DC modifier (negative = easier)",
+                    "minimum": -10,
+                    "maximum": 10
+                },
+                "bonusDice": {
+                    "type": "integer",
+                    "description": "Number of bonus d10s added to dice pool",
+                    "minimum": 0,
+                    "maximum": 5
+                }
+            }
+        },
+        "environmentModifier": {
+            "type": "object",
+            "required": ["condition", "dcModifier"],
+            "properties": {
+                "condition": {
+                    "type": "string",
+                    "description": "Environmental condition name"
+                },
+                "dcModifier": {
+                    "type": "integer",
+                    "description": "DC modifier for this condition"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Description of the condition"
+                }
+            }
+        },
+        "fumbleEffects": {
+            "type": "object",
+            "required": ["baseDamage", "additionalDcPenalty", "toolBreaksOnFumble", "noiseLevel"],
+            "properties": {
+                "baseDamage": {
+                    "type": "string",
+                    "description": "Dice notation for fumble damage",
+                    "pattern": "^[0-9]+d[0-9]+([+-][0-9]+)?$"
+                },
+                "additionalDcPenalty": {
+                    "type": "integer",
+                    "description": "Permanent DC penalty from fumble",
+                    "minimum": 0
+                },
+                "toolBreaksOnFumble": {
+                    "type": "boolean",
+                    "description": "Whether tools break on fumble"
+                },
+                "noiseLevel": {
+                    "type": "string",
+                    "description": "Noise level on fumble",
+                    "enum": ["Silent", "Quiet", "Moderate", "Loud", "VeryLoud", "Extreme"]
+                },
+                "description": {
+                    "type": "string"
+                }
+            }
+        },
+        "criticalSuccess": {
+            "type": "object",
+            "required": ["threshold"],
+            "properties": {
+                "threshold": {
+                    "type": "integer",
+                    "description": "Net successes required for critical",
+                    "minimum": 1
+                },
+                "noiseLevelReduction": {
+                    "type": "integer",
+                    "description": "Number of noise levels reduced on critical"
+                },
+                "avoidsContentDamage": {
+                    "type": "boolean"
+                },
+                "avoidsExhaustion": {
+                    "type": "boolean"
+                },
+                "description": {
+                    "type": "string"
+                }
+            }
+        },
+        "assistanceBonus": {
+            "type": "object",
+            "properties": {
+                "maxBonusDice": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "dicePerAssistant": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "description": {
+                    "type": "string"
+                }
+            }
+        },
+        "exhaustionPenalty": {
+            "type": "object",
+            "properties": {
+                "formula": {
+                    "type": "string",
+                    "description": "Formula for calculating penalty"
+                },
+                "description": {
+                    "type": "string"
+                }
+            }
+        },
+        "flavorText": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string",
+                    "description": "Narrative description of the target"
+                },
+                "criticalSuccess": {
+                    "type": "string",
+                    "description": "Narrative for critical success"
+                },
+                "success": {
+                    "type": "string",
+                    "description": "Narrative for normal success"
+                },
+                "failure": {
+                    "type": "string",
+                    "description": "Narrative for failure"
+                },
+                "fumble": {
+                    "type": "string",
+                    "description": "Narrative for fumble"
+                }
+            }
+        }
+    }
+}

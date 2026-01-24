@@ -1,0 +1,344 @@
+{
+    "$schema": "../schemas/alternative-methods.schema.json",
+    "version": "0.15.4h",
+    "description": "Alternative bypass methods configuration for obstacles when primary skills are unavailable",
+    "alternatives": {
+        "LockedDoor": [
+            {
+                "methodId": "alt_door_find_key",
+                "methodName": "Find Key",
+                "description": "Search nearby areas or negotiate with someone who has the key.",
+                "requiredCheck": "Investigation",
+                "checkDc": 14,
+                "timeRequired": "10-30 minutes",
+                "prerequisites": [],
+                "consequences": [
+                    "Time spent searching",
+                    "May trigger random encounters",
+                    "Social interaction may require favors or payment"
+                ],
+                "flavorText": {
+                    "attempt": "You begin methodically searching the area for a key or someone who might have one.",
+                    "success": "Your thorough search pays off—you find the key hidden nearby.",
+                    "failure": "Despite your efforts, no key can be found in the immediate area."
+                },
+                "uiHints": {
+                    "colorHint": "green",
+                    "iconHint": "key"
+                }
+            },
+            {
+                "methodId": "alt_door_brute_force",
+                "methodName": "Brute Force",
+                "description": "Use raw strength to break down the door.",
+                "requiredCheck": "Might",
+                "checkDc": 12,
+                "checkDcNote": "Varies by door type - see brute-force-options.json",
+                "timeRequired": "1-3 rounds",
+                "prerequisites": [],
+                "consequences": [
+                    "Loud noise alerts nearby",
+                    "Contents behind door may be damaged",
+                    "Multiple attempts cause exhaustion"
+                ],
+                "linksToBruteForce": true,
+                "flavorText": {
+                    "attempt": "You brace yourself and prepare to force your way through.",
+                    "success": "The door gives way under your assault.",
+                    "failure": "The door holds firm against your strength."
+                },
+                "uiHints": {
+                    "colorHint": "red",
+                    "iconHint": "fist"
+                }
+            },
+            {
+                "methodId": "alt_door_runic_bypass",
+                "methodName": "Runic Bypass",
+                "description": "Manipulate the lock's runic bindings to release the mechanism.",
+                "requiredCheck": "Runecraft",
+                "checkDc": 16,
+                "timeRequired": "1 round",
+                "prerequisites": [
+                    "[Rune Sight] ability or equivalent",
+                    "Runecraft skill trained"
+                ],
+                "consequences": [
+                    "Essence cost (1-3 points)",
+                    "Potential corruption exposure",
+                    "May trigger runic alarms"
+                ],
+                "essenceCost": {
+                    "min": 1,
+                    "max": 3
+                },
+                "flavorText": {
+                    "attempt": "You focus your Rune Sight on the lock, perceiving the binding patterns within.",
+                    "success": "The runic bindings unravel at your touch—the lock clicks open silently.",
+                    "failure": "The runic patterns resist your manipulation. The binding holds."
+                },
+                "uiHints": {
+                    "colorHint": "purple",
+                    "iconHint": "rune"
+                }
+            },
+            {
+                "methodId": "alt_door_alternate_route",
+                "methodName": "Alternate Route",
+                "description": "Find another path: ventilation shaft, window, or collapsed wall.",
+                "requiredCheck": "Perception",
+                "checkDc": 14,
+                "timeRequired": "5-20 minutes",
+                "prerequisites": [],
+                "consequences": [
+                    "Time spent exploring",
+                    "Alternate paths may have their own hazards",
+                    "May not be accessible for all party members"
+                ],
+                "flavorText": {
+                    "attempt": "You scan the area for alternative entry points.",
+                    "success": "You spot a ventilation shaft / window / structural weakness that bypasses the door entirely.",
+                    "failure": "No viable alternate routes present themselves."
+                },
+                "uiHints": {
+                    "colorHint": "cyan",
+                    "iconHint": "eye"
+                }
+            }
+        ],
+        "SecuredTerminal": [
+            {
+                "methodId": "alt_terminal_find_codes",
+                "methodName": "Find Codes",
+                "description": "Search for written passwords or credentials in the area.",
+                "requiredCheck": "Investigation",
+                "checkDc": 16,
+                "timeRequired": "5-15 minutes",
+                "prerequisites": [],
+                "consequences": [
+                    "Time spent searching",
+                    "Codes may be expired or single-use",
+                    "May find partial codes only"
+                ],
+                "flavorText": {
+                    "attempt": "You search nearby desks, notes, and hidden compartments for written credentials.",
+                    "success": "Success! Someone left their password on a sticky note. Typical.",
+                    "failure": "No written credentials can be found nearby."
+                },
+                "uiHints": {
+                    "colorHint": "green",
+                    "iconHint": "document"
+                }
+            },
+            {
+                "methodId": "alt_terminal_hotwire",
+                "methodName": "Hotwire to Different Terminal",
+                "description": "Bypass this terminal by connecting to a less secured access point.",
+                "requiredCheck": "Wits",
+                "checkDc": 14,
+                "timeRequired": "2-5 rounds",
+                "prerequisites": [
+                    "Secondary terminal must exist in area",
+                    "Wire or cable available"
+                ],
+                "consequences": [
+                    "Reduced access level (User instead of Admin)",
+                    "Connection may be unstable",
+                    "May trigger ICE on secondary terminal"
+                ],
+                "accessLevelGranted": "User",
+                "flavorText": {
+                    "attempt": "You locate a secondary terminal and begin splicing a connection.",
+                    "success": "The bypass connection establishes—you have limited but functional access.",
+                    "failure": "The connection fails to establish. The terminals are incompatible."
+                },
+                "uiHints": {
+                    "colorHint": "yellow",
+                    "iconHint": "cable"
+                }
+            },
+            {
+                "methodId": "alt_terminal_partial",
+                "methodName": "Accept Partial Access",
+                "description": "Stop at User Level access rather than pursuing Admin Level.",
+                "requiredCheck": "None",
+                "checkDc": 0,
+                "timeRequired": "Immediate",
+                "prerequisites": [
+                    "Must have achieved at least User Level access"
+                ],
+                "consequences": [
+                    "Cannot access hidden or classified files",
+                    "Limited functionality available",
+                    "May need to return later with better access"
+                ],
+                "accessLevelGranted": "User",
+                "flavorText": {
+                    "attempt": "You decide that User Level access is sufficient for your current needs.",
+                    "success": "You proceed with the limited access available to you.",
+                    "failure": null
+                },
+                "uiHints": {
+                    "colorHint": "gray",
+                    "iconHint": "lock-partial"
+                }
+            }
+        ],
+        "ActiveTrap": [
+            {
+                "methodId": "alt_trap_trigger_distance",
+                "methodName": "Trigger from Distance",
+                "description": "Throw an object or use ranged attack to safely trigger the trap.",
+                "requiredCheck": "Finesse",
+                "checkDc": 12,
+                "timeRequired": "1 round",
+                "prerequisites": [
+                    "Object to throw or ranged weapon",
+                    "Line of sight to trigger mechanism"
+                ],
+                "consequences": [
+                    "Noise from trap activation",
+                    "Trap effects apply to area (may destroy loot)",
+                    "Consumes thrown object"
+                ],
+                "flavorText": {
+                    "attempt": "You ready a thrown object, aiming for the trap's trigger mechanism.",
+                    "success": "Your throw is true—the trap activates harmlessly at a safe distance.",
+                    "failure": "Your throw misses the trigger. The trap remains armed."
+                },
+                "uiHints": {
+                    "colorHint": "orange",
+                    "iconHint": "throw"
+                }
+            },
+            {
+                "methodId": "alt_trap_destroy",
+                "methodName": "Destroy Mechanism",
+                "description": "Attack the trap mechanism directly to disable it.",
+                "requiredCheck": "Attack",
+                "checkDc": 0,
+                "checkDcNote": "Uses attack roll vs trap AC",
+                "timeRequired": "1 round",
+                "prerequisites": [
+                    "Weapon or damaging ability"
+                ],
+                "consequences": [
+                    "Noise from destruction",
+                    "Trap may trigger if not destroyed in one hit",
+                    "No salvageable components"
+                ],
+                "trapAcRange": {
+                    "min": 10,
+                    "max": 18
+                },
+                "flavorText": {
+                    "attempt": "You ready your weapon and prepare to strike the trap mechanism.",
+                    "success": "Your strike destroys the mechanism before it can activate.",
+                    "failure": "Your attack fails to disable the mechanism—it triggers!"
+                },
+                "uiHints": {
+                    "colorHint": "red",
+                    "iconHint": "sword"
+                }
+            },
+            {
+                "methodId": "alt_trap_sacrifice",
+                "methodName": "Sacrifice (Shield/Item)",
+                "description": "Block trap effect with shield or absorb with expendable item.",
+                "requiredCheck": "None",
+                "checkDc": 0,
+                "timeRequired": "1 round",
+                "prerequisites": [
+                    "Shield or expendable item available",
+                    "Item must be appropriate for trap type"
+                ],
+                "consequences": [
+                    "Shield takes damage (may break)",
+                    "Consumable item destroyed",
+                    "Trap still triggers alert systems"
+                ],
+                "itemDamageRisk": {
+                    "shieldDamage": "2d10",
+                    "breakThreshold": "50% of max durability"
+                },
+                "flavorText": {
+                    "attempt": "You interpose your shield/item between yourself and the trap.",
+                    "success": "The trap triggers harmlessly against your protection—though at a cost.",
+                    "failure": null
+                },
+                "uiHints": {
+                    "colorHint": "blue",
+                    "iconHint": "shield"
+                }
+            }
+        ],
+        "PhysicalBarrier": [],
+        "EnergyBarrier": []
+    },
+    "checkTypes": {
+        "None": {
+            "description": "No check required; automatic if prerequisites met"
+        },
+        "Might": {
+            "attribute": "MIGHT",
+            "description": "MIGHT attribute check for physical force"
+        },
+        "Finesse": {
+            "attribute": "FINESSE",
+            "description": "FINESSE attribute check for precision"
+        },
+        "Wits": {
+            "attribute": "WITS",
+            "description": "WITS attribute check for clever solutions"
+        },
+        "Investigation": {
+            "skill": "Investigation",
+            "description": "Investigation skill check for searching"
+        },
+        "Perception": {
+            "skill": "Perception",
+            "description": "Perception skill check for spotting alternatives"
+        },
+        "Runecraft": {
+            "skill": "Runecraft",
+            "description": "Runecraft skill check for runic manipulation"
+        },
+        "Attack": {
+            "type": "Attack",
+            "description": "Standard attack roll vs target AC"
+        },
+        "Social": {
+            "attribute": "CHARISMA",
+            "description": "Social/Charisma-based check for negotiation"
+        }
+    },
+    "difficultyDescriptions": {
+        "0": "Automatic",
+        "1-8": "Very Easy",
+        "9-12": "Easy",
+        "13-16": "Moderate",
+        "17-20": "Hard",
+        "21-24": "Very Hard",
+        "25+": "Nearly Impossible"
+    },
+    "futureImplementation": {
+        "PhysicalBarrier": {
+            "description": "Physical barriers like walls and rubble. Reserved for future versions.",
+            "plannedAlternatives": [
+                "Climb Over",
+                "Dig Through",
+                "Find Gap",
+                "Destroy Section"
+            ]
+        },
+        "EnergyBarrier": {
+            "description": "Energy fields and force barriers. Reserved for future versions.",
+            "plannedAlternatives": [
+                "Overload Generator",
+                "Find Control Panel",
+                "Runic Dispel",
+                "Wait for Cycle"
+            ]
+        }
+    }
+}
