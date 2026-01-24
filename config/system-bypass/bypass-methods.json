@@ -1,0 +1,208 @@
+{
+    "$schema": "../schemas/bypass-methods.schema.json",
+    "version": "0.15.4e",
+    "description": "Bypass method configuration for the Jury-Rigging subsystem",
+    "bypassMethods": [
+        {
+            "id": "percussiveMaintenance",
+            "name": "Percussive Maintenance",
+            "enumValue": 0,
+            "dcModifier": 0,
+            "description": "Strike the mechanism with calculated force to jar components into alignment.",
+            "requirements": {
+                "requiresFamiliarity": false,
+                "requiresGlitched": false
+            },
+            "effects": {
+                "destroysMechanism": false,
+                "electrocutionRisk": false,
+                "resetsMechanismState": false,
+                "guaranteesSalvage": false
+            },
+            "risks": [
+                "May permanently break the mechanism on fumble"
+            ],
+            "flavorText": {
+                "attempt": "You raise your hand and strike the mechanism with precise force.",
+                "success": "Something clicks into place. The mechanism responds favorably.",
+                "failure": "The machine buzzes angrily but holds firm.",
+                "fumble": "Your strike goes awry—something shatters within. The mechanism is ruined."
+            },
+            "uiHints": {
+                "colorHint": "white",
+                "iconHint": "hammer"
+            }
+        },
+        {
+            "id": "wireManipulation",
+            "name": "Wire Manipulation",
+            "enumValue": 1,
+            "dcModifier": -2,
+            "description": "Access internal wiring to bypass security circuits directly.",
+            "requirements": {
+                "requiresFamiliarity": false,
+                "requiresGlitched": false
+            },
+            "effects": {
+                "destroysMechanism": false,
+                "electrocutionRisk": true,
+                "resetsMechanismState": false,
+                "guaranteesSalvage": false
+            },
+            "risks": [
+                "Electrocution risk: FINESSE DC 12 or 2d10 lightning damage"
+            ],
+            "electrocutionDetails": {
+                "saveDc": 12,
+                "saveAttribute": "FINESSE",
+                "damageDice": "2d10",
+                "damageType": "lightning"
+            },
+            "flavorText": {
+                "attempt": "You pry open the access panel, exposing tangled wires crackling with dormant energy.",
+                "success": "Your nimble fingers dance between live circuits. The lock disengages with a soft click.",
+                "failure": "The wires resist your manipulation. You'll need another approach.",
+                "fumble": "Your probe slips—lightning arcs through your body before the mechanism sparks and dies.",
+                "electrocutionSaved": "Your nimble fingers dance around the live wires. A spark leaps toward you but you pull back just in time.",
+                "electrocutionFailed": "Lightning arcs through your hands! The current courses through your body before you can wrench yourself free."
+            },
+            "uiHints": {
+                "colorHint": "yellow",
+                "iconHint": "wire"
+            }
+        },
+        {
+            "id": "glitchExploitation",
+            "name": "Glitch Exploitation",
+            "enumValue": 2,
+            "dcModifier": -4,
+            "description": "Exploit the mechanism's corrupted behavior patterns.",
+            "requirements": {
+                "requiresFamiliarity": false,
+                "requiresGlitched": true
+            },
+            "effects": {
+                "destroysMechanism": false,
+                "electrocutionRisk": false,
+                "resetsMechanismState": false,
+                "guaranteesSalvage": false
+            },
+            "risks": [
+                "Unpredictable: Only works on [Glitched] mechanisms"
+            ],
+            "flavorText": {
+                "attempt": "You watch the mechanism's erratic behavior, searching for a pattern in the chaos.",
+                "success": "You time your action perfectly with the glitch cycle—the mechanism yields.",
+                "failure": "The glitch patterns shift unpredictably. You'll need to observe longer.",
+                "fumble": "The glitch cascades catastrophically—the mechanism destroys itself.",
+                "unavailable": "This mechanism is too stable for glitch exploitation."
+            },
+            "uiHints": {
+                "colorHint": "purple",
+                "iconHint": "glitch"
+            }
+        },
+        {
+            "id": "memorizedSequence",
+            "name": "Memorized Sequence",
+            "enumValue": 3,
+            "dcModifier": -2,
+            "description": "Apply a previously memorized activation sequence.",
+            "requirements": {
+                "requiresFamiliarity": true,
+                "requiresGlitched": false
+            },
+            "effects": {
+                "destroysMechanism": false,
+                "electrocutionRisk": false,
+                "resetsMechanismState": false,
+                "guaranteesSalvage": false
+            },
+            "risks": [
+                "Only works on mechanism types you've bypassed before"
+            ],
+            "flavorText": {
+                "attempt": "Your fingers move from memory, recalling the sequence from previous encounters.",
+                "success": "Muscle memory guides you true. The familiar mechanism responds as expected.",
+                "failure": "Something is different about this model. Your memorized sequence doesn't quite work.",
+                "fumble": "Your confidence betrays you—the mechanism rejects the sequence violently.",
+                "unavailable": "You haven't encountered this mechanism type before."
+            },
+            "uiHints": {
+                "colorHint": "blue",
+                "iconHint": "brain"
+            }
+        },
+        {
+            "id": "bruteDisassembly",
+            "name": "Brute Disassembly",
+            "enumValue": 4,
+            "dcModifier": 2,
+            "description": "Tear apart the mechanism to force access, destroying it in the process.",
+            "requirements": {
+                "requiresFamiliarity": false,
+                "requiresGlitched": false
+            },
+            "effects": {
+                "destroysMechanism": true,
+                "electrocutionRisk": false,
+                "resetsMechanismState": false,
+                "guaranteesSalvage": true
+            },
+            "risks": [
+                "Destroys the mechanism, but guarantees component salvage"
+            ],
+            "flavorText": {
+                "attempt": "You grip the mechanism's housing and begin systematically tearing it apart.",
+                "success": "Piece by piece, the mechanism comes apart in your hands. Useless now—but you have what you need.",
+                "failure": "The housing resists your efforts. This will take more force.",
+                "fumble": "The mechanism breaks apart explosively, destroying any usable components."
+            },
+            "uiHints": {
+                "colorHint": "red",
+                "iconHint": "wrench"
+            }
+        },
+        {
+            "id": "powerCycling",
+            "name": "Power Cycling",
+            "enumValue": 5,
+            "dcModifier": 0,
+            "description": "Cut and restore power to reset the mechanism to its default state.",
+            "requirements": {
+                "requiresFamiliarity": false,
+                "requiresGlitched": false
+            },
+            "effects": {
+                "destroysMechanism": false,
+                "electrocutionRisk": false,
+                "resetsMechanismState": true,
+                "guaranteesSalvage": false
+            },
+            "risks": [
+                "Resets all progress, including partial successes"
+            ],
+            "flavorText": {
+                "attempt": "You locate the power coupling and prepare to cut the circuit.",
+                "success": "The mechanism goes dark, then hums back to life—now responsive to your commands.",
+                "failure": "The mechanism reboots but remains locked. At least it's no longer in lockout.",
+                "fumble": "The power surge fries the circuits. The mechanism is dead."
+            },
+            "uiHints": {
+                "colorHint": "cyan",
+                "iconHint": "power"
+            }
+        }
+    ],
+    "familiarityBonus": {
+        "bonusDice": 2,
+        "description": "Characters familiar with a mechanism type gain +2d10 bonus dice on experiment rolls."
+    },
+    "criticalSuccess": {
+        "threshold": 5,
+        "yieldsComponents": true,
+        "description": "Net successes >= 5 yields salvageable components from the mechanism."
+    },
+    "minimumDc": 4,
+    "iterationReduction": 1
+}

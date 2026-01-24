@@ -1,0 +1,172 @@
+{
+    "$schema": "../schemas/complication-table.schema.json",
+    "version": "0.15.4e",
+    "description": "Complication table for the Jury-Rigging subsystem (d10 roll on failure)",
+    "complicationTable": [
+        {
+            "id": "permanentLock",
+            "enumValue": 0,
+            "rollRange": {
+                "min": 1,
+                "max": 1
+            },
+            "name": "Permanent Lock",
+            "description": "Machine locks permanently",
+            "isTerminal": true,
+            "consequences": {
+                "endsSession": true,
+                "allowsRetry": false,
+                "dealsDamage": false,
+                "triggersAlarm": false
+            },
+            "flavorText": {
+                "short": "Machine locks permanently",
+                "full": "A deep clunk echoes from within as internal bolts slide into place. The mechanism has locked permanently—no amount of tinkering will open it now.",
+                "narration": "The mechanism detects your tampering and engages a final lockout protocol. You hear the decisive click of internal bolts sliding into place. This door is sealed to you forever."
+            },
+            "resolution": "Find an alternative approach: locate a key, destroy the mechanism, or find another route."
+        },
+        {
+            "id": "alarmTriggered",
+            "enumValue": 1,
+            "rollRange": {
+                "min": 2,
+                "max": 3
+            },
+            "name": "Alarm Triggered",
+            "description": "Security alert, enemies alerted",
+            "isTerminal": false,
+            "consequences": {
+                "endsSession": false,
+                "allowsRetry": true,
+                "dealsDamage": false,
+                "triggersAlarm": true,
+                "encounterModifier": 2,
+                "guardResponseRounds": "1d4"
+            },
+            "flavorText": {
+                "short": "Alarm triggered!",
+                "full": "Your fumbling activates a security protocol! A klaxon begins wailing, and warning lights flash throughout the area.",
+                "narration": "Red lights begin flashing and a piercing alarm cuts through the silence. You've been detected—guards will be coming. But the mechanism itself remains functional."
+            },
+            "resolution": "May continue attempting (alarm already sounding anyway). +2 to encounter check, guards investigate in 1d4 rounds."
+        },
+        {
+            "id": "sparksFly",
+            "enumValue": 2,
+            "rollRange": {
+                "min": 4,
+                "max": 5
+            },
+            "name": "Sparks Fly",
+            "description": "Take 1d6 electrical damage",
+            "isTerminal": false,
+            "consequences": {
+                "endsSession": false,
+                "allowsRetry": true,
+                "dealsDamage": true,
+                "triggersAlarm": false,
+                "damage": {
+                    "dice": "1d6",
+                    "type": "electrical",
+                    "bypassesArmor": true
+                }
+            },
+            "flavorText": {
+                "short": "Sparks fly (1d6 damage)",
+                "full": "A shower of sparks erupts from the mechanism, burning your hands and face!",
+                "narration": "The mechanism protests your intrusion with a violent spray of sparks. Pain lances through your hands as the electricity finds its path to ground through your body."
+            },
+            "resolution": "May continue attempting (mechanism still functional). Damage is NOT reduced by armor."
+        },
+        {
+            "id": "nothing",
+            "enumValue": 3,
+            "rollRange": {
+                "min": 6,
+                "max": 7
+            },
+            "name": "Nothing Happens",
+            "description": "No effect, may retry",
+            "isTerminal": false,
+            "consequences": {
+                "endsSession": false,
+                "allowsRetry": true,
+                "dealsDamage": false,
+                "triggersAlarm": false
+            },
+            "flavorText": {
+                "short": "Nothing happens",
+                "full": "The mechanism buzzes indifferently. Your attempt achieves nothing, but nothing goes wrong either. The machine waits, impassive as ever.",
+                "narration": "The mechanism responds to your attempt with a disinterested hum. Neither success nor catastrophe—just the indifferent patience of Old World technology."
+            },
+            "resolution": "No change to mechanism state. May attempt again (DC reduced by 1 from iteration)."
+        },
+        {
+            "id": "partialSuccess",
+            "enumValue": 4,
+            "rollRange": {
+                "min": 8,
+                "max": 9
+            },
+            "name": "Partial Success",
+            "description": "One function works",
+            "isTerminal": false,
+            "consequences": {
+                "endsSession": false,
+                "allowsRetry": true,
+                "dealsDamage": false,
+                "triggersAlarm": false,
+                "grantsPartialAccess": true
+            },
+            "flavorText": {
+                "short": "One function works",
+                "full": "The mechanism partially responds! While not fully bypassed, one of its secondary functions activates. This may be enough for your purposes.",
+                "narration": "Something clicks within the mechanism. Not full access, but a secondary function springs to life. Perhaps this is enough for what you need?"
+            },
+            "resolution": "Specific function depends on mechanism type. May continue attempting for full access."
+        },
+        {
+            "id": "glitchInFavor",
+            "enumValue": 5,
+            "rollRange": {
+                "min": 10,
+                "max": 10
+            },
+            "name": "Glitch in Your Favor",
+            "description": "Machine glitches in your favor, auto-success",
+            "isTerminal": true,
+            "consequences": {
+                "endsSession": true,
+                "allowsRetry": false,
+                "dealsDamage": false,
+                "triggersAlarm": false,
+                "automaticSuccess": true
+            },
+            "flavorText": {
+                "short": "Glitch in your favor!",
+                "full": "The machine's own instability works in your favor! A fortuitous glitch causes the mechanism to bypass itself, flickering and then granting access.",
+                "narration": "The mechanism sputters, its corrupted circuitry cascading in an unexpected way. Lights flicker wildly, and then—with a satisfying click—access is granted. The Old World technology, corrupted by centuries, has helped you despite your lack of true understanding."
+            },
+            "resolution": "Automatic success—mechanism is bypassed. No salvage available (mechanism still intact)."
+        }
+    ],
+    "complicationRules": {
+        "triggerCondition": "Net successes <= 0 without fumble",
+        "diceType": "d10",
+        "terminalResults": [1, 10],
+        "description": "When an experiment fails without fumbling, roll d10 on the complication table. Results 1 and 10 are terminal; results 2-9 allow continued attempts.",
+        "iterationLearning": {
+            "dcReduction": 1,
+            "appliesTo": "non-terminal failures",
+            "minimumDc": 4,
+            "description": "Each non-terminal failure reduces DC by 1 for the next attempt, to a minimum of 4."
+        }
+    },
+    "fumbleRules": {
+        "condition": "0 successes AND at least 1 botch",
+        "result": "Mechanism destroyed",
+        "salvage": false,
+        "description": "Fumble (0 successes + botch) skips the complication table and immediately destroys the mechanism. No salvage is possible."
+    }
+}
