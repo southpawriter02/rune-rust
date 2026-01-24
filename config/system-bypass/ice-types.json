@@ -1,0 +1,162 @@
+{
+    "$schema": "../schemas/ice-types.schema.json",
+    "version": "0.15.4c",
+    "description": "ICE (Intrusion Countermeasures Electronics) configuration for the Terminal Hacking subsystem",
+    "iceTypes": [
+        {
+            "id": "passive",
+            "name": "Passive (Trace)",
+            "enumValue": 0,
+            "resolutionMethod": "contested",
+            "contestedSkill": "system-bypass",
+            "saveDc": null,
+            "description": "Trace ICE that detects intrusions and broadcasts hacker location to security systems.",
+            "triggerCondition": "Layer 2 authentication failure",
+            "consequences": {
+                "onCharacterWin": {
+                    "description": "Trace evaded, no consequences",
+                    "locationRevealed": false,
+                    "forcedDisconnect": false,
+                    "lockoutMinutes": 0,
+                    "alertLevelChange": 0,
+                    "damage": null,
+                    "stress": null,
+                    "bonusDice": 0
+                },
+                "onIceWin": {
+                    "description": "Location broadcast to security, guards alerted",
+                    "locationRevealed": true,
+                    "forcedDisconnect": false,
+                    "lockoutMinutes": 0,
+                    "alertLevelChange": 2,
+                    "damage": null,
+                    "stress": null,
+                    "bonusDice": 0
+                }
+            },
+            "flavorText": "The trace unfurls through the system like a gossamer thread, seeking the warm signature of an intruder."
+        },
+        {
+            "id": "active",
+            "name": "Active (Attack)",
+            "enumValue": 1,
+            "resolutionMethod": "contested",
+            "contestedSkill": "system-bypass",
+            "saveDc": null,
+            "description": "Attack ICE that aggressively severs hacker connections and locks out the terminal temporarily.",
+            "triggerCondition": "Layer 2 authentication failure",
+            "consequences": {
+                "onCharacterWin": {
+                    "description": "ICE disabled, bonus dice granted",
+                    "locationRevealed": false,
+                    "forcedDisconnect": false,
+                    "lockoutMinutes": 0,
+                    "alertLevelChange": 0,
+                    "damage": null,
+                    "stress": null,
+                    "bonusDice": 1
+                },
+                "onIceWin": {
+                    "description": "Connection severed, temporary lockout",
+                    "locationRevealed": false,
+                    "forcedDisconnect": true,
+                    "lockoutMinutes": 1,
+                    "alertLevelChange": 1,
+                    "damage": null,
+                    "stress": null,
+                    "bonusDice": 0
+                }
+            },
+            "flavorText": "The ICE launches from its digital lair, programs crackling with hostile intent."
+        },
+        {
+            "id": "lethal",
+            "name": "Lethal (Neural)",
+            "enumValue": 2,
+            "resolutionMethod": "save",
+            "contestedSkill": null,
+            "saveDc": 16,
+            "description": "Neural ICE that bypasses digital defenses to attack the hacker's mind directly through their interface.",
+            "triggerCondition": "Layer 2 authentication failure",
+            "consequences": {
+                "onCharacterWin": {
+                    "description": "Escaped with stress, temporary lockout",
+                    "locationRevealed": false,
+                    "forcedDisconnect": true,
+                    "lockoutMinutes": 1,
+                    "alertLevelChange": 0,
+                    "damage": null,
+                    "stress": "1d6",
+                    "bonusDice": 0
+                },
+                "onIceWin": {
+                    "description": "Full neural strike, permanent lockout",
+                    "locationRevealed": false,
+                    "forcedDisconnect": true,
+                    "lockoutMinutes": -1,
+                    "alertLevelChange": 2,
+                    "damage": "3d10",
+                    "stress": "2d6",
+                    "bonusDice": 0
+                }
+            },
+            "flavorText": "Ancient malevolence reaches through the connection, clawing at the edges of consciousness."
+        }
+    ],
+    "iceByTerminalType": [
+        {
+            "terminalType": "civilian-data-port",
+            "iceTypes": [],
+            "iceRating": 0,
+            "description": "No ICE protection"
+        },
+        {
+            "terminalType": "corporate-mainframe",
+            "iceTypes": ["passive"],
+            "iceRating": 12,
+            "description": "Trace ICE for detecting intrusions"
+        },
+        {
+            "terminalType": "security-hub",
+            "iceTypes": ["active"],
+            "iceRating": 16,
+            "description": "Attack ICE for active defense"
+        },
+        {
+            "terminalType": "military-server",
+            "iceTypes": ["active", "lethal"],
+            "iceRating": 20,
+            "description": "Attack ICE with Lethal backup"
+        },
+        {
+            "terminalType": "jotun-archive",
+            "iceTypes": ["lethal"],
+            "iceRating": 24,
+            "description": "Neural ICE from the World Before"
+        },
+        {
+            "terminalType": "glitched-manifold",
+            "iceTypes": [],
+            "iceRating": 0,
+            "description": "Unpredictable - determined at runtime"
+        }
+    ],
+    "globalSettings": {
+        "iceDcConversionDivisor": 6,
+        "iceDcMinimum": 1,
+        "lethalIceSaveDc": 16,
+        "lethalIceSaveAttribute": "will",
+        "activeIceVictoryBonusDice": 1,
+        "passiveIceAlertIncrease": 2,
+        "activeIceAlertIncrease": 1,
+        "lethalIceAlertIncrease": 2
+    },
+    "narrativeDescriptions": {
+        "passiveEvaded": "You slip through the trace like smoke through fingers. The guardian program spins in confusion, losing your trail.",
+        "passiveFailed": "The ICE locks onto your neural signature. Your location pulses on security displays. They know where you are.",
+        "activeDefeated": "The ICE lunges—but you're faster. Your countermeasures fragment the program into harmless data streams. The path is clear.",
+        "activeFailed": "The ICE strikes like a viper. Your connection shatters—you're thrown back to reality, neural interfaces screaming.",
+        "lethalSaved": "You feel the neural strike incoming—ancient malice reaching for your mind. You tear yourself free just in time, gasping, shaking. The connection severs.",
+        "lethalFailed": "The Lethal ICE bypasses every defense. Ancient code burns through your neural pathways like acid. You scream as your vision fills with static and blood."
+    }
+}

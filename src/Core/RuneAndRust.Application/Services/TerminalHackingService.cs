@@ -7,6 +7,7 @@
 // Bypass skill. Handles layer progression, DC calculation, outcome processing,
 // and fumble consequence management.
 // Part of v0.15.4b Terminal Hacking System implementation.
+// Updated in v0.15.4c to integrate ICE countermeasure triggering.
 // </summary>
 // ------------------------------------------------------------------------------
 
@@ -64,6 +65,7 @@ public sealed class TerminalHackingService : ITerminalHackingService
 
     private readonly SkillCheckService _skillCheckService;
     private readonly IFumbleConsequenceService _fumbleService;
+    private readonly IIceCountermeasureService _iceService;
     private readonly IGameConfigurationProvider _configProvider;
     private readonly ILogger<TerminalHackingService> _logger;
 
@@ -76,6 +78,7 @@ public sealed class TerminalHackingService : ITerminalHackingService
     /// </summary>
     /// <param name="skillCheckService">Service for performing skill checks.</param>
     /// <param name="fumbleService">Service for managing fumble consequences.</param>
+    /// <param name="iceService">Service for handling ICE countermeasures (v0.15.4c).</param>
     /// <param name="configProvider">Provider for game configuration data.</param>
     /// <param name="logger">Logger for diagnostic output.</param>
     /// <exception cref="ArgumentNullException">
@@ -84,11 +87,13 @@ public sealed class TerminalHackingService : ITerminalHackingService
     public TerminalHackingService(
         SkillCheckService skillCheckService,
         IFumbleConsequenceService fumbleService,
+        IIceCountermeasureService iceService,
         IGameConfigurationProvider configProvider,
         ILogger<TerminalHackingService> logger)
     {
         _skillCheckService = skillCheckService ?? throw new ArgumentNullException(nameof(skillCheckService));
         _fumbleService = fumbleService ?? throw new ArgumentNullException(nameof(fumbleService));
+        _iceService = iceService ?? throw new ArgumentNullException(nameof(iceService));
         _configProvider = configProvider ?? throw new ArgumentNullException(nameof(configProvider));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
@@ -250,6 +255,136 @@ public sealed class TerminalHackingService : ITerminalHackingService
         }
 
         return success;
+    }
+
+    // -------------------------------------------------------------------------
+    // ICE Methods (v0.15.4c)
+    // -------------------------------------------------------------------------
+
+    /// <summary>
+    /// Triggers ICE countermeasures after a Layer 2 authentication failure.
+    /// </summary>
+    /// <param name="player">The player who triggered the ICE.</param>
+    /// <param name="state">The current infiltration state.</param>
+    /// <returns>
+    /// List of ICE resolution results if ICE was triggered; empty list if no ICE present.
+    /// </returns>
+    /// <remarks>
+    /// <para>
+    /// This method should be called after a Layer 2 authentication failure.
+    /// It determines what ICE types protect the terminal and resolves each
+    /// encounter in sequence.
+    /// </para>
+    /// <para>
+    /// If any ICE encounter results in disconnection or lockout, subsequent
+    /// ICE encounters are skipped (the character is no longer connected).
+    /// </para>
+    /// </remarks>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when player or state is null.
+    /// </exception>
+    public IReadOnlyList<IceResolutionResult> TriggerIceCountermeasures(
+        Player player,
+        TerminalInfiltrationState state)
+    {
+        ArgumentNullException.ThrowIfNull(player);
+        ArgumentNullException.ThrowIfNull(state);
+
+        var results = new List<IceResolutionResult>();
+
+        // Get ICE types for this terminal
+        var iceTypes = _iceService.GetIceForTerminal(state.TerminalType);
+
+        if (iceTypes.Count == 0)
+        {
+            _logger.LogDebug(
+                "No ICE on terminal {TerminalId} ({TerminalType}); skipping ICE resolution",
+                state.TerminalId,
+                state.TerminalType);
+            return results;
+        }
+
+        var iceRating = _iceService.GetIceRating(state.TerminalType);
+
+        _logger.LogInformation(
+            "Triggering ICE countermeasures on terminal {TerminalId}: " +
+            "{IceCount} ICE type(s) [{IceTypes}], Rating={Rating}",
+            state.TerminalId,
+            iceTypes.Count,
+            string.Join(", ", iceTypes),
+            iceRating);
+
+        // Process each ICE type in order
+        foreach (var iceType in iceTypes)
+        {
+            // Skip if already disconnected from previous ICE
+            if (state.Status == InfiltrationStatus.Disconnected ||
+                state.Status == InfiltrationStatus.LockedOut)
+            {
+                _logger.LogDebug(
+                    "Skipping {IceType} ICE resolution: player already disconnected/locked out",
+                    iceType);
+                break;
+            }
+
+            // Trigger and resolve this ICE encounter
+            var encounter = _iceService.TriggerIce(iceType, iceRating);
+            var result = _iceService.ResolveIce(encounter, player);
+
+            _logger.LogInformation(
+                "ICE {IceType} resolution: Outcome={Outcome}, " +
+                "Roll={Roll} vs DC={DC}",
+                iceType,
+                result.Outcome,
+                result.CharacterRoll,
+                result.IceDc);
+
+            // Apply consequences to player and state
+            _iceService.ApplyIceConsequences(result, player, state);
+
+            results.Add(result);
+        }
+
+        _logger.LogInformation(
+            "ICE countermeasures complete on terminal {TerminalId}: " +
+            "{EncounterCount} encounter(s), Final status={Status}, Alert={Alert}",
+            state.TerminalId,
+            results.Count,
+            state.Status,
+            state.AlertLevel);
+
+        return results;
+    }
+
+    /// <summary>
+    /// Determines if ICE should be triggered based on the current state and layer result.
+    /// </summary>
+    /// <param name="state">The infiltration state.</param>
+    /// <param name="layerResult">The result of the layer attempt.</param>
+    /// <returns>True if ICE should be triggered; otherwise false.</returns>
+    /// <remarks>
+    /// ICE triggers when:
+    /// <list type="bullet">
+    ///   <item><description>Layer 2 authentication fails (not fumble)</description></item>
+    ///   <item><description>The terminal has ICE protection</description></item>
+    /// </list>
+    /// Fumbles already result in immediate lockout, so ICE is not triggered.
+    /// </remarks>
+    public bool ShouldTriggerIce(TerminalInfiltrationState state, LayerResult layerResult)
+    {
+        // Only trigger on Layer 2 failure (not fumble)
+        if (layerResult.Layer != InfiltrationLayer.Layer2_Authentication)
+        {
+            return false;
+        }
+
+        if (layerResult.IsSuccess || layerResult.IsFumble)
+        {
+            return false;
+        }
+
+        // Check if terminal has ICE
+        return _iceService.HasIce(state.TerminalType);
     }
 
     // -------------------------------------------------------------------------

@@ -1,0 +1,296 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "ice-types.schema.json",
+    "title": "ICE Types Configuration",
+    "description": "Schema for ICE (Intrusion Countermeasures Electronics) configuration in the Terminal Hacking subsystem (v0.15.4c)",
+    "type": "object",
+    "required": ["iceTypes", "iceByTerminalType", "globalSettings"],
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "Reference to this schema file"
+        },
+        "version": {
+            "type": "string",
+            "description": "Configuration version identifier",
+            "pattern": "^\\d+\\.\\d+\\.\\d+[a-z]?$"
+        },
+        "description": {
+            "type": "string",
+            "description": "Human-readable description of this configuration file"
+        },
+        "iceTypes": {
+            "type": "array",
+            "description": "Array of ICE type definitions",
+            "minItems": 1,
+            "items": {
+                "$ref": "#/definitions/iceTypeDefinition"
+            }
+        },
+        "iceByTerminalType": {
+            "type": "array",
+            "description": "Mapping of terminal types to their ICE protection",
+            "minItems": 1,
+            "items": {
+                "$ref": "#/definitions/iceTerminalMapping"
+            }
+        },
+        "globalSettings": {
+            "$ref": "#/definitions/globalSettings"
+        },
+        "narrativeDescriptions": {
+            "$ref": "#/definitions/narrativeDescriptions"
+        }
+    },
+    "definitions": {
+        "iceTypeDefinition": {
+            "type": "object",
+            "description": "Definition for a single ICE type",
+            "required": ["id", "name", "enumValue", "resolutionMethod", "consequences"],
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Unique identifier for this ICE type",
+                    "pattern": "^[a-z][a-z0-9-]*$",
+                    "minLength": 1,
+                    "maxLength": 50
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Human-readable display name",
+                    "minLength": 1,
+                    "maxLength": 100
+                },
+                "enumValue": {
+                    "type": "integer",
+                    "description": "Corresponding enum value in IceType",
+                    "minimum": 0,
+                    "maximum": 10
+                },
+                "resolutionMethod": {
+                    "type": "string",
+                    "description": "How this ICE type is resolved",
+                    "enum": ["contested", "save"]
+                },
+                "contestedSkill": {
+                    "type": ["string", "null"],
+                    "description": "Skill used for contested resolution (null for save-based)",
+                    "pattern": "^[a-z][a-z0-9-]*$"
+                },
+                "saveDc": {
+                    "type": ["integer", "null"],
+                    "description": "Fixed save DC (null for contested resolution)",
+                    "minimum": 1,
+                    "maximum": 30
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Detailed description of this ICE type",
+                    "maxLength": 500
+                },
+                "triggerCondition": {
+                    "type": "string",
+                    "description": "When this ICE type activates",
+                    "maxLength": 200
+                },
+                "consequences": {
+                    "$ref": "#/definitions/iceConsequences"
+                },
+                "flavorText": {
+                    "type": "string",
+                    "description": "Flavor text for immersion",
+                    "maxLength": 500
+                }
+            },
+            "additionalProperties": false
+        },
+        "iceConsequences": {
+            "type": "object",
+            "description": "Consequences for ICE encounter outcomes",
+            "required": ["onCharacterWin", "onIceWin"],
+            "properties": {
+                "onCharacterWin": {
+                    "$ref": "#/definitions/consequenceSet"
+                },
+                "onIceWin": {
+                    "$ref": "#/definitions/consequenceSet"
+                }
+            },
+            "additionalProperties": false
+        },
+        "consequenceSet": {
+            "type": "object",
+            "description": "Set of consequences for an ICE outcome",
+            "required": ["description", "locationRevealed", "forcedDisconnect", "lockoutMinutes", "alertLevelChange"],
+            "properties": {
+                "description": {
+                    "type": "string",
+                    "description": "Short description of this outcome",
+                    "maxLength": 200
+                },
+                "locationRevealed": {
+                    "type": "boolean",
+                    "description": "Whether the hacker's location is revealed to security"
+                },
+                "forcedDisconnect": {
+                    "type": "boolean",
+                    "description": "Whether the hacker is forcibly disconnected"
+                },
+                "lockoutMinutes": {
+                    "type": "integer",
+                    "description": "Minutes of lockout (0 = none, -1 = permanent)",
+                    "minimum": -1,
+                    "maximum": 60
+                },
+                "alertLevelChange": {
+                    "type": "integer",
+                    "description": "Change to terminal alert level",
+                    "minimum": 0,
+                    "maximum": 10
+                },
+                "damage": {
+                    "type": ["string", "null"],
+                    "description": "Damage dice notation (e.g., '3d10') or null for no damage",
+                    "pattern": "^\\d+d\\d+(\\+\\d+)?$"
+                },
+                "stress": {
+                    "type": ["string", "null"],
+                    "description": "Stress dice notation (e.g., '1d6') or null for no stress",
+                    "pattern": "^\\d+d\\d+(\\+\\d+)?$"
+                },
+                "bonusDice": {
+                    "type": "integer",
+                    "description": "Bonus dice granted for next layer check",
+                    "minimum": 0,
+                    "maximum": 5
+                }
+            },
+            "additionalProperties": false
+        },
+        "iceTerminalMapping": {
+            "type": "object",
+            "description": "Mapping of a terminal type to its ICE configuration",
+            "required": ["terminalType", "iceTypes", "iceRating"],
+            "properties": {
+                "terminalType": {
+                    "type": "string",
+                    "description": "Terminal type ID (matches terminal-types.json)",
+                    "pattern": "^[a-z][a-z0-9-]*$"
+                },
+                "iceTypes": {
+                    "type": "array",
+                    "description": "ICE types active on this terminal (in resolution order)",
+                    "items": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9-]*$"
+                    }
+                },
+                "iceRating": {
+                    "type": "integer",
+                    "description": "ICE rating (base DC) for this terminal",
+                    "minimum": 0,
+                    "maximum": 30
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Brief description of ICE on this terminal",
+                    "maxLength": 200
+                }
+            },
+            "additionalProperties": false
+        },
+        "globalSettings": {
+            "type": "object",
+            "description": "Global settings for the ICE system",
+            "required": ["iceDcConversionDivisor", "iceDcMinimum", "lethalIceSaveDc", "lethalIceSaveAttribute"],
+            "properties": {
+                "iceDcConversionDivisor": {
+                    "type": "integer",
+                    "description": "Divisor for converting ICE rating to DC (rating / divisor, rounded up)",
+                    "minimum": 1,
+                    "maximum": 10
+                },
+                "iceDcMinimum": {
+                    "type": "integer",
+                    "description": "Minimum ICE DC after conversion",
+                    "minimum": 1,
+                    "maximum": 5
+                },
+                "lethalIceSaveDc": {
+                    "type": "integer",
+                    "description": "Fixed DC for Lethal ICE saves",
+                    "minimum": 1,
+                    "maximum": 25
+                },
+                "lethalIceSaveAttribute": {
+                    "type": "string",
+                    "description": "Attribute used for Lethal ICE saves",
+                    "pattern": "^[a-z][a-z0-9-]*$"
+                },
+                "activeIceVictoryBonusDice": {
+                    "type": "integer",
+                    "description": "Bonus dice granted for defeating Active ICE",
+                    "minimum": 0,
+                    "maximum": 5
+                },
+                "passiveIceAlertIncrease": {
+                    "type": "integer",
+                    "description": "Alert level increase when Passive ICE wins",
+                    "minimum": 0,
+                    "maximum": 10
+                },
+                "activeIceAlertIncrease": {
+                    "type": "integer",
+                    "description": "Alert level increase when Active ICE wins",
+                    "minimum": 0,
+                    "maximum": 10
+                },
+                "lethalIceAlertIncrease": {
+                    "type": "integer",
+                    "description": "Alert level increase when Lethal ICE wins",
+                    "minimum": 0,
+                    "maximum": 10
+                }
+            },
+            "additionalProperties": false
+        },
+        "narrativeDescriptions": {
+            "type": "object",
+            "description": "Narrative text for ICE resolution outcomes",
+            "properties": {
+                "passiveEvaded": {
+                    "type": "string",
+                    "description": "Text when character evades Passive ICE",
+                    "maxLength": 500
+                },
+                "passiveFailed": {
+                    "type": "string",
+                    "description": "Text when Passive ICE reveals location",
+                    "maxLength": 500
+                },
+                "activeDefeated": {
+                    "type": "string",
+                    "description": "Text when character defeats Active ICE",
+                    "maxLength": 500
+                },
+                "activeFailed": {
+                    "type": "string",
+                    "description": "Text when Active ICE forces disconnect",
+                    "maxLength": 500
+                },
+                "lethalSaved": {
+                    "type": "string",
+                    "description": "Text when character saves against Lethal ICE",
+                    "maxLength": 500
+                },
+                "lethalFailed": {
+                    "type": "string",
+                    "description": "Text when Lethal ICE deals full damage",
+                    "maxLength": 500
+                }
+            },
+            "additionalProperties": false
+        }
+    },
+    "additionalProperties": false
+}

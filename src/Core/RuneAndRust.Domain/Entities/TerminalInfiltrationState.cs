@@ -5,6 +5,7 @@
 // <summary>
 // Tracks the state of a multi-layer terminal infiltration attempt.
 // Part of v0.15.4b Terminal Hacking System implementation.
+// Updated in v0.15.4c to add ICE encounter tracking.
 // </summary>
 // ------------------------------------------------------------------------------
 
@@ -39,6 +40,7 @@ public class TerminalInfiltrationState
     // -------------------------------------------------------------------------
 
     private readonly List<LayerResult> _layerResults = new();
+    private readonly List<IceEncounter> _iceEncounters = new();
 
     // -------------------------------------------------------------------------
     // Core Properties
@@ -105,6 +107,36 @@ public class TerminalInfiltrationState
     public bool TracksCovered { get; private set; }
 
     // -------------------------------------------------------------------------
+    // ICE Encounter Properties (v0.15.4c)
+    // -------------------------------------------------------------------------
+
+    /// <summary>
+    /// Gets the collection of ICE encounters during this infiltration attempt.
+    /// </summary>
+    /// <remarks>
+    /// ICE encounters are added when defensive programs activate, typically on
+    /// Layer 2 authentication failure. Each encounter tracks its type, rating,
+    /// and resolution outcome.
+    /// </remarks>
+    public IReadOnlyList<IceEncounter> IceEncounters => _iceEncounters.AsReadOnly();
+
+    /// <summary>
+    /// Gets the time when the terminal lockout expires.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Lockout occurs on ICE-induced disconnect (Active or Lethal ICE failure)
+    /// or permanent lockout (Lethal ICE save failure or fumble).
+    /// </para>
+    /// <para>
+    /// <c>null</c>: No lockout active.
+    /// <c>DateTime.MaxValue</c>: Permanent lockout (terminal can never be accessed).
+    /// Other values: Temporary lockout until that time.
+    /// </para>
+    /// </remarks>
+    public DateTime? LockoutUntil { get; private set; }
+
+    // -------------------------------------------------------------------------
     // Computed Properties
     // -------------------------------------------------------------------------
 
@@ -136,6 +168,62 @@ public class TerminalInfiltrationState
     /// Gets whether admin access was achieved.
     /// </summary>
     public bool HasAdminAccess => AccessLevel == AccessLevel.AdminLevel;
+
+    // -------------------------------------------------------------------------
+    // ICE Computed Properties (v0.15.4c)
+    // -------------------------------------------------------------------------
+
+    /// <summary>
+    /// Whether any ICE encounter resulted in the character's location being revealed.
+    /// </summary>
+    /// <remarks>
+    /// Location reveal occurs when Passive (Trace) ICE wins the contested check.
+    /// When location is revealed, security may dispatch guards to the hacker's position.
+    /// </remarks>
+    public bool IsLocationRevealed => _iceEncounters.Any(e =>
+        e.IceType == IceType.Passive &&
+        e.EncounterResult == IceResolutionOutcome.IceWon);
+
+    /// <summary>
+    /// Whether the character was disconnected by ICE.
+    /// </summary>
+    /// <remarks>
+    /// Forced disconnect occurs when Active or Lethal ICE wins. The character
+    /// must wait for the lockout to expire before retrying (or cannot retry
+    /// if lockout is permanent).
+    /// </remarks>
+    public bool WasDisconnectedByIce => _iceEncounters.Any(e =>
+        e.EncounterResult == IceResolutionOutcome.IceWon &&
+        e.IceType is IceType.Active or IceType.Lethal);
+
+    /// <summary>
+    /// Whether any ICE was successfully defeated.
+    /// </summary>
+    /// <remarks>
+    /// Defeating ICE (particularly Active ICE) may grant bonuses to subsequent checks.
+    /// </remarks>
+    public bool HasDefeatedIce => _iceEncounters.Any(e =>
+        e.EncounterResult == IceResolutionOutcome.CharacterWon);
+
+    /// <summary>
+    /// Gets the total bonus dice earned from defeating Active ICE.
+    /// </summary>
+    /// <remarks>
+    /// Each defeated Active ICE grants +1d10 to the next layer check.
+    /// </remarks>
+    public int IceBonusDice => _iceEncounters.Count(e =>
+        e.IceType == IceType.Active &&
+        e.EncounterResult == IceResolutionOutcome.CharacterWon);
+
+    /// <summary>
+    /// Whether the terminal is currently in lockout state.
+    /// </summary>
+    public bool IsInLockout => LockoutUntil.HasValue && DateTime.UtcNow < LockoutUntil.Value;
+
+    /// <summary>
+    /// Whether the terminal is permanently locked out.
+    /// </summary>
+    public bool IsPermanentlyLockedOut => LockoutUntil == DateTime.MaxValue;
 
     // -------------------------------------------------------------------------
     // Constructor
@@ -257,6 +345,104 @@ public class TerminalInfiltrationState
     public void IncreaseAlertLevel(int amount = 1)
     {
         AlertLevel += Math.Max(0, amount);
+    }
+
+    // -------------------------------------------------------------------------
+    // ICE Encounter Methods (v0.15.4c)
+    // -------------------------------------------------------------------------
+
+    /// <summary>
+    /// Adds a resolved ICE encounter to the state.
+    /// </summary>
+    /// <param name="encounter">The resolved encounter to add.</param>
+    /// <remarks>
+    /// Call this method after resolving an ICE encounter to track the outcome.
+    /// The encounter should have a non-Pending resolution outcome.
+    /// </remarks>
+    public void AddIceEncounter(IceEncounter encounter)
+    {
+        _iceEncounters.Add(encounter);
+    }
+
+    /// <summary>
+    /// Sets the terminal to a disconnected state with a lockout duration.
+    /// </summary>
+    /// <param name="lockoutMinutes">
+    /// Minutes until reconnection allowed.
+    /// Use -1 for permanent lockout (terminal can never be accessed again).
+    /// Use 0 for immediate availability (no lockout).
+    /// </param>
+    /// <remarks>
+    /// <para>
+    /// Called when ICE forces a disconnect:
+    /// <list type="bullet">
+    ///   <item><description>Active ICE failure: 1 minute lockout</description></item>
+    ///   <item><description>Lethal ICE save success: 1 minute lockout</description></item>
+    ///   <item><description>Lethal ICE save failure: Permanent lockout</description></item>
+    /// </list>
+    /// </para>
+    /// </remarks>
+    public void SetDisconnected(int lockoutMinutes)
+    {
+        if (Status == InfiltrationStatus.LockedOut)
+        {
+            return; // Already in terminal state from fumble
+        }
+
+        Status = InfiltrationStatus.Disconnected;
+
+        // Set lockout duration
+        LockoutUntil = lockoutMinutes switch
+        {
+            -1 => DateTime.MaxValue,           // Permanent lockout
+            0 => null,                          // No lockout
+            _ => DateTime.UtcNow.AddMinutes(lockoutMinutes)  // Temporary lockout
+        };
+    }
+
+    /// <summary>
+    /// Marks the terminal as permanently locked out.
+    /// </summary>
+    /// <remarks>
+    /// Called when Lethal ICE save fails or on terminal fumble.
+    /// The terminal can never be accessed again by any character.
+    /// </remarks>
+    public void MarkAsLockedOut()
+    {
+        IsLockedOut = true;
+        AccessLevel = AccessLevel.Lockout;
+        Status = InfiltrationStatus.LockedOut;
+        LockoutUntil = DateTime.MaxValue;
+    }
+
+    /// <summary>
+    /// Clears the lockout if the lockout period has expired.
+    /// </summary>
+    /// <returns>True if lockout was cleared; false if still active or permanent.</returns>
+    /// <remarks>
+    /// Call this before allowing retry attempts to check if lockout has expired.
+    /// Permanent lockouts (DateTime.MaxValue) can never be cleared.
+    /// </remarks>
+    public bool TryClearExpiredLockout()
+    {
+        if (!LockoutUntil.HasValue)
+        {
+            return true; // No lockout
+        }
+
+        if (LockoutUntil == DateTime.MaxValue)
+        {
+            return false; // Permanent lockout
+        }
+
+        if (DateTime.UtcNow >= LockoutUntil.Value)
+        {
+            LockoutUntil = null;
+            Status = InfiltrationStatus.InProgress;
+            return true;
+        }
+
+        return false; // Still locked out
     }
 
     // -------------------------------------------------------------------------

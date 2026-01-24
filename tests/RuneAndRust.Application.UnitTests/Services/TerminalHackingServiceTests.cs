@@ -35,6 +35,7 @@ public class TerminalHackingServiceTests
 
     private SkillCheckService _skillCheckService = null!;
     private IFumbleConsequenceService _fumbleService = null!;
+    private IIceCountermeasureService _iceService = null!;
     private IGameConfigurationProvider _configProvider = null!;
     private ILogger<TerminalHackingService> _logger = null!;
     private ILogger<SkillCheckService> _skillCheckLogger = null!;
@@ -53,6 +54,7 @@ public class TerminalHackingServiceTests
         _skillCheckLogger = Substitute.For<ILogger<SkillCheckService>>();
         _diceLogger = Substitute.For<ILogger<DiceService>>();
         _fumbleService = Substitute.For<IFumbleConsequenceService>();
+        _iceService = Substitute.For<IIceCountermeasureService>();
         _configProvider = Substitute.For<IGameConfigurationProvider>();
 
         // Create DiceService with seeded random for reproducible tests
@@ -72,6 +74,7 @@ public class TerminalHackingServiceTests
         _service = new TerminalHackingService(
             _skillCheckService,
             _fumbleService,
+            _iceService,
             _configProvider,
             _logger);
     }
