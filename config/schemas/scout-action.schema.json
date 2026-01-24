@@ -1,0 +1,470 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://runeandrust.game/schemas/scout-action.schema.json",
+    "title": "Scout Action Configuration",
+    "description": "Configuration schema for scout action terrain types, visibility modifiers, equipment bonuses, threat levels, hazard severity, and points of interest",
+    "type": "object",
+    "required": [
+        "terrainTypes",
+        "visibilityModifiers",
+        "equipmentBonuses",
+        "roomRevelation",
+        "threatLevels",
+        "hazardSeverity",
+        "pointsOfInterestTypes",
+        "scoutOutcomes",
+        "scoutingBlockedReasons"
+    ],
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "Reference to this schema file"
+        },
+        "terrainTypes": {
+            "type": "object",
+            "description": "Navigation terrain type definitions with base DCs",
+            "required": ["OpenWasteland", "ModerateRuins", "DenseRuins", "Labyrinthine", "GlitchedLabyrinth"],
+            "properties": {
+                "OpenWasteland": { "$ref": "#/$defs/terrainTypeDefinition" },
+                "ModerateRuins": { "$ref": "#/$defs/terrainTypeDefinition" },
+                "DenseRuins": { "$ref": "#/$defs/terrainTypeDefinition" },
+                "Labyrinthine": { "$ref": "#/$defs/terrainTypeDefinition" },
+                "GlitchedLabyrinth": { "$ref": "#/$defs/terrainTypeDefinition" }
+            },
+            "additionalProperties": false
+        },
+        "visibilityModifiers": {
+            "type": "object",
+            "description": "Visibility condition definitions with DC modifiers",
+            "required": ["excellent", "good", "normal", "poor", "terrible", "staticStorm"],
+            "properties": {
+                "excellent": { "$ref": "#/$defs/visibilityModifierDefinition" },
+                "good": { "$ref": "#/$defs/visibilityModifierDefinition" },
+                "normal": { "$ref": "#/$defs/visibilityModifierDefinition" },
+                "poor": { "$ref": "#/$defs/visibilityModifierDefinition" },
+                "terrible": { "$ref": "#/$defs/visibilityModifierDefinition" },
+                "staticStorm": { "$ref": "#/$defs/visibilityModifierDefinition" }
+            },
+            "additionalProperties": false
+        },
+        "equipmentBonuses": {
+            "type": "object",
+            "description": "Equipment that provides bonuses to scouting",
+            "required": ["survivalKit", "binoculars"],
+            "properties": {
+                "survivalKit": { "$ref": "#/$defs/equipmentBonusDefinition" },
+                "binoculars": { "$ref": "#/$defs/equipmentBonusDefinition" }
+            },
+            "additionalProperties": { "$ref": "#/$defs/equipmentBonusDefinition" }
+        },
+        "roomRevelation": {
+            "$ref": "#/$defs/roomRevelationDefinition",
+            "description": "Room revelation formula and scaling configuration"
+        },
+        "threatLevels": {
+            "type": "object",
+            "description": "Enemy threat level classifications",
+            "required": ["Low", "Moderate", "High", "Extreme"],
+            "properties": {
+                "Low": { "$ref": "#/$defs/threatLevelDefinition" },
+                "Moderate": { "$ref": "#/$defs/threatLevelDefinition" },
+                "High": { "$ref": "#/$defs/threatLevelDefinition" },
+                "Extreme": { "$ref": "#/$defs/threatLevelDefinition" }
+            },
+            "additionalProperties": false
+        },
+        "hazardSeverity": {
+            "type": "object",
+            "description": "Hazard severity classifications",
+            "required": ["Minor", "Moderate", "Severe", "Lethal"],
+            "properties": {
+                "Minor": { "$ref": "#/$defs/hazardSeverityDefinition" },
+                "Moderate": { "$ref": "#/$defs/hazardSeverityDefinition" },
+                "Severe": { "$ref": "#/$defs/hazardSeverityDefinition" },
+                "Lethal": { "$ref": "#/$defs/hazardSeverityDefinition" }
+            },
+            "additionalProperties": false
+        },
+        "pointsOfInterestTypes": {
+            "type": "object",
+            "description": "Point of interest type definitions",
+            "required": ["Container", "ScavengerSign", "Mechanism", "ResourceNode", "Landmark", "Other"],
+            "properties": {
+                "Container": { "$ref": "#/$defs/poiTypeDefinition" },
+                "ScavengerSign": { "$ref": "#/$defs/poiTypeDefinition" },
+                "Mechanism": { "$ref": "#/$defs/poiTypeDefinition" },
+                "ResourceNode": { "$ref": "#/$defs/poiTypeDefinition" },
+                "Landmark": { "$ref": "#/$defs/poiTypeDefinition" },
+                "Other": { "$ref": "#/$defs/poiTypeDefinition" }
+            },
+            "additionalProperties": false
+        },
+        "scoutOutcomes": {
+            "type": "object",
+            "description": "Scout action outcome definitions",
+            "required": ["success", "criticalSuccess", "failure"],
+            "properties": {
+                "success": { "$ref": "#/$defs/scoutSuccessDefinition" },
+                "criticalSuccess": { "$ref": "#/$defs/scoutCriticalDefinition" },
+                "failure": { "$ref": "#/$defs/scoutFailureDefinition" }
+            },
+            "additionalProperties": false
+        },
+        "scoutingBlockedReasons": {
+            "type": "object",
+            "description": "Reasons why scouting may be blocked",
+            "required": ["noAdjacentRooms"],
+            "properties": {
+                "noAdjacentRooms": { "type": "string" },
+                "blinded": { "type": "string" },
+                "insufficientLight": { "type": "string" },
+                "incapacitated": { "type": "string" }
+            },
+            "additionalProperties": { "type": "string" }
+        },
+        "balanceNotes": {
+            "type": "object",
+            "description": "Design notes and balance rationale (not used by game logic)",
+            "additionalProperties": { "type": "string" }
+        }
+    },
+    "additionalProperties": false,
+    "$defs": {
+        "terrainTypeDefinition": {
+            "type": "object",
+            "description": "Definition for a navigation terrain type",
+            "required": ["id", "baseDc", "displayName", "description", "scoutingDescription", "characteristics"],
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9-]+$",
+                    "description": "Unique identifier for this terrain type (kebab-case)"
+                },
+                "baseDc": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 30,
+                    "description": "Base difficulty class for scouting in this terrain"
+                },
+                "displayName": {
+                    "type": "string",
+                    "description": "Human-readable display name"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "General description of the terrain type"
+                },
+                "scoutingDescription": {
+                    "type": "string",
+                    "description": "Description of how terrain affects scouting specifically"
+                },
+                "characteristics": {
+                    "$ref": "#/$defs/terrainCharacteristicsDefinition",
+                    "description": "Terrain-specific characteristics"
+                }
+            },
+            "additionalProperties": false
+        },
+        "terrainCharacteristicsDefinition": {
+            "type": "object",
+            "description": "Characteristics of a terrain type",
+            "required": ["travelSpeedMultiplier", "trackingCheckInterval", "compassEffective"],
+            "properties": {
+                "travelSpeedMultiplier": {
+                    "type": "number",
+                    "minimum": 0.1,
+                    "maximum": 2.0,
+                    "description": "Multiplier applied to base travel speed"
+                },
+                "trackingCheckInterval": {
+                    "type": "string",
+                    "description": "Distance or frequency between tracking checks"
+                },
+                "compassEffective": {
+                    "type": "boolean",
+                    "description": "Whether compasses function normally in this terrain"
+                }
+            },
+            "additionalProperties": false
+        },
+        "visibilityModifierDefinition": {
+            "type": "object",
+            "description": "Definition for a visibility condition",
+            "required": ["modifier", "displayName", "description"],
+            "properties": {
+                "modifier": {
+                    "type": "integer",
+                    "minimum": -10,
+                    "maximum": 20,
+                    "description": "DC modifier applied (negative = easier, positive = harder)"
+                },
+                "displayName": {
+                    "type": "string",
+                    "description": "Human-readable display name"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Description of the visibility conditions"
+                }
+            },
+            "additionalProperties": false
+        },
+        "equipmentBonusDefinition": {
+            "type": "object",
+            "description": "Definition for equipment that aids scouting",
+            "required": ["bonus", "displayName", "description"],
+            "properties": {
+                "bonus": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 10,
+                    "description": "Bonus dice added to the scouting check"
+                },
+                "displayName": {
+                    "type": "string",
+                    "description": "Human-readable equipment name"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Description of the equipment and its benefit"
+                }
+            },
+            "additionalProperties": false
+        },
+        "roomRevelationDefinition": {
+            "type": "object",
+            "description": "Room revelation formula configuration",
+            "required": ["formula", "baseRooms", "successesPerRoom", "scaling"],
+            "properties": {
+                "formula": {
+                    "type": "string",
+                    "description": "Human-readable description of the revelation formula"
+                },
+                "baseRooms": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 10,
+                    "description": "Base number of rooms revealed on success"
+                },
+                "successesPerRoom": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 10,
+                    "description": "Net successes required for each additional room"
+                },
+                "scaling": {
+                    "type": "object",
+                    "description": "Room revelation scaling by net success range",
+                    "additionalProperties": { "$ref": "#/$defs/roomRevelationScalingDefinition" }
+                }
+            },
+            "additionalProperties": false
+        },
+        "roomRevelationScalingDefinition": {
+            "type": "object",
+            "description": "Room revelation for a specific net success range",
+            "required": ["range", "rooms", "description"],
+            "properties": {
+                "range": {
+                    "type": "string",
+                    "description": "Net success range (e.g., '0-1', '2-3', '6+')"
+                },
+                "rooms": {
+                    "oneOf": [
+                        { "type": "integer", "minimum": 0, "maximum": 20 },
+                        { "type": "string" }
+                    ],
+                    "description": "Number of rooms revealed (or string like '4+')"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Description of this revelation tier"
+                }
+            },
+            "additionalProperties": false
+        },
+        "threatLevelDefinition": {
+            "type": "object",
+            "description": "Definition for an enemy threat level",
+            "required": ["minXp", "displayName", "shortDescriptor", "description", "tacticalRecommendation"],
+            "properties": {
+                "minXp": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "Minimum XP value for this threat level"
+                },
+                "maxXp": {
+                    "oneOf": [
+                        { "type": "integer", "minimum": 0 },
+                        { "type": "null" }
+                    ],
+                    "description": "Maximum XP value for this threat level (null for no upper limit)"
+                },
+                "displayName": {
+                    "type": "string",
+                    "description": "Human-readable display name"
+                },
+                "shortDescriptor": {
+                    "type": "string",
+                    "description": "Short descriptor for inline display (e.g., 'minor', 'deadly')"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Detailed description of the threat level"
+                },
+                "tacticalRecommendation": {
+                    "type": "string",
+                    "description": "Tactical advice for dealing with this threat level"
+                }
+            },
+            "additionalProperties": false
+        },
+        "hazardSeverityDefinition": {
+            "type": "object",
+            "description": "Definition for a hazard severity level",
+            "required": ["displayName", "shortDescriptor", "typicalDamageDice", "description", "tacticalRecommendation"],
+            "properties": {
+                "displayName": {
+                    "type": "string",
+                    "description": "Human-readable display name"
+                },
+                "shortDescriptor": {
+                    "type": "string",
+                    "description": "Short descriptor for inline display"
+                },
+                "typicalDamageDice": {
+                    "type": "string",
+                    "pattern": "^\\d+d\\d+(\\+\\d+)?$",
+                    "description": "Typical damage dice expression for this severity"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Detailed description of the severity level"
+                },
+                "tacticalRecommendation": {
+                    "type": "string",
+                    "description": "Tactical advice for dealing with this severity"
+                }
+            },
+            "additionalProperties": false
+        },
+        "poiTypeDefinition": {
+            "type": "object",
+            "description": "Definition for a point of interest type",
+            "required": ["id", "displayName", "description", "interactionHint", "characteristics"],
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9-]+$",
+                    "description": "Unique identifier for this POI type (kebab-case)"
+                },
+                "displayName": {
+                    "type": "string",
+                    "description": "Human-readable display name"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Description of this POI type"
+                },
+                "interactionHint": {
+                    "type": "string",
+                    "description": "Hint for how to interact with this POI"
+                },
+                "characteristics": {
+                    "$ref": "#/$defs/poiCharacteristicsDefinition",
+                    "description": "POI type characteristics"
+                }
+            },
+            "additionalProperties": false
+        },
+        "poiCharacteristicsDefinition": {
+            "type": "object",
+            "description": "Characteristics of a point of interest type",
+            "required": ["containsItems", "requiresSkillCheck", "mayBeDangerous", "mayHaveNarrativeSignificance"],
+            "properties": {
+                "containsItems": {
+                    "type": "boolean",
+                    "description": "Whether this POI type typically contains items"
+                },
+                "requiresSkillCheck": {
+                    "type": "boolean",
+                    "description": "Whether interacting requires a skill check"
+                },
+                "mayBeDangerous": {
+                    "type": "boolean",
+                    "description": "Whether interacting may trigger danger"
+                },
+                "mayHaveNarrativeSignificance": {
+                    "type": "boolean",
+                    "description": "Whether this POI may contain story elements"
+                },
+                "associatedSkillId": {
+                    "oneOf": [
+                        { "type": "string" },
+                        { "type": "null" }
+                    ],
+                    "description": "Skill ID associated with this POI type (null if none)"
+                }
+            },
+            "additionalProperties": false
+        },
+        "scoutSuccessDefinition": {
+            "type": "object",
+            "description": "Definition for successful scout outcome",
+            "required": ["description", "minNetSuccesses", "baseRoomsRevealed"],
+            "properties": {
+                "description": {
+                    "type": "string",
+                    "description": "Description of success conditions"
+                },
+                "minNetSuccesses": {
+                    "type": "integer",
+                    "minimum": -10,
+                    "maximum": 20,
+                    "description": "Minimum net successes for this outcome"
+                },
+                "baseRoomsRevealed": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 10,
+                    "description": "Base number of rooms revealed"
+                }
+            },
+            "additionalProperties": false
+        },
+        "scoutCriticalDefinition": {
+            "type": "object",
+            "description": "Definition for critical success outcome",
+            "required": ["threshold", "description"],
+            "properties": {
+                "threshold": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 20,
+                    "description": "Net successes required for critical success"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Description of critical success result"
+                }
+            },
+            "additionalProperties": false
+        },
+        "scoutFailureDefinition": {
+            "type": "object",
+            "description": "Definition for failed scout outcome",
+            "required": ["description", "message"],
+            "properties": {
+                "description": {
+                    "type": "string",
+                    "description": "Description of failure conditions"
+                },
+                "message": {
+                    "type": "string",
+                    "description": "Message displayed to player on failure"
+                }
+            },
+            "additionalProperties": false
+        }
+    }
+}

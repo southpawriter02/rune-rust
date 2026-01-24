@@ -1,0 +1,313 @@
+{
+    "$schema": "./schemas/scout-action.schema.json",
+    "terrainTypes": {
+        "OpenWasteland": {
+            "id": "open-wasteland",
+            "baseDc": 8,
+            "displayName": "Open Wasteland",
+            "description": "Barren expanses with clear sightlines. Landmarks visible at great distance. Easy terrain for experienced survivors.",
+            "scoutingDescription": "Clear sightlines make scouting easy. Enemies and features are readily visible.",
+            "characteristics": {
+                "travelSpeedMultiplier": 1.0,
+                "trackingCheckInterval": "2 miles",
+                "compassEffective": true
+            }
+        },
+        "ModerateRuins": {
+            "id": "moderate-ruins",
+            "baseDc": 12,
+            "displayName": "Moderate Ruins",
+            "description": "Partially collapsed structures with navigable paths. Some route-finding required to avoid obstacles.",
+            "scoutingDescription": "Partial cover requires careful observation. Some threats may be obscured.",
+            "characteristics": {
+                "travelSpeedMultiplier": 0.8,
+                "trackingCheckInterval": "1 mile",
+                "compassEffective": true
+            }
+        },
+        "DenseRuins": {
+            "id": "dense-ruins",
+            "baseDc": 16,
+            "displayName": "Dense Ruins",
+            "description": "Heavily damaged urban areas with many blocked routes. Frequent dead ends and unstable structures.",
+            "scoutingDescription": "Many hiding spots make thorough scouting difficult. Enemies could be anywhere.",
+            "characteristics": {
+                "travelSpeedMultiplier": 0.6,
+                "trackingCheckInterval": "0.5 miles",
+                "compassEffective": true
+            }
+        },
+        "Labyrinthine": {
+            "id": "labyrinthine",
+            "baseDc": 20,
+            "displayName": "Labyrinthine",
+            "description": "Maze-like structures requiring careful path tracking. Easy to get turned around without landmarks.",
+            "scoutingDescription": "Twisting passages severely limit visibility. Scouting is challenging.",
+            "characteristics": {
+                "travelSpeedMultiplier": 0.4,
+                "trackingCheckInterval": "per room/intersection",
+                "compassEffective": true
+            }
+        },
+        "GlitchedLabyrinth": {
+            "id": "glitched-labyrinth",
+            "baseDc": 24,
+            "displayName": "Glitched Labyrinth",
+            "description": "Reality-warped maze where paths shift and compasses fail. Only the most skilled can navigate these corrupted zones.",
+            "scoutingDescription": "Reality distortions make accurate observation nearly impossible. Even successful scouting may be unreliable.",
+            "characteristics": {
+                "travelSpeedMultiplier": 0.3,
+                "trackingCheckInterval": "per room/intersection",
+                "compassEffective": false
+            }
+        }
+    },
+    "visibilityModifiers": {
+        "excellent": {
+            "modifier": -2,
+            "displayName": "Excellent",
+            "description": "Bright light, clear weather, elevated position. Perfect conditions for observation."
+        },
+        "good": {
+            "modifier": -1,
+            "displayName": "Good",
+            "description": "Adequate lighting and minimal obstructions. Slightly better than average conditions."
+        },
+        "normal": {
+            "modifier": 0,
+            "displayName": "Normal",
+            "description": "Standard conditions. No bonuses or penalties to scouting."
+        },
+        "poor": {
+            "modifier": 2,
+            "displayName": "Poor",
+            "description": "Dim lighting, fog, or light precipitation. Visibility is reduced but scouting is still possible."
+        },
+        "terrible": {
+            "modifier": 4,
+            "displayName": "Terrible",
+            "description": "Darkness, heavy precipitation, or dense fog. Very difficult to observe surroundings."
+        },
+        "staticStorm": {
+            "modifier": 6,
+            "displayName": "Static Storm",
+            "description": "Reality-distorting storms that warp perception. Observation is extremely unreliable."
+        }
+    },
+    "equipmentBonuses": {
+        "survivalKit": {
+            "bonus": 1,
+            "displayName": "Survival Kit",
+            "description": "Basic survival equipment that aids in reconnaissance. Provides minor bonus to scouting checks."
+        },
+        "binoculars": {
+            "bonus": 2,
+            "displayName": "Binoculars",
+            "description": "Optical equipment for long-distance observation. Provides significant bonus to scouting checks."
+        }
+    },
+    "roomRevelation": {
+        "formula": "1 + (netSuccesses / 2), capped at adjacent room count",
+        "baseRooms": 1,
+        "successesPerRoom": 2,
+        "scaling": {
+            "netMinus": {
+                "range": "< 0",
+                "rooms": 0,
+                "description": "Failure - no rooms revealed"
+            },
+            "net0to1": {
+                "range": "0-1",
+                "rooms": 1,
+                "description": "Base success - minimum revelation"
+            },
+            "net2to3": {
+                "range": "2-3",
+                "rooms": 2,
+                "description": "Good success - additional room"
+            },
+            "net4to5": {
+                "range": "4-5",
+                "rooms": 3,
+                "description": "Excellent success - substantial revelation"
+            },
+            "net6plus": {
+                "range": "6+",
+                "rooms": "4+",
+                "description": "Outstanding success - capped at adjacent count"
+            }
+        }
+    },
+    "threatLevels": {
+        "Low": {
+            "minXp": 0,
+            "maxXp": 50,
+            "displayName": "Low Threat",
+            "shortDescriptor": "minor",
+            "description": "Minor threat that can be handled without significant risk. Suitable for direct engagement.",
+            "tacticalRecommendation": "Engage at will."
+        },
+        "Moderate": {
+            "minXp": 51,
+            "maxXp": 150,
+            "displayName": "Moderate Threat",
+            "shortDescriptor": "moderate",
+            "description": "Competent opponents that require attention. May cause injury if underestimated.",
+            "tacticalRecommendation": "Proceed with normal caution."
+        },
+        "High": {
+            "minXp": 151,
+            "maxXp": 400,
+            "displayName": "High Threat",
+            "shortDescriptor": "dangerous",
+            "description": "Dangerous enemies that pose serious risk. Preparation and tactical approach recommended.",
+            "tacticalRecommendation": "Prepare before engaging. Consider tactical approach."
+        },
+        "Extreme": {
+            "minXp": 401,
+            "maxXp": null,
+            "displayName": "Extreme Threat",
+            "shortDescriptor": "deadly",
+            "description": "Potentially lethal encounter. Consider retreat or exceptional preparation before engaging.",
+            "tacticalRecommendation": "Extreme caution advised. Consider retreat or exceptional preparation."
+        }
+    },
+    "hazardSeverity": {
+        "Minor": {
+            "displayName": "Minor",
+            "shortDescriptor": "minor",
+            "typicalDamageDice": "1d4",
+            "description": "Minor inconvenience that causes minimal harm. Can be ignored in urgent situations.",
+            "tacticalRecommendation": "Proceed normally, minor damage expected."
+        },
+        "Moderate": {
+            "displayName": "Moderate",
+            "shortDescriptor": "moderate",
+            "typicalDamageDice": "1d8",
+            "description": "Notable hazard that will cause meaningful damage. Should be avoided if possible.",
+            "tacticalRecommendation": "Avoid if convenient, or prepare for damage."
+        },
+        "Severe": {
+            "displayName": "Severe",
+            "shortDescriptor": "severe",
+            "typicalDamageDice": "2d8",
+            "description": "Dangerous hazard that poses significant threat. Should be actively avoided.",
+            "tacticalRecommendation": "Find alternate route or use protective equipment."
+        },
+        "Lethal": {
+            "displayName": "Lethal",
+            "shortDescriptor": "lethal",
+            "typicalDamageDice": "3d10",
+            "description": "Potentially fatal hazard. Extreme caution required.",
+            "tacticalRecommendation": "Do not enter without specialized protection."
+        }
+    },
+    "pointsOfInterestTypes": {
+        "Container": {
+            "id": "container",
+            "displayName": "Container",
+            "description": "Storage that may contain items. Can be searched for loot.",
+            "interactionHint": "Can be searched for items.",
+            "characteristics": {
+                "containsItems": true,
+                "requiresSkillCheck": false,
+                "mayBeDangerous": true,
+                "mayHaveNarrativeSignificance": false,
+                "associatedSkillId": "perception"
+            }
+        },
+        "ScavengerSign": {
+            "id": "scavenger-sign",
+            "displayName": "Scavenger Sign",
+            "description": "Faction markings that can be interpreted with Wasteland Survival.",
+            "interactionHint": "Can be interpreted with Wasteland Survival.",
+            "characteristics": {
+                "containsItems": false,
+                "requiresSkillCheck": true,
+                "mayBeDangerous": false,
+                "mayHaveNarrativeSignificance": true,
+                "associatedSkillId": "wasteland-survival"
+            }
+        },
+        "Mechanism": {
+            "id": "mechanism",
+            "displayName": "Mechanism",
+            "description": "Device that can be activated, deactivated, or bypassed.",
+            "interactionHint": "May be activated or bypassed.",
+            "characteristics": {
+                "containsItems": false,
+                "requiresSkillCheck": true,
+                "mayBeDangerous": true,
+                "mayHaveNarrativeSignificance": false,
+                "associatedSkillId": "technology"
+            }
+        },
+        "ResourceNode": {
+            "id": "resource-node",
+            "displayName": "Resource Node",
+            "description": "Source of raw materials that can be harvested.",
+            "interactionHint": "Can be harvested for materials.",
+            "characteristics": {
+                "containsItems": true,
+                "requiresSkillCheck": true,
+                "mayBeDangerous": false,
+                "mayHaveNarrativeSignificance": false,
+                "associatedSkillId": "wasteland-survival"
+            }
+        },
+        "Landmark": {
+            "id": "landmark",
+            "displayName": "Landmark",
+            "description": "Notable feature useful for navigation or containing lore.",
+            "interactionHint": "Notable for navigation.",
+            "characteristics": {
+                "containsItems": false,
+                "requiresSkillCheck": false,
+                "mayBeDangerous": false,
+                "mayHaveNarrativeSignificance": true,
+                "associatedSkillId": null
+            }
+        },
+        "Other": {
+            "id": "other",
+            "displayName": "Point of Interest",
+            "description": "Unusual feature that may warrant closer inspection.",
+            "interactionHint": "May warrant closer inspection.",
+            "characteristics": {
+                "containsItems": false,
+                "requiresSkillCheck": false,
+                "mayBeDangerous": false,
+                "mayHaveNarrativeSignificance": true,
+                "associatedSkillId": null
+            }
+        }
+    },
+    "scoutOutcomes": {
+        "success": {
+            "description": "Net successes >= 0. At least 1 room revealed.",
+            "minNetSuccesses": 0,
+            "baseRoomsRevealed": 1
+        },
+        "criticalSuccess": {
+            "threshold": 4,
+            "description": "Net successes >= 4. Reveals 3+ rooms (exceptional reconnaissance)."
+        },
+        "failure": {
+            "description": "Net successes < 0. No rooms revealed.",
+            "message": "You strain to observe the surroundings but learn nothing useful. The terrain obscures your view."
+        }
+    },
+    "scoutingBlockedReasons": {
+        "noAdjacentRooms": "There are no adjacent rooms to scout.",
+        "blinded": "You cannot see well enough to scout.",
+        "insufficientLight": "It is too dark to scout effectively.",
+        "incapacitated": "You are unable to scout in your current condition."
+    },
+    "balanceNotes": {
+        "dcDesign": "Base DCs range from 8 (open terrain) to 24 (glitched labyrinth). Combined with poor visibility (+4 max typical), total DCs can reach 28 for the most challenging conditions.",
+        "revelationFormula": "Formula of 1 + (net/2) ensures even marginal success reveals something, while rewarding skill investment with more information.",
+        "equipmentDesign": "Equipment bonuses are modest (+1 to +2) to avoid trivializing scouting. Skill investment remains the primary factor.",
+        "threatMapping": "Experience value thresholds (50/150/400) align with typical encounter difficulty progression.",
+        "visibilityImpact": "Static storms (+6) represent the most extreme conditions, making scouting nearly impossible without exceptional skill."
+    }
+}
