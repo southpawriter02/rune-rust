@@ -1,0 +1,232 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Crafting Components Configuration",
+    "description": "Schema for crafting component definitions and salvage rules (v0.15.4g)",
+    "type": "object",
+    "required": ["version", "componentTypes", "components", "salvageRules", "rarityTiers"],
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "Reference to this schema file"
+        },
+        "version": {
+            "type": "string",
+            "description": "Version of the configuration file",
+            "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+[a-z]?$"
+        },
+        "description": {
+            "type": "string",
+            "description": "Description of the configuration file purpose"
+        },
+        "componentTypes": {
+            "type": "array",
+            "description": "Array of component type definitions",
+            "items": {
+                "$ref": "#/definitions/componentType"
+            }
+        },
+        "components": {
+            "type": "array",
+            "description": "Array of component definitions",
+            "items": {
+                "$ref": "#/definitions/component"
+            }
+        },
+        "salvageRules": {
+            "type": "object",
+            "description": "Rules for salvaging components from bypass successes",
+            "properties": {
+                "bypassType": {
+                    "type": "object",
+                    "description": "Salvage rules per bypass type",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/salvageRule"
+                    }
+                },
+                "criticalSuccessRequired": {
+                    "type": "boolean",
+                    "description": "Whether critical success is required for salvage"
+                },
+                "criticalSuccessThreshold": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "Net successes threshold for critical"
+                },
+                "description": {
+                    "type": "string"
+                }
+            },
+            "required": ["bypassType", "criticalSuccessRequired"],
+            "additionalProperties": false
+        },
+        "rarityTiers": {
+            "type": "array",
+            "description": "Array of rarity tier definitions",
+            "items": {
+                "$ref": "#/definitions/rarityTier"
+            }
+        }
+    },
+    "definitions": {
+        "componentType": {
+            "type": "object",
+            "required": ["id", "value", "name", "description", "canSubstituteFor", "sources"],
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Type identifier"
+                },
+                "value": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "Enumeration value"
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Display name"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Description of the type"
+                },
+                "canSubstituteFor": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "Types this can substitute for"
+                },
+                "sources": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "Common sources for this type"
+                }
+            },
+            "additionalProperties": false
+        },
+        "component": {
+            "type": "object",
+            "required": ["id", "name", "type", "rarity", "description"],
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Unique component identifier",
+                    "pattern": "^[a-z_]+$"
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Display name"
+                },
+                "type": {
+                    "type": "string",
+                    "enum": ["Metal", "Wire", "Circuit", "Misc"],
+                    "description": "Component type"
+                },
+                "rarity": {
+                    "type": "string",
+                    "enum": ["Common", "Uncommon", "Rare"],
+                    "description": "Rarity tier"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Flavor description"
+                },
+                "usedIn": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "Tools this component is used to craft"
+                },
+                "notes": {
+                    "type": "string",
+                    "description": "Additional notes"
+                },
+                "primarySources": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "Primary salvage sources"
+                }
+            },
+            "additionalProperties": false
+        },
+        "salvageRule": {
+            "type": "object",
+            "required": ["guaranteed", "chance", "narrative"],
+            "properties": {
+                "guaranteed": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "Components always salvaged"
+                },
+                "chance": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/chanceSalvage"
+                    },
+                    "description": "Components with probability to salvage"
+                },
+                "narrative": {
+                    "type": "string",
+                    "description": "Narrative text for salvage"
+                }
+            },
+            "additionalProperties": false
+        },
+        "chanceSalvage": {
+            "type": "object",
+            "required": ["component", "probability", "diceCheck"],
+            "properties": {
+                "component": {
+                    "type": "string",
+                    "description": "Component name"
+                },
+                "probability": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "description": "Probability (0-1)"
+                },
+                "diceCheck": {
+                    "type": "string",
+                    "description": "Dice roll description"
+                },
+                "isRare": {
+                    "type": "boolean",
+                    "description": "Whether this is a rare component"
+                }
+            },
+            "additionalProperties": false
+        },
+        "rarityTier": {
+            "type": "object",
+            "required": ["tier", "description", "examples"],
+            "properties": {
+                "tier": {
+                    "type": "string",
+                    "enum": ["Common", "Uncommon", "Rare"],
+                    "description": "Tier name"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Tier description"
+                },
+                "examples": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "Example components"
+                }
+            },
+            "additionalProperties": false
+        }
+    },
+    "additionalProperties": false
+}

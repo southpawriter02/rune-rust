@@ -1,0 +1,179 @@
+{
+    "$schema": "../schemas/crafting-components.schema.json",
+    "version": "0.15.4g",
+    "description": "Crafting component definitions and salvage rules for the Improvised Tool Crafting subsystem",
+    "componentTypes": [
+        {
+            "id": "Metal",
+            "value": 0,
+            "name": "Metal",
+            "description": "Metal scraps, clips, and springs",
+            "canSubstituteFor": ["Misc"],
+            "sources": ["Locks", "Structures", "Containers"]
+        },
+        {
+            "id": "Wire",
+            "value": 1,
+            "name": "Wire",
+            "description": "Wire, cables, and filaments",
+            "canSubstituteFor": [],
+            "sources": ["Terminals", "Traps", "Electronics"]
+        },
+        {
+            "id": "Circuit",
+            "value": 2,
+            "name": "Circuit",
+            "description": "Circuit boards, capacitors, and chips",
+            "canSubstituteFor": [],
+            "sources": ["Terminals", "Advanced devices"]
+        },
+        {
+            "id": "Misc",
+            "value": 3,
+            "name": "Misc",
+            "description": "Miscellaneous parts and casings",
+            "canSubstituteFor": [],
+            "sources": ["Tools", "Devices", "Containers"]
+        }
+    ],
+    "components": [
+        {
+            "id": "scrap_metal",
+            "name": "Scrap Metal",
+            "type": "Metal",
+            "rarity": "Common",
+            "description": "Salvaged metal fragments that can be reshaped for various uses.",
+            "usedIn": ["Shim Picks"],
+            "primarySources": ["Locks", "Structures", "Containers"]
+        },
+        {
+            "id": "metal_clips",
+            "name": "Metal Clips",
+            "type": "Metal",
+            "rarity": "Common",
+            "description": "Spring-loaded metal fasteners salvaged from traps and mechanisms.",
+            "usedIn": ["Bypass Clamps"],
+            "primarySources": ["Traps", "Containers", "Mechanisms"]
+        },
+        {
+            "id": "high_tension_spring",
+            "name": "High-Tension Spring",
+            "type": "Metal",
+            "rarity": "Uncommon",
+            "description": "A precisely calibrated spring from complex lock mechanisms.",
+            "usedIn": [],
+            "notes": "Not currently used in recipes, valuable for trading.",
+            "primarySources": ["Complex locks"]
+        },
+        {
+            "id": "copper_wire",
+            "name": "Copper Wire",
+            "type": "Wire",
+            "rarity": "Common",
+            "description": "Conductive copper wire suitable for circuit manipulation.",
+            "usedIn": ["Wire Probe"],
+            "primarySources": ["Terminals", "Electronics"]
+        },
+        {
+            "id": "wire",
+            "name": "Wire",
+            "type": "Wire",
+            "rarity": "Common",
+            "description": "Generic wire salvaged from various electronic devices.",
+            "usedIn": ["Glitch Trigger"],
+            "primarySources": ["Terminals", "Traps", "Electronics"]
+        },
+        {
+            "id": "capacitor",
+            "name": "Capacitor",
+            "type": "Circuit",
+            "rarity": "Rare",
+            "description": "A functional capacitor capable of storing electrical charge. Rare and valuable.",
+            "usedIn": ["Glitch Trigger"],
+            "primarySources": ["Military terminals", "Advanced traps", "Glitched devices"]
+        },
+        {
+            "id": "circuit_fragment",
+            "name": "Circuit Fragment",
+            "type": "Circuit",
+            "rarity": "Uncommon",
+            "description": "A fragment of Old World circuitry, partially functional.",
+            "usedIn": [],
+            "notes": "Not currently used in recipes, valuable for trading.",
+            "primarySources": ["Terminals", "Advanced devices"]
+        },
+        {
+            "id": "handle",
+            "name": "Handle",
+            "type": "Misc",
+            "rarity": "Common",
+            "description": "An insulated grip suitable for tool construction.",
+            "usedIn": ["Wire Probe"],
+            "primarySources": ["Tools", "Devices"]
+        }
+    ],
+    "salvageRules": {
+        "bypassType": {
+            "Lockpicking": {
+                "guaranteed": ["High-Tension Spring"],
+                "chance": [
+                    {
+                        "component": "Scrap Metal",
+                        "probability": 0.50,
+                        "diceCheck": "1d4 >= 3"
+                    }
+                ],
+                "narrative": "As you work the lock, you recognize useful springs and metal pieces that can be salvaged."
+            },
+            "TerminalHacking": {
+                "guaranteed": ["Circuit Fragment", "Wire"],
+                "chance": [
+                    {
+                        "component": "Capacitor",
+                        "probability": 0.167,
+                        "diceCheck": "1d6 == 6",
+                        "isRare": true
+                    }
+                ],
+                "narrative": "While navigating the terminal circuits, you identify recoverable components in the wiring."
+            },
+            "TrapDisarmament": {
+                "guaranteed": ["Wire", "Metal Clips"],
+                "chance": [],
+                "narrative": "Disarming the trap reveals salvageable wire and metal clips within its mechanism."
+            },
+            "GlitchExploitation": {
+                "guaranteed": ["Circuit Fragment"],
+                "chance": [
+                    {
+                        "component": "Capacitor",
+                        "probability": 0.50,
+                        "diceCheck": "1d4 >= 3",
+                        "isRare": true
+                    }
+                ],
+                "narrative": "The glitched device yields fragments of circuitry that survived its corruption."
+            }
+        },
+        "criticalSuccessRequired": true,
+        "criticalSuccessThreshold": 5,
+        "description": "Components are acquired through critical successes (net >= 5) on bypass checks."
+    },
+    "rarityTiers": [
+        {
+            "tier": "Common",
+            "description": "Frequently found in basic mechanisms",
+            "examples": ["Scrap Metal", "Metal Clips", "Wire", "Copper Wire", "Handle"]
+        },
+        {
+            "tier": "Uncommon",
+            "description": "Found in specialized or complex mechanisms",
+            "examples": ["High-Tension Spring", "Circuit Fragment"]
+        },
+        {
+            "tier": "Rare",
+            "description": "Difficult to find, from advanced or military hardware",
+            "examples": ["Capacitor"]
+        }
+    ]
+}

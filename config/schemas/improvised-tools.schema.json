@@ -1,0 +1,322 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Improvised Tools Configuration",
+    "description": "Schema for improvised tool recipes and crafting configuration (v0.15.4g)",
+    "type": "object",
+    "required": ["version", "toolRecipes", "craftingModifiers", "toolDurability", "criticalSuccess", "fumbleConsequences"],
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "Reference to this schema file"
+        },
+        "version": {
+            "type": "string",
+            "description": "Version of the configuration file",
+            "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+[a-z]?$"
+        },
+        "description": {
+            "type": "string",
+            "description": "Description of the configuration file purpose"
+        },
+        "toolRecipes": {
+            "type": "array",
+            "description": "Array of tool recipe definitions",
+            "items": {
+                "$ref": "#/definitions/toolRecipe"
+            }
+        },
+        "craftingModifiers": {
+            "type": "object",
+            "description": "Modifiers that affect crafting checks",
+            "properties": {
+                "tinkersToolkit": {
+                    "$ref": "#/definitions/craftingModifier"
+                },
+                "workshopAccess": {
+                    "$ref": "#/definitions/craftingModifier"
+                },
+                "underPressure": {
+                    "$ref": "#/definitions/craftingPenalty"
+                }
+            },
+            "additionalProperties": false
+        },
+        "toolDurability": {
+            "type": "object",
+            "description": "Tool durability configuration",
+            "properties": {
+                "standard": {
+                    "$ref": "#/definitions/durabilityTier"
+                },
+                "quality": {
+                    "$ref": "#/definitions/durabilityTier"
+                },
+                "fumbleBreak": {
+                    "type": "boolean",
+                    "description": "Whether fumble while using breaks the tool immediately"
+                },
+                "description": {
+                    "type": "string"
+                }
+            },
+            "required": ["standard", "quality"],
+            "additionalProperties": false
+        },
+        "criticalSuccess": {
+            "type": "object",
+            "description": "Critical success configuration",
+            "properties": {
+                "threshold": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "Net successes threshold for critical"
+                },
+                "createsQualityTool": {
+                    "type": "boolean",
+                    "description": "Whether critical success creates quality tool"
+                },
+                "description": {
+                    "type": "string"
+                }
+            },
+            "required": ["threshold", "createsQualityTool"],
+            "additionalProperties": false
+        },
+        "fumbleConsequences": {
+            "type": "object",
+            "description": "Fumble consequences configuration",
+            "properties": {
+                "componentsLost": {
+                    "type": "boolean",
+                    "description": "Whether components are lost on fumble"
+                },
+                "damageDice": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "Number of damage dice"
+                },
+                "damageDieSize": {
+                    "type": "integer",
+                    "enum": [4, 6, 8, 10, 12, 20],
+                    "description": "Size of damage die"
+                },
+                "description": {
+                    "type": "string"
+                }
+            },
+            "required": ["componentsLost", "damageDice", "damageDieSize"],
+            "additionalProperties": false
+        }
+    },
+    "definitions": {
+        "toolRecipe": {
+            "type": "object",
+            "required": ["id", "toolName", "toolType", "toolTypeValue", "components", "craftDc", "requiredAttribute", "standardStats", "qualityStats", "applicableBypassTypes"],
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Unique identifier for the recipe",
+                    "pattern": "^recipe_[a-z_]+$"
+                },
+                "toolName": {
+                    "type": "string",
+                    "description": "Display name of the tool"
+                },
+                "toolType": {
+                    "type": "string",
+                    "enum": ["ShimPicks", "WireProbe", "GlitchTrigger", "BypassClamps"],
+                    "description": "Tool type enumeration name"
+                },
+                "toolTypeValue": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 3,
+                    "description": "Tool type enumeration value"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Flavor description of the tool"
+                },
+                "components": {
+                    "type": "array",
+                    "description": "Required components for crafting",
+                    "items": {
+                        "$ref": "#/definitions/componentRequirement"
+                    },
+                    "minItems": 1
+                },
+                "craftDc": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "Difficulty class for crafting check"
+                },
+                "requiredAttribute": {
+                    "type": "string",
+                    "enum": ["Wits", "Finesse", "WitsOrFinesse"],
+                    "description": "Required attribute for crafting"
+                },
+                "standardStats": {
+                    "$ref": "#/definitions/toolStats"
+                },
+                "qualityStats": {
+                    "$ref": "#/definitions/toolStats"
+                },
+                "applicableBypassTypes": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "enum": ["Lockpicking", "TerminalHacking", "TrapDisarmament", "GlitchExploitation"]
+                    },
+                    "description": "Bypass types this tool assists with"
+                },
+                "specialEffect": {
+                    "oneOf": [
+                        { "type": "null" },
+                        { "$ref": "#/definitions/specialEffect" }
+                    ],
+                    "description": "Special effect beyond dice bonus (optional)"
+                },
+                "flavorText": {
+                    "$ref": "#/definitions/flavorText"
+                },
+                "uiHints": {
+                    "$ref": "#/definitions/uiHints"
+                }
+            },
+            "additionalProperties": false
+        },
+        "componentRequirement": {
+            "type": "object",
+            "required": ["componentName", "componentType", "quantity"],
+            "properties": {
+                "componentName": {
+                    "type": "string",
+                    "description": "Name of the required component"
+                },
+                "componentType": {
+                    "type": "string",
+                    "enum": ["Metal", "Wire", "Circuit", "Misc"],
+                    "description": "Type of the required component"
+                },
+                "quantity": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "Number of components required"
+                }
+            },
+            "additionalProperties": false
+        },
+        "toolStats": {
+            "type": "object",
+            "required": ["bonusAmount", "durability"],
+            "properties": {
+                "bonusAmount": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "Dice pool bonus (d10s)"
+                },
+                "durability": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "Number of uses before breaking"
+                }
+            },
+            "additionalProperties": false
+        },
+        "specialEffect": {
+            "type": "object",
+            "required": ["id", "name", "description"],
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Effect identifier"
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Display name of the effect"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Short description of the effect"
+                },
+                "details": {
+                    "type": "string",
+                    "description": "Detailed explanation of the effect"
+                }
+            },
+            "additionalProperties": false
+        },
+        "flavorText": {
+            "type": "object",
+            "properties": {
+                "success": { "type": "string" },
+                "criticalSuccess": { "type": "string" },
+                "failure": { "type": "string" },
+                "fumble": { "type": "string" }
+            },
+            "additionalProperties": false
+        },
+        "uiHints": {
+            "type": "object",
+            "properties": {
+                "colorHint": {
+                    "type": "string",
+                    "description": "Suggested color for UI display"
+                },
+                "iconHint": {
+                    "type": "string",
+                    "description": "Suggested icon identifier"
+                }
+            },
+            "additionalProperties": false
+        },
+        "craftingModifier": {
+            "type": "object",
+            "required": ["bonusDice", "description"],
+            "properties": {
+                "bonusDice": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "Number of bonus dice"
+                },
+                "description": {
+                    "type": "string"
+                }
+            },
+            "additionalProperties": false
+        },
+        "craftingPenalty": {
+            "type": "object",
+            "required": ["penaltyDice", "description"],
+            "properties": {
+                "penaltyDice": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "Number of penalty dice"
+                },
+                "description": {
+                    "type": "string"
+                }
+            },
+            "additionalProperties": false
+        },
+        "durabilityTier": {
+            "type": "object",
+            "required": ["uses", "bonusAmount"],
+            "properties": {
+                "uses": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "Number of uses before breaking"
+                },
+                "bonusAmount": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "Dice pool bonus"
+                }
+            },
+            "additionalProperties": false
+        }
+    },
+    "additionalProperties": false
+}

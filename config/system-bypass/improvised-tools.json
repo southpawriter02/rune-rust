@@ -1,0 +1,208 @@
+{
+    "$schema": "../schemas/improvised-tools.schema.json",
+    "version": "0.15.4g",
+    "description": "Improvised tool recipes and configuration for the Improvised Tool Crafting subsystem",
+    "toolRecipes": [
+        {
+            "id": "recipe_shim_picks",
+            "toolName": "Shim Picks",
+            "toolType": "ShimPicks",
+            "toolTypeValue": 0,
+            "description": "Bend scrap metal into thin shims that slip between lock pins, allowing manipulation without proper lockpicks.",
+            "components": [
+                {
+                    "componentName": "Scrap Metal",
+                    "componentType": "Metal",
+                    "quantity": 3
+                }
+            ],
+            "craftDc": 10,
+            "requiredAttribute": "WitsOrFinesse",
+            "standardStats": {
+                "bonusAmount": 1,
+                "durability": 3
+            },
+            "qualityStats": {
+                "bonusAmount": 2,
+                "durability": 5
+            },
+            "applicableBypassTypes": ["Lockpicking"],
+            "specialEffect": null,
+            "flavorText": {
+                "success": "After careful work, you've fashioned a serviceable set of shim picks. They're rough around the edges but functional.",
+                "criticalSuccess": "Your hands move with practiced precision. The shim picks are of exceptional quality—they'll serve you well.",
+                "failure": "The metal shards won't cooperate, breaking apart as you work. Your materials are lost.",
+                "fumble": "A sharp edge catches you off guard—pain lances through your hand. The components are ruined."
+            },
+            "uiHints": {
+                "colorHint": "silver",
+                "iconHint": "lockpick"
+            }
+        },
+        {
+            "id": "recipe_wire_probe",
+            "toolName": "Wire Probe",
+            "toolType": "WireProbe",
+            "toolTypeValue": 1,
+            "description": "A carefully wrapped probe of copper wire attached to an insulated handle, used to manipulate exposed terminal circuits.",
+            "components": [
+                {
+                    "componentName": "Copper Wire",
+                    "componentType": "Wire",
+                    "quantity": 2
+                },
+                {
+                    "componentName": "Handle",
+                    "componentType": "Misc",
+                    "quantity": 1
+                }
+            ],
+            "craftDc": 12,
+            "requiredAttribute": "WitsOrFinesse",
+            "standardStats": {
+                "bonusAmount": 1,
+                "durability": 3
+            },
+            "qualityStats": {
+                "bonusAmount": 2,
+                "durability": 5
+            },
+            "applicableBypassTypes": ["TerminalHacking"],
+            "specialEffect": null,
+            "flavorText": {
+                "success": "You've fashioned a serviceable wire probe. The handle provides just enough insulation for careful work.",
+                "criticalSuccess": "The probe is perfectly balanced with precise wire wrapping—a quality tool for delicate terminal work.",
+                "failure": "The wire keeps slipping, refusing to wrap correctly. Your components are wasted.",
+                "fumble": "A spark arcs between the wires, burning your fingers. The components are destroyed."
+            },
+            "uiHints": {
+                "colorHint": "copper",
+                "iconHint": "probe"
+            }
+        },
+        {
+            "id": "recipe_glitch_trigger",
+            "toolName": "Glitch Trigger",
+            "toolType": "GlitchTrigger",
+            "toolTypeValue": 2,
+            "description": "A crude device that emits an electromagnetic pulse pattern known to induce glitched states in Old World machinery.",
+            "components": [
+                {
+                    "componentName": "Capacitor",
+                    "componentType": "Circuit",
+                    "quantity": 1
+                },
+                {
+                    "componentName": "Wire",
+                    "componentType": "Wire",
+                    "quantity": 4
+                }
+            ],
+            "craftDc": 14,
+            "requiredAttribute": "Wits",
+            "standardStats": {
+                "bonusAmount": 1,
+                "durability": 3
+            },
+            "qualityStats": {
+                "bonusAmount": 2,
+                "durability": 5
+            },
+            "applicableBypassTypes": ["GlitchExploitation"],
+            "specialEffect": {
+                "id": "force_glitch_state",
+                "name": "Force Glitch State",
+                "description": "Force mechanism into [Glitched] state",
+                "details": "When activated on a non-glitched mechanism, the mechanism becomes [Glitched] for 1d4+1 rounds. This enables Glitch Exploitation bypass method (-4 DC) but also adds +2 DC from [Glitched] state."
+            },
+            "flavorText": {
+                "success": "The glitch trigger crackles with unstable energy. It's ready to corrupt machinery on command.",
+                "criticalSuccess": "You've built a remarkably stable glitch trigger—it will induce glitches reliably and safely.",
+                "failure": "The capacitor discharges prematurely, frying the wire connections. Nothing remains.",
+                "fumble": "The capacitor explodes in your hands! Electric burns and fragments of wire cut deep."
+            },
+            "uiHints": {
+                "colorHint": "purple",
+                "iconHint": "pulse"
+            }
+        },
+        {
+            "id": "recipe_bypass_clamps",
+            "toolName": "Bypass Clamps",
+            "toolType": "BypassClamps",
+            "toolTypeValue": 3,
+            "description": "Spring-loaded metal clips that physically bypass the outer access layer of a terminal, connecting directly to inner circuits.",
+            "components": [
+                {
+                    "componentName": "Metal Clips",
+                    "componentType": "Metal",
+                    "quantity": 4
+                }
+            ],
+            "craftDc": 12,
+            "requiredAttribute": "Finesse",
+            "standardStats": {
+                "bonusAmount": 1,
+                "durability": 3
+            },
+            "qualityStats": {
+                "bonusAmount": 2,
+                "durability": 5
+            },
+            "applicableBypassTypes": ["TerminalHacking"],
+            "specialEffect": {
+                "id": "skip_layer_1",
+                "name": "Skip Layer 1",
+                "description": "Skip Layer 1 of terminal infiltration",
+                "details": "When used on terminal hacking, automatically passes Layer 1 (Access) and starts infiltration at Layer 2 (Authentication). Saves time and eliminates Layer 1 failure risk."
+            },
+            "flavorText": {
+                "success": "The bypass clamps are functional. They'll grip terminal circuits firmly enough for a clean bypass.",
+                "criticalSuccess": "These clamps have perfect spring tension—they'll connect securely and bypass terminals with ease.",
+                "failure": "The clips won't hold their shape, bending out of alignment. Your metal is wasted.",
+                "fumble": "A clip snaps violently, sending metal fragments flying. Your hands pay the price."
+            },
+            "uiHints": {
+                "colorHint": "brass",
+                "iconHint": "clamp"
+            }
+        }
+    ],
+    "craftingModifiers": {
+        "tinkersToolkit": {
+            "bonusDice": 1,
+            "description": "Having [Tinker's Toolkit] grants +1d10 to crafting checks."
+        },
+        "workshopAccess": {
+            "bonusDice": 2,
+            "description": "Being in a proper workshop grants +2d10 to crafting checks."
+        },
+        "underPressure": {
+            "penaltyDice": 1,
+            "description": "Being under time pressure or in hostile environment causes -1d10 to crafting checks."
+        }
+    },
+    "toolDurability": {
+        "standard": {
+            "uses": 3,
+            "bonusAmount": 1
+        },
+        "quality": {
+            "uses": 5,
+            "bonusAmount": 2
+        },
+        "fumbleBreak": true,
+        "description": "Standard tools have 3 uses, quality tools have 5. Fumble while using a tool breaks it immediately."
+    },
+    "criticalSuccess": {
+        "threshold": 5,
+        "createsQualityTool": true,
+        "description": "Net successes >= 5 creates a quality version of the tool with +2d10 bonus and 5 uses."
+    },
+    "fumbleConsequences": {
+        "componentsLost": true,
+        "damageDice": 1,
+        "damageDieSize": 6,
+        "description": "On fumble, components are destroyed and crafter takes 1d6 damage from sparks and metal fragments."
+    }
+}
