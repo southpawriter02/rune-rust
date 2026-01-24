@@ -1,0 +1,222 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "bypass-specializations.schema.json",
+  "title": "Bypass Specializations Configuration",
+  "description": "Configuration schema for bypass specialization abilities in the System Bypass skill system (v0.15.4i)",
+  "type": "object",
+  "required": ["version", "specializations"],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Reference to this schema file"
+    },
+    "version": {
+      "type": "string",
+      "description": "Version of the configuration format",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+[a-z]?$"
+    },
+    "description": {
+      "type": "string",
+      "description": "Human-readable description of the configuration"
+    },
+    "specializations": {
+      "type": "object",
+      "description": "Bypass specialization definitions keyed by specialization ID",
+      "additionalProperties": {
+        "$ref": "#/definitions/specialization"
+      }
+    },
+    "masterworkRecipes": {
+      "type": "array",
+      "description": "Masterwork tool recipes available to Scrap-Tinkers",
+      "items": {
+        "$ref": "#/definitions/masterworkRecipe"
+      }
+    },
+    "constants": {
+      "$ref": "#/definitions/constants"
+    }
+  },
+  "definitions": {
+    "specialization": {
+      "type": "object",
+      "description": "A bypass specialization definition",
+      "required": ["name", "description", "abilities"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Display name of the specialization"
+        },
+        "description": {
+          "type": "string",
+          "description": "Narrative description of the specialization"
+        },
+        "bypassFocus": {
+          "type": "array",
+          "description": "Bypass systems this specialization focuses on",
+          "items": {
+            "type": "string",
+            "enum": ["All", "Lockpicking", "TerminalHacking", "TrapDisarmament", "GlitchExploitation", "ImprovisedToolCrafting"]
+          }
+        },
+        "abilities": {
+          "type": "array",
+          "description": "Abilities granted by this specialization",
+          "items": {
+            "$ref": "#/definitions/ability"
+          },
+          "minItems": 2,
+          "maxItems": 2
+        }
+      }
+    },
+    "ability": {
+      "type": "object",
+      "description": "A specialization ability definition",
+      "required": ["abilityId", "name", "description", "abilityType", "triggerCondition", "effectType"],
+      "properties": {
+        "abilityId": {
+          "type": "string",
+          "description": "Unique identifier for the ability",
+          "pattern": "^[a-z-]+$"
+        },
+        "name": {
+          "type": "string",
+          "description": "Display name with brackets (e.g., '[Master Craftsman]')"
+        },
+        "description": {
+          "type": "string",
+          "description": "Full description of what the ability does"
+        },
+        "abilityType": {
+          "type": "string",
+          "description": "Category of ability",
+          "enum": ["Passive", "Triggered", "UniqueAction"]
+        },
+        "triggerCondition": {
+          "type": "string",
+          "description": "When the ability activates",
+          "enum": ["ManualActivation", "OnMovement", "OnBypassAttempt", "OnBypassInDanger", "OnGlitchedInteraction", "OnTerminalHackSuccess", "OnCraftAttempt"]
+        },
+        "effectType": {
+          "type": "string",
+          "description": "What type of effect the ability applies",
+          "enum": ["None", "AutoDetection", "DcReduction", "TimeReduction", "PenaltyNegation", "UpgradeResult", "UnlockRecipes", "UniqueAction"]
+        },
+        "effectMagnitude": {
+          "type": "integer",
+          "description": "Numeric value for the effect (e.g., DC reduction amount)",
+          "minimum": 0,
+          "default": 0
+        },
+        "requiredBypassType": {
+          "type": "string",
+          "description": "Which bypass system this ability applies to",
+          "enum": ["None", "Lockpicking", "TerminalHacking", "TrapDisarmament", "GlitchExploitation"]
+        },
+        "checkDc": {
+          "type": "integer",
+          "description": "DC for unique actions that require a check (0 if none)",
+          "minimum": 0,
+          "default": 0
+        },
+        "checkAttribute": {
+          "type": "string",
+          "description": "Attribute used for unique action checks (e.g., 'WITS')",
+          "default": ""
+        }
+      }
+    },
+    "masterworkRecipe": {
+      "type": "object",
+      "description": "A masterwork tool recipe",
+      "required": ["recipeId", "name", "description", "bypassType", "requiredComponents", "craftingDc", "bonusDice", "durabilityUses"],
+      "properties": {
+        "recipeId": {
+          "type": "string",
+          "description": "Unique identifier for the recipe",
+          "pattern": "^masterwork-[a-z-]+$"
+        },
+        "name": {
+          "type": "string",
+          "description": "Display name of the masterwork tool"
+        },
+        "description": {
+          "type": "string",
+          "description": "Narrative description of the tool"
+        },
+        "bypassType": {
+          "type": "string",
+          "description": "Which bypass system the tool assists",
+          "enum": ["Lockpicking", "TerminalHacking", "TrapDisarmament", "GlitchExploitation"]
+        },
+        "requiredComponents": {
+          "type": "array",
+          "description": "Components needed to craft the tool",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "craftingDc": {
+          "type": "integer",
+          "description": "WITS DC to craft the tool",
+          "minimum": 10,
+          "maximum": 25
+        },
+        "bonusDice": {
+          "type": "integer",
+          "description": "Number of bonus dice the tool provides",
+          "minimum": 1,
+          "maximum": 3
+        },
+        "durabilityUses": {
+          "type": "integer",
+          "description": "Number of uses before the tool degrades",
+          "minimum": 1
+        }
+      }
+    },
+    "constants": {
+      "type": "object",
+      "description": "System constants for bypass specializations",
+      "properties": {
+        "sixthSenseRadiusFeet": {
+          "type": "integer",
+          "description": "Detection radius for [Sixth Sense] in feet",
+          "minimum": 5,
+          "maximum": 30,
+          "default": 10
+        },
+        "relockDc": {
+          "type": "integer",
+          "description": "DC for [Relock] unique action",
+          "minimum": 8,
+          "maximum": 20,
+          "default": 12
+        },
+        "trapArtistDc": {
+          "type": "integer",
+          "description": "DC for [Trap Artist] unique action",
+          "minimum": 10,
+          "maximum": 22,
+          "default": 14
+        },
+        "fastPickTimeReduction": {
+          "type": "integer",
+          "description": "Rounds reduced by [Fast Pick]",
+          "minimum": 1,
+          "maximum": 3,
+          "default": 1
+        },
+        "patternRecognitionDcReduction": {
+          "type": "integer",
+          "description": "DC reduction from [Pattern Recognition]",
+          "minimum": 1,
+          "maximum": 5,
+          "default": 2
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,180 @@
+{
+  "$schema": "./schemas/bypass-specializations.schema.json",
+  "version": "0.15.4i",
+  "description": "Bypass specialization abilities for the System Bypass skill system",
+  "specializations": {
+    "ScrapTinker": {
+      "name": "Scrap-Tinker",
+      "description": "Masters of salvage and improvised crafting. Scrap-Tinkers understand the inner workings of Old World mechanisms intimately.",
+      "bypassFocus": ["Lockpicking", "ImprovisedToolCrafting"],
+      "abilities": [
+        {
+          "abilityId": "master-craftsman",
+          "name": "[Master Craftsman]",
+          "description": "Your intimate knowledge of mechanisms allows you to craft [Masterwork Tools] from rare components. These tools provide +1 bonus die on bypass attempts.",
+          "abilityType": "Triggered",
+          "triggerCondition": "OnCraftAttempt",
+          "effectType": "UnlockRecipes",
+          "effectMagnitude": 1,
+          "requiredBypassType": "Lockpicking",
+          "checkDc": 0,
+          "checkAttribute": ""
+        },
+        {
+          "abilityId": "relock",
+          "name": "[Relock]",
+          "description": "After picking a lock, you can re-engage the mechanism behind you. A successful WITS check (DC 12) returns the lock to its secured state, slowing any pursuers.",
+          "abilityType": "UniqueAction",
+          "triggerCondition": "ManualActivation",
+          "effectType": "UniqueAction",
+          "effectMagnitude": 0,
+          "requiredBypassType": "Lockpicking",
+          "checkDc": 12,
+          "checkAttribute": "WITS"
+        }
+      ]
+    },
+    "RuinStalker": {
+      "name": "Ruin-Stalker",
+      "description": "Experts in navigating trapped environments. Ruin-Stalkers have developed an almost supernatural sense for danger.",
+      "bypassFocus": ["TrapDisarmament"],
+      "abilities": [
+        {
+          "abilityId": "trap-artist",
+          "name": "[Trap Artist]",
+          "description": "After disabling a trap, you can re-arm it as a defensive measure. A successful WITS check (DC 14) sets the trap to trigger on your enemies instead.",
+          "abilityType": "UniqueAction",
+          "triggerCondition": "ManualActivation",
+          "effectType": "UniqueAction",
+          "effectMagnitude": 0,
+          "requiredBypassType": "TrapDisarmament",
+          "checkDc": 14,
+          "checkAttribute": "WITS"
+        },
+        {
+          "abilityId": "sixth-sense",
+          "name": "[Sixth Sense]",
+          "description": "Your experience navigating trapped ruins has sharpened your instincts. You automatically detect any trap within 10 feet without requiring a check.",
+          "abilityType": "Passive",
+          "triggerCondition": "OnMovement",
+          "effectType": "AutoDetection",
+          "effectMagnitude": 10,
+          "requiredBypassType": "TrapDisarmament",
+          "checkDc": 0,
+          "checkAttribute": ""
+        }
+      ]
+    },
+    "JotunReader": {
+      "name": "Jötun-Reader",
+      "description": "Those who commune with ancient technology. Jötun-Readers have learned to speak the language of Old World machines.",
+      "bypassFocus": ["TerminalHacking", "GlitchExploitation"],
+      "abilities": [
+        {
+          "abilityId": "deep-access",
+          "name": "[Deep Access]",
+          "description": "Your communion with Old World technology runs deep. When you successfully hack a terminal, you automatically gain [Admin-Level] access.",
+          "abilityType": "Triggered",
+          "triggerCondition": "OnTerminalHackSuccess",
+          "effectType": "UpgradeResult",
+          "effectMagnitude": 2,
+          "requiredBypassType": "TerminalHacking",
+          "checkDc": 0,
+          "checkAttribute": ""
+        },
+        {
+          "abilityId": "pattern-recognition",
+          "name": "[Pattern Recognition]",
+          "description": "You've learned to read the chaos in corrupted technology. The DC penalty from [Glitched] status is reduced by 2 for all bypass attempts.",
+          "abilityType": "Passive",
+          "triggerCondition": "OnGlitchedInteraction",
+          "effectType": "DcReduction",
+          "effectMagnitude": 2,
+          "requiredBypassType": "GlitchExploitation",
+          "checkDc": 0,
+          "checkAttribute": ""
+        }
+      ]
+    },
+    "GantryRunner": {
+      "name": "Gantry-Runner",
+      "description": "Speed and precision under pressure. Gantry-Runners have learned to work fast and stay calm when danger looms.",
+      "bypassFocus": ["All"],
+      "abilities": [
+        {
+          "abilityId": "fast-pick",
+          "name": "[Fast Pick]",
+          "description": "Speed is survival on the gantries. You've learned to work fast without sacrificing precision. All bypass attempts take 1 fewer round to complete (minimum 1 round).",
+          "abilityType": "Passive",
+          "triggerCondition": "OnBypassAttempt",
+          "effectType": "TimeReduction",
+          "effectMagnitude": 1,
+          "requiredBypassType": "None",
+          "checkDc": 0,
+          "checkAttribute": ""
+        },
+        {
+          "abilityId": "bypass-under-fire",
+          "name": "[Bypass Under Fire]",
+          "description": "Danger sharpens your focus instead of dulling it. You ignore all penalties that would apply when attempting bypass while in combat or under threat.",
+          "abilityType": "Passive",
+          "triggerCondition": "OnBypassInDanger",
+          "effectType": "PenaltyNegation",
+          "effectMagnitude": 0,
+          "requiredBypassType": "None",
+          "checkDc": 0,
+          "checkAttribute": ""
+        }
+      ]
+    }
+  },
+  "masterworkRecipes": [
+    {
+      "recipeId": "masterwork-shim-picks",
+      "name": "Masterwork Shim Picks",
+      "description": "Precision-crafted lock picks made from salvaged Old World alloys. The balance and flexibility of these tools is unmatched.",
+      "bypassType": "Lockpicking",
+      "requiredComponents": ["Fine Wire", "Precision Springs", "Grip Material"],
+      "craftingDc": 14,
+      "bonusDice": 1,
+      "durabilityUses": 10
+    },
+    {
+      "recipeId": "masterwork-wire-probe",
+      "name": "Masterwork Wire Probe",
+      "description": "A delicate probe designed for interfacing with Old World terminals. Its conductive filaments can navigate the most complex circuits.",
+      "bypassType": "TerminalHacking",
+      "requiredComponents": ["Conductive Filament", "Insulated Housing", "Circuit Fragment"],
+      "craftingDc": 16,
+      "bonusDice": 1,
+      "durabilityUses": 8
+    },
+    {
+      "recipeId": "masterwork-trap-kit",
+      "name": "Masterwork Trap Kit",
+      "description": "A comprehensive toolkit for neutralizing mechanical and magical traps. Contains everything a professional needs to work safely.",
+      "bypassType": "TrapDisarmament",
+      "requiredComponents": ["Thin Blades", "Mirror Shard", "Dampening Cloth"],
+      "craftingDc": 15,
+      "bonusDice": 1,
+      "durabilityUses": 6
+    },
+    {
+      "recipeId": "masterwork-glitch-trigger",
+      "name": "Masterwork Glitch Trigger",
+      "description": "A device tuned to exploit Old World corruption patterns. The resonance crystal at its heart reads the machine's madness.",
+      "bypassType": "GlitchExploitation",
+      "requiredComponents": ["Corrupted Chip", "Resonance Crystal", "Null-Metal Casing"],
+      "craftingDc": 18,
+      "bonusDice": 1,
+      "durabilityUses": 4
+    }
+  ],
+  "constants": {
+    "sixthSenseRadiusFeet": 10,
+    "relockDc": 12,
+    "trapArtistDc": 14,
+    "fastPickTimeReduction": 1,
+    "patternRecognitionDcReduction": 2
+  }
+}
