@@ -69,13 +69,13 @@ public static class RoomFeatureExaminationSeeder
         // rusted_terminal
         yield return ExaminationDescriptor.CreateCursory(
             ObjectCategory.Machinery, "rusted_terminal",
-            "An ancient computing device, its screen dark and cracked.");
+            "An ancient spirit-slate, its glass face dark and cracked.");
         yield return ExaminationDescriptor.CreateDetailed(
             ObjectCategory.Machinery, "rusted_terminal",
-            "Corrosion has claimed most of the internals, but the power coupling might be salvageable.");
+            "Corrosion has claimed most of the internals, but the spark-vessel might be salvageable.");
         yield return ExaminationDescriptor.CreateExpert(
             ObjectCategory.Machinery, "rusted_terminal",
-            "Oracle-box, pre-Glitch Series 3. If the memory core survived, it might hold administrative data.", revealsHint: true);
+            "Oracle-box, pre-Glitch Series 3. If the remembrance-stone survived, it might hold the Old One's secrets.", revealsHint: true);
 
         // salvage_pile
         yield return ExaminationDescriptor.CreateCursory(
@@ -83,7 +83,7 @@ public static class RoomFeatureExaminationSeeder
             "A heap of broken machinery and debris.");
         yield return ExaminationDescriptor.CreateDetailed(
             ObjectCategory.Container, "salvage_pile",
-            "Among the junk: intact gears, copper wiring, functional servos. Worth sifting through.");
+            "Among the junk: intact gears, lightning-veins, functional joints. Worth sifting through.");
         yield return ExaminationDescriptor.CreateExpert(
             ObjectCategory.Container, "salvage_pile",
             "Most of this is Dvergr manufacture. The components could be repurposed for repairs.");
@@ -327,7 +327,7 @@ public static class RoomFeatureExaminationSeeder
             "The venting is predictable. Watch the rhythm and time your passage.", revealsHint: true);
         yield return ExaminationDescriptor.CreateExpert(
             ObjectCategory.Machinery, "heat_vent",
-            "Geothermal pressure release. The intervals are regular - exactly 12 seconds safe.");
+            "Geothermal pressure release. The intervals are regular - count twelve heartbeats of safety.");
 
         // lava_pool
         yield return ExaminationDescriptor.CreateCursory(

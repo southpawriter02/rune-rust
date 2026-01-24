@@ -201,10 +201,10 @@ public static class RoomTemplateSeeder
 
         var chamber2 = new RoomTemplate(
             "roots_chamber_02",
-            "Machine Graveyard",
+            "Iron-Walker Graveyard",
             RoomArchetype.Chamber,
             Biome.TheRoots,
-            "Broken machines litter this {ADJ_SIZE} chamber, half-consumed by fungal growth. The roots have claimed the Ancients' devices, making them part of the living earth.",
+            "Broken iron-walkers litter this {ADJ_SIZE} chamber, half-consumed by fungal growth. The roots have claimed the Ancients' mechanisms, making them part of the living earth.",
             minExits: 2, maxExits: 3, weight: 2);
         chamber2.AddTags(["Salvage", "Organic", "Machine"]);
         chamber2.AddFeature(new RoomFeature(RoomFeatureType.Interactable, "rusted_terminal", 0.4));
