@@ -112,7 +112,29 @@ public enum FumbleType
     /// </list>
     /// </para>
     /// </remarks>
-    SubjectBroken = 10
+    SubjectBroken = 10,
+
+    /// <summary>
+    /// Wasteland Survival/Navigation: Got critically lost and entered a dangerous area.
+    /// Cannot navigate until the effect wears off or recovery condition is met.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Triggered when a fumble occurs during navigation (0 successes + at least 1 botch).
+    /// The navigator becomes severely disoriented, losing their bearings completely and
+    /// stumbling into a hazardous, hostile, or glitch-affected area.
+    /// </para>
+    /// <para>
+    /// Mechanical effects:
+    /// <list type="bullet">
+    ///   <item><description>Cannot attempt navigation while disoriented</description></item>
+    ///   <item><description>Enters a dangerous area (Hazard Zone, Hostile Territory, or Glitch Pocket)</description></item>
+    ///   <item><description>Recovery requires rest at safe location or successful orientation check (DC 12)</description></item>
+    ///   <item><description>Dangerous area may trigger additional encounters or hazards</description></item>
+    /// </list>
+    /// </para>
+    /// </remarks>
+    Disoriented = 11
 }
 
 /// <summary>
@@ -138,6 +160,7 @@ public static class FumbleTypeExtensions
             FumbleType.SystemWideAlert => true, // Affects all enemies in area
             FumbleType.NegotiationCollapsed => false, // Only affects specific NPC/deal
             FumbleType.SubjectBroken => false, // Only affects specific subject
+            FumbleType.Disoriented => false, // Only affects the navigator
             _ => false
         };
     }
@@ -154,6 +177,7 @@ public static class FumbleTypeExtensions
             FumbleType.TheLongFall => false, // Has status duration
             FumbleType.NegotiationCollapsed => true, // Immediate termination
             FumbleType.SubjectBroken => true, // Subject immediately broken/dead
+            FumbleType.Disoriented => false, // Has recovery duration
             _ => false
         };
     }
@@ -176,6 +200,7 @@ public static class FumbleTypeExtensions
             FumbleType.SystemWideAlert => "stealth",
             FumbleType.NegotiationCollapsed => "negotiation",
             FumbleType.SubjectBroken => "interrogation",
+            FumbleType.Disoriented => "wasteland-survival",
             _ => "unknown"
         };
     }
@@ -198,6 +223,7 @@ public static class FumbleTypeExtensions
             FumbleType.SystemWideAlert => "System-Wide Alert",
             FumbleType.NegotiationCollapsed => "Negotiation Collapsed",
             FumbleType.SubjectBroken => "Subject Broken",
+            FumbleType.Disoriented => "Disoriented",
             _ => "Unknown Fumble"
         };
     }
@@ -233,6 +259,8 @@ public static class FumbleTypeExtensions
                 "The negotiation has completely failed. The NPC walks away and the deal is permanently off the table.",
             FumbleType.SubjectBroken =>
                 "The torture has gone too far. The subject is permanently broken - dead, insane, or catatonic. No information can be extracted.",
+            FumbleType.Disoriented =>
+                "Got critically lost and entered a dangerous area. Cannot navigate until orientation is recovered.",
             _ => "An unknown fumble consequence occurred."
         };
     }
@@ -249,6 +277,7 @@ public static class FumbleTypeExtensions
             FumbleType.ChallengeAccepted => true,
             FumbleType.SystemWideAlert => true, // Enemies converge
             FumbleType.SubjectBroken => false, // No combat, subject is incapacitated
+            FumbleType.Disoriented => false, // May trigger combat separately via dangerous area
             _ => false
         };
     }
@@ -266,6 +295,7 @@ public static class FumbleTypeExtensions
             FumbleType.MechanismJammed => true, // Lock permanently affected
             FumbleType.NegotiationCollapsed => true, // Deal permanently lost
             FumbleType.SubjectBroken => true, // Subject permanently incapacitated
+            FumbleType.Disoriented => false, // Recovers with rest or skill check
             _ => false
         };
     }

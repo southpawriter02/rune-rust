@@ -1,0 +1,153 @@
+{
+    "$schema": "./schemas/terrain-types.schema.json",
+    "terrainTypes": {
+        "OpenWasteland": {
+            "dc": 8,
+            "speedMultiplier": 1.0,
+            "compassEffective": true,
+            "description": "Flat, exposed terrain with clear sightlines. Easy navigation but no cover."
+        },
+        "ModerateRuins": {
+            "dc": 12,
+            "speedMultiplier": 0.8,
+            "compassEffective": true,
+            "description": "Partially collapsed urban areas with recognizable streets. Moderate navigation difficulty."
+        },
+        "DenseRuins": {
+            "dc": 16,
+            "speedMultiplier": 0.6,
+            "compassEffective": true,
+            "description": "Heavily damaged urban zones with blocked paths and unstable structures. Difficult navigation."
+        },
+        "Labyrinthine": {
+            "dc": 20,
+            "speedMultiplier": 0.4,
+            "compassEffective": true,
+            "description": "Complex maze of collapsed buildings and debris. Very difficult navigation."
+        },
+        "GlitchedLabyrinth": {
+            "dc": 24,
+            "speedMultiplier": 0.3,
+            "compassEffective": false,
+            "description": "Reality-warped maze affected by Glitch corruption. Compasses fail. Extreme navigation difficulty."
+        }
+    },
+    "weatherModifiers": {
+        "Clear": {
+            "modifier": 1,
+            "description": "Good visibility, optimal conditions for navigation."
+        },
+        "Cloudy": {
+            "modifier": 0,
+            "description": "Normal visibility, no modifier."
+        },
+        "LightRain": {
+            "modifier": -1,
+            "description": "Reduced visibility, minor navigation penalty."
+        },
+        "HeavyRain": {
+            "modifier": -2,
+            "description": "Poor visibility, moderate navigation penalty."
+        },
+        "Fog": {
+            "modifier": -3,
+            "description": "Very poor visibility, significant navigation penalty."
+        },
+        "Storm": {
+            "modifier": -4,
+            "description": "Severe conditions, major navigation penalty."
+        }
+    },
+    "equipmentModifiers": {
+        "compass": {
+            "bonus": 1,
+            "glitchImmune": false,
+            "description": "Working compass provides +1d10 to navigation. Ineffective in glitch-corrupted terrain."
+        },
+        "advancedCompass": {
+            "bonus": 2,
+            "glitchImmune": false,
+            "description": "Advanced navigation device provides +2d10. Still fails in glitch-corrupted terrain."
+        },
+        "glitchCompass": {
+            "bonus": 1,
+            "glitchImmune": true,
+            "description": "Glitch-shielded compass works even in corrupted terrain."
+        }
+    },
+    "familiarTerritoryBonus": {
+        "bonus": 2,
+        "description": "Familiarity with an area provides +2d10 to navigation checks."
+    },
+    "nightPenalty": {
+        "penalty": 2,
+        "description": "Traveling at night without a light source imposes -2d10 to navigation."
+    },
+    "outcomeTimeMultipliers": {
+        "Success": {
+            "multiplier": 1.0,
+            "description": "Reached destination on schedule."
+        },
+        "PartialSuccess": {
+            "multiplier": 1.25,
+            "description": "Reached destination with minor delays. Travel took 25% longer."
+        },
+        "Failure": {
+            "multiplier": 1.5,
+            "description": "Got lost! Must backtrack. Travel takes 50% longer."
+        },
+        "Fumble": {
+            "multiplier": 1.0,
+            "description": "Critically lost! Stumbled into a dangerous area. Other consequences apply."
+        }
+    },
+    "outcomeThresholds": {
+        "partialSuccessMargin": 2,
+        "fumbleCondition": {
+            "successesRequired": 0,
+            "botchesRequired": 1
+        },
+        "description": "Net >= DC: Success. Net >= DC-2: Partial. Net < DC-2: Failure. 0 successes + botch: Fumble."
+    },
+    "dangerousAreas": {
+        "HazardZone": {
+            "minRoll": 1,
+            "maxRoll": 2,
+            "hasEnvironmentalHazards": true,
+            "mayTriggerCombat": false,
+            "hasGlitchEffects": false,
+            "description": "Area with environmental hazards: radiation, toxic chemicals, unstable structures."
+        },
+        "HostileTerritory": {
+            "minRoll": 3,
+            "maxRoll": 4,
+            "hasEnvironmentalHazards": false,
+            "mayTriggerCombat": true,
+            "hasGlitchEffects": false,
+            "description": "Territory controlled by hostile forces: raiders, mutants, or territorial fauna."
+        },
+        "GlitchPocket": {
+            "minRoll": 5,
+            "maxRoll": 6,
+            "hasEnvironmentalHazards": true,
+            "mayTriggerCombat": false,
+            "hasGlitchEffects": true,
+            "description": "Area of concentrated reality distortion. Strange phenomena and risk of Glitch corruption."
+        }
+    },
+    "fumbleConsequence": {
+        "fumbleType": "Disoriented",
+        "skillId": "wasteland-survival",
+        "recoveryConditions": [
+            "Rest at a safe location",
+            "Successful orientation check (DC 12)"
+        ],
+        "description": "Character becomes Disoriented and cannot attempt navigation until recovered."
+    },
+    "balanceNotes": {
+        "terrainProgression": "DC increases by 4 per tier: 8 → 12 → 16 → 20 → 24",
+        "speedProgression": "Speed decreases roughly 20% per tier for difficult terrain",
+        "modifierStackLimit": "No hard cap on modifier stacking, but practical range is -6 to +5",
+        "designIntent": "Navigation should feel risky in difficult terrain without being impossible for skilled characters"
+    }
+}

@@ -1,0 +1,314 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://runeandrust.game/schemas/terrain-types.schema.json",
+    "title": "Navigation Terrain Types Configuration",
+    "description": "Configuration schema for navigation terrain types, weather modifiers, equipment bonuses, and fumble consequences",
+    "type": "object",
+    "required": ["terrainTypes", "weatherModifiers", "outcomeTimeMultipliers", "dangerousAreas"],
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "Reference to this schema file"
+        },
+        "terrainTypes": {
+            "type": "object",
+            "description": "Terrain type definitions with difficulty classes and modifiers",
+            "required": ["OpenWasteland", "ModerateRuins", "DenseRuins", "Labyrinthine", "GlitchedLabyrinth"],
+            "properties": {
+                "OpenWasteland": { "$ref": "#/$defs/terrainDefinition" },
+                "ModerateRuins": { "$ref": "#/$defs/terrainDefinition" },
+                "DenseRuins": { "$ref": "#/$defs/terrainDefinition" },
+                "Labyrinthine": { "$ref": "#/$defs/terrainDefinition" },
+                "GlitchedLabyrinth": { "$ref": "#/$defs/terrainDefinition" }
+            },
+            "additionalProperties": false
+        },
+        "weatherModifiers": {
+            "type": "object",
+            "description": "Weather condition modifiers for navigation",
+            "required": ["Clear", "Cloudy", "LightRain", "HeavyRain", "Fog", "Storm"],
+            "properties": {
+                "Clear": { "$ref": "#/$defs/weatherDefinition" },
+                "Cloudy": { "$ref": "#/$defs/weatherDefinition" },
+                "LightRain": { "$ref": "#/$defs/weatherDefinition" },
+                "HeavyRain": { "$ref": "#/$defs/weatherDefinition" },
+                "Fog": { "$ref": "#/$defs/weatherDefinition" },
+                "Storm": { "$ref": "#/$defs/weatherDefinition" }
+            },
+            "additionalProperties": false
+        },
+        "equipmentModifiers": {
+            "type": "object",
+            "description": "Equipment that provides navigation bonuses",
+            "additionalProperties": {
+                "$ref": "#/$defs/equipmentDefinition"
+            }
+        },
+        "familiarTerritoryBonus": {
+            "$ref": "#/$defs/bonusDefinition",
+            "description": "Bonus for navigating familiar territory"
+        },
+        "nightPenalty": {
+            "$ref": "#/$defs/penaltyDefinition",
+            "description": "Penalty for traveling at night without light"
+        },
+        "outcomeTimeMultipliers": {
+            "type": "object",
+            "description": "Time multipliers for each navigation outcome",
+            "required": ["Success", "PartialSuccess", "Failure", "Fumble"],
+            "properties": {
+                "Success": { "$ref": "#/$defs/outcomeDefinition" },
+                "PartialSuccess": { "$ref": "#/$defs/outcomeDefinition" },
+                "Failure": { "$ref": "#/$defs/outcomeDefinition" },
+                "Fumble": { "$ref": "#/$defs/outcomeDefinition" }
+            },
+            "additionalProperties": false
+        },
+        "outcomeThresholds": {
+            "$ref": "#/$defs/outcomeThresholdsDefinition",
+            "description": "Thresholds for determining navigation outcomes"
+        },
+        "dangerousAreas": {
+            "type": "object",
+            "description": "Dangerous area types encountered on fumbles",
+            "required": ["HazardZone", "HostileTerritory", "GlitchPocket"],
+            "properties": {
+                "HazardZone": { "$ref": "#/$defs/dangerousAreaDefinition" },
+                "HostileTerritory": { "$ref": "#/$defs/dangerousAreaDefinition" },
+                "GlitchPocket": { "$ref": "#/$defs/dangerousAreaDefinition" }
+            },
+            "additionalProperties": false
+        },
+        "fumbleConsequence": {
+            "$ref": "#/$defs/fumbleConsequenceDefinition",
+            "description": "The fumble consequence applied on navigation fumbles"
+        },
+        "balanceNotes": {
+            "type": "object",
+            "description": "Design notes and balance rationale (not used by game logic)",
+            "additionalProperties": { "type": "string" }
+        }
+    },
+    "additionalProperties": false,
+    "$defs": {
+        "terrainDefinition": {
+            "type": "object",
+            "description": "Definition for a terrain type",
+            "required": ["dc", "speedMultiplier", "compassEffective"],
+            "properties": {
+                "dc": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 30,
+                    "description": "Base difficulty class for navigation in this terrain"
+                },
+                "speedMultiplier": {
+                    "type": "number",
+                    "minimum": 0.1,
+                    "maximum": 2.0,
+                    "description": "Travel speed multiplier (1.0 = normal speed)"
+                },
+                "compassEffective": {
+                    "type": "boolean",
+                    "description": "Whether compasses function in this terrain"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Human-readable description of the terrain"
+                }
+            },
+            "additionalProperties": false
+        },
+        "weatherDefinition": {
+            "type": "object",
+            "description": "Definition for a weather condition modifier",
+            "required": ["modifier"],
+            "properties": {
+                "modifier": {
+                    "type": "integer",
+                    "minimum": -10,
+                    "maximum": 10,
+                    "description": "Dice modifier for navigation (positive = bonus, negative = penalty)"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Human-readable description of the weather effect"
+                }
+            },
+            "additionalProperties": false
+        },
+        "equipmentDefinition": {
+            "type": "object",
+            "description": "Definition for navigation equipment",
+            "required": ["bonus", "glitchImmune"],
+            "properties": {
+                "bonus": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 5,
+                    "description": "Bonus dice provided by this equipment"
+                },
+                "glitchImmune": {
+                    "type": "boolean",
+                    "description": "Whether this equipment functions in glitch-corrupted terrain"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Human-readable description of the equipment"
+                }
+            },
+            "additionalProperties": false
+        },
+        "bonusDefinition": {
+            "type": "object",
+            "description": "Definition for a bonus modifier",
+            "required": ["bonus"],
+            "properties": {
+                "bonus": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 10,
+                    "description": "Bonus dice provided"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Human-readable description"
+                }
+            },
+            "additionalProperties": false
+        },
+        "penaltyDefinition": {
+            "type": "object",
+            "description": "Definition for a penalty modifier",
+            "required": ["penalty"],
+            "properties": {
+                "penalty": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 10,
+                    "description": "Penalty dice applied (as a positive number)"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Human-readable description"
+                }
+            },
+            "additionalProperties": false
+        },
+        "outcomeDefinition": {
+            "type": "object",
+            "description": "Definition for a navigation outcome",
+            "required": ["multiplier"],
+            "properties": {
+                "multiplier": {
+                    "type": "number",
+                    "minimum": 0.5,
+                    "maximum": 3.0,
+                    "description": "Time multiplier for this outcome (1.0 = no change)"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Human-readable description of the outcome"
+                }
+            },
+            "additionalProperties": false
+        },
+        "outcomeThresholdsDefinition": {
+            "type": "object",
+            "description": "Thresholds for determining navigation outcomes",
+            "required": ["partialSuccessMargin", "fumbleCondition"],
+            "properties": {
+                "partialSuccessMargin": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 5,
+                    "description": "How far below DC a roll can be for partial success"
+                },
+                "fumbleCondition": {
+                    "type": "object",
+                    "required": ["successesRequired", "botchesRequired"],
+                    "properties": {
+                        "successesRequired": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "description": "Maximum successes to trigger fumble (typically 0)"
+                        },
+                        "botchesRequired": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "description": "Minimum botches required for fumble"
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Human-readable description of outcome determination"
+                }
+            },
+            "additionalProperties": false
+        },
+        "dangerousAreaDefinition": {
+            "type": "object",
+            "description": "Definition for a dangerous area type",
+            "required": ["minRoll", "maxRoll"],
+            "properties": {
+                "minRoll": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 6,
+                    "description": "Minimum d6 roll for this area type (inclusive)"
+                },
+                "maxRoll": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 6,
+                    "description": "Maximum d6 roll for this area type (inclusive)"
+                },
+                "hasEnvironmentalHazards": {
+                    "type": "boolean",
+                    "description": "Whether this area has environmental dangers"
+                },
+                "mayTriggerCombat": {
+                    "type": "boolean",
+                    "description": "Whether this area may result in combat"
+                },
+                "hasGlitchEffects": {
+                    "type": "boolean",
+                    "description": "Whether this area has Glitch corruption effects"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Human-readable description of the dangerous area"
+                }
+            },
+            "additionalProperties": false
+        },
+        "fumbleConsequenceDefinition": {
+            "type": "object",
+            "description": "Definition for the fumble consequence",
+            "required": ["fumbleType", "skillId"],
+            "properties": {
+                "fumbleType": {
+                    "type": "string",
+                    "description": "The FumbleType enum value applied on fumble"
+                },
+                "skillId": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9-]+$",
+                    "description": "The skill ID associated with this fumble type"
+                },
+                "recoveryConditions": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "description": "Ways to recover from the fumble consequence"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Human-readable description of the fumble consequence"
+                }
+            },
+            "additionalProperties": false
+        }
+    }
+}
