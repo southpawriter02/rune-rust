@@ -1,0 +1,143 @@
+{
+    "$schema": "./schemas/foraging-yields.schema.json",
+    "yieldTable": [
+        {
+            "minSuccesses": 0,
+            "maxSuccesses": 1,
+            "scrapDice": 0,
+            "rationDice": 0,
+            "components": 0,
+            "description": "Nothing found"
+        },
+        {
+            "minSuccesses": 2,
+            "maxSuccesses": 3,
+            "scrapDice": 2,
+            "rationDice": 0,
+            "components": 0,
+            "description": "Meager haul - basic scrap only"
+        },
+        {
+            "minSuccesses": 4,
+            "maxSuccesses": 5,
+            "scrapDice": 3,
+            "rationDice": 1,
+            "components": 0,
+            "description": "Decent finds - scrap and some rations"
+        },
+        {
+            "minSuccesses": 6,
+            "maxSuccesses": 7,
+            "scrapDice": 4,
+            "rationDice": 1,
+            "components": 1,
+            "description": "Good haul - includes valuable components"
+        },
+        {
+            "minSuccesses": 8,
+            "maxSuccesses": 99,
+            "scrapDice": 5,
+            "rationDice": 2,
+            "componentsRoll": "1d4",
+            "description": "Excellent haul - maximum yields with multiple components"
+        }
+    ],
+    "durationBonuses": {
+        "Quick": {
+            "bonus": 0,
+            "timeMinutes": 10,
+            "description": "A quick 10-minute sweep of the immediate area"
+        },
+        "Thorough": {
+            "bonus": 2,
+            "timeMinutes": 60,
+            "description": "A careful 1-hour search of the surrounding area"
+        },
+        "Complete": {
+            "bonus": 4,
+            "timeMinutes": 240,
+            "description": "An exhaustive 4-hour search of all accessible areas"
+        }
+    },
+    "forageDcs": {
+        "CommonSalvage": {
+            "dc": 10,
+            "description": "Search for scrap metal, wiring, and debris"
+        },
+        "UsefulSupplies": {
+            "dc": 14,
+            "description": "Search for rations, water, and basic supplies"
+        },
+        "ValuableComponents": {
+            "dc": 18,
+            "description": "Search for tech parts and rare materials"
+        },
+        "HiddenCache": {
+            "dc": 22,
+            "description": "Search specifically for hidden survivor caches"
+        }
+    },
+    "cacheTrigger": {
+        "dieValue": 10,
+        "marksRoll": "1d100",
+        "itemChance": 0.5,
+        "description": "Rolling any 10 during the foraging check discovers a hidden cache"
+    },
+    "criticalSuccess": {
+        "threshold": 5,
+        "description": "Net successes of 5 or more grants a biome-specific bonus item"
+    },
+    "areaExhaustion": {
+        "maxPenalty": 3,
+        "penaltyPerSearch": 1,
+        "description": "Each previous search in an area reduces dice pool by 1, up to -3"
+    },
+    "biomeLootTables": {
+        "industrial-ruins": [
+            { "id": "corroded-medkit", "name": "Corroded Medkit", "weight": 25 },
+            { "id": "rusty-toolkit", "name": "Rusty Toolkit", "weight": 25 },
+            { "id": "fuel-canister", "name": "Fuel Canister", "weight": 25 },
+            { "id": "wire-spool", "name": "Wire Spool", "weight": 25 }
+        ],
+        "residential-ruins": [
+            { "id": "canned-food", "name": "Canned Food", "weight": 30 },
+            { "id": "tattered-map", "name": "Tattered Map", "weight": 20 },
+            { "id": "old-currency", "name": "Old Currency", "weight": 25 },
+            { "id": "faded-photograph", "name": "Faded Photograph", "weight": 25 }
+        ],
+        "wasteland": [
+            { "id": "mutant-bone", "name": "Mutant Bone", "weight": 25 },
+            { "id": "glowing-crystal", "name": "Glowing Crystal", "weight": 20 },
+            { "id": "petrified-wood", "name": "Petrified Wood", "weight": 30 },
+            { "id": "strange-ore", "name": "Strange Ore", "weight": 25 }
+        ],
+        "swamp": [
+            { "id": "medicinal-moss", "name": "Medicinal Moss", "weight": 30 },
+            { "id": "poison-gland", "name": "Poison Gland", "weight": 20 },
+            { "id": "bog-iron", "name": "Bog Iron", "weight": 25 },
+            { "id": "reed-bundle", "name": "Reed Bundle", "weight": 25 }
+        ],
+        "forest": [
+            { "id": "edible-mushrooms", "name": "Edible Mushrooms", "weight": 25 },
+            { "id": "medicinal-herbs", "name": "Medicinal Herbs", "weight": 30 },
+            { "id": "animal-hide", "name": "Animal Hide", "weight": 25 },
+            { "id": "sturdy-branch", "name": "Sturdy Branch", "weight": 20 }
+        ],
+        "default": [
+            { "id": "mysterious-object", "name": "Mysterious Object", "weight": 34 },
+            { "id": "salvageable-scrap", "name": "Salvageable Scrap", "weight": 33 },
+            { "id": "strange-device", "name": "Strange Device", "weight": 33 }
+        ]
+    },
+    "economyBalance": {
+        "scrapValuePerUnit": 1,
+        "rationValuePerUnit": 5,
+        "componentValuePerUnit": 20,
+        "expectedValuePerHour": {
+            "Quick": 48,
+            "Thorough": 20,
+            "Complete": 15
+        },
+        "notes": "Quick is most time-efficient but yields only common salvage. Complete has highest total yields but lowest value/hour."
+    }
+}

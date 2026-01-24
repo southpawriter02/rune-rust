@@ -1,0 +1,283 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://runeandrust.game/schemas/foraging-yields.schema.json",
+    "title": "Foraging Yields Configuration",
+    "description": "Configuration schema for foraging yield tables, duration bonuses, target DCs, cache mechanics, and biome loot tables",
+    "type": "object",
+    "required": ["yieldTable", "durationBonuses", "forageDcs", "cacheTrigger", "biomeLootTables"],
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "Reference to this schema file"
+        },
+        "yieldTable": {
+            "type": "array",
+            "description": "Yield table defining resource amounts based on net successes",
+            "minItems": 1,
+            "items": {
+                "$ref": "#/$defs/yieldTier"
+            }
+        },
+        "durationBonuses": {
+            "type": "object",
+            "description": "Bonus dice and time costs for each search duration",
+            "required": ["Quick", "Thorough", "Complete"],
+            "properties": {
+                "Quick": { "$ref": "#/$defs/durationDefinition" },
+                "Thorough": { "$ref": "#/$defs/durationDefinition" },
+                "Complete": { "$ref": "#/$defs/durationDefinition" }
+            },
+            "additionalProperties": false
+        },
+        "forageDcs": {
+            "type": "object",
+            "description": "Base difficulty classes for each forage target type",
+            "required": ["CommonSalvage", "UsefulSupplies", "ValuableComponents", "HiddenCache"],
+            "properties": {
+                "CommonSalvage": { "$ref": "#/$defs/forageDcDefinition" },
+                "UsefulSupplies": { "$ref": "#/$defs/forageDcDefinition" },
+                "ValuableComponents": { "$ref": "#/$defs/forageDcDefinition" },
+                "HiddenCache": { "$ref": "#/$defs/forageDcDefinition" }
+            },
+            "additionalProperties": false
+        },
+        "cacheTrigger": {
+            "$ref": "#/$defs/cacheTriggerDefinition",
+            "description": "Configuration for hidden cache discovery mechanics"
+        },
+        "criticalSuccess": {
+            "$ref": "#/$defs/criticalSuccessDefinition",
+            "description": "Configuration for critical success bonuses"
+        },
+        "areaExhaustion": {
+            "$ref": "#/$defs/areaExhaustionDefinition",
+            "description": "Configuration for area exhaustion penalties"
+        },
+        "biomeLootTables": {
+            "type": "object",
+            "description": "Loot tables by biome ID containing special items",
+            "additionalProperties": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/$defs/lootTableItem"
+                }
+            }
+        },
+        "economyBalance": {
+            "$ref": "#/$defs/economyBalanceDefinition",
+            "description": "Economy balance values for resource valuation"
+        }
+    },
+    "additionalProperties": false,
+    "$defs": {
+        "yieldTier": {
+            "type": "object",
+            "description": "A single tier in the yield table defining resource yields for a success range",
+            "required": ["minSuccesses", "maxSuccesses", "scrapDice", "rationDice"],
+            "properties": {
+                "minSuccesses": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "Minimum net successes for this tier (inclusive)"
+                },
+                "maxSuccesses": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "Maximum net successes for this tier (inclusive)"
+                },
+                "scrapDice": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "Number of d10s to roll for scrap yield"
+                },
+                "rationDice": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "Number of d6s to roll for ration yield"
+                },
+                "components": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "Fixed number of components (use componentsRoll for variable)"
+                },
+                "componentsRoll": {
+                    "type": "string",
+                    "pattern": "^\\d+d\\d+$",
+                    "description": "Dice expression for variable component yield (e.g., '1d4')"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Human-readable description of this tier's yields"
+                }
+            },
+            "additionalProperties": false
+        },
+        "durationDefinition": {
+            "type": "object",
+            "description": "Definition for a search duration option",
+            "required": ["bonus", "timeMinutes"],
+            "properties": {
+                "bonus": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 10,
+                    "description": "Bonus dice added to the foraging check"
+                },
+                "timeMinutes": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "Time required for this search duration in minutes"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Human-readable description of this duration"
+                }
+            },
+            "additionalProperties": false
+        },
+        "forageDcDefinition": {
+            "type": "object",
+            "description": "Definition for a forage target difficulty class",
+            "required": ["dc"],
+            "properties": {
+                "dc": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 30,
+                    "description": "Base difficulty class for this target type"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Human-readable description of this target"
+                }
+            },
+            "additionalProperties": false
+        },
+        "cacheTriggerDefinition": {
+            "type": "object",
+            "description": "Configuration for hidden cache discovery mechanics",
+            "required": ["dieValue", "marksRoll", "itemChance"],
+            "properties": {
+                "dieValue": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 10,
+                    "description": "Die value that triggers cache discovery (typically 10)"
+                },
+                "marksRoll": {
+                    "type": "string",
+                    "pattern": "^\\d+d\\d+$",
+                    "description": "Dice expression for Marks found in cache (e.g., '1d100')"
+                },
+                "itemChance": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "description": "Probability (0-1) of finding a bonus item in the cache"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Human-readable description of cache discovery mechanics"
+                }
+            },
+            "additionalProperties": false
+        },
+        "criticalSuccessDefinition": {
+            "type": "object",
+            "description": "Configuration for critical success mechanics",
+            "required": ["threshold"],
+            "properties": {
+                "threshold": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "Net successes required for critical success"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Human-readable description of critical success effects"
+                }
+            },
+            "additionalProperties": false
+        },
+        "areaExhaustionDefinition": {
+            "type": "object",
+            "description": "Configuration for area exhaustion penalties",
+            "required": ["maxPenalty", "penaltyPerSearch"],
+            "properties": {
+                "maxPenalty": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "Maximum dice penalty from repeated searches"
+                },
+                "penaltyPerSearch": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "Dice penalty per previous search"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Human-readable description of exhaustion mechanics"
+                }
+            },
+            "additionalProperties": false
+        },
+        "lootTableItem": {
+            "type": "object",
+            "description": "A single item in a biome loot table",
+            "required": ["id", "name", "weight"],
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9-]+$",
+                    "description": "Unique identifier for the item (kebab-case)"
+                },
+                "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Display name of the item"
+                },
+                "weight": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "Relative weight for random selection"
+                }
+            },
+            "additionalProperties": false
+        },
+        "economyBalanceDefinition": {
+            "type": "object",
+            "description": "Economy balance values for resource valuation",
+            "properties": {
+                "scrapValuePerUnit": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "Value in Marks per unit of scrap"
+                },
+                "rationValuePerUnit": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "Value in Marks per unit of rations"
+                },
+                "componentValuePerUnit": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "Value in Marks per component"
+                },
+                "expectedValuePerHour": {
+                    "type": "object",
+                    "description": "Expected average value per hour for each search duration",
+                    "properties": {
+                        "Quick": { "type": "number" },
+                        "Thorough": { "type": "number" },
+                        "Complete": { "type": "number" }
+                    }
+                },
+                "notes": {
+                    "type": "string",
+                    "description": "Design notes about economy balance"
+                }
+            },
+            "additionalProperties": false
+        }
+    }
+}
