@@ -1,0 +1,371 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "glitch-cycles.schema.json",
+    "title": "Glitch Cycles Configuration",
+    "description": "Schema for glitch cycle configuration in the Glitch Exploitation subsystem (v0.15.4f)",
+    "type": "object",
+    "required": ["patternObservation", "exploitWindow", "phases", "chaosTable"],
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "Reference to this schema file"
+        },
+        "version": {
+            "type": "string",
+            "description": "Configuration version identifier",
+            "pattern": "^\\d+\\.\\d+\\.\\d+[a-z]?$"
+        },
+        "description": {
+            "type": "string",
+            "description": "Human-readable description of this configuration file"
+        },
+        "patternObservation": {
+            "$ref": "#/definitions/patternObservation",
+            "description": "Configuration for pattern observation mechanics"
+        },
+        "exploitWindow": {
+            "$ref": "#/definitions/exploitWindow",
+            "description": "Configuration for the exploit window bonus"
+        },
+        "phases": {
+            "type": "array",
+            "description": "Array of glitch cycle phase definitions",
+            "minItems": 4,
+            "maxItems": 4,
+            "items": {
+                "$ref": "#/definitions/phaseDefinition"
+            }
+        },
+        "chaosTable": {
+            "$ref": "#/definitions/chaosTable",
+            "description": "Configuration for the Chaos table when proceeding without pattern observation"
+        },
+        "integrationNotes": {
+            "$ref": "#/definitions/integrationNotes",
+            "description": "Notes on how this system integrates with other subsystems"
+        },
+        "designNotes": {
+            "$ref": "#/definitions/designNotes",
+            "description": "Design notes explaining key decisions"
+        }
+    },
+    "definitions": {
+        "patternObservation": {
+            "type": "object",
+            "description": "Settings for the WITS-based pattern observation check",
+            "required": ["attribute", "dc", "timeRequired"],
+            "properties": {
+                "attribute": {
+                    "type": "string",
+                    "description": "The attribute used for the observation check",
+                    "enum": ["WITS", "PERCEPTION", "TECH"]
+                },
+                "dc": {
+                    "type": "integer",
+                    "description": "Difficulty class for the observation check",
+                    "minimum": 1,
+                    "maximum": 30
+                },
+                "timeRequired": {
+                    "type": "string",
+                    "description": "Time required to attempt observation",
+                    "pattern": "^\\d+ (round|rounds|minute|minutes)$"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Detailed description of pattern observation mechanics",
+                    "maxLength": 500
+                },
+                "onSuccess": {
+                    "type": "string",
+                    "description": "What happens when pattern observation succeeds",
+                    "maxLength": 300
+                },
+                "onFailure": {
+                    "type": "string",
+                    "description": "What happens when pattern observation fails",
+                    "maxLength": 300
+                }
+            },
+            "additionalProperties": false
+        },
+        "exploitWindow": {
+            "type": "object",
+            "description": "Configuration for the exploit window bonus",
+            "required": ["phase", "dcModifier"],
+            "properties": {
+                "phase": {
+                    "type": "string",
+                    "description": "The phase ID that grants the exploit window",
+                    "pattern": "^[a-z][a-z0-9-]*$"
+                },
+                "dcModifier": {
+                    "type": "integer",
+                    "description": "DC modifier when in the exploit window (should be negative)",
+                    "minimum": -10,
+                    "maximum": 0
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Description of the exploit window mechanic",
+                    "maxLength": 500
+                }
+            },
+            "additionalProperties": false
+        },
+        "phaseDefinition": {
+            "type": "object",
+            "description": "Definition for a single glitch cycle phase",
+            "required": ["id", "enumValue", "name", "dcModifier", "isExploitWindow", "durationDice", "durationRange", "nextPhase"],
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Unique identifier for this phase",
+                    "pattern": "^[a-z][a-z0-9-]*$",
+                    "minLength": 1,
+                    "maxLength": 50
+                },
+                "enumValue": {
+                    "type": "integer",
+                    "description": "Enum value corresponding to GlitchCyclePhase",
+                    "minimum": 0,
+                    "maximum": 3
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Human-readable display name",
+                    "minLength": 1,
+                    "maxLength": 50
+                },
+                "dcModifier": {
+                    "type": "integer",
+                    "description": "DC modifier when in this phase",
+                    "minimum": -10,
+                    "maximum": 10
+                },
+                "isExploitWindow": {
+                    "type": "boolean",
+                    "description": "Whether this phase is the exploit window (grants bonus DC)"
+                },
+                "durationDice": {
+                    "type": "string",
+                    "description": "Dice expression for phase duration (e.g., '1d4+1')",
+                    "pattern": "^\\d*d\\d+(\\+\\d+)?$"
+                },
+                "durationRange": {
+                    "$ref": "#/definitions/rangeDefinition",
+                    "description": "Minimum and maximum possible duration in rounds"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Brief description of this phase",
+                    "maxLength": 200
+                },
+                "flavorText": {
+                    "$ref": "#/definitions/flavorText",
+                    "description": "Narrative flavor text for this phase"
+                },
+                "nextPhase": {
+                    "type": "string",
+                    "description": "ID of the next phase in the cycle",
+                    "pattern": "^[a-z][a-z0-9-]*$"
+                }
+            },
+            "additionalProperties": false
+        },
+        "chaosTable": {
+            "type": "object",
+            "description": "Configuration for the Chaos table used when pattern is not observed",
+            "required": ["diceType", "entries"],
+            "properties": {
+                "diceType": {
+                    "type": "string",
+                    "description": "Type of die rolled on the Chaos table",
+                    "enum": ["d4", "d6", "d8", "d10", "d12", "d20"]
+                },
+                "triggerCondition": {
+                    "type": "string",
+                    "description": "When the Chaos table is used",
+                    "maxLength": 200
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Detailed description of the Chaos table mechanics",
+                    "maxLength": 500
+                },
+                "entries": {
+                    "type": "array",
+                    "description": "Chaos table entries mapping die rolls to effects",
+                    "minItems": 1,
+                    "items": {
+                        "$ref": "#/definitions/chaosEntry"
+                    }
+                }
+            },
+            "additionalProperties": false
+        },
+        "chaosEntry": {
+            "type": "object",
+            "description": "A single entry in the Chaos table",
+            "required": ["id", "enumValue", "rollRange", "name", "dcModifier"],
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Unique identifier for this chaos effect",
+                    "pattern": "^[a-z][a-z0-9-]*$",
+                    "minLength": 1,
+                    "maxLength": 50
+                },
+                "enumValue": {
+                    "type": "integer",
+                    "description": "Enum value corresponding to ChaosEffect",
+                    "minimum": 0,
+                    "maximum": 10
+                },
+                "rollRange": {
+                    "$ref": "#/definitions/rangeDefinition",
+                    "description": "Die roll range that triggers this effect"
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Human-readable name for this effect",
+                    "minLength": 1,
+                    "maxLength": 50
+                },
+                "dcModifier": {
+                    "type": "integer",
+                    "description": "DC modifier applied by this effect",
+                    "minimum": -10,
+                    "maximum": 10
+                },
+                "probability": {
+                    "type": "string",
+                    "description": "Probability of this effect occurring",
+                    "pattern": "^\\d+%$"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Brief description of the effect",
+                    "maxLength": 200
+                },
+                "flavorText": {
+                    "$ref": "#/definitions/chaosFlavorText",
+                    "description": "Narrative flavor text for this chaos effect"
+                }
+            },
+            "additionalProperties": false
+        },
+        "rangeDefinition": {
+            "type": "object",
+            "description": "A numeric range with minimum and maximum values",
+            "required": ["min", "max"],
+            "properties": {
+                "min": {
+                    "type": "integer",
+                    "description": "Minimum value (inclusive)",
+                    "minimum": 0
+                },
+                "max": {
+                    "type": "integer",
+                    "description": "Maximum value (inclusive)",
+                    "minimum": 0
+                }
+            },
+            "additionalProperties": false
+        },
+        "flavorText": {
+            "type": "object",
+            "description": "Narrative descriptions for a glitch phase",
+            "properties": {
+                "short": {
+                    "type": "string",
+                    "description": "Short summary for quick reference",
+                    "maxLength": 100
+                },
+                "visual": {
+                    "type": "string",
+                    "description": "Visual description of the phase",
+                    "maxLength": 200
+                },
+                "audio": {
+                    "type": "string",
+                    "description": "Audio description of the phase",
+                    "maxLength": 200
+                },
+                "full": {
+                    "type": "string",
+                    "description": "Full narrative description",
+                    "maxLength": 500
+                }
+            },
+            "additionalProperties": false
+        },
+        "chaosFlavorText": {
+            "type": "object",
+            "description": "Narrative descriptions for a chaos effect",
+            "properties": {
+                "short": {
+                    "type": "string",
+                    "description": "Short summary for quick reference",
+                    "maxLength": 100
+                },
+                "full": {
+                    "type": "string",
+                    "description": "Full narrative description",
+                    "maxLength": 500
+                }
+            },
+            "additionalProperties": false
+        },
+        "integrationNotes": {
+            "type": "object",
+            "description": "Notes on system integration",
+            "properties": {
+                "juryRiggingSystem": {
+                    "type": "string",
+                    "description": "How this system integrates with jury-rigging",
+                    "maxLength": 500
+                },
+                "dcModifierApplication": {
+                    "type": "string",
+                    "description": "How DC modifiers are applied",
+                    "maxLength": 500
+                },
+                "phaseTrackingScope": {
+                    "type": "string",
+                    "description": "Scope of phase tracking (per-mechanism, global, etc.)",
+                    "maxLength": 500
+                }
+            },
+            "additionalProperties": true
+        },
+        "designNotes": {
+            "type": "object",
+            "description": "Design rationale and notes",
+            "properties": {
+                "phaseOrder": {
+                    "type": "string",
+                    "description": "Documentation of phase order",
+                    "maxLength": 200
+                },
+                "exploitWindowDuration": {
+                    "type": "string",
+                    "description": "Why exploit window has different duration",
+                    "maxLength": 300
+                },
+                "chaosRiskReward": {
+                    "type": "string",
+                    "description": "Risk/reward analysis of chaos rolls",
+                    "maxLength": 300
+                },
+                "observationValue": {
+                    "type": "string",
+                    "description": "Value proposition of observation vs chaos",
+                    "maxLength": 300
+                }
+            },
+            "additionalProperties": true
+        }
+    },
+    "additionalProperties": false
+}

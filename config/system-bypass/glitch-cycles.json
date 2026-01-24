@@ -1,0 +1,166 @@
+{
+    "$schema": "../schemas/glitch-cycles.schema.json",
+    "version": "0.15.4f",
+    "description": "Glitch cycle configuration for the Glitch Exploitation subsystem",
+    "patternObservation": {
+        "attribute": "WITS",
+        "dc": 14,
+        "timeRequired": "1 round",
+        "description": "Observe and identify the glitch cycle pattern to time exploitation attempts for maximum effect.",
+        "onSuccess": "Character identifies the cycle and can time actions to exploit the Permissive phase (-4 DC)",
+        "onFailure": "Pattern unknown. Must roll on Chaos table or retry observation."
+    },
+    "exploitWindow": {
+        "phase": "permissive",
+        "dcModifier": -4,
+        "description": "When the pattern is identified and the mechanism enters the Permissive phase, the character gains -4 DC to bypass attempts."
+    },
+    "phases": [
+        {
+            "id": "stable",
+            "enumValue": 0,
+            "name": "Stable",
+            "dcModifier": 0,
+            "isExploitWindow": false,
+            "durationDice": "1d4+1",
+            "durationRange": {
+                "min": 2,
+                "max": 5
+            },
+            "description": "Normal [Glitched] behavior with no modifier",
+            "flavorText": {
+                "short": "Normal glitched behavior",
+                "visual": "Steady but flickering lights, occasional sparks",
+                "audio": "Low electrical hum, intermittent clicks",
+                "full": "The mechanism operates with its usual erratic hum, the corruption simmering beneath the surface. It responds to inputs unpredictably but without exceptional resistance."
+            },
+            "nextPhase": "unstable"
+        },
+        {
+            "id": "unstable",
+            "enumValue": 1,
+            "name": "Unstable",
+            "dcModifier": 0,
+            "isExploitWindow": false,
+            "durationDice": "1d4+1",
+            "durationRange": {
+                "min": 2,
+                "max": 5
+            },
+            "description": "Erratic behavior increases but no modifier",
+            "flavorText": {
+                "short": "Erratic behavior intensifies",
+                "visual": "Rapid light flickering, visible sparks, display glitches",
+                "audio": "Crackling electricity, high-pitched whine, distorted sounds",
+                "full": "Lights flicker rapidly and strange sounds emanate from within. The corruption intensifies, building toward a breaking point. Experienced observers know what comes next."
+            },
+            "nextPhase": "permissive"
+        },
+        {
+            "id": "permissive",
+            "enumValue": 2,
+            "name": "Permissive",
+            "dcModifier": -4,
+            "isExploitWindow": true,
+            "durationDice": "1d4",
+            "durationRange": {
+                "min": 1,
+                "max": 4
+            },
+            "description": "Security momentarily lapses—EXPLOIT WINDOW! (-4 DC)",
+            "flavorText": {
+                "short": "EXPLOIT WINDOW!",
+                "visual": "Lights dim suddenly, access panels loosen, security indicators off",
+                "audio": "Sudden silence, soft clicks, whirring down",
+                "full": "The mechanism's defenses momentarily lapse! Security protocols flicker and fail as the corruption overwhelms the system's safeguards. Strike now for maximum advantage!"
+            },
+            "nextPhase": "lockdown"
+        },
+        {
+            "id": "lockdown",
+            "enumValue": 3,
+            "name": "Lockdown",
+            "dcModifier": 2,
+            "isExploitWindow": false,
+            "durationDice": "1d4+1",
+            "durationRange": {
+                "min": 2,
+                "max": 5
+            },
+            "description": "System compensates for corruption (+2 DC)",
+            "flavorText": {
+                "short": "System compensates",
+                "visual": "Red warning lights, panels seal tight, security active",
+                "audio": "Alarm tone, heavy clicking locks, power surge hum",
+                "full": "The system compensates for its corruption, becoming temporarily more resistant to interference. Best to wait for the cycle to return to a more favorable phase."
+            },
+            "nextPhase": "stable"
+        }
+    ],
+    "chaosTable": {
+        "diceType": "d6",
+        "triggerCondition": "Pattern not identified when attempting Glitch Exploitation",
+        "description": "When a character attempts Glitch Exploitation without first observing the pattern, roll d6 on the Chaos table to determine the glitch's effect.",
+        "entries": [
+            {
+                "id": "against",
+                "enumValue": 0,
+                "rollRange": {
+                    "min": 1,
+                    "max": 2
+                },
+                "name": "Against",
+                "dcModifier": 4,
+                "probability": "33%",
+                "description": "The glitch actively resists the character's interference",
+                "flavorText": {
+                    "short": "Glitch resists (+4 DC)",
+                    "full": "The glitch pulses angrily as you approach, its erratic behavior intensifying as if the machine itself rejects your interference. Security protocols flare to life in unexpected ways."
+                }
+            },
+            {
+                "id": "neutral",
+                "enumValue": 1,
+                "rollRange": {
+                    "min": 3,
+                    "max": 4
+                },
+                "name": "Neutral",
+                "dcModifier": 0,
+                "probability": "33%",
+                "description": "The glitch has no particular effect on the attempt",
+                "flavorText": {
+                    "short": "No effect (+0 DC)",
+                    "full": "The machine's corrupted patterns continue their chaotic dance, neither helping nor hindering your attempt. You proceed against the normal [Glitched] resistance."
+                }
+            },
+            {
+                "id": "helps",
+                "enumValue": 2,
+                "rollRange": {
+                    "min": 5,
+                    "max": 6
+                },
+                "name": "Helps",
+                "dcModifier": -2,
+                "probability": "33%",
+                "description": "The glitch coincidentally aids the character's attempt",
+                "flavorText": {
+                    "short": "Glitch helps (-2 DC)",
+                    "full": "Fortune favors the bold! The glitch cycles into a momentarily permissive state just as you act. The machine's own malfunction becomes your ally."
+                }
+            }
+        ]
+    },
+    "integrationNotes": {
+        "juryRiggingSystem": "This system is used when BypassMethod.GlitchExploitation is selected on a [Glitched] mechanism",
+        "dcModifierApplication": "The glitch modifier is applied to the experiment roll's DC after method and iteration modifiers",
+        "phaseTrackingScope": "Phase tracking is per-mechanism; each glitched device maintains its own cycle"
+    },
+    "designNotes": {
+        "phaseOrder": "Stable → Unstable → Permissive → Lockdown → (repeat)",
+        "exploitWindowDuration": "Shorter (1d4) than other phases (1d4+1) to create urgency",
+        "chaosRiskReward": "33% chance of +4 DC, 33% neutral, 33% of -2 DC encourages pattern observation",
+        "observationValue": "Identifying pattern guarantees -4 DC (vs chaos average of +0.67 DC)"
+    }
+}
