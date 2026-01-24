@@ -1,0 +1,254 @@
+{
+    "$schema": "../schemas/terminal-types.schema.json",
+    "version": "0.15.4b",
+    "description": "Terminal classification system for the Terminal Hacking subsystem of System Bypass skill",
+    "terminalTypes": [
+        {
+            "id": "civilian-data-port",
+            "name": "Civilian Data Port",
+            "layer1BaseDc": 8,
+            "difficultyRating": "Trivial",
+            "iceRating": "None",
+            "minimumToolQuality": "BareHands",
+            "defaultSecurityLevel": "password-only",
+            "encryptionTimeRounds": 1,
+            "description": "Basic data terminals found in residential areas and public spaces. Minimal security, no countermeasures.",
+            "examples": [
+                "Residential info-kiosks",
+                "Public notice boards",
+                "Merchant inventory systems",
+                "Community message terminals"
+            ],
+            "salvageComponents": [
+                { "componentId": "wire-bundle", "weight": 60 },
+                { "componentId": "circuit-fragment", "weight": 40 }
+            ],
+            "flavorText": "A relic of everyday life Before - the blinking cursor waits patiently for commands it may never receive."
+        },
+        {
+            "id": "corporate-mainframe",
+            "name": "Corporate Mainframe",
+            "layer1BaseDc": 12,
+            "difficultyRating": "Moderate",
+            "iceRating": "Passive",
+            "minimumToolQuality": "Improvised",
+            "defaultSecurityLevel": "biometric",
+            "encryptionTimeRounds": 2,
+            "description": "Business-grade terminals with standard security protocols. Features passive trace countermeasures.",
+            "examples": [
+                "Trade company ledgers",
+                "Guild hall records",
+                "Corporate office systems",
+                "Warehouse inventories"
+            ],
+            "salvageComponents": [
+                { "componentId": "circuit-fragment", "weight": 50 },
+                { "componentId": "power-cell-fragment", "weight": 50 }
+            ],
+            "flavorText": "The corporations of the World Before kept meticulous records. Some secrets are worth more than gold."
+        },
+        {
+            "id": "security-hub",
+            "name": "Security Hub",
+            "layer1BaseDc": 16,
+            "difficultyRating": "Hard",
+            "iceRating": "Active",
+            "minimumToolQuality": "Proper",
+            "defaultSecurityLevel": "multi-factor",
+            "encryptionTimeRounds": 3,
+            "description": "Security station terminals with active defense systems. ICE will attack intruders.",
+            "examples": [
+                "Watch post consoles",
+                "Enforcement facility databases",
+                "Prison control systems",
+                "Perimeter monitoring stations"
+            ],
+            "salvageComponents": [
+                { "componentId": "encryption-chip", "weight": 40 },
+                { "componentId": "biometric-sensor", "weight": 60 }
+            ],
+            "flavorText": "Built to protect the protectors. The watchful eye of the Old World still blinks in the darkness."
+        },
+        {
+            "id": "military-server",
+            "name": "Military Server",
+            "layer1BaseDc": 20,
+            "difficultyRating": "Very Hard",
+            "iceRating": "Lethal",
+            "minimumToolQuality": "Proper",
+            "defaultSecurityLevel": "multi-factor",
+            "encryptionTimeRounds": 4,
+            "description": "Military-grade servers with hardened defenses. Features aggressive countermeasures with lethal backup.",
+            "examples": [
+                "Command center databases",
+                "Armory access systems",
+                "Strategic planning terminals",
+                "Weapons research archives"
+            ],
+            "salvageComponents": [
+                { "componentId": "encryption-chip", "weight": 50 },
+                { "componentId": "neural-interface-fragment", "weight": 50 }
+            ],
+            "flavorText": "The military-industrial complex left its fingerprints everywhere. Some doors should remain closed."
+        },
+        {
+            "id": "jotun-archive",
+            "name": "Jötun Archive",
+            "layer1BaseDc": 24,
+            "difficultyRating": "Legendary",
+            "iceRating": "Lethal",
+            "minimumToolQuality": "Masterwork",
+            "defaultSecurityLevel": "jotun-locked",
+            "encryptionTimeRounds": 5,
+            "description": "Ancient giant-craft terminals of incomprehensible complexity. Neural ICE can destroy minds.",
+            "examples": [
+                "Runic data repositories",
+                "Ancient facility cores",
+                "Excavation site terminals",
+                "Pre-Shattering vaults"
+            ],
+            "salvageComponents": [
+                { "componentId": "jotun-circuit", "weight": 30 },
+                { "componentId": "resonance-crystal", "weight": 70 }
+            ],
+            "flavorText": "The Jötun built for eternity. Their archives hold knowledge beyond mortal comprehension—and dangers to match."
+        },
+        {
+            "id": "glitched-manifold",
+            "name": "Glitched Manifold",
+            "layer1BaseDc": 0,
+            "difficultyRating": "Unpredictable",
+            "iceRating": "Unpredictable",
+            "minimumToolQuality": "Improvised",
+            "defaultSecurityLevel": "password-only",
+            "encryptionTimeRounds": 1,
+            "description": "Corrupted terminals where reality itself is unstable. DC varies based on glitch cycle phase.",
+            "examples": [
+                "Resonance-touched terminals",
+                "Reality-warped consoles",
+                "Temporal-flux data ports",
+                "Paradox nodes"
+            ],
+            "salvageComponents": [
+                { "componentId": "glitch-essence", "weight": 80 },
+                { "componentId": "paradox-shard", "weight": 20 }
+            ],
+            "flavorText": "The screen flickers with images that haven't happened yet—or perhaps never will. Reality bleeds at the edges."
+        }
+    ],
+    "securityLevels": [
+        {
+            "id": "password-only",
+            "name": "Password Only",
+            "dcModifier": 0,
+            "description": "Basic password authentication. The simplest security measure.",
+            "authenticationMethod": "Alphanumeric password"
+        },
+        {
+            "id": "biometric",
+            "name": "Biometric",
+            "dcModifier": 2,
+            "description": "Biometric verification required. May include fingerprint, retinal, or voice recognition.",
+            "authenticationMethod": "Biometric scan (fingerprint, retinal, voice)"
+        },
+        {
+            "id": "multi-factor",
+            "name": "Multi-Factor",
+            "dcModifier": 4,
+            "description": "Multiple authentication methods required. Combines password, biometric, and possession checks.",
+            "authenticationMethod": "Password + Biometric + Security token"
+        },
+        {
+            "id": "jotun-locked",
+            "name": "Jötun-Locked",
+            "dcModifier": 6,
+            "description": "Ancient giant-craft authentication beyond mortal understanding. May require neural synchronization.",
+            "authenticationMethod": "Neural synchronization with ancient protocols"
+        }
+    ],
+    "dataTypes": [
+        {
+            "id": "public-records",
+            "name": "Public Records",
+            "baseDc": 10,
+            "requiresAdminAccess": false,
+            "description": "Publicly available information with no restricted access.",
+            "examples": [
+                "News archives",
+                "Public announcements",
+                "General databases",
+                "Community records"
+            ]
+        },
+        {
+            "id": "internal-documents",
+            "name": "Internal Documents",
+            "baseDc": 14,
+            "requiresAdminAccess": false,
+            "description": "Internal organization documents requiring authorized access.",
+            "examples": [
+                "Personnel files",
+                "Financial records",
+                "Internal memos",
+                "Project documentation"
+            ]
+        },
+        {
+            "id": "classified",
+            "name": "Classified",
+            "baseDc": 18,
+            "requiresAdminAccess": false,
+            "description": "Sensitive information with restricted access protocols.",
+            "examples": [
+                "Security protocols",
+                "Strategic plans",
+                "Research data",
+                "Incident reports"
+            ]
+        },
+        {
+            "id": "archived-hidden",
+            "name": "Archived / Hidden",
+            "baseDc": 22,
+            "requiresAdminAccess": true,
+            "description": "Deeply buried or deliberately hidden data requiring administrative privileges.",
+            "examples": [
+                "Deleted files",
+                "Shadow archives",
+                "Pre-Shattering secrets",
+                "Forbidden knowledge"
+            ]
+        }
+    ],
+    "corruptionModifiers": [
+        {
+            "corruptionTier": "Normal",
+            "dcModifier": 0,
+            "description": "No corruption - terminal functions normally"
+        },
+        {
+            "corruptionTier": "Glitched",
+            "dcModifier": 2,
+            "description": "Minor corruption causing visual artifacts and unpredictable behavior"
+        },
+        {
+            "corruptionTier": "Blighted",
+            "dcModifier": 4,
+            "description": "Significant corruption warping the terminal's responses and data integrity"
+        },
+        {
+            "corruptionTier": "Resonance",
+            "dcModifier": 6,
+            "description": "Severe corruption with reality-distorting effects and potential psychic feedback"
+        }
+    ],
+    "globalSettings": {
+        "layer1FailureDcPenalty": 2,
+        "coverTracksDc": 14,
+        "temporaryLockoutRounds": 10,
+        "bareHandsDiceModifier": -2,
+        "improvisedDiceModifier": 0,
+        "properDiceModifier": 1,
+        "masterworkDiceModifier": 2
+    }
+}

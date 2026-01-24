@@ -1,0 +1,314 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "terminal-types.schema.json",
+    "title": "Terminal Types Configuration",
+    "description": "Schema for terminal classification system in the Terminal Hacking subsystem (v0.15.4b)",
+    "type": "object",
+    "required": ["terminalTypes", "securityLevels", "dataTypes", "corruptionModifiers", "globalSettings"],
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "Reference to this schema file"
+        },
+        "version": {
+            "type": "string",
+            "description": "Configuration version identifier",
+            "pattern": "^\\d+\\.\\d+\\.\\d+[a-z]?$"
+        },
+        "description": {
+            "type": "string",
+            "description": "Human-readable description of this configuration file"
+        },
+        "terminalTypes": {
+            "type": "array",
+            "description": "Array of terminal type definitions",
+            "minItems": 1,
+            "items": {
+                "$ref": "#/definitions/terminalTypeDefinition"
+            }
+        },
+        "securityLevels": {
+            "type": "array",
+            "description": "Security level definitions for Layer 2 DC modifiers",
+            "minItems": 1,
+            "items": {
+                "$ref": "#/definitions/securityLevelDefinition"
+            }
+        },
+        "dataTypes": {
+            "type": "array",
+            "description": "Data type definitions for Layer 3 DCs",
+            "minItems": 1,
+            "items": {
+                "$ref": "#/definitions/dataTypeDefinition"
+            }
+        },
+        "corruptionModifiers": {
+            "type": "array",
+            "description": "Corruption tier DC modifiers",
+            "minItems": 1,
+            "items": {
+                "$ref": "#/definitions/corruptionModifier"
+            }
+        },
+        "globalSettings": {
+            "$ref": "#/definitions/globalSettings"
+        }
+    },
+    "definitions": {
+        "terminalTypeDefinition": {
+            "type": "object",
+            "description": "Definition for a single terminal type",
+            "required": ["id", "name", "layer1BaseDc", "difficultyRating", "iceRating", "minimumToolQuality"],
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Unique identifier for this terminal type",
+                    "pattern": "^[a-z][a-z0-9-]*$",
+                    "minLength": 1,
+                    "maxLength": 50
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Human-readable display name",
+                    "minLength": 1,
+                    "maxLength": 100
+                },
+                "layer1BaseDc": {
+                    "type": "integer",
+                    "description": "Base difficulty class for Layer 1 (Access)",
+                    "minimum": 1,
+                    "maximum": 30
+                },
+                "difficultyRating": {
+                    "type": "string",
+                    "description": "Difficulty rating for display",
+                    "enum": ["Trivial", "Easy", "Moderate", "Hard", "Very Hard", "Legendary"]
+                },
+                "iceRating": {
+                    "type": "string",
+                    "description": "ICE (Intrusion Countermeasures Electronics) rating",
+                    "enum": ["None", "Passive", "Active", "Lethal", "Unpredictable"]
+                },
+                "minimumToolQuality": {
+                    "type": "string",
+                    "description": "Minimum tool quality required to attempt this terminal",
+                    "enum": ["BareHands", "Improvised", "Proper", "Masterwork"]
+                },
+                "defaultSecurityLevel": {
+                    "type": "string",
+                    "description": "Default security level for this terminal type",
+                    "pattern": "^[a-z][a-z0-9-]*$"
+                },
+                "encryptionTimeRounds": {
+                    "type": "integer",
+                    "description": "Time in rounds for Layer 1 access attempt",
+                    "minimum": 1,
+                    "maximum": 10
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Detailed description of this terminal type",
+                    "maxLength": 500
+                },
+                "examples": {
+                    "type": "array",
+                    "description": "Example locations where this terminal type is found",
+                    "items": {
+                        "type": "string",
+                        "maxLength": 100
+                    }
+                },
+                "salvageComponents": {
+                    "type": "array",
+                    "description": "Components that can be salvaged from this terminal on critical success",
+                    "items": {
+                        "$ref": "#/definitions/salvageEntry"
+                    }
+                },
+                "flavorText": {
+                    "type": "string",
+                    "description": "Flavor text for immersion",
+                    "maxLength": 500
+                }
+            },
+            "additionalProperties": false
+        },
+        "securityLevelDefinition": {
+            "type": "object",
+            "description": "Definition for a security level (Layer 2 DC modifier)",
+            "required": ["id", "name", "dcModifier"],
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Unique identifier for this security level",
+                    "pattern": "^[a-z][a-z0-9-]*$",
+                    "minLength": 1,
+                    "maxLength": 50
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Human-readable display name",
+                    "minLength": 1,
+                    "maxLength": 100
+                },
+                "dcModifier": {
+                    "type": "integer",
+                    "description": "DC modifier added to Layer 1 DC for Layer 2 checks",
+                    "minimum": 0,
+                    "maximum": 10
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Description of this security level",
+                    "maxLength": 300
+                },
+                "authenticationMethod": {
+                    "type": "string",
+                    "description": "Type of authentication required",
+                    "maxLength": 100
+                }
+            },
+            "additionalProperties": false
+        },
+        "dataTypeDefinition": {
+            "type": "object",
+            "description": "Definition for a data type (Layer 3 DC)",
+            "required": ["id", "name", "baseDc"],
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Unique identifier for this data type",
+                    "pattern": "^[a-z][a-z0-9-]*$",
+                    "minLength": 1,
+                    "maxLength": 50
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Human-readable display name",
+                    "minLength": 1,
+                    "maxLength": 100
+                },
+                "baseDc": {
+                    "type": "integer",
+                    "description": "Base DC for navigating to this data type",
+                    "minimum": 1,
+                    "maximum": 30
+                },
+                "requiresAdminAccess": {
+                    "type": "boolean",
+                    "description": "Whether AdminLevel access is required to access this data",
+                    "default": false
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Description of this data type",
+                    "maxLength": 300
+                },
+                "examples": {
+                    "type": "array",
+                    "description": "Examples of data in this category",
+                    "items": {
+                        "type": "string",
+                        "maxLength": 100
+                    }
+                }
+            },
+            "additionalProperties": false
+        },
+        "salvageEntry": {
+            "type": "object",
+            "description": "Entry for a salvageable component",
+            "required": ["componentId", "weight"],
+            "properties": {
+                "componentId": {
+                    "type": "string",
+                    "description": "Reference to component ID",
+                    "pattern": "^[a-z][a-z0-9-]*$"
+                },
+                "weight": {
+                    "type": "integer",
+                    "description": "Relative weight for random selection",
+                    "minimum": 1,
+                    "maximum": 100
+                }
+            },
+            "additionalProperties": false
+        },
+        "corruptionModifier": {
+            "type": "object",
+            "description": "DC modifier for a corruption tier",
+            "required": ["corruptionTier", "dcModifier"],
+            "properties": {
+                "corruptionTier": {
+                    "type": "string",
+                    "description": "Corruption tier name",
+                    "enum": ["Normal", "Glitched", "Blighted", "Resonance"]
+                },
+                "dcModifier": {
+                    "type": "integer",
+                    "description": "DC modifier for this corruption tier",
+                    "minimum": 0,
+                    "maximum": 10
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Description of this corruption tier's effects",
+                    "maxLength": 200
+                }
+            },
+            "additionalProperties": false
+        },
+        "globalSettings": {
+            "type": "object",
+            "description": "Global settings for the terminal hacking system",
+            "required": ["layer1FailureDcPenalty", "coverTracksDc", "temporaryLockoutRounds"],
+            "properties": {
+                "layer1FailureDcPenalty": {
+                    "type": "integer",
+                    "description": "DC increase after Layer 1 failure",
+                    "minimum": 1,
+                    "maximum": 10
+                },
+                "coverTracksDc": {
+                    "type": "integer",
+                    "description": "DC for covering tracks after successful infiltration (Stealth)",
+                    "minimum": 1,
+                    "maximum": 25
+                },
+                "temporaryLockoutRounds": {
+                    "type": "integer",
+                    "description": "Number of rounds for temporary lockout after Layer 1 failure",
+                    "minimum": 1,
+                    "maximum": 20
+                },
+                "bareHandsDiceModifier": {
+                    "type": "integer",
+                    "description": "Dice modifier for bare hands",
+                    "minimum": -10,
+                    "maximum": 0
+                },
+                "improvisedDiceModifier": {
+                    "type": "integer",
+                    "description": "Dice modifier for improvised tools",
+                    "minimum": -5,
+                    "maximum": 5
+                },
+                "properDiceModifier": {
+                    "type": "integer",
+                    "description": "Dice modifier for proper tools",
+                    "minimum": 0,
+                    "maximum": 5
+                },
+                "masterworkDiceModifier": {
+                    "type": "integer",
+                    "description": "Dice modifier for masterwork tools",
+                    "minimum": 0,
+                    "maximum": 10
+                }
+            },
+            "additionalProperties": false
+        }
+    },
+    "additionalProperties": false
+}
