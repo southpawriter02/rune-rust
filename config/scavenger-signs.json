@@ -1,0 +1,235 @@
+{
+    "$schema": "./schemas/scavenger-signs.schema.json",
+    "signTypes": {
+        "TerritoryMarker": {
+            "id": "territory-marker",
+            "baseDc": 10,
+            "displayName": "Territory Marker",
+            "description": "Marks faction territory boundaries. Warns outsiders that they are entering claimed land and may face hostility from faction patrols.",
+            "successMeaning": "This area belongs to {faction}. Trespassers may face hostility.",
+            "criticalContext": "You can tell the faction patrols this border regularly.",
+            "misinterpretation": "This marks a safe haven—travelers are welcome here.",
+            "visualStyles": [
+                "Parallel scratches with central faction symbol",
+                "Overlapping circles in faction colors",
+                "Bold strokes forming boundary warnings"
+            ],
+            "characteristics": {
+                "indicatesDanger": true,
+                "indicatesResource": false,
+                "providesNavigation": false,
+                "misinterpretationCausesFactionConflict": true,
+                "misinterpretationCausesEnvironmentalDanger": false
+            }
+        },
+        "WarningSign": {
+            "id": "warning-sign",
+            "baseDc": 12,
+            "displayName": "Warning Sign",
+            "description": "Warns of danger ahead—environmental hazards, creature lairs, or potential ambush sites. Indicates the type and direction of the threat.",
+            "successMeaning": "Danger lies ahead: {hazard_type}. Proceed with caution.",
+            "criticalContext": "The specific danger symbol suggests environmental hazard rather than creatures.",
+            "misinterpretation": "This indicates valuable salvage ahead—hurry before others find it!",
+            "visualStyles": [
+                "Jagged lines radiating from center",
+                "Skull-like patterns",
+                "Sharp angles pointing away from danger zones"
+            ],
+            "characteristics": {
+                "indicatesDanger": true,
+                "indicatesResource": false,
+                "providesNavigation": false,
+                "misinterpretationCausesFactionConflict": false,
+                "misinterpretationCausesEnvironmentalDanger": true
+            }
+        },
+        "CacheIndicator": {
+            "id": "cache-indicator",
+            "baseDc": 14,
+            "displayName": "Cache Indicator",
+            "description": "Indicates hidden supplies, equipment caches, or safe houses nearby. Deliberately cryptic to prevent theft by rival factions.",
+            "successMeaning": "Hidden supplies are concealed {direction}, approximately {distance} away.",
+            "criticalContext": "A subtle directional mark indicates the cache is hidden below ground level.",
+            "misinterpretation": "This warns of extreme danger—do not proceed in this direction.",
+            "visualStyles": [
+                "Subtle arrow-like marks barely visible",
+                "Triangular dot patterns with directional lines",
+                "Spirals ending in small marks"
+            ],
+            "characteristics": {
+                "indicatesDanger": false,
+                "indicatesResource": true,
+                "providesNavigation": true,
+                "misinterpretationCausesFactionConflict": false,
+                "misinterpretationCausesEnvironmentalDanger": false
+            }
+        },
+        "TrailBlaze": {
+            "id": "trail-blaze",
+            "baseDc": 10,
+            "displayName": "Trail Blaze",
+            "description": "Marks a safe path through dangerous terrain. Helps travelers avoid hazards, predators, or hostile patrols.",
+            "successMeaning": "This path leads {direction} and has been marked as safe.",
+            "criticalContext": "Secondary marks suggest this path is only safe during daylight hours.",
+            "misinterpretation": "This path leads to a trap or ambush—avoid it.",
+            "visualStyles": [
+                "Simple arrows at eye level",
+                "Parallel lines indicating direction",
+                "Chevron patterns pointing the way forward"
+            ],
+            "characteristics": {
+                "indicatesDanger": false,
+                "indicatesResource": true,
+                "providesNavigation": true,
+                "misinterpretationCausesFactionConflict": false,
+                "misinterpretationCausesEnvironmentalDanger": true
+            }
+        },
+        "HuntMarker": {
+            "id": "hunt-marker",
+            "baseDc": 14,
+            "displayName": "Hunt Marker",
+            "description": "Indicates prey sightings, hunting grounds, or migration patterns. Uses specialized hunter terminology known mainly to the faction.",
+            "successMeaning": "{prey_type} was spotted {direction}, {time_ago} ago.",
+            "criticalContext": "The prey marking style suggests a creature worth significant value.",
+            "misinterpretation": "This area is protected—no predators come here.",
+            "visualStyles": [
+                "Stylized animal tracks",
+                "Circles with claw marks",
+                "Predator symbols with time indicators"
+            ],
+            "characteristics": {
+                "indicatesDanger": false,
+                "indicatesResource": true,
+                "providesNavigation": true,
+                "misinterpretationCausesFactionConflict": false,
+                "misinterpretationCausesEnvironmentalDanger": false
+            }
+        },
+        "TabooSign": {
+            "id": "taboo-sign",
+            "baseDc": 12,
+            "displayName": "Taboo Sign",
+            "description": "Designates forbidden areas—cursed zones, glitch pockets, or faction-sacred ground. Entry is strongly discouraged with potentially severe consequences.",
+            "successMeaning": "This area is forbidden. {reason}",
+            "criticalContext": "The intensity of the marking suggests supernatural danger, not just faction law.",
+            "misinterpretation": "This marks a place of great treasure—sacred to the faction.",
+            "visualStyles": [
+                "X marks with warning symbols",
+                "Circles with lines through them",
+                "Repeated warning patterns covering large areas"
+            ],
+            "characteristics": {
+                "indicatesDanger": true,
+                "indicatesResource": false,
+                "providesNavigation": false,
+                "misinterpretationCausesFactionConflict": true,
+                "misinterpretationCausesEnvironmentalDanger": true
+            }
+        }
+    },
+    "majorFactions": {
+        "iron-covenant": {
+            "displayName": "Iron Covenant",
+            "signStyle": "Industrial symbols, gear patterns, angular metalwork motifs",
+            "territoryColor": "Rust orange",
+            "description": "A faction of former industrial workers and engineers who maintain and salvage pre-war machinery."
+        },
+        "rust-walkers": {
+            "displayName": "Rust Walkers",
+            "signStyle": "Weathered organic shapes, wind-blown patterns, nomadic trail markers",
+            "territoryColor": "Sandy brown",
+            "description": "Nomadic survivors who traverse the wasteland following resources and avoiding dangers."
+        },
+        "silent-ones": {
+            "displayName": "Silent Ones",
+            "signStyle": "Minimalist marks, subtle shadows, nearly invisible to untrained eyes",
+            "territoryColor": "Charcoal gray",
+            "description": "Secretive faction that values stealth and information over open confrontation."
+        },
+        "verdant-circle": {
+            "displayName": "Verdant Circle",
+            "signStyle": "Plant-based symbols, growth patterns, natural dyes in green and brown",
+            "territoryColor": "Forest green",
+            "description": "Survivors who tend to rare vegetation and guard the few green spaces left in the wasteland."
+        },
+        "ash-born": {
+            "displayName": "Ash-Born",
+            "signStyle": "Flame motifs, carbon marks, charred surfaces",
+            "territoryColor": "Ash gray with ember orange",
+            "description": "Those who survived the great fires and now control fire-scarred territories."
+        }
+    },
+    "signAgeModifiers": {
+        "Fresh": {
+            "dcModifier": 0,
+            "displayString": "freshly made, the marks still wet",
+            "approximateTime": "within the last few hours",
+            "isReliable": true,
+            "description": "Just made, the marks are still wet or freshly cut."
+        },
+        "Recent": {
+            "dcModifier": 0,
+            "displayString": "recent, made within the last day",
+            "approximateTime": "within the last day",
+            "isReliable": true,
+            "description": "Made within the last day. The marks are clear and easy to read."
+        },
+        "Old": {
+            "dcModifier": 1,
+            "displayString": "old, perhaps a week or more",
+            "approximateTime": "about a week ago",
+            "isReliable": false,
+            "reliabilityWarning": "Note: This sign is old. Situations may have changed since it was made.",
+            "description": "Made within the last week. Some wear is visible but still readable."
+        },
+        "Faded": {
+            "dcModifier": 2,
+            "displayString": "faded, worn by time and weather",
+            "approximateTime": "several weeks ago",
+            "isReliable": false,
+            "reliabilityWarning": "Warning: This sign is significantly aged. The information may be outdated.",
+            "description": "Made weeks ago, partially worn by time and weather."
+        },
+        "Ancient": {
+            "dcModifier": 4,
+            "displayString": "ancient, barely visible",
+            "approximateTime": "months or years ago",
+            "isReliable": false,
+            "reliabilityWarning": "Caution: This sign is ancient. The information is likely obsolete.",
+            "description": "Very old, barely visible or partially destroyed."
+        }
+    },
+    "dcModifiers": {
+        "unknownFaction": {
+            "modifier": 4,
+            "description": "Applied when the sign's faction is not known to the player."
+        }
+    },
+    "interpretationOutcomes": {
+        "success": {
+            "description": "Net successes >= DC. Sign type and meaning revealed.",
+            "learnsFaction": true
+        },
+        "criticalSuccess": {
+            "threshold": 5,
+            "description": "Net successes >= 5. Additional context about sign revealed."
+        },
+        "failure": {
+            "description": "Net successes < DC. No information gained. Player sees only visual description.",
+            "message": "The markings are incomprehensible to you."
+        },
+        "fumble": {
+            "condition": "0 successes AND at least 1 botch",
+            "description": "Misinterpretation. Player receives false information and believes it to be true.",
+            "learnsFaction": false
+        }
+    },
+    "balanceNotes": {
+        "dcDesign": "Base DCs range from 10 (universal/standardized) to 14 (deliberately cryptic). Combined with modifiers, total DCs can reach 22 for ancient unknown faction signs.",
+        "factionKnowledgeDesign": "Major factions are always known. Unknown factions add +4 DC. Successfully interpreting a sign teaches the faction.",
+        "ageReliability": "Older signs may contain outdated information (caches moved, dangers passed). Fresh/Recent signs are reliable.",
+        "fumbleDanger": "Misinterpretations are designed to lead players into dangerous situations: faction conflict, environmental hazards, or missed opportunities.",
+        "criticalReward": "Critical success provides actionable extra information like time restrictions, hidden details, or faction behavior patterns."
+    }
+}

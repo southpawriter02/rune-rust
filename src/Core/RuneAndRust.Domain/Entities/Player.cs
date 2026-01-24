@@ -1633,5 +1633,172 @@ public class Player : IEntity
     {
         return _achievements.Sum(a => a.PointsAwarded);
     }
+
+    // ===== Faction Knowledge Properties (v0.15.5f) =====
+
+    /// <summary>
+    /// Backing field for known faction IDs.
+    /// </summary>
+    /// <remarks>
+    /// Uses case-insensitive comparison for faction ID matching.
+    /// </remarks>
+    private readonly HashSet<string> _knownFactionIds = new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// Gets the factions this player has encountered and learned about.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Known factions receive no DC penalty when interpreting their scavenger signs.
+    /// Unknown factions impose a +4 DC penalty on sign interpretation checks.
+    /// </para>
+    /// <para>
+    /// Major factions (Iron Covenant, Rust Walkers, Silent Ones, Verdant Circle, Ash-Born)
+    /// are always considered known to all players and do not need to be in this collection.
+    /// Use <see cref="KnowsFaction"/> to check if a faction is known, as it accounts for
+    /// both learned factions and major factions.
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// // Check all learned factions (excluding major factions)
+    /// foreach (var factionId in player.KnownFactions)
+    /// {
+    ///     Console.WriteLine($"Learned faction: {factionId}");
+    /// }
+    /// </code>
+    /// </example>
+    public IReadOnlySet<string> KnownFactions => _knownFactionIds;
+
+    /// <summary>
+    /// The set of major faction IDs that are known to all players.
+    /// </summary>
+    /// <remarks>
+    /// These factions have well-established sign systems that any wasteland survivor would recognize.
+    /// </remarks>
+    private static readonly HashSet<string> MajorFactionIds = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "iron-covenant",
+        "rust-walkers",
+        "silent-ones",
+        "verdant-circle",
+        "ash-born"
+    };
+
+    // ===== Faction Knowledge Methods (v0.15.5f) =====
+
+    /// <summary>
+    /// Adds a faction to the player's known factions list.
+    /// </summary>
+    /// <param name="factionId">
+    /// The faction ID to add. Must not be null, empty, or whitespace.
+    /// </param>
+    /// <exception cref="ArgumentException">
+    /// Thrown when <paramref name="factionId"/> is null, empty, or whitespace.
+    /// </exception>
+    /// <remarks>
+    /// <para>
+    /// Once a faction is known, the player no longer receives a DC penalty
+    /// when interpreting that faction's scavenger signs.
+    /// </para>
+    /// <para>
+    /// Factions can be learned through:
+    /// <list type="bullet">
+    ///   <item><description>Successfully interpreting a sign from an unknown faction</description></item>
+    ///   <item><description>Meeting faction members</description></item>
+    ///   <item><description>Information gathering through dialogue</description></item>
+    ///   <item><description>Finding faction-related items or documents</description></item>
+    /// </list>
+    /// </para>
+    /// <para>
+    /// Adding a major faction has no effect since they are always known.
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// // Player learns about the Scrap Collectors faction
+    /// player.AddKnownFaction("scrap-collectors");
+    /// </code>
+    /// </example>
+    public void AddKnownFaction(string factionId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(factionId, nameof(factionId));
+        _knownFactionIds.Add(factionId);
+    }
+
+    /// <summary>
+    /// Checks whether the player knows a specific faction.
+    /// </summary>
+    /// <param name="factionId">
+    /// The faction ID to check. Returns false for null, empty, or whitespace.
+    /// </param>
+    /// <returns>
+    /// <c>true</c> if the faction is known (either a major faction or learned);
+    /// <c>false</c> otherwise.
+    /// </returns>
+    /// <remarks>
+    /// <para>
+    /// This method checks both the player's learned factions AND the major factions list.
+    /// Major factions are always known to all players.
+    /// </para>
+    /// <para>
+    /// Use this method when calculating sign interpretation DCs:
+    /// <list type="bullet">
+    ///   <item><description>Known faction: No DC penalty</description></item>
+    ///   <item><description>Unknown faction: +4 DC penalty</description></item>
+    /// </list>
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// // Check if faction is known for DC calculation
+    /// var dcModifier = player.KnowsFaction(sign.FactionId) ? 0 : 4;
+    /// var totalDc = sign.BaseDc + dcModifier;
+    /// </code>
+    /// </example>
+    public bool KnowsFaction(string factionId)
+    {
+        if (string.IsNullOrWhiteSpace(factionId))
+            return false;
+
+        // Major factions are always known
+        if (MajorFactionIds.Contains(factionId))
+            return true;
+
+        // Check learned factions
+        return _knownFactionIds.Contains(factionId);
+    }
+
+    /// <summary>
+    /// Checks whether a faction ID represents a major faction.
+    /// </summary>
+    /// <param name="factionId">The faction ID to check.</param>
+    /// <returns>
+    /// <c>true</c> if the faction is a major faction; <c>false</c> otherwise.
+    /// </returns>
+    /// <remarks>
+    /// Major factions are well-established wasteland powers whose sign systems
+    /// are known to all survivors. They include:
+    /// <list type="bullet">
+    ///   <item><description>iron-covenant - Iron Covenant</description></item>
+    ///   <item><description>rust-walkers - Rust Walkers</description></item>
+    ///   <item><description>silent-ones - Silent Ones</description></item>
+    ///   <item><description>verdant-circle - Verdant Circle</description></item>
+    ///   <item><description>ash-born - Ash-Born</description></item>
+    /// </list>
+    /// </remarks>
+    public static bool IsMajorFaction(string factionId)
+    {
+        if (string.IsNullOrWhiteSpace(factionId))
+            return false;
+
+        return MajorFactionIds.Contains(factionId);
+    }
+
+    /// <summary>
+    /// Gets the list of major faction IDs.
+    /// </summary>
+    /// <returns>A read-only collection of major faction identifiers.</returns>
+    public static IReadOnlyCollection<string> GetMajorFactionIds() => MajorFactionIds;
 }
 

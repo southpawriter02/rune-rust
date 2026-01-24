@@ -1,0 +1,306 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://runeandrust.game/schemas/scavenger-signs.schema.json",
+    "title": "Scavenger Sign Configuration",
+    "description": "Configuration schema for scavenger sign types, factions, age modifiers, and interpretation outcomes",
+    "type": "object",
+    "required": ["signTypes", "majorFactions", "signAgeModifiers", "dcModifiers", "interpretationOutcomes"],
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "Reference to this schema file"
+        },
+        "signTypes": {
+            "type": "object",
+            "description": "Scavenger sign type definitions",
+            "required": ["TerritoryMarker", "WarningSign", "CacheIndicator", "TrailBlaze", "HuntMarker", "TabooSign"],
+            "properties": {
+                "TerritoryMarker": { "$ref": "#/$defs/signTypeDefinition" },
+                "WarningSign": { "$ref": "#/$defs/signTypeDefinition" },
+                "CacheIndicator": { "$ref": "#/$defs/signTypeDefinition" },
+                "TrailBlaze": { "$ref": "#/$defs/signTypeDefinition" },
+                "HuntMarker": { "$ref": "#/$defs/signTypeDefinition" },
+                "TabooSign": { "$ref": "#/$defs/signTypeDefinition" }
+            },
+            "additionalProperties": false
+        },
+        "majorFactions": {
+            "type": "object",
+            "description": "Major faction definitions (always known to players)",
+            "required": ["iron-covenant", "rust-walkers", "silent-ones", "verdant-circle", "ash-born"],
+            "properties": {
+                "iron-covenant": { "$ref": "#/$defs/factionDefinition" },
+                "rust-walkers": { "$ref": "#/$defs/factionDefinition" },
+                "silent-ones": { "$ref": "#/$defs/factionDefinition" },
+                "verdant-circle": { "$ref": "#/$defs/factionDefinition" },
+                "ash-born": { "$ref": "#/$defs/factionDefinition" }
+            },
+            "additionalProperties": false
+        },
+        "signAgeModifiers": {
+            "type": "object",
+            "description": "Sign age categories with DC modifiers and reliability",
+            "required": ["Fresh", "Recent", "Old", "Faded", "Ancient"],
+            "properties": {
+                "Fresh": { "$ref": "#/$defs/signAgeDefinition" },
+                "Recent": { "$ref": "#/$defs/signAgeDefinition" },
+                "Old": { "$ref": "#/$defs/signAgeDefinition" },
+                "Faded": { "$ref": "#/$defs/signAgeDefinition" },
+                "Ancient": { "$ref": "#/$defs/signAgeDefinition" }
+            },
+            "additionalProperties": false
+        },
+        "dcModifiers": {
+            "type": "object",
+            "description": "Additional DC modifiers",
+            "required": ["unknownFaction"],
+            "properties": {
+                "unknownFaction": { "$ref": "#/$defs/dcModifierDefinition" }
+            },
+            "additionalProperties": false
+        },
+        "interpretationOutcomes": {
+            "type": "object",
+            "description": "Possible interpretation outcome definitions",
+            "required": ["success", "criticalSuccess", "failure", "fumble"],
+            "properties": {
+                "success": { "$ref": "#/$defs/outcomeDefinition" },
+                "criticalSuccess": { "$ref": "#/$defs/criticalOutcomeDefinition" },
+                "failure": { "$ref": "#/$defs/failureOutcomeDefinition" },
+                "fumble": { "$ref": "#/$defs/fumbleOutcomeDefinition" }
+            },
+            "additionalProperties": false
+        },
+        "balanceNotes": {
+            "type": "object",
+            "description": "Design notes and balance rationale (not used by game logic)",
+            "additionalProperties": { "type": "string" }
+        }
+    },
+    "additionalProperties": false,
+    "$defs": {
+        "signTypeDefinition": {
+            "type": "object",
+            "description": "Definition for a scavenger sign type",
+            "required": ["id", "baseDc", "displayName", "description", "successMeaning", "criticalContext", "misinterpretation", "visualStyles", "characteristics"],
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9-]+$",
+                    "description": "Unique identifier for this sign type (kebab-case)"
+                },
+                "baseDc": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 30,
+                    "description": "Base difficulty class for interpreting this sign type"
+                },
+                "displayName": {
+                    "type": "string",
+                    "description": "Human-readable display name"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Detailed description of what this sign type represents"
+                },
+                "successMeaning": {
+                    "type": "string",
+                    "description": "Template for the meaning revealed on successful interpretation (may contain placeholders)"
+                },
+                "criticalContext": {
+                    "type": "string",
+                    "description": "Additional context revealed on critical success (net >= 5)"
+                },
+                "misinterpretation": {
+                    "type": "string",
+                    "description": "False meaning given on fumble (0 successes + botch)"
+                },
+                "visualStyles": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "minItems": 1,
+                    "description": "Visual description variants for this sign type"
+                },
+                "characteristics": {
+                    "$ref": "#/$defs/signCharacteristicsDefinition",
+                    "description": "Boolean characteristics of the sign type"
+                }
+            },
+            "additionalProperties": false
+        },
+        "signCharacteristicsDefinition": {
+            "type": "object",
+            "description": "Boolean characteristics of a sign type",
+            "required": ["indicatesDanger", "indicatesResource", "providesNavigation", "misinterpretationCausesFactionConflict", "misinterpretationCausesEnvironmentalDanger"],
+            "properties": {
+                "indicatesDanger": {
+                    "type": "boolean",
+                    "description": "Whether this sign type indicates danger or hostility"
+                },
+                "indicatesResource": {
+                    "type": "boolean",
+                    "description": "Whether this sign type indicates valuable resources"
+                },
+                "providesNavigation": {
+                    "type": "boolean",
+                    "description": "Whether this sign type provides navigation assistance"
+                },
+                "misinterpretationCausesFactionConflict": {
+                    "type": "boolean",
+                    "description": "Whether misinterpretation may lead to faction conflict"
+                },
+                "misinterpretationCausesEnvironmentalDanger": {
+                    "type": "boolean",
+                    "description": "Whether misinterpretation may lead to environmental hazards"
+                }
+            },
+            "additionalProperties": false
+        },
+        "factionDefinition": {
+            "type": "object",
+            "description": "Definition for a major faction",
+            "required": ["displayName", "signStyle", "territoryColor", "description"],
+            "properties": {
+                "displayName": {
+                    "type": "string",
+                    "description": "Human-readable faction name"
+                },
+                "signStyle": {
+                    "type": "string",
+                    "description": "Description of the faction's distinctive sign marking style"
+                },
+                "territoryColor": {
+                    "type": "string",
+                    "description": "Color associated with the faction's territory markers"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Brief description of the faction"
+                }
+            },
+            "additionalProperties": false
+        },
+        "signAgeDefinition": {
+            "type": "object",
+            "description": "Definition for a sign age category",
+            "required": ["dcModifier", "displayString", "approximateTime", "isReliable", "description"],
+            "properties": {
+                "dcModifier": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 10,
+                    "description": "DC modifier applied based on sign age"
+                },
+                "displayString": {
+                    "type": "string",
+                    "description": "Narrative description of the sign's age for player display"
+                },
+                "approximateTime": {
+                    "type": "string",
+                    "description": "Approximate time since the sign was made"
+                },
+                "isReliable": {
+                    "type": "boolean",
+                    "description": "Whether information from signs of this age is likely still accurate"
+                },
+                "reliabilityWarning": {
+                    "type": "string",
+                    "description": "Warning message about potential information obsolescence (optional)"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Detailed description of the sign's condition"
+                }
+            },
+            "additionalProperties": false
+        },
+        "dcModifierDefinition": {
+            "type": "object",
+            "description": "Definition for a DC modifier",
+            "required": ["modifier", "description"],
+            "properties": {
+                "modifier": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 20,
+                    "description": "The DC modifier value"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Description of when this modifier is applied"
+                }
+            },
+            "additionalProperties": false
+        },
+        "outcomeDefinition": {
+            "type": "object",
+            "description": "Definition for a standard interpretation outcome",
+            "required": ["description", "learnsFaction"],
+            "properties": {
+                "description": {
+                    "type": "string",
+                    "description": "Description of the outcome conditions and result"
+                },
+                "learnsFaction": {
+                    "type": "boolean",
+                    "description": "Whether the player learns the faction on this outcome"
+                }
+            },
+            "additionalProperties": false
+        },
+        "criticalOutcomeDefinition": {
+            "type": "object",
+            "description": "Definition for critical success outcome",
+            "required": ["threshold", "description"],
+            "properties": {
+                "threshold": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 20,
+                    "description": "Net successes required for critical success"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Description of the outcome conditions and result"
+                }
+            },
+            "additionalProperties": false
+        },
+        "failureOutcomeDefinition": {
+            "type": "object",
+            "description": "Definition for failure outcome",
+            "required": ["description", "message"],
+            "properties": {
+                "description": {
+                    "type": "string",
+                    "description": "Description of the outcome conditions and result"
+                },
+                "message": {
+                    "type": "string",
+                    "description": "Message displayed to the player on failure"
+                }
+            },
+            "additionalProperties": false
+        },
+        "fumbleOutcomeDefinition": {
+            "type": "object",
+            "description": "Definition for fumble/misinterpretation outcome",
+            "required": ["condition", "description", "learnsFaction"],
+            "properties": {
+                "condition": {
+                    "type": "string",
+                    "description": "Dice condition that triggers a fumble"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Description of the outcome conditions and result"
+                },
+                "learnsFaction": {
+                    "type": "boolean",
+                    "description": "Whether the player learns the faction on this outcome"
+                }
+            },
+            "additionalProperties": false
+        }
+    }
+}
