@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "trail-ages.schema.json",
+  "title": "Trail Ages Configuration",
+  "description": "Schema for trail age classifications in the Extended Tracking System",
+  "type": "object",
+  "required": ["version", "description", "trailAges", "dcModifiers"],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema reference"
+    },
+    "version": {
+      "type": "string",
+      "description": "Configuration version number",
+      "pattern": "^\\d+\\.\\d+\\.\\d+[a-z]?$"
+    },
+    "description": {
+      "type": "string",
+      "description": "Human-readable description of this configuration file"
+    },
+    "trailAges": {
+      "type": "array",
+      "description": "Array of trail age classifications",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/trailAge"
+      }
+    },
+    "dcModifiers": {
+      "type": "object",
+      "description": "Global DC modifiers that apply to all trail ages",
+      "required": ["perHourElapsed", "description"],
+      "properties": {
+        "perHourElapsed": {
+          "type": "integer",
+          "description": "DC increase per hour elapsed since trail was created",
+          "minimum": 0,
+          "maximum": 5
+        },
+        "description": {
+          "type": "string",
+          "description": "Explanation of the modifier"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "trailAge": {
+      "type": "object",
+      "description": "A single trail age classification",
+      "required": ["id", "type", "baseDc", "displayName", "description", "timeRange", "requiresMasterRank"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for this trail age",
+          "pattern": "^[a-z][a-z0-9-]*$"
+        },
+        "type": {
+          "type": "string",
+          "description": "Trail age type matching the TrailAge enum",
+          "enum": ["Obvious", "Fresh", "Standard", "Old", "Obscured", "Cold"]
+        },
+        "baseDc": {
+          "type": "integer",
+          "description": "Base difficulty class for tracking this trail age",
+          "minimum": 1,
+          "maximum": 50
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Human-readable name for display"
+        },
+        "description": {
+          "type": "string",
+          "description": "Detailed description of this trail age category"
+        },
+        "timeRange": {
+          "type": "string",
+          "description": "Typical time range for trails of this age"
+        },
+        "requiresMasterRank": {
+          "type": "boolean",
+          "description": "Whether Master rank (Rank 5) in Wasteland Survival is required"
+        },
+        "examples": {
+          "type": "array",
+          "description": "Example scenarios for this trail age",
+          "items": {
+            "type": "string"
+          }
+        },
+        "masterRankNote": {
+          "type": "string",
+          "description": "Additional note about master rank requirement"
+        }
+      }
+    }
+  }
+}

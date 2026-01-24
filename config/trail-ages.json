@@ -1,0 +1,108 @@
+{
+  "$schema": "./schemas/trail-ages.schema.json",
+  "version": "0.15.5a",
+  "description": "Trail age classifications for the Extended Tracking System",
+  "trailAges": [
+    {
+      "id": "obvious",
+      "type": "Obvious",
+      "baseDc": 8,
+      "displayName": "Obvious Trail",
+      "description": "A trail so clear that even an untrained eye could follow it. Examples include caravans through ash fields, large creature tracks in soft ground, or heavily-used paths.",
+      "timeRange": "N/A - based on trail characteristics",
+      "requiresMasterRank": false,
+      "examples": [
+        "Caravan tracks through ash",
+        "Large creature prints in mud",
+        "Dragged objects leaving grooves",
+        "Fresh blood pools",
+        "Broken vegetation corridor"
+      ]
+    },
+    {
+      "id": "fresh",
+      "type": "Fresh",
+      "baseDc": 12,
+      "displayName": "Fresh Trail",
+      "description": "A recently-made trail with clear signs of passage. The signs are still distinct and haven't degraded significantly.",
+      "timeRange": "Less than 1 hour old",
+      "requiresMasterRank": false,
+      "examples": [
+        "Footprints in dust",
+        "Bent grass not yet recovered",
+        "Warm ashes from a campfire",
+        "Fresh scrape marks",
+        "Disturbed debris"
+      ]
+    },
+    {
+      "id": "standard",
+      "type": "Standard",
+      "baseDc": 16,
+      "displayName": "Standard Trail",
+      "description": "A typical trail with moderate signs of passage. Some natural degradation has occurred but the trail remains followable.",
+      "timeRange": "2-8 hours old",
+      "requiresMasterRank": false,
+      "examples": [
+        "Partial footprints",
+        "Disturbed vegetation",
+        "Scent traces (for those who can detect)",
+        "Broken twigs",
+        "Displaced rocks"
+      ]
+    },
+    {
+      "id": "old",
+      "type": "Old",
+      "baseDc": 20,
+      "displayName": "Old Trail",
+      "description": "An aged trail with subtle signs of passage. Significant degradation has occurred, requiring careful observation.",
+      "timeRange": "12-24 hours old",
+      "requiresMasterRank": false,
+      "examples": [
+        "Faded impressions",
+        "Slightly displaced debris",
+        "Weathered disturbances",
+        "Aged scrape marks",
+        "Nearly-recovered vegetation"
+      ]
+    },
+    {
+      "id": "obscured",
+      "type": "Obscured",
+      "baseDc": 24,
+      "displayName": "Obscured Trail",
+      "description": "A trail that has been deliberately hidden or heavily affected by environmental factors. Expert tracking skills required.",
+      "timeRange": "Deliberately hidden or 24+ hours with adverse conditions",
+      "requiresMasterRank": false,
+      "examples": [
+        "Counter-tracked trail",
+        "Trail through water",
+        "Wind-eroded tracks",
+        "Rain-washed signs",
+        "Professionally concealed passage"
+      ]
+    },
+    {
+      "id": "cold",
+      "type": "Cold",
+      "baseDc": 28,
+      "displayName": "Cold Trail",
+      "description": "A nearly-invisible trail that only a master tracker can hope to follow. The signs are so subtle that most would consider the trail unfindable.",
+      "timeRange": "24-48 hours old or heavily obscured",
+      "requiresMasterRank": true,
+      "examples": [
+        "Ancient impressions",
+        "Trace evidence only",
+        "Multiple-day-old trails",
+        "Professionally hidden with counter-tracking",
+        "Trails through difficult terrain"
+      ],
+      "masterRankNote": "Requires Rank 5 (Master) in Wasteland Survival to attempt"
+    }
+  ],
+  "dcModifiers": {
+    "perHourElapsed": 1,
+    "description": "Each hour that passes adds +1 to the effective DC as the trail degrades naturally"
+  }
+}

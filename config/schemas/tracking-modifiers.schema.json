@@ -1,0 +1,296 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "tracking-modifiers.schema.json",
+  "title": "Tracking Modifiers Configuration",
+  "description": "Schema for tracking modifiers, terrain intervals, and recovery procedures in the Extended Tracking System",
+  "type": "object",
+  "required": ["version", "description", "conditionModifiers", "equipmentBonuses", "terrainCheckIntervals", "recoveryProcedures", "closingInModifiers", "failureThresholds", "optionalChecks"],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema reference"
+    },
+    "version": {
+      "type": "string",
+      "description": "Configuration version number",
+      "pattern": "^\\d+\\.\\d+\\.\\d+[a-z]?$"
+    },
+    "description": {
+      "type": "string",
+      "description": "Human-readable description of this configuration file"
+    },
+    "conditionModifiers": {
+      "type": "array",
+      "description": "Condition-based modifiers that affect tracking difficulty",
+      "items": {
+        "$ref": "#/$defs/conditionModifier"
+      }
+    },
+    "equipmentBonuses": {
+      "type": "array",
+      "description": "Equipment bonuses that add dice to the tracking pool",
+      "items": {
+        "$ref": "#/$defs/equipmentBonus"
+      }
+    },
+    "terrainCheckIntervals": {
+      "type": "array",
+      "description": "Check intervals and navigation DCs by terrain type",
+      "items": {
+        "$ref": "#/$defs/terrainCheckInterval"
+      }
+    },
+    "recoveryProcedures": {
+      "type": "array",
+      "description": "Procedures for recovering a lost trail",
+      "items": {
+        "$ref": "#/$defs/recoveryProcedure"
+      }
+    },
+    "closingInModifiers": {
+      "type": "array",
+      "description": "DC modifiers for the closing-in phase based on distance",
+      "items": {
+        "$ref": "#/$defs/closingInModifier"
+      }
+    },
+    "failureThresholds": {
+      "$ref": "#/$defs/failureThresholds"
+    },
+    "optionalChecks": {
+      "$ref": "#/$defs/optionalChecks"
+    }
+  },
+  "$defs": {
+    "conditionModifier": {
+      "type": "object",
+      "description": "A condition-based modifier",
+      "required": ["id", "name", "type", "description", "source"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier",
+          "pattern": "^[a-z][a-z0-9-]*$"
+        },
+        "name": {
+          "type": "string",
+          "description": "Display name"
+        },
+        "dcModifier": {
+          "type": "integer",
+          "description": "DC modifier (positive = harder, negative = easier)"
+        },
+        "diceModifier": {
+          "type": "integer",
+          "description": "Dice pool modifier (positive = more dice)"
+        },
+        "type": {
+          "type": "string",
+          "description": "Type of modifier",
+          "enum": ["dc", "dice"]
+        },
+        "description": {
+          "type": "string",
+          "description": "Detailed description of the modifier"
+        },
+        "source": {
+          "type": "string",
+          "description": "Source of the modifier (target, weather, tracker, etc.)"
+        },
+        "minimumTargets": {
+          "type": "integer",
+          "description": "Minimum target count for this modifier to apply",
+          "minimum": 1
+        }
+      }
+    },
+    "equipmentBonus": {
+      "type": "object",
+      "description": "Equipment-based dice bonus",
+      "required": ["id", "name", "diceBonus", "description"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier",
+          "pattern": "^[a-z][a-z0-9-]*$"
+        },
+        "name": {
+          "type": "string",
+          "description": "Equipment name"
+        },
+        "diceBonus": {
+          "type": "integer",
+          "description": "Number of bonus dice added to tracking pool",
+          "minimum": 0,
+          "maximum": 10
+        },
+        "description": {
+          "type": "string",
+          "description": "Equipment description"
+        }
+      }
+    },
+    "terrainCheckInterval": {
+      "type": "object",
+      "description": "Terrain-based check interval configuration",
+      "required": ["terrainType", "checkIntervalMiles", "navigationDc", "description"],
+      "properties": {
+        "terrainType": {
+          "type": "string",
+          "description": "Navigation terrain type",
+          "enum": ["OpenWasteland", "ModerateRuins", "DenseRuins", "Labyrinthine", "GlitchedLabyrinth"]
+        },
+        "checkIntervalMiles": {
+          "type": "number",
+          "description": "Distance in miles between required checks",
+          "minimum": 0.1,
+          "maximum": 10
+        },
+        "navigationDc": {
+          "type": "integer",
+          "description": "Base navigation DC for this terrain",
+          "minimum": 1,
+          "maximum": 50
+        },
+        "description": {
+          "type": "string",
+          "description": "Terrain description"
+        },
+        "examples": {
+          "type": "array",
+          "description": "Example locations",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "recoveryProcedure": {
+      "type": "object",
+      "description": "Trail recovery procedure",
+      "required": ["type", "dcModifier", "timeCostMinutes", "description", "bestUsedWhen"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "Recovery type",
+          "enum": ["Backtrack", "SpiralSearch", "ReturnToLastKnown"]
+        },
+        "dcModifier": {
+          "type": "integer",
+          "description": "DC modifier added to recovery check",
+          "minimum": 0,
+          "maximum": 20
+        },
+        "timeCostMinutes": {
+          "type": "integer",
+          "description": "Time required for this recovery procedure",
+          "minimum": 1
+        },
+        "description": {
+          "type": "string",
+          "description": "Procedure description"
+        },
+        "bestUsedWhen": {
+          "type": "string",
+          "description": "Guidance on when to use this procedure"
+        }
+      }
+    },
+    "closingInModifier": {
+      "type": "object",
+      "description": "Distance-based modifier for closing-in phase",
+      "required": ["distanceThresholdFeet", "description"],
+      "properties": {
+        "distanceThresholdFeet": {
+          "type": "integer",
+          "description": "Distance threshold in feet",
+          "minimum": 0
+        },
+        "dcModifier": {
+          "type": ["integer", "null"],
+          "description": "DC modifier at this distance (null for auto-success)"
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of this distance threshold"
+        },
+        "alertChance": {
+          "type": "string",
+          "description": "Chance of alerting the target"
+        },
+        "autoSuccess": {
+          "type": "boolean",
+          "description": "Whether this distance triggers automatic success"
+        }
+      }
+    },
+    "failureThresholds": {
+      "type": "object",
+      "description": "Configuration for failure handling",
+      "required": ["acquisitionMaxFailures", "recoveryMaxFailures", "acquisitionRetryDcIncrease", "acquisitionRetryTimeMinutes", "fumbleEffect"],
+      "properties": {
+        "acquisitionMaxFailures": {
+          "type": "integer",
+          "description": "Maximum failed acquisition attempts before trail goes cold",
+          "minimum": 1
+        },
+        "recoveryMaxFailures": {
+          "type": "integer",
+          "description": "Maximum failed recovery attempts before trail goes cold",
+          "minimum": 1
+        },
+        "acquisitionRetryDcIncrease": {
+          "type": "integer",
+          "description": "DC increase per acquisition retry",
+          "minimum": 0
+        },
+        "acquisitionRetryTimeMinutes": {
+          "type": "integer",
+          "description": "Time required before acquisition retry",
+          "minimum": 1
+        },
+        "fumbleEffect": {
+          "type": "string",
+          "description": "Effect of fumbling during acquisition"
+        }
+      }
+    },
+    "optionalChecks": {
+      "type": "object",
+      "description": "Optional information-gathering checks",
+      "required": ["estimateTargetCount", "estimateTrailAge"],
+      "properties": {
+        "estimateTargetCount": {
+          "type": "object",
+          "required": ["dc", "description"],
+          "properties": {
+            "dc": {
+              "type": "integer",
+              "description": "Difficulty class for the check",
+              "minimum": 1
+            },
+            "description": {
+              "type": "string",
+              "description": "Check description"
+            }
+          }
+        },
+        "estimateTrailAge": {
+          "type": "object",
+          "required": ["dc", "description"],
+          "properties": {
+            "dc": {
+              "type": "integer",
+              "description": "Difficulty class for the check",
+              "minimum": 1
+            },
+            "description": {
+              "type": "string",
+              "description": "Check description"
+            }
+          }
+        }
+      }
+    }
+  }
+}

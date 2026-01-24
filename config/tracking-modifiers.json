@@ -1,0 +1,174 @@
+{
+  "$schema": "./schemas/tracking-modifiers.schema.json",
+  "version": "0.15.5a",
+  "description": "Condition modifiers, terrain intervals, and recovery procedures for the Extended Tracking System",
+  "conditionModifiers": [
+    {
+      "id": "blood-trail",
+      "name": "Blood Trail",
+      "dcModifier": -4,
+      "type": "dc",
+      "description": "Target is leaving a blood trail - highly visible and provides consistent tracking signs",
+      "source": "Target condition"
+    },
+    {
+      "id": "fresh-injury",
+      "name": "Fresh Injury",
+      "dcModifier": -2,
+      "type": "dc",
+      "description": "Target is actively bleeding - leaves blood drops and moves slower",
+      "source": "Target condition"
+    },
+    {
+      "id": "multiple-targets",
+      "name": "Multiple Targets",
+      "dcModifier": -2,
+      "type": "dc",
+      "description": "Two or more targets leave more signs of passage, making tracking easier",
+      "source": "Target composition",
+      "minimumTargets": 2
+    },
+    {
+      "id": "recent-rain",
+      "name": "Recent Rain",
+      "dcModifier": 4,
+      "type": "dc",
+      "description": "Rain washes away footprints, scent, and other tracking signs",
+      "source": "Weather"
+    },
+    {
+      "id": "target-hiding",
+      "name": "Target Deliberately Hiding",
+      "dcModifier": 2,
+      "type": "dc",
+      "description": "Target is actively concealing their trail through counter-tracking techniques",
+      "source": "Target behavior"
+    },
+    {
+      "id": "familiar-territory",
+      "name": "Familiar Territory",
+      "diceModifier": 2,
+      "type": "dice",
+      "description": "Tracker knows local terrain, common paths, and likely hiding spots",
+      "source": "Tracker knowledge"
+    }
+  ],
+  "equipmentBonuses": [
+    {
+      "id": "no-equipment",
+      "name": "No Equipment",
+      "diceBonus": 0,
+      "description": "No tracking equipment"
+    },
+    {
+      "id": "basic-survival-kit",
+      "name": "Basic Survival Kit",
+      "diceBonus": 1,
+      "description": "Basic tools for wilderness survival including simple tracking aids"
+    },
+    {
+      "id": "trackers-kit",
+      "name": "Tracker's Kit",
+      "diceBonus": 2,
+      "description": "Specialized tracking equipment including magnifying lens, scent trackers, and measurement tools"
+    }
+  ],
+  "terrainCheckIntervals": [
+    {
+      "terrainType": "OpenWasteland",
+      "checkIntervalMiles": 2.0,
+      "navigationDc": 8,
+      "description": "Flat or gently rolling terrain with minimal obstructions. Tracks visible at distance but degrade faster from wind.",
+      "examples": ["Ash plains", "Salt flats", "Scrubland", "Desert"]
+    },
+    {
+      "terrainType": "ModerateRuins",
+      "checkIntervalMiles": 1.0,
+      "navigationDc": 12,
+      "description": "Partially collapsed structures with navigable paths. Tracks protected from elements but multiple paths exist.",
+      "examples": ["Suburban ruins", "Collapsed factories", "Broken highways"]
+    },
+    {
+      "terrainType": "DenseRuins",
+      "checkIntervalMiles": 0.5,
+      "navigationDc": 16,
+      "description": "Heavily damaged urban environment with many obstacles. Many possible routes require frequent reconfirmation.",
+      "examples": ["City centers", "Industrial districts", "Collapsed tunnels"]
+    },
+    {
+      "terrainType": "Labyrinthine",
+      "checkIntervalMiles": 0.1,
+      "navigationDc": 20,
+      "description": "Maze-like environment requiring constant navigation. Each junction point requires a new tracking check.",
+      "examples": ["Underground complexes", "Intact buildings", "Cave systems"]
+    },
+    {
+      "terrainType": "GlitchedLabyrinth",
+      "checkIntervalMiles": 0.1,
+      "navigationDc": 24,
+      "description": "Unstable environment affected by Glitch corruption. Paths may alter, making tracking extremely difficult.",
+      "examples": ["Glitch-corrupted sectors", "Unstable reality zones"]
+    }
+  ],
+  "recoveryProcedures": [
+    {
+      "type": "Backtrack",
+      "dcModifier": 0,
+      "timeCostMinutes": 10,
+      "description": "Retrace steps to find where the trail was lost. Quickest option with no DC penalty.",
+      "bestUsedWhen": "Trail was recently lost and tracker is confident about where they went wrong"
+    },
+    {
+      "type": "SpiralSearch",
+      "dcModifier": 4,
+      "timeCostMinutes": 30,
+      "description": "Methodical search pattern covering a wider area. More thorough than backtracking but harder.",
+      "bestUsedWhen": "Unsure where the trail was lost or when backtracking has already failed"
+    },
+    {
+      "type": "ReturnToLastKnown",
+      "dcModifier": 8,
+      "timeCostMinutes": 60,
+      "description": "Return to last confirmed trail location and start fresh. Most time-consuming but most thorough.",
+      "bestUsedWhen": "Last resort when other recovery methods have failed or tracker is completely disoriented"
+    }
+  ],
+  "closingInModifiers": [
+    {
+      "distanceThresholdFeet": 500,
+      "dcModifier": -4,
+      "description": "Within 500 feet of target. Target may detect pursuit.",
+      "alertChance": "Low"
+    },
+    {
+      "distanceThresholdFeet": 100,
+      "dcModifier": -6,
+      "description": "Within 100 feet of target. Contested vs target's Perception.",
+      "alertChance": "Moderate"
+    },
+    {
+      "distanceThresholdFeet": 50,
+      "dcModifier": null,
+      "description": "Within 50 feet of target. Automatic success - immediate encounter.",
+      "alertChance": "N/A",
+      "autoSuccess": true
+    }
+  ],
+  "failureThresholds": {
+    "acquisitionMaxFailures": 3,
+    "recoveryMaxFailures": 3,
+    "acquisitionRetryDcIncrease": 2,
+    "acquisitionRetryTimeMinutes": 10,
+    "fumbleEffect": "Trail immediately goes cold"
+  },
+  "optionalChecks": {
+    "estimateTargetCount": {
+      "dc": 10,
+      "description": "Contested check to estimate how many targets are being tracked"
+    },
+    "estimateTrailAge": {
+      "dc": 12,
+      "description": "Check to estimate how old the trail is"
+    }
+  }
+}
