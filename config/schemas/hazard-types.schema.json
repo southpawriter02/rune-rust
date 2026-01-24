@@ -1,0 +1,328 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://runeandrust.game/schemas/hazard-types.schema.json",
+    "title": "Hazard Detection Configuration",
+    "description": "Configuration schema for detectable hazard types, detection methods, glitch effects, and status effects",
+    "type": "object",
+    "required": ["hazardTypes", "glitchEffectTable", "detectionMethods", "criticalDetection"],
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "Reference to this schema file"
+        },
+        "hazardTypes": {
+            "type": "object",
+            "description": "Detectable hazard type definitions",
+            "required": ["ObviousDanger", "HiddenPit", "ToxicZone", "GlitchPocket", "AmbushSite"],
+            "properties": {
+                "ObviousDanger": { "$ref": "#/$defs/hazardTypeDefinition" },
+                "HiddenPit": { "$ref": "#/$defs/hazardTypeDefinition" },
+                "ToxicZone": { "$ref": "#/$defs/hazardTypeDefinition" },
+                "GlitchPocket": { "$ref": "#/$defs/hazardTypeDefinition" },
+                "AmbushSite": { "$ref": "#/$defs/hazardTypeDefinition" }
+            },
+            "additionalProperties": false
+        },
+        "glitchEffectTable": {
+            "type": "array",
+            "description": "Glitch Effect Table for Glitch Pocket hazards (d6 roll)",
+            "items": { "$ref": "#/$defs/glitchEffectDefinition" },
+            "minItems": 6,
+            "maxItems": 6
+        },
+        "detectionMethods": {
+            "type": "object",
+            "description": "Detection method definitions",
+            "required": ["PassivePerception", "ActiveInvestigation", "AreaSweep"],
+            "properties": {
+                "PassivePerception": { "$ref": "#/$defs/detectionMethodDefinition" },
+                "ActiveInvestigation": { "$ref": "#/$defs/detectionMethodDefinition" },
+                "AreaSweep": { "$ref": "#/$defs/detectionMethodDefinition" }
+            },
+            "additionalProperties": false
+        },
+        "criticalDetection": {
+            "$ref": "#/$defs/criticalDetectionDefinition",
+            "description": "Critical detection threshold and benefits"
+        },
+        "statusEffects": {
+            "type": "object",
+            "description": "Status effects applied by hazards",
+            "additionalProperties": { "$ref": "#/$defs/statusEffectDefinition" }
+        },
+        "balanceNotes": {
+            "type": "object",
+            "description": "Design notes and balance rationale (not used by game logic)",
+            "additionalProperties": { "type": "string" }
+        }
+    },
+    "additionalProperties": false,
+    "$defs": {
+        "hazardTypeDefinition": {
+            "type": "object",
+            "description": "Definition for a detectable hazard type",
+            "required": ["id", "detectionDc", "displayName", "description", "consequence", "avoidanceOptions", "characteristics"],
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9-]+$",
+                    "description": "Unique identifier for this hazard type (kebab-case)"
+                },
+                "detectionDc": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 30,
+                    "description": "Difficulty class for detecting this hazard"
+                },
+                "displayName": {
+                    "type": "string",
+                    "description": "Human-readable display name"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Detailed description of the hazard"
+                },
+                "consequence": {
+                    "$ref": "#/$defs/hazardConsequenceDefinition",
+                    "description": "What happens when the hazard is triggered"
+                },
+                "avoidanceOptions": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "minItems": 1,
+                    "description": "Ways to avoid or circumvent the hazard once detected"
+                },
+                "characteristics": {
+                    "$ref": "#/$defs/hazardCharacteristicsDefinition",
+                    "description": "Boolean characteristics of the hazard"
+                }
+            },
+            "additionalProperties": false
+        },
+        "hazardConsequenceDefinition": {
+            "type": "object",
+            "description": "Definition for hazard trigger consequences",
+            "required": ["requiresAssistance", "surpriseRound"],
+            "properties": {
+                "damageType": {
+                    "type": ["string", "null"],
+                    "enum": ["Physical", "Psychic", "Special", null],
+                    "description": "Type of damage dealt (null if no damage)"
+                },
+                "damageDice": {
+                    "type": ["string", "null"],
+                    "pattern": "^\\d+d\\d+([+-]\\d+)?$",
+                    "description": "Dice expression for damage (e.g., '2d10', '1d6+2')"
+                },
+                "statusEffect": {
+                    "type": ["string", "null"],
+                    "description": "Status effect applied (null if none)"
+                },
+                "statusDuration": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "Duration of status effect in rounds"
+                },
+                "specialEffect": {
+                    "type": ["string", "null"],
+                    "description": "Description of any special effect"
+                },
+                "requiresAssistance": {
+                    "type": "boolean",
+                    "description": "Whether the player may need help to recover"
+                },
+                "surpriseRound": {
+                    "type": "boolean",
+                    "description": "Whether enemies gain a surprise round"
+                },
+                "saveDc": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 30,
+                    "description": "DC for any saving throw (if applicable)"
+                },
+                "saveAttribute": {
+                    "type": "string",
+                    "description": "Attribute used for saving throw"
+                },
+                "damagePerRound": {
+                    "type": "string",
+                    "pattern": "^\\d+d\\d+([+-]\\d+)?$",
+                    "description": "Ongoing damage per round (if applicable)"
+                },
+                "usesGlitchEffectTable": {
+                    "type": "boolean",
+                    "description": "Whether to roll on the Glitch Effect Table"
+                }
+            },
+            "additionalProperties": false
+        },
+        "hazardCharacteristicsDefinition": {
+            "type": "object",
+            "description": "Boolean characteristics of a hazard",
+            "required": ["dealsImmediateDamage", "appliesStatusEffect", "mayTriggerCombat", "hasUnpredictableEffects", "mayRequireAssistance"],
+            "properties": {
+                "dealsImmediateDamage": {
+                    "type": "boolean",
+                    "description": "Whether the hazard deals immediate damage"
+                },
+                "appliesStatusEffect": {
+                    "type": "boolean",
+                    "description": "Whether the hazard applies a status effect"
+                },
+                "mayTriggerCombat": {
+                    "type": "boolean",
+                    "description": "Whether the hazard may result in combat"
+                },
+                "hasUnpredictableEffects": {
+                    "type": "boolean",
+                    "description": "Whether the hazard has random/unpredictable effects"
+                },
+                "mayRequireAssistance": {
+                    "type": "boolean",
+                    "description": "Whether the player may need help to recover"
+                }
+            },
+            "additionalProperties": false
+        },
+        "glitchEffectDefinition": {
+            "type": "object",
+            "description": "Definition for a Glitch Effect Table entry",
+            "required": ["roll", "effect", "description", "mechanic"],
+            "properties": {
+                "roll": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 6,
+                    "description": "d6 roll value for this effect"
+                },
+                "effect": {
+                    "type": "string",
+                    "description": "Short name of the effect"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Narrative description of the effect"
+                },
+                "mechanic": {
+                    "type": "string",
+                    "enum": ["teleport_random", "damage", "disable_item", "time_skip", "narrative", "movement_lock"],
+                    "description": "Mechanical effect type"
+                },
+                "distanceDice": {
+                    "type": "string",
+                    "pattern": "^\\d+d\\d+$",
+                    "description": "Dice for teleport distance (if applicable)"
+                },
+                "damageDice": {
+                    "type": "string",
+                    "pattern": "^\\d+d\\d+([+-]\\d+)?$",
+                    "description": "Dice for damage (if applicable)"
+                },
+                "damageType": {
+                    "type": "string",
+                    "description": "Type of damage dealt (if applicable)"
+                },
+                "durationDice": {
+                    "type": "string",
+                    "pattern": "^\\d+d\\d+$",
+                    "description": "Dice for duration (if applicable)"
+                },
+                "durationUnit": {
+                    "type": "string",
+                    "enum": ["rounds", "hours"],
+                    "description": "Unit for duration"
+                }
+            },
+            "additionalProperties": false
+        },
+        "detectionMethodDefinition": {
+            "type": "object",
+            "description": "Definition for a detection method",
+            "required": ["description", "requiresDiceRoll", "revealsHazardType"],
+            "properties": {
+                "formula": {
+                    "type": "string",
+                    "description": "Formula for passive detection (if applicable)"
+                },
+                "skill": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9-]+$",
+                    "description": "Skill used for active detection (if applicable)"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Human-readable description of the method"
+                },
+                "requiresDiceRoll": {
+                    "type": "boolean",
+                    "description": "Whether this method requires a dice roll"
+                },
+                "revealsHazardType": {
+                    "type": "boolean",
+                    "description": "Whether successful detection reveals the hazard type"
+                }
+            },
+            "additionalProperties": false
+        },
+        "criticalDetectionDefinition": {
+            "type": "object",
+            "description": "Definition for critical detection",
+            "required": ["threshold", "description"],
+            "properties": {
+                "threshold": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 20,
+                    "description": "Net successes required for critical detection"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Description of critical detection benefits"
+                }
+            },
+            "additionalProperties": false
+        },
+        "statusEffectDefinition": {
+            "type": "object",
+            "description": "Definition for a status effect",
+            "required": ["duration", "description"],
+            "properties": {
+                "damagePerRound": {
+                    "type": "string",
+                    "pattern": "^\\d+d\\d+([+-]\\d+)?$",
+                    "description": "Damage dealt each round (if applicable)"
+                },
+                "duration": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "Default duration in rounds"
+                },
+                "saveDc": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 30,
+                    "description": "DC for saving throw to end early (if applicable)"
+                },
+                "saveAttribute": {
+                    "type": "string",
+                    "description": "Attribute used for saving throw"
+                },
+                "cure": {
+                    "type": "string",
+                    "description": "Item or method that cures this status"
+                },
+                "effects": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "description": "Mechanical effects of the status"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Human-readable description"
+                }
+            },
+            "additionalProperties": false
+        }
+    }
+}

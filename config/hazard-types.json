@@ -1,0 +1,238 @@
+{
+    "$schema": "./schemas/hazard-types.schema.json",
+    "hazardTypes": {
+        "ObviousDanger": {
+            "id": "obvious-danger",
+            "detectionDc": 8,
+            "displayName": "Obvious Danger",
+            "description": "Unstable debris, exposed wiring, crumbling structures, or other visible hazards that still cause harm if walked into carelessly.",
+            "consequence": {
+                "damageType": "Physical",
+                "damageDice": "1d6",
+                "statusEffect": null,
+                "statusDuration": 0,
+                "specialEffect": null,
+                "requiresAssistance": false,
+                "surpriseRound": false
+            },
+            "avoidanceOptions": [
+                "Carefully navigate around the debris",
+                "Clear a path through (may take time)",
+                "Find an alternate route"
+            ],
+            "characteristics": {
+                "dealsImmediateDamage": true,
+                "appliesStatusEffect": false,
+                "mayTriggerCombat": false,
+                "hasUnpredictableEffects": false,
+                "mayRequireAssistance": false
+            }
+        },
+        "HiddenPit": {
+            "id": "hidden-pit",
+            "detectionDc": 12,
+            "displayName": "Hidden Pit",
+            "description": "Concealed drops, false floors, covered holes, or unstable ground that gives way underfoot.",
+            "consequence": {
+                "damageType": "Physical",
+                "damageDice": "2d10",
+                "statusEffect": null,
+                "statusDuration": 0,
+                "specialEffect": "May require assistance to escape. DC 12 Acrobatics to halve damage.",
+                "requiresAssistance": true,
+                "surpriseRound": false
+            },
+            "avoidanceOptions": [
+                "Walk around the concealed area",
+                "Jump over the pit (DC 12 Acrobatics)",
+                "Use debris or planks to bridge the gap"
+            ],
+            "characteristics": {
+                "dealsImmediateDamage": true,
+                "appliesStatusEffect": false,
+                "mayTriggerCombat": false,
+                "hasUnpredictableEffects": false,
+                "mayRequireAssistance": true
+            }
+        },
+        "ToxicZone": {
+            "id": "toxic-zone",
+            "detectionDc": 16,
+            "displayName": "Toxic Zone",
+            "description": "Chemical spills, radiation pockets, biological contamination, or other environmental poisons that harm those who enter.",
+            "consequence": {
+                "damageType": null,
+                "damageDice": null,
+                "statusEffect": "Poisoned",
+                "statusDuration": 3,
+                "specialEffect": "Take 1d6 damage each round while poisoned. DC 14 ENDURANCE save ends early. Antidote cures immediately.",
+                "requiresAssistance": false,
+                "surpriseRound": false,
+                "saveDc": 14,
+                "saveAttribute": "Endurance",
+                "damagePerRound": "1d6"
+            },
+            "avoidanceOptions": [
+                "Find a path that avoids the contaminated area",
+                "Use protective equipment (gas mask, hazmat suit)",
+                "Wait for conditions to clear (if temporary)"
+            ],
+            "characteristics": {
+                "dealsImmediateDamage": false,
+                "appliesStatusEffect": true,
+                "mayTriggerCombat": false,
+                "hasUnpredictableEffects": false,
+                "mayRequireAssistance": false
+            }
+        },
+        "GlitchPocket": {
+            "id": "glitch-pocket",
+            "detectionDc": 20,
+            "displayName": "Glitch Pocket",
+            "description": "Reality distortion zones where space, time, and matter behave unpredictably due to lingering Jotun corruption.",
+            "consequence": {
+                "damageType": "Special",
+                "damageDice": null,
+                "statusEffect": "Disoriented",
+                "statusDuration": 2,
+                "specialEffect": "Roll on Glitch Effect Table (d6) for random effect.",
+                "requiresAssistance": false,
+                "surpriseRound": false,
+                "usesGlitchEffectTable": true
+            },
+            "avoidanceOptions": [
+                "Give the distortion a wide berth",
+                "Wait for the glitch cycle to stabilize",
+                "Attempt to time passage through (extremely risky)"
+            ],
+            "characteristics": {
+                "dealsImmediateDamage": false,
+                "appliesStatusEffect": true,
+                "mayTriggerCombat": false,
+                "hasUnpredictableEffects": true,
+                "mayRequireAssistance": false
+            }
+        },
+        "AmbushSite": {
+            "id": "ambush-site",
+            "detectionDc": 16,
+            "displayName": "Ambush Site",
+            "description": "Signs of hostile presence: fresh tracks, disturbed debris, concealed positions, or other indicators of a prepared ambush.",
+            "consequence": {
+                "damageType": null,
+                "damageDice": null,
+                "statusEffect": null,
+                "statusDuration": 0,
+                "specialEffect": "Enemies gain surprise round. You cannot act in the first round. Enemies attack with advantage.",
+                "requiresAssistance": false,
+                "surpriseRound": true
+            },
+            "avoidanceOptions": [
+                "Approach from a different direction",
+                "Create a distraction to draw enemies out",
+                "Prepare for combat before entering",
+                "Find a way to avoid the area entirely"
+            ],
+            "characteristics": {
+                "dealsImmediateDamage": false,
+                "appliesStatusEffect": false,
+                "mayTriggerCombat": true,
+                "hasUnpredictableEffects": false,
+                "mayRequireAssistance": false
+            }
+        }
+    },
+    "glitchEffectTable": [
+        {
+            "roll": 1,
+            "effect": "Teleport",
+            "description": "Reality tears - you are teleported 2d6 rooms in a random direction!",
+            "mechanic": "teleport_random",
+            "distanceDice": "2d6"
+        },
+        {
+            "roll": 2,
+            "effect": "Psychic Feedback",
+            "description": "Psychic feedback - you take 2d10 psychic damage!",
+            "mechanic": "damage",
+            "damageDice": "2d10",
+            "damageType": "Psychic"
+        },
+        {
+            "roll": 3,
+            "effect": "Equipment Malfunction",
+            "description": "Equipment malfunction - a random item is disabled until repaired!",
+            "mechanic": "disable_item"
+        },
+        {
+            "roll": 4,
+            "effect": "Time Skip",
+            "description": "Time skip - you lose 1d4 hours, disoriented and confused!",
+            "mechanic": "time_skip",
+            "durationDice": "1d4",
+            "durationUnit": "hours"
+        },
+        {
+            "roll": 5,
+            "effect": "Memory Echo",
+            "description": "Memory echo - you experience a vivid flashback of past combat!",
+            "mechanic": "narrative"
+        },
+        {
+            "roll": 6,
+            "effect": "Reality Anchor",
+            "description": "Reality anchor - you cannot leave this room for 1d6 rounds!",
+            "mechanic": "movement_lock",
+            "durationDice": "1d6",
+            "durationUnit": "rounds"
+        }
+    ],
+    "detectionMethods": {
+        "PassivePerception": {
+            "formula": "WITS / 2",
+            "description": "Automatic detection based on WITS attribute. Provides hint only, no type revealed.",
+            "requiresDiceRoll": false,
+            "revealsHazardType": false
+        },
+        "ActiveInvestigation": {
+            "skill": "wasteland-survival",
+            "description": "Full skill check via investigate command. Reveals hazard type and avoidance options on success.",
+            "requiresDiceRoll": true,
+            "revealsHazardType": true
+        },
+        "AreaSweep": {
+            "skill": "wasteland-survival",
+            "description": "Multiple hazard detection in a single location. Each hazard is checked separately.",
+            "requiresDiceRoll": true,
+            "revealsHazardType": true
+        }
+    },
+    "criticalDetection": {
+        "threshold": 5,
+        "description": "Net successes >= 5 on active investigation provides additional context on how to disable or exploit the hazard."
+    },
+    "statusEffects": {
+        "Poisoned": {
+            "damagePerRound": "1d6",
+            "duration": 3,
+            "saveDc": 14,
+            "saveAttribute": "Endurance",
+            "cure": "Antidote consumable",
+            "description": "Take damage at the start of each round. Save at end of turn to end early."
+        },
+        "Disoriented": {
+            "duration": 2,
+            "effects": [
+                "Difficulty navigating",
+                "Penalty to perception checks"
+            ],
+            "description": "Applied after glitch pocket effects. Lasts 2 rounds."
+        }
+    },
+    "balanceNotes": {
+        "dcProgression": "DCs progress based on hazard subtlety: 8 (obvious) -> 12 (hidden) -> 16 (subtle) -> 20 (extremely subtle)",
+        "passiveDetectionDesign": "WITS / 2 means WITS 16 (passive 8) detects ObviousDanger, WITS 24 (passive 12) detects HiddenPit, etc.",
+        "consequenceEscalation": "Consequences escalate from minor damage to status effects to combat triggers",
+        "designIntent": "Hazard detection rewards cautious exploration while creating tension for players who rush ahead"
+    }
+}
