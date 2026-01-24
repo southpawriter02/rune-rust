@@ -1,0 +1,264 @@
+{
+    "$schema": "../schemas/trap-types.schema.json",
+    "version": "0.15.4d",
+    "description": "Trap configuration for the Trap Disarmament subsystem",
+    "trapTypes": [
+        {
+            "id": "tripwire",
+            "name": "Tripwire",
+            "enumValue": 0,
+            "detectionDc": 8,
+            "disarmDc": 8,
+            "description": "Simple mechanical trap using a wire to trigger an alarm or minor mechanism.",
+            "effect": {
+                "type": "alarm",
+                "damageDice": null,
+                "damageType": null,
+                "alertsEnemies": true,
+                "triggersLockdown": false
+            },
+            "salvage": [
+                "trigger-mechanism",
+                "wire-bundle"
+            ],
+            "flavorText": {
+                "detection": {
+                    "success": "Your trained eye catches the glint of wire stretched across the passage.",
+                    "failure": "Your foot catches the wire too late. A shrill alarm pierces the darkness."
+                },
+                "disarmament": {
+                    "success": "The wire goes slack in your hands. The trap is neutralized.",
+                    "critical": "Not only do you disable the wire, but you recover usable components from the mechanism.",
+                    "failure": "The mechanism resists your efforts. You'll need to try a different approach—and it won't be any easier.",
+                    "fumble": "Your tools slip at the worst moment. The alarm screams into the darkness."
+                },
+                "analysis": {
+                    "consequence": "Triggering this wire would sound an alarm, alerting nearby threats.",
+                    "hint": "The wire is attached to a simple bell mechanism. Cutting it near the anchor would silence it."
+                }
+            }
+        },
+        {
+            "id": "pressurePlate",
+            "name": "Pressure Plate",
+            "enumValue": 1,
+            "detectionDc": 10,
+            "disarmDc": 12,
+            "description": "Weight-sensitive plate that triggers a damaging mechanism when stepped on.",
+            "effect": {
+                "type": "damage",
+                "damageDice": "2d10",
+                "damageType": "physical",
+                "alertsEnemies": false,
+                "triggersLockdown": false
+            },
+            "salvage": [
+                "high-tension-spring",
+                "pressure-sensor"
+            ],
+            "flavorText": {
+                "detection": {
+                    "success": "The floor tile ahead sits slightly higher than its neighbors. A pressure plate.",
+                    "failure": "The floor gives way beneath your foot. Something clicks—then strikes."
+                },
+                "disarmament": {
+                    "success": "With careful precision, you disable the pressure mechanism. Safe.",
+                    "critical": "With expert precision, you dismantle the trap entirely, salvaging valuable components.",
+                    "failure": "The mechanism resists your efforts. You'll need to try a different approach—and it won't be any easier.",
+                    "fumble": "A wrong move—the mechanism triggers with you on top of it."
+                },
+                "analysis": {
+                    "consequence": "Failure would release a crushing mechanism dealing 2d10 damage.",
+                    "hint": "The pressure sensor has a calibration screw. Loosening it would increase the trigger threshold."
+                }
+            }
+        },
+        {
+            "id": "electrified",
+            "name": "Electrified Grid",
+            "enumValue": 2,
+            "detectionDc": 14,
+            "disarmDc": 16,
+            "description": "Electrified surface or grid that delivers a powerful shock.",
+            "effect": {
+                "type": "damage",
+                "damageDice": "3d10",
+                "damageType": "lightning",
+                "alertsEnemies": false,
+                "triggersLockdown": false
+            },
+            "salvage": [
+                "capacitor",
+                "blighted-power-cell"
+            ],
+            "flavorText": {
+                "detection": {
+                    "success": "The faint hum of electricity warns you of the charged grid ahead.",
+                    "failure": "The grid crackles to life as you step onto it. Lightning arcs through your body."
+                },
+                "disarmament": {
+                    "success": "The crackling fades. The grid is now just harmless metal.",
+                    "critical": "You not only disable the grid but carefully extract its power components. Excellent work.",
+                    "failure": "The mechanism resists your efforts. You'll need to try a different approach—and it won't be any easier.",
+                    "fumble": "Your probe touches the wrong contact. Lightning answers your mistake."
+                },
+                "analysis": {
+                    "consequence": "The grid would unleash 3d10 lightning damage through the conductive surface.",
+                    "hint": "The power coupling on the left side appears to be the main feed. Disconnecting it first would be wise."
+                }
+            }
+        },
+        {
+            "id": "laserGrid",
+            "name": "Laser Grid",
+            "enumValue": 3,
+            "detectionDc": 18,
+            "disarmDc": 20,
+            "description": "Advanced Old World security using focused light beams to detect intrusion.",
+            "effect": {
+                "type": "alarm",
+                "damageDice": null,
+                "damageType": null,
+                "alertsEnemies": true,
+                "triggersLockdown": true
+            },
+            "salvage": [
+                "sensor-module",
+                "focusing-crystal"
+            ],
+            "flavorText": {
+                "detection": {
+                    "success": "Faint red lines crisscross the corridor—Old World security lasers.",
+                    "failure": "The beam flares red as you break it. Doors slam shut. Alarms wail."
+                },
+                "disarmament": {
+                    "success": "The beams flicker and die. You've blinded the ancient eye.",
+                    "critical": "The system yields to your expertise. You salvage the focusing crystal and sensor module intact.",
+                    "failure": "The mechanism resists your efforts. You'll need to try a different approach—and it won't be any easier.",
+                    "fumble": "You stumble into the beam. Doors seal. Alarms howl. You're trapped."
+                },
+                "analysis": {
+                    "consequence": "Breaking the beam would trigger alarms and seal all nearby doors.",
+                    "hint": "The emitters cycle every few seconds. Timing your movements to the cycle is the key."
+                }
+            }
+        },
+        {
+            "id": "jotunDefense",
+            "name": "Jotun Defense",
+            "enumValue": 4,
+            "detectionDc": 22,
+            "disarmDc": 24,
+            "description": "Incomprehensible Jotun defense mechanism, the most dangerous trap type.",
+            "effect": {
+                "type": "damage",
+                "damageDice": "5d10",
+                "damageType": "physical",
+                "alertsEnemies": true,
+                "triggersLockdown": false
+            },
+            "salvage": [
+                "jotun-mechanism-fragment",
+                "ancient-power-core"
+            ],
+            "flavorText": {
+                "detection": {
+                    "success": "Something ancient stirs at the edge of your perception. Jotun defenses.",
+                    "failure": "Ancient mechanisms awaken. Pain and noise erupt in equal measure."
+                },
+                "disarmament": {
+                    "success": "The Jotun mechanism groans and falls silent. You've outsmarted the ancients.",
+                    "critical": "The ancient mechanism surrenders its secrets. You recover fragments of Jotun technology.",
+                    "failure": "The mechanism resists your efforts. You'll need to try a different approach—and it won't be any easier.",
+                    "fumble": "The ancient defense senses your fumbling. It punishes such incompetence severely."
+                },
+                "analysis": {
+                    "consequence": "The ancient defense would unleash 5d10 damage and summon security constructs.",
+                    "hint": "The mechanism hums in a pattern—ancient but recognizable. Matching the frequency with your tools might confuse it."
+                }
+            }
+        }
+    ],
+    "toolRequirements": {
+        "minimumDcForTools": 4,
+        "toolModifiers": {
+            "bareHands": -2,
+            "improvised": 0,
+            "proper": 1,
+            "masterwork": 2
+        },
+        "toolDescriptions": {
+            "bareHands": "Attempting without tools—significantly harder and restricted to low-DC traps.",
+            "improvised": "Makeshift tools cobbled together from available materials.",
+            "proper": "A proper Tinker's Toolkit with quality tools for the job.",
+            "masterwork": "Exceptional tools crafted by master artificers."
+        }
+    },
+    "analysisThresholds": {
+        "revealDcModifier": -2,
+        "revealConsequencesModifier": 0,
+        "revealHintModifier": 2,
+        "hintBonusDice": 1,
+        "description": "Analysis uses WITS check. Reveals: DC at (Base-2), consequences at (Base), hints at (Base+2). Hint grants +1d10 on disarmament."
+    },
+    "disarmamentRules": {
+        "attributeUsed": "Higher of WITS or FINESSE",
+        "dcEscalation": 1,
+        "criticalThreshold": 5,
+        "fumbleCondition": "0 successes + 1+ botch",
+        "fumbleConsequence": "Forced Execution",
+        "description": "Disarmament uses higher of WITS or FINESSE. Each failure adds +1 to DC. Net successes >= 5 yields salvage. Fumble triggers trap on disarmer."
+    },
+    "salvageComponents": {
+        "trigger-mechanism": {
+            "displayName": "Trigger Mechanism",
+            "rarity": "common",
+            "description": "Basic mechanical trigger, useful for crafting traps."
+        },
+        "wire-bundle": {
+            "displayName": "Wire Bundle",
+            "rarity": "common",
+            "description": "Copper wiring, useful for electrical projects."
+        },
+        "high-tension-spring": {
+            "displayName": "High-Tension Spring",
+            "rarity": "common",
+            "description": "Used in crafting mechanical devices and improvised tools."
+        },
+        "pressure-sensor": {
+            "displayName": "Pressure Sensor",
+            "rarity": "uncommon",
+            "description": "Sensitive mechanism for detecting weight changes."
+        },
+        "capacitor": {
+            "displayName": "Capacitor",
+            "rarity": "uncommon",
+            "description": "Stores electrical charge. Essential for powered devices."
+        },
+        "blighted-power-cell": {
+            "displayName": "Blighted Power Cell",
+            "rarity": "rare",
+            "description": "Corrupted but functional power source. Handle with care."
+        },
+        "sensor-module": {
+            "displayName": "Sensor Module",
+            "rarity": "rare",
+            "description": "Advanced detection component from Old World technology."
+        },
+        "focusing-crystal": {
+            "displayName": "Focusing Crystal",
+            "rarity": "rare",
+            "description": "Precision optics for lasers and energy weapons."
+        },
+        "jotun-mechanism-fragment": {
+            "displayName": "Jotun Mechanism Fragment",
+            "rarity": "epic",
+            "description": "Incomprehensible Jotun technology. Valuable to the right collector."
+        },
+        "ancient-power-core": {
+            "displayName": "Ancient Power Core",
+            "rarity": "epic",
+            "description": "Intact Jotun power source. Radiates faint warmth."
+        }
+    }
+}

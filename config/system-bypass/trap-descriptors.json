@@ -1,0 +1,151 @@
+{
+    "$schema": "../schemas/trap-descriptors.schema.json",
+    "version": "0.15.4d",
+    "description": "Narrative text and descriptions for the Trap Disarmament subsystem",
+    "detectionDescriptions": {
+        "success": {
+            "tripwire": "Your trained eye catches the glint of wire stretched across the passage.",
+            "pressurePlate": "The floor tile ahead sits slightly higher than its neighbors. A pressure plate.",
+            "electrified": "The faint hum of electricity warns you of the charged grid ahead.",
+            "laserGrid": "Faint red lines crisscross the corridor—Old World security lasers.",
+            "jotunDefense": "Something ancient stirs at the edge of your perception. Jotun defenses."
+        },
+        "failure": {
+            "tripwire": "Your foot catches the wire too late. A shrill alarm pierces the darkness.",
+            "pressurePlate": "The floor gives way beneath your foot. Something clicks—then strikes.",
+            "electrified": "The grid crackles to life as you step onto it. Lightning arcs through your body.",
+            "laserGrid": "The beam flares red as you break it. Doors slam shut. Alarms wail.",
+            "jotunDefense": "Ancient mechanisms awaken. Pain and noise erupt in equal measure."
+        },
+        "generic": {
+            "success": "You spot the trap before it spots you. The mechanism lies dormant, waiting for its next victim.",
+            "failure": "The trap activates."
+        }
+    },
+    "disarmDescriptions": {
+        "success": {
+            "tripwire": "The wire goes slack in your hands. The trap is neutralized.",
+            "pressurePlate": "With careful precision, you disable the pressure mechanism. Safe.",
+            "electrified": "The crackling fades. The grid is now just harmless metal.",
+            "laserGrid": "The beams flicker and die. You've blinded the ancient eye.",
+            "jotunDefense": "The Jotun mechanism groans and falls silent. You've outsmarted the ancients."
+        },
+        "critical": {
+            "tripwire": "Not only do you disable the wire, but you recover usable components from the mechanism.",
+            "pressurePlate": "With expert precision, you dismantle the trap entirely, salvaging valuable components.",
+            "electrified": "You not only disable the grid but carefully extract its power components. Excellent work.",
+            "laserGrid": "The system yields to your expertise. You salvage the focusing crystal and sensor module intact.",
+            "jotunDefense": "The ancient mechanism surrenders its secrets. You recover fragments of Jotun technology."
+        },
+        "failure": {
+            "default": "The mechanism resists your efforts. You'll need to try a different approach—and it won't be any easier."
+        },
+        "fumble": {
+            "tripwire": "Your tools slip at the worst moment. The alarm screams into the darkness.",
+            "pressurePlate": "A wrong move—the mechanism triggers with you on top of it.",
+            "electrified": "Your probe touches the wrong contact. Lightning answers your mistake.",
+            "laserGrid": "You stumble into the beam. Doors seal. Alarms howl. You're trapped.",
+            "jotunDefense": "The ancient defense senses your fumbling. It punishes such incompetence severely."
+        },
+        "generic": {
+            "success": "The trap is disabled.",
+            "critical": "The trap is disabled and yields components.",
+            "failure": "The mechanism resists your efforts. You'll need to try a different approach—and it won't be any easier.",
+            "fumble": "The trap triggers on you."
+        }
+    },
+    "analysisDescriptions": {
+        "consequences": {
+            "tripwire": "Triggering this wire would sound an alarm, alerting nearby threats.",
+            "pressurePlate": "Failure would release a crushing mechanism dealing 2d10 damage.",
+            "electrified": "The grid would unleash 3d10 lightning damage through the conductive surface.",
+            "laserGrid": "Breaking the beam would trigger alarms and seal all nearby doors.",
+            "jotunDefense": "The ancient defense would unleash 5d10 damage and summon security constructs."
+        },
+        "hints": {
+            "tripwire": "The wire is attached to a simple bell mechanism. Cutting it near the anchor would silence it.",
+            "pressurePlate": "The pressure sensor has a calibration screw. Loosening it would increase the trigger threshold.",
+            "electrified": "The power coupling on the left side appears to be the main feed. Disconnecting it first would be wise.",
+            "laserGrid": "The emitters cycle every few seconds. Timing your movements to the cycle is the key.",
+            "jotunDefense": "The mechanism hums in a pattern—ancient but recognizable. Matching the frequency with your tools might confuse it."
+        },
+        "dcRevealed": {
+            "template": "The mechanism's complexity suggests a DC {dc} challenge."
+        },
+        "generic": {
+            "consequence": "Unknown consequences.",
+            "hint": "No hints available.",
+            "noInfo": "Analysis revealed nothing useful."
+        }
+    },
+    "forcedExecutionDescriptions": {
+        "header": "[Forced Execution]",
+        "description": "A fumble during disarmament triggers the trap directly on the disarmer.",
+        "mechanicalEffect": "Trap activates with disarmer as primary target. Trap is destroyed (no salvage possible).",
+        "narrativeIntro": "Your tools slip at the worst possible moment. The mechanism lurches—you hear a click, then a roar of energy. The trap executes its ancient purpose, with you at ground zero."
+    },
+    "procedureDescriptions": {
+        "detection": {
+            "name": "Step 1: Detection",
+            "required": true,
+            "checkType": "Perception (passive or active)",
+            "successOutcome": "Trap detected, may proceed to Analysis or Disarmament",
+            "failureOutcome": "Walk into trap, trigger effects immediately"
+        },
+        "analysis": {
+            "name": "Step 2: Analysis",
+            "required": false,
+            "checkType": "WITS",
+            "successOutcome": "Information revealed based on check result (DC, consequences, hints)",
+            "failureOutcome": "Limited or no information revealed"
+        },
+        "disarmament": {
+            "name": "Step 3: Disarmament",
+            "required": true,
+            "checkType": "Higher of WITS or FINESSE",
+            "successOutcome": "Trap disabled. Critical success yields salvage.",
+            "failureOutcome": "DC +1 for next attempt. Fumble triggers [Forced Execution]."
+        }
+    },
+    "toolDescriptions": {
+        "bareHands": {
+            "name": "Bare Hands",
+            "modifier": "-2d10",
+            "description": "Attempting without tools—significantly harder and restricted to low-DC traps (DC < 4 only).",
+            "restriction": "Cannot attempt traps with DC 4 or higher."
+        },
+        "improvised": {
+            "name": "Improvised Tools",
+            "modifier": "+0",
+            "description": "Makeshift tools cobbled together from available materials."
+        },
+        "proper": {
+            "name": "Tinker's Toolkit",
+            "modifier": "+1d10",
+            "description": "A proper toolkit with quality tools for the job."
+        },
+        "masterwork": {
+            "name": "Masterwork Tools",
+            "modifier": "+2d10",
+            "description": "Exceptional tools crafted by master artificers."
+        }
+    },
+    "salvageDescriptions": {
+        "common": {
+            "header": "Common Component",
+            "description": "Basic materials useful for simple crafting projects."
+        },
+        "uncommon": {
+            "header": "Uncommon Component",
+            "description": "Quality components with specialized applications."
+        },
+        "rare": {
+            "header": "Rare Component",
+            "description": "Advanced Old World technology, highly valued by artificers."
+        },
+        "epic": {
+            "header": "Epic Component",
+            "description": "Jotun-origin materials of extraordinary value and unknown potential."
+        }
+    }
+}
