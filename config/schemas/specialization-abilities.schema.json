@@ -88,7 +88,16 @@
                     "type": "string"
                 },
                 "trigger": {
-                    "type": "string"
+                    "oneOf": [
+                        {
+                            "type": "string",
+                            "description": "Simple text description of the trigger condition"
+                        },
+                        {
+                            "$ref": "#/$defs/triggerCondition",
+                            "description": "Structured trigger condition for programmatic evaluation"
+                        }
+                    ]
                 },
                 "requirements": {
                     "type": "array",
@@ -163,6 +172,42 @@
                         },
                         "target": {
                             "type": "string"
+                        },
+                        "duration": {
+                            "type": "string",
+                            "description": "Duration of the effect (e.g., 'until-rest')"
+                        },
+                        "checkTypes": {
+                            "type": "array",
+                            "description": "Check types affected by zone marker",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "reveals": {
+                            "type": "array",
+                            "description": "Information revealed by post-check abilities",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "avoids": {
+                            "type": "array",
+                            "description": "Hazards avoided by path-reveal abilities",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "pathType": {
+                            "type": "string",
+                            "description": "Type of path revealed (e.g., 'elevated')"
+                        },
+                        "bypasses": {
+                            "type": "array",
+                            "description": "Obstacles bypassed by path-reveal abilities",
+                            "items": {
+                                "type": "string"
+                            }
                         }
                     }
                 },
@@ -177,6 +222,61 @@
                     "items": {
                         "type": "string"
                     }
+                },
+                "creatureWeaknesses": {
+                    "type": "array",
+                    "description": "List of possible creature weaknesses (for Predator's Eye ability)",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "behaviorPatterns": {
+                    "type": "array",
+                    "description": "List of possible creature behavior patterns (for Predator's Eye ability)",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "triggerCondition": {
+            "type": "object",
+            "description": "Structured trigger condition for programmatic ability evaluation",
+            "properties": {
+                "checkType": {
+                    "type": "string",
+                    "description": "The type of Wasteland Survival check that triggers this ability",
+                    "enum": [
+                        "General",
+                        "Tracking",
+                        "Foraging",
+                        "Navigation",
+                        "HazardDetection",
+                        "SignReading",
+                        "Scouting"
+                    ]
+                },
+                "targetType": {
+                    "type": "string",
+                    "description": "The type of target being tracked (for Beast Tracker)",
+                    "enum": [
+                        "Unknown",
+                        "LivingCreature",
+                        "Construct",
+                        "Vehicle",
+                        "Group"
+                    ]
+                },
+                "terrain": {
+                    "type": "array",
+                    "description": "Terrain types that trigger this ability",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "hazardType": {
+                    "type": "string",
+                    "description": "Hazard type that triggers this ability (for Toxin Resistance)"
                 }
             }
         }

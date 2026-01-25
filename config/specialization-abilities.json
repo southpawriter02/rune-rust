@@ -1,8 +1,203 @@
 {
     "$schema": "./schemas/specialization-abilities.schema.json",
-    "version": "0.15.2g",
-    "description": "Specialization abilities for Gantry-Runner and Myrk-gengr specializations",
+    "version": "0.15.5h",
+    "description": "Specialization abilities for Acrobatics (Gantry-Runner), Stealth (Myrk-gengr), and Wasteland Survival (Veioimaor, Myr-Stalker, Gantry-Runner) skills",
     "specializations": {
+        "veioimaor": {
+            "id": "veioimaor",
+            "name": "Veioimaor",
+            "description": "Master hunters of the wasteland who track living prey with preternatural skill and claim hunting territories as their own",
+            "primarySkill": "WastelandSurvival",
+            "abilities": [
+                {
+                    "id": "beast-tracker",
+                    "name": "[Beast Tracker]",
+                    "type": "passive",
+                    "description": "Gain +2d10 when tracking living creatures in the wasteland",
+                    "trigger": {
+                        "checkType": "Tracking",
+                        "targetType": "LivingCreature"
+                    },
+                    "effect": {
+                        "type": "dice-bonus",
+                        "diceBonus": 2
+                    },
+                    "narrativeTemplates": [
+                        "Your hunter's instincts sharpen as you recognize the signs of living prey.",
+                        "The creature's trail speaks to you in ways others cannot perceive."
+                    ]
+                },
+                {
+                    "id": "predators-eye",
+                    "name": "[Predator's Eye]",
+                    "type": "active",
+                    "trigger": "After a successful tracking check against a living creature",
+                    "description": "Reveal the tracked creature's weakness and behavior pattern",
+                    "effect": {
+                        "type": "post-check",
+                        "reveals": ["weakness", "behavior"]
+                    },
+                    "creatureWeaknesses": [
+                        "fire",
+                        "cold",
+                        "electricity",
+                        "poison",
+                        "sonic",
+                        "radiation",
+                        "psychic"
+                    ],
+                    "behaviorPatterns": [
+                        "aggressive-territorial",
+                        "pack-hunter",
+                        "ambush-predator",
+                        "scavenger-opportunist",
+                        "nocturnal-stalker",
+                        "migratory-herd",
+                        "solitary-hunter"
+                    ],
+                    "narrativeTemplates": [
+                        "You discern the creature's vulnerability to {weakness} and recognize its {behavior} behavior.",
+                        "Your predator's eye reveals the beast's weakness and hunting patterns."
+                    ]
+                },
+                {
+                    "id": "hunting-grounds",
+                    "name": "[Hunting Grounds]",
+                    "type": "active",
+                    "description": "Mark an area as your hunting grounds, granting +2d10 to all Wasteland Survival checks in the zone until rest",
+                    "effect": {
+                        "type": "zone-marker",
+                        "diceBonus": 2,
+                        "duration": "until-rest",
+                        "checkTypes": ["all"]
+                    },
+                    "limitations": [
+                        "Only one hunting grounds marker can be active at a time",
+                        "Marking a new area automatically clears any existing marker"
+                    ],
+                    "narrativeTemplates": [
+                        "You mark {areaName} as your hunting grounds. The territory feels familiar now.",
+                        "This land is yours. Every survival instinct sharpens within these bounds."
+                    ]
+                }
+            ]
+        },
+        "myr-stalker": {
+            "id": "myr-stalker",
+            "name": "Myr-Stalker",
+            "description": "Survivors who have mastered the treacherous mires and swamps, immune to the poisons that claim lesser wanderers",
+            "primarySkill": "WastelandSurvival",
+            "abilities": [
+                {
+                    "id": "swamp-navigator",
+                    "name": "[Swamp Navigator]",
+                    "type": "passive",
+                    "description": "Gain +1d10 to all Wasteland Survival checks in swamp or marsh terrain",
+                    "trigger": {
+                        "terrain": ["Swamp", "Marsh", "Bog", "Wetland"]
+                    },
+                    "effect": {
+                        "type": "dice-bonus",
+                        "diceBonus": 1
+                    },
+                    "narrativeTemplates": [
+                        "The mire's secrets are no mystery to you.",
+                        "You read the swamp's treacherous surface with practiced ease."
+                    ]
+                },
+                {
+                    "id": "toxin-resistance",
+                    "name": "[Toxin Resistance]",
+                    "type": "passive",
+                    "description": "Gain advantage on saves against poison gas hazards",
+                    "trigger": {
+                        "hazardType": "PoisonGas"
+                    },
+                    "effect": {
+                        "type": "advantage",
+                        "target": "hazard-save"
+                    },
+                    "narrativeTemplates": [
+                        "Years in the mire have hardened your lungs against toxic vapors.",
+                        "The poison gas that would fell others merely stings your throat."
+                    ]
+                },
+                {
+                    "id": "mire-knowledge",
+                    "name": "[Mire Knowledge]",
+                    "type": "active",
+                    "trigger": "When navigating through a bog or swamp",
+                    "description": "Reveal a safe path through the mire, avoiding hazards",
+                    "effect": {
+                        "type": "path-reveal",
+                        "avoids": ["quicksand", "toxic-gas-pocket", "deep-water", "unstable-ground"]
+                    },
+                    "narrativeTemplates": [
+                        "You identify a safe path: {pathDescription}",
+                        "Your knowledge of the mire reveals a route that avoids the worst hazards."
+                    ]
+                }
+            ]
+        },
+        "ws-gantry-runner": {
+            "id": "ws-gantry-runner",
+            "name": "Gantry-Runner (Wasteland)",
+            "description": "Urban survivors who navigate the ruins with unmatched skill, finding paths and resources where others see only rubble",
+            "primarySkill": "WastelandSurvival",
+            "abilities": [
+                {
+                    "id": "urban-navigator",
+                    "name": "[Urban Navigator]",
+                    "type": "passive",
+                    "description": "Gain +1d10 to all Wasteland Survival checks in ruins terrain",
+                    "trigger": {
+                        "terrain": ["ModerateRuins", "DenseRuins", "LightRuins"]
+                    },
+                    "effect": {
+                        "type": "dice-bonus",
+                        "diceBonus": 1
+                    },
+                    "narrativeTemplates": [
+                        "The urban wasteland is your domain.",
+                        "You navigate the crumbling cityscape with instinctive familiarity."
+                    ]
+                },
+                {
+                    "id": "rooftop-routes",
+                    "name": "[Rooftop Routes]",
+                    "type": "active",
+                    "trigger": "When seeking an elevated path through ruins",
+                    "description": "Reveal an elevated route across rooftops and gantries that bypasses ground-level obstacles",
+                    "effect": {
+                        "type": "path-reveal",
+                        "pathType": "elevated",
+                        "bypasses": ["ground-obstacles", "patrols", "flooded-areas"]
+                    },
+                    "narrativeTemplates": [
+                        "You spot an elevated route: {routeDescription}",
+                        "Your eyes trace a path across the rooftops that others would never see."
+                    ]
+                },
+                {
+                    "id": "scrap-familiar",
+                    "name": "[Scrap Familiar]",
+                    "type": "passive",
+                    "description": "Gain +1d10 when foraging in ruins terrain",
+                    "trigger": {
+                        "checkType": "Foraging",
+                        "terrain": ["ModerateRuins", "DenseRuins", "LightRuins"]
+                    },
+                    "effect": {
+                        "type": "dice-bonus",
+                        "diceBonus": 1
+                    },
+                    "narrativeTemplates": [
+                        "You know exactly where the useful scraps hide in these ruins.",
+                        "The urban wasteland yields its treasures to your practiced eye."
+                    ]
+                }
+            ]
+        },
         "gantry-runner": {
             "id": "gantry-runner",
             "name": "Gantry-Runner",
