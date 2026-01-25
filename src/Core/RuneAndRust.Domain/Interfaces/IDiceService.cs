@@ -17,16 +17,18 @@ public interface IDiceService
     /// </summary>
     /// <param name="pool">The dice pool to roll.</param>
     /// <param name="advantageType">Whether to roll with advantage or disadvantage.</param>
+    /// <param name="context">The context for this roll.</param>
     /// <returns>The complete roll result with breakdown.</returns>
-    DiceRollResult Roll(DicePool pool, AdvantageType advantageType = AdvantageType.Normal);
+    DiceRollResult Roll(DicePool pool, AdvantageType advantageType = AdvantageType.Normal, string context = "Unspecified");
 
     /// <summary>
     /// Parses dice notation and rolls.
     /// </summary>
     /// <param name="notation">Dice notation (e.g., "3d6+5").</param>
     /// <param name="advantageType">Advantage/disadvantage.</param>
+    /// <param name="context">The context for this roll.</param>
     /// <returns>Roll result.</returns>
-    DiceRollResult Roll(string notation, AdvantageType advantageType = AdvantageType.Normal);
+    DiceRollResult Roll(string notation, AdvantageType advantageType = AdvantageType.Normal, string context = "Unspecified");
 
     /// <summary>
     /// Convenience method for rolling a single die type.

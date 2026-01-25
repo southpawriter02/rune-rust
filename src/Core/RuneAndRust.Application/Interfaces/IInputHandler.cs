@@ -67,12 +67,6 @@ public record DropCommand(string ItemName) : GameCommand;
 public record UseCommand(string ItemName) : GameCommand;
 
 /// <summary>
-/// Command to examine an item, monster, or room feature in detail.
-/// </summary>
-/// <param name="Target">The name of the target to examine.</param>
-public record ExamineCommand(string Target) : GameCommand;
-
-/// <summary>
 /// Command to display detailed player statistics.
 /// </summary>
 public record StatusCommand : GameCommand;

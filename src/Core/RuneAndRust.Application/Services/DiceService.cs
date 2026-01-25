@@ -38,19 +38,20 @@ public class DiceService : IDiceService
     /// </summary>
     /// <param name="pool">The dice pool to roll.</param>
     /// <param name="advantageType">Whether to roll with advantage or disadvantage.</param>
+    /// <param name="context">The context for this roll.</param>
     /// <returns>The complete roll result with breakdown.</returns>
-    public DiceRollResult Roll(DicePool pool, AdvantageType advantageType = AdvantageType.Normal)
+    public DiceRollResult Roll(DicePool pool, AdvantageType advantageType = AdvantageType.Normal, string context = "Unspecified")
     {
-        _logger.LogDebug("Rolling {Pool} with {AdvantageType}", pool, advantageType);
+        _logger.LogTrace("Rolling {Pool} with {AdvantageType} for {Context}", pool, advantageType, context);
 
         if (advantageType == AdvantageType.Normal)
         {
-            return RollOnce(pool, advantageType);
+            return RollOnce(pool, advantageType, context);
         }
 
         // Roll twice for advantage/disadvantage
-        var roll1 = RollOnce(pool, advantageType);
-        var roll2 = RollOnce(pool, advantageType);
+        var roll1 = RollOnce(pool, advantageType, context);
+        var roll2 = RollOnce(pool, advantageType, context);
 
         var allTotals = new[] { roll1.Total, roll2.Total };
         var selectedIndex = advantageType == AdvantageType.Advantage
@@ -68,13 +69,14 @@ public class DiceService : IDiceService
             allTotals,
             selectedIndex);
 
-        _logger.LogInformation(
-            "Roll {Pool} ({AdvantageType}): [{Roll1}, {Roll2}] -> {Selected}",
-            pool, advantageType, roll1.Total, roll2.Total, result.Total);
+        _logger.LogDebug(
+            "Roll {Pool} ({AdvantageType}) for {Context}: [{Roll1}, {Roll2}] -> {Selected}",
+            pool, advantageType, context, roll1.Total, roll2.Total, result.Total);
 
         _eventLogger?.LogDice("DiceRolled", $"{pool} = {result.Total}",
             data: new Dictionary<string, object>
             {
+                ["context"] = context,
                 ["pool"] = pool.ToString(),
                 ["total"] = result.Total,
                 ["advantageType"] = advantageType.ToString()
@@ -88,12 +90,13 @@ public class DiceService : IDiceService
     /// </summary>
     /// <param name="notation">Dice notation (e.g., "3d6+5").</param>
     /// <param name="advantageType">Advantage/disadvantage.</param>
+    /// <param name="context">The context for this roll.</param>
     /// <returns>Roll result.</returns>
     /// <exception cref="FormatException">If notation is invalid.</exception>
-    public DiceRollResult Roll(string notation, AdvantageType advantageType = AdvantageType.Normal)
+    public DiceRollResult Roll(string notation, AdvantageType advantageType = AdvantageType.Normal, string context = "Unspecified")
     {
         var pool = DicePool.Parse(notation);
-        return Roll(pool, advantageType);
+        return Roll(pool, advantageType, context);
     }
 
     /// <summary>
@@ -126,7 +129,7 @@ public class DiceService : IDiceService
     /// <summary>
     /// Performs a single roll of the dice pool.
     /// </summary>
-    private DiceRollResult RollOnce(DicePool pool, AdvantageType advantageType)
+    private DiceRollResult RollOnce(DicePool pool, AdvantageType advantageType, string context)
     {
         var rolls = new List<int>();
         var explosions = new List<int>();
@@ -136,6 +139,8 @@ public class DiceService : IDiceService
         {
             var roll = RollSingleDie(pool.Faces);
             rolls.Add(roll);
+
+            _logger.LogTrace("Rolled die {Index} for {Context}: {Roll} (d{Faces})", i, context, roll, pool.Faces);
 
             // Handle exploding dice
             if (pool.Exploding && roll == pool.Faces)
@@ -150,8 +155,8 @@ public class DiceService : IDiceService
                     explosionCount++;
 
                     _logger.LogDebug(
-                        "Die exploded! Roll {Explosion} on d{Faces} (explosion {Count})",
-                        explosionRoll, pool.Faces, explosionCount);
+                        "Die exploded! Roll {Explosion} on d{Faces} (explosion {Count}) for {Context}",
+                        explosionRoll, pool.Faces, explosionCount, context);
                 }
             }
         }
@@ -160,8 +165,8 @@ public class DiceService : IDiceService
         var total = diceTotal + pool.Modifier;
 
         _logger.LogDebug(
-            "Rolled {Pool}: dice=[{Rolls}] explosions=[{Explosions}] total={Total}",
-            pool, string.Join(",", rolls), string.Join(",", explosions), total);
+            "Rolled {Pool} for {Context}: dice=[{Rolls}] explosions=[{Explosions}] total={Total}",
+            pool, context, string.Join(",", rolls), string.Join(",", explosions), total);
 
         return new DiceRollResult(
             pool,
