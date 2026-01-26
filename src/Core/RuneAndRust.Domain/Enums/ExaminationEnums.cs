@@ -18,18 +18,55 @@ public enum ExaminationLayer
 /// <summary>
 /// Categories of objects that can be examined.
 /// </summary>
+/// <remarks>
+/// <para>
+/// Categories provide the primary filter for descriptor lookup. Each category
+/// contains specific object types with layered examination text.
+/// </para>
+/// <para>
+/// Added in v0.15.6c: Furniture, Environmental, Creature categories.
+/// </para>
+/// </remarks>
 public enum ObjectCategory
 {
+    /// <summary>Entry points and barriers (LockedDoor, BlastDoor, SecurityDoor).</summary>
     Door,
+
+    /// <summary>Technical equipment (Console, Terminal, Servitor, PowerUnit).</summary>
     Machinery,
+
+    /// <summary>Artistic and historical objects (Inscription, Mural, Statue).</summary>
     Decorative,
+
+    /// <summary>Storage objects (Chest, Locker, Crate, Safe).</summary>
     Container,
+
+    /// <summary>Structural elements (Wall, Floor, Pillar). Legacy alias for Environmental.</summary>
     Structural,
+
+    /// <summary>Plant life and fungi.</summary>
     Flora,
+
+    /// <summary>Animal life and creatures.</summary>
     Fauna,
+
+    /// <summary>Deceased creatures and remains.</summary>
     Corpse,
+
+    /// <summary>Written text and carvings.</summary>
     Inscription,
-    Item
+
+    /// <summary>Portable items and equipment.</summary>
+    Item,
+
+    /// <summary>Functional furniture (Table, Chair, Bed, Workbench, Shelf). Added in v0.15.6c.</summary>
+    Furniture = 11,
+
+    /// <summary>Room structural features (Wall, Floor, Ceiling, Vent, Pipe). Added in v0.15.6c.</summary>
+    Environmental = 12,
+
+    /// <summary>Living or deceased creatures and remains. Added in v0.15.6c.</summary>
+    Creature = 13
 }
 
 /// <summary>
