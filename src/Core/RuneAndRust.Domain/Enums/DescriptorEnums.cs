@@ -92,3 +92,28 @@ public enum RoomSize
     /// <summary>Extra large rooms like boss arenas.</summary>
     XLarge
 }
+
+/// <summary>
+/// Defines the type of target being searched.
+/// </summary>
+/// <remarks>
+/// Used by the search command (v0.15.6f) to determine search scope
+/// and time calculations.
+/// </remarks>
+public enum SearchTarget
+{
+    /// <summary>
+    /// Search the entire room including all accessible containers.
+    /// </summary>
+    Room,
+
+    /// <summary>
+    /// Search a specific container within the current room.
+    /// </summary>
+    Container,
+
+    /// <summary>
+    /// Search a specific object or area within the room.
+    /// </summary>
+    Object
+}
