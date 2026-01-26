@@ -1,0 +1,108 @@
+{
+    "$schema": "./schemas/combined-checks.schema.json",
+    "synergies": [
+        {
+            "id": "find-hidden-path",
+            "displayName": "Find Hidden Path",
+            "primarySkill": "navigation",
+            "secondarySkill": "acrobatics",
+            "secondaryMode": "traverse",
+            "timing": "on-primary-success",
+            "description": "Navigate to find a hidden path, then traverse the difficult terrain.",
+            "narratives": {
+                "fullSuccess": "You discover a hidden path and traverse it successfully.",
+                "partialSuccess": "You find the hidden path but cannot navigate the terrain.",
+                "primaryFailure": "You search thoroughly but find no hidden passages.",
+                "primaryFumble": "You become hopelessly lost searching for a hidden path."
+            }
+        },
+        {
+            "id": "track-to-lair",
+            "displayName": "Track to Lair",
+            "primarySkill": "tracking",
+            "secondarySkill": "system-bypass",
+            "secondaryMode": "enter",
+            "timing": "on-primary-success",
+            "description": "Track prey to its lair, then bypass the entrance security.",
+            "narratives": {
+                "fullSuccess": "You follow the trail to the lair and slip inside undetected.",
+                "partialSuccess": "You find the lair but cannot bypass its entrance.",
+                "primaryFailure": "The trail goes cold. You'll need to find it again.",
+                "primaryFumble": "The trail leads you into a dead end—you've been misled."
+            }
+        },
+        {
+            "id": "avoid-patrol",
+            "displayName": "Avoid Patrol",
+            "primarySkill": "hazard-detection",
+            "secondarySkill": "acrobatics",
+            "secondaryMode": "stealth",
+            "timing": "on-primary-success",
+            "description": "Detect an approaching patrol, then use stealth to evade them.",
+            "narratives": {
+                "fullSuccess": "You spot the patrol and slip into the shadows, evading them.",
+                "partialSuccess": "You spot the patrol but they catch a glimpse of you.",
+                "primaryFailure": "You don't notice the patrol until it's too late.",
+                "primaryFumble": "You walk directly into the patrol's path!"
+            }
+        },
+        {
+            "id": "find-and-loot",
+            "displayName": "Find and Loot",
+            "primarySkill": "foraging",
+            "secondarySkill": "system-bypass",
+            "secondaryMode": "lockpick",
+            "timing": "on-primary-success",
+            "description": "Discover a locked cache while foraging, then bypass the lock.",
+            "narratives": {
+                "fullSuccess": "You discover a locked cache and deftly bypass its mechanism.",
+                "partialSuccess": "You find a cache but cannot bypass its lock.",
+                "primaryFailure": "You find nothing of particular value.",
+                "primaryFumble": "Your search disturbs something dangerous."
+            }
+        }
+    ],
+    "secondaryDCs": {
+        "find-hidden-path": {
+            "narrow-ledge": 2,
+            "collapsed-tunnel": 3,
+            "vertical-shaft": 3,
+            "crumbling-facade": 4
+        },
+        "track-to-lair": {
+            "simple-den": 2,
+            "burrow": 2,
+            "fortified-nest": 3,
+            "secured-cave": 4
+        },
+        "avoid-patrol": {
+            "inattentive": 3,
+            "alert": 3,
+            "elite": 4
+        },
+        "find-and-loot": {
+            "simple-latch": 2,
+            "combination": 3,
+            "electronic": 3,
+            "secured-vault": 4
+        }
+    },
+    "primaryDCs": {
+        "find-hidden-path": {
+            "baseModifier": 1,
+            "description": "Base navigation DC +1 for hidden path discovery"
+        },
+        "track-to-lair": {
+            "baseModifier": 0,
+            "description": "Standard tracking DC based on trail age"
+        },
+        "avoid-patrol": {
+            "ambush-dc": 3,
+            "description": "DC to detect ambush sites and patrols"
+        },
+        "find-and-loot": {
+            "cache-dc": 4,
+            "description": "DC to discover hidden caches (high difficulty)"
+        }
+    }
+}

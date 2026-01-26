@@ -1,0 +1,113 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://runeandrust.game/schemas/combined-checks.schema.json",
+    "title": "Combined Checks Configuration",
+    "description": "Configuration schema for combined skill checks in Exploration Synergies",
+    "type": "object",
+    "required": ["synergies"],
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "JSON Schema reference"
+        },
+        "synergies": {
+            "type": "array",
+            "description": "Array of synergy definitions",
+            "items": {
+                "type": "object",
+                "required": ["id", "displayName", "primarySkill", "secondarySkill", "timing"],
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "description": "Unique identifier for the synergy",
+                        "pattern": "^[a-z][a-z0-9-]*$"
+                    },
+                    "displayName": {
+                        "type": "string",
+                        "description": "Human-readable name"
+                    },
+                    "primarySkill": {
+                        "type": "string",
+                        "enum": ["navigation", "tracking", "hazard-detection", "foraging"],
+                        "description": "Primary Wasteland Survival skill"
+                    },
+                    "secondarySkill": {
+                        "type": "string",
+                        "enum": ["acrobatics", "system-bypass"],
+                        "description": "Secondary skill"
+                    },
+                    "secondaryMode": {
+                        "type": "string",
+                        "description": "Specific mode of secondary skill (e.g., traverse, stealth, lockpick)"
+                    },
+                    "timing": {
+                        "type": "string",
+                        "enum": ["on-primary-success", "on-primary-critical", "always"],
+                        "description": "When secondary check executes"
+                    },
+                    "description": {
+                        "type": "string",
+                        "description": "Player-facing description of the synergy"
+                    },
+                    "narratives": {
+                        "type": "object",
+                        "description": "Outcome-based narrative text",
+                        "properties": {
+                            "fullSuccess": {
+                                "type": "string",
+                                "description": "Narrative when both checks succeed"
+                            },
+                            "partialSuccess": {
+                                "type": "string",
+                                "description": "Narrative when primary succeeds but secondary fails"
+                            },
+                            "primaryFailure": {
+                                "type": "string",
+                                "description": "Narrative when primary check fails"
+                            },
+                            "primaryFumble": {
+                                "type": "string",
+                                "description": "Narrative when primary check fumbles"
+                            },
+                            "secondaryFumble": {
+                                "type": "string",
+                                "description": "Narrative when secondary check fumbles"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "secondaryDCs": {
+            "type": "object",
+            "description": "DC tables for secondary checks by synergy and situation",
+            "additionalProperties": {
+                "type": "object",
+                "additionalProperties": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 6,
+                    "description": "DC in success-counting system (number of net successes required)"
+                }
+            }
+        },
+        "primaryDCs": {
+            "type": "object",
+            "description": "DC configuration for primary checks",
+            "additionalProperties": {
+                "type": "object",
+                "properties": {
+                    "baseModifier": {
+                        "type": "integer",
+                        "description": "Modifier applied to base DC"
+                    },
+                    "description": {
+                        "type": "string",
+                        "description": "Description of the DC calculation"
+                    }
+                },
+                "additionalProperties": true
+            }
+        }
+    }
+}
