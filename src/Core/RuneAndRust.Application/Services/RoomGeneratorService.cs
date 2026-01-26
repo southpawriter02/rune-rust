@@ -52,14 +52,15 @@ public class RoomGeneratorService : IRoomGeneratorService
             template = CreateFallbackTemplate(biomeId);
         }
 
-        // Generate room name from pattern (use NamePattern directly for now)
-        var name = template.NamePattern;
+        // Generate room name from pattern
+        var name = template.Name;
 
         // Generate description from pattern
-        var description = template.DescriptionPattern;
+        var description = template.BaseDescription;
 
         // Create room
         var room = new Room(name, description, position);
+        room.SetIsSecret(template.IsSecret);
 
         // Set environment context
         var environment = CreateEnvironmentContext(biomeId, template);
@@ -135,31 +136,16 @@ public class RoomGeneratorService : IRoomGeneratorService
         var random = new Random(seed + 1); // Offset seed for exit generation
         var exits = new List<Direction>();
 
-        // Get exit slots from template
-        var exitSlots = template.GetSlotsByType(SlotType.Exit).ToList();
-        var exitProbabilities = new Dictionary<string, float>(StringComparer.OrdinalIgnoreCase);
-
-        // Extract exit probabilities from slot constraints
-        foreach (var slot in exitSlots)
+        // Default probabilities since we don't have slots
+        var exitProbabilities = new Dictionary<string, float>(StringComparer.OrdinalIgnoreCase)
         {
-            var direction = slot.GetConstraint("direction");
-            if (!string.IsNullOrEmpty(direction))
-            {
-                exitProbabilities[direction] = slot.EffectiveFillProbability;
-            }
-        }
-
-        // Use default probabilities if no exit slots defined
-        if (exitProbabilities.Count == 0)
-        {
-            exitProbabilities = new Dictionary<string, float>(StringComparer.OrdinalIgnoreCase)
-            {
-                ["north"] = 0.5f,
-                ["south"] = 0.5f,
-                ["east"] = 0.5f,
-                ["west"] = 0.5f
-            };
-        }
+            ["north"] = 0.5f,
+            ["south"] = 0.5f,
+            ["east"] = 0.5f,
+            ["west"] = 0.5f,
+            ["up"] = 0.1f,
+            ["down"] = 0.1f
+        };
 
         // Check each direction
         foreach (Direction direction in Enum.GetValues<Direction>())
@@ -182,7 +168,7 @@ public class RoomGeneratorService : IRoomGeneratorService
         }
 
         // Ensure minimum exits
-        var minExits = _rulesConfig.MinExitsPerRoom;
+        var minExits = Math.Max(_rulesConfig.MinExitsPerRoom, template.MinExits);
         while (exits.Count < minExits && exits.Count < 6)
         {
             var availableDirections = Enum.GetValues<Direction>()
@@ -196,7 +182,7 @@ public class RoomGeneratorService : IRoomGeneratorService
         }
 
         // Enforce maximum exits
-        var maxExits = _rulesConfig.MaxExitsPerRoom;
+        var maxExits = Math.Min(_rulesConfig.MaxExitsPerRoom, template.MaxExits);
         if (exits.Count > maxExits && guaranteedExit.HasValue)
         {
             exits = exits
@@ -247,9 +233,14 @@ public class RoomGeneratorService : IRoomGeneratorService
 
     private RoomTemplate? SelectTemplate(string biomeId, int depth, Random random)
     {
+        if (!Enum.TryParse<Biome>(biomeId, true, out var biomeEnum))
+        {
+            return null;
+        }
+
         var validTemplates = _templateConfig.Templates.Values
-            .Where(t => t.IsValidForBiome(biomeId))
-            .Where(t => t.IsValidForDepth(depth))
+            .Where(t => t.IsCompatibleWithBiome(biomeEnum))
+            // Depth validation removed as RoomTemplate does not support it
             .ToList();
 
         if (validTemplates.Count == 0) return null;
@@ -273,18 +264,21 @@ public class RoomGeneratorService : IRoomGeneratorService
         return validTemplates.Last();
     }
 
-    private static RoomTemplate CreateFallbackTemplate(string biome) =>
-        new(
+    private static RoomTemplate CreateFallbackTemplate(string biome)
+    {
+        if (!Enum.TryParse<Biome>(biome, true, out var biomeEnum))
+            biomeEnum = Biome.Citadel;
+
+        return new RoomTemplate(
             templateId: "fallback",
-            namePattern: "Dark Chamber",
-            descriptionPattern: "A room shrouded in darkness. You can barely make out the walls.",
-            validBiomes: [biome, "dungeon", "cave", "volcanic"],
-            roomType: RoomType.Standard,
-            slots: [],
-            weight: 1,
-            minDepth: 0,
-            maxDepth: null,
-            tags: ["fallback"]);
+            name: "Dark Chamber",
+            archetype: RoomArchetype.Chamber,
+            biome: biomeEnum,
+            baseDescription: "A room shrouded in darkness. You can barely make out the walls.",
+            minExits: 1,
+            maxExits: 4,
+            weight: 1);
+    }
 
     private EnvironmentContext CreateEnvironmentContext(string biomeId, RoomTemplate template)
     {
