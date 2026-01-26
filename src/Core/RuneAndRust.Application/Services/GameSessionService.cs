@@ -1301,7 +1301,7 @@ public class GameSessionService
             {
                 HiddenElementType.Trap => ObjectCategory.Machinery,
                 HiddenElementType.SecretDoor => ObjectCategory.Door,
-                HiddenElementType.Cache => ObjectCategory.Container,
+                HiddenElementType.HiddenCache => ObjectCategory.Container,
                 _ => ObjectCategory.Decorative
             };
 

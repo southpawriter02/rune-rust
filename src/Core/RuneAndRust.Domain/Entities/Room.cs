@@ -696,15 +696,16 @@ public class Room : IEntity
     /// and reveals any that the player can detect.
     /// </summary>
     /// <param name="passivePerception">The player's passive perception value.</param>
+    /// <param name="characterId">The ID of the character doing the check (defaults to "system").</param>
     /// <returns>List of newly revealed elements.</returns>
-    public IReadOnlyList<HiddenElement> CheckPassivePerception(int passivePerception)
+    public IReadOnlyList<HiddenElement> CheckPassivePerception(int passivePerception, string characterId = "system")
     {
         var revealed = new List<HiddenElement>();
         foreach (var element in _hiddenElements.Where(h => !h.IsRevealed))
         {
             if (element.CanBeDetectedBy(passivePerception))
             {
-                element.Reveal();
+                element.Reveal(characterId);
                 revealed.Add(element);
             }
         }

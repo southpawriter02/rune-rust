@@ -91,7 +91,7 @@ public class ExaminationService : IExaminationService
         {
             if (element.CanBeDetectedBy(passivePerception))
             {
-                element.Reveal();
+                element.Reveal("passive-perception");
                 revealedElements.Add(element.ToDto());
 
                 // Get a perception descriptor for narrative flavor
@@ -138,7 +138,7 @@ public class ExaminationService : IExaminationService
         {
             if (checkResult.TotalResult >= element.DetectionDC)
             {
-                element.Reveal();
+                element.Reveal("active-search");
                 revealedElements.Add(element.ToDto());
 
                 // Determine success level based on how much we exceeded the DC

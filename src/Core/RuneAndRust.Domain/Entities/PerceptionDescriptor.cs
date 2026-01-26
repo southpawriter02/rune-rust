@@ -82,7 +82,7 @@ public class PerceptionDescriptor : IEntity
         string descriptorText,
         int requiredDC = 14,
         Biome? biomeAffinity = null) =>
-        new(HiddenElementType.Cache, PerceptionSuccessLevel.Standard, requiredDC, descriptorText, biomeAffinity);
+        new(HiddenElementType.HiddenCache, PerceptionSuccessLevel.Standard, requiredDC, descriptorText, biomeAffinity);
 
     public override string ToString() => $"{PerceptionType} ({SuccessLevel}, DC {RequiredDC})";
 }

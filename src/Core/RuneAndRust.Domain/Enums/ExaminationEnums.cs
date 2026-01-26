@@ -60,16 +60,6 @@ public enum Biome
 }
 
 /// <summary>
-/// Types of hidden elements that can be detected via perception.
-/// </summary>
-public enum HiddenElementType
-{
-    Trap,
-    SecretDoor,
-    Cache
-}
-
-/// <summary>
 /// Success levels for perception checks.
 /// </summary>
 public enum PerceptionSuccessLevel
