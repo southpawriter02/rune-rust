@@ -1,0 +1,44 @@
+{
+  "TemplateId": "transit_hub",
+  "Biome": "the_roots",
+  "Size": "Large",
+  "Archetype": "Junction",
+  "NameTemplates": [
+    "The {Adjective} Transit Hub",
+    "The {Adjective} Transportation Nexus",
+    "The {Adjective} Junction Chamber"
+  ],
+  "Adjectives": [
+    "Collapsed",
+    "Shattered",
+    "Ruined",
+    "Broken",
+    "Fractured"
+  ],
+  "DescriptionTemplates": [
+    "A {Adjective} transit hub spreads before you. {Detail}. Rail lines converge here from multiple directions.",
+    "This {Adjective} transportation nexus once directed cargo throughout the facility. {Detail}. The rails are now twisted and broken.",
+    "You emerge into a {Adjective} junction chamber. {Detail}. Multiple transit passages branch off like spokes on a wheel."
+  ],
+  "Details": [
+    "Abandoned transit cars sit motionless on broken rails",
+    "Overhead conveyor systems hang at dangerous angles",
+    "Loading platforms provide elevated vantage points",
+    "Routing displays flicker with corrupted destination data",
+    "The skeletal remains of automated loaders rust in place"
+  ],
+  "MinConnectionPoints": 3,
+  "MaxConnectionPoints": 5,
+  "ValidConnections": [
+    "Corridor",
+    "Chamber",
+    "Junction"
+  ],
+  "Difficulty": "Medium",
+  "Tags": [
+    "Branching",
+    "Choice",
+    "Transit",
+    "Industrial"
+  ]
+}

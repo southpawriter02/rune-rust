@@ -1,0 +1,25 @@
+{
+  "bindings": {
+    "N": "north",
+    "S": "south",
+    "E": "east",
+    "W": "west",
+    "U": "up",
+    "D": "down",
+    "Enter": "confirm",
+    "Escape": "cancel",
+    "M": "menu",
+    "H": "help",
+    "I": "inventory",
+    "C": "character",
+    "J": "journal",
+    "B": "bench",
+    "F": "interact",
+    "L": "look",
+    "X": "search",
+    "Spacebar": "wait",
+    "A": "attack",
+    "Q": "light",
+    "R": "heavy"
+  }
+}

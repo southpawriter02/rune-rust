@@ -1,0 +1,44 @@
+{
+  "$schema": "../schema/capture-template.schema.json",
+  "category": "rusted-servitor",
+  "version": "1.0.0",
+  "description": "Templates for Rusted Servitor encounters and automaton examinations. Matched by keywords: servitor, automaton, machine.",
+  "matchKeywords": ["servitor", "automaton", "machine", "mechanical"],
+  "templates": [
+    {
+      "id": "servitor-fungal-infection",
+      "type": "Specimen",
+      "fragmentContent": "The servo-motor shows signs of organic fungal infiltration. Mycelial threads have woven through the mechanical joints, creating an unsettling fusion of rust and growth.",
+      "source": "Servitor examination",
+      "quality": 15,
+      "tags": ["servitor", "fungal", "blight-adjacent"]
+    },
+    {
+      "id": "servitor-maintenance-log",
+      "type": "TextFragment",
+      "fragmentContent": "Recovered maintenance logs, partially corrupted: '...Unit 7-Alpha reporting nominal function. Awaiting directives from Central. Note: Unusual signal interference detected in lower sectors...'",
+      "source": "Recovered data-slate",
+      "matchKeywords": ["servitor", "automaton", "aesir"],
+      "quality": 15,
+      "tags": ["aesir", "pre-glitch", "log"]
+    },
+    {
+      "id": "servitor-crystal-growth",
+      "type": "VisualRecord",
+      "fragmentContent": "Crystalline growths cluster around the primary actuator joints. The formations pulse with a faint amber luminescence when the unit attempts movement, suggesting some form of energy harvesting.",
+      "source": "Visual inspection",
+      "matchKeywords": ["servitor", "automaton", "crystal"],
+      "quality": 15,
+      "tags": ["crystal", "energy"]
+    },
+    {
+      "id": "servitor-aetheric-resonance",
+      "type": "RunicTrace",
+      "fragmentContent": "Faint Aetheric resonance detected in the power coupling. The signature matches pre-Glitch Aesir manufacturing standards, though degradation patterns suggest centuries of dormancy.",
+      "source": "Runic analysis",
+      "matchKeywords": ["servitor", "aesir", "rune", "aetheric"],
+      "quality": 15,
+      "tags": ["aetheric", "pre-glitch", "runic"]
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "TemplateId": "rust_choked_corridor",
+  "Biome": "the_roots",
+  "Size": "Medium",
+  "Archetype": "Corridor",
+  "NameTemplates": [
+    "The {Adjective} Corridor",
+    "The {Adjective} Passage",
+    "The {Adjective} Hallway"
+  ],
+  "Adjectives": [
+    "Rust-Choked",
+    "Corroded",
+    "Decaying",
+    "Oxidized",
+    "Deteriorating"
+  ],
+  "DescriptionTemplates": [
+    "A {Adjective} corridor stretches before you. {Detail}. Flickering lights cast erratic shadows along the walls.",
+    "This {Adjective} passage connects distant chambers. {Detail}. The air is thick with the smell of decay.",
+    "You enter a {Adjective} hallway. {Detail}. Your footsteps echo in the confined space."
+  ],
+  "Details": [
+    "Rust flakes fall like snow from the ceiling",
+    "Condensation pools on the uneven floor",
+    "The walls are covered in oxidized stains",
+    "Overhead pipes hiss and groan with pressure",
+    "Ancient warning symbols are barely visible through the corrosion"
+  ],
+  "MinConnectionPoints": 2,
+  "MaxConnectionPoints": 3,
+  "ValidConnections": [
+    "Corridor",
+    "Chamber",
+    "Junction"
+  ],
+  "Difficulty": "Easy",
+  "Tags": [
+    "Connector",
+    "Linear"
+  ]
+}

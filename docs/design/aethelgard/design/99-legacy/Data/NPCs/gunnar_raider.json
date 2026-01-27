@@ -1,0 +1,18 @@
+{
+  "Id": "gunnar_raider",
+  "Name": "Gunnar the Raider",
+  "Description": "A wiry man with calculating eyes, dressed in the mismatched armor of the Rust-Clans. He sizes you up like prey.",
+  "InitialGreeting": "Well, well. Not every day someone wanders into our territory and lives. You looking for work, or trouble?",
+  "Archetype": "Raider",
+  "Subtype": "Veteran",
+  "RoomId": 15,
+  "IsHostile": false,
+  "Faction": "RustClans",
+  "BaseDisposition": -10,
+  "CurrentDisposition": -10,
+  "RootDialogueId": "gunnar_greeting",
+  "EncounteredTopics": [],
+  "HasBeenMet": false,
+  "IsAlive": true,
+  "QuestFlags": {}
+}
