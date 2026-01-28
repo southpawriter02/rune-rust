@@ -1,0 +1,38 @@
+{
+  "$schema": "./schemas/proficiency-acquisition.schema.json",
+  "ppPurchase": {
+    "enabled": true,
+    "costPerLevel": 2,
+    "note": "Flat cost per proficiency level advancement using Progression Points"
+  },
+  "npcTraining": {
+    "enabled": true,
+    "costs": {
+      "nonProficientToProficient": {
+        "piecesSilver": 50,
+        "weeks": 2
+      },
+      "proficientToExpert": {
+        "piecesSilver": 150,
+        "weeks": 4
+      },
+      "expertToMaster": {
+        "piecesSilver": 400,
+        "weeks": 8
+      }
+    },
+    "note": "Training costs scale with target proficiency level"
+  },
+  "combatExperience": {
+    "enabled": true,
+    "note": "Combat experience thresholds defined in proficiency-thresholds.json"
+  },
+  "archetype": {
+    "enabled": true,
+    "note": "Archetype proficiencies defined in archetype-proficiencies.json"
+  },
+  "specialization": {
+    "enabled": true,
+    "note": "Specialization-granted proficiencies defined per specialization"
+  }
+}

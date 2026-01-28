@@ -1,0 +1,146 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "proficiency-acquisition.schema.json",
+  "title": "Proficiency Acquisition Configuration",
+  "description": "Configuration for weapon proficiency acquisition methods, costs, and settings.",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema reference"
+    },
+    "ppPurchase": {
+      "type": "object",
+      "description": "Configuration for Progression Point purchases",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Whether PP purchases are enabled",
+          "default": true
+        },
+        "costPerLevel": {
+          "type": "integer",
+          "description": "Progression Points required per proficiency level advancement",
+          "minimum": 1,
+          "default": 2
+        },
+        "note": {
+          "type": "string",
+          "description": "Optional documentation note"
+        }
+      },
+      "required": ["enabled", "costPerLevel"],
+      "additionalProperties": false
+    },
+    "npcTraining": {
+      "type": "object",
+      "description": "Configuration for NPC trainer costs",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Whether NPC training is enabled",
+          "default": true
+        },
+        "costs": {
+          "type": "object",
+          "description": "Training costs per level transition",
+          "properties": {
+            "nonProficientToProficient": {
+              "$ref": "#/$defs/trainingCost",
+              "description": "Cost to advance from NonProficient to Proficient"
+            },
+            "proficientToExpert": {
+              "$ref": "#/$defs/trainingCost",
+              "description": "Cost to advance from Proficient to Expert"
+            },
+            "expertToMaster": {
+              "$ref": "#/$defs/trainingCost",
+              "description": "Cost to advance from Expert to Master"
+            }
+          },
+          "required": ["nonProficientToProficient", "proficientToExpert", "expertToMaster"],
+          "additionalProperties": false
+        },
+        "note": {
+          "type": "string",
+          "description": "Optional documentation note"
+        }
+      },
+      "required": ["enabled", "costs"],
+      "additionalProperties": false
+    },
+    "combatExperience": {
+      "type": "object",
+      "description": "Configuration for combat experience acquisition",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Whether combat experience is enabled",
+          "default": true
+        },
+        "note": {
+          "type": "string",
+          "description": "Optional documentation note"
+        }
+      },
+      "required": ["enabled"],
+      "additionalProperties": false
+    },
+    "archetype": {
+      "type": "object",
+      "description": "Configuration for archetype-granted proficiencies",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Whether archetype proficiencies are enabled",
+          "default": true
+        },
+        "note": {
+          "type": "string",
+          "description": "Optional documentation note"
+        }
+      },
+      "required": ["enabled"],
+      "additionalProperties": false
+    },
+    "specialization": {
+      "type": "object",
+      "description": "Configuration for specialization-granted proficiencies",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Whether specialization proficiencies are enabled",
+          "default": true
+        },
+        "note": {
+          "type": "string",
+          "description": "Optional documentation note"
+        }
+      },
+      "required": ["enabled"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["ppPurchase", "npcTraining", "combatExperience", "archetype", "specialization"],
+  "additionalProperties": false,
+  "$defs": {
+    "trainingCost": {
+      "type": "object",
+      "description": "Training cost definition",
+      "properties": {
+        "piecesSilver": {
+          "type": "integer",
+          "description": "Currency cost in Pieces Silver",
+          "minimum": 0
+        },
+        "weeks": {
+          "type": "integer",
+          "description": "Training duration in weeks",
+          "minimum": 1
+        }
+      },
+      "required": ["piecesSilver", "weeks"],
+      "additionalProperties": false
+    }
+  }
+}
