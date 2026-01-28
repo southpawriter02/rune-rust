@@ -1,0 +1,45 @@
+{
+  "$comment": "Armor proficiency effects configuration - Version 0.16.2a",
+  "armorProficiencyEffects": [
+    {
+      "level": "NonProficient",
+      "penaltyMultiplier": 2.0,
+      "attackModifier": -2,
+      "defenseModifier": 0,
+      "tierReduction": 0,
+      "canUseSpecialProperties": false,
+      "displayName": "Non-Proficient",
+      "description": "All armor penalties are doubled. -2 attack penalty. Cannot use special armor properties."
+    },
+    {
+      "level": "Proficient",
+      "penaltyMultiplier": 1.0,
+      "attackModifier": 0,
+      "defenseModifier": 0,
+      "tierReduction": 0,
+      "canUseSpecialProperties": true,
+      "displayName": "Proficient",
+      "description": "Standard armor penalties apply. Full access to armor functions and special properties."
+    },
+    {
+      "level": "Expert",
+      "penaltyMultiplier": 1.0,
+      "attackModifier": 0,
+      "defenseModifier": 0,
+      "tierReduction": 1,
+      "canUseSpecialProperties": true,
+      "displayName": "Expert",
+      "description": "Armor is treated as one tier lighter for penalty calculations. Heavy armor uses Medium penalties."
+    },
+    {
+      "level": "Master",
+      "penaltyMultiplier": 1.0,
+      "attackModifier": 0,
+      "defenseModifier": 1,
+      "tierReduction": 1,
+      "canUseSpecialProperties": true,
+      "displayName": "Master",
+      "description": "Tier reduction like Expert, plus +1 Defense bonus and halved armor maintenance costs."
+    }
+  ]
+}
