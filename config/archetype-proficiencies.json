@@ -1,0 +1,56 @@
+{
+    "$schema": "./schemas/archetype-proficiencies.schema.json",
+    "archetypes": [
+        {
+            "archetypeId": "warrior",
+            "displayName": "Warrior",
+            "description": "Master of arms, proficient with all weapons and armor. Warriors excel in direct combat and can effectively wield any weapon they find.",
+            "proficientCategories": [
+                "Axes",
+                "Swords",
+                "Hammers",
+                "Daggers",
+                "Polearms",
+                "Staves",
+                "Bows",
+                "Crossbows",
+                "Shields",
+                "Firearms",
+                "ArcaneImplements"
+            ]
+        },
+        {
+            "archetypeId": "skirmisher",
+            "displayName": "Skirmisher",
+            "description": "Light weapons specialist favoring speed and precision. Skirmishers excel with finesse weapons and ranged combat, avoiding heavy armor and two-handed melee weapons.",
+            "proficientCategories": [
+                "Daggers",
+                "Swords",
+                "Axes",
+                "Bows",
+                "Crossbows"
+            ]
+        },
+        {
+            "archetypeId": "mystic",
+            "displayName": "Mystic",
+            "description": "Arcane practitioner who channels magical energies. Mystics are proficient only with weapons that complement spellcasting, relying on magic rather than martial prowess.",
+            "proficientCategories": [
+                "Daggers",
+                "Staves",
+                "ArcaneImplements"
+            ]
+        },
+        {
+            "archetypeId": "adept",
+            "displayName": "Adept",
+            "description": "Hybrid combatant blending martial and mystical techniques. Adepts are proficient with select melee and ranged weapons that support their versatile fighting style.",
+            "proficientCategories": [
+                "Daggers",
+                "Staves",
+                "Hammers",
+                "Crossbows"
+            ]
+        }
+    ]
+}

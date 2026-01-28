@@ -1,0 +1,123 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "archetype-proficiencies.schema.json",
+    "title": "Archetype Proficiencies Configuration",
+    "description": "Defines weapon category proficiencies for each character archetype. Each archetype has a set of weapon categories they start proficient with; all other categories start at NonProficient level.",
+    "type": "object",
+    "required": ["archetypes"],
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "JSON schema reference for IDE validation support"
+        },
+        "archetypes": {
+            "type": "array",
+            "description": "Array of archetype proficiency definitions. Must contain exactly 4 entries: Warrior, Skirmisher, Mystic, Adept.",
+            "minItems": 4,
+            "maxItems": 4,
+            "items": {
+                "$ref": "#/$defs/archetypeProficiency"
+            }
+        }
+    },
+    "additionalProperties": false,
+    "$defs": {
+        "archetypeProficiency": {
+            "type": "object",
+            "description": "Proficiency definition for a single archetype, defining which weapon categories the archetype starts proficient with.",
+            "required": [
+                "archetypeId",
+                "displayName",
+                "description",
+                "proficientCategories"
+            ],
+            "properties": {
+                "archetypeId": {
+                    "type": "string",
+                    "description": "Unique identifier for the archetype. Must be lowercase and match character creation archetype IDs.",
+                    "pattern": "^[a-z]+$",
+                    "enum": ["warrior", "skirmisher", "mystic", "adept"],
+                    "examples": ["warrior", "mystic"]
+                },
+                "displayName": {
+                    "type": "string",
+                    "description": "Human-readable archetype name for UI display.",
+                    "minLength": 1,
+                    "maxLength": 50,
+                    "examples": ["Warrior", "Mystic"]
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Flavor text describing the archetype's combat style and weapon preferences.",
+                    "minLength": 20,
+                    "maxLength": 500
+                },
+                "proficientCategories": {
+                    "type": "array",
+                    "description": "Weapon categories the archetype starts proficient with. Categories not listed here start at NonProficient level with -3 attack, -2 damage penalties.",
+                    "minItems": 1,
+                    "maxItems": 11,
+                    "items": {
+                        "type": "string",
+                        "description": "Weapon category name. Must match WeaponCategory enum values.",
+                        "enum": [
+                            "Axes",
+                            "Swords",
+                            "Hammers",
+                            "Daggers",
+                            "Polearms",
+                            "Staves",
+                            "Bows",
+                            "Crossbows",
+                            "Shields",
+                            "Firearms",
+                            "ArcaneImplements"
+                        ]
+                    },
+                    "uniqueItems": true
+                }
+            },
+            "additionalProperties": false
+        },
+        "weaponCategory": {
+            "type": "string",
+            "description": "Valid weapon category values matching the WeaponCategory enum (0-10).",
+            "enum": [
+                "Axes",
+                "Swords",
+                "Hammers",
+                "Daggers",
+                "Polearms",
+                "Staves",
+                "Bows",
+                "Crossbows",
+                "Shields",
+                "Firearms",
+                "ArcaneImplements"
+            ]
+        }
+    },
+    "examples": [
+        {
+            "$schema": "./schemas/archetype-proficiencies.schema.json",
+            "archetypes": [
+                {
+                    "archetypeId": "warrior",
+                    "displayName": "Warrior",
+                    "description": "Master of arms, proficient with all weapons.",
+                    "proficientCategories": [
+                        "Axes", "Swords", "Hammers", "Daggers", "Polearms",
+                        "Staves", "Bows", "Crossbows", "Shields", "Firearms",
+                        "ArcaneImplements"
+                    ]
+                },
+                {
+                    "archetypeId": "mystic",
+                    "displayName": "Mystic",
+                    "description": "Arcane practitioner with limited weapon training.",
+                    "proficientCategories": ["Daggers", "Staves", "ArcaneImplements"]
+                }
+            ]
+        }
+    ]
+}
