@@ -604,4 +604,143 @@ public class LootService : ILootService
             itemId.Split('_', '-')
                 .Select(word => char.ToUpper(word[0]) + word[1..].ToLower()));
     }
+
+    // ═══════════════════════════════════════════════════════════════
+    // TIERED LOOT GENERATION (v0.16.0d)
+    // ═══════════════════════════════════════════════════════════════
+
+    /// <inheritdoc/>
+    public LootDrop GenerateTieredLoot(Monster monster, Random random)
+    {
+        ArgumentNullException.ThrowIfNull(monster);
+        ArgumentNullException.ThrowIfNull(random);
+
+        // Get the monster's drop class
+        var dropClass = GetDropClassForMonster(monster);
+        
+        _logger.LogDebug(
+            "Generating tiered loot for {MonsterName}: DropClass={DropClass}",
+            monster.Name,
+            dropClass);
+
+        // For now, delegate to existing loot generation
+        // Full tier probability implementation will be provided by IDropTableProvider
+        var baseLoot = GenerateLoot(monster);
+        
+        // Enhance items with tier information
+        var tieredItems = baseLoot.Items
+            .Select(item => DroppedItem.Create(
+                item.ItemId, 
+                item.Name, 
+                item.Quantity))
+            .ToList();
+
+        var result = LootDrop.Create(
+            tieredItems, 
+            new Dictionary<string, int>(baseLoot.Currency), 
+            monster.Name);
+
+        _logger.LogDebug(
+            "Generated tiered loot from {MonsterName}: {ItemCount} items, HighestTier={HighestTier}",
+            monster.Name,
+            result.TotalItems,
+            result.HighestTier);
+
+        return result;
+    }
+
+    /// <inheritdoc/>
+    public DroppedItem GenerateItemForTier(QualityTier tier, string category, Random random)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(category);
+        ArgumentNullException.ThrowIfNull(random);
+
+        _logger.LogDebug(
+            "Generating item for tier {Tier}, category={Category}",
+            tier,
+            category);
+
+        // Generate attribute bonus for tier 2+ items
+        int? attributeBonus = null;
+        string? bonusAttribute = null;
+
+        if ((int)tier >= 2)
+        {
+            // Tier 2 = +1-2, Tier 3 = +2-3, Tier 4 = +3-5
+            var tierValue = (int)tier;
+            var minBonus = tierValue - 1;
+            var maxBonus = tierValue + 1;
+            attributeBonus = random.Next(minBonus, maxBonus + 1);
+
+            // Select a random attribute
+            var attributes = new[] { "Might", "Finesse", "Vigor", "Will", "Presence" };
+            bonusAttribute = attributes[random.Next(attributes.Length)];
+        }
+
+        // Create item based on category
+        var itemId = $"generated-{category}-{tier.ToString().ToLowerInvariant()}";
+        var itemName = $"{tier} {char.ToUpper(category[0])}{category[1..]}";
+
+        var item = category.ToLowerInvariant() switch
+        {
+            "weapon" => DroppedItem.CreateWeapon(itemId, itemName, tier, attributeBonus, bonusAttribute),
+            "armor" => DroppedItem.CreateArmor(itemId, itemName, tier, attributeBonus, bonusAttribute),
+            _ => DroppedItem.CreateWeapon(itemId, itemName, tier, attributeBonus, bonusAttribute)
+        };
+
+        _logger.LogDebug(
+            "Generated tiered item: {FormattedName}",
+            item.FormattedName);
+
+        return item;
+    }
+
+    /// <inheritdoc/>
+    public EnemyDropClass GetDropClassForMonster(Monster monster)
+    {
+        ArgumentNullException.ThrowIfNull(monster);
+
+        // Get the monster definition to check for drop class metadata
+        if (!string.IsNullOrEmpty(monster.MonsterDefinitionId))
+        {
+            var definition = _configProvider.GetMonsterById(monster.MonsterDefinitionId);
+            if (definition != null)
+            {
+                // Check if definition has drop class metadata
+                // For now, infer from monster type
+                var name = definition.Name?.ToLowerInvariant() ?? "";
+                
+                if (name.Contains("boss") || name.Contains("lord") || name.Contains("king"))
+                {
+                    _logger.LogDebug(
+                        "Monster {MonsterName} classified as Boss based on name",
+                        monster.Name);
+                    return EnemyDropClass.Boss;
+                }
+                
+                if (name.Contains("elite") || name.Contains("champion"))
+                {
+                    _logger.LogDebug(
+                        "Monster {MonsterName} classified as Elite based on name",
+                        monster.Name);
+                    return EnemyDropClass.Elite;
+                }
+                
+                if (name.Contains("mini") || name.Contains("captain") || name.Contains("warden"))
+                {
+                    _logger.LogDebug(
+                        "Monster {MonsterName} classified as MiniBoss based on name",
+                        monster.Name);
+                    return EnemyDropClass.MiniBoss;
+                }
+            }
+        }
+
+        // Default to Standard
+        _logger.LogDebug(
+            "Monster {MonsterName} classified as Standard (default)",
+            monster.Name);
+        return EnemyDropClass.Standard;
+    }
 }
+

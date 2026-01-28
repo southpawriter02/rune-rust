@@ -1,6 +1,7 @@
 using RuneAndRust.Application.DTOs;
 using RuneAndRust.Domain.Definitions;
 using RuneAndRust.Domain.Entities;
+using RuneAndRust.Domain.Enums;
 using RuneAndRust.Domain.ValueObjects;
 
 namespace RuneAndRust.Application.Interfaces;
@@ -165,4 +166,96 @@ public interface ILootService
     /// </summary>
     /// <returns>A read-only list of all currency definitions.</returns>
     IReadOnlyList<CurrencyDefinition> GetAllCurrencies();
+
+    // ═══════════════════════════════════════════════════════════════
+    // TIERED LOOT GENERATION (v0.16.0d)
+    // ═══════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// Generates tiered loot from a defeated monster using quality tier probabilities.
+    /// </summary>
+    /// <param name="monster">The defeated monster entity.</param>
+    /// <param name="random">Random number generator for tier and item rolling.</param>
+    /// <returns>A LootDrop containing tier-scaled items with calculated statistics.</returns>
+    /// <remarks>
+    /// <para>
+    /// This method integrates the quality tier system (v0.16.0a-c) to generate
+    /// loot based on the monster's drop class. The process:
+    /// </para>
+    /// <list type="number">
+    ///   <item><description>Determine the monster's EnemyDropClass</description></item>
+    ///   <item><description>Query the drop table for tier probabilities</description></item>
+    ///   <item><description>Roll for each item based on the monster's drop count</description></item>
+    ///   <item><description>Apply attribute bonuses for Tier 2+ items</description></item>
+    ///   <item><description>Aggregate tier statistics in the LootDrop</description></item>
+    /// </list>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// var random = new Random(seed);
+    /// var loot = lootService.GenerateTieredLoot(defeatedBoss, random);
+    /// 
+    /// Console.WriteLine($"Highest tier: {loot.HighestTier}");
+    /// Console.WriteLine($"Myth-Forged drop: {loot.HasMythForged}");
+    /// 
+    /// foreach (var item in loot.Items)
+    /// {
+    ///     Console.WriteLine($"  {item.FormattedName}");
+    /// }
+    /// </code>
+    /// </example>
+    LootDrop GenerateTieredLoot(Monster monster, Random random);
+
+    /// <summary>
+    /// Generates a single item for a specific quality tier.
+    /// </summary>
+    /// <param name="tier">The quality tier for the item.</param>
+    /// <param name="category">The item category (e.g., "weapon", "armor").</param>
+    /// <param name="random">Random number generator for item selection and bonuses.</param>
+    /// <returns>A DroppedItem of the specified tier with appropriate bonuses.</returns>
+    /// <remarks>
+    /// <para>
+    /// This method creates items with tier-appropriate statistics:
+    /// </para>
+    /// <list type="bullet">
+    ///   <item><description>Tier 0-1: No attribute bonuses</description></item>
+    ///   <item><description>Tier 2+: Rolled attribute bonus based on tier scaling</description></item>
+    ///   <item><description>Tier 4: Unique properties and highest bonus range</description></item>
+    /// </list>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// var random = new Random();
+    /// var sword = lootService.GenerateItemForTier(QualityTier.ClanForged, "weapon", random);
+    /// 
+    /// Console.WriteLine($"Created: {sword.FormattedName}");
+    /// if (sword.HasAttributeBonus)
+    /// {
+    ///     Console.WriteLine($"  Bonus: +{sword.AttributeBonus} {sword.BonusAttribute}");
+    /// }
+    /// </code>
+    /// </example>
+    DroppedItem GenerateItemForTier(QualityTier tier, string category, Random random);
+
+    /// <summary>
+    /// Gets the drop class for a specific monster.
+    /// </summary>
+    /// <param name="monster">The monster entity to classify.</param>
+    /// <returns>The EnemyDropClass determining loot quality probabilities.</returns>
+    /// <remarks>
+    /// <para>
+    /// Drop class is determined by the monster's type and configuration.
+    /// Unknown monsters default to <see cref="EnemyDropClass.Standard"/>.
+    /// </para>
+    /// <para>
+    /// Drop class affects:
+    /// </para>
+    /// <list type="bullet">
+    ///   <item><description>Tier probability distribution</description></item>
+    ///   <item><description>Number of items dropped</description></item>
+    ///   <item><description>Chance of no-drop (Trash class only)</description></item>
+    /// </list>
+    /// </remarks>
+    EnemyDropClass GetDropClassForMonster(Monster monster);
 }
+
