@@ -1,0 +1,105 @@
+{
+  "$schema": "./schemas/armor-categories.schema.json",
+  "categories": [
+    {
+      "category": "Light",
+      "categoryValue": 0,
+      "displayName": "Light Armor",
+      "description": "Flexible protective gear favoring mobility over protection. Light armor imposes no penalties and allows full freedom of movement, making it ideal for agile combatants and spellcasters.",
+      "exampleArmors": [
+        "Cloth Armor",
+        "Padded Armor",
+        "Leather Armor",
+        "Hide Armor",
+        "Studded Leather"
+      ],
+      "penalties": {
+        "agilityDicePenalty": 0,
+        "staminaCostModifier": 0,
+        "movementPenalty": 0,
+        "hasStealthDisadvantage": false
+      },
+      "weightTier": 0,
+      "requiresSpecialTraining": false
+    },
+    {
+      "category": "Medium",
+      "categoryValue": 1,
+      "displayName": "Medium Armor",
+      "description": "Balanced protective gear providing moderate protection with manageable penalties. Medium armor is suitable for versatile combatants who need protection without sacrificing too much mobility.",
+      "exampleArmors": [
+        "Chain Mail",
+        "Scale Mail",
+        "Ring Mail",
+        "Brigandine",
+        "Splint Armor"
+      ],
+      "penalties": {
+        "agilityDicePenalty": -1,
+        "staminaCostModifier": 2,
+        "movementPenalty": -5,
+        "hasStealthDisadvantage": true
+      },
+      "weightTier": 1,
+      "requiresSpecialTraining": false
+    },
+    {
+      "category": "Heavy",
+      "categoryValue": 2,
+      "displayName": "Heavy Armor",
+      "description": "Maximum protection at the cost of mobility. Heavy armor is designed for frontline warriors who can afford reduced agility in exchange for superior defense. Blocks Galdr casting (Faraday-cage effect).",
+      "exampleArmors": [
+        "Half Plate",
+        "Full Plate",
+        "Fortress Armor"
+      ],
+      "penalties": {
+        "agilityDicePenalty": -2,
+        "staminaCostModifier": 5,
+        "movementPenalty": -10,
+        "hasStealthDisadvantage": true
+      },
+      "weightTier": 2,
+      "requiresSpecialTraining": false
+    },
+    {
+      "category": "Shields",
+      "categoryValue": 3,
+      "displayName": "Shields",
+      "description": "Held defensive equipment providing additional blocking capability. Shields impose minimal penalties while enabling active defense and special maneuvers. Not affected by the weight tier reduction system.",
+      "exampleArmors": [
+        "Buckler",
+        "Round Shield",
+        "Kite Shield",
+        "Tower Shield"
+      ],
+      "penalties": {
+        "agilityDicePenalty": 0,
+        "staminaCostModifier": 1,
+        "movementPenalty": 0,
+        "hasStealthDisadvantage": false
+      },
+      "weightTier": -1,
+      "requiresSpecialTraining": false
+    },
+    {
+      "category": "Specialized",
+      "categoryValue": 4,
+      "displayName": "Specialized Armor",
+      "description": "Exotic protective equipment requiring specific training to use effectively. These items represent faction-specific technology, unique construction methods, or unconventional protective gear that cannot be used without explicit instruction.",
+      "exampleArmors": [
+        "Servitor Shell",
+        "Symbiotic Carapace",
+        "Rune-Bonded Plate"
+      ],
+      "penalties": {
+        "agilityDicePenalty": -1,
+        "staminaCostModifier": 3,
+        "movementPenalty": -5,
+        "hasStealthDisadvantage": false
+      },
+      "weightTier": 1,
+      "requiresSpecialTraining": true
+    }
+  ]
+}

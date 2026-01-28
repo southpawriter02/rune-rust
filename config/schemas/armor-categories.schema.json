@@ -1,0 +1,121 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "armor-categories.schema.json",
+  "title": "Armor Categories Configuration",
+  "description": "Schema for armor category definitions including penalties and metadata.",
+  "type": "object",
+  "required": ["categories"],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Schema reference for validation."
+    },
+    "categories": {
+      "type": "array",
+      "description": "Array of armor category definitions. Must contain exactly 5 categories.",
+      "minItems": 5,
+      "maxItems": 5,
+      "items": {
+        "$ref": "#/$defs/categoryDefinition"
+      }
+    }
+  },
+  "$defs": {
+    "categoryDefinition": {
+      "type": "object",
+      "description": "Definition for a single armor category.",
+      "required": [
+        "category",
+        "categoryValue",
+        "displayName",
+        "description",
+        "exampleArmors",
+        "penalties",
+        "weightTier",
+        "requiresSpecialTraining"
+      ],
+      "properties": {
+        "category": {
+          "type": "string",
+          "description": "Armor category enum name.",
+          "enum": ["Light", "Medium", "Heavy", "Shields", "Specialized"]
+        },
+        "categoryValue": {
+          "type": "integer",
+          "description": "Numeric value of the category enum (0-4).",
+          "minimum": 0,
+          "maximum": 4
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Human-readable display name for UI.",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "description": "Flavor text describing the category and its characteristics.",
+          "minLength": 1
+        },
+        "exampleArmors": {
+          "type": "array",
+          "description": "List of example armor names in this category.",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1
+        },
+        "penalties": {
+          "$ref": "#/$defs/penalties"
+        },
+        "weightTier": {
+          "type": "integer",
+          "description": "Weight tier for penalty reduction (-1 for non-tiered, 0-2 for tiered).",
+          "minimum": -1,
+          "maximum": 3
+        },
+        "requiresSpecialTraining": {
+          "type": "boolean",
+          "description": "Whether special faction training is required beyond normal proficiency."
+        }
+      },
+      "additionalProperties": false
+    },
+    "penalties": {
+      "type": "object",
+      "description": "Base penalties for an armor category.",
+      "required": [
+        "agilityDicePenalty",
+        "staminaCostModifier",
+        "movementPenalty",
+        "hasStealthDisadvantage"
+      ],
+      "properties": {
+        "agilityDicePenalty": {
+          "type": "integer",
+          "description": "Dice removed from Agility-based rolls (0 to -10).",
+          "minimum": -10,
+          "maximum": 0
+        },
+        "staminaCostModifier": {
+          "type": "integer",
+          "description": "Additional stamina cost per combat action (0 to 20).",
+          "minimum": 0,
+          "maximum": 20
+        },
+        "movementPenalty": {
+          "type": "integer",
+          "description": "Movement speed reduction in feet (0 to -30).",
+          "minimum": -30,
+          "maximum": 0
+        },
+        "hasStealthDisadvantage": {
+          "type": "boolean",
+          "description": "Whether stealth checks have disadvantage."
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}
