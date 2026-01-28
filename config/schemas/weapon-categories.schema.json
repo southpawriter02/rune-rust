@@ -1,0 +1,95 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "weapon-categories.schema.json",
+    "title": "Weapon Categories Configuration",
+    "description": "Defines weapon category metadata for the proficiency system.",
+    "type": "object",
+    "required": ["categories"],
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "Reference to this JSON Schema file."
+        },
+        "categories": {
+            "type": "array",
+            "description": "All 11 weapon category definitions.",
+            "minItems": 11,
+            "maxItems": 11,
+            "items": {
+                "$ref": "#/$defs/categoryDefinition"
+            }
+        }
+    },
+    "additionalProperties": false,
+    "$defs": {
+        "categoryDefinition": {
+            "type": "object",
+            "description": "Definition for a single weapon category.",
+            "required": [
+                "category",
+                "categoryValue",
+                "displayName",
+                "description",
+                "exampleWeapons",
+                "primaryAttribute",
+                "requiresSpecialTraining"
+            ],
+            "properties": {
+                "category": {
+                    "type": "string",
+                    "description": "The weapon category enum name.",
+                    "enum": [
+                        "Axes",
+                        "Swords",
+                        "Hammers",
+                        "Daggers",
+                        "Polearms",
+                        "Staves",
+                        "Bows",
+                        "Crossbows",
+                        "Shields",
+                        "Firearms",
+                        "ArcaneImplements"
+                    ]
+                },
+                "categoryValue": {
+                    "type": "integer",
+                    "description": "The integer value of the category enum (0-10).",
+                    "minimum": 0,
+                    "maximum": 10
+                },
+                "displayName": {
+                    "type": "string",
+                    "description": "Human-readable name for UI display.",
+                    "minLength": 1,
+                    "maxLength": 50
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Flavor text describing the weapon category.",
+                    "minLength": 10,
+                    "maxLength": 500
+                },
+                "exampleWeapons": {
+                    "type": "array",
+                    "description": "List of example weapon names in this category.",
+                    "minItems": 1,
+                    "items": {
+                        "type": "string",
+                        "minLength": 1
+                    }
+                },
+                "primaryAttribute": {
+                    "type": "string",
+                    "description": "The primary attribute for attack/damage scaling.",
+                    "enum": ["Might", "Finesse", "Will", "Wits"]
+                },
+                "requiresSpecialTraining": {
+                    "type": "boolean",
+                    "description": "Whether this category requires special training beyond archetype defaults."
+                }
+            },
+            "additionalProperties": false
+        }
+    }
+}

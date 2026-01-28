@@ -1,0 +1,157 @@
+{
+    "$schema": "./schemas/weapon-categories.schema.json",
+    "categories": [
+        {
+            "category": "Axes",
+            "categoryValue": 0,
+            "displayName": "Axes",
+            "description": "Heavy chopping weapons favored by warriors for their devastating strikes.",
+            "exampleWeapons": [
+                "Battleaxe",
+                "Handaxe",
+                "Greataxe",
+                "Throwing Axe"
+            ],
+            "primaryAttribute": "Might",
+            "requiresSpecialTraining": false
+        },
+        {
+            "category": "Swords",
+            "categoryValue": 1,
+            "displayName": "Swords",
+            "description": "Versatile bladed weapons balanced for both offense and defense.",
+            "exampleWeapons": [
+                "Longsword",
+                "Shortsword",
+                "Greatsword",
+                "Rapier"
+            ],
+            "primaryAttribute": "Might",
+            "requiresSpecialTraining": false
+        },
+        {
+            "category": "Hammers",
+            "categoryValue": 2,
+            "displayName": "Hammers",
+            "description": "Blunt impact weapons effective against armored foes.",
+            "exampleWeapons": [
+                "Warhammer",
+                "Mace",
+                "Maul",
+                "Flail"
+            ],
+            "primaryAttribute": "Might",
+            "requiresSpecialTraining": false
+        },
+        {
+            "category": "Daggers",
+            "categoryValue": 3,
+            "displayName": "Daggers",
+            "description": "Light, precise bladed weapons ideal for swift, targeted strikes.",
+            "exampleWeapons": [
+                "Dagger",
+                "Stiletto",
+                "Kris",
+                "Throwing Knife"
+            ],
+            "primaryAttribute": "Finesse",
+            "requiresSpecialTraining": false
+        },
+        {
+            "category": "Polearms",
+            "categoryValue": 4,
+            "displayName": "Polearms",
+            "description": "Long-hafted weapons providing reach advantage in combat.",
+            "exampleWeapons": [
+                "Spear",
+                "Halberd",
+                "Glaive",
+                "Pike"
+            ],
+            "primaryAttribute": "Might",
+            "requiresSpecialTraining": false
+        },
+        {
+            "category": "Staves",
+            "categoryValue": 5,
+            "displayName": "Staves",
+            "description": "Two-handed implements channeling arcane energy.",
+            "exampleWeapons": [
+                "Quarterstaff",
+                "Arcane Staff",
+                "Runestaff"
+            ],
+            "primaryAttribute": "Will",
+            "requiresSpecialTraining": false
+        },
+        {
+            "category": "Bows",
+            "categoryValue": 6,
+            "displayName": "Bows",
+            "description": "Drawn ranged weapons requiring finesse and steady aim.",
+            "exampleWeapons": [
+                "Longbow",
+                "Shortbow",
+                "Composite Bow",
+                "Recurve Bow"
+            ],
+            "primaryAttribute": "Finesse",
+            "requiresSpecialTraining": false
+        },
+        {
+            "category": "Crossbows",
+            "categoryValue": 7,
+            "displayName": "Crossbows",
+            "description": "Mechanical ranged weapons with powerful bolts.",
+            "exampleWeapons": [
+                "Light Crossbow",
+                "Heavy Crossbow",
+                "Hand Crossbow"
+            ],
+            "primaryAttribute": "Wits",
+            "requiresSpecialTraining": false
+        },
+        {
+            "category": "Shields",
+            "categoryValue": 8,
+            "displayName": "Shields",
+            "description": "Defensive equipment for blocking attacks and shield-bashing.",
+            "exampleWeapons": [
+                "Buckler",
+                "Round Shield",
+                "Kite Shield",
+                "Tower Shield"
+            ],
+            "primaryAttribute": "Might",
+            "requiresSpecialTraining": false
+        },
+        {
+            "category": "Firearms",
+            "categoryValue": 9,
+            "displayName": "Firearms",
+            "description": "Gunpowder-based ranged weapons requiring specialized training.",
+            "exampleWeapons": [
+                "Pistol",
+                "Musket",
+                "Blunderbuss",
+                "Arquebus"
+            ],
+            "primaryAttribute": "Wits",
+            "requiresSpecialTraining": true
+        },
+        {
+            "category": "ArcaneImplements",
+            "categoryValue": 10,
+            "displayName": "Arcane Implements",
+            "description": "Magical foci that enhance spellcasting abilities.",
+            "exampleWeapons": [
+                "Wand",
+                "Orb",
+                "Tome",
+                "Crystal Focus"
+            ],
+            "primaryAttribute": "Will",
+            "requiresSpecialTraining": false
+        }
+    ]
+}
