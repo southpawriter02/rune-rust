@@ -1,0 +1,105 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "proficiency-thresholds.schema.json",
+  "title": "Proficiency Thresholds Configuration",
+  "description": "Schema for weapon proficiency advancement threshold configuration",
+  "type": "object",
+  "required": ["version", "description", "combatsRequired"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema reference"
+    },
+    "version": {
+      "type": "string",
+      "description": "Configuration version for compatibility tracking",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+[a-z]?$",
+      "examples": ["0.16.1d"]
+    },
+    "description": {
+      "type": "string",
+      "description": "Brief description of this configuration file",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "notes": {
+      "type": "object",
+      "description": "Explanatory notes about the configuration",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "combatsRequired": {
+      "type": "object",
+      "description": "Combat experience thresholds for each advancement tier",
+      "required": ["nonProficientToProficient", "proficientToExpert", "expertToMaster"],
+      "additionalProperties": false,
+      "properties": {
+        "nonProficientToProficient": {
+          "$ref": "#/definitions/thresholdEntry",
+          "description": "Combats to advance from NonProficient to Proficient"
+        },
+        "proficientToExpert": {
+          "$ref": "#/definitions/thresholdEntry",
+          "description": "Combats to advance from Proficient to Expert"
+        },
+        "expertToMaster": {
+          "$ref": "#/definitions/thresholdEntry",
+          "description": "Combats to advance from Expert to Master"
+        }
+      }
+    },
+    "balanceNotes": {
+      "type": "object",
+      "description": "Design rationale and balance considerations",
+      "properties": {
+        "rationale": {
+          "type": "string",
+          "description": "Explanation of threshold value choices"
+        },
+        "archetypeAdvantage": {
+          "type": "string",
+          "description": "How archetype proficiencies affect progression"
+        },
+        "estimatedTime": {
+          "type": "object",
+          "description": "Estimated real-world time to reach mastery",
+          "properties": {
+            "combatsPerSession": {
+              "type": "string",
+              "description": "Average combats per play session"
+            },
+            "sessionsToMaster": {
+              "type": "string",
+              "description": "Estimated sessions needed for mastery"
+            }
+          }
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "definitions": {
+    "thresholdEntry": {
+      "type": "object",
+      "description": "Individual threshold configuration with value and description",
+      "required": ["value"],
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "type": "integer",
+          "description": "Number of combats required for this advancement",
+          "minimum": 1,
+          "maximum": 1000,
+          "examples": [10, 25, 50]
+        },
+        "description": {
+          "type": "string",
+          "description": "What this advancement represents narratively",
+          "maxLength": 200
+        }
+      }
+    }
+  }
+}

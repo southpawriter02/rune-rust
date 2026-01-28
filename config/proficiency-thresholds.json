@@ -1,0 +1,33 @@
+{
+  "$schema": "./schemas/proficiency-thresholds.schema.json",
+  "version": "0.16.1d",
+  "description": "Combat experience thresholds for weapon proficiency advancement",
+  "notes": {
+    "overview": "Each threshold represents the number of combats required to advance between proficiency levels.",
+    "combatCounting": "A combat is counted when the character participates in battle using a weapon from the given category.",
+    "experienceReset": "Combat experience resets to 0 when advancing to the next level.",
+    "totalCombats": "Total combats to master a category: 85 (from NonProficient) or 75 (from Proficient)."
+  },
+  "combatsRequired": {
+    "nonProficientToProficient": {
+      "value": 10,
+      "description": "Learning basics - removes NonProficient penalties (-3 attack, -2 damage)"
+    },
+    "proficientToExpert": {
+      "value": 25,
+      "description": "Developing technique - grants +1 attack bonus"
+    },
+    "expertToMaster": {
+      "value": 50,
+      "description": "Achieving mastery - grants +2 attack, +1 damage, max techniques"
+    }
+  },
+  "balanceNotes": {
+    "rationale": "Exponential progression creates meaningful milestones. The 10-combat entry point allows quick removal of non-proficiency penalties, while mastery requires significant investment.",
+    "archetypeAdvantage": "Characters with archetype proficiencies skip the first 10 combats, starting directly at Proficient level.",
+    "estimatedTime": {
+      "combatsPerSession": "5-10 average",
+      "sessionsToMaster": "8-17 (from Proficient)"
+    }
+  }
+}
