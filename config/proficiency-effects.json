@@ -1,0 +1,45 @@
+{
+    "$schema": "./schemas/proficiency-effects.schema.json",
+    "effects": [
+        {
+            "level": "NonProficient",
+            "levelValue": 0,
+            "attackModifier": -3,
+            "damageModifier": -2,
+            "canUseSpecialProperties": false,
+            "unlockedTechniques": "None",
+            "displayName": "Non-Proficient",
+            "description": "No training with this weapon type. Severe penalties apply and special properties cannot be activated."
+        },
+        {
+            "level": "Proficient",
+            "levelValue": 1,
+            "attackModifier": 0,
+            "damageModifier": 0,
+            "canUseSpecialProperties": true,
+            "unlockedTechniques": "Basic",
+            "displayName": "Proficient",
+            "description": "Basic training completed. Full access to weapon capabilities and basic combat techniques."
+        },
+        {
+            "level": "Expert",
+            "levelValue": 2,
+            "attackModifier": 1,
+            "damageModifier": 0,
+            "canUseSpecialProperties": true,
+            "unlockedTechniques": "Advanced",
+            "displayName": "Expert",
+            "description": "Advanced training mastered. Enhanced attack accuracy and access to advanced combat techniques."
+        },
+        {
+            "level": "Master",
+            "levelValue": 3,
+            "attackModifier": 2,
+            "damageModifier": 1,
+            "canUseSpecialProperties": true,
+            "unlockedTechniques": "Signature",
+            "displayName": "Master",
+            "description": "Complete mastery achieved. Peak combat performance with signature techniques that define your fighting style."
+        }
+    ]
+}

@@ -1,0 +1,87 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "proficiency-effects.schema.json",
+    "title": "Proficiency Effects Configuration",
+    "description": "Defines combat effects for each weapon proficiency level. Loaded at startup to determine attack/damage modifiers, special property access, and technique availability.",
+    "type": "object",
+    "required": ["effects"],
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "JSON schema reference for validation"
+        },
+        "effects": {
+            "type": "array",
+            "description": "Array of proficiency effect definitions. Must contain exactly 4 entries, one for each WeaponProficiencyLevel.",
+            "minItems": 4,
+            "maxItems": 4,
+            "items": {
+                "$ref": "#/$defs/effectDefinition"
+            }
+        }
+    },
+    "additionalProperties": false,
+    "$defs": {
+        "effectDefinition": {
+            "type": "object",
+            "description": "Definition of combat effects for a single proficiency level",
+            "required": [
+                "level",
+                "levelValue",
+                "attackModifier",
+                "damageModifier",
+                "canUseSpecialProperties",
+                "unlockedTechniques",
+                "displayName",
+                "description"
+            ],
+            "properties": {
+                "level": {
+                    "type": "string",
+                    "description": "The enum name for this proficiency level. Must match WeaponProficiencyLevel enum.",
+                    "enum": ["NonProficient", "Proficient", "Expert", "Master"]
+                },
+                "levelValue": {
+                    "type": "integer",
+                    "description": "The integer value of the proficiency level (0-3). Used for validation and serialization.",
+                    "minimum": 0,
+                    "maximum": 3
+                },
+                "attackModifier": {
+                    "type": "integer",
+                    "description": "Modifier applied to attack rolls. Negative values are penalties, positive are bonuses.",
+                    "minimum": -5,
+                    "maximum": 5
+                },
+                "damageModifier": {
+                    "type": "integer",
+                    "description": "Modifier applied to damage rolls. Negative values are penalties, positive are bonuses.",
+                    "minimum": -5,
+                    "maximum": 5
+                },
+                "canUseSpecialProperties": {
+                    "type": "boolean",
+                    "description": "Whether characters at this proficiency level can activate weapon special properties (lifesteal, cleave, etc.)."
+                },
+                "unlockedTechniques": {
+                    "type": "string",
+                    "description": "The highest tier of combat techniques available at this level. Must match TechniqueAccess enum.",
+                    "enum": ["None", "Basic", "Advanced", "Signature"]
+                },
+                "displayName": {
+                    "type": "string",
+                    "description": "Human-readable name for UI display (e.g., 'Non-Proficient', 'Master').",
+                    "minLength": 1,
+                    "maxLength": 50
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Flavor text describing this proficiency level. Shown in tooltips and character sheets.",
+                    "minLength": 1,
+                    "maxLength": 500
+                }
+            },
+            "additionalProperties": false
+        }
+    }
+}
