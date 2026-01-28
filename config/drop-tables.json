@@ -1,0 +1,70 @@
+{
+    "$schema": "./schemas/drop-tables.schema.json",
+    "dropTables": [
+        {
+            "enemyClass": "Trash",
+            "enemyClassValue": 0,
+            "description": "Weak fodder enemies (Servitors)",
+            "tierProbabilities": {
+                "JuryRigged": 0.6,
+                "Scavenged": 0.3,
+                "ClanForged": 0.0,
+                "Optimized": 0.0,
+                "MythForged": 0.0
+            },
+            "noDropChance": 0.1
+        },
+        {
+            "enemyClass": "Standard",
+            "enemyClassValue": 1,
+            "description": "Regular combat enemies (Drones)",
+            "tierProbabilities": {
+                "JuryRigged": 0.0,
+                "Scavenged": 0.4,
+                "ClanForged": 0.4,
+                "Optimized": 0.2,
+                "MythForged": 0.0
+            },
+            "noDropChance": 0.0
+        },
+        {
+            "enemyClass": "Elite",
+            "enemyClassValue": 2,
+            "description": "Challenging elite enemies (Wardens)",
+            "tierProbabilities": {
+                "JuryRigged": 0.0,
+                "Scavenged": 0.0,
+                "ClanForged": 0.4,
+                "Optimized": 0.5,
+                "MythForged": 0.1
+            },
+            "noDropChance": 0.0
+        },
+        {
+            "enemyClass": "MiniBoss",
+            "enemyClassValue": 3,
+            "description": "Mid-dungeon bosses",
+            "tierProbabilities": {
+                "JuryRigged": 0.0,
+                "Scavenged": 0.0,
+                "ClanForged": 0.2,
+                "Optimized": 0.5,
+                "MythForged": 0.3
+            },
+            "noDropChance": 0.0
+        },
+        {
+            "enemyClass": "Boss",
+            "enemyClassValue": 4,
+            "description": "Major dungeon bosses",
+            "tierProbabilities": {
+                "JuryRigged": 0.0,
+                "Scavenged": 0.0,
+                "ClanForged": 0.0,
+                "Optimized": 0.3,
+                "MythForged": 0.7
+            },
+            "noDropChance": 0.0
+        }
+    ]
+}

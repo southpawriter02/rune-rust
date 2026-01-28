@@ -1,0 +1,81 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "drop-tables.schema.json",
+    "title": "Drop Tables Configuration",
+    "description": "Defines drop probability tables by enemy class",
+    "type": "object",
+    "required": ["dropTables"],
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "JSON schema reference"
+        },
+        "dropTables": {
+            "type": "array",
+            "description": "Drop probability entries for each enemy class",
+            "minItems": 5,
+            "maxItems": 5,
+            "items": {
+                "$ref": "#/$defs/dropTableEntry"
+            }
+        }
+    },
+    "$defs": {
+        "enemyClassEnum": {
+            "type": "string",
+            "enum": ["Trash", "Standard", "Elite", "MiniBoss", "Boss"]
+        },
+        "tierProbabilities": {
+            "type": "object",
+            "description": "Probability for each quality tier (0.0-1.0)",
+            "required": [
+                "JuryRigged",
+                "Scavenged",
+                "ClanForged",
+                "Optimized",
+                "MythForged"
+            ],
+            "properties": {
+                "JuryRigged": { "type": "number", "minimum": 0, "maximum": 1 },
+                "Scavenged": { "type": "number", "minimum": 0, "maximum": 1 },
+                "ClanForged": { "type": "number", "minimum": 0, "maximum": 1 },
+                "Optimized": { "type": "number", "minimum": 0, "maximum": 1 },
+                "MythForged": { "type": "number", "minimum": 0, "maximum": 1 }
+            },
+            "additionalProperties": false
+        },
+        "dropTableEntry": {
+            "type": "object",
+            "required": [
+                "enemyClass",
+                "enemyClassValue",
+                "tierProbabilities",
+                "noDropChance"
+            ],
+            "properties": {
+                "enemyClass": {
+                    "$ref": "#/$defs/enemyClassEnum"
+                },
+                "enemyClassValue": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Human-readable description of this enemy class"
+                },
+                "tierProbabilities": {
+                    "$ref": "#/$defs/tierProbabilities"
+                },
+                "noDropChance": {
+                    "type": "number",
+                    "description": "Chance of no drop occurring (0.0-1.0)",
+                    "minimum": 0,
+                    "maximum": 1
+                }
+            },
+            "additionalProperties": false
+        }
+    }
+}
