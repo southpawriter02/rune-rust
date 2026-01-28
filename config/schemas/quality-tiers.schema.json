@@ -1,75 +1,127 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "quality-tiers.schema.json",
-  "title": "Quality Tiers Configuration",
-  "description": "Schema for crafted item quality tier definitions (v0.11.2c)",
-  "type": "object",
-  "required": ["tiers"],
-  "properties": {
-    "$schema": {
-      "type": "string",
-      "description": "Reference to this schema file"
-    },
-    "tiers": {
-      "type": "array",
-      "description": "Array of quality tier definitions",
-      "minItems": 1,
-      "items": {
-        "$ref": "#/definitions/tierDefinition"
-      }
-    }
-  },
-  "definitions": {
-    "tierDefinition": {
-      "type": "object",
-      "description": "Definition for a single quality tier",
-      "required": ["quality"],
-      "properties": {
-        "quality": {
-          "type": "string",
-          "description": "The quality tier identifier",
-          "enum": ["Standard", "Fine", "Masterwork", "Legendary"]
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "quality-tiers.schema.json",
+    "title": "Quality Tiers Configuration",
+    "description": "Defines the quality tier metadata for the loot system",
+    "type": "object",
+    "required": ["tiers"],
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "JSON schema reference"
         },
-        "displayName": {
-          "type": "string",
-          "description": "Human-readable display name for UI presentation",
-          "minLength": 1,
-          "maxLength": 50
-        },
-        "colorCode": {
-          "type": "string",
-          "description": "Hex color code for visual styling (e.g., '#FFFFFF')",
-          "pattern": "^#[0-9A-Fa-f]{6}$"
-        },
-        "statMultiplier": {
-          "type": "number",
-          "description": "Multiplier applied to item stats (1.0 = no change, 1.25 = +25%)",
-          "minimum": 0.1,
-          "maximum": 10.0,
-          "default": 1.0
-        },
-        "valueMultiplier": {
-          "type": "number",
-          "description": "Multiplier applied to item gold/currency value",
-          "minimum": 0.1,
-          "maximum": 100.0,
-          "default": 1.0
-        },
-        "minimumMargin": {
-          "type": "integer",
-          "description": "Minimum roll margin (roll - DC) required to achieve this tier",
-          "minimum": 0,
-          "maximum": 20,
-          "default": 0
-        },
-        "requiresNatural20": {
-          "type": "boolean",
-          "description": "Whether this tier can only be achieved by rolling a natural 20",
-          "default": false
+        "tiers": {
+            "type": "array",
+            "description": "Array of quality tier definitions",
+            "minItems": 5,
+            "maxItems": 5,
+            "items": {
+                "$ref": "#/$defs/tierDefinition"
+            }
         }
-      },
-      "additionalProperties": false
+    },
+    "$defs": {
+        "tierDefinition": {
+            "type": "object",
+            "description": "Definition of a single quality tier",
+            "required": [
+                "tier",
+                "tierValue",
+                "displayName",
+                "displayNamePlural",
+                "description",
+                "iconGlyph",
+                "dropWeightMultiplier",
+                "color"
+            ],
+            "properties": {
+                "tier": {
+                    "type": "string",
+                    "description": "The enum name for this tier",
+                    "enum": [
+                        "JuryRigged",
+                        "Scavenged",
+                        "ClanForged",
+                        "Optimized",
+                        "MythForged"
+                    ]
+                },
+                "tierValue": {
+                    "type": "integer",
+                    "description": "The integer value of the tier (0-4)",
+                    "minimum": 0,
+                    "maximum": 4
+                },
+                "displayName": {
+                    "type": "string",
+                    "description": "Singular display name for the tier",
+                    "minLength": 1,
+                    "maxLength": 50
+                },
+                "displayNamePlural": {
+                    "type": "string",
+                    "description": "Plural display name for the tier",
+                    "minLength": 1,
+                    "maxLength": 60
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Flavor text describing items of this tier",
+                    "minLength": 10,
+                    "maxLength": 500
+                },
+                "iconGlyph": {
+                    "type": "string",
+                    "description": "Single character icon for terminal display",
+                    "minLength": 1,
+                    "maxLength": 1
+                },
+                "dropWeightMultiplier": {
+                    "type": "number",
+                    "description": "Relative drop rate multiplier (1.0 = baseline)",
+                    "minimum": 0,
+                    "maximum": 10
+                },
+                "color": {
+                    "$ref": "#/$defs/colorDefinition"
+                }
+            },
+            "additionalProperties": false
+        },
+        "colorDefinition": {
+            "type": "object",
+            "description": "Color specification for the tier",
+            "required": ["hexColor", "consoleColor"],
+            "properties": {
+                "hexColor": {
+                    "type": "string",
+                    "description": "Hex color code in #RRGGBB format",
+                    "pattern": "^#[0-9A-Fa-f]{6}$"
+                },
+                "consoleColor": {
+                    "type": "string",
+                    "description": "System.ConsoleColor enum name",
+                    "enum": [
+                        "Black",
+                        "DarkBlue",
+                        "DarkGreen",
+                        "DarkCyan",
+                        "DarkRed",
+                        "DarkMagenta",
+                        "DarkYellow",
+                        "Gray",
+                        "DarkGray",
+                        "Blue",
+                        "Green",
+                        "Cyan",
+                        "Red",
+                        "Magenta",
+                        "Yellow",
+                        "White"
+                    ]
+                }
+            },
+            "additionalProperties": false
+        }
     }
-  },
-  "additionalProperties": false
 }

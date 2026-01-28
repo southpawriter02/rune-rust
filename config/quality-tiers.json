@@ -2,40 +2,69 @@
   "$schema": "./schemas/quality-tiers.schema.json",
   "tiers": [
     {
-      "quality": "Standard",
-      "displayName": "Standard",
-      "colorCode": "#FFFFFF",
-      "statMultiplier": 1.0,
-      "valueMultiplier": 1.0,
-      "minimumMargin": 0,
-      "requiresNatural20": false
+      "tier": "JuryRigged",
+      "tierValue": 0,
+      "displayName": "Jury-Rigged",
+      "displayNamePlural": "Jury-Rigged items",
+      "description": "Makeshift equipment cobbled together from salvaged scraps and broken tools. Functional, but barely.",
+      "iconGlyph": "○",
+      "dropWeightMultiplier": 1.0,
+      "color": {
+        "hexColor": "#808080",
+        "consoleColor": "Gray"
+      }
     },
     {
-      "quality": "Fine",
-      "displayName": "Fine",
-      "colorCode": "#1EFF00",
-      "statMultiplier": 1.10,
-      "valueMultiplier": 1.5,
-      "minimumMargin": 5,
-      "requiresNatural20": false
+      "tier": "Scavenged",
+      "tierValue": 1,
+      "displayName": "Scavenged",
+      "displayNamePlural": "Scavenged items",
+      "description": "Standard equipment found on fallen enemies or in abandoned caches. Unremarkable but reliable.",
+      "iconGlyph": "●",
+      "dropWeightMultiplier": 0.5,
+      "color": {
+        "hexColor": "#FFFFFF",
+        "consoleColor": "White"
+      }
     },
     {
-      "quality": "Masterwork",
-      "displayName": "Masterwork",
-      "colorCode": "#0070DD",
-      "statMultiplier": 1.25,
-      "valueMultiplier": 2.5,
-      "minimumMargin": 10,
-      "requiresNatural20": false
+      "tier": "ClanForged",
+      "tierValue": 2,
+      "displayName": "Clan-Forged",
+      "displayNamePlural": "Clan-Forged items",
+      "description": "Quality craftsmanship from regional clan smiths. These weapons and armor bear the marks of skilled artisans.",
+      "iconGlyph": "◆",
+      "dropWeightMultiplier": 0.25,
+      "color": {
+        "hexColor": "#00FF00",
+        "consoleColor": "Green"
+      }
     },
     {
-      "quality": "Legendary",
-      "displayName": "Legendary",
-      "colorCode": "#FF8000",
-      "statMultiplier": 1.50,
-      "valueMultiplier": 5.0,
-      "minimumMargin": 0,
-      "requiresNatural20": true
+      "tier": "Optimized",
+      "tierValue": 3,
+      "displayName": "Optimized",
+      "displayNamePlural": "Optimized items",
+      "description": "Exceptional gear refined by master craftsmen or enhanced through Dvergr techniques. Combat-optimized for maximum effectiveness.",
+      "iconGlyph": "★",
+      "dropWeightMultiplier": 0.1,
+      "color": {
+        "hexColor": "#800080",
+        "consoleColor": "Magenta"
+      }
+    },
+    {
+      "tier": "MythForged",
+      "tierValue": 4,
+      "displayName": "Myth-Forged",
+      "displayNamePlural": "Myth-Forged items",
+      "description": "Legendary artifacts of mythic origin. Each piece carries unique properties that can define a warrior's path. Only one of each can exist in a run.",
+      "iconGlyph": "✦",
+      "dropWeightMultiplier": 0.02,
+      "color": {
+        "hexColor": "#FFD700",
+        "consoleColor": "Yellow"
+      }
     }
   ]
 }
