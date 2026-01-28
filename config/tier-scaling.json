@@ -1,0 +1,100 @@
+{
+    "$schema": "./schemas/tier-scaling.schema.json",
+    "weaponScaling": [
+        {
+            "tier": "JuryRigged",
+            "tierValue": 0,
+            "damageDice": "1d6",
+            "accuracyModifier": -1,
+            "attributeBonus": null
+        },
+        {
+            "tier": "Scavenged",
+            "tierValue": 1,
+            "damageDice": "1d6+1",
+            "accuracyModifier": 0,
+            "attributeBonus": null
+        },
+        {
+            "tier": "ClanForged",
+            "tierValue": 2,
+            "damageDice": "1d6+3",
+            "accuracyModifier": 0,
+            "attributeBonus": {
+                "minBonus": 1,
+                "maxBonus": 1
+            }
+        },
+        {
+            "tier": "Optimized",
+            "tierValue": 3,
+            "damageDice": "2d6",
+            "accuracyModifier": 1,
+            "attributeBonus": {
+                "minBonus": 1,
+                "maxBonus": 2
+            }
+        },
+        {
+            "tier": "MythForged",
+            "tierValue": 4,
+            "damageDice": "2d6+4",
+            "accuracyModifier": 2,
+            "attributeBonus": {
+                "minBonus": 2,
+                "maxBonus": 4
+            }
+        }
+    ],
+    "armorScaling": [
+        {
+            "tier": "JuryRigged",
+            "tierValue": 0,
+            "hpBonus": 5,
+            "defenseBonus": 1,
+            "penaltyReduction": 0,
+            "attributeBonus": null
+        },
+        {
+            "tier": "Scavenged",
+            "tierValue": 1,
+            "hpBonus": 10,
+            "defenseBonus": 1,
+            "penaltyReduction": 0,
+            "attributeBonus": null
+        },
+        {
+            "tier": "ClanForged",
+            "tierValue": 2,
+            "hpBonus": 15,
+            "defenseBonus": 2,
+            "penaltyReduction": 0,
+            "attributeBonus": {
+                "minBonus": 1,
+                "maxBonus": 1
+            }
+        },
+        {
+            "tier": "Optimized",
+            "tierValue": 3,
+            "hpBonus": 20,
+            "defenseBonus": 2,
+            "penaltyReduction": 0,
+            "attributeBonus": {
+                "minBonus": 1,
+                "maxBonus": 2
+            }
+        },
+        {
+            "tier": "MythForged",
+            "tierValue": 4,
+            "hpBonus": 30,
+            "defenseBonus": 3,
+            "penaltyReduction": 1,
+            "attributeBonus": {
+                "minBonus": 2,
+                "maxBonus": 4
+            }
+        }
+    ]
+}

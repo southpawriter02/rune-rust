@@ -1,0 +1,134 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "tier-scaling.schema.json",
+    "title": "Tier Scaling Configuration",
+    "description": "Defines stat scaling for weapons and armor by quality tier",
+    "type": "object",
+    "required": ["weaponScaling", "armorScaling"],
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "JSON schema reference"
+        },
+        "weaponScaling": {
+            "type": "array",
+            "description": "Weapon stat scaling per tier",
+            "minItems": 5,
+            "maxItems": 5,
+            "items": {
+                "$ref": "#/$defs/weaponScalingEntry"
+            }
+        },
+        "armorScaling": {
+            "type": "array",
+            "description": "Armor stat scaling per tier",
+            "minItems": 5,
+            "maxItems": 5,
+            "items": {
+                "$ref": "#/$defs/armorScalingEntry"
+            }
+        }
+    },
+    "$defs": {
+        "tierEnum": {
+            "type": "string",
+            "enum": [
+                "JuryRigged",
+                "Scavenged",
+                "ClanForged",
+                "Optimized",
+                "MythForged"
+            ]
+        },
+        "attributeBonusRange": {
+            "type": ["object", "null"],
+            "properties": {
+                "minBonus": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 10
+                },
+                "maxBonus": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 10
+                }
+            },
+            "required": ["minBonus", "maxBonus"]
+        },
+        "weaponScalingEntry": {
+            "type": "object",
+            "required": [
+                "tier",
+                "tierValue",
+                "damageDice",
+                "accuracyModifier",
+                "attributeBonus"
+            ],
+            "properties": {
+                "tier": {
+                    "$ref": "#/$defs/tierEnum"
+                },
+                "tierValue": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4
+                },
+                "damageDice": {
+                    "type": "string",
+                    "pattern": "^\\d+d\\d+(\\+\\d+)?$",
+                    "description": "Dice notation (e.g., 1d6, 2d6+4)"
+                },
+                "accuracyModifier": {
+                    "type": "integer",
+                    "minimum": -5,
+                    "maximum": 5
+                },
+                "attributeBonus": {
+                    "$ref": "#/$defs/attributeBonusRange"
+                }
+            },
+            "additionalProperties": false
+        },
+        "armorScalingEntry": {
+            "type": "object",
+            "required": [
+                "tier",
+                "tierValue",
+                "hpBonus",
+                "defenseBonus",
+                "penaltyReduction",
+                "attributeBonus"
+            ],
+            "properties": {
+                "tier": {
+                    "$ref": "#/$defs/tierEnum"
+                },
+                "tierValue": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4
+                },
+                "hpBonus": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 100
+                },
+                "defenseBonus": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 10
+                },
+                "penaltyReduction": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 2
+                },
+                "attributeBonus": {
+                    "$ref": "#/$defs/attributeBonusRange"
+                }
+            },
+            "additionalProperties": false
+        }
+    }
+}
