@@ -1,0 +1,142 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://runeandrust.com/schemas/lineages.schema.json",
+    "title": "Lineage Definitions Schema",
+    "description": "Schema for validating lineage configuration in Rune and Rust. Defines bloodline heritage options for character creation.",
+    "type": "object",
+    "required": ["version", "lineages"],
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "Reference to this schema file for validation."
+        },
+        "version": {
+            "type": "string",
+            "description": "Schema version for backwards compatibility.",
+            "pattern": "^\\d+\\.\\d+$"
+        },
+        "lineages": {
+            "type": "array",
+            "description": "Array of lineage definitions available for character creation.",
+            "minItems": 1,
+            "items": {
+                "$ref": "#/definitions/lineageDefinition"
+            }
+        }
+    },
+    "definitions": {
+        "lineageDefinition": {
+            "type": "object",
+            "description": "A single lineage definition with metadata and attribute modifiers.",
+            "required": [
+                "id",
+                "lineageType",
+                "displayName",
+                "description",
+                "selectionText",
+                "attributeModifiers"
+            ],
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Unique kebab-case identifier for this lineage.",
+                    "pattern": "^[a-z][a-z0-9-]*$",
+                    "examples": ["clan-born", "rune-marked", "iron-blooded", "vargr-kin"]
+                },
+                "lineageType": {
+                    "type": "string",
+                    "description": "The enum value matching the Lineage enum in C# code.",
+                    "enum": ["ClanBorn", "RuneMarked", "IronBlooded", "VargrKin"]
+                },
+                "displayName": {
+                    "type": "string",
+                    "description": "Human-readable name shown to players.",
+                    "minLength": 1,
+                    "maxLength": 50
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Full lore description of the lineage.",
+                    "minLength": 50,
+                    "maxLength": 1000
+                },
+                "selectionText": {
+                    "type": "string",
+                    "description": "Short text displayed during character creation selection.",
+                    "minLength": 10,
+                    "maxLength": 200
+                },
+                "attributeModifiers": {
+                    "$ref": "#/definitions/attributeModifiers"
+                },
+                "appearanceNotes": {
+                    "type": "string",
+                    "description": "Optional notes about typical physical appearance.",
+                    "maxLength": 500
+                },
+                "socialRole": {
+                    "type": "string",
+                    "description": "Optional description of typical social role in Aethelgard.",
+                    "maxLength": 500
+                }
+            },
+            "additionalProperties": false
+        },
+        "attributeModifiers": {
+            "type": "object",
+            "description": "Attribute modifiers applied by this lineage.",
+            "required": [
+                "might",
+                "finesse",
+                "wits",
+                "will",
+                "sturdiness",
+                "hasFlexibleBonus",
+                "flexibleBonusAmount"
+            ],
+            "properties": {
+                "might": {
+                    "type": "integer",
+                    "description": "Modifier to MIGHT attribute.",
+                    "minimum": -3,
+                    "maximum": 3
+                },
+                "finesse": {
+                    "type": "integer",
+                    "description": "Modifier to FINESSE attribute.",
+                    "minimum": -3,
+                    "maximum": 3
+                },
+                "wits": {
+                    "type": "integer",
+                    "description": "Modifier to WITS attribute.",
+                    "minimum": -3,
+                    "maximum": 3
+                },
+                "will": {
+                    "type": "integer",
+                    "description": "Modifier to WILL attribute.",
+                    "minimum": -3,
+                    "maximum": 3
+                },
+                "sturdiness": {
+                    "type": "integer",
+                    "description": "Modifier to STURDINESS attribute.",
+                    "minimum": -3,
+                    "maximum": 3
+                },
+                "hasFlexibleBonus": {
+                    "type": "boolean",
+                    "description": "Whether this lineage grants a player-chosen bonus."
+                },
+                "flexibleBonusAmount": {
+                    "type": "integer",
+                    "description": "The amount of the flexible bonus (if hasFlexibleBonus is true).",
+                    "minimum": 0,
+                    "maximum": 3
+                }
+            },
+            "additionalProperties": false
+        }
+    }
+}

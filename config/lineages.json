@@ -1,0 +1,78 @@
+{
+    "$schema": "./schemas/lineages.schema.json",
+    "version": "1.0",
+    "lineages": [
+        {
+            "id": "clan-born",
+            "lineageType": "ClanBorn",
+            "displayName": "Clan-Born",
+            "description": "Descendants of survivors whose bloodlines remained untainted by the Runic Blight. Their ancestors survived through luck, preparation, or isolation rather than mutation. Clan-Born represent baseline humanity in Aethelgard, often serving as community leaders and diplomats due to their balanced nature and social adaptability.",
+            "selectionText": "The Stable Code – Humanity's baseline. Flexible and adaptable.",
+            "attributeModifiers": {
+                "might": 0,
+                "finesse": 0,
+                "wits": 0,
+                "will": 0,
+                "sturdiness": 0,
+                "hasFlexibleBonus": true,
+                "flexibleBonusAmount": 1
+            },
+            "appearanceNotes": "No distinctive physical mutations. Typically exhibit the full range of human appearances, though often carry subtle marks of their clan's regional heritage.",
+            "socialRole": "Trusted as community leaders and diplomats. Clan-Born often serve as mediators between the other lineages due to their unmodified nature and social adaptability."
+        },
+        {
+            "id": "rune-marked",
+            "lineageType": "RuneMarked",
+            "displayName": "Rune-Marked",
+            "description": "Those whose ancestors were exposed to concentrated Aether during the Runic Blight. The All-Rune's echo flows through their blood, granting enhanced magical aptitude at the cost of physical resilience. They carry a permanent taint of Corruption that can never be fully cleansed.",
+            "selectionText": "The Tainted Aether – Enhanced magical aptitude with inherent Corruption.",
+            "attributeModifiers": {
+                "might": 0,
+                "finesse": 0,
+                "wits": 0,
+                "will": 2,
+                "sturdiness": -1,
+                "hasFlexibleBonus": false,
+                "flexibleBonusAmount": 0
+            },
+            "appearanceNotes": "Often have faint glowing marks on skin that intensify during Aether use. Eyes may have an unusual luminescence. Some exhibit subtle runic patterns that appear when emotional.",
+            "socialRole": "Sought after as scholars, mystics, and Galdr practitioners. Viewed with a mixture of reverence and suspicion by the common folk due to their inherent connection to the corrupted Aether."
+        },
+        {
+            "id": "iron-blooded",
+            "lineageType": "IronBlooded",
+            "displayName": "Iron-Blooded",
+            "description": "Bloodlines hardened by generations of proximity to Blight-metal in the corrupted mines and forges. Their bodies have developed remarkable resilience to physical harm and environmental hazards, but their minds are more vulnerable to psychic assault and manipulation.",
+            "selectionText": "The Corrupted Earth – Physical resilience with mental vulnerability.",
+            "attributeModifiers": {
+                "might": 0,
+                "finesse": 0,
+                "wits": 0,
+                "will": -1,
+                "sturdiness": 2,
+                "hasFlexibleBonus": false,
+                "flexibleBonusAmount": 0
+            },
+            "appearanceNotes": "Often have a slightly metallic sheen to skin or hair. Some exhibit unusual coloration in veins near the surface. Many have denser bone structure visible in facial features.",
+            "socialRole": "Valued as laborers, soldiers, and craftsmen. Their resistance to environmental hazards makes them essential for dangerous work. Often underestimated intellectually due to their physical nature."
+        },
+        {
+            "id": "vargr-kin",
+            "lineageType": "VargrKin",
+            "displayName": "Vargr-Kin",
+            "description": "Those who trace their lineage to the Varangian shamans who communed with primal wolf-spirits before the Great Silence. They carry the blessing of the Wild, granting enhanced physical prowess and instincts. Their Primal Clarity helps resist psychic assault despite their reduced willpower.",
+            "selectionText": "The Uncorrupted Echo – Primal connection with balanced physical bonuses.",
+            "attributeModifiers": {
+                "might": 1,
+                "finesse": 1,
+                "wits": 0,
+                "will": -1,
+                "sturdiness": 0,
+                "hasFlexibleBonus": false,
+                "flexibleBonusAmount": 0
+            },
+            "appearanceNotes": "Often have pronounced canine features, unusual eye colors (amber, silver), or coarser hair. Many have enhanced hearing visible in ear structure. Some exhibit animal-like mannerisms.",
+            "socialRole": "Respected as hunters, scouts, and wilderness guides. Their primal instincts make them valuable in dangerous territories. Sometimes viewed as uncivilized by urban populations."
+        }
+    ]
+}
