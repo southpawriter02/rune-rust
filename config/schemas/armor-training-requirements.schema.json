@@ -1,0 +1,151 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "armor-training-requirements.schema.json",
+  "title": "Armor Training Requirements Configuration",
+  "description": "Configuration schema for armor proficiency training costs and requirements. Defines currency costs, time requirements, and level prerequisites for each proficiency level transition.",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Reference to this JSON schema file"
+    },
+    "version": {
+      "type": "string",
+      "description": "Schema version for compatibility checking",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "examples": ["1.0.0"]
+    },
+    "currencyId": {
+      "type": "string",
+      "description": "The currency ID used for training costs (e.g., 'silver' for Pieces Silver)",
+      "default": "silver"
+    },
+    "defaultRequirements": {
+      "$ref": "#/$defs/levelRequirements",
+      "description": "Default training requirements applied to all armor categories unless overridden"
+    },
+    "categoryOverrides": {
+      "type": "object",
+      "description": "Category-specific training requirements that override defaults",
+      "additionalProperties": {
+        "$ref": "#/$defs/levelRequirements"
+      },
+      "propertyNames": {
+        "enum": ["light", "medium", "heavy", "shields", "specialized"]
+      }
+    },
+    "trainerAvailability": {
+      "type": "object",
+      "description": "Configuration for trainer availability checks",
+      "properties": {
+        "requireTrainerForProficient": {
+          "type": "boolean",
+          "description": "Whether NPC trainer is required for Proficient training",
+          "default": true
+        },
+        "requireTrainerForExpert": {
+          "type": "boolean",
+          "description": "Whether NPC trainer is required for Expert training",
+          "default": true
+        },
+        "requireTrainerForMaster": {
+          "type": "boolean",
+          "description": "Whether NPC trainer is required for Master training",
+          "default": true
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "required": ["version", "defaultRequirements"],
+  "additionalProperties": false,
+  "$defs": {
+    "levelRequirements": {
+      "type": "object",
+      "description": "Training requirements for each proficiency level transition",
+      "properties": {
+        "nonProficientToProficient": {
+          "$ref": "#/$defs/trainingCost",
+          "description": "Requirements to advance from NonProficient to Proficient"
+        },
+        "proficientToExpert": {
+          "$ref": "#/$defs/trainingCost",
+          "description": "Requirements to advance from Proficient to Expert"
+        },
+        "expertToMaster": {
+          "$ref": "#/$defs/trainingCost",
+          "description": "Requirements to advance from Expert to Master"
+        }
+      },
+      "required": ["nonProficientToProficient", "proficientToExpert", "expertToMaster"],
+      "additionalProperties": false
+    },
+    "trainingCost": {
+      "type": "object",
+      "description": "Cost definition for a single training level transition",
+      "properties": {
+        "currencyCost": {
+          "type": "integer",
+          "description": "Currency cost in the configured currency (default: Pieces Silver)",
+          "minimum": 0,
+          "examples": [50, 200, 500]
+        },
+        "trainingWeeks": {
+          "type": "integer",
+          "description": "Training duration in in-game weeks",
+          "minimum": 0,
+          "examples": [2, 4, 8]
+        },
+        "minimumCharacterLevel": {
+          "type": "integer",
+          "description": "Minimum character level required to begin this training",
+          "minimum": 1,
+          "default": 1,
+          "examples": [1, 5, 10]
+        },
+        "requiresNpcTrainer": {
+          "type": "boolean",
+          "description": "Whether this training requires an NPC trainer",
+          "default": true
+        },
+        "prerequisites": {
+          "type": "array",
+          "description": "Additional prerequisites beyond proficiency level",
+          "items": {
+            "$ref": "#/$defs/prerequisite"
+          },
+          "default": []
+        }
+      },
+      "required": ["currencyCost", "trainingWeeks"],
+      "additionalProperties": false
+    },
+    "prerequisite": {
+      "type": "object",
+      "description": "An additional prerequisite for training",
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "The type of prerequisite",
+          "enum": ["quest", "achievement", "reputation", "skill"]
+        },
+        "id": {
+          "type": "string",
+          "description": "The ID of the required quest, achievement, reputation faction, or skill",
+          "pattern": "^[a-z][a-z0-9-]*$"
+        },
+        "value": {
+          "type": "integer",
+          "description": "Optional value requirement (e.g., minimum reputation level or skill rank)",
+          "minimum": 0
+        },
+        "description": {
+          "type": "string",
+          "description": "Human-readable description of this prerequisite"
+        }
+      },
+      "required": ["type", "id"],
+      "additionalProperties": false
+    }
+  }
+}

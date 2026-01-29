@@ -1,0 +1,81 @@
+{
+  "$schema": "./schemas/armor-training-requirements.schema.json",
+  "version": "1.0.0",
+  "currencyId": "silver",
+  "defaultRequirements": {
+    "nonProficientToProficient": {
+      "currencyCost": 50,
+      "trainingWeeks": 2,
+      "minimumCharacterLevel": 1,
+      "requiresNpcTrainer": true,
+      "prerequisites": []
+    },
+    "proficientToExpert": {
+      "currencyCost": 200,
+      "trainingWeeks": 4,
+      "minimumCharacterLevel": 5,
+      "requiresNpcTrainer": true,
+      "prerequisites": []
+    },
+    "expertToMaster": {
+      "currencyCost": 500,
+      "trainingWeeks": 8,
+      "minimumCharacterLevel": 10,
+      "requiresNpcTrainer": true,
+      "prerequisites": []
+    }
+  },
+  "categoryOverrides": {
+    "heavy": {
+      "nonProficientToProficient": {
+        "currencyCost": 75,
+        "trainingWeeks": 3,
+        "minimumCharacterLevel": 1,
+        "requiresNpcTrainer": true,
+        "prerequisites": []
+      },
+      "proficientToExpert": {
+        "currencyCost": 300,
+        "trainingWeeks": 6,
+        "minimumCharacterLevel": 7,
+        "requiresNpcTrainer": true,
+        "prerequisites": []
+      },
+      "expertToMaster": {
+        "currencyCost": 750,
+        "trainingWeeks": 12,
+        "minimumCharacterLevel": 12,
+        "requiresNpcTrainer": true,
+        "prerequisites": []
+      }
+    },
+    "shields": {
+      "nonProficientToProficient": {
+        "currencyCost": 40,
+        "trainingWeeks": 1,
+        "minimumCharacterLevel": 1,
+        "requiresNpcTrainer": true,
+        "prerequisites": []
+      },
+      "proficientToExpert": {
+        "currencyCost": 150,
+        "trainingWeeks": 3,
+        "minimumCharacterLevel": 4,
+        "requiresNpcTrainer": true,
+        "prerequisites": []
+      },
+      "expertToMaster": {
+        "currencyCost": 400,
+        "trainingWeeks": 6,
+        "minimumCharacterLevel": 8,
+        "requiresNpcTrainer": true,
+        "prerequisites": []
+      }
+    }
+  },
+  "trainerAvailability": {
+    "requireTrainerForProficient": true,
+    "requireTrainerForExpert": true,
+    "requireTrainerForMaster": true
+  }
+}
