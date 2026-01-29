@@ -4,8 +4,15 @@ namespace RuneAndRust.Domain.ValueObjects;
 /// Represents a possible item drop in a loot table.
 /// </summary>
 /// <remarks>
+/// <para>
 /// Each entry has a drop chance (0.0-1.0) and a weight for
 /// selection when multiple items could drop.
+/// </para>
+/// <para>
+/// The CategoryId enables smart loot filtering by allowing the
+/// loot system to match items against archetype-appropriate
+/// equipment categories (e.g., "swords" for Warriors).
+/// </para>
 /// </remarks>
 public readonly record struct LootEntry
 {
@@ -16,6 +23,22 @@ public readonly record struct LootEntry
     /// References an Item entity or ItemDefinition.
     /// </remarks>
     public string ItemId { get; init; }
+
+    /// <summary>
+    /// Gets the equipment category ID for smart loot filtering.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// References an EquipmentClassMapping category (e.g., "swords", "daggers").
+    /// Used by ISmartLootService to determine if this item is appropriate
+    /// for a player's archetype.
+    /// </para>
+    /// <para>
+    /// May be null for non-equipment items (consumables, currency, etc.)
+    /// which are not subject to class-appropriate filtering.
+    /// </para>
+    /// </remarks>
+    public string? CategoryId { get; init; }
 
     /// <summary>
     /// Gets the relative weight for selection among entries.
@@ -45,9 +68,18 @@ public readonly record struct LootEntry
     public float DropChance { get; init; }
 
     /// <summary>
+    /// Gets a value indicating whether this entry has a category for filtering.
+    /// </summary>
+    /// <remarks>
+    /// Items without a category (consumables, currency) always pass category filters.
+    /// </remarks>
+    public bool HasCategory => !string.IsNullOrWhiteSpace(CategoryId);
+
+    /// <summary>
     /// Creates a validated LootEntry.
     /// </summary>
     /// <param name="itemId">The ID of the item to drop.</param>
+    /// <param name="categoryId">Optional equipment category ID for smart loot filtering (e.g., "swords", "daggers").</param>
     /// <param name="weight">The relative weight for selection (default: 100).</param>
     /// <param name="minQuantity">The minimum quantity to drop (default: 1).</param>
     /// <param name="maxQuantity">The maximum quantity to drop (default: 1).</param>
@@ -57,11 +89,13 @@ public readonly record struct LootEntry
     /// <exception cref="ArgumentOutOfRangeException">Thrown when weight is not positive or quantity values are invalid.</exception>
     public static LootEntry Create(
         string itemId,
+        string? categoryId = null,
         int weight = 100,
         int minQuantity = 1,
         int maxQuantity = 1,
         float dropChance = 1.0f)
     {
+        // Validate required item ID
         ArgumentException.ThrowIfNullOrWhiteSpace(itemId);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(weight);
         ArgumentOutOfRangeException.ThrowIfNegative(minQuantity);
@@ -70,6 +104,8 @@ public readonly record struct LootEntry
         return new LootEntry
         {
             ItemId = itemId.ToLowerInvariant(),
+            // Normalize category ID to lowercase for consistent lookups
+            CategoryId = categoryId?.ToLowerInvariant(),
             Weight = weight,
             MinQuantity = minQuantity,
             MaxQuantity = maxQuantity,
@@ -77,3 +113,4 @@ public readonly record struct LootEntry
         };
     }
 }
+

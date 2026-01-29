@@ -1071,11 +1071,12 @@ public class JsonConfigurationProvider : IGameConfigurationProvider
 
         var entries = config.Entries?
             .Select(e => LootEntry.Create(
-                e.ItemId,
-                e.Weight,
-                e.MinQuantity,
-                e.MaxQuantity,
-                e.DropChance))
+                itemId: e.ItemId,
+                categoryId: null,  // CategoryId not available in legacy config
+                weight: e.Weight,
+                minQuantity: e.MinQuantity,
+                maxQuantity: e.MaxQuantity,
+                dropChance: e.DropChance))
             .ToList() ?? [];
 
         var currencyDrops = config.CurrencyDrops?
