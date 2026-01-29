@@ -11,6 +11,7 @@ using RuneAndRust.Infrastructure.Configuration;
 using RuneAndRust.Infrastructure.Persistence;
 using RuneAndRust.Infrastructure.Providers;
 using RuneAndRust.Infrastructure.Repositories;
+using RuneAndRust.Infrastructure.Services;
 
 namespace RuneAndRust.Infrastructure;
 
@@ -137,6 +138,14 @@ public static class DependencyInjection
         // Note: Uses default configuration; override via AchievementProvider constructor if needed
         services.AddSingleton<AchievementOptions>(new AchievementOptions());
         services.AddSingleton<IAchievementProvider, AchievementProvider>();
+
+        // Lineage provider (v0.17.0e) - loads lineage definitions from JSON config
+        services.AddSingleton<ILineageProvider>(sp =>
+        {
+            var lineagesPath = Path.Combine(configPath, "lineages.json");
+            var logger = sp.GetRequiredService<ILogger<LineageProvider>>();
+            return new LineageProvider(logger, lineagesPath);
+        });
 
         return services;
     }
@@ -329,6 +338,11 @@ public static class DependencyInjection
         // Tracks and queries dice roll history including streaks and luck ratings
         // Provides statistics aggregation for the dice statistics view
         services.AddScoped<IDiceHistoryService, DiceHistoryService>();
+
+        // Lineage application service (v0.17.0f)
+        // Orchestrates applying lineage bonuses, traits, and trauma baselines to characters
+        // during character creation. Depends on ILineageProvider for lineage definitions.
+        services.AddScoped<ILineageApplicationService, LineageApplicationService>();
 
         return services;
     }

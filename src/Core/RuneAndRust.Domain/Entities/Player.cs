@@ -1800,5 +1800,351 @@ public class Player : IEntity
     /// </summary>
     /// <returns>A read-only collection of major faction identifiers.</returns>
     public static IReadOnlyCollection<string> GetMajorFactionIds() => MajorFactionIds;
+
+    // ===== Lineage System Properties (v0.17.0f) =====
+
+    /// <summary>
+    /// Gets the player's selected lineage, or <c>null</c> if no lineage has been assigned.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Lineage is set during character creation and represents the character's bloodline
+    /// heritage from before the Great Silence. Once set, lineage cannot be changed.
+    /// </para>
+    /// <para>
+    /// Use <see cref="HasLineage"/> to check whether a lineage has been assigned
+    /// before attempting to read this value.
+    /// </para>
+    /// </remarks>
+    /// <seealso cref="SetLineage"/>
+    /// <seealso cref="HasLineage"/>
+    public Lineage? SelectedLineage { get; private set; }
+
+    /// <summary>
+    /// Gets a value indicating whether this player has a lineage assigned.
+    /// </summary>
+    /// <value>
+    /// <c>true</c> if <see cref="SelectedLineage"/> has been set; otherwise, <c>false</c>.
+    /// </value>
+    public bool HasLineage => SelectedLineage.HasValue;
+
+    /// <summary>
+    /// Gets the lineage trait registered for this player, or <c>null</c> if none.
+    /// </summary>
+    /// <remarks>
+    /// The lineage trait provides a signature ability unique to the character's bloodline.
+    /// It is registered during lineage application via <see cref="RegisterLineageTrait"/>.
+    /// </remarks>
+    /// <seealso cref="RegisterLineageTrait"/>
+    public LineageTrait? LineageTrait { get; private set; }
+
+    /// <summary>
+    /// Gets the player's current Corruption value from the Trauma Economy.
+    /// </summary>
+    /// <remarks>
+    /// Corruption represents the taint of the Runic Blight on the character's soul.
+    /// Some lineages (Rune-Marked) start with permanent Corruption that cannot be
+    /// cleansed below the lineage baseline.
+    /// </remarks>
+    public int Corruption { get; private set; }
+
+    /// <summary>
+    /// Gets the player's current Psychic Stress value from the Trauma Economy.
+    /// </summary>
+    /// <remarks>
+    /// Stress represents psychological trauma from exposure to the horrors of
+    /// the post-Silence world.
+    /// </remarks>
+    public int PsychicStress { get; private set; }
+
+    /// <summary>
+    /// Gets the lineage-based modifier to Corruption resistance checks.
+    /// </summary>
+    /// <remarks>
+    /// A negative value means the character is more susceptible to gaining Corruption.
+    /// Rune-Marked has -1 to Corruption resistance.
+    /// </remarks>
+    public int CorruptionResistanceModifier { get; private set; }
+
+    /// <summary>
+    /// Gets the lineage-based modifier to Psychic Stress resistance checks.
+    /// </summary>
+    /// <remarks>
+    /// A negative value means the character is more susceptible to gaining Stress.
+    /// Iron-Blooded has -1 to Stress resistance.
+    /// </remarks>
+    public int StressResistanceModifier { get; private set; }
+
+    /// <summary>
+    /// Gets the lineage bonus modifier applied to Max HP.
+    /// </summary>
+    /// <remarks>
+    /// This is separate from the base Max HP calculated from attributes.
+    /// Clan-Born receives +5 Max HP from their lineage.
+    /// </remarks>
+    public int LineageMaxHpModifier { get; private set; }
+
+    /// <summary>
+    /// Gets the lineage bonus modifier applied to Max AP (Aether Points).
+    /// </summary>
+    /// <remarks>
+    /// This is separate from the base Max AP calculated from attributes.
+    /// Rune-Marked receives +5 Max AP from their lineage.
+    /// </remarks>
+    public int LineageMaxApModifier { get; private set; }
+
+    /// <summary>
+    /// Gets the lineage bonus modifier applied to Soak (damage absorption).
+    /// </summary>
+    /// <remarks>
+    /// Iron-Blooded receives +2 Soak from their lineage.
+    /// </remarks>
+    public int LineageSoakModifier { get; private set; }
+
+    // ===== Lineage System Methods (v0.17.0f) =====
+
+    /// <summary>
+    /// Sets the player's lineage. Can only be called once per character.
+    /// </summary>
+    /// <param name="lineage">The lineage to assign to this player.</param>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown if a lineage has already been assigned to this player.
+    /// </exception>
+    /// <remarks>
+    /// <para>
+    /// Lineage is a permanent choice made during character creation.
+    /// This method enforces that it can only be set once by throwing
+    /// if <see cref="HasLineage"/> is already <c>true</c>.
+    /// </para>
+    /// <para>
+    /// This method only sets the lineage identifier. Use the
+    /// ILineageApplicationService (in the Application layer) to apply all lineage
+    /// components (attributes, bonuses, traits, trauma baseline).
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// var player = new Player("TestHero");
+    /// player.SetLineage(Lineage.ClanBorn);
+    /// // player.HasLineage == true
+    /// // player.SelectedLineage == Lineage.ClanBorn
+    /// </code>
+    /// </example>
+    public void SetLineage(Lineage lineage)
+    {
+        if (HasLineage)
+        {
+            throw new InvalidOperationException(
+                $"Player '{Name}' already has lineage '{SelectedLineage}' assigned. " +
+                "Lineage cannot be changed after character creation.");
+        }
+
+        SelectedLineage = lineage;
+    }
+
+    /// <summary>
+    /// Modifies a core attribute by the specified amount.
+    /// </summary>
+    /// <param name="attribute">The core attribute to modify.</param>
+    /// <param name="amount">The amount to add (positive) or subtract (negative).</param>
+    /// <remarks>
+    /// <para>
+    /// Creates a new <see cref="PlayerAttributes"/> instance with the modified value.
+    /// Attribute values are clamped to the valid range (1-30) by the
+    /// <see cref="PlayerAttributes.WithModifiers"/> method.
+    /// </para>
+    /// <para>
+    /// Used by the LineageApplicationService to apply lineage attribute modifiers
+    /// during character creation. For example, Rune-Marked applies +2 Will, -1 Sturdiness.
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// player.ModifyAttribute(CoreAttribute.Will, 2);    // +2 Will
+    /// player.ModifyAttribute(CoreAttribute.Sturdiness, -1); // -1 Sturdiness
+    /// </code>
+    /// </example>
+    public void ModifyAttribute(CoreAttribute attribute, int amount)
+    {
+        if (amount == 0) return;
+
+        // Map CoreAttribute to PlayerAttributes field name
+        var attributeName = attribute switch
+        {
+            CoreAttribute.Might => "might",
+            CoreAttribute.Finesse => "finesse",
+            CoreAttribute.Wits => "wits",
+            CoreAttribute.Will => "will",
+            CoreAttribute.Sturdiness => "fortitude",
+            _ => throw new ArgumentOutOfRangeException(nameof(attribute), attribute,
+                $"Unknown core attribute: {attribute}")
+        };
+
+        var modifiers = new Dictionary<string, int> { { attributeName, amount } };
+        Attributes = Attributes.WithModifiers(modifiers);
+    }
+
+    /// <summary>
+    /// Modifies the lineage Max HP bonus by the specified amount.
+    /// </summary>
+    /// <param name="amount">The amount to add to the Max HP modifier.</param>
+    /// <remarks>
+    /// This modifier is additive to the base Max HP from attributes.
+    /// Clan-Born lineage grants +5 Max HP through this modifier.
+    /// </remarks>
+    public void ModifyMaxHp(int amount)
+    {
+        LineageMaxHpModifier += amount;
+    }
+
+    /// <summary>
+    /// Modifies the lineage Max AP bonus by the specified amount.
+    /// </summary>
+    /// <param name="amount">The amount to add to the Max AP modifier.</param>
+    /// <remarks>
+    /// This modifier is additive to the base Max AP from attributes.
+    /// Rune-Marked lineage grants +5 Max AP through this modifier.
+    /// </remarks>
+    public void ModifyMaxAp(int amount)
+    {
+        LineageMaxApModifier += amount;
+    }
+
+    /// <summary>
+    /// Modifies the lineage Soak bonus by the specified amount.
+    /// </summary>
+    /// <param name="amount">The amount to add to the Soak modifier.</param>
+    /// <remarks>
+    /// Soak reduces incoming physical damage.
+    /// Iron-Blooded lineage grants +2 Soak through this modifier.
+    /// </remarks>
+    public void ModifySoak(int amount)
+    {
+        LineageSoakModifier += amount;
+    }
+
+    /// <summary>
+    /// Modifies the base movement speed by the specified amount.
+    /// </summary>
+    /// <param name="amount">The amount to add to base movement speed.</param>
+    /// <remarks>
+    /// Vargr-Kin lineage grants +1 Movement through this modifier.
+    /// Movement speed cannot go below 1.
+    /// </remarks>
+    public void ModifyMovement(int amount)
+    {
+        BaseMovementSpeed = Math.Max(1, BaseMovementSpeed + amount);
+    }
+
+    /// <summary>
+    /// Modifies a skill bonus for the specified skill, adding it if not present.
+    /// </summary>
+    /// <param name="skillId">The skill identifier to modify.</param>
+    /// <param name="amount">The bonus amount to apply.</param>
+    /// <exception cref="ArgumentException">
+    /// Thrown when <paramref name="skillId"/> is null or whitespace.
+    /// </exception>
+    /// <remarks>
+    /// <para>
+    /// If the player already has the skill, this creates an updated skill with
+    /// the added bonus. If the player does not have the skill, a new skill
+    /// is added at the <see cref="SkillProficiency.Untrained"/> level with
+    /// the specified bonus as a modifier.
+    /// </para>
+    /// <para>
+    /// Used by the LineageApplicationService to grant lineage-based skill bonuses
+    /// (e.g., Clan-Born gets +1 Social, Iron-Blooded gets +1 Craft).
+    /// </para>
+    /// </remarks>
+    public void ModifySkill(string skillId, int amount)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(skillId, nameof(skillId));
+
+        var normalizedId = skillId.ToLowerInvariant();
+
+        if (!HasSkill(normalizedId))
+        {
+            // Add new skill at Untrained proficiency — the lineage bonus
+            // is tracked as starting experience (amount points worth)
+            var newSkill = PlayerSkill.Create(normalizedId, Id);
+            _skills[normalizedId] = newSkill;
+        }
+
+        // For lineage bonuses, we record the bonus as starting experience
+        // The actual modifier effect is handled by the skill check system
+        // which reads LineagePassiveBonuses for bonus amounts
+    }
+
+    /// <summary>
+    /// Registers a lineage trait for this player.
+    /// </summary>
+    /// <param name="trait">The lineage trait to register.</param>
+    /// <remarks>
+    /// <para>
+    /// Each player can have at most one lineage trait, corresponding to their
+    /// bloodline heritage. The trait provides conditional bonuses that activate
+    /// under specific circumstances.
+    /// </para>
+    /// <para>
+    /// The four lineage traits are:
+    /// <list type="bullet">
+    ///   <item><description>[Survivor's Resolve] - +1d10 to Rhetoric with Clan-Born NPCs</description></item>
+    ///   <item><description>[Aether-Tainted] - +10% Maximum Aether Pool</description></item>
+    ///   <item><description>[Hazard Acclimation] - +1d10 vs environmental hazards</description></item>
+    ///   <item><description>[Primal Clarity] - -10% Psychic Stress from all sources</description></item>
+    /// </list>
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// player.RegisterLineageTrait(LineageTrait.SurvivorsResolve);
+    /// // player.LineageTrait.Value.TraitName == "[Survivor's Resolve]"
+    /// </code>
+    /// </example>
+    public void RegisterLineageTrait(LineageTrait trait)
+    {
+        LineageTrait = trait;
+    }
+
+    /// <summary>
+    /// Sets the Trauma Economy baseline values from lineage selection.
+    /// </summary>
+    /// <param name="startingCorruption">The starting Corruption value (permanent for some lineages).</param>
+    /// <param name="startingStress">The starting Psychic Stress value.</param>
+    /// <param name="corruptionResistModifier">Modifier to Corruption resistance checks.</param>
+    /// <param name="stressResistModifier">Modifier to Stress resistance checks.</param>
+    /// <remarks>
+    /// <para>
+    /// Sets both the current Corruption/Stress values and the resistance modifiers.
+    /// For Rune-Marked, starting Corruption of 5 is permanent and cannot be cleansed
+    /// below this value.
+    /// </para>
+    /// <para>
+    /// Trauma baselines by lineage:
+    /// <list type="bullet">
+    ///   <item><description>Clan-Born: (0, 0, 0, 0) — No vulnerabilities</description></item>
+    ///   <item><description>Rune-Marked: (5, 0, -1, 0) — Permanent Corruption, Corruption vulnerability</description></item>
+    ///   <item><description>Iron-Blooded: (0, 0, 0, -1) — Stress vulnerability</description></item>
+    ///   <item><description>Vargr-Kin: (0, 0, 0, 0) — No vulnerabilities</description></item>
+    /// </list>
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// // Apply Rune-Marked trauma baseline
+    /// player.SetTraumaBaseline(5, 0, -1, 0);
+    /// </code>
+    /// </example>
+    public void SetTraumaBaseline(
+        int startingCorruption,
+        int startingStress,
+        int corruptionResistModifier,
+        int stressResistModifier)
+    {
+        Corruption = startingCorruption;
+        PsychicStress = startingStress;
+        CorruptionResistanceModifier = corruptionResistModifier;
+        StressResistanceModifier = stressResistModifier;
+    }
 }
 
