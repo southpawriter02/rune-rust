@@ -36,7 +36,8 @@
                 "selectionText",
                 "attributeModifiers",
                 "passiveBonuses",
-                "uniqueTrait"
+                "uniqueTrait",
+                "traumaBaseline"
             ],
             "properties": {
                 "id": {
@@ -86,6 +87,9 @@
                 },
                 "uniqueTrait": {
                     "$ref": "#/definitions/lineageTrait"
+                },
+                "traumaBaseline": {
+                    "$ref": "#/definitions/traumaBaseline"
                 }
             },
             "additionalProperties": false
@@ -293,6 +297,48 @@
                     }
                 }
             ]
+        },
+        "traumaBaseline": {
+            "type": "object",
+            "description": "The Trauma Economy baseline values for this lineage. Defines starting Corruption/Stress and resistance modifiers.",
+            "required": [
+                "startingCorruption",
+                "startingStress",
+                "corruptionResistanceModifier",
+                "stressResistanceModifier"
+            ],
+            "properties": {
+                "startingCorruption": {
+                    "type": "integer",
+                    "description": "Permanent Corruption at character creation. Cannot be cleansed below this value.",
+                    "minimum": 0,
+                    "maximum": 100,
+                    "default": 0
+                },
+                "startingStress": {
+                    "type": "integer",
+                    "description": "Initial Stress at character creation.",
+                    "minimum": 0,
+                    "maximum": 100,
+                    "default": 0
+                },
+                "corruptionResistanceModifier": {
+                    "type": "integer",
+                    "description": "Modifier to Corruption resistance checks. Negative values make the character more vulnerable.",
+                    "minimum": -10,
+                    "maximum": 10,
+                    "default": 0
+                },
+                "stressResistanceModifier": {
+                    "type": "integer",
+                    "description": "Modifier to Stress resistance checks. Negative values make the character more vulnerable.",
+                    "minimum": -10,
+                    "maximum": 10,
+                    "default": 0
+                }
+            },
+            "additionalProperties": false
         }
     }
 }
+

@@ -37,6 +37,12 @@
                 "bonusDice": 1,
                 "targetCheck": "rhetoric",
                 "targetCondition": "npc.lineage == ClanBorn"
+            },
+            "traumaBaseline": {
+                "startingCorruption": 0,
+                "startingStress": 0,
+                "corruptionResistanceModifier": 0,
+                "stressResistanceModifier": 0
             }
         },
         {
@@ -72,6 +78,12 @@
                 "effectType": "PassiveAuraBonus",
                 "triggerCondition": "max_ap_calculation",
                 "percentModifier": 0.10
+            },
+            "traumaBaseline": {
+                "startingCorruption": 5,
+                "startingStress": 0,
+                "corruptionResistanceModifier": -1,
+                "stressResistanceModifier": 0
             }
         },
         {
@@ -109,6 +121,12 @@
                 "bonusDice": 1,
                 "targetCheck": "sturdiness",
                 "targetCondition": "source.type == environmental_hazard"
+            },
+            "traumaBaseline": {
+                "startingCorruption": 0,
+                "startingStress": 0,
+                "corruptionResistanceModifier": 0,
+                "stressResistanceModifier": -1
             }
         },
         {
@@ -144,6 +162,12 @@
                 "effectType": "PercentageModifier",
                 "triggerCondition": "psychic_stress_gain",
                 "percentModifier": -0.10
+            },
+            "traumaBaseline": {
+                "startingCorruption": 0,
+                "startingStress": 0,
+                "corruptionResistanceModifier": 0,
+                "stressResistanceModifier": 0
             }
         }
     ]

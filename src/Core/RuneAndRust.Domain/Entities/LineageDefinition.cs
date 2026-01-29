@@ -1,8 +1,8 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 // LineageDefinition.cs
 // Entity defining a lineage with its associated metadata, attribute modifiers,
-// passive bonuses, and unique traits.
-// Version: 0.17.0c
+// passive bonuses, unique traits, and Trauma Economy baseline values.
+// Version: 0.17.0d
 // ═══════════════════════════════════════════════════════════════════════════════
 
 namespace RuneAndRust.Domain.Entities;
@@ -25,14 +25,9 @@ using RuneAndRust.Domain.ValueObjects;
 ///   <item><description>Attribute modifiers via <see cref="LineageAttributeModifiers"/></description></item>
 ///   <item><description>Passive bonuses via <see cref="LineagePassiveBonuses"/> (HP, AP, Soak, Movement, Skills)</description></item>
 ///   <item><description>Unique trait via <see cref="LineageTrait"/> for signature abilities</description></item>
+///   <item><description>Trauma baseline via <see cref="LineageTraumaBaseline"/> for Corruption/Stress starting values</description></item>
 ///   <item><description>Appearance notes for character visualization</description></item>
 ///   <item><description>Social role description for roleplay guidance</description></item>
-/// </list>
-/// <para>
-/// <strong>Future Extensions (v0.17.0d+):</strong>
-/// </para>
-/// <list type="bullet">
-///   <item><description>TraumaBaseline: Corruption/Stress starting values</description></item>
 /// </list>
 /// <para>
 /// Instances are typically loaded from configuration (lineages.json) via
@@ -43,6 +38,7 @@ using RuneAndRust.Domain.ValueObjects;
 /// <seealso cref="LineageAttributeModifiers"/>
 /// <seealso cref="LineagePassiveBonuses"/>
 /// <seealso cref="LineageTrait"/>
+/// <seealso cref="LineageTraumaBaseline"/>
 public sealed class LineageDefinition : IEntity
 {
     // ═══════════════════════════════════════════════════════════════════════════
@@ -152,6 +148,44 @@ public sealed class LineageDefinition : IEntity
     public LineageTrait UniqueTrait { get; private set; }
 
     /// <summary>
+    /// Gets the Trauma Economy baseline values for this lineage.
+    /// </summary>
+    /// <value>
+    /// A <see cref="LineageTraumaBaseline"/> containing starting Corruption/Stress
+    /// and resistance modifiers for this lineage.
+    /// </value>
+    /// <remarks>
+    /// <para>
+    /// TraumaBaseline defines how this lineage interacts with the Trauma Economy:
+    /// <list type="bullet">
+    ///   <item><description>StartingCorruption: Permanent Corruption at character creation</description></item>
+    ///   <item><description>StartingStress: Initial Stress at character creation</description></item>
+    ///   <item><description>CorruptionResistanceModifier: Bonus/penalty to Corruption resistance checks</description></item>
+    ///   <item><description>StressResistanceModifier: Bonus/penalty to Stress resistance checks</description></item>
+    /// </list>
+    /// </para>
+    /// <para>
+    /// StartingCorruption is PERMANENT and cannot be cleansed below this value.
+    /// This represents the indelible mark of the Runic Blight on certain bloodlines.
+    /// </para>
+    /// <para>
+    /// Trauma baselines by lineage:
+    /// <list type="bullet">
+    ///   <item><description>Clan-Born: (0, 0, 0, 0) - Baseline humans</description></item>
+    ///   <item><description>Rune-Marked: (5, 0, -1, 0) - 5 permanent Corruption, -1 Corruption resistance</description></item>
+    ///   <item><description>Iron-Blooded: (0, 0, 0, -1) - -1 Stress resistance</description></item>
+    ///   <item><description>Vargr-Kin: (0, 0, 0, 0) - Baseline values</description></item>
+    /// </list>
+    /// </para>
+    /// </remarks>
+    /// <seealso cref="GetPermanentCorruptionFloor"/>
+    /// <seealso cref="HasTraumaVulnerabilities"/>
+    /// <seealso cref="GetStartingCorruption"/>
+    /// <seealso cref="GetCorruptionResistanceModifier"/>
+    /// <seealso cref="GetStressResistanceModifier"/>
+    public LineageTraumaBaseline TraumaBaseline { get; private set; }
+
+    /// <summary>
     /// Gets notes about typical physical appearance for this lineage.
     /// </summary>
     /// <value>
@@ -207,6 +241,7 @@ public sealed class LineageDefinition : IEntity
     /// <param name="attributeModifiers">The attribute modifiers for this lineage.</param>
     /// <param name="passiveBonuses">The passive stat and skill bonuses for this lineage.</param>
     /// <param name="uniqueTrait">The unique trait for this lineage.</param>
+    /// <param name="traumaBaseline">The Trauma Economy baseline values for this lineage.</param>
     /// <param name="appearanceNotes">Optional appearance notes.</param>
     /// <param name="socialRole">Optional social role description.</param>
     /// <param name="logger">Optional logger for diagnostic output.</param>
@@ -225,6 +260,7 @@ public sealed class LineageDefinition : IEntity
     ///     LineageAttributeModifiers.ClanBorn,
     ///     LineagePassiveBonuses.ClanBorn,
     ///     LineageTrait.SurvivorsResolve,
+    ///     LineageTraumaBaseline.ClanBorn,
     ///     "No distinctive physical mutations.",
     ///     "Trusted as community leaders and diplomats."
     /// );
@@ -238,6 +274,7 @@ public sealed class LineageDefinition : IEntity
         LineageAttributeModifiers attributeModifiers,
         LineagePassiveBonuses passiveBonuses,
         LineageTrait uniqueTrait,
+        LineageTraumaBaseline traumaBaseline,
         string? appearanceNotes = null,
         string? socialRole = null,
         ILogger<LineageDefinition>? logger = null)
@@ -256,10 +293,12 @@ public sealed class LineageDefinition : IEntity
         ArgumentException.ThrowIfNullOrWhiteSpace(selectionText, nameof(selectionText));
 
         _logger?.LogDebug(
-            "Validation passed. Attribute modifiers: {AttributeModifiers}, Passive bonuses: {PassiveBonuses}, Trait: {TraitName}",
+            "Validation passed. Attribute modifiers: {AttributeModifiers}, Passive bonuses: {PassiveBonuses}, " +
+            "Trait: {TraitName}, Trauma baseline: {TraumaBaseline}",
             attributeModifiers,
             passiveBonuses,
-            uniqueTrait.TraitName);
+            uniqueTrait.TraitName,
+            traumaBaseline);
 
         var definition = new LineageDefinition
         {
@@ -271,6 +310,7 @@ public sealed class LineageDefinition : IEntity
             AttributeModifiers = attributeModifiers,
             PassiveBonuses = passiveBonuses,
             UniqueTrait = uniqueTrait,
+            TraumaBaseline = traumaBaseline,
             AppearanceNotes = appearanceNotes?.Trim() ?? string.Empty,
             SocialRole = socialRole?.Trim() ?? string.Empty
         };
@@ -279,7 +319,7 @@ public sealed class LineageDefinition : IEntity
             "Created LineageDefinition '{DisplayName}' (ID: {Id}) for lineage {LineageId}. " +
             "Total fixed modifiers: {TotalFixedModifiers}, Has flexible bonus: {HasFlexibleBonus}, " +
             "Passive bonuses: HP={HpBonus}, AP={ApBonus}, Soak={SoakBonus}, Move={MoveBonus}, Skills={SkillCount}, " +
-            "Unique trait: {TraitName}",
+            "Unique trait: {TraitName}, Trauma baseline: StartCorr={StartCorr}, CorrResist={CorrResist}, StressResist={StressResist}",
             definition.DisplayName,
             definition.Id,
             definition.LineageId,
@@ -290,7 +330,10 @@ public sealed class LineageDefinition : IEntity
             definition.PassiveBonuses.SoakBonus,
             definition.PassiveBonuses.MovementBonus,
             definition.PassiveBonuses.SkillBonuses.Count,
-            definition.UniqueTrait.TraitName);
+            definition.UniqueTrait.TraitName,
+            definition.TraumaBaseline.StartingCorruption,
+            definition.TraumaBaseline.CorruptionResistanceModifier,
+            definition.TraumaBaseline.StressResistanceModifier);
 
         return definition;
     }
@@ -434,6 +477,72 @@ public sealed class LineageDefinition : IEntity
     public LineageTrait GetTrait() => UniqueTrait;
 
     // ═══════════════════════════════════════════════════════════════════════════
+    // TRAUMA BASELINE HELPER METHODS
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// Gets the permanent Corruption floor for this lineage.
+    /// </summary>
+    /// <returns>The minimum Corruption value after cleansing.</returns>
+    /// <remarks>
+    /// This is a convenience method that delegates to
+    /// <see cref="LineageTraumaBaseline.PermanentCorruptionFloor"/>.
+    /// For Rune-Marked, this is 5. For all other lineages, this is 0.
+    /// </remarks>
+    public int GetPermanentCorruptionFloor() =>
+        TraumaBaseline.PermanentCorruptionFloor;
+
+    /// <summary>
+    /// Gets whether this lineage has any trauma vulnerabilities.
+    /// </summary>
+    /// <returns>
+    /// <c>true</c> if the lineage has Corruption or Stress resistance penalties;
+    /// otherwise, <c>false</c>.
+    /// </returns>
+    /// <remarks>
+    /// Rune-Marked has Corruption vulnerability (-1 resistance).
+    /// Iron-Blooded has Stress vulnerability (-1 resistance).
+    /// </remarks>
+    public bool HasTraumaVulnerabilities() =>
+        TraumaBaseline.HasAnyVulnerability;
+
+    /// <summary>
+    /// Gets the starting Corruption value for new characters of this lineage.
+    /// </summary>
+    /// <returns>Starting Corruption from lineage.</returns>
+    /// <remarks>
+    /// This is a convenience method that delegates to
+    /// <see cref="LineageTraumaBaseline.StartingCorruption"/>.
+    /// Only Rune-Marked has starting Corruption (5).
+    /// </remarks>
+    public int GetStartingCorruption() =>
+        TraumaBaseline.StartingCorruption;
+
+    /// <summary>
+    /// Gets the Corruption resistance modifier for this lineage.
+    /// </summary>
+    /// <returns>Modifier to add to Corruption resistance checks.</returns>
+    /// <remarks>
+    /// This is a convenience method that delegates to
+    /// <see cref="LineageTraumaBaseline.CorruptionResistanceModifier"/>.
+    /// Rune-Marked has -1, making them more susceptible to Corruption.
+    /// </remarks>
+    public int GetCorruptionResistanceModifier() =>
+        TraumaBaseline.CorruptionResistanceModifier;
+
+    /// <summary>
+    /// Gets the Stress resistance modifier for this lineage.
+    /// </summary>
+    /// <returns>Modifier to add to Stress resistance checks.</returns>
+    /// <remarks>
+    /// This is a convenience method that delegates to
+    /// <see cref="LineageTraumaBaseline.StressResistanceModifier"/>.
+    /// Iron-Blooded has -1, making them more susceptible to Stress.
+    /// </remarks>
+    public int GetStressResistanceModifier() =>
+        TraumaBaseline.StressResistanceModifier;
+
+    // ═══════════════════════════════════════════════════════════════════════════
     // DEBUGGING
     // ═══════════════════════════════════════════════════════════════════════════
 
@@ -444,5 +553,5 @@ public sealed class LineageDefinition : IEntity
     /// A formatted string containing the display name, lineage ID, and modifier summary.
     /// </returns>
     public override string ToString() =>
-        $"{DisplayName} ({LineageId}): {AttributeModifiers}, {PassiveBonuses}, Trait: {UniqueTrait.TraitName}";
+        $"{DisplayName} ({LineageId}): {AttributeModifiers}, {PassiveBonuses}, Trait: {UniqueTrait.TraitName}, Trauma: {TraumaBaseline}";
 }
