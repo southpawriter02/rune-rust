@@ -1,157 +1,91 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "title": "Background Configuration",
-    "description": "Schema for character background definitions. Backgrounds represent a character's history and provide attribute bonuses, starter abilities, and starting items.",
+    "$id": "backgrounds.schema.json",
+    "title": "Backgrounds Configuration",
+    "description": "Defines background data for the character creation system. Each background represents a pre-Silence profession that determines starting skills, equipment, social standing, and narrative hooks.",
     "type": "object",
+    "required": ["backgrounds"],
     "properties": {
         "$schema": {
             "type": "string",
-            "description": "Reference to the JSON schema file for validation"
-        },
-        "version": {
-            "type": "string",
-            "description": "Configuration file version for compatibility tracking",
-            "pattern": "^[0-9]+\\.[0-9]+$"
+            "description": "JSON schema reference for editor support"
         },
         "backgrounds": {
             "type": "array",
-            "description": "List of background definitions",
+            "description": "Array of background definitions. Must contain exactly 6 backgrounds, one for each Background enum value.",
+            "minItems": 6,
+            "maxItems": 6,
             "items": {
-                "$ref": "#/definitions/BackgroundDefinition"
-            },
-            "minItems": 1
+                "$ref": "#/$defs/backgroundDefinition"
+            }
         }
     },
-    "required": [
-        "backgrounds"
-    ],
-    "additionalProperties": false,
-    "definitions": {
-        "BackgroundDefinition": {
+    "$defs": {
+        "backgroundDefinition": {
             "type": "object",
-            "description": "A single background definition with category, bonuses, ability, and metadata",
+            "description": "Definition of a single background including display properties, profession context, social standing, and narrative hooks.",
+            "required": [
+                "backgroundId",
+                "displayName",
+                "description",
+                "selectionText",
+                "professionBefore",
+                "socialStanding"
+            ],
             "properties": {
-                "id": {
+                "backgroundId": {
                     "type": "string",
-                    "description": "Unique identifier for the background (lowercase kebab-case)",
-                    "pattern": "^[a-z][a-z0-9-]*$",
+                    "description": "The enum name for this background. Must match a value in the Background enum exactly.",
+                    "enum": [
+                        "VillageSmith",
+                        "TravelingHealer",
+                        "RuinDelver",
+                        "ClanGuard",
+                        "WanderingSkald",
+                        "OutcastScavenger"
+                    ]
+                },
+                "displayName": {
+                    "type": "string",
+                    "description": "Display name shown in the character creation UI and character sheet.",
                     "minLength": 1,
                     "maxLength": 50
-                },
-                "name": {
-                    "type": "string",
-                    "description": "Display name for the background shown to players",
-                    "minLength": 1,
-                    "maxLength": 100
-                },
-                "category": {
-                    "type": "string",
-                    "description": "Background category determining bonus distribution pattern",
-                    "enum": [
-                        "Profession",
-                        "Lineage"
-                    ]
                 },
                 "description": {
                     "type": "string",
-                    "description": "Short description of the background for character creation",
-                    "minLength": 1,
+                    "description": "Full lore description of the background for detail views and character sheet.",
+                    "minLength": 10,
                     "maxLength": 500
                 },
-                "lore": {
+                "selectionText": {
                     "type": "string",
-                    "description": "Extended lore and background story flavor text",
-                    "maxLength": 2000
+                    "description": "Flavor text for character creation selection screen. Written in second person to help players connect with the backstory.",
+                    "minLength": 10,
+                    "maxLength": 500
                 },
-                "attributeBonuses": {
-                    "$ref": "#/definitions/AttributeBonuses",
-                    "description": "Attribute bonuses provided by this background (0-2 per attribute)"
-                },
-                "starterAbilityId": {
+                "professionBefore": {
                     "type": "string",
-                    "description": "Unique identifier for the starter ability granted by this background",
-                    "minLength": 1,
-                    "maxLength": 50
-                },
-                "starterAbilityName": {
-                    "type": "string",
-                    "description": "Display name for the starter ability",
+                    "description": "Brief description of the character's pre-Silence occupation (e.g., 'Blacksmith and metalworker').",
                     "minLength": 1,
                     "maxLength": 100
                 },
-                "starterAbilityDescription": {
+                "socialStanding": {
                     "type": "string",
-                    "description": "Description of the starter ability's effect",
+                    "description": "How post-Silence society views characters with this background. Affects NPC reactions and dialogue options.",
                     "minLength": 1,
-                    "maxLength": 500
+                    "maxLength": 200
                 },
-                "startingItems": {
+                "narrativeHooks": {
                     "type": "array",
-                    "description": "Item IDs granted to characters with this background at creation",
+                    "description": "Quest and dialogue trigger strings that the narrative event system can match against. Each hook provides a background-specific interaction opportunity.",
                     "items": {
                         "type": "string",
-                        "minLength": 1
+                        "description": "A single narrative hook string describing a potential background-specific interaction.",
+                        "minLength": 1,
+                        "maxLength": 200
                     },
-                    "uniqueItems": true
-                },
-                "isPlayable": {
-                    "type": "boolean",
-                    "description": "Whether this background can be selected during character creation",
-                    "default": true
-                },
-                "sortOrder": {
-                    "type": "integer",
-                    "description": "Display order in character creation UI (lower = earlier)",
-                    "minimum": 0,
-                    "default": 0
-                }
-            },
-            "required": [
-                "id",
-                "name",
-                "category",
-                "description",
-                "attributeBonuses",
-                "starterAbilityId",
-                "starterAbilityName",
-                "starterAbilityDescription",
-                "startingItems"
-            ],
-            "additionalProperties": false
-        },
-        "AttributeBonuses": {
-            "type": "object",
-            "description": "Attribute bonuses provided by this background. All fields are optional; only specified attributes receive bonuses.",
-            "properties": {
-                "might": {
-                    "type": "integer",
-                    "description": "Physical power bonus affecting melee damage and carry capacity",
-                    "minimum": 0,
-                    "maximum": 2
-                },
-                "fortitude": {
-                    "type": "integer",
-                    "description": "Physical resilience bonus affecting health and resistances",
-                    "minimum": 0,
-                    "maximum": 2
-                },
-                "will": {
-                    "type": "integer",
-                    "description": "Mental fortitude bonus affecting magical resistance and focus",
-                    "minimum": 0,
-                    "maximum": 2
-                },
-                "wits": {
-                    "type": "integer",
-                    "description": "Mental acuity bonus affecting initiative and perception",
-                    "minimum": 0,
-                    "maximum": 2
-                },
-                "finesse": {
-                    "type": "integer",
-                    "description": "Dexterity bonus affecting accuracy and evasion",
-                    "minimum": 0,
-                    "maximum": 2
+                    "minItems": 0,
+                    "maxItems": 10
                 }
             },
             "additionalProperties": false

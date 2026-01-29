@@ -1,154 +1,83 @@
 {
     "$schema": "./schemas/backgrounds.schema.json",
-    "version": "1.0",
     "backgrounds": [
         {
-            "id": "soldier",
-            "name": "Soldier",
-            "category": "Profession",
-            "description": "You served in an army or militia, learning the ways of combat.",
-            "lore": "Years of drilling, marching, and fighting have hardened your body and mind. You've seen comrades fall and enemies routed, and you carry those experiences with you.",
-            "attributeBonuses": {
-                "might": 2
-            },
-            "starterAbilityId": "shield_bash",
-            "starterAbilityName": "Shield Bash",
-            "starterAbilityDescription": "Stun an enemy for one turn using your shield.",
-            "startingItems": [
-                "iron_shield"
-            ],
-            "isPlayable": true,
-            "sortOrder": 1
+            "backgroundId": "VillageSmith",
+            "displayName": "Village Smith",
+            "description": "You worked the forge, shaping metal into tools of war and peace. The ring of hammer on anvil was your morning song.",
+            "selectionText": "The ring of hammer on anvil was your morning song. You knew the secrets of metal, the temperatures that forge and those that destroy. Every blade that left your hands carried a piece of your spirit.",
+            "professionBefore": "Blacksmith and metalworker",
+            "socialStanding": "Respected craftsperson, essential to any settlement",
+            "narrativeHooks": [
+                "Recognize craftsmanship in ruins",
+                "Repair broken equipment more easily",
+                "Clan smiths may offer discounts or quests"
+            ]
         },
         {
-            "id": "scholar",
-            "name": "Scholar",
-            "category": "Profession",
-            "description": "You spent years studying ancient texts and accumulating knowledge.",
-            "lore": "The musty halls of libraries and academies were your home. You learned that knowledge is power, and you've accumulated quite a bit of both.",
-            "attributeBonuses": {
-                "wits": 2
-            },
-            "starterAbilityId": "lore_recall",
-            "starterAbilityName": "Lore Recall",
-            "starterAbilityDescription": "Identify items and gain insight into monster weaknesses.",
-            "startingItems": [
-                "ancient_tome"
-            ],
-            "isPlayable": true,
-            "sortOrder": 2
+            "backgroundId": "TravelingHealer",
+            "displayName": "Traveling Healer",
+            "description": "You walked between settlements, bringing medicine and hope. You learned the old ways—which herbs heal, which kill, and which do both.",
+            "selectionText": "You learned the old ways—which herbs heal, which kill, and which do both. The sick blessed you; the superstitious cursed you. You walked the line between life and death, and death blinked first.",
+            "professionBefore": "Itinerant medicine practitioner",
+            "socialStanding": "Welcomed but sometimes distrusted",
+            "narrativeHooks": [
+                "Recognize diseases and their cures",
+                "Bone-Setters may share knowledge",
+                "Some view you with superstitious fear"
+            ]
         },
         {
-            "id": "thief",
-            "name": "Thief",
-            "category": "Profession",
-            "description": "You lived by your wits and nimble fingers in the city's shadows.",
-            "lore": "The streets taught you that the wealthy rarely deserve their fortune, and that a quick hand and quicker feet can level the playing field.",
-            "attributeBonuses": {
-                "finesse": 2
-            },
-            "starterAbilityId": "sneak_attack",
-            "starterAbilityName": "Sneak Attack",
-            "starterAbilityDescription": "Deal double damage when attacking from stealth.",
-            "startingItems": [
-                "lockpicks"
-            ],
-            "isPlayable": true,
-            "sortOrder": 3
+            "backgroundId": "RuinDelver",
+            "displayName": "Ruin Delver",
+            "description": "The old places called to you, their secrets waiting to be found. While others feared the dark places, you saw opportunity.",
+            "selectionText": "While others feared the dark places, you saw opportunity. Every ruin is a puzzle, every trap a challenge. The dead have no use for treasure, and you have no use for fear.",
+            "professionBefore": "Scavenger and explorer",
+            "socialStanding": "Useful but looked down upon",
+            "narrativeHooks": [
+                "Know ruin layouts and hazards",
+                "Scrap-Tinkers respect your finds",
+                "May have enemies among rival delvers"
+            ]
         },
         {
-            "id": "healer",
-            "name": "Healer",
-            "category": "Profession",
-            "description": "You dedicated yourself to tending the sick and wounded.",
-            "lore": "Whether in a temple infirmary or a battlefield medical tent, you learned the art of mending flesh and soothing pain. Life is precious, and you've sworn to preserve it.",
-            "attributeBonuses": {
-                "will": 2
-            },
-            "starterAbilityId": "minor_heal",
-            "starterAbilityName": "Minor Heal",
-            "starterAbilityDescription": "Restore a small amount of health to yourself or an ally.",
-            "startingItems": [
-                "healing_herbs"
-            ],
-            "isPlayable": true,
-            "sortOrder": 4
+            "backgroundId": "ClanGuard",
+            "displayName": "Clan Guard",
+            "description": "You stood on the walls, shield in hand, protecting your people. You learned that walls mean nothing without warriors to defend them.",
+            "selectionText": "The weight of the shield, the length of the spear—these were your teachers. You learned that walls mean nothing without warriors to defend them. Your oath was to protect, and you intend to keep it.",
+            "professionBefore": "Warrior and protector",
+            "socialStanding": "Honored defender, trusted by clan leadership",
+            "narrativeHooks": [
+                "Recognize military formations and tactics",
+                "Other guards trust you more quickly",
+                "May have oaths to uphold or avenge"
+            ]
         },
         {
-            "id": "mountainborn",
-            "name": "Mountainborn",
-            "category": "Lineage",
-            "description": "You were raised in the harsh mountain peaks, building endurance.",
-            "lore": "The thin air and treacherous terrain of the high peaks forged you into someone who can endure hardships that would break others.",
-            "attributeBonuses": {
-                "fortitude": 1,
-                "might": 1
-            },
-            "starterAbilityId": "endurance",
-            "starterAbilityName": "Endurance",
-            "starterAbilityDescription": "Resist exhaustion and recover faster from exertion.",
-            "startingItems": [
-                "climbing_gear"
-            ],
-            "isPlayable": true,
-            "sortOrder": 10
+            "backgroundId": "WanderingSkald",
+            "displayName": "Wandering Skald",
+            "description": "You carried the stories, the songs, the memories of what was. In a world that has forgotten so much, you remember.",
+            "selectionText": "In a world that has forgotten so much, you remember. The sagas live in your voice, and through you, the old heroes never truly die. Your words can inspire courage or bring tears.",
+            "professionBefore": "Storyteller and historian",
+            "socialStanding": "Entertainer, keeper of lore, welcome at most hearths",
+            "narrativeHooks": [
+                "Know old legends that hold clues",
+                "Earn room and board through performance",
+                "Jötun-Readers value your historical knowledge"
+            ]
         },
         {
-            "id": "coastlander",
-            "name": "Coastlander",
-            "category": "Lineage",
-            "description": "You grew up along the shores, at home on both land and sea.",
-            "lore": "Salt water runs in your veins. The rhythm of the tides taught you patience, and the unpredictable seas made you adaptable.",
-            "attributeBonuses": {
-                "finesse": 1,
-                "wits": 1
-            },
-            "starterAbilityId": "swim",
-            "starterAbilityName": "Strong Swimmer",
-            "starterAbilityDescription": "Move freely through water without penalty.",
-            "startingItems": [
-                "fishing_net"
-            ],
-            "isPlayable": true,
-            "sortOrder": 11
-        },
-        {
-            "id": "forestkin",
-            "name": "Forestkin",
-            "category": "Lineage",
-            "description": "The deep woods were your home, teaching you to track and survive.",
-            "lore": "Where others see an impenetrable tangle of growth, you see paths, signs, and sanctuary. The forest's secrets are yours to know.",
-            "attributeBonuses": {
-                "wits": 1,
-                "finesse": 1
-            },
-            "starterAbilityId": "track",
-            "starterAbilityName": "Tracker",
-            "starterAbilityDescription": "Follow trails and detect nearby creatures.",
-            "startingItems": [
-                "hunters_bow"
-            ],
-            "isPlayable": true,
-            "sortOrder": 12
-        },
-        {
-            "id": "cityfolk",
-            "name": "Cityfolk",
-            "category": "Lineage",
-            "description": "You were raised in a bustling city, learning to navigate crowds and politics.",
-            "lore": "The city never sleeps, and neither did you. You learned to read people as easily as street signs, and to find opportunity in every crowded corner.",
-            "attributeBonuses": {
-                "will": 1,
-                "wits": 1
-            },
-            "starterAbilityId": "streetwise",
-            "starterAbilityName": "Streetwise",
-            "starterAbilityDescription": "Gain advantage on social interactions and finding information.",
-            "startingItems": [
-                "city_map"
-            ],
-            "isPlayable": true,
-            "sortOrder": 13
+            "backgroundId": "OutcastScavenger",
+            "displayName": "Outcast Scavenger",
+            "description": "Cast out from your clan, you survived alone in the wastes. They called you unclean. You called yourself alive.",
+            "selectionText": "They called you unclean. You called yourself alive. The wastes taught you what the clans never could—how to survive on nothing. Every day is borrowed, and you intend to collect on that debt.",
+            "professionBefore": "Exile and lone survivor",
+            "socialStanding": "Pariah, viewed with suspicion but grudging respect for survival skills",
+            "narrativeHooks": [
+                "Know the wasteland's secrets and dangers",
+                "Other outcasts may offer aid",
+                "Clans may remember why you were cast out"
+            ]
         }
     ]
 }

@@ -3,6 +3,7 @@ using RuneAndRust.Application.DTOs;
 using RuneAndRust.Application.Services;
 using RuneAndRust.Domain.Definitions;
 using RuneAndRust.Domain.Entities;
+using BackgroundDefinition = RuneAndRust.Domain.Definitions.BackgroundDefinition;
 using RuneAndRust.Domain.ValueObjects;
 using Spectre.Console;
 

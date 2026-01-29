@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using RuneAndRust.Application.Interfaces;
 using RuneAndRust.Domain.Definitions;
 using RuneAndRust.Domain.Entities;
+using BackgroundDefinition = RuneAndRust.Domain.Definitions.BackgroundDefinition;
 using RuneAndRust.Domain.Validation;
 using RuneAndRust.Domain.ValueObjects;
 
