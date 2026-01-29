@@ -34,7 +34,8 @@
                 "displayName",
                 "description",
                 "selectionText",
-                "attributeModifiers"
+                "attributeModifiers",
+                "passiveBonuses"
             ],
             "properties": {
                 "id": {
@@ -78,6 +79,9 @@
                     "type": "string",
                     "description": "Optional description of typical social role in Aethelgard.",
                     "maxLength": 500
+                },
+                "passiveBonuses": {
+                    "$ref": "#/definitions/passiveBonuses"
                 }
             },
             "additionalProperties": false
@@ -134,6 +138,71 @@
                     "description": "The amount of the flexible bonus (if hasFlexibleBonus is true).",
                     "minimum": 0,
                     "maximum": 3
+                }
+            },
+            "additionalProperties": false
+        },
+        "passiveBonuses": {
+            "type": "object",
+            "description": "Passive stat and skill bonuses granted by this lineage.",
+            "required": [
+                "maxHpBonus",
+                "maxApBonus",
+                "soakBonus",
+                "movementBonus",
+                "skillBonuses"
+            ],
+            "properties": {
+                "maxHpBonus": {
+                    "type": "integer",
+                    "description": "Bonus added to Max HP calculation.",
+                    "minimum": 0,
+                    "maximum": 20
+                },
+                "maxApBonus": {
+                    "type": "integer",
+                    "description": "Bonus added to Max AP (Aether Pool) calculation.",
+                    "minimum": 0,
+                    "maximum": 20
+                },
+                "soakBonus": {
+                    "type": "integer",
+                    "description": "Bonus added to damage reduction (Soak).",
+                    "minimum": 0,
+                    "maximum": 10
+                },
+                "movementBonus": {
+                    "type": "integer",
+                    "description": "Bonus added to movement range in tiles.",
+                    "minimum": 0,
+                    "maximum": 5
+                },
+                "skillBonuses": {
+                    "type": "array",
+                    "description": "Array of skill bonuses granted by this lineage.",
+                    "items": {
+                        "$ref": "#/definitions/skillBonus"
+                    }
+                }
+            },
+            "additionalProperties": false
+        },
+        "skillBonus": {
+            "type": "object",
+            "description": "A bonus to a specific skill.",
+            "required": ["skillId", "bonusAmount"],
+            "properties": {
+                "skillId": {
+                    "type": "string",
+                    "description": "The kebab-case skill identifier.",
+                    "pattern": "^[a-z][a-z0-9-]*$",
+                    "examples": ["social", "lore", "craft", "survival"]
+                },
+                "bonusAmount": {
+                    "type": "integer",
+                    "description": "The bonus amount to apply to skill checks.",
+                    "minimum": -5,
+                    "maximum": 5
                 }
             },
             "additionalProperties": false

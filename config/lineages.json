@@ -18,7 +18,16 @@
                 "flexibleBonusAmount": 1
             },
             "appearanceNotes": "No distinctive physical mutations. Typically exhibit the full range of human appearances, though often carry subtle marks of their clan's regional heritage.",
-            "socialRole": "Trusted as community leaders and diplomats. Clan-Born often serve as mediators between the other lineages due to their unmodified nature and social adaptability."
+            "socialRole": "Trusted as community leaders and diplomats. Clan-Born often serve as mediators between the other lineages due to their unmodified nature and social adaptability.",
+            "passiveBonuses": {
+                "maxHpBonus": 5,
+                "maxApBonus": 0,
+                "soakBonus": 0,
+                "movementBonus": 0,
+                "skillBonuses": [
+                    { "skillId": "social", "bonusAmount": 1 }
+                ]
+            }
         },
         {
             "id": "rune-marked",
@@ -36,7 +45,16 @@
                 "flexibleBonusAmount": 0
             },
             "appearanceNotes": "Often have faint glowing marks on skin that intensify during Aether use. Eyes may have an unusual luminescence. Some exhibit subtle runic patterns that appear when emotional.",
-            "socialRole": "Sought after as scholars, mystics, and Galdr practitioners. Viewed with a mixture of reverence and suspicion by the common folk due to their inherent connection to the corrupted Aether."
+            "socialRole": "Sought after as scholars, mystics, and Galdr practitioners. Viewed with a mixture of reverence and suspicion by the common folk due to their inherent connection to the corrupted Aether.",
+            "passiveBonuses": {
+                "maxHpBonus": 0,
+                "maxApBonus": 5,
+                "soakBonus": 0,
+                "movementBonus": 0,
+                "skillBonuses": [
+                    { "skillId": "lore", "bonusAmount": 1 }
+                ]
+            }
         },
         {
             "id": "iron-blooded",
@@ -54,7 +72,16 @@
                 "flexibleBonusAmount": 0
             },
             "appearanceNotes": "Often have a slightly metallic sheen to skin or hair. Some exhibit unusual coloration in veins near the surface. Many have denser bone structure visible in facial features.",
-            "socialRole": "Valued as laborers, soldiers, and craftsmen. Their resistance to environmental hazards makes them essential for dangerous work. Often underestimated intellectually due to their physical nature."
+            "socialRole": "Valued as laborers, soldiers, and craftsmen. Their resistance to environmental hazards makes them essential for dangerous work. Often underestimated intellectually due to their physical nature.",
+            "passiveBonuses": {
+                "maxHpBonus": 0,
+                "maxApBonus": 0,
+                "soakBonus": 2,
+                "movementBonus": 0,
+                "skillBonuses": [
+                    { "skillId": "craft", "bonusAmount": 1 }
+                ]
+            }
         },
         {
             "id": "vargr-kin",
@@ -72,7 +99,16 @@
                 "flexibleBonusAmount": 0
             },
             "appearanceNotes": "Often have pronounced canine features, unusual eye colors (amber, silver), or coarser hair. Many have enhanced hearing visible in ear structure. Some exhibit animal-like mannerisms.",
-            "socialRole": "Respected as hunters, scouts, and wilderness guides. Their primal instincts make them valuable in dangerous territories. Sometimes viewed as uncivilized by urban populations."
+            "socialRole": "Respected as hunters, scouts, and wilderness guides. Their primal instincts make them valuable in dangerous territories. Sometimes viewed as uncivilized by urban populations.",
+            "passiveBonuses": {
+                "maxHpBonus": 0,
+                "maxApBonus": 0,
+                "soakBonus": 0,
+                "movementBonus": 1,
+                "skillBonuses": [
+                    { "skillId": "survival", "bonusAmount": 1 }
+                ]
+            }
         }
     ]
 }

@@ -1,7 +1,8 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 // LineageDefinition.cs
-// Entity defining a lineage with its associated metadata and attribute modifiers.
-// Version: 0.17.0a
+// Entity defining a lineage with its associated metadata, attribute modifiers,
+// and passive bonuses.
+// Version: 0.17.0b
 // ═══════════════════════════════════════════════════════════════════════════════
 
 namespace RuneAndRust.Domain.Entities;
@@ -22,14 +23,14 @@ using RuneAndRust.Domain.ValueObjects;
 /// <list type="bullet">
 ///   <item><description>Display metadata (name, description, selection text)</description></item>
 ///   <item><description>Attribute modifiers via <see cref="LineageAttributeModifiers"/></description></item>
+///   <item><description>Passive bonuses via <see cref="LineagePassiveBonuses"/> (HP, AP, Soak, Movement, Skills)</description></item>
 ///   <item><description>Appearance notes for character visualization</description></item>
 ///   <item><description>Social role description for roleplay guidance</description></item>
 /// </list>
 /// <para>
-/// <strong>Future Extensions (v0.17.0b+):</strong>
+/// <strong>Future Extensions (v0.17.0c+):</strong>
 /// </para>
 /// <list type="bullet">
-///   <item><description>PassiveBonuses: HP/AP bonuses, skill bonuses</description></item>
 ///   <item><description>UniqueTraits: Lineage-specific abilities</description></item>
 ///   <item><description>TraumaBaseline: Corruption/Stress starting values</description></item>
 /// </list>
@@ -40,6 +41,7 @@ using RuneAndRust.Domain.ValueObjects;
 /// </remarks>
 /// <seealso cref="Lineage"/>
 /// <seealso cref="LineageAttributeModifiers"/>
+/// <seealso cref="LineagePassiveBonuses"/>
 public sealed class LineageDefinition : IEntity
 {
     // ═══════════════════════════════════════════════════════════════════════════
@@ -100,6 +102,27 @@ public sealed class LineageDefinition : IEntity
     public LineageAttributeModifiers AttributeModifiers { get; private set; }
 
     /// <summary>
+    /// Gets the passive stat and skill bonuses granted by this lineage.
+    /// </summary>
+    /// <value>
+    /// A <see cref="LineagePassiveBonuses"/> containing HP, AP, Soak, Movement,
+    /// and skill bonuses for this lineage.
+    /// </value>
+    /// <remarks>
+    /// Passive bonuses are applied during character creation and include:
+    /// <list type="bullet">
+    ///   <item><description>Stat bonuses: Max HP, Max AP, Soak, Movement</description></item>
+    ///   <item><description>Skill bonuses: One or more skill modifiers</description></item>
+    /// </list>
+    /// Each lineage provides one stat bonus and one skill bonus. These bonuses
+    /// are permanent and affect derived stat calculations throughout the game.
+    /// </remarks>
+    /// <seealso cref="GetHpBonus"/>
+    /// <seealso cref="GetApBonus"/>
+    /// <seealso cref="GetSkillBonus"/>
+    public LineagePassiveBonuses PassiveBonuses { get; private set; }
+
+    /// <summary>
     /// Gets notes about typical physical appearance for this lineage.
     /// </summary>
     /// <value>
@@ -153,6 +176,7 @@ public sealed class LineageDefinition : IEntity
     /// <param name="description">The lore description.</param>
     /// <param name="selectionText">The character creation selection text.</param>
     /// <param name="attributeModifiers">The attribute modifiers for this lineage.</param>
+    /// <param name="passiveBonuses">The passive stat and skill bonuses for this lineage.</param>
     /// <param name="appearanceNotes">Optional appearance notes.</param>
     /// <param name="socialRole">Optional social role description.</param>
     /// <param name="logger">Optional logger for diagnostic output.</param>
@@ -169,6 +193,7 @@ public sealed class LineageDefinition : IEntity
     ///     "Descendants of survivors with untainted bloodlines...",
     ///     "The Stable Code – Humanity's baseline.",
     ///     LineageAttributeModifiers.ClanBorn,
+    ///     LineagePassiveBonuses.ClanBorn,
     ///     "No distinctive physical mutations.",
     ///     "Trusted as community leaders and diplomats."
     /// );
@@ -180,6 +205,7 @@ public sealed class LineageDefinition : IEntity
         string description,
         string selectionText,
         LineageAttributeModifiers attributeModifiers,
+        LineagePassiveBonuses passiveBonuses,
         string? appearanceNotes = null,
         string? socialRole = null,
         ILogger<LineageDefinition>? logger = null)
@@ -198,8 +224,9 @@ public sealed class LineageDefinition : IEntity
         ArgumentException.ThrowIfNullOrWhiteSpace(selectionText, nameof(selectionText));
 
         _logger?.LogDebug(
-            "Validation passed. Attribute modifiers: {AttributeModifiers}",
-            attributeModifiers);
+            "Validation passed. Attribute modifiers: {AttributeModifiers}, Passive bonuses: {PassiveBonuses}",
+            attributeModifiers,
+            passiveBonuses);
 
         var definition = new LineageDefinition
         {
@@ -209,18 +236,25 @@ public sealed class LineageDefinition : IEntity
             Description = description.Trim(),
             SelectionText = selectionText.Trim(),
             AttributeModifiers = attributeModifiers,
+            PassiveBonuses = passiveBonuses,
             AppearanceNotes = appearanceNotes?.Trim() ?? string.Empty,
             SocialRole = socialRole?.Trim() ?? string.Empty
         };
 
         _logger?.LogInformation(
             "Created LineageDefinition '{DisplayName}' (ID: {Id}) for lineage {LineageId}. " +
-            "Total fixed modifiers: {TotalFixedModifiers}, Has flexible bonus: {HasFlexibleBonus}",
+            "Total fixed modifiers: {TotalFixedModifiers}, Has flexible bonus: {HasFlexibleBonus}, " +
+            "Passive bonuses: HP={HpBonus}, AP={ApBonus}, Soak={SoakBonus}, Move={MoveBonus}, Skills={SkillCount}",
             definition.DisplayName,
             definition.Id,
             definition.LineageId,
             definition.AttributeModifiers.TotalFixedModifiers,
-            definition.AttributeModifiers.HasFlexibleBonus);
+            definition.AttributeModifiers.HasFlexibleBonus,
+            definition.PassiveBonuses.MaxHpBonus,
+            definition.PassiveBonuses.MaxApBonus,
+            definition.PassiveBonuses.SoakBonus,
+            definition.PassiveBonuses.MovementBonus,
+            definition.PassiveBonuses.SkillBonuses.Count);
 
         return definition;
     }
@@ -255,6 +289,70 @@ public sealed class LineageDefinition : IEntity
     /// </remarks>
     public bool RequiresFlexibleBonusSelection() => AttributeModifiers.HasFlexibleBonus;
 
+    /// <summary>
+    /// Gets the Max HP bonus from this lineage's passive bonuses.
+    /// </summary>
+    /// <returns>The Max HP bonus amount.</returns>
+    /// <remarks>
+    /// This is a convenience method that delegates to
+    /// <see cref="LineagePassiveBonuses.MaxHpBonus"/>.
+    /// </remarks>
+    public int GetHpBonus() => PassiveBonuses.MaxHpBonus;
+
+    /// <summary>
+    /// Gets the Max AP bonus from this lineage's passive bonuses.
+    /// </summary>
+    /// <returns>The Max AP bonus amount.</returns>
+    /// <remarks>
+    /// This is a convenience method that delegates to
+    /// <see cref="LineagePassiveBonuses.MaxApBonus"/>.
+    /// </remarks>
+    public int GetApBonus() => PassiveBonuses.MaxApBonus;
+
+    /// <summary>
+    /// Gets the Soak bonus from this lineage's passive bonuses.
+    /// </summary>
+    /// <returns>The Soak bonus amount.</returns>
+    /// <remarks>
+    /// This is a convenience method that delegates to
+    /// <see cref="LineagePassiveBonuses.SoakBonus"/>.
+    /// </remarks>
+    public int GetSoakBonus() => PassiveBonuses.SoakBonus;
+
+    /// <summary>
+    /// Gets the Movement bonus from this lineage's passive bonuses.
+    /// </summary>
+    /// <returns>The Movement bonus amount.</returns>
+    /// <remarks>
+    /// This is a convenience method that delegates to
+    /// <see cref="LineagePassiveBonuses.MovementBonus"/>.
+    /// </remarks>
+    public int GetMovementBonus() => PassiveBonuses.MovementBonus;
+
+    /// <summary>
+    /// Gets the skill bonus for a specific skill from this lineage.
+    /// </summary>
+    /// <param name="skillId">The skill identifier to look up.</param>
+    /// <returns>The bonus amount, or 0 if no bonus exists for the skill.</returns>
+    /// <exception cref="ArgumentException">
+    /// Thrown when <paramref name="skillId"/> is null or whitespace.
+    /// </exception>
+    /// <remarks>
+    /// This is a convenience method that delegates to
+    /// <see cref="LineagePassiveBonuses.GetSkillBonus"/>.
+    /// </remarks>
+    public int GetSkillBonus(string skillId) => PassiveBonuses.GetSkillBonus(skillId);
+
+    /// <summary>
+    /// Gets all skill bonuses from this lineage.
+    /// </summary>
+    /// <returns>A read-only list of skill bonuses.</returns>
+    /// <remarks>
+    /// Each lineage typically grants one skill bonus, but the design
+    /// supports multiple skill bonuses for future extensibility.
+    /// </remarks>
+    public IReadOnlyList<SkillBonus> GetAllSkillBonuses() => PassiveBonuses.SkillBonuses;
+
     // ═══════════════════════════════════════════════════════════════════════════
     // DEBUGGING
     // ═══════════════════════════════════════════════════════════════════════════
@@ -266,5 +364,5 @@ public sealed class LineageDefinition : IEntity
     /// A formatted string containing the display name, lineage ID, and modifier summary.
     /// </returns>
     public override string ToString() =>
-        $"{DisplayName} ({LineageId}): {AttributeModifiers}";
+        $"{DisplayName} ({LineageId}): {AttributeModifiers}, {PassiveBonuses}";
 }
