@@ -1,6 +1,6 @@
 {
     "$schema": "./schemas/lineages.schema.json",
-    "version": "1.0",
+    "version": "1.1",
     "lineages": [
         {
             "id": "clan-born",
@@ -27,6 +27,16 @@
                 "skillBonuses": [
                     { "skillId": "social", "bonusAmount": 1 }
                 ]
+            },
+            "uniqueTrait": {
+                "traitId": "survivors_resolve",
+                "traitName": "[Survivor's Resolve]",
+                "description": "Gain +1d10 to Rhetoric checks when interacting with Clan-Born NPCs.",
+                "effectType": "BonusDiceToSkill",
+                "triggerCondition": "rhetoric_check_initiated",
+                "bonusDice": 1,
+                "targetCheck": "rhetoric",
+                "targetCondition": "npc.lineage == ClanBorn"
             }
         },
         {
@@ -54,6 +64,14 @@
                 "skillBonuses": [
                     { "skillId": "lore", "bonusAmount": 1 }
                 ]
+            },
+            "uniqueTrait": {
+                "traitId": "aether_tainted",
+                "traitName": "[Aether-Tainted]",
+                "description": "Your Maximum Aether Pool is increased by 10%.",
+                "effectType": "PassiveAuraBonus",
+                "triggerCondition": "max_ap_calculation",
+                "percentModifier": 0.10
             }
         },
         {
@@ -81,6 +99,16 @@
                 "skillBonuses": [
                     { "skillId": "craft", "bonusAmount": 1 }
                 ]
+            },
+            "uniqueTrait": {
+                "traitId": "hazard_acclimation",
+                "traitName": "[Hazard Acclimation]",
+                "description": "Gain +1d10 to Sturdiness Resolve checks versus environmental hazards.",
+                "effectType": "BonusDiceToResolve",
+                "triggerCondition": "sturdiness_resolve_check",
+                "bonusDice": 1,
+                "targetCheck": "sturdiness",
+                "targetCondition": "source.type == environmental_hazard"
             }
         },
         {
@@ -108,6 +136,14 @@
                 "skillBonuses": [
                     { "skillId": "survival", "bonusAmount": 1 }
                 ]
+            },
+            "uniqueTrait": {
+                "traitId": "primal_clarity",
+                "traitName": "[Primal Clarity]",
+                "description": "Take 10% less Psychic Stress from all sources.",
+                "effectType": "PercentageModifier",
+                "triggerCondition": "psychic_stress_gain",
+                "percentModifier": -0.10
             }
         }
     ]

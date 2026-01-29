@@ -1,8 +1,8 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 // LineageDefinition.cs
 // Entity defining a lineage with its associated metadata, attribute modifiers,
-// and passive bonuses.
-// Version: 0.17.0b
+// passive bonuses, and unique traits.
+// Version: 0.17.0c
 // ═══════════════════════════════════════════════════════════════════════════════
 
 namespace RuneAndRust.Domain.Entities;
@@ -24,14 +24,14 @@ using RuneAndRust.Domain.ValueObjects;
 ///   <item><description>Display metadata (name, description, selection text)</description></item>
 ///   <item><description>Attribute modifiers via <see cref="LineageAttributeModifiers"/></description></item>
 ///   <item><description>Passive bonuses via <see cref="LineagePassiveBonuses"/> (HP, AP, Soak, Movement, Skills)</description></item>
+///   <item><description>Unique trait via <see cref="LineageTrait"/> for signature abilities</description></item>
 ///   <item><description>Appearance notes for character visualization</description></item>
 ///   <item><description>Social role description for roleplay guidance</description></item>
 /// </list>
 /// <para>
-/// <strong>Future Extensions (v0.17.0c+):</strong>
+/// <strong>Future Extensions (v0.17.0d+):</strong>
 /// </para>
 /// <list type="bullet">
-///   <item><description>UniqueTraits: Lineage-specific abilities</description></item>
 ///   <item><description>TraumaBaseline: Corruption/Stress starting values</description></item>
 /// </list>
 /// <para>
@@ -42,6 +42,7 @@ using RuneAndRust.Domain.ValueObjects;
 /// <seealso cref="Lineage"/>
 /// <seealso cref="LineageAttributeModifiers"/>
 /// <seealso cref="LineagePassiveBonuses"/>
+/// <seealso cref="LineageTrait"/>
 public sealed class LineageDefinition : IEntity
 {
     // ═══════════════════════════════════════════════════════════════════════════
@@ -123,6 +124,34 @@ public sealed class LineageDefinition : IEntity
     public LineagePassiveBonuses PassiveBonuses { get; private set; }
 
     /// <summary>
+    /// Gets the unique trait granted by this lineage.
+    /// </summary>
+    /// <value>
+    /// A <see cref="LineageTrait"/> containing the signature ability unique to this bloodline.
+    /// </value>
+    /// <remarks>
+    /// <para>
+    /// Each lineage has exactly one unique trait that provides a signature ability.
+    /// Traits are conditional, activating under specific circumstances unlike passive
+    /// bonuses which are always active.
+    /// </para>
+    /// <para>
+    /// The four lineage traits are:
+    /// <list type="bullet">
+    ///   <item><description>Clan-Born: [Survivor's Resolve] - +1d10 to Rhetoric with Clan-Born NPCs</description></item>
+    ///   <item><description>Rune-Marked: [Aether-Tainted] - +10% Maximum Aether Pool</description></item>
+    ///   <item><description>Iron-Blooded: [Hazard Acclimation] - +1d10 vs environmental hazards</description></item>
+    ///   <item><description>Vargr-Kin: [Primal Clarity] - -10% Psychic Stress</description></item>
+    /// </list>
+    /// </para>
+    /// </remarks>
+    /// <seealso cref="GetTraitName"/>
+    /// <seealso cref="GetTraitDescription"/>
+    /// <seealso cref="HasBonusDiceTrait"/>
+    /// <seealso cref="HasPercentModifierTrait"/>
+    public LineageTrait UniqueTrait { get; private set; }
+
+    /// <summary>
     /// Gets notes about typical physical appearance for this lineage.
     /// </summary>
     /// <value>
@@ -177,6 +206,7 @@ public sealed class LineageDefinition : IEntity
     /// <param name="selectionText">The character creation selection text.</param>
     /// <param name="attributeModifiers">The attribute modifiers for this lineage.</param>
     /// <param name="passiveBonuses">The passive stat and skill bonuses for this lineage.</param>
+    /// <param name="uniqueTrait">The unique trait for this lineage.</param>
     /// <param name="appearanceNotes">Optional appearance notes.</param>
     /// <param name="socialRole">Optional social role description.</param>
     /// <param name="logger">Optional logger for diagnostic output.</param>
@@ -194,6 +224,7 @@ public sealed class LineageDefinition : IEntity
     ///     "The Stable Code – Humanity's baseline.",
     ///     LineageAttributeModifiers.ClanBorn,
     ///     LineagePassiveBonuses.ClanBorn,
+    ///     LineageTrait.SurvivorsResolve,
     ///     "No distinctive physical mutations.",
     ///     "Trusted as community leaders and diplomats."
     /// );
@@ -206,6 +237,7 @@ public sealed class LineageDefinition : IEntity
         string selectionText,
         LineageAttributeModifiers attributeModifiers,
         LineagePassiveBonuses passiveBonuses,
+        LineageTrait uniqueTrait,
         string? appearanceNotes = null,
         string? socialRole = null,
         ILogger<LineageDefinition>? logger = null)
@@ -224,9 +256,10 @@ public sealed class LineageDefinition : IEntity
         ArgumentException.ThrowIfNullOrWhiteSpace(selectionText, nameof(selectionText));
 
         _logger?.LogDebug(
-            "Validation passed. Attribute modifiers: {AttributeModifiers}, Passive bonuses: {PassiveBonuses}",
+            "Validation passed. Attribute modifiers: {AttributeModifiers}, Passive bonuses: {PassiveBonuses}, Trait: {TraitName}",
             attributeModifiers,
-            passiveBonuses);
+            passiveBonuses,
+            uniqueTrait.TraitName);
 
         var definition = new LineageDefinition
         {
@@ -237,6 +270,7 @@ public sealed class LineageDefinition : IEntity
             SelectionText = selectionText.Trim(),
             AttributeModifiers = attributeModifiers,
             PassiveBonuses = passiveBonuses,
+            UniqueTrait = uniqueTrait,
             AppearanceNotes = appearanceNotes?.Trim() ?? string.Empty,
             SocialRole = socialRole?.Trim() ?? string.Empty
         };
@@ -244,7 +278,8 @@ public sealed class LineageDefinition : IEntity
         _logger?.LogInformation(
             "Created LineageDefinition '{DisplayName}' (ID: {Id}) for lineage {LineageId}. " +
             "Total fixed modifiers: {TotalFixedModifiers}, Has flexible bonus: {HasFlexibleBonus}, " +
-            "Passive bonuses: HP={HpBonus}, AP={ApBonus}, Soak={SoakBonus}, Move={MoveBonus}, Skills={SkillCount}",
+            "Passive bonuses: HP={HpBonus}, AP={ApBonus}, Soak={SoakBonus}, Move={MoveBonus}, Skills={SkillCount}, " +
+            "Unique trait: {TraitName}",
             definition.DisplayName,
             definition.Id,
             definition.LineageId,
@@ -254,7 +289,8 @@ public sealed class LineageDefinition : IEntity
             definition.PassiveBonuses.MaxApBonus,
             definition.PassiveBonuses.SoakBonus,
             definition.PassiveBonuses.MovementBonus,
-            definition.PassiveBonuses.SkillBonuses.Count);
+            definition.PassiveBonuses.SkillBonuses.Count,
+            definition.UniqueTrait.TraitName);
 
         return definition;
     }
@@ -354,6 +390,50 @@ public sealed class LineageDefinition : IEntity
     public IReadOnlyList<SkillBonus> GetAllSkillBonuses() => PassiveBonuses.SkillBonuses;
 
     // ═══════════════════════════════════════════════════════════════════════════
+    // TRAIT HELPER METHODS
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// Gets the display name of the unique trait.
+    /// </summary>
+    /// <returns>The trait name with brackets (e.g., "[Survivor's Resolve]").</returns>
+    public string GetTraitName() => UniqueTrait.TraitName;
+
+    /// <summary>
+    /// Gets the description of the unique trait.
+    /// </summary>
+    /// <returns>The player-facing trait description.</returns>
+    public string GetTraitDescription() => UniqueTrait.Description;
+
+    /// <summary>
+    /// Gets whether the unique trait uses bonus dice.
+    /// </summary>
+    /// <returns>
+    /// <c>true</c> if the trait adds dice to skill or resolve checks;
+    /// otherwise, <c>false</c>.
+    /// </returns>
+    public bool HasBonusDiceTrait() => UniqueTrait.UsesBonusDice;
+
+    /// <summary>
+    /// Gets whether the unique trait uses percentage modification.
+    /// </summary>
+    /// <returns>
+    /// <c>true</c> if the trait scales values by percentage;
+    /// otherwise, <c>false</c>.
+    /// </returns>
+    public bool HasPercentModifierTrait() => UniqueTrait.UsesPercentModifier;
+
+    /// <summary>
+    /// Gets the unique trait for this lineage.
+    /// </summary>
+    /// <returns>The <see cref="LineageTrait"/> for this lineage.</returns>
+    /// <remarks>
+    /// This is a convenience method that returns the same value as
+    /// <see cref="UniqueTrait"/> property.
+    /// </remarks>
+    public LineageTrait GetTrait() => UniqueTrait;
+
+    // ═══════════════════════════════════════════════════════════════════════════
     // DEBUGGING
     // ═══════════════════════════════════════════════════════════════════════════
 
@@ -364,5 +444,5 @@ public sealed class LineageDefinition : IEntity
     /// A formatted string containing the display name, lineage ID, and modifier summary.
     /// </returns>
     public override string ToString() =>
-        $"{DisplayName} ({LineageId}): {AttributeModifiers}, {PassiveBonuses}";
+        $"{DisplayName} ({LineageId}): {AttributeModifiers}, {PassiveBonuses}, Trait: {UniqueTrait.TraitName}";
 }

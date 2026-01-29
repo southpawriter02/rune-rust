@@ -35,7 +35,8 @@
                 "description",
                 "selectionText",
                 "attributeModifiers",
-                "passiveBonuses"
+                "passiveBonuses",
+                "uniqueTrait"
             ],
             "properties": {
                 "id": {
@@ -82,6 +83,9 @@
                 },
                 "passiveBonuses": {
                     "$ref": "#/definitions/passiveBonuses"
+                },
+                "uniqueTrait": {
+                    "$ref": "#/definitions/lineageTrait"
                 }
             },
             "additionalProperties": false
@@ -206,6 +210,89 @@
                 }
             },
             "additionalProperties": false
+        },
+        "lineageTrait": {
+            "type": "object",
+            "description": "A unique trait granted by the lineage.",
+            "required": [
+                "traitId",
+                "traitName",
+                "description",
+                "effectType"
+            ],
+            "properties": {
+                "traitId": {
+                    "type": "string",
+                    "description": "Unique snake_case identifier for this trait.",
+                    "pattern": "^[a-z][a-z0-9_]*$",
+                    "examples": ["survivors_resolve", "aether_tainted", "hazard_acclimation", "primal_clarity"]
+                },
+                "traitName": {
+                    "type": "string",
+                    "description": "Display name with brackets for player-facing presentation.",
+                    "pattern": "^\\[.+\\]$",
+                    "examples": ["[Survivor's Resolve]", "[Aether-Tainted]", "[Hazard Acclimation]", "[Primal Clarity]"]
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Player-facing explanation of the trait effect.",
+                    "minLength": 10,
+                    "maxLength": 500
+                },
+                "effectType": {
+                    "type": "string",
+                    "description": "The type of effect this trait applies.",
+                    "enum": ["BonusDiceToSkill", "PercentageModifier", "BonusDiceToResolve", "PassiveAuraBonus"]
+                },
+                "triggerCondition": {
+                    "type": "string",
+                    "description": "Optional condition string for when the trait activates.",
+                    "maxLength": 200
+                },
+                "bonusDice": {
+                    "type": "integer",
+                    "description": "Number of bonus dice (required for BonusDiceToSkill and BonusDiceToResolve effects).",
+                    "minimum": 1,
+                    "maximum": 5
+                },
+                "percentModifier": {
+                    "type": "number",
+                    "description": "Percentage modifier (required for PercentageModifier and PassiveAuraBonus effects). Positive increases, negative decreases.",
+                    "minimum": -1.0,
+                    "maximum": 1.0
+                },
+                "targetCheck": {
+                    "type": "string",
+                    "description": "Optional skill or resolve check type affected.",
+                    "pattern": "^[a-z][a-z0-9_-]*$",
+                    "examples": ["rhetoric", "sturdiness", "lore"]
+                },
+                "targetCondition": {
+                    "type": "string",
+                    "description": "Optional condition for valid targets.",
+                    "maxLength": 200,
+                    "examples": ["npc.lineage == ClanBorn", "source.type == environmental_hazard"]
+                }
+            },
+            "additionalProperties": false,
+            "allOf": [
+                {
+                    "if": {
+                        "properties": { "effectType": { "enum": ["BonusDiceToSkill", "BonusDiceToResolve"] } }
+                    },
+                    "then": {
+                        "required": ["bonusDice"]
+                    }
+                },
+                {
+                    "if": {
+                        "properties": { "effectType": { "enum": ["PercentageModifier", "PassiveAuraBonus"] } }
+                    },
+                    "then": {
+                        "required": ["percentModifier"]
+                    }
+                }
+            ]
         }
     }
 }

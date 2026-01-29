@@ -32,6 +32,7 @@ public class LineageDefinitionTests
             "The Stable Code – Humanity's baseline.",
             LineageAttributeModifiers.ClanBorn,
             LineagePassiveBonuses.ClanBorn,
+            LineageTrait.SurvivorsResolve,
             "No distinctive physical mutations.",
             "Trusted as community leaders.");
 
@@ -60,7 +61,8 @@ public class LineageDefinitionTests
             "Description",
             "Selection text",
             LineageAttributeModifiers.ClanBorn,
-            LineagePassiveBonuses.ClanBorn);
+            LineagePassiveBonuses.ClanBorn,
+            LineageTrait.SurvivorsResolve);
 
         // Assert
         act.Should().Throw<ArgumentException>()
@@ -80,7 +82,8 @@ public class LineageDefinitionTests
             "",
             "Selection text",
             LineageAttributeModifiers.ClanBorn,
-            LineagePassiveBonuses.ClanBorn);
+            LineagePassiveBonuses.ClanBorn,
+            LineageTrait.SurvivorsResolve);
 
         // Assert
         act.Should().Throw<ArgumentException>()
@@ -100,7 +103,8 @@ public class LineageDefinitionTests
             "Description",
             "   ",
             LineageAttributeModifiers.ClanBorn,
-            LineagePassiveBonuses.ClanBorn);
+            LineagePassiveBonuses.ClanBorn,
+            LineageTrait.SurvivorsResolve);
 
         // Assert
         act.Should().Throw<ArgumentException>()
@@ -124,7 +128,8 @@ public class LineageDefinitionTests
             "Descendants of survivors.",
             "The Stable Code.",
             LineageAttributeModifiers.ClanBorn,
-            LineagePassiveBonuses.ClanBorn);
+            LineagePassiveBonuses.ClanBorn,
+            LineageTrait.SurvivorsResolve);
 
         // Act
         var result = definition.RequiresFlexibleBonusSelection();
@@ -158,13 +163,22 @@ public class LineageDefinitionTests
             _ => throw new ArgumentException("Unexpected lineage")
         };
 
+        var trait = lineage switch
+        {
+            Lineage.RuneMarked => LineageTrait.AetherTainted,
+            Lineage.IronBlooded => LineageTrait.HazardAcclimation,
+            Lineage.VargrKin => LineageTrait.PrimalClarity,
+            _ => throw new ArgumentException("Unexpected lineage")
+        };
+
         var definition = LineageDefinition.Create(
             lineage,
             lineage.ToString(),
             "Test description for this lineage.",
             "Test selection text.",
             modifiers,
-            passiveBonuses);
+            passiveBonuses,
+            trait);
 
         // Act
         var result = definition.RequiresFlexibleBonusSelection();
@@ -186,7 +200,8 @@ public class LineageDefinitionTests
             "Those whose blood carries the All-Rune's echo.",
             "The Tainted Aether.",
             LineageAttributeModifiers.RuneMarked,
-            LineagePassiveBonuses.RuneMarked);
+            LineagePassiveBonuses.RuneMarked,
+            LineageTrait.AetherTainted);
 
         // Act
         var result = definition.GetTotalFixedModifiers();
@@ -212,7 +227,8 @@ public class LineageDefinitionTests
             "Bloodlines hardened by Blight-metal.",
             "The Corrupted Earth.",
             LineageAttributeModifiers.IronBlooded,
-            LineagePassiveBonuses.IronBlooded);
+            LineagePassiveBonuses.IronBlooded,
+            LineageTrait.HazardAcclimation);
 
         // Assert
         definition.AppearanceNotes.Should().BeEmpty();
