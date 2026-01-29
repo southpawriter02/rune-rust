@@ -53,6 +53,11 @@ public class LootService : ILootService
     /// </summary>
     private readonly IRecipeService? _recipeService;
 
+    /// <summary>
+    /// Optional smart loot service for class-appropriate loot bias (v0.16.3d).
+    /// </summary>
+    private readonly ISmartLootService? _smartLootService;
+
     // ═══════════════════════════════════════════════════════════════
     // CONSTRUCTORS
     // ═══════════════════════════════════════════════════════════════
@@ -66,9 +71,10 @@ public class LootService : ILootService
     /// <param name="scrollProvider">Optional provider for recipe scroll configurations (v0.11.1c).</param>
     /// <param name="recipeProvider">Optional recipe provider for recipe lookups (v0.11.1c).</param>
     /// <param name="recipeService">Optional recipe service for checking known recipes (v0.11.1c).</param>
+    /// <param name="smartLootService">Optional smart loot service for class-appropriate bias (v0.16.3d).</param>
     /// <remarks>
-    /// The scroll-related dependencies are optional. If not provided, recipe scroll
-    /// generation will be disabled but the service will function normally otherwise.
+    /// The scroll-related and smart loot dependencies are optional. If not provided,
+    /// their respective features will be disabled but the service will function normally.
     /// </remarks>
     public LootService(
         IGameConfigurationProvider configProvider,
@@ -76,8 +82,9 @@ public class LootService : ILootService
         IGameEventLogger? eventLogger = null,
         IRecipeScrollProvider? scrollProvider = null,
         IRecipeProvider? recipeProvider = null,
-        IRecipeService? recipeService = null)
-        : this(configProvider, logger, eventLogger, Random.Shared, scrollProvider, recipeProvider, recipeService)
+        IRecipeService? recipeService = null,
+        ISmartLootService? smartLootService = null)
+        : this(configProvider, logger, eventLogger, Random.Shared, scrollProvider, recipeProvider, recipeService, smartLootService)
     {
     }
 
@@ -91,6 +98,7 @@ public class LootService : ILootService
     /// <param name="scrollProvider">Optional provider for recipe scroll configurations (v0.11.1c).</param>
     /// <param name="recipeProvider">Optional recipe provider for recipe lookups (v0.11.1c).</param>
     /// <param name="recipeService">Optional recipe service for checking known recipes (v0.11.1c).</param>
+    /// <param name="smartLootService">Optional smart loot service for class-appropriate bias (v0.16.3d).</param>
     internal LootService(
         IGameConfigurationProvider configProvider,
         ILogger<LootService> logger,
@@ -98,7 +106,8 @@ public class LootService : ILootService
         Random random,
         IRecipeScrollProvider? scrollProvider = null,
         IRecipeProvider? recipeProvider = null,
-        IRecipeService? recipeService = null)
+        IRecipeService? recipeService = null,
+        ISmartLootService? smartLootService = null)
     {
         _configProvider = configProvider ?? throw new ArgumentNullException(nameof(configProvider));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -107,6 +116,7 @@ public class LootService : ILootService
         _scrollProvider = scrollProvider;
         _recipeProvider = recipeProvider;
         _recipeService = recipeService;
+        _smartLootService = smartLootService;
 
         // Log initialization status for scroll generation
         if (_scrollProvider != null)
@@ -122,6 +132,16 @@ public class LootService : ILootService
         else
         {
             _logger.LogDebug("LootService initialized without recipe scroll support");
+        }
+
+        // Log smart loot service status (v0.16.3d)
+        if (_smartLootService != null)
+        {
+            _logger.LogDebug("LootService initialized with smart loot support");
+        }
+        else
+        {
+            _logger.LogDebug("LootService initialized without smart loot support - using random selection only");
         }
     }
 
@@ -182,6 +202,134 @@ public class LootService : ILootService
                 ["items"] = items.Select(i => $"{i.Quantity}x {i.Name}").ToList(),
                 ["currency"] = currency.Select(c => $"{c.Value} {c.Key}").ToList(),
                 ["lootMultiplier"] = lootMultiplier
+            });
+
+        return loot;
+    }
+
+    /// <inheritdoc/>
+    public LootDrop GenerateLoot(Monster monster, Player player)
+    {
+        // Validate inputs
+        if (monster == null)
+        {
+            _logger.LogWarning("Attempted to generate smart loot for null monster");
+            return LootDrop.Empty;
+        }
+
+        if (player == null)
+        {
+            _logger.LogDebug("No player context provided, falling back to basic loot generation");
+            return GenerateLoot(monster);
+        }
+
+        // Get monster definition
+        if (string.IsNullOrEmpty(monster.MonsterDefinitionId))
+        {
+            _logger.LogDebug("Monster has no definition ID: {MonsterName}", monster.Name);
+            return LootDrop.Empty;
+        }
+
+        var definition = _configProvider.GetMonsterById(monster.MonsterDefinitionId);
+        if (definition?.LootTable == null || !definition.LootTable.HasEntries)
+        {
+            _logger.LogDebug("No loot table found for monster: {MonsterName} (ID: {MonsterId})",
+                monster.Name, monster.MonsterDefinitionId);
+            return LootDrop.Empty;
+        }
+
+        // Check if smart loot is available
+        if (_smartLootService == null)
+        {
+            _logger.LogDebug(
+                "Smart loot service unavailable, using basic loot generation for {MonsterName}",
+                monster.Name);
+            return GenerateLoot(definition, monster.LootMultiplier);
+        }
+
+        // Get player archetype for smart loot filtering
+        var archetypeId = player.ArchetypeId;
+        if (string.IsNullOrWhiteSpace(archetypeId))
+        {
+            _logger.LogDebug(
+                "Player {PlayerName} has no archetype, using basic loot generation",
+                player.Name);
+            return GenerateLoot(definition, monster.LootMultiplier);
+        }
+
+        // Build smart loot context from loot table entries
+        var lootTable = definition.LootTable;
+        var availableItems = lootTable.Entries.ToList();
+
+        _logger.LogDebug(
+            "Generating smart loot for {PlayerArchetype} player from {MonsterName} " +
+            "({ItemCount} available items)",
+            archetypeId, monster.Name, availableItems.Count);
+
+        // Create context and select using smart loot algorithm
+        var context = SmartLootContext.Create(
+            playerArchetypeId: archetypeId,
+            qualityTier: QualityTier.Scavenged, // Default tier for now
+            availableItems: availableItems);
+
+        var result = _smartLootService.SelectItem(context);
+
+        // Log selection details
+        _logger.LogInformation(
+            "Smart loot selection for {PlayerArchetype}: {SelectionReason} " +
+            "(Roll={BiasRoll}, ClassAppropriate={WasClassAppropriate}, " +
+            "FilteredPool={FilteredSize}/{TotalSize})",
+            archetypeId,
+            result.SelectionReason,
+            result.BiasRoll,
+            result.WasClassAppropriate,
+            result.FilteredPoolSize,
+            result.TotalPoolSize);
+
+        if (!result.HasSelection)
+        {
+            _logger.LogDebug("Smart loot selection returned no item for {MonsterName}", monster.Name);
+            
+            // Fall back to currency-only drop
+            var currencyOnly = GenerateCurrencyDrops(lootTable.CurrencyDrops, monster.LootMultiplier);
+            return LootDrop.Create([], currencyOnly, monster.Name);
+        }
+
+        // Create LootDrop using the smart loot factory method
+        var loot = LootDrop.CreateFrom(result, archetypeId, monster.Name);
+
+        // Generate currency separately
+        var currency = GenerateCurrencyDrops(lootTable.CurrencyDrops, monster.LootMultiplier);
+
+        // If we have currency, combine with the item drop
+        if (currency.Count > 0)
+        {
+            loot = LootDrop.Create(
+                loot.Items,
+                currency,
+                monster.Name);
+            
+            // Re-apply smart loot metadata after combining
+            loot = loot with
+            {
+                WasClassAppropriate = result.WasClassAppropriate,
+                PlayerArchetypeId = archetypeId,
+                SelectionReason = result.SelectionReason,
+                BiasRoll = result.BiasRoll
+            };
+        }
+
+        // Log event for analytics
+        _eventLogger?.LogInventory("SmartLootGenerated", $"Smart loot dropped from {monster.Name}",
+            data: new Dictionary<string, object>
+            {
+                ["monsterName"] = monster.Name,
+                ["playerArchetype"] = archetypeId,
+                ["wasClassAppropriate"] = result.WasClassAppropriate,
+                ["biasRoll"] = result.BiasRoll,
+                ["selectionReason"] = result.SelectionReason,
+                ["itemCount"] = loot.TotalItems,
+                ["currencyTypes"] = currency.Count
             });
 
         return loot;

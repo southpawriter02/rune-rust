@@ -123,6 +123,66 @@ public readonly record struct DroppedItem
     }
 
     /// <summary>
+    /// Creates a dropped item from a <see cref="LootEntry"/>.
+    /// </summary>
+    /// <param name="entry">The loot entry containing item data.</param>
+    /// <param name="quantity">Optional quantity override (default: uses entry's min/max range midpoint).</param>
+    /// <returns>A new DroppedItem instance.</returns>
+    /// <remarks>
+    /// <para>
+    /// The item name is derived from the ItemId by converting from kebab-case
+    /// to Title Case (e.g., "iron-sword" becomes "Iron Sword").
+    /// </para>
+    /// <para>
+    /// This factory method is primarily used by the smart loot system to convert
+    /// <see cref="SmartLootResult"/> selections into displayable dropped items.
+    /// </para>
+    /// </remarks>
+    public static DroppedItem CreateFromLootEntry(LootEntry entry, int? quantity = null)
+    {
+        // Derive display name from ItemId (kebab-case to Title Case)
+        var name = ConvertKebabToTitleCase(entry.ItemId);
+        
+        // Use provided quantity or calculate from entry's range
+        var qty = quantity ?? (entry.MinQuantity + entry.MaxQuantity) / 2;
+        qty = Math.Max(1, qty);
+
+        return new DroppedItem
+        {
+            ItemId = entry.ItemId,
+            Name = name,
+            Quantity = qty,
+            QualityTier = QualityTier.Scavenged,
+            AttributeBonus = null,
+            BonusAttribute = null
+        };
+    }
+
+    /// <summary>
+    /// Converts a kebab-case string to Title Case.
+    /// </summary>
+    /// <param name="kebabCase">The kebab-case string (e.g., "iron-sword").</param>
+    /// <returns>Title Case string (e.g., "Iron Sword").</returns>
+    private static string ConvertKebabToTitleCase(string kebabCase)
+    {
+        if (string.IsNullOrWhiteSpace(kebabCase))
+        {
+            return kebabCase;
+        }
+
+        var words = kebabCase.Split('-');
+        for (var i = 0; i < words.Length; i++)
+        {
+            if (words[i].Length > 0)
+            {
+                words[i] = char.ToUpperInvariant(words[i][0]) + 
+                           (words[i].Length > 1 ? words[i][1..] : string.Empty);
+            }
+        }
+        return string.Join(" ", words);
+    }
+
+    /// <summary>
     /// Creates a tiered weapon item with optional attribute bonus.
     /// </summary>
     /// <param name="itemId">The unique identifier of the weapon.</param>

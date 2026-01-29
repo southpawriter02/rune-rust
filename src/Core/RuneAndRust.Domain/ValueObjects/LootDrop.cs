@@ -59,6 +59,46 @@ public readonly record struct LootDrop
     public string SourceMonster { get; init; }
 
     // ═══════════════════════════════════════════════════════════════
+    // SMART LOOT METADATA (v0.16.3d)
+    // ═══════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// Gets whether the primary item was selected from the class-appropriate pool.
+    /// </summary>
+    /// <remarks>
+    /// When true, the loot bias algorithm successfully selected an item matching
+    /// the player's archetype. When false, either random selection was used or
+    /// no class-appropriate items were available (fallback).
+    /// </remarks>
+    public bool WasClassAppropriate { get; init; }
+
+    /// <summary>
+    /// Gets the player archetype ID used for smart loot generation, if any.
+    /// </summary>
+    /// <remarks>
+    /// Null when no player context was available (e.g., environmental loot).
+    /// </remarks>
+    public string? PlayerArchetypeId { get; init; }
+
+    /// <summary>
+    /// Gets a human-readable explanation of the selection logic.
+    /// </summary>
+    /// <remarks>
+    /// Examples: "Class-appropriate bias selection", "Random selection",
+    /// "Fallback: no class-appropriate items", "Random only: no archetype".
+    /// </remarks>
+    public string SelectionReason { get; init; }
+
+    /// <summary>
+    /// Gets the bias roll (0-99) used for selection, or -1 if not applicable.
+    /// </summary>
+    /// <remarks>
+    /// With default 60% bias: rolls 0-59 favor class-appropriate,
+    /// rolls 60-99 favor random selection.
+    /// </remarks>
+    public int BiasRoll { get; init; }
+
+    // ═══════════════════════════════════════════════════════════════
     // COMPUTED PROPERTIES
     // ═══════════════════════════════════════════════════════════════
 
@@ -83,6 +123,15 @@ public readonly record struct LootDrop
     /// </summary>
     public int TotalItems => Items?.Count ?? 0;
 
+    /// <summary>
+    /// Gets whether this loot drop was generated with player context.
+    /// </summary>
+    /// <remarks>
+    /// Returns true when <see cref="PlayerArchetypeId"/> is set,
+    /// indicating the smart loot algorithm considered player class.
+    /// </remarks>
+    public bool HasPlayerContext => !string.IsNullOrWhiteSpace(PlayerArchetypeId);
+
     // ═══════════════════════════════════════════════════════════════
     // FACTORY METHODS
     // ═══════════════════════════════════════════════════════════════
@@ -97,7 +146,11 @@ public readonly record struct LootDrop
         HighestTier = null,
         HasMythForged = false,
         TierCounts = new Dictionary<QualityTier, int>(),
-        SourceMonster = string.Empty
+        SourceMonster = string.Empty,
+        WasClassAppropriate = false,
+        PlayerArchetypeId = null,
+        SelectionReason = string.Empty,
+        BiasRoll = -1
     };
 
     /// <summary>
@@ -158,7 +211,94 @@ public readonly record struct LootDrop
             HighestTier = highestTier,
             HasMythForged = hasMythForged,
             TierCounts = tierCounts,
-            SourceMonster = sourceMonster ?? string.Empty
+            SourceMonster = sourceMonster ?? string.Empty,
+            WasClassAppropriate = false,
+            PlayerArchetypeId = null,
+            SelectionReason = "Direct creation",
+            BiasRoll = -1
+        };
+    }
+
+    /// <summary>
+    /// Creates a loot drop from a <see cref="SmartLootResult"/>.
+    /// </summary>
+    /// <param name="result">The smart loot selection result.</param>
+    /// <param name="playerArchetypeId">The player's archetype ID, if available.</param>
+    /// <param name="sourceMonster">The monster or source that generated this loot.</param>
+    /// <returns>A new LootDrop with smart loot metadata populated.</returns>
+    /// <remarks>
+    /// This factory method preserves all metadata from the smart loot algorithm
+    /// for debugging, statistics, and UI display.
+    /// </remarks>
+    public static LootDrop CreateFrom(
+        SmartLootResult result,
+        string? playerArchetypeId,
+        string? sourceMonster = null)
+    {
+        if (!result.HasSelection || result.SelectedItem is null)
+        {
+            return Empty;
+        }
+
+        // Create dropped item from the selected loot entry
+        var item = DroppedItem.CreateFromLootEntry(result.SelectedItem.Value);
+        var items = new List<DroppedItem> { item };
+
+        // Calculate tier statistics for the single item
+        var tierCounts = new Dictionary<QualityTier, int>
+        {
+            [item.QualityTier] = 1
+        };
+
+        return new LootDrop
+        {
+            Items = items,
+            Currency = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase),
+            HighestTier = item.QualityTier,
+            HasMythForged = item.QualityTier == QualityTier.MythForged,
+            TierCounts = tierCounts,
+            SourceMonster = sourceMonster ?? string.Empty,
+            WasClassAppropriate = result.WasClassAppropriate,
+            PlayerArchetypeId = playerArchetypeId,
+            SelectionReason = result.SelectionReason,
+            BiasRoll = result.BiasRoll
+        };
+    }
+
+    /// <summary>
+    /// Creates a loot drop from a random selection (no player context).
+    /// </summary>
+    /// <param name="entry">The randomly selected loot entry.</param>
+    /// <param name="sourceMonster">The monster or source that generated this loot.</param>
+    /// <returns>A new LootDrop with random selection metadata.</returns>
+    /// <remarks>
+    /// Use this factory when generating loot without player context,
+    /// such as environmental drops or pre-placed loot.
+    /// </remarks>
+    public static LootDrop CreateRandom(
+        LootEntry entry,
+        string? sourceMonster = null)
+    {
+        var item = DroppedItem.CreateFromLootEntry(entry);
+        var items = new List<DroppedItem> { item };
+
+        var tierCounts = new Dictionary<QualityTier, int>
+        {
+            [item.QualityTier] = 1
+        };
+
+        return new LootDrop
+        {
+            Items = items,
+            Currency = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase),
+            HighestTier = item.QualityTier,
+            HasMythForged = item.QualityTier == QualityTier.MythForged,
+            TierCounts = tierCounts,
+            SourceMonster = sourceMonster ?? string.Empty,
+            WasClassAppropriate = false,
+            PlayerArchetypeId = null,
+            SelectionReason = "Random selection: no player context",
+            BiasRoll = -1
         };
     }
 

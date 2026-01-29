@@ -77,6 +77,40 @@ public interface ILootService
     LootDrop GenerateLoot(MonsterDefinition definition, float lootMultiplier = 1.0f);
 
     /// <summary>
+    /// Generates loot from a defeated monster with player context for smart loot selection.
+    /// </summary>
+    /// <param name="monster">The defeated monster.</param>
+    /// <param name="player">The player receiving the loot (enables class-appropriate bias).</param>
+    /// <returns>A LootDrop containing generated items and currency with smart loot metadata.</returns>
+    /// <remarks>
+    /// <para>
+    /// When a player is provided and <see cref="ISmartLootService"/> is available,
+    /// the loot system uses the 60/40 smart loot algorithm to bias equipment drops
+    /// toward items appropriate for the player's archetype.
+    /// </para>
+    /// <para>
+    /// The returned LootDrop includes metadata about the selection process:
+    /// <list type="bullet">
+    ///   <item><description>WasClassAppropriate - Whether the item matched player's class</description></item>
+    ///   <item><description>PlayerArchetypeId - The archetype used for filtering</description></item>
+    ///   <item><description>SelectionReason - Human-readable selection explanation</description></item>
+    ///   <item><description>BiasRoll - The 0-99 roll for debugging</description></item>
+    /// </list>
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// // Generate smart loot with class bias
+    /// var loot = lootService.GenerateLoot(defeatedGoblin, currentPlayer);
+    /// if (loot.WasClassAppropriate)
+    /// {
+    ///     Console.WriteLine("Lucky! You got gear for your class!");
+    /// }
+    /// </code>
+    /// </example>
+    LootDrop GenerateLoot(Monster monster, Player player);
+
+    /// <summary>
     /// Collects all dropped loot from a room and adds it to the player's inventory.
     /// </summary>
     /// <param name="player">The player collecting the loot.</param>
