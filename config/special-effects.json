@@ -1,0 +1,114 @@
+{
+    "$schema": "./schemas/special-effects.schema.json",
+    "specialEffects": [
+        {
+            "effectId": "ignore-armor",
+            "effectType": "IgnoreArmor",
+            "triggerType": "OnAttack",
+            "magnitude": 1.0,
+            "description": "Attacks completely bypass target's defense"
+        },
+        {
+            "effectId": "life-steal",
+            "effectType": "LifeSteal",
+            "triggerType": "OnDamageDealt",
+            "magnitude": 0.15,
+            "description": "Heals 15% of damage dealt to enemies"
+        },
+        {
+            "effectId": "cleave",
+            "effectType": "Cleave",
+            "triggerType": "OnAttack",
+            "magnitude": 1.0,
+            "description": "Attacks hit all adjacent enemies"
+        },
+        {
+            "effectId": "phase-strike",
+            "effectType": "Phase",
+            "triggerType": "OnAttack",
+            "magnitude": 1.0,
+            "description": "Attacks cannot be blocked or parried"
+        },
+        {
+            "effectId": "damage-reflect",
+            "effectType": "Reflect",
+            "triggerType": "OnDamageTaken",
+            "magnitude": 0.25,
+            "description": "Returns 25% of damage taken to the attacker"
+        },
+        {
+            "effectId": "fire-damage",
+            "effectType": "FireDamage",
+            "triggerType": "OnHit",
+            "magnitude": 10,
+            "damageTypeId": "fire",
+            "description": "Deals 10 fire damage on successful hits"
+        },
+        {
+            "effectId": "ice-damage",
+            "effectType": "IceDamage",
+            "triggerType": "OnHit",
+            "magnitude": 8,
+            "damageTypeId": "ice",
+            "description": "Deals 8 ice damage on successful hits"
+        },
+        {
+            "effectId": "lightning-damage",
+            "effectType": "LightningDamage",
+            "triggerType": "OnHit",
+            "magnitude": 12,
+            "damageTypeId": "lightning",
+            "description": "Deals 12 lightning damage on successful hits"
+        },
+        {
+            "effectId": "shadow-damage",
+            "effectType": "FireDamage",
+            "triggerType": "OnHit",
+            "magnitude": 10,
+            "damageTypeId": "shadow",
+            "description": "Deals 10 shadow damage on successful hits"
+        },
+        {
+            "effectId": "slow-strike",
+            "effectType": "Slow",
+            "triggerType": "OnHit",
+            "magnitude": 2.0,
+            "description": "Slows target for 2 seconds on hit"
+        },
+        {
+            "effectId": "shadow-step",
+            "effectType": "AutoHide",
+            "triggerType": "OnKill",
+            "magnitude": 1.0,
+            "description": "Enter hidden state after defeating an enemy"
+        },
+        {
+            "effectId": "true-sight",
+            "effectType": "Detection",
+            "triggerType": "Passive",
+            "magnitude": 1.0,
+            "description": "Reveals hidden enemies and traps within range"
+        },
+        {
+            "effectId": "critical-edge",
+            "effectType": "CriticalBonus",
+            "triggerType": "Passive",
+            "magnitude": 0.1,
+            "description": "+10% critical hit chance"
+        },
+        {
+            "effectId": "damage-reduction",
+            "effectType": "DamageReduction",
+            "triggerType": "Passive",
+            "magnitude": 5,
+            "description": "Reduces all incoming damage by 5"
+        },
+        {
+            "effectId": "fear-aura",
+            "effectType": "FearAura",
+            "triggerType": "Passive",
+            "magnitude": 1.0,
+            "description": "Intimidates nearby enemies, potentially causing them to flee"
+        }
+    ]
+}

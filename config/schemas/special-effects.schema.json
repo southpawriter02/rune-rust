@@ -1,0 +1,112 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "special-effects.schema.json",
+    "title": "Special Effects Configuration",
+    "description": "Schema for Myth-Forged special effect definitions",
+    "type": "object",
+    "required": ["specialEffects"],
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "Reference to this JSON Schema"
+        },
+        "specialEffects": {
+            "type": "array",
+            "description": "Array of special effect definitions",
+            "items": {
+                "$ref": "#/definitions/specialEffect"
+            },
+            "minItems": 1
+        }
+    },
+    "definitions": {
+        "specialEffect": {
+            "type": "object",
+            "description": "A special effect definition for Myth-Forged items",
+            "required": ["effectId", "effectType", "triggerType", "magnitude"],
+            "properties": {
+                "effectId": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9-]*$",
+                    "description": "Unique identifier in kebab-case (e.g., 'life-steal', 'fire-damage')"
+                },
+                "effectType": {
+                    "type": "string",
+                    "description": "The type of special effect",
+                    "enum": [
+                        "IgnoreArmor",
+                        "LifeSteal",
+                        "Cleave",
+                        "Phase",
+                        "Reflect",
+                        "FireDamage",
+                        "IceDamage",
+                        "LightningDamage",
+                        "Slow",
+                        "AutoHide",
+                        "Detection",
+                        "CriticalBonus",
+                        "DamageReduction",
+                        "FearAura"
+                    ]
+                },
+                "triggerType": {
+                    "type": "string",
+                    "description": "When the effect activates",
+                    "enum": [
+                        "Passive",
+                        "OnAttack",
+                        "OnHit",
+                        "OnDamageDealt",
+                        "OnDamageTaken",
+                        "OnKill"
+                    ]
+                },
+                "magnitude": {
+                    "type": "number",
+                    "minimum": 0,
+                    "description": "Effect strength (interpretation varies by type: percentage 0.0-1.0 for LifeSteal/Reflect/CriticalBonus, flat value for damage/reduction)"
+                },
+                "damageTypeId": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9-]*$",
+                    "description": "Damage type for elemental effects (required for FireDamage, IceDamage, LightningDamage)"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Player-facing description of the effect"
+                }
+            },
+            "allOf": [
+                {
+                    "if": {
+                        "properties": {
+                            "effectType": {
+                                "enum": ["FireDamage", "IceDamage", "LightningDamage"]
+                            }
+                        }
+                    },
+                    "then": {
+                        "required": ["damageTypeId"]
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "effectType": {
+                                "enum": ["LifeSteal", "Reflect", "CriticalBonus"]
+                            }
+                        }
+                    },
+                    "then": {
+                        "properties": {
+                            "magnitude": {
+                                "maximum": 1.0
+                            }
+                        }
+                    }
+                }
+            ]
+        }
+    }
+}
