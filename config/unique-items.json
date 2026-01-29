@@ -1,0 +1,83 @@
+{
+    "$schema": "./schemas/unique-items.schema.json",
+    "uniqueItems": [
+        {
+            "itemId": "shadowfang-blade",
+            "name": "Shadowfang Blade",
+            "description": "A blade forged in eternal darkness that drains life from foes.",
+            "flavorText": "\"The shadows remember what the light forgets.\" - Unknown",
+            "category": "weapon",
+            "requiredLevel": 10,
+            "stats": {
+                "might": 5,
+                "agility": 2,
+                "bonusDamage": 15
+            },
+            "dropSources": [
+                {
+                    "sourceType": "boss",
+                    "sourceId": "shadow-lord",
+                    "dropChance": 5.0
+                },
+                {
+                    "sourceType": "container",
+                    "sourceId": "legendary-chest",
+                    "dropChance": 0.5
+                }
+            ],
+            "classAffinities": ["warrior", "rogue"],
+            "specialEffectIds": ["life-drain", "shadow-damage"]
+        },
+        {
+            "itemId": "phoenixheart-amulet",
+            "name": "Phoenixheart Amulet",
+            "description": "An amulet containing the essence of a phoenix, granting renewal.",
+            "flavorText": "Born from ash, destined for glory.",
+            "category": "accessory",
+            "requiredLevel": 15,
+            "stats": {
+                "will": 4,
+                "fortitude": 3,
+                "bonusHealth": 50
+            },
+            "dropSources": [
+                {
+                    "sourceType": "boss",
+                    "sourceId": "phoenix-guardian",
+                    "dropChance": 3.0
+                }
+            ],
+            "classAffinities": [],
+            "specialEffectIds": ["phoenix-rebirth"]
+        },
+        {
+            "itemId": "dread-knights-plate",
+            "name": "Dread Knight's Plate",
+            "description": "Armor worn by the legendary Dread Knight, inspiring fear in enemies.",
+            "flavorText": "Those who wore it were feared. Those who faced it despaired.",
+            "category": "armor",
+            "requiredLevel": 20,
+            "stats": {
+                "fortitude": 6,
+                "might": 3,
+                "bonusDefense": 25,
+                "bonusHealth": 30
+            },
+            "dropSources": [
+                {
+                    "sourceType": "boss",
+                    "sourceId": "dread-knight",
+                    "dropChance": 2.0
+                },
+                {
+                    "sourceType": "quest",
+                    "sourceId": "fallen-order",
+                    "dropChance": 100.0
+                }
+            ],
+            "classAffinities": ["warrior", "paladin"],
+            "specialEffectIds": ["fear-aura", "damage-reduction"],
+            "setId": "dread-knight-set"
+        }
+    ]
+}

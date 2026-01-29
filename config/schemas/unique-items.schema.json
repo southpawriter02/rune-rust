@@ -1,0 +1,163 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "unique-items.schema.json",
+    "title": "Unique Items Configuration",
+    "description": "Schema for Myth-Forged unique item definitions",
+    "type": "object",
+    "required": ["uniqueItems"],
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "JSON Schema reference"
+        },
+        "uniqueItems": {
+            "type": "array",
+            "description": "Collection of unique item definitions",
+            "items": {
+                "$ref": "#/definitions/uniqueItem"
+            },
+            "minItems": 1
+        }
+    },
+    "definitions": {
+        "uniqueItem": {
+            "type": "object",
+            "description": "A single unique (Myth-Forged) item definition",
+            "required": [
+                "itemId",
+                "name",
+                "description",
+                "category",
+                "stats",
+                "dropSources"
+            ],
+            "properties": {
+                "itemId": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9-]*$",
+                    "description": "Unique identifier in lowercase kebab-case"
+                },
+                "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Display name for the item"
+                },
+                "description": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Functional description of the item"
+                },
+                "flavorText": {
+                    "type": "string",
+                    "description": "Optional lore/flavor text for atmosphere"
+                },
+                "category": {
+                    "type": "string",
+                    "enum": ["weapon", "armor", "accessory", "tool"],
+                    "description": "Equipment category matching EquipmentCategory enum"
+                },
+                "requiredLevel": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "default": 1,
+                    "description": "Minimum character level required to equip"
+                },
+                "stats": {
+                    "$ref": "#/definitions/itemStats",
+                    "description": "Stat bonuses provided by the item"
+                },
+                "dropSources": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dropSource"
+                    },
+                    "minItems": 1,
+                    "description": "Sources from which this item can drop"
+                },
+                "classAffinities": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9-]*$"
+                    },
+                    "description": "Class IDs with affinity for this item (empty = all classes)"
+                },
+                "specialEffectIds": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9-]*$"
+                    },
+                    "description": "IDs of special effects granted by this item"
+                },
+                "setId": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9-]*$",
+                    "description": "Optional set identifier for equipment set bonuses"
+                }
+            }
+        },
+        "itemStats": {
+            "type": "object",
+            "description": "Stat bonuses provided by an item",
+            "properties": {
+                "might": {
+                    "type": "integer",
+                    "description": "Bonus to Might stat"
+                },
+                "agility": {
+                    "type": "integer",
+                    "description": "Bonus to Agility stat"
+                },
+                "will": {
+                    "type": "integer",
+                    "description": "Bonus to Will stat"
+                },
+                "fortitude": {
+                    "type": "integer",
+                    "description": "Bonus to Fortitude stat"
+                },
+                "arcana": {
+                    "type": "integer",
+                    "description": "Bonus to Arcana stat"
+                },
+                "bonusHealth": {
+                    "type": "integer",
+                    "description": "Flat bonus to maximum health"
+                },
+                "bonusDamage": {
+                    "type": "integer",
+                    "description": "Flat bonus to damage dealt"
+                },
+                "bonusDefense": {
+                    "type": "integer",
+                    "description": "Flat bonus to defense rating"
+                }
+            },
+            "additionalProperties": false
+        },
+        "dropSource": {
+            "type": "object",
+            "description": "A source from which a unique item can drop",
+            "required": ["sourceType", "sourceId", "dropChance"],
+            "properties": {
+                "sourceType": {
+                    "type": "string",
+                    "enum": ["monster", "container", "boss", "vendor", "quest"],
+                    "description": "Type of drop source"
+                },
+                "sourceId": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9-]*$",
+                    "description": "Identifier for the specific source"
+                },
+                "dropChance": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100,
+                    "description": "Base drop chance as a percentage (0-100)"
+                }
+            }
+        }
+    }
+}
