@@ -1,0 +1,125 @@
+{
+    "$schema": "./schemas/equipment-class-mapping.schema.json",
+    "mappings": [
+        {
+            "categoryId": "axes",
+            "displayName": "Axes",
+            "affinity": "Warrior",
+            "primaryAttribute": "MIGHT",
+            "equipmentSlot": "Weapon",
+            "exampleItems": ["Hand Axe", "Bearded Axe", "Greataxe", "Throwing Axe"]
+        },
+        {
+            "categoryId": "greatswords",
+            "displayName": "Greatswords",
+            "affinity": "Warrior",
+            "primaryAttribute": "MIGHT",
+            "equipmentSlot": "Weapon",
+            "exampleItems": ["Claymore", "Zweihander", "Flamberge", "Bastard Sword"]
+        },
+        {
+            "categoryId": "hammers",
+            "displayName": "Hammers",
+            "affinity": "Warrior",
+            "primaryAttribute": "MIGHT",
+            "equipmentSlot": "Weapon",
+            "exampleItems": ["Mace", "War Hammer", "Maul", "Flail"]
+        },
+        {
+            "categoryId": "daggers",
+            "displayName": "Daggers",
+            "affinity": "Skirmisher",
+            "primaryAttribute": "FINESSE",
+            "equipmentSlot": "Weapon",
+            "exampleItems": ["Knife", "Stiletto", "Dirk", "Throwing Knife"]
+        },
+        {
+            "categoryId": "blades",
+            "displayName": "Blades",
+            "affinity": "Skirmisher",
+            "primaryAttribute": "FINESSE",
+            "equipmentSlot": "Weapon",
+            "exampleItems": ["Short Sword", "Saber", "Rapier", "Scimitar"]
+        },
+        {
+            "categoryId": "bows",
+            "displayName": "Bows",
+            "affinity": "Skirmisher",
+            "primaryAttribute": "FINESSE",
+            "equipmentSlot": "Weapon",
+            "exampleItems": ["Shortbow", "Longbow", "Composite Bow", "Hunting Bow"]
+        },
+        {
+            "categoryId": "staves",
+            "displayName": "Staves",
+            "affinity": "Mystic",
+            "primaryAttribute": "WILL",
+            "equipmentSlot": "Weapon",
+            "exampleItems": ["Quarterstaff", "Walking Stick", "Iron-shod Staff", "Runed Staff"]
+        },
+        {
+            "categoryId": "foci",
+            "displayName": "Foci",
+            "affinity": "Mystic",
+            "primaryAttribute": "WILL",
+            "equipmentSlot": "Weapon",
+            "exampleItems": ["Wand", "Rod", "Channeling Crystal", "Scepter"]
+        },
+        {
+            "categoryId": "orbs",
+            "displayName": "Orbs",
+            "affinity": "Mystic",
+            "primaryAttribute": "WILL",
+            "equipmentSlot": "Weapon",
+            "exampleItems": ["Crystal Orb", "Spirit Sphere", "Runestone", "Soul Gem"]
+        },
+        {
+            "categoryId": "crossbows",
+            "displayName": "Crossbows",
+            "affinity": "Adept",
+            "primaryAttribute": "WITS",
+            "equipmentSlot": "Weapon",
+            "exampleItems": ["Light Crossbow", "Heavy Crossbow", "Repeating Crossbow", "Hand Crossbow"]
+        },
+        {
+            "categoryId": "arc-cannons",
+            "displayName": "Arc-Cannons",
+            "affinity": "Adept",
+            "primaryAttribute": "WITS",
+            "equipmentSlot": "Weapon",
+            "exampleItems": ["Tesla Projector", "Lightning Rod", "Shock Lance", "Volt Pistol"]
+        },
+        {
+            "categoryId": "heavy-armor",
+            "displayName": "Heavy Armor",
+            "affinity": "Warrior",
+            "primaryAttribute": "MIGHT",
+            "equipmentSlot": "Armor",
+            "exampleItems": ["Half Plate", "Full Plate", "Fortress Armor", "Crusader Plate"]
+        },
+        {
+            "categoryId": "medium-armor",
+            "displayName": "Medium Armor",
+            "affinity": "Skirmisher",
+            "primaryAttribute": "FINESSE",
+            "equipmentSlot": "Armor",
+            "exampleItems": ["Chain Mail", "Scale Mail", "Brigandine", "Lamellar"]
+        },
+        {
+            "categoryId": "light-armor",
+            "displayName": "Light Armor",
+            "affinity": "Universal",
+            "primaryAttribute": "",
+            "equipmentSlot": "Armor",
+            "exampleItems": ["Cloth Armor", "Leather Armor", "Padded Armor", "Hide Vest"]
+        },
+        {
+            "categoryId": "accessories",
+            "displayName": "Accessories",
+            "affinity": "Universal",
+            "primaryAttribute": "",
+            "equipmentSlot": "Accessory",
+            "exampleItems": ["Ring", "Amulet", "Tool Belt", "Cloak"]
+        }
+    ]
+}

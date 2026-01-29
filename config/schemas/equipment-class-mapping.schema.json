@@ -1,0 +1,82 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "equipment-class-mapping.schema.json",
+    "title": "Equipment Class Mapping Configuration",
+    "description": "Defines equipment category to archetype affinity mappings for smart loot generation.",
+    "type": "object",
+    "required": ["mappings"],
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "Schema reference for validation."
+        },
+        "mappings": {
+            "type": "array",
+            "description": "Array of equipment category to affinity mappings.",
+            "minItems": 1,
+            "items": {
+                "$ref": "#/$defs/equipmentMapping"
+            }
+        }
+    },
+    "additionalProperties": false,
+    "$defs": {
+        "equipmentMapping": {
+            "type": "object",
+            "description": "Maps a single equipment category to its archetype affinity.",
+            "required": [
+                "categoryId",
+                "displayName",
+                "affinity",
+                "equipmentSlot",
+                "exampleItems"
+            ],
+            "properties": {
+                "categoryId": {
+                    "type": "string",
+                    "description": "Unique identifier for the equipment category (lowercase kebab-case).",
+                    "pattern": "^[a-z][a-z0-9-]*$",
+                    "minLength": 2,
+                    "maxLength": 50
+                },
+                "displayName": {
+                    "type": "string",
+                    "description": "Human-readable display name for UI.",
+                    "minLength": 1,
+                    "maxLength": 100
+                },
+                "affinity": {
+                    "type": "string",
+                    "description": "The archetype this category is designed for.",
+                    "enum": [
+                        "Warrior",
+                        "Skirmisher",
+                        "Mystic",
+                        "Adept",
+                        "Universal"
+                    ]
+                },
+                "primaryAttribute": {
+                    "type": "string",
+                    "description": "The primary attribute this category scales with. Empty for Universal.",
+                    "maxLength": 20
+                },
+                "equipmentSlot": {
+                    "type": "string",
+                    "description": "The equipment slot type.",
+                    "enum": ["Weapon", "Armor", "Accessory"]
+                },
+                "exampleItems": {
+                    "type": "array",
+                    "description": "Example item names for reference and tooltips.",
+                    "minItems": 1,
+                    "items": {
+                        "type": "string",
+                        "minLength": 1
+                    }
+                }
+            },
+            "additionalProperties": false
+        }
+    }
+}
