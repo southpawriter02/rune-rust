@@ -12,6 +12,14 @@
                 "Recognize craftsmanship in ruins",
                 "Repair broken equipment more easily",
                 "Clan smiths may offer discounts or quests"
+            ],
+            "skillGrants": [
+                { "skillId": "craft", "bonusAmount": 2, "grantType": "Permanent" },
+                { "skillId": "might", "bonusAmount": 1, "grantType": "Permanent" }
+            ],
+            "equipmentGrants": [
+                { "itemId": "smiths-hammer", "quantity": 1, "isEquipped": true, "slot": "Weapon" },
+                { "itemId": "leather-apron", "quantity": 1, "isEquipped": true, "slot": "Armor" }
             ]
         },
         {
@@ -25,6 +33,14 @@
                 "Recognize diseases and their cures",
                 "Bone-Setters may share knowledge",
                 "Some view you with superstitious fear"
+            ],
+            "skillGrants": [
+                { "skillId": "medicine", "bonusAmount": 2, "grantType": "Permanent" },
+                { "skillId": "herbalism", "bonusAmount": 1, "grantType": "Permanent" }
+            ],
+            "equipmentGrants": [
+                { "itemId": "healers-kit", "quantity": 1, "isEquipped": false, "slot": null },
+                { "itemId": "bandages", "quantity": 5, "isEquipped": false, "slot": null }
             ]
         },
         {
@@ -38,6 +54,15 @@
                 "Know ruin layouts and hazards",
                 "Scrap-Tinkers respect your finds",
                 "May have enemies among rival delvers"
+            ],
+            "skillGrants": [
+                { "skillId": "exploration", "bonusAmount": 2, "grantType": "Permanent" },
+                { "skillId": "traps", "bonusAmount": 1, "grantType": "Permanent" }
+            ],
+            "equipmentGrants": [
+                { "itemId": "lantern", "quantity": 1, "isEquipped": false, "slot": null },
+                { "itemId": "rope", "quantity": 1, "isEquipped": false, "slot": null },
+                { "itemId": "lockpicks", "quantity": 1, "isEquipped": false, "slot": null }
             ]
         },
         {
@@ -51,6 +76,14 @@
                 "Recognize military formations and tactics",
                 "Other guards trust you more quickly",
                 "May have oaths to uphold or avenge"
+            ],
+            "skillGrants": [
+                { "skillId": "combat", "bonusAmount": 2, "grantType": "Permanent" },
+                { "skillId": "vigilance", "bonusAmount": 1, "grantType": "Permanent" }
+            ],
+            "equipmentGrants": [
+                { "itemId": "shield", "quantity": 1, "isEquipped": true, "slot": "Shield" },
+                { "itemId": "spear", "quantity": 1, "isEquipped": true, "slot": "Weapon" }
             ]
         },
         {
@@ -64,6 +97,14 @@
                 "Know old legends that hold clues",
                 "Earn room and board through performance",
                 "Jötun-Readers value your historical knowledge"
+            ],
+            "skillGrants": [
+                { "skillId": "performance", "bonusAmount": 2, "grantType": "Permanent" },
+                { "skillId": "lore", "bonusAmount": 1, "grantType": "Permanent" }
+            ],
+            "equipmentGrants": [
+                { "itemId": "instrument", "quantity": 1, "isEquipped": false, "slot": null },
+                { "itemId": "journal", "quantity": 1, "isEquipped": false, "slot": null }
             ]
         },
         {
@@ -77,6 +118,14 @@
                 "Know the wasteland's secrets and dangers",
                 "Other outcasts may offer aid",
                 "Clans may remember why you were cast out"
+            ],
+            "skillGrants": [
+                { "skillId": "survival", "bonusAmount": 2, "grantType": "Permanent" },
+                { "skillId": "stealth", "bonusAmount": 1, "grantType": "Permanent" }
+            ],
+            "equipmentGrants": [
+                { "itemId": "rations", "quantity": 3, "isEquipped": false, "slot": null },
+                { "itemId": "travel-cloak", "quantity": 1, "isEquipped": true, "slot": "Armor" }
             ]
         }
     ]
