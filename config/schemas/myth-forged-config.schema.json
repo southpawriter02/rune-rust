@@ -1,0 +1,94 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "myth-forged-config.schema.json",
+    "title": "Myth-Forged Configuration",
+    "description": "Configuration for Myth-Forged (unique/legendary) item generation during loot drops. Defines drop chances by source type, class affinity filtering, and fallback behavior.",
+    "type": "object",
+    "required": ["dropChances", "affinityBiasPercent", "fallbackTier"],
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "JSON schema reference for IDE support."
+        },
+        "dropChances": {
+            "type": "object",
+            "description": "Drop chances by source type, expressed as decimals from 0.0 (0%) to 1.0 (100%). These chances are rolled AFTER a Tier 4 quality roll to determine if a Myth-Forged item generates.",
+            "properties": {
+                "boss": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "description": "Drop chance for boss enemies (default: 70%)."
+                },
+                "elite": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "description": "Drop chance for elite/mini-boss enemies (default: 10%)."
+                },
+                "bossChest": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "description": "Drop chance for boss treasure chests (default: 50%)."
+                },
+                "hiddenCache": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "description": "Drop chance for hidden caches/secret containers (default: 15%)."
+                },
+                "questReward": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "description": "Drop chance for quest completion rewards (default: 100%)."
+                },
+                "monster": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "description": "Drop chance for regular monster kills (default: 1%)."
+                },
+                "container": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "description": "Drop chance for standard containers (default: 2%)."
+                },
+                "vendor": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "description": "Drop chance for vendor purchases (default: 0%)."
+                }
+            },
+            "additionalProperties": false
+        },
+        "affinityBiasPercent": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100,
+            "description": "Percentage chance (0-100) that class affinity filtering will be applied when a player class is provided. When applied, the item pool is filtered to items with affinity for the player's class before selection. Default: 60."
+        },
+        "fallbackTier": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 3,
+            "description": "Quality tier to fall back to when Myth-Forged generation fails. 0=JuryRigged, 1=Scavenged, 2=ClanForged, 3=Optimized. Default: 3 (Optimized)."
+        },
+        "minimumTierForMythForged": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 4,
+            "default": 4,
+            "description": "Minimum quality tier roll required to attempt Myth-Forged generation. Default: 4 (Legendary). Setting to lower values allows Myth-Forged attempts on lower tier rolls."
+        },
+        "requiresLegendaryRoll": {
+            "type": "boolean",
+            "default": true,
+            "description": "If true (default), only Tier 4 (Legendary) quality rolls can trigger Myth-Forged generation. If false, any tier meeting minimumTierForMythForged may trigger."
+        }
+    },
+    "additionalProperties": false
+}

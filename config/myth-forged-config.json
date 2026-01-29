@@ -1,0 +1,17 @@
+{
+    "$schema": "./schemas/myth-forged-config.schema.json",
+    "dropChances": {
+        "boss": 0.70,
+        "elite": 0.10,
+        "bossChest": 0.50,
+        "hiddenCache": 0.15,
+        "questReward": 1.00,
+        "monster": 0.01,
+        "container": 0.02,
+        "vendor": 0.00
+    },
+    "affinityBiasPercent": 60,
+    "fallbackTier": 3,
+    "minimumTierForMythForged": 4,
+    "requiresLegendaryRoll": true
+}
