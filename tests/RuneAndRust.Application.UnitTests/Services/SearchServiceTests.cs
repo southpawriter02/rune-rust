@@ -29,7 +29,7 @@ public class SearchServiceTests
         _mockConfig = new Mock<IGameConfigurationProvider>();
         SetupDefaultMocks();
 
-        var seededRandom = new Random(42);
+        var seededRandom = new Random(8);
         var diceService = new DiceService(NullLogger<DiceService>.Instance, seededRandom);
         _skillCheckService = new SkillCheckService(
             diceService,

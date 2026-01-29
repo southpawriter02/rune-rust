@@ -1046,24 +1046,33 @@ public class GameSessionService
         var newTurnCount = _currentSession.TurnCount;
         _logger.LogDebug("Turn advanced to {TurnCount}", newTurnCount);
 
-        // Process resource regeneration/decay
-        var resourceResult = _resourceService!.ProcessTurnEnd(player, inCombat);
-        var resourceChanges = resourceResult.Changes
-            .Select(c => MapResourceChange(c))
-            .ToList();
+        // Process resource regeneration/decay (if service is available)
+        var resourceChanges = new List<TurnResourceChangeDto>();
+        if (_resourceService != null)
+        {
+            var resourceResult = _resourceService.ProcessTurnEnd(player, inCombat);
+            resourceChanges = resourceResult.Changes
+                .Select(c => MapResourceChange(c))
+                .ToList();
+        }
 
-        // Process ability cooldowns
-        var cooldownChanges = _abilityService!.ProcessTurnEnd(player);
-        var abilitiesNowReady = cooldownChanges
-            .Where(c => c.IsNowReady)
-            .Select(c => c.AbilityName)
-            .ToList();
+        // Process ability cooldowns (if service is available)
+        var cooldownChanges = new List<CooldownChangeDto>();
+        var abilitiesNowReady = new List<string>();
+        if (_abilityService != null)
+        {
+            cooldownChanges = _abilityService.ProcessTurnEnd(player).ToList();
+            abilitiesNowReady = cooldownChanges
+                .Where(c => c.IsNowReady)
+                .Select(c => c.AbilityName)
+                .ToList();
+        }
 
         _logger.LogInformation(
             "Turn {Turn} ended: {ResourceChanges} resource changes, {CooldownChanges} cooldown changes, {AbilitiesReady} abilities now ready",
             newTurnCount, resourceChanges.Count, cooldownChanges.Count, abilitiesNowReady.Count);
 
-        return new TurnEndResult(newTurnCount, resourceChanges, cooldownChanges.ToList(), abilitiesNowReady);
+        return new TurnEndResult(newTurnCount, resourceChanges, cooldownChanges, abilitiesNowReady);
     }
 
     private TurnResourceChangeDto MapResourceChange(ResourceChange change)

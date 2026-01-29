@@ -166,6 +166,8 @@ public class RoomTemplate : IEntity
             throw new ArgumentOutOfRangeException(nameof(minDepth), "Minimum depth cannot be negative");
         if (maxDepth.HasValue && maxDepth < minDepth)
             throw new ArgumentOutOfRangeException(nameof(maxDepth), "Maximum depth cannot be less than minimum depth");
+        if (validBiomes == null || !validBiomes.Any())
+            throw new ArgumentException("At least one valid biome must be specified", nameof(validBiomes));
 
         Id = Guid.NewGuid();
         TemplateId = templateId;

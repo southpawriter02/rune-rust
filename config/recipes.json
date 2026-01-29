@@ -2,397 +2,330 @@
   "$schema": "./schemas/recipes.schema.json",
   "recipes": [
     {
-      "id": "health-potion-basic",
-      "name": "Basic Health Potion",
-      "description": "A simple restorative elixir that heals minor wounds. Known by novice alchemists everywhere.",
-      "category": "Alchemy",
-      "materials": [
-        {
-          "itemId": "herb-bloodmoss",
-          "quantity": 2,
-          "isConsumed": true
-        },
-        {
-          "itemId": "vial-empty",
-          "quantity": 1,
-          "isConsumed": true
-        }
-      ],
-      "skillRequirements": [
-        {
-          "skillId": "alchemy",
-          "minimumLevel": 1
-        }
-      ],
-      "output": {
-        "itemId": "potion-health-basic",
-        "quantity": {
-          "min": 1,
-          "max": 1
-        },
-        "qualityVariance": {
-          "baseQuality": "Common",
-          "upgradeChance": 0.1
-        }
-      },
-      "stationRequired": "alchemy-table",
-      "isKnownByDefault": true,
-      "experienceReward": 10,
-      "sortOrder": 0
-    },
-    {
       "id": "iron-sword",
       "name": "Iron Sword",
       "description": "A sturdy iron blade forged at the anvil. The foundation of any warrior's arsenal.",
-      "category": "Smithing",
-      "materials": [
-        {
-          "itemId": "ingot-iron",
-          "quantity": 3,
-          "isConsumed": true
-        },
-        {
-          "itemId": "leather-strips",
-          "quantity": 1,
-          "isConsumed": true
-        },
-        {
-          "itemId": "tool-smithing-hammer",
-          "quantity": 1,
-          "isConsumed": false
-        }
-      ],
-      "skillRequirements": [
-        {
-          "skillId": "smithing",
-          "minimumLevel": 1
-        }
+      "category": "Weapon",
+      "requiredStation": "anvil",
+      "ingredients": [
+        { "resourceId": "iron-ore", "quantity": 5 },
+        { "resourceId": "leather", "quantity": 2 }
       ],
       "output": {
-        "itemId": "weapon-iron-sword",
-        "quantity": {
-          "min": 1,
-          "max": 1
-        },
-        "qualityVariance": {
-          "baseQuality": "Common",
-          "upgradeChance": 0.15,
-          "criticalUpgradeChance": 0.02
-        }
+        "itemId": "iron-sword",
+        "quantity": 1
       },
-      "stationRequired": "forge-basic",
-      "craftingTime": 3,
-      "isKnownByDefault": true,
-      "failureChance": 0.05,
-      "failureOutput": {
-        "itemId": "scrap-iron",
-        "quantity": {
-          "min": 1,
-          "max": 2
-        }
-      },
-      "experienceReward": 25,
-      "sortOrder": 0
+      "difficultyClass": 12,
+      "isDefault": true,
+      "craftingTimeSeconds": 45,
+      "icon": "icons/recipes/iron_sword.png"
     },
     {
-      "id": "grilled-meat",
-      "name": "Grilled Meat",
-      "description": "Simple yet satisfying, this grilled meat restores stamina and provides warmth.",
-      "category": "Cooking",
-      "materials": [
-        {
-          "itemId": "meat-raw",
-          "quantity": 1,
-          "isConsumed": true
-        }
+      "id": "steel-sword",
+      "name": "Steel Sword",
+      "description": "A finely tempered steel blade, sharper and more durable than its iron counterpart.",
+      "category": "Weapon",
+      "requiredStation": "anvil",
+      "ingredients": [
+        { "resourceId": "steel-ingot", "quantity": 4 },
+        { "resourceId": "leather", "quantity": 2 },
+        { "resourceId": "iron-ore", "quantity": 2 }
       ],
       "output": {
-        "itemId": "food-grilled-meat",
-        "quantity": {
-          "min": 1,
-          "max": 1
-        }
+        "itemId": "steel-sword",
+        "quantity": 1
       },
-      "stationRequired": "campfire",
-      "isKnownByDefault": true,
-      "experienceReward": 5,
-      "sortOrder": 0
+      "difficultyClass": 14,
+      "isDefault": true,
+      "craftingTimeSeconds": 60,
+      "icon": "icons/recipes/steel_sword.png"
+    },
+    {
+      "id": "mithril-blade",
+      "name": "Mithril Blade",
+      "description": "A legendary weapon forged from rare mithril ore. Only the most skilled smiths dare attempt its creation.",
+      "category": "Weapon",
+      "requiredStation": "anvil",
+      "ingredients": [
+        { "resourceId": "mithril-ore", "quantity": 6 },
+        { "resourceId": "dragon-leather", "quantity": 2 },
+        { "resourceId": "enchanted-flux", "quantity": 1 }
+      ],
+      "output": {
+        "itemId": "mithril-blade",
+        "quantity": 1,
+        "qualityFormula": "Base + (Skill * 2); if Critical then Legendary"
+      },
+      "difficultyClass": 18,
+      "isDefault": false,
+      "craftingTimeSeconds": 120,
+      "icon": "icons/recipes/mithril_blade.png"
+    },
+    {
+      "id": "iron-ingot",
+      "name": "Iron Ingot",
+      "description": "Smelt raw iron ore into a usable ingot. A fundamental skill for any aspiring smith.",
+      "category": "Material",
+      "requiredStation": "anvil",
+      "ingredients": [
+        { "resourceId": "iron-ore", "quantity": 3 }
+      ],
+      "output": {
+        "itemId": "iron-ingot",
+        "quantity": 1
+      },
+      "difficultyClass": 8,
+      "isDefault": true,
+      "craftingTimeSeconds": 20,
+      "icon": "icons/recipes/iron_ingot.png"
+    },
+    {
+      "id": "steel-ingot",
+      "name": "Steel Ingot",
+      "description": "Combine iron and carbon at extreme heat to produce a strong steel ingot.",
+      "category": "Material",
+      "requiredStation": "anvil",
+      "ingredients": [
+        { "resourceId": "iron-ore", "quantity": 4 },
+        { "resourceId": "coal", "quantity": 2 }
+      ],
+      "output": {
+        "itemId": "steel-ingot",
+        "quantity": 1
+      },
+      "difficultyClass": 10,
+      "isDefault": true,
+      "craftingTimeSeconds": 30,
+      "icon": "icons/recipes/steel_ingot.png"
+    },
+    {
+      "id": "healing-potion",
+      "name": "Healing Potion",
+      "description": "A simple restorative elixir that mends minor wounds. Known by novice alchemists everywhere.",
+      "category": "Potion",
+      "requiredStation": "alchemy-table",
+      "ingredients": [
+        { "resourceId": "herb-bloodmoss", "quantity": 2 },
+        { "resourceId": "vial-empty", "quantity": 1 }
+      ],
+      "output": {
+        "itemId": "healing-potion",
+        "quantity": 1
+      },
+      "difficultyClass": 8,
+      "isDefault": true,
+      "craftingTimeSeconds": 15,
+      "icon": "icons/recipes/healing_potion.png"
+    },
+    {
+      "id": "mana-potion",
+      "name": "Mana Potion",
+      "description": "A shimmering blue elixir that restores magical energy to the drinker.",
+      "category": "Potion",
+      "requiredStation": "alchemy-table",
+      "ingredients": [
+        { "resourceId": "herb-moonpetal", "quantity": 2 },
+        { "resourceId": "vial-empty", "quantity": 1 },
+        { "resourceId": "dust-arcane", "quantity": 1 }
+      ],
+      "output": {
+        "itemId": "mana-potion",
+        "quantity": 1
+      },
+      "difficultyClass": 10,
+      "isDefault": true,
+      "craftingTimeSeconds": 20,
+      "icon": "icons/recipes/mana_potion.png"
     },
     {
       "id": "leather-armor",
       "name": "Leather Armor",
       "description": "Light and flexible armor crafted from cured leather. Provides protection without sacrificing mobility.",
-      "category": "Leatherworking",
-      "materials": [
-        {
-          "itemId": "leather-cured",
-          "quantity": 4,
-          "isConsumed": true
-        },
-        {
-          "itemId": "thread-strong",
-          "quantity": 2,
-          "isConsumed": true
-        }
-      ],
-      "skillRequirements": [
-        {
-          "skillId": "leatherworking",
-          "minimumLevel": 2
-        }
+      "category": "Armor",
+      "requiredStation": "tanning-rack",
+      "ingredients": [
+        { "resourceId": "leather", "quantity": 6 },
+        { "resourceId": "thread-strong", "quantity": 2 }
       ],
       "output": {
-        "itemId": "armor-leather-basic",
-        "quantity": {
-          "min": 1,
-          "max": 1
-        },
-        "qualityVariance": {
-          "baseQuality": "Common",
-          "upgradeChance": 0.12
-        }
+        "itemId": "leather-armor",
+        "quantity": 1
       },
-      "stationRequired": "tanning-rack",
-      "craftingTime": 2,
-      "discoveryCondition": {
-        "type": "Teacher",
-        "teacherNpcId": "npc-leatherworker"
-      },
-      "experienceReward": 20,
-      "sortOrder": 1
+      "difficultyClass": 10,
+      "isDefault": true,
+      "craftingTimeSeconds": 45,
+      "icon": "icons/recipes/leather_armor.png"
     },
     {
-      "id": "enchant-fire-1",
-      "name": "Fire Enchantment I",
-      "description": "Imbue a weapon with the essence of flame, adding fire damage to attacks.",
-      "category": "Enchanting",
-      "materials": [
-        {
-          "itemId": "gem-fire-essence",
-          "quantity": 1,
-          "isConsumed": true
-        },
-        {
-          "itemId": "dust-arcane",
-          "quantity": 3,
-          "isConsumed": true
-        },
-        {
-          "itemId": "tool-enchanting-focus",
-          "quantity": 1,
-          "isConsumed": false
-        }
-      ],
-      "skillRequirements": [
-        {
-          "skillId": "enchanting",
-          "minimumLevel": 3,
-          "dc": 12
-        }
+      "id": "iron-shield",
+      "name": "Iron Shield",
+      "description": "A solid iron shield that can absorb heavy blows in close combat.",
+      "category": "Armor",
+      "requiredStation": "anvil",
+      "ingredients": [
+        { "resourceId": "iron-ore", "quantity": 6 },
+        { "resourceId": "leather", "quantity": 1 }
       ],
       "output": {
-        "itemId": "enchantment-fire-1",
-        "quantity": {
-          "min": 1,
-          "max": 1
-        }
+        "itemId": "iron-shield",
+        "quantity": 1
       },
-      "stationRequired": "enchanting-table",
-      "craftingTime": 5,
-      "discoveryCondition": {
-        "type": "Quest",
-        "questId": "quest-arcane-apprentice"
+      "difficultyClass": 11,
+      "isDefault": true,
+      "craftingTimeSeconds": 40,
+      "icon": "icons/recipes/iron_shield.png"
+    },
+    {
+      "id": "grilled-meat",
+      "name": "Grilled Meat",
+      "description": "Simple yet satisfying, this grilled meat restores stamina and provides warmth.",
+      "category": "Consumable",
+      "requiredStation": "campfire",
+      "ingredients": [
+        { "resourceId": "meat-raw", "quantity": 1 }
+      ],
+      "output": {
+        "itemId": "grilled-meat",
+        "quantity": 1
       },
-      "failureChance": 0.2,
-      "experienceReward": 40,
-      "sortOrder": 0
+      "difficultyClass": 5,
+      "isDefault": true,
+      "craftingTimeSeconds": 10,
+      "icon": "icons/recipes/grilled_meat.png"
+    },
+    {
+      "id": "hearty-stew",
+      "name": "Hearty Stew",
+      "description": "A nourishing stew made with meat and herbs that restores both health and stamina over time.",
+      "category": "Consumable",
+      "requiredStation": "campfire",
+      "ingredients": [
+        { "resourceId": "meat-raw", "quantity": 2 },
+        { "resourceId": "herb-bloodmoss", "quantity": 1 },
+        { "resourceId": "water-flask", "quantity": 1 }
+      ],
+      "output": {
+        "itemId": "hearty-stew",
+        "quantity": 1
+      },
+      "difficultyClass": 8,
+      "isDefault": true,
+      "craftingTimeSeconds": 20,
+      "icon": "icons/recipes/hearty_stew.png"
     },
     {
       "id": "silver-ring",
       "name": "Silver Ring",
-      "description": "A delicate silver ring, perfect for enchanting or as a gift.",
-      "category": "Jewelcrafting",
-      "materials": [
-        {
-          "itemId": "ingot-silver",
-          "quantity": 1,
-          "isConsumed": true
-        }
-      ],
-      "skillRequirements": [
-        {
-          "skillId": "jewelcrafting",
-          "minimumLevel": 1
-        }
+      "description": "A delicate silver ring, perfect for enchanting or as a simple accessory.",
+      "category": "Accessory",
+      "requiredStation": "jeweler-bench",
+      "ingredients": [
+        { "resourceId": "silver-ore", "quantity": 2 }
       ],
       "output": {
-        "itemId": "ring-silver-plain",
-        "quantity": {
-          "min": 1,
-          "max": 1
-        },
-        "qualityVariance": {
-          "baseQuality": "Common",
-          "upgradeChance": 0.2
-        },
-        "bonusOutputs": [
-          {
-            "itemId": "dust-silver",
-            "quantity": 1,
-            "chance": 0.25
-          }
-        ]
+        "itemId": "silver-ring",
+        "quantity": 1
       },
-      "stationRequired": "jeweler-bench",
-      "discoveryCondition": {
-        "type": "Level",
-        "requiredLevel": 5
-      },
-      "experienceReward": 15,
-      "sortOrder": 0
+      "difficultyClass": 10,
+      "isDefault": false,
+      "craftingTimeSeconds": 25,
+      "icon": "icons/recipes/silver_ring.png"
     },
     {
-      "id": "mage-robes",
-      "name": "Mage Robes",
-      "description": "Elegant robes woven with arcane thread, enhancing magical abilities.",
-      "category": "Tailoring",
-      "materials": [
-        {
-          "itemId": "cloth-silk",
-          "quantity": 3,
-          "isConsumed": true
-        },
-        {
-          "itemId": "thread-arcane",
-          "quantity": 2,
-          "isConsumed": true
-        }
-      ],
-      "skillRequirements": [
-        {
-          "skillId": "tailoring",
-          "minimumLevel": 4
-        }
+      "id": "fire-enchantment",
+      "name": "Fire Enchantment",
+      "description": "Imbue a weapon with the essence of flame, adding fire damage to attacks.",
+      "category": "Accessory",
+      "requiredStation": "enchanting-table",
+      "ingredients": [
+        { "resourceId": "gem-fire-essence", "quantity": 1 },
+        { "resourceId": "dust-arcane", "quantity": 3 }
       ],
       "output": {
-        "itemId": "armor-mage-robes",
-        "quantity": {
-          "min": 1,
-          "max": 1
-        },
-        "qualityVariance": {
-          "baseQuality": "Uncommon",
-          "upgradeChance": 0.15,
-          "criticalUpgradeChance": 0.03
-        }
+        "itemId": "fire-enchantment",
+        "quantity": 1
       },
-      "stationRequired": "loom-basic",
-      "craftingTime": 4,
-      "discoveryCondition": {
-        "type": "Item",
-        "itemId": "recipe-scroll-mage-robes"
-      },
-      "experienceReward": 35,
-      "sortOrder": 0
-    },
-    {
-      "id": "mechanical-trap",
-      "name": "Mechanical Trap",
-      "description": "A cunning device that snaps shut on unsuspecting prey or enemies.",
-      "category": "Engineering",
-      "materials": [
-        {
-          "itemId": "gear-iron",
-          "quantity": 2,
-          "isConsumed": true
-        },
-        {
-          "itemId": "spring-tension",
-          "quantity": 1,
-          "isConsumed": true
-        },
-        {
-          "itemId": "plate-iron",
-          "quantity": 1,
-          "isConsumed": true
-        }
-      ],
-      "skillRequirements": [
-        {
-          "skillId": "engineering",
-          "minimumLevel": 2,
-          "dc": 10
-        }
-      ],
-      "output": {
-        "itemId": "trap-mechanical-basic",
-        "quantity": {
-          "min": 1,
-          "max": 2
-        }
-      },
-      "stationRequired": "workbench",
-      "craftingTime": 2,
-      "discoveryCondition": {
-        "type": "Exploration",
-        "locationId": "location-gnome-workshop"
-      },
-      "failureChance": 0.1,
-      "failureOutput": {
-        "itemId": "scrap-metal",
-        "quantity": {
-          "min": 1,
-          "max": 1
-        }
-      },
-      "experienceReward": 20,
-      "sortOrder": 0
+      "difficultyClass": 14,
+      "isDefault": false,
+      "craftingTimeSeconds": 60,
+      "icon": "icons/recipes/fire_enchantment.png"
     },
     {
       "id": "scroll-fireball",
       "name": "Scroll of Fireball",
       "description": "A single-use scroll inscribed with the explosive fireball spell.",
-      "category": "Inscription",
-      "materials": [
-        {
-          "itemId": "parchment-blank",
-          "quantity": 1,
-          "isConsumed": true
-        },
-        {
-          "itemId": "ink-arcane",
-          "quantity": 2,
-          "isConsumed": true
-        },
-        {
-          "itemId": "gem-fire-essence",
-          "quantity": 1,
-          "isConsumed": true
-        }
-      ],
-      "skillRequirements": [
-        {
-          "skillId": "inscription",
-          "minimumLevel": 5,
-          "dc": 15
-        }
+      "category": "Consumable",
+      "requiredStation": "scribe-desk",
+      "ingredients": [
+        { "resourceId": "parchment-blank", "quantity": 1 },
+        { "resourceId": "ink-arcane", "quantity": 2 },
+        { "resourceId": "gem-fire-essence", "quantity": 1 }
       ],
       "output": {
-        "itemId": "scroll-spell-fireball",
-        "quantity": {
-          "min": 1,
-          "max": 1
-        }
+        "itemId": "scroll-fireball",
+        "quantity": 1
       },
-      "stationRequired": "scribe-desk",
-      "craftingTime": 3,
-      "discoveryCondition": {
-        "type": "Teacher",
-        "teacherNpcId": "npc-archmage"
+      "difficultyClass": 15,
+      "isDefault": false,
+      "craftingTimeSeconds": 45,
+      "icon": "icons/recipes/scroll_fireball.png"
+    },
+    {
+      "id": "hunting-knife",
+      "name": "Hunting Knife",
+      "description": "A sharp utility knife used for skinning game and preparing hides.",
+      "category": "Tool",
+      "requiredStation": "anvil",
+      "ingredients": [
+        { "resourceId": "iron-ore", "quantity": 2 },
+        { "resourceId": "leather", "quantity": 1 }
+      ],
+      "output": {
+        "itemId": "hunting-knife",
+        "quantity": 1
       },
-      "failureChance": 0.15,
-      "experienceReward": 50,
-      "sortOrder": 0
+      "difficultyClass": 9,
+      "isDefault": true,
+      "craftingTimeSeconds": 25,
+      "icon": "icons/recipes/hunting_knife.png"
+    },
+    {
+      "id": "poison-vial",
+      "name": "Poison Vial",
+      "description": "A toxic concoction that can be applied to blades for additional damage.",
+      "category": "Potion",
+      "requiredStation": "alchemy-table",
+      "ingredients": [
+        { "resourceId": "herb-nightshade", "quantity": 3 },
+        { "resourceId": "vial-empty", "quantity": 1 }
+      ],
+      "output": {
+        "itemId": "poison-vial",
+        "quantity": 1
+      },
+      "difficultyClass": 12,
+      "isDefault": false,
+      "craftingTimeSeconds": 20,
+      "icon": "icons/recipes/poison_vial.png"
+    },
+    {
+      "id": "iron-helmet",
+      "name": "Iron Helmet",
+      "description": "A sturdy iron helm that protects the head from blows in battle.",
+      "category": "Armor",
+      "requiredStation": "anvil",
+      "ingredients": [
+        { "resourceId": "iron-ore", "quantity": 4 },
+        { "resourceId": "leather", "quantity": 1 }
+      ],
+      "output": {
+        "itemId": "iron-helmet",
+        "quantity": 1
+      },
+      "difficultyClass": 11,
+      "isDefault": false,
+      "craftingTimeSeconds": 35,
+      "icon": "icons/recipes/iron_helmet.png"
     }
   ]
 }

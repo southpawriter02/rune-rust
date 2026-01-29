@@ -17,13 +17,17 @@ public class DirectionTests
         var values = Enum.GetValues<Direction>();
 
         // Assert
-        values.Should().HaveCount(6);
+        values.Should().HaveCount(10);
         values.Should().Contain(Direction.North);
         values.Should().Contain(Direction.South);
         values.Should().Contain(Direction.East);
         values.Should().Contain(Direction.West);
         values.Should().Contain(Direction.Up);
         values.Should().Contain(Direction.Down);
+        values.Should().Contain(Direction.Northeast);
+        values.Should().Contain(Direction.Northwest);
+        values.Should().Contain(Direction.Southeast);
+        values.Should().Contain(Direction.Southwest);
     }
 
     [Test]

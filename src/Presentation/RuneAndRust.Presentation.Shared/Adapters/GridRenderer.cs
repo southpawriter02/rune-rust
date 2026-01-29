@@ -247,7 +247,14 @@ public class GridRenderer : IGridRenderer
 
         var sb = new StringBuilder();
         sb.AppendLine("Legend:");
-        sb.AppendLine("  @ = You    M = Monster");
+
+        // Player position
+        var playerPos = GetPlayerPosition(grid);
+        var posStr = playerPos.HasValue ? $" ({playerPos.Value})" : "";
+        sb.AppendLine($"  @ = You{posStr}");
+        sb.AppendLine("  M = Monster");
+        sb.AppendLine("  . = Empty");
+        sb.AppendLine("  # = Wall");
 
         // Add unique terrain types
         if (options.ShowTerrain)

@@ -282,8 +282,8 @@ public class StatisticsServiceTests
     /// </summary>
     [Test]
     [TestCase(10, 0, 0, 0, ExpectedResult = CombatRating.Journeyman)]  // 10 kills, 0 deaths = K/D 10, 40 pts
-    [TestCase(20, 1, 5, 0, ExpectedResult = CombatRating.Skilled)]     // 20 kills, 1 death = K/D 20 (40 pts) + 5 crit/10 = 100 pts crit (10 pts)
-    [TestCase(10, 0, 1, 2, ExpectedResult = CombatRating.Skilled)]     // 10 kills = 40pts + 10% crit = 20pts + 2 bosses = 10pts = ~50 pts
+    [TestCase(20, 1, 5, 0, ExpectedResult = CombatRating.Veteran)]     // 20 kills, 1 death = K/D 20 → 40pts + 50% crit → 20pts + 0 miss → 0pts + 0 bosses → 0pts = 60 → Veteran
+    [TestCase(10, 0, 1, 2, ExpectedResult = CombatRating.Veteran)]     // 12 kills (10+2 boss), 0 deaths → 40pts + 10% crit → 20pts + 2 bosses → 10pts = 70 → Veteran
     public CombatRating GetMetrics_CalculateCombatRating_ReturnsCorrectRating(
         int monstersKilled,
         int deaths,

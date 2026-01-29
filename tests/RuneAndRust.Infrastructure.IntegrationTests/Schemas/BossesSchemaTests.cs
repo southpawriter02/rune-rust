@@ -5,9 +5,9 @@
 // <summary>
 // Unit tests for bosses.schema.json validation.
 // Verifies schema structure, multi-phase boss definitions, health threshold
-// range validation (0-100), behavior enum validation (5 values), phases array
+// range validation (0-100), behavior enum validation (6 values), phases array
 // minimum validation (minItems: 1), and backwards compatibility with existing
-// bosses.json containing 3 example bosses.
+// bosses.json containing 4 example bosses.
 // </summary>
 // ------------------------------------------------------------------------------
 
@@ -20,9 +20,8 @@ using NUnit.Framework;
 /// <summary>
 /// Unit tests validating the bosses.schema.json JSON Schema.
 /// Tests ensure the schema correctly validates boss encounter definitions,
-/// enforces health thresholds (0-100%), behavior enum values (5 patterns),
-/// phases array minimum (1+), and required fields. These tests support the
-/// v0.14.3d Boss Schema implementation for multi-phase boss encounters.
+/// enforces health thresholds (0-100%), behavior enum values (6 patterns),
+/// phases array minimum (1+), and required fields.
 /// </summary>
 [TestFixture]
 public class BossesSchemaTests
@@ -56,9 +55,8 @@ public class BossesSchemaTests
 
     /// <summary>
     /// Verifies the schema file is valid JSON Schema Draft-07 with expected structure.
-    /// Validates that all 8 definitions are present:
-    /// BossDefinition, BossPhase, EnrageConfig, SummonConfig, VulnerabilityWindow,
-    /// BossAnnouncement, QuantityRange, StatModifiers.
+    /// Validates that all 5 definitions are present:
+    /// BossDefinition, BossPhase, StatModifier, BossLoot, SummonConfig.
     /// </summary>
     [Test]
     public void Schema_IsValidJsonSchemaDraft07()
@@ -68,21 +66,18 @@ public class BossesSchemaTests
         _schema.Title.Should().Be("Boss Configuration", "schema title should match");
         _schema.Type.Should().Be(JsonObjectType.Object, "root type should be object");
 
-        // Verify all 8 definitions are present
+        // Verify all 5 definitions are present
         _schema.Definitions.Should().ContainKey("BossDefinition", "should define BossDefinition");
         _schema.Definitions.Should().ContainKey("BossPhase", "should define BossPhase");
-        _schema.Definitions.Should().ContainKey("EnrageConfig", "should define EnrageConfig");
+        _schema.Definitions.Should().ContainKey("StatModifier", "should define StatModifier");
+        _schema.Definitions.Should().ContainKey("BossLoot", "should define BossLoot");
         _schema.Definitions.Should().ContainKey("SummonConfig", "should define SummonConfig");
-        _schema.Definitions.Should().ContainKey("VulnerabilityWindow", "should define VulnerabilityWindow");
-        _schema.Definitions.Should().ContainKey("BossAnnouncement", "should define BossAnnouncement");
-        _schema.Definitions.Should().ContainKey("QuantityRange", "should define QuantityRange");
-        _schema.Definitions.Should().ContainKey("StatModifiers", "should define StatModifiers");
     }
 
     /// <summary>
     /// Verifies the bosses.json configuration validates against the schema
     /// without errors. This is the primary backwards compatibility test ensuring all
-    /// 3 existing bosses (skeleton-king, shadow-weaver, stone-guardian) are valid.
+    /// 4 existing bosses are valid.
     /// </summary>
     [Test]
     public async Task BossesJson_ValidatesAgainstSchema()
@@ -96,7 +91,7 @@ public class BossesSchemaTests
         // Assert: No validation errors - all existing bosses should be valid
         errors.Should().BeEmpty(
             "existing bosses.json should validate against the schema without errors. " +
-            "All 3 bosses (skeleton-king, shadow-weaver, stone-guardian) must pass validation.");
+            "All 4 bosses must pass validation.");
     }
 
     /// <summary>
@@ -111,10 +106,10 @@ public class BossesSchemaTests
         {
             "bosses": [
                 {
-                    "id": "no-phases-boss",
+                    "bossId": "no-phases-boss",
                     "name": "Invalid Boss",
                     "description": "A boss with no phases",
-                    "baseMonsterId": "skeleton",
+                    "baseMonsterDefinitionId": "skeleton",
                     "phases": []
                 }
             ]
@@ -142,15 +137,15 @@ public class BossesSchemaTests
         {
             "bosses": [
                 {
-                    "id": "invalid-threshold-boss",
+                    "bossId": "invalid-threshold-boss",
                     "name": "Invalid Boss",
                     "description": "A boss with invalid threshold",
-                    "baseMonsterId": "skeleton",
+                    "baseMonsterDefinitionId": "skeleton",
                     "phases": [
                         {
-                            "id": "phase_1",
+                            "phaseNumber": 1,
                             "name": "Phase 1",
-                            "healthThresholdPercent": 150,
+                            "healthThreshold": 150,
                             "behavior": "Aggressive"
                         }
                     ]
@@ -164,12 +159,12 @@ public class BossesSchemaTests
 
         // Assert: Validation should fail due to health threshold > 100
         errors.Should().NotBeEmpty(
-            "healthThresholdPercent 150 should fail validation (must be 0-100)");
+            "healthThreshold 150 should fail validation (must be 0-100)");
     }
 
     /// <summary>
     /// Verifies behavior must be one of the valid enum values:
-    /// Aggressive, Defensive, Tactical, Berserk, Summoner.
+    /// Aggressive, Defensive, Tactical, Berserk, Summoner, Enraged.
     /// Invalid behavior values are rejected.
     /// </summary>
     [Test]
@@ -180,15 +175,15 @@ public class BossesSchemaTests
         {
             "bosses": [
                 {
-                    "id": "invalid-behavior-boss",
+                    "bossId": "invalid-behavior-boss",
                     "name": "Invalid Boss",
                     "description": "A boss with invalid behavior",
-                    "baseMonsterId": "skeleton",
+                    "baseMonsterDefinitionId": "skeleton",
                     "phases": [
                         {
-                            "id": "phase_1",
+                            "phaseNumber": 1,
                             "name": "Phase 1",
-                            "healthThresholdPercent": 100,
+                            "healthThreshold": 100,
                             "behavior": "InvalidBehavior"
                         }
                     ]
@@ -202,82 +197,38 @@ public class BossesSchemaTests
 
         // Assert: Validation should fail due to invalid behavior enum
         errors.Should().NotBeEmpty(
-            "behavior 'InvalidBehavior' should fail validation (must be Aggressive, Defensive, Tactical, Berserk, or Summoner)");
+            "behavior 'InvalidBehavior' should fail validation (must be Aggressive, Defensive, Tactical, Berserk, Summoner, or Enraged)");
     }
 
     /// <summary>
-    /// Verifies enrage trigger type must be one of the valid enum values:
-    /// Timer, HealthPercent, TurnCount, AllyDeath.
-    /// Invalid trigger types are rejected.
+    /// Verifies that loot drop chance must be between 0 and 1.
+    /// Values outside this range are rejected.
     /// </summary>
     [Test]
-    public void EnrageTriggerType_InvalidEnum_FailsValidation()
+    public void LootChance_OutOfRange_FailsValidation()
     {
-        // Arrange: JSON with invalid enrage trigger type
+        // Arrange: JSON with loot chance above 1.0
         var invalidJson = """
         {
             "bosses": [
                 {
-                    "id": "invalid-enrage-boss",
+                    "bossId": "invalid-loot-boss",
                     "name": "Invalid Boss",
-                    "description": "A boss with invalid enrage trigger",
-                    "baseMonsterId": "skeleton",
+                    "description": "A boss with invalid loot chance",
+                    "baseMonsterDefinitionId": "skeleton",
                     "phases": [
                         {
-                            "id": "phase_1",
+                            "phaseNumber": 1,
                             "name": "Phase 1",
-                            "healthThresholdPercent": 100,
+                            "healthThreshold": 100,
                             "behavior": "Aggressive"
                         }
                     ],
-                    "enrage": {
-                        "triggerType": "InvalidTrigger",
-                        "triggerValue": 100,
-                        "statMultipliers": { "attack": 1.5 }
-                    }
-                }
-            ]
-        }
-        """;
-
-        // Act: Validate the invalid JSON against the schema
-        var errors = _schema.Validate(invalidJson);
-
-        // Assert: Validation should fail due to invalid enrage trigger type
-        errors.Should().NotBeEmpty(
-            "enrage triggerType 'InvalidTrigger' should fail validation (must be Timer, HealthPercent, TurnCount, or AllyDeath)");
-    }
-
-    /// <summary>
-    /// Verifies vulnerability window duration must be >= 1.
-    /// Duration of 0 would mean no vulnerability window, which is invalid.
-    /// </summary>
-    [Test]
-    public void VulnerabilityDuration_Zero_FailsValidation()
-    {
-        // Arrange: JSON with vulnerability duration of 0
-        var invalidJson = """
-        {
-            "bosses": [
-                {
-                    "id": "invalid-vuln-boss",
-                    "name": "Invalid Boss",
-                    "description": "A boss with invalid vulnerability duration",
-                    "baseMonsterId": "skeleton",
-                    "phases": [
+                    "loot": [
                         {
-                            "id": "phase_1",
-                            "name": "Phase 1",
-                            "healthThresholdPercent": 100,
-                            "behavior": "Aggressive"
-                        }
-                    ],
-                    "vulnerabilityWindows": [
-                        {
-                            "id": "invalid_vuln",
-                            "triggerType": "AfterAbility",
-                            "triggerValue": "some_ability",
-                            "durationTurns": 0
+                            "itemId": "gold",
+                            "amount": 100,
+                            "chance": 1.5
                         }
                     ]
                 }
@@ -288,8 +239,49 @@ public class BossesSchemaTests
         // Act: Validate the invalid JSON against the schema
         var errors = _schema.Validate(invalidJson);
 
-        // Assert: Validation should fail due to duration < 1
+        // Assert: Validation should fail due to chance > 1.0
         errors.Should().NotBeEmpty(
-            "durationTurns 0 should fail validation (must be >= 1)");
+            "loot chance 1.5 should fail validation (must be 0.0-1.0)");
+    }
+
+    /// <summary>
+    /// Verifies that summon count must be at least 1.
+    /// Zero summons is invalid.
+    /// </summary>
+    [Test]
+    public void SummonCount_Zero_FailsValidation()
+    {
+        // Arrange: JSON with summon count of 0
+        var invalidJson = """
+        {
+            "bosses": [
+                {
+                    "bossId": "invalid-summon-boss",
+                    "name": "Invalid Boss",
+                    "description": "A boss with invalid summon count",
+                    "baseMonsterDefinitionId": "skeleton",
+                    "phases": [
+                        {
+                            "phaseNumber": 1,
+                            "name": "Phase 1",
+                            "healthThreshold": 100,
+                            "behavior": "Summoner",
+                            "summonConfig": {
+                                "monsterDefinitionId": "skeleton-minion",
+                                "count": 0
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+        """;
+
+        // Act: Validate the invalid JSON against the schema
+        var errors = _schema.Validate(invalidJson);
+
+        // Assert: Validation should fail due to count < 1
+        errors.Should().NotBeEmpty(
+            "summon count 0 should fail validation (must be >= 1)");
     }
 }

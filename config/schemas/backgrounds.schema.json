@@ -16,11 +16,11 @@
             "minItems": 6,
             "maxItems": 6,
             "items": {
-                "$ref": "#/$defs/backgroundDefinition"
+                "$ref": "#/definitions/backgroundDefinition"
             }
         }
     },
-    "$defs": {
+    "definitions": {
         "skillGrant": {
             "type": "object",
             "description": "A skill bonus granted by the background. Each background typically grants a primary (+2) and secondary (+1) skill bonus reflecting pre-Silence professional expertise.",
@@ -156,7 +156,7 @@
                     "type": "array",
                     "description": "Skill bonuses granted by this background. Each background typically has a primary (+2) and secondary (+1) skill grant.",
                     "items": {
-                        "$ref": "#/$defs/skillGrant"
+                        "$ref": "#/definitions/skillGrant"
                     },
                     "minItems": 0,
                     "maxItems": 5
@@ -165,7 +165,7 @@
                     "type": "array",
                     "description": "Starting equipment from this background. Items may be auto-equipped or inventory-only.",
                     "items": {
-                        "$ref": "#/$defs/equipmentGrant"
+                        "$ref": "#/definitions/equipmentGrant"
                     },
                     "minItems": 0,
                     "maxItems": 10

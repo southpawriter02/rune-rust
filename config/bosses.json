@@ -1,280 +1,366 @@
 {
     "$schema": "./schemas/bosses.schema.json",
-    "description": "Boss encounter definitions for v0.14.3d",
     "bosses": [
         {
-            "id": "skeleton-king",
-            "name": "Skeleton King",
-            "title": "Lord of Bones",
-            "description": "An ancient monarch raised from the dead, commanding legions of skeletal warriors. His power grows as his army falls.",
-            "baseMonsterId": "skeleton",
-            "baseHealth": 500,
+            "bossId": "skeleton-king",
+            "name": "The Skeleton King",
+            "description": "An ancient monarch who refused to relinquish his throne even in death. Risen from the deepest catacombs of the Undead Crypt, he commands legions of skeletal warriors with an iron will forged over centuries of undeath. His crown pulses with necrotic energy, and his tactical brilliance makes him a terrifying adversary.",
+            "baseMonsterDefinitionId": "skeleton-elite",
+            "titleText": "Lord of the Undead Crypt",
             "phases": [
                 {
-                    "id": "phase_1",
-                    "name": "Phase 1",
-                    "healthThresholdPercent": 100,
+                    "phaseNumber": 1,
+                    "name": "Awakened",
+                    "healthThreshold": 100,
                     "behavior": "Tactical",
                     "abilityIds": [
-                        "bone_throw",
-                        "shield_bash"
+                        "bone-strike",
+                        "shield-of-bones",
+                        "cursed-slash"
                     ],
-                    "transitionAnnouncement": "You dare challenge me?"
+                    "transitionText": "The Skeleton King rises from his throne, eyes blazing with unholy fire."
                 },
                 {
-                    "id": "phase_2",
-                    "name": "Summoner Phase",
-                    "healthThresholdPercent": 60,
+                    "phaseNumber": 2,
+                    "name": "Commanding",
+                    "healthThreshold": 60,
                     "behavior": "Summoner",
                     "abilityIds": [
-                        "summon_skeletons",
-                        "dark_wave"
+                        "raise-dead",
+                        "bone-cage",
+                        "necrotic-pulse"
                     ],
-                    "transitionAnnouncement": "Rise, my minions!",
-                    "transitionEffect": "dark_summon"
-                },
-                {
-                    "id": "phase_3",
-                    "name": "Final Stand",
-                    "healthThresholdPercent": 30,
-                    "behavior": "Berserk",
-                    "abilityIds": [
-                        "bone_storm",
-                        "death_strike"
-                    ],
-                    "statModifiers": {
-                        "attack": 10,
-                        "speed": 5
-                    },
-                    "transitionAnnouncement": "ENOUGH! I will destroy you all!",
-                    "transitionEffect": "bone_explosion"
-                }
-            ],
-            "enrage": {
-                "triggerType": "Timer",
-                "triggerValue": 300,
-                "statMultipliers": {
-                    "attack": 1.5,
-                    "speed": 1.25
-                },
-                "additionalAbilityIds": [
-                    "enraged_strike"
-                ],
-                "announcement": "The Skeleton King's rage knows no bounds!"
-            },
-            "summons": [
-                {
-                    "monsterId": "skeleton",
-                    "count": {
-                        "min": 2,
-                        "max": 4
-                    },
-                    "triggerType": "PhaseStart",
-                    "cooldownTurns": 3,
-                    "maxActive": 6,
-                    "announcement": "Minions, to me!"
-                }
-            ],
-            "vulnerabilityWindows": [
-                {
-                    "id": "post_bone_storm",
-                    "triggerType": "AfterAbility",
-                    "triggerValue": "bone_storm",
-                    "durationTurns": 2,
-                    "damageMultiplier": 2.0,
-                    "announcement": "The Skeleton King is exhausted!"
-                }
-            ],
-            "announcements": [
-                {
-                    "trigger": "BattleStart",
-                    "text": "You dare enter my domain, mortal?"
-                },
-                {
-                    "trigger": "LowHealth",
-                    "triggerValue": 10,
-                    "text": "This... cannot be..."
-                },
-                {
-                    "trigger": "Victory",
-                    "text": "Your bones will join my army..."
-                }
-            ],
-            "uniqueLootTableId": "skeleton_king_loot",
-            "musicTrackId": "boss_skeleton_king",
-            "arenaRequirements": {
-                "minWidth": 15,
-                "minHeight": 15
-            },
-            "sortOrder": 0
-        },
-        {
-            "id": "shadow-weaver",
-            "name": "Shadow Weaver",
-            "title": "Mistress of Darkness",
-            "description": "A corrupted mage who traded her soul for mastery over shadow magic. She strikes from the darkness, vanishing before retaliation.",
-            "baseMonsterId": "goblin_shaman",
-            "baseHealth": 350,
-            "phases": [
-                {
-                    "id": "phase_1",
-                    "name": "Shadow Dance",
-                    "healthThresholdPercent": 100,
-                    "behavior": "Tactical",
-                    "abilityIds": [
-                        "shadow_bolt",
-                        "fade_away",
-                        "dark_binding"
-                    ],
-                    "transitionAnnouncement": "The shadows welcome you..."
-                },
-                {
-                    "id": "phase_2",
-                    "name": "Desperation",
-                    "healthThresholdPercent": 40,
-                    "behavior": "Aggressive",
-                    "abilityIds": [
-                        "shadow_storm",
-                        "life_drain",
-                        "dark_nova"
-                    ],
-                    "statModifiers": {
-                        "criticalChance": 0.15
-                    },
-                    "transitionAnnouncement": "You will drown in darkness!",
-                    "transitionEffect": "shadow_burst"
-                }
-            ],
-            "enrage": {
-                "triggerType": "TurnCount",
-                "triggerValue": 25,
-                "statMultipliers": {
-                    "attack": 1.75,
-                    "speed": 1.5
-                },
-                "announcement": "The shadows consume all!"
-            },
-            "vulnerabilityWindows": [
-                {
-                    "id": "post_fade",
-                    "triggerType": "AfterAbility",
-                    "triggerValue": "fade_away",
-                    "durationTurns": 1,
-                    "damageMultiplier": 1.5,
-                    "announcement": "The Shadow Weaver rematerializes!"
-                }
-            ],
-            "announcements": [
-                {
-                    "trigger": "BattleStart",
-                    "text": "Step into my web of shadows..."
-                },
-                {
-                    "trigger": "Enrage",
-                    "text": "The darkness grows hungry!"
-                }
-            ],
-            "uniqueLootTableId": "shadow_weaver_loot",
-            "musicTrackId": "boss_shadow_weaver",
-            "sortOrder": 1
-        },
-        {
-            "id": "stone-guardian",
-            "name": "Stone Guardian",
-            "title": "Ancient Protector",
-            "description": "A massive golem awakened from millennia of slumber to protect an ancient treasure. Its stone form makes it nearly impervious to damage.",
-            "baseMonsterId": "orc",
-            "baseHealth": 800,
-            "phases": [
-                {
-                    "id": "phase_1",
-                    "name": "Dormant Defense",
-                    "healthThresholdPercent": 100,
-                    "behavior": "Defensive",
-                    "abilityIds": [
-                        "stone_slam",
-                        "fortify"
-                    ],
-                    "statModifiers": {
-                        "defense": 20,
-                        "damageReduction": 5
+                    "transitionText": "Rise, my fallen soldiers! Serve your king once more!",
+                    "summonConfig": {
+                        "monsterDefinitionId": "skeleton-minion",
+                        "count": 2,
+                        "intervalTurns": 3,
+                        "maxActive": 6
                     }
                 },
                 {
-                    "id": "phase_2",
-                    "name": "Awakened",
-                    "healthThresholdPercent": 70,
+                    "phaseNumber": 3,
+                    "name": "Enraged",
+                    "healthThreshold": 25,
+                    "behavior": "Enraged",
+                    "abilityIds": [
+                        "bone-storm",
+                        "death-strike",
+                        "crown-of-wrath"
+                    ],
+                    "statModifiers": [
+                        {
+                            "statId": "attack",
+                            "type": "Flat",
+                            "value": 15.0
+                        },
+                        {
+                            "statId": "speed",
+                            "type": "Flat",
+                            "value": 8.0
+                        },
+                        {
+                            "statId": "defense",
+                            "type": "Flat",
+                            "value": -5.0
+                        }
+                    ],
+                    "transitionText": "ENOUGH! I will grind your bones to dust!",
+                    "transitionEffectId": "boss-enrage-aura"
+                }
+            ],
+            "loot": [
+                {
+                    "itemId": "gold",
+                    "amount": 500,
+                    "chance": 1.0
+                },
+                {
+                    "itemId": "bone-shard",
+                    "amount": 3,
+                    "chance": 0.75
+                },
+                {
+                    "itemId": "crown-of-bones",
+                    "amount": 1,
+                    "chance": 0.15
+                },
+                {
+                    "itemId": "necrotic-essence",
+                    "amount": 1,
+                    "chance": 0.5
+                }
+            ]
+        },
+        {
+            "bossId": "volcanic-wyrm",
+            "name": "The Volcanic Wyrm",
+            "description": "A primordial dragon born from the molten heart of Mount Ashenveil. Its scales are fused obsidian, and rivers of magma flow through its veins. When it breathes, the air itself ignites. Adventurers who challenge it must brave both its devastating flame and the erupting terrain of its volcanic lair.",
+            "baseMonsterDefinitionId": "wyrm-elder",
+            "titleText": "Fury of Mount Ashenveil",
+            "phases": [
+                {
+                    "phaseNumber": 1,
+                    "name": "Smoldering",
+                    "healthThreshold": 100,
+                    "behavior": "Tactical",
+                    "abilityIds": [
+                        "flame-breath",
+                        "tail-sweep",
+                        "magma-spit"
+                    ],
+                    "transitionText": "The Volcanic Wyrm awakens, smoke billowing from its nostrils."
+                },
+                {
+                    "phaseNumber": 2,
+                    "name": "Erupting",
+                    "healthThreshold": 55,
                     "behavior": "Aggressive",
                     "abilityIds": [
-                        "boulder_toss",
-                        "earthquake",
-                        "stone_slam"
+                        "lava-eruption",
+                        "wing-buffet",
+                        "inferno-blast"
                     ],
-                    "transitionAnnouncement": "INTRUDERS... DETECTED...",
-                    "transitionEffect": "stone_crack"
+                    "statModifiers": [
+                        {
+                            "statId": "attack",
+                            "type": "Flat",
+                            "value": 10.0
+                        }
+                    ],
+                    "transitionText": "The ground trembles as magma erupts from fissures around the wyrm!",
+                    "transitionEffectId": "volcanic-eruption"
                 },
                 {
-                    "id": "phase_3",
-                    "name": "Crumbling Fury",
-                    "healthThresholdPercent": 30,
-                    "behavior": "Berserk",
+                    "phaseNumber": 3,
+                    "name": "Meltdown",
+                    "healthThreshold": 20,
+                    "behavior": "Enraged",
                     "abilityIds": [
-                        "earthquake",
-                        "collapse",
-                        "desperate_slam"
+                        "apocalypse-flame",
+                        "molten-dive",
+                        "magma-storm"
                     ],
-                    "transitionAnnouncement": "MUST... PROTECT... TREASURE...",
-                    "transitionEffect": "stone_crumble"
+                    "statModifiers": [
+                        {
+                            "statId": "attack",
+                            "type": "Flat",
+                            "value": 20.0
+                        },
+                        {
+                            "statId": "speed",
+                            "type": "Flat",
+                            "value": 10.0
+                        }
+                    ],
+                    "transitionText": "The wyrm's body cracks open, revealing a core of pure molten fury!",
+                    "transitionEffectId": "boss-enrage-aura"
                 }
             ],
-            "enrage": {
-                "triggerType": "HealthPercent",
-                "triggerValue": 15,
-                "statMultipliers": {
-                    "attack": 2.0,
-                    "defense": 0.5
-                },
-                "announcement": "SYSTEMS... FAILING... MAXIMUM... POWER..."
-            },
-            "vulnerabilityWindows": [
+            "loot": [
                 {
-                    "id": "phase_transition_vuln",
-                    "triggerType": "PhaseTransition",
-                    "triggerValue": "phase_2",
-                    "durationTurns": 2,
-                    "damageMultiplier": 1.5,
-                    "announcement": "The Stone Guardian's defenses weaken!"
+                    "itemId": "gold",
+                    "amount": 750,
+                    "chance": 1.0
                 },
                 {
-                    "id": "post_earthquake",
-                    "triggerType": "AfterAbility",
-                    "triggerValue": "earthquake",
-                    "durationTurns": 1,
-                    "damageMultiplier": 1.25,
-                    "announcement": "The guardian stumbles!"
+                    "itemId": "obsidian-scale",
+                    "amount": 2,
+                    "chance": 0.6
+                },
+                {
+                    "itemId": "wyrm-heart-ember",
+                    "amount": 1,
+                    "chance": 0.1
+                }
+            ]
+        },
+        {
+            "bossId": "shadow-lich",
+            "name": "The Shadow Lich",
+            "description": "Once a revered archmage of the Silver Conclave, Verathos traded his humanity for mastery over shadow and death. His phylactery pulses with stolen souls, and his command of dark magic is unrivaled. He exists between the planes of life and death, phasing in and out of reality to confound his enemies.",
+            "baseMonsterDefinitionId": "lich-ancient",
+            "titleText": "Verathos, Devourer of Souls",
+            "phases": [
+                {
+                    "phaseNumber": 1,
+                    "name": "Shadow Veil",
+                    "healthThreshold": 100,
+                    "behavior": "Tactical",
+                    "abilityIds": [
+                        "shadow-bolt",
+                        "soul-drain",
+                        "dark-ward"
+                    ],
+                    "transitionText": "The Shadow Lich materializes from the darkness, eyes burning with violet flame."
+                },
+                {
+                    "phaseNumber": 2,
+                    "name": "Soul Harvest",
+                    "healthThreshold": 70,
+                    "behavior": "Aggressive",
+                    "abilityIds": [
+                        "soul-storm",
+                        "necrotic-chain",
+                        "phase-shift"
+                    ],
+                    "transitionText": "Your soul will feed my power for eternity!",
+                    "transitionEffectId": "shadow-nova"
+                },
+                {
+                    "phaseNumber": 3,
+                    "name": "Phylactery Unleashed",
+                    "healthThreshold": 40,
+                    "behavior": "Summoner",
+                    "abilityIds": [
+                        "mass-raise-dead",
+                        "death-coil",
+                        "shadow-rift"
+                    ],
+                    "transitionText": "The phylactery shatters, releasing a torrent of trapped souls!",
+                    "transitionEffectId": "phylactery-burst",
+                    "summonConfig": {
+                        "monsterDefinitionId": "shadow-wraith",
+                        "count": 3,
+                        "intervalTurns": 2,
+                        "maxActive": 6
+                    }
+                },
+                {
+                    "phaseNumber": 4,
+                    "name": "Ascended Horror",
+                    "healthThreshold": 15,
+                    "behavior": "Enraged",
+                    "abilityIds": [
+                        "void-collapse",
+                        "finger-of-death",
+                        "shadow-apocalypse"
+                    ],
+                    "statModifiers": [
+                        {
+                            "statId": "attack",
+                            "type": "Flat",
+                            "value": 25.0
+                        },
+                        {
+                            "statId": "speed",
+                            "type": "Flat",
+                            "value": 12.0
+                        },
+                        {
+                            "statId": "defense",
+                            "type": "Flat",
+                            "value": 10.0
+                        }
+                    ],
+                    "transitionText": "I have transcended mortality! I AM DEATH ITSELF!",
+                    "transitionEffectId": "boss-enrage-aura"
                 }
             ],
-            "announcements": [
+            "loot": [
                 {
-                    "trigger": "BattleStart",
-                    "text": "HALT... NONE... SHALL... PASS..."
+                    "itemId": "gold",
+                    "amount": 1000,
+                    "chance": 1.0
                 },
                 {
-                    "trigger": "LowHealth",
-                    "triggerValue": 20,
-                    "text": "STRUCTURAL... INTEGRITY... COMPROMISED..."
+                    "itemId": "shadow-essence",
+                    "amount": 2,
+                    "chance": 0.7
+                },
+                {
+                    "itemId": "phylactery-shard",
+                    "amount": 1,
+                    "chance": 0.08
+                },
+                {
+                    "itemId": "staff-of-verathos",
+                    "amount": 1,
+                    "chance": 0.05
+                }
+            ]
+        },
+        {
+            "bossId": "orc-warlord",
+            "name": "The Orc Warlord",
+            "description": "Grothnak the Unbroken has united the scattered orc clans under his iron fist through sheer brutality and cunning. Wielding a massive war-cleaver forged in dragonfire, he commands absolute loyalty from his warriors. His battle-scarred hide is as tough as plate armor, and his war cry alone has been known to shatter the resolve of entire battalions.",
+            "baseMonsterDefinitionId": "orc-chieftain",
+            "titleText": "Grothnak the Unbroken",
+            "phases": [
+                {
+                    "phaseNumber": 1,
+                    "name": "War Cry",
+                    "healthThreshold": 100,
+                    "behavior": "Aggressive",
+                    "abilityIds": [
+                        "cleave",
+                        "war-cry",
+                        "shield-slam"
+                    ],
+                    "transitionText": "Grothnak bellows a thunderous war cry that shakes the very ground!"
+                },
+                {
+                    "phaseNumber": 2,
+                    "name": "Rally the Horde",
+                    "healthThreshold": 50,
+                    "behavior": "Summoner",
+                    "abilityIds": [
+                        "rallying-shout",
+                        "brutal-charge",
+                        "cleave"
+                    ],
+                    "transitionText": "Warriors! To me! Crush these weaklings!",
+                    "transitionEffectId": "war-horn",
+                    "summonConfig": {
+                        "monsterDefinitionId": "orc-warrior",
+                        "count": 2,
+                        "intervalTurns": 3,
+                        "maxActive": 4
+                    }
+                },
+                {
+                    "phaseNumber": 3,
+                    "name": "Blood Frenzy",
+                    "healthThreshold": 20,
+                    "behavior": "Enraged",
+                    "abilityIds": [
+                        "execute",
+                        "whirlwind",
+                        "blood-frenzy"
+                    ],
+                    "statModifiers": [
+                        {
+                            "statId": "attack",
+                            "type": "Flat",
+                            "value": 18.0
+                        },
+                        {
+                            "statId": "speed",
+                            "type": "Flat",
+                            "value": 5.0
+                        }
+                    ],
+                    "transitionText": "I will NOT fall! GROTHNAK IS UNBROKEN!",
+                    "transitionEffectId": "boss-enrage-aura"
                 }
             ],
-            "uniqueLootTableId": "stone_guardian_loot",
-            "musicTrackId": "boss_stone_guardian",
-            "arenaRequirements": {
-                "minWidth": 20,
-                "minHeight": 20,
-                "requiredTerrain": [
-                    "stone_floor"
-                ]
-            },
-            "sortOrder": 2
+            "loot": [
+                {
+                    "itemId": "gold",
+                    "amount": 600,
+                    "chance": 1.0
+                },
+                {
+                    "itemId": "war-cleaver-shard",
+                    "amount": 1,
+                    "chance": 0.4
+                },
+                {
+                    "itemId": "warlord-banner",
+                    "amount": 1,
+                    "chance": 0.12
+                }
+            ]
         }
     ]
 }

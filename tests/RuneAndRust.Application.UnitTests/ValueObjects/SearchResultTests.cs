@@ -30,8 +30,8 @@ public class SearchResultTests
     [Test]
     public void Failed_CreatesResultWithFailedCheck()
     {
-        // Arrange
-        var mockCheck = CreateMockSkillCheckResult(8, 12);
+        // Arrange - roll of 3 on d10 = 0 successes, DC 1 → failure
+        var mockCheck = CreateFailedSkillCheckResult();
 
         // Act
         var result = SearchResult.Failed(mockCheck);
@@ -46,8 +46,8 @@ public class SearchResultTests
     [Test]
     public void Success_CreatesResultWithDiscoveries()
     {
-        // Arrange
-        var mockCheck = CreateMockSkillCheckResult(15, 12);
+        // Arrange - roll of 9 on d10 = 1 success, DC 1 → marginal success
+        var mockCheck = CreateSuccessfulSkillCheckResult();
         var exits = new List<Direction> { Direction.East };
         var items = new List<Guid> { Guid.NewGuid() };
 
@@ -65,7 +65,7 @@ public class SearchResultTests
     public void FoundSomething_TrueWhenExitsDiscovered()
     {
         // Arrange
-        var mockCheck = CreateMockSkillCheckResult(15, 12);
+        var mockCheck = CreateSuccessfulSkillCheckResult();
         var exits = new List<Direction> { Direction.North };
 
         // Act
@@ -75,24 +75,41 @@ public class SearchResultTests
         result.FoundSomething.Should().BeTrue();
     }
 
-    private static SkillCheckResult CreateMockSkillCheckResult(int total, int dc)
+    /// <summary>
+    /// Creates a SkillCheckResult that succeeds using success-counting mechanics.
+    /// Rolling a 9 on 1d10 produces 1 net success (9 >= 8 threshold), beating DC 1.
+    /// </summary>
+    private static SkillCheckResult CreateSuccessfulSkillCheckResult()
     {
-        // Parse a simple dice pool for the test
         var dicePool = DicePool.Parse("1d10");
-        var diceValue = total - 12; // Subtract attribute bonus
-        
-        // Create a dice roll result with the appropriate values
-        var diceResult = new DiceRollResult(
-            pool: dicePool,
-            rolls: [diceValue > 0 ? diceValue : 1]);
+        var diceResult = new DiceRollResult(pool: dicePool, rolls: [9]);
 
         return new SkillCheckResult(
             skillId: "perception",
             skillName: "Perception",
             diceResult: diceResult,
-            attributeBonus: 12,
+            attributeBonus: 0,
             otherBonus: 0,
-            difficultyClass: dc,
-            difficultyName: "Moderate");
+            difficultyClass: 1,
+            difficultyName: "Easy");
+    }
+
+    /// <summary>
+    /// Creates a SkillCheckResult that fails using success-counting mechanics.
+    /// Rolling a 3 on 1d10 produces 0 net successes (3 &lt; 8 threshold), failing DC 1.
+    /// </summary>
+    private static SkillCheckResult CreateFailedSkillCheckResult()
+    {
+        var dicePool = DicePool.Parse("1d10");
+        var diceResult = new DiceRollResult(pool: dicePool, rolls: [3]);
+
+        return new SkillCheckResult(
+            skillId: "perception",
+            skillName: "Perception",
+            diceResult: diceResult,
+            attributeBonus: 0,
+            otherBonus: 0,
+            difficultyClass: 1,
+            difficultyName: "Easy");
     }
 }

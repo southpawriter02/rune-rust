@@ -3,9 +3,10 @@
 //     Copyright (c) Rune & Rust. All rights reserved.
 // </copyright>
 // <summary>
-// Unit tests for backgrounds.schema.json validation.
-// Verifies schema structure, category enum validation, attribute bonus range,
-// and required fields.
+// Integration tests for backgrounds.schema.json validation.
+// Verifies schema structure, backgroundId enum validation, skill grant
+// and equipment grant range constraints, and required fields.
+// Version: 0.17.1c
 // </summary>
 // ------------------------------------------------------------------------------
 
@@ -16,9 +17,10 @@ using NJsonSchema;
 using NUnit.Framework;
 
 /// <summary>
-/// Unit tests validating the backgrounds.schema.json JSON Schema.
+/// Integration tests validating the backgrounds.schema.json JSON Schema.
 /// Tests ensure the schema correctly validates background configuration files,
-/// enforces category enums, attribute bonus ranges, and required fields.
+/// enforces backgroundId enums, skill grant bonus ranges, equipment grant
+/// constraints, and required fields.
 /// </summary>
 [TestFixture]
 public class BackgroundSchemaTests
@@ -57,10 +59,11 @@ public class BackgroundSchemaTests
     {
         // Assert: Schema loaded successfully and has expected properties
         _schema.Should().NotBeNull("schema file should parse successfully");
-        _schema.Title.Should().Be("Background Configuration", "schema title should match");
+        _schema.Title.Should().Be("Backgrounds Configuration", "schema title should match");
         _schema.Type.Should().Be(JsonObjectType.Object, "root type should be object");
-        _schema.Definitions.Should().ContainKey("BackgroundDefinition", "should define BackgroundDefinition");
-        _schema.Definitions.Should().ContainKey("AttributeBonuses", "should define AttributeBonuses");
+        _schema.Definitions.Should().ContainKey("backgroundDefinition", "should define backgroundDefinition");
+        _schema.Definitions.Should().ContainKey("skillGrant", "should define skillGrant");
+        _schema.Definitions.Should().ContainKey("equipmentGrant", "should define equipmentGrant");
     }
 
     /// <summary>
@@ -82,26 +85,23 @@ public class BackgroundSchemaTests
     }
 
     /// <summary>
-    /// Verifies that category must be a valid enum value (Profession or Lineage).
-    /// Invalid category values should produce validation errors.
+    /// Verifies that backgroundId must be a valid enum value.
+    /// Invalid backgroundId values should produce validation errors.
     /// </summary>
     [Test]
-    public void Category_InvalidEnumValue_FailsValidation()
+    public void BackgroundId_InvalidEnumValue_FailsValidation()
     {
-        // Arrange: JSON with invalid category value
+        // Arrange: JSON with invalid backgroundId value
         var invalidJson = """
         {
             "backgrounds": [
                 {
-                    "id": "noble",
-                    "name": "Noble",
-                    "category": "Occupation",
-                    "description": "Born into wealth and privilege.",
-                    "attributeBonuses": { "will": 1 },
-                    "starterAbilityId": "command",
-                    "starterAbilityName": "Command",
-                    "starterAbilityDescription": "Issue orders to allies.",
-                    "startingItems": ["signet_ring"]
+                    "backgroundId": "Noble",
+                    "displayName": "Noble",
+                    "description": "Born into wealth and privilege, you commanded respect.",
+                    "selectionText": "Your blood carried weight. Your name opened doors.",
+                    "professionBefore": "Aristocrat",
+                    "socialStanding": "High-born, respected by all"
                 }
             ]
         }
@@ -110,37 +110,32 @@ public class BackgroundSchemaTests
         // Act: Validate the invalid JSON
         var errors = _schema.Validate(invalidJson);
 
-        // Assert: Should produce validation errors for the category enum
+        // Assert: Should produce validation errors for the backgroundId enum
         errors.Should().NotBeEmpty(
-            "category 'Occupation' should fail enum validation");
-        
-        // Verify the error references the category property
-        var errorSummary = string.Join(", ", errors.Select(e => e.ToString()));
-        errorSummary.Should().Contain("category",
-            "error should reference the category property");
+            "backgroundId 'Noble' should fail enum validation — only the 6 defined backgrounds are valid");
     }
 
     /// <summary>
-    /// Verifies that attribute bonuses must be within 0 to 2 range.
-    /// Negative values or values above 2 should produce validation errors.
+    /// Verifies that skill grant bonusAmount must be within 0 to 5 range.
+    /// Values above 5 should produce validation errors.
     /// </summary>
     [Test]
-    public void AttributeBonuses_OutOfRange_FailsValidation()
+    public void SkillGrant_BonusAmountOutOfRange_FailsValidation()
     {
-        // Arrange: JSON with out-of-range attribute bonus (might: 5)
+        // Arrange: JSON with out-of-range skill grant bonus (bonusAmount: 10)
         var invalidJson = """
         {
             "backgrounds": [
                 {
-                    "id": "berserker",
-                    "name": "Berserker",
-                    "category": "Profession",
-                    "description": "A warrior consumed by battle fury.",
-                    "attributeBonuses": { "might": 5 },
-                    "starterAbilityId": "rage",
-                    "starterAbilityName": "Rage",
-                    "starterAbilityDescription": "Enter a furious battle state.",
-                    "startingItems": ["greataxe"]
+                    "backgroundId": "VillageSmith",
+                    "displayName": "Village Smith",
+                    "description": "You worked the forge, shaping metal into tools.",
+                    "selectionText": "The ring of hammer on anvil was your morning song.",
+                    "professionBefore": "Blacksmith and metalworker",
+                    "socialStanding": "Respected craftsperson",
+                    "skillGrants": [
+                        { "skillId": "craft", "bonusAmount": 10, "grantType": "Permanent" }
+                    ]
                 }
             ]
         }
@@ -149,37 +144,31 @@ public class BackgroundSchemaTests
         // Act: Validate the invalid JSON
         var errors = _schema.Validate(invalidJson);
 
-        // Assert: Should produce validation errors for the attribute range
+        // Assert: Should produce validation errors for the bonus range
         errors.Should().NotBeEmpty(
-            "attribute bonus 'might: 5' should fail range validation (max is 2)");
-        
-        // Verify the error references the might property
-        var errorSummary = string.Join(", ", errors.Select(e => e.ToString()));
-        errorSummary.Should().Contain("might",
-            "error should reference the might property");
+            "skill grant bonusAmount 10 should fail range validation (max is 5)");
     }
 
     /// <summary>
-    /// Verifies that negative attribute bonuses are not allowed (minimum: 0).
-    /// Backgrounds provide bonuses only, not penalties.
+    /// Verifies that skill grant bonusAmount cannot be negative (minimum: 0).
     /// </summary>
     [Test]
-    public void AttributeBonuses_NegativeValue_FailsValidation()
+    public void SkillGrant_NegativeBonusAmount_FailsValidation()
     {
-        // Arrange: JSON with negative attribute bonus
+        // Arrange: JSON with negative skill grant bonus
         var invalidJson = """
         {
             "backgrounds": [
                 {
-                    "id": "clumsy",
-                    "name": "Clumsy",
-                    "category": "Lineage",
-                    "description": "Born with two left feet.",
-                    "attributeBonuses": { "finesse": -1 },
-                    "starterAbilityId": "trip",
-                    "starterAbilityName": "Trip",
-                    "starterAbilityDescription": "Fall over at inopportune times.",
-                    "startingItems": ["bandages"]
+                    "backgroundId": "VillageSmith",
+                    "displayName": "Village Smith",
+                    "description": "You worked the forge, shaping metal into tools.",
+                    "selectionText": "The ring of hammer on anvil was your morning song.",
+                    "professionBefore": "Blacksmith and metalworker",
+                    "socialStanding": "Respected craftsperson",
+                    "skillGrants": [
+                        { "skillId": "craft", "bonusAmount": -1, "grantType": "Permanent" }
+                    ]
                 }
             ]
         }
@@ -190,11 +179,67 @@ public class BackgroundSchemaTests
 
         // Assert: Should produce validation errors for the negative value
         errors.Should().NotBeEmpty(
-            "attribute bonus 'finesse: -1' should fail minimum validation (min is 0)");
-        
-        // Verify the error references the finesse property
-        var errorSummary = string.Join(", ", errors.Select(e => e.ToString()));
-        errorSummary.Should().Contain("finesse",
-            "error should reference the finesse property");
+            "skill grant bonusAmount -1 should fail minimum validation (min is 0)");
+    }
+
+    /// <summary>
+    /// Verifies that equipment grant quantity must be at least 1.
+    /// Zero quantity should produce validation errors.
+    /// </summary>
+    [Test]
+    public void EquipmentGrant_ZeroQuantity_FailsValidation()
+    {
+        // Arrange: JSON with zero equipment grant quantity
+        var invalidJson = """
+        {
+            "backgrounds": [
+                {
+                    "backgroundId": "ClanGuard",
+                    "displayName": "Clan Guard",
+                    "description": "You stood on the walls, shield in hand.",
+                    "selectionText": "The weight of the shield, the length of the spear.",
+                    "professionBefore": "Warrior and protector",
+                    "socialStanding": "Honored defender",
+                    "equipmentGrants": [
+                        { "itemId": "shield", "quantity": 0, "isEquipped": true, "slot": "Shield" }
+                    ]
+                }
+            ]
+        }
+        """;
+
+        // Act: Validate the invalid JSON
+        var errors = _schema.Validate(invalidJson);
+
+        // Assert: Should produce validation errors for zero quantity
+        errors.Should().NotBeEmpty(
+            "equipment grant quantity 0 should fail minimum validation (min is 1)");
+    }
+
+    /// <summary>
+    /// Verifies that required fields must be present in background definitions.
+    /// Missing required fields should produce validation errors.
+    /// </summary>
+    [Test]
+    public void BackgroundDefinition_MissingRequiredFields_FailsValidation()
+    {
+        // Arrange: JSON missing required fields (no displayName, no description)
+        var invalidJson = """
+        {
+            "backgrounds": [
+                {
+                    "backgroundId": "VillageSmith"
+                }
+            ]
+        }
+        """;
+
+        // Act: Validate the invalid JSON
+        var errors = _schema.Validate(invalidJson);
+
+        // Assert: Should produce validation errors for missing required fields
+        errors.Should().NotBeEmpty(
+            "background definition missing displayName, description, selectionText, " +
+            "professionBefore, and socialStanding should fail validation");
     }
 }

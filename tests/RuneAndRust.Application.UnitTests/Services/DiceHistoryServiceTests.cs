@@ -427,11 +427,11 @@ public class DiceHistoryServiceTests
     [Test]
     // The CalculateLuckRating method is internal, so we test through GetLuckRating behavior
     // by recording rolls that produce the target luck percentages
-    [TestCase(3, LuckRating.Cursed)]       // Average of 3 = (3 - 10.5) / 10.5 * 100 = -71.4%
-    [TestCase(7, LuckRating.Unlucky)]      // Average of 7 = (7 - 10.5) / 10.5 * 100 = -33.3%
-    [TestCase(10, LuckRating.Average)]     // Average of 10 = (10 - 10.5) / 10.5 * 100 = -4.76%
-    [TestCase(12, LuckRating.Lucky)]       // Average of 12 = (12 - 10.5) / 10.5 * 100 = +14.3%
-    [TestCase(18, LuckRating.Blessed)]     // Average of 18 = (18 - 10.5) / 10.5 * 100 = +71.4%
+    [TestCase(3, LuckRating.Cursed)]       // Average of 3 = (3 - 10.5) / 10.5 * 100 = -71.4% (< -10)
+    [TestCase(7, LuckRating.Cursed)]       // Average of 7 = (7 - 10.5) / 10.5 * 100 = -33.3% (< -10)
+    [TestCase(10, LuckRating.Average)]     // Average of 10 = (10 - 10.5) / 10.5 * 100 = -4.76% (-5 to +5)
+    [TestCase(12, LuckRating.Blessed)]     // Average of 12 = (12 - 10.5) / 10.5 * 100 = +14.3% (> +10)
+    [TestCase(18, LuckRating.Blessed)]     // Average of 18 = (18 - 10.5) / 10.5 * 100 = +71.4% (> +10)
     public void GetLuckRating_WithVariousAverages_ReturnsCorrectRating(int rollValue, LuckRating expectedRating)
     {
         // Arrange - Record a single roll with the target value
