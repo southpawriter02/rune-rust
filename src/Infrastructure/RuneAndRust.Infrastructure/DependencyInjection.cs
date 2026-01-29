@@ -147,6 +147,14 @@ public static class DependencyInjection
             return new LineageProvider(logger, lineagesPath);
         });
 
+        // Background provider (v0.17.1d) - loads background definitions from JSON config
+        services.AddSingleton<IBackgroundProvider>(sp =>
+        {
+            var backgroundsPath = Path.Combine(configPath, "backgrounds.json");
+            var logger = sp.GetRequiredService<ILogger<BackgroundProvider>>();
+            return new BackgroundProvider(logger, backgroundsPath);
+        });
+
         return services;
     }
 
