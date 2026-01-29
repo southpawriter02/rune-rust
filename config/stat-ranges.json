@@ -1,0 +1,101 @@
+{
+    "$schema": "./schemas/stat-ranges.schema.json",
+    "version": "1.0.0",
+    "tiers": [
+        {
+            "tier": 0,
+            "tierName": "JuryRigged",
+            "damage": {
+                "diceCount": 1,
+                "diceSides": 4,
+                "bonus": 0,
+                "min": 1,
+                "max": 4
+            },
+            "defense": {
+                "min": 0,
+                "max": 1
+            },
+            "attributeBonus": {
+                "min": 0,
+                "max": 0
+            }
+        },
+        {
+            "tier": 1,
+            "tierName": "Scavenged",
+            "damage": {
+                "diceCount": 1,
+                "diceSides": 6,
+                "bonus": 0,
+                "min": 1,
+                "max": 6
+            },
+            "defense": {
+                "min": 1,
+                "max": 2
+            },
+            "attributeBonus": {
+                "min": 0,
+                "max": 1
+            }
+        },
+        {
+            "tier": 2,
+            "tierName": "ClanForged",
+            "damage": {
+                "diceCount": 1,
+                "diceSides": 8,
+                "bonus": 1,
+                "min": 2,
+                "max": 9
+            },
+            "defense": {
+                "min": 2,
+                "max": 4
+            },
+            "attributeBonus": {
+                "min": 1,
+                "max": 2
+            }
+        },
+        {
+            "tier": 3,
+            "tierName": "Optimized",
+            "damage": {
+                "diceCount": 2,
+                "diceSides": 6,
+                "bonus": 2,
+                "min": 4,
+                "max": 14
+            },
+            "defense": {
+                "min": 4,
+                "max": 7
+            },
+            "attributeBonus": {
+                "min": 2,
+                "max": 3
+            }
+        },
+        {
+            "tier": 4,
+            "tierName": "MythForged",
+            "damage": {
+                "diceCount": 2,
+                "diceSides": 8,
+                "bonus": 4,
+                "min": 6,
+                "max": 20
+            },
+            "defense": {
+                "min": 6,
+                "max": 10
+            },
+            "attributeBonus": {
+                "min": 3,
+                "max": 5
+            }
+        }
+    ]
+}

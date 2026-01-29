@@ -1,0 +1,119 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "stat-ranges.schema.json",
+    "title": "Stat Ranges Configuration",
+    "description": "Defines expected stat ranges for each quality tier. Used by IStatVerificationService to validate generated item stats.",
+    "type": "object",
+    "required": ["version", "tiers"],
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "JSON Schema reference"
+        },
+        "version": {
+            "type": "string",
+            "pattern": "^\\d+\\.\\d+\\.\\d+$",
+            "description": "Configuration file version in semver format"
+        },
+        "tiers": {
+            "type": "array",
+            "minItems": 5,
+            "maxItems": 5,
+            "description": "Array of tier definitions (0-4: JuryRigged through MythForged)",
+            "items": {
+                "$ref": "#/$defs/tierDefinition"
+            }
+        }
+    },
+    "$defs": {
+        "tierDefinition": {
+            "type": "object",
+            "description": "Stat ranges for a single quality tier",
+            "required": ["tier", "tierName", "damage", "defense", "attributeBonus"],
+            "properties": {
+                "tier": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4,
+                    "description": "Tier index (0=JuryRigged, 4=MythForged)"
+                },
+                "tierName": {
+                    "type": "string",
+                    "description": "Human-readable tier name",
+                    "enum": [
+                        "JuryRigged",
+                        "Scavenged",
+                        "ClanForged",
+                        "Optimized",
+                        "MythForged"
+                    ]
+                },
+                "damage": {
+                    "$ref": "#/$defs/diceRange",
+                    "description": "Expected weapon damage range for this tier"
+                },
+                "defense": {
+                    "$ref": "#/$defs/flatRange",
+                    "description": "Expected armor defense range for this tier"
+                },
+                "attributeBonus": {
+                    "$ref": "#/$defs/flatRange",
+                    "description": "Expected attribute bonus range for this tier"
+                }
+            },
+            "additionalProperties": false
+        },
+        "diceRange": {
+            "type": "object",
+            "description": "Range defined by dice expression (NdX+Y)",
+            "required": ["diceCount", "diceSides", "bonus", "min", "max"],
+            "properties": {
+                "diceCount": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "Number of dice (N in NdX)"
+                },
+                "diceSides": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "Sides per die (X in NdX)"
+                },
+                "bonus": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "Flat bonus (Y in NdX+Y)"
+                },
+                "min": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "Minimum value (diceCount + bonus)"
+                },
+                "max": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "Maximum value (diceCount * diceSides + bonus)"
+                }
+            },
+            "additionalProperties": false
+        },
+        "flatRange": {
+            "type": "object",
+            "description": "Simple min/max range (not dice-based)",
+            "required": ["min", "max"],
+            "properties": {
+                "min": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "Minimum value (inclusive)"
+                },
+                "max": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "Maximum value (inclusive)"
+                }
+            },
+            "additionalProperties": false
+        }
+    },
+    "additionalProperties": false
+}
