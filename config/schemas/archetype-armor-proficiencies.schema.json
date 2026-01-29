@@ -1,0 +1,124 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "archetype-armor-proficiencies.schema.json",
+    "title": "Archetype Armor Proficiency Configuration",
+    "description": "Defines archetype-armor proficiency mappings and Galdr interference rules for the Rune & Rust armor proficiency system v0.16.2c",
+    "type": "object",
+    "required": ["proficiencySets"],
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "JSON Schema reference for validation"
+        },
+        "proficiencySets": {
+            "type": "array",
+            "description": "List of archetype armor proficiency configurations",
+            "minItems": 1,
+            "items": {
+                "$ref": "#/definitions/proficiencySet"
+            }
+        }
+    },
+    "definitions": {
+        "proficiencySet": {
+            "type": "object",
+            "description": "Armor proficiency configuration for a single archetype",
+            "required": [
+                "archetypeId",
+                "displayName",
+                "proficientCategories",
+                "nonProficientCategories"
+            ],
+            "properties": {
+                "archetypeId": {
+                    "type": "string",
+                    "description": "Unique archetype identifier in kebab-case (e.g., 'warrior', 'mystic')",
+                    "pattern": "^[a-z][a-z0-9-]*$"
+                },
+                "displayName": {
+                    "type": "string",
+                    "description": "Human-readable archetype name for UI display",
+                    "minLength": 1
+                },
+                "proficientCategories": {
+                    "type": "array",
+                    "description": "Armor categories the archetype starts proficient with",
+                    "items": {
+                        "$ref": "#/definitions/armorCategory"
+                    },
+                    "minItems": 1,
+                    "uniqueItems": true
+                },
+                "nonProficientCategories": {
+                    "type": "array",
+                    "description": "Armor categories the archetype is not proficient with",
+                    "items": {
+                        "$ref": "#/definitions/armorCategory"
+                    },
+                    "uniqueItems": true
+                },
+                "galdrInterference": {
+                    "oneOf": [
+                        { "type": "null" },
+                        { "$ref": "#/definitions/galdrInterference" }
+                    ],
+                    "description": "Galdr/WITS interference rules for caster archetypes, null for martial archetypes"
+                },
+                "specialRestrictions": {
+                    "type": ["string", "null"],
+                    "description": "Additional restrictions text for UI display"
+                }
+            },
+            "additionalProperties": false
+        },
+        "armorCategory": {
+            "type": "string",
+            "description": "Armor category enum value",
+            "enum": ["Light", "Medium", "Heavy", "Shields", "Specialized"]
+        },
+        "galdrInterference": {
+            "type": "object",
+            "description": "Galdr/WITS interference rules for caster archetypes",
+            "required": [
+                "mediumArmorPenalty",
+                "heavyArmorBlocked",
+                "heavyArmorPenalty",
+                "affectsWits",
+                "shieldsBlocked",
+                "description"
+            ],
+            "properties": {
+                "mediumArmorPenalty": {
+                    "type": "integer",
+                    "description": "Penalty to Galdr/WITS checks when wearing medium armor",
+                    "maximum": 0,
+                    "minimum": -10
+                },
+                "heavyArmorBlocked": {
+                    "type": "boolean",
+                    "description": "Whether heavy armor completely blocks Galdr casting"
+                },
+                "heavyArmorPenalty": {
+                    "type": "integer",
+                    "description": "Penalty to Galdr/WITS checks when wearing heavy armor (only applies if not blocked)",
+                    "maximum": 0,
+                    "minimum": -10
+                },
+                "affectsWits": {
+                    "type": "boolean",
+                    "description": "Whether penalties apply to WITS-based abilities instead of Galdr"
+                },
+                "shieldsBlocked": {
+                    "type": "boolean",
+                    "description": "Whether using shields blocks Galdr or imposes WITS penalties"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Lore description explaining the interference mechanism",
+                    "minLength": 1
+                }
+            },
+            "additionalProperties": false
+        }
+    }
+}

@@ -1,0 +1,51 @@
+{
+    "$schema": "./schemas/archetype-armor-proficiencies.schema.json",
+    "proficiencySets": [
+        {
+            "archetypeId": "warrior",
+            "displayName": "Warrior",
+            "proficientCategories": ["Light", "Medium", "Heavy", "Shields"],
+            "nonProficientCategories": ["Specialized"],
+            "galdrInterference": null,
+            "specialRestrictions": null
+        },
+        {
+            "archetypeId": "skirmisher",
+            "displayName": "Skirmisher",
+            "proficientCategories": ["Light", "Medium", "Shields"],
+            "nonProficientCategories": ["Heavy", "Specialized"],
+            "galdrInterference": null,
+            "specialRestrictions": "Cannot effectively use Tower Shields"
+        },
+        {
+            "archetypeId": "mystic",
+            "displayName": "Mystic",
+            "proficientCategories": ["Light"],
+            "nonProficientCategories": ["Medium", "Heavy", "Shields", "Specialized"],
+            "galdrInterference": {
+                "mediumArmorPenalty": -2,
+                "heavyArmorBlocked": true,
+                "heavyArmorPenalty": 0,
+                "affectsWits": false,
+                "shieldsBlocked": true,
+                "description": "Heavy armor creates a Faraday-cage effect blocking Galdr. Medium armor and shields interfere with channeling gestures."
+            },
+            "specialRestrictions": "Galdr blocked in Heavy armor"
+        },
+        {
+            "archetypeId": "adept",
+            "displayName": "Adept",
+            "proficientCategories": ["Light"],
+            "nonProficientCategories": ["Medium", "Heavy", "Shields", "Specialized"],
+            "galdrInterference": {
+                "mediumArmorPenalty": -2,
+                "heavyArmorBlocked": false,
+                "heavyArmorPenalty": -4,
+                "affectsWits": true,
+                "shieldsBlocked": true,
+                "description": "Armor bulk impairs mental focus for WITS-based abilities. Medium armor causes minor distraction, heavy armor severely impairs concentration."
+            },
+            "specialRestrictions": "-4 WITS penalty in Heavy armor"
+        }
+    ]
+}
