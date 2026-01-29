@@ -1,0 +1,125 @@
+{
+    "$schema": "./schemas/container-types.schema.json",
+    "containerTypes": [
+        {
+            "type": "SmallChest",
+            "minItems": 1,
+            "maxItems": 2,
+            "minTier": 0,
+            "maxTier": 1,
+            "minCurrency": 10,
+            "maxCurrency": 30,
+            "itemCategoryFilter": null,
+            "discoveryDC": null,
+            "flags": []
+        },
+        {
+            "type": "MediumChest",
+            "minItems": 2,
+            "maxItems": 4,
+            "minTier": 1,
+            "maxTier": 2,
+            "minCurrency": 25,
+            "maxCurrency": 75,
+            "itemCategoryFilter": null,
+            "discoveryDC": null,
+            "flags": []
+        },
+        {
+            "type": "LargeChest",
+            "minItems": 3,
+            "maxItems": 5,
+            "minTier": 2,
+            "maxTier": 3,
+            "minCurrency": 50,
+            "maxCurrency": 150,
+            "itemCategoryFilter": null,
+            "discoveryDC": null,
+            "flags": []
+        },
+        {
+            "type": "BossChest",
+            "minItems": 4,
+            "maxItems": 6,
+            "minTier": 3,
+            "maxTier": 4,
+            "minCurrency": 100,
+            "maxCurrency": 300,
+            "itemCategoryFilter": null,
+            "discoveryDC": null,
+            "flags": ["MythForgedChance"]
+        },
+        {
+            "type": "HiddenCache",
+            "minItems": 1,
+            "maxItems": 3,
+            "minTier": 1,
+            "maxTier": 3,
+            "minCurrency": 50,
+            "maxCurrency": 200,
+            "itemCategoryFilter": null,
+            "discoveryDC": 14,
+            "flags": ["RequiresDiscovery"]
+        },
+        {
+            "type": "Corpse",
+            "minItems": 0,
+            "maxItems": 2,
+            "minTier": 0,
+            "maxTier": 1,
+            "minCurrency": 5,
+            "maxCurrency": 20,
+            "itemCategoryFilter": null,
+            "discoveryDC": null,
+            "flags": ["MayBeEmpty"]
+        },
+        {
+            "type": "Locker",
+            "minItems": 1,
+            "maxItems": 3,
+            "minTier": 0,
+            "maxTier": 2,
+            "minCurrency": 15,
+            "maxCurrency": 50,
+            "itemCategoryFilter": null,
+            "discoveryDC": null,
+            "flags": []
+        },
+        {
+            "type": "SupplyCrate",
+            "minItems": 2,
+            "maxItems": 3,
+            "minTier": 0,
+            "maxTier": 1,
+            "minCurrency": null,
+            "maxCurrency": null,
+            "itemCategoryFilter": "consumables",
+            "discoveryDC": null,
+            "flags": []
+        },
+        {
+            "type": "WeaponRack",
+            "minItems": 1,
+            "maxItems": 2,
+            "minTier": 1,
+            "maxTier": 3,
+            "minCurrency": null,
+            "maxCurrency": null,
+            "itemCategoryFilter": "weapons",
+            "discoveryDC": null,
+            "flags": []
+        },
+        {
+            "type": "ArmorStand",
+            "minItems": 1,
+            "maxItems": 1,
+            "minTier": 1,
+            "maxTier": 3,
+            "minCurrency": null,
+            "maxCurrency": null,
+            "itemCategoryFilter": "armor",
+            "discoveryDC": null,
+            "flags": []
+        }
+    ]
+}

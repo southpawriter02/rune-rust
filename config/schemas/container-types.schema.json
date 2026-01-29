@@ -1,0 +1,101 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "container-types.schema.json",
+    "title": "Container Types Configuration",
+    "description": "Defines loot specifications for each container type in Rune & Rust. Each container type specifies item counts, quality tier ranges, currency amounts, and special behaviors.",
+    "type": "object",
+    "required": ["containerTypes"],
+    "properties": {
+        "containerTypes": {
+            "type": "array",
+            "description": "Array of container type definitions. Each entry defines loot generation parameters for a specific container category.",
+            "items": {
+                "$ref": "#/$defs/containerTypeDefinition"
+            },
+            "minItems": 1
+        }
+    },
+    "$defs": {
+        "containerTypeDefinition": {
+            "type": "object",
+            "description": "Defines loot generation parameters for a single container type.",
+            "required": ["type", "minItems", "maxItems", "minTier", "maxTier"],
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "description": "The container type identifier. Must match a value from the ContainerType enum.",
+                    "enum": [
+                        "SmallChest",
+                        "MediumChest",
+                        "LargeChest",
+                        "BossChest",
+                        "HiddenCache",
+                        "Corpse",
+                        "Locker",
+                        "SupplyCrate",
+                        "WeaponRack",
+                        "ArmorStand"
+                    ]
+                },
+                "minItems": {
+                    "type": "integer",
+                    "description": "Minimum number of items this container can hold. Must be >= 0.",
+                    "minimum": 0
+                },
+                "maxItems": {
+                    "type": "integer",
+                    "description": "Maximum number of items this container can hold. Must be >= minItems.",
+                    "minimum": 0
+                },
+                "minTier": {
+                    "type": "integer",
+                    "description": "Minimum quality tier for generated items. Range 0-4 where 0=JuryRigged, 1=Scavenged, 2=ClanForged, 3=Optimized, 4=MythForged.",
+                    "minimum": 0,
+                    "maximum": 4
+                },
+                "maxTier": {
+                    "type": "integer",
+                    "description": "Maximum quality tier for generated items. Range 0-4 where 0=JuryRigged through 4=MythForged. Must be >= minTier.",
+                    "minimum": 0,
+                    "maximum": 4
+                },
+                "minCurrency": {
+                    "type": ["integer", "null"],
+                    "description": "Minimum currency amount awarded when looting. Set to null if the container does not award currency.",
+                    "minimum": 0
+                },
+                "maxCurrency": {
+                    "type": ["integer", "null"],
+                    "description": "Maximum currency amount awarded when looting. Set to null if the container does not award currency. Must be >= minCurrency when both are set.",
+                    "minimum": 0
+                },
+                "itemCategoryFilter": {
+                    "type": ["string", "null"],
+                    "description": "Restricts generated items to a specific category. Valid values include 'weapons', 'armor', 'consumables'. Set to null for no restriction.",
+                    "examples": ["weapons", "armor", "consumables"]
+                },
+                "discoveryDC": {
+                    "type": ["integer", "null"],
+                    "description": "Difficulty class for Perception check to discover hidden containers. Set to null if the container is always visible. Must be >= 1 when set.",
+                    "minimum": 1
+                },
+                "flags": {
+                    "type": "array",
+                    "description": "Special behavior flags that modify container generation and interaction.",
+                    "items": {
+                        "type": "string",
+                        "enum": [
+                            "MayBeEmpty",
+                            "MythForgedChance",
+                            "RequiresDiscovery"
+                        ]
+                    },
+                    "uniqueItems": true,
+                    "default": []
+                }
+            },
+            "additionalProperties": false
+        }
+    },
+    "additionalProperties": false
+}
