@@ -1,0 +1,40 @@
+{
+    "$schema": "./schemas/biome-loot-modifiers.schema.json",
+    "biomeModifiers": [
+        {
+            "biomeId": "the-roots",
+            "goldMultiplier": 1.0,
+            "dropRateMultiplier": 1.0,
+            "qualityBonus": 0,
+            "rareChanceBonusPercent": 0
+        },
+        {
+            "biomeId": "muspelheim",
+            "goldMultiplier": 1.2,
+            "dropRateMultiplier": 0.9,
+            "qualityBonus": 0,
+            "rareChanceBonusPercent": 5
+        },
+        {
+            "biomeId": "alfheim",
+            "goldMultiplier": 1.5,
+            "dropRateMultiplier": 0.7,
+            "qualityBonus": 1,
+            "rareChanceBonusPercent": 15
+        },
+        {
+            "biomeId": "jotunheim",
+            "goldMultiplier": 2.0,
+            "dropRateMultiplier": 0.8,
+            "qualityBonus": 1,
+            "rareChanceBonusPercent": 20
+        },
+        {
+            "biomeId": "boss-room",
+            "goldMultiplier": 1.5,
+            "dropRateMultiplier": 1.0,
+            "qualityBonus": 1,
+            "rareChanceBonusPercent": 25
+        }
+    ]
+}

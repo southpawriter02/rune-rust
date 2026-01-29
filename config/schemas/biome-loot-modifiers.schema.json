@@ -1,0 +1,77 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "biome-loot-modifiers.schema.json",
+    "title": "Biome Loot Modifiers Configuration",
+    "description": "Defines biome-specific modifiers for container loot generation in Rune and Rust.",
+    "type": "object",
+    "required": ["biomeModifiers"],
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "JSON Schema reference for validation."
+        },
+        "biomeModifiers": {
+            "type": "array",
+            "description": "Array of biome modifier definitions.",
+            "items": {
+                "$ref": "#/$defs/biomeLootModifier"
+            },
+            "minItems": 1
+        }
+    },
+    "$defs": {
+        "biomeLootModifier": {
+            "type": "object",
+            "description": "Modifier settings for a single biome.",
+            "required": [
+                "biomeId",
+                "goldMultiplier",
+                "dropRateMultiplier",
+                "qualityBonus",
+                "rareChanceBonusPercent"
+            ],
+            "properties": {
+                "biomeId": {
+                    "type": "string",
+                    "description": "Unique identifier for the biome (kebab-case, lowercase).",
+                    "pattern": "^[a-z][a-z0-9-]*$",
+                    "examples": ["the-roots", "muspelheim", "alfheim", "jotunheim", "boss-room"]
+                },
+                "goldMultiplier": {
+                    "type": "number",
+                    "description": "Multiplier for gold amounts. 1.0 = normal, 2.0 = double gold.",
+                    "minimum": 0.1,
+                    "maximum": 10.0,
+                    "default": 1.0,
+                    "examples": [1.0, 1.2, 1.5, 2.0]
+                },
+                "dropRateMultiplier": {
+                    "type": "number",
+                    "description": "Multiplier for item counts. 1.0 = normal, 0.7 = 70% items.",
+                    "minimum": 0.1,
+                    "maximum": 10.0,
+                    "default": 1.0,
+                    "examples": [0.7, 0.8, 0.9, 1.0]
+                },
+                "qualityBonus": {
+                    "type": "integer",
+                    "description": "Additive bonus to quality tier. 0 = no bonus, 1 = +1 tier.",
+                    "minimum": 0,
+                    "maximum": 4,
+                    "default": 0,
+                    "examples": [0, 1, 2]
+                },
+                "rareChanceBonusPercent": {
+                    "type": "integer",
+                    "description": "Additive bonus to rare item chance (0-100%). 15 = +15% rare chance.",
+                    "minimum": 0,
+                    "maximum": 100,
+                    "default": 0,
+                    "examples": [0, 5, 15, 20, 25]
+                }
+            },
+            "additionalProperties": false
+        }
+    },
+    "additionalProperties": false
+}
