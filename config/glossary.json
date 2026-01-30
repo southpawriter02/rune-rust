@@ -1638,6 +1638,90 @@
                 "value-object"
             ],
             "sortOrder": 36
+        },
+        {
+            "id": "specialization-path-type",
+            "term": "Specialization Path Type",
+            "definition": "Classifies specializations by their relationship with reality and the Aether. Coherent paths work within stable reality with no Corruption risk from abilities, while Heretical paths interface with corrupted Aether and some abilities may trigger Corruption gain. Path type is permanent and determined by the specialization itself. Of 17 total specializations, 5 are Heretical (Berserkr, Gorge-Maw, Myrk-gengr, Seiðkona, Echo-Caller) and 12 are Coherent.",
+            "shortDefinition": "Coherent or Heretical classification determining Corruption risk.",
+            "categoryId": "mechanics",
+            "aliases": [
+                "path type",
+                "coherent path",
+                "heretical path"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "specialization-id",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "archetype",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "character-creation",
+                "specialization",
+                "corruption",
+                "enum"
+            ],
+            "sortOrder": 37
+        },
+        {
+            "id": "specialization-id",
+            "term": "Specialization ID",
+            "definition": "Unique identifier for each of the 17 specializations across 4 archetypes: Warrior (6: Berserkr, Iron-Bane, Skjaldmaer, Skar-Horde, Atgeir-Wielder, Gorge-Maw), Skirmisher (4: Veiðimaðr, Myrk-gengr, Strandhögg, Hlekkr-master), Mystic (2: Seiðkona, Echo-Caller), and Adept (5: Bone-Setter, Jötun-Reader, Skald, Scrap-Tinker, Einbúi). Each specialization provides a tactical identity through unique ability trees, special resources, and path type classification.",
+            "shortDefinition": "Enum identifying all 17 specializations across 4 archetypes.",
+            "categoryId": "mechanics",
+            "aliases": [
+                "specialization",
+                "spec id",
+                "specialization identifier"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "specialization-path-type",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "archetype",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "character-creation",
+                "specialization",
+                "enum"
+            ],
+            "sortOrder": 38
+        },
+        {
+            "id": "specialization-extensions",
+            "term": "Specialization Extensions",
+            "definition": "Extension methods for SpecializationId and SpecializationPathType enums providing path type lookups (GetPathType), parent archetype mappings (GetParentArchetype), Heretical checks (IsHeretical), display names with Old Norse diacritics (GetDisplayName), Corruption risk descriptions (GetCorruptionRisk), Corruption risk evaluation (RisksCorruption), creation warnings (GetCreationWarning), and path type descriptions (GetDescription). All methods use O(1) switch expressions.",
+            "shortDefinition": "Extension methods for specialization path type lookups and display names.",
+            "categoryId": "mechanics",
+            "aliases": [
+                "specialization id extensions",
+                "specialization path type extensions"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "specialization-id",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "specialization-path-type",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "character-creation",
+                "specialization",
+                "extension-methods"
+            ],
+            "sortOrder": 39
         }
     ]
 }

@@ -1,0 +1,90 @@
+{
+    "$schema": "./schemas/specializations.schema.json",
+    "pathTypes": [
+        {
+            "specializationId": "Berserkr",
+            "pathType": "Heretical",
+            "corruptionRisk": "Rage abilities may trigger Corruption gain"
+        },
+        {
+            "specializationId": "IronBane",
+            "pathType": "Coherent",
+            "corruptionRisk": null
+        },
+        {
+            "specializationId": "Skjaldmaer",
+            "pathType": "Coherent",
+            "corruptionRisk": null
+        },
+        {
+            "specializationId": "SkarHorde",
+            "pathType": "Coherent",
+            "corruptionRisk": null
+        },
+        {
+            "specializationId": "AtgeirWielder",
+            "pathType": "Coherent",
+            "corruptionRisk": null
+        },
+        {
+            "specializationId": "GorgeMaw",
+            "pathType": "Heretical",
+            "corruptionRisk": "Consuming enemies risks Corruption"
+        },
+        {
+            "specializationId": "Veidimadr",
+            "pathType": "Coherent",
+            "corruptionRisk": null
+        },
+        {
+            "specializationId": "MyrkGengr",
+            "pathType": "Heretical",
+            "corruptionRisk": "Shadow manipulation risks Corruption"
+        },
+        {
+            "specializationId": "Strandhogg",
+            "pathType": "Coherent",
+            "corruptionRisk": null
+        },
+        {
+            "specializationId": "HlekkrMaster",
+            "pathType": "Coherent",
+            "corruptionRisk": null
+        },
+        {
+            "specializationId": "Seidkona",
+            "pathType": "Heretical",
+            "corruptionRisk": "Aether spellcasting risks Corruption"
+        },
+        {
+            "specializationId": "EchoCaller",
+            "pathType": "Heretical",
+            "corruptionRisk": "Communing with the dead risks Corruption"
+        },
+        {
+            "specializationId": "BoneSetter",
+            "pathType": "Coherent",
+            "corruptionRisk": null
+        },
+        {
+            "specializationId": "JotunReader",
+            "pathType": "Coherent",
+            "corruptionRisk": null
+        },
+        {
+            "specializationId": "Skald",
+            "pathType": "Coherent",
+            "corruptionRisk": null
+        },
+        {
+            "specializationId": "ScrapTinker",
+            "pathType": "Coherent",
+            "corruptionRisk": null
+        },
+        {
+            "specializationId": "Einbui",
+            "pathType": "Coherent",
+            "corruptionRisk": null
+        }
+    ]
+}

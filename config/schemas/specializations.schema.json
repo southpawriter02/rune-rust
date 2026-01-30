@@ -1,0 +1,85 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "specializations.schema.json",
+    "title": "Specializations Configuration",
+    "description": "Configuration for character specialization path type classifications and Corruption risk profiles. Each specialization is classified as Coherent (stable reality, no Corruption risk) or Heretical (corrupted Aether, abilities may trigger Corruption gain). Part of v0.17.4a Specialization Enum & Path Types.",
+    "type": "object",
+    "required": [
+        "pathTypes"
+    ],
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "JSON Schema reference for validation."
+        },
+        "pathTypes": {
+            "type": "array",
+            "description": "Array of path type classifications for all 17 specializations.",
+            "minItems": 17,
+            "maxItems": 17,
+            "items": {
+                "$ref": "#/definitions/pathTypeEntry"
+            }
+        }
+    },
+    "additionalProperties": false,
+    "definitions": {
+        "pathTypeEntry": {
+            "type": "object",
+            "description": "Path type classification for a single specialization, including its Corruption risk profile.",
+            "required": [
+                "specializationId",
+                "pathType",
+                "corruptionRisk"
+            ],
+            "properties": {
+                "specializationId": {
+                    "type": "string",
+                    "description": "The PascalCase identifier matching the SpecializationId enum value.",
+                    "enum": [
+                        "Berserkr",
+                        "IronBane",
+                        "Skjaldmaer",
+                        "SkarHorde",
+                        "AtgeirWielder",
+                        "GorgeMaw",
+                        "Veidimadr",
+                        "MyrkGengr",
+                        "Strandhogg",
+                        "HlekkrMaster",
+                        "Seidkona",
+                        "EchoCaller",
+                        "BoneSetter",
+                        "JotunReader",
+                        "Skald",
+                        "ScrapTinker",
+                        "Einbui"
+                    ]
+                },
+                "pathType": {
+                    "type": "string",
+                    "description": "The path type classification: Coherent (stable reality) or Heretical (corrupted Aether).",
+                    "enum": [
+                        "Coherent",
+                        "Heretical"
+                    ]
+                },
+                "corruptionRisk": {
+                    "description": "Description of Corruption risk for Heretical paths, or null for Coherent paths.",
+                    "oneOf": [
+                        {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Corruption risk description for Heretical specializations."
+                        },
+                        {
+                            "type": "null",
+                            "description": "Null for Coherent specializations with no Corruption risk."
+                        }
+                    ]
+                }
+            },
+            "additionalProperties": false
+        }
+    }
+}
