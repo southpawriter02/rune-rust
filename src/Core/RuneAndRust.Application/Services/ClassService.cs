@@ -190,7 +190,7 @@ public class ClassService
         return classDef.StatModifiers.ApplyTo(baseStats);
     }
 
-    private static ArchetypeDto ToDto(ArchetypeDefinition archetype, IReadOnlyList<ClassDefinition> allClasses)
+    private static ArchetypeDto ToDto(Domain.Definitions.ArchetypeDefinition archetype, IReadOnlyList<ClassDefinition> allClasses)
     {
         var classNames = allClasses
             .Where(c => c.ArchetypeId.Equals(archetype.Id, StringComparison.OrdinalIgnoreCase))

@@ -1144,6 +1144,177 @@
                 "service"
             ],
             "sortOrder": 20
+        },
+        {
+            "id": "archetype",
+            "term": "Archetype",
+            "definition": "A permanent character creation choice that defines the character's fundamental combat role, primary resource pool (Stamina or Aether Pool), starting abilities, and available specializations. The four archetypes are Warrior (Tank / Melee DPS), Skirmisher (Mobile DPS), Mystic (Caster / Control), and Adept (Support / Utility). Archetype cannot be changed after character creation.",
+            "shortDefinition": "Permanent combat role choice determining resource pool and abilities.",
+            "categoryId": "mechanics",
+            "aliases": [
+                "class",
+                "combat role",
+                "character class"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "warrior-archetype",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "skirmisher-archetype",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "mystic-archetype",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "adept-archetype",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "resource-type",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "character-creation",
+                "combat",
+                "permanent-choice"
+            ],
+            "sortOrder": 21
+        },
+        {
+            "id": "warrior-archetype",
+            "term": "Warrior",
+            "definition": "The Tank / Melee DPS archetype. Warriors are frontline fighters who absorb punishment and deal devastating melee damage. They use Stamina as their primary resource and have the highest HP bonus (+49) of any archetype. Warriors have 6 available specializations: Berserkr, Iron-Bane, Skjaldmaer, Skar-Horde, Atgeir-Wielder, and Gorge-Maw.",
+            "shortDefinition": "Tank / Melee DPS archetype with highest HP and Stamina resource.",
+            "categoryId": "mechanics",
+            "aliases": [
+                "warrior",
+                "tank"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "archetype",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "character-creation",
+                "combat",
+                "archetype"
+            ],
+            "sortOrder": 22
+        },
+        {
+            "id": "skirmisher-archetype",
+            "term": "Skirmisher",
+            "definition": "The Mobile DPS archetype. Skirmishers excel at mobility and precision strikes, weaving in and out of combat. They use Stamina as their primary resource and have +1 Movement bonus. Skirmishers have 4 available specializations: Veiðimaðr, Myrk-gengr, Strandhögg, and Hlekkr-master.",
+            "shortDefinition": "Mobile DPS archetype with enhanced movement and Stamina resource.",
+            "categoryId": "mechanics",
+            "aliases": [
+                "skirmisher",
+                "rogue",
+                "scout"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "archetype",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "character-creation",
+                "combat",
+                "archetype"
+            ],
+            "sortOrder": 23
+        },
+        {
+            "id": "mystic-archetype",
+            "term": "Mystic",
+            "definition": "The Caster / Control archetype. Mystics channel the corrupted Aether to unleash devastating magical attacks from range. They are the only archetype using Aether Pool as their primary resource and have +20 AP bonus. Mystics have 2 available specializations: Seiðkona and Echo-Caller.",
+            "shortDefinition": "Caster / Control archetype using Aether Pool for ranged magical attacks.",
+            "categoryId": "mechanics",
+            "aliases": [
+                "mystic",
+                "mage",
+                "caster"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "archetype",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "resource-type",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "character-creation",
+                "combat",
+                "archetype",
+                "magic"
+            ],
+            "sortOrder": 24
+        },
+        {
+            "id": "adept-archetype",
+            "term": "Adept",
+            "definition": "The Support / Utility archetype. Adepts master mundane arts and make the most of limited resources. They use Stamina as their primary resource and have a unique +20% consumable effectiveness bonus. Adepts receive 14 starting attribute points instead of the standard 15. They have 5 available specializations: Bone-Setter, Jötun-Reader, Skald, Scrap-Tinker, and Einbúi.",
+            "shortDefinition": "Support / Utility archetype with +20% consumable effectiveness.",
+            "categoryId": "mechanics",
+            "aliases": [
+                "adept",
+                "support",
+                "utility"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "archetype",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "character-creation",
+                "combat",
+                "archetype"
+            ],
+            "sortOrder": 25
+        },
+        {
+            "id": "resource-type",
+            "term": "Resource Type",
+            "definition": "The primary resource pool type used by an archetype for powering abilities. There are two resource types: Stamina (physical resource used by Warrior, Skirmisher, and Adept) and Aether Pool (magical resource used exclusively by Mystic). The resource type determines regeneration rates, ability costs, and synergies with lineage traits.",
+            "shortDefinition": "Primary ability resource pool: Stamina (physical) or Aether Pool (magical).",
+            "categoryId": "mechanics",
+            "aliases": [
+                "resource pool",
+                "primary resource"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "archetype",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "max-stamina",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "aether-pool",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "character-creation",
+                "combat",
+                "resources"
+            ],
+            "sortOrder": 26
         }
     ]
 }

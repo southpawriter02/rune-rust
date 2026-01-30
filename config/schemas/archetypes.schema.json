@@ -1,8 +1,10 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "archetypes.schema.json",
     "title": "Archetypes Configuration",
-    "description": "Schema for class archetype definitions. Archetypes group classes by playstyle and stat tendencies.",
+    "description": "Configuration for character archetypes defining combat roles, primary resources, and display metadata. Archetypes are permanent choices made during character creation that determine a character's fundamental combat identity.",
     "type": "object",
+    "required": ["archetypes"],
     "properties": {
         "$schema": {
             "type": "string",
@@ -10,71 +12,81 @@
         },
         "archetypes": {
             "type": "array",
-            "description": "List of archetype definitions",
-            "items": {
-                "$ref": "#/definitions/ArchetypeDefinition"
-            },
-            "minItems": 1
+            "description": "List of archetype definitions. Exactly 4 archetypes are required.",
+            "items": { "$ref": "#/definitions/archetypeDefinition" },
+            "minItems": 4,
+            "maxItems": 4
         }
     },
-    "required": [
-        "archetypes"
-    ],
     "additionalProperties": false,
     "definitions": {
-        "ArchetypeDefinition": {
+        "archetypeDefinition": {
             "type": "object",
-            "description": "A single archetype definition with playstyle and stat tendency metadata",
+            "description": "Core definition for a single archetype including display metadata, combat role, and resource type.",
+            "required": [
+                "archetypeId",
+                "displayName",
+                "tagline",
+                "description",
+                "selectionText",
+                "combatRole",
+                "primaryResource",
+                "playstyleDescription",
+                "isPermanent"
+            ],
             "properties": {
-                "id": {
+                "archetypeId": {
                     "type": "string",
-                    "description": "Unique identifier for the archetype (lowercase kebab-case)",
-                    "pattern": "^[a-z][a-z0-9-]*$",
+                    "description": "The archetype enum value. Must be one of the four defined archetypes.",
+                    "enum": ["Warrior", "Skirmisher", "Mystic", "Adept"]
+                },
+                "displayName": {
+                    "type": "string",
+                    "description": "Display name shown in UI (e.g., 'Warrior')",
                     "minLength": 1,
                     "maxLength": 50
                 },
-                "name": {
+                "tagline": {
                     "type": "string",
-                    "description": "Display name for the archetype shown to players",
+                    "description": "Thematic tagline for the archetype (e.g., 'The Unyielding Bulwark')",
                     "minLength": 1,
                     "maxLength": 100
                 },
                 "description": {
                     "type": "string",
-                    "description": "Description of the archetype's role and characteristics",
+                    "description": "Full description of the archetype's role and characteristics",
                     "minLength": 1,
-                    "maxLength": 1000
+                    "maxLength": 500
                 },
-                "playstyleSummary": {
+                "selectionText": {
                     "type": "string",
-                    "description": "Brief summary of the archetype's playstyle for character creation UI",
+                    "description": "Flavor text for character creation selection in second-person perspective",
+                    "minLength": 1,
+                    "maxLength": 500
+                },
+                "combatRole": {
+                    "type": "string",
+                    "description": "Combat role descriptor (e.g., 'Tank / Melee DPS')",
+                    "minLength": 1,
+                    "maxLength": 50
+                },
+                "primaryResource": {
+                    "type": "string",
+                    "description": "Primary resource type used by this archetype",
+                    "enum": ["Stamina", "AetherPool"]
+                },
+                "playstyleDescription": {
+                    "type": "string",
+                    "description": "Brief playstyle guidance for the player",
                     "minLength": 1,
                     "maxLength": 200
                 },
-                "statTendency": {
-                    "type": "string",
-                    "description": "The general stat distribution tendency of classes in this archetype",
-                    "enum": [
-                        "offensive",
-                        "defensive",
-                        "balanced"
-                    ]
-                },
-                "sortOrder": {
-                    "type": "integer",
-                    "description": "Display order in archetype lists (lower = earlier)",
-                    "minimum": 0,
-                    "default": 0
+                "isPermanent": {
+                    "type": "boolean",
+                    "description": "Whether the archetype choice is permanent. Must always be true.",
+                    "const": true
                 }
             },
-            "required": [
-                "id",
-                "name",
-                "description",
-                "playstyleSummary",
-                "statTendency",
-                "sortOrder"
-            ],
             "additionalProperties": false
         }
     }

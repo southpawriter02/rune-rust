@@ -2,36 +2,48 @@
     "$schema": "./schemas/archetypes.schema.json",
     "archetypes": [
         {
-            "id": "warrior",
-            "name": "Warrior",
-            "description": "Warriors are masters of martial combat, trained in the art of weapons and armor. They excel at direct confrontation, using their strength and endurance to overpower foes.",
-            "playstyleSummary": "Frontline fighter with high survivability",
-            "statTendency": "defensive",
-            "sortOrder": 1
+            "archetypeId": "Warrior",
+            "displayName": "Warrior",
+            "tagline": "The Unyielding Bulwark",
+            "description": "Warriors are the frontline fighters who absorb punishment and deal devastating melee damage.",
+            "selectionText": "You are the shield between the innocent and the horror. When others flee, you advance. Your body is a weapon, your will is unbreakable.",
+            "combatRole": "Tank / Melee DPS",
+            "primaryResource": "Stamina",
+            "playstyleDescription": "Stand in the front, absorb damage, protect allies",
+            "isPermanent": true
         },
         {
-            "id": "skirmisher",
-            "name": "Skirmisher",
-            "description": "Skirmishers are agile combatants who rely on speed, precision, and cunning rather than brute force. They strike from the shadows and exploit enemy weaknesses.",
-            "playstyleSummary": "High damage dealer with mobility focus",
-            "statTendency": "offensive",
-            "sortOrder": 2
+            "archetypeId": "Skirmisher",
+            "displayName": "Skirmisher",
+            "tagline": "Swift as Shadow",
+            "description": "Skirmishers excel at mobility and precision strikes, weaving in and out of combat.",
+            "selectionText": "Speed is survival. Strike fast, strike true, and be gone before they know you were there.",
+            "combatRole": "Mobile DPS",
+            "primaryResource": "Stamina",
+            "playstyleDescription": "High mobility, hit-and-run tactics, evasion",
+            "isPermanent": true
         },
         {
-            "id": "adept",
-            "name": "Adept",
-            "description": "Adepts are versatile individuals who have honed practical skills and technical knowledge. They solve problems through ingenuity and resourcefulness.",
-            "playstyleSummary": "Versatile utility class with gadgets and tricks",
-            "statTendency": "balanced",
-            "sortOrder": 3
+            "archetypeId": "Mystic",
+            "displayName": "Mystic",
+            "tagline": "Wielder of Tainted Aether",
+            "description": "Mystics channel the corrupted Aether to unleash devastating magical attacks from range.",
+            "selectionText": "The Aether flows through you like a river of broken logic. Others fear its touch; you have learned to direct its chaos.",
+            "combatRole": "Caster / Control",
+            "primaryResource": "AetherPool",
+            "playstyleDescription": "Ranged magical damage, crowd control, Aether management",
+            "isPermanent": true
         },
         {
-            "id": "mystic",
-            "name": "Mystic",
-            "description": "Mystics channel supernatural forces, whether arcane magic, divine power, or primal energies. They wield abilities beyond the reach of mundane warriors.",
-            "playstyleSummary": "Spellcaster with powerful abilities",
-            "statTendency": "offensive",
-            "sortOrder": 4
+            "archetypeId": "Adept",
+            "displayName": "Adept",
+            "tagline": "Master of Mundane Arts",
+            "description": "Adepts excel at support, utility, and making the most of limited resources.",
+            "selectionText": "While others rely on strength or magic, you rely on knowledge, skill, and preparation.",
+            "combatRole": "Support / Utility",
+            "primaryResource": "Stamina",
+            "playstyleDescription": "Support allies, maximize resources, utility skills",
+            "isPermanent": true
         }
     ]
 }
