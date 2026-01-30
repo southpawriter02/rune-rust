@@ -1537,6 +1537,107 @@
                 "value-object"
             ],
             "sortOrder": 33
+        },
+        {
+            "id": "archetype-application-service",
+            "term": "Archetype Application Service",
+            "definition": "Application layer service that orchestrates applying an archetype to a character during creation Step 4. Validates preconditions (null character, existing archetype, valid enum, definition exists), retrieves archetype data from IArchetypeProvider, applies resource bonuses (HP, Aether Pool, Movement) and starting abilities to the Player entity, and returns an ArchetypeApplicationResult capturing all changes. Archetype selection is permanent and cannot be changed after character creation.",
+            "shortDefinition": "Service applying archetype bonuses, abilities, and specializations during creation.",
+            "categoryId": "mechanics",
+            "aliases": [
+                "IArchetypeApplicationService",
+                "archetype applicator",
+                "archetype service"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "archetype",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "archetype-provider",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "archetype-application-result",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "archetype-validation-result",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "character-creation",
+                "archetype",
+                "service",
+                "application-layer"
+            ],
+            "sortOrder": 34
+        },
+        {
+            "id": "archetype-application-result",
+            "term": "Archetype Application Result",
+            "definition": "Value object capturing the comprehensive result of applying an archetype to a character during creation Step 4. On success, contains the applied archetype, resource bonuses applied (ArchetypeResourceBonuses), abilities granted (list of ArchetypeAbilityGrant), and available specializations (ArchetypeSpecializationMapping). On failure, contains a human-readable failure reason. Provides display methods: GetSummary(), GetGrantedAbilitiesList(), and GetSpecializationsList().",
+            "shortDefinition": "Result of applying an archetype containing granted bonuses, abilities, and specializations.",
+            "categoryId": "mechanics",
+            "aliases": [
+                "application result",
+                "archetype result"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "archetype-application-service",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "archetype-resource-bonuses",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "archetype-ability-grant",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "archetype-specialization-mapping",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "character-creation",
+                "archetype",
+                "value-object",
+                "result"
+            ],
+            "sortOrder": 35
+        },
+        {
+            "id": "archetype-validation-result",
+            "term": "Archetype Validation Result",
+            "definition": "Lightweight value object representing the outcome of validating whether an archetype can be applied to a character. Contains IsValid (bool) and Issues (list of validation failure descriptions). Factory methods: Valid() for passing validation and Invalid(issues) for failing validation with one or more reasons. Used by IArchetypeApplicationService.CanApplyArchetype() to pre-check preconditions before application.",
+            "shortDefinition": "Validation check result for archetype application preconditions.",
+            "categoryId": "mechanics",
+            "aliases": [
+                "validation result",
+                "archetype validation"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "archetype-application-service",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "archetype-application-result",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "character-creation",
+                "archetype",
+                "validation",
+                "value-object"
+            ],
+            "sortOrder": 36
         }
     ]
 }
