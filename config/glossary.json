@@ -1112,6 +1112,38 @@
                 "allocation"
             ],
             "sortOrder": 19
+        },
+        {
+            "id": "derived-stat-calculator",
+            "term": "Derived Stat Calculator",
+            "definition": "Application service that computes derived statistics (Max HP, Max Stamina, Max Aether Pool, Initiative, Soak, Movement Speed, Carrying Capacity) from core attributes, archetype bonuses, and lineage bonuses using configurable formulas. Supports calculating all stats at once, single stat lookup by name, and live preview from an attribute allocation state during character creation. Uses formula-driven architecture where each stat has a base value, attribute scaling multipliers, optional archetype bonuses, optional lineage bonuses, and optional lineage multipliers applied in order.",
+            "shortDefinition": "Service that computes derived stats from attributes using configurable formulas.",
+            "categoryId": "mechanics",
+            "aliases": [
+                "stat calculator",
+                "derived calculator"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "derived-stats",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "attribute-allocation-service",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "attribute-provider",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "character-creation",
+                "attributes",
+                "derived-stats",
+                "service"
+            ],
+            "sortOrder": 20
         }
     ]
 }

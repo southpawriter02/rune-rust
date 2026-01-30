@@ -365,6 +365,16 @@ public static class DependencyInjection
         // during character creation. Depends on IBackgroundProvider for background definitions.
         services.AddScoped<IBackgroundApplicationService, BackgroundApplicationService>();
 
+        // Derived stat calculator (v0.17.2g)
+        // Calculates derived statistics (HP, Stamina, Aether Pool, Initiative, Soak,
+        // Movement Speed, Carrying Capacity) from core attributes during character creation.
+        // Uses default formulas built into the calculator.
+        services.AddScoped<IDerivedStatCalculator>(sp =>
+        {
+            var logger = sp.GetRequiredService<ILogger<DerivedStatCalculator>>();
+            return DerivedStatCalculator.CreateWithDefaultFormulas(logger);
+        });
+
         return services;
     }
 }
