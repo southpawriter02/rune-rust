@@ -2,7 +2,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "$id": "archetypes.schema.json",
     "title": "Archetypes Configuration",
-    "description": "Configuration for character archetypes defining combat roles, primary resources, display metadata, and resource pool bonuses. Archetypes are permanent choices made during character creation that determine a character's fundamental combat identity.",
+    "description": "Configuration for character archetypes defining combat roles, primary resources, display metadata, resource pool bonuses, and starting abilities. Archetypes are permanent choices made during character creation that determine a character's fundamental combat identity.",
     "type": "object",
     "required": ["archetypes"],
     "properties": {
@@ -22,7 +22,7 @@
     "definitions": {
         "archetypeDefinition": {
             "type": "object",
-            "description": "Core definition for a single archetype including display metadata, combat role, resource type, and resource pool bonuses.",
+            "description": "Core definition for a single archetype including display metadata, combat role, resource type, resource pool bonuses, and starting abilities.",
             "required": [
                 "archetypeId",
                 "displayName",
@@ -33,7 +33,8 @@
                 "primaryResource",
                 "playstyleDescription",
                 "isPermanent",
-                "resourceBonuses"
+                "resourceBonuses",
+                "startingAbilities"
             ],
             "properties": {
                 "archetypeId": {
@@ -89,6 +90,13 @@
                 },
                 "resourceBonuses": {
                     "$ref": "#/definitions/resourceBonuses"
+                },
+                "startingAbilities": {
+                    "type": "array",
+                    "description": "Starting abilities granted by the archetype during character creation. Each archetype grants exactly 3 abilities.",
+                    "items": { "$ref": "#/definitions/abilityGrant" },
+                    "minItems": 3,
+                    "maxItems": 3
                 }
             },
             "additionalProperties": false
@@ -133,6 +141,43 @@
                         { "$ref": "#/definitions/specialBonus" }
                     ],
                     "description": "Optional unique bonus for special effects. Only Adept uses this (+20% ConsumableEffectiveness)."
+                }
+            },
+            "additionalProperties": false
+        },
+        "abilityGrant": {
+            "type": "object",
+            "description": "A starting ability granted to the character during archetype selection.",
+            "required": [
+                "abilityId",
+                "abilityName",
+                "abilityType",
+                "description"
+            ],
+            "properties": {
+                "abilityId": {
+                    "type": "string",
+                    "description": "Unique ability identifier in kebab-case format (e.g., 'power-strike'). Used to reference the ability in the Ability System.",
+                    "pattern": "^[a-z][a-z0-9-]*$",
+                    "minLength": 3,
+                    "maxLength": 50
+                },
+                "abilityName": {
+                    "type": "string",
+                    "description": "Display name for the ability shown in UI (e.g., 'Power Strike')",
+                    "minLength": 1,
+                    "maxLength": 50
+                },
+                "abilityType": {
+                    "type": "string",
+                    "description": "Classification of the ability by activation type",
+                    "enum": ["Active", "Passive", "Stance"]
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Brief description of the ability's effect for tooltips and panels",
+                    "minLength": 1,
+                    "maxLength": 200
                 }
             },
             "additionalProperties": false

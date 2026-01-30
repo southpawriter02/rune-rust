@@ -1375,6 +1375,66 @@
                 "archetype"
             ],
             "sortOrder": 28
+        },
+        {
+            "id": "ability-type",
+            "term": "Ability Type",
+            "definition": "Classification of abilities by activation behavior. There are three ability types: Active (player-activated abilities that cost resources and have cooldowns), Passive (always-on abilities that provide constant benefits with no activation), and Stance (toggleable modes that modify character behavior while active). Each archetype's starting abilities include a mix of these types.",
+            "shortDefinition": "Ability classification: Active (activated), Passive (always-on), Stance (toggleable).",
+            "categoryId": "mechanics",
+            "aliases": [
+                "activation type",
+                "ability classification"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "archetype-ability-grant",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "archetype",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "character-creation",
+                "combat",
+                "abilities"
+            ],
+            "sortOrder": 29
+        },
+        {
+            "id": "archetype-ability-grant",
+            "term": "Archetype Ability Grant",
+            "definition": "A starting ability granted by an archetype during character creation. Each archetype provides exactly 3 starting abilities that define the character's initial combat capabilities. Abilities are identified by a kebab-case ID (e.g., 'power-strike') and classified by AbilityType (Active, Passive, or Stance). Warrior receives Power Strike, Defensive Stance, and Iron Will. Skirmisher receives Quick Strike, Evasive Maneuvers, and Opportunist. Mystic receives Aether Bolt, Aether Shield, and Aether Sense. Adept receives Precise Strike, Assess Weakness, and Resourceful.",
+            "shortDefinition": "Starting ability (3 per archetype) granted during character creation.",
+            "categoryId": "mechanics",
+            "aliases": [
+                "starting ability",
+                "archetype ability",
+                "ability grant"
+            ],
+            "crossReferences": [
+                {
+                    "termId": "ability-type",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "archetype",
+                    "relationship": "Related"
+                },
+                {
+                    "termId": "archetype-resource-bonuses",
+                    "relationship": "Related"
+                }
+            ],
+            "tags": [
+                "character-creation",
+                "combat",
+                "abilities",
+                "archetype"
+            ],
+            "sortOrder": 30
         }
     ]
 }

@@ -17,7 +17,27 @@
                 "maxAetherPoolBonus": 0,
                 "movementBonus": 0,
                 "specialBonus": null
-            }
+            },
+            "startingAbilities": [
+                {
+                    "abilityId": "power-strike",
+                    "abilityName": "Power Strike",
+                    "abilityType": "Active",
+                    "description": "A powerful melee attack that deals bonus damage."
+                },
+                {
+                    "abilityId": "defensive-stance",
+                    "abilityName": "Defensive Stance",
+                    "abilityType": "Stance",
+                    "description": "Reduces damage taken but slows movement."
+                },
+                {
+                    "abilityId": "iron-will",
+                    "abilityName": "Iron Will",
+                    "abilityType": "Passive",
+                    "description": "Resistance to fear and mental effects."
+                }
+            ]
         },
         {
             "archetypeId": "Skirmisher",
@@ -35,7 +55,27 @@
                 "maxAetherPoolBonus": 0,
                 "movementBonus": 1,
                 "specialBonus": null
-            }
+            },
+            "startingAbilities": [
+                {
+                    "abilityId": "quick-strike",
+                    "abilityName": "Quick Strike",
+                    "abilityType": "Active",
+                    "description": "A fast attack with reduced cooldown."
+                },
+                {
+                    "abilityId": "evasive-maneuvers",
+                    "abilityName": "Evasive Maneuvers",
+                    "abilityType": "Active",
+                    "description": "Dodge the next incoming attack."
+                },
+                {
+                    "abilityId": "opportunist",
+                    "abilityName": "Opportunist",
+                    "abilityType": "Passive",
+                    "description": "Bonus damage when attacking from advantage."
+                }
+            ]
         },
         {
             "archetypeId": "Mystic",
@@ -53,7 +93,27 @@
                 "maxAetherPoolBonus": 20,
                 "movementBonus": 0,
                 "specialBonus": null
-            }
+            },
+            "startingAbilities": [
+                {
+                    "abilityId": "aether-bolt",
+                    "abilityName": "Aether Bolt",
+                    "abilityType": "Active",
+                    "description": "Launch a bolt of Aetheric energy at a target."
+                },
+                {
+                    "abilityId": "aether-shield",
+                    "abilityName": "Aether Shield",
+                    "abilityType": "Active",
+                    "description": "Create a temporary barrier that absorbs damage."
+                },
+                {
+                    "abilityId": "aether-sense",
+                    "abilityName": "Aether Sense",
+                    "abilityType": "Passive",
+                    "description": "Detect nearby Aetheric sources and anomalies."
+                }
+            ]
         },
         {
             "archetypeId": "Adept",
@@ -75,7 +135,27 @@
                     "bonusValue": 0.2,
                     "description": "+20% effectiveness from all consumable items"
                 }
-            }
+            },
+            "startingAbilities": [
+                {
+                    "abilityId": "precise-strike",
+                    "abilityName": "Precise Strike",
+                    "abilityType": "Active",
+                    "description": "A calculated attack that targets weak points."
+                },
+                {
+                    "abilityId": "assess-weakness",
+                    "abilityName": "Assess Weakness",
+                    "abilityType": "Active",
+                    "description": "Study an enemy to reveal vulnerabilities."
+                },
+                {
+                    "abilityId": "resourceful",
+                    "abilityName": "Resourceful",
+                    "abilityType": "Passive",
+                    "description": "Chance to preserve consumables when used."
+                }
+            ]
         }
     ]
 }
